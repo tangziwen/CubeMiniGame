@@ -1,6 +1,6 @@
 		Cube Engine
 	Cube Engine is my own hobby porject, It's a small Graphic Engine written in c++ and powered by OpenGL (ES 2.0 or higher), I develop so that I can improve my knowledges of CG and 
-common programming Skills(generic algorithm ,code style ,design patterns).
+	common programming Skills(generic algorithm ,code style ,design patterns).
 	any questions or idea please contace me :) 
 				tangziwen 	tzwtangziwen@163.com , ziwen.tang@chukong-inc.com;
 Features:
