@@ -53,6 +53,9 @@ local.properties
 build_*_xcode/
 build_*_vc10/
 
+# Ignore QT project user file files
+*.user.*
+
 # Ignore files build by xcode
 *.mode*v*
 *.pbxuser
