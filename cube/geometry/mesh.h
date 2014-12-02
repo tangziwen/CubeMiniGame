@@ -16,9 +16,9 @@ public:
     void pushVertex(VertexData * vertex,int size);
     void pushIndex(GLushort index);
     void pushIndex(GLushort * array, int size);
-    void initWithoutNormal();
+    void finishWithoutNormal();
     void setBones(std::vector<BoneData> bones);
-    void init();
+    void finish();
     void checkIndexValid(int index);
     void draw();
     int getVerticesNumber();

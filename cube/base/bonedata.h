@@ -9,5 +9,4 @@ struct BoneData
     BoneData();
     void addBoneData(int id, float weight);
 };
-
 #endif // BONEDATA_H

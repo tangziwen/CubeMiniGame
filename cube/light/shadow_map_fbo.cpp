@@ -89,6 +89,6 @@ GLuint ShadowMapFBO::getShadowMap()
 void ShadowMapFBO::applyShadowMapTexture(ShaderProgram *shader_program)
 {
     //for shadow mapping
-    int shadowMap_ptr = glGetUniformLocation(shader_program->getShaderId(),"ShadowMap");
+    int shadowMap_ptr = glGetUniformLocation(shader_program->getShaderId(),"g_shadow_map");
     glUniform1i(shadowMap_ptr,1);
 }

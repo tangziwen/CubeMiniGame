@@ -53,7 +53,7 @@ static  void CaculateNormalLine(GLushort * indices,int indices_count,VertexData 
 }
 
 
-void TMesh::initWithoutNormal()
+void TMesh::finishWithoutNormal()
 {
     initializeGLFunctions();
     glGenBuffers(2, vbo);
@@ -86,7 +86,7 @@ void TMesh::setBones(std::vector<BoneData> bones)
     }
 }
 
-void TMesh::init()
+void TMesh::finish()
 {
     initializeGLFunctions();
 

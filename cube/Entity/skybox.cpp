@@ -28,7 +28,7 @@ SkyBox::SkyBox(const char *  PosXFilename,
     };
     m_mesh->pushIndex(indices,sizeof(indices)/sizeof(GLushort));
     m_mesh->setMaterial (MaterialPool::getInstance ()->createMaterial ("default"));
-    m_mesh->initWithoutNormal();
+    m_mesh->finishWithoutNormal();
     entity = new Entity();
     entity->addMesh(m_mesh);
     entity->scale(20,20,20);

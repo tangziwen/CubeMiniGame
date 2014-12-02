@@ -326,7 +326,7 @@ void Entity::loadModelData(const char *file_name)
         }
         //load bones
         loadBones(the_mesh,mesh);
-        mesh->init();
+        mesh->finish();
     }
 
 }

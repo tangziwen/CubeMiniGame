@@ -106,7 +106,7 @@ QMatrix4x4 Node::getScallingMatrix()
 {
     QMatrix4x4 scaleMatrix;
     scaleMatrix.setToIdentity();
-    scaleMatrix.scale(QVector3D(this->m_scalling.x(),this->m_scalling.y(),this->m_scalling.z()));
+    scaleMatrix.scale(TVector3D(this->m_scalling.x(),this->m_scalling.y(),this->m_scalling.z()));
     return scaleMatrix;
 }
 
@@ -176,37 +176,37 @@ void Node::moveBy(float the_x, float the_y, float the_z)
 {
     QVector4D v(the_x,the_y,the_z,1);
     v = this->getRotaionMatrix ()*v;
-    this->m_pos += QVector3D(v.x(),v.y(),v.z());
+    this->m_pos += TVector3D(v.x(),v.y(),v.z());
 }
 
 void Node::move(float the_x, float the_y, float the_z)
 {
-    this->m_pos = QVector3D(the_x,the_y,the_z);
+    this->m_pos = TVector3D(the_x,the_y,the_z);
 }
-QVector3D Node::pos() const
+TVector3D Node::pos() const
 {
     return m_pos;
 }
 
-void Node::setPos(const QVector3D &pos)
+void Node::setPos(const TVector3D &pos)
 {
     m_pos = pos;
 }
-QVector3D Node::rotation() const
+TVector3D Node::rotation() const
 {
     return m_rotation;
 }
 
-void Node::setRotation(const QVector3D &rotation)
+void Node::setRotation(const TVector3D &rotation)
 {
     m_rotation = rotation;
 }
-QVector3D Node::scalling() const
+TVector3D Node::scalling() const
 {
     return m_scalling;
 }
 
-void Node::setScalling(const QVector3D &scalling)
+void Node::setScalling(const TVector3D &scalling)
 {
     m_scalling = scalling;
 }

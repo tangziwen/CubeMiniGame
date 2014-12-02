@@ -81,17 +81,17 @@ void Scene::setEntityBoneTransform(Entity *entity)
 {
     if(entity->hasAnimation())
     {
-        entity->getShaderProgram()->setUniformInteger("hasAnimation",1);
+        entity->getShaderProgram()->setUniformInteger("g_has_animation",1);
         std::vector <Matrix4f > transform;
         entity->bonesTransform(entity->animateTime(),transform,entity->animationName());
         for(int i =0;i<transform.size();i++)
         {
             char str[100];
-            sprintf(str,"gBones[%d]",i);
+            sprintf(str,"g_bones[%d]",i);
             entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i].m),true);
         }
     }else{
-        entity->getShaderProgram()->setUniformInteger("hasAnimation",0);
+        entity->getShaderProgram()->setUniformInteger("g_has_animation",0);
     }
 }
 
@@ -138,7 +138,7 @@ void Scene::renderPass()
         Camera * camera =entity->getCamera();
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
-
+        p.setEyePosition (camera->pos ());
 
         QMatrix4x4 lightView;
         lightView.setToIdentity();
@@ -173,8 +173,8 @@ void Scene::renderPass()
 
 void Scene::calculateLight(ShaderProgram *shader)
 {
-    shader->setUniformInteger("pointLightAmount",this->pointLights.size());
-    shader->setUniformInteger("spotLightAmount",this->spotLights.size());
+    shader->setUniformInteger("g_point_light_amount",this->pointLights.size());
+    shader->setUniformInteger("g_spot_light_amount",this->spotLights.size());
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     for(int j = 0;j<this->pointLights.size();j++)

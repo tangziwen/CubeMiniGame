@@ -82,19 +82,19 @@ void MeshDrawComand::setTextureState()
     //diffuse texture
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D,this->material->getDiffuse()->texture->getTextureID());
-    this->shaderProgram->setUniformInteger ("texture",0);
+    this->shaderProgram->setUniformInteger ("g_diffuse_texture",0);
 
     //normal texture
     if(this->material->normalMap ())
     {
         glActiveTexture (GL_TEXTURE2);
         glBindTexture (GL_TEXTURE_2D,this->material->normalMap ()->getTextureID ());
-        this->shaderProgram->setUniformInteger ("hasNormalMap",1);
-        this->shaderProgram->setUniformInteger ("normalMap",2);
+        this->shaderProgram->setUniformInteger ("g_has_normal_map",1);
+        this->shaderProgram->setUniformInteger ("g_normal_map",2);
     }else
     {
-        this->shaderProgram->setUniformInteger ("hasNormalMap",0);
-        this->shaderProgram->setUniformInteger ("normalMap",0);
+        this->shaderProgram->setUniformInteger ("g_has_normal_map",0);
+        this->shaderProgram->setUniformInteger ("g_normal_map",0);
     }
 }
 
@@ -130,14 +130,14 @@ void MeshDrawComand::setAttribState()
         glVertexAttribPointer(normalLineLocation, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
     }
     offset+= sizeof(QVector3D);
-    int BoneId = glGetAttribLocation (shader_id,"BONE_ID"); // bone ID
+    int BoneId = glGetAttribLocation (shader_id,"a_bone_ID"); // bone ID
     if(BoneId>=0)
     {
         glEnableVertexAttribArray(BoneId);
         glVertexAttribPointer(BoneId,4,GL_INT,GL_FALSE,sizeof(VertexData),(const void *)offset);
     }
     offset+=sizeof(VertexData::boneId);
-    int BoneWeight = glGetAttribLocation (shader_id,"BONE_WEIGHT"); //bone weight
+    int BoneWeight = glGetAttribLocation (shader_id,"a_bone_weight"); //bone weight
     if(BoneWeight>=0)
     {
         glEnableVertexAttribArray(BoneWeight);

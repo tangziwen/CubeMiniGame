@@ -18,9 +18,9 @@ Terrain::Terrain(const char *fileName)
         for(int j=0;j<height;j++)
         {
             VertexData v;
-            v.position = QVector3D(j*MAP_SCALE,
-                                  result[(i*width+j)*3]*1.0/255*MAP_HEIGHT,
-                    i*MAP_SCALE);
+            v.position = QVector3D(j*MAP_SCALE- height/2*MAP_SCALE,
+                                  result[(i*width+j)*3]*1.0/255*MAP_HEIGHT -0.5*MAP_HEIGHT,
+                    i*MAP_SCALE - width/2*MAP_SCALE);
             v.texCoord = QVector2D(j*1.0/width,i*1.0/height);
             m_mesh->pushVertex (v);
         }
@@ -40,7 +40,7 @@ Terrain::Terrain(const char *fileName)
         }
     }
     m_mesh->setMaterial (MaterialPool::getInstance ()->createMaterial ("default"));
-    m_mesh->initWithoutNormal ();
+    m_mesh->finishWithoutNormal ();
 }
 TMesh *Terrain::mesh() const
 {

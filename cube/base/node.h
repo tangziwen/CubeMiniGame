@@ -2,7 +2,7 @@
 #define NODE_H
 
 #include <QMatrix4x4>
-#include <QVector3D>
+#include "base/tvector3d.h"
 #include <vector>
 #include <string>
 
@@ -51,19 +51,19 @@ public:
     void moveBy(float the_x, float the_y, float the_z);
     void move(float the_x, float the_y, float the_z);
 
-    QVector3D pos() const;
+    TVector3D pos() const;
     void setPos(const QVector3D &pos);
 
-    QVector3D rotation() const;
+    TVector3D rotation() const;
     void setRotation(const QVector3D &rotation);
 
-    QVector3D scalling() const;
+    TVector3D scalling() const;
     void setScalling(const QVector3D &scalling);
 
 protected:
-    QVector3D m_pos;
-    QVector3D m_rotation;
-    QVector3D m_scalling;
+    TVector3D m_pos;
+    TVector3D m_rotation;
+    TVector3D m_scalling;
     int m_nodeType;
     Node * m_parent;
     std::vector<Node *>m_children;

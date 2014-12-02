@@ -213,7 +213,8 @@ SOURCES += main.cpp \
     Entity/skybox.cpp \
     backend/backendbridge.cpp \
     base/node.cpp \
-    geometry/terrain.cpp
+    geometry/terrain.cpp \
+    base/tvector3d.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -518,7 +519,8 @@ HEADERS += \
     backend/backendbridge.h \
     base/node.h \
     base/camera.h \
-    geometry/terrain.h
+    geometry/terrain.h \
+    base/tvector3d.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

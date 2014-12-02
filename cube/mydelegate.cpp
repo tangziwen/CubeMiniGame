@@ -36,6 +36,8 @@ void myDelegate::onInit()
     terrain_model->setCamera(&camera);
     a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createTexture ("./res/model/terrain/sand.jpg");
     terrain_model->addMesh(a.mesh ());
+    terrain_model->scale (10,10,10);
+    terrain_model->setPos (QVector3D(0,-3,0));
     scene->root ()->addChild (terrain_model);
 
     Entity * box_cube = new Entity("res/model/box/box.obj");
@@ -44,7 +46,7 @@ void myDelegate::onInit()
     box_cube->scale (5,5,1);
     box_cube->rotate(0,0,0);
     box_cube->setName ("box_cube");
-    scene->root ()->addChild (box_cube);
+    //scene->root ()->addChild (box_cube);
 
     entity =new Entity("res/model/bob/boblampclean.md5mesh");
     entity->setCamera(&camera);
@@ -130,7 +132,6 @@ void myDelegate::onKeyPress(int key_code)
     case Qt::Key_A:
         this->move_left=true;
         break;
-
     case Qt::Key_D:
         this->move_right=true;
         break;
