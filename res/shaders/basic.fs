@@ -39,23 +39,23 @@ struct SpotLight
 	float outterAng;
 };
 
-uniform int pointLightAmount;
-uniform int spotLightAmount;
+uniform int g_point_light_amount;
+uniform int g_spot_light_amount;
 uniform Ambient ambient;
 uniform DirectionalLight directionLight;
 
 uniform PointLight pointLight[MAX_POINT_LIGHTS];
 uniform SpotLight spotLight[MAX_SPOT_LIGHTS];
 
-uniform mat4 modelViewMatrix;
-uniform sampler2D texture;
-uniform sampler2D ShadowMap;
-uniform int hasNormalMap;
-uniform sampler2D normalMap;
+uniform mat4 g_MV_matrix;
+uniform sampler2D g_diffuse_texture;
+uniform sampler2D g_shadow_map;
+uniform int g_has_normal_map;
+uniform sampler2D g_normal_map;
+uniform vec3 g_eye_position;
 
-
-varying vec3 world_position;
-varying vec4 LightSpace_postion;
+varying vec3 v_world_position;
+varying vec4 v_light_space_postion;
 varying vec2 v_texcoord;
 varying vec3 v_normal_line;
 varying vec3 v_tangent;
@@ -67,7 +67,7 @@ vec3 CalcBumpedNormal()
     vec3 Tangent = normalize(v_tangent);
     Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
     vec3 Bitangent = cross(Tangent, Normal);
-    vec3 BumpMapNormal = texture2D(texture, v_texcoord).xyz;
+    vec3 BumpMapNormal = texture2D(g_diffuse_texture, v_texcoord).xyz;
     BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
     vec3 NewNormal;
     mat3 TBN = mat3(Tangent, Bitangent, Normal);
@@ -116,13 +116,22 @@ vec4 calculateDiffuse(vec3 normal_line , vec3 light_direction , vec3 color , flo
 	float diffuse_factor = dot(normalize(normal_line), normalize(-light_direction));
 	
 	vec4 diffuse_color;
+	vec4 specular_color;
     if (diffuse_factor > 0) {
         diffuse_color = vec4(color,1.0) * diffuse_factor * intensity;
+
+        vec3 VertexToEye = normalize(g_eye_position - v_world_position);
+        vec3 LightReflect = normalize(reflect(light_direction, normal_line));
+        float SpecularFactor = dot(VertexToEye, LightReflect);
+        SpecularFactor = pow(SpecularFactor, 32);
+        if (SpecularFactor > 0) {
+            specular_color = vec4(color, 1.0f) * 1 * SpecularFactor;
+        }
     }
     else {
         diffuse_color = vec4(0, 0, 0, 1.0);
     }
-	return diffuse_color;
+	return diffuse_color+ specular_color;
 }
 
 
@@ -136,7 +145,7 @@ vec4 caclculateDirectionLight(vec3 normal_line,DirectionalLight light)
 
 vec4 calculatePointLight(vec3 normal_line,PointLight light)
 {
-	vec3 pointLightDirection = world_position - light.pos;
+	vec3 pointLightDirection = v_world_position - light.pos;
 	float distance = length(pointLightDirection);
 	pointLightDirection = normalize(pointLightDirection);
 	vec4 pointColor = calculateDiffuse(normal_line,pointLightDirection, light.color , light.intensity);
@@ -148,8 +157,8 @@ vec4 calculatePointLight(vec3 normal_line,PointLight light)
 
 vec4 calculateSpotLight(vec3 normal_line,SpotLight light)
 {
-	float shadow_factor =CalcShadowFactor(ShadowMap,LightSpace_postion);
-	vec3 pixelToSourceDirection = world_position - light.pos;
+	float shadow_factor =CalcShadowFactor(g_shadow_map,v_light_space_postion);
+	vec3 pixelToSourceDirection = v_world_position - light.pos;
 	float distance = length(pixelToSourceDirection);
 	pixelToSourceDirection = normalize(pixelToSourceDirection);
 	float current_ang = dot(normalize(pixelToSourceDirection), normalize(light.direction));
@@ -178,7 +187,7 @@ vec4 calculateSpotLight(vec3 normal_line,SpotLight light)
 void main()
 {
 	vec3 normal;
-	if(hasNormalMap >0 )
+	if(g_has_normal_map >0 )
 	{
 		normal = CalcBumpedNormal();
 	}else
@@ -190,16 +199,16 @@ void main()
 	totalLight += calculateAmbient(ambient);
 	totalLight += caclculateDirectionLight(normal,directionLight);
 	
-	for(int j = 0;j<spotLightAmount;j++)
+	for(int j = 0;j<g_spot_light_amount;j++)
 	{
 	totalLight += calculateSpotLight(normal,spotLight[j]);
 	}
-	for(int i = 0;i<pointLightAmount;i++)
+	for(int i = 0;i<g_point_light_amount;i++)
 	{
 	totalLight += calculatePointLight(normal,pointLight[i]);
 	}
 	
-	gl_FragColor = texture2D(texture,v_texcoord)*totalLight;
+	gl_FragColor = texture2D(g_diffuse_texture,v_texcoord)*totalLight;
 	return;
 }
 
