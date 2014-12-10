@@ -46,7 +46,7 @@ void myDelegate::onInit()
     box_cube->scale (5,5,1);
     box_cube->rotate(0,0,0);
     box_cube->setName ("box_cube");
-    //scene->root ()->addChild (box_cube);
+    scene->root ()->addChild (box_cube);
 
     entity =new Entity("res/model/bob/boblampclean.md5mesh");
     entity->setCamera(&camera);
@@ -63,6 +63,8 @@ void myDelegate::onInit()
     weapon->rotate (-90,180,0);
     weapon->translate (0.6,-0.55,-0.8);
     camera.addChild (weapon);
+
+
 
     // a spotlight
     SpotLight * light = scene->createSpotLight();

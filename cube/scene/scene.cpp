@@ -22,7 +22,7 @@ void Scene::pushToRenderQueue(Entity *entity)
 void Scene::render()
 {
     this->m_root.visit (this);
-    if(!this->spotLights.empty ())
+if(!this->spotLights.empty ())
     {
         this->shadowPass(spotLights[0]);
     }
@@ -139,12 +139,13 @@ void Scene::renderPass()
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
         p.setEyePosition (camera->pos ());
-
-        QMatrix4x4 lightView;
-        lightView.setToIdentity();
-        lightView.lookAt(spotLights[0]->getPos(),this->spotLights[0]->getPos()+this->spotLights[0]->getDirection(),QVector3D(0,1,0));
-        p.setLightViewMatrix(lightView);
-
+	if(!spotLights.empty ())
+	{
+		QMatrix4x4 lightView;
+		lightView.setToIdentity();
+		lightView.lookAt(spotLights[0]->getPos(),this->spotLights[0]->getPos()+this->spotLights[0]->getDirection(),QVector3D(0,1,0));
+		p.setLightViewMatrix(lightView);
+	}
         p.setModelMatrix(entity->getModelTrans());
         p.applyLightMvp(entity->getShaderProgram());
         this->shadowMapFbo->applyShadowMapTexture(entity->getShaderProgram());

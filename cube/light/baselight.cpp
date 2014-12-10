@@ -25,6 +25,7 @@ void BaseLight::setIntensity(float new_intensity)
     this->intensity = new_intensity;
 }
 
+
 void BaseLight::apply(ShaderProgram *program, int index)
 {
 
