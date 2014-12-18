@@ -42,5 +42,8 @@ ShaderPoll::ShaderPoll()
     this->createShader ("shadow","./res/shaders/shadow.vs","./res/shaders/shadow.fs");
     this->createShader("default","./res/shaders/basic.vs","./res/shaders/basic.fs");
     this->createShader("sky_box","./res/shaders/sky_box.vs","./res/shaders/sky_box.fs");
-
+    this->createShader("deferred","./res/shaders/deferred.vs","./res/shaders/deferred.fs");
+    this->createShader("dir_light_pass","./res/shaders/lightPass.vs","./res/shaders/DirlightPass.fs");
+    this->createShader ("point_light_pass","./res/shaders/lightPass.vs","./res/shaders/pointLightPass.fs");
+     this->createShader ("spot_light_pass","./res/shaders/lightPass.vs","./res/shaders/spotLightPass.fs");
 }

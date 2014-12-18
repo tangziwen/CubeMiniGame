@@ -32,7 +32,7 @@ public:
 
     void BindForReading(GLenum TextureUnit);
     GLuint getShadowMap();
-    void applyShadowMapTexture(ShaderProgram * shader_program);
+    void applyShadowMapTexture(ShaderProgram * shader_program, int sampler_ID);
 private:
 
     GLuint m_fbo;

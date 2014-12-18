@@ -214,7 +214,9 @@ SOURCES += main.cpp \
     backend/backendbridge.cpp \
     base/node.cpp \
     geometry/terrain.cpp \
-    base/tvector3d.cpp
+    base/tvector3d.cpp \
+    renderer/gbuffer.cpp \
+    renderer/renderbuffer.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -520,7 +522,9 @@ HEADERS += \
     base/node.h \
     base/camera.h \
     geometry/terrain.h \
-    base/tvector3d.h
+    base/tvector3d.h \
+    renderer/gbuffer.h \
+    renderer/renderbuffer.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

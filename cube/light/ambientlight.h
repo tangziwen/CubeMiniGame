@@ -4,7 +4,7 @@
 #include <QOpenGLFunctions>
 #include "shader/shader_program.h"
 #include "baselight.h"
-class AmbientLight :  public QGLFunctions , public BaseLight
+class AmbientLight :  public QOpenGLFunctions , public BaseLight
 {
 public:
     AmbientLight();

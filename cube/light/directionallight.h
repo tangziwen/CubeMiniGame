@@ -6,7 +6,7 @@
 #include <QVector3D>
 #include "shader/shader_program.h"
 #include "baselight.h"
-class DirectionalLight : public QGLFunctions , public BaseLight
+class DirectionalLight : public QOpenGLFunctions , public BaseLight
 {
 public:
     DirectionalLight();

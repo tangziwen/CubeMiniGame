@@ -44,14 +44,14 @@ TMesh *Entity::getMesh(int index)
     return mesh_list[index];
 }
 
-void Entity::draw()
+void Entity::draw(bool withoutexture)
 {
     for(int i=0;i<mesh_list.size();i++)
     {
         TMesh * mesh =mesh_list[i];
         MeshDrawComand * command = mesh->getCommand();
         command->synchronizeData(program,mesh->getMaterial(),mesh->getVerticesVbo(),mesh->getIndicesVbo());
-        command->CommandSetRenderState(NULL,NULL,-1,-1);
+        command->CommandSetRenderState(NULL,NULL,-1,-1,withoutexture);
         command->Draw();
     }
 }
@@ -313,7 +313,11 @@ void Entity::loadModelData(const char *file_name)
             vec.position = QVector3D(pPos->x,pPos->y,pPos->z);
             vec.normalLine = QVector3D(pNormal->x,pNormal->y,pNormal->z);
             vec.texCoord = QVector2D(pTexCoord->x,pTexCoord->y);
-            vec.tangent = QVector3D(pTangent->x,pTangent->y,pTangent->z);
+	    if(pTangent)
+	    {
+		     vec.tangent = QVector3D(pTangent->x,pTangent->y,pTangent->z);
+	    }
+
             mesh->pushVertex(vec);
         }
 

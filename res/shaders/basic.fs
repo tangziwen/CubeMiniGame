@@ -178,7 +178,6 @@ vec4 calculateSpotLight(vec3 normal_line,SpotLight light)
 	else {
 			return vec4(0.0,0,0,1.0);
 	}
-
 }
 
 

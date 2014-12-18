@@ -4,7 +4,7 @@ DirectionalLight::DirectionalLight()
 {
     this->color = QVector3D(1,1,1);
     this->direction = QVector3D(0,0,1);
-    this->intensity = 0.8;
+    this->intensity = 0;
 }
 
 void DirectionalLight::setDirection(QVector3D new_direction)

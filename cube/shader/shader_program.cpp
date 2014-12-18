@@ -4,7 +4,7 @@
 #include <assert.h>
 ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName)
 {
-    this->initializeGLFunctions ();
+    initializeOpenGLFunctions ();
     this->shader = glCreateProgram();
 
     if (shader == 0) {
@@ -125,6 +125,26 @@ void ShaderProgram::setUniform3Float(const char *str, float x, float y, float z)
         if(ptr!=-1)
         {
             glUniform3f(ptr,x,y,z);
+        }
+        else{
+            //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
+        }
+    }else
+    {
+        T_LOG<<"please use this shader before set uniform";
+    }
+}
+
+void ShaderProgram::setUniform2Float(const char *str, float x, float y)
+{
+    int current_shader=0;
+    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
+    if(current_shader == this->shader)
+    {
+        int ptr =glGetUniformLocation(this->shader,str);
+        if(ptr!=-1)
+        {
+            glUniform2f(ptr,x,y);
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;

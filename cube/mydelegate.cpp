@@ -21,59 +21,121 @@ void myDelegate::onInit()
     this->move_up = false;
     this->move_down = false;
 
+    scene->setRenderType (DEFERRED_SHADING);
 
-    SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
-                                  "./res/texture/sky_box/sp3left.jpg",
-                                  "./res/texture/sky_box/sp3top.jpg",
-                                  "./res/texture/sky_box/sp3bot.jpg",
-                                  "./res/texture/sky_box/sp3front.jpg",
-                                  "./res/texture/sky_box/sp3back.jpg");
-    sky_box->setCamera(&camera);
-    scene->setSkyBox(sky_box);
+    if(scene->renderType () == FORWARD_SHADING)
+    {
+        SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
+                                      "./res/texture/sky_box/sp3left.jpg",
+                                      "./res/texture/sky_box/sp3top.jpg",
+                                      "./res/texture/sky_box/sp3bot.jpg",
+                                      "./res/texture/sky_box/sp3front.jpg",
+                                      "./res/texture/sky_box/sp3back.jpg");
+        sky_box->setCamera(&camera);
+        scene->setSkyBox(sky_box);
 
-    Terrain a("./res/model/terrain/terrain.jpg");
-    Entity * terrain_model = new Entity();
-    terrain_model->setCamera(&camera);
-    a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createTexture ("./res/model/terrain/sand.jpg");
-    terrain_model->addMesh(a.mesh ());
-    terrain_model->scale (10,10,10);
-    terrain_model->setPos (QVector3D(0,-3,0));
-    scene->root ()->addChild (terrain_model);
+        Terrain a("./res/model/terrain/terrain.jpg");
+        Entity * terrain_model = new Entity();
+        terrain_model->setCamera(&camera);
+        a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createTexture ("./res/model/terrain/sand.jpg");
+        terrain_model->addMesh(a.mesh ());
+        terrain_model->scale (10,10,10);
+        terrain_model->setPos (QVector3D(0,-3,0));
+        scene->root ()->addChild (terrain_model);
 
-    Entity * box_cube = new Entity("res/model/box/box.obj");
-    box_cube->setCamera(&camera);
-    box_cube->translate(0,0,-5);
-    box_cube->scale (5,5,1);
-    box_cube->rotate(0,0,0);
-    box_cube->setName ("box_cube");
-    scene->root ()->addChild (box_cube);
+        Entity * box_cube = new Entity("res/model/box/box.obj");
+        box_cube->setCamera(&camera);
+        box_cube->translate(0,0,-5);
+        box_cube->scale (5,5,1);
+        box_cube->rotate(0,0,0);
+        box_cube->setName ("box_cube");
+        scene->root ()->addChild (box_cube);
 
-    entity =new Entity("res/model/bob/boblampclean.md5mesh");
-    entity->setCamera(&camera);
-    entity->scale(0.05,0.05,0.05);
-    entity->translate(0,-2,-10);
-    entity->rotate(-90,0,0);
+        entity =new Entity("res/model/bob/boblampclean.md5mesh");
+        entity->setCamera(&camera);
+        entity->scale(0.05,0.05,0.05);
+        entity->translate(0,-2,-10);
+        entity->rotate(-90,0,0);
 
-    entity->setName ("entity");
-    scene->root ()->addChild (entity);
-
-
-    Entity * weapon = new Entity("res/model/m16/M16.dae");
-    weapon->setCamera(&camera);
-    weapon->rotate (-90,180,0);
-    weapon->translate (0.6,-0.55,-0.8);
-    camera.addChild (weapon);
+        entity->setName ("entity");
+        scene->root ()->addChild (entity);
 
 
+        Entity * weapon = new Entity("res/model/m16/M16.dae");
+        weapon->setCamera(&camera);
+        weapon->rotate (-90,180,0);
+        weapon->translate (0.6,-0.55,-0.8);
+        camera.addChild (weapon);
 
-    // a spotlight
-    SpotLight * light = scene->createSpotLight();
-    light->setPos(QVector3D(0,0,-25));
-    light->setColor(QVector3D(1,0,0));
-    light->setDirection(QVector3D(0,0,1));
-    light->setRange(100);
-    light->setAngle(utility::Ang2Radius(10));
-    light->setOutterAngle(utility::Ang2Radius(12));
+
+
+        // a spotlight
+        SpotLight * light = scene->createSpotLight();
+        light->setPos(QVector3D(0,0,-25));
+        light->setColor(QVector3D(1,0,0));
+        light->setDirection(QVector3D(0,0,1));
+        light->setRange(100);
+        light->setAngle(utility::Ang2Radius(10));
+        light->setOutterAngle(utility::Ang2Radius(12));
+
+    }else
+    {
+        //create  a spotlight
+        /*
+        SpotLight * light = scene->createSpotLight();
+        light->setPos(QVector3D(0,0,-25));
+        light->setColor(QVector3D(1,0,0));
+        light->setDirection(QVector3D(0,0,1));
+        light->setRange(100);
+        light->setAngle(utility::Ang2Radius(10));
+        light->setOutterAngle(utility::Ang2Radius(12));
+        */
+        DirectionalLight * directionLight = scene->getDirectionalLight ();
+        directionLight->setIntensity (1);
+        directionLight->setDirection (QVector3D(0,-0.3,1));
+        AmbientLight * ambient = scene->getAmbientLight ();
+        ambient->setColor (QVector3D(1,1,1));
+        ambient->setIntensity (0.2);
+
+        entity =new Entity("res/model/bob/boblampclean.md5mesh");
+        entity->setShaderProgram (ShaderPoll::getInstance ()->get ("deferred"));
+        entity->setCamera(&camera);
+        entity->scale(0.05,0.05,0.05);
+        entity->translate(0,-2,-10);
+        entity->rotate(-90,0,0);
+        scene->root ()->addChild (entity);
+
+
+        Terrain a("./res/model/terrain/terrain.jpg");
+        Entity * terrain_model = new Entity();
+
+        terrain_model->setCamera(&camera);
+        a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createTexture ("./res/model/terrain/sand.jpg");
+        terrain_model->addMesh(a.mesh ());
+        terrain_model->scale (10,10,10);
+        terrain_model->setPos (QVector3D(0,-3,0));
+        terrain_model->setShaderProgram (ShaderPoll::getInstance ()->get ("deferred"));
+        scene->root ()->addChild (terrain_model);
+
+        Entity * box_cube = new Entity("res/model/box/box.obj");
+        box_cube->setShaderProgram (ShaderPoll::getInstance ()->get ("deferred"));
+        box_cube->setCamera(&camera);
+        box_cube->translate(0,0,-5);
+        box_cube->scale (5,5,1);
+        box_cube->rotate(0,0,0);
+
+        scene->root ()->addChild (box_cube);
+        scene->setCamera (&camera);
+
+        SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
+                                      "./res/texture/sky_box/sp3left.jpg",
+                                      "./res/texture/sky_box/sp3top.jpg",
+                                      "./res/texture/sky_box/sp3bot.jpg",
+                                      "./res/texture/sky_box/sp3front.jpg",
+                                      "./res/texture/sky_box/sp3back.jpg");
+        sky_box->setCamera(&camera);
+        scene->setSkyBox(sky_box);
+    }
 
     //set this scene as current scene
     scene->setAsCurrentScene();
@@ -200,5 +262,6 @@ void myDelegate::onTouchMove(int x, int y)
 
 void myDelegate::onTouchEnd(int x, int y)
 {
+
 
 }
