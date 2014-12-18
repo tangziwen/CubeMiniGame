@@ -15,14 +15,14 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 5. Lighting (ambient ,diffuse ,specular)
 6. NormalMapping
 7. ShadowMapping with soft edges
-8. deferred shading support
+8. deferred shading
 
 
 
 ###requirement###
-* libassimp (If you use Windows, the project have a modified copy in the <b>"external"</b> folder)
-* Qt framework and qt-creator (only use if you compile with Qt)
-* Opengl ES 2.0 (forward shading) or Opengl ES 3.0(deffered shading)
+* <b>libassimp:</b> If you use Windows, the project have a modified copy under the  <b>"cube/external"</b> folder
+* <b>Qt framework and qt-creator:</b> only use if you compile with Qt
+* Opengl ES 2.0 (forward shading) or 3.0(deffered shading)
 
 
 ###How to Build?###
