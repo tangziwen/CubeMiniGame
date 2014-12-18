@@ -81,7 +81,6 @@ void myDelegate::onInit()
     }else
     {
         //create  a spotlight
-        /*
         SpotLight * light = scene->createSpotLight();
         light->setPos(QVector3D(0,0,-25));
         light->setColor(QVector3D(1,0,0));
@@ -89,10 +88,11 @@ void myDelegate::onInit()
         light->setRange(100);
         light->setAngle(utility::Ang2Radius(10));
         light->setOutterAngle(utility::Ang2Radius(12));
-        */
+
         DirectionalLight * directionLight = scene->getDirectionalLight ();
-        directionLight->setIntensity (1);
+        directionLight->setIntensity (0.2);
         directionLight->setDirection (QVector3D(0,-0.3,1));
+
         AmbientLight * ambient = scene->getAmbientLight ();
         ambient->setColor (QVector3D(1,1,1));
         ambient->setIntensity (0.2);

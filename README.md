@@ -17,13 +17,21 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 7. ShadowMapping with soft edges
 8. deferred shading support
 
+
+
 ###requirement###
 * libassimp (If you use Windows, the project have a modified copy in the <b>"external"</b> folder)
 * Qt framework and qt-creator (only use if you compile with Qt)
 * Opengl ES 2.0 (forward shading) or Opengl ES 3.0(deffered shading)
+
+
 ###How to Build?###
 * <b>Use Qt:</b> currently, I use Qt framework As a backend,so you need qt-creator.just use qt-creator open the file <b>cube.pro</b> in the <b>"cube"</b> folder and bulid it,when you finish ,drag the <b>"res"</b> folder to your build directory like <b>"build-cube-Desktop_Qt_XXXXX-Debug"</b>
 * <b>without Qt:</b> you also can compile the cube engine without Qt, but you need modify the <b>backend.cpp</b>,and handle the delegate's by yourself,it's not too hard to switching the Qt backend to such like <b>GLFW</b> or <b>SDL</b>
+
+
+###screenshot###
+![](screenshot.jpg)
 
 ##ChangeLog##
 
