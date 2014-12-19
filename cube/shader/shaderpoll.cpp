@@ -46,4 +46,5 @@ ShaderPoll::ShaderPoll()
     this->createShader("dir_light_pass","./res/shaders/lightPass.vs","./res/shaders/DirlightPass.fs");
     this->createShader ("point_light_pass","./res/shaders/lightPass.vs","./res/shaders/pointLightPass.fs");
      this->createShader ("spot_light_pass","./res/shaders/lightPass.vs","./res/shaders/spotLightPass.fs");
+    this->createShader ("SSAO","./res/shaders/postProcess.vs","./res/shaders/ssao.fs");
 }

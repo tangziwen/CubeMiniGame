@@ -70,13 +70,13 @@ void GBuffer::BindForWriting()
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
 }
 
-void GBuffer::BindForReading()
+void GBuffer::BindForReading(GLuint buffer)
 {
     qDebug()<<glGetError ();
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer);
     for (unsigned int i = 0 ; i <3; i++) {
         glActiveTexture(GL_TEXTURE0 + i);
-        glBindTexture(GL_TEXTURE_2D, m_textures[GBUFFER_TEXTURE_TYPE_POSITION + i]);
+        glBindTexture(GL_TEXTURE_2D, m_textures[GBUFFER_TEXTURE_TYPE_DIFFUSE + i]);
     }
 }
 
