@@ -64,7 +64,7 @@ bool ShadowMapFBO::Init(unsigned int WindowWidth, unsigned int WindowHeight)
         printf("FB error, status: 0x%x\n", Status);
         return false;
     }
-   // glBindFramebuffer(GL_FRAMEBUFFER,0);
+   glBindFramebuffer(GL_FRAMEBUFFER,0);
     return true;
 }
 
@@ -86,9 +86,9 @@ GLuint ShadowMapFBO::getShadowMap()
     return this->m_shadowMap;
 }
 
-void ShadowMapFBO::applyShadowMapTexture(ShaderProgram *shader_program)
+void ShadowMapFBO::applyShadowMapTexture(ShaderProgram *shader_program,int sampler_ID)
 {
     //for shadow mapping
     int shadowMap_ptr = glGetUniformLocation(shader_program->getShaderId(),"g_shadow_map");
-    glUniform1i(shadowMap_ptr,1);
+    glUniform1i(shadowMap_ptr,sampler_ID);
 }

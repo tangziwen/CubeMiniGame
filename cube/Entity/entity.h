@@ -26,7 +26,7 @@ public:
     Entity(const char * file_name);
     void addMesh(TMesh *mesh);
     TMesh * getMesh(int index);
-    void draw();
+    void draw(bool withoutexture =false);
     void setShaderProgram(ShaderProgram * program);
     void setCamera(Camera * camera);
     Camera * getCamera();

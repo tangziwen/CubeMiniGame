@@ -13,7 +13,7 @@ public:
     void synchronizeData(ShaderProgram * shader, Material *material, GLuint vertices , GLuint Indices );
     void Init(Material *material, GLuint vertices , GLuint Indices , int indices_count);
     void Init(Material *material, GLuint vertices , GLuint Indices ,GLuint bone, int indices_count);
-    void CommandSetRenderState(ShaderProgram *shader, Material *material, GLuint vertices, GLuint Indices);
+    void CommandSetRenderState(ShaderProgram *shader, Material *material, GLuint vertices, GLuint Indices, bool withoutTexture =false);
     void setShaderState();
     MeshDrawComand();
     void Draw();

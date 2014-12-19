@@ -42,10 +42,11 @@ void MeshDrawComand::Init(Material *material, GLuint vertices, GLuint Indices, G
     this->indices_count = indices_count;
 }
 
-void MeshDrawComand::CommandSetRenderState(ShaderProgram *shader, Material *material, GLuint vertices, GLuint Indices)
+void MeshDrawComand::CommandSetRenderState(ShaderProgram *shader, Material *material, GLuint vertices, GLuint Indices,bool withoutTexture)
 {
     if(shader!= this->shaderProgram)
         setShaderState();
+    if(!withoutTexture)
         setTextureState();
     if(vertices != this->vbo[0] || Indices != this->vbo[1])
         setAttribState();

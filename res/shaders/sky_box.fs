@@ -6,7 +6,7 @@ precision mediump float;
 
 varying vec3 v_texcoord;
 varying vec3 v_normal_line;
-varying vec3 world_position;
+varying vec3 v_world_position;
 
 uniform samplerCube gCubemapTexture;        
 void main()

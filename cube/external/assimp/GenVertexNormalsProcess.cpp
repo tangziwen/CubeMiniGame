@@ -77,8 +77,8 @@ bool GenVertexNormalsProcess::IsActive( unsigned int pFlags) const
 void GenVertexNormalsProcess::SetupProperties(const Importer* pImp)
 {
 	// Get the current value of the AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE property
-	configMaxAngle = pImp->GetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,175.f);
-	configMaxAngle = AI_DEG_TO_RAD(std::max(std::min(configMaxAngle,175.0f),0.0f));
+    configMaxAngle = pImp->GetPropertyFloat(AI_CONFIG_PP_GSN_MAX_SMOOTHING_ANGLE,80.0f);
+    configMaxAngle = AI_DEG_TO_RAD(std::max(std::min(configMaxAngle,80.0f),0.0f));
 }
 
 // ------------------------------------------------------------------------------------------------
