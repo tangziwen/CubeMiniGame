@@ -60,14 +60,11 @@ void myDelegate::onInit()
         entity->setName ("entity");
         scene->root ()->addChild (entity);
 
-
         Entity * weapon = new Entity("res/model/m16/M16.dae");
         weapon->setCamera(&camera);
         weapon->rotate (-90,180,0);
         weapon->translate (0.6,-0.55,-0.8);
         camera.addChild (weapon);
-
-
 
         // a spotlight
         SpotLight * light = scene->createSpotLight();

@@ -4,8 +4,8 @@
 precision mediump int;
 precision mediump float;
 #endif
-layout (location = 0) out vec3 WorldPosOut;   
-layout (location = 1) out vec3 DiffuseOut;     
+layout (location = 0) out vec3 DiffuseOut;   
+layout (location = 1) out vec3 WorldPosOut;   
 layout (location = 2) out vec3 NormalOut;     
 
 uniform mat4 g_MV_matrix;

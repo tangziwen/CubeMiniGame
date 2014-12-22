@@ -5,8 +5,16 @@
 class RenderBuffer: protected QOpenGLFunctions_3_0
 {
 public:
-    RenderBuffer();
+    RenderBuffer(int width, int height);
     ~RenderBuffer();
+    void BindForWriting();
+    void BindForReading();
+    GLuint buffer() const;
+    void setBuffer(const GLuint &buffer);
+
+private:
+    GLuint m_buffer;
+    GLuint m_texture;
 };
 
 #endif // RENDERBUFFER_H

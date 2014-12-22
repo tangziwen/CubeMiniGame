@@ -10,7 +10,7 @@
 #include "light/shadow_map_fbo.h"
 #include "Entity/skybox.h"
 #include "renderer/gbuffer.h"
-
+#include "renderer/renderbuffer.h"
 #define DEFERRED_SHADING 1
 #define FORWARD_SHADING 0
 class Node;
@@ -39,9 +39,11 @@ private:
     Entity * m_quad;
     Entity * m_sphere;
     GBuffer * m_GBuffer;
+    RenderBuffer * renderBuffer;
     int m_renderType;
     Node  m_root;
     SkyBox * m_skyBox;
+    void postProcess();
     void setEntityBoneTransform(Entity *entity);
     ShadowMapFBO * shadowMapFbo;
     void shadowPass(SpotLight *light);

@@ -17,7 +17,7 @@ Scene::Scene()
 	this->setRenderType (FORWARD_SHADING);
 	m_GBuffer = new GBuffer();
 	m_GBuffer->Init (1024,768);
-
+    renderBuffer = new RenderBuffer(1024,768);
 
 	TMesh * mesh = new TMesh();
 	mesh->pushVertex (VertexData(QVector3D(-1,-1,0),QVector2D(0,0)));
@@ -242,20 +242,7 @@ void Scene::geometryPass()
 
 void Scene::lightPass()
 {
-    /*
-    PipeLine p;
-    if(m_skyBox)
-    {
-        Camera * camera =m_skyBox->camera();
-        m_skyBox->shader()->use();
-        p.setProjectionMatrix(camera->getProjection());
-        p.setViewMatrix(camera->getViewMatrix());
-        m_skyBox->getEntity()->translate(camera->pos ().x (),camera->pos ().y (),camera->pos ().z ());
-        p.setModelMatrix(m_skyBox->getEntity()->getModelTrans());
-        p.apply(m_skyBox->shader());
-        m_skyBox->Draw();
-    }
-*/
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	pointLightPass();
 	spotLightPass();
 	directionLightPass();
@@ -279,9 +266,9 @@ void Scene::spotLightPass()
 			m.setToIdentity ();
 			shader->setUniformMat4v ("g_MVP_matrix",m.data ());
 			shader->setUniform2Float ("g_screen_size",1024,768);
-			shader->setUniformInteger ("g_position_map",0);
-			shader->setUniformInteger ("g_color_map",1);
-			shader->setUniformInteger ("g_normal_map",2);
+            shader->setUniformInteger ("g_color_map",0);
+            shader->setUniformInteger ("g_position_map",1);
+            shader->setUniformInteger ("g_normal_map",2);
 			shader->setUniform3Float ("g_eye_position",
 						  m_camera->pos ().x(),
 						  m_camera->pos ().y(),
@@ -313,9 +300,9 @@ void Scene::pointLightPass()
 			m.setToIdentity ();
 			shader->setUniformMat4v ("g_MVP_matrix",m.data ());
 			shader->setUniform2Float ("g_screen_size",1024,768);
-			shader->setUniformInteger ("g_position_map",0);
-			shader->setUniformInteger ("g_color_map",1);
-			shader->setUniformInteger ("g_normal_map",2);
+            shader->setUniformInteger ("g_color_map",0);
+            shader->setUniformInteger ("g_position_map",1);
+            shader->setUniformInteger ("g_normal_map",2);
 			shader->setUniform3Float ("g_eye_position",
 						  m_camera->pos ().x(),
 						  m_camera->pos ().y(),
@@ -335,9 +322,9 @@ void Scene::directionLightPass()
 	m_quad->setShaderProgram (shader);
 	shader->setUniformMat4v ("g_MVP_matrix",m.data ());
 	shader->setUniform2Float ("g_screen_size",1024,768);
-	shader->setUniformInteger ("g_position_map",0);
-	shader->setUniformInteger ("g_color_map",1);
-	shader->setUniformInteger ("g_normal_map",2);
+    shader->setUniformInteger ("g_color_map",0);
+    shader->setUniformInteger ("g_position_map",1);
+    shader->setUniformInteger ("g_normal_map",2);
 	shader->setUniform3Float ("g_eye_position",
 				  m_camera->pos ().x(),
 				  m_camera->pos ().y(),
@@ -376,9 +363,12 @@ void Scene::deferredRendering()
 	glEnable(GL_BLEND);
 	glBlendEquation(GL_FUNC_ADD);
 	glBlendFunc(GL_ONE, GL_ONE);
-	m_GBuffer->BindForReading();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    m_GBuffer->BindForReading(0);
+    renderBuffer->BindForWriting ();
+
     lightPass();
+    renderBuffer->BindForReading ();// post processing
+    postProcess();
 }
 
 void Scene::forwardRendering()
@@ -413,5 +403,27 @@ Camera *Scene::camera() const
 
 void Scene::setCamera(Camera *camera)
 {
-	m_camera = camera;
+    m_camera = camera;
+}
+
+void Scene::postProcess()
+{
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    ShaderProgram * shader =ShaderPoll::getInstance ()->get("SSAO");
+    shader->use ();
+    QMatrix4x4 m;
+    m.setToIdentity ();
+    m_quad->setShaderProgram (shader);
+    shader->setUniformMat4v ("g_MVP_matrix",m.data ());
+    shader->setUniform2Float ("g_screen_size",1024,768);
+    shader->setUniformInteger ("g_color_map",0);
+    shader->setUniformInteger ("g_position_map",1);
+    shader->setUniformInteger ("g_normal_map",2);
+    shader->setUniform3Float ("g_eye_position",
+                  m_camera->pos ().x(),
+                  m_camera->pos ().y(),
+                  m_camera->pos ().z());
+    this->directionLight.apply(shader);
+    this->ambientLight.apply(shader);
+    m_quad->draw (true);
 }

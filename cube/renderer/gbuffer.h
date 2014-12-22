@@ -10,8 +10,8 @@ class GBuffer :protected QOpenGLFunctions_3_0
 {
 public:
 	enum GBUFFER_TEXTURE_TYPE {
-        GBUFFER_TEXTURE_TYPE_POSITION,
         GBUFFER_TEXTURE_TYPE_DIFFUSE,
+        GBUFFER_TEXTURE_TYPE_POSITION,
         GBUFFER_TEXTURE_TYPE_NORMAL,
 		GBUFFER_NUM_TEXTURES
 	};
@@ -19,7 +19,7 @@ public:
     ~GBuffer();
     bool Init(unsigned int WindowWidth, unsigned int WindowHeight);
     void BindForWriting();
-    void BindForReading();
+    void BindForReading(GLuint buffer);
     void SetReadBuffer(GBUFFER_TEXTURE_TYPE TextureType);
     GLuint m_fbo;
 private:
