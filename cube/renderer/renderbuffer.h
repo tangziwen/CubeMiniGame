@@ -8,7 +8,7 @@ public:
     RenderBuffer(int width, int height);
     ~RenderBuffer();
     void BindForWriting();
-    void BindForReading();
+    void BindForReading(RenderBuffer *buffer);
     GLuint buffer() const;
     void setBuffer(const GLuint &buffer);
 

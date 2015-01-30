@@ -19,7 +19,8 @@ Entity::Entity()
     this->setIsEnableShadow(true);
     this->onRender = NULL;
     this->setNodeType (NODE_TYPE_ENTITY);
-    this->setShaderProgram (ShaderPoll::getInstance ()->get ("default"));
+    this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
+    m_isAABBDirty = true;
 }
 
 Entity::Entity(const char *file_name)
@@ -29,9 +30,10 @@ Entity::Entity(const char *file_name)
     this->m_animateTime = 0;
     this->setIsEnableShadow(true);
     this->onRender = NULL;
-    this->setShaderProgram (ShaderPoll::getInstance ()->get ("default"));
+    this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     this->setNodeType (NODE_TYPE_ENTITY);
     loadModelData(file_name);
+    m_isAABBDirty = true;
 }
 
 void Entity::addMesh(TMesh *mesh)
@@ -134,6 +136,28 @@ bool Entity::isEnableShadow() const
 void Entity::setIsEnableShadow(bool isEnableShadow)
 {
     m_isEnableShadow = isEnableShadow;
+}
+
+AABB Entity::getAABB()
+{
+    if(m_isAABBDirty)
+    {
+        for(int i =0;i<mesh_list.size ();i++)
+        {
+            m_aabb.merge (mesh_list[i]->aabb());
+        }
+        m_aabb.transForm (getModelTrans ());
+        m_isAABBDirty = false;
+    }
+    return m_aabb;
+}
+
+float Entity::getDistToCamera()
+{
+    QMatrix4x4 viewMat  = camera->getViewMatrix ();
+    QMatrix4x4 transform = getModelTrans ();
+    float globalZ = -1*(viewMat.data ()[2] * transform.data ()[12] + viewMat.data ()[6] * transform.data ()[13] + viewMat.data ()[10] * transform.data ()[14] + viewMat.data ()[14]);
+    return globalZ;
 }
 
 uint Entity::findBoneInterpoScaling(float AnimationTime, const aiNodeAnim *pNodeAnim)
@@ -346,7 +370,7 @@ void Entity::LoadMaterial(const aiScene *pScene, const char * file_name, const c
         aiMaterial * the_material = pScene->mMaterials[i];
         char file_postfix[100];
         sprintf(file_postfix,"%s_%d",file_name,i+1);
-        Material * material = MaterialPool::getInstance()->createMaterial(file_postfix);
+        Material * material = MaterialPool::getInstance()->createOrGetMaterial(file_postfix);
         MaterialChannel * ambient_channel =  material->getAmbient();
         MaterialChannel * diffuse_channel =  material->getDiffuse();
         MaterialChannel * specular_channel =  material->getSpecular();
@@ -364,25 +388,25 @@ void Entity::LoadMaterial(const aiScene *pScene, const char * file_name, const c
         the_material->GetTexture(aiTextureType_DIFFUSE,0,&diffuse_Path);
         if(diffuse_Path.length == 0 )
         {
-            diffuse_channel->texture = TexturePool::getInstance()->createTexture("default");
+            diffuse_channel->texture = TexturePool::getInstance()->createOrGetTexture("default");
         }else
         {
             char str[100];
-            Texture * tmp_tex = TexturePool::getInstance()->createTexture(diffuse_Path.C_Str());
+            Texture * tmp_tex = TexturePool::getInstance()->createOrGetTexture(diffuse_Path.C_Str());
             if(tmp_tex)
             {
                 diffuse_channel->texture =tmp_tex;
                 goto END;
             }
             sprintf(str,"%s%s",pre_fix,diffuse_Path.C_Str());
-            tmp_tex = TexturePool::getInstance()->createTexture(str);
+            tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
             if(tmp_tex)
             {
                 diffuse_channel->texture =tmp_tex;
                 goto END;
             }
             sprintf(str,"%s%s","res/texture/",diffuse_Path.C_Str());
-            tmp_tex = TexturePool::getInstance()->createTexture(str);
+            tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
             if(tmp_tex)
             {
                 diffuse_channel->texture =tmp_tex;

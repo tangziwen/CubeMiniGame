@@ -4,15 +4,15 @@
 #include "shader_program.h"
 #include <string>
 #include <map>
-class ShaderPoll
+class ShaderPool
 {
 public:
-    static ShaderPoll *getInstance();
+    static ShaderPool *getInstance();
     ShaderProgram * get(const char * name);
     ShaderProgram * createShader(const char * shader_name ,const char * vs_name,const char * fs_name);
 private:
-    ShaderPoll();
-    static ShaderPoll * instance;
+    ShaderPool();
+    static ShaderPool * instance;
     std::map<std::string, ShaderProgram * > shader_list;
 };
 

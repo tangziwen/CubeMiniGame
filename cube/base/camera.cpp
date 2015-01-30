@@ -17,6 +17,12 @@ void Camera::setPerspective(float fov, float aspect, float z_near, float z_far)
     m_projection.perspective(fov,aspect,z_near,z_far);
 }
 
+void Camera::setOrtho(float left,float right,float bottom,float top,float near,float far)
+{
+    m_projection.setToIdentity ();
+    m_projection.ortho (left,right,bottom,top,near,far);
+}
+
 QMatrix4x4 Camera::getViewMatrix()
 {
     return getModelTrans().inverted ();

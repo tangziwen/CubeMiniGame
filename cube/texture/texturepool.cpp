@@ -1,6 +1,6 @@
 #include "texturepool.h"
 TexturePool * TexturePool::instance = NULL;
-Texture *TexturePool::createTexture(const char *file_name)
+Texture *TexturePool::createOrGetTexture(const char *file_name)
 {
     Texture * texture = NULL;
     std::map<std::string , Texture * >::iterator result = this->texture_list.find(file_name);

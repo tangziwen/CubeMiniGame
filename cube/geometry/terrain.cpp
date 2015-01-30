@@ -39,7 +39,7 @@ Terrain::Terrain(const char *fileName)
             m_mesh->pushIndex ((i+1)*width+j+1);
         }
     }
-    m_mesh->setMaterial (MaterialPool::getInstance ()->createMaterial ("default"));
+    m_mesh->setMaterial (MaterialPool::getInstance ()->createOrGetMaterial ("default"));
     m_mesh->finishWithoutNormal ();
 }
 TMesh *Terrain::mesh() const

@@ -33,9 +33,15 @@ vec2 CalcTexCoord()
     return gl_FragCoord.xy / g_screen_size;
 }
 
-vec4 calculateAmbient(Ambient light)
+vec4 calculateAmbient(Ambient light , vec3 normal)
 {
-	return vec4(light.color,1.0) * light.intensity;
+    if(length(normal) <= 0.5)
+    {   
+        return vec4(1.0,1.0,1.0,1.0);
+    }else
+    {
+        return vec4(light.color,1.0) * light.intensity;
+    }
 }
 
 vec4 calculateDiffuse(vec3 normal_line , vec3 light_direction , vec3 color , float intensity,vec3 world_pos)
@@ -71,8 +77,11 @@ void main()
 	vec3 world_pos = texture2D(g_position_map, tex_coord).xyz;
 	vec3 color = texture2D(g_color_map, tex_coord).xyz;
 	vec3 normal = texture2D(g_normal_map, tex_coord).xyz;
-	normal = normalize(normal);
-	vec4 totalLight = calculateAmbient(ambient);
+    if(length(normal) != 0.0)
+    {
+        normal = normalize(normal); 
+    }
+	vec4 totalLight = calculateAmbient(ambient,normal);
 	totalLight += caclculateDirectionLight(normal,directionLight,world_pos);
 	gl_FragColor = vec4(color, 1.0) * totalLight;
 	return;

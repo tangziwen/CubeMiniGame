@@ -4,7 +4,7 @@
 class MaterialPool
 {
 public:
-    Material *createMaterial(const char * the_name);
+    Material *createOrGetMaterial(const char * the_name);
     static MaterialPool *getInstance();
 private:
    static  MaterialPool * instance;

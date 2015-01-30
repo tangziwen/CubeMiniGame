@@ -1,6 +1,7 @@
 #include "skybox.h"
 #include "external/SOIL/SOIL.h"
 #include "material/materialpool.h"
+#include <QOpenGLTexture>
 SkyBox::SkyBox(const char *  PosXFilename,
                const char *  NegXFilename,
                const char *  PosYFilename,
@@ -10,10 +11,10 @@ SkyBox::SkyBox(const char *  PosXFilename,
 {
     initializeOpenGLFunctions();
     this->m_cubeMapTexture = SOIL_load_OGL_cubemap(PosXFilename,NegXFilename,PosYFilename,NegYFilename,PosZFilename,NegZFilename,4,0,SOIL_FLAG_TEXTURE_REPEATS);
-    glBindTexture (GL_TEXTURE_3D,m_cubeMapTexture);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     m_mesh = new TMesh();
+
     m_mesh->pushVertex (VertexData(QVector3D(-1,-1,1),QVector2D(0,0)));//0
     m_mesh->pushVertex (VertexData(QVector3D(1,-1,1),QVector2D(1,0)));//1
     m_mesh->pushVertex (VertexData(QVector3D(-1,1,1),QVector2D(0,1)));//2
@@ -26,13 +27,14 @@ SkyBox::SkyBox(const char *  PosXFilename,
 
     GLushort indices[]={2,0,1,2,1,3,3,1,5,3,5,7,7,5,4,7,4,6,6,4,0,6,0,2,6,2,3,6,3,7,5,1,0,5,0,4
     };
+
     m_mesh->pushIndex(indices,sizeof(indices)/sizeof(GLushort));
-    m_mesh->setMaterial (MaterialPool::getInstance ()->createMaterial ("default"));
+    m_mesh->setMaterial (MaterialPool::getInstance ()->createOrGetMaterial ("default"));
     m_mesh->finishWithoutNormal();
     entity = new Entity();
     entity->addMesh(m_mesh);
     entity->scale(20,20,20);
-    this->setShader(ShaderPoll::getInstance()->get("sky_box"));
+    this->setShader(ShaderPool::getInstance()->get("sky_box"));
 }
 
 void SkyBox::Draw()

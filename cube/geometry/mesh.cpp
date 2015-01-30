@@ -67,7 +67,11 @@ void TMesh::finishWithoutNormal()
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), &indices[0], GL_STATIC_DRAW);
     if(!this->material->getDiffuse()->texture)
     {
-        this->material->getDiffuse()->texture = TexturePool::getInstance()->createTexture("default");
+        this->material->getDiffuse()->texture = TexturePool::getInstance()->createOrGetTexture("default");
+    }
+    for(int i =0;i<vertices.size ();i++)
+    {
+        m_aabb.update (&vertices[i].position,1);
     }
     draw_command.Init(this->material,vbo[0],vbo[1],indices.size());
 }
@@ -106,7 +110,7 @@ void TMesh::finish()
 
     if(!this->material->getDiffuse()->texture)
     {
-        this->material->getDiffuse()->texture = TexturePool::getInstance()->createTexture("default");
+        this->material->getDiffuse()->texture = TexturePool::getInstance()->createOrGetTexture("default");
     }
     draw_command.m_bones = this->m_bones;
     draw_command.Init(this->material,vbo[0],vbo[1],vbo[2],indices.size());
@@ -156,4 +160,14 @@ void TMesh::setMaterial(Material *value)
 {
     material = value;
 }
+AABB TMesh::aabb() const
+{
+    return m_aabb;
+}
+
+void TMesh::setAabb(const AABB &aabb)
+{
+    m_aabb = aabb;
+}
+
 

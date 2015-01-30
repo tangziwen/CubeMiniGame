@@ -6,6 +6,10 @@
 #include "material/materialpool.h"
 #include "entity/skybox.h"
 #include "geometry/terrain.h"
+#include <qquaternion.h>
+#include "Entity/cubeprimitve.h"
+#include "geometry/ray.h"
+#include "GUI/sprite.h"
 myDelegate::myDelegate()
 {
 
@@ -20,30 +24,27 @@ void myDelegate::onInit()
     this->move_right=false;
     this->move_up = false;
     this->move_down = false;
-
     scene->setRenderType (DEFERRED_SHADING);
-
     if(scene->renderType () == FORWARD_SHADING)
     {
-        SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
-                                      "./res/texture/sky_box/sp3left.jpg",
-                                      "./res/texture/sky_box/sp3top.jpg",
-                                      "./res/texture/sky_box/sp3bot.jpg",
-                                      "./res/texture/sky_box/sp3front.jpg",
-                                      "./res/texture/sky_box/sp3back.jpg");
+        auto sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
+                                  "./res/texture/sky_box/sp3left.jpg",
+                                  "./res/texture/sky_box/sp3top.jpg",
+                                  "./res/texture/sky_box/sp3bot.jpg",
+                                  "./res/texture/sky_box/sp3front.jpg",
+                                  "./res/texture/sky_box/sp3back.jpg");
         sky_box->setCamera(&camera);
         scene->setSkyBox(sky_box);
-
         Terrain a("./res/model/terrain/terrain.jpg");
-        Entity * terrain_model = new Entity();
+        auto terrain_model = new Entity();
         terrain_model->setCamera(&camera);
-        a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createTexture ("./res/model/terrain/sand.jpg");
+        a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/model/terrain/sand.jpg");
         terrain_model->addMesh(a.mesh ());
         terrain_model->scale (10,10,10);
         terrain_model->setPos (QVector3D(0,-3,0));
         scene->root ()->addChild (terrain_model);
 
-        Entity * box_cube = new Entity("res/model/box/box.obj");
+        auto box_cube = new Entity("res/model/box/box.obj");
         box_cube->setCamera(&camera);
         box_cube->translate(0,0,-5);
         box_cube->scale (5,5,1);
@@ -56,18 +57,17 @@ void myDelegate::onInit()
         entity->scale(0.05,0.05,0.05);
         entity->translate(0,-2,-10);
         entity->rotate(-90,0,0);
-
         entity->setName ("entity");
         scene->root ()->addChild (entity);
-
-        Entity * weapon = new Entity("res/model/m16/M16.dae");
+        auto  weapon = new Entity("res/model/m16/M16.dae");
+        weapon->setGroupMask (NodeGroup::G_1);
         weapon->setCamera(&camera);
         weapon->rotate (-90,180,0);
         weapon->translate (0.6,-0.55,-0.8);
         camera.addChild (weapon);
 
         // a spotlight
-        SpotLight * light = scene->createSpotLight();
+        auto * light = scene->createSpotLight();
         light->setPos(QVector3D(0,0,-25));
         light->setColor(QVector3D(1,0,0));
         light->setDirection(QVector3D(0,0,1));
@@ -77,51 +77,51 @@ void myDelegate::onInit()
 
     }else
     {
-        //create  a spotlight
-        SpotLight * light = scene->createSpotLight();
-        light->setPos(QVector3D(0,0,-25));
-        light->setColor(QVector3D(1,0,0));
-        light->setDirection(QVector3D(0,0,1));
-        light->setRange(100);
-        light->setAngle(utility::Ang2Radius(10));
-        light->setOutterAngle(utility::Ang2Radius(12));
-
-        DirectionalLight * directionLight = scene->getDirectionalLight ();
-        directionLight->setIntensity (0.2);
-        directionLight->setDirection (QVector3D(0,-0.3,1));
 
         AmbientLight * ambient = scene->getAmbientLight ();
         ambient->setColor (QVector3D(1,1,1));
-        ambient->setIntensity (0.2);
+        ambient->setIntensity (0.5);
 
-        entity =new Entity("res/model/bob/boblampclean.md5mesh");
-        entity->setShaderProgram (ShaderPoll::getInstance ()->get ("deferred"));
-        entity->setCamera(&camera);
-        entity->scale(0.05,0.05,0.05);
-        entity->translate(0,-2,-10);
-        entity->rotate(-90,0,0);
-        scene->root ()->addChild (entity);
+        Entity * weapon = new Entity("res/model/m16/M16.dae");
+        weapon->setCamera(&camera);
+        weapon->setName ("weapon");
+        weapon->setGroupMask (NodeGroup::G_1);
+        weapon->rotate (-90,180,0);
+        weapon->translate (0.6,-0.55,-0.8);
+        weapon->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+        camera.addChild (weapon);
+
+        CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+        bileishou->setName ("bileishou");
+        bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+        bileishou->setCamera(&camera);
+        scene->root ()->addChild (bileishou);
+
+        CubePrimitve * xiaoxiao = new CubePrimitve("./res/texture/mygame/wool_colored_white.png");
+        xiaoxiao->setName ("xiaoxiao");
+        xiaoxiao->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+        xiaoxiao->setCamera(&camera);
+        xiaoxiao->setPos (QVector3D(1,0,10));
+        scene->root ()->addChild (xiaoxiao);
+        // a spotlight
+        auto light = scene->createSpotLight();
+        light->setPos(QVector3D(0,0,-25));
+        light->setColor(QVector3D(1,1,1));
+        light->setDirection(QVector3D(0,0,1));
+        light->setRange(300);
+        light->setAngle(utility::Ang2Radius(10));
+        light->setOutterAngle(utility::Ang2Radius(12));
 
 
-        Terrain a("./res/model/terrain/terrain.jpg");
-        Entity * terrain_model = new Entity();
 
-        terrain_model->setCamera(&camera);
-        a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createTexture ("./res/model/terrain/sand.jpg");
-        terrain_model->addMesh(a.mesh ());
-        terrain_model->scale (10,10,10);
-        terrain_model->setPos (QVector3D(0,-3,0));
-        terrain_model->setShaderProgram (ShaderPoll::getInstance ()->get ("deferred"));
-        scene->root ()->addChild (terrain_model);
+        auto sprite = new Sprite();
+        sprite->setTexture (TexturePool::getInstance ()->createOrGetTexture ("./res/texture/mygame/fps/cross_hair.png"));
+        sprite->setCamera (scene->guiCamera ());
+        sprite->setPos (QVector3D(1024/2-sprite->texture ()->width ()/2,768/2-sprite->texture ()->height ()/2,0));
+        scene->root ()->addChild (sprite);
 
-        Entity * box_cube = new Entity("res/model/box/box.obj");
-        box_cube->setShaderProgram (ShaderPoll::getInstance ()->get ("deferred"));
-        box_cube->setCamera(&camera);
-        box_cube->translate(0,0,-5);
-        box_cube->scale (5,5,1);
-        box_cube->rotate(0,0,0);
 
-        scene->root ()->addChild (box_cube);
+
         scene->setCamera (&camera);
 
         SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
@@ -133,7 +133,6 @@ void myDelegate::onInit()
         sky_box->setCamera(&camera);
         scene->setSkyBox(sky_box);
     }
-
     //set this scene as current scene
     scene->setAsCurrentScene();
     scene->root ()->addChild (&camera);
@@ -165,7 +164,7 @@ void myDelegate::onRender()
     {
         camera.moveBy (0,-0.1,0);
     }
-    entity->setAnimateTime(entity->animateTime()+0.01);
+    //entity->setAnimateTime(entity->animateTime()+0.01);
 }
 
 void myDelegate::onResize(int w, int h)
@@ -228,6 +227,103 @@ void myDelegate::onKeyRelease(int key_code)
     case Qt::Key_E:
         this->move_down = false;
         break;
+    case Qt::Key_F:
+    {
+
+        QVector4D nearPoint(0,0,-1,1);
+        QVector4D farPoint(0,0,1,1);
+        //unproject it
+        QMatrix4x4 mat = camera.getProjection () * camera.getViewMatrix ();
+        mat = mat.inverted ();
+        nearPoint = mat* nearPoint;
+        QVector3D nearPoint3 = nearPoint.toVector3D ()/nearPoint.w ();
+        farPoint = mat*farPoint;
+        QVector3D farPoint3 = farPoint.toVector3D ()/farPoint.w ();
+        QVector3D direction = farPoint3 - nearPoint3;
+        Ray ray(nearPoint3,direction);
+        auto entityList = scene->getPotentialEntityList ();
+        for(Entity * entity : entityList)
+        {
+            if(!entity->isGroupMask (NodeGroup::G_Default))
+            {
+                continue;
+            }
+            RayAABBSide SideResult;
+            bool result = ray.intersect (entity->getAABB (),&SideResult);
+            if(result)
+            {
+                qDebug()<<"hit "<<entity->name ();
+                switch (SideResult) {
+                case RayAABBSide::up:
+                {
+                    qDebug()<<"up";
+                    CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+                    bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+                    bileishou->setCamera(&camera);
+                    bileishou->setPos (entity->pos ()+QVector3D(0,1,0));
+                    scene->root ()->addChild (bileishou);
+                }
+                    break;
+                case RayAABBSide::down:
+                {
+                    qDebug()<<"down";
+                    CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+                    bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+                    bileishou->setCamera(&camera);
+                    bileishou->setPos (entity->pos ()+QVector3D(0,-1,0));
+                    scene->root ()->addChild (bileishou);
+                }
+                    break;
+                case RayAABBSide::left:
+                {
+                    qDebug()<<"left";
+                    CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+                    bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+                    bileishou->setCamera(&camera);
+                    bileishou->setPos (entity->pos ()+QVector3D(-1,0,0));
+                    scene->root ()->addChild (bileishou);
+                }
+                    break;
+                case RayAABBSide::right:
+                {
+                    qDebug()<<"right";
+                    CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+                    bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+                    bileishou->setCamera(&camera);
+                    bileishou->setPos (entity->pos ()+QVector3D(1,0,0));
+                    scene->root ()->addChild (bileishou);
+                }
+                    break;
+                case RayAABBSide::back:
+                {
+                    qDebug()<<"back";
+                    CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+                    bileishou->setName ("bileishou");
+                    bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+                    bileishou->setCamera(&camera);
+                    bileishou->setPos (entity->pos ()+QVector3D(0,0,-1));
+                    scene->root ()->addChild (bileishou);
+                }
+                    break;
+                case RayAABBSide::front:
+                {
+                    qDebug()<<"front";
+                    CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
+                    bileishou->setName ("bileishou");
+                    bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+                    bileishou->setCamera(&camera);
+                    bileishou->setPos (entity->pos ()+QVector3D(0,0,1));
+                    scene->root ()->addChild (bileishou);
+                }
+                    break;
+                default:
+                    break;
+                }
+                break;
+            }
+        }
+    }
+        break;
     }
 }
 
@@ -260,5 +356,18 @@ void myDelegate::onTouchMove(int x, int y)
 void myDelegate::onTouchEnd(int x, int y)
 {
 
+}
 
+void myDelegate::createTerrain()
+{
+    Terrain a("./res/model/terrain/terrain.jpg");
+    auto terrain_model = new Entity();
+    terrain_model->setName ("terrain");
+    terrain_model->setCamera(&camera);
+    terrain_model->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+    a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/model/terrain/sand.jpg");
+    terrain_model->addMesh(a.mesh ());
+    terrain_model->scale (10,10,10);
+    terrain_model->setPos (QVector3D(0,-3,0));
+    scene->root ()->addChild (terrain_model);
 }

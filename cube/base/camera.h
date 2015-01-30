@@ -7,6 +7,7 @@ class Camera : public Node
 public:
     Camera();
     void setPerspective(float fov ,float aspect,float z_near,float z_far);
+    void setOrtho(float left, float right, float bottom, float top, float near, float far);
     QMatrix4x4 getViewMatrix();
     QMatrix4x4 getProjection();
 private:

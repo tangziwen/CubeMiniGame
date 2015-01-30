@@ -6,6 +6,7 @@
 #include "shader/shader_program.h"
 #include "Entity/entity.h"
 #include <QOpenGLFunctions>
+#include <QOpenGLTexture>
 class SkyBox :protected QOpenGLFunctions
 {
 public:
@@ -27,6 +28,7 @@ public:
     void setEntity(Entity *value);
 
 private:
+    QOpenGLTexture * m_qTexture;
     Entity * entity;
     ShaderProgram * m_shader;
     TMesh * m_mesh;

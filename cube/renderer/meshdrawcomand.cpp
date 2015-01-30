@@ -106,14 +106,14 @@ void MeshDrawComand::setAttribState()
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
     // Offset for position
-    quintptr offset = 0;
+    quintptr offset = offsetof(VertexData,position);
     // Tell OpenGL programmable pipeline how to locate vertex position data
     int vertexLocation = glGetAttribLocation (shader_id,"a_position");
     glEnableVertexAttribArray (vertexLocation);
 
     glVertexAttribPointer(vertexLocation, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
     // Offset for texture coordinate
-    offset += sizeof(QVector3D);
+    offset = offsetof(VertexData,texCoord);
     // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
     int texcoordLocation = glGetAttribLocation (shader_id,"a_texcoord");
     if(texcoordLocation>=0)
@@ -123,28 +123,28 @@ void MeshDrawComand::setAttribState()
         glVertexAttribPointer(texcoordLocation, 2, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
     }
 
-    offset+= sizeof(QVector2D);
+    offset =offsetof(VertexData,normalLine);
     int normalLineLocation = glGetAttribLocation (shader_id,"a_normal_line");
     if(normalLineLocation>=0)
     {
         glEnableVertexAttribArray(normalLineLocation);
         glVertexAttribPointer(normalLineLocation, 3, GL_FLOAT, GL_FALSE, sizeof(VertexData), (const void *)offset);
     }
-    offset+= sizeof(QVector3D);
+    offset = offsetof(VertexData,boneId);
     int BoneId = glGetAttribLocation (shader_id,"a_bone_ID"); // bone ID
     if(BoneId>=0)
     {
         glEnableVertexAttribArray(BoneId);
         glVertexAttribPointer(BoneId,4,GL_INT,GL_FALSE,sizeof(VertexData),(const void *)offset);
     }
-    offset+=sizeof(VertexData::boneId);
+     offset = offsetof(VertexData,boneWeight);
     int BoneWeight = glGetAttribLocation (shader_id,"a_bone_weight"); //bone weight
     if(BoneWeight>=0)
     {
         glEnableVertexAttribArray(BoneWeight);
         glVertexAttribPointer(BoneWeight,4,GL_FLOAT,GL_FALSE,sizeof(VertexData),(const void *)offset);
     }
-    offset+=sizeof(VertexData::boneWeight);
+    offset = offsetof(VertexData,tangent);
     int tangentLocation = glGetAttribLocation (shader_id,"a_tangent");
     if(tangentLocation >= 0)
     {

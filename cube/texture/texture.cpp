@@ -1,9 +1,14 @@
 #include "texture.h"
+#include <QImage>
 
 Texture::Texture(const char *texture_file_name)
 {
+    QImage image(texture_file_name);
+    m_qtexture = new QOpenGLTexture(image);
     initializeOpenGLFunctions();
-    this->texture_id = SOIL_load_OGL_texture(texture_file_name,4,0, SOIL_FLAG_POWER_OF_TWO);
+    this->texture_id =m_qtexture->textureId();
+    m_width = m_qtexture->width ();
+    m_height = m_qtexture->height ();
     initTexture();
 }
 
@@ -16,6 +21,26 @@ void Texture::setTextureID(unsigned int new_id)
 {
     this->texture_id = new_id;
 }
+int Texture::height() const
+{
+    return m_height;
+}
+
+void Texture::setHeight(int height)
+{
+    m_height = height;
+}
+int Texture::width() const
+{
+    return m_width;
+}
+
+void Texture::setWidth(int width)
+{
+    m_width = width;
+}
+
+
 
 void Texture::initTexture()
 {

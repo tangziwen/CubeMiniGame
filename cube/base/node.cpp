@@ -8,6 +8,7 @@ Node::Node()
     setNodeType (NODE_TYPE_NODE);
     this->m_parent = NULL;
     this->m_name = "node";
+    this->m_groupMask = (unsigned int)NodeGroup::G_Default;
 }
 
 void Node::addChild(Node *child)
@@ -41,13 +42,26 @@ void Node::visit(Scene *scene)
     {
         m_children[i]->visit(scene);
     }
-    if(nodeType()==NODE_TYPE_ENTITY)
+    switch(nodeType())
+    {
+    case NODE_TYPE_ENTITY:
     {
         Entity *entity = (Entity * )this;
         if(scene)
         {
-            scene->pushToRenderQueue (entity);
+            scene->pushEntityToRenderQueue (entity);
         }
+    }
+        break;
+    case NODE_TYPE_SPRITE:
+    {
+        auto sprite = (Sprite *)this;
+        if(scene)
+        {
+            scene->pushSpriteToRenderQueue (sprite);
+        }
+    }
+        break;
     }
 }
 int Node::nodeType() const
@@ -98,7 +112,7 @@ QMatrix4x4 Node::getRotaionMatrix()
     rotateMatrix.setToIdentity();
     rotateMatrix.rotate(this->m_rotation.y(),QVector3D(0,1,0));//yaw - pan
     rotateMatrix.rotate(this->m_rotation.x(),QVector3D(1,0,0));//pitch - tilt
-     rotateMatrix.rotate(this->m_rotation.z(),QVector3D(0,0,1));//roll
+    rotateMatrix.rotate(this->m_rotation.z(),QVector3D(0,0,1));//roll
     return rotateMatrix;
 }
 
@@ -205,6 +219,17 @@ TVector3D Node::scalling() const
 {
     return m_scalling;
 }
+
+void Node::setGroupMask(NodeGroup mask)
+{
+    m_groupMask =  (unsigned int )mask;
+}
+
+bool Node::isGroupMask(NodeGroup mask)
+{
+    return m_groupMask & (unsigned int )mask;
+}
+
 
 void Node::setScalling(const TVector3D &scalling)
 {

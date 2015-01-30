@@ -17,6 +17,9 @@ public:
     virtual void onTouchBegin(int x,int y);
     virtual void onTouchMove(int x , int y);
     virtual void onTouchEnd(int x , int y);
+
+private:
+    void createTerrain();
 private:
     Camera camera;
     Scene * scene;

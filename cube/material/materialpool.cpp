@@ -1,7 +1,7 @@
 #include "materialpool.h"
 #include "texture/texturepool.h"
 MaterialPool * MaterialPool::instance = NULL;
-Material *MaterialPool::createMaterial(const char *the_name)
+Material *MaterialPool::createOrGetMaterial(const char *the_name)
 {
     Material * material = NULL;
     std::map<std::string , Material * >::iterator result = this->texture_list.find(the_name);
@@ -29,6 +29,6 @@ MaterialPool *MaterialPool::getInstance()
 MaterialPool::MaterialPool()
 {
     Material * material = new Material();
-    material->getDiffuse()->texture = TexturePool::getInstance()->createTexture("default");
+    material->getDiffuse()->texture = TexturePool::getInstance()->createOrGetTexture("default");
     this->texture_list.insert(std::make_pair(std::string("default"),material));
 }

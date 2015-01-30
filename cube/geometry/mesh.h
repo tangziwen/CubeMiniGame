@@ -8,6 +8,7 @@
 #include "shader/shader_program.h"
 #include "material/material.h"
 #include  "base/bonedata.h"
+#include "aabb.h"
 class TMesh: protected QGLFunctions
 {
 public:
@@ -28,8 +29,10 @@ public:
     MeshDrawComand *getCommand();
     Material *getMaterial() const;
     void setMaterial(Material *value);
+    AABB aabb() const;
+    void setAabb(const AABB &aabb);
 private:
-
+    AABB m_aabb;
     Material * material;
     MeshDrawComand draw_command;
     GLuint vbo[3];

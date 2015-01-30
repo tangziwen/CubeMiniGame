@@ -7,7 +7,7 @@ class TexturePool
 {
 public:
     //get a texture if it's not exist ,create one
-    Texture *createTexture(const char * file_name);
+    Texture *createOrGetTexture(const char * file_name);
     static TexturePool *getInstance();
 private:
    static  TexturePool * instance;

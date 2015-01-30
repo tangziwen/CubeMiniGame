@@ -23,9 +23,16 @@ void RenderBuffer::BindForWriting()
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_buffer);
 }
 
-void RenderBuffer::BindForReading()
+void RenderBuffer::BindForReading(RenderBuffer* buffer)
 {
-    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    if(buffer)
+    {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, buffer->buffer ());
+    }else
+    {
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+    }
+
     glActiveTexture(GL_TEXTURE0);
     glBindTexture (GL_TEXTURE_2D,m_texture);
 }

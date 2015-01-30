@@ -50,6 +50,11 @@ MainWidget::MainWidget(QWidget *parent,RenderDelegate *delegate) :
     QGLWidget(parent)
 {
     this->delegate = delegate;
+     isKeyPressed = false;
+     isKeyRelease = false;
+     isMouseMove = false;
+     isMousePress = false;
+     isMouseRelease = false;
 }
 
 MainWidget::~MainWidget()

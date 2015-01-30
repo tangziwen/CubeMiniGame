@@ -1,5 +1,5 @@
 QT       += core gui widgets
-
+QMAKE_CXXFLAGS += -std=c++11
 TARGET = cube
 TEMPLATE = app
 
@@ -216,7 +216,11 @@ SOURCES += main.cpp \
     geometry/terrain.cpp \
     base/tvector3d.cpp \
     renderer/gbuffer.cpp \
-    renderer/renderbuffer.cpp
+    renderer/renderbuffer.cpp \
+    geometry/aabb.cpp \
+    Entity/cubeprimitve.cpp \
+    geometry/ray.cpp \
+    GUI/sprite.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -524,7 +528,11 @@ HEADERS += \
     geometry/terrain.h \
     base/tvector3d.h \
     renderer/gbuffer.h \
-    renderer/renderbuffer.h
+    renderer/renderbuffer.h \
+    geometry/aabb.h \
+    Entity/cubeprimitve.h \
+    geometry/ray.h \
+    GUI/sprite.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

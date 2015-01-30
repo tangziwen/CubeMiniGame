@@ -9,6 +9,20 @@
 #define NODE_TYPE_NODE 0
 #define NODE_TYPE_ENTITY 1
 #define NODE_TYPE_CAMERA 2
+#define NODE_TYPE_SPRITE 4
+
+enum class NodeGroup
+{
+    G_Default = 1,
+    G_1 = 1 << 1,
+    G_2 = 1 << 2,
+    G_3 = 1 << 3,
+    G_4 = 1 << 4,
+    G_5 = 1 << 5,
+    G_6 = 1 << 6,
+    G_7 = 1 << 7,
+    G_8 = 1 << 8,
+};
 
 class Scene;
 class Node
@@ -60,6 +74,10 @@ public:
     TVector3D scalling() const;
     void setScalling(const QVector3D &scalling);
 
+    void setGroupMask(NodeGroup mask);
+
+    bool isGroupMask(NodeGroup mask);
+
 protected:
     TVector3D m_pos;
     TVector3D m_rotation;
@@ -68,6 +86,7 @@ protected:
     Node * m_parent;
     std::vector<Node *>m_children;
     std::string m_name;
+    unsigned int m_groupMask;
 };
 
 #endif // NODE_H

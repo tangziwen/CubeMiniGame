@@ -78,6 +78,11 @@ protected:
     void initShaders();
     void initTextures();
 private:
+    bool isKeyPressed;
+    bool isKeyRelease;
+    bool isMouseMove;
+    bool isMousePress;
+    bool isMouseRelease;
     RenderDelegate * delegate;
     QBasicTimer timer;
 };

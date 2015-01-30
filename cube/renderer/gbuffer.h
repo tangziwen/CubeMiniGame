@@ -5,8 +5,9 @@
 #define GBUFFER_POSITION_TEXTURE_UNIT 0
 #define GBUFFER_DIFFUSE_TEXTURE_UNIT  1
 #define GBUFFER_NORMAL_TEXTURE_UNIT   2
-#include <qopenglfunctions_3_0.h>
-class GBuffer :protected QOpenGLFunctions_3_0
+
+#include <QOpenGLFunctions_4_0_Core>
+class GBuffer :protected QOpenGLFunctions_4_0_Core
 {
 public:
 	enum GBUFFER_TEXTURE_TYPE {
