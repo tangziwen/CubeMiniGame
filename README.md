@@ -94,10 +94,11 @@ CubeEngineに対しいかなる疑問あるいはよい意見があれば以下�
 * <b>Qtではない場合：もちろんQTを使わなくても編集と翻訳できるが、b>backend.cpp</b>ファイルに対し少しの改訂が必要とし、delegateのコールバックをカスタム必要があり、そうするとQTのバックエンドを<b>GLFW</b>や<b>SDL</b>で管理することにする。
 ##ChangeLog##
 
-###alpha v0.08b 1.27.2015###
+###alpha v0.08b 2.2.2015###
 * support multiple shadowMap(finally support directional light)
 * code refactor
 * add a brief chinese doc
+* 
 ###alpha v0.08 1.27.2015###
 * Add AABB
 * Add Ray
