@@ -47,7 +47,8 @@ private:
     void linearBlur(float radius,float samples);
     void setEntityBoneTransform(Entity *entity);
     void spriteRenderPass();
-    void shadowPass(SpotLight *light);
+    void shadowPassForSpot(SpotLight *light);
+    void shadowPassDirectional();
     void forwardRenderPass();
     void geometryPass();
     void lightPass();
@@ -70,7 +71,8 @@ private:
     int m_renderType;
     Node  m_root;
     SkyBox * m_skyBox;
-    ShadowMapFBO * shadowMapFbo;
+    ShadowMapFBO * spotLightshadowMapFbo;
+    ShadowMapFBO * directionalLightshadowMapFbo;
     static Scene * currentScene;
     std::vector<Entity *> m_entityList;
     std::vector<Entity *> m_tempEntityList;

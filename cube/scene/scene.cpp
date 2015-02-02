@@ -11,8 +11,7 @@ Scene * Scene::currentScene = NULL;
 Scene::Scene()
 {
     initializeOpenGLFunctions();
-    this->shadowMapFbo = new ShadowMapFBO();
-    this->shadowMapFbo->Init(1024,768);
+
     this->setSkyBox(NULL);
     m_root.setName ("root");
     this->setRenderType (FORWARD_SHADING);
@@ -162,12 +161,13 @@ void Scene::spriteRenderPass()
     m_spriteList.clear ();
 }
 
-void Scene::shadowPass(SpotLight * light)
+void Scene::shadowPassForSpot(SpotLight * light)
 {
     // Clear color and depth buffer
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
-    this->shadowMapFbo->BindForWriting();
+
+    light->shadowFBO ()->BindForWriting();
     glClear(GL_DEPTH_BUFFER_BIT);
     ShaderProgram * shadow_shader = ShaderPool::getInstance ()->get("shadow");
     PipeLine p;
@@ -183,6 +183,41 @@ void Scene::shadowPass(SpotLight * light)
         view.setToIdentity();
         view.lookAt(light->getPos(),light->getPos()+light->getDirection(),QVector3D(0,1,0));
         p.setViewMatrix(view);
+        ShaderProgram * tmp_shader = entity->getShaderProgram ();
+        entity->setShaderProgram (shadow_shader);
+        setEntityBoneTransform(entity);
+        p.apply(shadow_shader);
+        entity->draw();
+        entity->setShaderProgram (tmp_shader);
+    }
+    glDepthMask(GL_FALSE);
+    glDisable(GL_DEPTH_TEST);
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);//switch the frame buffer back.
+}
+
+void Scene::shadowPassDirectional()
+{
+    auto light = this->getDirectionalLight ();
+    // Clear color and depth buffer
+    glDepthMask(GL_TRUE);
+    glEnable(GL_DEPTH_TEST);
+    light->shadowFBO ()->BindForWriting();
+    glClear(GL_DEPTH_BUFFER_BIT);
+    ShaderProgram * shadow_shader = ShaderPool::getInstance ()->get("shadow");
+    PipeLine p;
+    for (std::vector<Entity *>::iterator i =m_entityList.begin();i!=m_entityList.end();i++)
+    {
+        shadow_shader->use ();
+        Entity * entity = (* i);
+        if(!entity->isEnableShadow()) continue;
+        p.setModelMatrix(entity->getModelTrans());
+        QMatrix4x4 lightView;
+        lightView.setToIdentity();
+        lightView.lookAt(m_camera->pos ()-10*directionLight.getDirection (),m_camera->pos (),QVector3D(0,1,0));
+        QMatrix4x4 proj;
+        proj.ortho (-25,25,-25,25,0.01,50);
+        p.setProjectionMatrix(proj);
+        p.setViewMatrix(lightView);
         ShaderProgram * tmp_shader = entity->getShaderProgram ();
         entity->setShaderProgram (shadow_shader);
         setEntityBoneTransform(entity);
@@ -221,7 +256,7 @@ void Scene::forwardRenderPass()
         }
         p.setModelMatrix(entity->getModelTrans());
         p.applyLightMvp(entity->getShaderProgram());
-        this->shadowMapFbo->applyShadowMapTexture(entity->getShaderProgram(),1);
+        spotLights[0]->shadowFBO()->applyShadowMapTexture(entity->getShaderProgram(),1);
         calculateLight(entity->getShaderProgram());
         setEntityBoneTransform(entity);
         p.apply(entity->getShaderProgram());
@@ -300,15 +335,16 @@ void Scene::lightPass()
 
 void Scene::spotLightPass()
 {
-    this->shadowMapFbo->BindForReading(GL_TEXTURE3);
     if(!this->spotLights.empty ())
     {
         for(int i =0;i<spotLights.size ();i++)
         {
+            PointLight * light = this->spotLights[i];
+            light->shadowFBO ()->BindForReading(GL_TEXTURE3);
             ShaderProgram * shader = ShaderPool::getInstance ()->get("spot_light_pass");
             shader->use ();
-            shadowMapFbo->applyShadowMapTexture (shader,3);
-            PointLight * light = this->spotLights[i];
+            light->shadowFBO ()->applyShadowMapTexture (shader,3);
+
             light->apply (shader,0);
             m_quad->setShaderProgram (shader);
             QMatrix4x4 m;
@@ -364,8 +400,10 @@ void Scene::pointLightPass()
 
 void Scene::directionLightPass()
 {
+    directionLight.shadowFBO ()->BindForReading(GL_TEXTURE3);
     ShaderProgram * shader =ShaderPool::getInstance ()->get("dir_light_pass");
     shader->use ();
+    directionLight.shadowFBO ()->applyShadowMapTexture (shader,3);
     QMatrix4x4 m;
     m.setToIdentity ();
     m_quad->setShaderProgram (shader);
@@ -378,6 +416,14 @@ void Scene::directionLightPass()
                               m_camera->pos ().x(),
                               m_camera->pos ().y(),
                               m_camera->pos ().z());
+    QMatrix4x4 lightView;
+    lightView.setToIdentity();
+    lightView.lookAt(m_camera->pos ()-10*directionLight.getDirection (),m_camera->pos (),QVector3D(0,1,0));
+    QMatrix4x4 light_vp;
+    QMatrix4x4 proj;
+    proj.ortho (-25,25,-25,25,0.01,50);
+    light_vp = proj * lightView ;
+    shader->setUniformMat4v ("g_light_vp_matrix",light_vp.data ());
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     m_quad->draw (true);
@@ -405,7 +451,11 @@ void Scene::deferredRendering()
 {
     if(!this->spotLights.empty ())
     {
-        this->shadowPass(spotLights[0]);
+        this->shadowPassForSpot(spotLights[0]);
+    }
+    if(this->directionLight.getIntensity ()>0)
+    {
+        this->shadowPassDirectional ();
     }
     geometryPass();
     glEnable(GL_BLEND);
@@ -449,9 +499,9 @@ void Scene::forwardRendering()
 
     if(!this->spotLights.empty ())
     {
-        this->shadowPass(spotLights[0]);
+        this->shadowPassForSpot(spotLights[0]);
     }
-    this->shadowMapFbo->BindForReading(GL_TEXTURE1);
+    this->spotLightshadowMapFbo->BindForReading(GL_TEXTURE1);
     this->forwardRenderPass();
 }
 

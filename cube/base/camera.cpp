@@ -2,8 +2,7 @@
 #include "utility.h"
 #include "math.h"
 #include "QDebug"
-
-
+#include <QVector4D>
 static float PI_OVER_180 =(3.1415927 / 180.0);
 
 Camera::Camera()
@@ -31,4 +30,14 @@ QMatrix4x4 Camera::getViewMatrix()
 QMatrix4x4 Camera::getProjection()
 {
     return this->m_projection;
+}
+
+QVector3D Camera::ScreenToWorld(QVector3D vec)
+{
+    QVector4D src4(vec,1);
+    QMatrix4x4 mat = m_projection*getModelTrans().inverted ();
+    QVector4D result4 = mat.inverted () * src4;
+    float w = result4.w ();
+    QVector3D result3 = result4.toVector3D () / w;
+    return result3;
 }

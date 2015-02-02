@@ -24,8 +24,9 @@ uniform sampler2D g_position_map;
 uniform sampler2D g_color_map;
 uniform sampler2D g_normal_map;
 uniform sampler2D g_shadow_map;
-uniform mat4 g_light_vp_matrix;
 uniform vec3 g_eye_position;
+
+uniform mat4 g_light_vp_matrix;
 
 float CalcShadowFactor(sampler2D the_shadow_map, vec4 LightSpacePos)                                                  
 {                       	

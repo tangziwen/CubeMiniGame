@@ -3,6 +3,8 @@
 BaseLight::BaseLight()
 {
     this->intensity = 1;
+    m_shadowFBO = new ShadowMapFBO();
+    m_shadowFBO->Init (1024,768);
 }
 
 QVector3D BaseLight::getColor()
@@ -30,3 +32,13 @@ void BaseLight::apply(ShaderProgram *program, int index)
 {
 
 }
+ShadowMapFBO *BaseLight::shadowFBO() const
+{
+    return m_shadowFBO;
+}
+
+void BaseLight::setShadowFBO(ShadowMapFBO *shadowFBO)
+{
+    m_shadowFBO = shadowFBO;
+}
+

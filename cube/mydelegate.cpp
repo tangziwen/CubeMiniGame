@@ -91,6 +91,10 @@ void myDelegate::onInit()
         weapon->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
         camera.addChild (weapon);
 
+        auto dir_light = scene->getDirectionalLight ();
+        dir_light->setDirection (QVector3D(0,0,1));
+        dir_light->setIntensity (0.5);
+
         CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
         bileishou->setName ("bileishou");
         bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
@@ -103,14 +107,17 @@ void myDelegate::onInit()
         xiaoxiao->setCamera(&camera);
         xiaoxiao->setPos (QVector3D(1,0,10));
         scene->root ()->addChild (xiaoxiao);
+
+
         // a spotlight
         auto light = scene->createSpotLight();
-        light->setPos(QVector3D(0,0,-25));
+        light->setPos(QVector3D(0,0,25));
         light->setColor(QVector3D(1,1,1));
-        light->setDirection(QVector3D(0,0,1));
+        light->setDirection(QVector3D(0,0,-1));
         light->setRange(300);
         light->setAngle(utility::Ang2Radius(10));
         light->setOutterAngle(utility::Ang2Radius(12));
+
 
 
 
@@ -230,17 +237,13 @@ void myDelegate::onKeyRelease(int key_code)
     case Qt::Key_F:
     {
 
-        QVector4D nearPoint(0,0,-1,1);
-        QVector4D farPoint(0,0,1,1);
+        QVector3D nearPoint(0,0,-1);
+        QVector3D farPoint(0,0,1);
         //unproject it
-        QMatrix4x4 mat = camera.getProjection () * camera.getViewMatrix ();
-        mat = mat.inverted ();
-        nearPoint = mat* nearPoint;
-        QVector3D nearPoint3 = nearPoint.toVector3D ()/nearPoint.w ();
-        farPoint = mat*farPoint;
-        QVector3D farPoint3 = farPoint.toVector3D ()/farPoint.w ();
-        QVector3D direction = farPoint3 - nearPoint3;
-        Ray ray(nearPoint3,direction);
+        nearPoint = camera.ScreenToWorld (nearPoint);
+        farPoint = camera.ScreenToWorld (farPoint);
+        QVector3D direction = farPoint - nearPoint;
+        Ray ray(nearPoint,direction);
         auto entityList = scene->getPotentialEntityList ();
         for(Entity * entity : entityList)
         {
@@ -252,11 +255,9 @@ void myDelegate::onKeyRelease(int key_code)
             bool result = ray.intersect (entity->getAABB (),&SideResult);
             if(result)
             {
-                qDebug()<<"hit "<<entity->name ();
                 switch (SideResult) {
                 case RayAABBSide::up:
                 {
-                    qDebug()<<"up";
                     CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
                     bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
                     bileishou->setCamera(&camera);
@@ -266,7 +267,6 @@ void myDelegate::onKeyRelease(int key_code)
                     break;
                 case RayAABBSide::down:
                 {
-                    qDebug()<<"down";
                     CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
                     bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
                     bileishou->setCamera(&camera);
@@ -276,7 +276,6 @@ void myDelegate::onKeyRelease(int key_code)
                     break;
                 case RayAABBSide::left:
                 {
-                    qDebug()<<"left";
                     CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
                     bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
                     bileishou->setCamera(&camera);
@@ -286,7 +285,6 @@ void myDelegate::onKeyRelease(int key_code)
                     break;
                 case RayAABBSide::right:
                 {
-                    qDebug()<<"right";
                     CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
                     bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
                     bileishou->setCamera(&camera);
@@ -296,7 +294,6 @@ void myDelegate::onKeyRelease(int key_code)
                     break;
                 case RayAABBSide::back:
                 {
-                    qDebug()<<"back";
                     CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
                     bileishou->setName ("bileishou");
                     bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
@@ -307,7 +304,6 @@ void myDelegate::onKeyRelease(int key_code)
                     break;
                 case RayAABBSide::front:
                 {
-                    qDebug()<<"front";
                     CubePrimitve * bileishou = new CubePrimitve("./res/texture/mygame/bileishou.jpg");
                     bileishou->setName ("bileishou");
                     bileishou->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
