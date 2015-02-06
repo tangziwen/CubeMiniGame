@@ -54,8 +54,7 @@ build_*_xcode/
 build_*_vc10/
 
 # Ignore QT project user file files
-*.user.*
-*.pro.user
+*.user
 
 # Ignore files build by QT
 build-debug/
