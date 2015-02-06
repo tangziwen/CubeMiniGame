@@ -3,11 +3,11 @@
 #include "math.h"
 #include "QDebug"
 #include <QVector4D>
-static float PI_OVER_180 =(3.1415927 / 180.0);
 
 Camera::Camera()
 {
     this->setNodeType (NODE_TYPE_CAMERA);
+    m_frustumDirty = true;
 }
 
 void Camera::setPerspective(float fov, float aspect, float z_near, float z_far)
@@ -24,7 +24,13 @@ void Camera::setOrtho(float left,float right,float bottom,float top,float near,f
 
 QMatrix4x4 Camera::getViewMatrix()
 {
-    return getModelTrans().inverted ();
+    auto viewMatrix = getModelTrans().inverted ();
+    if(viewMatrix != m_viewMatrix)
+    {
+        m_frustumDirty = true;
+        m_viewMatrix = viewMatrix;
+    }
+    return m_viewMatrix;
 }
 
 QMatrix4x4 Camera::getProjection()
@@ -40,4 +46,14 @@ QVector3D Camera::ScreenToWorld(QVector3D vec)
     float w = result4.w ();
     QVector3D result3 = result4.toVector3D () / w;
     return result3;
+}
+
+bool Camera::isVisibleInFrustum(const AABB *aabb)
+{
+    if (m_frustumDirty)
+    {
+        m_frustum.initFrustum(this);
+        m_frustumDirty = false;
+    }
+    return !m_frustum.isOutOfFrustum(*aabb);
 }

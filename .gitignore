@@ -55,6 +55,7 @@ build_*_vc10/
 
 # Ignore QT project user file files
 *.user.*
+*.pro.user
 
 # Ignore files build by QT
 build-debug/

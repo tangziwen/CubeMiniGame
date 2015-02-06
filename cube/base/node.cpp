@@ -1,5 +1,7 @@
 #include "node.h"
 #include "scene/scene.h"
+#include "utility.h"
+#include <algorithm>
 Node::Node()
 {
     this->m_pos=QVector3D(0,0,0);
@@ -186,16 +188,43 @@ void Node::rollBy(float value)
     m_rotation.setZ(m_rotation.z ()+value);
 }
 
-void Node::moveBy(float the_x, float the_y, float the_z)
+void Node::moveBy(float the_x, float the_y, float the_z, bool isRelative)
 {
-    QVector4D v(the_x,the_y,the_z,1);
-    v = this->getRotaionMatrix ()*v;
-    this->m_pos += TVector3D(v.x(),v.y(),v.z());
+    if(isRelative)
+    {
+        QVector4D v(the_x,the_y,the_z,1);
+        v = this->getRotaionMatrix ()*v;
+        this->m_pos += TVector3D(v.x(),v.y(),v.z());
+    }else
+    {
+        this->m_pos += TVector3D(the_x,the_y,the_z);
+    }
+
 }
 
 void Node::move(float the_x, float the_y, float the_z)
 {
     this->m_pos = TVector3D(the_x,the_y,the_z);
+}
+
+void Node::removeFromParent()
+{
+    if(T_INVALID(m_parent)) return;
+
+    m_parent->removechild (this);
+}
+
+void Node::removechild(Node *child)
+{
+    if(T_INVALID(child)) return;
+
+    auto iter = std::find(m_children.begin (),m_children.end (),child);
+    if(iter !=m_children.end ())
+    {
+        Node * node = (*iter);
+        node->setIsRemoved (true);
+        m_children.erase (iter);
+    }
 }
 TVector3D Node::pos() const
 {
@@ -235,12 +264,3 @@ void Node::setScalling(const TVector3D &scalling)
 {
     m_scalling = scalling;
 }
-
-
-
-
-
-
-
-
-

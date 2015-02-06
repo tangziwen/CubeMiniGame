@@ -4,6 +4,8 @@
 #include <string>
 #include <QDebug>
 #define T_LOG (qDebug())
+#define T_VALID(A) (A!=NULL)
+#define T_INVALID(A) (A==NULL)
 using namespace std;
 namespace utility{
 bool ReadFile(const char* pFileName, string& outFile);

@@ -4,10 +4,10 @@
 #include "base/camera.h"
 #include "scene/scene.h"
 #include "shader/shader_program.h"
-class myDelegate : public RenderDelegate
+class CubeCraftDelegate : public RenderDelegate
 {
 public:
-    myDelegate();
+    CubeCraftDelegate();
     virtual void onInit() ;
     virtual void onRender();
     virtual void onResize(int w, int h);
@@ -20,6 +20,8 @@ public:
 
 private:
     void createTerrain();
+    void createBlock();
+    void removeBlock();
 private:
     Camera camera;
     Scene * scene;

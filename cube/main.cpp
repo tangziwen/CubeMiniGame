@@ -42,11 +42,34 @@
 #include <QLabel>
 
 #include "base/tzwengine.h"
-#include "mydelegate.h"
+#include "Demo/CubeCraft/CubeCraftDelegate.h"
+enum class SampleID
+{
+    CubeCraft,
+    simple,
+};
 
+RenderDelegate * runSample(SampleID sample_ID);
 int main(int argc, char *argv[])
 {
-    myDelegate delegate;
-    return TzwEngine::go(&delegate,argc,argv);
+    auto result = runSample(SampleID::CubeCraft);
+    return TzwEngine::go(result,argc,argv);
+}
 
+RenderDelegate *runSample(SampleID sample_ID)
+{
+    RenderDelegate * result;
+    switch(sample_ID)
+    {
+    case SampleID::CubeCraft:
+    {
+        result =new  CubeCraftDelegate();
+    }
+        break;
+    case SampleID::simple:
+    {
+    }
+        break;
+    }
+    return result;
 }

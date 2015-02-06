@@ -5,6 +5,7 @@
 #include "base/tvector3d.h"
 #include <vector>
 #include <string>
+#include "base/removable.h"
 
 #define NODE_TYPE_NODE 0
 #define NODE_TYPE_ENTITY 1
@@ -25,11 +26,13 @@ enum class NodeGroup
 };
 
 class Scene;
-class Node
+class Node :public Removable
 {
 public:
     Node();
     void addChild(Node * child);
+    void removeFromParent();
+    void removechild(Node * child);
     Node *parent() const;
     void setParent(Node *parent);
     std::vector<Node *> children() const;
@@ -62,8 +65,9 @@ public:
     void yawBy(float value);
     void pitchBy(float value);
     void rollBy(float value);
-    void moveBy(float the_x, float the_y, float the_z);
+    void moveBy(float the_x, float the_y, float the_z,bool isRelative = true);
     void move(float the_x, float the_y, float the_z);
+
 
     TVector3D pos() const;
     void setPos(const QVector3D &pos);

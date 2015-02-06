@@ -6,6 +6,7 @@
 using namespace std;
 
 
+
 bool utility::ReadFile(const char *pFileName, string &outFile)
 {
     ifstream f(pFileName);

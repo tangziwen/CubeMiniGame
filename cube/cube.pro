@@ -17,7 +17,6 @@ SOURCES += main.cpp \
     Entity/entity.cpp \
     base/tzwengine.cpp \
     backend/backend.cpp \
-    mydelegate.cpp \
     backend/mainwidget.cpp \
     light/directionallight.cpp \
     light/ambientlight.cpp \
@@ -220,7 +219,11 @@ SOURCES += main.cpp \
     geometry/aabb.cpp \
     Entity/cubeprimitve.cpp \
     geometry/ray.cpp \
-    GUI/sprite.cpp
+    GUI/sprite.cpp \
+    Demo/CubeCraft/CubeCraftDelegate.cpp \
+    base/removable.cpp \
+    base/frustum.cpp \
+    geometry/plane.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -246,7 +249,6 @@ HEADERS += \
     Entity/entity.h \
     base/tzwengine.h \
     backend/backend.h \
-    mydelegate.h \
     backend/mainwidget.h \
     light/directionallight.h \
     light/ambientlight.h \
@@ -532,7 +534,11 @@ HEADERS += \
     geometry/aabb.h \
     Entity/cubeprimitve.h \
     geometry/ray.h \
-    GUI/sprite.h
+    GUI/sprite.h \
+    Demo/CubeCraft/CubeCraftDelegate.h \
+    base/removable.h \
+    base/frustum.h \
+    geometry/plane.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \
