@@ -27,15 +27,42 @@ uniform vec2 g_screen_size;
 uniform sampler2D g_position_map;
 uniform sampler2D g_color_map;
 uniform sampler2D g_normal_map;
+uniform sampler2D g_depth_map;
 uniform vec3 g_eye_position;
-uniform mat4 g_light_vp_matrix;
+uniform mat4 g_light_vp_matrix[4];
 
-uniform sampler2D g_shadow_map;
+uniform sampler2D g_shadow_map[4];
 
+vec2 CalcTexCoord()
+{
+    return gl_FragCoord.xy / g_screen_size;
+}
 
-float CalcShadowFactor(sampler2D the_shadow_map, vec4 LightSpacePos)                                                  
-{                       	
-	float bias = 0.005f;
+float LinearDepth(float depth,float zNear,float zFar){
+    return (depth - zNear)/(zFar - zNear);
+}
+
+float CalcShadowFactor(vec3 worldPosition,vec3 normal,vec3 lightDirection)                                                  
+{
+    int shadowMapLayerIndex = 3;
+    vec2 v = CalcTexCoord(); 
+    float far = 100.0;
+    float currentPixelZ = texture2D(g_depth_map,v).r;
+    currentPixelZ = LinearDepth(currentPixelZ ,0.01,100.0);
+    if(currentPixelZ*1.0 <=0.2)
+    {
+        shadowMapLayerIndex = 0;
+    }
+    else if(currentPixelZ*1.0 <=0.4)
+    {
+        shadowMapLayerIndex = 1;
+    }
+    else if(currentPixelZ*1.0 <= 0.7)
+    {
+        shadowMapLayerIndex = 2;
+    }
+
+    vec4 LightSpacePos = g_light_vp_matrix[shadowMapLayerIndex] *vec4(worldPosition,1.0f);
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;                                  
     vec2 UVCoords;                                                                          
     UVCoords.x = 0.5*ProjCoords.x +0.5;                                                  
@@ -47,12 +74,21 @@ float CalcShadowFactor(sampler2D the_shadow_map, vec4 LightSpacePos)
 
     float Factor = 0.0f;
 
+    //out of shadow map
+    if(UVCoords.x >1.0 || UVCoords.x <0.0 || UVCoords.y >1.0 || UVCoords.y <0.0)
+    {
+        return 1.0;
+    }
+
+    float cosTheta = clamp(dot(normal,lightDirection),0.0,1.0);
+    float bias = 0.005*tan(acos(cosTheta)); // cosTheta is dot( n,l ), clamped between 0 and 1
+    bias = clamp(bias, 0.0,0.01);
     for (int y = -1 ; y <= 1 ; y++) {
         for (int x = -1 ; x <= 1 ; x++) {
             vec2 Offsets = vec2(float(x) * xOffset, float(y) * yOffset);
             vec2 UVC = vec2(UVCoords + Offsets);
-            float  result = texture2D(the_shadow_map, UVC).x;
-			if(result < z -0.00001f)
+            float  result = texture2D(g_shadow_map[shadowMapLayerIndex], UVC).x;
+			if(result < z - bias)
 			{
 			Factor +=0.0f;
 			}
@@ -64,10 +100,7 @@ float CalcShadowFactor(sampler2D the_shadow_map, vec4 LightSpacePos)
 	return Factor/9.0f;
 }
 
-vec2 CalcTexCoord()
-{
-    return gl_FragCoord.xy / g_screen_size;
-}
+
 
 vec4 calculateAmbient(Ambient light , vec3 normal)
 {
@@ -82,8 +115,7 @@ vec4 calculateAmbient(Ambient light , vec3 normal)
 
 vec4 calculateDiffuse(vec3 normal_line , vec3 light_direction , vec3 color , float intensity,vec3 world_pos)
 {
-	vec4 light_space_pos = g_light_vp_matrix *vec4(world_pos,1.0f);
-	float shadow_factor =CalcShadowFactor(g_shadow_map,light_space_pos);
+	float shadow_factor =CalcShadowFactor(world_pos,normal_line,light_direction);
 	float diffuse_factor = dot(normalize(normal_line), normalize(-light_direction));
 	vec4 diffuse_color;
 	vec4 specular_color;
@@ -112,6 +144,7 @@ vec4 caclculateDirectionLight(vec3 normal_line,DirectionalLight light,vec3 world
 void main()
 {	
 	vec2 tex_coord = CalcTexCoord();
+
 	vec3 world_pos = texture2D(g_position_map, tex_coord).xyz;
 	vec3 color = texture2D(g_color_map, tex_coord).xyz;
 	vec3 normal = texture2D(g_normal_map, tex_coord).xyz;
@@ -122,6 +155,12 @@ void main()
 	vec4 totalLight = calculateAmbient(ambient,normal);
 	totalLight += caclculateDirectionLight(normal,directionLight,world_pos);
 	gl_FragColor = vec4(color, 1.0) * totalLight;
+
+/*
+    float Depth = texture2D(g_depth_map, tex_coord).x;
+    Depth = 1.0 - (1.0 - Depth) * 25.0;
+    gl_FragColor = vec4(Depth);
+*/
 	return;
 }
 
