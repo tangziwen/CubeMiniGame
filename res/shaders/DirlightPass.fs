@@ -38,8 +38,10 @@ vec2 CalcTexCoord()
     return gl_FragCoord.xy / g_screen_size;
 }
 
-float LinearDepth(float depth,float zNear,float zFar){
-    return (depth - zNear)/(zFar - zNear);
+float LinearDepth(float depth,float near,float far){
+    float z = depth * 2.0 - 1.0; 
+    float linearDepth = (2.0 * near) / (far + near - z * (far - near));	
+    return linearDepth;
 }
 
 float CalcShadowFactor(vec3 worldPosition,vec3 normal,vec3 lightDirection)                                                  
