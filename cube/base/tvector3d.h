@@ -6,4 +6,3 @@
 
 typedef  QVector3D TVector3D;
 #endif // TVECTOR3D_H
-

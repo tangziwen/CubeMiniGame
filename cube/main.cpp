@@ -43,16 +43,19 @@
 
 #include "base/tzwengine.h"
 #include "Demo/CubeCraft/CubeCraftDelegate.h"
+#include "Demo/SimpleDelegate/TerrainDelegate.h"
+#include "Demo/NormalMapping/normalmappingdelegate.h"
 enum class SampleID
 {
     CubeCraft,
-    simple,
+    FlightGame,
+    NormalMapping
 };
 
 RenderDelegate * runSample(SampleID sample_ID);
 int main(int argc, char *argv[])
 {
-    auto result = runSample(SampleID::CubeCraft);
+    auto result = runSample(SampleID::FlightGame);
     return TzwEngine::go(result,argc,argv);
 }
 
@@ -66,9 +69,17 @@ RenderDelegate *runSample(SampleID sample_ID)
         result =new  CubeCraftDelegate();
     }
         break;
-    case SampleID::simple:
+    case SampleID::FlightGame:
     {
+        result = new FlightGameDelegate();
     }
+     break;
+    case SampleID::NormalMapping:
+    {
+        result = new NormalMappingDelegate();
+    }
+        break;
+    default:
         break;
     }
     return result;

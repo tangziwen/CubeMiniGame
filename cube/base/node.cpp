@@ -11,6 +11,7 @@ Node::Node()
     this->m_parent = NULL;
     this->m_name = "node";
     this->m_groupMask = (unsigned int)NodeGroup::G_Default;
+    onUpdate = nullptr;
 }
 
 void Node::addChild(Node *child)
@@ -40,6 +41,7 @@ void Node::setChildren(const std::vector<Node *> &children)
 
 void Node::visit(Scene *scene)
 {
+    if(onUpdate) onUpdate(this);
     for(int i =0;i<m_children.size ();i++)
     {
         m_children[i]->visit(scene);

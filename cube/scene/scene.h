@@ -12,6 +12,7 @@
 #include "Entity/skybox.h"
 #include "renderer/gbuffer.h"
 #include "renderer/renderbuffer.h"
+#include <QMatrix4x4>
 #define DEFERRED_SHADING 1
 #define FORWARD_SHADING 0
 class Node;
@@ -58,12 +59,12 @@ private:
     void calculateLight(ShaderProgram * shader);
     void deferredRendering();
     void forwardRendering();
-
+    QMatrix4x4 getCropMatrix(AABB frustumAABB);
 private:
+    ShadowMapFBO * cameraShadowFbo;
     Camera * m_guiCamera;
     Camera * m_camera;
     Entity * m_quad;
-    Entity * m_sphere;
     GBuffer * m_GBuffer;
     RenderBuffer * bloom_fbo1;
     RenderBuffer * bloom_fbo2;

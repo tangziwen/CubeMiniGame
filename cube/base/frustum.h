@@ -17,8 +17,12 @@ public:
     /**
      * init frustum from camera.
      */
-    bool initFrustum(Camera* camera);
+    bool initFrustumFromCamera(Camera* camera);
 
+    /**
+     * init frustum from camera.
+     */
+    bool initFrustumFromProjectMatrix(QMatrix4x4 matrix);
     /**
      * is aabb out of frustum.
      */
@@ -35,6 +39,11 @@ protected:
      * create clip plane
      */
     void createPlane( Camera* camera);
+
+    /**
+     * create clip plane
+     */
+    void createPlane(QMatrix4x4 matrix);
 
     Plane _plane[6];             // clip plane, left, right, top, bottom, near, far
     bool _clipZ;                // use near and far clip plane

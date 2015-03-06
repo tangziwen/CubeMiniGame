@@ -1,10 +1,17 @@
 #include "frustum.h"
 #include <QMatrix4x4>
 #include "base/camera.h"
-bool Frustum::initFrustum(Camera* camera)
+bool Frustum::initFrustumFromCamera(Camera* camera)
 {
     _initialized = true;
     createPlane(camera);
+    return true;
+}
+
+bool Frustum::initFrustumFromProjectMatrix(QMatrix4x4 matrix)
+{
+    _initialized = true;
+    createPlane(matrix);
     return true;
 }
 
@@ -42,3 +49,15 @@ void Frustum::createPlane( Camera* camera)
     _plane[4].initPlane(-QVector3D(m[3] + m[2], m[7] + m[6], m[11] + m[10]), (m[15] + m[14]));//near
     _plane[5].initPlane(-QVector3D(m[3] - m[2], m[7] - m[6], m[11] - m[10]), (m[15] - m[14]));//far
 }
+
+void Frustum::createPlane(QMatrix4x4 matrix)
+{
+    float * m =matrix.data ();
+   _plane[0].initPlane(-QVector3D(m[3] + m[0], m[7] + m[4], m[11] + m[8]), (m[15] + m[12]));//left
+   _plane[1].initPlane(-QVector3D(m[3] - m[0], m[7] - m[4], m[11] - m[8]), (m[15] - m[12]));//right
+   _plane[2].initPlane(-QVector3D(m[3] + m[1], m[7] + m[5], m[11] + m[9]), (m[15] + m[13]));//bottom
+   _plane[3].initPlane(-QVector3D(m[3] - m[1], m[7] - m[5], m[11] - m[9]), (m[15] - m[13]));//top
+   _plane[4].initPlane(-QVector3D(m[3] + m[2], m[7] + m[6], m[11] + m[10]), (m[15] + m[14]));//near
+   _plane[5].initPlane(-QVector3D(m[3] - m[2], m[7] - m[6], m[11] - m[10]), (m[15] - m[14]));//far
+}
+

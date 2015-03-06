@@ -3,17 +3,24 @@
 #include "math.h"
 #include "QDebug"
 #include <QVector4D>
-
+float frustumSplitFactor [4] = {0.2,0.4,0.7,1};
 Camera::Camera()
 {
     this->setNodeType (NODE_TYPE_CAMERA);
     m_frustumDirty = true;
+
 }
 
 void Camera::setPerspective(float fov, float aspect, float z_near, float z_far)
 {
     m_projection.setToIdentity();
     m_projection.perspective(fov,aspect,z_near,z_far);
+    m_fov = fov;
+    m_aspect = aspect;
+    m_ZFar = z_far;
+    m_ZNear = z_near;
+    m_FrustumAABB =  getProjectionAABB (m_projection);
+    splitFrustum(4);
 }
 
 void Camera::setOrtho(float left,float right,float bottom,float top,float near,float far)
@@ -52,8 +59,118 @@ bool Camera::isVisibleInFrustum(const AABB *aabb)
 {
     if (m_frustumDirty)
     {
-        m_frustum.initFrustum(this);
+        m_frustum.initFrustumFromCamera(this);
         m_frustumDirty = false;
     }
     return !m_frustum.isOutOfFrustum(*aabb);
 }
+
+void Camera::splitFrustum( int NumofSplits)
+{
+    auto pre_zfar = m_ZNear;
+    for(int i = 0;i<NumofSplits;i++)
+    {
+        auto z_far = m_ZFar*frustumSplitFactor[i];
+        m_splitFrust[i].perspective (m_fov,m_aspect,pre_zfar,z_far);
+        m_splitFrustumAABB[i] =getProjectionAABB(m_splitFrust[i]);
+        pre_zfar = z_far;
+    }
+}
+float Camera::ZNear() const
+{
+    return m_ZNear;
+}
+
+void Camera::setZNear(float ZNear)
+{
+    m_ZNear = ZNear;
+}
+
+float Camera::ZFar() const
+{
+    return m_ZFar;
+}
+
+void Camera::setZFar(float ZFar)
+{
+    m_ZFar = ZFar;
+}
+float Camera::fov() const
+{
+    return m_fov;
+}
+
+void Camera::setFov(float fov)
+{
+    m_fov = fov;
+}
+float Camera::aspect() const
+{
+    return m_aspect;
+}
+
+void Camera::setAspect(float aspect)
+{
+    m_aspect = aspect;
+}
+
+AABB Camera::getSplitFrustumAABB(int index)
+{
+    return m_splitFrustumAABB[index];
+}
+
+AABB Camera::getProjectionAABB(QMatrix4x4 projectMatrix)
+{
+   projectMatrix =  projectMatrix.inverted ();
+    QVector4D bl_near = QVector4D(-1,-1,-1,1);
+    bl_near = projectMatrix*bl_near;
+    bl_near = QVector4D(bl_near.toVector3D ()/bl_near.w (),1);
+    QVector4D br_near = QVector4D(1,-1,-1,1);
+    br_near = projectMatrix*br_near;
+    br_near = QVector4D(br_near.toVector3D ()/br_near.w (),1);
+    QVector4D tl_near = QVector4D(-1,1,-1,1);
+    tl_near = projectMatrix*tl_near;
+    tl_near = QVector4D(tl_near.toVector3D ()/tl_near.w (),1);
+    QVector4D tr_near = QVector4D(1,1,-1,1);
+    tr_near = projectMatrix*tr_near;
+    tr_near = QVector4D(tr_near.toVector3D ()/tr_near.w (),1);
+
+    QVector4D bl_far = QVector4D(-1,-1,1,1);
+    bl_far = projectMatrix*bl_far;
+    bl_far = QVector4D(bl_far.toVector3D ()/bl_far.w (),1);
+    QVector4D br_far = QVector4D(1,-1,1,1);
+    br_far = projectMatrix*br_far;
+    br_far = QVector4D(br_far.toVector3D ()/br_far.w (),1);
+    QVector4D tl_far = QVector4D(-1,1,1,1);
+    tl_far = projectMatrix*tl_far;
+    tl_far = QVector4D(tl_far.toVector3D ()/tl_far.w (),1);
+    QVector4D tr_far = QVector4D(1,1,1,1);
+    tr_far = projectMatrix*tr_far;
+    tr_far = QVector4D(tr_far.toVector3D ()/tr_far.w (),1);
+
+    AABB aabb;
+    aabb.update (bl_near.toVector3D ());
+    aabb.update (br_near.toVector3D ());
+    aabb.update (tl_near.toVector3D ());
+    aabb.update (tr_near.toVector3D ());
+    aabb.update (bl_far.toVector3D ());
+    aabb.update (br_far.toVector3D ());
+    aabb.update (tl_far.toVector3D ());
+    aabb.update (tr_far.toVector3D ());
+
+    return aabb;
+}
+AABB Camera::FrustumAABB() const
+{
+    return m_FrustumAABB;
+}
+
+void Camera::setFrustumAABB(const AABB &FrustumAABB)
+{
+    m_FrustumAABB = FrustumAABB;
+}
+
+
+
+
+

@@ -223,7 +223,9 @@ SOURCES += main.cpp \
     Demo/CubeCraft/CubeCraftDelegate.cpp \
     base/removable.cpp \
     base/frustum.cpp \
-    geometry/plane.cpp
+    geometry/plane.cpp \
+    Demo/NormalMapping/normalmappingdelegate.cpp \
+    Demo/SimpleDelegate/FlightGameDelegate.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -538,7 +540,9 @@ HEADERS += \
     Demo/CubeCraft/CubeCraftDelegate.h \
     base/removable.h \
     base/frustum.h \
-    geometry/plane.h
+    geometry/plane.h \
+    Demo/SimpleDelegate/TerrainDelegate.h \
+    Demo/NormalMapping/normalmappingdelegate.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

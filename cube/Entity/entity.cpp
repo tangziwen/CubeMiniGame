@@ -314,6 +314,11 @@ void Entity::loadModelData(const char *file_name)
 {
     const aiScene* pScene = m_Importer.ReadFile(file_name,aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals |aiProcess_CalcTangentSpace);
     this->m_pScene = (aiScene*)pScene;
+    if(pScene==NULL)
+    {
+        T_LOG<<"INVALID MODEL FILE OR INVALID PATH";
+        return;
+    }
     m_globalInverseTransform = pScene->mRootNode->mTransformation;
     m_globalInverseTransform = m_globalInverseTransform.Inverse();
     char str[100]={'\0'};

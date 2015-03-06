@@ -178,6 +178,5 @@ void ShaderProgram::AddShader(GLuint ShaderProgram, const char *pShaderText, GLe
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
     }
-
     glAttachShader(ShaderProgram, ShaderObj);
 }

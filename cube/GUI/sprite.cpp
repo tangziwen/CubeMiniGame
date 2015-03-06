@@ -25,6 +25,7 @@ Sprite::Sprite()
     onRender = NULL;
     setShader (ShaderPool::getInstance ()->get ("basic_sprite"));
 }
+
 Texture *Sprite::texture() const
 {
     return m_texture;
@@ -86,16 +87,24 @@ void Sprite::setCamera(Camera *camera)
     m_camera = camera;
 }
 
-void Sprite::updateVertices(float size_x,float size_y)
+void Sprite::updateVertices(float the_size_x,float the_size_y)
 {
-    vertices[0] = VertexData(QVector3D(0,size_y,-1),QVector2D(0,0));// tl
+    vertices[0] = VertexData(QVector3D(0,the_size_y,-1),QVector2D(0,0));// tl
     vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(0,1));//bl
-    vertices[2] = VertexData(QVector3D(size_x,0,-1),QVector2D(1,1));//br
-    vertices[3] = VertexData(QVector3D(size_x,size_y,-1),QVector2D(1,0));//tr
+    vertices[2] = VertexData(QVector3D(the_size_x,0,-1),QVector2D(1,1));//br
+    vertices[3] = VertexData(QVector3D(the_size_x,the_size_y,-1),QVector2D(1,0));//tr
+    glBindBuffer (GL_ARRAY_BUFFER,_vbo[0]);
+    glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),vertices,GL_STREAM_DRAW);
+    size_x = the_size_x;
+    size_y = the_size_y;
+}
+
+void Sprite::setRect(QVector2D TL, QVector2D BR)
+{
+    vertices[0] = VertexData(QVector3D(0,size_y,-1),TL);// tl
+    vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(TL.x (),BR.y ()));//bl
+    vertices[2] = VertexData(QVector3D(size_x,0,-1),BR);//br
+    vertices[3] = VertexData(QVector3D(size_x,size_y,-1),QVector2D(BR.x (),TL.y ()));//tr
     glBindBuffer (GL_ARRAY_BUFFER,_vbo[0]);
     glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),vertices,GL_STREAM_DRAW);
 }
-
-
-
-

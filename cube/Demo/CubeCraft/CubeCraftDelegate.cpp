@@ -42,8 +42,6 @@ void CubeCraftDelegate::onInit()
     sprite->setPos (QVector3D(1024/2-sprite->texture ()->width ()/2,768/2-sprite->texture ()->height ()/2,0));
     scene->root ()->addChild (sprite);
 
-
-
     scene->setCamera (&camera);
 
     SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
@@ -62,7 +60,6 @@ void CubeCraftDelegate::onInit()
 
 void CubeCraftDelegate::onRender()
 {
-
     if(move_forward)
     {
         camera.moveBy(0,0,-0.1);
@@ -151,6 +148,9 @@ void CubeCraftDelegate::onKeyRelease(int key_code)
         break;
     case Qt::Key_R:
         removeBlock();
+        break;
+    case Qt::Key_Z:
+        //replace delegate
         break;
     }
 }

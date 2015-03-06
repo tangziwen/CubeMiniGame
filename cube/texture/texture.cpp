@@ -1,14 +1,10 @@
 #include "texture.h"
-#include <QImage>
+#include "external/SOIL/SOIL.h"
 
 Texture::Texture(const char *texture_file_name)
 {
-    QImage image(texture_file_name);
-    m_qtexture = new QOpenGLTexture(image);
     initializeOpenGLFunctions();
-    this->texture_id =m_qtexture->textureId();
-    m_width = m_qtexture->width ();
-    m_height = m_qtexture->height ();
+    this->texture_id =SOIL_load_OGL_texture (texture_file_name,0,0,0 ,&m_width,&m_height);
     initTexture();
 }
 

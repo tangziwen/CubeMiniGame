@@ -119,7 +119,7 @@ void MainWidget::initializeGL()
     // Enable depth buffer
     glEnable(GL_DEPTH_TEST);
     //Enable back face culling
-   //glEnable(GL_CULL_FACE);
+   glEnable(GL_CULL_FACE);
     // Use QBasicTimer because its faster than QTimer
     timer.start(12, this);
     if(delegate)

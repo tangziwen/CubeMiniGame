@@ -2,9 +2,11 @@
 #define NODE_H
 
 #include <QMatrix4x4>
-#include "base/tvector3d.h"
 #include <vector>
 #include <string>
+#include <functional>
+#include "base/tvector3d.h"
+
 #include "base/removable.h"
 
 #define NODE_TYPE_NODE 0
@@ -82,6 +84,8 @@ public:
 
     bool isGroupMask(NodeGroup mask);
 
+public:
+    std::function<void (Node *)> onUpdate;
 protected:
     TVector3D m_pos;
     TVector3D m_rotation;

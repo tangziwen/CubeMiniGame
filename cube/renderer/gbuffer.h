@@ -23,6 +23,9 @@ public:
     void BindForReading(GLuint buffer);
     void SetReadBuffer(GBUFFER_TEXTURE_TYPE TextureType);
     GLuint m_fbo;
+    GLuint depthTexture() const;
+    void setDepthTexture(const GLuint &depthTexture);
+
 private:
     GLuint m_textures[GBUFFER_NUM_TEXTURES];
     GLuint m_depthTexture;

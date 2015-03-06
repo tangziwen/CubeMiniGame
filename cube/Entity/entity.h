@@ -1,25 +1,24 @@
 #ifndef ENTITY_H
 #define ENTITY_H
-#include "geometry/mesh.h"
-#include "renderer/meshdrawcomand.h"
-#include "shader/shaderpoll.h"
 #include <QVector3D>
 #include <vector>
 #include <QMatrix4x4>
 #include <QGLFunctions>
 #include <QGLShaderProgram>
+#include <QMatrix4x4>
+#include <functional>
+#include "geometry/mesh.h"
+#include "renderer/meshdrawcomand.h"
+#include "shader/shaderpoll.h"
 #include "base/camera.h"
 #include "material/material.h"
-#include <QMatrix4x4>
 #include "base/bonedata.h"
 #include "base/boneinfo.h"
-
 #include "base/ogldev_math_3d.h"
 #include "external/include/assimp/scene.h"
 #include "external/include/assimp/Importer.hpp"
 #include "external/include/assimp/postprocess.h"
 #include "base/node.h"
-
 
 class Entity : public Node
 {

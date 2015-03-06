@@ -20,7 +20,6 @@ bool utility::ReadFile(const char *pFileName, string &outFile)
                outFile.append("\n");
            }
            f.close();
-
            ret = true;
        }
        else {

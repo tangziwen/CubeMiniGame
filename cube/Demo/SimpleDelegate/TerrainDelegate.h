@@ -1,13 +1,13 @@
-#ifndef MYDELEGATE_H
-#define MYDELEGATE_H
+#ifndef SIMPLE_DELEGATE_H
+#define SIMPLE_DELEGATE_H
 #include "base/renderdelegate.h"
 #include "base/camera.h"
 #include "scene/scene.h"
 #include "shader/shader_program.h"
-class CubeCraftDelegate : public RenderDelegate
+class FlightGameDelegate : public RenderDelegate
 {
 public:
-    CubeCraftDelegate();
+    FlightGameDelegate();
     virtual void onInit() ;
     virtual void onRender();
     virtual void onResize(int w, int h);
@@ -27,7 +27,6 @@ private:
     Scene * scene;
     QVector2D mousePressPosition;
     QVector2D mouseLastPosition;
-    Entity *entity;
     bool move_forward;
     bool move_backward;
     bool move_left;

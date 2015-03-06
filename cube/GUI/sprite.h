@@ -20,10 +20,13 @@ public:
     void (*onRender)(Sprite * self,float dt);
     Camera *camera() const;
     void setCamera(Camera *camera);
+    void setRect(QVector2D TL,QVector2D BR);
+private:
+    void updateVertices(float the_size_x, float the_size_y);
 
 private:
-    void updateVertices(float size_x, float size_y);
-private:
+    float size_x;
+    float size_y;
     Camera * m_camera;
     Texture * m_texture;
     VertexData vertices[4];

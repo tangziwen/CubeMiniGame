@@ -41,6 +41,34 @@ void AABB::update(QVector3D * vec,int num)
     }
 }
 
+void AABB::update(QVector3D vec)
+{
+    // Leftmost point.
+    if (vec.x() < m_min.x())
+        m_min.setX(vec.x ());
+
+    // Lowest point.
+    if (vec.y() < m_min.y())
+        m_min.setY (vec.y ());
+
+    // Farthest point.
+    if (vec.z() < m_min.z())
+        m_min.setZ (vec.z ());
+
+    // Rightmost point.
+    if (vec.x() > m_max.x())
+        m_max.setX(vec.x ());
+
+
+    // Highest point.
+    if (vec.y() > m_max.y())
+        m_max.setY (vec.y ());
+
+    // Nearest point.
+    if (vec.z() > m_max.z())
+        m_max.setZ (vec.z ());
+}
+
 void AABB::transForm(QMatrix4x4 mat)
 {
 
@@ -104,6 +132,11 @@ void AABB::setMin(const QVector3D &min)
 QVector3D AABB::max() const
 {
     return m_max;
+}
+
+QVector3D AABB::centre()
+{
+    return (m_max + m_min)/2;
 }
 
 void AABB::setMax(const QVector3D &max)
