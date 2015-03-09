@@ -72,7 +72,6 @@ void FlightGameDelegate::onInit()
         flight->setPos (QVector3D((rand()%5)*2,-1,-10-2*i));
     }
 
-
 /*
     auto spotLight = scene->createSpotLight ();
     spotLight->setIntensity (1);

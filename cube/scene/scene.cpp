@@ -318,7 +318,6 @@ void Scene::geometryPass()
             entity->onRender(entity,0);
         }
     }
-/*
     if(m_skyBox)
     {
         m_skyBox->setShader (ShaderPool::getInstance ()->get ("sky_box_deferred"));
@@ -331,7 +330,6 @@ void Scene::geometryPass()
         p.apply(m_skyBox->shader());
         m_skyBox->Draw();
     }
-    */
     glDepthMask(GL_FALSE);
     glDisable(GL_DEPTH_TEST);
 }
@@ -539,6 +537,8 @@ void Scene::forwardRendering()
     this->forwardRenderPass();
 }
 
+
+//use CropMatrix to adjust the projection matrix which Cascaded Shadow Maps need;
 QMatrix4x4 Scene::getCropMatrix(AABB frustumAABB)
 {
     float scaleX = 2.0f/(frustumAABB.max ().x() - frustumAABB.min ().x());
@@ -552,7 +552,8 @@ QMatrix4x4 Scene::getCropMatrix(AABB frustumAABB)
                           offsetX, offsetY,  0.0f,  1.0f );
     CropMatrix = CropMatrix.transposed ();
     auto orthoMatrix = QMatrix4x4();
-    orthoMatrix.ortho(-1.0, 1.0, -1.0, 1.0, -frustumAABB.max ().z(),100);// -frustumAABB.min ().z() );
+
+    orthoMatrix.ortho(-1.0, 1.0, -1.0, 1.0, -frustumAABB.max ().z(), -frustumAABB.min ().z() );
     orthoMatrix = CropMatrix * orthoMatrix;
     return orthoMatrix;
 }
@@ -626,9 +627,6 @@ void Scene::pickBright()
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     m_quad->draw (true);
-
-
-
 }
 
 void Scene::gaussianBlur_H(float size)
