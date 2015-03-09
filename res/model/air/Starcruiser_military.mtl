@@ -1,0 +1,137 @@
+newmtl default
+d 1
+Ns 1
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+
+newmtl default_windshield
+d 0.8
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 0 0 0
+Ks 1 1 1
+Km 0
+map_Kd /Maps/c1_09.jpg
+
+newmtl default_cushion
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/yx1_02_02_01.jpg
+
+newmtl default_seat
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/c1_09_01.jpg
+
+newmtl default_comp1_panel
+d 1
+Ns 0.75
+Ni 0
+Ka 1 1 1
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/pn2_04.jpg
+
+newmtl default_skin
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 0.419608 0.419608 0.501961
+Ks 1 1 1
+Km 0
+map_Kd /Maps/cp1_01.jpg
+
+newmtl default_red_lights
+d 1
+Ns 0.75
+Ni 0
+Ka 1 0 0
+Kd 1 0 0
+Ks 1 1 1
+Km 0
+
+newmtl default_gate
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 0.419608 0.419608 0.501961
+Ks 1 1 1
+Km 0
+map_Kd /Maps/c1_01_02_01_04.jpg
+
+newmtl default_yellow_lights
+d 1
+Ns 0.75
+Ni 0
+Ka 1 1 0
+Kd 1 1 0
+Ks 1 1 1
+Km 0
+
+newmtl default_ship
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 0.419608 0.419608 0.501961
+Ks 1 1 1
+Km 0
+map_Kd /Maps/c1ecv1.jpg
+
+newmtl default_exhaust2
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/angar_bo4ka_09_01_01_03.jpg
+
+newmtl default_feed2
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/c3_12.jpg
+
+newmtl default_compresor2
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 1 1 1
+Ks 1 1 1
+Km 0
+map_Kd /Maps/c1_09_01_01.jpg
+
+newmtl default_engines
+d 1
+Ns 0.75
+Ni 0
+Ka 0 0 0
+Kd 0.419608 0.419608 0.501961
+Ks 1 1 1
+Km 0
+map_Kd /Maps/ang1_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01_01.jpg
+
