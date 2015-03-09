@@ -45,7 +45,7 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 * support multiple shadowMap(finally support directional light)
 * code refactor
 * add a brief chinese doc
-* 
+
 ###alpha v0.08 1.27.2015###
 * Add AABB
 * Add Ray
@@ -54,6 +54,7 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 * Add Bloom Effect
 * Add simple 2D element
 * Add Node Groupping 
+
 ###alpha v0.07 12.18.2014###
 * add basic deferred-shading support, the deferred shading system can allow you create lots of Lights.
 * lot's of bug fixed
