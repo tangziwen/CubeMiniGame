@@ -10,6 +10,7 @@
 #include "Entity/cubeprimitve.h"
 #include "geometry/ray.h"
 #include "GUI/sprite.h"
+#include "Entity/water.h"
 FlightGameDelegate::FlightGameDelegate()
 {
 
@@ -24,7 +25,6 @@ void FlightGameDelegate::onInit()
     this->move_right=false;
     this->move_up = false;
     this->move_down = false;
-    scene->setRenderType (DEFERRED_SHADING);
 
     AmbientLight * ambient = scene->getAmbientLight ();
     ambient->setColor (QVector3D(1,1,1));
@@ -60,7 +60,15 @@ void FlightGameDelegate::onInit()
     terrain_model->addMesh(a.mesh ());
     terrain_model->scale (10,10,10);
     terrain_model->setPos (QVector3D(0,-3,0));
-    scene->root ()->addChild (terrain_model);
+   // scene->root ()->addChild (terrain_model);
+
+    auto water = new Water(30,30,-3,1);
+    water->setCamera(&camera);
+    water->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
+    water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/model/terrain/sand.jpg");
+    water->setIsEnableShadow (false);
+    scene->root ()->addChild (water);
+
     for(int i = 0;i< 5;i++)
     {
         auto flight = new Entity("./res/model/spaceship/phoenix_ugv.md2");

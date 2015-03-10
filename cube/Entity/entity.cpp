@@ -160,6 +160,11 @@ float Entity::getDistToCamera()
     return globalZ;
 }
 
+void Entity::adjustVertices()
+{
+
+}
+
 uint Entity::findBoneInterpoScaling(float AnimationTime, const aiNodeAnim *pNodeAnim)
 {
     assert(pNodeAnim->mNumScalingKeys > 0);

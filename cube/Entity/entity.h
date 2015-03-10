@@ -45,6 +45,7 @@ public:
     void (*onRender)(Entity * self,float dt);
     AABB getAABB();
     float getDistToCamera();
+    virtual void adjustVertices();
 private:
     uint findBoneInterpoScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
     uint findBoneInterpoRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);

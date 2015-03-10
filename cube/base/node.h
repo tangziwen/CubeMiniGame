@@ -13,6 +13,8 @@
 #define NODE_TYPE_ENTITY 1
 #define NODE_TYPE_CAMERA 2
 #define NODE_TYPE_SPRITE 4
+#define NODE_TYPE_CUSTOM 5
+
 
 enum class NodeGroup
 {
@@ -86,6 +88,8 @@ public:
 
 public:
     std::function<void (Node *)> onUpdate;
+protected:
+    void setAsCustomNode();
 protected:
     TVector3D m_pos;
     TVector3D m_rotation;

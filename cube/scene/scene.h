@@ -22,6 +22,7 @@ public:
     Scene();
     void pushEntityToRenderQueue(Entity * entity);
     void pushSpriteToRenderQueue(Sprite * sprite);
+    void pushCustomNodeToRenderQueue(Node * node);
     void render();
     DirectionalLight *getDirectionalLight();
     AmbientLight * getAmbientLight();
@@ -48,9 +49,9 @@ private:
     void linearBlur(float radius,float samples);
     void setEntityBoneTransform(Entity *entity);
     void spriteRenderPass();
+    void customNodeRenderPass();
     void shadowPassForSpot(SpotLight *light);
     void shadowPassDirectional();
-    void forwardRenderPass();
     void geometryPass();
     void lightPass();
     void spotLightPass();
@@ -61,7 +62,6 @@ private:
     void forwardRendering();
     QMatrix4x4 getCropMatrix(AABB frustumAABB);
 private:
-    ShadowMapFBO * cameraShadowFbo;
     Camera * m_guiCamera;
     Camera * m_camera;
     Entity * m_quad;
@@ -78,6 +78,7 @@ private:
     std::vector<Entity *> m_entityList;
     std::vector<Entity *> m_tempEntityList;
     std::vector<Sprite *>m_spriteList;
+    std::vector<Node*> m_customNodeList;
     DirectionalLight directionLight;
     AmbientLight ambientLight;
     PointLight pointLight;

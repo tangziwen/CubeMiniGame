@@ -7,6 +7,8 @@
 #include "base/node.h"
 #include "geometry/mesh.h"
 #include "material/materialpool.h"
+
+#include <QMessageBox>
 Scene * Scene::currentScene = NULL;
 Scene::Scene()
 {
@@ -41,8 +43,7 @@ Scene::Scene()
     m_guiCamera->setOrtho (0,1024,0,768,0.01,1000);
     m_guiCamera->setPos (QVector3D(0,0,0));
 
-    cameraShadowFbo = new ShadowMapFBO();
-    cameraShadowFbo->Init (1024,768);
+    m_renderType = DEFERRED_SHADING;
 }
 
 void Scene::pushEntityToRenderQueue(Entity *entity)
@@ -55,6 +56,11 @@ void Scene::pushSpriteToRenderQueue(Sprite *sprite)
     this->m_spriteList.push_back (sprite);
 }
 
+void Scene::pushCustomNodeToRenderQueue(Node *node)
+{
+    m_customNodeList.push_back (node);
+}
+
 void Scene::render()
 {
     this->m_root.visit (this);
@@ -62,7 +68,11 @@ void Scene::render()
     switch(m_renderType)
     {
     case FORWARD_SHADING:
-        forwardRendering ();
+    {
+        QMessageBox msgBox;
+        msgBox.setText("the forward rendering was dropped since ver 0.09b");
+        msgBox.exec();
+    }
         break;
     case DEFERRED_SHADING:
         deferredRendering ();
@@ -101,8 +111,6 @@ void Scene::setAsCurrentScene()
 {
     Scene::currentScene = this;
 }
-
-
 
 Scene *Scene::getCurrentScene()
 {
@@ -158,6 +166,11 @@ void Scene::spriteRenderPass()
         }
     }
     m_spriteList.clear ();
+}
+
+void Scene::customNodeRenderPass()
+{
+
 }
 
 void Scene::shadowPassForSpot(SpotLight * light)
@@ -240,57 +253,6 @@ void Scene::shadowPassDirectional()
     }
 }
 
-
-
-void Scene::forwardRenderPass()
-{
-    glDepthMask(GL_TRUE);
-    glEnable(GL_DEPTH_TEST);
-    // Clear color and depth buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    PipeLine p;
-    for (std::vector<Entity *>::iterator i =m_entityList.begin();i!=m_entityList.end();i++)
-    {
-        Entity * entity = (* i);
-        entity->getShaderProgram ()->use ();
-        Camera * camera =entity->getCamera();
-        p.setProjectionMatrix(camera->getProjection());
-        p.setViewMatrix(camera->getViewMatrix());
-        p.setEyePosition (camera->pos ());
-        if(!spotLights.empty ())
-        {
-            QMatrix4x4 lightView;
-            lightView.setToIdentity();
-            lightView.lookAt(spotLights[0]->getPos(),this->spotLights[0]->getPos()+this->spotLights[0]->getDirection(),QVector3D(0,1,0));
-            p.setLightViewMatrix(lightView);
-        }
-        p.setModelMatrix(entity->getModelTrans());
-        p.applyLightMvp(entity->getShaderProgram());
-        spotLights[0]->shadowFBO()->applyShadowMapTexture(entity->getShaderProgram(),1);
-        calculateLight(entity->getShaderProgram());
-        setEntityBoneTransform(entity);
-        p.apply(entity->getShaderProgram());
-        entity->draw();
-        if(entity->onRender)
-        {
-            entity->onRender(entity,0);
-        }
-    }
-    if(m_skyBox)
-    {
-        Camera * camera =m_skyBox->camera();
-        m_skyBox->shader()->use();
-        p.setProjectionMatrix(camera->getProjection());
-        p.setViewMatrix(camera->getViewMatrix());
-        m_skyBox->getEntity()->translate(camera->pos ().x (),camera->pos ().y (),camera->pos ().z ());
-        p.setModelMatrix(m_skyBox->getEntity()->getModelTrans());
-        p.apply(m_skyBox->shader());
-        m_skyBox->Draw();
-    }
-    glDepthMask(GL_FALSE);
-    glDisable(GL_DEPTH_TEST);
-}
-
 void Scene::geometryPass()
 {
     m_GBuffer->BindForWriting ();
@@ -304,6 +266,7 @@ void Scene::geometryPass()
     {
         Entity * entity = (* i);
         entity->getShaderProgram ()->use ();
+        entity->adjustVertices ();
         Camera * camera =entity->getCamera();
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
@@ -526,16 +489,6 @@ void Scene::deferredRendering()
     m_quad->draw (true);
 }
 
-void Scene::forwardRendering()
-{
-
-    if(!this->spotLights.empty ())
-    {
-        this->shadowPassForSpot(spotLights[0]);
-    }
-    this->spotLightshadowMapFbo->BindForReading(GL_TEXTURE1);
-    this->forwardRenderPass();
-}
 
 
 //use CropMatrix to adjust the projection matrix which Cascaded Shadow Maps need;
@@ -547,9 +500,9 @@ QMatrix4x4 Scene::getCropMatrix(AABB frustumAABB)
     float offsetY = -0.5f*(frustumAABB.max ().y() + frustumAABB.min ().y()) * scaleY;
 
     auto CropMatrix = QMatrix4x4(scaleX,    0.0f,  0.0f, 0.0f,
-                             0.0f,  scaleY,  0.0f, 0.0f,
-                             0.0f,    0.0f,  1.0f,  0.0f,
-                          offsetX, offsetY,  0.0f,  1.0f );
+                                 0.0f,  scaleY,  0.0f, 0.0f,
+                                 0.0f,    0.0f,  1.0f,  0.0f,
+                                 offsetX, offsetY,  0.0f,  1.0f );
     CropMatrix = CropMatrix.transposed ();
     auto orthoMatrix = QMatrix4x4();
 
