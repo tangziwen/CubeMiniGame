@@ -226,7 +226,8 @@ SOURCES += main.cpp \
     geometry/plane.cpp \
     Demo/NormalMapping/normalmappingdelegate.cpp \
     Demo/SimpleDelegate/FlightGameDelegate.cpp \
-    Entity/water.cpp
+    Entity/water.cpp \
+    base/RenderTarget.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -544,7 +545,8 @@ HEADERS += \
     geometry/plane.h \
     Demo/SimpleDelegate/TerrainDelegate.h \
     Demo/NormalMapping/normalmappingdelegate.h \
-    Entity/water.h
+    Entity/water.h \
+    base/RenderTarget.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

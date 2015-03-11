@@ -86,6 +86,8 @@ public:
 
     bool isGroupMask(NodeGroup mask);
 
+    QVector3D getForwardVector();
+
 public:
     std::function<void (Node *)> onUpdate;
 protected:

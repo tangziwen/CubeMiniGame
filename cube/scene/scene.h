@@ -1,18 +1,25 @@
 #ifndef SCENE_H
 #define SCENE_H
+
+#include <vector>
+#include <QMatrix4x4>
+#include <QOpenGLFunctions_3_0>
+
 #include "Entity/entity.h"
 #include "GUI/sprite.h"
-#include <vector>
+
 #include "light/directionallight.h"
 #include "light/ambientlight.h"
 #include "light/pointlight.h"
 #include "light/spotlight.h"
-#include <QOpenGLFunctions_3_0>
+
 #include "light/shadow_map_fbo.h"
 #include "Entity/skybox.h"
 #include "renderer/gbuffer.h"
 #include "renderer/renderbuffer.h"
-#include <QMatrix4x4>
+#include "base/RenderTarget.h"
+
+
 #define DEFERRED_SHADING 1
 #define FORWARD_SHADING 0
 class Node;
@@ -40,6 +47,7 @@ public:
     Camera *guiCamera() const;
     void setGuiCamera(Camera *guiCamera);
     std::vector<Entity *> getPotentialEntityList() const;
+    void addRenderTarget(RenderTarget * target);
 
 private:
     void sortRenderQue();
@@ -50,20 +58,23 @@ private:
     void setEntityBoneTransform(Entity *entity);
     void spriteRenderPass();
     void customNodeRenderPass();
-    void shadowPassForSpot(SpotLight *light);
-    void shadowPassDirectional();
-    void geometryPass();
-    void lightPass();
-    void spotLightPass();
-    void pointLightPass();
-    void directionLightPass();
+    void shadowPassForSpot(SpotLight *light, RenderTarget *target);
+    void shadowPassDirectional(RenderTarget *target);
+
+    //geometryPass : grab all info including diffuse,Normal,depth etc. to one G-Buffer.
+    void geometryPass(RenderTarget *target);
+
+    void lightPass(RenderTarget * target);
+    void spotLightPass(RenderTarget *target);
+    void pointLightPass(RenderTarget * target);
+    void directionLightPass(RenderTarget * target);
     void calculateLight(ShaderProgram * shader);
-    void deferredRendering();
+    void deferredRendering(RenderTarget * target);
     void forwardRendering();
     QMatrix4x4 getCropMatrix(AABB frustumAABB);
 private:
+    RenderTarget * m_mainRenderTarget;
     Camera * m_guiCamera;
-    Camera * m_camera;
     Entity * m_quad;
     GBuffer * m_GBuffer;
     RenderBuffer * bloom_fbo1;
@@ -79,6 +90,7 @@ private:
     std::vector<Entity *> m_tempEntityList;
     std::vector<Sprite *>m_spriteList;
     std::vector<Node*> m_customNodeList;
+    std::vector<RenderTarget*> m_renderTargetList;
     DirectionalLight directionLight;
     AmbientLight ambientLight;
     PointLight pointLight;

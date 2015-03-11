@@ -17,9 +17,8 @@ Scene::Scene()
     this->setSkyBox(NULL);
     m_root.setName ("root");
     this->setRenderType (DEFERRED_SHADING);
-    m_GBuffer = new GBuffer();
-    m_GBuffer->Init (1024,768);
-
+    m_mainRenderTarget = new RenderTarget();
+    m_mainRenderTarget->setType (RenderTarget::TargetType::ON_SCREEN);
     bloom_fbo1 = new RenderBuffer(1024,768);
     bloom_fbo2 = new RenderBuffer(1024,768);
     bloom_fbo3 = new RenderBuffer(1024,768);
@@ -75,7 +74,13 @@ void Scene::render()
     }
         break;
     case DEFERRED_SHADING:
-        deferredRendering ();
+    {
+        for(int i =0;i<m_renderTargetList.size ();i++)
+        {
+            deferredRendering (m_renderTargetList[i]);
+        }
+        deferredRendering (m_mainRenderTarget);
+    }
         break;
     }
     spriteRenderPass ();
@@ -173,7 +178,7 @@ void Scene::customNodeRenderPass()
 
 }
 
-void Scene::shadowPassForSpot(SpotLight * light)
+void Scene::shadowPassForSpot(SpotLight * light,RenderTarget * target)
 {
     // Clear color and depth buffer
     glDepthMask(GL_TRUE);
@@ -188,6 +193,7 @@ void Scene::shadowPassForSpot(SpotLight * light)
         shadow_shader->use ();
         Entity * entity = (* i);
         if(!entity->isEnableShadow()) continue;
+        if(target->isIgnoreEntity (entity))continue;
         Camera * camera =entity->getCamera();
         p.setModelMatrix(entity->getModelTrans());
         p.setProjectionMatrix(camera->getProjection());
@@ -209,7 +215,7 @@ void Scene::shadowPassForSpot(SpotLight * light)
     glBindFramebuffer(GL_DRAW_FRAMEBUFFER,0);//switch the frame buffer back.
 }
 
-void Scene::shadowPassDirectional()
+void Scene::shadowPassDirectional(RenderTarget * target)
 {
     auto light = this->getDirectionalLight ();
     for(int j =0;j<4;j++)
@@ -226,6 +232,7 @@ void Scene::shadowPassDirectional()
             shadow_shader->use ();
             Entity * entity = (* i);
             if(!entity->isEnableShadow()) continue;
+            if(target->isIgnoreEntity (entity))continue;
             p.setModelMatrix(entity->getModelTrans());
             QMatrix4x4 lightView;
             lightView.setToIdentity();
@@ -253,9 +260,9 @@ void Scene::shadowPassDirectional()
     }
 }
 
-void Scene::geometryPass()
+void Scene::geometryPass(RenderTarget * target)
 {
-    m_GBuffer->BindForWriting ();
+    target->getGBuffer ()->BindForWriting ();
     glDepthMask(GL_TRUE);
     glEnable(GL_DEPTH_TEST);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -267,11 +274,13 @@ void Scene::geometryPass()
         Entity * entity = (* i);
         entity->getShaderProgram ()->use ();
         entity->adjustVertices ();
-        Camera * camera =entity->getCamera();
+        if(target->isIgnoreEntity (entity))continue;
+        Camera * camera  = target->camera ();
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
         p.setEyePosition (camera->pos ());
         p.setModelMatrix(entity->getModelTrans());
+        p.setEyeDirection(camera->getForwardVector ());
         p.applyLightMvp(entity->getShaderProgram());
         setEntityBoneTransform(entity);
         p.apply(entity->getShaderProgram());
@@ -284,7 +293,7 @@ void Scene::geometryPass()
     if(m_skyBox)
     {
         m_skyBox->setShader (ShaderPool::getInstance ()->get ("sky_box_deferred"));
-        Camera * camera =m_skyBox->camera();
+        Camera * camera =target->camera ();
         m_skyBox->shader()->use();
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
@@ -297,15 +306,15 @@ void Scene::geometryPass()
     glDisable(GL_DEPTH_TEST);
 }
 
-void Scene::lightPass()
+void Scene::lightPass(RenderTarget * target)
 {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    //pointLightPass();
-    //spotLightPass();
-    directionLightPass();
+    //pointLightPass(target);
+    //spotLightPass(target);
+    directionLightPass(target);
 }
 
-void Scene::spotLightPass()
+void Scene::spotLightPass(RenderTarget * target)
 {
     if(!this->spotLights.empty ())
     {
@@ -321,27 +330,28 @@ void Scene::spotLightPass()
             m_quad->setShaderProgram (shader);
             QMatrix4x4 m;
             m.setToIdentity ();
+            auto camera = target->camera ();
             shader->setUniformMat4v ("g_MVP_matrix",m.data ());
             shader->setUniform2Float ("g_screen_size",1024,768);
             shader->setUniformInteger ("g_color_map",0);
             shader->setUniformInteger ("g_position_map",1);
             shader->setUniformInteger ("g_normal_map",2);
             shader->setUniform3Float ("g_eye_position",
-                                      m_camera->pos ().x(),
-                                      m_camera->pos ().y(),
-                                      m_camera->pos ().z());
+                                      camera->pos ().x(),
+                                      camera->pos ().y(),
+                                      camera->pos ().z());
             QMatrix4x4 lightView;
             lightView.setToIdentity();
             lightView.lookAt(spotLights[0]->getPos(),this->spotLights[0]->getPos()+this->spotLights[0]->getDirection(),QVector3D(0,1,0));
             QMatrix4x4 light_vp;
-            light_vp = m_camera->getProjection () * lightView ;
+            light_vp = camera->getProjection () * lightView ;
             shader->setUniformMat4v ("g_light_vp_matrix",light_vp.data ());
             m_quad->draw (true);
         }
     }
 }
 
-void Scene::pointLightPass()
+void Scene::pointLightPass(RenderTarget *target)
 {
     if(!this->pointLights.empty ())
     {
@@ -355,21 +365,22 @@ void Scene::pointLightPass()
             m_quad->setShaderProgram (shader);
             QMatrix4x4 m;
             m.setToIdentity ();
+            auto camera = target->camera ();
             shader->setUniformMat4v ("g_MVP_matrix",m.data ());
             shader->setUniform2Float ("g_screen_size",1024,768);
             shader->setUniformInteger ("g_color_map",0);
             shader->setUniformInteger ("g_position_map",1);
             shader->setUniformInteger ("g_normal_map",2);
             shader->setUniform3Float ("g_eye_position",
-                                      m_camera->pos ().x(),
-                                      m_camera->pos ().y(),
-                                      m_camera->pos ().z());
+                                      camera->pos ().x(),
+                                      camera->pos ().y(),
+                                      camera->pos ().z());
             m_quad->draw (true);
         }
     }
 }
 
-void Scene::directionLightPass()
+void Scene::directionLightPass(RenderTarget *target)
 {
     ShaderProgram * shader =ShaderPool::getInstance ()->get("dir_light_pass");
     shader->use ();
@@ -394,10 +405,11 @@ void Scene::directionLightPass()
 
     shader->setUniformInteger ("g_depth_map",4);//for depth
 
+    auto camera = target->camera ();
     shader->setUniform3Float ("g_eye_position",
-                              m_camera->pos ().x(),
-                              m_camera->pos ().y(),
-                              m_camera->pos ().z());
+                              camera->pos ().x(),
+                              camera->pos ().y(),
+                              camera->pos ().z());
     QMatrix4x4 lightView;
     lightView.setToIdentity();
 
@@ -408,8 +420,8 @@ void Scene::directionLightPass()
 
     for(int i =0 ;i <4 ;i++)
     {
-        auto split_frustum_aabb = camera ()->getSplitFrustumAABB (i);
-        split_frustum_aabb.transForm (camera()->getModelTrans ());
+        auto split_frustum_aabb = target->camera ()->getSplitFrustumAABB (i);
+        split_frustum_aabb.transForm (target->camera()->getModelTrans ());
         split_frustum_aabb.transForm (lightView);
         auto matrix = getCropMatrix (split_frustum_aabb);
         QMatrix4x4 light_vp;
@@ -441,23 +453,23 @@ void Scene::calculateLight(ShaderProgram *shader)
 }
 #define WINDOW_WIDTH 1024
 #define WINDOW_HEIGHT 768
-void Scene::deferredRendering()
+void Scene::deferredRendering(RenderTarget * target)
 {
     if(!this->spotLights.empty ())
     {
-        this->shadowPassForSpot(spotLights[0]);
+        this->shadowPassForSpot(spotLights[0],target);
     }
     if(this->directionLight.getIntensity ()>0)
     {
-        this->shadowPassDirectional ();
+        this->shadowPassDirectional (target);
     }
-    geometryPass();
+    geometryPass(target);
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
-    m_GBuffer->BindForReading(bloom_fbo1->buffer ());
+    target->getGBuffer ()->BindForReading(bloom_fbo1->buffer ());
 
-    lightPass();
+    lightPass(target);
 
     bloom_fbo1->BindForReading (bloom_fbo2);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -469,23 +481,31 @@ void Scene::deferredRendering()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     gaussianBlur_V (2);
 
-    bloom_fbo1->BindForReading (NULL);
+    if(target->type () == RenderTarget::TargetType::ON_SCREEN)
+    {
+        bloom_fbo1->BindForReading (NULL);
+    }
+    else
+    {
+         bloom_fbo1->BindForReading (target->resultBuffer ());
+         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
 
-    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     ShaderProgram * shader =ShaderPool::getInstance ()->get("deffered_simple");
     shader->use ();
     QMatrix4x4 m;
     m.setToIdentity ();
     m_quad->setShaderProgram (shader);
+    auto camera =target->camera ();
     shader->setUniformMat4v ("g_MVP_matrix",m.data ());
     shader->setUniform2Float ("g_screen_size",1024,768);
     shader->setUniformInteger ("g_color_map",0);
     shader->setUniformInteger ("g_position_map",1);
     shader->setUniformInteger ("g_normal_map",2);
     shader->setUniform3Float ("g_eye_position",
-                              m_camera->pos ().x(),
-                              m_camera->pos ().y(),
-                              m_camera->pos ().z());
+                              camera->pos ().x(),
+                              camera->pos ().y(),
+                              camera->pos ().z());
     m_quad->draw (true);
 }
 
@@ -527,12 +547,12 @@ void Scene::setRenderType(int renderType)
 
 Camera *Scene::camera() const
 {
-    return m_camera;
+    return m_mainRenderTarget->camera ();
 }
 
 void Scene::setCamera(Camera *camera)
 {
-    m_camera = camera;
+    m_mainRenderTarget->setCamera (camera);
 }
 Camera *Scene::guiCamera() const
 {
@@ -547,6 +567,11 @@ void Scene::setGuiCamera(Camera *guiCamera)
 std::vector<Entity *> Scene::getPotentialEntityList() const
 {
     return m_tempEntityList;
+}
+
+void Scene::addRenderTarget(RenderTarget *target)
+{
+    m_renderTargetList.push_back (target);
 }
 
 bool entityCompare( Entity* pfirst, Entity* psecond)
@@ -573,10 +598,6 @@ void Scene::pickBright()
     shader->setUniformInteger ("g_color_map",0);
     shader->setUniformInteger ("g_position_map",1);
     shader->setUniformInteger ("g_normal_map",2);
-    shader->setUniform3Float ("g_eye_position",
-                              m_camera->pos ().x(),
-                              m_camera->pos ().y(),
-                              m_camera->pos ().z());
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     m_quad->draw (true);
@@ -596,10 +617,6 @@ void Scene::gaussianBlur_H(float size)
     shader->setUniformInteger ("g_color_map",0);
     shader->setUniformInteger ("g_position_map",1);
     shader->setUniformInteger ("g_normal_map",2);
-    shader->setUniform3Float ("g_eye_position",
-                              m_camera->pos ().x(),
-                              m_camera->pos ().y(),
-                              m_camera->pos ().z());
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     m_quad->draw (true);
@@ -618,10 +635,6 @@ void Scene::gaussianBlur_V(float size)
     shader->setUniformInteger ("g_color_map",0);
     shader->setUniformInteger ("g_position_map",1);
     shader->setUniformInteger ("g_normal_map",2);
-    shader->setUniform3Float ("g_eye_position",
-                              m_camera->pos ().x(),
-                              m_camera->pos ().y(),
-                              m_camera->pos ().z());
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     m_quad->draw (true);
@@ -641,10 +654,6 @@ void Scene::linearBlur(float radius, float samples)
     shader->setUniformInteger ("g_color_map",0);
     shader->setUniformInteger ("g_position_map",1);
     shader->setUniformInteger ("g_normal_map",2);
-    shader->setUniform3Float ("g_eye_position",
-                              m_camera->pos ().x(),
-                              m_camera->pos ().y(),
-                              m_camera->pos ().z());
     this->directionLight.apply(shader);
     this->ambientLight.apply(shader);
     m_quad->draw (true);

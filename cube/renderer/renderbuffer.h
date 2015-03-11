@@ -11,7 +11,8 @@ public:
     void BindForReading(RenderBuffer *buffer);
     GLuint buffer() const;
     void setBuffer(const GLuint &buffer);
-
+    GLuint texture() const;
+    void setTexture(const GLuint &texture);
 private:
     GLuint m_buffer;
     GLuint m_texture;

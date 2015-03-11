@@ -265,6 +265,13 @@ bool Node::isGroupMask(NodeGroup mask)
     return m_groupMask & (unsigned int )mask;
 }
 
+QVector3D Node::getForwardVector()
+{
+    QVector4D v(0,0,-1,1);
+    v = this->getRotaionMatrix ()*v;
+    return v.toVector3D ();
+}
+
 void Node::setAsCustomNode()
 {
     m_nodeType = NODE_TYPE_CUSTOM;

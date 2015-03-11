@@ -53,4 +53,5 @@ ShaderPool::ShaderPool()
     this->createShader ("deffered_simple","./res/shaders/postProcess.vs","./res/shaders/deffered_simple.fs");
     this->createShader ("linear_blur","./res/shaders/postProcess.vs","./res/shaders/linearBlur.fs");
     this->createShader ("basic_sprite","./res/shaders/basic_sprite.vs","./res/shaders/basic_sprite.fs");
+    this->createShader ("deferred_water","./res/shaders/deferred_water.vs","./res/shaders/deferred_water.fs");
 }

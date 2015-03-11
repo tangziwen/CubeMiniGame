@@ -5,6 +5,12 @@
 
 here is the changelog of the CubeEngine
 
+###alpha v0.10 3.10.2015###
+* fix the normalmapping bug
+* add the "RenderTarget" class,you can use it to simulate such as mirror effect
+* add the "Water" class , begin to add support of the water simulation, currently, it caculate on CPU side,
+and lack of some features.
+
 ###alpha v0.09b 3.10.2015###
 * drop the support of the forward-rendering.
 
