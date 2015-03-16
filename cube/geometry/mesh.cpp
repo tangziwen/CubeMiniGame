@@ -3,7 +3,10 @@
 
 TMesh::TMesh()
 {
-
+    for(int i =0;i<3;i++)
+    {
+        vbo[i] =0;
+    }
 }
 
 void TMesh::pushVertex(VertexData vertex)
@@ -51,13 +54,57 @@ static  void CaculateNormalLine(GLushort * indices,int indices_count,VertexData 
         vertices[i].normalLine.normalize();
     }
 }
+static  void CaculateTangent(GLushort * indices,int indices_count,VertexData  * vertices,int vertices_count  )
+{
+
+    for (unsigned int i = 0 ; i < indices_count; i += 3) {
+        auto v0 = vertices[indices[i]];
+        auto v1 = vertices[indices[i+1]];
+        auto v2 = vertices[indices[i+2]];
+
+        auto Edge1 = v1.position - v0.position;
+        auto Edge2 = v2.position - v0.position;
+
+        float DeltaU1 = v1.texCoord.x ()- v0.texCoord.x ();
+        float DeltaV1 = v1.texCoord.y() - v0.texCoord.y();
+        float DeltaU2 = v2.texCoord.x() - v0.texCoord.x();
+        float DeltaV2 = v2.texCoord.y() - v0.texCoord.y();
+
+        float f = 1.0f / (DeltaU1 * DeltaV2 - DeltaU2 * DeltaV1);
+
+        QVector3D Tangent, Bitangent;
+
+        Tangent.setX (f * (DeltaV2 * Edge1.x() - DeltaV1 * Edge2.x()));
+        Tangent.setY (f * (DeltaV2 * Edge1.y() - DeltaV1 * Edge2.y()));
+        Tangent.setZ (f * (DeltaV2 * Edge1.z() - DeltaV1 * Edge2.z()));
+
+        Bitangent.setX (f * (-DeltaU2 * Edge1.x() - DeltaU1 * Edge2.x()));
+        Bitangent.setY (f * (-DeltaU2 * Edge1.y() - DeltaU1 * Edge2.y()));
+        Bitangent.setZ (f * (-DeltaU2 * Edge1.z() - DeltaU1 * Edge2.z()));
+
+        vertices[indices[i]].tangent += Tangent;
+        vertices[indices[i+1]].tangent += Tangent;
+        vertices[indices[i+2]].tangent += Tangent;
+    }
+
+    for (unsigned int i = 0 ; i < vertices_count ; i++) {
+        vertices[i].tangent.normalize ();
+    }
+}
 
 
 void TMesh::finishWithoutNormal()
 {
     initializeGLFunctions();
-    glGenBuffers(2, vbo);
+    if(!vbo[0])
+    {
+        glGenBuffers(2, vbo);
+    }
+
+
     CaculateNormalLine(&this->indices[0],this->indices.size(),&this->vertices[0],this->vertices.size());
+
+    CaculateTangent(&this->indices[0],this->indices.size(),&this->vertices[0],this->vertices.size());
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo[0]);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(VertexData), &vertices[0], GL_STATIC_DRAW);

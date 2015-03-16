@@ -10,6 +10,7 @@
 #include "Entity/cubeprimitve.h"
 #include "geometry/ray.h"
 #include "GUI/sprite.h"
+#include "Entity/water.h"
 FlightGameDelegate::FlightGameDelegate()
 {
 
@@ -24,11 +25,10 @@ void FlightGameDelegate::onInit()
     this->move_right=false;
     this->move_up = false;
     this->move_down = false;
-    scene->setRenderType (DEFERRED_SHADING);
 
     AmbientLight * ambient = scene->getAmbientLight ();
     ambient->setColor (QVector3D(1,1,1));
-    ambient->setIntensity (0.1);
+    ambient->setIntensity (0.5);
 
     auto sprite = new Sprite();
     sprite->setTexture (TexturePool::getInstance ()->createOrGetTexture ("./res/texture/mygame/fps/cross_hair.png"));
@@ -38,12 +38,12 @@ void FlightGameDelegate::onInit()
 
     scene->setCamera (&camera);
 
-    SkyBox * sky_box = new SkyBox("./res/texture/sky_box/sp3right.jpg",
-                                  "./res/texture/sky_box/sp3left.jpg",
-                                  "./res/texture/sky_box/sp3top.jpg",
-                                  "./res/texture/sky_box/sp3bot.jpg",
-                                  "./res/texture/sky_box/sp3front.jpg",
-                                  "./res/texture/sky_box/sp3back.jpg");
+    SkyBox * sky_box = new SkyBox("./res/texture/sky_box/right.jpg",
+                                  "./res/texture/sky_box/left.jpg",
+                                  "./res/texture/sky_box/top.jpg",
+                                  "./res/texture/sky_box/bottom.jpg",
+                                  "./res/texture/sky_box/front.jpg",
+                                  "./res/texture/sky_box/back.jpg");
     sky_box->setCamera(&camera);
     scene->setSkyBox(sky_box);
 
@@ -60,7 +60,18 @@ void FlightGameDelegate::onInit()
     terrain_model->addMesh(a.mesh ());
     terrain_model->scale (10,10,10);
     terrain_model->setPos (QVector3D(0,-3,0));
-    scene->root ()->addChild (terrain_model);
+   // scene->root ()->addChild (terrain_model);
+
+    auto water = new Water(30,30,-3,1);
+    water->setCamera(&camera);
+    water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/dummy.png");
+    water->setIsEnableShadow (false);
+    scene->root ()->addChild (water);
+
+    auto mirrorRenderTarget = new RenderTarget();
+    mirrorRenderTarget->setCamera (water->mirrorCamera ());
+    water->setMirrorRenderTarget (mirrorRenderTarget);
+    scene->addRenderTarget (mirrorRenderTarget);
     for(int i = 0;i< 5;i++)
     {
         auto flight = new Entity("./res/model/spaceship/phoenix_ugv.md2");
@@ -69,9 +80,8 @@ void FlightGameDelegate::onInit()
         flight->setScalling (QVector3D(0.05,0.05,0.05));
         scene->root ()->addChild (flight);
         //flight->setIsEnableShadow (false);
-        flight->setPos (QVector3D((rand()%5)*2,-1,-10-2*i));
+        flight->setPos (QVector3D((rand()%5)*2,3,-2*i));
     }
-
 /*
     auto spotLight = scene->createSpotLight ();
     spotLight->setIntensity (1);
@@ -85,7 +95,7 @@ void FlightGameDelegate::onInit()
 
     //then add  a Directional light
     auto directional_light = scene->getDirectionalLight ();
-    directional_light->setIntensity (1);
+    directional_light->setIntensity (0.5);
     directional_light->setColor (QVector3D(1,1,1));
     directional_light->setDirection (QVector3D(-1,-1,0));
 }

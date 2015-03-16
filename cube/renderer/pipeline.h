@@ -12,6 +12,7 @@ public:
     void setProjectionMatrix(QMatrix4x4 matrix);
     void setLightViewMatrix(QMatrix4x4 matrix);
     void setEyePosition(QVector3D pos);
+    void setEyeDirection(QVector3D dir);
     void apply(ShaderProgram *shader);
     void applyLightMvp(ShaderProgram * shader);
 private:
@@ -20,6 +21,7 @@ private:
     QMatrix4x4 m_view;
     QMatrix4x4 m_projection;
     QVector3D m_eyePosition;
+    QVector3D m_eyeDirection;
 };
 
 #endif // PIPELINE_H

@@ -46,6 +46,16 @@ void RenderBuffer::setBuffer(const GLuint &buffer)
 {
     m_buffer = buffer;
 }
+GLuint RenderBuffer::texture() const
+{
+    return m_texture;
+}
+
+void RenderBuffer::setTexture(const GLuint &texture)
+{
+    m_texture = texture;
+}
+
 
 
 

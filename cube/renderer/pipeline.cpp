@@ -29,6 +29,12 @@ void PipeLine::setEyePosition(QVector3D pos)
     m_eyePosition = pos;
 }
 
+void PipeLine::setEyeDirection(QVector3D dir)
+{
+    m_eyeDirection = dir;
+    m_eyeDirection.normalize ();
+}
+
 void PipeLine::apply(ShaderProgram *shader)
 {
     initializeOpenGLFunctions();
@@ -39,6 +45,7 @@ void PipeLine::apply(ShaderProgram *shader)
     shader->setUniformMat4v("g_model_matrix",m_model.data());
     shader->setUniformMat4v("g_projection_matrix",m_projection.data());
     shader->setUniform3Float ("g_eye_position",m_eyePosition.x (),m_eyePosition.y (),m_eyePosition.z ());
+    shader->setUniform3Float ("g_eye_dir",m_eyeDirection.x (),m_eyeDirection.y (),m_eyeDirection.z ());
 }
 
 void PipeLine::applyLightMvp(ShaderProgram *shader)
