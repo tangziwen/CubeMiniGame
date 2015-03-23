@@ -28,7 +28,12 @@ public:
     void setIgnoreEntity(Entity * entity);
 
     bool isIgnoreEntity(Entity * entity);
+
+    QMatrix4x4 auxMatrix() const;
+    void setAuxMatrix(const QMatrix4x4 &auxMatrix);
+
 private:
+    QMatrix4x4 m_auxMatrix;
     TargetType m_type;
     Camera * m_camera;
     GBuffer * m_GBuffer;

@@ -139,6 +139,18 @@ QVector3D AABB::centre()
     return (m_max + m_min)/2;
 }
 
+bool AABB::isInside(QVector3D p)
+{
+    if(p.x ()>=m_min.x ()&&p.y ()>=m_min.y () && p.z ()>= m_min.z ()
+            &&p.x ()<=m_max.x () && p.y () <=m_max.y () && p.z () <= m_max.z ())
+    {
+        return true;
+    }
+    else{
+        return false;
+    }
+}
+
 void AABB::setMax(const QVector3D &max)
 {
     m_max = max;

@@ -16,8 +16,10 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 6. NormalMapping
 7. ShadowMapping (CSM PCF)
 8. deferred shading
+9. unlimited water surface
 
-
+###Current Version###
+* the current version is alpha v0.11 3.23.2015
 
 ###requirement###
 * <b>libassimp:</b> If you use Windows, the project have a modified copy under the  <b>"cube/external"</b> folder
@@ -35,5 +37,6 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 ![](screenshot_1.jpg)
 * Cascaded Shadow Maps for huge scene
 ![](screenshot_2.jpg)
-
+* Unlimited water surface use projected-grid
+![](screenshot_3.jpg)
 

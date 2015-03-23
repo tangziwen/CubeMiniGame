@@ -12,6 +12,7 @@ public:
     void setUniformMat4v(const char * str, const GLfloat *array, bool transpose = false, int count = 1);
     void setUniformFloat(const char * str,float value);
     void setUniform3Float(const char * str,float x,float y,float z);
+    void setUniform3Float(const char * str,QVector3D v);
     void setUniform2Float(const char * str,float x,float y);
 private:
     void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
