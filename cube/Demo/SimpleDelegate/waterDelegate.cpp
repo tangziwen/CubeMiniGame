@@ -1,4 +1,4 @@
-#include "TerrainDelegate.h"
+#include "waterDelegate.h"
 #include <QDebug>
 #include "utility.h"
 #include "shader/shaderpoll.h"
@@ -10,7 +10,9 @@
 #include "Entity/cubeprimitve.h"
 #include "geometry/ray.h"
 #include "GUI/sprite.h"
-#include "Entity/water.h"
+#include "Entity/waterNaive.h"
+#include "Entity/waterprojectgrid.h"
+
 FlightGameDelegate::FlightGameDelegate()
 {
 
@@ -18,6 +20,8 @@ FlightGameDelegate::FlightGameDelegate()
 
 void FlightGameDelegate::onInit()
 {
+    auto a_plane = new Plane(QVector3D(0,1,0),QVector3D(100,100,0));
+    qDebug()<<a_plane->getDist ();
     scene = new Scene();
     this->move_forward=false;
     this->move_backward=false;
@@ -51,6 +55,9 @@ void FlightGameDelegate::onInit()
     scene->setAsCurrentScene();
     scene->root ()->addChild (&camera);
 
+    camera.setPos (QVector3D(0,15,0));
+    camera.setRotation (QVector3D(-60,0,0));
+
     Terrain a("./res/model/terrain/terrain.jpg");
     auto terrain_model = new Entity();
     terrain_model->setName ("terrain");
@@ -60,8 +67,9 @@ void FlightGameDelegate::onInit()
     terrain_model->addMesh(a.mesh ());
     terrain_model->scale (10,10,10);
     terrain_model->setPos (QVector3D(0,-3,0));
-   // scene->root ()->addChild (terrain_model);
+    // scene->root ()->addChild (terrain_model);
 
+    /*
     auto water = new Water(30,30,-3,1);
     water->setCamera(&camera);
     water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/dummy.png");
@@ -72,17 +80,35 @@ void FlightGameDelegate::onInit()
     mirrorRenderTarget->setCamera (water->mirrorCamera ());
     water->setMirrorRenderTarget (mirrorRenderTarget);
     scene->addRenderTarget (mirrorRenderTarget);
+*/
+
+    auto water = new WaterProjectGrid(100,100,-3);
+    water->setIsEnableShadow (false);
+    water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/dummy.png");
+    cameraFixed = camera;
+
+    water->setCamera (&camera);
+
+    auto mirrorRenderTarget = new RenderTarget();
+    mirrorRenderTarget->setCamera (&camera);
+    water->setMirrorRenderTarget (mirrorRenderTarget);
+    scene->addRenderTarget (mirrorRenderTarget);
+
+    scene->root ()->addChild (water);
+
     for(int i = 0;i< 5;i++)
     {
         auto flight = new Entity("./res/model/spaceship/phoenix_ugv.md2");
         flight->setCamera (&camera);
         flight->setShaderProgram (ShaderPool::getInstance()->get ("deferred"));
         flight->setScalling (QVector3D(0.05,0.05,0.05));
+
         scene->root ()->addChild (flight);
         //flight->setIsEnableShadow (false);
         flight->setPos (QVector3D((rand()%5)*2,3,-2*i));
     }
-/*
+
+    /*
     auto spotLight = scene->createSpotLight ();
     spotLight->setIntensity (1);
     spotLight->setColor (QVector3D(0,1,1));
@@ -136,6 +162,7 @@ void FlightGameDelegate::onResize(int w, int h)
 
     // Reset projection
     camera.setPerspective(fov,aspect,zNear,zFar);
+    cameraFixed.setPerspective(fov,aspect,zNear,zFar);
 }
 
 void FlightGameDelegate::onKeyPress(int key_code)

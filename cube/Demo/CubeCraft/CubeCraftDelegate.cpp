@@ -217,7 +217,7 @@ void CubeCraftDelegate::createBlock()
             continue;
         }
         RayAABBSide SideResult;
-        bool result = ray.intersect (entity->getAABB (),&SideResult);
+        bool result = ray.intersectAABB (entity->getAABB (),&SideResult);
         if(result)
         {
             switch (SideResult) {
@@ -302,7 +302,7 @@ void CubeCraftDelegate::removeBlock()
             continue;
         }
         RayAABBSide SideResult;
-        bool result = ray.intersect (entity->getAABB (),&SideResult);
+        bool result = ray.intersectAABB (entity->getAABB (),&SideResult);
         if(result)
         {
             entity->removeFromParent ();

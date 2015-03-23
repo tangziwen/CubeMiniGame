@@ -225,9 +225,10 @@ SOURCES += main.cpp \
     base/frustum.cpp \
     geometry/plane.cpp \
     Demo/NormalMapping/normalmappingdelegate.cpp \
-    Demo/SimpleDelegate/FlightGameDelegate.cpp \
-    Entity/water.cpp \
-    base/RenderTarget.cpp
+    base/RenderTarget.cpp \
+    Entity/waterprojectgrid.cpp \
+    Entity/waterNaive.cpp \
+    Demo/SimpleDelegate/waterDelegate.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -543,10 +544,11 @@ HEADERS += \
     base/removable.h \
     base/frustum.h \
     geometry/plane.h \
-    Demo/SimpleDelegate/TerrainDelegate.h \
     Demo/NormalMapping/normalmappingdelegate.h \
-    Entity/water.h \
-    base/RenderTarget.h
+    base/RenderTarget.h \
+    Entity/waterprojectgrid.h \
+    Entity/waterNaive.h \
+    Demo/SimpleDelegate/waterDelegate.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

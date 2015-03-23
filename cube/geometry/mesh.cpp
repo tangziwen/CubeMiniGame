@@ -54,6 +54,7 @@ static  void CaculateNormalLine(GLushort * indices,int indices_count,VertexData 
         vertices[i].normalLine.normalize();
     }
 }
+
 static  void CaculateTangent(GLushort * indices,int indices_count,VertexData  * vertices,int vertices_count  )
 {
 

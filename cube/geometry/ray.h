@@ -2,6 +2,7 @@
 #define RAY_H
 #include <QVector3D>
 #include "aabb.h"
+#include "plane.h"
 enum class RayAABBSide{
     up =0,
     down,
@@ -14,14 +15,15 @@ enum class RayAABBSide{
 class Ray
 {
 public:
+    Ray();
     Ray(QVector3D origin,QVector3D direction);
     ~Ray();
     QVector3D origin() const;
     void setOrigin(const QVector3D &origin);
     QVector3D direction() const;
     void setDirection(const QVector3D &direction);
-
-    bool intersect(AABB  aabb, RayAABBSide * side);
+    QVector3D intersectPlane(Plane p);
+    bool intersectAABB(AABB  aabb, RayAABBSide * side);
 private:
     QVector3D m_origin;
     QVector3D m_direction;

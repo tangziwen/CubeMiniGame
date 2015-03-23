@@ -7,6 +7,13 @@
 #include <QVector2D>
 #include "base/RenderTarget.h"
 
+
+/*
+ * the class of the water
+ * It's a easy class used to simulate the small water area, It can be set everywhere.
+ * but if you want to simulate huge water area , such as an ocean. you can use the waterPG(water projected grid implemention ) instead.
+ */
+
 struct Wave{
     float    fFreq;    // 频率 (2PI / 波长)
     float    fAmp;    // 振幅
@@ -49,7 +56,7 @@ private:
 private:
     Camera * m_mirrorCamera;
     float m_time;
-    Wave m_waves[3];
+    Wave m_waves[4];
     TMesh * m_mesh;
     float m_width;
     float m_height;
@@ -57,5 +64,4 @@ private:
     float m_waterLevel;
     RenderTarget * m_mirrorRenderTarget;
 };
-
 #endif // WATER_H

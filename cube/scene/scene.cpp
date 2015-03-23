@@ -195,7 +195,7 @@ void Scene::shadowPassForSpot(SpotLight * light,RenderTarget * target)
         if(!entity->isEnableShadow()) continue;
         if(target->isIgnoreEntity (entity))continue;
         Camera * camera =entity->getCamera();
-        p.setModelMatrix(entity->getModelTrans());
+        p.setModelMatrix(target->auxMatrix ()*entity->getModelTrans());
         p.setProjectionMatrix(camera->getProjection());
         QMatrix4x4 view;
         view.setToIdentity();
@@ -233,7 +233,7 @@ void Scene::shadowPassDirectional(RenderTarget * target)
             Entity * entity = (* i);
             if(!entity->isEnableShadow()) continue;
             if(target->isIgnoreEntity (entity))continue;
-            p.setModelMatrix(entity->getModelTrans());
+            p.setModelMatrix(target->auxMatrix ()*entity->getModelTrans());
             QMatrix4x4 lightView;
             lightView.setToIdentity();
             auto lightDir = directionLight.getDirection ();
@@ -279,7 +279,7 @@ void Scene::geometryPass(RenderTarget * target)
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
         p.setEyePosition (camera->pos ());
-        p.setModelMatrix(entity->getModelTrans());
+        p.setModelMatrix(target->auxMatrix ()*entity->getModelTrans());
         p.setEyeDirection(camera->getForwardVector ());
         p.applyLightMvp(entity->getShaderProgram());
         setEntityBoneTransform(entity);
@@ -298,7 +298,7 @@ void Scene::geometryPass(RenderTarget * target)
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
         m_skyBox->getEntity()->translate(camera->pos ().x (),camera->pos ().y (),camera->pos ().z ());
-        p.setModelMatrix(m_skyBox->getEntity()->getModelTrans());
+        p.setModelMatrix(target->auxMatrix ()*m_skyBox->getEntity()->getModelTrans());
         p.apply(m_skyBox->shader());
         m_skyBox->Draw();
     }

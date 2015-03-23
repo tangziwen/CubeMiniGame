@@ -10,7 +10,7 @@ int backend::start(RenderDelegate *delegate, int argc, char *argv[])
 {
 
     QApplication app(argc, argv);
-    app.setApplicationName("test ");
+    app.setApplicationName("cube ");
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
     MainWidget widget(0,delegate);

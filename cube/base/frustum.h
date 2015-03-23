@@ -2,7 +2,6 @@
 #define FRUSTUM_H
 #include "geometry/aabb.h"
 #include "geometry/plane.h"
-#include "geometry/aabb.h"
 class Camera;
 class Frustum
 {

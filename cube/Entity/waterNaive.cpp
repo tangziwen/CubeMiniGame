@@ -1,4 +1,4 @@
-#include "water.h"
+#include "waterNaive.h"
 #include "material/materialpool.h"
 #include "texture/texturepool.h"
 Water::Water(float width, float height, float waterLevel, float scale)
@@ -124,7 +124,7 @@ void Water::adjustVertices()
         {
             auto index = i+ j*m_width;
             auto y = m_waterLevel;
-            for(int k =0;k<3;k++)
+            for(int k =0;k<4;k++)
             {
                 y += evaluateWave (m_waves[k],QVector2D(i,j),m_time);
             }
@@ -149,7 +149,8 @@ void Water::initWaves()
 {
     m_waves[0] = { 0.5f, 0.2f, 0.50f, QVector2D( -1.0f, 0.0f ) };
    m_waves[1] =  { 1.0f, 0.17f, 1.30f, QVector2D( -0.7f, 0.7f ) };
-   m_waves[2] =  { .25f, 0.4f, 0.250f, QVector2D( 0.2f, 0.1f ) };
+   m_waves[2] =  { 1.0f, 0.17f, 1.30f, QVector2D( 0.7f, 0.7f ) };
+   m_waves[3] =  { .25f, 0.4f, 0.250f, QVector2D( 0.2f, 0.1f ) };
 }
 Camera *Water::mirrorCamera() const
 {

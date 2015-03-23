@@ -5,6 +5,11 @@
 
 here is the changelog of the CubeEngine
 
+###alpha v0.11 3.23.2015###
+* add two water simulation classes - waterNaive & waterPG(Projected grid water),use waterNaive to simulate a small water area, use waterPG to simulate unlimited water surface like ocean.
+* add RenderTarget class, you can use RenderTarget to control the render pipeline.for example you can use it to simulate mirror.
+* Lot's of bug Fixed.
+
 ###alpha v0.10 3.10.2015###
 * fix the normalmapping bug
 * add the "RenderTarget" class,you can use it to simulate such as mirror effect

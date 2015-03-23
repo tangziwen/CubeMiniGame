@@ -43,7 +43,7 @@
 
 #include "base/tzwengine.h"
 #include "Demo/CubeCraft/CubeCraftDelegate.h"
-#include "Demo/SimpleDelegate/TerrainDelegate.h"
+#include "Demo/SimpleDelegate/waterDelegate.h"
 #include "Demo/NormalMapping/normalmappingdelegate.h"
 enum class SampleID
 {

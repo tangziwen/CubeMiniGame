@@ -135,6 +135,11 @@ void ShaderProgram::setUniform3Float(const char *str, float x, float y, float z)
     }
 }
 
+void ShaderProgram::setUniform3Float(const char *str, QVector3D v)
+{
+    setUniform3Float(str,v.x (),v.y (),v.z ());
+}
+
 void ShaderProgram::setUniform2Float(const char *str, float x, float y)
 {
     int current_shader=0;

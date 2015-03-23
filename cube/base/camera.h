@@ -5,15 +5,23 @@
 #include <QVector3D>
 #include <geometry/aabb.h>
 #include <base/frustum.h>
+#include <QVector2D>
+#include "geometry/ray.h"
 class Camera : public Node
 {
 public:
     Camera();
+
+
     void setPerspective(float fov ,float aspect,float z_near,float z_far);
     void setOrtho(float left, float right, float bottom, float top, float near, float far);
+    void lookAt(QVector3D lookAtPos, QVector3D up);
     QMatrix4x4 getViewMatrix();
     QMatrix4x4 getProjection();
     QVector3D ScreenToWorld(QVector3D vec);
+    QVector3D screenToWorldDir(QVector2D v);
+    Ray screenToWorldRay(QVector2D v);
+    QVector3D worldToScreen(QVector3D v);
     bool isVisibleInFrustum(const AABB* aabb);
     void splitFrustum(int NumofSplits);
 
@@ -31,6 +39,7 @@ public:
     AABB getSplitFrustumAABB(int index);
     AABB FrustumAABB() const;
     void setFrustumAABB(const AABB &FrustumAABB);
+    void setViewMatrix(QMatrix4x4 matrix);
 
 private:
     AABB getProjectionAABB(QMatrix4x4 projectMatrix);
@@ -46,6 +55,7 @@ private:
     Frustum m_splitFrustum[4];
     AABB m_splitFrustumAABB[4];
     AABB m_FrustumAABB;
+    bool m_isManuallyView;
 };
 
 

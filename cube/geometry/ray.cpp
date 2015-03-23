@@ -1,5 +1,10 @@
 #include "ray.h"
 
+Ray::Ray()
+{
+
+}
+
 Ray::Ray(QVector3D origin,QVector3D direction)
 {
     m_origin = origin;
@@ -29,7 +34,15 @@ void Ray::setDirection(const QVector3D &direction)
     m_direction = direction;
 }
 
-bool Ray::intersect(AABB aabb, RayAABBSide *side)
+QVector3D Ray::intersectPlane(Plane p)
+{
+   auto point = p .getNormal ()*p.getDist ();
+   auto r = QVector3D::dotProduct (p.getNormal (),(point - m_origin)) / QVector3D::dotProduct (p.getNormal (),m_direction);
+   auto result = m_origin + m_direction*r;
+   return result;
+}
+
+bool Ray::intersectAABB(AABB aabb, RayAABBSide *side)
 {
 
     QVector3D ptOnPlane;

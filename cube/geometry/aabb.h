@@ -19,6 +19,7 @@ public:
 
     QVector3D centre();
 
+    bool isInside(QVector3D p);
     void setMax(const QVector3D &max);
 
 private:

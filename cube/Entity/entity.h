@@ -46,6 +46,9 @@ public:
     AABB getAABB();
     float getDistToCamera();
     virtual void adjustVertices();
+    bool isSetDrawWire() const;
+    void setIsSetDrawWire(bool isSetDrawWire);
+
 private:
     uint findBoneInterpoScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
     uint findBoneInterpoRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -59,13 +62,14 @@ private:
     void LoadMaterial(const aiScene* pScene, const char *file_name,const char * pre_fix);
     void loadBones(const aiMesh* pMesh, TMesh *mesh);
 private:
+    bool m_isSetDrawWire;
     bool m_isEnableShadow;
     bool m_hasAnimation;
     float m_animateTime;
     std::string m_animationName;
     ShaderProgram * program;
     std::vector <TMesh *> mesh_list;
-    Camera *camera;
+
     std::vector <Material * >material_list;
     Matrix4f m_globalInverseTransform;
     std::map<std::string,int> m_BoneMapping;  // maps a bone name to its index
@@ -75,6 +79,8 @@ private:
     Assimp::Importer m_Importer;
     AABB m_aabb;
     bool m_isAABBDirty;
+protected:
+    Camera *camera;
 };
 
 #endif // ENTITY_H

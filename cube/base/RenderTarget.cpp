@@ -6,6 +6,7 @@ RenderTarget::RenderTarget()
     m_GBuffer->Init (1024,768);
     m_type = TargetType::OFF_SCREEN;
     m_resultBuffer =new RenderBuffer(1024,768);
+    m_auxMatrix.setToIdentity ();
 }
 GBuffer *RenderTarget::getGBuffer() const
 {
@@ -66,6 +67,16 @@ bool RenderTarget::isIgnoreEntity(Entity *entity)
         }
     }
 }
+QMatrix4x4 RenderTarget::auxMatrix() const
+{
+    return m_auxMatrix;
+}
+
+void RenderTarget::setAuxMatrix(const QMatrix4x4 &auxMatrix)
+{
+    m_auxMatrix = auxMatrix;
+}
+
 
 
 

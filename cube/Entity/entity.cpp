@@ -461,3 +461,13 @@ void Entity::loadBones( const aiMesh *pMesh,TMesh * mesh)
     }
     mesh->setBones(Bones);
 }
+bool Entity::isSetDrawWire() const
+{
+    return m_isSetDrawWire;
+}
+
+void Entity::setIsSetDrawWire(bool isSetDrawWire)
+{
+    m_isSetDrawWire = isSetDrawWire;
+}
+
