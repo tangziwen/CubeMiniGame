@@ -160,6 +160,26 @@ void ShaderProgram::setUniform2Float(const char *str, float x, float y)
     }
 }
 
+void ShaderProgram::setUniform4Float(const char *str, float x, float y, float z, float w)
+{
+    int current_shader=0;
+    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
+    if(current_shader == this->shader)
+    {
+        int ptr =glGetUniformLocation(this->shader,str);
+        if(ptr!=-1)
+        {
+            glUniform4f(ptr,x,y,z,w);
+        }
+        else{
+            //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
+        }
+    }else
+    {
+        T_LOG<<"please use this shader before set uniform";
+    }
+}
+
 void ShaderProgram::AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
 {
     GLuint ShaderObj = glCreateShader(ShaderType);

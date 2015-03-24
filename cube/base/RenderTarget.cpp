@@ -8,6 +8,7 @@ RenderTarget::RenderTarget()
     m_resultBuffer =new RenderBuffer(1024,768);
     m_auxMatrix.setToIdentity ();
     m_isIgnoreSkyBox = false;
+    m_isEnableClipPlane = false;
 }
 GBuffer *RenderTarget::getGBuffer() const
 {
@@ -86,6 +87,30 @@ void RenderTarget::setIsIgnoreSkyBox(bool isIgnoreSkyBox)
 {
     m_isIgnoreSkyBox = isIgnoreSkyBox;
 }
+
+void RenderTarget::setClipPlane(double *clipPlane)
+{
+    for(int i =0;i<4;i++)
+    {
+        m_clipPlane[i] = clipPlane[i];
+    }
+}
+
+bool RenderTarget::isEnableClipPlane() const
+{
+    return m_isEnableClipPlane;
+}
+
+void RenderTarget::setIsEnableClipPlane(bool isEnableClipPlane)
+{
+    m_isEnableClipPlane = isEnableClipPlane;
+}
+
+double *RenderTarget::getClipPlane()
+{
+    return m_clipPlane;
+}
+
 
 
 

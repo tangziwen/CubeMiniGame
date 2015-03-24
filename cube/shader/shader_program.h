@@ -14,6 +14,7 @@ public:
     void setUniform3Float(const char * str,float x,float y,float z);
     void setUniform3Float(const char * str,QVector3D v);
     void setUniform2Float(const char * str,float x,float y);
+    void setUniform4Float(const char * str,float x,float y,float z,float w);
 private:
     void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
     GLuint shader;

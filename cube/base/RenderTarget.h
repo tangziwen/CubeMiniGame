@@ -35,6 +35,12 @@ public:
     bool isIgnoreSkyBox() const;
     void setIsIgnoreSkyBox(bool isIgnoreSkyBox);
 
+    void setClipPlane(double * clipPlane);
+
+    bool isEnableClipPlane() const;
+    void setIsEnableClipPlane(bool isEnableClipPlane);
+
+    double *getClipPlane();
 private:
     QMatrix4x4 m_auxMatrix;
     TargetType m_type;
@@ -43,7 +49,8 @@ private:
     RenderBuffer * m_resultBuffer;
     std::vector<Entity*> m_ignoreList;
     bool m_isIgnoreSkyBox;
-
+    double m_clipPlane[4];
+    bool m_isEnableClipPlane;
 };
 
 #endif // RENDERTARGET_H

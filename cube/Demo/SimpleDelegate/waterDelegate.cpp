@@ -66,8 +66,8 @@ void FlightGameDelegate::onInit()
     a.mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/model/terrain/sand.jpg");
     terrain_model->addMesh(a.mesh ());
     terrain_model->scale (10,10,10);
-    terrain_model->setPos (QVector3D(0,-3,0));
-    // scene->root ()->addChild (terrain_model);
+    terrain_model->setPos (QVector3D(0,0,0));
+    scene->root ()->addChild (terrain_model);
 
     auto water = new WaterProjectGrid(100,100,-3);
     water->setIsEnableShadow (false);

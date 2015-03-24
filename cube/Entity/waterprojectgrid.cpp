@@ -46,8 +46,7 @@ WaterProjectGrid::WaterProjectGrid(float width, float height, float waterLevel, 
         }
     }
 
-
-    m_mesh->setMaterial (MaterialPool::getInstance ()->createOrGetMaterial ("default"));
+    m_mesh->setMaterial (new Material());
 
     m_mesh->finishWithoutNormal ();
 
@@ -317,6 +316,9 @@ void WaterProjectGrid::setMirrorRenderTarget(RenderTarget *mirrorRenderTarget)
     QMatrix4x4 matrix;
     matrix.scale (1,-1,1);
     m_mirrorRenderTarget->setAuxMatrix (matrix);
+    m_mirrorRenderTarget->setIsEnableClipPlane (true);
+    double clipPlane[4] = {0.0, -1.0, 0.0, 0.0};
+    m_mirrorRenderTarget->setClipPlane (clipPlane);
 }
 
 TMesh *WaterProjectGrid::mesh() const
