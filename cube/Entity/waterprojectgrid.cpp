@@ -57,6 +57,7 @@ WaterProjectGrid::WaterProjectGrid(float width, float height, float waterLevel, 
     m_mesh->getMaterial ()->setNormalMap (TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/water_normal.png"));
 
     m_mirrorRenderTarget = NULL;
+    m_refractRenderTarget = NULL;
 }
 
 float WaterProjectGrid::width() const
@@ -97,12 +98,6 @@ void WaterProjectGrid::adjustVertices()
     v1 = caculateWorldPosForLower(QVector2D(max_x,min_y),vp.inverted ());//br
     v2 = caculateWorldPosUpper(QVector2D(min_x,max_y),vp.inverted ());//tl
     v3 = caculateWorldPosUpper(QVector2D(max_x,max_y),vp.inverted ());//tr
-
-    AABB aabb;
-    aabb.update (v0);
-    aabb.update (v1);
-    aabb.update (v2);
-    aabb.update (v3);
 
     float du = 1.0f/float(m_width-1);
     float dv = 1.0f/float(m_height-1);
@@ -150,6 +145,17 @@ void WaterProjectGrid::adjustVertices()
     else
     {
         getShaderProgram ()->setUniformInteger ("g_has_mirror",0);
+    }
+
+    if(m_refractRenderTarget)
+    {
+        getShaderProgram ()->setUniformInteger ("g_has_refract",1);
+        getShaderProgram ()->setUniformInteger ("g_refract_map",5);
+        glActiveTexture (GL_TEXTURE5);
+        glBindTexture (GL_TEXTURE_2D,m_refractRenderTarget->resultBuffer ()->texture ());
+    }else
+    {
+        getShaderProgram ()->setUniformInteger ("g_has_refract",0);
     }
 
     m_mesh->finishWithoutNormal ();
@@ -304,6 +310,23 @@ void WaterProjectGrid::initWaves()
     m_waves[2] =  { 1.0f, 0.17f, 1.30f, QVector2D( 0.7f, 0.7f ) };
     m_waves[3] =  { .25f, 0.4f, 0.250f, QVector2D( 0.2f, 0.1f ) };
 }
+RenderTarget *WaterProjectGrid::refractRenderTarget() const
+{
+    return m_refractRenderTarget;
+}
+
+void WaterProjectGrid::setRefractRenderTarget(RenderTarget *refractRenderTarget)
+{
+    m_refractRenderTarget = refractRenderTarget;
+    m_refractRenderTarget->setIgnoreEntity (this);
+    m_refractRenderTarget->setIsEnableClipPlane (true);
+    QMatrix4x4 matrix;
+    matrix.scale (1,1.0/1.33,1);
+    m_refractRenderTarget->setAuxMatrix (matrix);
+    double clipPlane[4] = {0.0, -1.0, 0.0, -1*std::max(fabs(getUpperBound ()),fabs(getLowerBound ()))};
+    m_refractRenderTarget->setClipPlane (clipPlane);
+}
+
 RenderTarget *WaterProjectGrid::mirrorRenderTarget() const
 {
     return m_mirrorRenderTarget;
@@ -317,7 +340,7 @@ void WaterProjectGrid::setMirrorRenderTarget(RenderTarget *mirrorRenderTarget)
     matrix.scale (1,-1,1);
     m_mirrorRenderTarget->setAuxMatrix (matrix);
     m_mirrorRenderTarget->setIsEnableClipPlane (true);
-    double clipPlane[4] = {0.0, -1.0, 0.0, 0.0};
+    double clipPlane[4] = {0.0, -1.0, 0.0, -1*std::max(fabs(getUpperBound ()),fabs(getLowerBound ()))};
     m_mirrorRenderTarget->setClipPlane (clipPlane);
 }
 

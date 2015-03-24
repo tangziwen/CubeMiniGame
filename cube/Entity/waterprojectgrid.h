@@ -42,9 +42,13 @@ public:
     RenderTarget *mirrorRenderTarget() const;
     void setMirrorRenderTarget(RenderTarget *mirrorRenderTarget);
 
+    RenderTarget *refractRenderTarget() const;
+    void setRefractRenderTarget(RenderTarget *refractRenderTarget);
+
 private:
     void initWaves();
     RenderTarget * m_mirrorRenderTarget;
+    RenderTarget *m_refractRenderTarget;
     float m_normalSplatSize;
     float m_width;
     float m_height;
@@ -52,6 +56,8 @@ private:
     TMesh * m_mesh;
     float m_time;
     Wave m_waves[4];
+    float m_upperBound;
+    float m_lowerBound;
 };
 
 #endif // WATERPROJECTGRID_H
