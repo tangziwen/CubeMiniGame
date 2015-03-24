@@ -32,6 +32,9 @@ public:
     QMatrix4x4 auxMatrix() const;
     void setAuxMatrix(const QMatrix4x4 &auxMatrix);
 
+    bool isIgnoreSkyBox() const;
+    void setIsIgnoreSkyBox(bool isIgnoreSkyBox);
+
 private:
     QMatrix4x4 m_auxMatrix;
     TargetType m_type;
@@ -39,6 +42,7 @@ private:
     GBuffer * m_GBuffer;
     RenderBuffer * m_resultBuffer;
     std::vector<Entity*> m_ignoreList;
+    bool m_isIgnoreSkyBox;
 
 };
 

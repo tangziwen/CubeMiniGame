@@ -20,12 +20,12 @@ uniform float g_time;
 uniform float g_normal_splat_size;
 uniform int g_has_mirror;
 
-varying vec3 v_world_position;
-varying vec4 v_light_space_postion;
-varying vec2 v_texcoord;
-varying vec3 v_normal_line;
-varying vec3 v_tangent;
-varying vec2 v_texcoordReflect;
+in vec3 v_world_position;
+in vec4 v_light_space_postion;
+in vec2 v_texcoord;
+in vec3 v_normal_line;
+in vec3 v_tangent;
+in vec2 v_texcoordReflect;
 
 float reflectionFactor = 0.02037;
 
@@ -73,12 +73,12 @@ void main()
         vec2 a = CalcTexCoord();
         const float Eta=0.6;
         const float FresnelPower=5.0;
-        const float F=0.99;
+        const float F=0.04;
         normalize(g_eye_dir);
-        float fastFresnel = F + (1.0-F) * pow(1.0 - dot(g_eye_dir, normal),FresnelPower);
+        float fastFresnel = F + (1.0-F) * pow(1.0 - clamp(dot(-g_eye_dir, normal),0.0,1.0),FresnelPower);
         vec3 waterColor = texture2D(g_diffuse_texture, v_texcoord).xyz;
         vec3 reflectColor = texture2D(g_mirror_map,a+normal.xz*0.03).xyz;
-        DiffuseOut      =  reflectColor*fastFresnel + waterColor*fastFresnel;
+        DiffuseOut      =  reflectColor*fastFresnel + waterColor*(1.0 - fastFresnel);
     }else
     {
         DiffuseOut      = texture2D(g_diffuse_texture, v_texcoord).xyz;

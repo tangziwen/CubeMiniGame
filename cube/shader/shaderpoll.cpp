@@ -1,4 +1,5 @@
 #include "shaderpoll.h"
+#include "utility.h"
 ShaderPool * ShaderPool::instance = NULL;
 ShaderPool *ShaderPool::getInstance()
 {
@@ -28,8 +29,10 @@ ShaderProgram *ShaderPool::createShader(const char *shader_name, const char *vs_
     std::map<std::string,ShaderProgram *>::iterator result = this->shader_list.find(std::string(shader_name));
     if(result == this->shader_list.end())
     {
+        qDebug()<<"compile Shader "<<shader_name;
         ShaderProgram * shader = new ShaderProgram(vs_name,fs_name);
         this->shader_list.insert(std::make_pair(std::string(shader_name),shader));
+        qDebug()<<"Shader "<<shader_name<<" finish";
         return shader;
     }else
     {

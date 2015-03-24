@@ -9,11 +9,12 @@ layout (location = 0) out vec3 DiffuseOut;
 layout (location = 1) out vec3 WorldPosOut;   
 layout (location = 2) out vec3 NormalOut;   
 
-varying vec3 v_texcoord;
-varying vec3 v_normal_line;
-varying vec3 v_world_position;
+in vec3 v_texcoord;
+in vec3 v_normal_line;
+in vec3 v_world_position;
 
-uniform samplerCube gCubemapTexture;        
+uniform samplerCube gCubemapTexture; 
+       
 void main()
 {
 	DiffuseOut = textureCube(gCubemapTexture, v_texcoord).xyz;

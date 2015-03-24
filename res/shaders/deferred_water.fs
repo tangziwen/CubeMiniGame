@@ -19,11 +19,11 @@ uniform vec3 g_eye_dir;
 uniform float g_time;
 uniform int g_has_mirror;
 
-varying vec3 v_world_position;
-varying vec4 v_light_space_postion;
-varying vec2 v_texcoord;
-varying vec3 v_normal_line;
-varying vec3 v_tangent;
+in vec3 v_world_position;
+in vec4 v_light_space_postion;
+in vec2 v_texcoord;
+in vec3 v_normal_line;
+in vec3 v_tangent;
 
 float reflectionFactor = 0.02037;
 vec3 CalcBumpedNormal()

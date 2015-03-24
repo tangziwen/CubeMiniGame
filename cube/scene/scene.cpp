@@ -290,7 +290,7 @@ void Scene::geometryPass(RenderTarget * target)
             entity->onRender(entity,0);
         }
     }
-    if(m_skyBox)
+    if(m_skyBox && !target->isIgnoreSkyBox ())
     {
         m_skyBox->setShader (ShaderPool::getInstance ()->get ("sky_box_deferred"));
         Camera * camera =target->camera ();
@@ -658,4 +658,3 @@ void Scene::linearBlur(float radius, float samples)
     this->ambientLight.apply(shader);
     m_quad->draw (true);
 }
-

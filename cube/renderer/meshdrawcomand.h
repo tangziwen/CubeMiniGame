@@ -1,13 +1,13 @@
 #ifndef MESHDRAWCOMAND_H
 #define MESHDRAWCOMAND_H
-#include <QGLFunctions>
+#include <QOpenGLFunctions_3_0>
 #include <QGLShaderProgram>
 #include "base/vertexdata.h"
 #include "shader/shader_program.h"
 #include <QMatrix4x4>
 #include "material/material.h"
 #include "base/bonedata.h"
-class MeshDrawComand : protected QGLFunctions
+class MeshDrawComand : protected QOpenGLFunctions_3_0
 {
 public:
     void synchronizeData(ShaderProgram * shader, Material *material, GLuint vertices , GLuint Indices );

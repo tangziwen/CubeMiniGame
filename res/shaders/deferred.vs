@@ -1,3 +1,4 @@
+#version 300 es
 #ifdef GL_ES
 // Set default precision to medium
 precision mediump int;
@@ -14,22 +15,22 @@ uniform mat4 g_projection_matrix;
 uniform mat4 g_bones[MAX_BONES];
 uniform int  g_has_animation;
 
-attribute vec3 a_position;
-attribute vec2 a_texcoord;
-attribute vec3 a_normal_line;
-attribute vec4 a_bone_ID;
-attribute vec4 a_bone_weight;
-attribute vec3 a_tangent;
+in vec3 a_position;
+in vec2 a_texcoord;
+in vec3 a_normal_line;
+in ivec4 a_bone_ID;
+in vec4 a_bone_weight;
+in vec3 a_tangent;
 
-varying vec2 v_texcoord;
-varying vec3 v_normal_line;
-varying vec3 v_world_position;
-varying vec4 v_light_space_postion;
-varying vec3 v_tangent;
+out vec2 v_texcoord;
+out vec3 v_normal_line;
+out vec3 v_world_position;
+out vec4 v_light_space_postion;
+out vec3 v_tangent;
 void main()
 {
 	vec4 actual_pos;
-	if(g_has_animation)
+	if(g_has_animation == 1)
 	{
 	mat4 BoneTransform;
     BoneTransform     = g_bones[a_bone_ID[0]]*a_bone_weight[0];

@@ -7,6 +7,7 @@ RenderTarget::RenderTarget()
     m_type = TargetType::OFF_SCREEN;
     m_resultBuffer =new RenderBuffer(1024,768);
     m_auxMatrix.setToIdentity ();
+    m_isIgnoreSkyBox = false;
 }
 GBuffer *RenderTarget::getGBuffer() const
 {
@@ -76,6 +77,16 @@ void RenderTarget::setAuxMatrix(const QMatrix4x4 &auxMatrix)
 {
     m_auxMatrix = auxMatrix;
 }
+bool RenderTarget::isIgnoreSkyBox() const
+{
+    return m_isIgnoreSkyBox;
+}
+
+void RenderTarget::setIsIgnoreSkyBox(bool isIgnoreSkyBox)
+{
+    m_isIgnoreSkyBox = isIgnoreSkyBox;
+}
+
 
 
 

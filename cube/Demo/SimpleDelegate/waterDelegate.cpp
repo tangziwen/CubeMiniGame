@@ -69,28 +69,13 @@ void FlightGameDelegate::onInit()
     terrain_model->setPos (QVector3D(0,-3,0));
     // scene->root ()->addChild (terrain_model);
 
-    /*
-    auto water = new Water(30,30,-3,1);
-    water->setCamera(&camera);
-    water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/dummy.png");
-    water->setIsEnableShadow (false);
-    scene->root ()->addChild (water);
-
-    auto mirrorRenderTarget = new RenderTarget();
-    mirrorRenderTarget->setCamera (water->mirrorCamera ());
-    water->setMirrorRenderTarget (mirrorRenderTarget);
-    scene->addRenderTarget (mirrorRenderTarget);
-*/
-
     auto water = new WaterProjectGrid(100,100,-3);
     water->setIsEnableShadow (false);
     water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/dummy.png");
-    cameraFixed = camera;
-
     water->setCamera (&camera);
-
     auto mirrorRenderTarget = new RenderTarget();
     mirrorRenderTarget->setCamera (&camera);
+    mirrorRenderTarget->setIsIgnoreSkyBox (true);
     water->setMirrorRenderTarget (mirrorRenderTarget);
     scene->addRenderTarget (mirrorRenderTarget);
 
@@ -108,6 +93,7 @@ void FlightGameDelegate::onInit()
         flight->setPos (QVector3D((rand()%5)*2,3,-2*i));
     }
 
+
     /*
     auto spotLight = scene->createSpotLight ();
     spotLight->setIntensity (1);
@@ -124,6 +110,7 @@ void FlightGameDelegate::onInit()
     directional_light->setIntensity (0.5);
     directional_light->setColor (QVector3D(1,1,1));
     directional_light->setDirection (QVector3D(-1,-1,0));
+
 }
 
 void FlightGameDelegate::onRender()
@@ -162,7 +149,6 @@ void FlightGameDelegate::onResize(int w, int h)
 
     // Reset projection
     camera.setPerspective(fov,aspect,zNear,zFar);
-    cameraFixed.setPerspective(fov,aspect,zNear,zFar);
 }
 
 void FlightGameDelegate::onKeyPress(int key_code)

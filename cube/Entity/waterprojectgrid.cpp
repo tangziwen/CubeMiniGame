@@ -55,7 +55,7 @@ WaterProjectGrid::WaterProjectGrid(float width, float height, float waterLevel, 
 
     this->setShaderProgram (ShaderPool::getInstance()->get ("deferred_water_PG"));
 
-    m_mesh->getMaterial ()->setNormalMap (TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/water_normal.jpg"));
+    m_mesh->getMaterial ()->setNormalMap (TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/water_normal.png"));
 
     m_mirrorRenderTarget = NULL;
 }
