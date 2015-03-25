@@ -27,6 +27,7 @@ out vec3 v_normal_line;
 out vec3 v_world_position;
 out vec4 v_light_space_postion;
 out vec3 v_tangent;
+out vec3 v_eye_dir;
 void main()
 {
 	vec4 actual_pos;
@@ -46,5 +47,7 @@ void main()
     v_texcoord = vec2(v_world_position.x/20.0,v_world_position.z/20.0);
 
     v_texcoordReflect = a_texcoord;
+
+    v_eye_dir = v_world_position - g_eye_position;
 }
 //! [0]

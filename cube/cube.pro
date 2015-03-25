@@ -3,6 +3,9 @@ QMAKE_CXXFLAGS += -std=c++11
 TARGET = cube
 TEMPLATE = app
 
+DEFINES += "M_PI=3.14159265358979323846"
+DEFINES += "M_PI_2=1.57079632679489661923"
+
 SOURCES += main.cpp \
     utility.cpp \
     gl_matrix/mat3.c \

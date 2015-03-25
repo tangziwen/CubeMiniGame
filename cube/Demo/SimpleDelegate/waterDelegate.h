@@ -24,7 +24,6 @@ private:
     void removeBlock();
 private:
     Camera camera;
-    Camera cameraFixed;
     Scene * scene;
     QVector2D mousePressPosition;
     QVector2D mouseLastPosition;

@@ -23,7 +23,7 @@ void MeshDrawComand::synchronizeData(ShaderProgram *shader, Material *material, 
 
 void MeshDrawComand::Init(Material* material, GLuint vertices, GLuint Indices, int indices_count)
 {
-    initializeGLFunctions();
+    initializeOpenGLFunctions ();
     this->material=material;
     this->vbo[0]=vertices;
     this->vbo[1]=Indices;
@@ -33,7 +33,7 @@ void MeshDrawComand::Init(Material* material, GLuint vertices, GLuint Indices, i
 
 void MeshDrawComand::Init(Material *material, GLuint vertices, GLuint Indices, GLuint bone, int indices_count)
 {
-    initializeGLFunctions();
+    initializeOpenGLFunctions ();
     this->material=material;
     this->vbo[0]=vertices;
     this->vbo[1]=Indices;
@@ -60,7 +60,7 @@ void MeshDrawComand::setShaderState()
 
 MeshDrawComand::MeshDrawComand()
 {
-    initializeGLFunctions();
+    initializeOpenGLFunctions ();
     for(int i =0;i<3;i++)
     {
         this->vbo[i]=0;
@@ -142,7 +142,7 @@ void MeshDrawComand::setAttribState()
     if(BoneWeight>=0)
     {
         glEnableVertexAttribArray(BoneWeight);
-        glVertexAttribPointer(BoneWeight,4,GL_FLOAT,GL_FALSE,sizeof(VertexData),(const void *)offset);
+        glVertexAttribIPointer(BoneWeight,4,GL_INT,sizeof(VertexData),(const void *)offset);
     }
     offset = offsetof(VertexData,tangent);
     int tangentLocation = glGetAttribLocation (shader_id,"a_tangent");

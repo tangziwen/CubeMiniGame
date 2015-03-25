@@ -14,11 +14,13 @@ uniform sampler2D g_shadow_map;
 uniform int g_has_normal_map;
 uniform sampler2D g_normal_map;
 uniform sampler2D g_mirror_map;
+uniform sampler2D g_refract_map;
 uniform vec3 g_eye_position;
 uniform vec3 g_eye_dir;
 uniform float g_time;
 uniform float g_normal_splat_size;
 uniform int g_has_mirror;
+uniform int g_has_refract;
 
 in vec3 v_world_position;
 in vec4 v_light_space_postion;
@@ -26,6 +28,7 @@ in vec2 v_texcoord;
 in vec3 v_normal_line;
 in vec3 v_tangent;
 in vec2 v_texcoordReflect;
+in vec3 v_eye_dir;
 
 float reflectionFactor = 0.02037;
 
@@ -68,21 +71,34 @@ void main()
 		normal = normalize(v_normal_line);
 	}
 
+    vec3 waterColor = texture2D(g_diffuse_texture, v_texcoord).xyz;
+    vec3 reflectColor = vec3(0,0,0);
+    vec3 refractColor = vec3(0,0,0);
+
+    const float FresnelPower=5.0;
+    const float F=0.02037;
+    normalize(v_eye_dir);
+    float fastFresnel = F + (1.0-F) * pow(1.0 - clamp(dot(-g_eye_dir,vec3(0,1,0)),0.0,1.0),FresnelPower);
+
+
     if(g_has_mirror > 0)
     {
-        vec2 a = CalcTexCoord();
-        const float Eta=0.6;
-        const float FresnelPower=5.0;
-        const float F=0.04;
-        normalize(g_eye_dir);
-        float fastFresnel = F + (1.0-F) * pow(1.0 - clamp(dot(-g_eye_dir, normal),0.0,1.0),FresnelPower);
-        vec3 waterColor = texture2D(g_diffuse_texture, v_texcoord).xyz;
-        vec3 reflectColor = texture2D(g_mirror_map,a+normal.xz*0.03).xyz;
-        DiffuseOut      =  reflectColor*fastFresnel + waterColor*(1.0 - fastFresnel);
-    }else
-    {
-        DiffuseOut      = texture2D(g_diffuse_texture, v_texcoord).xyz;
+        vec2 a = CalcTexCoord()+normal.xz*0.03;
+        a.x = clamp(a.x,0.0,1.0);
+        a.y = clamp(a.y,0.0,1.0);
+        reflectColor = texture2D(g_mirror_map,a).xyz;
     }
+
+    if(g_has_refract > 0)
+    {
+        vec2 a = CalcTexCoord()+normal.xz*0.03;
+        a.x = clamp(a.x,0.0,1.0);
+        a.y = clamp(a.y,0.0,1.0);
+        refractColor = texture2D(g_refract_map,a).xyz;
+    }
+
+    DiffuseOut = waterColor + reflectColor*fastFresnel + refractColor*(1.0 -fastFresnel);
+
     NormalOut = normal;
 
 	return;

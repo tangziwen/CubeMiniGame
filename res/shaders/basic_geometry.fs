@@ -13,11 +13,9 @@ uniform sampler2D g_diffuse_texture;
 uniform sampler2D g_shadow_map;
 uniform int g_has_normal_map;
 uniform sampler2D g_normal_map;
-uniform sampler2D g_mirror_map;
 uniform vec3 g_eye_position;
-uniform vec3 g_eye_dir;
-uniform float g_time;
-uniform int g_has_mirror;
+uniform vec4 g_clip_plane;
+uniform int g_is_enable_clip;
 
 in vec3 v_world_position;
 in vec4 v_light_space_postion;
@@ -25,17 +23,13 @@ in vec2 v_texcoord;
 in vec3 v_normal_line;
 in vec3 v_tangent;
 
-float reflectionFactor = 0.02037;
 vec3 CalcBumpedNormal()
 {
     vec3 Normal = normalize(v_normal_line);
     vec3 Tangent = normalize(v_tangent);
     Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
     vec3 Bitangent = cross(Tangent, Normal);
-    vec2 texCoord = v_texcoord;
-    texCoord.y += 0.01*g_time;
-    texCoord.x += 0.01*g_time;  
-    vec3 BumpMapNormal = texture2D(g_normal_map, texCoord).xyz;
+    vec3 BumpMapNormal = texture2D(g_normal_map, v_texcoord).xyz;
     BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
     vec3 NewNormal;
     mat3 TBN = mat3(Tangent, Bitangent, Normal);
@@ -47,29 +41,23 @@ vec3 CalcBumpedNormal()
 void main()
 {	
 	WorldPosOut     = v_world_position;
-    
-
-    vec3 normal;
+    if(g_is_enable_clip > 0)
+    {
+        vec3 planeNormal = g_clip_plane.xyz;
+        float dist = dot(planeNormal,v_world_position) - g_clip_plane.w;
+        if(dist < 0.0)
+        {
+            discard;
+        }
+    }
+	DiffuseOut      = texture2D(g_diffuse_texture, v_texcoord).xyz;	
 	if(g_has_normal_map > 0)
 	{
-		normal = CalcBumpedNormal();
+		NormalOut = CalcBumpedNormal();
 	}else
 	{
-		normal = normalize(v_normal_line);
+		NormalOut = normalize(v_normal_line);
 	}
-
-    if(g_has_mirror > 0)
-    {
-                            
-        float fastFresnel = max(0.0 ,min(1.0,pow(1.0 - dot(g_eye_dir, normal), 5.0)));
-        vec3 waterColor = texture2D(g_diffuse_texture, v_texcoord).xyz;
-        vec3 reflectColor = texture2D(g_mirror_map, v_texcoord).xyz;
-        DiffuseOut      =  reflectColor*fastFresnel + waterColor;
-    }else
-    {
-        DiffuseOut      = texture2D(g_diffuse_texture, v_texcoord).xyz;
-    }
-    NormalOut = normal;
 	return;
 }
 

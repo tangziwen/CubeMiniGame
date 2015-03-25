@@ -275,6 +275,17 @@ void Scene::geometryPass(RenderTarget * target)
         entity->getShaderProgram ()->use ();
         entity->adjustVertices ();
         if(target->isIgnoreEntity (entity))continue;
+        if(target->isEnableClipPlane ())
+        {
+            auto shader = entity->getShaderProgram ();
+            auto array = target->getClipPlane ();
+            shader->setUniform4Float ("g_clip_plane",array[0],array[1],array[2],array[3]);
+            shader->setUniformInteger ("g_is_enable_clip",1);
+        }else
+        {
+            auto shader = entity->getShaderProgram ();
+            shader->setUniformInteger ("g_is_enable_clip",0);
+        }
         Camera * camera  = target->camera ();
         p.setProjectionMatrix(camera->getProjection());
         p.setViewMatrix(camera->getViewMatrix());
@@ -290,7 +301,7 @@ void Scene::geometryPass(RenderTarget * target)
             entity->onRender(entity,0);
         }
     }
-    if(m_skyBox)
+    if(m_skyBox && !target->isIgnoreSkyBox ())
     {
         m_skyBox->setShader (ShaderPool::getInstance ()->get ("sky_box_deferred"));
         Camera * camera =target->camera ();
@@ -455,6 +466,12 @@ void Scene::calculateLight(ShaderProgram *shader)
 #define WINDOW_HEIGHT 768
 void Scene::deferredRendering(RenderTarget * target)
 {
+
+    if(target->isEnableClipPlane ())
+    {
+        glEnable(GL_CLIP_PLANE0);
+        glClipPlane(GL_CLIP_PLANE0, target->getClipPlane());
+    }
     if(!this->spotLights.empty ())
     {
         this->shadowPassForSpot(spotLights[0],target);
@@ -463,7 +480,12 @@ void Scene::deferredRendering(RenderTarget * target)
     {
         this->shadowPassDirectional (target);
     }
+
     geometryPass(target);
+    if(target->isEnableClipPlane ())
+    {
+        glDisable(GL_CLIP_PLANE0);
+    }
     glEnable(GL_BLEND);
     glBlendEquation(GL_FUNC_ADD);
     glBlendFunc(GL_ONE, GL_ONE);
@@ -658,4 +680,3 @@ void Scene::linearBlur(float radius, float samples)
     this->ambientLight.apply(shader);
     m_quad->draw (true);
 }
-

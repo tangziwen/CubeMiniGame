@@ -16,7 +16,7 @@ uniform int g_has_animation;
 attribute vec3 a_position;
 attribute vec2 a_texcoord;
 attribute vec3 a_normal_line; 
-attribute vec4 a_bone_ID;
+attribute ivec4 a_bone_ID;
 attribute vec4 a_bone_weight;
 
 
@@ -27,7 +27,7 @@ varying vec3 v_world_position;
 void main()
 {
 	vec4 actual_pos;
-	if(g_has_animation)
+	if(g_has_animation ==1)
 	{
 	mat4 BoneTransform;
     BoneTransform     = g_bones[a_bone_ID[0]]*a_bone_weight[0];

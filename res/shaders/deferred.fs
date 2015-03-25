@@ -15,11 +15,11 @@ uniform int g_has_normal_map;
 uniform sampler2D g_normal_map;
 uniform vec3 g_eye_position;
 
-varying vec3 v_world_position;
-varying vec4 v_light_space_postion;
-varying vec2 v_texcoord;
-varying vec3 v_normal_line;
-varying vec3 v_tangent;
+in vec3 v_world_position;
+in vec4 v_light_space_postion;
+in vec2 v_texcoord;
+in vec3 v_normal_line;
+in vec3 v_tangent;
 
 vec3 CalcBumpedNormal()
 {
