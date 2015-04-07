@@ -80,21 +80,17 @@ void main()
     normalize(v_eye_dir);
     float fastFresnel = F + (1.0-F) * pow(1.0 - clamp(dot(-g_eye_dir,vec3(0,1,0)),0.0,1.0),FresnelPower);
 
+    vec2 coord = CalcTexCoord()+normal.xz*0.03;
+    coord.x = clamp(coord.x,0.0,1.0);
+    coord.y = clamp(coord.y,0.0,1.0);
 
     if(g_has_mirror > 0)
     {
-        vec2 a = CalcTexCoord()+normal.xz*0.03;
-        a.x = clamp(a.x,0.0,1.0);
-        a.y = clamp(a.y,0.0,1.0);
-        reflectColor = texture2D(g_mirror_map,a).xyz;
+        reflectColor = texture2D(g_mirror_map,coord).xyz;
     }
-
     if(g_has_refract > 0)
     {
-        vec2 a = CalcTexCoord()+normal.xz*0.03;
-        a.x = clamp(a.x,0.0,1.0);
-        a.y = clamp(a.y,0.0,1.0);
-        refractColor = texture2D(g_refract_map,a).xyz;
+        refractColor = texture2D(g_refract_map,coord).xyz;
     }
 
     DiffuseOut = waterColor + reflectColor*fastFresnel + refractColor*(1.0 -fastFresnel);
