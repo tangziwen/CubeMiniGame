@@ -232,7 +232,8 @@ SOURCES += main.cpp \
     Entity/waterprojectgrid.cpp \
     Entity/waterNaive.cpp \
     Demo/SimpleDelegate/waterDelegate.cpp \
-    scene/OCTree.cpp
+    scene/OCTree.cpp \
+    Demo/CSMDelegate/csmdelegate.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -553,7 +554,8 @@ HEADERS += \
     Entity/waterprojectgrid.h \
     Entity/waterNaive.h \
     Demo/SimpleDelegate/waterDelegate.h \
-    scene/OCTree.h
+    scene/OCTree.h \
+    Demo/CSMDelegate/csmdelegate.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

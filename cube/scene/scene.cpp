@@ -541,11 +541,10 @@ QMatrix4x4 Scene::getCropMatrix(AABB frustumAABB)
     float offsetX = -0.5f*(frustumAABB.max ().x() + frustumAABB.min ().x()) * scaleX;
     float offsetY = -0.5f*(frustumAABB.max ().y() + frustumAABB.min ().y()) * scaleY;
 
-    auto CropMatrix = QMatrix4x4(scaleX,    0.0f,  0.0f, 0.0f,
-                                 0.0f,  scaleY,  0.0f, 0.0f,
-                                 0.0f,    0.0f,  1.0f,  0.0f,
-                                 offsetX, offsetY,  0.0f,  1.0f );
-    CropMatrix = CropMatrix.transposed ();
+    auto CropMatrix = QMatrix4x4(scaleX,0.0f,  0.0f, offsetX,
+                                                     0.0f,  scaleY,  0.0f, offsetY,
+                                                     0.0f,    0.0f,  1.0f,  0.0f,
+                                                     0.0f, 0.0f,  0.0f,  1.0f );
     auto orthoMatrix = QMatrix4x4();
 
     orthoMatrix.ortho(-1.0, 1.0, -1.0, 1.0, -frustumAABB.max ().z(), -frustumAABB.min ().z() );
