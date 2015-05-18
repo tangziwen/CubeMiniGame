@@ -233,7 +233,12 @@ SOURCES += main.cpp \
     Entity/waterNaive.cpp \
     Demo/SimpleDelegate/waterDelegate.cpp \
     scene/OCTree.cpp \
-    Demo/CSMDelegate/csmdelegate.cpp
+    Demo/CSMDelegate/csmdelegate.cpp \
+    Demo/GUIDemo/guidelegate.cpp \
+    GUI/button.cpp \
+    geometry/rect.cpp \
+    listener/touchable.cpp \
+    Event/eventmgr.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -555,7 +560,12 @@ HEADERS += \
     Entity/waterNaive.h \
     Demo/SimpleDelegate/waterDelegate.h \
     scene/OCTree.h \
-    Demo/CSMDelegate/csmdelegate.h
+    Demo/CSMDelegate/csmdelegate.h \
+    Demo/GUIDemo/guidelegate.h \
+    GUI/button.h \
+    geometry/rect.h \
+    listener/touchable.h \
+    Event/eventmgr.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

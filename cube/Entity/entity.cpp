@@ -17,7 +17,7 @@ Entity::Entity()
     this->m_animateTime = 0;
     this->m_hasAnimation = 0;
     this->setIsEnableShadow(true);
-    this->onRender = NULL;
+    this->onRender = nullptr;
     this->setNodeType (NODE_TYPE_ENTITY);
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     m_isAABBDirty = true;
@@ -29,7 +29,7 @@ Entity::Entity(const char *file_name)
     this->m_numBones = 0;
     this->m_animateTime = 0;
     this->setIsEnableShadow(true);
-    this->onRender = NULL;
+    this->onRender = nullptr;
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     this->setNodeType (NODE_TYPE_ENTITY);
     loadModelData(file_name);

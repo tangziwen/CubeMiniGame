@@ -16,8 +16,12 @@ Node::Node()
 
 void Node::addChild(Node *child)
 {
-    m_children.push_back (child);
-    child->setParent (this);
+    if(child->parent ()){
+        T_LOG<<"your child has already add in a node";
+    }else{
+        m_children.push_back (child);
+        child->setParent (this);
+    }
 }
 Node *Node::parent() const
 {

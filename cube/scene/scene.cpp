@@ -63,7 +63,7 @@ void Scene::pushCustomNodeToRenderQueue(Node *node)
 void Scene::render()
 {
     this->m_root.visit (this);
-    sortRenderQue ();
+    sortRenderQue();
     switch(m_renderType)
     {
     case FORWARD_SHADING:
@@ -417,10 +417,14 @@ void Scene::directionLightPass(RenderTarget *target)
     shader->setUniformInteger ("g_depth_map",4);//for depth
 
     auto camera = target->camera ();
-    shader->setUniform3Float ("g_eye_position",
-                              camera->pos ().x(),
-                              camera->pos ().y(),
-                              camera->pos ().z());
+    if(camera)
+    {
+        shader->setUniform3Float ("g_eye_position",
+                                  camera->pos ().x(),
+                                  camera->pos ().y(),
+                                  camera->pos ().z());
+    }
+
     QMatrix4x4 lightView;
     lightView.setToIdentity();
 
@@ -431,7 +435,8 @@ void Scene::directionLightPass(RenderTarget *target)
 
     for(int i =0 ;i <4 ;i++)
     {
-        auto split_frustum_aabb = target->camera ()->getSplitFrustumAABB (i);
+        if(!camera) break;
+        auto split_frustum_aabb = camera->getSplitFrustumAABB (i);
         split_frustum_aabb.transForm (target->camera()->getModelTrans ());
         split_frustum_aabb.transForm (lightView);
         auto matrix = getCropMatrix (split_frustum_aabb);
@@ -466,7 +471,6 @@ void Scene::calculateLight(ShaderProgram *shader)
 #define WINDOW_HEIGHT 768
 void Scene::deferredRendering(RenderTarget * target)
 {
-
     if(target->isEnableClipPlane ())
     {
         glEnable(GL_CLIP_PLANE0);
@@ -509,8 +513,8 @@ void Scene::deferredRendering(RenderTarget * target)
     }
     else
     {
-         bloom_fbo1->BindForReading (target->resultBuffer ());
-         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        bloom_fbo1->BindForReading (target->resultBuffer ());
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
     ShaderProgram * shader =ShaderPool::getInstance ()->get("deffered_simple");
@@ -524,10 +528,13 @@ void Scene::deferredRendering(RenderTarget * target)
     shader->setUniformInteger ("g_color_map",0);
     shader->setUniformInteger ("g_position_map",1);
     shader->setUniformInteger ("g_normal_map",2);
-    shader->setUniform3Float ("g_eye_position",
-                              camera->pos ().x(),
-                              camera->pos ().y(),
-                              camera->pos ().z());
+    if(camera)
+    {
+        shader->setUniform3Float ("g_eye_position",
+                                  camera->pos ().x(),
+                                  camera->pos ().y(),
+                                  camera->pos ().z());
+    }
     m_quad->draw (true);
 }
 
@@ -542,9 +549,9 @@ QMatrix4x4 Scene::getCropMatrix(AABB frustumAABB)
     float offsetY = -0.5f*(frustumAABB.max ().y() + frustumAABB.min ().y()) * scaleY;
 
     auto CropMatrix = QMatrix4x4(scaleX,0.0f,  0.0f, offsetX,
-                                                     0.0f,  scaleY,  0.0f, offsetY,
-                                                     0.0f,    0.0f,  1.0f,  0.0f,
-                                                     0.0f, 0.0f,  0.0f,  1.0f );
+                                 0.0f,  scaleY,  0.0f, offsetY,
+                                 0.0f,    0.0f,  1.0f,  0.0f,
+                                 0.0f, 0.0f,  0.0f,  1.0f );
     auto orthoMatrix = QMatrix4x4();
 
     orthoMatrix.ortho(-1.0, 1.0, -1.0, 1.0, -frustumAABB.max ().z(), -frustumAABB.min ().z() );

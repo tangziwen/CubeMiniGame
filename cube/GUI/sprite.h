@@ -5,10 +5,14 @@
 #include "base/node.h"
 #include "base/vertexdata.h"
 #include "base/camera.h"
+#include "listener/touchable.h"
+
 #include <vector>
 #include <QGLFunctions>
+#include <functional>
+
 //Sprite class , use to handle GUI element
-class Sprite : public Node, QGLFunctions
+class Sprite : public Node, public QGLFunctions, public Touchable
 {
 public:
     Sprite();
@@ -17,20 +21,18 @@ public:
     void draw();
     ShaderProgram *shader() const;
     void setShader(ShaderProgram *shader);
-    void (*onRender)(Sprite * self,float dt);
+    std::function<void (Sprite * self,float dt)> onRender;
     Camera *camera() const;
     void setCamera(Camera *camera);
-    void setRect(QVector2D TL,QVector2D BR);
+    void setRect(QVector2D TL, QVector2D BR, float the_size_x, float the_size_y);
+    QVector2D getSize();
 private:
-    void updateVertices(float the_size_x, float the_size_y);
-
-private:
-    float size_x;
-    float size_y;
+    float m_sizeX;
+    float m_sizeY;
     Camera * m_camera;
     Texture * m_texture;
-    VertexData vertices[4];
-    GLushort indices[6];
+    VertexData m_vertices[4];
+    GLushort m_indices[6];
     GLuint _vbo[2];
     ShaderProgram * m_shader;
 };

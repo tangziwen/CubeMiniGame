@@ -1,28 +1,28 @@
 #include "sprite.h"
-#define FACTOR 100
+
 Sprite::Sprite()
 {
-    vertices[0] = VertexData(QVector3D(0,1,-1),QVector2D(0,0));// tl
-    vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(0,1));//bl
-    vertices[2] = VertexData(QVector3D(1,0,-1),QVector2D(1,1));//br
-    vertices[3] = VertexData(QVector3D(1,1,-1),QVector2D(1,0));//tr
+    m_vertices[0] = VertexData(QVector3D(0,1,-1),QVector2D(0,0));// tl
+    m_vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(0,1));//bl
+    m_vertices[2] = VertexData(QVector3D(1,0,-1),QVector2D(1,1));//br
+    m_vertices[3] = VertexData(QVector3D(1,1,-1),QVector2D(1,0));//tr
 
-    indices[0] = 0;
-    indices[1] = 1;
-    indices[2] = 2;
+    m_indices[0] = 0;
+    m_indices[1] = 1;
+    m_indices[2] = 2;
 
-    indices[3] = 0;
-    indices[4] = 2;
-    indices[5] = 3;
+    m_indices[3] = 0;
+    m_indices[4] = 2;
+    m_indices[5] = 3;
     initializeGLFunctions ();
     glGenBuffers (2,_vbo);
     glBindBuffer (GL_ARRAY_BUFFER,_vbo[0]);
-    glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),vertices,GL_STREAM_DRAW);
+    glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),m_vertices,GL_STREAM_DRAW);
 
     glBindBuffer (GL_ELEMENT_ARRAY_BUFFER,_vbo[1]);
-    glBufferData (GL_ELEMENT_ARRAY_BUFFER,6*sizeof(GLushort),indices,GL_STATIC_DRAW);
+    glBufferData (GL_ELEMENT_ARRAY_BUFFER,6*sizeof(GLushort),m_indices,GL_STATIC_DRAW);
     setNodeType (NODE_TYPE_SPRITE);
-    onRender = NULL;
+    onRender = nullptr;
     setShader (ShaderPool::getInstance ()->get ("basic_sprite"));
 }
 
@@ -34,7 +34,7 @@ Texture *Sprite::texture() const
 void Sprite::setTexture(Texture *texture)
 {
     m_texture = texture;
-    updateVertices(texture->width (),texture->height ());
+    setRect(QVector2D(0,0),QVector2D(1,1),texture->width (),texture->height ());
 }
 
 void Sprite::draw()
@@ -87,24 +87,20 @@ void Sprite::setCamera(Camera *camera)
     m_camera = camera;
 }
 
-void Sprite::updateVertices(float the_size_x,float the_size_y)
+void Sprite::setRect(QVector2D TL, QVector2D BR, float the_size_x,float the_size_y)
 {
-    vertices[0] = VertexData(QVector3D(0,the_size_y,-1),QVector2D(0,0));// tl
-    vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(0,1));//bl
-    vertices[2] = VertexData(QVector3D(the_size_x,0,-1),QVector2D(1,1));//br
-    vertices[3] = VertexData(QVector3D(the_size_x,the_size_y,-1),QVector2D(1,0));//tr
+    m_vertices[0] = VertexData(QVector3D(0,the_size_y,-1),TL);// tl
+    m_vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(TL.x (),BR.y ()));//bl
+    m_vertices[2] = VertexData(QVector3D(the_size_x,0,-1),BR);//br
+    m_vertices[3] = VertexData(QVector3D(the_size_x,the_size_y,-1),QVector2D(BR.x (),TL.y ()));//tr
     glBindBuffer (GL_ARRAY_BUFFER,_vbo[0]);
-    glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),vertices,GL_STREAM_DRAW);
-    size_x = the_size_x;
-    size_y = the_size_y;
+    glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),m_vertices,GL_STREAM_DRAW);
+
+    m_sizeX = the_size_x;
+    m_sizeY = the_size_y;
 }
 
-void Sprite::setRect(QVector2D TL, QVector2D BR)
+QVector2D Sprite::getSize()
 {
-    vertices[0] = VertexData(QVector3D(0,size_y,-1),TL);// tl
-    vertices[1] = VertexData(QVector3D(0,0,-1),QVector2D(TL.x (),BR.y ()));//bl
-    vertices[2] = VertexData(QVector3D(size_x,0,-1),BR);//br
-    vertices[3] = VertexData(QVector3D(size_x,size_y,-1),QVector2D(BR.x (),TL.y ()));//tr
-    glBindBuffer (GL_ARRAY_BUFFER,_vbo[0]);
-    glBufferData (GL_ARRAY_BUFFER,4*sizeof(VertexData),vertices,GL_STREAM_DRAW);
+    return QVector2D(m_sizeX,m_sizeY);
 }
