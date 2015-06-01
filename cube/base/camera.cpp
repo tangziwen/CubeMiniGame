@@ -143,6 +143,7 @@ void Camera::splitFrustum( int NumofSplits)
     for(int i = 0;i<NumofSplits;i++)
     {
         auto z_far = m_ZFar*frustumSplitFactor[i];
+        m_splitFrust[i].setToIdentity ();
         m_splitFrust[i].perspective (m_fov,m_aspect,pre_zfar,z_far);
         m_splitFrustumAABB[i] =getProjectionAABB(m_splitFrust[i]);
         pre_zfar = z_far;
@@ -233,6 +234,7 @@ AABB Camera::getProjectionAABB(QMatrix4x4 projectMatrix)
 
     return aabb;
 }
+
 AABB Camera::FrustumAABB() const
 {
     return m_FrustumAABB;

@@ -46,6 +46,7 @@
 #include "utility.h"
 #include "texture/texturepool.h"
 
+#include "Event/eventmgr.h"
 MainWidget::MainWidget(QWidget *parent,RenderDelegate *delegate) :
     QGLWidget(parent)
 {
@@ -76,7 +77,7 @@ void MainWidget::mousePressEvent(QMouseEvent *e)
     {
         delegate->onTouchBegin(e->localPos().x(),e->localPos().y());
     }
-
+    EventMgr::get ()->raiseOnTouchPress (QVector2D(e->localPos().x(),this->size ().height () - e->localPos().y()));
 }
 
 void MainWidget::mouseReleaseEvent(QMouseEvent *e)
@@ -85,6 +86,7 @@ void MainWidget::mouseReleaseEvent(QMouseEvent *e)
     {
         delegate->onTouchEnd(e->localPos().x(),e->localPos().y());
     }
+    EventMgr::get ()->raiseOnTouchRelease (QVector2D(e->localPos().x(),this->size ().height () - e->localPos().y()));
 }
 
 void MainWidget::timerEvent(QTimerEvent *)

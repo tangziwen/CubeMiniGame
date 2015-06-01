@@ -1,13 +1,13 @@
-#ifndef SIMPLE_DELEGATE_H
-#define SIMPLE_DELEGATE_H
+#ifndef CSM_DELEGATE_H
+#define CSM_DELEGATE_H
 #include "base/renderdelegate.h"
 #include "base/camera.h"
 #include "scene/scene.h"
 #include "shader/shader_program.h"
-class WaterDelegate : public RenderDelegate
+class CSMDelegate : public RenderDelegate
 {
 public:
-    WaterDelegate();
+    CSMDelegate();
     virtual void onInit() ;
     virtual void onRender();
     virtual void onResize(int w, int h);

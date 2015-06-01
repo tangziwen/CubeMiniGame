@@ -21,7 +21,7 @@ public:
 
     bool isInside(QVector3D p);
     void setMax(const QVector3D &max);
-
+    bool isCanCotain(AABB aabb);
 private:
     QVector3D m_min;
     QVector3D m_max;

@@ -9,6 +9,7 @@ RenderTarget::RenderTarget()
     m_auxMatrix.setToIdentity ();
     m_isIgnoreSkyBox = false;
     m_isEnableClipPlane = false;
+    m_camera = nullptr;
 }
 GBuffer *RenderTarget::getGBuffer() const
 {

@@ -1,13 +1,14 @@
-#ifndef SIMPLE_DELEGATE_H
-#define SIMPLE_DELEGATE_H
+#ifndef GUIDELEGATE_H
+#define GUIDELEGATE_H
+
 #include "base/renderdelegate.h"
 #include "base/camera.h"
 #include "scene/scene.h"
 #include "shader/shader_program.h"
-class WaterDelegate : public RenderDelegate
+class GUIDelegate :public RenderDelegate
 {
 public:
-    WaterDelegate();
+    GUIDelegate();
     virtual void onInit() ;
     virtual void onRender();
     virtual void onResize(int w, int h);
@@ -19,18 +20,8 @@ public:
     virtual void onTouchEnd(int x , int y);
 
 private:
-    void createTerrain();
 private:
-    Camera camera;
     Scene * scene;
-    QVector2D mousePressPosition;
-    QVector2D mouseLastPosition;
-    bool move_forward;
-    bool move_backward;
-    bool move_left;
-    bool move_right;
-    bool move_up;
-    bool move_down;
 };
 
-#endif // MYDELEGATE_H
+#endif // GUIDELEGATE_H

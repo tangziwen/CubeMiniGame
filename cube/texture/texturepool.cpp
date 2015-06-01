@@ -2,6 +2,9 @@
 TexturePool * TexturePool::instance = NULL;
 Texture *TexturePool::createOrGetTexture(const char *file_name)
 {
+    if(!file_name)
+        return NULL;
+
     Texture * texture = NULL;
     std::map<std::string , Texture * >::iterator result = this->texture_list.find(file_name);
     if(result!= this->texture_list.end())

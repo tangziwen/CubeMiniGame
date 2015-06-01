@@ -1,4 +1,4 @@
-#include "waterDelegate.h"
+#include "csmdelegate.h"
 #include <QDebug>
 #include "utility.h"
 #include "shader/shaderpoll.h"
@@ -13,15 +13,13 @@
 #include "Entity/waterNaive.h"
 #include "Entity/waterprojectgrid.h"
 
-WaterDelegate::WaterDelegate()
+CSMDelegate::CSMDelegate()
 {
 
 }
 
-void WaterDelegate::onInit()
+void CSMDelegate::onInit()
 {
-    auto a_plane = new Plane(QVector3D(0,1,0),QVector3D(100,100,0));
-    qDebug()<<a_plane->getDist ();
     scene = new Scene();
     this->move_forward=false;
     this->move_backward=false;
@@ -69,27 +67,6 @@ void WaterDelegate::onInit()
     terrain_model->setPos (QVector3D(0,-1,0));
     scene->root ()->addChild (terrain_model);
 
-    auto water = new WaterProjectGrid(100,100,-3);
-    water->setIsEnableShadow (false);
-    water->mesh ()->getMaterial ()->getDiffuse ()->texture= TexturePool::getInstance ()->createOrGetTexture ("./res/texture/water/dummy.png");
-    water->setCamera (&camera);
-
-    //reflect
-    auto mirrorRenderTarget = new RenderTarget();
-    mirrorRenderTarget->setCamera (&camera);
-    mirrorRenderTarget->setIsIgnoreSkyBox (true);
-    water->setMirrorRenderTarget (mirrorRenderTarget);
-    scene->addRenderTarget (mirrorRenderTarget);
-
-    //refract
-    auto refractRenderTarget = new RenderTarget();
-    refractRenderTarget->setCamera (&camera);
-    refractRenderTarget->setIsIgnoreSkyBox (true);
-    water->setRefractRenderTarget (refractRenderTarget);
-    scene->addRenderTarget (refractRenderTarget);
-
-    scene->root ()->addChild (water);
-
     for(int i = 0;i< 5;i++)
     {
         auto flight = new Entity("./res/model/spaceship/phoenix_ugv.md2");
@@ -122,7 +99,7 @@ void WaterDelegate::onInit()
 
 }
 
-void WaterDelegate::onRender()
+void CSMDelegate::onRender()
 {
     if(move_forward)
     {
@@ -148,7 +125,7 @@ void WaterDelegate::onRender()
         camera.moveBy (0,-0.1,0,false);
     }
 }
-void WaterDelegate::onResize(int w, int h)
+void CSMDelegate::onResize(int w, int h)
 {
 
     // Calculate aspect ratio
@@ -160,7 +137,7 @@ void WaterDelegate::onResize(int w, int h)
     camera.setPerspective(fov,aspect,zNear,zFar);
 }
 
-void WaterDelegate::onKeyPress(int key_code)
+void CSMDelegate::onKeyPress(int key_code)
 {
     switch(key_code)
     {
@@ -185,7 +162,7 @@ void WaterDelegate::onKeyPress(int key_code)
     }
 }
 
-void WaterDelegate::onKeyRelease(int key_code)
+void CSMDelegate::onKeyRelease(int key_code)
 {
     switch(key_code)
     {
@@ -210,14 +187,14 @@ void WaterDelegate::onKeyRelease(int key_code)
     }
 }
 
-void WaterDelegate::onTouchBegin(int x, int y)
+void CSMDelegate::onTouchBegin(int x, int y)
 {
     mousePressPosition = QVector2D(x,y);
 
     mouseLastPosition = QVector2D(x,y);
 }
 
-void WaterDelegate::onTouchMove(int x, int y)
+void CSMDelegate::onTouchMove(int x, int y)
 {
     QVector2D diff = QVector2D(x,y) - mouseLastPosition;
     if(diff.x()>2){
@@ -236,12 +213,12 @@ void WaterDelegate::onTouchMove(int x, int y)
     mouseLastPosition=QVector2D(x,y);
 }
 
-void WaterDelegate::onTouchEnd(int x, int y)
+void CSMDelegate::onTouchEnd(int x, int y)
 {
 
 }
 
-void WaterDelegate::createTerrain()
+void CSMDelegate::createTerrain()
 {
 
 }

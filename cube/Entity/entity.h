@@ -42,7 +42,7 @@ public:
     void setHasAnimation(bool hasAnimation);
     bool isEnableShadow() const;
     void setIsEnableShadow(bool isEnableShadow);
-    void (*onRender)(Entity * self,float dt);
+    std::function<void (Entity * self, float dt)> onRender;
     AABB getAABB();
     float getDistToCamera();
     virtual void adjustVertices();

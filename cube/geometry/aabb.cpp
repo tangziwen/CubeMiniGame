@@ -156,5 +156,17 @@ void AABB::setMax(const QVector3D &max)
     m_max = max;
 }
 
+bool AABB::isCanCotain(AABB aabb)
+{
+    if(m_min.x () <aabb.min ().x () && m_min.y () <aabb.min ().y () && m_min.z () <aabb.min ().z ()
+            && m_max.x ()>aabb.max ().x () && m_max.y ()>aabb.max ().y () && m_max.z ()>aabb.max ().z ())
+    {
+        return true;
+    }else
+    {
+        return false;
+    }
+}
+
 
 

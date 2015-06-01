@@ -19,7 +19,7 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 9. unlimited water surface
 
 ###Current Version###
-* the current version is alpha v0.11 3.23.2015
+* the current version is alpha v0.11c 5.18.2015
 
 ###requirement###
 * <b>libassimp:</b> If you use Windows, the project have a modified copy under the  <b>"cube/external"</b> folder
@@ -40,4 +40,8 @@ Any questions or ideas please contact me: <br> tzwtangziwen@163.com <b>or</b> zi
 * Unlimited water surface use projected-grid
 ![](screenshot_3.jpg)
 
-<p>\frac{1}{3}</P>
+
+###TO DO###
+* Octree scene manager intergrated.
+* Basic UI support(also support some basic text rendering).
+* Imrpove Lighting system.

@@ -3,7 +3,18 @@
 
 #ChangeLog#
 
-here is the changelog of the CubeEngine
+##Here is the changelog of the CubeEngine
+
+
+###alpha v0.11c 5.18.2015###
+* fix crash when RenderTarget's camera is not set.
+* fix wrong shadow effect when multiple resize.
+* change some the code of the sprite.
+* fix Node can only be addChild once a time.
+* add a 2D primitive - Rect.
+* add basic button widget
+* add eventMgr which can handle all sort of events
+
 
 ###alpha v0.11b 3.24.2015###
 * fix shader compile error in some machine.
