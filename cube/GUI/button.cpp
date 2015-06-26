@@ -3,6 +3,7 @@
 #include "geometry/rect.h"
 #include <Event/eventmgr.h>
 Button::Button()
+    :m_isHolding(false)
 {
 
 }
@@ -10,9 +11,9 @@ Button::Button()
 void Button::init(const char * texture, const char * texture_pressed)
 {
     EventMgr::get()->addTouchableListener (this);
-    textureNormal = TexturePool::getInstance ()->createOrGetTexture (texture);
-    texturePressed = TexturePool::getInstance ()->createOrGetTexture (texture_pressed);
-    this->setTexture(textureNormal);
+    m_textureNormal = TexturePool::getInstance ()->createOrGetTexture (texture);
+    m_texturePressed = TexturePool::getInstance ()->createOrGetTexture (texture_pressed);
+    this->setTexture(m_textureNormal);
 }
 
 bool Button::checkTouchPress(QVector2D pos)
@@ -28,11 +29,19 @@ bool Button::checkTouchPress(QVector2D pos)
 
 void Button::handleTouchPress(QVector2D pos)
 {
-    this->setTexture(texturePressed);
+    if(checkTouchPress(pos))
+    {
+        this->setTexture(m_texturePressed);
+        m_isHolding = true;
+    }
 }
 
 void Button::handleTouchRelease(QVector2D pos)
 {
-    this->setTexture(textureNormal);
+    if(m_isHolding)
+    {
+        this->setTexture(m_textureNormal);
+        m_isHolding = false;
+    }
 }
 

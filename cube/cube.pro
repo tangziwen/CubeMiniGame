@@ -1,11 +1,12 @@
 QT       += core gui widgets
+QT += opengl
 QMAKE_CXXFLAGS += -std=c++11
 TARGET = cube
 TEMPLATE = app
 
 DEFINES += "M_PI=3.14159265358979323846"
 DEFINES += "M_PI_2=1.57079632679489661923"
-
+DEFINES += "USE_QT=1"
 SOURCES += main.cpp \
     utility.cpp \
     gl_matrix/mat3.c \
@@ -203,7 +204,6 @@ SOURCES += main.cpp \
     material/material.cpp \
     material/materialchannel.cpp \
     material/materialpool.cpp \
-    shader/shaderpoll.cpp \
     shader/shader_program.cpp \
     scene/scene.cpp \
     base/camera.cpp \
@@ -238,7 +238,15 @@ SOURCES += main.cpp \
     GUI/button.cpp \
     geometry/rect.cpp \
     listener/touchable.cpp \
-    Event/eventmgr.cpp
+    Event/eventmgr.cpp \
+    external/TUtility/log/Tlog.cpp \
+    external/TUtility/log/TstatckTrace.cpp \
+    external/TUtility/math/TbaseMath.cpp \
+    external/TUtility/math/Tvector.cpp \
+    external/TUtility/string/Tstring.cpp \
+    shader/ShaderPool.cpp \
+    listener/Clickable.cpp \
+    GUI/Label.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -530,7 +538,6 @@ HEADERS += \
     material/material.h \
     material/materialchannel.h \
     material/materialpool.h \
-    shader/shaderpoll.h \
     shader/shader_program.h \
     scene/scene.h \
     light/shadow_map_fbo.h \
@@ -565,7 +572,16 @@ HEADERS += \
     GUI/button.h \
     geometry/rect.h \
     listener/touchable.h \
-    Event/eventmgr.h
+    Event/eventmgr.h \
+    external/TUtility/log/Tlog.h \
+    external/TUtility/log/TstatckTrace.h \
+    external/TUtility/math/TbaseMath.h \
+    external/TUtility/math/Tvector.h \
+    external/TUtility/string/Tstring.h \
+    external/TUtility/TUtility.h \
+    shader/ShaderPool.h \
+    listener/Clickable.h \
+    GUI/Label.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

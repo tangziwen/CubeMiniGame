@@ -2,7 +2,9 @@
 #define EVENTMGR_H
 
 #include <vector>
-#include "listener/touchable.h"
+class Touchable;
+class Clickable;
+
 #include <QVector2D>
 class EventMgr
 {
@@ -11,6 +13,8 @@ public:
     void addTouchableListener(Touchable * listener);
     void raiseOnTouchPress(QVector2D pos);
     void raiseOnTouchRelease(QVector2D pos);
+    void raiseOnKeyPress(int keyCode);
+    void raiseOnKeyRelease(int keyCode);
 private:
     EventMgr();
     static EventMgr * instance;
@@ -18,7 +22,7 @@ private:
 
     //touchable
     std::vector<Touchable *> touchableList;
-    Touchable * m_currentHoldTouchableListener;
+    std::vector<Clickable * > clickableList;
 };
 
 #endif // EVENTMGR_H

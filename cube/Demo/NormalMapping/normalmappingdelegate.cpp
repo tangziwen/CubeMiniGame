@@ -1,7 +1,7 @@
 #include "normalmappingdelegate.h"
 #include <QDebug>
 #include "utility.h"
-#include "shader/shaderpoll.h"
+#include "shader/ShaderPool.h"
 #include "texture/texturepool.h"
 #include "material/materialpool.h"
 #include "entity/skybox.h"

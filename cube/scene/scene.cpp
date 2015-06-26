@@ -2,7 +2,7 @@
 #include "scene.h"
 #include "external/SOIL/SOIL.h"
 #include "renderer/pipeline.h"
-#include "shader/shaderpoll.h"
+#include "shader/ShaderPool.h"
 #include "base/ogldev_math_3d.h"
 #include "base/node.h"
 #include "geometry/mesh.h"
