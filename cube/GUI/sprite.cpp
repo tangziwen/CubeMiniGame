@@ -98,9 +98,41 @@ void Sprite::setRect(QVector2D TL, QVector2D BR, float the_size_x,float the_size
 
     m_sizeX = the_size_x;
     m_sizeY = the_size_y;
+    m_TL = TL;
+    m_BR = BR;
+}
+
+void Sprite::setRect(QVector2D TL, QVector2D BR)
+{
+    setRect(TL,BR,m_sizeX,m_sizeY);
 }
 
 QVector2D Sprite::getSize()
 {
     return QVector2D(m_sizeX,m_sizeY);
 }
+
+void Sprite::setSize(int width, int height)
+{
+    setRect (m_TL,m_BR,width,height);
+}
+QVector2D Sprite::TL() const
+{
+    return m_TL;
+}
+
+void Sprite::setTL(const QVector2D &TL)
+{
+    m_TL = TL;
+}
+QVector2D Sprite::BR() const
+{
+    return m_BR;
+}
+
+void Sprite::setBR(const QVector2D &BR)
+{
+    m_BR = BR;
+}
+
+

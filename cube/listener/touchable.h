@@ -7,7 +7,6 @@ class Touchable
 {
 public:
     Touchable();
-    virtual bool checkTouchPress(QVector2D pos);
 
     virtual void handleTouchPress(QVector2D pos);
     virtual void handleTouchRelease(QVector2D pos);

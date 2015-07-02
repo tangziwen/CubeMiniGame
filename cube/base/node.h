@@ -29,6 +29,7 @@ enum class NodeGroup
     G_8 = 1 << 8,
 };
 
+class Camera;
 class Scene;
 class Node :public Removable
 {
@@ -87,12 +88,18 @@ public:
     bool isGroupMask(NodeGroup mask);
 
     QVector3D getForwardVector();
-
 public:
     std::function<void (Node *)> onUpdate;
+    bool enable() const;
+    void setEnable(bool enable);
+
+    virtual Camera *camera() const;
+    virtual void setCamera(Camera *camera);
+
 protected:
     void setAsCustomNode();
 protected:
+    Camera * m_camera;
     TVector3D m_pos;
     TVector3D m_rotation;
     TVector3D m_scalling;
@@ -101,6 +108,7 @@ protected:
     std::vector<Node *>m_children;
     std::string m_name;
     unsigned int m_groupMask;
+    bool m_enable;
 };
 
 #endif // NODE_H

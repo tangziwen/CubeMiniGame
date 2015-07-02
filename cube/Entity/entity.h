@@ -9,7 +9,7 @@
 #include <functional>
 #include "geometry/mesh.h"
 #include "renderer/meshdrawcomand.h"
-#include "shader/shaderpoll.h"
+#include "shader/ShaderPool.h"
 #include "base/camera.h"
 #include "material/material.h"
 #include "base/bonedata.h"

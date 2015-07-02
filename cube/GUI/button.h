@@ -9,13 +9,14 @@ class Button : public Sprite
 public:
     Button();
     void init(const char *texture, const char *texture_pressed = nullptr);
-    virtual bool checkTouchPress(QVector2D pos);
+    bool checkTouchPress(QVector2D pos);
 
     virtual void handleTouchPress(QVector2D pos);
     virtual void handleTouchRelease(QVector2D pos);
-private:
-    Texture * textureNormal;
-    Texture * texturePressed;
-};
 
+private:
+    Texture * m_textureNormal;
+    Texture * m_texturePressed;
+    bool m_isHolding;
+};
 #endif // BUTTON_H
