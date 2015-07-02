@@ -38,7 +38,7 @@ void GUIDelegate::onInit()
     Label * label = new Label();
     label->setCamera (scene->guiCamera ());
     label->setPos (QVector3D(200,400,0));
-    label->setText ("HELLO, WORLD!");
+    label->setText ("fuck Fuck     world!");
     scene->root ()->addChild (label);
 
     //set this scene as current scene

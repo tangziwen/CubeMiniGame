@@ -18,6 +18,7 @@
 #include "external/include/assimp/scene.h"
 #include "external/include/assimp/Importer.hpp"
 #include "external/include/assimp/postprocess.h"
+#include "external/converter/CMC_Model.h"
 #include "base/node.h"
 
 class Entity : public Node
@@ -59,8 +60,11 @@ private:
     void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void loadModelData(const char * file_name);
+    void loadModelDataFromTZW(const char * file_name);
     void LoadMaterial(const aiScene* pScene, const char *file_name,const char * pre_fix);
+    void loadMaterialFromTZW(tzw::CMC_Model * model, const char * file_name,const char * pre_fix);
     void loadBones(const aiMesh* pMesh, TMesh *mesh);
+    Texture *loadTextureFromMaterial(std::string fileName, const char * pre_fix);
 private:
     bool m_isSetDrawWire;
     bool m_isEnableShadow;

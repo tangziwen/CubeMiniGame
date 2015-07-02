@@ -7,10 +7,12 @@
 #include "material/materialpool.h"
 #include "texture/texturepool.h"
 #include "shader/shader_program.h"
+#include "external/TUtility/TUtility.h"
+
 #include <QDebug>
 Entity::Entity()
 {
-    this->m_pScene = NULL;
+    this->m_pScene = nullptr;
     this->mesh_list.clear();
 
     this->m_numBones = 0;
@@ -25,6 +27,7 @@ Entity::Entity()
 
 Entity::Entity(const char *file_name)
 {
+    this->m_pScene = nullptr;
     this->mesh_list.clear();
     this->m_numBones = 0;
     this->m_animateTime = 0;
@@ -32,7 +35,14 @@ Entity::Entity(const char *file_name)
     this->onRender = nullptr;
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     this->setNodeType (NODE_TYPE_ENTITY);
-    loadModelData(file_name);
+    auto fileType = tzw::Tfile::getInstance ()->guessFileType (file_name);
+    if(fileType.compare ("tzw")==0)
+    {
+        loadModelDataFromTZW (file_name);
+    }else
+    {
+        loadModelData(file_name);
+    }
     m_isAABBDirty = true;
 }
 
@@ -369,6 +379,46 @@ void Entity::loadModelData(const char *file_name)
 
 }
 
+void Entity::loadModelDataFromTZW(const char *file_name)
+{
+    auto cmc_model = new tzw::CMC_Model();
+    cmc_model->loadFromTZW (file_name);
+    char str[100]={'\0'};
+    utility::FindPrefix(file_name,str);
+    //load material
+    loadMaterialFromTZW(cmc_model,file_name,str);
+
+    //global inverse transform(not supported yet)
+    m_globalInverseTransform.InitIdentity ();
+
+    for(int i =0 ;i< cmc_model->m_meshList.size ();i++)
+    {
+        auto the_mesh = cmc_model->m_meshList[i];
+        TMesh * mesh =new TMesh();
+        this->addMesh(mesh);
+        //set material
+        mesh->setMaterial(this->material_list[the_mesh->materialIndex ()]);
+        for(int j =0; j<the_mesh->m_vertices.size();j++)
+        {
+            auto v = the_mesh->m_vertices[j];
+            VertexData vec;
+            vec.position = v.pos ();
+            vec.normalLine = v.normal ();
+            vec.texCoord = v.UV ();
+            vec.tangent = v.tangent ();
+
+            mesh->pushVertex(vec);
+        }
+        for (unsigned int k = 0 ; k < the_mesh->m_indices.size (); k++) {
+            mesh->pushIndex (the_mesh->m_indices[k]);
+        }
+        //load bones(not supported yet).
+        //loadBones(the_mesh,mesh);
+        this->m_hasAnimation = false;
+        mesh->finish();
+    }
+}
+
 void Entity::LoadMaterial(const aiScene *pScene, const char * file_name, const char *pre_fix)
 {
     //store material
@@ -391,40 +441,54 @@ void Entity::LoadMaterial(const aiScene *pScene, const char * file_name, const c
         ambient_channel->color = QVector3D(amb.r,amb.g,amb.b);
         diffuse_channel->color = QVector3D(dif.r,dif.g,dif.b);
         specular_channel->color = QVector3D(spec.r,spec.g,spec.b);
+
+
         aiString normalPath;
         the_material->GetTexture (aiTextureType_NORMALS,0,&normalPath);
+        auto normalTexture = loadTextureFromMaterial(normalPath.C_Str (),pre_fix);
+        // we don't check the normal texture whether is a nullptr, because models which don't use normal mapping technique are very common.
+        material->setNormalMap (normalTexture);
+
         //now ,we only use the first diffuse texture, will fix it later
         aiString diffuse_Path;
         the_material->GetTexture(aiTextureType_DIFFUSE,0,&diffuse_Path);
-        if(diffuse_Path.length == 0 )
-        {
-            diffuse_channel->texture = TexturePool::getInstance()->createOrGetTexture("default");
-        }else
-        {
-            char str[100];
-            Texture * tmp_tex = TexturePool::getInstance()->createOrGetTexture(diffuse_Path.C_Str());
-            if(tmp_tex)
-            {
-                diffuse_channel->texture =tmp_tex;
-                goto END;
-            }
-            sprintf(str,"%s%s",pre_fix,diffuse_Path.C_Str());
-            tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
-            if(tmp_tex)
-            {
-                diffuse_channel->texture =tmp_tex;
-                goto END;
-            }
-            sprintf(str,"%s%s","res/texture/",diffuse_Path.C_Str());
-            tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
-            if(tmp_tex)
-            {
-                diffuse_channel->texture =tmp_tex;
-                goto END;
-            }
+        auto diffuseTexture = loadTextureFromMaterial(diffuse_Path.C_Str (),pre_fix);
+        if(!diffuseTexture) diffuseTexture = TexturePool::getInstance ()->createOrGetTexture ("default");
+        diffuse_channel->texture = diffuseTexture;
 
-        }
-END:
+        this->material_list.push_back(material);
+    }
+}
+
+void Entity::loadMaterialFromTZW(tzw::CMC_Model *model, const char *file_name, const char *pre_fix)
+{
+    //store material
+    for(int i = 0 ;i<model->m_materialList.size();i++)
+    {
+        auto the_material = model->m_materialList[i];
+        char file_postfix[100];
+        sprintf(file_postfix,"%s_%d",file_name,i+1);
+        Material * material = MaterialPool::getInstance()->createOrGetMaterial(file_postfix);
+        MaterialChannel * ambient_channel =  material->getAmbient();
+        MaterialChannel * diffuse_channel =  material->getDiffuse();
+        MaterialChannel * specular_channel =  material->getSpecular();
+
+        ambient_channel->color = the_material->ambientColor;
+        diffuse_channel->color = the_material->diffuseColor;
+        specular_channel->color = the_material->specularColor;
+
+        auto normalPath = the_material->normalTexturePath;
+        auto normalTexture = loadTextureFromMaterial(normalPath,pre_fix);
+        // we don't check the normal texture whether is a nullptr, because models which don't use normal mapping technique are very common.
+        material->setNormalMap (normalTexture);
+
+        //now ,we only use the first diffuse texture, will fix it later
+        auto diffuse_Path = the_material->diffuseTexturePath;
+        auto diffuseTexture = loadTextureFromMaterial(diffuse_Path,pre_fix);
+        //if the diffuseTexture is not exist, we will use a default texture to replace.
+        if(!diffuseTexture) diffuseTexture = TexturePool::getInstance ()->createOrGetTexture ("default");
+        diffuse_channel->texture = diffuseTexture;
+
         this->material_list.push_back(material);
     }
 }
@@ -461,6 +525,37 @@ void Entity::loadBones( const aiMesh *pMesh,TMesh * mesh)
     }
     mesh->setBones(Bones);
 }
+
+Texture *Entity::loadTextureFromMaterial(std::string fileName, const char *pre_fix)
+{
+    Texture * result = nullptr;
+    if(fileName.empty ())
+    {
+        return result;
+    }else
+    {
+        char str[100];
+        Texture * tmp_tex = TexturePool::getInstance()->createOrGetTexture(fileName.c_str ());
+        if(tmp_tex)
+        {
+            result =tmp_tex;
+        }
+        sprintf(str,"%s%s",pre_fix,fileName.c_str());
+        tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
+        if(tmp_tex)
+        {
+            result =tmp_tex;
+        }
+        sprintf(str,"%s%s","res/texture/",fileName.c_str ());
+        tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
+        if(tmp_tex)
+        {
+            result =tmp_tex;
+        }
+    }
+    return result;
+}
+
 bool Entity::isSetDrawWire() const
 {
     return m_isSetDrawWire;

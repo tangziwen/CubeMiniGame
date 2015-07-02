@@ -13,7 +13,6 @@ public:
 
     virtual void handleTouchPress(QVector2D pos);
     virtual void handleTouchRelease(QVector2D pos);
-
 private:
     Texture * m_textureNormal;
     Texture * m_texturePressed;

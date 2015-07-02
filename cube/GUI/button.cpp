@@ -19,7 +19,7 @@ void Button::init(const char * texture, const char * texture_pressed)
 bool Button::checkTouchPress(QVector2D pos)
 {
     Rect rect(this->m_pos.toVector2D (),this->m_pos.toVector2D () +this->getSize ());
-    if(rect.isInRect (pos))
+    if(rect.containsPoint (pos))
     {
         return true;
     }else{

@@ -38,6 +38,7 @@ public:
     void addChild(Node * child);
     void removeFromParent();
     void removechild(Node * child);
+    void removeAllChildren();
     Node *parent() const;
     void setParent(Node *parent);
     std::vector<Node *> children() const;

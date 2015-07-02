@@ -238,6 +238,15 @@ void Node::removechild(Node *child)
         m_children.erase (iter);
     }
 }
+
+void Node::removeAllChildren()
+{
+    for(Node * node : m_children)
+    {
+        delete node;
+    }
+    m_children.clear ();
+}
 TVector3D Node::pos() const
 {
     return m_pos;
