@@ -236,7 +236,6 @@ SOURCES += main.cpp \
     Demo/CSMDelegate/csmdelegate.cpp \
     Demo/GUIDemo/guidelegate.cpp \
     GUI/button.cpp \
-    geometry/rect.cpp \
     listener/touchable.cpp \
     Event/eventmgr.cpp \
     external/TUtility/log/Tlog.cpp \
@@ -246,7 +245,21 @@ SOURCES += main.cpp \
     external/TUtility/string/Tstring.cpp \
     shader/ShaderPool.cpp \
     listener/Clickable.cpp \
-    GUI/Label.cpp
+    GUI/Label.cpp \
+    GUI/font/BMFontConfiguration.cpp \
+    geometry/Rect.cpp \
+    external/TUtility/Data.cpp \
+    external/TUtility/file/Tfile.cpp \
+    external/converter/CMC_Material.cpp \
+    external/converter/CMC_Mesh.cpp \
+    external/converter/CMC_Model.cpp \
+    external/converter/CMC_Vertex.cpp \
+    base/Bone.cpp \
+    external/converter/CMC_Animate.cpp \
+    external/converter/CMC_AnimateBone.cpp \
+    external/converter/CMC_Bone.cpp \
+    external/converter/CMC_BoneMetaInfo.cpp \
+    external/converter/Loader.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -570,7 +583,6 @@ HEADERS += \
     Demo/CSMDelegate/csmdelegate.h \
     Demo/GUIDemo/guidelegate.h \
     GUI/button.h \
-    geometry/rect.h \
     listener/touchable.h \
     Event/eventmgr.h \
     external/TUtility/log/Tlog.h \
@@ -581,7 +593,50 @@ HEADERS += \
     external/TUtility/TUtility.h \
     shader/ShaderPool.h \
     listener/Clickable.h \
-    GUI/Label.h
+    GUI/Label.h \
+    GUI/font/BMFontConfiguration.h \
+    geometry/Rect.h \
+    external/UT_hash.h \
+    external/TUtility/Data.h \
+    external/TUtility/file/Tfile.h \
+    external/converter/CMC_Material.h \
+    external/converter/CMC_Mesh.h \
+    external/converter/CMC_Model.h \
+    external/converter/CMC_Vertex.h \
+    external/rapidjson/error/en.h \
+    external/rapidjson/error/error.h \
+    external/rapidjson/internal/biginteger.h \
+    external/rapidjson/internal/diyfp.h \
+    external/rapidjson/internal/dtoa.h \
+    external/rapidjson/internal/ieee754.h \
+    external/rapidjson/internal/itoa.h \
+    external/rapidjson/internal/meta.h \
+    external/rapidjson/internal/pow10.h \
+    external/rapidjson/internal/stack.h \
+    external/rapidjson/internal/strfunc.h \
+    external/rapidjson/internal/strtod.h \
+    external/rapidjson/msinttypes/inttypes.h \
+    external/rapidjson/msinttypes/stdint.h \
+    external/rapidjson/allocators.h \
+    external/rapidjson/document.h \
+    external/rapidjson/encodedstream.h \
+    external/rapidjson/encodings.h \
+    external/rapidjson/filereadstream.h \
+    external/rapidjson/filewritestream.h \
+    external/rapidjson/memorybuffer.h \
+    external/rapidjson/memorystream.h \
+    external/rapidjson/pointer.h \
+    external/rapidjson/prettywriter.h \
+    external/rapidjson/rapidjson.h \
+    external/rapidjson/reader.h \
+    external/rapidjson/stringbuffer.h \
+    external/rapidjson/writer.h \
+    base/Bone.h \
+    external/converter/CMC_Animate.h \
+    external/converter/CMC_AnimateBone.h \
+    external/converter/CMC_Bone.h \
+    external/converter/CMC_BoneMetaInfo.h \
+    external/converter/Loader.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

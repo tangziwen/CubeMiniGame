@@ -3,6 +3,7 @@
 #include <string>
 #include "GUI/sprite.h"
 #include <vector>
+#include "font/BMFontConfiguration.h"
 
 class Label : public Node
 {
@@ -13,12 +14,14 @@ public:
     int fontSize() const;
     void setFontSize(int fontSize);
 private:
-    void getTextureOffset(QVector2D & TL, QVector2D & BR, char c);
+    void getTextureOffset(QVector2D & TL, QVector2D & BR, const _BMFontDef &def);
+    float scaleByFontSize(float value);
 private:
     int m_fontSize;
     std::string m_string;
     std::vector<Sprite * >m_glyphs;
     Texture * m_texture;
+    BMFontConfiguration * _config;
 };
 
 #endif // LABEL_H
