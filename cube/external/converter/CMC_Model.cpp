@@ -11,7 +11,8 @@ namespace tzw {
 
 CMC_Model::CMC_Model()
 {
-
+    m_numBones = 0;
+    m_rootBone = nullptr;
 }
 
 CMC_Model::~CMC_Model()
@@ -105,6 +106,16 @@ void CMC_Model::loadFromTZW(const char *fileName)
         addMesh (mesh);
     }
 }
+CMC_Bone *CMC_Model::rootBone() const
+{
+    return m_rootBone;
+}
+
+void CMC_Model::setRootBone(CMC_Bone *rootBone)
+{
+    m_rootBone = rootBone;
+}
+
 
 } // namespace tzw
 

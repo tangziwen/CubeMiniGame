@@ -253,7 +253,13 @@ SOURCES += main.cpp \
     external/converter/CMC_Material.cpp \
     external/converter/CMC_Mesh.cpp \
     external/converter/CMC_Model.cpp \
-    external/converter/CMC_Vertex.cpp
+    external/converter/CMC_Vertex.cpp \
+    base/Bone.cpp \
+    external/converter/CMC_Animate.cpp \
+    external/converter/CMC_AnimateBone.cpp \
+    external/converter/CMC_Bone.cpp \
+    external/converter/CMC_BoneMetaInfo.cpp \
+    external/converter/Loader.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -624,7 +630,13 @@ HEADERS += \
     external/rapidjson/rapidjson.h \
     external/rapidjson/reader.h \
     external/rapidjson/stringbuffer.h \
-    external/rapidjson/writer.h
+    external/rapidjson/writer.h \
+    base/Bone.h \
+    external/converter/CMC_Animate.h \
+    external/converter/CMC_AnimateBone.h \
+    external/converter/CMC_Bone.h \
+    external/converter/CMC_BoneMetaInfo.h \
+    external/converter/Loader.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

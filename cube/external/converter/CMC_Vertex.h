@@ -7,7 +7,7 @@
 #include "external/rapidjson/filewritestream.h"
 #include "external/rapidjson/stringbuffer.h"
 namespace tzw {
-
+#define MAX_BONES 4
 class CMC_Vertex
 {
 public:
@@ -28,6 +28,10 @@ public:
     void write( rapidjson::PrettyWriter<rapidjson::StringBuffer> & writer);
 
     void loadFromTZW(const rapidjson::Value &value);
+    void addBoneData(int boneIndex, float boneWeight);
+
+    int m_boneIds[MAX_BONES];
+    float m_boneWeights[MAX_BONES];
 private:
     QVector3D m_pos;
     QVector2D m_UV;

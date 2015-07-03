@@ -8,7 +8,7 @@
 #include "texture/texturepool.h"
 #include "shader/shader_program.h"
 #include "external/TUtility/TUtility.h"
-
+#include "external/converter/Loader.h"
 #include <QDebug>
 Entity::Entity()
 {
@@ -25,7 +25,7 @@ Entity::Entity()
     m_isAABBDirty = true;
 }
 
-Entity::Entity(const char *file_name)
+Entity::Entity(const char *file_name,LoadPolicy policy)
 {
     this->m_pScene = nullptr;
     this->mesh_list.clear();
@@ -35,13 +35,31 @@ Entity::Entity(const char *file_name)
     this->onRender = nullptr;
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     this->setNodeType (NODE_TYPE_ENTITY);
-    auto fileType = tzw::Tfile::getInstance ()->guessFileType (file_name);
-    if(fileType.compare ("tzw")==0)
+    switch(policy)
     {
-        loadModelDataFromTZW (file_name);
-    }else
+    case LoadPolicy::LoadFromAssimp:
     {
         loadModelData(file_name);
+        m_model = nullptr;
+    }
+        break;
+    case LoadPolicy::LoadFromLoader:
+    {
+
+        tzw::Loader loader;
+        loader.loadFromModel (file_name);
+        loadModelDataFromTZW (loader.model (),file_name);
+        m_model = loader.model ();
+    }
+        break;
+    case LoadPolicy::LoadFromTzw:
+    {
+        tzw::CMC_Model * model = new tzw::CMC_Model;
+        model->loadFromTZW (file_name);
+        loadModelDataFromTZW (model,file_name);
+        m_model = model;
+    }
+        break;
     }
     m_isAABBDirty = true;
 }
@@ -90,6 +108,17 @@ ShaderProgram *Entity::getShaderProgram()
 
 void Entity::bonesTransform(float TimeInSeconds, std::vector<Matrix4f> &Transforms,std::string animation_name)
 {
+    if(m_model)
+    {
+        bonesTransformTZW(TimeInSeconds,Transforms,animation_name);
+    }else
+    {
+        bonesTransformAssimp(TimeInSeconds,Transforms,animation_name);
+    }
+}
+
+void Entity::bonesTransformAssimp(float TimeInSeconds, std::vector<Matrix4f> &Transforms, string animation_name)
+{
     if(!m_pScene  || m_pScene->mNumAnimations<=0)
     {
         Transforms.clear();
@@ -107,9 +136,14 @@ void Entity::bonesTransform(float TimeInSeconds, std::vector<Matrix4f> &Transfor
     }
 }
 
-void Entity::animate(float time, const char *animation_name)
+void Entity::bonesTransformTZW(float TimeInSeconds, std::vector<Matrix4f> &Transforms, string animation_name)
 {
 
+}
+
+void Entity::animate(float time, const char *animation_name)
+{
+    m_animateTime = time;
 }
 float Entity::animateTime() const
 {
@@ -379,10 +413,8 @@ void Entity::loadModelData(const char *file_name)
 
 }
 
-void Entity::loadModelDataFromTZW(const char *file_name)
+void Entity::loadModelDataFromTZW(tzw::CMC_Model * cmc_model,const char * file_name)
 {
-    auto cmc_model = new tzw::CMC_Model();
-    cmc_model->loadFromTZW (file_name);
     char str[100]={'\0'};
     utility::FindPrefix(file_name,str);
     //load material

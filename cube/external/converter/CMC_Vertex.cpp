@@ -19,6 +19,10 @@ enum AttributeOffset
 CMC_Vertex::CMC_Vertex()
 {
 
+    for(int i =0; i<MAX_BONES; i++)
+    {
+        m_boneWeights[i] = 0;
+    }
 }
 
 CMC_Vertex::~CMC_Vertex()
@@ -93,6 +97,19 @@ void CMC_Vertex::loadFromTZW(const rapidjson::Value &value)
     m_normal = QVector3D(value[NX_offset].GetDouble (),value[NY_offset].GetDouble (),value[NZ_offset].GetDouble ());
     //tangent
     m_tangent = QVector3D(value[TX_offset].GetDouble (),value[TY_offset].GetDouble (),value[TZ_offset].GetDouble ());
+}
+
+void CMC_Vertex::addBoneData(int boneIndex, float boneWeight)
+{
+    for (int i = 0 ; i < MAX_BONES ; i++) {
+        if (m_boneWeights[i] == 0.0) {
+            m_boneIds[i]     = boneIndex;
+            m_boneWeights[i] = boneWeight;
+            return;
+        }
+    }
+    // should never get here - more bones than we have space for
+    assert(0);
 }
 
 

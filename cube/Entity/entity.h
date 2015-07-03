@@ -24,8 +24,15 @@
 class Entity : public Node
 {
 public:
+    enum class LoadPolicy
+    {
+        LoadFromAssimp,
+        LoadFromLoader,
+        LoadFromTzw,
+    };
+
     Entity();
-    Entity(const char * file_name);
+    Entity(const char * file_name,LoadPolicy policy = LoadPolicy::LoadFromAssimp);
     void addMesh(TMesh *mesh);
     TMesh * getMesh(int index);
     void draw(bool withoutexture =false);
@@ -34,6 +41,8 @@ public:
     Camera * getCamera();
     ShaderProgram * getShaderProgram();
     void bonesTransform(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
+    void bonesTransformAssimp(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
+    void bonesTransformTZW(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
     void animate(float time,const char * animation_name);
     float animateTime() const;
     void setAnimateTime(float animateTime);
@@ -60,11 +69,12 @@ private:
     void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void loadModelData(const char * file_name);
-    void loadModelDataFromTZW(const char * file_name);
+    void loadModelDataFromTZW(tzw::CMC_Model *cmc_model, const char *file_name);
     void LoadMaterial(const aiScene* pScene, const char *file_name,const char * pre_fix);
     void loadMaterialFromTZW(tzw::CMC_Model * model, const char * file_name,const char * pre_fix);
     void loadBones(const aiMesh* pMesh, TMesh *mesh);
     Texture *loadTextureFromMaterial(std::string fileName, const char * pre_fix);
+    tzw::CMC_Model * m_model;
 private:
     bool m_isSetDrawWire;
     bool m_isEnableShadow;
