@@ -31,6 +31,7 @@ public:
     void setMaterial(Material *value);
     AABB aabb() const;
     void setAabb(const AABB &aabb);
+    VertexData * getVertex(int index );
 private:
     AABB m_aabb;
     Material * material;
@@ -39,7 +40,6 @@ private:
     std::vector<VertexData> vertices;
     int texture_id;
     std::vector<GLushort > indices;
-    std::vector<BoneData> m_bones;
 };
 
 #endif // MESH_H

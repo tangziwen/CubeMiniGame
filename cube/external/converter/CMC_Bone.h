@@ -15,8 +15,9 @@ public:
     CMC_BoneMetaInfo *info() const;
     void setInfo(CMC_BoneMetaInfo *info);
     void addChild(CMC_Bone * bone);
-private:
     std::vector <CMC_Bone * >m_children;
+    QMatrix4x4 m_localTransform;// node to parent transform.
+private:
     CMC_BoneMetaInfo * m_info;
 };
 

@@ -58,27 +58,39 @@ void NormalMappingDelegate::onInit()
     };
 
     {
-        auto the_box = new Entity("./res/model/box/box.obj",Entity::LoadPolicy::LoadFromLoader);
-        the_box->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
-        the_box->setCamera (&camera);
-        //scene->root ()->addChild (the_box);
-        the_box->setIsEnableShadow (false);
+        //bob
+        auto the_bob2 = new Entity("./res/model/bob/boblampclean.md5mesh",Entity::LoadPolicy::LoadFromLoader);
+        the_bob2->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
+        the_bob2->setCamera (&camera);
+        the_bob2->setPos (QVector3D(-2,0,-10));
+        the_bob2->setRotation (QVector3D(-90,0,0));
+        scene->root ()->addChild (the_bob2);
+        the_bob2->setIsEnableShadow (false);
+        the_bob2->scale (0.05,0.05,0.05);
         //this sample we don't use shadow
-        the_box->setIsEnableShadow (false);
+        the_bob2->setIsEnableShadow (false);
+//        the_bob2->onRender = [](Entity * self, float dt){
+//            self->setAnimateTime(self->animateTime ()+ 0.05);
+//            self->animate (self->animateTime (),nullptr);
+//        };
     }
 
     {
         //bob
-        auto the_bob = new Entity("./res/model/bob/boblampclean.md5mesh");
-        the_bob->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
-        the_bob->setCamera (&camera);
-        the_bob->setPos (QVector3D(0,0,-10));
-        the_bob->setRotation (QVector3D(-90,0,0));
-        scene->root ()->addChild (the_bob);
-        the_bob->setIsEnableShadow (false);
-        the_bob->scale (0.05,0.05,0.05);
+        auto the_bob2 = new Entity("./res/model/bob/boblampclean.md5mesh");
+        the_bob2->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
+        the_bob2->setCamera (&camera);
+        the_bob2->setPos (QVector3D(2,0,-10));
+        the_bob2->setRotation (QVector3D(-90,0,0));
+        scene->root ()->addChild (the_bob2);
+        the_bob2->setIsEnableShadow (false);
+        the_bob2->scale (0.05,0.05,0.05);
         //this sample we don't use shadow
-        the_bob->setIsEnableShadow (false);
+        the_bob2->setIsEnableShadow (false);
+//        the_bob2->onRender = [](Entity * self, float dt){
+//            self->setAnimateTime(self->animateTime ()+ 0.05);
+//            self->animate (self->animateTime (),nullptr);
+//        };
     }
 
     //then add  a Directional light

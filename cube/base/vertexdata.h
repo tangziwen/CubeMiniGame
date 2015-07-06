@@ -17,6 +17,7 @@ struct VertexData
     int boneId[4];
     float boneWeight[4];
     QVector3D tangent;
+    void addBoneData(int id, float weight);
 };
 
 #endif // VERTEXDATA_H

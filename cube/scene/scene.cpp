@@ -136,15 +136,30 @@ void Scene::setEntityBoneTransform(Entity *entity)
 {
     if(entity->hasAnimation())
     {
-        entity->getShaderProgram()->setUniformInteger("g_has_animation",1);
-        std::vector <Matrix4f > transform;
-        entity->bonesTransform(entity->animateTime(),transform,entity->animationName());
-        for(int i =0;i<transform.size();i++)
+        entity->getShaderProgram()->setUniformInteger("g_has_animation",1);\
+        if(entity->m_model)
         {
-            char str[100];
-            sprintf(str,"g_bones[%d]",i);
-            entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i].m),true);
+            std::vector <QMatrix4x4 > transform;
+            entity->bonesTransformTZW (entity->animateTime (),transform,entity->animationName ());
+            //entity->bonesTransform(entity->animateTime(),transform,entity->animationName());
+            for(int i =0;i<transform.size();i++)
+            {
+                char str[100];
+                sprintf(str,"g_bones[%d]",i);
+                entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i].data()),true);
+            }
+        }else
+        {
+            std::vector <Matrix4f > transform;
+            entity->bonesTransformAssimp(entity->animateTime(),transform,entity->animationName());
+            for(int i =0;i<transform.size();i++)
+            {
+                char str[100];
+                sprintf(str,"g_bones[%d]",i);
+                entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i]),true);
+            }
         }
+
     }else{
         entity->getShaderProgram()->setUniformInteger("g_has_animation",0);
     }

@@ -124,19 +124,6 @@ void TMesh::finishWithoutNormal()
     draw_command.Init(this->material,vbo[0],vbo[1],indices.size());
 }
 
-void TMesh::setBones(std::vector<BoneData> bones)
-{
-    this->m_bones = bones;
-    for(int i =0 ;i<bones.size();i++)
-    {
-        for(int j =0; j<4;j++)
-        {
-            this->vertices[i].boneId[j] = bones[i].IDs[j];
-            this->vertices[i].boneWeight[j] = bones[i].weights[j];
-        }
-
-    }
-}
 
 void TMesh::finish()
 {
@@ -152,15 +139,11 @@ void TMesh::finish()
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, vbo[1]);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(GLushort), &indices[0], GL_STATIC_DRAW);
 
-    //bone
-    glBindBuffer(GL_ARRAY_BUFFER,vbo[2]);
-    glBufferData(GL_ARRAY_BUFFER,sizeof(BoneData)*m_bones.size(),&m_bones[0],GL_STATIC_DRAW);
 
     if(!this->material->getDiffuse()->texture)
     {
         this->material->getDiffuse()->texture = TexturePool::getInstance()->createOrGetTexture("default");
     }
-    draw_command.m_bones = this->m_bones;
     draw_command.Init(this->material,vbo[0],vbo[1],vbo[2],indices.size());
 }
 
@@ -216,6 +199,11 @@ AABB TMesh::aabb() const
 void TMesh::setAabb(const AABB &aabb)
 {
     m_aabb = aabb;
+}
+
+VertexData *TMesh::getVertex(int index)
+{
+    return &vertices[index];
 }
 
 

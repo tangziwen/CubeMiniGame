@@ -10,7 +10,9 @@ public:
     CMC_Animate();
     std::vector<CMC_AnimateBone *>m_animateBone;
     void addAnimateBone(CMC_AnimateBone * bone);
+    CMC_AnimateBone * findAnimateBone(std::string boneName);
     float m_ticksPerSecond;
+    float m_duration;
 };
 
 } // namespace tzw

@@ -35,6 +35,13 @@ public:
     void addTranslate(CMC_TranslateKey v);
     void addScale(CMC_ScaleKey v);
     void addRotate(CMC_RotateKey q);
+    std::string m_boneName;
+    void calcInterpolatedScaling(QVector3D & out, float AnimationTime) const;
+    void calcInterpolatedRotation(QQuaternion &out, float AnimationTime)const;
+    void calcInterpolatedPosition(QVector3D &out, float AnimationTime)const;
+    int findBoneInterpoScaling(float AnimationTime) const;
+    int findBoneInterpoRotation(float AnimationTime) const;
+    int findBoneInterpoTranslation(float AnimationTime) const;
 };
 
 } // namespace tzw

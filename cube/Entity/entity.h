@@ -42,7 +42,7 @@ public:
     ShaderProgram * getShaderProgram();
     void bonesTransform(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
     void bonesTransformAssimp(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
-    void bonesTransformTZW(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
+    void bonesTransformTZW(float TimeInSeconds, std::vector<QMatrix4x4> &Transforms, std::string animation_name);
     void animate(float time,const char * animation_name);
     float animateTime() const;
     void setAnimateTime(float animateTime);
@@ -58,13 +58,14 @@ public:
     virtual void adjustVertices();
     bool isSetDrawWire() const;
     void setIsSetDrawWire(bool isSetDrawWire);
-
+    tzw::CMC_Model * m_model;
 private:
     uint findBoneInterpoScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
     uint findBoneInterpoRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
     uint findBoneInterpoTranslation(float AnimationTime, const aiNodeAnim* pNodeAnim);
     const aiNodeAnim* findNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
     void readNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
+    void readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Bone * node, QMatrix4x4 parentTransform, std::vector<QMatrix4x4> &Transforms);
     void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
@@ -74,7 +75,7 @@ private:
     void loadMaterialFromTZW(tzw::CMC_Model * model, const char * file_name,const char * pre_fix);
     void loadBones(const aiMesh* pMesh, TMesh *mesh);
     Texture *loadTextureFromMaterial(std::string fileName, const char * pre_fix);
-    tzw::CMC_Model * m_model;
+
 private:
     bool m_isSetDrawWire;
     bool m_isEnableShadow;

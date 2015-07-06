@@ -8,8 +8,9 @@ QMatrix4x4 toQMatrix(aiMatrix4x4 mat)
     QMatrix4x4 m(mat.a1,mat.a2,mat.a3,mat.a4,
                  mat.b1,mat.b2,mat.b3,mat.b4,
                  mat.c1,mat.c2,mat.c3,mat.c4,
-                 mat.d1,mat.d2,mat.d3,mat.d3
+                 mat.d1,mat.d2,mat.d3,mat.d4
                 );
+    return m;
 }
 
 Loader::Loader()
@@ -51,7 +52,7 @@ bool Loader::loadFromModel(const char *fileName)
 
         auto inverseTransform = pScene->mRootNode->mTransformation;
         inverseTransform = inverseTransform.Inverse();
-        //m_model->setGlobalInverseTransform (inverseTransform);
+        m_model->setGlobalInverseTransform (toQMatrix(inverseTransform).transposed ());
         LoadMaterial(pScene,fileName);
 
         const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
@@ -114,7 +115,10 @@ void Loader::loadBoneList(const aiMesh *pMesh, CMC_Mesh *mesh)
             m_model->m_numBones++;
             CMC_BoneMetaInfo * metaInfo = new CMC_BoneMetaInfo();
             metaInfo->setName (BoneName);
-            metaInfo->setDefaultOffset (toQMatrix(pMesh->mBones[i]->mOffsetMatrix));
+            auto matrix_assimp = pMesh->mBones[i]->mOffsetMatrix;
+            auto matrix_qt = toQMatrix(matrix_assimp);
+            matrix_qt = matrix_qt.transposed ();
+            metaInfo->setDefaultOffset (matrix_qt);
             m_model->m_boneMetaInfoList.push_back (metaInfo);
             m_model->m_BoneMetaInfoMapping[BoneName] = BoneIndex;
         }
@@ -192,7 +196,7 @@ void Loader::loadBonesHeirarchy(CMC_Bone *paretnBone, const aiNode *pNode)
         boneInfo->setDefaultOffset (mat);
         bone->setInfo (boneInfo);
     }
-
+    bone->m_localTransform = toQMatrix (pNode->mTransformation).transposed ();//set the node to it's parent node transformation.
     for (uint i = 0 ; i < pNode->mNumChildren ; i++) {
         loadBonesHeirarchy(bone,pNode->mChildren[i]);
     }
@@ -210,9 +214,8 @@ void Loader::loadAnimation(const aiNode *pNode)
     const aiNodeAnim * pNodeAnim = findNodeAnim(pAnimation, NodeName);
     if(pNodeAnim)//that node is a animation bone.
     {
-        auto index = findBoneIndex(NodeName);//fine the index of the bone list.
         auto animateBone = new CMC_AnimateBone();
-        animateBone->m_boneIndex = index;
+        animateBone->m_boneName = NodeName;
         //load position key.
         for(int i =0;i<pNodeAnim->mNumPositionKeys;i++)
         {
@@ -242,6 +245,7 @@ void Loader::loadAnimation(const aiNode *pNode)
         }
         m_model->m_animate.addAnimateBone (animateBone);
         m_model->m_animate.m_ticksPerSecond = pAnimation->mTicksPerSecond;
+        m_model->m_animate.m_duration = pAnimation->mDuration;
     }
     for (uint i = 0 ; i < pNode->mNumChildren ; i++) {
         loadAnimation( pNode->mChildren[i]);
