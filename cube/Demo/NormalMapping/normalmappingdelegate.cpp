@@ -44,20 +44,19 @@ void NormalMappingDelegate::onInit()
     scene->root ()->addChild (&camera);
 
     //create a box
-    auto the_head = new Entity("./res/model/scan_head/Infinite-Level_02.obj");
+    auto the_head = new Entity("./res/model/scan_head/Infinite-Level_02.obj",Entity::LoadPolicy::LoadFromLoader);
     the_head->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
+    the_head->scale (2,2,2);
     //set it's normal map
     auto material = the_head->getMesh (0)->getMaterial ();
     material->setNormalMap (TexturePool::getInstance ()->createOrGetTexture ("./res/model/scan_head/Infinite-Level_02_Tangent_SmoothUV.jpg"));
     the_head->setCamera (&camera);
-    //scene->root ()->addChild (the_head);
+    scene->root ()->addChild (the_head);
     //this sample we don't use shadow
     the_head->setIsEnableShadow (false);
-    the_head->onUpdate = [](Node* target){
-        target->setRotation (target->rotation ()+QVector3D(0,0.1,0));
+    the_head->onUpdate = [=](Node* target){
     };
 
-    {
         //bob
         auto the_bob2 = new Entity("./res/model/bob/boblampclean.md5mesh",Entity::LoadPolicy::LoadFromLoader);
         the_bob2->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
@@ -69,29 +68,11 @@ void NormalMappingDelegate::onInit()
         the_bob2->scale (0.05,0.05,0.05);
         //this sample we don't use shadow
         the_bob2->setIsEnableShadow (false);
-//        the_bob2->onRender = [](Entity * self, float dt){
-//            self->setAnimateTime(self->animateTime ()+ 0.05);
-//            self->animate (self->animateTime (),nullptr);
-//        };
-    }
+        the_bob2->onRender = [](Entity * self, float dt){
+            self->playAnimate (0,self->animateTime ()+ 0.02);
+        };
 
-    {
-        //bob
-        auto the_bob2 = new Entity("./res/model/bob/boblampclean.md5mesh");
-        the_bob2->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
-        the_bob2->setCamera (&camera);
-        the_bob2->setPos (QVector3D(2,0,-10));
-        the_bob2->setRotation (QVector3D(-90,0,0));
-        scene->root ()->addChild (the_bob2);
-        the_bob2->setIsEnableShadow (false);
-        the_bob2->scale (0.05,0.05,0.05);
-        //this sample we don't use shadow
-        the_bob2->setIsEnableShadow (false);
-//        the_bob2->onRender = [](Entity * self, float dt){
-//            self->setAnimateTime(self->animateTime ()+ 0.05);
-//            self->animate (self->animateTime (),nullptr);
-//        };
-    }
+
 
     //then add  a Directional light
     auto directional_light = scene->getDirectionalLight ();

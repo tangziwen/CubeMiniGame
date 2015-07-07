@@ -88,6 +88,135 @@ void Node::setNodeType(int nodeType)
     m_nodeType = nodeType;
 }
 
+static bool decomposeMatrix(QMatrix4x4 src,QVector3D * pos,QQuaternion * rotation,QVector3D * scale)
+{
+    auto m = src.data ();
+    if (pos)
+        {
+            // Extract the translation.
+        pos->setX (m[12]);
+        pos->setY (m[13]);
+        pos->setZ (m[14]);
+        }
+
+        // Nothing left to do.
+        if (scale == nullptr && rotation == nullptr)
+            return true;
+
+        // Extract the scale.
+        // This is simply the length of each axis (row/column) in the matrix.
+        QVector3D xaxis(m[0], m[1], m[2]);
+        float scaleX = xaxis.length ();
+
+        QVector3D yaxis(m[4], m[5], m[6]);
+        float scaleY = yaxis.length();
+
+        QVector3D zaxis(m[8], m[9], m[10]);
+        float scaleZ = zaxis.length();
+
+        // Determine if we have a negative scale (true if determinant is less than zero).
+        // In this case, we simply negate a single axis of the scale.
+        float det = src.determinant ();
+        if (det < 0)
+            scaleZ = -scaleZ;
+
+        if (scale)
+        {
+            scale->setX (scaleX);
+            scale->setY (scaleY);
+            scale->setZ (scaleZ);
+        }
+
+        // Nothing left to do.
+        if (rotation == nullptr)
+            return true;
+
+        // Scale too close to zero, can't decompose rotation.
+        if (scaleX < 0.00001 || scaleY < 00001 || fabs(scaleZ) < 00001)
+            return false;
+
+        float rn;
+
+        // Factor the scale out of the matrix axes.
+        rn = 1.0f / scaleX;
+        xaxis *=rn;
+
+        rn = 1.0f / scaleY;
+        yaxis *= rn;
+
+
+        rn = 1.0f / scaleZ;
+        zaxis *= rn;
+
+
+        // Now calculate the rotation from the resulting matrix (axes).
+        float trace = xaxis.x() + yaxis.y() + zaxis.z() + 1.0f;
+
+        if (trace > 0.000001f)
+        {
+            float s = 0.5f / sqrt(trace);
+            rotation->setScalar (0.25f / s);
+            rotation->setX ((yaxis.z() - zaxis.y()) * s);
+            rotation->setY ((zaxis.x() - xaxis.z()) * s);
+            rotation->setZ ((xaxis.y() - yaxis.x()) * s);
+        }
+        else
+        {
+            // Note: since xaxis, yaxis, and zaxis are normalized,
+            // we will never divide by zero in the code below.
+            if (xaxis.x() > yaxis.y() && xaxis.x() > zaxis.z())
+            {
+                float s = 0.5f / sqrt(1.0f + xaxis.x() - yaxis.y() - zaxis.z());
+                rotation->setScalar ((yaxis.z() - zaxis.y()) * s);
+                rotation->setX (0.25f / s);
+                rotation->setY ((yaxis.x() + xaxis.y()) * s);
+                rotation->setZ ((zaxis.x() + xaxis.z()) * s);
+            }
+            else if (yaxis.y() > zaxis.z())
+            {
+                float s = 0.5f / sqrt(1.0f + yaxis.y() - xaxis.x ()- zaxis.z());
+                rotation->setScalar ((zaxis.x() - xaxis.z()) * s);
+                rotation->setX ((yaxis.x() + xaxis.y()) * s);
+                rotation->setY (0.25f / s);
+                rotation->setZ ((zaxis.y() + yaxis.z()) * s);
+            }
+            else
+            {
+                float s = 0.5f / sqrt(1.0f + zaxis.z() - xaxis.x ()- yaxis.y() );
+                rotation->setScalar ((xaxis.y() - yaxis.x() ) * s);
+                rotation->setX ((zaxis.x() + xaxis.z() ) * s);
+                rotation->setY ((zaxis.y() + yaxis.z() ) * s);
+                rotation->setZ (0.25f / s);
+            }
+        }
+        return true;
+}
+
+QVector3D quaternionToEuler(QQuaternion q)
+{
+    float rotate_x,rotate_y,rotate_z;
+    //convert quaternion to Euler angle
+    float x = q.x (), y = q.y (), z = q.z(), w = q.scalar ();
+    rotate_x = atan2f(2.f * (w * x + y * z), 1.f - 2.f * (x * x + y * y));
+    rotate_y = asinf(2.f * (w * y - z * x));
+    rotate_z = atan2f(2.f * (w * z + x * y), 1.f - 2.f * (y * y + z * z));
+
+    rotate_x = utility::Radius2Ang (rotate_x);
+    rotate_y = utility::Radius2Ang (rotate_y);
+    rotate_z = utility::Radius2Ang (rotate_z);
+    return QVector3D(rotate_x,rotate_y,rotate_z);
+}
+
+void Node::setTransform(QMatrix4x4 matrix)
+{
+    QVector3D pos,scale;
+    QQuaternion rotate;
+    decomposeMatrix(matrix,&pos,&rotate,&scale);
+    m_pos = pos;
+    m_scalling = scale;
+    m_rotation = quaternionToEuler(rotate);
+}
+
 void Node::translate(float x, float y, float z)
 {
     m_pos=QVector3D(x,y,z);
@@ -285,6 +414,16 @@ QVector3D Node::getForwardVector()
     QVector4D v(0,0,-1,1);
     v = this->getRotaionMatrix ()*v;
     return v.toVector3D ();
+}
+
+Node *Node::getChild(int index)
+{
+    return m_children[index];
+}
+
+int Node::getChildrenAmount()
+{
+    return m_children.size ();
 }
 
 void Node::setAsCustomNode()

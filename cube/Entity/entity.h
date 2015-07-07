@@ -20,19 +20,18 @@
 #include "external/include/assimp/postprocess.h"
 #include "external/converter/CMC_ModelData.h"
 #include "base/node.h"
-
+#include "EntityNode.h"
 class Entity : public Node
 {
 public:
     enum class LoadPolicy
     {
-        LoadFromAssimp,
         LoadFromLoader,
         LoadFromTzw,
     };
 
     Entity();
-    Entity(const char * file_name,LoadPolicy policy = LoadPolicy::LoadFromAssimp);
+    Entity(const char * file_name,LoadPolicy policy = LoadPolicy::LoadFromLoader);
     void addMesh(TMesh *mesh);
     TMesh * getMesh(int index);
     void draw(bool withoutexture =false);
@@ -40,14 +39,10 @@ public:
     void setCamera(Camera * camera);
     Camera * getCamera();
     ShaderProgram * getShaderProgram();
-    void bonesTransform(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
-    void bonesTransformAssimp(float TimeInSeconds, std::vector<Matrix4f> &Transforms, std::string animation_name);
-    void bonesTransformTZW(float TimeInSeconds, std::vector<QMatrix4x4> &Transforms, std::string animation_name);
-    void animate(float time,const char * animation_name);
+    void copyBonePalette(std::vector<QMatrix4x4> &Transforms);
+    void playAnimate(int index, float time);
     float animateTime() const;
     void setAnimateTime(float animateTime);
-    std::string animationName() const;
-    void setAnimationName(const std::string &animationName);
     bool hasAnimation() const;
     void setHasAnimation(bool hasAnimation);
     bool isEnableShadow() const;
@@ -58,42 +53,44 @@ public:
     virtual void adjustVertices();
     bool isSetDrawWire() const;
     void setIsSetDrawWire(bool isSetDrawWire);
-    tzw::CMC_ModelData * m_model;
-private:
-    uint findBoneInterpoScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
-    uint findBoneInterpoRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-    uint findBoneInterpoTranslation(float AnimationTime, const aiNodeAnim* pNodeAnim);
-    const aiNodeAnim* findNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
-    void readNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
-    void readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Node * node, QMatrix4x4 parentTransform, std::vector<QMatrix4x4> &Transforms);
-    void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-    void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-    void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
-    void loadModelData(const char * file_name);
-    void loadModelDataFromTZW(tzw::CMC_ModelData *cmc_model, const char *file_name);
-    void LoadMaterial(const aiScene* pScene, const char *file_name,const char * pre_fix);
-    void loadMaterialFromTZW(tzw::CMC_ModelData * model, const char * file_name,const char * pre_fix);
-    void loadBones(const aiMesh* pMesh, TMesh *mesh);
-    Texture *loadTextureFromMaterial(std::string fileName, const char * pre_fix);
+
+    void updateNodeAndBone();
+    EntityNode *getEntityNodeRoot() const;
+    void setEntityNodeRoot(EntityNode *entityNodeRoot);
+
+    int getCurrentAnimateIndex() const;
+    void setCurrentAnimateIndex(int currentAnimateIndex);
+
+    tzw::CMC_ModelData *getModelData() const;
+    void setModelData(tzw::CMC_ModelData *modelData);
 
 private:
+    void loadModelDataFromTZW(tzw::CMC_ModelData *cmc_model, const char *file_name);
+    void loadMaterialFromTZW(tzw::CMC_ModelData * model, const char * file_name,const char * pre_fix);
+    Texture *loadTextureFromMaterial(std::string fileName, const char * pre_fix);
+    void createNode(Node *parent, tzw::CMC_Node *node);
+    void updateNodesAndBonesRecursively(EntityNode * theNode, QMatrix4x4 parentTransform);
+    float getPercentageOfAnimate();
+
+private:
+    tzw::CMC_ModelData * m_modelData;
+    EntityNode * m_entityNodeRoot;
     bool m_isSetDrawWire;
     bool m_isEnableShadow;
     bool m_hasAnimation;
     float m_animateTime;
-    std::string m_animationName;
     ShaderProgram * program;
     std::vector <TMesh *> mesh_list;
-
     std::vector <Material * >material_list;
     Matrix4f m_globalInverseTransform;
     std::map<std::string,int> m_BoneMapping;  // maps a bone name to its index
     int m_numBones;
     std::vector<BoneInfo> m_BoneInfo;
-    aiScene* m_pScene;
+    std::vector<QMatrix4x4> m_bonePalette;
     Assimp::Importer m_Importer;
     AABB m_aabb;
     bool m_isAABBDirty;
+    int m_currentAnimateIndex;
 protected:
     Camera *camera;
 };

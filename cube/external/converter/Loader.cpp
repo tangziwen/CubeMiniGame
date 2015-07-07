@@ -52,7 +52,7 @@ bool Loader::loadFromModel(const char *fileName)
 
         auto inverseTransform = pScene->mRootNode->mTransformation;
         inverseTransform = inverseTransform.Inverse();
-        m_model->setGlobalInverseTransform (toQMatrix(inverseTransform).transposed ());
+        m_model->setGlobalInverseTransform (toQMatrix(inverseTransform));
         LoadMaterial(pScene,fileName);
 
         const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
@@ -92,7 +92,7 @@ bool Loader::loadFromModel(const char *fileName)
             //mesh->finish();
         }
         loadNodeHeirarchy(nullptr,m_pScene->mRootNode);
-        loadAnimation(m_pScene->mRootNode);
+        loadAnimations ();
         printf("extracting finish..\n");
         return true;
     }
@@ -117,7 +117,6 @@ void Loader::loadBoneList(const aiMesh *pMesh, CMC_MeshData *mesh)
             metaInfo->setName (BoneName);
             auto matrix_assimp = pMesh->mBones[i]->mOffsetMatrix;
             auto matrix_qt = toQMatrix(matrix_assimp);
-            matrix_qt = matrix_qt.transposed ();
             metaInfo->setDefaultBoneOffset (matrix_qt);
             m_model->m_boneMetaInfoList.push_back (metaInfo);
             m_model->m_BoneMetaInfoMapping[BoneName] = BoneIndex;
@@ -166,43 +165,49 @@ void Loader::LoadMaterial(const aiScene *pScene, const char *file_name)
     }
 }
 
-void Loader::loadNodeHeirarchy(CMC_Node *paretnBone, const aiNode *pNode)
+void Loader::loadNodeHeirarchy(CMC_Node *parentNode, const aiNode *pNode)
 {
-    CMC_Node *  bone = nullptr;
+    CMC_Node *  node = nullptr;
     auto NodeName = pNode->mName.C_Str ();
     if(!m_model->rootBone ())
     {
         m_model->setRootBone (new CMC_Node());
-        bone = m_model->rootBone ();
+        node = m_model->rootBone ();
     }
     else
     {
-        bone = new CMC_Node();
-        paretnBone->addChild (bone);
+        node = new CMC_Node();
+        parentNode->addChild (node);
     }
 
-    auto result = m_model->m_BoneMetaInfoMapping.find(NodeName);
-    if (result != m_model->m_BoneMetaInfoMapping.end ()) {
+    //load the index of meshes which attach to the node.
+    for(int i =0;i<pNode->mNumMeshes;i++)
+    {
+        node->m_childrenMeshes.push_back (pNode->mMeshes[i]);
+    }
+
+    //check if it is a bone
+    if (m_model->m_BoneMetaInfoMapping.find(NodeName) != m_model->m_BoneMetaInfoMapping.end ()) {
         uint BoneIndex = m_model->m_BoneMetaInfoMapping[NodeName];
         auto  boneinfo = m_model->m_boneMetaInfoList[BoneIndex];
-        bone->setInfo (boneinfo);
-    }else
+        node->setInfo (boneinfo);
+    }else //not a bone ,just a normal node ,we use the identy matrix.
     {
-        //just a normal node ,we use the identy matrix.
-        auto boneInfo = new CMC_NodeMetaInfo();
-        boneInfo->setName (NodeName);
+
+        auto nodeInfo = new CMC_NodeMetaInfo();
+        nodeInfo->setName (NodeName);
         QMatrix4x4 mat;
         mat.setToIdentity ();
-        boneInfo->setDefaultBoneOffset (mat);
-        bone->setInfo (boneInfo);
+        nodeInfo->setDefaultBoneOffset (mat);
+        node->setInfo (nodeInfo);
     }
-    bone->m_localTransform = toQMatrix (pNode->mTransformation).transposed ();//set the node to it's parent node transformation.
+    node->m_localTransform = toQMatrix (pNode->mTransformation);//set the node to it's parent node transformation.
     for (uint i = 0 ; i < pNode->mNumChildren ; i++) {
-        loadNodeHeirarchy(bone,pNode->mChildren[i]);
+        loadNodeHeirarchy(node,pNode->mChildren[i]);
     }
 }
 
-void Loader::loadAnimation(const aiNode *pNode)
+void Loader::loadAnimation(const aiNode *pNode,int index,CMC_AnimateData * animate)
 {
     std::string NodeName(pNode->mName.data);
     if(!m_pScene->HasAnimations ())
@@ -210,7 +215,7 @@ void Loader::loadAnimation(const aiNode *pNode)
         m_model->m_hasAnimation = false;
         return ;
     }
-    const aiAnimation* pAnimation = m_pScene->mAnimations[0];
+    const aiAnimation* pAnimation = m_pScene->mAnimations[index];
     const aiNodeAnim * pNodeAnim = findNodeAnim(pAnimation, NodeName);
     if(pNodeAnim)//that node is a animation bone.
     {
@@ -243,12 +248,27 @@ void Loader::loadAnimation(const aiNode *pNode)
             key.rotate = QQuaternion(v.mValue.w,v.mValue.x,v.mValue.y,v.mValue.z);
             animateBone->addRotate (key);
         }
-        m_model->m_animate.addAnimateBone (animateBone);
-        m_model->m_animate.m_ticksPerSecond = pAnimation->mTicksPerSecond;
-        m_model->m_animate.m_duration = pAnimation->mDuration;
+
+        animate->addAnimateBone (animateBone);
+        animate->m_ticksPerSecond = pAnimation->mTicksPerSecond;
+        animate->m_duration = pAnimation->mDuration;
     }
     for (uint i = 0 ; i < pNode->mNumChildren ; i++) {
-        loadAnimation( pNode->mChildren[i]);
+        loadAnimation( pNode->mChildren[i],index,animate);
+    }
+}
+
+void Loader::loadAnimations()
+{
+    if(m_pScene->HasAnimations ())
+    {
+        for(int i =0;i<m_pScene->mNumAnimations;i++)
+        {
+            CMC_AnimateData * animate = new CMC_AnimateData();
+            animate->m_name = m_pScene->mAnimations[i]->mName.C_Str ();
+            loadAnimation (m_pScene->mRootNode,i,animate);
+            m_model->m_animates.push_back (animate);
+        }
     }
 }
 

@@ -13,6 +13,7 @@ using namespace std;
 namespace utility{
 bool ReadFile(const char* pFileName, string& outFile);
 float Ang2Radius(float ang);
+float Radius2Ang(float radius);
 const char *  GuessFileTYPE(const char * file_name);
 void FindPrefix(const char * file_name, char *dst);
 QQuaternion RotateMatrix2Quaternion(QMatrix4x4 matrix);

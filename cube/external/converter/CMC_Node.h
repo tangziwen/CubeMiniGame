@@ -18,6 +18,7 @@ public:
     QMatrix4x4 m_localTransform;// node to parent transform.
     CMC_Node *parent() const;
     void setParent(CMC_Node *parent);
+    std::vector<int>m_childrenMeshes;
 private:
     CMC_NodeMetaInfo * m_info;
     CMC_Node *m_parent;

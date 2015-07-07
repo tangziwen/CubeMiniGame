@@ -23,7 +23,8 @@ private:
     void loadBoneList(const aiMesh* pMesh, CMC_MeshData * mesh);
     void LoadMaterial(const aiScene* pScene, const char *file_name);
     void loadNodeHeirarchy(CMC_Node  *paretnBone, const aiNode * pNode);
-    void loadAnimation(const aiNode * pNode);
+    void loadAnimation(const aiNode * pNode, int index, CMC_AnimateData *animate);
+    void loadAnimations();
     const aiNodeAnim* findNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
     int findBoneIndex(const std::string NodeName);
     aiScene* m_pScene;

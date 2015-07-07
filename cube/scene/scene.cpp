@@ -134,32 +134,18 @@ void Scene::setSkyBox(SkyBox *skyBox)
 
 void Scene::setEntityBoneTransform(Entity *entity)
 {
-    if(entity->hasAnimation())
+    if(entity->hasAnimation()&& entity->getCurrentAnimateIndex ()>=0)
     {
-        entity->getShaderProgram()->setUniformInteger("g_has_animation",1);\
-        if(entity->m_model)
+        entity->getShaderProgram()->setUniformInteger("g_has_animation",1);
+        entity->updateNodeAndBone ();
+        std::vector <QMatrix4x4 > transform;
+        entity->copyBonePalette (transform);
+        for(int i =0;i<transform.size();i++)
         {
-            std::vector <QMatrix4x4 > transform;
-            entity->bonesTransformTZW (entity->animateTime (),transform,entity->animationName ());
-            //entity->bonesTransform(entity->animateTime(),transform,entity->animationName());
-            for(int i =0;i<transform.size();i++)
-            {
-                char str[100];
-                sprintf(str,"g_bones[%d]",i);
-                entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i].data()),true);
-            }
-        }else
-        {
-            std::vector <Matrix4f > transform;
-            entity->bonesTransformAssimp(entity->animateTime(),transform,entity->animationName());
-            for(int i =0;i<transform.size();i++)
-            {
-                char str[100];
-                sprintf(str,"g_bones[%d]",i);
-                entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i]),true);
-            }
+            char str[100];
+            sprintf(str,"g_bones[%d]",i);
+            entity->getShaderProgram()->setUniformMat4v(str,(const GLfloat*)(transform[i].data()),false);
         }
-
     }else{
         entity->getShaderProgram()->setUniformInteger("g_has_animation",0);
     }

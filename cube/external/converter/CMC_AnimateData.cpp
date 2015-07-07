@@ -1,18 +1,18 @@
-#include "CMC_Animate.h"
+#include "CMC_AnimateData.h"
 
 namespace tzw {
 
-CMC_Animate::CMC_Animate()
+CMC_AnimateData::CMC_AnimateData()
 {
 
 }
 
-void CMC_Animate::addAnimateBone(CMC_AnimateBone *bone)
+void CMC_AnimateData::addAnimateBone(CMC_AnimateBone *bone)
 {
     m_animateBone.push_back (bone);
 }
 
-CMC_AnimateBone *CMC_Animate::findAnimateBone(std::string boneName)
+CMC_AnimateBone *CMC_AnimateData::findAnimateBone(std::string boneName)
 {
     for(int i =0;i<m_animateBone.size ();i++)
     {

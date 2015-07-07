@@ -10,9 +10,9 @@
 #include "external/TUtility/TUtility.h"
 #include "external/converter/Loader.h"
 #include <QDebug>
+
 Entity::Entity()
 {
-    this->m_pScene = nullptr;
     this->mesh_list.clear();
 
     this->m_numBones = 0;
@@ -22,34 +22,29 @@ Entity::Entity()
     this->onRender = nullptr;
     this->setNodeType (NODE_TYPE_ENTITY);
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
+    this->m_currentAnimateIndex = -1;
     m_isAABBDirty = true;
 }
 
 Entity::Entity(const char *file_name,LoadPolicy policy)
 {
-    this->m_pScene = nullptr;
     this->mesh_list.clear();
     this->m_numBones = 0;
     this->m_animateTime = 0;
     this->setIsEnableShadow(true);
     this->onRender = nullptr;
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
+    this->m_currentAnimateIndex = -1;
     this->setNodeType (NODE_TYPE_ENTITY);
     switch(policy)
     {
-    case LoadPolicy::LoadFromAssimp:
-    {
-        loadModelData(file_name);
-        m_model = nullptr;
-    }
-        break;
     case LoadPolicy::LoadFromLoader:
     {
 
         tzw::Loader loader;
         loader.loadFromModel (file_name);
         loadModelDataFromTZW (loader.model (),file_name);
-        m_model = loader.model ();
+        setModelData (loader.model ());
     }
         break;
     case LoadPolicy::LoadFromTzw:
@@ -57,7 +52,7 @@ Entity::Entity(const char *file_name,LoadPolicy policy)
         tzw::CMC_ModelData * model = new tzw::CMC_ModelData;
         model->loadFromTZW (file_name);
         loadModelDataFromTZW (model,file_name);
-        m_model = model;
+        setModelData (model);
     }
         break;
     }
@@ -106,60 +101,26 @@ ShaderProgram *Entity::getShaderProgram()
     return this->program;
 }
 
-void Entity::bonesTransform(float TimeInSeconds, std::vector<Matrix4f> &Transforms,std::string animation_name)
-{
-    if(m_model)
-    {
-        //bonesTransformTZW(TimeInSeconds,Transforms,animation_name);
-    }else
-    {
-        bonesTransformAssimp(TimeInSeconds,Transforms,animation_name);
-    }
-}
-
-void Entity::bonesTransformAssimp(float TimeInSeconds, std::vector<Matrix4f> &Transforms, string animation_name)
-{
-    if(!m_pScene  || m_pScene->mNumAnimations<=0)
-    {
-        Transforms.clear();
-        return;
-    }
-    Matrix4f Identity;
-    Identity.InitIdentity();
-    float TicksPerSecond =(float)(m_pScene->mAnimations[0]->mTicksPerSecond != 0 ? m_pScene->mAnimations[0]->mTicksPerSecond : 25.0f);
-    float TimeInTicks = TimeInSeconds * TicksPerSecond;
-    float AnimationTime = fmod(TimeInTicks, (float)m_pScene->mAnimations[0]->mDuration);
-    readNodeHeirarchy(AnimationTime, m_pScene->mRootNode, Identity);
-    Transforms.resize(m_numBones);
-    for (uint i = 0 ; i < m_numBones ; i++) {
-        Transforms[i] = m_BoneInfo[i].FinalTransformation;
-    }
-}
-
-void Entity::bonesTransformTZW(float TimeInSeconds, std::vector<QMatrix4x4> &Transforms, string animation_name)
+void Entity::copyBonePalette(std::vector<QMatrix4x4> &Transforms)
 {
     if(!hasAnimation ())
     {
         Transforms.clear ();
         return;
     }
-
-    int numOfBones = m_model->m_boneMetaInfoList.size ();
+    int numOfBones = getModelData ()->m_boneMetaInfoList.size ();
     Transforms.resize(numOfBones);
-    QMatrix4x4 Identity;
-    Identity.setToIdentity ();
-    float TicksPerSecond =(float)(m_model->m_animate.m_ticksPerSecond != 0 ? m_model->m_animate.m_ticksPerSecond : 25.0f);
-    float TimeInTicks = TimeInSeconds * TicksPerSecond;
-    float AnimationTime = fmod(TimeInTicks, m_model->m_animate.m_duration);
-    readNodeHeirarchyTZW (AnimationTime, m_model->rootBone (), Identity,Transforms);
-
-
+    for (uint i = 0 ; i < numOfBones ; i++) {
+        Transforms[i] = m_bonePalette[i];
+    }
 }
 
-void Entity::animate(float time, const char *animation_name)
+void Entity::playAnimate(int index, float time)
 {
-    m_animateTime = time;
+    setAnimateTime (time);
+    setCurrentAnimateIndex (index);
 }
+
 float Entity::animateTime() const
 {
     return m_animateTime;
@@ -168,15 +129,6 @@ float Entity::animateTime() const
 void Entity::setAnimateTime(float animateTime)
 {
     m_animateTime = animateTime;
-}
-std::string Entity::animationName() const
-{
-    return m_animationName;
-}
-
-void Entity::setAnimationName(const std::string &animationName)
-{
-    m_animationName = animationName;
 }
 bool Entity::hasAnimation() const
 {
@@ -224,266 +176,9 @@ void Entity::adjustVertices()
 
 }
 
-uint Entity::findBoneInterpoScaling(float AnimationTime, const aiNodeAnim *pNodeAnim)
-{
-    assert(pNodeAnim->mNumScalingKeys > 0);
-    
-    for (uint i = 0 ; i < pNodeAnim->mNumScalingKeys - 1 ; i++) {
-        if (AnimationTime < (float)pNodeAnim->mScalingKeys[i + 1].mTime) {
-            return i;
-        }
-    }
-    assert(0);
-
-    return 0;
-}
-
-uint Entity::findBoneInterpoRotation(float AnimationTime, const aiNodeAnim *pNodeAnim)
-{
-    assert(pNodeAnim->mNumRotationKeys > 0);
-
-    for (uint i = 0 ; i < pNodeAnim->mNumRotationKeys - 1 ; i++) {
-        if (AnimationTime < (float)pNodeAnim->mRotationKeys[i + 1].mTime) {
-            return i;
-        }
-    }
-
-    assert(0);
-
-    return 0;
-}
-
-uint Entity::findBoneInterpoTranslation(float AnimationTime, const aiNodeAnim *pNodeAnim)
-{
-    for (uint i = 0 ; i < pNodeAnim->mNumPositionKeys - 1 ; i++) {
-        if (AnimationTime < (float)pNodeAnim->mPositionKeys[i + 1].mTime) {
-            return i;
-        }
-    }
-    assert(0);
-
-    return 0;
-}
-
-const aiNodeAnim *Entity::findNodeAnim(const aiAnimation *pAnimation, const std::string NodeName)
-{
-    for (uint i = 0 ; i < pAnimation->mNumChannels ; i++) {
-        const aiNodeAnim* pNodeAnim = pAnimation->mChannels[i];
-        if (string(pNodeAnim->mNodeName.data) == NodeName) {
-            return pNodeAnim;
-        }
-    }
-    return NULL;
-}
-
-void Entity::readNodeHeirarchy(float AnimationTime, const aiNode *pNode, const Matrix4f &ParentTransform)
-{
-    string NodeName(pNode->mName.data);
-    const aiAnimation* pAnimation = m_pScene->mAnimations[0];
-    Matrix4f NodeTransformation(pNode->mTransformation);
-    const aiNodeAnim * pNodeAnim = findNodeAnim(pAnimation, NodeName);
-    if (pNodeAnim) {
-        // Interpolate scaling and generate scaling transformation matrix
-        aiVector3D Scaling;
-        CalcInterpolatedScaling(Scaling, AnimationTime, pNodeAnim);
-        Matrix4f ScalingM;
-        ScalingM.InitScaleTransform(Scaling.x, Scaling.y, Scaling.z);
-
-        // Interpolate rotation and generate rotation transformation matrix
-        aiQuaternion RotationQ;
-        CalcInterpolatedRotation(RotationQ, AnimationTime, pNodeAnim);
-        Matrix4f RotationM = Matrix4f(RotationQ.GetMatrix());
-
-        // Interpolate translation and generate translation transformation matrix
-        aiVector3D Translation;
-        CalcInterpolatedPosition(Translation, AnimationTime, pNodeAnim);
-        Matrix4f TranslationM;
-        TranslationM.InitTranslationTransform(Translation.x, Translation.y, Translation.z);
-
-        // Combine the above transformations
-        NodeTransformation =  TranslationM * RotationM * ScalingM;
-    }
-
-    Matrix4f GlobalTransformation = ParentTransform * NodeTransformation;
-
-    if (m_BoneMapping.find(NodeName) != m_BoneMapping.end()) {
-        auto globalInverse = m_globalInverseTransform;
-        uint BoneIndex = m_BoneMapping[NodeName];
-        auto offset =  m_BoneInfo[BoneIndex].BoneOffset;
-        auto resultMatrix = globalInverse*GlobalTransformation*offset;
-        m_BoneInfo[BoneIndex].FinalTransformation =  resultMatrix;
-    }
-
-    for (uint i = 0 ; i < pNode->mNumChildren ; i++) {
-        readNodeHeirarchy(AnimationTime, pNode->mChildren[i], GlobalTransformation);
-    }
-}
-
-void Entity::readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Node *node, QMatrix4x4 parentTransform,std::vector<QMatrix4x4> &Transforms)
-{
-    std::string NodeName = node->info ()->name ();
-    QMatrix4x4 NodeTransformation(node->m_localTransform);
-    const tzw::CMC_AnimateBone * pNodeAnim = m_model->m_animate.findAnimateBone (NodeName);
-    if (pNodeAnim) {
-        // Interpolate scaling and generate scaling transformation matrix
-        QVector3D Scaling;
-        pNodeAnim->calcInterpolatedScaling (Scaling,AnimationTime);
-        QMatrix4x4 ScalingM;
-        ScalingM.setToIdentity ();
-        ScalingM.scale (Scaling.x (),Scaling.y (),Scaling.z ());
-        ScalingM = ScalingM.transposed ();
-
-        // Interpolate rotation and generate rotation transformation matrix
-        QQuaternion RotationQ;
-        pNodeAnim->calcInterpolatedRotation (RotationQ,AnimationTime);
-        QMatrix4x4 RotationM;
-        RotationM.setToIdentity ();
-        RotationM.rotate(RotationQ);
-        RotationM = RotationM.transposed ();
-
-        // Interpolate translation and generate translation transformation matrix
-        QVector3D Translation;
-        pNodeAnim->calcInterpolatedPosition (Translation,AnimationTime);
-        QMatrix4x4 TranslationM;
-        TranslationM.setToIdentity ();
-        TranslationM.translate (Translation.x(),Translation.y (),Translation.z ());
-        TranslationM = TranslationM.transposed ();
-
-        // Combine the above transformations
-        NodeTransformation =    ScalingM *RotationM *TranslationM;
-    }
-
-    QMatrix4x4 GlobalTransformation = NodeTransformation *parentTransform;
-
-    if (m_model->m_BoneMetaInfoMapping.find(node->info ()->name ()) != m_model->m_BoneMetaInfoMapping.end ()) {
-        auto globalInverse = m_model->globalInverseTransform () ;
-        uint BoneIndex = m_model->m_BoneMetaInfoMapping[node->info ()->name ()];
-        auto offsetMatrix = node->info ()->defaultBoneOffset ();
-        auto resultMatrix = offsetMatrix* GlobalTransformation * globalInverse ;
-        Transforms[BoneIndex] =  resultMatrix;
-    }
-
-    for (uint i = 0 ; i < node->m_children.size (); i++) {
-        readNodeHeirarchyTZW(AnimationTime, node->m_children[i], GlobalTransformation,Transforms);
-    }
-    return ;
-}
-
-void Entity::CalcInterpolatedScaling(aiVector3D &Out, float AnimationTime, const aiNodeAnim *pNodeAnim)
-{
-    if (pNodeAnim->mNumScalingKeys == 1) {
-        Out = pNodeAnim->mScalingKeys[0].mValue;
-        return;
-    }
-
-    uint ScalingIndex = findBoneInterpoScaling(AnimationTime, pNodeAnim);
-    uint NextScalingIndex = (ScalingIndex + 1);
-    assert(NextScalingIndex < pNodeAnim->mNumScalingKeys);
-    float DeltaTime = (float)(pNodeAnim->mScalingKeys[NextScalingIndex].mTime - pNodeAnim->mScalingKeys[ScalingIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mScalingKeys[ScalingIndex].mTime) / DeltaTime;
-    assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiVector3D& Start = pNodeAnim->mScalingKeys[ScalingIndex].mValue;
-    const aiVector3D& End   = pNodeAnim->mScalingKeys[NextScalingIndex].mValue;
-    aiVector3D Delta = End - Start;
-    Out = Start + Factor * Delta;
-}
-
-void Entity::CalcInterpolatedRotation(aiQuaternion &Out, float AnimationTime, const aiNodeAnim *pNodeAnim)
-{
-    // we need at least two values to interpolate...
-    if (pNodeAnim->mNumRotationKeys == 1) {
-        Out = pNodeAnim->mRotationKeys[0].mValue;
-        return;
-    }
-
-    uint RotationIndex = findBoneInterpoRotation(AnimationTime, pNodeAnim);
-    uint NextRotationIndex = (RotationIndex + 1);
-    assert(NextRotationIndex < pNodeAnim->mNumRotationKeys);
-    float DeltaTime = (float)(pNodeAnim->mRotationKeys[NextRotationIndex].mTime - pNodeAnim->mRotationKeys[RotationIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mRotationKeys[RotationIndex].mTime) / DeltaTime;
-    assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiQuaternion& StartRotationQ = pNodeAnim->mRotationKeys[RotationIndex].mValue;
-    const aiQuaternion& EndRotationQ   = pNodeAnim->mRotationKeys[NextRotationIndex].mValue;
-    aiQuaternion::Interpolate(Out, StartRotationQ, EndRotationQ, Factor);
-    Out = Out.Normalize();
-}
-
-void Entity::CalcInterpolatedPosition(aiVector3D &Out, float AnimationTime, const aiNodeAnim *pNodeAnim)
-{
-    if (pNodeAnim->mNumPositionKeys == 1) {
-        Out = pNodeAnim->mPositionKeys[0].mValue;
-        return;
-    }
-
-    uint PositionIndex = findBoneInterpoTranslation(AnimationTime, pNodeAnim);
-    uint NextPositionIndex = (PositionIndex + 1);
-    assert(NextPositionIndex < pNodeAnim->mNumPositionKeys);
-    float DeltaTime = (float)(pNodeAnim->mPositionKeys[NextPositionIndex].mTime - pNodeAnim->mPositionKeys[PositionIndex].mTime);
-    float Factor = (AnimationTime - (float)pNodeAnim->mPositionKeys[PositionIndex].mTime) / DeltaTime;
-    assert(Factor >= 0.0f && Factor <= 1.0f);
-    const aiVector3D& Start = pNodeAnim->mPositionKeys[PositionIndex].mValue;
-    const aiVector3D& End = pNodeAnim->mPositionKeys[NextPositionIndex].mValue;
-    aiVector3D Delta = End - Start;
-    Out = Start + Factor * Delta;
-}
-
-void Entity::loadModelData(const char *file_name)
-{
-    const aiScene* pScene = m_Importer.ReadFile(file_name,aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_GenSmoothNormals |aiProcess_CalcTangentSpace);
-    this->m_pScene = (aiScene*)pScene;
-    if(pScene==NULL)
-    {
-        T_LOG<<"INVALID MODEL FILE OR INVALID PATH";
-        return;
-    }
-    m_globalInverseTransform = pScene->mRootNode->mTransformation;
-    m_globalInverseTransform = m_globalInverseTransform.Inverse();
-    char str[100]={'\0'};
-    utility::FindPrefix(file_name,str);
-    LoadMaterial(pScene,file_name,str);
-    const aiVector3D Zero3D(0.0f, 0.0f, 0.0f);
-    for(int i =0 ;i< pScene->mNumMeshes ;i++)
-    {
-        const aiMesh* the_mesh = pScene->mMeshes[i];
-        TMesh * mesh =new TMesh();
-        this->addMesh(mesh);
-        //set material
-        mesh->setMaterial(this->material_list[the_mesh->mMaterialIndex]);
-        for(int j =0; j<the_mesh->mNumVertices;j++)
-        {
-            const aiVector3D* pPos = &(the_mesh->mVertices[j]);
-            const aiVector3D* pNormal = &(the_mesh->mNormals[j]);
-            const aiVector3D* pTexCoord = the_mesh->HasTextureCoords(0) ? &(the_mesh->mTextureCoords[0][j]) : &Zero3D;
-            const aiVector3D* pTangent = &(the_mesh->mTangents[i]);
-            VertexData vec;
-            vec.position = QVector3D(pPos->x,pPos->y,pPos->z);
-            vec.normalLine = QVector3D(pNormal->x,pNormal->y,pNormal->z);
-            vec.texCoord = QVector2D(pTexCoord->x,pTexCoord->y);
-	    if(pTangent)
-	    {
-		     vec.tangent = QVector3D(pTangent->x,pTangent->y,pTangent->z);
-	    }
-
-            mesh->pushVertex(vec);
-        }
-
-        for (unsigned int k = 0 ; k < the_mesh->mNumFaces ; k++) {
-            const aiFace& Face = the_mesh->mFaces[k];
-            assert(Face.mNumIndices == 3);
-            mesh->pushIndex(Face.mIndices[0]);
-            mesh->pushIndex(Face.mIndices[1]);
-            mesh->pushIndex(Face.mIndices[2]);
-        }
-        //load bones
-        loadBones(the_mesh,mesh);
-        mesh->finish();
-    }
-
-}
-
 void Entity::loadModelDataFromTZW(tzw::CMC_ModelData * cmc_model,const char * file_name)
 {
-    m_hasAnimation = cmc_model->m_hasAnimation;
+    m_hasAnimation = cmc_model->hasAnimation ();
     char str[100]={'\0'};
     utility::FindPrefix(file_name,str);
     //load material
@@ -492,9 +187,9 @@ void Entity::loadModelDataFromTZW(tzw::CMC_ModelData * cmc_model,const char * fi
     //global inverse transform(not supported yet)
     m_globalInverseTransform.InitIdentity ();
 
-    for(int i =0 ;i< cmc_model->m_meshList.size ();i++)
+    for(int i =0 ;i< cmc_model->meshList ().size ();i++)
     {
-        auto the_mesh = cmc_model->m_meshList[i];
+        auto the_mesh = cmc_model->meshList ()[i];
         TMesh * mesh =new TMesh();
         this->addMesh(mesh);
         //set material
@@ -522,55 +217,16 @@ void Entity::loadModelDataFromTZW(tzw::CMC_ModelData * cmc_model,const char * fi
         }
         mesh->finish();
     }
-}
-
-void Entity::LoadMaterial(const aiScene *pScene, const char * file_name, const char *pre_fix)
-{
-    //store material
-    for(int i = 0 ;i<pScene->mNumMaterials;i++)
-    {
-        aiColor3D dif(0.f,0.f,0.f);
-        aiColor3D amb(0.f,0.f,0.f);
-        aiColor3D spec(0.f,0.f,0.f);
-        aiMaterial * the_material = pScene->mMaterials[i];
-        char file_postfix[100];
-        sprintf(file_postfix,"%s_%d",file_name,i+1);
-        Material * material = MaterialPool::getInstance()->createOrGetMaterial(file_postfix);
-        MaterialChannel * ambient_channel =  material->getAmbient();
-        MaterialChannel * diffuse_channel =  material->getDiffuse();
-        MaterialChannel * specular_channel =  material->getSpecular();
-        the_material->Get(AI_MATKEY_COLOR_AMBIENT,amb);
-        the_material->Get(AI_MATKEY_COLOR_DIFFUSE,dif);
-        the_material->Get(AI_MATKEY_COLOR_SPECULAR,spec);
-
-        ambient_channel->color = QVector3D(amb.r,amb.g,amb.b);
-        diffuse_channel->color = QVector3D(dif.r,dif.g,dif.b);
-        specular_channel->color = QVector3D(spec.r,spec.g,spec.b);
-
-
-        aiString normalPath;
-        the_material->GetTexture (aiTextureType_NORMALS,0,&normalPath);
-        auto normalTexture = loadTextureFromMaterial(normalPath.C_Str (),pre_fix);
-        // we don't check the normal texture whether is a nullptr, because models which don't use normal mapping technique are very common.
-        material->setNormalMap (normalTexture);
-
-        //now ,we only use the first diffuse texture, will fix it later
-        aiString diffuse_Path;
-        the_material->GetTexture(aiTextureType_DIFFUSE,0,&diffuse_Path);
-        auto diffuseTexture = loadTextureFromMaterial(diffuse_Path.C_Str (),pre_fix);
-        if(!diffuseTexture) diffuseTexture = TexturePool::getInstance ()->createOrGetTexture ("default");
-        diffuse_channel->texture = diffuseTexture;
-
-        this->material_list.push_back(material);
-    }
+    m_bonePalette.resize (cmc_model->m_BoneMetaInfoMapping.size ());
+    createNode(this,cmc_model->rootBone ());
 }
 
 void Entity::loadMaterialFromTZW(tzw::CMC_ModelData *model, const char *file_name, const char *pre_fix)
 {
     //store material
-    for(int i = 0 ;i<model->m_materialList.size();i++)
+    for(int i = 0 ;i<model->materialList ().size();i++)
     {
-        auto the_material = model->m_materialList[i];
+        auto the_material = model->materialList ()[i];
         char file_postfix[100];
         sprintf(file_postfix,"%s_%d",file_name,i+1);
         Material * material = MaterialPool::getInstance()->createOrGetMaterial(file_postfix);
@@ -595,36 +251,6 @@ void Entity::loadMaterialFromTZW(tzw::CMC_ModelData *model, const char *file_nam
         diffuse_channel->texture = diffuseTexture;
 
         this->material_list.push_back(material);
-    }
-}
-
-void Entity::loadBones( const aiMesh *pMesh,TMesh * mesh)
-{
-    this->m_hasAnimation = m_pScene->HasAnimations();
-    if(!m_hasAnimation)
-    {
-        return;
-    }
-    for (uint i = 0 ; i < pMesh->mNumBones ; i++) {
-        uint BoneIndex = 0;
-        string BoneName(pMesh->mBones[i]->mName.data);
-        if (m_BoneMapping.find(BoneName) == m_BoneMapping.end()) {
-            // Allocate an index for a new bone
-            BoneIndex = m_numBones;
-            m_numBones++;
-            BoneInfo bi;
-            m_BoneInfo.push_back(bi);
-            m_BoneInfo[BoneIndex].BoneOffset = pMesh->mBones[i]->mOffsetMatrix;
-            m_BoneMapping[BoneName] = BoneIndex;
-        }
-        else {
-            BoneIndex = m_BoneMapping[BoneName];
-        }
-        for (uint j = 0 ; j < pMesh->mBones[i]->mNumWeights ; j++) {
-            uint VertexID = pMesh->mBones[i]->mWeights[j].mVertexId;
-            float Weight  = pMesh->mBones[i]->mWeights[j].mWeight;
-            mesh->getVertex (VertexID)->addBoneData (BoneIndex,Weight);
-        }
     }
 }
 
@@ -658,6 +284,116 @@ Texture *Entity::loadTextureFromMaterial(std::string fileName, const char *pre_f
     return result;
 }
 
+void Entity::createNode(Node *parent, tzw::CMC_Node * node)
+{
+    EntityNode * subEntity = new EntityNode();
+    subEntity->setName (node->info ()->name ().c_str ());
+    subEntity->setNodeData (node);
+    parent->addChild (subEntity);
+    if(parent == this)
+    {
+        m_entityNodeRoot = subEntity;
+    }
+    for(int i =0; i< node->m_children.size ();i++)
+    {
+        createNode(subEntity,node->m_children[i]);
+    }
+}
+
+void Entity::updateNodesAndBonesRecursively(EntityNode *theNode, QMatrix4x4 parentTransform)
+{
+    auto sub_entity = theNode;
+    std::string NodeName = sub_entity->name ();
+    auto node = sub_entity->nodeData ();
+    QMatrix4x4 NodeTransform;
+    QMatrix4x4 globalTransform;
+    if(getModelData ()->isBone (NodeName))
+    {
+        //do animation;
+        float t = getPercentageOfAnimate();
+        const tzw::CMC_AnimateBone * pNodeAnim = getModelData ()->animates ()[m_currentAnimateIndex]->findAnimateBone (NodeName);
+        // Interpolate scaling and generate scaling transformation matrix
+        QVector3D Scaling;
+        pNodeAnim->calcInterpolatedScaling (Scaling,t);
+        QMatrix4x4 ScalingM;
+        ScalingM.setToIdentity ();
+        ScalingM.scale (Scaling.x (),Scaling.y (),Scaling.z ());
+
+        // Interpolate rotation and generate rotation transformation matrix
+        QQuaternion RotationQ;
+        pNodeAnim->calcInterpolatedRotation (RotationQ,t);
+        QMatrix4x4 RotationM;
+        RotationM.setToIdentity ();
+        RotationM.rotate(RotationQ);
+
+        // Interpolate translation and generate translation transformation matrix
+        QVector3D Translation;
+        pNodeAnim->calcInterpolatedPosition (Translation,t);
+        QMatrix4x4 TranslationM;
+        TranslationM.setToIdentity ();
+        TranslationM.translate (Translation.x(),Translation.y (),Translation.z ());
+
+        auto offsetMatrix = node->info ()->defaultBoneOffset ();
+        // Combine the above transformations
+        NodeTransform = TranslationM*RotationM*ScalingM;
+        sub_entity->setTransform (NodeTransform);
+        globalTransform = parentTransform * NodeTransform;
+
+        //write to palette.
+        uint BoneIndex = getModelData ()->m_BoneMetaInfoMapping[NodeName];
+        m_bonePalette[BoneIndex] = getModelData ()->globalInverseTransform ()* globalTransform * offsetMatrix;
+    }else
+    {
+        NodeTransform = node->m_localTransform;
+        sub_entity->setTransform (NodeTransform);
+        globalTransform = parentTransform * NodeTransform;
+    }
+    for(int i =0;i<sub_entity->getChildrenAmount ();i++)
+    {
+        auto child = sub_entity->getChild (i);
+        if(child->nodeType ()!=NODE_TYPE_BONE) continue;
+        updateNodesAndBonesRecursively((EntityNode *)sub_entity->getChild (i),globalTransform);
+    }
+}
+
+float Entity::getPercentageOfAnimate()
+{
+    auto TimeInSeconds = m_animateTime;
+    float TicksPerSecond =(float)(getModelData ()->animates ()[m_currentAnimateIndex]->m_ticksPerSecond != 0 ? getModelData ()->animates ()[m_currentAnimateIndex]->m_ticksPerSecond : 25.0f);
+    float TimeInTicks = TimeInSeconds * TicksPerSecond;
+    float AnimationTime = fmod(TimeInTicks, getModelData ()->animates ()[m_currentAnimateIndex]->m_duration);
+    return AnimationTime;
+}
+
+int Entity::getCurrentAnimateIndex() const
+{
+    return m_currentAnimateIndex;
+}
+
+void Entity::setCurrentAnimateIndex(int currentAnimateIndex)
+{
+    m_currentAnimateIndex = currentAnimateIndex;
+}
+
+EntityNode *Entity::getEntityNodeRoot() const
+{
+    return m_entityNodeRoot;
+}
+
+void Entity::setEntityNodeRoot(EntityNode *entityNodeRoot)
+{
+    m_entityNodeRoot = entityNodeRoot;
+}
+
+
+void Entity::updateNodeAndBone()
+{
+    QMatrix4x4 mat;
+    mat.setToIdentity ();
+    updateNodesAndBonesRecursively(m_entityNodeRoot,mat);
+}
+
+
 bool Entity::isSetDrawWire() const
 {
     return m_isSetDrawWire;
@@ -666,5 +402,14 @@ bool Entity::isSetDrawWire() const
 void Entity::setIsSetDrawWire(bool isSetDrawWire)
 {
     m_isSetDrawWire = isSetDrawWire;
+}
+tzw::CMC_ModelData *Entity::getModelData() const
+{
+    return m_modelData;
+}
+
+void Entity::setModelData(tzw::CMC_ModelData *modelData)
+{
+    m_modelData = modelData;
 }
 

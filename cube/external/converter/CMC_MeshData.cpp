@@ -88,7 +88,5 @@ void CMC_MeshData::loadFromTZW(const rapidjson::Value &value)
         pushIndex (indexObj.GetInt ());
     }
 }
-
-
 } // namespace tzw
 

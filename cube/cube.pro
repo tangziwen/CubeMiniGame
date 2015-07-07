@@ -253,13 +253,14 @@ SOURCES += main.cpp \
     external/converter/CMC_Material.cpp \
     external/converter/CMC_Vertex.cpp \
     base/Bone.cpp \
-    external/converter/CMC_Animate.cpp \
     external/converter/CMC_AnimateBone.cpp \
     external/converter/Loader.cpp \
     external/converter/CMC_Node.cpp \
     external/converter/CMC_NodeMetaInfo.cpp \
     external/converter/CMC_ModelData.cpp \
-    external/converter/CMC_MeshData.cpp
+    external/converter/CMC_MeshData.cpp \
+    Entity/EntityNode.cpp \
+    external/converter/CMC_AnimateData.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -630,13 +631,14 @@ HEADERS += \
     external/rapidjson/stringbuffer.h \
     external/rapidjson/writer.h \
     base/Bone.h \
-    external/converter/CMC_Animate.h \
     external/converter/CMC_AnimateBone.h \
     external/converter/Loader.h \
     external/converter/CMC_Node.h \
     external/converter/CMC_NodeMetaInfo.h \
     external/converter/CMC_ModelData.h \
-    external/converter/CMC_MeshData.h
+    external/converter/CMC_MeshData.h \
+    Entity/EntityNode.h \
+    external/converter/CMC_AnimateData.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

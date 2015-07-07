@@ -14,7 +14,7 @@
 #define NODE_TYPE_CAMERA 2
 #define NODE_TYPE_SPRITE 4
 #define NODE_TYPE_CUSTOM 5
-
+#define NODE_TYPE_BONE 6
 
 enum class NodeGroup
 {
@@ -47,6 +47,7 @@ public:
     int nodeType() const;
     void setNodeType(int nodeType);
 
+    void setTransform(QMatrix4x4 matrix);
     void translate(float x, float y, float z);
     void rotate(float x,float y, float z);
     void scale(float x, float y ,float z);
@@ -89,6 +90,10 @@ public:
     bool isGroupMask(NodeGroup mask);
 
     QVector3D getForwardVector();
+
+    Node * getChild(int index);
+
+    int getChildrenAmount();
 public:
     std::function<void (Node *)> onUpdate;
     bool enable() const;

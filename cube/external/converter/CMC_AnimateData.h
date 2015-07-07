@@ -4,15 +4,16 @@
 
 namespace tzw {
 
-class CMC_Animate
+class CMC_AnimateData
 {
 public:
-    CMC_Animate();
+    CMC_AnimateData();
     std::vector<CMC_AnimateBone *>m_animateBone;
     void addAnimateBone(CMC_AnimateBone * bone);
     CMC_AnimateBone * findAnimateBone(std::string boneName);
     float m_ticksPerSecond;
     float m_duration;
+    std::string m_name;
 };
 
 } // namespace tzw

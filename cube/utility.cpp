@@ -113,3 +113,9 @@ QQuaternion utility::RotateMatrix2Quaternion(QMatrix4x4 matrix)
         result = QQuaternion(v4);
     }
 }
+
+
+float utility::Radius2Ang(float radius)
+{
+    return radius * 57.29577951f;// PI * 180
+}
