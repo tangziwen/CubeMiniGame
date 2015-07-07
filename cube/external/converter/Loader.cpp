@@ -23,12 +23,12 @@ Loader::~Loader()
 {
 
 }
-CMC_Model *Loader::model() const
+CMC_ModelData *Loader::model() const
 {
     return m_model;
 }
 
-void Loader::setModel(CMC_Model *model)
+void Loader::setModel(CMC_ModelData *model)
 {
     m_model = model;
 }
@@ -48,7 +48,7 @@ bool Loader::loadFromModel(const char *fileName)
     {
         printf("parsing succes!\n");
         printf("extracting data to memory...\n");
-        m_model = new CMC_Model();
+        m_model = new CMC_ModelData();
 
         auto inverseTransform = pScene->mRootNode->mTransformation;
         inverseTransform = inverseTransform.Inverse();
@@ -59,7 +59,7 @@ bool Loader::loadFromModel(const char *fileName)
         for(int i =0 ;i< pScene->mNumMeshes ;i++)
         {
             const aiMesh* the_mesh = pScene->mMeshes[i];
-            auto mesh = new CMC_Mesh;
+            auto mesh = new CMC_MeshData;
             m_model->addMesh(mesh);
             //set material
             mesh->setMaterialIndex (the_mesh->mMaterialIndex);
@@ -91,14 +91,14 @@ bool Loader::loadFromModel(const char *fileName)
             loadBoneList(the_mesh,mesh);
             //mesh->finish();
         }
-        loadBonesHeirarchy(nullptr,m_pScene->mRootNode);
+        loadNodeHeirarchy(nullptr,m_pScene->mRootNode);
         loadAnimation(m_pScene->mRootNode);
         printf("extracting finish..\n");
         return true;
     }
 }
 
-void Loader::loadBoneList(const aiMesh *pMesh, CMC_Mesh *mesh)
+void Loader::loadBoneList(const aiMesh *pMesh, CMC_MeshData *mesh)
 {
     m_model->m_hasAnimation = m_pScene->HasAnimations();
     if(!m_model->m_hasAnimation)
@@ -113,12 +113,12 @@ void Loader::loadBoneList(const aiMesh *pMesh, CMC_Mesh *mesh)
             // Allocate an index for a new bone
             BoneIndex = m_model->m_numBones;
             m_model->m_numBones++;
-            CMC_BoneMetaInfo * metaInfo = new CMC_BoneMetaInfo();
+            CMC_NodeMetaInfo * metaInfo = new CMC_NodeMetaInfo();
             metaInfo->setName (BoneName);
             auto matrix_assimp = pMesh->mBones[i]->mOffsetMatrix;
             auto matrix_qt = toQMatrix(matrix_assimp);
             matrix_qt = matrix_qt.transposed ();
-            metaInfo->setDefaultOffset (matrix_qt);
+            metaInfo->setDefaultBoneOffset (matrix_qt);
             m_model->m_boneMetaInfoList.push_back (metaInfo);
             m_model->m_BoneMetaInfoMapping[BoneName] = BoneIndex;
         }
@@ -166,18 +166,18 @@ void Loader::LoadMaterial(const aiScene *pScene, const char *file_name)
     }
 }
 
-void Loader::loadBonesHeirarchy(CMC_Bone *paretnBone, const aiNode *pNode)
+void Loader::loadNodeHeirarchy(CMC_Node *paretnBone, const aiNode *pNode)
 {
-    CMC_Bone *  bone = nullptr;
+    CMC_Node *  bone = nullptr;
     auto NodeName = pNode->mName.C_Str ();
     if(!m_model->rootBone ())
     {
-        m_model->setRootBone (new CMC_Bone());
+        m_model->setRootBone (new CMC_Node());
         bone = m_model->rootBone ();
     }
     else
     {
-        bone = new CMC_Bone();
+        bone = new CMC_Node();
         paretnBone->addChild (bone);
     }
 
@@ -189,16 +189,16 @@ void Loader::loadBonesHeirarchy(CMC_Bone *paretnBone, const aiNode *pNode)
     }else
     {
         //just a normal node ,we use the identy matrix.
-        auto boneInfo = new CMC_BoneMetaInfo();
+        auto boneInfo = new CMC_NodeMetaInfo();
         boneInfo->setName (NodeName);
         QMatrix4x4 mat;
         mat.setToIdentity ();
-        boneInfo->setDefaultOffset (mat);
+        boneInfo->setDefaultBoneOffset (mat);
         bone->setInfo (boneInfo);
     }
     bone->m_localTransform = toQMatrix (pNode->mTransformation).transposed ();//set the node to it's parent node transformation.
     for (uint i = 0 ; i < pNode->mNumChildren ; i++) {
-        loadBonesHeirarchy(bone,pNode->mChildren[i]);
+        loadNodeHeirarchy(bone,pNode->mChildren[i]);
     }
 }
 

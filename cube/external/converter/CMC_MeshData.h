@@ -9,11 +9,11 @@
 #include "external/rapidjson/stringbuffer.h"
 namespace tzw {
 
-class CMC_Mesh
+class CMC_MeshData
 {
 public:
-    CMC_Mesh();
-    ~CMC_Mesh();
+    CMC_MeshData();
+    ~CMC_MeshData();
     CMC_Vertex * getVertex(int index);
     void pushVertex(CMC_Vertex vertex);
     void pushIndex(unsigned short index);

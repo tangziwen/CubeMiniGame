@@ -5,19 +5,18 @@
 
 namespace tzw {
 
-class CMC_BoneMetaInfo
+class CMC_NodeMetaInfo
 {
 public:
-    CMC_BoneMetaInfo();
+    CMC_NodeMetaInfo();
     std::string name() const;
     void setName(const std::string &name);
 
-    QMatrix4x4 defaultOffset() const;
-    void setDefaultOffset(const QMatrix4x4 &defaultOffset);
+    QMatrix4x4 defaultBoneOffset() const;
+    void setDefaultBoneOffset(const QMatrix4x4 &defaultBoneOffset);
 private:
     std::string m_name;
-    QMatrix4x4 m_defaultOffset;
-
+    QMatrix4x4 m_defaultBoneOffset;
 };
 
 } // namespace tzw

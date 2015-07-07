@@ -251,15 +251,15 @@ SOURCES += main.cpp \
     external/TUtility/Data.cpp \
     external/TUtility/file/Tfile.cpp \
     external/converter/CMC_Material.cpp \
-    external/converter/CMC_Mesh.cpp \
-    external/converter/CMC_Model.cpp \
     external/converter/CMC_Vertex.cpp \
     base/Bone.cpp \
     external/converter/CMC_Animate.cpp \
     external/converter/CMC_AnimateBone.cpp \
-    external/converter/CMC_Bone.cpp \
-    external/converter/CMC_BoneMetaInfo.cpp \
-    external/converter/Loader.cpp
+    external/converter/Loader.cpp \
+    external/converter/CMC_Node.cpp \
+    external/converter/CMC_NodeMetaInfo.cpp \
+    external/converter/CMC_ModelData.cpp \
+    external/converter/CMC_MeshData.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -600,8 +600,6 @@ HEADERS += \
     external/TUtility/Data.h \
     external/TUtility/file/Tfile.h \
     external/converter/CMC_Material.h \
-    external/converter/CMC_Mesh.h \
-    external/converter/CMC_Model.h \
     external/converter/CMC_Vertex.h \
     external/rapidjson/error/en.h \
     external/rapidjson/error/error.h \
@@ -634,9 +632,11 @@ HEADERS += \
     base/Bone.h \
     external/converter/CMC_Animate.h \
     external/converter/CMC_AnimateBone.h \
-    external/converter/CMC_Bone.h \
-    external/converter/CMC_BoneMetaInfo.h \
-    external/converter/Loader.h
+    external/converter/Loader.h \
+    external/converter/CMC_Node.h \
+    external/converter/CMC_NodeMetaInfo.h \
+    external/converter/CMC_ModelData.h \
+    external/converter/CMC_MeshData.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

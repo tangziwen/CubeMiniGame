@@ -54,7 +54,7 @@ Entity::Entity(const char *file_name,LoadPolicy policy)
         break;
     case LoadPolicy::LoadFromTzw:
     {
-        tzw::CMC_Model * model = new tzw::CMC_Model;
+        tzw::CMC_ModelData * model = new tzw::CMC_ModelData;
         model->loadFromTZW (file_name);
         loadModelDataFromTZW (model,file_name);
         m_model = model;
@@ -319,7 +319,7 @@ void Entity::readNodeHeirarchy(float AnimationTime, const aiNode *pNode, const M
     }
 }
 
-void Entity::readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Bone *node, QMatrix4x4 parentTransform,std::vector<QMatrix4x4> &Transforms)
+void Entity::readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Node *node, QMatrix4x4 parentTransform,std::vector<QMatrix4x4> &Transforms)
 {
     std::string NodeName = node->info ()->name ();
     QMatrix4x4 NodeTransformation(node->m_localTransform);
@@ -358,7 +358,7 @@ void Entity::readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Bone *node
     if (m_model->m_BoneMetaInfoMapping.find(node->info ()->name ()) != m_model->m_BoneMetaInfoMapping.end ()) {
         auto globalInverse = m_model->globalInverseTransform () ;
         uint BoneIndex = m_model->m_BoneMetaInfoMapping[node->info ()->name ()];
-        auto offsetMatrix = node->info ()->defaultOffset ();
+        auto offsetMatrix = node->info ()->defaultBoneOffset ();
         auto resultMatrix = offsetMatrix* GlobalTransformation * globalInverse ;
         Transforms[BoneIndex] =  resultMatrix;
     }
@@ -481,7 +481,7 @@ void Entity::loadModelData(const char *file_name)
 
 }
 
-void Entity::loadModelDataFromTZW(tzw::CMC_Model * cmc_model,const char * file_name)
+void Entity::loadModelDataFromTZW(tzw::CMC_ModelData * cmc_model,const char * file_name)
 {
     m_hasAnimation = cmc_model->m_hasAnimation;
     char str[100]={'\0'};
@@ -565,7 +565,7 @@ void Entity::LoadMaterial(const aiScene *pScene, const char * file_name, const c
     }
 }
 
-void Entity::loadMaterialFromTZW(tzw::CMC_Model *model, const char *file_name, const char *pre_fix)
+void Entity::loadMaterialFromTZW(tzw::CMC_ModelData *model, const char *file_name, const char *pre_fix)
 {
     //store material
     for(int i = 0 ;i<model->m_materialList.size();i++)

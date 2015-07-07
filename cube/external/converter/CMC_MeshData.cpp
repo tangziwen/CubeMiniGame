@@ -1,33 +1,33 @@
-#include "CMC_Mesh.h"
+#include "CMC_MeshData.h"
 
 namespace tzw {
 
-CMC_Mesh::CMC_Mesh()
+CMC_MeshData::CMC_MeshData()
 {
 
 }
 
-CMC_Mesh::~CMC_Mesh()
+CMC_MeshData::~CMC_MeshData()
 {
 
 }
 
-CMC_Vertex *CMC_Mesh::getVertex(int index)
+CMC_Vertex *CMC_MeshData::getVertex(int index)
 {
     return &m_vertices[index];
 }
 
-void CMC_Mesh::pushVertex(CMC_Vertex vertex)
+void CMC_MeshData::pushVertex(CMC_Vertex vertex)
 {
     m_vertices.push_back (vertex);
 }
 
-void CMC_Mesh::pushIndex(unsigned short index)
+void CMC_MeshData::pushIndex(unsigned short index)
 {
     m_indices.push_back (index);
 }
 
-void CMC_Mesh::write(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer)
+void CMC_MeshData::write(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer)
 {
     writer.StartObject ();
 
@@ -55,17 +55,17 @@ void CMC_Mesh::write(rapidjson::PrettyWriter<rapidjson::StringBuffer> &writer)
 
     writer.EndObject ();
 }
-int CMC_Mesh::materialIndex() const
+int CMC_MeshData::materialIndex() const
 {
     return m_materialIndex;
 }
 
-void CMC_Mesh::setMaterialIndex(int materialIndex)
+void CMC_MeshData::setMaterialIndex(int materialIndex)
 {
     m_materialIndex = materialIndex;
 }
 
-void CMC_Mesh::loadFromTZW(const rapidjson::Value &value)
+void CMC_MeshData::loadFromTZW(const rapidjson::Value &value)
 {
     //load material index.
     m_materialIndex = value["material_index"].GetInt ();

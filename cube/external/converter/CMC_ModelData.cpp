@@ -1,4 +1,4 @@
-#include "CMC_Model.h"
+#include "CMC_ModelData.h"
 #include "external/rapidjson/document.h"
 #include "external/rapidjson/prettywriter.h"
 #include "external/rapidjson/filewritestream.h"
@@ -9,34 +9,34 @@
 #include <iostream>
 namespace tzw {
 
-CMC_Model::CMC_Model()
+CMC_ModelData::CMC_ModelData()
 {
     m_numBones = 0;
     m_rootBone = nullptr;
 }
 
-CMC_Model::~CMC_Model()
+CMC_ModelData::~CMC_ModelData()
 {
 
 }
 
 
 
-void CMC_Model::addMesh(CMC_Mesh *mesh)
+void CMC_ModelData::addMesh(CMC_MeshData *mesh)
 {
     m_meshList.push_back (mesh);
 }
-QMatrix4x4 CMC_Model::globalInverseTransform() const
+QMatrix4x4 CMC_ModelData::globalInverseTransform() const
 {
     return m_globalInverseTransform;
 }
 
-void CMC_Model::setGlobalInverseTransform(const QMatrix4x4 &globalInverseTransform)
+void CMC_ModelData::setGlobalInverseTransform(const QMatrix4x4 &globalInverseTransform)
 {
     m_globalInverseTransform = globalInverseTransform;
 }
 
-void CMC_Model::writeToFile(const char *fielName)
+void CMC_ModelData::writeToFile(const char *fielName)
 {
     printf("will write model data to %s.\n",fielName);
     printf("writing...\n");
@@ -74,12 +74,12 @@ void CMC_Model::writeToFile(const char *fielName)
     printf("Done.\n");
 }
 
-void CMC_Model::addMaterial(CMC_Material *material)
+void CMC_ModelData::addMaterial(CMC_Material *material)
 {
     m_materialList.push_back (material);
 }
 
-void CMC_Model::loadFromTZW(const char *fileName)
+void CMC_ModelData::loadFromTZW(const char *fileName)
 {
 
     // load All materials
@@ -101,17 +101,17 @@ void CMC_Model::loadFromTZW(const char *fileName)
     for(auto iter = meshesObj.Begin ();iter!= meshesObj.End ();iter++)
     {
         auto& meshObj = *iter;
-        auto mesh = new CMC_Mesh();
+        auto mesh = new CMC_MeshData();
         mesh->loadFromTZW (meshObj);
         addMesh (mesh);
     }
 }
-CMC_Bone *CMC_Model::rootBone() const
+CMC_Node *CMC_ModelData::rootBone() const
 {
     return m_rootBone;
 }
 
-void CMC_Model::setRootBone(CMC_Bone *rootBone)
+void CMC_ModelData::setRootBone(CMC_Node *rootBone)
 {
     m_rootBone = rootBone;
 }

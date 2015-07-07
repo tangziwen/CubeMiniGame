@@ -18,7 +18,7 @@
 #include "external/include/assimp/scene.h"
 #include "external/include/assimp/Importer.hpp"
 #include "external/include/assimp/postprocess.h"
-#include "external/converter/CMC_Model.h"
+#include "external/converter/CMC_ModelData.h"
 #include "base/node.h"
 
 class Entity : public Node
@@ -58,21 +58,21 @@ public:
     virtual void adjustVertices();
     bool isSetDrawWire() const;
     void setIsSetDrawWire(bool isSetDrawWire);
-    tzw::CMC_Model * m_model;
+    tzw::CMC_ModelData * m_model;
 private:
     uint findBoneInterpoScaling(float AnimationTime, const aiNodeAnim* pNodeAnim);
     uint findBoneInterpoRotation(float AnimationTime, const aiNodeAnim* pNodeAnim);
     uint findBoneInterpoTranslation(float AnimationTime, const aiNodeAnim* pNodeAnim);
     const aiNodeAnim* findNodeAnim(const aiAnimation* pAnimation, const std::string NodeName);
     void readNodeHeirarchy(float AnimationTime, const aiNode* pNode, const Matrix4f& ParentTransform);
-    void readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Bone * node, QMatrix4x4 parentTransform, std::vector<QMatrix4x4> &Transforms);
+    void readNodeHeirarchyTZW(float AnimationTime, const tzw::CMC_Node * node, QMatrix4x4 parentTransform, std::vector<QMatrix4x4> &Transforms);
     void CalcInterpolatedScaling(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedRotation(aiQuaternion& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void CalcInterpolatedPosition(aiVector3D& Out, float AnimationTime, const aiNodeAnim* pNodeAnim);
     void loadModelData(const char * file_name);
-    void loadModelDataFromTZW(tzw::CMC_Model *cmc_model, const char *file_name);
+    void loadModelDataFromTZW(tzw::CMC_ModelData *cmc_model, const char *file_name);
     void LoadMaterial(const aiScene* pScene, const char *file_name,const char * pre_fix);
-    void loadMaterialFromTZW(tzw::CMC_Model * model, const char * file_name,const char * pre_fix);
+    void loadMaterialFromTZW(tzw::CMC_ModelData * model, const char * file_name,const char * pre_fix);
     void loadBones(const aiMesh* pMesh, TMesh *mesh);
     Texture *loadTextureFromMaterial(std::string fileName, const char * pre_fix);
 
