@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <string.h>
+#include <math.h>
 using namespace std;
 
 

@@ -59,6 +59,7 @@ build_*_vc10/
 # Ignore files build by QT
 build-debug/
 build-relase/
+/*-Debug/*
 
 # Ignore files build by xcode
 *.mode*v*

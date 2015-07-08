@@ -1,5 +1,6 @@
 QT       += core gui widgets
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11
+# QMAKE_CXXFLAGS += -std=c++11
 TARGET = cube
 TEMPLATE = app
 
@@ -480,7 +481,6 @@ HEADERS += \
     external/assimp/contrib/zlib/inflate.h \
     external/assimp/contrib/zlib/inftrees.h \
     external/assimp/contrib/zlib/trees.h \
-    external/assimp/contrib/zlib/zconf.in.h \
     external/assimp/contrib/zlib/zlib.h \
     external/assimp/contrib/zlib/zutil.h \
     external/include/assimp/Compiler/poppack1.h \
@@ -565,9 +565,14 @@ HEADERS += \
     GUI/button.h \
     geometry/rect.h \
     listener/touchable.h \
-    Event/eventmgr.h
+    Event/eventmgr.h \
+    external/assimp/contrib/zlib/zconf.in.h \
+    external/assimp/contrib/zlib/zconf.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \
     external/assimp/makefile.mingw \
     external/assimp/BoostWorkaround/boost/LICENSE_1_0.txt
+
+INCLUDEPATH += \
+    /Users/Shared/include/boost/
