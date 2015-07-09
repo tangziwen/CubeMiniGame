@@ -6,6 +6,15 @@
 ##Here is the changelog of the CubeEngine
 
 
+###alpha v0.13 7.9.2015###
+* Add external "converter" libary for handling model convert, and separate the connection between the Engine adn Assimp.
+* Add two new classes "skeleton" & "EntityNode", Skeleton use to update the bone and node transformation while Entity is playing skin animation. EntityNode use to represent the Node(typically the Bone) in the model,you can use it to get the bone(node) transform matrix or simplly attach something(eg. weapons. ) in the specified entity.
+* Fix the bug which cause the relative path of the texture image invalid.
+* Add new model file format "*.tzw",loading and writing. currently it only support static models, the models which have skin animation still need Assimp support(not directly like previous versions but via the "external/converter"). In the future, I will completely strip down the ASSIMP codes from Engine. The next step, I plan to write an utility application (maybe named "CubeConverter", use the "external/converter" code base) which will use Assimp to convert others models file to ".tzw" files,and <b>only guarantee</b> the engine can parse & write "*.tzw" file format.
+* Add dependency of TUtility libary (see <a href="https://github.com/tangziwen/TUtility">https://github.com/tangziwen/TUtility</a> for details).
+* Add a Class called "Label" which can do some simple text rendering.
+* Refine the class "Sprite".
+
 ###alpha v0.11c 5.18.2015###
 * fix crash when RenderTarget's camera is not set.
 * fix wrong shadow effect when multiple resize.
