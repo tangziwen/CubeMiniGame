@@ -1,12 +1,17 @@
 QT       += core gui widgets
+<<<<<<< HEAD
 CONFIG += c++11
 # QMAKE_CXXFLAGS += -std=c++11
+=======
+QT += opengl
+QMAKE_CXXFLAGS += -std=c++11
+>>>>>>> origin/master
 TARGET = cube
 TEMPLATE = app
 
 DEFINES += "M_PI=3.14159265358979323846"
 DEFINES += "M_PI_2=1.57079632679489661923"
-
+DEFINES += "USE_QT=1"
 SOURCES += main.cpp \
     utility.cpp \
     gl_matrix/mat3.c \
@@ -204,7 +209,6 @@ SOURCES += main.cpp \
     material/material.cpp \
     material/materialchannel.cpp \
     material/materialpool.cpp \
-    shader/shaderpoll.cpp \
     shader/shader_program.cpp \
     scene/scene.cpp \
     base/camera.cpp \
@@ -237,9 +241,30 @@ SOURCES += main.cpp \
     Demo/CSMDelegate/csmdelegate.cpp \
     Demo/GUIDemo/guidelegate.cpp \
     GUI/button.cpp \
-    geometry/rect.cpp \
     listener/touchable.cpp \
-    Event/eventmgr.cpp
+    Event/eventmgr.cpp \
+    external/TUtility/log/Tlog.cpp \
+    external/TUtility/log/TstatckTrace.cpp \
+    external/TUtility/math/TbaseMath.cpp \
+    external/TUtility/math/Tvector.cpp \
+    external/TUtility/string/Tstring.cpp \
+    shader/ShaderPool.cpp \
+    listener/Clickable.cpp \
+    GUI/Label.cpp \
+    GUI/font/BMFontConfiguration.cpp \
+    geometry/Rect.cpp \
+    external/TUtility/Data.cpp \
+    external/TUtility/file/Tfile.cpp \
+    external/converter/CMC_Material.cpp \
+    external/converter/CMC_Mesh.cpp \
+    external/converter/CMC_Model.cpp \
+    external/converter/CMC_Vertex.cpp \
+    base/Bone.cpp \
+    external/converter/CMC_Animate.cpp \
+    external/converter/CMC_AnimateBone.cpp \
+    external/converter/CMC_Bone.cpp \
+    external/converter/CMC_BoneMetaInfo.cpp \
+    external/converter/Loader.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -530,7 +555,6 @@ HEADERS += \
     material/material.h \
     material/materialchannel.h \
     material/materialpool.h \
-    shader/shaderpoll.h \
     shader/shader_program.h \
     scene/scene.h \
     light/shadow_map_fbo.h \
@@ -563,11 +587,65 @@ HEADERS += \
     Demo/CSMDelegate/csmdelegate.h \
     Demo/GUIDemo/guidelegate.h \
     GUI/button.h \
-    geometry/rect.h \
     listener/touchable.h \
     Event/eventmgr.h \
+<<<<<<< HEAD
     external/assimp/contrib/zlib/zconf.in.h \
     external/assimp/contrib/zlib/zconf.h
+=======
+    external/TUtility/log/Tlog.h \
+    external/TUtility/log/TstatckTrace.h \
+    external/TUtility/math/TbaseMath.h \
+    external/TUtility/math/Tvector.h \
+    external/TUtility/string/Tstring.h \
+    external/TUtility/TUtility.h \
+    shader/ShaderPool.h \
+    listener/Clickable.h \
+    GUI/Label.h \
+    GUI/font/BMFontConfiguration.h \
+    geometry/Rect.h \
+    external/UT_hash.h \
+    external/TUtility/Data.h \
+    external/TUtility/file/Tfile.h \
+    external/converter/CMC_Material.h \
+    external/converter/CMC_Mesh.h \
+    external/converter/CMC_Model.h \
+    external/converter/CMC_Vertex.h \
+    external/rapidjson/error/en.h \
+    external/rapidjson/error/error.h \
+    external/rapidjson/internal/biginteger.h \
+    external/rapidjson/internal/diyfp.h \
+    external/rapidjson/internal/dtoa.h \
+    external/rapidjson/internal/ieee754.h \
+    external/rapidjson/internal/itoa.h \
+    external/rapidjson/internal/meta.h \
+    external/rapidjson/internal/pow10.h \
+    external/rapidjson/internal/stack.h \
+    external/rapidjson/internal/strfunc.h \
+    external/rapidjson/internal/strtod.h \
+    external/rapidjson/msinttypes/inttypes.h \
+    external/rapidjson/msinttypes/stdint.h \
+    external/rapidjson/allocators.h \
+    external/rapidjson/document.h \
+    external/rapidjson/encodedstream.h \
+    external/rapidjson/encodings.h \
+    external/rapidjson/filereadstream.h \
+    external/rapidjson/filewritestream.h \
+    external/rapidjson/memorybuffer.h \
+    external/rapidjson/memorystream.h \
+    external/rapidjson/pointer.h \
+    external/rapidjson/prettywriter.h \
+    external/rapidjson/rapidjson.h \
+    external/rapidjson/reader.h \
+    external/rapidjson/stringbuffer.h \
+    external/rapidjson/writer.h \
+    base/Bone.h \
+    external/converter/CMC_Animate.h \
+    external/converter/CMC_AnimateBone.h \
+    external/converter/CMC_Bone.h \
+    external/converter/CMC_BoneMetaInfo.h \
+    external/converter/Loader.h
+>>>>>>> origin/master
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

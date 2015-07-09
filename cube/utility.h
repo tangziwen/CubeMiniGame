@@ -16,7 +16,6 @@ float Ang2Radius(float ang);
 const char *  GuessFileTYPE(const char * file_name);
 void FindPrefix(const char * file_name, char *dst);
 QQuaternion RotateMatrix2Quaternion(QMatrix4x4 matrix);
-
 }
 
 #endif // UTILITY_H

@@ -60,7 +60,7 @@ enum class SampleID
 RenderDelegate * runSample(SampleID sample_ID);
 int main(int argc, char *argv[])
 {
-    auto result = runSample(SampleID::GUIDemo);
+    auto result = runSample(SampleID::NormalMapping);
     return TzwEngine::go(result,argc,argv);
 }
 

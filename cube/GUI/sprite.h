@@ -1,6 +1,6 @@
 #ifndef SPRITE_H
 #define SPRITE_H
-#include "shader/shaderpoll.h"
+#include "shader/ShaderPool.h"
 #include "texture/texturepool.h"
 #include "base/node.h"
 #include "base/vertexdata.h"
@@ -25,8 +25,18 @@ public:
     Camera *camera() const;
     void setCamera(Camera *camera);
     void setRect(QVector2D TL, QVector2D BR, float the_size_x, float the_size_y);
+    void setRect(QVector2D TL, QVector2D BR);
     QVector2D getSize();
+    void setSize(int width,int height);
+    QVector2D TL() const;
+    void setTL(const QVector2D &TL);
+
+    QVector2D BR() const;
+    void setBR(const QVector2D &BR);
+
 private:
+    QVector2D m_TL;
+    QVector2D m_BR;
     float m_sizeX;
     float m_sizeY;
     Camera * m_camera;

@@ -1,7 +1,7 @@
 #include "normalmappingdelegate.h"
 #include <QDebug>
 #include "utility.h"
-#include "shader/shaderpoll.h"
+#include "shader/ShaderPool.h"
 #include "texture/texturepool.h"
 #include "material/materialpool.h"
 #include "entity/skybox.h"
@@ -44,17 +44,43 @@ void NormalMappingDelegate::onInit()
     scene->root ()->addChild (&camera);
 
     //create a box
-    auto the_box = new Entity("./res/model/box/box.obj");
-    the_box->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
+    auto the_head = new Entity("./res/model/scan_head/Infinite-Level_02.obj");
+    the_head->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
     //set it's normal map
-    the_box->getMesh (0)->getMaterial ()->setNormalMap (TexturePool::getInstance ()->createOrGetTexture ("./res/model/box/bricks_normal.jpg"));
-    the_box->setCamera (&camera);
-    scene->root ()->addChild (the_box);
+    auto material = the_head->getMesh (0)->getMaterial ();
+    material->setNormalMap (TexturePool::getInstance ()->createOrGetTexture ("./res/model/scan_head/Infinite-Level_02_Tangent_SmoothUV.jpg"));
+    the_head->setCamera (&camera);
+    //scene->root ()->addChild (the_head);
     //this sample we don't use shadow
-    the_box->setIsEnableShadow (false);
-    the_box->onUpdate = [](Node* target){
+    the_head->setIsEnableShadow (false);
+    the_head->onUpdate = [](Node* target){
         target->setRotation (target->rotation ()+QVector3D(0,0.1,0));
     };
+
+    {
+        auto the_box = new Entity("./res/model/box/box.obj",Entity::LoadPolicy::LoadFromLoader);
+        the_box->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
+        the_box->setCamera (&camera);
+        //scene->root ()->addChild (the_box);
+        the_box->setIsEnableShadow (false);
+        //this sample we don't use shadow
+        the_box->setIsEnableShadow (false);
+    }
+
+    {
+        //bob
+        auto the_bob = new Entity("./res/model/bob/boblampclean.md5mesh");
+        the_bob->setShaderProgram (ShaderPool::getInstance ()->get ("deferred"));
+        the_bob->setCamera (&camera);
+        the_bob->setPos (QVector3D(0,0,-10));
+        the_bob->setRotation (QVector3D(-90,0,0));
+        scene->root ()->addChild (the_bob);
+        the_bob->setIsEnableShadow (false);
+        the_bob->scale (0.05,0.05,0.05);
+        //this sample we don't use shadow
+        the_bob->setIsEnableShadow (false);
+    }
+
     //then add  a Directional light
     auto directional_light = scene->getDirectionalLight ();
     directional_light->setIntensity (1);

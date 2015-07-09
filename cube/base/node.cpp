@@ -3,6 +3,7 @@
 #include "utility.h"
 #include <algorithm>
 Node::Node()
+    :m_enable(true),m_camera(nullptr)
 {
     this->m_pos=QVector3D(0,0,0);
     this->m_rotation=QVector3D(0,0,0);
@@ -45,6 +46,7 @@ void Node::setChildren(const std::vector<Node *> &children)
 
 void Node::visit(Scene *scene)
 {
+    if(!m_enable) return;
     if(onUpdate) onUpdate(this);
     for(int i =0;i<m_children.size ();i++)
     {
@@ -236,6 +238,15 @@ void Node::removechild(Node *child)
         m_children.erase (iter);
     }
 }
+
+void Node::removeAllChildren()
+{
+    for(Node * node : m_children)
+    {
+        delete node;
+    }
+    m_children.clear ();
+}
 TVector3D Node::pos() const
 {
     return m_pos;
@@ -280,6 +291,26 @@ void Node::setAsCustomNode()
 {
     m_nodeType = NODE_TYPE_CUSTOM;
 }
+Camera *Node::camera() const
+{
+    return m_camera;
+}
+
+void Node::setCamera(Camera *camera)
+{
+    m_camera = camera;
+}
+
+bool Node::enable() const
+{
+    return m_enable;
+}
+
+void Node::setEnable(bool enable)
+{
+    m_enable = enable;
+}
+
 
 
 void Node::setScalling(const TVector3D &scalling)

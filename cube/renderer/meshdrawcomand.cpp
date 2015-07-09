@@ -135,14 +135,14 @@ void MeshDrawComand::setAttribState()
     if(BoneId>=0)
     {
         glEnableVertexAttribArray(BoneId);
-        glVertexAttribPointer(BoneId,4,GL_INT,GL_FALSE,sizeof(VertexData),(const void *)offset);
+        glVertexAttribIPointer(BoneId,4,GL_INT,sizeof(VertexData),(const void *)offset);
     }
      offset = offsetof(VertexData,boneWeight);
     int BoneWeight = glGetAttribLocation (shader_id,"a_bone_weight"); //bone weight
     if(BoneWeight>=0)
     {
         glEnableVertexAttribArray(BoneWeight);
-        glVertexAttribIPointer(BoneWeight,4,GL_INT,sizeof(VertexData),(const void *)offset);
+        glVertexAttribPointer(BoneWeight,4,GL_FLOAT,GL_FALSE,sizeof(VertexData),(const void *)offset);
     }
     offset = offsetof(VertexData,tangent);
     int tangentLocation = glGetAttribLocation (shader_id,"a_tangent");

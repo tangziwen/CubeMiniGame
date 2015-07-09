@@ -8,10 +8,6 @@ Touchable::Touchable()
 
 }
 
-bool Touchable::checkTouchPress(QVector2D pos)
-{
-    return false;
-}
 
 void Touchable::handleTouchPress(QVector2D pos)
 {

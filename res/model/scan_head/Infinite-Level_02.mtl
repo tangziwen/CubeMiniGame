@@ -1,0 +1,8 @@
+#
+# Wavefront material file
+# Converted by Meshlab Group
+#
+
+newmtl material_0
+map_Kd Map-COL.jpg
+
