@@ -2,6 +2,7 @@
 #include "../Data.h"
 #include "../log/Tlog.h"
 #include "string.h"
+#include<stdlib.h>
 namespace tzw
 {
 Tfile * Tfile::m_instance = nullptr;

@@ -1,4 +1,5 @@
 #include "Data.h"
+#include<stdlib.h>
 #include "external/TUtility/log/Tlog.h"
 using namespace tzw;
 const Data Data::Null;
