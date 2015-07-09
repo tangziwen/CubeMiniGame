@@ -5,7 +5,7 @@
 #include <QMatrix4x4>
 #include <QOpenGLFunctions_3_0>
 
-#include "Entity/entity.h"
+#include "Entity/Entity.h"
 #include "GUI/sprite.h"
 
 #include "light/directionallight.h"

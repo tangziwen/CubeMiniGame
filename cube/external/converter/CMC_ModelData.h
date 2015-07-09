@@ -21,7 +21,6 @@ public:
     void writeToFile(const char * fielName);
     void addMaterial(CMC_Material * material);
     void loadFromTZW(const char * fileName);
-
     CMC_Node *rootBone() const;
     void setRootBone(CMC_Node *rootBone);
     std::map<std::string,int> m_BoneMetaInfoMapping;

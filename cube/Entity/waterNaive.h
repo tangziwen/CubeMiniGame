@@ -1,7 +1,7 @@
 #ifndef WATER_H
 #define WATER_H
 #include "base/node.h"
-#include "entity.h"
+#include "Entity.h"
 #include <QOpenGLFunctions>
 #include "geometry/mesh.h"
 #include <QVector2D>

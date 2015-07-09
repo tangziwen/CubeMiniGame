@@ -1,7 +1,8 @@
 #include "EntityNode.h"
-
-EntityNode::EntityNode()
-    :m_nodeData(nullptr)
+#include "Entity.h"
+#include "external/converter/CMC_Node.h"
+EntityNode::EntityNode(Entity *entity)
+    :m_nodeData(nullptr),m_entity(entity)
 {
     this->m_nodeType = NODE_TYPE_BONE;
 }
@@ -20,6 +21,20 @@ void EntityNode::setNodeData(tzw::CMC_Node *nodeData)
     m_nodeData = nodeData;
 }
 
+QMatrix4x4 EntityNode::getModelTrans()
+{
+    QMatrix4x4 mat = m_entity->getModelData ()->globalInverseTransform ()* getGlobalBoneTransform ();
+    return m_entity->getModelTrans () * mat;
+}
+QMatrix4x4 EntityNode::getGlobalBoneTransform() const
+{
+    return m_globalBoneTransform;
+}
+
+void EntityNode::setGlobalBoneTransform(const QMatrix4x4 &globalTransform)
+{
+    m_globalBoneTransform = globalTransform;
+}
 
 EntityNode *EntityNode::findNodeRecursively(EntityNode *node, std::string nodeName)
 {

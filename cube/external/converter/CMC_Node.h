@@ -19,6 +19,7 @@ public:
     CMC_Node *parent() const;
     void setParent(CMC_Node *parent);
     std::vector<int>m_childrenMeshes;
+    QMatrix4x4 getOffset();
 private:
     CMC_NodeMetaInfo * m_info;
     CMC_Node *m_parent;

@@ -137,9 +137,10 @@ void Scene::setEntityBoneTransform(Entity *entity)
     if(entity->hasAnimation()&& entity->getCurrentAnimateIndex ()>=0)
     {
         entity->getShaderProgram()->setUniformInteger("g_has_animation",1);
-        entity->updateNodeAndBone ();
+        entity->getSkeleton ()->updateNodeAndBone (entity->getModelData ()->animates ()[entity->getCurrentAnimateIndex ()]
+                ,entity->getPercentageOfAnimate ());
         std::vector <QMatrix4x4 > transform;
-        entity->copyBonePalette (transform);
+        entity->getSkeleton ()->copyBonePalette (transform);
         for(int i =0;i<transform.size();i++)
         {
             char str[100];

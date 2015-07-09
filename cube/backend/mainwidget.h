@@ -54,7 +54,7 @@
 #include <QMatrix4x4>
 #include "base/camera.h"
 #include "geometry/mesh.h"
-#include "Entity/entity.h"
+#include "Entity/Entity.h"
 #include "base/renderdelegate.h"
 #include "scene/scene.h"
 class GeometryEngine;

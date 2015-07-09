@@ -2,6 +2,7 @@
 #include "../Data.h"
 #include "../log/Tlog.h"
 #include "string.h"
+#include <algorithm>
 namespace tzw
 {
 Tfile * Tfile::m_instance = nullptr;
@@ -117,7 +118,7 @@ std::string Tfile::getReleativePath(std::string filePath)
     std::string relativePath;
     for(auto i = filePath.rbegin ();i!=filePath.rend ();i++)
     {
-        if((*i)=='/')
+        if((*i)=='/' ||(*i)=='\\' )
         {
             break;
         }else
@@ -125,6 +126,7 @@ std::string Tfile::getReleativePath(std::string filePath)
             relativePath.push_back (*i);
         }
     }
+    std::reverse(relativePath.begin (),relativePath.end ());
     return relativePath;
 }
 

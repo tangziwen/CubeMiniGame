@@ -5,7 +5,7 @@
 #include <QVector3D>
 #include <vector>
 
-#include "Entity/entity.h"
+#include "Entity/Entity.h"
 #include "geometry/aabb.h"
 #include "base/frustum.h"
 

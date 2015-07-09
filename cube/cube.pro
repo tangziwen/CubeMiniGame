@@ -18,7 +18,6 @@ SOURCES += main.cpp \
     base/vertexdata.cpp \
     geometry/mesh.cpp \
     renderer/meshdrawcomand.cpp \
-    Entity/entity.cpp \
     base/tzwengine.cpp \
     backend/backend.cpp \
     backend/mainwidget.cpp \
@@ -27,7 +26,6 @@ SOURCES += main.cpp \
     light/pointlight.cpp \
     light/baselight.cpp \
     light/spotlight.cpp \
-    external/tiny_obj_loader.cc \
     external/assimp/3DSConverter.cpp \
     external/assimp/3DSLoader.cpp \
     external/assimp/ACLoader.cpp \
@@ -260,7 +258,9 @@ SOURCES += main.cpp \
     external/converter/CMC_ModelData.cpp \
     external/converter/CMC_MeshData.cpp \
     Entity/EntityNode.cpp \
-    external/converter/CMC_AnimateData.cpp
+    external/converter/CMC_AnimateData.cpp \
+    Entity/Entity.cpp \
+    Entity/Skeleton.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -283,7 +283,6 @@ HEADERS += \
     base/vertexdata.h \
     geometry/mesh.h \
     renderer/meshdrawcomand.h \
-    Entity/entity.h \
     base/tzwengine.h \
     backend/backend.h \
     backend/mainwidget.h \
@@ -638,7 +637,9 @@ HEADERS += \
     external/converter/CMC_ModelData.h \
     external/converter/CMC_MeshData.h \
     Entity/EntityNode.h \
-    external/converter/CMC_AnimateData.h
+    external/converter/CMC_AnimateData.h \
+    Entity/Entity.h \
+    Entity/Skeleton.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

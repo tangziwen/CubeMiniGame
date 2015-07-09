@@ -32,6 +32,17 @@ void CMC_Node::setParent(CMC_Node *parent)
     m_parent = parent;
 }
 
+QMatrix4x4 CMC_Node::getOffset()
+{
+    if(m_parent)
+    {
+        return m_parent->getOffset ()*m_localTransform;
+    }else
+    {
+        return m_localTransform;
+    }
+}
+
 
 } // namespace tzw
 

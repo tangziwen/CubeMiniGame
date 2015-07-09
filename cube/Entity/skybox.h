@@ -4,7 +4,7 @@
 #include "base/camera.h"
 #include "geometry/mesh.h"
 #include "shader/shader_program.h"
-#include "Entity/entity.h"
+#include "Entity/Entity.h"
 #include <QOpenGLFunctions>
 #include <QOpenGLTexture>
 class SkyBox :protected QOpenGLFunctions

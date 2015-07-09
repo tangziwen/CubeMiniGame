@@ -4,7 +4,7 @@
 #include "renderer/gbuffer.h"
 #include "base/camera.h"
 #include "renderer/renderbuffer.h"
-#include "Entity/entity.h"
+#include "Entity/Entity.h"
 #include <vector>
 class RenderTarget
 {

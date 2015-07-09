@@ -52,7 +52,7 @@ public:
     void rotate(float x,float y, float z);
     void scale(float x, float y ,float z);
 
-    QMatrix4x4 getModelTrans();
+    virtual QMatrix4x4 getModelTrans();
     QMatrix4x4 getParentModelTrans();
     QMatrix4x4 getRotaionMatrix();
     QMatrix4x4 getScallingMatrix();

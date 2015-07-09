@@ -1,4 +1,4 @@
-#include "entity.h"
+#include "Entity.h"
 #include <iostream>
 #include "geometry/mesh.h"
 #include "utility.h"
@@ -14,8 +14,6 @@
 Entity::Entity()
 {
     this->mesh_list.clear();
-
-    this->m_numBones = 0;
     this->m_animateTime = 0;
     this->m_hasAnimation = 0;
     this->setIsEnableShadow(true);
@@ -23,18 +21,19 @@ Entity::Entity()
     this->setNodeType (NODE_TYPE_ENTITY);
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     this->m_currentAnimateIndex = -1;
+    this->m_skeleton = nullptr;
     m_isAABBDirty = true;
 }
 
 Entity::Entity(const char *file_name,LoadPolicy policy)
 {
     this->mesh_list.clear();
-    this->m_numBones = 0;
     this->m_animateTime = 0;
     this->setIsEnableShadow(true);
     this->onRender = nullptr;
     this->setShaderProgram (ShaderPool::getInstance ()->get ("default"));
     this->m_currentAnimateIndex = -1;
+    this->m_skeleton = nullptr;
     this->setNodeType (NODE_TYPE_ENTITY);
     switch(policy)
     {
@@ -43,7 +42,7 @@ Entity::Entity(const char *file_name,LoadPolicy policy)
 
         tzw::Loader loader;
         loader.loadFromModel (file_name);
-        loadModelDataFromTZW (loader.model (),file_name);
+        loadModelData (loader.model (),file_name);
         setModelData (loader.model ());
     }
         break;
@@ -51,7 +50,7 @@ Entity::Entity(const char *file_name,LoadPolicy policy)
     {
         tzw::CMC_ModelData * model = new tzw::CMC_ModelData;
         model->loadFromTZW (file_name);
-        loadModelDataFromTZW (model,file_name);
+        loadModelData (model,file_name);
         setModelData (model);
     }
         break;
@@ -99,20 +98,6 @@ Camera *Entity::getCamera()
 ShaderProgram *Entity::getShaderProgram()
 {
     return this->program;
-}
-
-void Entity::copyBonePalette(std::vector<QMatrix4x4> &Transforms)
-{
-    if(!hasAnimation ())
-    {
-        Transforms.clear ();
-        return;
-    }
-    int numOfBones = getModelData ()->m_boneMetaInfoList.size ();
-    Transforms.resize(numOfBones);
-    for (uint i = 0 ; i < numOfBones ; i++) {
-        Transforms[i] = m_bonePalette[i];
-    }
 }
 
 void Entity::playAnimate(int index, float time)
@@ -176,13 +161,13 @@ void Entity::adjustVertices()
 
 }
 
-void Entity::loadModelDataFromTZW(tzw::CMC_ModelData * cmc_model,const char * file_name)
+void Entity::loadModelData(tzw::CMC_ModelData * cmc_model,const char * file_name)
 {
     m_hasAnimation = cmc_model->hasAnimation ();
     char str[100]={'\0'};
     utility::FindPrefix(file_name,str);
     //load material
-    loadMaterialFromTZW(cmc_model,file_name,str);
+    loadMaterial(cmc_model,file_name,str);
 
     //global inverse transform(not supported yet)
     m_globalInverseTransform.InitIdentity ();
@@ -217,11 +202,11 @@ void Entity::loadModelDataFromTZW(tzw::CMC_ModelData * cmc_model,const char * fi
         }
         mesh->finish();
     }
-    m_bonePalette.resize (cmc_model->m_BoneMetaInfoMapping.size ());
+    m_skeleton = new Skeleton(this,cmc_model->m_BoneMetaInfoMapping.size ());
     createNode(this,cmc_model->rootBone ());
 }
 
-void Entity::loadMaterialFromTZW(tzw::CMC_ModelData *model, const char *file_name, const char *pre_fix)
+void Entity::loadMaterial(tzw::CMC_ModelData *model, const char *file_name, const char *pre_fix)
 {
     //store material
     for(int i = 0 ;i<model->materialList ().size();i++)
@@ -268,6 +253,7 @@ Texture *Entity::loadTextureFromMaterial(std::string fileName, const char *pre_f
         {
             result =tmp_tex;
         }
+        fileName = tzw::Tfile::getInstance ()->getReleativePath (fileName);
         sprintf(str,"%s%s",pre_fix,fileName.c_str());
         tmp_tex = TexturePool::getInstance()->createOrGetTexture(str);
         if(tmp_tex)
@@ -286,73 +272,17 @@ Texture *Entity::loadTextureFromMaterial(std::string fileName, const char *pre_f
 
 void Entity::createNode(Node *parent, tzw::CMC_Node * node)
 {
-    EntityNode * subEntity = new EntityNode();
+    EntityNode * subEntity = new EntityNode(this);
     subEntity->setName (node->info ()->name ().c_str ());
     subEntity->setNodeData (node);
     parent->addChild (subEntity);
     if(parent == this)
     {
-        m_entityNodeRoot = subEntity;
+        m_skeleton->setEntityNodeRoot (subEntity);
     }
     for(int i =0; i< node->m_children.size ();i++)
     {
         createNode(subEntity,node->m_children[i]);
-    }
-}
-
-void Entity::updateNodesAndBonesRecursively(EntityNode *theNode, QMatrix4x4 parentTransform)
-{
-    auto sub_entity = theNode;
-    std::string NodeName = sub_entity->name ();
-    auto node = sub_entity->nodeData ();
-    QMatrix4x4 NodeTransform;
-    QMatrix4x4 globalTransform;
-    if(getModelData ()->isBone (NodeName))
-    {
-        //do animation;
-        float t = getPercentageOfAnimate();
-        const tzw::CMC_AnimateBone * pNodeAnim = getModelData ()->animates ()[m_currentAnimateIndex]->findAnimateBone (NodeName);
-        // Interpolate scaling and generate scaling transformation matrix
-        QVector3D Scaling;
-        pNodeAnim->calcInterpolatedScaling (Scaling,t);
-        QMatrix4x4 ScalingM;
-        ScalingM.setToIdentity ();
-        ScalingM.scale (Scaling.x (),Scaling.y (),Scaling.z ());
-
-        // Interpolate rotation and generate rotation transformation matrix
-        QQuaternion RotationQ;
-        pNodeAnim->calcInterpolatedRotation (RotationQ,t);
-        QMatrix4x4 RotationM;
-        RotationM.setToIdentity ();
-        RotationM.rotate(RotationQ);
-
-        // Interpolate translation and generate translation transformation matrix
-        QVector3D Translation;
-        pNodeAnim->calcInterpolatedPosition (Translation,t);
-        QMatrix4x4 TranslationM;
-        TranslationM.setToIdentity ();
-        TranslationM.translate (Translation.x(),Translation.y (),Translation.z ());
-
-        auto offsetMatrix = node->info ()->defaultBoneOffset ();
-        // Combine the above transformations
-        NodeTransform = TranslationM*RotationM*ScalingM;
-        sub_entity->setTransform (NodeTransform);
-        globalTransform = parentTransform * NodeTransform;
-
-        //write to palette.
-        uint BoneIndex = getModelData ()->m_BoneMetaInfoMapping[NodeName];
-        m_bonePalette[BoneIndex] = getModelData ()->globalInverseTransform ()* globalTransform * offsetMatrix;
-    }else
-    {
-        NodeTransform = node->m_localTransform;
-        sub_entity->setTransform (NodeTransform);
-        globalTransform = parentTransform * NodeTransform;
-    }
-    for(int i =0;i<sub_entity->getChildrenAmount ();i++)
-    {
-        auto child = sub_entity->getChild (i);
-        if(child->nodeType ()!=NODE_TYPE_BONE) continue;
-        updateNodesAndBonesRecursively((EntityNode *)sub_entity->getChild (i),globalTransform);
     }
 }
 
@@ -365,6 +295,17 @@ float Entity::getPercentageOfAnimate()
     return AnimationTime;
 }
 
+Skeleton *Entity::getSkeleton() const
+{
+    return m_skeleton;
+}
+
+void Entity::setSkeleton(Skeleton *skeleton)
+{
+    m_skeleton = skeleton;
+}
+
+
 int Entity::getCurrentAnimateIndex() const
 {
     return m_currentAnimateIndex;
@@ -375,34 +316,6 @@ void Entity::setCurrentAnimateIndex(int currentAnimateIndex)
     m_currentAnimateIndex = currentAnimateIndex;
 }
 
-EntityNode *Entity::getEntityNodeRoot() const
-{
-    return m_entityNodeRoot;
-}
-
-void Entity::setEntityNodeRoot(EntityNode *entityNodeRoot)
-{
-    m_entityNodeRoot = entityNodeRoot;
-}
-
-
-void Entity::updateNodeAndBone()
-{
-    QMatrix4x4 mat;
-    mat.setToIdentity ();
-    updateNodesAndBonesRecursively(m_entityNodeRoot,mat);
-}
-
-
-bool Entity::isSetDrawWire() const
-{
-    return m_isSetDrawWire;
-}
-
-void Entity::setIsSetDrawWire(bool isSetDrawWire)
-{
-    m_isSetDrawWire = isSetDrawWire;
-}
 tzw::CMC_ModelData *Entity::getModelData() const
 {
     return m_modelData;
