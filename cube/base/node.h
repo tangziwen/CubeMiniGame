@@ -102,9 +102,13 @@ public:
     virtual Camera *camera() const;
     virtual void setCamera(Camera *camera);
 
+    unsigned int getZOrder() const;
+    void setZOrder(unsigned int zOrder);
+
 protected:
     void setAsCustomNode();
 protected:
+    unsigned int m_zOrder;
     Camera * m_camera;
     TVector3D m_pos;
     TVector3D m_rotation;

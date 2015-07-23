@@ -57,7 +57,7 @@
 #include "Entity/Entity.h"
 #include "base/renderdelegate.h"
 #include "scene/scene.h"
-class GeometryEngine;
+#include <time.h>
 
 class MainWidget : public QGLWidget, protected QGLFunctions
 {
@@ -78,6 +78,8 @@ protected:
     void initShaders();
     void initTextures();
 private:
+    clock_t m_clockBegin;
+    clock_t m_clockEnd;
     bool isKeyPressed;
     bool isKeyRelease;
     bool isMouseMove;

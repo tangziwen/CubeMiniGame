@@ -41,12 +41,13 @@
 #include <QApplication>
 #include <QLabel>
 
-#include "base/tzwengine.h"
+#include "base/TzwEngine.h"
 #include "Demo/CubeCraft/CubeCraftDelegate.h"
 #include "Demo/SimpleDelegate/waterDelegate.h"
 #include "Demo/NormalMapping/normalmappingdelegate.h"
 #include "Demo/CSMDelegate/csmdelegate.h"
 #include "Demo/GUIDemo/guidelegate.h"
+#include "Demo/Demo.h"
 
 enum class SampleID
 {
@@ -60,44 +61,6 @@ enum class SampleID
 RenderDelegate * runSample(SampleID sample_ID);
 int main(int argc, char *argv[])
 {
-    auto result = runSample(SampleID::NormalMapping);
-    return TzwEngine::go(result,argc,argv);
-}
-
-
-RenderDelegate *runSample(SampleID sample_ID)
-{
-    RenderDelegate * result;
-    switch(sample_ID)
-    {
-    case SampleID::CubeCraft:
-    {
-        result =new  CubeCraftDelegate();
-    }
-        break;
-    case SampleID::Water:
-    {
-        result = new WaterDelegate();
-    }
-        break;
-
-    case SampleID::NormalMapping:
-    {
-        result = new NormalMappingDelegate();
-    }
-        break;
-    case SampleID::CSM:
-    {
-        result = new CSMDelegate();
-    }
-        break;
-    case SampleID::GUIDemo:
-    {
-        result = new GUIDelegate();
-    }
-        break;
-    default:
-        break;
-    }
-    return result;
+    auto demo = new Demo();
+    return TzwEngine::go(demo,argc,argv);
 }

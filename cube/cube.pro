@@ -1,4 +1,4 @@
-QT       += core gui widgets
+QT += core gui widgets
 QT += opengl
 QMAKE_CXXFLAGS += -std=c++11
 TARGET = cube
@@ -18,7 +18,6 @@ SOURCES += main.cpp \
     base/vertexdata.cpp \
     geometry/mesh.cpp \
     renderer/meshdrawcomand.cpp \
-    base/tzwengine.cpp \
     backend/backend.cpp \
     backend/mainwidget.cpp \
     light/directionallight.cpp \
@@ -234,15 +233,12 @@ SOURCES += main.cpp \
     Demo/CSMDelegate/csmdelegate.cpp \
     Demo/GUIDemo/guidelegate.cpp \
     GUI/button.cpp \
-    listener/touchable.cpp \
-    Event/eventmgr.cpp \
     external/TUtility/log/Tlog.cpp \
     external/TUtility/log/TstatckTrace.cpp \
     external/TUtility/math/TbaseMath.cpp \
     external/TUtility/math/Tvector.cpp \
     external/TUtility/string/Tstring.cpp \
     shader/ShaderPool.cpp \
-    listener/Clickable.cpp \
     GUI/Label.cpp \
     GUI/font/BMFontConfiguration.cpp \
     geometry/Rect.cpp \
@@ -260,7 +256,15 @@ SOURCES += main.cpp \
     Entity/EntityNode.cpp \
     external/converter/CMC_AnimateData.cpp \
     Entity/Entity.cpp \
-    Entity/Skeleton.cpp
+    Entity/Skeleton.cpp \
+    Utility/FPSCamera.cpp \
+    listener/KeyListener.cpp \
+    listener/TouchListener.cpp \
+    listener/BaseListener.cpp \
+    listener/RenderListener.cpp \
+    Event/EventMgr.cpp \
+    base/TzwEngine.cpp \
+    Demo/Demo.cpp
 
 qtHaveModule(opengl) {
     QT += opengl
@@ -283,7 +287,6 @@ HEADERS += \
     base/vertexdata.h \
     geometry/mesh.h \
     renderer/meshdrawcomand.h \
-    base/tzwengine.h \
     backend/backend.h \
     backend/mainwidget.h \
     light/directionallight.h \
@@ -583,8 +586,6 @@ HEADERS += \
     Demo/CSMDelegate/csmdelegate.h \
     Demo/GUIDemo/guidelegate.h \
     GUI/button.h \
-    listener/touchable.h \
-    Event/eventmgr.h \
     external/TUtility/log/Tlog.h \
     external/TUtility/log/TstatckTrace.h \
     external/TUtility/math/TbaseMath.h \
@@ -592,7 +593,6 @@ HEADERS += \
     external/TUtility/string/Tstring.h \
     external/TUtility/TUtility.h \
     shader/ShaderPool.h \
-    listener/Clickable.h \
     GUI/Label.h \
     GUI/font/BMFontConfiguration.h \
     geometry/Rect.h \
@@ -639,7 +639,15 @@ HEADERS += \
     Entity/EntityNode.h \
     external/converter/CMC_AnimateData.h \
     Entity/Entity.h \
-    Entity/Skeleton.h
+    Entity/Skeleton.h \
+    Utility/FPSCamera.h \
+    listener/TouchListener.h \
+    listener/KeyListener.h \
+    listener/BaseListener.h \
+    listener/RenderListener.h \
+    Event/EventMgr.h \
+    base/TzwEngine.h \
+    Demo/Demo.h
 
 OTHER_FILES += \
     external/assimp/CMakeLists.txt \

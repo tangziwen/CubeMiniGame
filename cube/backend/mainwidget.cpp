@@ -46,7 +46,7 @@
 #include "utility.h"
 #include "texture/texturepool.h"
 
-#include "Event/eventmgr.h"
+#include "Event/EventMgr.h"
 MainWidget::MainWidget(QWidget *parent,RenderDelegate *delegate) :
     QGLWidget(parent)
 {
@@ -56,6 +56,8 @@ MainWidget::MainWidget(QWidget *parent,RenderDelegate *delegate) :
      isMouseMove = false;
      isMousePress = false;
      isMouseRelease = false;
+     m_clockBegin = 0;
+     m_clockEnd = 0;
 }
 
 MainWidget::~MainWidget()
@@ -69,6 +71,7 @@ void MainWidget::mouseMoveEvent(QMouseEvent *e)
     {
         delegate->onTouchMove(e->localPos().x(),e->localPos().y());
     }
+    EventMgr::get ()->raiseOnTouchMove (QVector2D(e->localPos().x(),e->localPos().y()));
 }
 
 void MainWidget::mousePressEvent(QMouseEvent *e)
@@ -100,6 +103,7 @@ void MainWidget::keyPressEvent(QKeyEvent *event)
     {
         delegate->onKeyPress(event->key());
     }
+    EventMgr::get ()->raiseOnKeyPress (event->key ());
 }
 
 void MainWidget::keyReleaseEvent(QKeyEvent *event)
@@ -108,6 +112,7 @@ void MainWidget::keyReleaseEvent(QKeyEvent *event)
     {
         delegate->onKeyRelease(event->key());
     }
+    EventMgr::get ()->raiseOnKeyRelease (event->key ());
 }
 
 
@@ -150,10 +155,14 @@ void MainWidget::resizeGL(int w, int h)
 }
 void MainWidget::paintGL()
 {
-
+    m_clockEnd = clock();
+    auto delta = m_clockEnd - m_clockBegin;
+    float deltaInSec = delta*1.0 / CLOCKS_PER_SEC;
+    m_clockBegin = clock();
     if(delegate)
     {
         delegate->onRender();
     }
+    EventMgr::get ()->raiseOnRender (deltaInSec);
     Scene::getCurrentScene()->render();
 }

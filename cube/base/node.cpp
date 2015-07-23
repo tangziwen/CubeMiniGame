@@ -3,7 +3,7 @@
 #include "utility.h"
 #include <algorithm>
 Node::Node()
-    :m_enable(true),m_camera(nullptr)
+    :m_enable(true),m_camera(nullptr),m_zOrder(0)
 {
     this->m_pos=QVector3D(0,0,0);
     this->m_rotation=QVector3D(0,0,0);
@@ -430,6 +430,16 @@ void Node::setAsCustomNode()
 {
     m_nodeType = NODE_TYPE_CUSTOM;
 }
+unsigned int Node::getZOrder() const
+{
+    return m_zOrder;
+}
+
+void Node::setZOrder(unsigned int zOrder)
+{
+    m_zOrder = zOrder;
+}
+
 Camera *Node::camera() const
 {
     return m_camera;

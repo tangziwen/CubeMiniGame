@@ -43,6 +43,8 @@ Scene::Scene()
     m_guiCamera->setPos (QVector3D(0,0,0));
 
     m_renderType = DEFERRED_SHADING;
+
+    initLogo();
 }
 
 void Scene::pushEntityToRenderQueue(Entity *entity)
@@ -602,6 +604,17 @@ std::vector<Entity *> Scene::getPotentialEntityList() const
 void Scene::addRenderTarget(RenderTarget *target)
 {
     m_renderTargetList.push_back (target);
+}
+
+void Scene::initLogo()
+{
+    m_logoSprite = new Sprite();
+
+    m_logoSprite->setTexture (TexturePool::getInstance ()->createOrGetTexture ("./res/texture/logo_small.png"));
+    m_logoSprite->setCamera (guiCamera ());
+    m_logoSprite->setPos (QVector3D(0,0,0));
+    m_logoSprite->setZOrder (10000);
+    root ()->addChild (m_logoSprite);
 }
 
 bool entityCompare( Entity* pfirst, Entity* psecond)

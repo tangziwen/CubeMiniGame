@@ -1,16 +1,16 @@
 #include "button.h"
 #include <QVector2D>
 #include "geometry/rect.h"
-#include <Event/eventmgr.h>
+#include <Event/EventMgr.h>
 Button::Button()
-    :m_isHolding(false)
+    :m_isHolding(false),onTouch(nullptr)
 {
 
 }
 
 void Button::init(const char * texture, const char * texture_pressed)
 {
-    EventMgr::get()->addTouchableListener (this);
+    EventMgr::get()->addListener (this);
     m_textureNormal = TexturePool::getInstance ()->createOrGetTexture (texture);
     m_texturePressed = TexturePool::getInstance ()->createOrGetTexture (texture_pressed);
     this->setTexture(m_textureNormal);
@@ -42,6 +42,7 @@ void Button::handleTouchRelease(QVector2D pos)
     {
         this->setTexture(m_textureNormal);
         m_isHolding = false;
+        if(onTouch)onTouch();
     }
 }
 

@@ -50,6 +50,7 @@ public:
     void addRenderTarget(RenderTarget * target);
 
 private:
+    void initLogo();
     void sortRenderQue();
     void pickBright();
     void gaussianBlur_H(float size);
@@ -97,6 +98,7 @@ private:
     SpotLight spotLight;
     std::vector<PointLight * > pointLights;
     std::vector <SpotLight * > spotLights;
+    Sprite * m_logoSprite;
 };
 
 #endif // SCENE_H

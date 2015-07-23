@@ -1,6 +1,7 @@
-#include "eventmgr.h"
-#include "listener/touchable.h"
-#include "listener/Clickable.h"
+#include "EventMgr.h"
+#include "listener/TouchListener.h"
+#include "listener/KeyListener.h"
+#include "listener/RenderListener.h"
 EventMgr * EventMgr::instance = nullptr;
 
 EventMgr *EventMgr::get()
@@ -14,16 +15,29 @@ EventMgr *EventMgr::get()
     }
 }
 
-void EventMgr::addTouchableListener(Touchable *listener)
+void EventMgr::addListener(BaseListener *listener)
 {
-    touchableList.push_back (listener);
+    switch(listener->getListenerType ())
+    {
+    case BaseListener::Type::KeyListener:
+        m_keyListeners.push_back (static_cast<KeyListener*>(listener));
+        break;
+    case BaseListener::Type::TouchListener:
+        m_touchListeners.push_back (static_cast<TouchListener*>(listener));
+        break;
+    case BaseListener::Type::RenderListener:
+        m_renderListeners.push_back (static_cast<RenderListener*>(listener));
+        break;
+    default:
+        break;
+    }
 }
 
 void EventMgr::raiseOnTouchPress(QVector2D pos)
 {
-    for(int i =0; i<touchableList.size (); i++)
+    for(int i =0; i<m_touchListeners.size (); i++)
     {
-        Touchable * listener = touchableList.at (i);
+        TouchListener * listener = m_touchListeners.at (i);
             listener->handleTouchPress (pos);
 
             auto callBack = listener->onTouchPress;
@@ -32,11 +46,24 @@ void EventMgr::raiseOnTouchPress(QVector2D pos)
     }
 }
 
+void EventMgr::raiseOnTouchMove(QVector2D pos)
+{
+    for(int i =0; i<m_touchListeners.size (); i++)
+    {
+        TouchListener * listener = m_touchListeners.at (i);
+            listener->handleTouchMove (pos);
+
+            auto callBack = listener->onTouchMove;
+            if(callBack) callBack(listener,pos);
+            break;
+    }
+}
+
 void EventMgr::raiseOnTouchRelease(QVector2D pos)
 {
-    for(int i =0; i<touchableList.size (); i++)
+    for(int i =0; i<m_touchListeners.size (); i++)
     {
-        Touchable * listener = touchableList.at (i);
+        TouchListener * listener = m_touchListeners.at (i);
         listener->handleTouchRelease (pos);
         auto callBack = listener->onTouchRelease;
         if(callBack) callBack(listener,pos);
@@ -45,7 +72,7 @@ void EventMgr::raiseOnTouchRelease(QVector2D pos)
 
 void EventMgr::raiseOnKeyPress(int keyCode)
 {
-    for(Clickable * listener : clickableList)
+    for(KeyListener * listener : m_keyListeners)
     {
         listener->handleKeyPress (keyCode);
         auto callBack = listener->onKeyPress;
@@ -55,11 +82,21 @@ void EventMgr::raiseOnKeyPress(int keyCode)
 
 void EventMgr::raiseOnKeyRelease(int keyCode)
 {
-    for(Clickable * listener : clickableList)
+    for(KeyListener * listener : m_keyListeners)
     {
         listener->handleKeyRelease (keyCode);
         auto callBack = listener->onKeyRelease;
         if(callBack) callBack(listener,keyCode);
+    }
+}
+
+void EventMgr::raiseOnRender(float dt)
+{
+    for(RenderListener * listener : m_renderListeners)
+    {
+        listener->handleOnRender (dt);
+        auto callBack = listener->onRender;
+        if(callBack) callBack(listener,dt);
     }
 }
 

@@ -14,7 +14,7 @@ int backend::start(RenderDelegate *delegate, int argc, char *argv[])
     app.setApplicationVersion("0.1");
 #ifndef QT_NO_OPENGL
     MainWidget widget(0,delegate);
-    widget.resize (1024,768);
+    widget.setFixedSize (1024,768);
     widget.show();
 #else
     QLabel note("OpenGL Support required");

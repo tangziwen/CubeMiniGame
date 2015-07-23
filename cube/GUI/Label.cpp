@@ -27,6 +27,7 @@ void Label::setText(std::string string)
         auto sprite = new Sprite;
         sprite->setTexture (m_texture);
         sprite->setPos (QVector3D(pos_x,0,0));
+
         pos_x += scaleByFontSize(def.xAdvance);
         float w = scaleByFontSize(def.rect.size.x ());
         float h = scaleByFontSize(def.rect.size.y ());

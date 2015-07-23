@@ -5,14 +5,14 @@
 #include "base/node.h"
 #include "base/vertexdata.h"
 #include "base/camera.h"
-#include "listener/touchable.h"
+#include "listener/TouchListener.h"
 
 #include <vector>
 #include <QGLFunctions>
 #include <functional>
 
 //Sprite class , use to handle GUI element
-class Sprite : public Node, public QGLFunctions, public Touchable
+class Sprite : public Node, public QGLFunctions, public TouchListener
 {
 public:
     Sprite();
