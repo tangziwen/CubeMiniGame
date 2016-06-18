@@ -158,3 +158,9 @@ tests/cpp-tests/Resources/audio
 /external/audio/
 /external/xxtea/
 /external/protobuf-lite/
+publish
+oldDemo
+API
+CubeEngine.pro.user
+*.dll
+*.a

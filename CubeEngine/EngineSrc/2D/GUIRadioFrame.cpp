@@ -1,0 +1,187 @@
+#include "GUIRadioFrame.h"
+
+namespace tzw {
+
+GUIRadioFrame::GUIRadioFrame()
+{
+	m_expandType = ExpandType::Horizontal;
+	m_focusBtn = nullptr;
+    m_stride = 10;
+	m_btnsStride = 10;
+    m_marginHorizontal = vec2(10,10);
+}
+
+GUIRadioFrame *GUIRadioFrame::create(std::string titleText, vec4 color, vec2 size)
+{
+	auto frame = new GUIRadioFrame();
+	frame->initLabel();
+	frame->setUniformColor(color);
+	frame->setTitle(titleText);
+	frame->setContentSize(size);
+	frame->initDetailLabel();
+	frame->initTipsLabel();
+	return frame;
+}
+
+tzw::GUIRadioFrame *tzw::GUIRadioFrame::create(std::string titleText, vec2 size)
+{
+    return GUIRadioFrame::create(titleText,vec4(53.0/255,53.0/255,53.0/255,1.0),size);
+}
+
+GUIRadioFrame *GUIRadioFrame::create(std::string titleText)
+{
+    return GUIRadioFrame::create(titleText,vec2(100,100));
+}
+
+void GUIRadioFrame::addRadioButton(std::string buttonName,std::function<void(Button*)> btnCallback)
+{
+	Button * startBtn = Button::create(buttonName);
+	startBtn->setOnBtnClicked(std::bind(&GUIRadioFrame::onButtonClicked,this,std::placeholders::_1));
+	this->addChild(startBtn);
+	m_buttonCallbackMap[startBtn] = btnCallback;
+	m_btnList.push_back(startBtn);
+}
+
+GUIRadioFrame::ExpandType GUIRadioFrame::getExpandType() const
+{
+	return m_expandType;
+}
+
+void GUIRadioFrame::setExpandType(const ExpandType &expandType)
+{
+	m_expandType = expandType;
+}
+
+void GUIRadioFrame::flush()
+{
+	focusAndTintColor(m_btnList.front());
+	switch(m_expandType)
+	{
+	case ExpandType::Vertical:
+		flushVertical();
+		break;
+	case ExpandType::Horizontal:
+		flushHorizontal();
+		break;
+	}
+}
+
+void GUIRadioFrame::onButtonClicked(Button *btn)
+{
+	focusAndTintColor(btn);
+	auto result = m_buttonCallbackMap.find(btn);
+	if(result != m_buttonCallbackMap.end())
+	{
+		auto callback = m_buttonCallbackMap[btn];
+		if(callback)
+		{
+			callback(btn);
+		}
+	}
+}
+
+void tzw::GUIRadioFrame::flushVertical()
+{
+}
+
+void tzw::GUIRadioFrame::flushHorizontal()
+{
+	//以水平方向重新输出控件,我们首先要决定控件的总大小
+	//控件的总大小为:宽 = max(tips.width,buttons.width,detail.width)
+    //高 = max(tips.height + max(buttons.height) + detail.height,preHeight);
+
+	int advance_y = m_stride;
+    float frame_width = 0;
+    float frame_height = 0;
+	float buttonWidth = 0;
+	float buttonHeight = 0;
+	for(auto btn :m_btnList)
+	{
+        buttonWidth += btn->getContentSize().x + m_btnsStride;
+		buttonHeight = btn->getContentSize().y;
+	}
+    qDebug()<<m_tipsLabel->contentSize().x<<buttonWidth;
+    frame_width = std::max(std::max(m_detailLabel->contentSize().x,m_tipsLabel->contentSize().x),buttonWidth) + m_marginHorizontal.x + m_marginHorizontal.y;
+	frame_height = m_tipsLabel->contentSize().y + buttonHeight + m_tipsLabel->contentSize().y + 4 * m_stride;
+    auto preFrameHeight = getContentSize().y;//原先的高度
+    setContentSize(vec2(frame_width,std::max(frame_height,preFrameHeight)));
+    auto offsetY = preFrameHeight - frame_height;
+	//重新调整一下位置
+    m_detailLabel->setPos2D(m_marginHorizontal.x,advance_y+offsetY);
+	advance_y+=m_detailLabel->contentSize().y + m_stride;
+    int advance_x = m_marginHorizontal.x;
+	for(auto btn:m_btnList)
+	{
+        btn->setPos2D(advance_x,advance_y+offsetY);
+		advance_x += btn->getContentSize().x + m_btnsStride;
+	}
+    advance_y += buttonHeight + m_stride + m_tipsLabel->contentSize().y;
+    m_tipsLabel->setPos2D(m_marginHorizontal.x,advance_y+offsetY);
+}
+
+void GUIRadioFrame::focusAndTintColor(Button *btn)
+{
+	if(m_focusBtn)
+	{
+		m_focusBtn->getLabel()->setUniformColor(vec3(1.0,1.0,1.0));
+	}
+	m_focusBtn = btn;
+	m_focusBtn->getLabel()->setUniformColor(vec3(1.0,0.0,0.0));
+}
+
+void GUIRadioFrame::initTipsLabel()
+{
+	m_tipsLabel = LabelNew::create("some tips");
+	addChild(m_tipsLabel);
+	auto contentSize = this->getContentSize();
+	m_tipsLabel->setPos2D(0,contentSize.y - 15);
+}
+
+void GUIRadioFrame::initDetailLabel()
+{
+	m_detailLabel = LabelNew::create("some detail");
+	addChild(m_detailLabel);
+	m_detailLabel->setPos2D(0,0);
+}
+
+vec2 GUIRadioFrame::getMarginHorizontal() const
+{
+    return m_marginHorizontal;
+}
+
+void GUIRadioFrame::setMarginHorizontal(const vec2 &marginHorizontal)
+{
+    m_marginHorizontal = marginHorizontal;
+}
+
+LabelNew *GUIRadioFrame::getDetailLabel() const
+{
+    return m_detailLabel;
+}
+
+LabelNew *GUIRadioFrame::getTipsLabel() const
+{
+    return m_tipsLabel;
+}
+
+float GUIRadioFrame::getBtnsStride() const
+{
+	return m_btnsStride;
+}
+
+void GUIRadioFrame::setBtnsStride(float btnsStride)
+{
+	m_btnsStride = btnsStride;
+}
+
+float GUIRadioFrame::getStride() const
+{
+	return m_stride;
+}
+
+void GUIRadioFrame::setStride(float stride)
+{
+	m_stride = stride;
+}
+
+} // namespace tzw

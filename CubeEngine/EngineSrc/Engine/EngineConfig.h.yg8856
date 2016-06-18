@@ -1,0 +1,19 @@
+#ifndef TZW_ENGINECONFIG_H
+#define TZW_ENGINECONFIG_H
+
+#define TZW_SINGLETON_IMPL(className)
+namespace tzw {
+typedef int integer;
+typedef unsigned int integer_u;
+class EngineConfig
+{
+public:
+    EngineConfig();
+    static int maxPiority;
+    static const char * versionStr;
+    static int focusPiority;
+};
+
+} // namespace tzw
+
+#endif // TZW_ENGINECONFIG_H

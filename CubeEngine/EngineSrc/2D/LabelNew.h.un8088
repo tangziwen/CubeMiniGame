@@ -1,0 +1,29 @@
+#ifndef TZW_LABELNEW_H
+#define TZW_LABELNEW_H
+#include "../Font/Font.h"
+#include "../Mesh/Mesh.h"
+#include "../Interface/Drawable.h"
+
+namespace tzw {
+
+class LabelNew : public Drawable
+{
+public:
+    LabelNew();
+    static LabelNew * create(std::string theString, Font * font);
+    std::string string() const;
+    void setString(const std::string &string);
+    Font *font() const;
+    void setFont(Font *font);
+    void genMesh();
+    virtual void draw();
+private:
+    std::string m_string;
+    Font * m_font;
+    Mesh * m_mesh;
+    vec2 m_contentSize;
+};
+
+} // namespace tzw
+
+#endif // TZW_LABELNEW_H

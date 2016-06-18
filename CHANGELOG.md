@@ -5,6 +5,42 @@
 
 ##Here is the changelog of the CubeEngine
 
+###alpha v0.13 6.15.2016###
+*new GUI window
+*a bunch of useful macro to prototype
+*add a simple script language virtual machine.
+
+###alpha v0.13 3.4.2016###
+* add some GUI controls, Label, Button, Frame,RadioFrame etc.
+* Label now support utf-8 characters display.
+* a bunch of Bugs fixed.
+
+###alpha v0.13 12.28.2015###
+* the octScene now will generate a visible list instead of simplly setting object drawable 
+* add two classes tzw::TextureAtlas and tzw::TextureFrame,the first one can read an texture altas,the second use to handle the orignial texture
+* mesh add a method called "merge", which can allow you to batch some meshes in one, should reduce the draw call performance hit.
+
+###alpha v0.13 12.7.2015###
+* fix the skybox problem
+* add a bunch of APIs which can let you controll the whole pipeline easilly.
+* strip some Qt's library.
+
+###alpha v0.13 12.2.2015###
+* fix a lot of bugs for octree
+* remove all script code, I decide use my own script language
+* update some docs
+
+###alpha v0.13 9.6.2015###
+* improve event management
+* add simple sky box
+* add freetype support 
+* add basic GUI support including ColorQuad, Sprite, button, label,
+* a basic quake-like ingame console.
+* fix lot's of bug especially in rendering parts
+
+###alpha v0.13 9.6.2015###
+* add Octree management and frustum culling
+* sperate the logical update and draw call
 
 ###alpha v0.13 7.9.2015###
 * Add external "converter" libary for handling model convert, and separate the connection between the Engine adn Assimp.

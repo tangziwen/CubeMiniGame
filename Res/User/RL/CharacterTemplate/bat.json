@@ -1,0 +1,12 @@
+{
+	"name":"bat",
+	"Tile":"bat.png",
+	"Strength":0,
+	"Agility":0,
+	"Stamina":0,
+	"Intelligence":0,
+	"BaseDamage":"10:17",
+	"BaseHp":"500:550",
+	"BaseMana":"10:10",
+	"desc":"abcd"
+}
