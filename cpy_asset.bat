@@ -1,0 +1,1 @@
+python cpy_asset.py
