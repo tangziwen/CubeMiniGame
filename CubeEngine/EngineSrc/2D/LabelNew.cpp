@@ -116,6 +116,7 @@ void LabelNew::draw()
     technique()->setVar("TU_color",getUniformColor());
     m_technique->setTex("TU_tex1",m_atlas->texture());
     RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);
+    command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
 }
 

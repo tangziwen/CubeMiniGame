@@ -7,7 +7,7 @@
 #include <functional>
 namespace tzw {
 
-class Button: public Node,public Event
+class Button: public Node,public EventListener
 {
 public:
     Button();

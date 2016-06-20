@@ -2,79 +2,89 @@
 #include "EventMgr.h"
 namespace tzw {
 
-bool Event::onKeyPress(std::string keyCode)
+bool EventListener::onKeyPress(std::string keyCode)
 {
     return false;
 }
 
-Event::~Event()
+EventListener::~EventListener()
 {
     EventMgr::shared()->removeEventListener(this);
 }
 
-bool Event::onKeyRelease(std::string keyCode)
+bool EventListener::onKeyRelease(std::string keyCode)
 {
     return false;
 }
 
-bool Event::onMouseRelease(int button, vec2 pos)
+bool EventListener::onMouseRelease(int button, vec2 pos)
 {
     return false;
 }
 
-bool Event::onMousePress(int button, vec2 pos)
+bool EventListener::onMousePress(int button, vec2 pos)
 {
     return false;
 }
 
-bool Event::onMouseMove(vec2 pos)
+bool EventListener::onMouseMove(vec2 pos)
 {
     return false;
 }
 
-void Event::onFrameUpdate(float delta)
+void EventListener::onFrameUpdate(float delta)
 {
 
 }
 
-Event::Event()
-    :m_eventPiority(0),m_isSwallow(false)
+EventListener::EventListener()
+    :m_fixedPiority(0),m_isSwallow(false)
 {
 
 }
 
-unsigned int Event::eventPiority() const
+unsigned int EventListener::getFixedPiority() const
 {
-    return m_eventPiority;
+    return m_fixedPiority;
 }
 
-void Event::setEventPiority(unsigned int eventPiority)
+void EventListener::setFixedPiority(unsigned int eventPiority)
 {
-    m_eventPiority = eventPiority;
+    m_fixedPiority = eventPiority;
     if (m_parent)
     {
-        m_parent->sortEvents();
+        m_parent->sortFixedListener();
     }
 }
 
-bool Event::isSwallow() const
+bool EventListener::isSwallow() const
 {
     return m_isSwallow;
 }
 
-void Event::setIsSwallow(bool isSwallow)
+void EventListener::setIsSwallow(bool isSwallow)
 {
     m_isSwallow = isSwallow;
 }
 
-EventMgr *Event::parent() const
+EventMgr *EventListener::parent() const
 {
     return m_parent;
 }
 
-void Event::setParent(EventMgr *parent)
+void EventListener::setParent(EventMgr *parent)
 {
     m_parent = parent;
+}
+
+Node *EventListener::attachNode() const
+{
+    return m_attachNode;
+}
+
+void EventListener::setAttachNode(Node *attachNode)
+{
+    m_attachNode = attachNode;
 }
 
 } // namespace tzw

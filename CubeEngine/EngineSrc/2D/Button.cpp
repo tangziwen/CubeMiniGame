@@ -6,8 +6,7 @@ namespace tzw {
 Button::Button():
     m_isTouched(false)
 {
-    EventMgr::shared()->addEventListener(this);
-    setEventPiority(1000);
+    EventMgr::shared()->addNodePiorityListener(this,this);
     setIsSwallow(true);
 }
 
@@ -18,8 +17,8 @@ Button *Button::create(std::string str)
     btn->m_frameBG = GUIFrame::create(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
     btn->addChild(btn->m_label);
     btn->addChild(btn->m_frameBG);
-    btn->m_frameBG->setPiority(0);
-    btn->m_label->setPiority(1);
+    btn->m_frameBG->setLocalPiority(0);
+    btn->m_label->setLocalPiority(1);
     btn->setStr(str);
     return btn;
 }

@@ -4,23 +4,23 @@
 #include "../Scene/SceneMgr.h"
 namespace tzw {
 TZW_SINGLETON_IMPL(GUIWindowMgr)
-void GUIWindowMgr::focus(GUITitledFrame *window)
+void GUIWindowMgr::focus(GUIWindow *window)
 {
     auto result = std::find(frameList.begin(),frameList.end(),window);
-    window->setPiority(frameList.size());
+    window->setLocalPiority(frameList.size());
     frameList.erase(result);
-    for (auto wnd :frameList)
-    {
-        wnd->setPiority(wnd->getPiority() - 1);
-        window->setEventPiority(wnd->getPiority());
-    }
     frameList.push_back(window);
+    for (size_t i = 0; i<frameList.size();i++)
+    {
+        auto wnd = frameList[i];
+        wnd->setLocalPiority(i);
+    }
 }
 
-void GUIWindowMgr::add(GUITitledFrame *frame)
+void GUIWindowMgr::add(GUIWindow *frame)
 {
     frameList.push_back(frame);
-    frame->setPiority(frameList.size());
+    frame->setLocalPiority(frameList.size());
     SceneMgr::shared()->currentScene()->addNode(frame);
 }
 

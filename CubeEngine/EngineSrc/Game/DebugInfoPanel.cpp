@@ -26,7 +26,8 @@ namespace tzw {
 DebugInfoPanel::DebugInfoPanel()
     :m_curTime(0),m_isInit(false)
 {
-    m_frame = GUITitledFrame::create("Profile Window",vec2(PANEL_WIDTH,PANEL_HEIGHT));
+    m_frame = GUIWindow::create("Profile Window",vec2(PANEL_WIDTH,PANEL_HEIGHT));
+    m_frame->setGlobalPiority(EngineDef::maxPiority);
     //m_frame->setIsDragable(false);
     GUIWindowMgr::shared()->add(m_frame);
     for (int i =0 ;i<= LABEL_VERSION;i++)

@@ -30,9 +30,9 @@ ConsolePanel::ConsolePanel(Node *renderNode)
     m_label->setPos2D(m_margin.x,7);
 
     m_inputFrame->addChild(m_label);
-    m_node->setPiority(EngineDef::maxPiority);
+    m_node->setLocalPiority(EngineDef::maxPiority);
     renderNode->addChild(m_node);
-    EventMgr::shared()->addEventListener(this);
+    EventMgr::shared()->addNodePiorityListener(m_node,this);
     m_isVisible = false;
     setIsVisible(false);
 }

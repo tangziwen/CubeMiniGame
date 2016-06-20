@@ -5,6 +5,15 @@
 
 ##Here is the changelog of the CubeEngine
 
+
+###alpha v0.15 6.20.2016###
+* use LocalPiority instead Piority.
+* totally reworked GUITitledFrame. and change the name to GUIWindow.
+* totally reworked EventMgr system add ObeyNodePiority's Listener they will sort them piority when Node's Piority(LocalPiority & GlobalPiority both are suitable)
+* totally reworked Event and change the name to EventListener.
+
+* fixed some bug which previous buggy Piority-System caused.
+
 ###alpha v0.13 6.15.2016###
 *new GUI window
 *a bunch of useful macro to prototype

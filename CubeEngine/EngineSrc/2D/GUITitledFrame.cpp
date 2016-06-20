@@ -14,9 +14,9 @@
 
 namespace tzw {
 
-GUITitledFrame *GUITitledFrame::create(std::string titleText, vec4 color, vec2 size)
+GUIWindow *GUIWindow::create(std::string titleText, vec4 color, vec2 size)
 {
-    auto frame = new GUITitledFrame();
+    auto frame = new GUIWindow();
     frame->initLabel();
     frame->initBorders();
     frame->setUniformColor(color);
@@ -25,26 +25,26 @@ GUITitledFrame *GUITitledFrame::create(std::string titleText, vec4 color, vec2 s
     return frame;
 }
 
-GUITitledFrame *GUITitledFrame::create(std::string titleText, vec2 size)
+GUIWindow *GUIWindow::create(std::string titleText, vec2 size)
 {
-    return GUITitledFrame::create(titleText,GUIStyleMgr::shared()->defaultPalette()->backGroundColor,size);
+    return GUIWindow::create(titleText,GUIStyleMgr::shared()->defaultPalette()->backGroundColor,size);
 }
 
-GUITitledFrame::GUITitledFrame()
+GUIWindow::GUIWindow()
 {
     m_label = nullptr;
     m_isDraging = false;
-    EventMgr::shared()->addEventListener(this);
+    EventMgr::shared()->addNodePiorityListener(this,this);
     setIsSwallow(true);
     m_isDragable = true;
 }
 
-std::string GUITitledFrame::title() const
+std::string GUIWindow::title() const
 {
     return m_title;
 }
 
-void GUITitledFrame::setTitle(const std::string &title)
+void GUIWindow::setTitle(const std::string &title)
 {
     m_title = title;
     m_label->setString(title);
@@ -52,26 +52,26 @@ void GUITitledFrame::setTitle(const std::string &title)
     m_label->setPos2D(vec2(15,7));
 }
 
-void GUITitledFrame::setContentSize(const vec2 &contentSize)
+void GUIWindow::setContentSize(const vec2 &contentSize)
 {
     GUIFrame::setContentSize(contentSize);
     m_labelFrame->setPos2D(vec2(0,m_contentSize.y));
     adjustBorders();
 }
 
-vec2 GUITitledFrame::getOuterContentSize()
+vec2 GUIWindow::getOuterContentSize()
 {
     return getContentSize() + m_labelFrame->getContentSize()/2.0f;
 }
 
-bool GUITitledFrame::onMouseRelease(int button, vec2 pos)
+bool GUIWindow::onMouseRelease(int button, vec2 pos)
 {
     if (!m_isDragable) return false;
     m_isDraging = false;
     return false;
 }
 
-bool GUITitledFrame::onMousePress(int button, vec2 pos)
+bool GUIWindow::onMousePress(int button, vec2 pos)
 {
     if(m_labelFrame->isInTheRect(pos) && m_isDragable)
     {
@@ -88,7 +88,7 @@ bool GUITitledFrame::onMousePress(int button, vec2 pos)
     return false;
 }
 
-bool GUITitledFrame::onMouseMove(vec2 pos)
+bool GUIWindow::onMouseMove(vec2 pos)
 {
     if (!m_isDragable) return false;
     if(m_isDraging == true)
@@ -101,7 +101,7 @@ bool GUITitledFrame::onMouseMove(vec2 pos)
     return false;
 }
 
-void GUITitledFrame::initLabel()
+void GUIWindow::initLabel()
 {
     m_label = LabelNew::create(" ",FontMgr::shared()->getTitleFont());
     m_labelFrame = GUIFrame::create(vec4(33.0/255,33.0/255,37.0/255,1.0));
@@ -109,7 +109,7 @@ void GUITitledFrame::initLabel()
     addChild(m_labelFrame);
 }
 
-void GUITitledFrame::initBorders()
+void GUIWindow::initBorders()
 {
     for (int i =0; i<4; i++)
     {
@@ -118,7 +118,7 @@ void GUITitledFrame::initBorders()
     }
 }
 
-void GUITitledFrame::adjustBorders()
+void GUIWindow::adjustBorders()
 {
     m_borders[BORDER_LEFT]->setContentSize(vec2(3,m_contentSize.y));
     m_borders[BORDER_RIGHT]->setContentSize(vec2(3,m_contentSize.y));
@@ -128,22 +128,22 @@ void GUITitledFrame::adjustBorders()
     m_borders[BORDER_BOTTOM]->setContentSize(vec2(m_contentSize.x,3));
 }
 
-bool GUITitledFrame::getIsDragable() const
+bool GUIWindow::getIsDragable() const
 {
     return m_isDragable;
 }
 
-void GUITitledFrame::setIsDragable(bool isDragable)
+void GUIWindow::setIsDragable(bool isDragable)
 {
     m_isDragable = isDragable;
 }
 
-bool GUITitledFrame::getIsFocus() const
+bool GUIWindow::getIsFocus() const
 {
     return m_isFocus;
 }
 
-void GUITitledFrame::setIsFocus(bool isFocus)
+void GUIWindow::setIsFocus(bool isFocus)
 {
     m_isFocus = isFocus;
 }

@@ -4,14 +4,14 @@
 #include "../Engine/EngineDef.h"
 #include <deque>
 namespace tzw {
-class GUITitledFrame;
+class GUIWindow;
 class GUIWindowMgr
 {
 public:
-    void focus(GUITitledFrame * window);
-    void add(GUITitledFrame * frame);
+    void focus(GUIWindow * window);
+    void add(GUIWindow * frame);
 private:
-    std::deque<GUITitledFrame *> frameList;
+    std::deque<GUIWindow *> frameList;
     GUIWindowMgr();
 
     TZW_SINGLETON_DECL(GUIWindowMgr)

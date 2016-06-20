@@ -6,12 +6,12 @@
 #include "../Event/Event.h"
 namespace tzw {
 
-class GUITitledFrame : public GUIFrame, public Event
+class GUIWindow : public GUIFrame, public EventListener
 {
 public:
-    static GUITitledFrame * create(std::string titleText, vec4 color,vec2 size);
-    static GUITitledFrame * create(std::string titleText,vec2 size);
-    GUITitledFrame();
+    static GUIWindow * create(std::string titleText, vec4 color,vec2 size);
+    static GUIWindow * create(std::string titleText,vec2 size);
+    GUIWindow();
     std::string title() const;
     void setTitle(const std::string &title);
     virtual void setContentSize(const vec2 &getContentSize);

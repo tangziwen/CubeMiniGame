@@ -10,7 +10,7 @@ public:
     virtual void update(float dt);
     void setInfo();
 private:
-    GUITitledFrame * m_frame;
+    GUIWindow * m_frame;
     std::vector<LabelNew*> m_labelList;
     float m_curTime;
     bool m_isInit;

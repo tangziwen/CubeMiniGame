@@ -27,14 +27,14 @@ GameEntry::GameEntry()
 
 void GameEntry::onStart()
 {
-    auto frame = GUITitledFrame::create("划水",vec2(450,600));
+    auto frame = GUIWindow::create("划水",vec2(450,600));
     GUIWindowMgr::shared()->add(frame);
     Button * startBtn = Button::create("开始游戏");
     startBtn->setPos2D(100,340);
     frame->addChild(startBtn);
 
 
-    auto frame2 = GUITitledFrame::create("Cube Engine",vec2(450,600));
+    auto frame2 = GUIWindow::create("Cube Engine",vec2(450,600));
     GUIWindowMgr::shared()->add(frame2);
     Button * startBtn2 = Button::create("GUI组件");
     startBtn2->setPos2D(100,340);

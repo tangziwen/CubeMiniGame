@@ -130,7 +130,7 @@ void Scene::init()
     m_octreeScene->init(sceneBounding);
     m_consolePanel = new ConsolePanel(this->root());
     m_debugInfoPanel = new DebugInfoPanel();
-    m_debugInfoPanel->setPiority(EngineDef::maxPiority);
+    m_debugInfoPanel->setLocalPiority(EngineDef::maxPiority);
     this->root()->addChild(m_debugInfoPanel);
 }
 

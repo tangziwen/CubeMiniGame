@@ -16,7 +16,7 @@ Node::Node()
       m_rotateQ(QQuaternion(1.0f,0.0f,0.0f,0.0f)),
       m_pos(vec3()),
       m_needToUpdate(true),
-      m_piority(0),
+      m_localPiority(0),
       m_globalPiority(0),
       m_isAccpectOCTtree(true),
       m_name("default"),
@@ -265,6 +265,10 @@ void Node::addChild(Node *node)
         //refresh the new child's transform cache
         node->setNeedToUpdate(true);
         node->m_parent = this;
+        if (node->getGlobalPiority() ==0)
+        {
+            node->setGlobalPiority(m_globalPiority);
+        }
         //sort the children
         sortChildren();
     }
@@ -297,6 +301,11 @@ Node *Node::getChildByName(const std::string &name)
         if (node->m_name == name) return node;
     }
     return nullptr;
+}
+
+Node *Node::getChildByIndex(size_t index)
+{
+    return m_children[index];
 }
 
 /**
@@ -409,12 +418,25 @@ unsigned int Node::getGlobalPiority() const
 
 ///
 /// \brief 设置全局渲染优先级
-/// @note 全局渲染优先级和层级无关，并直接作用于renderComand中的zorder
+/// @note 全局渲染优先级和层级无关，并直接作用于renderComand中的zorder,
+/// 对于子节点而言，凡是其GlobalPiority不等于0，调用此函数后也会受到级联设置
 /// \param globalPiority 全局渲染优先级
 ///
 void Node::setGlobalPiority(unsigned int globalPiority)
 {
     m_globalPiority = globalPiority;
+    for(auto child :m_children)
+    {
+        if(child->getGlobalPiority() == 0)
+        {
+            child->setGlobalPiority(globalPiority);
+        }
+    }
+}
+
+size_t Node::getChildrenAmount()
+{
+    return m_children.size();
 }
 
 ///
@@ -505,24 +527,24 @@ vec3 Node::getForward()
 
 ///
 /// \brief 设置局部渲染优先级
-/// @note 局部渲染优先级，只与本层级有关，关系到该节点在本层次被渲染时遍历的先后顺序，但是其对应rendering Command 的Zorder仍然保持不变，故
+/// @note 局部渲染优先级，只与本层级有关，关系到该节点在本层次被渲染时遍历的先后顺序(即与兄弟之间的次序)，但是其对应rendering Command 的Zorder仍然保持不变，故
 /// 不能影响到全局渲染优先级
 /// \param zOrder 局部渲染优先级
 ///
-int Node::getPiority() const
+int Node::getLocalPiority() const
 {
-    return m_piority;
+    return m_localPiority;
 }
 
 ///
 /// \brief 设置局部渲染优先级
-/// @note 局部渲染优先级，只与本层级有关，关系到该节点在本层次被渲染时遍历的先后顺序，但是其对应rendering Command 的Zorder仍然保持不变，故
+/// @note 局部渲染优先级，只与本层级有关，关系到该节点在本层次被渲染时遍历的先后顺序(即与兄弟之间的次序)，但是其对应rendering Command 的Zorder仍然保持不变，故
 /// 不能影响到全局渲染优先级
 /// \param zOrder 局部渲染优先级
 ///
-void Node::setPiority(int zOrder)
+void Node::setLocalPiority(int zOrder)
 {
-    m_piority = zOrder;
+    m_localPiority = zOrder;
     if (m_parent)
     {
         m_parent->sortChildren();
@@ -531,7 +553,7 @@ void Node::setPiority(int zOrder)
 
 static bool NodeSort(const Node *a,const Node *b)
 {
-    return a->getPiority() < b->getPiority();
+    return a->getLocalPiority() < b->getLocalPiority();
 }
 
 void Node::sortChildren()

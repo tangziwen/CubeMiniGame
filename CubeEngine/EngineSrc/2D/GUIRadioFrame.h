@@ -7,7 +7,7 @@
 #include <map>
 namespace tzw {
 
-class GUIRadioFrame :public GUITitledFrame
+class GUIRadioFrame :public GUIWindow
 {
 public:
     enum class ExpandType

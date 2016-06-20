@@ -50,6 +50,7 @@ public:
     Node *getParent() const;
     std::string getName() const;
     Node *getChildByName(const std::string &name);
+    Node * getChildByIndex(size_t index);
     void setName(const std::string &name);
     void setPos2D(float x,float y);
     void setPos2D(vec2 pos);
@@ -73,8 +74,8 @@ public:
     void removeFromParent();
     void setParent(Node *parent);
     vec3 getForward();
-    int getPiority() const;
-    void setPiority(int zOrder);
+    int getLocalPiority() const;
+    void setLocalPiority(int zOrder);
     void sortChildren();
     Scene *getScene() const;
     void setScene(Scene *scene);
@@ -82,6 +83,7 @@ public:
     void setRotateQ(const QQuaternion &rotateQ);
     unsigned int getGlobalPiority() const;
     void setGlobalPiority(unsigned int globalPiority);
+    size_t getChildrenAmount();
 protected:
     bool m_isDrawable;
     std::vector<Node *> m_children;
@@ -92,7 +94,7 @@ protected:
     vec3 m_pos;
     bool m_needToUpdate;
     QMatrix4x4 m_worldTransformCache;
-    int m_piority;
+    int m_localPiority;
     unsigned int m_globalPiority;
     bool m_isAccpectOCTtree;
     std::string m_name;

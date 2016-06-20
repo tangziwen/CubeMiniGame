@@ -8,7 +8,7 @@
 namespace tzw {
 
 ///用于输出调试信息，以及输入脚本的控制台窗口
-class ConsolePanel : Event
+class ConsolePanel : EventListener
 {
 public:
     ConsolePanel(Node * renderNode);
