@@ -73,7 +73,7 @@ bool Camera::isOutOfFrustum(AABB aabb)
  * @brief Camera::projection 获取相机的投影矩阵
  * @return
  */
-QMatrix4x4 Camera::projection() const
+Matrix44 Camera::projection() const
 {
     return m_projection;
 }
@@ -81,7 +81,7 @@ QMatrix4x4 Camera::projection() const
  * @brief Camera::setProjection 直接设置相机的投影矩阵
  * @param projection
  */
-void Camera::setProjection(const QMatrix4x4 &projection)
+void Camera::setProjection(const Matrix44 &projection)
 {
     m_projection = projection;
     m_frustum.initFrustumFromCamera(this);
@@ -90,7 +90,7 @@ void Camera::setProjection(const QMatrix4x4 &projection)
  * @brief Camera::getViewMatrix 获取视图矩阵
  * @return
  */
-QMatrix4x4 Camera::getViewMatrix()
+Matrix44 Camera::getViewMatrix()
 {
     return getTransform().inverted();
 }
@@ -98,7 +98,7 @@ QMatrix4x4 Camera::getViewMatrix()
  * @brief Camera::getViewProjectionMatrix 获取视图投影矩阵，其值为 投影矩阵 * 视图矩阵
  * @return
  */
-QMatrix4x4 Camera::getViewProjectionMatrix()
+Matrix44 Camera::getViewProjectionMatrix()
 {
     auto view = getViewMatrix();
     return m_projection * view ;
@@ -114,9 +114,7 @@ void Camera::lookAt(vec3 targetPos, vec3 upFrame)
 
     auto aixY = vec3::CrossProduct(aixX,aixZ);
     aixY.normalize();
-    m_rotateQ = QQuaternion::fromAxes(QVector3D(aixX.x,aixX.y,aixX.z),
-                                      QVector3D(aixY.x,aixY.y,aixY.z),
-                                      QVector3D(-1*aixZ.x,-1*aixZ.y,-1*aixZ.z));
+    m_rotateQ.fromAxises(aixX,aixY,aixZ);
     m_needToUpdate = true;
     reCache();
     //    float rotateX,rotateY,rotateZ;
@@ -172,20 +170,21 @@ void Camera::reCache()
 vec3 Camera::unproject(vec3 src)
 {
     auto viewport = Engine::shared()->winSize();
-    QVector4D screen(src.x / viewport.x, src.y / viewport.y, src.z, 1.0f);
-    screen.setX(screen.x() * 2.0f - 1.0f);
-    screen.setY(screen.y() * 2.0f - 1.0f);
-    screen.setZ(screen.z() * 2.0f - 1.0f);
+    vec4 screen(src.x / viewport.x, src.y / viewport.y, src.z, 1.0f);
+    screen.x = (screen.x * 2.0f - 1.0f);
+    screen.y = (screen.y * 2.0f - 1.0f);
+    screen.z = (screen.z * 2.0f - 1.0f);
 
     auto inverseMat = getViewProjectionMatrix().inverted();
     screen = inverseMat * screen;
-    if (screen.w() != 0.0f)
+    if (screen.w != 0.0f)
     {
-        screen.setX(screen.x() / screen.w());
-        screen.setY(screen.y() / screen.w());
-        screen.setZ(screen.z() / screen.w());
+        float w = screen.w;
+        screen.x = (screen.x / w);
+        screen.y = (screen.y / w);
+        screen.z = (screen.z / w);
     }
-    return vec3(screen.x(),screen.y(),screen.z());
+    return vec3(screen.x,screen.y,screen.z);
 }
 } // namespace tzw
 

@@ -13,7 +13,7 @@ Node::Node()
       m_isValid(true),
       m_scene(nullptr),
       m_scale(vec3(1,1,1)),
-      m_rotateQ(QQuaternion(1.0f,0.0f,0.0f,0.0f)),
+      m_rotateQ(Quaternion(0.0f,0.0f,0.0f,1.0f)),
       m_pos(vec3()),
       m_needToUpdate(true),
       m_localPiority(0),
@@ -45,7 +45,7 @@ Node *Node::create()
  * @note 该变换是级联的，包括其父节点(如果有的话)的变换
  * @return 变换矩阵
  */
-QMatrix4x4 Node::getTransform()
+Matrix44 Node::getTransform()
 {
     if(m_needToUpdate)
     {
@@ -58,7 +58,7 @@ QMatrix4x4 Node::getTransform()
  * @note 该方法返回的矩阵不回受层次关系影响，仅为本节点的局部变换
  * @return 局部变换矩阵
  */
-QMatrix4x4 Node::getLocalTransform()
+Matrix44 Node::getLocalTransform()
 {
     return getTranslationMatrix() * getRotationMatrix() * getScalingMatrix();
 }
@@ -100,7 +100,7 @@ void Node::update(float dt)
 vec3 Node::getRotate() const
 {
     vec3 theEulerAngle;
-    m_rotateQ.getEulerAngles(&theEulerAngle.x,&theEulerAngle.y,&theEulerAngle.z);
+    m_rotateQ.toEulserAngel(&theEulerAngle.x,&theEulerAngle.y,&theEulerAngle.z);
     return theEulerAngle;
 }
 
@@ -111,7 +111,7 @@ vec3 Node::getRotate() const
  */
 void Node::setRotateE(const vec3 &rotate)
 {
-    m_rotateQ = QQuaternion::fromEulerAngles(QVector3D(rotate.x,rotate.y,rotate.z));
+    m_rotateQ.fromEulerAngle(rotate);
     m_needToUpdate = true;
 }
 /**
@@ -159,10 +159,10 @@ void Node::setScale(float x, float y, float z)
  * @brief Node::getTranslationMatrix 获取平移矩阵
  * @return
  */
-QMatrix4x4 Node::getTranslationMatrix()
+Matrix44 Node::getTranslationMatrix()
 {
-    QMatrix4x4 mat;
-    mat.translate(m_pos.x,m_pos.y,m_pos.z);
+    Matrix44 mat;
+    mat.translate(m_pos);
     return mat;
 }
 
@@ -171,9 +171,9 @@ QMatrix4x4 Node::getTranslationMatrix()
  * @brief Node::getRotationMatrix 获取旋转矩阵
  * @return
  */
-QMatrix4x4 Node::getRotationMatrix()
+Matrix44 Node::getRotationMatrix()
 {
-    QMatrix4x4 rotateMatrix;
+    Matrix44 rotateMatrix;
     rotateMatrix.setToIdentity();
     m_rotateQ.normalize();
     rotateMatrix.rotate(m_rotateQ);
@@ -184,10 +184,10 @@ QMatrix4x4 Node::getRotationMatrix()
  * @brief Node::getScalingMatrix 获取缩放矩阵
  * @return
  */
-QMatrix4x4 Node::getScalingMatrix()
+Matrix44 Node::getScalingMatrix()
 {
-    QMatrix4x4 s;
-    s.scale(m_scale.x,m_scale.y,m_scale.z);
+    Matrix44 s;
+    s.scale(m_scale);
     return s;
 }
 ///
@@ -464,13 +464,13 @@ void Node::cacheTransform()
 {
     if(getNeedToUpdate())
     {
-        QMatrix4x4 parentTransform;
+        Matrix44 parentTransform;
         parentTransform.setToIdentity();
         if(m_parent)
         {
             parentTransform = m_parent->getTransform();
         }
-        QMatrix4x4 localTransform = getLocalTransform();
+        Matrix44 localTransform = getLocalTransform();
         m_worldTransformCache = parentTransform * localTransform;
     }
 }
@@ -571,14 +571,15 @@ void Node::setScene(Scene *scene)
     m_scene = scene;
 }
 
-QQuaternion Node::getRotateQ() const
+Quaternion Node::getRotateQ() const
 {
     return m_rotateQ;
 }
 
-void Node::setRotateQ(const QQuaternion &rotateQ)
+void Node::setRotateQ(const Quaternion &rotateQ)
 {
     m_rotateQ = rotateQ;
+    m_needToUpdate = true;
 }
 
 

@@ -6,7 +6,7 @@
 #include <QOpenGLBuffer>
 #include "../Rendering/RenderBuffer.h"
 #include "../Math/AABB.h"
-#include <QMatrix4x4>
+#include "../Math/Matrix44.h"
 namespace tzw {
 
 class Mesh
@@ -33,7 +33,7 @@ public:
     AABB getAabb() const;
     void setAabb(const AABB &aabb);
     void calculateAABB();
-    void merge(Mesh * other, const QMatrix4x4 &transform);
+    void merge(Mesh * other, const Matrix44 &transform);
     void createBufferObject();
     void clear();
 private:

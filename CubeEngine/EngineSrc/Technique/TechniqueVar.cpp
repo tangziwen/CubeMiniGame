@@ -14,7 +14,7 @@ void TechniqueVar::setF(float value)
     type = Type::Float;
 }
 
-void TechniqueVar::setM(const QMatrix4x4 & value)
+void TechniqueVar::setM(const Matrix44 &value)
 {
     data.m = value;
     type = Type::Matrix;

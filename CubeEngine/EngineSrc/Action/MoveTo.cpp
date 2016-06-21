@@ -16,4 +16,14 @@ void MoveTo::step(Node *node, float dt)
     node->setPos(resultPos);
 }
 
+void MoveTo::final(Node *node)
+{
+    node->setPos(m_toPos);
+}
+
+MoveTo::~MoveTo()
+{
+
+}
+
 } // namespace tzw

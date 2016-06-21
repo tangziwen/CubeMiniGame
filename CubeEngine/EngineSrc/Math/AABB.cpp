@@ -71,7 +71,7 @@ void AABB::update(vec3 vec)
         m_max.setZ (vec.z );
 }
 
-void AABB::transForm(QMatrix4x4 mat)
+void AABB::transForm(Matrix44 mat)
 {
 
     vec3 corners[8];
@@ -96,8 +96,8 @@ void AABB::transForm(QMatrix4x4 mat)
     corners[7] = vec3(m_min.x, m_max.y, m_min.z);
     for(int i =0 ; i < 8 ; i++)
     {
-        QVector4D result = mat*QVector4D(corners[i].x,corners[i].y,corners[i].z,1);
-        corners[i] = vec3(result.x(),result.y(),result.z());
+        vec4 result = mat*vec4(corners[i].x,corners[i].y,corners[i].z,1);
+        corners[i] = vec3(result.x,result.y,result.z);
     }
     reset();
     update(corners,8);

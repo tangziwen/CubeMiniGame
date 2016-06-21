@@ -14,6 +14,10 @@ void ActionInterval::update(Node *node, float dt)
     {
         step(node,dt);
     }
+    else
+    {
+        final(node);
+    }
     m_currentTime += dt;
 }
 
@@ -50,6 +54,11 @@ float ActionInterval::currentTime() const
 void ActionInterval::setCurrentTime(float currentTime)
 {
     m_currentTime = currentTime;
+}
+
+void ActionInterval::final(Node *node)
+{
+
 }
 
 } // namespace tzw

@@ -21,10 +21,10 @@ public:
     void setPerspective(float fov, float aspect, float near, float far);
     void setOrtho(float left, float right, float bottom, float top, float near, float far);
     bool isOutOfFrustum(AABB aabb);
-    QMatrix4x4 projection() const;
-    void setProjection(const QMatrix4x4 &projection);
-    QMatrix4x4 getViewMatrix();
-    QMatrix4x4 getViewProjectionMatrix();
+    Matrix44 projection() const;
+    void setProjection(const Matrix44 &projection);
+    Matrix44 getViewMatrix();
+    Matrix44 getViewProjectionMatrix();
     void lookAt(vec3 targetPos,vec3 upFrame);
     virtual void update(float dt);
     void updateFrustum();
@@ -37,7 +37,7 @@ protected:
     bool m_useCustomFrustumUpdate;
 private:
 
-    QMatrix4x4 m_projection;
+    Matrix44 m_projection;
 };
 
 } // namespace tzw

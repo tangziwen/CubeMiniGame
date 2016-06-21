@@ -5,7 +5,7 @@
 #include <map>
 #include "../Shader/ShaderProgram.h"
 #include "TechniqueVar.h"
-#include <QMatrix4x4>
+#include "../Math/Matrix44.h"
 namespace tzw {
 /**
  * @brief 该类用于维护CPU端向shader提交数据的结构
@@ -20,7 +20,7 @@ class Technique
 {
 public:
     Technique(const char *vsFilePath,const char *fsFilePath);
-    void setVar(std::string name, const QMatrix4x4 &value);
+    void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);
     void setVar(std::string name, const vec3& value);

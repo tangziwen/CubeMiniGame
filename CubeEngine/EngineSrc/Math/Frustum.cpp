@@ -1,6 +1,6 @@
 #include "Frustum.h"
 #include "frustum.h"
-#include <QMatrix4x4>
+#include "../Math/Matrix44.h"
 #include "../Base/Camera.h"
 namespace tzw {
 
@@ -11,7 +11,7 @@ bool Frustum::initFrustumFromCamera(Camera* camera)
     return true;
 }
 
-bool Frustum::initFrustumFromProjectMatrix(QMatrix4x4 matrix)
+bool Frustum::initFrustumFromProjectMatrix(Matrix44 matrix)
 {
     _initialized = true;
     createPlane(matrix);
@@ -41,7 +41,7 @@ bool Frustum::isOutOfFrustum(const AABB& aabb) const
 
 void Frustum::createPlane( Camera* camera)
 {
-     QMatrix4x4 mat = camera->getViewProjectionMatrix();
+     Matrix44 mat = camera->getViewProjectionMatrix();
     //ref http://www.lighthouse3d.com/tutorials/view-frustum-culling/clip-space-approach-extracting-the-planes/
     //extract frustum plane
      float * m =mat.data ();
@@ -53,7 +53,7 @@ void Frustum::createPlane( Camera* camera)
     _plane[5].initPlane(-vec3(m[3] - m[2], m[7] - m[6], m[11] - m[10]), (m[15] - m[14]));//far
 }
 
-void Frustum::createPlane(QMatrix4x4 matrix)
+void Frustum::createPlane(Matrix44 matrix)
 {
     float * m =matrix.data ();
    _plane[0].initPlane(-vec3(m[3] + m[0], m[7] + m[4], m[11] + m[8]), (m[15] + m[12]));//left

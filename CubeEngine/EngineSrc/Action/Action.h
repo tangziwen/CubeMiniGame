@@ -11,9 +11,11 @@ class Action
 {
 public:
     Action();
+    virtual void init(Node *theNode);
     virtual bool isDone();
     virtual void update(Node * node, float dt);
     virtual void step(Node * node,float dt);
+    virtual ~Action();
 };
 
 } // namespace tzw

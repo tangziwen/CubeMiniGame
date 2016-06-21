@@ -39,8 +39,7 @@ void OctreeScene::addObj(Drawable3D *obj)
     auto result = addObj_R(m_root,obj);
     if(!result)
     {
-
-        qDebug()<<"can not contain this object";
+        return;
     }
 }
 

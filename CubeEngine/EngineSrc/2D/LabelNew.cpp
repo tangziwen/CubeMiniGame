@@ -89,9 +89,9 @@ void LabelNew::genMesh()
         charMesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
         charMesh->addIndices(indices,sizeof(indices)/sizeof(GLushort));
         charMesh->finish(false);//we don't pass it to the GPU
-        QMatrix4x4 mat;
+        Matrix44 mat;
         mat.setToIdentity();
-        mat.translate(QVector3D(penX,penY + diff,0));
+        mat.translate(vec3(penX,penY + diff,0));
         m_mesh->merge(charMesh,mat);
         penX+= gNode->m_data.advance;
         delete charMesh;

@@ -8,6 +8,10 @@
 
 ###alpha v0.20 6.20.2016###
 * purge qt's opengl binding and qt window manager classes. use GLFW & GLEW instead.
+* purge qt's math libary (qvector qmatrix qquaternion etc.)
+* add tzw::Matrix44 tzw::Quaternion to do math stuff.
+* add Action::final method to make sure action's result is accuracy.
+* bump version to v0.20
 
 ###alpha v0.15 6.20.2016###
 * use LocalPiority instead Piority.

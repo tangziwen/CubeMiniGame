@@ -100,7 +100,6 @@ void tzw::GUIRadioFrame::flushHorizontal()
         buttonWidth += btn->getContentSize().x + m_btnsStride;
 		buttonHeight = btn->getContentSize().y;
 	}
-    qDebug()<<m_tipsLabel->contentSize().x<<buttonWidth;
     frame_width = std::max(std::max(m_detailLabel->contentSize().x,m_tipsLabel->contentSize().x),buttonWidth) + m_marginHorizontal.x + m_marginHorizontal.y;
 	frame_height = m_tipsLabel->contentSize().y + buttonHeight + m_tipsLabel->contentSize().y + 4 * m_stride;
     auto preFrameHeight = getContentSize().y;//原先的高度

@@ -22,7 +22,7 @@ Technique::Technique(const char *vsFilePath, const char *fsFilePath)
  * @param value 值
  * @note Technique会自动缓存这些变量，只要Technique还在生存周期内，这些值都会不断的提交到shader
  */
-void Technique::setVar(std::string name, const QMatrix4x4 & value)
+void Technique::setVar(std::string name, const Matrix44 & value)
 {
     auto result = m_varList.find(name);
     if(result != m_varList.end())

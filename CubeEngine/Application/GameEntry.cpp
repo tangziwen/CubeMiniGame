@@ -13,12 +13,10 @@
 #include "EngineSrc/Scene/SceneMgr.h"
 #include "EngineSrc/3D/Primitive/Cube.h"
 
-
-#include "QMatrix4x4"
 #include <QDebug>
 #include "EngineSrc/Engine/EngineDef.h"
 #include "EngineSrc/2D/GUIWindowMgr.h"
-
+#include "EngineSrc/Action/RotateBy.h"
 using namespace tzw;
 GameEntry::GameEntry()
 {
@@ -38,8 +36,7 @@ void GameEntry::onStart()
     Button * startBtn2 = Button::create("GUI组件");
     startBtn2->setPos2D(100,340);
     frame2->addChild(startBtn2);
-    frame2->setPos2D(500,0);
-//    frame2->setIsDragable(false);
+    frame2->setPos2D(500,200);
 }
 
 void GameEntry::onExit()

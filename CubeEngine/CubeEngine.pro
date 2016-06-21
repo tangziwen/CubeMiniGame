@@ -146,7 +146,11 @@ SOURCES += main.cpp \
     EngineSrc/2D/GUIWindowMgr.cpp \
     EngineSrc/Engine/EngineDef.cpp \
     EngineSrc/2D/GUIStyle.cpp \
-    EngineSrc/2D/GUIStyleMgr.cpp
+    EngineSrc/2D/GUIStyleMgr.cpp \
+    EngineSrc/Math/Matrix44.cpp \
+    EngineSrc/Math/Quaternion.cpp \
+    EngineSrc/Action/RotateTo.cpp \
+    EngineSrc/Action/RotateBy.cpp
 
 HEADERS += \
     EngineSrc/BackEnd/QtGLWidget.h \
@@ -278,4 +282,8 @@ HEADERS += \
     EngineSrc/2D/GUIWindowMgr.h \
     EngineSrc/Engine/EngineDef.h \
     EngineSrc/2D/GUIStyle.h \
-    EngineSrc/2D/GUIStyleMgr.h
+    EngineSrc/2D/GUIStyleMgr.h \
+    EngineSrc/Math/Matrix44.h \
+    EngineSrc/Math/Quaternion.h \
+    EngineSrc/Action/RotateTo.h \
+    EngineSrc/Action/RotateBy.h

@@ -5,7 +5,7 @@
 #include "../Math/vec3.h"
 #include "../Math/vec4.h"
 #include "../Texture/Texture.h"
-#include <QMatrix4x4>
+#include "../Math/Matrix44.h"
 namespace tzw {
 
 struct TechniqueVar
@@ -22,7 +22,7 @@ struct TechniqueVar
     };
 
     struct {
-        QMatrix4x4 m;
+        Matrix44 m;
         float f;
         int i;
         vec3 v3;
@@ -33,7 +33,7 @@ struct TechniqueVar
     Type type;
     void setT(Texture * tex);
     void setF(float value);
-    void setM(const QMatrix4x4 &value);
+    void setM(const Matrix44 &value);
     void setI(int value);
     void setV2(vec2 value);
     void setV3(vec3 value);

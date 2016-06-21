@@ -1,7 +1,8 @@
 #ifndef TZW_AABB_H
 #define TZW_AABB_H
 #include "vec3.h"
-#include <QMatrix4x4>
+#include "../Math/Matrix44.h"
+#include <vector>
 namespace tzw {
 
 
@@ -12,7 +13,7 @@ public:
     ~AABB();
     void update(vec3 *vec, int num);
     void update(vec3 vec);
-    void transForm(QMatrix4x4 mat);
+    void transForm(Matrix44 mat);
     void reset();
     void merge(AABB box);
     vec3 min() const;

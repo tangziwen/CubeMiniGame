@@ -2,8 +2,8 @@
 #define TZW_NODE_H
 #include "../Math/vec3.h"
 #include "../Math/vec2.h"
-#include <QMatrix4x4>
-#include <QQuaternion>
+#include "../Math/Matrix44.h"
+#include "../Math/Quaternion.h"
 #include <string>
 #include <vector>
 #include "External/TUtility/TUtility.h"
@@ -30,8 +30,8 @@ public:
     Node();
     virtual ~Node();
     static Node * create();
-    QMatrix4x4 getTransform();
-    QMatrix4x4 getLocalTransform();
+    Matrix44 getTransform();
+    Matrix44 getLocalTransform();
     vec3 getPos() const;
     void setPos(const vec3 &pos);
     virtual void draw();
@@ -42,9 +42,9 @@ public:
     vec3 getScale() const;
     void setScale(const vec3 &scale);
     void setScale(float x,float y,float z);
-    QMatrix4x4 getTranslationMatrix();
-    QMatrix4x4 getRotationMatrix();
-    QMatrix4x4 getScalingMatrix();
+    Matrix44 getTranslationMatrix();
+    Matrix44 getRotationMatrix();
+    Matrix44 getScalingMatrix();
     void visitPost(OctreeScene *scene);
     void addChild(Node * node);
     Node *getParent() const;
@@ -79,8 +79,8 @@ public:
     void sortChildren();
     Scene *getScene() const;
     void setScene(Scene *scene);
-    QQuaternion getRotateQ() const;
-    void setRotateQ(const QQuaternion &rotateQ);
+    Quaternion getRotateQ() const;
+    void setRotateQ(const Quaternion &rotateQ);
     unsigned int getGlobalPiority() const;
     void setGlobalPiority(unsigned int globalPiority);
     size_t getChildrenAmount();
@@ -90,10 +90,10 @@ protected:
     bool m_isValid;
     Scene* m_scene;
     vec3 m_scale;
-    QQuaternion m_rotateQ;
+    Quaternion m_rotateQ;
     vec3 m_pos;
     bool m_needToUpdate;
-    QMatrix4x4 m_worldTransformCache;
+    Matrix44 m_worldTransformCache;
     int m_localPiority;
     unsigned int m_globalPiority;
     bool m_isAccpectOCTtree;

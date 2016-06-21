@@ -7,6 +7,11 @@ Action::Action()
 
 }
 
+void Action::init(Node * theNode)
+{
+
+}
+
 bool Action::isDone()
 {
     return true;
@@ -27,6 +32,11 @@ void Action::update(Node *node, float dt)
 /// \param dt
 ///
 void Action::step(Node *node, float dt)
+{
+
+}
+
+Action::~Action()
 {
 
 }

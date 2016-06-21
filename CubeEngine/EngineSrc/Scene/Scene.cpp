@@ -105,7 +105,6 @@ void Scene::createDefaultCameras()
 {
     m_defaultCamera = Camera::CreatePerspective(60,1.0f* Engine::shared()->windowWidth()/Engine::shared()->windowHeight(),0.01,200);
     m_defaultGUICamera = Camera::CreateOrtho(0,Engine::shared()->windowWidth(),0,Engine::shared()->windowHeight(),-1,100);
-    qDebug()<<"the windows Width "<<Engine::shared()->windowWidth()<<", Window Height "<<Engine::shared()->windowHeight();
     //m_root.addChild(m_defaultCamera);
 }
 

@@ -15,7 +15,7 @@ public:
     virtual bool isDone();
     float currentTime() const;
     void setCurrentTime(float currentTime);
-
+    virtual void final(Node * node);
 protected:
     float m_duration;
     float m_currentTime;
