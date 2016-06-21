@@ -16,7 +16,7 @@ TstatckTrace *TstatckTrace::get()
 void TstatckTrace::push(Tstring file, Tstring func)
 {
     Tstring a = "at ";
-    m_trace.push (a+file + ", func: "+func);
+    m_trace.push (a + file + ", func: "+func);
 }
 
 void TstatckTrace::pop()

@@ -6,6 +6,9 @@
 ##Here is the changelog of the CubeEngine
 
 
+###alpha v0.20 6.20.2016###
+* purge qt's opengl binding and qt window manager classes. use GLFW & GLEW instead.
+
 ###alpha v0.15 6.20.2016###
 * use LocalPiority instead Piority.
 * totally reworked GUITitledFrame. and change the name to GUIWindow.

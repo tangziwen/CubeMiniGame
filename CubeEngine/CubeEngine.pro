@@ -59,7 +59,6 @@ SOURCES += main.cpp \
     External/SOIL/image_helper.c \
     External/SOIL/SOIL.c \
     External/SOIL/stb_image_aug.c \
-    EngineSrc/Math/Matrix4.cpp \
     EngineSrc/Shader/ShaderProgram.cpp \
     External/TUtility/file/Data.cpp \
     External/TUtility/file/Tfile.cpp \
@@ -178,7 +177,6 @@ HEADERS += \
     External/SOIL/stbi_DDS_aug.h \
     External/SOIL/stbi_DDS_aug_c.h \
     EngineSrc/CubeEngine.h \
-    EngineSrc/Math/Matrix4.h \
     EngineSrc/Shader/ShaderProgram.h \
     External/TUtility/file/Data.h \
     External/TUtility/file/Tfile.h \

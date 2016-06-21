@@ -1,30 +1,26 @@
 #ifndef TZW_QTGLWIDGET_H
 #define TZW_QTGLWIDGET_H
 
-#include <QOpenGLWidget>
-#include <QOpenGLFunctions>
-#include <time.h>
-#include <QBasicTimer>
-namespace tzw {
 
-class QtGLWidget : public QOpenGLWidget, protected QOpenGLFunctions
+#include <time.h>
+#include <string>
+#include "../Engine/EngineDef.h"
+#include "../Math/vec2.h"
+namespace tzw {
+class QtGLWidget
 {
-    Q_OBJECT
 public:
-    explicit QtGLWidget(QWidget *parent = 0);
-protected:
-    void timerEvent(QTimerEvent *e) Q_DECL_OVERRIDE;
-    virtual void keyPressEvent(QKeyEvent * event);
-    virtual void keyReleaseEvent(QKeyEvent * event);
-    virtual void mousePressEvent(QMouseEvent * event);
-    virtual void mouseReleaseEvent(QMouseEvent * event);
-    virtual void mouseMoveEvent(QMouseEvent * event);
-    void initializeGL() Q_DECL_OVERRIDE;
-    void resizeGL(int w, int h) Q_DECL_OVERRIDE;
-    void paintGL() Q_DECL_OVERRIDE;
+    void keyPressEvent(std::string theCode);
+    void keyReleaseEvent(std::string theCode);
+    void mousePressEvent(int buttonCode, vec2 pos);
+    void mouseReleaseEvent(int buttonCode, vec2 pos);
+    void mouseMoveEvent(vec2 pos);
+    void initializeGL(int width, int height);
+    void resizeGL(int w, int h);
+    void paintGL();
     clock_t m_oldTicks,m_nowTicks;
-    QBasicTimer timer;
     bool m_isFirstFrame;
+    TZW_SINGLETON_DECL(QtGLWidget)
 };
 
 } // namespace tzw

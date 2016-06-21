@@ -3,14 +3,13 @@
 
 #include "VertexData.h"
 #include <vector>
-#include <QOpenGLFunctions>
 #include <QOpenGLBuffer>
 #include "../Rendering/RenderBuffer.h"
 #include "../Math/AABB.h"
 #include <QMatrix4x4>
 namespace tzw {
 
-class Mesh :protected QOpenGLFunctions
+class Mesh
 {
 public:
     Mesh();

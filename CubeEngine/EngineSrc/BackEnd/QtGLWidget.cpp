@@ -1,60 +1,42 @@
 #include "QtGLWidget.h"
-#include <QKeyEvent>
-#include <QMouseEvent>
+#include "GL/glew.h"
 #include "../Engine/Engine.h"
 #include "../Event/EventMgr.h"
+
 #include <Qt>
-#include <QDebug>
 namespace tzw {
+TZW_SINGLETON_IMPL(QtGLWidget)
 
-QtGLWidget::QtGLWidget(QWidget *parent)
-    :QOpenGLWidget(parent),m_oldTicks(0),m_nowTicks(0),m_isFirstFrame(true)
+void QtGLWidget::keyPressEvent(std::string theCode)
 {
-    setFixedSize(1280,768);
-    setAttribute(Qt::WidgetAttribute::WA_QuitOnClose,true);
-    makeCurrent();
+    EventMgr::shared()->handleKeyPress(theCode);
 }
 
-void QtGLWidget::timerEvent(QTimerEvent *e)
+void QtGLWidget::keyReleaseEvent(std::string theCode)
 {
-    repaint();
+    EventMgr::shared()->handleKeyRelease(theCode);
 }
 
-void QtGLWidget::keyPressEvent(QKeyEvent *event)
-{
-    EventMgr::shared()->handleKeyPress(event->text().toStdString());
-}
-
-void QtGLWidget::keyReleaseEvent(QKeyEvent *event)
-{
-    EventMgr::shared()->handleKeyRelease(event->text().toStdString());
-}
-
-void QtGLWidget::mousePressEvent(QMouseEvent *event)
+void QtGLWidget::mousePressEvent(int buttonCode,vec2 pos)
 {
     auto height = Engine::shared()->windowHeight();
-    auto pos = event->pos();
-    EventMgr::shared()->handleMousePress(event->button(),vec2(pos.x(),height - pos.y()));
+    EventMgr::shared()->handleMousePress(buttonCode,vec2(pos.x,height - pos.y));
 }
 
-void QtGLWidget::mouseReleaseEvent(QMouseEvent *event)
+void QtGLWidget::mouseReleaseEvent(int buttonCode,vec2 pos)
 {
     auto height = Engine::shared()->windowHeight();
-    auto pos = event->pos();
-    EventMgr::shared()->handleMouseRelease(event->button(),vec2(pos.x(),height - pos.y()));
+    EventMgr::shared()->handleMouseRelease(buttonCode,vec2(pos.x,height - pos.y));
 }
 
-void QtGLWidget::mouseMoveEvent(QMouseEvent *event)
+void QtGLWidget::mouseMoveEvent(vec2 pos)
 {
     auto height = Engine::shared()->windowHeight();
-    auto pos = event->pos();
-    EventMgr::shared()->handleMouseMove(vec2(pos.x(),height - pos.y()));
+    EventMgr::shared()->handleMouseMove(vec2(pos.x,height - pos.y));
 }
 
-void QtGLWidget::initializeGL()
+void QtGLWidget::initializeGL(int width,int height)
 {
-    initializeOpenGLFunctions();
-
     // Set the background color
     glClearColor(0, 0, 0, 1);
 
@@ -68,10 +50,8 @@ void QtGLWidget::initializeGL()
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    Engine::shared()->onStart(width(),height());
+    Engine::shared()->onStart(width,height);
     m_nowTicks = m_oldTicks = clock();
-    // Use QBasicTimer because its faster than QTimer
-    timer.start(1, this);
 }
 
 void QtGLWidget::resizeGL(int w, int h)
@@ -92,5 +72,6 @@ void QtGLWidget::paintGL()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Engine::shared()->update(delta);
 }
+
 } // namespace tzw
 

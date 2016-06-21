@@ -4,7 +4,6 @@
 #include "../Math/vec2.h"
 #include "../Math/vec3.h"
 #include "../Math/vec4.h"
-#include "../Math/Matrix4.h"
 #include "../Texture/Texture.h"
 #include <QMatrix4x4>
 namespace tzw {

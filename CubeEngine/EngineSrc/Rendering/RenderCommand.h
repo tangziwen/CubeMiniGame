@@ -1,7 +1,6 @@
 #ifndef TZW_RENDERCOMMAND_H
 #define TZW_RENDERCOMMAND_H
 
-#include <QOpenGLFunctions>
 #include "../Technique/Technique.h"
 #include "../Mesh/Mesh.h"
 #include "../Interface/DepthPolicy.h"
