@@ -33,7 +33,6 @@ void Action::update(Node *node, float dt)
 ///
 void Action::step(Node *node, float dt)
 {
-
 }
 
 Action::~Action()
