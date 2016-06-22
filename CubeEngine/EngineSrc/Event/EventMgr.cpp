@@ -9,6 +9,7 @@
 #define EVENT_TYPE_M_RELEASE 2
 #define EVENT_TYPE_M_PRESS 3
 #define EVENT_TYPE_M_MOVE 4
+#define EVENT_TYPE_K_CHAR_INPUT 5
 namespace tzw {
 
 TZW_SINGLETON_IMPL(EventMgr)
@@ -54,7 +55,7 @@ void EventMgr::sortNodePiorityListener()
     std::stable_sort(m_NodePioritylist.begin(),m_NodePioritylist.end(),nodeEventCompare);
 }
 
-void EventMgr::handleKeyPress(std::string keyCode)
+void EventMgr::handleKeyPress(int keyCode)
 {
     EventInfo info;
     info.keycode = keyCode;
@@ -63,7 +64,7 @@ void EventMgr::handleKeyPress(std::string keyCode)
 
 }
 
-void EventMgr::handleKeyRelease(std::string keyCode)
+void EventMgr::handleKeyRelease(int keyCode)
 {
     EventInfo info;
     info.keycode = keyCode;
@@ -80,6 +81,14 @@ void EventMgr::handleMousePress(int button, vec2 pos)
     info.type = EVENT_TYPE_M_PRESS;
     m_eventDeque.push_back(info);
 
+}
+
+void EventMgr::handleCharInput(unsigned int theChar)
+{
+    EventInfo info;
+    info.theChar = theChar;
+    info.type = EVENT_TYPE_K_CHAR_INPUT;
+    m_eventDeque.push_back(info);
 }
 
 void EventMgr::handleMouseRelease(int button, vec2 pos)
@@ -134,6 +143,10 @@ void EventMgr::apply(float delta)
             applyMouseRelease(info);
         }
             break;
+        case EVENT_TYPE_K_CHAR_INPUT:
+        {
+            applyKeyCharInput(info);
+        }
         }
         m_eventDeque.pop_front();
     }
@@ -174,6 +187,18 @@ void EventMgr::applyKeyPress(EventInfo &info)
     for (auto event :m_NodePioritylist)
     {
         if(event->onKeyPress(info.keycode) && event->isSwallow()) break;
+    }
+}
+
+void EventMgr::applyKeyCharInput(EventInfo &info)
+{
+    for(auto event : m_list)
+    {
+        if(event->onCharInput(info.theChar) && event->isSwallow()) break;
+    }
+    for (auto event :m_NodePioritylist)
+    {
+        if(event->onCharInput(info.theChar) && event->isSwallow()) break;
     }
 }
 

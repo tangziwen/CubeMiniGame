@@ -16,7 +16,7 @@ public:
     void renderAllGUI();
     void renderGUI(RenderCommand &command);
     void renderCommon(RenderCommand &command);
-    void clear();
+    void clearCommands();
     void render(RenderCommand &command);
     bool enable3DRender() const;
     void setEnable3DRender(bool enable3DRender);

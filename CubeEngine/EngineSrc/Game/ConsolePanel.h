@@ -12,7 +12,8 @@ class ConsolePanel : EventListener
 {
 public:
     ConsolePanel(Node * renderNode);
-    virtual bool onKeyPress(std::string keyCode);
+    virtual bool onKeyPress(int keyCode);
+    virtual bool onCharInput(unsigned int theChar);
     bool isVisible() const;
     void setIsVisible(bool isVisible);
     void toggleVissible();

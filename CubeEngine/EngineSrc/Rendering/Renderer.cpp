@@ -51,7 +51,7 @@ void Renderer::renderAll()
     {
         renderAllGUI();
     }
-    clear();
+    clearCommands();
 }
 
 void Renderer::renderAllCommon()
@@ -86,7 +86,7 @@ void Renderer::renderCommon(RenderCommand &command)
     render(command);
 }
 
-void Renderer::clear()
+void Renderer::clearCommands()
 {
     m_CommonCommand.clear();
     m_GUICommandList.clear();

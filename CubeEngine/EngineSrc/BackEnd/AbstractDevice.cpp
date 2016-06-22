@@ -7,14 +7,19 @@
 namespace tzw {
 TZW_SINGLETON_IMPL(AbstractDevice)
 
-void AbstractDevice::keyPressEvent(std::string theCode)
+void AbstractDevice::keyPressEvent(int theCode)
 {
     EventMgr::shared()->handleKeyPress(theCode);
 }
 
-void AbstractDevice::keyReleaseEvent(std::string theCode)
+void AbstractDevice::keyReleaseEvent(int theCode)
 {
     EventMgr::shared()->handleKeyRelease(theCode);
+}
+
+void AbstractDevice::charInputEvent(unsigned int theCode)
+{
+    EventMgr::shared()->handleCharInput(theCode);
 }
 
 void AbstractDevice::mousePressEvent(int buttonCode,vec2 pos)
@@ -48,7 +53,7 @@ void AbstractDevice::resizeGL(int w, int h)
 {
 }
 
-void AbstractDevice::paintGL()
+void AbstractDevice::update()
 {
     //calculate delta
     m_nowTicks = clock();

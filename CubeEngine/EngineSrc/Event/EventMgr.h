@@ -11,7 +11,8 @@ class Node;
 struct EventInfo
 {
     int type;
-    std::string keycode;
+    int keycode;
+    unsigned int theChar;
     int arg;
     vec2 pos;
 };
@@ -24,9 +25,10 @@ public:
     void addFixedPiorityListener(EventListener * event);
     void addNodePiorityListener(Node * node,EventListener * event);
 
-    void handleKeyPress(std::string keyCode);
-    void handleKeyRelease(std::string keyCode);
+    void handleKeyPress(int keyCode);
+    void handleKeyRelease(int keyCode);
     void handleMousePress(int button,vec2 pos);
+    void handleCharInput(unsigned int theChar);
     void handleMouseRelease(int button,vec2 pos);
     void handleMouseMove(vec2 pos);
     void apply(float delta);
@@ -36,6 +38,7 @@ private:
     void sortNodePiorityListener();
     void visitNode(Node * node);
     void applyKeyPress(EventInfo & info);
+    void applyKeyCharInput(EventInfo & info);
     void applyKeyRelease(EventInfo & info);
     void applyMousePress(EventInfo & info);
     void applyMouseRelease(EventInfo & info);

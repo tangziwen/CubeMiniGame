@@ -45,18 +45,12 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     {
     case GLFW_PRESS:
     {
-        std::strstream ss;
-        ss <<  char(key);
-        ss >> theStr;
-        AbstractDevice::shared()->keyPressEvent(theStr);
+        AbstractDevice::shared()->keyPressEvent(key);
     }
         break;
     case GLFW_RELEASE:
     {
-        std::strstream ss;
-        ss <<  char(key);
-        ss >> theStr;
-        AbstractDevice::shared()->keyReleaseEvent(theStr);
+        AbstractDevice::shared()->keyReleaseEvent(key);
     }
         break;
     default:
@@ -64,6 +58,11 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     }
     if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
         glfwSetWindowShouldClose(window, GL_TRUE);
+}
+
+static void char_callback(GLFWwindow *, unsigned int theChar)
+{
+    AbstractDevice::shared()->charInputEvent(theChar);
 }
 
 void GLFW_BackEnd::prepare()
@@ -77,6 +76,7 @@ void GLFW_BackEnd::prepare()
     glfwMakeContextCurrent(m_window);
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
+    glfwSetCharCallback(m_window, char_callback);
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glfwSetCursorPosCallback(m_window, cursor_position_callback);
     glfwMakeContextCurrent(m_window);
@@ -87,7 +87,7 @@ void GLFW_BackEnd::run()
 {
     while (!glfwWindowShouldClose(m_window))
     {
-        AbstractDevice::shared()->paintGL();
+        AbstractDevice::shared()->update();
         glfwSwapBuffers(m_window);
         glfwPollEvents();
     }

@@ -2,7 +2,7 @@
 #include "EventMgr.h"
 namespace tzw {
 
-bool EventListener::onKeyPress(std::string keyCode)
+bool EventListener::onKeyPress(int keyCode)
 {
     return false;
 }
@@ -12,7 +12,12 @@ EventListener::~EventListener()
     EventMgr::shared()->removeEventListener(this);
 }
 
-bool EventListener::onKeyRelease(std::string keyCode)
+bool EventListener::onKeyRelease(int keyCode)
+{
+    return false;
+}
+
+bool EventListener::onCharInput(unsigned int theChar)
 {
     return false;
 }

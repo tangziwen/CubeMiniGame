@@ -6,6 +6,7 @@
 #include <Qt>
 #include "../External/TUtility/TUtility.h"
 #include "../Engine/EngineDef.h"
+#include <strstream>
 namespace tzw {
 
 ConsolePanel::ConsolePanel(Node *renderNode)
@@ -37,33 +38,43 @@ ConsolePanel::ConsolePanel(Node *renderNode)
     setIsVisible(false);
 }
 
-bool ConsolePanel::onKeyPress(std::string keyCode)
+bool ConsolePanel::onKeyPress(int keyCode)
 {
-    auto wStr = Tmisc::StringToWString(keyCode);
-    printf("the key Code %s\n",keyCode.c_str());
-    switch(wStr[0])
+    switch(keyCode)
+    {
+    //删除和退格键
+    case 259:
+        eraseChar();
+        break;
+    case 261:
+        eraseChar();
+        break;
+    //回车键
+    case 257:
+    {
+        addStr(m_label->getString());
+        m_label->setString(" ");
+    }
+        break;
+    default:
+        break;
+    }
+    return false;
+}
+
+bool ConsolePanel::onCharInput(unsigned int theChar)
+{
+    switch(theChar)
     {
     case '`':
         toggleVissible();
         break;
-    case '\b':
-        eraseChar();
-        break;
-    case 127:
-        eraseChar();
-        break;
-    case '\r':
-        addStr(m_label->getString());
-        m_label->setString("");
-        break;
     default:
-    {
-        auto oldStr = m_label->getString();
-        oldStr = oldStr += keyCode;
-        m_label->setString(oldStr);
-    }
-        break;
-
+        auto oldS = m_label->getString();
+        std::wstring theStr;
+        theStr.push_back(wchar_t(theChar));
+        m_label->setString(oldS + Tmisc::WstringToString(theStr));
+        return true;
     }
     return true;
 }

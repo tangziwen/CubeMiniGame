@@ -21,9 +21,10 @@ class EventMgr;
 class EventListener
 {
 public:
-    virtual bool onKeyPress(std::string keyCode);
+    virtual bool onKeyPress(int keyCode);
     virtual ~EventListener();
-    virtual bool onKeyRelease(std::string keyCode);
+    virtual bool onKeyRelease(int keyCode);
+    virtual bool onCharInput(unsigned int theChar);
     virtual bool onMouseRelease(int button,vec2 pos);
     virtual bool onMousePress(int button,vec2 pos);
     virtual bool onMouseMove(vec2 pos);
