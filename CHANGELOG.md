@@ -5,8 +5,10 @@
 
 ##Here is the changelog of the CubeEngine
 
+###alpha v0.20b 6.22.2016###
+* reworked window management backend.split out the GLFW stuff.
 
-###alpha v0.20 6.20.2016###
+###alpha v0.20 6.21.2016###
 * purge qt's opengl binding and qt window manager classes. use GLFW & GLEW instead.
 * purge qt's math libary (qvector qmatrix qquaternion etc.)
 * add tzw::Matrix44 tzw::Quaternion to do math stuff.
