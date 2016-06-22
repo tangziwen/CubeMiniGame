@@ -2,7 +2,7 @@
 #include <QLabel>
 
 #ifndef QT_NO_OPENGL
-#include "EngineSrc/BackEnd/QtGLWidget.h"
+#include "EngineSrc/BackEnd/AbstractDevice.h"
 #endif
 
 #include "EngineSrc/Engine/Engine.h"

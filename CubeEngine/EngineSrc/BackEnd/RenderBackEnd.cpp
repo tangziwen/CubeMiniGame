@@ -25,6 +25,19 @@ void RenderBackEnd::initDevice()
         printf("opengl device init error!\n");
         exit(0);
     }
+
+    // Set the background color
+    glClearColor(0, 0, 0, 1);
+
+    // Enable depth buffer
+    glEnable(GL_DEPTH_TEST);
+
+    // Enable back face culling
+    glEnable(GL_CULL_FACE);
+
+    // Enable alpha blending
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 }
 
 unsigned int RenderBackEnd::genBuffer()

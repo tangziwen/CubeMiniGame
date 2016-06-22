@@ -1,64 +1,54 @@
-#include "QtGLWidget.h"
+#include "AbstractDevice.h"
 #include "GL/glew.h"
 #include "../Engine/Engine.h"
 #include "../Event/EventMgr.h"
-
+#include "RenderBackEnd.h"
 #include <Qt>
 namespace tzw {
-TZW_SINGLETON_IMPL(QtGLWidget)
+TZW_SINGLETON_IMPL(AbstractDevice)
 
-void QtGLWidget::keyPressEvent(std::string theCode)
+void AbstractDevice::keyPressEvent(std::string theCode)
 {
     EventMgr::shared()->handleKeyPress(theCode);
 }
 
-void QtGLWidget::keyReleaseEvent(std::string theCode)
+void AbstractDevice::keyReleaseEvent(std::string theCode)
 {
     EventMgr::shared()->handleKeyRelease(theCode);
 }
 
-void QtGLWidget::mousePressEvent(int buttonCode,vec2 pos)
+void AbstractDevice::mousePressEvent(int buttonCode,vec2 pos)
 {
     auto height = Engine::shared()->windowHeight();
     EventMgr::shared()->handleMousePress(buttonCode,vec2(pos.x,height - pos.y));
 }
 
-void QtGLWidget::mouseReleaseEvent(int buttonCode,vec2 pos)
+void AbstractDevice::mouseReleaseEvent(int buttonCode,vec2 pos)
 {
     auto height = Engine::shared()->windowHeight();
     EventMgr::shared()->handleMouseRelease(buttonCode,vec2(pos.x,height - pos.y));
 }
 
-void QtGLWidget::mouseMoveEvent(vec2 pos)
+void AbstractDevice::mouseMoveEvent(vec2 pos)
 {
     auto height = Engine::shared()->windowHeight();
     EventMgr::shared()->handleMouseMove(vec2(pos.x,height - pos.y));
 }
 
-void QtGLWidget::initializeGL(int width,int height)
+void AbstractDevice::init(int width,int height)
 {
-    // Set the background color
-    glClearColor(0, 0, 0, 1);
+    RenderBackEnd::shared()->initDevice();
 
-    // Enable depth buffer
-    glEnable(GL_DEPTH_TEST);
-
-    // Enable back face culling
-    glEnable(GL_CULL_FACE);
-
-    // Enable alpha blending
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     Engine::shared()->onStart(width,height);
     m_nowTicks = m_oldTicks = clock();
 }
 
-void QtGLWidget::resizeGL(int w, int h)
+void AbstractDevice::resizeGL(int w, int h)
 {
 }
 
-void QtGLWidget::paintGL()
+void AbstractDevice::paintGL()
 {
     //calculate delta
     m_nowTicks = clock();

@@ -6,9 +6,6 @@
 #define TZW_SINGLETON_IMPL(className) className * className::m_instance = nullptr;\
 className * className::shared(){if(!m_instance){m_instance = new className();}return m_instance;}
 
-#define TZW_LEFT_BTN 0
-
-#define TZW_RIGHT_BTN 1
 
 namespace tzw {
 typedef int integer;
@@ -16,6 +13,11 @@ typedef unsigned int integer_u;
 class EngineDef
 {
 public:
+    enum class MouseButton
+    {
+        LeftButton,
+        RightButton,
+    };
     static int maxPiority;
     static const char * versionStr;
     static int focusPiority;

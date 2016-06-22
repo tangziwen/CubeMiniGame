@@ -4,7 +4,7 @@
 #include "../Rendering/Renderer.h"
 #include "TUtility/TUtility.h"
 #include "../Game/ConsolePanel.h"
-#include "../BackEnd/BackEnd.h"
+#include "../BackEnd/WindowBackEndMgr.h"
 #include "../Event/EventMgr.h"
 #include "time.h"
 
@@ -169,7 +169,10 @@ void Engine::setWindowWidth(float windowWidth)
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
     Engine::shared()->setDelegate(delegate);
-    return BackEnd::Run(argc,argv);
+    auto window = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
+    window->prepare();
+    window->run();
+    return 0;
 }
 } // namespace tzw
 

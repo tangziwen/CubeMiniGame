@@ -34,7 +34,6 @@ LIBS += -lopengl32 -lglu32 -lglut32
 ####External library END####
 
 SOURCES += main.cpp \
-    EngineSrc/BackEnd/QtGLWidget.cpp \
     EngineSrc/Mesh/Mesh.cpp \
     EngineSrc/Math/vec3.cpp \
     EngineSrc/Math/vec2.cpp \
@@ -53,7 +52,6 @@ SOURCES += main.cpp \
     EngineSrc/Texture/TextureMgr.cpp \
     EngineSrc/Scene/Scene.cpp \
     EngineSrc/Scene/SceneMgr.cpp \
-    EngineSrc/BackEnd/BackEnd.cpp \
     EngineSrc/Engine/Engine.cpp \
     External/SOIL/image_DXT.c \
     External/SOIL/image_helper.c \
@@ -150,10 +148,13 @@ SOURCES += main.cpp \
     EngineSrc/Math/Matrix44.cpp \
     EngineSrc/Math/Quaternion.cpp \
     EngineSrc/Action/RotateTo.cpp \
-    EngineSrc/Action/RotateBy.cpp
+    EngineSrc/Action/RotateBy.cpp \
+    EngineSrc/BackEnd/WindowBackEnd.cpp \
+    EngineSrc/BackEnd/GLFW/GLFW_BackEnd.cpp \
+    EngineSrc/BackEnd/WindowBackEndMgr.cpp \
+    EngineSrc/BackEnd/AbstractDevice.cpp
 
 HEADERS += \
-    EngineSrc/BackEnd/QtGLWidget.h \
     EngineSrc/Mesh/Mesh.h \
     EngineSrc/Math/vec3.h \
     EngineSrc/Math/vec2.h \
@@ -172,7 +173,6 @@ HEADERS += \
     EngineSrc/Texture/TextureMgr.h \
     EngineSrc/Scene/Scene.h \
     EngineSrc/Scene/SceneMgr.h \
-    EngineSrc/BackEnd/BackEnd.h \
     EngineSrc/Engine/Engine.h \
     External/SOIL/image_DXT.h \
     External/SOIL/image_helper.h \
@@ -286,4 +286,8 @@ HEADERS += \
     EngineSrc/Math/Matrix44.h \
     EngineSrc/Math/Quaternion.h \
     EngineSrc/Action/RotateTo.h \
-    EngineSrc/Action/RotateBy.h
+    EngineSrc/Action/RotateBy.h \
+    EngineSrc/BackEnd/WindowBackEnd.h \
+    EngineSrc/BackEnd/GLFW/GLFW_BackEnd.h \
+    EngineSrc/BackEnd/WindowBackEndMgr.h \
+    EngineSrc/BackEnd/AbstractDevice.h

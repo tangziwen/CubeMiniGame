@@ -40,6 +40,7 @@ ConsolePanel::ConsolePanel(Node *renderNode)
 bool ConsolePanel::onKeyPress(std::string keyCode)
 {
     auto wStr = Tmisc::StringToWString(keyCode);
+    printf("the key Code %s\n",keyCode.c_str());
     switch(wStr[0])
     {
     case '`':

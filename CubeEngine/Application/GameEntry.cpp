@@ -36,7 +36,7 @@ void GameEntry::onStart()
     Button * startBtn2 = Button::create("GUI组件");
     startBtn2->setPos2D(100,340);
     frame2->addChild(startBtn2);
-    frame2->setPos2D(500,200);
+    frame2->setPos2D(500,100);
 }
 
 void GameEntry::onExit()
