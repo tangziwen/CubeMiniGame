@@ -30,6 +30,9 @@ INCLUDEPATH += ./External/GLFW3/include
 LIBS += -L$$PWD/lib -lglew32s
 INCLUDEPATH += ./External/GLEW
 
+#rapidJson
+INCLUDEPATH += ./External/rapidjson/include
+
 LIBS += -lopengl32 -lglu32 -lglut32
 ####External library END####
 
@@ -152,7 +155,9 @@ SOURCES += main.cpp \
     EngineSrc/BackEnd/WindowBackEnd.cpp \
     EngineSrc/BackEnd/GLFW/GLFW_BackEnd.cpp \
     EngineSrc/BackEnd/WindowBackEndMgr.cpp \
-    EngineSrc/BackEnd/AbstractDevice.cpp
+    EngineSrc/BackEnd/AbstractDevice.cpp \
+    EngineSrc/3D/Model/Model.cpp \
+    EngineSrc/3D/Model/ModelLoader.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -290,4 +295,6 @@ HEADERS += \
     EngineSrc/BackEnd/WindowBackEnd.h \
     EngineSrc/BackEnd/GLFW/GLFW_BackEnd.h \
     EngineSrc/BackEnd/WindowBackEndMgr.h \
-    EngineSrc/BackEnd/AbstractDevice.h
+    EngineSrc/BackEnd/AbstractDevice.h \
+    EngineSrc/3D/Model/Model.h \
+    EngineSrc/3D/Model/ModelLoader.h

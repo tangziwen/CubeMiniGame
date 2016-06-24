@@ -3,20 +3,7 @@
 #include "EngineSrc/Font/Font.h"
 
 #include "EngineSrc/CubeEngine.h"
-#include "EngineSrc/Game/ConsolePanel.h"
-#include "TUtility/TUtility.h"
-#include "EngineSrc/Texture/TextureAtlas.h"
-#include "EngineSrc/Font/FontMgr.h"
-#include "EngineSrc/2D/GUIFrame.h"
-#include "EngineSrc/2D/Button.h"
-#include "EngineSrc/2D/GUITitledFrame.h"
-#include "EngineSrc/Scene/SceneMgr.h"
-#include "EngineSrc/3D/Primitive/Cube.h"
 
-#include <QDebug>
-#include "EngineSrc/Engine/EngineDef.h"
-#include "EngineSrc/2D/GUIWindowMgr.h"
-#include "EngineSrc/Action/RotateBy.h"
 using namespace tzw;
 GameEntry::GameEntry()
 {
@@ -24,12 +11,17 @@ GameEntry::GameEntry()
 
 void GameEntry::onStart()
 {
+
+    auto theModel = Model::create("./test.tzw");
+    theModel->setPos(vec3(0,0,-50));
+    theModel->setScale(0.1,0.1,0.1);
+    theModel->runAction(new RotateBy(5.0,vec3(0,360,0)));
+    SceneMgr::shared()->currentScene()->addNode(theModel);
     auto frame = GUIWindow::create("划水",vec2(450,600));
     GUIWindowMgr::shared()->add(frame);
     Button * startBtn = Button::create("开始游戏");
     startBtn->setPos2D(100,340);
     frame->addChild(startBtn);
-
 
     auto frame2 = GUIWindow::create("Cube Engine",vec2(450,600));
     GUIWindowMgr::shared()->add(frame2);
