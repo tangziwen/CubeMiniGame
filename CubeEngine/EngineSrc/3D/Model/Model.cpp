@@ -29,11 +29,12 @@ Model *Model::create(std::string modelFilePath)
 
 void Model::draw()
 {
-    auto vp = camera()->getViewProjectionMatrix();
-    auto m = getTransform();
-    m_technique->setVar("TU_mvpMatrix", vp* m);
-    RenderCommand command(m_meshList[0],m_technique,RenderCommand::RenderType::Common);
-    Renderer::shared()->addRenderCommand(command);
+    m_technique->applyFromDrawable(this);
+    for(auto mesh : m_meshList)
+    {
+        m_technique->applyFromMat(mesh->getMat());
+        RenderCommand command(mesh,m_technique,RenderCommand::RenderType::Common);
+        Renderer::shared()->addRenderCommand(command);
+    }
 }
-
 } // namespace tzw

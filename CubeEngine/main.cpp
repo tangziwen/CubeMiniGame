@@ -1,15 +1,9 @@
-#include <QApplication>
-#include <QLabel>
-
-#ifndef QT_NO_OPENGL
-#include "EngineSrc/BackEnd/AbstractDevice.h"
-#endif
+#include <stdio.h>
 
 #include "EngineSrc/Engine/Engine.h"
 #include "Application/GameEntry.h"
 #include "EngineSrc/Script/ScriptVM.h"
 
-#include <stdio.h>
 using namespace tzw;
 int main(int argc, char *argv[])
 {

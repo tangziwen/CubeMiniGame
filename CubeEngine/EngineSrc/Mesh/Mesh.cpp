@@ -3,7 +3,7 @@
 namespace tzw {
 
 Mesh::Mesh()
-    :m_ibo(-1),m_vbo(-1)
+    :m_ibo(-1),m_vbo(-1),m_mat(nullptr)
 {
     m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
     m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
@@ -59,6 +59,16 @@ void Mesh::passToGPU()
     m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(GLushort));
 
 
+}
+
+Material *Mesh::getMat() const
+{
+    return m_mat;
+}
+
+void Mesh::setMat(Material *mat)
+{
+    m_mat = mat;
 }
 
 GLuint Mesh::vbo() const

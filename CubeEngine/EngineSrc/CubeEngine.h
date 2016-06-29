@@ -46,6 +46,7 @@
 #include "EngineSrc/Engine/EngineDef.h"
 #include "EngineSrc/2D/GUIWindowMgr.h"
 #include "EngineSrc/Action/RotateBy.h"
+#include "EngineSrc/Action/RepeatForever.h"
 #include "EngineSrc/3D/Model/Model.h"
 
 #endif // CUBEENGINE

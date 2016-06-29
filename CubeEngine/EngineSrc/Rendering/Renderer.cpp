@@ -107,7 +107,11 @@ void Renderer::render(RenderCommand &command)
     int vertexLocation = program->attributeLocation("a_position");
     program->enableAttributeArray(vertexLocation);
     program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-    // Offset for texture coordinate
+    offset += sizeof(vec3);
+
+    int normalLocation = program->attributeLocation("a_normal");
+    program->enableAttributeArray(normalLocation);
+    program->setAttributeBuffer(normalLocation,GL_FLOAT,offset,3,sizeof(VertexData));
     offset += sizeof(vec3);
 
     // Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
@@ -116,9 +120,6 @@ void Renderer::render(RenderCommand &command)
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
     offset += sizeof(vec2);
 
-    int normalLocation = program->attributeLocation("a_normal");
-    program->enableAttributeArray(normalLocation);
-    program->setAttributeBuffer(normalLocation,GL_FLOAT,offset,3,sizeof(VertexData));
     switch(command.m_primitiveType)
     {
     case RenderCommand::PrimitiveType::TRIANGLES:

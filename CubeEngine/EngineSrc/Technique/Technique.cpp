@@ -3,6 +3,9 @@
 #include <stdlib.h>
 #include "../Shader/ShaderMgr.h"
 #include "../BackEnd/RenderBackEnd.h"
+
+#include "../3D/Material/Material.h"
+#include "../Interface/Drawable3D.h"
 namespace tzw {
 
 /**
@@ -204,6 +207,19 @@ void Technique::use()
 ShaderProgram *Technique::program()
 {
     return m_program;
+}
+
+void Technique::applyFromMat(Material *mat)
+{
+    setTex("TU_tex0",mat->diffuseMap());
+}
+
+void Technique::applyFromDrawable(Drawable *node)
+{
+    auto vp = node->camera()->getViewProjectionMatrix();
+    auto m = node->getTransform();
+    setVar("TU_mvpMatrix", vp* m);
+    setVar("TU_color",node->getUniformColor());
 }
 
 

@@ -3,10 +3,10 @@
 
 #include "VertexData.h"
 #include <vector>
-#include <QOpenGLBuffer>
 #include "../Rendering/RenderBuffer.h"
 #include "../Math/AABB.h"
 #include "../Math/Matrix44.h"
+#include "../3D/Material/Material.h"
 namespace tzw {
 
 class Mesh
@@ -36,6 +36,9 @@ public:
     void merge(Mesh * other, const Matrix44 &transform);
     void createBufferObject();
     void clear();
+    Material *getMat() const;
+    void setMat(Material *mat);
+
 private:
     void passToGPU();
     AABB m_aabb;
@@ -43,6 +46,7 @@ private:
     RenderBuffer* m_indexBuf;
     std::vector<GLushort> m_indices;
     std::vector<VertexData> m_vertices;
+    Material * m_mat;
     GLuint m_vbo,m_ibo;
 };
 

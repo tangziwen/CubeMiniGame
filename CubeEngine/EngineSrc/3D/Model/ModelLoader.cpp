@@ -1,5 +1,6 @@
 #include "ModelLoader.h"
 #include "Model.h"
+#include "../../Texture/TextureMgr.h"
 namespace tzw {
 TZW_SINGLETON_IMPL(ModelLoader)
 
@@ -20,6 +21,17 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
         return;
     }
 
+    //获得material
+    auto tmgr = TextureMgr::shared();
+    auto& materialList = doc["materialList"];
+    for (unsigned int i = 0;i<materialList.Size();i++)
+    {
+        auto theMaterial = new Material();
+        auto & materialData = materialList[i];
+        theMaterial->setDiffuseMap(tmgr->getOrCreateTexture(materialData["diffuseMap"].GetString()));
+        model->m_materialList.push_back(theMaterial);
+    }
+
     //获得Mesh
     auto& meshList = doc["MeshList"];
     for (unsigned int i = 0;i<meshList.Size();i++)
@@ -32,6 +44,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
         {
             auto& vertexData_j = verticesData[k];
             theMesh->addVertex(VertexData(vec3(vertexData_j[0].GetDouble(),vertexData_j[1].GetDouble(),vertexData_j[2].GetDouble()),
+                    vec3(vertexData_j[3].GetDouble(),vertexData_j[4].GetDouble(),vertexData_j[5].GetDouble()),
                     vec2(vertexData_j[6].GetDouble(),vertexData_j[7].GetDouble())));
         }
         //get indices
@@ -40,6 +53,8 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
         {
             theMesh->addIndex(indicesData[k].GetInt());
         }
+        //material
+        theMesh->setMat(model->m_materialList[meshData["materialIndex"].GetInt()]);
         theMesh->finish(true);
         model->m_meshList.push_back(theMesh);
     }

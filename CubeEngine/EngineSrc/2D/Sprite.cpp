@@ -6,8 +6,7 @@ namespace tzw {
 Sprite::Sprite()
     :m_isUseTexture(true),m_texture(nullptr)
 {
-
-
+    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
 }
 
 /**
@@ -42,7 +41,7 @@ void Sprite::initWithTexture(std::string texturePath)
     m_contentSize = m_texture->getSize();
     setRenderRect(m_contentSize);
     setUpTechnique();
-    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
+
 }
 
 void Sprite::initWithTexture(Texture *texture)
@@ -58,8 +57,6 @@ void Sprite::initWithTexture(Texture *texture)
     m_contentSize = m_texture->getSize();
     setRenderRect(m_contentSize);
     setUpTechnique();
-
-    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
 }
 
 void Sprite::initWithColor(vec4 color,vec2 contentSize)
@@ -75,14 +72,11 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     m_contentSize = contentSize;
     setRenderRect(m_contentSize);
     setUpTechnique();
-    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
 }
 
 void Sprite::draw()
 {
-    auto vp = camera()->getViewProjectionMatrix();
-    auto m = getTransform();
-    m_technique->setVar("TU_mvpMatrix", vp* m);
+    m_technique->applyFromDrawable(this);
     RenderCommand command(m_mesh,m_technique,RenderCommand::RenderType::GUI);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
@@ -107,8 +101,6 @@ void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt)
 
 void Sprite::setRenderRect( vec4 v1, vec4 v2,vec4 v3, vec4 v4)
 {
-    auto width = m_contentSize.x;
-    auto height = m_contentSize.y;
     m_mesh->clearVertices();
     m_mesh->addVertex(tzw::VertexData(vec3(v1.x,v1.y,-1),vec2(v1.z,v1.w)));// left bottom
     m_mesh->addVertex(tzw::VertexData(vec3(v2.x,v2.y,-1),vec2(v2.z,v2.w)));// right bottom

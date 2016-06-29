@@ -11,6 +11,7 @@ LabelNew::LabelNew():
     m_mesh = new Mesh();
     m_technique = new Technique("./Res/EngineCoreRes/Shaders/Simple_v.glsl","./Res/EngineCoreRes/Shaders/Simple_f.glsl");
     m_technique->setVar("TU_color",getUniformColor());
+    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
 }
 
 LabelNew *LabelNew::create(std::string theString)
@@ -109,10 +110,7 @@ void LabelNew::genMesh()
 
 void LabelNew::draw()
 {
-    auto camera = SceneMgr::shared()->currentScene()->defaultGUICamera();
-    auto vp = camera->getViewProjectionMatrix();
-    auto m = getTransform();
-    technique()->setVar("TU_mvpMatrix", vp* m);
+    technique()->applyFromDrawable(this);
     technique()->setVar("TU_color",getUniformColor());
     m_technique->setTex("TU_tex1",m_atlas->texture());
     RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);

@@ -13,5 +13,11 @@ VertexData::VertexData(vec3 pos, vec2 texCoord)
 {
 
 }
+
+VertexData::VertexData(vec3 pos, vec3 normal,vec2 texCoord)
+    :m_pos(pos),m_normal(normal),m_texCoord(texCoord)
+{
+
+}
 } // namespace tzw
 

@@ -3,7 +3,7 @@
 
 #include "../../Interface/Drawable3D.h"
 #include "../../Mesh/Mesh.h"
-
+#include "../Material/Material.h"
 namespace tzw {
 class Model : public Drawable3D
 {
@@ -16,6 +16,7 @@ public:
 private:
     Technique * m_technique;
     std::vector<Mesh *> m_meshList;
+    std::vector<Material *> m_materialList;
 };
 
 } // namespace tzw

@@ -157,7 +157,9 @@ SOURCES += main.cpp \
     EngineSrc/BackEnd/WindowBackEndMgr.cpp \
     EngineSrc/BackEnd/AbstractDevice.cpp \
     EngineSrc/3D/Model/Model.cpp \
-    EngineSrc/3D/Model/ModelLoader.cpp
+    EngineSrc/3D/Model/ModelLoader.cpp \
+    EngineSrc/Action/RepeatForever.cpp \
+    EngineSrc/3D/Material/Material.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -297,4 +299,6 @@ HEADERS += \
     EngineSrc/BackEnd/WindowBackEndMgr.h \
     EngineSrc/BackEnd/AbstractDevice.h \
     EngineSrc/3D/Model/Model.h \
-    EngineSrc/3D/Model/ModelLoader.h
+    EngineSrc/3D/Model/ModelLoader.h \
+    EngineSrc/Action/RepeatForever.h \
+    EngineSrc/3D/Material/Material.h

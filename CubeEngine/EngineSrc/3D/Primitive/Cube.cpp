@@ -95,13 +95,9 @@ void Cube::draw()
 {
     if(m_cubeType == CubeType::Cube)
     {
-        auto vp = camera()->getViewProjectionMatrix();
-        auto m = getTransform();
-
         for(int i =0;i<3;i++)
         {
-            m_technique[i]->setVar("TU_mvpMatrix", vp* m);
-            m_technique[i]->setVar("TU_color",m_uniformColor);
+            m_technique[i]->applyFromDrawable(this);
             RenderCommand command(m_mesh[i],m_technique[i],RenderCommand::RenderType::Common);
             Renderer::shared()->addRenderCommand(command);
         }
@@ -109,10 +105,7 @@ void Cube::draw()
     {
         setPos(camera()->getPos());
         reCache();
-        auto vp = camera()->getViewProjectionMatrix();
-        auto m = getTransform();
-        m_skyBoxTechnique->setVar("TU_mvpMatrix",vp*m);
-        m_skyBoxTechnique->setVar("TU_color",m_uniformColor);
+        m_skyBoxTechnique->applyFromDrawable(this);
         RenderCommand command(m_skyBoxMesh,m_skyBoxTechnique,RenderCommand::RenderType::Common);
         command.setDepthTestPolicy(getDepthPolicy());
         Renderer::shared()->addRenderCommand(command);

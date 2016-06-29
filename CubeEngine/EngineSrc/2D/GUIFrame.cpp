@@ -9,6 +9,7 @@ GUIFrame::GUIFrame()
     m_mesh = new Mesh();
     m_technique = new Technique("./Res/EngineCoreRes/Shaders/SpriteColor_v.glsl","./Res/EngineCoreRes/Shaders/SpriteColor_f.glsl");
     m_technique->setVar("TU_color",getUniformColor());
+    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
 }
 
 void GUIFrame::setRenderRect()
@@ -48,10 +49,7 @@ GUIFrame *GUIFrame::create(vec4 color)
 
 void GUIFrame::draw()
 {
-    auto camera = SceneMgr::shared()->currentScene()->defaultGUICamera();
-    auto vp = camera->getViewProjectionMatrix();
-    auto m = getTransform();
-    technique()->setVar("TU_mvpMatrix", vp* m);
+    technique()->applyFromDrawable(this);
     technique()->setVar("TU_color",getUniformColor());
     RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);
     command.setZorder(m_globalPiority);

@@ -6,7 +6,11 @@
 #include "../Shader/ShaderProgram.h"
 #include "TechniqueVar.h"
 #include "../Math/Matrix44.h"
+
 namespace tzw {
+class Material;
+class Node;
+class Drawable;
 /**
  * @brief 该类用于维护CPU端向shader提交数据的结构
  *
@@ -29,6 +33,8 @@ public:
     void use();
     bool isExist(std::string name);
     ShaderProgram * program();
+    void applyFromMat(Material *mat);
+    void applyFromDrawable(Drawable * node);
 private:
     std::string m_vsPath;
     std::string m_fsPath;
