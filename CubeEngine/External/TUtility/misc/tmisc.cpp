@@ -16,15 +16,15 @@ std::wstring Tmisc::StringToWString(const std::string &str)
 
 std::string Tmisc::WstringToString(const std::wstring &wstr)
 {
-    std::string str;
     auto nLen = wstr.length();
-    str.resize(nLen,' ');
-    int nResult = WideCharToMultiByte(CP_ACP,0,(LPCWSTR)wstr.c_str(),(int)nLen,(LPSTR)str.c_str(),(int)nLen,NULL,NULL);
+    char * buf = new char[nLen];
+    auto multiLen = WideCharToMultiByte(65001,0,(LPCWSTR)wstr.c_str(),(int)nLen,(LPSTR)buf,0,NULL,NULL);
+    int nResult = WideCharToMultiByte(65001,0,(LPCWSTR)wstr.c_str(),(int)nLen,(LPSTR)buf,(int)multiLen,NULL,NULL);
     if (nResult == 0)
     {
-        str = "";
+        return std::string(" ");
     }
-    return str;
+    return std::string(buf);
 }
 
 } // namespace tzw
