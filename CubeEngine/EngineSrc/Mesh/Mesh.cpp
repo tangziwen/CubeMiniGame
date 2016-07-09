@@ -71,6 +71,31 @@ void Mesh::setMat(Material *mat)
     m_mat = mat;
 }
 
+void Mesh::caclNormals()
+{
+    size_t indexCount = m_indices.size();
+    // Accumulate each triangle normal into each of the triangle vertices
+    for (unsigned int i = 0 ; i < indexCount ; i += 3) {
+        short_u index0 = m_indices[i];
+        short_u index1 = m_indices[i + 1];
+        short_u index2 = m_indices[i + 2];
+        vec3 v1 = m_vertices[index1].m_pos - m_vertices[index0].m_pos;
+        vec3 v2 = m_vertices[index2].m_pos - m_vertices[index0].m_pos;
+        vec3 normal = vec3::CrossProduct(v1,v2);
+        normal.normalize();
+
+        m_vertices[index0].m_normal += normal;
+        m_vertices[index1].m_normal += normal;
+        m_vertices[index2].m_normal += normal;
+    }
+
+    size_t vertexCount = m_vertices.size();
+    // Normalize all the vertex normals
+    for (unsigned int i = 0 ; i < vertexCount ; i++) {
+        m_vertices[i].m_normal.normalize();
+    }
+}
+
 GLuint Mesh::vbo() const
 {
     return m_vbo;

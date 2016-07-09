@@ -10,6 +10,7 @@ className * className::shared(){if(!m_instance){m_instance = new className();}re
 namespace tzw {
 typedef int integer;
 typedef unsigned int integer_u;
+typedef unsigned short short_u;
 class EngineDef
 {
 public:

@@ -7,6 +7,7 @@
 #include "../Math/AABB.h"
 #include "../Math/Matrix44.h"
 #include "../3D/Material/Material.h"
+#include "../Engine/EngineDef.h"
 namespace tzw {
 
 class Mesh
@@ -40,11 +41,12 @@ public:
     void setMat(Material *mat);
 
 private:
+    void caclNormals();
     void passToGPU();
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;
     RenderBuffer* m_indexBuf;
-    std::vector<GLushort> m_indices;
+    std::vector<short_u> m_indices;
     std::vector<VertexData> m_vertices;
     Material * m_mat;
     GLuint m_vbo,m_ibo;

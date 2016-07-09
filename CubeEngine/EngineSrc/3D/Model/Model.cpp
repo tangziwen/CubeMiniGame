@@ -16,7 +16,7 @@ void Model::initWithFile(std::string modelFilePath)
 {
     ModelLoader::shared()->loadModel(this,modelFilePath);
     setCamera(SceneMgr::shared()->currentScene()->defaultCamera());
-    m_technique = new Technique("./Res/EngineCoreRes/Shaders/Debug_v.glsl","./Res/EngineCoreRes/Shaders/Debug_f.glsl");
+    m_technique = new Technique("./Res/EngineCoreRes/Shaders/Simple_v.glsl","./Res/EngineCoreRes/Shaders/Simple_f.glsl");
     setIsAccpectOCTtree(false);
 }
 

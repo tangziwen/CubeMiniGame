@@ -5,6 +5,11 @@
 
 ##Here is the changelog of the CubeEngine
 
+
+###alpha v0.30 9.7.2016###
+* added ".tzw" format model load.
+* fixed a bunch of bugs.
+
 ###alpha v0.20b 6.22.2016###
 * reworked window management backend.split out the GLFW stuff.
 

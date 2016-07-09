@@ -18,11 +18,11 @@ void GameEntry::onStart()
     SceneMgr::shared()->currentScene()->addNode(theModel);
 
 
-    auto frame = GUIWindow::create("划水",vec2(450,600));
-    GUIWindowMgr::shared()->add(frame);
-    Button * startBtn = Button::create("开始游戏");
-    startBtn->setPos2D(100,340);
-    frame->addChild(startBtn);
+//    auto frame = GUIWindow::create("划水",vec2(450,600));
+//    GUIWindowMgr::shared()->add(frame);
+//    Button * startBtn = Button::create("开始游戏");
+//    startBtn->setPos2D(100,340);
+//    frame->addChild(startBtn);
 }
 
 void GameEntry::onExit()
