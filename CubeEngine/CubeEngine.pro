@@ -159,7 +159,12 @@ SOURCES += main.cpp \
     EngineSrc/3D/Model/Model.cpp \
     EngineSrc/3D/Model/ModelLoader.cpp \
     EngineSrc/Action/RepeatForever.cpp \
-    EngineSrc/3D/Material/Material.cpp
+    EngineSrc/3D/Material/Material.cpp \
+    Application/GameSystem.cpp \
+    Application/Hero.cpp \
+    Application/MapSystem.cpp \
+    Application/MapCell.cpp \
+    Application/Settlement.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -301,4 +306,9 @@ HEADERS += \
     EngineSrc/3D/Model/Model.h \
     EngineSrc/3D/Model/ModelLoader.h \
     EngineSrc/Action/RepeatForever.h \
-    EngineSrc/3D/Material/Material.h
+    EngineSrc/3D/Material/Material.h \
+    Application/GameSystem.h \
+    Application/Hero.h \
+    Application/MapSystem.h \
+    Application/MapCell.h \
+    Application/Settlement.h
