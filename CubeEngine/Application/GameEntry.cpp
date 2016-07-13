@@ -7,6 +7,7 @@
 using namespace tzw;
 GameEntry::GameEntry()
 {
+    m_ticks = 0;
 }
 
 void GameEntry::onStart()
@@ -24,7 +25,7 @@ void GameEntry::onStart()
     {
         (void)button;
         tzwS::GameSystem::shared()->startNewGame();
-        frame->removeFromParent();
+        frame->setIsDrawable(false);
     });
     startBtn->setPos2D(100,340);
     frame->addChild(startBtn);
@@ -38,6 +39,12 @@ void GameEntry::onExit()
 
 void GameEntry::onUpdate(float delta)
 {
-    (void)delta;
+    m_ticks += delta;
+    if (m_ticks > 1.0) //每2秒过一天
+    {
+        tzwS::GameSystem::shared()->update();
+        m_ticks = 0;
+    }
+
 }
 

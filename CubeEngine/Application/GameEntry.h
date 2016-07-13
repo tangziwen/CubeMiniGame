@@ -9,6 +9,8 @@ public:
     virtual void onStart();
     virtual void onExit();
     virtual void onUpdate(float delta);
+private:
+    float m_ticks;
 };
 
 #endif // MYAPPDELEGATE_H

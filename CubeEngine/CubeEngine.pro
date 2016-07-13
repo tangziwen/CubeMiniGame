@@ -164,7 +164,12 @@ SOURCES += main.cpp \
     Application/Hero.cpp \
     Application/MapSystem.cpp \
     Application/MapCell.cpp \
-    Application/Settlement.cpp
+    Application/Settlement.cpp \
+    Application/AttributeList.cpp \
+    Application/LogicEntity.cpp \
+    Application/Player.cpp \
+    Application/AIHero.cpp \
+    Application/GUI/InfoPanel.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -311,4 +316,9 @@ HEADERS += \
     Application/Hero.h \
     Application/MapSystem.h \
     Application/MapCell.h \
-    Application/Settlement.h
+    Application/Settlement.h \
+    Application/AttributeList.h \
+    Application/LogicEntity.h \
+    Application/Player.h \
+    Application/AIHero.h \
+    Application/GUI/InfoPanel.h

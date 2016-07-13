@@ -3,6 +3,7 @@
 #include "../EngineSrc/Engine/EngineDef.h"
 
 #include "MapCell.h"
+#include <vector>
 namespace tzwS {
 
 class MapSystem
@@ -22,12 +23,14 @@ public:
     void initGraphics();
     unsigned int cellGraphicsSize() const;
     void setCellGraphicsSize(unsigned int cellGraphicsSize);
-
+    void update();
+    Settlement * getSettlementByName(std::string theName);
 private:
     MapCell * m_map;
     unsigned int m_width;
     unsigned int m_height;
     unsigned int m_cellGraphicsSize;
+    std::vector<Settlement *> m_settlementList;
     TZW_SINGLETON_DECL(MapSystem);
 };
 

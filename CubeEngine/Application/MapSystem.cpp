@@ -58,6 +58,7 @@ void MapSystem::addCell(int x, int y, MapCell cell)
 void MapSystem::addSettlement(int x, int y, Settlement *settlement)
 {
     m_map[m_width * y + x] = MapCell(settlement);
+    m_settlementList.push_back(settlement);
 }
 
 void MapSystem::initGraphics()
@@ -104,6 +105,26 @@ unsigned int MapSystem::cellGraphicsSize() const
 void MapSystem::setCellGraphicsSize(unsigned int cellGraphicsSize)
 {
     m_cellGraphicsSize = cellGraphicsSize;
+}
+
+void MapSystem::update()
+{
+    for(auto settlement : m_settlementList)
+    {
+        settlement->update();
+    }
+}
+
+Settlement *MapSystem::getSettlementByName(std::string theName)
+{
+    for(auto settlement :m_settlementList)
+    {
+        if(settlement->name() == theName)
+        {
+            return settlement;
+        }
+    }
+    return nullptr;
 }
 
 } // namespace tzwS
