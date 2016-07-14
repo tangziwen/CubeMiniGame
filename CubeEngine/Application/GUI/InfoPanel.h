@@ -9,6 +9,9 @@ class InfoPanel
 public:
     InfoPanel();
     void syncData();
+    void toggle();
+    void show();
+    void hide();
 private:
 
     tzw::GUIWindow * m_frame;

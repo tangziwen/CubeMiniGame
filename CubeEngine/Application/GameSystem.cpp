@@ -8,11 +8,13 @@ TZW_SINGLETON_IMPL(GameSystem)
 GameSystem::GameSystem()
 {
     m_player = new Player();
+    m_state = State::MainMenu;
 }
 
 void GameSystem::startNewGame()
 {
-    m_panel = new InfoPanel();
+    m_infoPanel = new InfoPanel();
+    m_topBar = new TopBar();
     MapSystem::shared()->init();
     MapSystem::shared()->addSettlement(5,0,new Settlement("guangzhou"));
     MapSystem::shared()->addSettlement(0,4,new Settlement("guilin"));
@@ -28,6 +30,8 @@ void GameSystem::startNewGame()
     m_player->own("guilin");
     m_player->own("guangzhou");
     MapSystem::shared()->initGraphics();
+    m_state = State::InGame;
+    m_date = 0;
 }
 
 Hero *GameSystem::player() const
@@ -42,7 +46,10 @@ void GameSystem::setPlayer(Hero *player)
 
 void GameSystem::update()
 {
-    m_panel->syncData();
+    if(m_state != State::InGame) return;
+    m_date +=1;
+    m_infoPanel->syncData();
+    m_topBar->syncData();
     MapSystem::shared()->update();
     m_player->update();
     for(auto hero:m_heroList)
@@ -54,6 +61,21 @@ void GameSystem::update()
 void GameSystem::addHero(Hero *theHero)
 {
     m_heroList.push_back(theHero);
+}
+
+unsigned int GameSystem::date() const
+{
+    return m_date;
+}
+
+InfoPanel *GameSystem::infoPanel() const
+{
+    return m_infoPanel;
+}
+
+TopBar *GameSystem::topBar() const
+{
+    return m_topBar;
 }
 
 } // namespace tzwS

@@ -159,7 +159,6 @@ void EventMgr::apply(float delta)
 
 void EventMgr::visitNode(Node *node)
 {
-
     if(m_nodeListenerMap.find(node) != m_nodeListenerMap.end())
     {
         m_NodePioritylist.push_front(m_nodeListenerMap[node]);
@@ -170,10 +169,7 @@ void EventMgr::visitNode(Node *node)
         for(size_t i = 0 ;i <amount;i++)
         {
             auto child = node->getChildByIndex(i);
-            if(m_nodeListenerMap.find(child) != m_nodeListenerMap.end())
-            {
-                visitNode(child);
-            }
+            visitNode(child);
         }
     }
 }

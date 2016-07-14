@@ -3,6 +3,7 @@
 #include <string.h>
 #include "EngineSrc/CubeEngine.h"
 #include "EngineSrc/Engine/Engine.h"
+using namespace tzw;
 namespace tzwS {
 
 TZW_SINGLETON_IMPL(MapSystem);
@@ -70,7 +71,6 @@ void MapSystem::initGraphics()
             auto cell = m_map[i*m_width + j];
             switch (cell.landType())
             {
-
             case LAND_TYPE_PLAIN:
             {
                 auto sprite = tzw::Sprite::create(tzw::Engine::shared()->getUserPath("Strategy/emptyLand.png"));
@@ -113,6 +113,19 @@ void MapSystem::update()
     {
         settlement->update();
     }
+}
+
+bool MapSystem::onMouseRelease(int button, tzw::vec2 pos)
+{
+    int tileX = pos.x / m_cellGraphicsSize;
+    int tileY = pos.y / m_cellGraphicsSize;
+    auto &cell = m_map[tileY * m_width + tileY];
+    if(cell.landType() == LAND_TYPE_SETTLEMENT)
+    {
+        m_currentSelectedCell = &cell;
+        return true;
+    }
+    return false;
 }
 
 Settlement *MapSystem::getSettlementByName(std::string theName)

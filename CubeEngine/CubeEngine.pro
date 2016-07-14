@@ -169,7 +169,8 @@ SOURCES += main.cpp \
     Application/LogicEntity.cpp \
     Application/Player.cpp \
     Application/AIHero.cpp \
-    Application/GUI/InfoPanel.cpp
+    Application/GUI/InfoPanel.cpp \
+    Application/GUI/TopBar.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -321,4 +322,5 @@ HEADERS += \
     Application/LogicEntity.h \
     Application/Player.h \
     Application/AIHero.h \
-    Application/GUI/InfoPanel.h
+    Application/GUI/InfoPanel.h \
+    Application/GUI/TopBar.h

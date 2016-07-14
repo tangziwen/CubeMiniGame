@@ -33,10 +33,10 @@ void Settlement::setOwner(Hero *owner)
 void Settlement::update()
 {
     m_ticks +=1;
-    if(m_ticks > 5)
+    if(m_ticks > 7)
     {
         printf("settlement %s is updating\n",m_name.c_str());
-        float totalOutputMoney = T_GETT("Population") * 0.7 + T_GETT("PublicOrder") * 0.3 + T_GETT("Development") * 0.4;
+        float totalOutputMoney = T_GETT("Population") * 0.1 + T_GETT("PublicOrder") * 0.1 + T_GETT("Development") * 0.1;
         if(m_owner)
         {
             m_owner->setMoney(m_owner->money() + totalOutputMoney * 0.33);

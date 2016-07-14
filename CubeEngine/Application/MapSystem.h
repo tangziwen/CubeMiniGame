@@ -4,9 +4,12 @@
 
 #include "MapCell.h"
 #include <vector>
+#include "../EngineSrc/Event/Event.h"
+#include "../EngineSrc/Event/EventMgr.h"
+#include "../EngineSrc/2D/Sprite.h"
 namespace tzwS {
 
-class MapSystem
+class MapSystem : public tzw::EventListener
 {
 public:
     MapSystem();
@@ -24,13 +27,16 @@ public:
     unsigned int cellGraphicsSize() const;
     void setCellGraphicsSize(unsigned int cellGraphicsSize);
     void update();
+    virtual bool onMouseRelease(int button,tzw::vec2 pos);
     Settlement * getSettlementByName(std::string theName);
 private:
     MapCell * m_map;
     unsigned int m_width;
     unsigned int m_height;
     unsigned int m_cellGraphicsSize;
+    MapCell * m_currentSelectedCell;
     std::vector<Settlement *> m_settlementList;
+    std::vector<tzw::Sprite *> m_spriteList;
     TZW_SINGLETON_DECL(MapSystem);
 };
 
