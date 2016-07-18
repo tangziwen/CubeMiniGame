@@ -159,11 +159,15 @@ void EventMgr::apply(float delta)
 
 void EventMgr::visitNode(Node *node)
 {
+    if (!node->getIsDrawable())
+    {
+        return;
+    }
     if(m_nodeListenerMap.find(node) != m_nodeListenerMap.end())
     {
         m_NodePioritylist.push_front(m_nodeListenerMap[node]);
     }
-    if(node->getChildrenAmount() > 0)
+    if(node->getChildrenAmount() > 0 )
     {
         auto amount = node->getChildrenAmount();
         for(size_t i = 0 ;i <amount;i++)

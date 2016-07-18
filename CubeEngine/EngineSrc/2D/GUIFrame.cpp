@@ -47,6 +47,14 @@ GUIFrame *GUIFrame::create(vec4 color)
     return frame;
 }
 
+GUIFrame *GUIFrame::create(vec2 size)
+{
+    auto frame = new GUIFrame();
+    frame->setUniformColor(vec4(33.0/255,33.0/255,37.0/255,1.0));
+    frame->setContentSize(size);
+    return frame;
+}
+
 void GUIFrame::draw()
 {
     technique()->applyFromDrawable(this);

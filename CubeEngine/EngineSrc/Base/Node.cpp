@@ -439,6 +439,16 @@ size_t Node::getChildrenAmount()
     return m_children.size();
 }
 
+unsigned int Node::getTag() const
+{
+    return m_tag;
+}
+
+void Node::setTag(unsigned int tag)
+{
+    m_tag = tag;
+}
+
 ///
 /// \brief 获取该节点是否能够被场景的八叉树管理器的影响，八叉树管理器会影响到该节点的可绘制性。
 /// \note 八叉树管理器使用惰性添加的方式处理新的节点，最快能够在其加入到场景树后能够直接被绘制的第二帧开始受到八叉树管理器的管理

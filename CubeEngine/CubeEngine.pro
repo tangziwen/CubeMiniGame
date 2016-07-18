@@ -170,7 +170,9 @@ SOURCES += main.cpp \
     Application/Player.cpp \
     Application/AIHero.cpp \
     Application/GUI/InfoPanel.cpp \
-    Application/GUI/TopBar.cpp
+    Application/GUI/TopBar.cpp \
+    Application/GUI/SettlementPanel.cpp \
+    EngineSrc/2D/TableView.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -323,4 +325,6 @@ HEADERS += \
     Application/Player.h \
     Application/AIHero.h \
     Application/GUI/InfoPanel.h \
-    Application/GUI/TopBar.h
+    Application/GUI/TopBar.h \
+    Application/GUI/SettlementPanel.h \
+    EngineSrc/2D/TableView.h

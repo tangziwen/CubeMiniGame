@@ -19,6 +19,7 @@ GUIWindow *GUIWindow::create(std::string titleText, vec4 color, vec2 size)
     auto frame = new GUIWindow();
     frame->initLabel();
     frame->initBorders();
+    frame->initCloseBtn();
     frame->setUniformColor(color);
     frame->setContentSize(size);
     frame->setTitle(titleText);
@@ -57,6 +58,7 @@ void GUIWindow::setContentSize(const vec2 &contentSize)
     GUIFrame::setContentSize(contentSize);
     m_labelFrame->setPos2D(vec2(0,m_contentSize.y));
     adjustBorders();
+    adjustCloseBtn();
 }
 
 vec2 GUIWindow::getOuterContentSize()
@@ -109,6 +111,18 @@ void GUIWindow::initLabel()
     addChild(m_labelFrame);
 }
 
+void GUIWindow::initCloseBtn()
+{
+    m_isShowCloseBtn = true;
+    m_closeBtn = Button::create("X");
+    addChild(m_closeBtn);
+    m_closeBtn->setOnBtnClicked([this](Button * button)
+    {
+        (void)button;
+        this->setIsDrawable(false);
+    });
+}
+
 void GUIWindow::initBorders()
 {
     for (int i =0; i<4; i++)
@@ -126,6 +140,28 @@ void GUIWindow::adjustBorders()
     m_borders[BORDER_TOP]->setContentSize(vec2(m_contentSize.x,3));
     m_borders[BORDER_TOP]->setPos2D(0,m_contentSize.y - 3);
     m_borders[BORDER_BOTTOM]->setContentSize(vec2(m_contentSize.x,3));
+}
+
+void GUIWindow::adjustCloseBtn()
+{
+    m_closeBtn->setPos2D(m_contentSize.x - 35,m_contentSize.y + 4);
+}
+
+bool GUIWindow::getIsShowCloseBtn() const
+{
+    return m_isShowCloseBtn;
+}
+
+void GUIWindow::setIsShowCloseBtn(bool isShowCloseBtn)
+{
+    m_isShowCloseBtn = isShowCloseBtn;
+    if(!m_isShowCloseBtn)
+    {
+        m_closeBtn->setIsDrawable(false);
+    }else
+    {
+        m_closeBtn->setIsDrawable(true);
+    }
 }
 
 bool GUIWindow::getIsDragable() const

@@ -5,8 +5,12 @@
 
 ##Here is the changelog of the CubeEngine
 
+###alpha v0.30b 7.18.2016###
+* add tableView
+* fix alot of bugs.
+* add a demo.
 
-###alpha v0.30 9.7.2016###
+###alpha v0.30 7.9.2016###
 * added ".tzw" format model load.
 * fixed a bunch of bugs.
 

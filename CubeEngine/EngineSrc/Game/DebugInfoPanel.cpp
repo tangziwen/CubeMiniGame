@@ -27,6 +27,7 @@ DebugInfoPanel::DebugInfoPanel()
     :m_curTime(0),m_isInit(false)
 {
     m_frame = GUIWindow::create("Profile Window",vec2(PANEL_WIDTH,PANEL_HEIGHT));
+    m_frame->setIsShowCloseBtn(false);
     m_frame->setGlobalPiority(EngineDef::maxPiority);
     //m_frame->setIsDragable(false);
     GUIWindowMgr::shared()->add(m_frame);

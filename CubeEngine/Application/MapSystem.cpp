@@ -3,6 +3,7 @@
 #include <string.h>
 #include "EngineSrc/CubeEngine.h"
 #include "EngineSrc/Engine/Engine.h"
+#include "GameSystem.h"
 using namespace tzw;
 namespace tzwS {
 
@@ -12,6 +13,8 @@ MapSystem::MapSystem()
     m_width = 25;
     m_height = 25;
     m_cellGraphicsSize = 32;
+    m_currentSelectedCell = nullptr;
+    EventMgr::shared()->addFixedPiorityListener(this);
 }
 
 void MapSystem::init()
@@ -119,10 +122,18 @@ bool MapSystem::onMouseRelease(int button, tzw::vec2 pos)
 {
     int tileX = pos.x / m_cellGraphicsSize;
     int tileY = pos.y / m_cellGraphicsSize;
-    auto &cell = m_map[tileY * m_width + tileY];
+    auto &cell = m_map[tileY * m_width + tileX];
     if(cell.landType() == LAND_TYPE_SETTLEMENT)
     {
         m_currentSelectedCell = &cell;
+        auto panel = GameSystem::shared()->settlementPanel();
+        panel->syncData();
+        panel->show();
+        return true;
+    }
+    else
+    {
+        m_currentSelectedCell = nullptr;
         return true;
     }
     return false;
@@ -138,6 +149,11 @@ Settlement *MapSystem::getSettlementByName(std::string theName)
         }
     }
     return nullptr;
+}
+
+MapCell *MapSystem::getCurrentSelectedCell() const
+{
+    return m_currentSelectedCell;
 }
 
 } // namespace tzwS

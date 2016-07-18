@@ -14,7 +14,10 @@ GameSystem::GameSystem()
 void GameSystem::startNewGame()
 {
     m_infoPanel = new InfoPanel();
+    m_infoPanel->hide();
     m_topBar = new TopBar();
+    m_settlementPanel = new SettlementPanel();
+    m_settlementPanel->hide();
     MapSystem::shared()->init();
     MapSystem::shared()->addSettlement(5,0,new Settlement("guangzhou"));
     MapSystem::shared()->addSettlement(0,4,new Settlement("guilin"));
@@ -50,6 +53,7 @@ void GameSystem::update()
     m_date +=1;
     m_infoPanel->syncData();
     m_topBar->syncData();
+    m_settlementPanel->syncData();
     MapSystem::shared()->update();
     m_player->update();
     for(auto hero:m_heroList)
@@ -76,6 +80,11 @@ InfoPanel *GameSystem::infoPanel() const
 TopBar *GameSystem::topBar() const
 {
     return m_topBar;
+}
+
+SettlementPanel *GameSystem::settlementPanel() const
+{
+    return m_settlementPanel;
 }
 
 } // namespace tzwS

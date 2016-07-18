@@ -1,6 +1,7 @@
 #ifndef TZW_GUITITLEDFRAME_H
 #define TZW_GUITITLEDFRAME_H
 #include "GUIFrame.h"
+#include "Button.h"
 #include "LabelNew.h"
 #include <string>
 #include "../Event/Event.h"
@@ -23,15 +24,22 @@ public:
     void setIsFocus(bool isFocus);
     bool getIsDragable() const;
     void setIsDragable(bool isDragable);
+    bool getIsShowCloseBtn() const;
+    void setIsShowCloseBtn(bool isShowCloseBtn);
+
 protected:
     void initLabel();
+    void initCloseBtn();
     void initBorders();
     void adjustBorders();
+    void adjustCloseBtn();
     bool m_isFocus;
     bool m_isDragable;
 private:
+    bool m_isShowCloseBtn;
     GUIFrame * m_labelFrame;
     GUIFrame * m_borders[4];
+    Button * m_closeBtn;
     LabelNew * m_label;
     std::string m_title;
     vec2 m_preMousePos;

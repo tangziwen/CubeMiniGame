@@ -4,6 +4,7 @@
 
 #include "EngineSrc/CubeEngine.h"
 #include "GameSystem.h"
+#include "EngineSrc/2D/TableView.h"
 using namespace tzw;
 GameEntry::GameEntry()
 {

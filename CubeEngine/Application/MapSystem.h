@@ -29,6 +29,8 @@ public:
     void update();
     virtual bool onMouseRelease(int button,tzw::vec2 pos);
     Settlement * getSettlementByName(std::string theName);
+    MapCell *getCurrentSelectedCell() const;
+
 private:
     MapCell * m_map;
     unsigned int m_width;

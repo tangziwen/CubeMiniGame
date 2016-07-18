@@ -33,10 +33,24 @@ TopBar::TopBar()
 void TopBar::syncData()
 {
     static char tmp[50];
-    sprintf(tmp,"date:%d",GameSystem::shared()->date());
-    m_infoLabel[LABEL_DATE]->setString(tmp);
+    m_infoLabel[LABEL_DATE]->setString(calDate());
     sprintf(tmp,"money:%d",GameSystem::shared()->player()->money());
     m_infoLabel[LABEL_MONEY]->setString(tmp);
+}
+
+std::string monthStr[] = {"元","二","三","四","五","六","七","八","九","十","十一","十二"};
+
+std::string TopBar::calDate()
+{
+    static char tmp[50];
+    auto totalDate = GameSystem::shared()->date();
+    auto year = totalDate / 365;
+    totalDate = totalDate - year * 365;
+    auto month = totalDate / 30;
+    totalDate = totalDate - month * 30;
+    auto date = totalDate;
+    sprintf(tmp,"%d年%s月%d日",year + 1,monthStr[month].c_str(),date + 1);
+    return tmp;
 }
 
 } // namespace tzwS

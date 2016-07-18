@@ -13,6 +13,7 @@ private:
     std::vector<tzw::LabelNew *> m_infoLabel;
     tzw::GUIFrame * m_frame;
     tzw::Button * m_actBtn;
+    std::string calDate();
 };
 
 } // namespace tzwS

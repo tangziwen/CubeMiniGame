@@ -7,7 +7,6 @@ namespace tzwS {
 #define LABEL_VASSAL 2
 InfoPanel::InfoPanel()
 {
-
     auto size = Engine::shared()->winSize();
     m_frame = GUIWindow::create("info Panel",vec2(450,500));
     m_frame->setPos2D(size.x/2 - 225,size.y/2 - 250);

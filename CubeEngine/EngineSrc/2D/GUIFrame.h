@@ -12,6 +12,7 @@ public:
     void setRenderRect();
     static GUIFrame * create(vec4 color,vec2 size);
     static GUIFrame * create(vec4 color);
+    static GUIFrame * create(vec2 size);
     virtual void draw();
     vec2 getContentSize() const;
     virtual void setContentSize(const vec2 &contentSize);

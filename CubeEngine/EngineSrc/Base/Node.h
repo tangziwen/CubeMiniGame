@@ -84,6 +84,9 @@ public:
     unsigned int getGlobalPiority() const;
     void setGlobalPiority(unsigned int globalPiority);
     size_t getChildrenAmount();
+    unsigned int getTag() const;
+    void setTag(unsigned int tag);
+
 protected:
     bool m_isDrawable;
     std::vector<Node *> m_children;
@@ -99,6 +102,7 @@ protected:
     bool m_isAccpectOCTtree;
     std::string m_name;
     Node * m_parent;
+    unsigned int m_tag;
 private:
     void removeAllChildren_r();
 };
