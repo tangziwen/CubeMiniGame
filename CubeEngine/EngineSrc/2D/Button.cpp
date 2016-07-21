@@ -13,6 +13,7 @@ Button::Button():
 Button *Button::create(std::string str)
 {
     Button * btn = new Button();
+    btn->m_type = Type::SimpleText;
     btn->m_label = LabelNew::create(str,FontMgr::shared()->getDefaultFont());
     btn->m_frameBG = GUIFrame::create(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
     btn->addChild(btn->m_label);
@@ -23,10 +24,23 @@ Button *Button::create(std::string str)
     return btn;
 }
 
+Button *Button::create(vec4 color, vec2 Size)
+{
+    Button * btn = new Button();
+    btn->m_type = Type::SimpleFrame;
+    btn->m_label = nullptr;
+    btn->m_frameBG = GUIFrame::create(color,Size);
+    btn->addChild(btn->m_frameBG);
+    btn->m_frameBG->setLocalPiority(0);
+    return btn;
+}
+
 void Button::setStr(std::string str)
 {
+    if(m_type != Type::SimpleText)
+        return;
     m_label->setString(str);
-    m_frameBG->setContentSize(m_label->contentSize() + vec2(18,12));
+    m_frameBG->setContentSize(m_label->getContentSize() + vec2(18,12));
     m_label->setPos2D(9,8);
 }
 
@@ -34,7 +48,11 @@ bool Button::onMouseRelease(int button, vec2 pos)
 {
     if(m_isTouched)
     {
-        m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
+        if(m_type == Type::SimpleText)
+        {
+            m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
+        }
+
         m_isTouched = false;
         if (m_frameBG->isInTheRect(pos))
         {
@@ -52,7 +70,11 @@ bool Button::onMousePress(int button, vec2 pos)
 {
     if (m_frameBG->isInTheRect(pos))
     {
-        m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColorHightLight);
+
+        if(m_type == Type::SimpleText)
+        {
+            m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColorHightLight);
+        }
         m_isTouched = true;
         return true;
     }
@@ -110,6 +132,11 @@ void Button::manualTrigger()
     {
         m_onBtnClicked(this);
     }
+}
+
+GUIFrame *Button::getFrameBG() const
+{
+    return m_frameBG;
 }
 
 

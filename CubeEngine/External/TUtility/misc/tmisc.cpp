@@ -1,5 +1,6 @@
 #include "Tmisc.h"
 #include <windows.h>
+#include <stdarg.h>
 namespace tzw {
 
 std::wstring Tmisc::StringToWString(const std::string &str)
@@ -25,6 +26,16 @@ std::string Tmisc::WstringToString(const std::wstring &wstr)
         return std::string(" ");
     }
     return std::string(buf);
+}
+
+std::string Tmisc::StrFormat(const char *format,...)
+{
+    va_list argptr;
+    static char tmp[128];
+    va_start(argptr, format);
+    vsprintf(tmp, format, argptr);
+    va_end(argptr);
+    return std::string(tmp);
 }
 
 } // namespace tzw

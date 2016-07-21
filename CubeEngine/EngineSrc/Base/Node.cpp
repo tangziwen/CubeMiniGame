@@ -303,6 +303,15 @@ Node *Node::getChildByName(const std::string &name)
     return nullptr;
 }
 
+Node *Node::getChildByTag(unsigned int tag)
+{
+    for(auto node :m_children)
+    {
+        if (node->getTag() == tag) return node;
+    }
+    return nullptr;
+}
+
 Node *Node::getChildByIndex(size_t index)
 {
     return m_children[index];

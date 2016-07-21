@@ -5,6 +5,7 @@
 #include "Settlement.h"
 #include "LogicEntity.h"
 #include "AttributeList.h"
+#include "Currency.h"
 namespace tzwS {
 
 class Hero : public LogicEntity
@@ -32,11 +33,10 @@ public:
     int charming() const;
     void setCharming(int charming);
 
-    int money() const;
-    void setMoney(int money);
     virtual void update();
 
     void own(std::string settlementName);
+    Currency currency;
 private:
     void init();
     Settlement * m_location;
@@ -46,7 +46,6 @@ private:
     int m_millitary;
     int m_willing;
     int m_charming;
-    int m_money;
 };
 
 } // namespace tzwS

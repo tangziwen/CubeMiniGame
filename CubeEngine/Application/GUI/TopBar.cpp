@@ -4,6 +4,10 @@ using namespace tzw;
 namespace tzwS {
 #define LABEL_DATE 0
 #define LABEL_MONEY 1
+#define LABEL_FOOD 2
+#define LABEL_ADMIN 3
+#define LABEL_MIL 4
+#define LABEL_TECH 5
 TopBar::TopBar()
 {
     auto winSize = Engine::shared()->winSize();
@@ -11,7 +15,7 @@ TopBar::TopBar()
     m_frame->setPos2D(0,winSize.y - 50);
     SceneMgr::shared()->currentScene()->addNode(m_frame);
 
-    for(int i =0 ;i <= LABEL_MONEY; i++)
+    for(int i =0 ;i <= LABEL_TECH; i++)
     {
         auto label = LabelNew::create("null str");
         label->setPos2D(100 + 150 * i,25);
@@ -34,8 +38,16 @@ void TopBar::syncData()
 {
     static char tmp[50];
     m_infoLabel[LABEL_DATE]->setString(calDate());
-    sprintf(tmp,"money:%d",GameSystem::shared()->player()->money());
+    sprintf(tmp,"money:%d",GameSystem::shared()->player()->currency.money);
     m_infoLabel[LABEL_MONEY]->setString(tmp);
+    sprintf(tmp,"food:%d",GameSystem::shared()->player()->currency.food);
+    m_infoLabel[LABEL_FOOD]->setString(tmp);
+    sprintf(tmp,"admin:%d",GameSystem::shared()->player()->currency.admin);
+    m_infoLabel[LABEL_ADMIN]->setString(tmp);
+    sprintf(tmp,"mil:%d",GameSystem::shared()->player()->currency.mil);
+    m_infoLabel[LABEL_MIL]->setString(tmp);
+    sprintf(tmp,"tech:%d",GameSystem::shared()->player()->currency.tech);
+    m_infoLabel[LABEL_TECH]->setString(tmp);
 }
 
 std::string monthStr[] = {"元","二","三","四","五","六","七","八","九","十","十一","十二"};

@@ -10,8 +10,14 @@ namespace tzw {
 class Button: public Node,public EventListener
 {
 public:
+    enum class Type
+    {
+        SimpleText,
+        SimpleFrame,
+    };
     Button();
     static Button * create(std::string str);
+    static Button * create(vec4 color,vec2 Size);
     void setStr(std::string str);
     virtual bool onMouseRelease(int button,vec2 pos);
     virtual bool onMousePress(int button,vec2 pos);
@@ -23,7 +29,10 @@ public:
 
     void manualTrigger();
 
+    GUIFrame *getFrameBG() const;
+
 private:
+    Type m_type;
     std::function <void(Button *)> m_onBtnClicked;
     bool m_isTouched;
     GUIFrame * m_frameBG;

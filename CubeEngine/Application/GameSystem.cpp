@@ -2,6 +2,7 @@
 #include "MapSystem.h"
 #include "Hero.h"
 #include "Player.h"
+
 namespace tzwS {
 TZW_SINGLETON_IMPL(GameSystem)
 
@@ -53,7 +54,6 @@ void GameSystem::update()
     m_date +=1;
     m_infoPanel->syncData();
     m_topBar->syncData();
-    m_settlementPanel->syncData();
     MapSystem::shared()->update();
     m_player->update();
     for(auto hero:m_heroList)

@@ -1,11 +1,11 @@
 #ifndef TZW_GUIFRAME_H
 #define TZW_GUIFRAME_H
 #include "../Mesh/Mesh.h"
-#include "../Interface/Drawable.h"
+#include "../Interface/Drawable2D.h"
 
 namespace tzw {
 
-class GUIFrame: public Drawable
+class GUIFrame: public Drawable2D
 {
 public:
     GUIFrame();
@@ -14,11 +14,9 @@ public:
     static GUIFrame * create(vec4 color);
     static GUIFrame * create(vec2 size);
     virtual void draw();
-    vec2 getContentSize() const;
-    virtual void setContentSize(const vec2 &contentSize);
+    virtual void setContentSize(const vec2 &getContentSize);
     bool isInTheRect(vec2 touchPos);
 protected:
-    vec2 m_contentSize;
 private:
     Mesh * m_mesh;
 };

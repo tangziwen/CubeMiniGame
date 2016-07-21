@@ -4,8 +4,8 @@
 namespace tzw {
 
 GUIFrame::GUIFrame()
-    :m_contentSize(vec2(100,100))
 {
+    m_contentSize = vec2(100,100);
     m_mesh = new Mesh();
     m_technique = new Technique("./Res/EngineCoreRes/Shaders/SpriteColor_v.glsl","./Res/EngineCoreRes/Shaders/SpriteColor_f.glsl");
     m_technique->setVar("TU_color",getUniformColor());
@@ -62,11 +62,6 @@ void GUIFrame::draw()
     RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
-}
-
-vec2 GUIFrame::getContentSize() const
-{
-    return m_contentSize;
 }
 
 void GUIFrame::setContentSize(const vec2 &contentSize)

@@ -11,6 +11,7 @@ class Tmisc
 public:
 	static std::wstring StringToWString(const std::string &str);
 	static std::string WstringToString(const std::wstring &wstr);
+	static std::string StrFormat(const char * format,...);
 };
 
 } // namespace tzw

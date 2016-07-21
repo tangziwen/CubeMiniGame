@@ -100,21 +100,21 @@ void tzw::GUIRadioFrame::flushHorizontal()
         buttonWidth += btn->getContentSize().x + m_btnsStride;
 		buttonHeight = btn->getContentSize().y;
 	}
-    frame_width = std::max(std::max(m_detailLabel->contentSize().x,m_tipsLabel->contentSize().x),buttonWidth) + m_marginHorizontal.x + m_marginHorizontal.y;
-	frame_height = m_tipsLabel->contentSize().y + buttonHeight + m_tipsLabel->contentSize().y + 4 * m_stride;
+    frame_width = std::max(std::max(m_detailLabel->getContentSize().x,m_tipsLabel->getContentSize().x),buttonWidth) + m_marginHorizontal.x + m_marginHorizontal.y;
+    frame_height = m_tipsLabel->getContentSize().y + buttonHeight + m_tipsLabel->getContentSize().y + 4 * m_stride;
     auto preFrameHeight = getContentSize().y;//原先的高度
     setContentSize(vec2(frame_width,std::max(frame_height,preFrameHeight)));
     auto offsetY = preFrameHeight - frame_height;
 	//重新调整一下位置
     m_detailLabel->setPos2D(m_marginHorizontal.x,advance_y+offsetY);
-	advance_y+=m_detailLabel->contentSize().y + m_stride;
+    advance_y+=m_detailLabel->getContentSize().y + m_stride;
     int advance_x = m_marginHorizontal.x;
 	for(auto btn:m_btnList)
 	{
         btn->setPos2D(advance_x,advance_y+offsetY);
 		advance_x += btn->getContentSize().x + m_btnsStride;
 	}
-    advance_y += buttonHeight + m_stride + m_tipsLabel->contentSize().y;
+    advance_y += buttonHeight + m_stride + m_tipsLabel->getContentSize().y;
     m_tipsLabel->setPos2D(m_marginHorizontal.x,advance_y+offsetY);
 }
 

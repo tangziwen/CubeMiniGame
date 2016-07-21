@@ -172,7 +172,16 @@ SOURCES += main.cpp \
     Application/GUI/InfoPanel.cpp \
     Application/GUI/TopBar.cpp \
     Application/GUI/SettlementPanel.cpp \
-    EngineSrc/2D/TableView.cpp
+    EngineSrc/2D/TableView.cpp \
+    Application/SettlementCell.cpp \
+    Application/Currency.cpp \
+    Application/GUI/SettlementCellUI.cpp \
+    Application/BuildingPool.cpp \
+    Application/Building.cpp \
+    Application/GUI/CurrencyLabelFactory.cpp \
+    Application/GUI/CurrencyLabel.cpp \
+    EngineSrc/Interface/Drawable2D.cpp \
+    EngineSrc/2D/GUIAttributeLabel.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -327,4 +336,13 @@ HEADERS += \
     Application/GUI/InfoPanel.h \
     Application/GUI/TopBar.h \
     Application/GUI/SettlementPanel.h \
-    EngineSrc/2D/TableView.h
+    EngineSrc/2D/TableView.h \
+    Application/SettlementCell.h \
+    Application/Currency.h \
+    Application/GUI/SettlementCellUI.h \
+    Application/BuildingPool.h \
+    Application/Building.h \
+    Application/GUI/CurrencyLabelFactory.h \
+    Application/GUI/CurrencyLabel.h \
+    EngineSrc/Interface/Drawable2D.h \
+    EngineSrc/2D/GUIAttributeLabel.h

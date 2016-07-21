@@ -4,6 +4,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include "EngineSrc/Engine/Engine.h"
 #include "GameSystem.h"
+#include "GUI/CurrencyLabelFactory.h"
 using namespace tzw;
 namespace tzwS {
 
@@ -98,6 +99,7 @@ void MapSystem::initGraphics()
             }
         }
     }
+
 }
 
 unsigned int MapSystem::cellGraphicsSize() const

@@ -121,15 +121,6 @@ void Sprite::setRenderRect( vec4 v1, vec4 v2,vec4 v3, vec4 v4)
 
 
 /**
- * @brief Sprite::contentSize 返回精灵的当前尺寸大小(未受缩放影响下的)，默认尺寸为精灵的贴图的宽高
- * @return 精灵的当前尺寸
- */
-vec2 Sprite::contentSize() const
-{
-    return m_contentSize;
-}
-
-/**
  * @brief Sprite::setContentSize 设置精灵的当前尺寸
  * @param contentSize 精灵的新尺寸
  */

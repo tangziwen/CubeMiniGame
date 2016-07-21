@@ -31,7 +31,7 @@ public:
     virtual ~Node();
     static Node * create();
     Matrix44 getTransform();
-    Matrix44 getLocalTransform();
+    virtual Matrix44 getLocalTransform();
     vec3 getPos() const;
     void setPos(const vec3 &pos);
     virtual void draw();
@@ -50,6 +50,7 @@ public:
     Node *getParent() const;
     std::string getName() const;
     Node *getChildByName(const std::string &name);
+    Node *getChildByTag(unsigned int tag);
     Node * getChildByIndex(size_t index);
     void setName(const std::string &name);
     void setPos2D(float x,float y);
@@ -86,7 +87,6 @@ public:
     size_t getChildrenAmount();
     unsigned int getTag() const;
     void setTag(unsigned int tag);
-
 protected:
     bool m_isDrawable;
     std::vector<Node *> m_children;

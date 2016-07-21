@@ -4,6 +4,9 @@
 #include <string>
 #include "AttributeList.h"
 #include "LogicEntity.h"
+#include "SettlementCell.h"
+#include <vector>
+#define SETTLEMENT_CELL_SIZE 16
 namespace tzwS {
 class Hero;
 class Settlement : public LogicEntity
@@ -16,7 +19,10 @@ public:
     void setOwner(Hero *owner);
 
     virtual void update();
+    SettlementCell * getCellIndex(int index);
+    unsigned int getCellSize();
 private:
+    std::vector<SettlementCell*>m_cellList;
     void init();
     Hero * m_owner;
     int m_ticks;

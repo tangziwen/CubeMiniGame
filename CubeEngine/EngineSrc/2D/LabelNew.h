@@ -2,11 +2,11 @@
 #define TZW_LABELNEW_H
 #include "../Font/Font.h"
 #include "../Mesh/Mesh.h"
-#include "../Interface/Drawable.h"
+#include "../Interface/Drawable2D.h"
 
 namespace tzw {
 
-class LabelNew : public Drawable
+class LabelNew : public Drawable2D
 {
 public:
     LabelNew();
@@ -19,15 +19,12 @@ public:
     void setFont(Font *font);
     void genMesh();
     virtual void draw();
-    vec2 contentSize() const;
-    void setContentSize(const vec2 &contentSize);
     void initAtlas();
 private:
     GlyphAtlas * m_atlas;
     std::string m_string;
     Font * m_font;
     Mesh * m_mesh;
-    vec2 m_contentSize;
 };
 
 } // namespace tzw

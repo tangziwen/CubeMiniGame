@@ -35,6 +35,12 @@ vec2 vec2::operator /(const float &other) const
 {
     return vec2(x / other, y / other);
 }
+
+vec2 vec2::operator *(float a) const
+{
+    auto v =vec2(x * a,y*a);
+    return v;
+}
 float vec2::getY() const
 {
     return y;

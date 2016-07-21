@@ -104,7 +104,7 @@ void LabelNew::genMesh()
         }
     }
     int result_width = std::max(penX,preMaxWidth);
-    m_contentSize = vec2(result_width,abs(penY) + m_font->getFontSize());
+    setContentSize(vec2(result_width,abs(penY) + m_font->getFontSize()));
     m_mesh->finish();
 }
 
@@ -116,16 +116,6 @@ void LabelNew::draw()
     RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
-}
-
-vec2 LabelNew::contentSize() const
-{
-    return m_contentSize;
-}
-
-void LabelNew::setContentSize(const vec2 &contentSize)
-{
-    m_contentSize = contentSize;
 }
 
 void LabelNew::initAtlas()

@@ -151,14 +151,14 @@ void ConsolePanel::setMargin(vec2 margin)
 
 void ConsolePanel::updateTexts()
 {
-    auto visibleRect = m_bgFrame->contentSize();
+    auto visibleRect = m_bgFrame->getContentSize();
     int y = visibleRect.y;
     for(auto iter = m_labelList.begin(); iter!= m_labelList.end() ;iter++)
     {
         LabelNew* label = (*iter);
         label->setPos2D(m_margin.x,y - m_margin.y);
         label->reCache();
-        y -= label->contentSize().y + m_verticalSpace;
+        y -= label->getContentSize().y + m_verticalSpace;
     }
 }
 

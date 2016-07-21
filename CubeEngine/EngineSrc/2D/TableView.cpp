@@ -5,6 +5,7 @@ namespace tzw {
 TableView::TableView(vec2 size)
 {
     m_currentFocusNode = nullptr;
+    m_marginX = 15;
     m_frame = GUIFrame::create(size);
     addChild(m_frame);
     m_buttonFrame = GUIFrame::create(vec4(0.3,0.1,0.1,1.0),vec2(size.x,25));
@@ -45,7 +46,10 @@ void TableView::initTabButtons()
         m_buttonFrame->addChild(button);
         if(prev)
         {
-            button->setPos2D(prev->getPos2D().x + prev->getContentSize().x + 10, 0);
+            button->setPos2D(m_marginX + prev->getPos2D().x + prev->getContentSize().x + 10, 0);
+        }else
+        {
+            button->setPos2D(m_marginX,0);
         }
         prev = button;
         button->setOnBtnClicked(std::bind(&TableView::onTabBtnClicked,this,std::placeholders::_1));
@@ -68,5 +72,15 @@ void TableView::focus(unsigned int index)
     auto node = m_tableList[index];
     node->setIsDrawable(true);
     m_currentFocusNode = node;
+}
+
+int TableView::getMarginX() const
+{
+    return m_marginX;
+}
+
+void TableView::setMarginX(int marginX)
+{
+    m_marginX = marginX;
 }
 } // namespace tzw

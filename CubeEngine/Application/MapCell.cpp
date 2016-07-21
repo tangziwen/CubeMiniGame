@@ -33,5 +33,4 @@ void MapCell::setSettlement(Settlement *settlement)
 {
     m_settlement = settlement;
 }
-
 } // namespace tzwS

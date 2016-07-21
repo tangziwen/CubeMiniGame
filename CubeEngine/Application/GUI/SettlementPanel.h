@@ -14,10 +14,12 @@ public:
     void show();
     void hide();
 private:
+    void syncProductionTab();
     void initPropertyTab();
     void initAdminTab();
     void initProductionTab();
     void initMilitaryTab();
+    void onCellClicked(tzw::Button * btn);
     tzw::Node * m_propertyTab;
     tzw::Node * m_adminTab;
     tzw::Node * m_productionTab;
@@ -25,6 +27,7 @@ private:
     tzw::TableView * m_tabView;
     tzw::GUIWindow * m_frame;
     std::vector<tzw::LabelNew *> m_infoLabel;
+    tzw::Button * m_currentSelectedCell;
 };
 
 } // namespace tzwS

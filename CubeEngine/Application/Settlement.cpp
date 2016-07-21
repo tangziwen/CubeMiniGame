@@ -33,16 +33,29 @@ void Settlement::setOwner(Hero *owner)
 void Settlement::update()
 {
     m_ticks +=1;
-    if(m_ticks > 7)
+    if(m_ticks >= 30)
     {
-        printf("settlement %s is updating\n",m_name.c_str());
+        for(auto cell : m_cellList)
+        {
+            cell->update();
+        }
         float totalOutputMoney = T_GETT("Population") * 0.1 + T_GETT("PublicOrder") * 0.1 + T_GETT("Development") * 0.1;
         if(m_owner)
         {
-            m_owner->setMoney(m_owner->money() + totalOutputMoney * 0.33);
+            m_owner->currency.money += totalOutputMoney * 0.33;
         }
         m_ticks = 0;
     }
+}
+
+SettlementCell *Settlement::getCellIndex(int index)
+{
+    return m_cellList[index];
+}
+
+unsigned int Settlement::getCellSize()
+{
+    return SETTLEMENT_CELL_SIZE;
 }
 
 void Settlement::init()
@@ -53,7 +66,12 @@ void Settlement::init()
     m_attr->set("Development",2.0f);
     m_attr->set("MillitaryPerformance",100.0f);
     m_attr->set("Defence",100.0f);
-
+    for(int i =0;i <SETTLEMENT_CELL_SIZE;i++)
+    {
+        auto cell = new SettlementCell();
+        cell->setParent(this);
+        m_cellList.push_back(cell);
+    }
     m_ticks = 0;
 }
 

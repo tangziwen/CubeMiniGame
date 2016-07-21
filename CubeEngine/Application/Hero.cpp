@@ -84,19 +84,8 @@ void Hero::setCharming(int charming)
     m_charming = charming;
 }
 
-int Hero::money() const
-{
-    return m_money;
-}
-
-void Hero::setMoney(int money)
-{
-    m_money = money;
-}
-
 void Hero::update()
 {
-    printf("the hero %s, his money is %d\n",m_name.c_str(),m_money);
 }
 
 void Hero::own(std::string settlementName)
@@ -111,7 +100,6 @@ void Hero::own(std::string settlementName)
 void Hero::init()
 {
     m_location = nullptr;
-    m_money = 0;
 }
 
 } // namespace tzwS

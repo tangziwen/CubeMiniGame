@@ -7,7 +7,7 @@
 #include "Button.h"
 namespace tzw {
 
-class TableView: public Drawable
+class TableView: public Drawable2D
 {
 public:
     TableView(vec2 size);
@@ -16,7 +16,11 @@ public:
     void initTabButtons();
     void onTabBtnClicked(Button * button);
     void focus(unsigned int index);
+    int getMarginX() const;
+    void setMarginX(int marginX);
+
 protected:
+    int m_marginX;
     std::vector<Node *>m_tableList;
     std::vector<Button *>m_tabBtnList;
     tzw::Node * m_currentFocusNode;
