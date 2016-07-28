@@ -3,6 +3,8 @@
 
 #include "../EngineSrc/CubeEngine.h"
 #include "../EngineSrc/2D/TableView.h"
+#include "../EngineSrc/2D/GUIAttributeLabel.h"
+#include "../EngineSrc/2D/BoxContainer.h"
 namespace tzwS {
 
 class SettlementPanel
@@ -26,8 +28,9 @@ private:
     tzw::Node * m_militaryTab;
     tzw::TableView * m_tabView;
     tzw::GUIWindow * m_frame;
-    std::vector<tzw::LabelNew *> m_infoLabel;
+    std::vector<tzw::GUIAttributeLabel *> m_infoLabel;
     tzw::Button * m_currentSelectedCell;
+    tzw::BoxContainer * m_infoContainer;
 };
 
 } // namespace tzwS

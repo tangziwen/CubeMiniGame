@@ -115,6 +115,7 @@ void GUIWindow::initCloseBtn()
 {
     m_isShowCloseBtn = true;
     m_closeBtn = Button::create("X");
+    m_closeBtn->setFrameSize(vec2(25,25));
     addChild(m_closeBtn);
     m_closeBtn->setOnBtnClicked([this](Button * button)
     {

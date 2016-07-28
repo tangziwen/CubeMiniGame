@@ -18,7 +18,7 @@ public:
     void focus(unsigned int index);
     int getMarginX() const;
     void setMarginX(int marginX);
-
+    virtual vec2 getContentSize();
 protected:
     int m_marginX;
     std::vector<Node *>m_tableList;

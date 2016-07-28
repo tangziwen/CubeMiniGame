@@ -30,6 +30,7 @@ public:
     void setBuilding(Building *building);
 
 protected:
+    int tick;
     Currency m_boost;
     unsigned int m_buildingType;
     Building * m_building;

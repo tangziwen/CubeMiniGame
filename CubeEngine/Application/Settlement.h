@@ -6,6 +6,7 @@
 #include "LogicEntity.h"
 #include "SettlementCell.h"
 #include <vector>
+#include "Currency.h"
 #define SETTLEMENT_CELL_SIZE 16
 namespace tzwS {
 class Hero;
@@ -21,7 +22,11 @@ public:
     virtual void update();
     SettlementCell * getCellIndex(int index);
     unsigned int getCellSize();
+    Currency getCurrency() const;
+    void setCurrency(const Currency &currency);
+
 private:
+    Currency m_currency;
     std::vector<SettlementCell*>m_cellList;
     void init();
     Hero * m_owner;

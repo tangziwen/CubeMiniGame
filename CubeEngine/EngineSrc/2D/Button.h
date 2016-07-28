@@ -26,12 +26,17 @@ public:
     void setOnBtnClicked(const std::function<void (Button *)> &onBtnClicked);
     vec2 getContentSize();
     LabelNew *getLabel() const;
-
+    vec2 getFrameSize();
+    void setFrameSize(vec2 size);
     void manualTrigger();
 
     GUIFrame *getFrameBG() const;
 
 private:
+    void init();
+    void adjustBorders();
+    void initBorders();
+    GUIFrame * m_borders[4];
     Type m_type;
     std::function <void(Button *)> m_onBtnClicked;
     bool m_isTouched;

@@ -3,7 +3,7 @@
 #include "../MapSystem.h"
 #include "../EngineSrc/Font/FontMgr.h"
 #include "CurrencyLabel.h"
-#include "../EngineSrc/2D/GUIAttributeLabel.h"
+
 using namespace tzw;
 namespace tzwS {
 #define LABEL_NAME 0
@@ -12,6 +12,11 @@ namespace tzwS {
 #define LABEL_DEVELOPMENT 3
 #define LABEL_MILPERFORMANCE 4
 #define LABEL_DEFENCE 5
+#define LABEL_MONEY 6
+#define LABEL_FOOD 7
+#define LABEL_ADMIN 8
+#define LABEL_MIL 9
+#define LABEL_TECH 10
 
 vec4 hightLightedColor = vec4(0.3,0.1,0.1,1.0);
 vec4 normalColor = vec4(0.1,0.3,0.1,1.0);
@@ -20,7 +25,7 @@ SettlementPanel::SettlementPanel()
     auto size = Engine::shared()->winSize();
     m_frame = GUIWindow::create("settlement",vec2(750,800));
 
-    m_tabView = new TableView(vec2(750,780));
+    m_tabView = new TableView(vec2(750,765));
     //    m_propertyTab = m_tabView->addTab("属性");
     //    m_adminTab = m_tabView->addTab("行政");
     m_productionTab = m_tabView->addTab("生产");
@@ -75,24 +80,36 @@ void SettlementPanel::syncProductionTab()
         return;
     }
     static char tmp[50];
-    sprintf(tmp,"name:%s",currSettlement->name().c_str());
-    m_infoLabel[LABEL_NAME]->setString(tmp);
 
-    sprintf(tmp,"Public Order:%g",T_GET(currSettlement,"PublicOrder"));
-    m_infoLabel[LABEL_PUBLIC_ORDER]->setString(tmp);
+    m_infoLabel[LABEL_PUBLIC_ORDER]->setDesc("PO.");
+    m_infoLabel[LABEL_PUBLIC_ORDER]->setValueF(T_GET(currSettlement,"PublicOrder"));
 
-    sprintf(tmp,"Population:%g",T_GET(currSettlement,"Population"));
-    m_infoLabel[LABEL_POPULATION]->setString(tmp);
+    m_infoLabel[LABEL_POPULATION]->setDesc("Pop.");
+    m_infoLabel[LABEL_POPULATION]->setValueF(T_GET(currSettlement,"Population"));
 
-    sprintf(tmp,"Development:%g",T_GET(currSettlement,"Development"));
-    m_infoLabel[LABEL_DEVELOPMENT]->setString(tmp);
+    m_infoLabel[LABEL_DEVELOPMENT]->setDesc("Dev.");
+    m_infoLabel[LABEL_DEVELOPMENT]->setValueF(T_GET(currSettlement,"Development"));
 
-    sprintf(tmp,"Millitary Performance:%g",T_GET(currSettlement,"MillitaryPerformance"));
-    m_infoLabel[LABEL_MILPERFORMANCE]->setString(tmp);
+    m_infoLabel[LABEL_MILPERFORMANCE]->setDesc("Army");
+    m_infoLabel[LABEL_MILPERFORMANCE]->setValueF(T_GET(currSettlement,"MillitaryPerformance"));
 
-    sprintf(tmp,"Defence:%g",T_GET(currSettlement,"Defence"));
-    m_infoLabel[LABEL_DEFENCE]->setString(tmp);
+    m_infoLabel[LABEL_DEFENCE]->setDesc("Def.");
+    m_infoLabel[LABEL_DEFENCE]->setValueF(T_GET(currSettlement,"Defence"));
 
+    m_infoLabel[LABEL_MONEY]->setDesc("Money");
+    m_infoLabel[LABEL_MONEY]->setValueF(currSettlement->getCurrency()[0]);
+
+    m_infoLabel[LABEL_FOOD]->setDesc("Food");
+    m_infoLabel[LABEL_FOOD]->setValueF(currSettlement->getCurrency()[1]);
+
+    m_infoLabel[LABEL_ADMIN]->setDesc("Admin");
+    m_infoLabel[LABEL_ADMIN]->setValueF(currSettlement->getCurrency()[2]);
+
+    m_infoLabel[LABEL_MIL]->setDesc("Mili");
+    m_infoLabel[LABEL_MIL]->setValueF(currSettlement->getCurrency()[3]);
+
+    m_infoLabel[LABEL_TECH]->setDesc("Tech");
+    m_infoLabel[LABEL_TECH]->setValueF(currSettlement->getCurrency()[4]);
     auto t = SETTLEMENT_CELL_SIZE;
     for(int k =0; k<t; k++)
     {
@@ -138,8 +155,6 @@ void SettlementPanel::initAdminTab()
 
 void SettlementPanel::initProductionTab()
 {
-
-
     auto t = SETTLEMENT_CELL_SIZE;
     int marginX = 35;
     int marginY = 35;
@@ -184,15 +199,16 @@ void SettlementPanel::initProductionTab()
     m_productionTab->addChild(removeBtn);
 
 
-    for(int i =0 ;i <= LABEL_DEFENCE; i++)
+    m_infoContainer = BoxContainer::create(vec2(750,150),vec2(180,30));
+    m_infoContainer->setPos2D(0,m_tabView->getContentSize().y - 150);
+    m_productionTab->addChild(m_infoContainer);
+    for(int i =0 ;i <= LABEL_TECH; i++)
     {
-        auto label = LabelNew::create("null str");
-        label->setPos2D(30,700 - (i * 30 + 25));
-        m_productionTab->addChild(label);
+        auto label = GUIAttributeLabel::createWithFixedSize("test",100,vec2(180,30));
+        m_infoContainer->insert(label);
         m_infoLabel.push_back(label);
     }
-    auto test = GUIAttributeLabel::createWithFixedSize("name",100,vec2(130,30));
-    m_productionTab->addChild(test);
+    m_infoContainer->format();
 }
 
 void SettlementPanel::initMilitaryTab()

@@ -1,6 +1,7 @@
 #include "SettlementCell.h"
 #include "External/TUtility/TUtility.h"
 #include <algorithm>
+#include "Settlement.h"
 namespace tzwS {
 
 SettlementCell::SettlementCell()
@@ -8,6 +9,7 @@ SettlementCell::SettlementCell()
     m_buildingType = 0;
     m_building = nullptr;
     randomGenerate();
+    tick = 0;
 }
 
 Settlement *SettlementCell::parent() const
@@ -49,6 +51,10 @@ void SettlementCell::build(unsigned int buildingID)
 void SettlementCell::update()
 {
 
+    if (m_parent)
+    {
+        m_parent->setCurrency(m_parent->getCurrency() + m_boost);
+    }
 }
 
 void SettlementCell::randomGenerate()

@@ -8,7 +8,7 @@ TableView::TableView(vec2 size)
     m_marginX = 15;
     m_frame = GUIFrame::create(size);
     addChild(m_frame);
-    m_buttonFrame = GUIFrame::create(vec4(0.3,0.1,0.1,1.0),vec2(size.x,25));
+    m_buttonFrame = GUIFrame::create(vec4(0.3,0.1,0.1,1.0),vec2(size.x,35));
     m_buttonFrame->setPos2D(0,size.y);
     addChild(m_buttonFrame);
 }
@@ -51,6 +51,8 @@ void TableView::initTabButtons()
         {
             button->setPos2D(m_marginX,0);
         }
+        auto cs = button->getContentSize();
+        button->setFrameSize(vec2(cs.x,30));
         prev = button;
         button->setOnBtnClicked(std::bind(&TableView::onTabBtnClicked,this,std::placeholders::_1));
         button->setTag(index);
@@ -82,5 +84,10 @@ int TableView::getMarginX() const
 void TableView::setMarginX(int marginX)
 {
     m_marginX = marginX;
+}
+
+vec2 TableView::getContentSize()
+{
+    return m_frame->getContentSize();
 }
 } // namespace tzw

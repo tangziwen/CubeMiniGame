@@ -40,10 +40,11 @@ void Settlement::update()
             cell->update();
         }
         float totalOutputMoney = T_GETT("Population") * 0.1 + T_GETT("PublicOrder") * 0.1 + T_GETT("Development") * 0.1;
-        if(m_owner)
-        {
-            m_owner->currency.money += totalOutputMoney * 0.33;
-        }
+        m_currency.money += int(totalOutputMoney);
+//        if(m_owner)
+//        {
+//            m_owner->currency.money += totalOutputMoney * 0.33;
+//        }
         m_ticks = 0;
     }
 }
@@ -56,6 +57,16 @@ SettlementCell *Settlement::getCellIndex(int index)
 unsigned int Settlement::getCellSize()
 {
     return SETTLEMENT_CELL_SIZE;
+}
+
+Currency Settlement::getCurrency() const
+{
+    return m_currency;
+}
+
+void Settlement::setCurrency(const Currency &currency)
+{
+    m_currency = currency;
 }
 
 void Settlement::init()

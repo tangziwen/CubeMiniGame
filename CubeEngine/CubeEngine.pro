@@ -181,7 +181,8 @@ SOURCES += main.cpp \
     Application/GUI/CurrencyLabelFactory.cpp \
     Application/GUI/CurrencyLabel.cpp \
     EngineSrc/Interface/Drawable2D.cpp \
-    EngineSrc/2D/GUIAttributeLabel.cpp
+    EngineSrc/2D/GUIAttributeLabel.cpp \
+    EngineSrc/2D/BoxContainer.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -345,4 +346,5 @@ HEADERS += \
     Application/GUI/CurrencyLabelFactory.h \
     Application/GUI/CurrencyLabel.h \
     EngineSrc/Interface/Drawable2D.h \
-    EngineSrc/2D/GUIAttributeLabel.h
+    EngineSrc/2D/GUIAttributeLabel.h \
+    EngineSrc/2D/BoxContainer.h
