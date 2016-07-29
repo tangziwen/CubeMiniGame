@@ -1,13 +1,13 @@
 #ifndef TZW_BUTTON_H
 #define TZW_BUTTON_H
-#include "../Base/Node.h"
 #include "../2D/GUIFrame.h"
 #include "../2D/LabelNew.h"
 #include "../Event/Event.h"
+#include "../Interface/Drawable2D.h"
 #include <functional>
 namespace tzw {
 
-class Button: public Node,public EventListener
+class Button: public Drawable2D,public EventListener
 {
 public:
     enum class Type
@@ -24,7 +24,7 @@ public:
     virtual bool onMouseMove(vec2 pos);
     std::function<void (Button *)> onBtnClicked() const;
     void setOnBtnClicked(const std::function<void (Button *)> &onBtnClicked);
-    vec2 getContentSize();
+    virtual vec2 getContentSize();
     LabelNew *getLabel() const;
     vec2 getFrameSize();
     void setFrameSize(vec2 size);

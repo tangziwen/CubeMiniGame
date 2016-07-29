@@ -4,6 +4,7 @@
 #include "../EngineSrc/Font/FontMgr.h"
 #include "CurrencyLabel.h"
 
+#include "EngineSrc/2D/GUIListView.h"
 using namespace tzw;
 namespace tzwS {
 #define LABEL_NAME 0
@@ -209,6 +210,13 @@ void SettlementPanel::initProductionTab()
         m_infoLabel.push_back(label);
     }
     m_infoContainer->format();
+    auto listView = GUIListView::create(vec2(250,400));
+    for(int i =0;i<50;i++)
+    {
+        listView->add(Tmisc::StrFormat("item: %d",i));
+    }
+    listView->updateForPage();
+    m_productionTab->addChild(listView);
 }
 
 void SettlementPanel::initMilitaryTab()
