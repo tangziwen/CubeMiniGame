@@ -24,9 +24,14 @@ public:
     void nextPage();
     void prevPage();
     void updateForPage();
+    void finalize();
 private:
+    void clearHightLight();
+    void setItemHightLight(int theCurrentIndex);
+    void resetItemHightLight();
     void initUI(vec2 theSize);
     std::vector<GUIListViewItem *>m_itemList;
+    int m_currSelectedIndex;
     GUIFrame * m_frame;
     Button * m_prevBtn;
     Button * m_nextBtn;

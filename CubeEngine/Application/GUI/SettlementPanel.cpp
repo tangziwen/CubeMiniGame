@@ -215,7 +215,7 @@ void SettlementPanel::initProductionTab()
     {
         listView->add(Tmisc::StrFormat("item: %d",i));
     }
-    listView->updateForPage();
+    listView->finalize();
     m_productionTab->addChild(listView);
 }
 
