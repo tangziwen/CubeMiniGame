@@ -102,6 +102,7 @@ vec3 Node::getRotate() const
     vec3 theEulerAngle;
     m_rotateQ.toEulserAngel(&theEulerAngle.x,&theEulerAngle.y,&theEulerAngle.z);
     return theEulerAngle;
+    //return vec3 (TbaseMath::Radius2Ang(theEulerAngle.x),TbaseMath::Radius2Ang(theEulerAngle.y),TbaseMath::Radius2Ang(theEulerAngle.z));
 }
 
 /**

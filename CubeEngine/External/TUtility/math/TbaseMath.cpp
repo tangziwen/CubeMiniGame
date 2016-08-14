@@ -22,7 +22,7 @@ unsigned int TbaseMath::nextPow2(unsigned int num)
     return rval;
 }
 
-TbaseMath::clampf(float value, float lowBound, float upBound)
+float TbaseMath::clampf(float value, float lowBound, float upBound)
 {
     if(value < lowBound) return lowBound;
     if(value > upBound) return upBound;

@@ -43,7 +43,7 @@ void EventListener::onFrameUpdate(float delta)
 }
 
 EventListener::EventListener()
-    :m_fixedPiority(0),m_isSwallow(false)
+    :m_fixedPiority(0),m_isSwallow(false),m_parent(nullptr)
 {
 
 }

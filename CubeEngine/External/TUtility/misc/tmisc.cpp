@@ -17,7 +17,7 @@ std::wstring Tmisc::StringToWString(const std::string &str)
 
 std::string Tmisc::WstringToString(const std::wstring &wstr)
 {
-    auto nLen = wstr.length();
+    auto nLen = wstr.length() + 1;
     char * buf = new char[nLen];
     auto multiLen = WideCharToMultiByte(65001,0,(LPCWSTR)wstr.c_str(),(int)nLen,(LPSTR)buf,0,NULL,NULL);
     int nResult = WideCharToMultiByte(65001,0,(LPCWSTR)wstr.c_str(),(int)nLen,(LPSTR)buf,(int)multiLen,NULL,NULL);

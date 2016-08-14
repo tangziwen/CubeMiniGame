@@ -16,9 +16,14 @@ TEMPLATE = app
 
 #OpenGL
 LIBS += -L.
+
+###Application folder BEGIN###
+INCLUDEPATH += ./Application
+###Application folder END###
+
+
 ####External library BEGIN####
 INCLUDEPATH += ./External
-
 #FreeType#
 LIBS += -L$$PWD/lib -lfreetype.dll
 INCLUDEPATH += ./External/FreeType
@@ -160,31 +165,21 @@ SOURCES += main.cpp \
     EngineSrc/3D/Model/ModelLoader.cpp \
     EngineSrc/Action/RepeatForever.cpp \
     EngineSrc/3D/Material/Material.cpp \
-    Application/GameSystem.cpp \
-    Application/Hero.cpp \
-    Application/MapSystem.cpp \
-    Application/MapCell.cpp \
-    Application/Settlement.cpp \
-    Application/AttributeList.cpp \
-    Application/LogicEntity.cpp \
-    Application/Player.cpp \
-    Application/AIHero.cpp \
-    Application/GUI/InfoPanel.cpp \
-    Application/GUI/TopBar.cpp \
-    Application/GUI/SettlementPanel.cpp \
     EngineSrc/2D/TableView.cpp \
-    Application/SettlementCell.cpp \
-    Application/Currency.cpp \
-    Application/GUI/SettlementCellUI.cpp \
-    Application/BuildingPool.cpp \
-    Application/Building.cpp \
-    Application/GUI/CurrencyLabelFactory.cpp \
-    Application/GUI/CurrencyLabel.cpp \
     EngineSrc/Interface/Drawable2D.cpp \
     EngineSrc/2D/GUIAttributeLabel.cpp \
     EngineSrc/2D/BoxContainer.cpp \
     EngineSrc/2D/GUIListView.cpp \
-    EngineSrc/2D/GUIListViewItem.cpp
+    EngineSrc/2D/GUIListViewItem.cpp \
+    Application/CubeGame/Block.cpp \
+    Application/CubeGame/BlockInfo.cpp \
+    Application/CubeGame/BlockInfoMgr.cpp \
+    Application/CubeGame/Chunk.cpp \
+    Application/CubeGame/FPSCamera.cpp \
+    Application/CubeGame/GameMap.cpp \
+    Application/CubeGame/GameWorld.cpp \
+    Application/CubeGame/MainMenu.cpp \
+    Application/CubeGame/Player.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -327,28 +322,18 @@ HEADERS += \
     EngineSrc/3D/Model/ModelLoader.h \
     EngineSrc/Action/RepeatForever.h \
     EngineSrc/3D/Material/Material.h \
-    Application/GameSystem.h \
-    Application/Hero.h \
-    Application/MapSystem.h \
-    Application/MapCell.h \
-    Application/Settlement.h \
-    Application/AttributeList.h \
-    Application/LogicEntity.h \
-    Application/Player.h \
-    Application/AIHero.h \
-    Application/GUI/InfoPanel.h \
-    Application/GUI/TopBar.h \
-    Application/GUI/SettlementPanel.h \
     EngineSrc/2D/TableView.h \
-    Application/SettlementCell.h \
-    Application/Currency.h \
-    Application/GUI/SettlementCellUI.h \
-    Application/BuildingPool.h \
-    Application/Building.h \
-    Application/GUI/CurrencyLabelFactory.h \
-    Application/GUI/CurrencyLabel.h \
     EngineSrc/Interface/Drawable2D.h \
     EngineSrc/2D/GUIAttributeLabel.h \
     EngineSrc/2D/BoxContainer.h \
     EngineSrc/2D/GUIListView.h \
-    EngineSrc/2D/GUIListViewItem.h
+    EngineSrc/2D/GUIListViewItem.h \
+    Application/CubeGame/Block.h \
+    Application/CubeGame/BlockInfo.h \
+    Application/CubeGame/BlockInfoMgr.h \
+    Application/CubeGame/Chunk.h \
+    Application/CubeGame/FPSCamera.h \
+    Application/CubeGame/GameMap.h \
+    Application/CubeGame/GameWorld.h \
+    Application/CubeGame/MainMenu.h \
+    Application/CubeGame/Player.h

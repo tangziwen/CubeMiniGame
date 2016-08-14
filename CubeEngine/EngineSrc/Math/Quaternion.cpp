@@ -1,6 +1,7 @@
 #include "Quaternion.h"
 #include <math.h>
 #include "../External/TUtility/TUtility.h"
+#include <stdlib.h>
 namespace tzw {
 
 Quaternion::Quaternion()
@@ -32,6 +33,7 @@ void Quaternion::toEulserAngel(float *resultX, float *resultY, float *resultZ) c
 {
     float _rotationX,_rotationY,_rotationZ;
     //convert quaternion to Euler angle
+
     _rotationX = atan2f(2.f * (w * x + y * z), 1.f - 2.f * (x * x + y * y));
     float sy = 2.f * (w * y - z * x);
     sy = TbaseMath::clampf(sy, -1, 1);

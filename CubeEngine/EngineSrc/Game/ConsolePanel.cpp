@@ -32,32 +32,37 @@ ConsolePanel::ConsolePanel(Node *renderNode)
 
     m_inputFrame->addChild(m_label);
     m_node->setLocalPiority(EngineDef::maxPiority);
+    setIsSwallow(true);
     renderNode->addChild(m_node);
-    EventMgr::shared()->addNodePiorityListener(m_node,this);
+    setFixedPiority(100);
+    EventMgr::shared()->addFixedPiorityListener(this);
     m_isVisible = false;
     setIsVisible(false);
 }
 
 bool ConsolePanel::onKeyPress(int keyCode)
 {
-    switch(keyCode)
-    {
-    //删除和退格键
-    case 259:
-        eraseChar();
-        break;
-    case 261:
-        eraseChar();
-        break;
-    //回车键
-    case 257:
-    {
-        addStr(m_label->getString());
-        m_label->setString(" ");
-    }
-        break;
-    default:
-        break;
+    if(m_isVisible) {
+        switch(keyCode)
+        {
+        //删除和退格键
+        case 259:
+            eraseChar();
+            break;
+        case 261:
+            eraseChar();
+            break;
+        //回车键
+        case 257:
+        {
+            addStr(m_label->getString());
+            m_label->setString(" ");
+        }
+            break;
+        default:
+            break;
+        }
+        return true;
     }
     return false;
 }
@@ -68,15 +73,19 @@ bool ConsolePanel::onCharInput(unsigned int theChar)
     {
     case '`':
         toggleVissible();
-        break;
+        return true;
     default:
+        if(m_isVisible)
+        {
         auto oldS = m_label->getString();
         std::wstring theStr;
         theStr.push_back(wchar_t(theChar));
         m_label->setString(oldS + Tmisc::WstringToString(theStr));
         return true;
+        }
+
     }
-    return true;
+    return false;
 }
 
 bool ConsolePanel::isVisible() const

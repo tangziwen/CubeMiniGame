@@ -182,11 +182,11 @@ void EventMgr::applyKeyPress(EventInfo &info)
 {
     for(auto event : m_list)
     {
-        if(event->onKeyPress(info.keycode) && event->isSwallow()) break;
+        if(event->onKeyPress(info.keycode) && event->isSwallow()) return;
     }
     for (auto event :m_NodePioritylist)
     {
-        if(event->onKeyPress(info.keycode) && event->isSwallow()) break;
+        if(event->onKeyPress(info.keycode) && event->isSwallow()) return;
     }
 }
 
@@ -194,11 +194,11 @@ void EventMgr::applyKeyCharInput(EventInfo &info)
 {
     for(auto event : m_list)
     {
-        if(event->onCharInput(info.theChar) && event->isSwallow()) break;
+        if(event->onCharInput(info.theChar) && event->isSwallow()) return;
     }
     for (auto event :m_NodePioritylist)
     {
-        if(event->onCharInput(info.theChar) && event->isSwallow()) break;
+        if(event->onCharInput(info.theChar) && event->isSwallow()) return;
     }
 }
 
@@ -206,11 +206,11 @@ void EventMgr::applyKeyRelease(EventInfo &info)
 {
     for(auto event : m_list)
     {
-        if(event->onKeyRelease(info.keycode)&&event->isSwallow()) break;
+        if(event->onKeyRelease(info.keycode)&&event->isSwallow()) return;
     }
     for (auto event :m_NodePioritylist)
     {
-        if(event->onKeyRelease(info.keycode) && event->isSwallow()) break;
+        if(event->onKeyRelease(info.keycode) && event->isSwallow()) return;
     }
 }
 
@@ -218,11 +218,11 @@ void EventMgr::applyMousePress(EventInfo &info)
 {
     for(auto event : m_list)
     {
-        if (event->onMousePress(info.arg,info.pos) && event->isSwallow()) break;
+        if (event->onMousePress(info.arg,info.pos) && event->isSwallow()) return;
     }
     for (auto event :m_NodePioritylist)
     {
-        if(event->onMousePress(info.arg,info.pos) && event->isSwallow()) break;
+        if(event->onMousePress(info.arg,info.pos) && event->isSwallow()) return;
     }
 }
 
@@ -230,11 +230,11 @@ void EventMgr::applyMouseRelease(EventInfo &info)
 {
     for(auto event : m_list)
     {
-        if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow()) break;
+        if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow()) return;
     }
     for (auto event :m_NodePioritylist)
     {
-        if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow()) break;
+        if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow()) return;
     }
 }
 
@@ -242,11 +242,11 @@ void EventMgr::applyMouseMove(EventInfo &info)
 {
     for(auto event : m_list)
     {
-        if(event->onMouseMove(info.pos)&& event->isSwallow()) break;
+        if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
     }
     for (auto event :m_NodePioritylist)
     {
-        if(event->onMouseMove(info.pos)&& event->isSwallow()) break;
+        if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
     }
 }
 
@@ -266,7 +266,7 @@ static bool eventSort(const EventListener *a,const EventListener *b)
 
 void EventMgr::sortFixedListener()
 {
-    std::stable_sort(m_list.rbegin(),m_list.rend(),eventSort);
+    std::stable_sort(m_list.begin(),m_list.end(),eventSort);
 }
 
 } // namespace tzw
