@@ -114,7 +114,7 @@ void Camera::lookAt(vec3 targetPos, vec3 upFrame)
 
     auto aixY = vec3::CrossProduct(aixX,aixZ);
     aixY.normalize();
-    m_rotateQ.fromAxises(aixX,aixY,aixZ);
+    m_rotateQ.fromAxises(aixX,aixY,aixZ * -1);
     m_needToUpdate = true;
     reCache();
     //    float rotateX,rotateY,rotateZ;

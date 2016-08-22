@@ -217,8 +217,11 @@ void Technique::applyFromMat(Material *mat)
 void Technique::applyFromDrawable(Drawable *node)
 {
     auto vp = node->camera()->getViewProjectionMatrix();
+    auto v = node->camera()->getViewMatrix();
     auto m = node->getTransform();
     setVar("TU_mvpMatrix", vp* m);
+    setVar("TU_mvMatrix", v * m);
+    setVar("TU_normalMatrix", (v * m).inverted().transpose());
     setVar("TU_color",node->getUniformColor());
 }
 

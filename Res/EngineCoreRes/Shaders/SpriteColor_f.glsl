@@ -10,7 +10,7 @@ varying vec2 v_texcoord;
 //! [0]
 void main()
 {
-    gl_FragColor = TU_color;
+    gl_FragData[0] = TU_color;
 }
 //! [0]
 

@@ -20,6 +20,15 @@ public:
     void drawElement(RenderFlag::IndicesType type,unsigned int size, const void *indicesAddress);
     void setDepthTestMethod(const RenderFlag::DepthTestMethod & method);
     void setTextureWarp(unsigned int textureID, RenderFlag::WarpAddress warpAddress, RenderFlag::TextureType type);
+    void bindFrameBuffer(unsigned int frameBufferID);
+    void blitFramebuffer(int srcX0,
+                           int srcY0,
+                           int srcX1,
+                           int srcY1,
+                           int dstX0,
+                           int dstY0,
+                           int dstX1,
+                           int dstY1);
 private:
     static RenderBackEnd * m_instance;
     RenderBackEnd();

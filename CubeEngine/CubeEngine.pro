@@ -179,7 +179,8 @@ SOURCES += main.cpp \
     Application/CubeGame/GameMap.cpp \
     Application/CubeGame/GameWorld.cpp \
     Application/CubeGame/MainMenu.cpp \
-    Application/CubeGame/Player.cpp
+    Application/CubeGame/Player.cpp \
+    EngineSrc/Rendering/RenderTarget.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -336,4 +337,5 @@ HEADERS += \
     Application/CubeGame/GameMap.h \
     Application/CubeGame/GameWorld.h \
     Application/CubeGame/MainMenu.h \
-    Application/CubeGame/Player.h
+    Application/CubeGame/Player.h \
+    EngineSrc/Rendering/RenderTarget.h

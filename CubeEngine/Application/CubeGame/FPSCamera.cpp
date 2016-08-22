@@ -15,6 +15,7 @@ FPSCamera::FPSCamera()
     ,m_speed(vec3(6,2,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_isFirstLoop(true)
     ,gravity_speed(0),m_gravity(0.3),distToGround(2.4),m_isStopUpdate(false)
 {
+    m_isMouseHold = false;
     m_enableFPSFeature = true;
     setUseCustomFrustumUpdate(true);
 }
@@ -144,17 +145,20 @@ bool FPSCamera::onKeyRelease(int keyCode)
 
 bool FPSCamera::onMouseRelease(int button, vec2 pos)
 {
+    m_isMouseHold = false;
     return true;
 }
 
 bool FPSCamera::onMousePress(int button, vec2 pos)
 {
     m_oldPosition = vec3(pos.x,pos.y,0.0);
+    m_isMouseHold = true;
     return true;
 }
 
 bool FPSCamera::onMouseMove(vec2 pos)
 {
+    if(!m_isMouseHold) return false;
     if(m_isFirstLoop)
     {
         m_oldPosition = vec3(pos.x,pos.y,0.0);

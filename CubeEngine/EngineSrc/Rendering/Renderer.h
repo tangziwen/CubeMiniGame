@@ -3,6 +3,8 @@
 
 #include "RenderCommand.h"
 #include <vector>
+#include "RenderTarget.h"
+#include "../Shader/ShaderMgr.h"
 namespace tzw {
 
 class Renderer
@@ -25,11 +27,13 @@ public:
     void setEnableGUIRender(bool enableGUIRender);
 
 private:
+    ShaderProgram * m_gpassProgram;
     bool m_enable3DRender;
     bool m_enableGUIRender;
     std::vector<RenderCommand> m_GUICommandList;
     std::vector<RenderCommand> m_CommonCommand;
     static Renderer * m_instance;
+    RenderTarget * m_gbuffer;
 };
 
 } // namespace tzw

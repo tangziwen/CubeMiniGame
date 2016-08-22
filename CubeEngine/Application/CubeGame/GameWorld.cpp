@@ -126,8 +126,8 @@ void GameWorld::startGame()
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
-    GameMap::shared()->setMapType(GameMap::MapType::Noise);
-    GameMap::shared()->setMaxHeight(10);
+    GameMap::shared()->setMapType(GameMap::MapType::Plain);
+    GameMap::shared()->setMaxHeight(1);
     auto player = new Player(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(SceneMgr::shared()->currentScene(),10,10,0.05);
@@ -154,7 +154,7 @@ bool tzw::GameWorld::onKeyPress(int keyCode)
 
 void GameWorld::loadChunksAroundPlayer()
 {
-    std::vector<Chunk*> m_tempArray = m_activedChunkList;
+    std::set<Chunk*> m_tempArray = m_activedChunkList;
     auto pos = m_player->getPos();
     pos = gridToChunk(worldToGrid(pos));
     int posX = pos.x + m_width/2;
@@ -167,13 +167,13 @@ void GameWorld::loadChunksAroundPlayer()
             {
                 auto targetChunk = m_chunkArray[i][j][k + WORLD_HEIGHT/2];
                 targetChunk->load();
-                auto findResult = std::find(m_tempArray.begin(),m_tempArray.end(),targetChunk);
+                auto findResult = m_tempArray.find(targetChunk);
                 if(findResult!= m_tempArray.end())
                 {
                     m_tempArray.erase(findResult);
                 }else
                 {
-                    m_activedChunkList.push_back(m_chunkArray[i][j][k + WORLD_HEIGHT/2]);
+                    m_activedChunkList.insert(m_chunkArray[i][j][k + WORLD_HEIGHT/2]);
                 }
             }
         }

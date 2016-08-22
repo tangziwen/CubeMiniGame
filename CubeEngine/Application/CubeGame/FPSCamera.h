@@ -43,6 +43,7 @@ public:
     virtual void reCache();
 
 private:
+    bool m_isMouseHold;
     bool m_enableFPSFeature;
     float m_maxFallSpeed;
     float m_distToside;

@@ -25,7 +25,7 @@ MainMenu::MainMenu()
 
     Button * startBtn = Button::create("开始游戏");
     startBtn->setPos2D(100,340);
-    startBtn->setOnBtnClicked(std::bind(&MainMenu::startGame,this,std::placeholders::_1));
+//    startBtn->setOnBtnClicked(   std::bind(&MainMenu::startGame,this,std::placeholders::_1));
     m_mainFrame->addChild(startBtn);
 
     Button * optionBtn = Button::create("选项");
@@ -33,9 +33,9 @@ MainMenu::MainMenu()
     optionBtn->setOnBtnClicked(std::bind(&onOption,std::placeholders::_1));
     m_mainFrame->addChild(optionBtn);
 
-    Button * creditBtn = Button::create("帮助");
-    creditBtn->setPos2D(100,240);
-    m_mainFrame->addChild(creditBtn);
+    Button * sampleBtn = Button::create("引擎示例");
+    sampleBtn->setPos2D(100,240);
+    m_mainFrame->addChild(sampleBtn);
 
     Button * quitBtn = Button::create("退出");
     quitBtn->setPos2D(100,190);

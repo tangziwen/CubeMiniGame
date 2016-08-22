@@ -5,9 +5,10 @@
 #include "./Chunk.h"
 #include "Player.h"
 #include "MainMenu.h"
+#include <set>
 namespace tzw {
 #define CUBE_MAP_SIZE 128
-#define WORLD_HEIGHT 4
+#define WORLD_HEIGHT 1
 class GameWorld : public EventListener
 {
 public:
@@ -56,7 +57,7 @@ private:
     std::vector<Chunk*> m_chunkList;
     static GameWorld *m_instance;
     GameWorld();
-    std::vector<Chunk*> m_activedChunkList;
+    std::set<Chunk*> m_activedChunkList;
     MainMenu * m_mainMenu;
 };
 

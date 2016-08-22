@@ -204,6 +204,16 @@ void RenderBackEnd::setTextureWarp(unsigned int textureID, RenderFlag::WarpAddre
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, flag);
 }
 
+void RenderBackEnd::bindFrameBuffer(unsigned int frameBufferID)
+{
+    glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferID);
+}
+
+void RenderBackEnd::blitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1)
+{
+    glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+}
+
 RenderBackEnd::RenderBackEnd()
 {
     memset(m_textureSlot,0,sizeof(m_textureSlot));

@@ -2,6 +2,7 @@
 #include "../BackEnd/RenderBackEnd.h"
 #include <algorithm>
 #include "../Engine/Engine.h"
+
 namespace tzw {
 
 Renderer * Renderer::m_instance = nullptr;
@@ -9,6 +10,10 @@ Renderer::Renderer()
 {
     m_enable3DRender = true;
     m_enableGUIRender = true;
+    m_gbuffer = new RenderTarget();
+    m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
+    m_gpassProgram = ShaderMgr::shared()->createOrGet("./Res/EngineCoreRes/Shaders/GeometryPass_v.glsl",
+                                                      "./Res/EngineCoreRes/Shaders/GeometryPass_f.glsl");
 }
 
 Renderer *Renderer::shared()
@@ -43,15 +48,38 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
+    m_gbuffer->bindForWriting();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     if(m_enable3DRender)
     {
         renderAllCommon();
     }
+
     if(m_enableGUIRender)
     {
         renderAllGUI();
     }
     clearCommands();
+
+    auto w = Engine::shared()->windowWidth();
+    auto h = Engine::shared()->windowHeight();
+    RenderBackEnd::shared()->bindFrameBuffer(0);
+    m_gbuffer->bindForReading();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    GLint HalfWidth = (GLint)(w / 2.0f);
+    GLint HalfHeight = (GLint)(h / 2.0f);
+    m_gbuffer->setReadBuffer(0);
+    RenderBackEnd::shared()->blitFramebuffer(0, 0, w, h, 0, 0, HalfWidth, HalfHeight);
+
+    m_gbuffer->setReadBuffer(1);
+    RenderBackEnd::shared()->blitFramebuffer(0, 0, w, h, 0, HalfHeight, HalfWidth, h);
+
+    m_gbuffer->setReadBuffer(2);
+    RenderBackEnd::shared()->blitFramebuffer(0, 0, w, h, HalfWidth, HalfHeight, w, h);
+
+    m_gbuffer->setReadBuffer(3);
+    RenderBackEnd::shared()->blitFramebuffer(0, 0, w, h, HalfWidth, 0, w, HalfHeight);
+
 }
 
 void Renderer::renderAllCommon()

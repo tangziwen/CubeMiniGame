@@ -5,6 +5,8 @@
 #include "EngineSrc/CubeEngine.h"
 #include "EngineSrc/2D/TableView.h"
 #include "CubeGame/GameWorld.h"
+#include "EngineSrc/Action/RepeatForever.h"
+#include "EngineSrc/Action/RotateBy.h"
 using namespace tzw;
 GameEntry::GameEntry()
 {
@@ -12,24 +14,15 @@ GameEntry::GameEntry()
 }
 void GameEntry::onStart()
 {
-//    auto theModel = Model::create("./Res/TestRes/duck.tzw");
-//    theModel->setPos(vec3(0,0,-50));
-//    theModel->setScale(0.1,0.1,0.1);
-//    theModel->runAction(new RepeatForever(new RotateBy(5.0,vec3(0,360,0))));
-//    SceneMgr::shared()->currentScene()->addNode(theModel);
+    auto camera = SceneMgr::shared()->currentScene()->defaultCamera();
+    auto model = Model::create("./Res/TestRes/phoenix_ugv.tzw");
+    model->runAction(new RepeatForever(new RotateBy(30.0,vec3(0,360,0))));
+    model->setScale(vec3(0.1,0.1,0.1));
+    SceneMgr::shared()->currentScene()->addNode(model);
 
-//    auto frame = GUIWindow::create("划水",vec2(450,600));
-//    GUIWindowMgr::shared()->add(frame);
-//    Button * startBtn = Button::create("开始游戏");
-//    startBtn->setOnBtnClicked([frame](Button * button)
-//    {
-//        (void)button;
-//        tzwS::GameSystem::shared()->startNewGame();
-//        frame->setIsDrawable(false);
-//    });
-//    startBtn->setPos2D(100,340);
-//    frame->addChild(startBtn);
-    GameWorld::shared();
+    camera->setPos(vec3(0,10,10));
+    camera->lookAt(model->getPos(),vec3(0,1,0));
+    //GameWorld::shared();
 }
 
 void GameEntry::onExit()
