@@ -33,7 +33,6 @@ public:
                          std::string  NegZFilename);
     virtual void draw();
     CubeType getCubeType() const;
-
 protected:
     CubeType m_cubeType;
     Texture * m_texture[3];

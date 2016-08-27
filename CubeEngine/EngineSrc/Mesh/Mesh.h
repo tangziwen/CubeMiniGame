@@ -39,9 +39,8 @@ public:
     void clear();
     Material *getMat() const;
     void setMat(Material *mat);
-
-private:
     void caclNormals();
+private:
     void passToGPU();
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;

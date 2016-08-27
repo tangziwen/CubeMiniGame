@@ -19,6 +19,7 @@ public:
     void perspective(float fovy, float aspect, float near, float far);
     Matrix44 inverted(bool *invertible = 0);
     Matrix44 transpose();
+    vec4 operator * (const vec4 & v );
     void frustum(float left, float right, float bottom, float top, float near, float far);
     float * data();
 private:

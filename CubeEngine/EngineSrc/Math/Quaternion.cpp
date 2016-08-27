@@ -2,6 +2,7 @@
 #include <math.h>
 #include "../External/TUtility/TUtility.h"
 #include <stdlib.h>
+#include <iostream>
 namespace tzw {
 
 Quaternion::Quaternion()
@@ -27,19 +28,34 @@ void Quaternion::fromEulerAngle(vec3 rotate)
     y = coshalfRadx * sinhalfRady * coshalfRadz + sinhalfRadx * coshalfRady * sinhalfRadz;
     z = coshalfRadx * coshalfRady * sinhalfRadz - sinhalfRadx * sinhalfRady * coshalfRadz;
     w = coshalfRadx * coshalfRady * coshalfRadz + sinhalfRadx * sinhalfRady * sinhalfRadz;
+
 }
 
 void Quaternion::toEulserAngel(float *resultX, float *resultY, float *resultZ) const
 {
     float _rotationX,_rotationY,_rotationZ;
     //convert quaternion to Euler angle
-
-    _rotationX = atan2f(2.f * (w * x + y * z), 1.f - 2.f * (x * x + y * y));
-    float sy = 2.f * (w * y - z * x);
-    sy = TbaseMath::clampf(sy, -1, 1);
-    _rotationY = asinf(sy);
-    _rotationZ = atan2f(2.f * (w * z + x * y), 1.f - 2.f * (y * y + z * z));
-
+    double test = x * y + z * w;
+    if (test > 0.499)
+    {
+        _rotationX = 3.14/2.0f;
+        _rotationY = 2 * atan2(x,w);
+        _rotationZ = 0;
+    }
+    else if (test < -0.499)
+    {
+        _rotationX = - 3.14/2.0f;
+        _rotationY = - 2 * atan2(x,w);
+        _rotationZ = 0;
+    }
+    else
+    {
+        _rotationX = atan2f(2.f * (w * x + y * z), 1.f - 2.f * (x * x + y * y));
+        float sy = 2.f * (w * y - z * x);
+        sy = TbaseMath::clampf(sy, -1, 1);
+        _rotationY = asinf(sy);
+        _rotationZ = atan2f(2.f * (w * z + x * y), 1.f - 2.f * (y * y + z * z));
+    }
     _rotationX = TbaseMath::Radius2Ang(_rotationX);
     _rotationY = TbaseMath::Radius2Ang(_rotationY);
     _rotationZ = -TbaseMath::Radius2Ang(_rotationZ);
@@ -171,6 +187,18 @@ float &Quaternion::operator [](int index)
     default:
         return x;
     }
+}
+
+Quaternion Quaternion::operator *(const Quaternion &other)
+{
+    Quaternion a;
+    Quaternion q = (*this);
+    Quaternion p = other;
+    return Quaternion(
+                q.w * p.w - q.x * p.x - q.y * p.y - q.z * p.z,
+                q.w * p.x + q.x * p.w + q.y * p.z - q.z * p.y,
+                q.w * p.y + q.y * p.w + q.z * p.x - q.x * p.z,
+                q.w * p.z + q.z * p.w + q.x * p.y - q.y * p.x);
 }
 
 } // namespace tzw

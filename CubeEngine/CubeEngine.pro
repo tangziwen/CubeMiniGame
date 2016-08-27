@@ -180,7 +180,11 @@ SOURCES += main.cpp \
     Application/CubeGame/GameWorld.cpp \
     Application/CubeGame/MainMenu.cpp \
     Application/CubeGame/Player.cpp \
-    EngineSrc/Rendering/RenderTarget.cpp
+    EngineSrc/Rendering/RenderTarget.cpp \
+    EngineSrc/Lighting/DirectionalLight.cpp \
+    EngineSrc/Lighting/BaseLight.cpp \
+    EngineSrc/Lighting/AmbientLight.cpp \
+    EngineSrc/3D/Primitive/CubePrimitive.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -338,4 +342,8 @@ HEADERS += \
     Application/CubeGame/GameWorld.h \
     Application/CubeGame/MainMenu.h \
     Application/CubeGame/Player.h \
-    EngineSrc/Rendering/RenderTarget.h
+    EngineSrc/Rendering/RenderTarget.h \
+    EngineSrc/Lighting/DirectionalLight.h \
+    EngineSrc/Lighting/BaseLight.h \
+    EngineSrc/Lighting/AmbientLight.h \
+    EngineSrc/3D/Primitive/CubePrimitive.h

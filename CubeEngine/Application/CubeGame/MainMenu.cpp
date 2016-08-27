@@ -25,7 +25,7 @@ MainMenu::MainMenu()
 
     Button * startBtn = Button::create("开始游戏");
     startBtn->setPos2D(100,340);
-//    startBtn->setOnBtnClicked(   std::bind(&MainMenu::startGame,this,std::placeholders::_1));
+    startBtn->setOnBtnClicked([=](Button * btn)->void{this->startGame(btn);});
     m_mainFrame->addChild(startBtn);
 
     Button * optionBtn = Button::create("选项");

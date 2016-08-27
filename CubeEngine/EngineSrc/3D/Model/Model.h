@@ -13,6 +13,7 @@ public:
     void initWithFile(std::string modelFilePath);
     static Model * create(std::string modelFilePath);
     virtual void draw();
+    virtual Technique *technique() const;
 private:
     Technique * m_technique;
     std::vector<Mesh *> m_meshList;

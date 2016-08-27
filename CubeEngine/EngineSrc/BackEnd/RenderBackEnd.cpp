@@ -214,6 +214,27 @@ void RenderBackEnd::blitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, 
     glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
 }
 
+void RenderBackEnd::setDepthTestEnable(bool isEnable)
+{
+    if(isEnable){
+        glEnable(GL_DEPTH_TEST);
+    }
+    else{
+        glDisable(GL_DEPTH_TEST);
+    }
+}
+
+void RenderBackEnd::setDepthMaskWriteEnable(bool isEnable)
+{
+    if(isEnable)
+    {
+        glDepthMask(GL_TRUE);
+    }else
+    {
+        glDepthMask(GL_FALSE);
+    }
+}
+
 RenderBackEnd::RenderBackEnd()
 {
     memset(m_textureSlot,0,sizeof(m_textureSlot));

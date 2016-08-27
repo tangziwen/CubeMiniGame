@@ -14,6 +14,12 @@ vec4::vec4(float x, float y, float z, float w)
 
 }
 
+vec4::vec4(vec3 v, float w)
+    :x(v.x),y(v.y),z(v.z),w(w)
+{
+
+}
+
 vec3 vec4::toVec3()
 {
     return vec3(x,y,z);

@@ -9,6 +9,8 @@ namespace tzw {
 Scene::Scene()
 {
     m_root.setScene(this);
+    m_ambient = new AmbientLight();
+    m_dirLight = new DirectionalLight();
 }
 
 Scene *Scene::create()
@@ -108,6 +110,11 @@ void Scene::createDefaultCameras()
     //m_root.addChild(m_defaultCamera);
 }
 
+BaseLight *Scene::getAmbient() const
+{
+    return m_ambient;
+}
+
 OctreeScene *Scene::getOctreeScene() const
 {
     return m_octreeScene;
@@ -116,6 +123,11 @@ OctreeScene *Scene::getOctreeScene() const
 void Scene::setOctreeScene(OctreeScene *octreeScene)
 {
     m_octreeScene = octreeScene;
+}
+
+DirectionalLight *Scene::getDirectionLight()
+{
+    return m_dirLight;
 }
 
 void Scene::init()

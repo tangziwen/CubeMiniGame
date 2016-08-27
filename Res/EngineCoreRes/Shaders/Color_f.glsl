@@ -4,13 +4,19 @@ precision mediump int;
 precision mediump float;
 #endif
 
-uniform vec4 TU_color;
-varying vec2 v_texcoord;
 
+uniform sampler2D TU_tex1;
+uniform vec4 TU_color;
+varying vec3 v_position;
+varying vec3 v_normal;
+varying vec2 v_texcoord;
 //! [0]
 void main()
 {
-    gl_FragColor = vec4(1.0,0.0,0.0,1.0);
+    // Set fragment color from texture
+    gl_FragData[0] = TU_color;
+	gl_FragData[1] = vec4(v_position,1.0);
+	gl_FragData[2] = vec4(normalize(v_normal),1.0);		
+	gl_FragData[3] = vec4(1.0,1.0,1.0,1.0);
 }
 //! [0]
-

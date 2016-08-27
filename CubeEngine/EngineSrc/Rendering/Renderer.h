@@ -6,7 +6,7 @@
 #include "RenderTarget.h"
 #include "../Shader/ShaderMgr.h"
 namespace tzw {
-
+class Mesh;
 class Renderer
 {
 public:
@@ -20,6 +20,7 @@ public:
     void renderCommon(RenderCommand &command);
     void clearCommands();
     void render(RenderCommand &command);
+    void renderPrimitive(Mesh * mesh, ShaderProgram * program,RenderCommand::PrimitiveType primitiveType);
     bool enable3DRender() const;
     void setEnable3DRender(bool enable3DRender);
 
@@ -27,7 +28,12 @@ public:
     void setEnableGUIRender(bool enableGUIRender);
 
 private:
-    ShaderProgram * m_gpassProgram;
+    void initQuad();
+    void geometryPass();
+    void LightingPass();
+    void directionalLightPass();
+    Mesh * m_quad;
+    ShaderProgram * m_dirLightProgram;
     bool m_enable3DRender;
     bool m_enableGUIRender;
     std::vector<RenderCommand> m_GUICommandList;

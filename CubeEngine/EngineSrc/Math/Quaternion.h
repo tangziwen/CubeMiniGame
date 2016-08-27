@@ -16,6 +16,7 @@ public:
     static Quaternion slerp(Quaternion start,Quaternion end,float dt);
     static Quaternion  lerp(Quaternion start,Quaternion end,float dt);
     float& operator [](int index);
+    Quaternion operator * (const Quaternion & other);
     float x,y,z,w;
 };
 

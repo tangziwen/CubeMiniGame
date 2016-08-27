@@ -3,6 +3,7 @@
 #include <GL/glew.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iostream>
 namespace tzw {
 
 RenderTarget::RenderTarget()
@@ -31,6 +32,8 @@ void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutput
         for (unsigned int i = 0 ; i < m_numOfOutputs ; i++) {
             glBindTexture(GL_TEXTURE_2D, m_colorTexs[i]);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
             glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorTexs[i], 0);
         }
     }
@@ -42,6 +45,8 @@ void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutput
 
         glBindTexture(GL_TEXTURE_2D, m_depthTex);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32F, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTex, 0);
     }
 
@@ -72,6 +77,10 @@ void RenderTarget::bindForWriting()
 void RenderTarget::bindForReading()
 {
     glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+    for (unsigned int i = 0 ; i < m_numOfOutputs; i++) {
+        glActiveTexture(GL_TEXTURE0 + i);
+        glBindTexture(GL_TEXTURE_2D, m_colorTexs[i]);
+    }
 }
 
 void RenderTarget::setReadBuffer(integer_u index)

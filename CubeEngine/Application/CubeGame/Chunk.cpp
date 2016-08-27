@@ -83,11 +83,7 @@ bool Chunk::getIsAccpectOCTtree() const
 void Chunk::draw()
 {
     if (!m_isLoaded) return;
-    auto camera = SceneMgr::shared()->currentScene()->defaultCamera();
-    auto vp = camera->getViewProjectionMatrix();
-    auto m = getTransform();
-    m_tech->setVar("TU_mvpMatrix", vp* m);
-    m_tech->setVar("TU_color",m_uniformColor);
+    m_tech->applyFromDrawable(this);
     RenderCommand command(m_mesh,m_tech,RenderCommand::RenderType::Common);
     Renderer::shared()->addRenderCommand(command);
 }
@@ -133,12 +129,13 @@ void Chunk::load()
 {
     if(m_isLoaded)return;
     m_isLoaded = true;
+    setCamera(SceneMgr::shared()->currentScene()->defaultCamera());
     //强制重缓存数据
     reCache();
     if (!m_mesh)
     {
         m_mesh = new Mesh();
-        m_tech = new Technique("./Res/EngineCoreRes/Shaders/Simple_v.glsl","./Res/EngineCoreRes/Shaders/Simple_f.glsl");
+        m_tech = new Technique("./Res/EngineCoreRes/Shaders/GeometryPass_v.glsl","./Res/EngineCoreRes/Shaders/GeometryPass_f.glsl");
     }
     generateBlocks();
     finish();
@@ -241,6 +238,7 @@ void Chunk::finish()
     {
         m_tech->setTex("TU_tex1",GameWorld::shared()->getBlockSheet()->texture());
     }
+    m_mesh->caclNormals();
     m_mesh->finish();
     auto m_nowTicks = clock();
 }

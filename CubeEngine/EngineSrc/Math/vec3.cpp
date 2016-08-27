@@ -118,6 +118,13 @@ vec3 vec3::lerp(const vec3 &from, const vec3 &to, float the_time)
     return result;
 }
 
+std::string vec3::getStr()
+{
+    static char tmpStr[50];
+    sprintf(tmpStr,"(%f, %f, %f)",x,y,z);
+    return tmpStr;
+}
+
 float vec3::getX() const
 {
     return x;

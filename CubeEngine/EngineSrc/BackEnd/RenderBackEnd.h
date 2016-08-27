@@ -29,6 +29,9 @@ public:
                            int dstY0,
                            int dstX1,
                            int dstY1);
+
+    void setDepthTestEnable(bool isEnable);
+    void setDepthMaskWriteEnable(bool isEnable);
 private:
     static RenderBackEnd * m_instance;
     RenderBackEnd();

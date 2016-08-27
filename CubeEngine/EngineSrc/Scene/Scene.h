@@ -6,7 +6,8 @@
 
 #include "../Math/Ray.h"
 #include "OctreeScene.h"
-
+#include "../Lighting/DirectionalLight.h"
+#include "../Lighting/AmbientLight.h"
 namespace tzw {
 
 class ConsolePanel;
@@ -40,13 +41,18 @@ public:
     OctreeScene *getOctreeScene() const;
     void setOctreeScene(OctreeScene *octreeScene);
 
+    DirectionalLight *getDirectionLight();
+
+    BaseLight *getAmbient() const;
+
 private:
+    DirectionalLight *m_dirLight;
     ConsolePanel * m_consolePanel;
     DebugInfoPanel * m_debugInfoPanel;
     Camera * m_defaultGUICamera;
     Camera * m_defaultCamera;
     void createDefaultCameras();
-
+    AmbientLight * m_ambient;
     Node m_root;
     OctreeScene * m_octreeScene;
 };

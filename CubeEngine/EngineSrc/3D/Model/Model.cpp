@@ -30,11 +30,17 @@ Model *Model::create(std::string modelFilePath)
 void Model::draw()
 {
     m_technique->applyFromDrawable(this);
+    m_technique->use();
     for(auto mesh : m_meshList)
     {
         m_technique->applyFromMat(mesh->getMat());
         RenderCommand command(mesh,m_technique,RenderCommand::RenderType::Common);
         Renderer::shared()->addRenderCommand(command);
     }
+}
+
+Technique *Model::technique() const
+{
+    return m_technique;
 }
 } // namespace tzw

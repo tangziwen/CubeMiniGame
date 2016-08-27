@@ -1,7 +1,7 @@
 #ifndef TZW_VEC3_H
 #define TZW_VEC3_H
 
-
+#include <string>
 namespace tzw {
 
 class vec3
@@ -30,6 +30,7 @@ public:
     float length() const;
     void normalize();
     static vec3 lerp(const vec3& from, const vec3 & to, float the_time);
+    std::string getStr();
 };
 
 } // namespace tzw

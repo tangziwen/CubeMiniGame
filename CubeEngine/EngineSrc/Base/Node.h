@@ -36,7 +36,7 @@ public:
     void setPos(const vec3 &pos);
     virtual void draw();
     virtual void update(float dt);
-    vec3 getRotate() const;
+    vec3 getRotate();
     void setRotateE(const vec3 &rotate);
     void setRotateE(float x,float y,float z);
     vec3 getScale() const;
@@ -94,6 +94,7 @@ protected:
     Scene* m_scene;
     vec3 m_scale;
     Quaternion m_rotateQ;
+    vec3 m_rotateE;
     vec3 m_pos;
     bool m_needToUpdate;
     Matrix44 m_worldTransformCache;

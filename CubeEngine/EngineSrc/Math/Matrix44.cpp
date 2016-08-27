@@ -226,6 +226,17 @@ Matrix44 Matrix44::transpose()
     return result;
 }
 
+vec4 Matrix44::operator *(const vec4 &v)
+{
+    vec4 dst;
+    auto m = m_data;
+    dst.x = v.x * m[0] + v.y * m[4] + v.z * m[8] + v.w * m[12];
+    dst.y = v.x * m[1] + v.y * m[5] + v.z * m[9] + v.w * m[13];
+    dst.z = v.x * m[2] + v.y * m[6] + v.z * m[10] + v.w * m[14];
+    dst.w = v.x * m[3] + v.y * m[7] + v.z * m[11] + v.w * m[15];
+    return dst;
+}
+
 void Matrix44::frustum(float left, float right, float bottom, float top, float near, float far)
 {
     float rl = (right - left),

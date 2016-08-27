@@ -4,6 +4,7 @@
 #include "../Scene/SceneMgr.h"
 #include "../Engine/Engine.h"
 #include "../Scene/Scene.h"
+#include <iostream>
 namespace tzw {
 /**
  * @brief Node::Node 构造函数
@@ -97,11 +98,12 @@ void Node::update(float dt)
  * @note 旋转量的x,y,z分量分别表示绕x轴,y轴,z轴旋转的角度(以角度记)，变换的顺序为roll(z)->picth(x)->yaw(y);
  * @return
  */
-vec3 Node::getRotate() const
+vec3 Node::getRotate()
 {
-    vec3 theEulerAngle;
-    m_rotateQ.toEulserAngel(&theEulerAngle.x,&theEulerAngle.y,&theEulerAngle.z);
-    return theEulerAngle;
+    float x = m_rotateE.x, y = m_rotateE.y, z = m_rotateE.z;
+    m_rotateQ.toEulserAngel(&x, &y, &z);
+    //m_rotateE = vec3(x,y,z);
+    return m_rotateE;
     //return vec3 (TbaseMath::Radius2Ang(theEulerAngle.x),TbaseMath::Radius2Ang(theEulerAngle.y),TbaseMath::Radius2Ang(theEulerAngle.z));
 }
 
@@ -112,7 +114,10 @@ vec3 Node::getRotate() const
  */
 void Node::setRotateE(const vec3 &rotate)
 {
-    m_rotateQ.fromEulerAngle(rotate);
+    m_rotateE = rotate;
+    //theRotate.x = TbaseMath::clampf(rotate.x,-60.f,60.f);
+    //theRotate.y = TbaseMath::clampf(rotate.y,0.f,360.f);
+    m_rotateQ.fromEulerAngle(m_rotateE);
     m_needToUpdate = true;
 }
 /**
@@ -599,6 +604,9 @@ Quaternion Node::getRotateQ() const
 void Node::setRotateQ(const Quaternion &rotateQ)
 {
     m_rotateQ = rotateQ;
+    float x,y,z;
+    m_rotateQ.toEulserAngel(&x,&y,&z);
+    m_rotateE = vec3(x, y, z);
     m_needToUpdate = true;
 }
 
