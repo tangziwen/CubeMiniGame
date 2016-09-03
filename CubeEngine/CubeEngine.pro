@@ -184,7 +184,8 @@ SOURCES += main.cpp \
     EngineSrc/Lighting/DirectionalLight.cpp \
     EngineSrc/Lighting/BaseLight.cpp \
     EngineSrc/Lighting/AmbientLight.cpp \
-    EngineSrc/3D/Primitive/CubePrimitive.cpp
+    EngineSrc/3D/Primitive/CubePrimitive.cpp \
+    EngineSrc/3D/Terrain/TerrainChunk.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -346,4 +347,5 @@ HEADERS += \
     EngineSrc/Lighting/DirectionalLight.h \
     EngineSrc/Lighting/BaseLight.h \
     EngineSrc/Lighting/AmbientLight.h \
-    EngineSrc/3D/Primitive/CubePrimitive.h
+    EngineSrc/3D/Primitive/CubePrimitive.h \
+    EngineSrc/3D/Terrain/TerrainChunk.h

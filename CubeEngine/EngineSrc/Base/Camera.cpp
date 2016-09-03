@@ -116,8 +116,8 @@ void Camera::lookAt(vec3 targetPos, vec3 upFrame)
     aixY.normalize();
     Quaternion q;
     q.fromAxises(aixX,aixY,-aixZ);
-    m_rotateQ = q;
-//    setRotateQ(q);
+    //m_rotateQ = q;
+    setRotateQ(q);
     reCache();
     //    float rotateX,rotateY,rotateZ;
     //    if(aixX.z != 1 || aixX.z != -1)

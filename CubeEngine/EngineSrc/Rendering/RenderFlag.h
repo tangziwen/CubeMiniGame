@@ -38,6 +38,20 @@ enum class WarpAddress
     Clamp,
     ClampToEdge,
 };
+
+enum class BlendingEquation
+{
+    Add,
+};
+
+enum class BlendingFactor
+{
+    One,
+    Zero,
+    SrcAlpha,
+    OneMinusSrcAlpha,
+    ConstantAlpha
+};
 }
 } // namespace tzw
 

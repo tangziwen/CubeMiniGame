@@ -15,6 +15,7 @@ public:
     vec3 m_pos;
     vec3 m_normal;
     vec2 m_texCoord;
+    vec3 m_color;
 };
 
 } // namespace tzw

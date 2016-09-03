@@ -141,7 +141,7 @@ void RenderBackEnd::setTexMAG(unsigned int textureID, int param, RenderFlag::Tex
 
 void RenderBackEnd::bindTexture2D(unsigned int texUnitID, unsigned int textureID, RenderFlag::TextureType type)
 {
-    if (m_textureSlot[texUnitID] == textureID) return;
+//    if (m_textureSlot[texUnitID] == textureID) return;
     m_textureSlot[texUnitID] = textureID;
     glActiveTexture(GL_TEXTURE0 + texUnitID);
     switch(type)
@@ -222,6 +222,37 @@ void RenderBackEnd::setDepthTestEnable(bool isEnable)
     else{
         glDisable(GL_DEPTH_TEST);
     }
+}
+
+void RenderBackEnd::setBlendEquation(RenderFlag::BlendingEquation equation)
+{
+    switch(equation)
+    {
+    case RenderFlag::BlendingEquation::Add:
+        glBlendEquation(GL_FUNC_ADD);
+        break;
+    }
+}
+static unsigned int getGLFactor(RenderFlag::BlendingFactor factor)
+{
+    switch(factor)
+    {
+    case RenderFlag::BlendingFactor::One:
+        return GL_ONE;
+    case RenderFlag::BlendingFactor::Zero:
+        return GL_ZERO;
+    case RenderFlag::BlendingFactor::SrcAlpha:
+        return GL_SRC_ALPHA;
+    case RenderFlag::BlendingFactor::OneMinusSrcAlpha:
+        return GL_ONE_MINUS_SRC_ALPHA;
+    case RenderFlag::BlendingFactor::ConstantAlpha:
+        return GL_CONSTANT_ALPHA;
+    }
+}
+
+void RenderBackEnd::setBlendFactor(RenderFlag::BlendingFactor factorSrc, RenderFlag::BlendingFactor factorDst)
+{
+    glBlendFunc(getGLFactor(factorSrc),getGLFactor(factorDst));
 }
 
 void RenderBackEnd::setDepthMaskWriteEnable(bool isEnable)

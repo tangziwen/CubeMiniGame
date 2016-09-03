@@ -3,22 +3,34 @@
 #include "GameWorld.h"
 #include "algorithm"
 #include "time.h"
+#include "../EngineSrc/Texture/TextureMgr.h"
 static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 namespace tzw {
+
+static int v0[] = {7, 8, 19, };
+static int v1[] = {0, 11, 16, };
+static int v2[] = {1, 8, 15, };
+static int v3[] = {6, 9, 12, };
+static int v4[] = {4, 23, 18, };
+static int v5[] = {17, 3, 20, };
+static int v6[] = {2, 14, 21, };
+static int v7[] = {5, 13, 22, };
+
 Chunk::Chunk(int the_x, int the_y,int the_z)
     :m_isLoaded(false),x(the_x),y(the_y),z(the_z)
 {
+    reset();
     m_localAABB.update(vec3(0,0,0));
-    m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,MAX_BLOCK * BLOCK_SIZE,MAX_BLOCK * BLOCK_SIZE));
-    setPos(vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , z* CHUNK_SIZE));
+    m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,MAX_BLOCK * BLOCK_SIZE,-1 * MAX_BLOCK * BLOCK_SIZE));
+    setPos(vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , -1 * z* CHUNK_SIZE));
     m_mesh = nullptr;
     m_tech = nullptr;
 }
 
 vec3 Chunk::getGridPos(int the_x, int the_y, int the_z)
 {
-    return vec3(x*MAX_BLOCK+the_x,y*MAX_BLOCK+the_y,z*MAX_BLOCK+the_z);
+    return vec3(x*MAX_BLOCK+the_x,y*MAX_BLOCK+the_y,-1 * (z*MAX_BLOCK+the_z));
 }
 
 Block *Chunk::getBlock(int x, int y, int z)
@@ -84,6 +96,7 @@ void Chunk::draw()
 {
     if (!m_isLoaded) return;
     m_tech->applyFromDrawable(this);
+    m_tech->setVar("TU_roughness",4.0f);
     RenderCommand command(m_mesh,m_tech,RenderCommand::RenderType::Common);
     Renderer::shared()->addRenderCommand(command);
 }
@@ -114,7 +127,7 @@ void Chunk::addBlock(std::string blockInfoName,int i,int j,int k)
     block->localGridX = i;
     block->localGridY = j;
     block->localGridZ = k;
-    block->setPos(vec3(i*BLOCK_SIZE,j*BLOCK_SIZE,k*BLOCK_SIZE ));
+    block->setPos(vec3(i*BLOCK_SIZE,j*BLOCK_SIZE, -k*BLOCK_SIZE ));
     block->setIsAccpectOCTtree(false);
     block->setParent(this);
     block->setIsDrawable(true);
@@ -135,7 +148,8 @@ void Chunk::load()
     if (!m_mesh)
     {
         m_mesh = new Mesh();
-        m_tech = new Technique("./Res/EngineCoreRes/Shaders/GeometryPass_v.glsl","./Res/EngineCoreRes/Shaders/GeometryPass_f.glsl");
+        m_tech = new Technique("./Res/EngineCoreRes/Shaders/VoxelTerrain_v.glsl","./Res/EngineCoreRes/Shaders/VoxelTerrain_f.glsl");
+        m_tech->setTex("TU_tex1", TextureMgr::shared()->getOrCreateTexture("./Res/TestRes/rock_texture.png"), 0);
     }
     generateBlocks();
     finish();
@@ -147,6 +161,55 @@ void Chunk::unload()
 {
     m_isLoaded = false;
     m_mesh->clear();
+}
+
+void Chunk::relax()
+{
+    //use laplace relax
+    for(int i =0;i<MAX_BLOCK + 1;i++)
+    {
+        for(int j=0;j<MAX_BLOCK + 1;j++)
+        {
+            for(int k=0;k<MAX_BLOCK + 1;k++)
+            {
+                if (m_indicesGroup[i][j][k] >= 0)
+                {
+                    int theCount = 0;
+                    vec3 thePos;
+                    int resultArray[9][3] = {{0,0,0},{-1,0,0},{1,0,0},{0,0,-1},{0,0,1},{-1,0,-1},{1,0,1},{-1,0,1},{1,0,-1}};
+                    for (int m = 0; m < 9; m++)
+                    {
+                        auto x = i + resultArray[m][0];
+                        auto y = j + resultArray[m][1];
+                        auto z = k + resultArray[m][2];
+                        if(getVerticesAt(x, y, z) >= 0)
+                        {
+                            thePos += m_mesh->getVertex(m_indicesGroup[x][y][z]).m_pos;
+                            theCount += 1;
+                        }
+                    }
+                    thePos = thePos / (theCount * 1.0f);
+                    auto result = m_mesh->getVertex(m_indicesGroup[i][j][k]);
+                    result.m_pos = thePos;
+                    m_mesh->setVertex(m_indicesGroup[i][j][k],result);
+                }
+            }
+        }
+    }
+}
+
+void Chunk::verticesInfoClear()
+{
+    for(int i =0;i<MAX_BLOCK + 1;i++)
+    {
+        for(int j=0;j<MAX_BLOCK + 1;j++)
+        {
+            for(int k=0;k<MAX_BLOCK + 1;k++)
+            {
+                m_indicesGroup[i][j][k] = -1;
+            }
+        }
+    }
 }
 
 bool Chunk::isInRange(int i, int j, int k)
@@ -166,6 +229,7 @@ void Chunk::reset()
             }
         }
     }
+    verticesInfoClear();
 }
 
 void Chunk::generateBlocks()
@@ -179,6 +243,7 @@ void Chunk::generateBlocks()
                 if(GameMap::shared()->isBlock(this,i,j,k))
                 {
                     Block * block = nullptr;
+                    block = Block::create("mud.json");
                     if (GameMap::shared()->isSurface(this,i,j,k))
                     {
                         block = Block::create("grass.json");
@@ -192,16 +257,14 @@ void Chunk::generateBlocks()
                     block->localGridX = i;
                     block->localGridY = j;
                     block->localGridZ = k;
-                    block->setPos(vec3(i*BLOCK_SIZE,j*BLOCK_SIZE,k*BLOCK_SIZE ));
-                    block->setIsAccpectOCTtree(false);
+                    block->setPos(vec3(i*BLOCK_SIZE,j*BLOCK_SIZE,-k*BLOCK_SIZE ));
                     block->setParent(this);
-                    block->setIsDrawable(true);
                     block->reCache();
                     m_blockGroup[i][j][k] = block;
                     m_blockList.push_back(block);
                 }else
                 {
-                     m_blockGroup[i][j][k] = nullptr;
+                    m_blockGroup[i][j][k] = nullptr;
                 }
             }
         }
@@ -218,6 +281,7 @@ void Chunk::finish()
     }
     auto m_oldTicks = clock();
     m_mesh->clear();
+    verticesInfoClear();
     for(int i =0;i<MAX_BLOCK;i++)
     {
         for(int j=0;j<MAX_BLOCK;j++)
@@ -225,19 +289,93 @@ void Chunk::finish()
             for(int k=0;k<MAX_BLOCK;k++)
             {
                 auto block = m_blockGroup[i][j][k];
-                if(!block) continue;
-                //检查方块的内部可见性，避免大量重复的mesh
-                if(isEmpty(i,j+1,k) || isEmpty(i,j-1,k) ||isEmpty(i-1,j,k) || isEmpty(i+1,j,k) || isEmpty(i,j,k+1) || isEmpty(i,j,k-1))
+                if(block)
                 {
-                    m_mesh->merge(block->info()->mesh(),block->getLocalTransform());
+                    //检查方块的内部可见性，避免大量重复的mesh
+                    if(isEmpty(i,j+1,k) || isEmpty(i,j-1,k) ||isEmpty(i-1,j,k) || isEmpty(i+1,j,k) || isEmpty(i,j,k+1) || isEmpty(i,j,k-1))
+                    {
+                        auto localTransform = block->getLocalTransform();
+                        auto info = block->info();
+                        auto theMesh = block->info()->mesh();
+                        auto vertices = theMesh->m_vertices;
+                        if(isEmpty(i,j+1,k))//top
+                        {
+                            m_mesh->addIndex(addVertexAt(i, j+1, k, info->getVertex(1,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j+1, k, info->getVertex(2,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j+1, k + 1, info->getVertex(5,localTransform)));
+
+                            m_mesh->addIndex(addVertexAt(i, j+1, k + 1, info->getVertex(6,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j+1, k, info->getVertex(1,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j+1, k + 1, info->getVertex(5,localTransform)));
+                        }
+
+                        if(isEmpty(i,j-1,k))//bottom
+                        {
+                            m_mesh->addIndex(addVertexAt(i, j, k + 1, info->getVertex(7,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i +1, j, k + 1, info->getVertex(4,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k, info->getVertex(3,localTransform)));
+
+                            m_mesh->addIndex(addVertexAt(i, j, k, info->getVertex(0,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j, k + 1, info->getVertex(7,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k, info->getVertex(3,localTransform)));
+                        }
+
+                        if(isEmpty(i-1,j,k))//left
+                        {
+                            m_mesh->addIndex(addVertexAt(i, j, k + 1, info->getVertex(7,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j, k, info->getVertex(0,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j + 1, k, info->getVertex(1,localTransform)));
+
+                            m_mesh->addIndex(addVertexAt(i, j + 1, k + 1, info->getVertex(6,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j, k + 1, info->getVertex(7,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j + 1, k, info->getVertex(1,localTransform)));
+                        }
+
+
+                        if(isEmpty(i+1,j,k))//right
+                        {
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k, info->getVertex(3,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i +1, j, k + 1, info->getVertex(4,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j + 1, k + 1, info->getVertex(5,localTransform)));
+
+                            m_mesh->addIndex(addVertexAt(i + 1, j + 1, k, info->getVertex(2,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k, info->getVertex(3,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j + 1, k + 1, info->getVertex(5,localTransform)));
+                        }
+
+                        if(isEmpty(i,j,k + 1))//back
+                        {
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k + 1, info->getVertex(4,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j, k + 1, info->getVertex(7,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j + 1, k + 1, info->getVertex(6,localTransform)));
+
+                            m_mesh->addIndex(addVertexAt(i + 1, j + 1, k + 1, info->getVertex(5,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k + 1, info->getVertex(4,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j + 1, k + 1, info->getVertex(6,localTransform)));
+                        }
+
+
+                        if(isEmpty(i,j,k - 1))//front
+                        {
+                            m_mesh->addIndex(addVertexAt(i, j, k, info->getVertex(0,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j, k, info->getVertex(3,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j + 1, k, info->getVertex(2,localTransform)));
+
+                            m_mesh->addIndex(addVertexAt(i, j + 1, k, info->getVertex(1,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i, j, k, info->getVertex(0,localTransform)));
+                            m_mesh->addIndex(addVertexAt(i + 1, j + 1, k, info->getVertex(2,localTransform)));
+                        }
+//                        m_mesh->merge(vertices, theMesh->m_indices,block->getLocalTransform());
+                    }
                 }
             }
         }
     }
     if(!m_blockList.empty())
     {
-        m_tech->setTex("TU_tex1",GameWorld::shared()->getBlockSheet()->texture());
+        //m_tech->setTex("TU_tex1",GameWorld::shared()->getBlockSheet()->texture());
     }
+    relax();
     m_mesh->caclNormals();
     m_mesh->finish();
     auto m_nowTicks = clock();
@@ -294,7 +432,7 @@ void Chunk::addBlockToNeighbor(std::string blockInfoName,int i, int j, int k)
     auto chunk = GameWorld::shared()->getChunkByChunk(theX,theY,theZ);
     if(chunk)
     {
-         chunk->addBlock(blockInfoName,i,j,k);
+        chunk->addBlock(blockInfoName,i,j,k);
     }else
     {
     }
@@ -308,6 +446,27 @@ bool Chunk::isEmpty(int x, int y, int z)
         return true;
     }
     return !m_blockGroup[x][y][z];
+}
+
+int Chunk::getVerticesAt(int x, int y, int z)
+{
+    if (x < 0 || x > MAX_BLOCK || y < 0 || y > MAX_BLOCK || z < 0 || z > MAX_BLOCK)
+        return -1;
+    return m_indicesGroup[x][y][z];
+}
+
+int Chunk::addVertexAt(int x, int y, int z, VertexData vertex)
+{
+    if(m_indicesGroup[x][y][z] >=0)
+    {
+        return m_indicesGroup[x][y][z];
+    }else
+    {
+        m_mesh->addVertex(vertex);
+        auto index = m_mesh->getVerticesSize() - 1;
+        m_indicesGroup[x][y][z] = index;
+        return index;
+    }
 }
 }
 

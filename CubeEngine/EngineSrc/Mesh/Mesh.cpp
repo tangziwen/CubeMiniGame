@@ -96,6 +96,16 @@ void Mesh::caclNormals()
     }
 }
 
+VertexData Mesh::getVertex(unsigned int index)
+{
+    return m_vertices[index];
+}
+
+void Mesh::setVertex(unsigned int index, VertexData vertex)
+{
+    m_vertices[index] = vertex;
+}
+
 GLuint Mesh::vbo() const
 {
     return m_vbo;
@@ -177,6 +187,27 @@ void Mesh::merge(Mesh *other, const Matrix44 &transform)
 
     //merge indices
     for(auto index : other->m_indices)
+    {
+        m_indices.push_back(index+vOffset);
+    }
+}
+
+void Mesh::merge(std::vector<VertexData> &vertices, std::vector<short_u> &indices, const Matrix44 &transform)
+{
+    auto vOffset = m_vertices.size();
+    //merge vertex
+    for(auto vertext : vertices)
+    {
+        //transform by matrix
+        auto pos = vec4(vertext.m_pos.x,vertext.m_pos.y,vertext.m_pos.z,1.0);
+        auto resultPos = transform * pos;
+        vertext.m_pos = vec3(resultPos.x,resultPos.y,resultPos.z);
+
+        m_vertices.push_back(vertext);
+    }
+
+    //merge indices
+    for(auto index : indices)
     {
         m_indices.push_back(index+vOffset);
     }

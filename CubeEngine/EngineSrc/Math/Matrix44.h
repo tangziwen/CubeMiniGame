@@ -20,8 +20,12 @@ public:
     Matrix44 inverted(bool *invertible = 0);
     Matrix44 transpose();
     vec4 operator * (const vec4 & v );
+    vec3 transformVec3(vec3 v);
     void frustum(float left, float right, float bottom, float top, float near, float far);
     float * data();
+    vec3 up();
+    vec3 forward();
+    vec3 right();
 private:
     float m_data[16];
 };

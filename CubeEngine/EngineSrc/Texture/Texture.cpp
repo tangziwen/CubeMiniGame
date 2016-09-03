@@ -13,6 +13,7 @@ Texture::Texture(std::string filePath)
         printf("texture create failed, no such file %s\n",filePath.c_str());
         exit(0);
     }
+    setWarp(RenderFlag::WarpAddress::Repeat);
 }
 
 Texture::Texture(unsigned char *rawData, int w, int h, bool needFlipY)
@@ -26,6 +27,7 @@ Texture::Texture(unsigned char *rawData, int w, int h, bool needFlipY)
     m_type = RenderFlag::TextureType::Texture2D;
     m_width = w;
     m_height = h;
+    setWarp(RenderFlag::WarpAddress::Repeat);
 }
 
 Texture::Texture(std::string PosXFilename, std::string NegXFilename, std::string PosYFilename, std::string NegYFilename, std::string PosZFilename, std::string NegZFilename)

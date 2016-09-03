@@ -23,16 +23,16 @@ void GameWorld::createWorld(Scene *scene, int width, int height,float ratio)
     //int block_height = height /MAX_BLOCK;
     m_width = width;
     m_height = height;
-    for(int i = -1 * width/2;i<=width/2;i++)
+    for(int i = 0;i< width;i++)
     {
-        for(int j=-1 * height/2;j<=height/2;j++)
+        for(int j=0;j<height;j++)
         {
-            for(int k= -1 *WORLD_HEIGHT/2; k<=WORLD_HEIGHT/2;k++)
+            for(int k = 0; k < WORLD_HEIGHT;k++)
             {
                 auto chunkA = new Chunk(i,k,j);
                 m_mainRoot->addChild(chunkA);
                 m_chunkList.push_back(chunkA);
-                m_chunkArray[i + width/2][j + height/2][k + WORLD_HEIGHT/2] = chunkA;
+                m_chunkArray[i][j][k] = chunkA;
             }
         }
     }
@@ -41,7 +41,7 @@ void GameWorld::createWorld(Scene *scene, int width, int height,float ratio)
 
 vec3 GameWorld::worldToGrid(vec3 world)
 {
-    return vec3((world.x+1) / BLOCK_SIZE, (world.y+1) / BLOCK_SIZE, (world.z+1) / BLOCK_SIZE);
+    return vec3((world.x+1) / BLOCK_SIZE, (world.y+1) / BLOCK_SIZE, (-world.z+1) / BLOCK_SIZE);
 }
 
 vec3 GameWorld::gridToChunk(vec3 grid)
@@ -127,10 +127,10 @@ void GameWorld::startGame()
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
     GameMap::shared()->setMapType(GameMap::MapType::Plain);
-    GameMap::shared()->setMaxHeight(1);
+    GameMap::shared()->setMaxHeight(5);
     auto player = new Player(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
-    GameWorld::shared()->createWorld(SceneMgr::shared()->currentScene(),10,10,0.05);
+    GameWorld::shared()->createWorld(SceneMgr::shared()->currentScene(),10,10,0.02);
     Cube* skybox = Cube::create("./Res/User/CubeGame/texture/SkyBox/left.jpg","./Res/User/CubeGame/texture/SkyBox/right.jpg",
                  "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
                  "./Res/User/CubeGame/texture/SkyBox/back.jpg","./Res/User/CubeGame/texture/SkyBox/front.jpg");
@@ -163,9 +163,9 @@ void GameWorld::loadChunksAroundPlayer()
     {
         for(int j =posY -4;j<=posY + 4;j++)
         {
-            for (int k = -1 * WORLD_HEIGHT/2;k<= WORLD_HEIGHT/2;k++)
+            for (int k = 0;k< WORLD_HEIGHT;k++)
             {
-                auto targetChunk = m_chunkArray[i][j][k + WORLD_HEIGHT/2];
+                auto targetChunk = m_chunkArray[i][j][k];
                 targetChunk->load();
                 auto findResult = m_tempArray.find(targetChunk);
                 if(findResult!= m_tempArray.end())
@@ -173,7 +173,7 @@ void GameWorld::loadChunksAroundPlayer()
                     m_tempArray.erase(findResult);
                 }else
                 {
-                    m_activedChunkList.insert(m_chunkArray[i][j][k + WORLD_HEIGHT/2]);
+                    m_activedChunkList.insert(m_chunkArray[i][j][k]);
                 }
             }
         }
@@ -186,10 +186,10 @@ void GameWorld::loadChunksAroundPlayer()
 
 Chunk *GameWorld::getChunkByChunk(int x, int y, int z)
 {
-    if(x + m_width/2 >=0 && x + m_width/2 <m_width && z + m_height/2 >=0 && z + m_height/2 <m_height
-            && y + WORLD_HEIGHT/2 >=0 && y + WORLD_HEIGHT/2 < WORLD_HEIGHT)
+    if(x >=0 && x <m_width && z >=0 && z <m_height
+            && y >=0 && y < WORLD_HEIGHT)
     {
-        return m_chunkArray[x + m_width/2][z + m_height/2][y + WORLD_HEIGHT/2];
+        return m_chunkArray[x][z][y];
     }
     else
     {

@@ -5,6 +5,11 @@
 #include <string>
 #include <vector>
 #define MAX_BLOCK 16
+struct vertexInfo
+{
+    unsigned int index;
+};
+
 namespace tzw
 {
 class Chunk : public Drawable3D
@@ -27,6 +32,8 @@ public:
     void load();
     void unload();
 private:
+    void relax();
+    void verticesInfoClear();
     bool m_isLoaded;
     Technique * m_tech;
     Mesh * m_mesh;
@@ -38,6 +45,9 @@ private:
     void addBlockToNeighbor(std::string blockInfoName,int i,int j,int k);
     bool isEmpty(int x,int y,int z);
     Block* m_blockGroup[MAX_BLOCK][MAX_BLOCK][MAX_BLOCK];
+    int m_indicesGroup[MAX_BLOCK + 1][MAX_BLOCK + 1][MAX_BLOCK + 1];
+    int getVerticesAt(int x, int y, int z);
+    int addVertexAt(int x, int y, int z, VertexData vertex);
 };
 }
 

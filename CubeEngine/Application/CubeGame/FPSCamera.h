@@ -41,8 +41,10 @@ public:
     bool getEnableFPSFeature() const;
     void setEnableFPSFeature(bool enableFPSFeature);
     virtual void reCache();
-
+    virtual void setRotateQ(const Quaternion &rotateQ);
+    void lookAt( vec3 pos);
 private:
+    void init(Camera * cloneObj);
     bool m_isMouseHold;
     bool m_enableFPSFeature;
     float m_maxFallSpeed;

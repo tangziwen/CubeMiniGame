@@ -9,7 +9,7 @@ Player::Player(Node *mainRoot)
     mainRoot->addChild(camera);
     SceneMgr::shared()->currentScene()->setDefaultCamera(camera);
     m_camera = camera;
-    m_camera->setIsEnableGravity(true);
+    m_camera->setIsEnableGravity(false);
 }
 
 FPSCamera *Player::camera() const

@@ -25,11 +25,7 @@ FPSCamera::FPSCamera()
 FPSCamera *FPSCamera::create(Camera *cloneObj)
 {
     auto camera =new  FPSCamera();
-    camera->setProjection(cloneObj->projection());
-    camera->setPos(cloneObj->getPos());
-    camera->setRotateE(cloneObj->getRotate());
-    camera->setScale(vec3(1.0,1.0,1.0));
-    EventMgr::shared()->addFixedPiorityListener(camera);
+    camera->init(cloneObj);
     return camera;
 }
 
@@ -95,7 +91,6 @@ bool FPSCamera::onKeyRelease(int keyCode)
         {
             auto block = static_cast<Block * >(chunk->intersectByRay(ray,hitPoint));
             chunk->removeBlock(block);
-            //            chunk->unload();
         }
     }
         break;
@@ -126,10 +121,10 @@ bool FPSCamera::onKeyRelease(int keyCode)
                 chunk->addBlock("stone.json",i,j-1,k);
                 break;
             case RayAABBSide::back:
-                chunk->addBlock("stone.json",i,j,k-1);
+                chunk->addBlock("stone.json",i,j,k + 1);
                 break;
             case RayAABBSide::front:
-                chunk->addBlock("stone.json",i,j,k+1);
+                chunk->addBlock("stone.json",i,j,k - 1);
                 break;
             case RayAABBSide::left:
                 chunk->addBlock("stone.json",i-1,j,k);
@@ -179,11 +174,9 @@ bool FPSCamera::onMouseMove(vec2 pos)
         {
             mouseForce.y = 0;
         }
-        vec3 a = getRotate();
-        auto deltaRot = vec3(mouseForce.y * 0.1,-1 * mouseForce.x * 0.1,0);
-        setRotateE(a + deltaRot);
+        auto deltaRot = vec3(mouseForce.y * 0.1,-1 * mouseForce.x * 0.1, 0);
+        setRotateE(getRotate()  + deltaRot);
     }
-    std::cout<<"current Rotate"<<m_rotateE.getStr()<<std::endl;
     m_oldPosition = newPosition;
     return true;
 }
@@ -222,7 +215,7 @@ void FPSCamera::update(float dt)
     vec3 test = pos + totalSpeed;
     playerAABB.update(vec3(test.x - m_distToside,test.y - distToGround, test.z - m_distToside));
     playerAABB.update(vec3(test.x + m_distToside,test.y, test.z + m_distToside));
-    if(!group.hitByAABB(playerAABB,overLap))//if no collid just go through
+    if(!group.hitByAABB(playerAABB,overLap) || true)//if no collid just go through TZW just for speed.
     {
         pos = test;
     }else //if collid detect, try as best as we can(6 times loop) to let the camera can move more()
@@ -414,6 +407,31 @@ void FPSCamera::reCache()
     {
         Camera::updateFrustum();
     }
+}
+
+void FPSCamera::setRotateQ(const Quaternion &rotateQ)
+{
+    Camera::setRotateQ(rotateQ);
+}
+
+void FPSCamera::lookAt(vec3 pos)
+{
+    Camera::lookAt(pos,vec3(0.f, 1.f,0.f));
+//    auto dir =  pos - m_pos;
+//    dir.normalize();
+//    auto pitch = TbaseMath::Radius2Ang(asin(dir.y));
+//    auto yaw = TbaseMath::Radius2Ang(acosf(dir.x / cosf(pitch)));
+//    setRotateE(vec3(pitch, yaw, 0.0));
+    std::cout<< "the rotation is "<<getRotate().getStr()<<std::endl;
+}
+
+void FPSCamera::init(Camera *cloneObj)
+{
+    setProjection(cloneObj->projection());
+    setPos(cloneObj->getPos());
+    setRotateE(cloneObj->getRotate());
+    setScale(vec3(1.0,1.0,1.0));
+    EventMgr::shared()->addFixedPiorityListener(this);
 }
 } // namespace tzw
 

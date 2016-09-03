@@ -2,6 +2,8 @@
 #include "GameWorld.h"
 namespace tzw {
 
+const float BlockSize = 1.0f;
+
 BlockInfo::BlockInfo()
 {
 
@@ -79,52 +81,24 @@ void BlockInfo::setBottomTexture(TextureFrame *bottomTexture)
 void BlockInfo::initMesh()
 {
     VertexData vertices[] = {
-        //top
-        {vec3( -1.0f, 1.0f,  1.0f), m_topTexture->UV(0.0f, 0.0f)}, // v1
-        {vec3( 1.0f,  1.0f,  1.0f), m_topTexture->UV(1.0f, 0.0f)},  // v2
-        {vec3( 1.0f,  1.0f,  -1.0f),m_topTexture->UV(1.0f, 1.0f)}, // v3
-        {vec3(-1.0f, 1.0f,  -1.0f), m_topTexture->UV(0.0f, 1.0f)},  // v0
+        {vec3( 0, 0,  0), m_topTexture->UV(0.0f, 0.0f)}, // v0
+        {vec3( 0,  BlockSize,  0), m_topTexture->UV(1.0f, 0.0f)},  // v1
+        {vec3( BlockSize,  BlockSize,  0),m_topTexture->UV(1.0f, 1.0f)}, // v2
+        {vec3( BlockSize, 0,  0), m_topTexture->UV(0.0f, 1.0f)},  // v3
 
-        //bottom
-        {vec3(-1.0f, -1.0f,  -1.0f), m_bottomTexture->UV(0.0f, 1.0f)},  // v0
-        {vec3( 1.0f,  -1.0f,  -1.0f),m_bottomTexture->UV(1.0f, 1.0f)}, // v3
-        {vec3( 1.0f,  -1.0f,  1.0f), m_bottomTexture->UV(1.0f, 0.0f)},  // v2
-        {vec3( -1.0f, -1.0f,  1.0f), m_bottomTexture->UV(0.0f, 0.0f)}, // v1
-
-        //----side---
-
-        // front
-        {vec3(-1.0f, -1.0f,  1.0f), m_sideTexture->UV(0.0f, 0.0f)},  // v0
-        {vec3( 1.0f,  -1.0f,  1.0f), m_sideTexture->UV(1.0f, 0.0f)}, // v1
-        {vec3( 1.0f,  1.0f,  1.0f), m_sideTexture->UV(1.0f, 1.0f)},  // v2
-        {vec3( -1.0f, 1.0f,  1.0f), m_sideTexture->UV(0.0f, 1.0f)}, // v3
-
-        // right
-        {vec3(1.0f, -1.0f,  1.0f), m_sideTexture->UV(0.0f, 0.0f)},  // v4
-        {vec3( 1.0f,  -1.0f,  -1.0f), m_sideTexture->UV(1.0f, 0.0f)}, // v5
-        {vec3( 1.0f,  1.0f,  -1.0f), m_sideTexture->UV(1.0f, 1.0f)},  // v6
-        {vec3( 1.0f, 1.0f,  1.0f), m_sideTexture->UV(0.0f, 1.0f)}, // v7
-
-        // left
-        {vec3( -1.0f, 1.0f,  1.0f), m_sideTexture->UV(1.0f, 1.0f)}, // v8
-        {vec3( -1.0f,  1.0f,  -1.0f), m_sideTexture->UV(0.0f, 1.0f)},  // v9
-        {vec3( -1.0f,  -1.0f,  -1.0f), m_sideTexture->UV(0.0f, 0.0f)}, // v10
-        {vec3( -1.0f, -1.0f,  1.0f), m_sideTexture->UV(1.0f, 0.0f)},  // v11
-
-        //back
-        {vec3( -1.0f, 1.0f,  -1.0f), m_sideTexture->UV(1.0f, 1.0f)}, // v12
-        {vec3( 1.0f,  1.0f,  -1.0f), m_sideTexture->UV(0.0f, 1.0f)},  // v13
-        {vec3( 1.0f,  -1.0f,  -1.0f), m_sideTexture->UV(0.0f, 0.0f)}, // v14
-        {vec3(-1.0f, -1.0f,  -1.0f), m_sideTexture->UV(1.0f, 0.0f)},  // v15
+        {vec3( BlockSize, 0,  -BlockSize), m_topTexture->UV(0.0f, 0.0f)}, // v4
+        {vec3( BlockSize,  BlockSize,  -BlockSize), m_topTexture->UV(1.0f, 0.0f)},  // v5
+        {vec3( 0,  BlockSize,  -BlockSize),m_topTexture->UV(1.0f, 1.0f)}, // v6
+        {vec3(0, 0,  -BlockSize), m_topTexture->UV(0.0f, 1.0f)},  // v7
 
     };
     GLushort indices[] = {
-         0,1,2,  0,2,3,//top
-        4,5,6,  4,6,7,//bottom
-        8,9,10,  8,10,11, //front
-        12,13,14, 12,14,15, //right
-       16,17,18, 16,18,19, //left
-       20,21,22, 20,22,23// back
+         0,3,2,  1,0,2,//front
+        3,4,5,  2,3,5,//right
+        7,0,1,  6,7,1, //left
+        1,2,5, 6,1,5, //top
+       7,4,3, 0,7,3, //bottom
+       4,7,6, 5,4,6// back
     };
     m_mesh = new Mesh();
     m_mesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
@@ -135,6 +109,13 @@ void BlockInfo::initMesh()
 Mesh *BlockInfo::mesh() const
 {
     return m_mesh;
+}
+
+VertexData BlockInfo::getVertex(int index, Matrix44 transform)
+{
+    auto vertex = m_mesh->m_vertices[index];
+    vertex.m_pos = transform.transformVec3(vertex.m_pos);
+    return vertex;
 }
 
 

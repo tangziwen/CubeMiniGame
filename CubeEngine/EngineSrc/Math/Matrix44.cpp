@@ -237,6 +237,12 @@ vec4 Matrix44::operator *(const vec4 &v)
     return dst;
 }
 
+vec3 Matrix44::transformVec3(vec3 v)
+{
+    auto result = *this * vec4(v, 1.0f);
+    return vec3(result.x, result.y, result.z);
+}
+
 void Matrix44::frustum(float left, float right, float bottom, float top, float near, float far)
 {
     float rl = (right - left),
@@ -263,6 +269,21 @@ void Matrix44::frustum(float left, float right, float bottom, float top, float n
 float *Matrix44::data()
 {
     return m_data;
+}
+
+vec3 Matrix44::up()
+{
+    return vec3(m_data[4], m_data[5], m_data[6]);
+}
+
+vec3 Matrix44::forward()
+{
+    return -vec3(m_data[8], m_data[9], m_data[10]);
+}
+
+vec3 Matrix44::right()
+{
+    return vec3(m_data[0], m_data[1], m_data[2]);
 }
 
 } // namespace tzw

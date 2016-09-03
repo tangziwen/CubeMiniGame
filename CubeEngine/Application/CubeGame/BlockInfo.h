@@ -31,6 +31,7 @@ public:
     void initMesh();
     Mesh *mesh() const;
 
+    VertexData getVertex(int index, Matrix44 transform);
 private:
     std::string m_topFile;
     std::string m_sideFile;

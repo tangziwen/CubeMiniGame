@@ -31,9 +31,21 @@ void Quaternion::fromEulerAngle(vec3 rotate)
 
 }
 
+void Quaternion::fromAxisAngle(vec3 axis, float angle)
+{
+    float half = TbaseMath::Ang2Radius(angle / 2.f);
+    float sinHalf = sinf(half);
+    w = cosf(half);
+    x = sinHalf * cosf(axis.x);
+    y = sinHalf * cosf(axis.y);
+    z = sinHalf * cosf(axis.z);
+}
+
 void Quaternion::toEulserAngel(float *resultX, float *resultY, float *resultZ) const
 {
     float _rotationX,_rotationY,_rotationZ;
+
+
     //convert quaternion to Euler angle
     double test = x * y + z * w;
     if (test > 0.499)
@@ -191,14 +203,14 @@ float &Quaternion::operator [](int index)
 
 Quaternion Quaternion::operator *(const Quaternion &other)
 {
-    Quaternion a;
-    Quaternion q = (*this);
-    Quaternion p = other;
-    return Quaternion(
-                q.w * p.w - q.x * p.x - q.y * p.y - q.z * p.z,
-                q.w * p.x + q.x * p.w + q.y * p.z - q.z * p.y,
-                q.w * p.y + q.y * p.w + q.z * p.x - q.x * p.z,
-                q.w * p.z + q.z * p.w + q.x * p.y - q.y * p.x);
+    Quaternion q1 = (*this);
+    Quaternion q2 = other;
+    Quaternion result;
+    result.x =  q1.x * q2.w + q1.y * q2.z - q1.z * q2.y + q1.w * q2.x;
+    result.y = -q1.x * q2.z + q1.y * q2.w + q1.z * q2.x + q1.w * q2.y;
+    result.z =  q1.x * q2.y - q1.y * q2.x + q1.z * q2.w + q1.w * q2.z;
+    result.w = -q1.x * q2.x - q1.y * q2.y - q1.z * q2.z + q1.w * q2.w;
+    return result;
 }
 
 } // namespace tzw

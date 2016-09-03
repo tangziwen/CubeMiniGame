@@ -35,18 +35,22 @@ public:
     void setAabb(const AABB &aabb);
     void calculateAABB();
     void merge(Mesh * other, const Matrix44 &transform);
+    void merge(std::vector<VertexData> & vertices, std::vector<short_u> & indices, const Matrix44 &transform);
     void createBufferObject();
     void clear();
     Material *getMat() const;
     void setMat(Material *mat);
     void caclNormals();
+    VertexData getVertex(unsigned int index);
+    void setVertex(unsigned int index, VertexData vertex);
+    std::vector<short_u> m_indices;
+    std::vector<VertexData> m_vertices;
 private:
     void passToGPU();
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;
     RenderBuffer* m_indexBuf;
-    std::vector<short_u> m_indices;
-    std::vector<VertexData> m_vertices;
+
     Material * m_mat;
     GLuint m_vbo,m_ibo;
 };

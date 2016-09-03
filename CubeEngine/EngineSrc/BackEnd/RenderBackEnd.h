@@ -31,6 +31,8 @@ public:
                            int dstY1);
 
     void setDepthTestEnable(bool isEnable);
+    void setBlendEquation(RenderFlag::BlendingEquation equation);
+    void setBlendFactor(RenderFlag::BlendingFactor factorSrc, RenderFlag::BlendingFactor factorDst);
     void setDepthMaskWriteEnable(bool isEnable);
 private:
     static RenderBackEnd * m_instance;

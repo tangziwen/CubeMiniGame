@@ -86,22 +86,28 @@ Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 
 Drawable3D *  Drawable3DGroup::hitByRay(const Ray &ray, vec3 &hitPoint)
 {
-    //sort by Dist
-    std::sort(m_list.begin(),m_list.end(),[ray](Drawable3D* p1, Drawable3D* p2)
-    {
-        float dist1 = ray.origin().distance(p1->getAABB().centre());
-        float dist2 = ray.origin().distance(p2->getAABB().centre());
-        return dist1<dist2;
-    });
+    std::vector<Drawable3D * > resultList;
     for(int i =0;i<m_list.size();i++)
     {
         Drawable3D * obj = m_list[i];
         if(obj->intersectByRay(ray,hitPoint))
         {
-            return obj;
+            resultList.push_back(obj);
         }
     }
-    return nullptr;
+    //sort by Dist
+    if (!resultList.empty())
+    {
+        std::sort(resultList.begin(),resultList.end(),[ray](Drawable3D* p1, Drawable3D* p2)    {
+            float dist1 = ray.origin().distance(p1->getAABB().centre());
+            float dist2 = ray.origin().distance(p2->getAABB().centre());
+            return dist1<dist2;
+        });
+        return resultList[0];
+    }else
+    {
+        return nullptr;
+    }
 }
 
 bool Drawable3DGroup::hitByAABB(AABB &aabb,vec3 & minmalOverLap)

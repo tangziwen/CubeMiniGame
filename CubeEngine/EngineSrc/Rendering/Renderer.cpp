@@ -14,7 +14,7 @@ Renderer::Renderer()
     m_gbuffer = new RenderTarget();
     m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
     m_dirLightProgram = ShaderMgr::shared()->createOrGet("./Res/EngineCoreRes/Shaders/LightPass_v.glsl",
-                                                      "./Res/EngineCoreRes/Shaders/LightPassDir_f.glsl");
+                                                         "./Res/EngineCoreRes/Shaders/LightPassDir_f.glsl");
 
     initQuad();
 }
@@ -51,42 +51,47 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
+//    glDisable(GL_CULL_FACE);
     RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
     RenderBackEnd::shared()->setDepthTestEnable(true);
     m_gbuffer->bindForWriting();
     RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     if(m_enable3DRender)
     {
         renderAllCommon();
     }
-    RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-//    auto WINDOW_WIDTH = 1024;
-//    auto WINDOW_HEIGHT = 768;
-//    GLsizei HalfWidth = (GLsizei)(WINDOW_WIDTH / 2.0f);
-//    GLsizei HalfHeight = (GLsizei)(WINDOW_HEIGHT / 2.0f);
-//    RenderBackEnd::shared()->bindFrameBuffer(0);
-//    m_gbuffer->setReadBuffer(0);
-//    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//                    0, HalfHeight, HalfWidth, WINDOW_HEIGHT);
 
-//    m_gbuffer->setReadBuffer(1);
-//    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//                    HalfWidth, HalfHeight, WINDOW_WIDTH, WINDOW_HEIGHT);
+    auto WINDOW_WIDTH = 1024;
+    auto WINDOW_HEIGHT = 768;
+    GLsizei HalfWidth = (GLsizei)(WINDOW_WIDTH / 2.0f);
+    GLsizei HalfHeight = (GLsizei)(WINDOW_HEIGHT / 2.0f);
+    RenderBackEnd::shared()->bindFrameBuffer(0);
+    //    m_gbuffer->setReadBuffer(0);
+    //    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+    //                    0, HalfHeight, HalfWidth, WINDOW_HEIGHT);
 
-//    m_gbuffer->setReadBuffer(2);
-//    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//                    0, 0, HalfWidth, HalfHeight);
+    //    m_gbuffer->setReadBuffer(1);
+    //    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+    //                    HalfWidth, HalfHeight, WINDOW_WIDTH, WINDOW_HEIGHT);
+    //     glClear(GL_COLOR_BUFFER_BIT);
+    //        m_gbuffer->setReadBuffer(2);
+    //        RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+    //                                                 0, 0, HalfWidth, HalfHeight);
 
-//    m_gbuffer->setReadBuffer(3);
-//    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//                    HalfWidth, 0, WINDOW_WIDTH, HalfHeight);
+    //    m_gbuffer->setReadBuffer(3);
+    //    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
+    //                    HalfWidth, 0, WINDOW_WIDTH, HalfHeight);
+
+
     LightingPass();
 
     if(m_enableGUIRender)
     {
         renderAllGUI();
     }
+
     clearCommands();
 }
 
@@ -101,6 +106,9 @@ void Renderer::renderAllCommon()
 
 void Renderer::renderAllGUI()
 {
+    RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+    RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
+                                            RenderFlag::BlendingFactor::OneMinusSrcAlpha);
     std::stable_sort(m_GUICommandList.begin(),m_GUICommandList.end(),GUICommandSort);
     RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::DepthTest);
     for(auto i =m_GUICommandList.begin();i!=m_GUICommandList.end();i++)
@@ -159,6 +167,10 @@ void Renderer::renderPrimitive(Mesh * mesh, ShaderProgram * program,RenderComman
     program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
     offset += sizeof(vec2);
 
+    int colorLocation = program->attributeLocation("a_color");
+    program->enableAttributeArray(colorLocation);
+    program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
     switch(primitiveType)
     {
     case RenderCommand::PrimitiveType::TRIANGLES:
@@ -166,7 +178,7 @@ void Renderer::renderPrimitive(Mesh * mesh, ShaderProgram * program,RenderComman
         break;
     case RenderCommand::PrimitiveType::TRIANGLE_STRIP:
         RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::TriangleStrip,mesh->getIndicesSize(),0);
-       break;
+        break;
     }
 }
 ///
@@ -219,10 +231,14 @@ void Renderer::initQuad()
 void Renderer::LightingPass()
 {
     RenderBackEnd::shared()->bindFrameBuffer(0);
+    RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+    RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
+    RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
+                                            RenderFlag::BlendingFactor::One);
     RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
     RenderBackEnd::shared()->setDepthTestEnable(false);
     m_gbuffer->bindForReading();
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BITS);
 
     directionalLightPass();
 }
@@ -245,7 +261,6 @@ void Renderer::directionalLightPass()
     auto ambient = currScene->getAmbient();
     m_dirLightProgram->setUniform3Float("gAmbientLight.color",ambient->color());
     m_dirLightProgram->setUniformFloat("gAmbientLight.intensity",ambient->intensity());
-
 
     m_dirLightProgram->use();
     renderPrimitive(m_quad, m_dirLightProgram, RenderCommand::PrimitiveType::TRIANGLES);

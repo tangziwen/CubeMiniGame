@@ -10,6 +10,7 @@ public:
     Quaternion();
     Quaternion(float theX,float theY,float theZ,float theW);
     void fromEulerAngle(vec3 rotate);
+    void fromAxisAngle(vec3 axis, float angle);
     void toEulserAngel(float * resultX, float * resultY, float * resultZ) const;
     void fromAxises(vec3 X_Axis, vec3 Y_Axis, vec3 zaxis);
     void normalize();

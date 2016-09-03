@@ -62,6 +62,7 @@ bool GameMap::isBlock(Chunk * chunk,int x, int y, int z)
             return true;
         }else
         {
+
             return false;
         }
     }
