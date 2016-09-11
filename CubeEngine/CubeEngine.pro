@@ -185,7 +185,9 @@ SOURCES += main.cpp \
     EngineSrc/Lighting/BaseLight.cpp \
     EngineSrc/Lighting/AmbientLight.cpp \
     EngineSrc/3D/Primitive/CubePrimitive.cpp \
-    EngineSrc/3D/Terrain/TerrainChunk.cpp
+    EngineSrc/3D/Terrain/TerrainChunk.cpp \
+    EngineSrc/3D/Terrain/VoxelChunk.cpp \
+    EngineSrc/3D/Terrain/MarchingCubes.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -348,4 +350,7 @@ HEADERS += \
     EngineSrc/Lighting/BaseLight.h \
     EngineSrc/Lighting/AmbientLight.h \
     EngineSrc/3D/Primitive/CubePrimitive.h \
-    EngineSrc/3D/Terrain/TerrainChunk.h
+    EngineSrc/3D/Terrain/TerrainChunk.h \
+    EngineSrc/3D/Terrain/VoxelChunk.h \
+    EngineSrc/3D/Terrain/MCTable.h \
+    EngineSrc/3D/Terrain/MarchingCubes.h

@@ -3,6 +3,7 @@
 
 #include "noise/noise.h"
 #include "noise/noiseutils.h"
+#include "EngineSrc/Math/vec3.h"
 namespace tzw {
 class Chunk;
 class GameMap
@@ -20,7 +21,7 @@ public:
     void setMaxHeight(float maxHeight);
     double getValue(int x,int z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
-    bool isSurface(Chunk * chunk,int x,int y,int z);
+    bool isSurface(vec3 pos);
     MapType getMapType() const;
     void setMapType(const MapType &mapType);
 

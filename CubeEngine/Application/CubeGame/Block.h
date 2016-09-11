@@ -7,7 +7,7 @@
 #define BLOCK_FACE_TOP 0
 #define BLOCK_FACE_BOTTOM 1
 #define BLOCK_FACE_SIDE 2
-#define BLOCK_SIZE 1.0
+#define BLOCK_SIZE 0.5f
 namespace tzw {
 
 class Block : public Drawable3D

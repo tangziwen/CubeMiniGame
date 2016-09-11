@@ -8,7 +8,7 @@
 using namespace std;
 namespace tzw {
 
-ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName)
+ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, const char *pTCSFileName, const char* pTESFileName)
 {
     this->shader = glCreateProgram();
     if (shader == 0) {
@@ -30,6 +30,18 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName)
     string fs = fs_data.getString();
     AddShader(shader, vs.c_str(), GL_VERTEX_SHADER);
     AddShader(shader, fs.c_str(), GL_FRAGMENT_SHADER);
+
+    if(pTCSFileName)
+    {
+        tzw::Data tcs_data = tzw::Tfile::getInstance()->getData(pTCSFileName,true);
+        AddShader(shader, tcs_data.getString().c_str(), GL_TESS_CONTROL_SHADER);
+    }
+
+    if(pTESFileName)
+    {
+        tzw::Data tes_data = tzw::Tfile::getInstance()->getData(pTESFileName,true);
+        AddShader(shader, tes_data.getString().c_str(), GL_TESS_EVALUATION_SHADER);
+    }
 
     GLint Success = 0;
     GLchar ErrorLog[2048] = { 0 };

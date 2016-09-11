@@ -11,7 +11,8 @@ enum class BufferTarget{
 };
 enum class IndicesType{
     Triangles,
-    TriangleStrip
+    TriangleStrip,
+    Patches,
 };
 
 enum class TextureType

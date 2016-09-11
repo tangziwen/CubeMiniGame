@@ -36,6 +36,8 @@ void GameWorld::createWorld(Scene *scene, int width, int height,float ratio)
             }
         }
     }
+    //just for test
+    //    m_chunkArray[0][0][0]->load();
     loadChunksAroundPlayer();
 }
 
@@ -132,8 +134,8 @@ void GameWorld::startGame()
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(SceneMgr::shared()->currentScene(),10,10,0.02);
     Cube* skybox = Cube::create("./Res/User/CubeGame/texture/SkyBox/left.jpg","./Res/User/CubeGame/texture/SkyBox/right.jpg",
-                 "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
-                 "./Res/User/CubeGame/texture/SkyBox/back.jpg","./Res/User/CubeGame/texture/SkyBox/front.jpg");
+                                "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
+                                "./Res/User/CubeGame/texture/SkyBox/back.jpg","./Res/User/CubeGame/texture/SkyBox/front.jpg");
     skybox->setIsAccpectOCTtree(false);
     skybox->setScale(80,80,80);
     m_mainRoot->addChild(skybox);
@@ -156,25 +158,22 @@ void GameWorld::loadChunksAroundPlayer()
 {
     std::set<Chunk*> m_tempArray = m_activedChunkList;
     auto pos = m_player->getPos();
-    pos = gridToChunk(worldToGrid(pos));
-    int posX = pos.x + m_width/2;
-    int posY = pos.z + m_height/2;
-    for(int i =posX -4;i<=posX + 4;i++)
+    int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+    int posY = pos.z / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+    for(int i =posX;i<=posX + 4;i++)
     {
-        for(int j =posY -4;j<=posY + 4;j++)
+        for(int j =posY;j<=posY + 4;j++)
         {
-            for (int k = 0;k< WORLD_HEIGHT;k++)
+            int k = 0;
+            auto targetChunk = m_chunkArray[i][j][k];
+            targetChunk->load();
+            auto findResult = m_tempArray.find(targetChunk);
+            if(findResult!= m_tempArray.end())
             {
-                auto targetChunk = m_chunkArray[i][j][k];
-                targetChunk->load();
-                auto findResult = m_tempArray.find(targetChunk);
-                if(findResult!= m_tempArray.end())
-                {
-                    m_tempArray.erase(findResult);
-                }else
-                {
-                    m_activedChunkList.insert(m_chunkArray[i][j][k]);
-                }
+                m_tempArray.erase(findResult);
+            }else
+            {
+                m_activedChunkList.insert(m_chunkArray[i][j][k]);
             }
         }
     }

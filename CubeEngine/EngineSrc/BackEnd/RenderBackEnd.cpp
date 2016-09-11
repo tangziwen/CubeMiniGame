@@ -165,6 +165,8 @@ void RenderBackEnd::drawElement(RenderFlag::IndicesType type, unsigned int size,
     case RenderFlag::IndicesType::TriangleStrip:
         glDrawElements(GL_TRIANGLE_STRIP, size, GL_UNSIGNED_SHORT, indicesAddress);
         break;
+    case RenderFlag::IndicesType::Patches:
+        glDrawElements(GL_PATCHES, size, GL_UNSIGNED_SHORT, indicesAddress);
     }
 }
 

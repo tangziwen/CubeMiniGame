@@ -19,7 +19,7 @@ class ShaderMgr
 {
 public:
     TZW_SINGLETON_DECL(ShaderMgr)
-    ShaderProgram * createOrGet(std::string vs,std::string fs);
+    ShaderProgram * createOrGet(std::string vs, std::string fs, const char *tcs = nullptr, const char *tes = nullptr);
 private:
     ShaderMgr();
     std::map<shaderInfo,ShaderProgram*> m_pool;

@@ -13,10 +13,10 @@ namespace tzw {
  * @param vsFilePath 顶点shader的文件路径
  * @param fsFilePath 片段shader的文件路径
  */
-Technique::Technique(const char *vsFilePath, const char *fsFilePath)
+Technique::Technique(const char *vsFilePath, const char *fsFilePath, const char *tcsFilePath, const char *tesFilePath)
     :m_vsPath(vsFilePath),m_fsPath(fsFilePath)
 {
-    m_program = ShaderMgr::shared()->createOrGet(vsFilePath,fsFilePath);
+    m_program = ShaderMgr::shared()->createOrGet(vsFilePath, fsFilePath, tcsFilePath, tesFilePath);
 }
 
 /**
@@ -220,7 +220,10 @@ void Technique::applyFromDrawable(Drawable *node)
     auto v = node->camera()->getViewMatrix();
     auto m = node->getTransform();
     setVar("TU_mvpMatrix", vp* m);
+    setVar("TU_vpMatrix", vp);
     setVar("TU_mvMatrix", v * m);
+    setVar("TU_vMatrix", v);
+
     setVar("TU_mMatrix", m);
     setVar("TU_normalMatrix", (v * m).inverted().transpose());
     setVar("TU_color",node->getUniformColor());

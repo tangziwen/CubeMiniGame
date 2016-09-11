@@ -33,6 +33,8 @@ public:
     int getLogicUpdateTime() const;
     int getIndicesCount() const;
     int getVerticesCount() const;
+    bool getIsEnableOutLine() const;
+    void setIsEnableOutLine(bool isEnableOutLine);
 private:
     static Engine * m_instance;
     int m_drawCallCount;
@@ -44,6 +46,7 @@ private:
     float m_deltaTime;
     float m_windowWidth;
     float m_windowHeight;
+    bool m_isEnableOutLine;
     AppEntry * m_delegate;
 };
 

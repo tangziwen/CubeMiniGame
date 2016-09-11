@@ -12,6 +12,7 @@ public:
     vec4(vec3 v,float w);
     vec3 toVec3();
     float x,y,z,w;
+    vec4 operator + (const vec4 & other);
 };
 
 } // namespace tzw

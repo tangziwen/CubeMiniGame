@@ -24,7 +24,17 @@ Engine *Engine::shared()
 
 Engine::Engine()
 {
+    m_isEnableOutLine = false;
+}
 
+bool Engine::getIsEnableOutLine() const
+{
+    return m_isEnableOutLine;
+}
+
+void Engine::setIsEnableOutLine(bool isEnableOutLine)
+{
+    m_isEnableOutLine = isEnableOutLine;
 }
 
 int Engine::getDrawCallCount()

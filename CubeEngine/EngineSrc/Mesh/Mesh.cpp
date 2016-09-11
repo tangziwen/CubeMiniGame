@@ -1,5 +1,6 @@
 #include "Mesh.h"
-
+#include <iostream>
+#include <assert.h>
 namespace tzw {
 
 Mesh::Mesh()
@@ -57,8 +58,6 @@ void Mesh::passToGPU()
     //pass data to the IBO
     m_indexBuf->use();
     m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(GLushort));
-
-
 }
 
 Material *Mesh::getMat() const
@@ -104,6 +103,273 @@ VertexData Mesh::getVertex(unsigned int index)
 void Mesh::setVertex(unsigned int index, VertexData vertex)
 {
     m_vertices[index] = vertex;
+}
+
+void Mesh::subDivide(int level)
+{
+    triangles_.clear();
+    newverts_.clear();
+    midTriangles_.clear();
+    for (size_t i = 0; i < m_indices.size(); i += 3)
+    {
+        Triangle t;
+        t.v[0] = m_indices[i];
+        t.v[2] = m_indices[i + 1];
+        t.v[1] = m_indices[i + 2];
+        triangles_.push_back(t);
+    }
+    findAdjTriangles();
+    for(int i = 0; i < level; i++)
+    {
+        subDivideIter();
+    }
+}
+
+void Mesh::cloneFrom(Mesh *other)
+{
+    m_vertices = other->m_vertices;
+    m_indices = other->m_indices;
+}
+
+void Mesh::triangleSplit(int index, int callee, int newPoint, int t1, int t2)
+{
+    if ( processed_[index] )
+        return;
+
+    int sz;
+    int midPoints[3];
+    int indices[3];
+    bool process[3];
+
+    const Triangle& cur = triangles_[index];
+    Triangle tri[4];
+    int off = tmpTriangles_.size ();
+
+    if ( callee < 0 ) {
+        sz = 3;
+        indices[0] =0; indices[1] =1; indices[2] = 2;
+    }
+    else
+    {
+        sz = 2;
+        int update = cur.findNeighborIndex ( callee );
+
+        if ( update < 0 )
+        {
+            std::cerr << "ObjFile::triangleSplit: semantic error !\n";
+        }
+
+        midPoints[update] = newPoint;
+        midPoints_[3*index + update] = newPoint;
+
+        tri[ update ].t[0] = t1;
+        tri[ (update+1)% 3].t[2] = t2;
+
+        tmpTriangles_[t1].t[2] = off + update;
+        tmpTriangles_[t2].t[0] = off + (update+1) % 3;
+
+        if ( update == 0 ) {
+            indices[0] = 1; indices[1] = 2;
+        } else if ( update == 1 ) {
+            indices[0] = 0; indices[1] = 2;
+        } else {
+            indices[0] = 0; indices[1] = 1;
+        }
+    }
+
+    // process the other ones
+    for ( int i =0; i < sz; ++i )
+    {
+        // check whether already processed ?
+        // get the neighbour of current edge
+        int ti = cur.t[indices[i]];
+        Triangle& t = triangles_[ti];
+        int tv = 3*ti + t.findNeighborIndex (index);
+        int tvnext = 3*ti + (t.findNeighborIndex (index)+1)%3;
+
+        if ( midPoints_[tv] >= 0 ) {
+            midPoints[indices[i]] = midPoints_[3*index + indices[i] ] = midPoints_ [tv];
+            process[i] = false;
+            // update triangle connectivity
+
+            if(midTriangles_[tv] == -1)
+            {
+                printf("assert A\n");
+            }
+            //assert ( midTriangles_[tvnext] != -1 );
+
+            tri[indices[i]].t[0] = midTriangles_[tvnext];
+            tri[(indices[i]+1)%3].t[2] = midTriangles_[tv];
+
+            tmpTriangles_[ midTriangles_[tvnext] ].t[2] = off + indices[i];
+            tmpTriangles_[ midTriangles_[tv] ].t[0] = off + (indices[i]+1)%3;
+
+        }
+        else {
+            //insert new one
+            int k = indices[i];
+            int knext = (k+1) % 3;
+            int kprev = (k+2) % 3;
+            int opposite = (t.findNeighborIndex (index) + 2) % 3;
+
+            vec3 p = ( m_vertices[ cur.v[k] ].m_pos + m_vertices [ cur.v[knext] ].m_pos ) * (3.0f / 8.0f) +
+                    ( m_vertices[ cur.v[kprev] ].m_pos + m_vertices[ t.v[ opposite ]].m_pos ) * (1.0f / 8.0f);
+            auto v = VertexData(p);
+            m_vertices.push_back ( v );
+            midPoints[indices[i]] = midPoints_[3*index + indices[i] ] = m_vertices.size() -1;
+            process[i] = true;
+        }
+    }
+
+    // add subdivided triangles to new list
+    //					2
+    //					/\
+    //			       /  \
+    //				  /  2 \
+    //               /      \
+    //			    *--------*
+    //             /  \  3 /  \
+    //            /  0 \  /  1 \
+    //           *------**------*
+    //           0               1
+
+    assert ( midPoints[0] != -1 );
+    assert ( midPoints[1] != -1 );
+    assert ( midPoints[2] != -1 );
+
+    tri[0].v[0] = cur.v[0];
+    tri[0].v[1] = midPoints[0];
+    tri[0].v[2] = midPoints[2];
+    tri[0].t[1] = off +3;
+
+    tri[3].v[0] = midPoints[2];
+    tri[3].v[1] = midPoints[0];
+    tri[3].v[2] = midPoints[1];
+    tri[3].t[0] = off;
+    tri[3].t[1] = off +1;
+    tri[3].t[2] = off +2;
+
+    tri[1].v[0] = cur.v[1];
+    tri[1].v[1] = midPoints[1];
+    tri[1].v[2] = midPoints[0];
+    tri[1].t[1] = off +3;
+
+    tri[2].v[0] = cur.v[2];
+    tri[2].v[1] = midPoints[2];
+    tri[2].v[2] = midPoints[1];
+    tri[2].t[1] = off +3;
+    //	vertexTriangle_[cur.v[0]] = vertexTriangle_[midPoints[0]] = off;
+    //	vertexTriangle_[cur.v[1]] = vertexTriangle_[midPoints[1]] = off+1;
+    //	vertexTriangle_[cur.v[2]] = vertexTriangle_[midPoints[2]] = off+2;
+
+    midTriangles_[3*index ] = off;
+    midTriangles_[3*index+1] = off+1;
+    midTriangles_[3*index+2] = off+2;
+
+    for ( int i =0; i < 4; ++ i)
+        tmpTriangles_.push_back (tri[i]);
+
+    processed_[index] = true;
+
+    // call the neigbor triangles
+    for ( int i =0; i < sz; ++i ) {
+        if ( process[i] )
+        {
+            splits_.push_back ( SplitData ( cur.t[indices[i]], index, midPoints[indices[i]],
+                    off + (indices[i]+1)%3, off + indices[i] ) );
+        }
+    }
+}
+
+void Mesh::computeNewVerts()
+{
+    std::vector<int> ks ( newverts_.size (), 0 );
+    for ( std::vector<Triangle>::const_iterator t = triangles_.begin(); t != triangles_.end (); ++t )
+    {
+        for ( int i =0; i < 3; ++i )
+        {
+            // all vertices are summed double
+            auto p = newverts_[ t->v[i] ].m_pos + m_vertices[ t->v[(i+1)%3] ].m_pos + m_vertices[ t->v[(i+2)%3] ].m_pos;
+            newverts_[ t->v[i] ] = VertexData(p);
+            ++ks[t->v[i]];
+        }
+    }
+    for ( auto nv = newverts_.begin (); nv != newverts_.end(); ++nv)
+    {
+        int num = ks[ nv-newverts_.begin()];
+        float beta = 3.0f / (8.0f * (float)num);
+        if ( num == 3 )
+            beta = 3.0f / 16.0f;
+
+        //float interm = (3.0/8.0 - 0.25 * cos ( 2 * M_PI / num ));
+        //float beta = 1.0/num*(5.0/8.0 - interm*interm);
+        auto tmpV = *nv;
+        *nv = (tmpV.m_pos * (0.5f * beta)) + m_vertices[nv-newverts_.begin()].m_pos * ( 1 - beta*num);
+    }
+}
+
+void Mesh::findAdjTriangles()
+{
+    for ( auto t = triangles_.begin(); t != triangles_.end(); ++t )
+        for ( int e =0; e< 3; ++e )
+            t->t[e] = -1;
+
+    for ( auto t = triangles_.begin(); t != triangles_.end(); ++t )
+    {
+        // fill adj triangles
+        for ( int e =0; e< 3; ++e ) {
+            int enext = (e+1) % 3;
+
+            if ( t->t[e] == -1 )
+            {
+                for ( auto t2 = t+1; t2 != triangles_.end(); ++t2 )
+                {
+                    int index;
+                    if ( (  index = t2->containsEdge ( t->v[enext], t->v[e] )) >= 0 )
+                    {
+                        t->t[e] = t2 - triangles_.begin();
+                        t2->t[index] = t - triangles_.begin();
+                    }
+                }
+            }
+        }
+    }
+}
+
+void Mesh::subDivideIter()
+{
+    midPoints_ = std::vector<int> ( triangles_.size()*3, -1) ;
+    midTriangles_ = std::vector<int> ( triangles_.size()*3, -1) ;
+    tmpTriangles_.clear ();
+    processed_ = std::vector<bool>(triangles_.size (), false);
+
+    int oldVertSize = m_vertices.size ();
+
+    // use list to avoid stack overflow problem
+    splits_.clear ();
+
+    //updates the tmpTriangles_ and vertexTriangle_ structure
+
+    splits_.push_back ( SplitData (0,-1,-1,-1,-1) );
+    while ( ! splits_.empty () )
+    {
+        SplitData sd = splits_.back ();
+        splits_.pop_back();
+        triangleSplit( sd.index, sd.callee, sd.newPoint, sd.t1, sd.t2 );
+    }
+
+    newverts_ = std::vector<VertexData>(oldVertSize);
+    computeNewVerts ();
+
+    std::copy ( newverts_.begin(), newverts_.end(), m_vertices.begin () );
+    triangles_.swap ( tmpTriangles_ );
+    m_indices.clear();
+    for (auto triangle : triangles_)
+    {
+        m_indices.push_back(triangle.v[0]);
+        m_indices.push_back(triangle.v[2]);
+        m_indices.push_back(triangle.v[1]);
+    }
 }
 
 GLuint Mesh::vbo() const
@@ -228,6 +494,49 @@ void Mesh::clear()
 {
     this->clearIndices();
     this->clearVertices();
+}
+
+Triangle::Triangle ()
+{
+    for ( int i =0; i < 3; ++i )
+    {
+        v[i] = n[i] = t[i] = -1; // invalid start value
+    }
+}
+
+int Triangle::containsEdge ( int n1, int n2 ) const
+{
+    for ( int i =0; i < 3; ++i )
+    {
+        int inext = (i+1) % 3;
+        if ( v[i] == n1 && v[inext] == n2 )
+            return i;
+
+    }
+
+    return -1;
+}
+
+int Triangle::findNeighborIndex (int n ) const
+{
+    for ( int i =0; i < 3; ++i )
+    {
+        if ( t[i] == n ) return i;
+    }
+
+    // not found
+    return -1;
+}
+
+int Triangle::getVertexIndex (int n) const
+{
+    for ( int i =0; i < 3; ++i )
+    {
+        if ( v[i] == n ) return i;
+    }
+
+    // not found
+    return -1;
 }
 
 

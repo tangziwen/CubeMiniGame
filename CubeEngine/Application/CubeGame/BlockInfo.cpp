@@ -2,7 +2,7 @@
 #include "GameWorld.h"
 namespace tzw {
 
-const float BlockSize = 1.0f;
+const float BlockSize = 0.5f;
 
 BlockInfo::BlockInfo()
 {

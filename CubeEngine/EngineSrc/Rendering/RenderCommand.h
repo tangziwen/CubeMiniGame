@@ -30,6 +30,8 @@ public:
         TRIANGLES,
         ///三角链
         TRIANGLE_STRIP,
+        ///细分Patch
+        PATCHES,
     };
 
     RenderCommand(Mesh * mesh,Technique * technique,RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES);

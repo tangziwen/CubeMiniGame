@@ -52,6 +52,10 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 void Renderer::renderAll()
 {
 //    glDisable(GL_CULL_FACE);
+    if(Engine::shared()->getIsEnableOutLine())
+    {
+        glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    }
     RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
     RenderBackEnd::shared()->setDepthTestEnable(true);
     m_gbuffer->bindForWriting();
@@ -68,6 +72,10 @@ void Renderer::renderAll()
     GLsizei HalfWidth = (GLsizei)(WINDOW_WIDTH / 2.0f);
     GLsizei HalfHeight = (GLsizei)(WINDOW_HEIGHT / 2.0f);
     RenderBackEnd::shared()->bindFrameBuffer(0);
+    if(Engine::shared()->getIsEnableOutLine())
+    {
+        glPolygonMode(GL_FRONT, GL_FILL);
+    }
     //    m_gbuffer->setReadBuffer(0);
     //    RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
     //                    0, HalfHeight, HalfWidth, WINDOW_HEIGHT);
@@ -178,6 +186,9 @@ void Renderer::renderPrimitive(Mesh * mesh, ShaderProgram * program,RenderComman
         break;
     case RenderCommand::PrimitiveType::TRIANGLE_STRIP:
         RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::TriangleStrip,mesh->getIndicesSize(),0);
+        break;
+    case RenderCommand::PrimitiveType::PATCHES:
+        RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Patches,mesh->getIndicesSize(),0);
         break;
     }
 }

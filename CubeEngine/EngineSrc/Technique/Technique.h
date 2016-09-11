@@ -23,7 +23,7 @@ class Drawable;
 class Technique
 {
 public:
-    Technique(const char *vsFilePath,const char *fsFilePath);
+    Technique(const char *vsFilePath,const char *fsFilePath, const char * tcsFilePath = nullptr, const char* tesFilePath = nullptr);
     void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);

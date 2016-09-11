@@ -67,7 +67,7 @@ TerrainChunk::TerrainChunk()
     }
     m_mesh->finish();
 
-    m_technique = new Technique("./Res/EngineCoreRes/Shaders/Terrain_v.glsl","./Res/EngineCoreRes/Shaders/Terrain_f.glsl");
+    m_technique = new Technique("./Res/EngineCoreRes/Shaders/Terrain_v.glsl","./Res/EngineCoreRes/Shaders/Terrain_f.glsl", nullptr, nullptr);
     m_technique->setVar("TU_roughness",0.1f);
     auto texture = TextureMgr::shared()->getOrCreateTexture("./Res/TestRes/rock_texture.png");
     auto rockNormalTexture = TextureMgr::shared()->getOrCreateTexture("./Res/TestRes/rock_normals.png");

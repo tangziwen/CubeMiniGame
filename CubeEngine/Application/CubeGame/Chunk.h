@@ -4,7 +4,7 @@
 #include "Block.h"
 #include <string>
 #include <vector>
-#define MAX_BLOCK 16
+#define MAX_BLOCK 64
 struct vertexInfo
 {
     unsigned int index;
@@ -28,12 +28,12 @@ public:
     virtual void draw();
     std::vector<Block *> m_blockList;
     void removeBlock(Block * block);
-    void addBlock(std::string blockInfoName, int i, int j, int k);
     void load();
     void unload();
+    void deformAround(vec3 pos, float value);
+    void setVoxelScalar(int x, int y, int z, float scalar);
+    void addVoexlScalar(int x, int y, int z, float scalar);
 private:
-    void relax();
-    void verticesInfoClear();
     bool m_isLoaded;
     Technique * m_tech;
     Mesh * m_mesh;
@@ -42,12 +42,13 @@ private:
     void generateBlocks();
     void finish();
     void sortByDist(vec3 pos);
-    void addBlockToNeighbor(std::string blockInfoName,int i,int j,int k);
     bool isEmpty(int x,int y,int z);
+    bool hitAny(Ray & ray, vec3 & result);
+    bool hitFirst(const Ray &ray, vec3 & result);
+    vec4 * mcPoints;
+    vec3 m_basePoint;
     Block* m_blockGroup[MAX_BLOCK][MAX_BLOCK][MAX_BLOCK];
     int m_indicesGroup[MAX_BLOCK + 1][MAX_BLOCK + 1][MAX_BLOCK + 1];
-    int getVerticesAt(int x, int y, int z);
-    int addVertexAt(int x, int y, int z, VertexData vertex);
 };
 }
 

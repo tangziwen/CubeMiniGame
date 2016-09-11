@@ -9,7 +9,7 @@ namespace tzw {
 class ShaderProgram
 {
 public:
-    ShaderProgram(const char * pVSFileName, const char * pFSFileName);
+    ShaderProgram(const char * pVSFileName, const char * pFSFileName, const char * pTCSFileName = nullptr, const char* pTESFileName = nullptr);
     void use();
     int getShaderId();
     void setUniformInteger(const char * str,int value);

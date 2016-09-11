@@ -25,5 +25,10 @@ vec3 vec4::toVec3()
     return vec3(x,y,z);
 }
 
+vec4 vec4::operator +(const vec4 &other)
+{
+    return vec4(x + other.x, y + other.y, z + other.z, w + other.w);
+}
+
 } // namespace tzw
 

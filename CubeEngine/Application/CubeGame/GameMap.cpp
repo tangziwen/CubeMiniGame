@@ -86,15 +86,14 @@ bool GameMap::isBlock(Chunk * chunk,int x, int y, int z)
     return false;
 }
 
-bool GameMap::isSurface(Chunk *chunk, int x, int y, int z)
+bool GameMap::isSurface( vec3 pos)
 {
     switch(m_mapType)
     {
     case MapType::Noise:
     {
-        vec3 worldPos = chunk->getGridPos(x,y,z);
-        float height = getValue(worldPos.x,worldPos.z);
-        if(worldPos.y == int(height))
+        float height = getValue(pos.x,pos.z);
+        if(pos.y <= int(height))
         {
             return true;
         }else
@@ -105,9 +104,8 @@ bool GameMap::isSurface(Chunk *chunk, int x, int y, int z)
         break;
     case MapType::Plain:
     {
-        vec3 worldPos = chunk->getGridPos(x,y,z);
         float height = maxHeight();
-        if(worldPos.y == int(height))
+        if(pos.y <= int(height))
         {
             return true;
         }else

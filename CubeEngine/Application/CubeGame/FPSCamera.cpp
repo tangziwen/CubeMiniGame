@@ -9,6 +9,7 @@
 #include <QDebug>
 #include <iostream>
 #include <QQuaternion>
+#include <time.h>
 namespace tzw {
 
 const float HeightThreadHold = 0.01;
@@ -89,8 +90,10 @@ bool FPSCamera::onKeyRelease(int keyCode)
         auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
         if(chunk)
         {
-            auto block = static_cast<Block * >(chunk->intersectByRay(ray,hitPoint));
-            chunk->removeBlock(block);
+            auto before = clock();
+            chunk->deformAround(hitPoint, -0.2);
+            auto delta = clock() - before;
+            std::cout << "time cost"<< delta << std::endl;
         }
     }
         break;
@@ -108,31 +111,7 @@ bool FPSCamera::onKeyRelease(int keyCode)
         auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
         if(chunk)
         {
-            auto block = static_cast<Block * >(chunk->intersectByRay(ray,hitPoint));
-            RayAABBSide side;
-            ray.intersectAABB(block->getAABB(),&side,hitPoint);
-            int i = block->localGridX,j = block->localGridY,k = block->localGridZ;
-            switch(side)
-            {
-            case RayAABBSide::up:
-                chunk->addBlock("stone.json",i,j+1,k);
-                break;
-            case RayAABBSide::down:
-                chunk->addBlock("stone.json",i,j-1,k);
-                break;
-            case RayAABBSide::back:
-                chunk->addBlock("stone.json",i,j,k + 1);
-                break;
-            case RayAABBSide::front:
-                chunk->addBlock("stone.json",i,j,k - 1);
-                break;
-            case RayAABBSide::left:
-                chunk->addBlock("stone.json",i-1,j,k);
-                break;
-            case RayAABBSide::right:
-                chunk->addBlock("stone.json",i+1,j,k);
-                break;
-            }
+            chunk->deformAround(hitPoint, 0.2);
         }
     }
         break;
