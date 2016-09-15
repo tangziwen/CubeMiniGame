@@ -17,6 +17,7 @@ public:
     static float Radius2Ang(float radius);
     static unsigned int nextPow2(unsigned int num);
     static float clampf(float value, float lowBound, float upBound);
+    static int clampI(int value, int lowBound, int upBound);
 protected:
     TbaseMath();
     ~TbaseMath();

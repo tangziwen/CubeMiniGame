@@ -25,14 +25,15 @@ void GameWorld::createWorld(Scene *scene, int width, int height,float ratio)
     m_height = height;
     for(int i = 0;i< width;i++)
     {
-        for(int j=0;j<height;j++)
+        for(int j=0;j<WORLD_HEIGHT;j++)
         {
-            for(int k = 0; k < WORLD_HEIGHT;k++)
+            for(int k = 0; k < height; k++)
             {
-                auto chunkA = new Chunk(i,k,j);
+                auto chunkA = new Chunk(i,j,k);
                 m_mainRoot->addChild(chunkA);
                 m_chunkList.push_back(chunkA);
                 m_chunkArray[i][j][k] = chunkA;
+                chunkA->loadData();
             }
         }
     }
@@ -128,8 +129,8 @@ void GameWorld::startGame()
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
-    GameMap::shared()->setMapType(GameMap::MapType::Plain);
-    GameMap::shared()->setMaxHeight(5);
+    GameMap::shared()->setMapType(GameMap::MapType::Noise);
+    GameMap::shared()->setMaxHeight(10);
     auto player = new Player(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(SceneMgr::shared()->currentScene(),10,10,0.02);

@@ -29,6 +29,13 @@ float TbaseMath::clampf(float value, float lowBound, float upBound)
     return value;
 }
 
+int TbaseMath::clampI(int value, int lowBound, int upBound)
+{
+    if(value < lowBound) return lowBound;
+    if(value > upBound) return upBound;
+    return value;
+}
+
 float TbaseMath::randF()
 {
     int r = rand()%100;

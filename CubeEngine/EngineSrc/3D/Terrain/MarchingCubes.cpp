@@ -240,18 +240,18 @@ void MarchingCubes::generate(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, 
                 }
 
 
-//                /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
-//                if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(verts[1], verts[2], minValue);
-//                if(edgeTable[cubeIndex] & 4) intVerts[2] = LinearInterp(verts[2], verts[3], minValue);
-//                if(edgeTable[cubeIndex] & 8) intVerts[3] = LinearInterp(verts[3], verts[0], minValue);
-//                if(edgeTable[cubeIndex] & 16) intVerts[4] = LinearInterp(verts[4], verts[5], minValue);
-//                if(edgeTable[cubeIndex] & 32) intVerts[5] = LinearInterp(verts[5], verts[6], minValue);
-//                if(edgeTable[cubeIndex] & 64) intVerts[6] = LinearInterp(verts[6], verts[7], minValue);
-//                if(edgeTable[cubeIndex] & 128) intVerts[7] = LinearInterp(verts[7], verts[4], minValue);
-//                if(edgeTable[cubeIndex] & 256) intVerts[8] = LinearInterp(verts[0], verts[4], minValue);
-//                if(edgeTable[cubeIndex] & 512) intVerts[9] = LinearInterp(verts[1], verts[5], minValue);
-//                if(edgeTable[cubeIndex] & 1024) intVerts[10] = LinearInterp(verts[2], verts[6], minValue);
-//                if(edgeTable[cubeIndex] & 2048) intVerts[11] = LinearInterp(verts[3], verts[7], minValue);
+                //                /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
+                //                if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(verts[1], verts[2], minValue);
+                //                if(edgeTable[cubeIndex] & 4) intVerts[2] = LinearInterp(verts[2], verts[3], minValue);
+                //                if(edgeTable[cubeIndex] & 8) intVerts[3] = LinearInterp(verts[3], verts[0], minValue);
+                //                if(edgeTable[cubeIndex] & 16) intVerts[4] = LinearInterp(verts[4], verts[5], minValue);
+                //                if(edgeTable[cubeIndex] & 32) intVerts[5] = LinearInterp(verts[5], verts[6], minValue);
+                //                if(edgeTable[cubeIndex] & 64) intVerts[6] = LinearInterp(verts[6], verts[7], minValue);
+                //                if(edgeTable[cubeIndex] & 128) intVerts[7] = LinearInterp(verts[7], verts[4], minValue);
+                //                if(edgeTable[cubeIndex] & 256) intVerts[8] = LinearInterp(verts[0], verts[4], minValue);
+                //                if(edgeTable[cubeIndex] & 512) intVerts[9] = LinearInterp(verts[1], verts[5], minValue);
+                //                if(edgeTable[cubeIndex] & 1024) intVerts[10] = LinearInterp(verts[2], verts[6], minValue);
+                //                if(edgeTable[cubeIndex] & 2048) intVerts[11] = LinearInterp(verts[3], verts[7], minValue);
 
                 //now build the triangles using triTable
                 for (int n=0; triTable[cubeIndex][n] != -1; n+=3)
@@ -272,9 +272,80 @@ void MarchingCubes::generate(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, 
                     meshIndex += 3;
                 }
             }	//END OF FOR LOOP
-//    mesh->caclNormals();
-    mesh->finish();
+    //    mesh->caclNormals();
+    //    mesh->finish();
 }
+
+void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 *points, float minValue)
+{
+    mesh->clear();
+    int meshIndex = 0;
+    int YtimeZ = (ncellsY+1)*(ncellsZ+1);
+    //go through all the points
+    for(int i=0; i < ncellsX; i++)			//x axis
+        for(int j=0; j < ncellsY; j++)		//y axis
+            for(int k=0; k < ncellsZ; k++)	//z axis
+            {
+                //initialize vertices
+                vec4 verts[8];
+                int ind = i*YtimeZ + j*(ncellsZ+1) + k;
+                int lastX = ncellsX;			//left from older version
+                int lastY = ncellsY;
+                int lastZ = ncellsZ;
+                verts[0] = points[ind];
+                verts[1] = points[ind + YtimeZ];
+                verts[2] = points[ind + YtimeZ + 1];
+                verts[3] = points[ind + 1];
+                verts[4] = points[ind + (ncellsZ+1)];
+                verts[5] = points[ind + YtimeZ + (ncellsZ+1)];
+                verts[6] = points[ind + YtimeZ + (ncellsZ+1) + 1];
+                verts[7] = points[ind + (ncellsZ+1) + 1];
+
+                //get the index
+                int cubeIndex = int(0);
+                for(int n=0; n < 8; n++)
+                    /*(step 4)*/		if(verts[n].w <= minValue) cubeIndex |= (1 << n);
+
+                //check if its completely inside or outside
+                /*(step 5)*/ if(!edgeTable[cubeIndex]) continue;
+
+                //get intersection vertices on edges and save into the array
+                vec3 intVerts[12];
+                int indGrad = 0;
+                auto edgeIndex = edgeTable[cubeIndex];
+
+
+                /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
+                if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(verts[1], verts[2], minValue);
+                if(edgeTable[cubeIndex] & 4) intVerts[2] = LinearInterp(verts[2], verts[3], minValue);
+                if(edgeTable[cubeIndex] & 8) intVerts[3] = LinearInterp(verts[3], verts[0], minValue);
+                if(edgeTable[cubeIndex] & 16) intVerts[4] = LinearInterp(verts[4], verts[5], minValue);
+                if(edgeTable[cubeIndex] & 32) intVerts[5] = LinearInterp(verts[5], verts[6], minValue);
+                if(edgeTable[cubeIndex] & 64) intVerts[6] = LinearInterp(verts[6], verts[7], minValue);
+                if(edgeTable[cubeIndex] & 128) intVerts[7] = LinearInterp(verts[7], verts[4], minValue);
+                if(edgeTable[cubeIndex] & 256) intVerts[8] = LinearInterp(verts[0], verts[4], minValue);
+                if(edgeTable[cubeIndex] & 512) intVerts[9] = LinearInterp(verts[1], verts[5], minValue);
+                if(edgeTable[cubeIndex] & 1024) intVerts[10] = LinearInterp(verts[2], verts[6], minValue);
+                if(edgeTable[cubeIndex] & 2048) intVerts[11] = LinearInterp(verts[3], verts[7], minValue);
+
+                //now build the triangles using triTable
+                for (int n=0; triTable[cubeIndex][n] != -1; n+=3)
+                {
+                    auto v0 = VertexData(intVerts[triTable[cubeIndex][n+2]]);
+                    auto v1 = VertexData(intVerts[triTable[cubeIndex][n+1]]);
+                    auto v2 = VertexData(intVerts[triTable[cubeIndex][n]]);
+                    mesh->addVertex(v0);
+                    mesh->addVertex(v1);
+                    mesh->addVertex(v2);
+
+                    mesh->addIndex(meshIndex + 2);
+                    mesh->addIndex(meshIndex + 1);
+                    mesh->addIndex(meshIndex);
+                    meshIndex += 3;
+                }
+            }	//END OF FOR LOOP
+}
+
 
 MarchingCubes::MarchingCubes()
 {
