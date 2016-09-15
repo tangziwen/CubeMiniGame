@@ -143,6 +143,11 @@ void Chunk::load()
         m_mesh = new Mesh();
         m_tech = new Technique("./Res/EngineCoreRes/Shaders/VoxelTerrain_v.glsl", "./Res/EngineCoreRes/Shaders/VoxelTerrain_f.glsl");
         m_tech->setTex("TU_tex1", TextureMgr::shared()->getOrCreateTexture("./Res/TestRes/rock_texture.png"), 0);
+        int result = (x % 2) ^ ( z % 2);
+        if (result)
+            setUniformColor(vec3(1.0,0.0,0.0));
+        else
+            setUniformColor(vec3(0.0,1.0,0.0));
     }
     finish();
 }
