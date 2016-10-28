@@ -9,10 +9,11 @@ class vec4
 public:
     vec4();
     vec4(float x,float y, float z, float w);
-    vec4(vec3 v,float w);
+    vec4(const vec3 & v,float w);
     vec3 toVec3();
     float x,y,z,w;
     vec4 operator + (const vec4 & other);
+	static vec4 fromRGB(int R, int G, int B, int A = 255);
 };
 
 } // namespace tzw

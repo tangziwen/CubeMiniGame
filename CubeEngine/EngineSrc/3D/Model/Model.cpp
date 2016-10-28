@@ -15,8 +15,7 @@ Model::Model()
 void Model::initWithFile(std::string modelFilePath)
 {
     ModelLoader::shared()->loadModel(this,modelFilePath);
-    setCamera(SceneMgr::shared()->currentScene()->defaultCamera());
-    m_technique = new Technique("./Res/EngineCoreRes/Shaders/GeometryPass_v.glsl","./Res/EngineCoreRes/Shaders/GeometryPass_f.glsl");
+    setCamera(g_GetCurrScene()->defaultCamera());
     setIsAccpectOCTtree(false);
 }
 
@@ -27,20 +26,14 @@ Model *Model::create(std::string modelFilePath)
     return theModel;
 }
 
-void Model::draw()
+void Model::submitDrawCmd()
 {
-    m_technique->applyFromDrawable(this);
-    m_technique->use();
     for(auto mesh : m_meshList)
     {
-        m_technique->applyFromMat(mesh->getMat());
-        RenderCommand command(mesh,m_technique,RenderCommand::RenderType::Common);
+        auto tech = m_effectList[mesh->getMatIndex()];
+        RenderCommand command(mesh,tech,RenderCommand::RenderType::Common);
+        setUpTransFormation(command.m_transInfo);
         Renderer::shared()->addRenderCommand(command);
     }
-}
-
-Technique *Model::technique() const
-{
-    return m_technique;
 }
 } // namespace tzw

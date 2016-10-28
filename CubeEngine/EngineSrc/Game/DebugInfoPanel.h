@@ -7,7 +7,7 @@ class DebugInfoPanel : public Node
 {
 public:
     DebugInfoPanel();
-    virtual void update(float dt);
+    virtual void logicUpdate(float dt);
     void setInfo();
 private:
     GUIWindow * m_frame;

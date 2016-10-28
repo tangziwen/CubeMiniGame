@@ -9,7 +9,7 @@ SceneMgr::SceneMgr()
     m_currentScene = nullptr;
 }
 
-Scene *SceneMgr::currentScene() const
+Scene *SceneMgr::getCurrScene() const
 {
     return m_currentScene;
 }
@@ -65,5 +65,11 @@ void SceneMgr::init()
     m_currentScene = new Scene();
     m_currentScene->init();
 }
+
+Scene *g_GetCurrScene()
+{
+	return SceneMgr::shared()->getCurrScene();
+}
+
 } // namespace tzw
 

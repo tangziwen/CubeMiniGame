@@ -1,26 +1,30 @@
 #include "FPSCamera.h"
-#include <QVector3D>
-#include <Qt>
 #include "EngineSrc/Engine/Engine.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include "EngineSrc/Scene/SceneMgr.h"
-#include "EngineSrc/Interface/Drawable3D.h"
+
 #include "Chunk.h"
-#include <QDebug>
 #include <iostream>
-#include <QQuaternion>
 #include <time.h>
+#include "EngineSrc/Math/t_Sphere.h"
+#include "EngineSrc/Math/Plane.h"
+#include <cmath>
+
 namespace tzw {
 
 const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera()
-    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.3), m_isEnableGravity(true),m_forward(0),m_slide(0)
+    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_forward(0),m_slide(0)
     ,m_speed(vec3(6,2,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_isFirstLoop(true)
-    ,gravity_speed(0),m_gravity(0.3),distToGround(2.4),m_isStopUpdate(false)
+    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(0.8),m_isStopUpdate(false)
 {
+    offsetToCentre = 0.6;
+    m_distToFront = 0.2;
     m_isMouseHold = false;
     m_enableFPSFeature = true;
     setUseCustomFrustumUpdate(true);
+    collisionPackage = new ColliderEllipsoid();
+    collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
 }
 
 FPSCamera *FPSCamera::create(Camera *cloneObj)
@@ -34,26 +38,25 @@ bool FPSCamera::onKeyPress(int keyCode)
 {
     switch(keyCode)
     {
-    case Qt::Key_W:
+    case GLFW_KEY_W:
         m_forward = 1;
         break;
-    case Qt::Key_A:
+    case GLFW_KEY_A:
         m_slide = -1;
         break;
-    case Qt::Key_S:
+    case GLFW_KEY_S:
         m_forward = -1;
         break;
-    case Qt::Key_D:
+    case GLFW_KEY_D:
         m_slide = 1;
         break;
-    case Qt::Key_Q:
+    case GLFW_KEY_Q:
         m_isStopUpdate = !m_isStopUpdate;
         break;
-    case Qt::Key_Space:
-        if(m_isEnableGravity && fabs(gravity_speed)<0.000000001)//now falling
+    case GLFW_KEY_SPACE:
+        if(m_isEnableGravity)//now falling
         {
-            //do nothing
-            gravity_speed = 10*Engine::shared()->deltaTime();
+            m_verticalSpeed = 0.2;
         }
         break;
     }
@@ -64,26 +67,26 @@ bool FPSCamera::onKeyRelease(int keyCode)
 {
     switch(keyCode)
     {
-    case Qt::Key_W:
+    case GLFW_KEY_W:
         m_forward = 0;
         break;
-    case Qt::Key_A:
+    case GLFW_KEY_A:
         m_slide = 0;
         break;
-    case Qt::Key_S:
+    case GLFW_KEY_S:
         m_forward = 0;
         break;
-    case Qt::Key_D:
+    case GLFW_KEY_D:
         m_slide = 0;
         break;
-    case Qt::Key_F:
+    case GLFW_KEY_F:
     {
         std::vector<Drawable3D *> list;
         auto pos = this->getPos();
         AABB aabb;
         aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
         aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
-        SceneMgr::shared()->currentScene()->getRange(&list,aabb);
+        g_GetCurrScene()->getRange(&list,aabb);
         Drawable3DGroup group(&list[0],list.size());
         Ray ray(pos,this->getForward());
         vec3 hitPoint;
@@ -93,25 +96,24 @@ bool FPSCamera::onKeyRelease(int keyCode)
             auto before = clock();
             chunk->deformAround(hitPoint, -0.2);
             auto delta = clock() - before;
-            std::cout << "time cost"<< delta << std::endl;
         }
     }
         break;
-    case Qt::Key_E:
+    case GLFW_KEY_E:
     {
         std::vector<Drawable3D *> list;
         auto pos = this->getPos();
         AABB aabb;
         aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
         aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
-        SceneMgr::shared()->currentScene()->getRange(&list,aabb);
+        g_GetCurrScene()->getRange(&list,aabb);
         Drawable3DGroup group(&list[0],list.size());
         Ray ray(pos,this->getForward());
         vec3 hitPoint;
         auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
         if(chunk)
         {
-            chunk->deformAround(hitPoint, 0.2);
+            chunk->deformAround(hitPoint, 1.0);
         }
     }
         break;
@@ -154,13 +156,13 @@ bool FPSCamera::onMouseMove(vec2 pos)
             mouseForce.y = 0;
         }
         auto deltaRot = vec3(mouseForce.y * 0.1,-1 * mouseForce.x * 0.1, 0);
-        setRotateE(getRotate()  + deltaRot);
+        setRotateE(getRotateE()  + deltaRot);
     }
     m_oldPosition = newPosition;
     return true;
 }
 
-void FPSCamera::update(float dt)
+void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
     auto m = getTransform().data();
@@ -183,124 +185,45 @@ void FPSCamera::update(float dt)
     aabb.update(vec3(pos.x -3,pos.y- 10,pos.z - 3));
     aabb.update(vec3(pos.x +3,pos.y + 10 ,pos.z + 3));
 
-    SceneMgr::shared()->currentScene()->getRange(&list,aabb);
+    g_GetCurrScene()->getRange(&list,aabb);
     Drawable3DGroup group(&list[0],list.size());
 
     AABB playerAABB;
     vec3 overLap;
     vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward;
     totalSpeed += rightDirection*dt*m_speed.x*m_slide;
-    totalSpeed += vec3(0,gravity_speed,0);
-    vec3 test = pos + totalSpeed;
-    playerAABB.update(vec3(test.x - m_distToside,test.y - distToGround, test.z - m_distToside));
-    playerAABB.update(vec3(test.x + m_distToside,test.y, test.z + m_distToside));
-    if(!group.hitByAABB(playerAABB,overLap) || true)//if no collid just go through TZW just for speed.
+
+    if(!group.hitByAABB(playerAABB,overLap) && false)//if no collid just go through TZW just for speed.
     {
+        vec3 test = pos + totalSpeed;
         pos = test;
-    }else //if collid detect, try as best as we can(6 times loop) to let the camera can move more()
+        setPos(pos);
+    }else
     {
-        vec3 tmpPos;
-        vec3 resultSpeed;
-        bool is_x_pass = false,is_y_pass = false, is_z_pass = false;
-        float speed_x = totalSpeed.x;
-        float speed_y = totalSpeed.y;
-        float speed_z = totalSpeed.z;
-
-        //try if we can move the camera along with the x-axis
-        for(int i =0;i<6;i++)
+        vec3 userSpeed = vec3(totalSpeed.x, 0, totalSpeed.z);
+        vec3 gravityVelocity;
+        if(m_isEnableGravity)
         {
-            playerAABB.reset();
-            tmpPos = pos + vec3(speed_x,0,0);
-            playerAABB.update(vec3(tmpPos.x -m_distToside,tmpPos.y- distToGround*0.9,tmpPos.z - m_distToside));
-            playerAABB.update(vec3(tmpPos.x +m_distToside,tmpPos.y  ,tmpPos.z + m_distToside));
-            if(!group.hitByAABB(playerAABB,overLap))
+            Ray ray(m_pos,vec3(0, -1, 0));
+            vec3 hitPoint;
+            if(group.hitByRay(ray,hitPoint) && hitPoint.distance(m_pos) <= (distToGround + offsetToCentre + 0.05) && m_verticalSpeed < 0.0f)
             {
-                is_x_pass = true;
-                break;
-            }else
-            {   //smaller the x speed, try again
-                speed_x *=0.8;
-            }
-        }
-        //try if we can move the camera along with the y-axis
-        for(int i =0;i<6;i++)
-        {
-            playerAABB.reset();
-            tmpPos = pos + vec3(0,speed_y,0);
-            playerAABB.update(vec3(tmpPos.x -m_distToside,tmpPos.y - distToGround*0.9,tmpPos.z - m_distToside));
-            playerAABB.update(vec3(tmpPos.x +m_distToside,tmpPos.y ,tmpPos.z + m_distToside));
-            if(!group.hitByAABB(playerAABB,overLap))
-            {
-                is_y_pass = true;
-                break;
+                m_verticalSpeed = 0.0;
             }else
             {
-                //smaller the y speed, try again
-                speed_y *=0.8;
-            }
-        }
-
-        for(int i =0;i<6;i++)
-        {
-            playerAABB.reset();
-            tmpPos = pos + vec3(0,0,speed_z);
-            playerAABB.update(vec3(tmpPos.x -m_distToside,tmpPos.y- distToGround*0.9,tmpPos.z - m_distToside));
-            playerAABB.update(vec3(tmpPos.x +m_distToside,tmpPos.y ,tmpPos.z + m_distToside));
-            if(!group.hitByAABB(playerAABB,overLap))
-            {
-                is_z_pass = true;
-                break;
-            }else
-            {
-                speed_z *=0.8;
-            }
-        }
-        if(is_x_pass)
-        {
-            resultSpeed.x = speed_x;
-        }
-        if(is_y_pass)
-        {
-            resultSpeed.y = speed_y;
-        }
-        if(is_z_pass)
-        {
-            resultSpeed.z = speed_z;
-        }
-
-        pos = pos + resultSpeed;
-    }
-
-    if(m_isEnableGravity)
-    {
-        Ray ray(pos,vec3(0,-1,0));
-        vec3 hitPoint;
-        auto isHit =group.hitByRay(ray,hitPoint);
-        if(isHit)
-        {
-            if((pos.y > hitPoint.y)&&((pos.y - hitPoint.y) > (distToGround + HeightThreadHold)))
-            {
-                if(gravity_speed > -dt *m_maxFallSpeed)
+                if(m_verticalSpeed <= -0.5)
                 {
-                    gravity_speed -= dt*m_gravity;
+                    m_verticalSpeed = -0.5;
                 }
                 else
                 {
-                    gravity_speed = -dt *m_maxFallSpeed;
+                    m_verticalSpeed -= 0.005;
                 }
-            }else if((pos.y - hitPoint.y) <=distToGround)//if stuck in ground, lift the camera a little bit.
-            {
-                gravity_speed = 0.3*dt;
-            }else
-            {
-                gravity_speed = 0;
             }
-        }else
-        {
-            gravity_speed = -5*dt;
+            gravityVelocity = vec3(0,m_verticalSpeed,0);
         }
+        collideAndSlide(userSpeed,gravityVelocity);
     }
-    setPos(pos);
 }
 
 
@@ -396,21 +319,137 @@ void FPSCamera::setRotateQ(const Quaternion &rotateQ)
 void FPSCamera::lookAt(vec3 pos)
 {
     Camera::lookAt(pos,vec3(0.f, 1.f,0.f));
-//    auto dir =  pos - m_pos;
-//    dir.normalize();
-//    auto pitch = TbaseMath::Radius2Ang(asin(dir.y));
-//    auto yaw = TbaseMath::Radius2Ang(acosf(dir.x / cosf(pitch)));
-//    setRotateE(vec3(pitch, yaw, 0.0));
-    std::cout<< "the rotation is "<<getRotate().getStr()<<std::endl;
+    //    auto dir =  pos - m_pos;
+    //    dir.normalize();
+    //    auto pitch = TbaseMath::Radius2Ang(asin(dir.y));
+    //    auto yaw = TbaseMath::Radius2Ang(acosf(dir.x / cosf(pitch)));
+    //    setRotateE(vec3(pitch, yaw, 0.0));
+    std::cout<< "the rotation is "<<getRotateE().getStr()<<std::endl;
 }
 
 void FPSCamera::init(Camera *cloneObj)
 {
     setProjection(cloneObj->projection());
     setPos(cloneObj->getPos());
-    setRotateE(cloneObj->getRotate());
+    setRotateE(cloneObj->getRotateE());
     setScale(vec3(1.0,1.0,1.0));
     EventMgr::shared()->addFixedPiorityListener(this);
+}
+
+void FPSCamera::collideAndSlide(vec3 vel, vec3 gravity)
+{
+    // Do collision detection:
+    collisionPackage->R3Position = m_pos - vec3(0, offsetToCentre, 0);
+    collisionPackage->R3Velocity = vel;
+    // calculate position and velocity in eSpace
+    vec3 eSpacePosition = collisionPackage->R3Position / collisionPackage->eRadius;
+    vec3 eSpaceVelocity = collisionPackage->R3Velocity / collisionPackage->eRadius;
+    // Iterate until we have our final position.
+    collisionRecursionDepth = 0;
+    vec3 finalPosition = collideWithWorld(eSpacePosition,eSpaceVelocity);
+
+
+    //do it again for gravity
+    collisionPackage->R3Position = finalPosition * collisionPackage->eRadius;
+    collisionPackage->R3Velocity = gravity;
+    eSpaceVelocity = collisionPackage->R3Velocity / collisionPackage->eRadius;
+    collisionRecursionDepth = 0;
+    finalPosition = collideWithWorld(finalPosition,eSpaceVelocity, false);
+
+    //now set the position
+    // Convert final result back to R3:
+    finalPosition = finalPosition * collisionPackage->eRadius;
+    if (finalPosition.distance(getPos()) > 0.001)
+    {
+        m_isMoving = true;
+    }else
+    {
+        m_isMoving = false;
+    }
+    setPos(finalPosition + vec3(0, offsetToCentre,0));
+}
+
+vec3 FPSCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlide)
+{
+    float veryCloseDistance = 0.005f;
+    // do we need to worry?
+    if (collisionRecursionDepth>5)
+        return pos;
+    // Ok, we need to worry:
+    collisionPackage->velocity = vel;
+
+    collisionPackage->normalizedVelocity = vel;
+    collisionPackage->normalizedVelocity.normalize();
+    collisionPackage->basePoint = pos;
+    collisionPackage->foundCollision = false;
+    // Check for collision (calls the collision routines)
+    // Application specific!!
+    checkCollision(collisionPackage);
+    // If no collision we just move along the velocity
+    if (collisionPackage->foundCollision == false) {
+        return pos + vel;
+    }
+    // *** Collision occured ***
+    // The original destination point
+    vec3 destinationPoint = pos + vel;
+    vec3 newBasePoint = pos;
+    // only update if we are not already very close
+    // and if so we only move very close to intersection..not
+    // to the exact spot.
+    if (collisionPackage->nearestDistance>=veryCloseDistance)
+    {
+        vec3 V = vel;
+        V.setLength(collisionPackage->nearestDistance - veryCloseDistance);
+        newBasePoint = collisionPackage->basePoint + V;
+        // Adjust polygon intersection point (so sliding
+        // plane will be unaffected by the fact that we
+        // move slightly less than collision tells us)
+        V.normalize();
+        collisionPackage->intersectionPoint -= V * std::min((float)collisionPackage->nearestDistance, veryCloseDistance);
+//        collisionPackage->intersectionPoint -= V * veryCloseDistance;
+    }
+    // Determine the sliding plane
+    vec3 slidePlaneOrigin =
+
+            collisionPackage->intersectionPoint;
+    vec3 slidePlaneNormal =
+            newBasePoint-collisionPackage->intersectionPoint;
+    slidePlaneNormal.normalize();
+    Plane slidingPlane(slidePlaneNormal , slidePlaneOrigin);
+    // Again, sorry about formatting.. but look carefully ;)
+    vec3 newDestinationPoint = destinationPoint - slidePlaneNormal * slidingPlane.dist2Plane(destinationPoint);
+    // Generate the slide vector, which will become our new
+    // velocity vector for the next iteration
+    vec3 newVelocityVector = newDestinationPoint - collisionPackage->intersectionPoint;
+    // Recurse:
+    // dont recurse if the new velocity is very small
+    if (newVelocityVector.length() < veryCloseDistance || !needSlide) {
+        return newBasePoint;
+    }
+    collisionRecursionDepth++;
+    return collideWithWorld(newBasePoint,newVelocityVector);
+}
+
+void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
+{
+    std::vector<Drawable3D *> list;
+    vec3 pos = thePackage->R3Position;
+    AABB aabb;
+    aabb.update(vec3(pos.x - 10,pos.y - 10,pos.z - 10));
+    aabb.update(vec3(pos.x + 10,pos.y + 10 ,pos.z + 10));
+    g_GetCurrScene()->getRange(&list,aabb);
+    Drawable3DGroup group(&list[0],list.size());
+    group.checkCollide(thePackage);
+}
+
+bool FPSCamera::getIsMoving() const
+{
+    return m_isMoving;
+}
+
+void FPSCamera::setIsMoving(bool isMoving)
+{
+    m_isMoving = isMoving;
 }
 } // namespace tzw
 

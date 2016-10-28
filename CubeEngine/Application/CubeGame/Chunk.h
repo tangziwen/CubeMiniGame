@@ -1,10 +1,9 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 #include "EngineSrc/CubeEngine.h"
-#include "Block.h"
 #include <string>
 #include <vector>
-#define MAX_BLOCK 32
+
 struct vertexInfo
 {
     unsigned int index;
@@ -20,18 +19,16 @@ public:
     int y;
     int z;
     vec3 getGridPos(int the_x, int the_y, int the_z);
-    Block * getBlock(int x,int y,int z);
     virtual bool intersectByAABB(const AABB & other, vec3 &overLap);
     virtual Drawable3D * intersectByRay(const Ray & ray,vec3 &hitPoint);
-    virtual void update(float delta);
+    virtual bool intersectBySphere(const t_Sphere & sphere, std::vector<vec3> & hitPoint);
+    virtual void logicUpdate(float delta);
     bool getIsAccpectOCTtree() const;
-    virtual void draw();
-    std::vector<Block *> m_blockList;
-    void removeBlock(Block * block);
+    virtual void submitDrawCmd();
     void load();
     void unload();
     void deformAround(vec3 pos, float value);
-    void deformNeighbor(int X, int Y, int Z, float value);
+    void deformWithNeighbor(int X, int Y, int Z, float value);
     void setVoxelScalar(int x, int y, int z, float scalar);
     void addVoexlScalar(int x, int y, int z, float scalar);
     void genNormal();
@@ -39,23 +36,24 @@ public:
     vec4 getPoint(int x, int y, int z);
     int getIndex(int x, int y, int z);
     void finish();
-    void loadData();
+    void initData();
+    virtual void checkCollide(ColliderEllipsoid * package);
+    virtual void setUpTransFormation(TransformationInfo & info);
 private:
     bool m_isLoaded;
-    Technique * m_tech;
+    bool m_isInitData;
     Mesh * m_mesh;
+	bool isInEdge(int i, int j, int k);
     bool isInRange(int i,int j, int k);
-    void reset();
-    void generateBlocks();
-    void sortByDist(vec3 pos);
-    bool isEmpty(int x,int y,int z);
+    bool isInOutterRange(int i, int j, int k);
+    bool isInInnerRange(int i, int j, int k);
+    bool isEdge(int i);
+
     bool hitAny(Ray & ray, vec3 & result);
     bool hitFirst(const Ray &ray, vec3 & result);
     vec4 * mcPoints;
     vec3 m_basePoint;
     std::vector<Chunk *> m_tmpNeighborChunk;
-    Block* m_blockGroup[MAX_BLOCK][MAX_BLOCK][MAX_BLOCK];
-    int m_indicesGroup[MAX_BLOCK + 1][MAX_BLOCK + 1][MAX_BLOCK + 1];
 };
 }
 

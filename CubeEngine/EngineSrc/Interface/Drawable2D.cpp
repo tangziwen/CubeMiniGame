@@ -4,9 +4,11 @@ namespace tzw {
 
 Drawable2D::Drawable2D()
 {
+    m_material = new Material();
     m_contentSize = vec2(0,0);
     m_anchorPoint = vec2(0,0);
     m_anchorPointInPoints = vec2(0,0);
+    m_uniformColor = vec4(1.0, 1.0, 1.0, 1.0);
 }
 
 vec2 Drawable2D::getContentSize() const
@@ -39,6 +41,29 @@ Matrix44 Drawable2D::getLocalTransform()
     mat.setToIdentity();
     mat.translate(vec3(-m_anchorPointInPoints.x,-m_anchorPointInPoints.y,0));
     return Node::getLocalTransform()*mat;
+}
+
+void Drawable2D::setUniformColor(const vec4 &color)
+{
+    m_uniformColor = color;
+    m_material->setVar("color",color);
+}
+
+void Drawable2D::setUniformColor(const vec3 &color)
+{
+    m_uniformColor = vec4(color.x, color.y, color.z, 1.0);
+    m_material->setVar("color", color);
+}
+
+vec4 Drawable2D::getUniformColor()
+{
+    return m_uniformColor;
+}
+
+void Drawable2D::setAlpha(float alphaValue)
+{
+    m_uniformColor.w = alphaValue;
+    m_material->setVar("color", m_uniformColor);
 }
 
 } // namespace tzw

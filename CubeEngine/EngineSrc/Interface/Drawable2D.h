@@ -16,7 +16,12 @@ public:
     virtual void setAnchorPoint(const vec2 &anchorPoint);
 
     virtual Matrix44 getLocalTransform();
+    virtual void setUniformColor(const tzw::vec4 &color);
+    virtual void setUniformColor(const tzw::vec3 &color);
+    virtual vec4 getUniformColor();
+    virtual void setAlpha(float alphaValue);
 protected:
+    vec4 m_uniformColor;
     vec2 m_contentSize;
     vec2 m_anchorPoint;
     vec2 m_anchorPointInPoints;

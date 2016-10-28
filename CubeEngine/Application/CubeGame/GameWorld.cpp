@@ -3,6 +3,9 @@
 #include "EngineSrc/Event/EventMgr.h"
 #include "TUtility/TUtility.h"
 #include "time.h"
+#include "EngineSrc/3D/SkyBox.h"
+#include <iostream>
+#include "GameConfig.h"
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
 GameWorld *GameWorld::shared()
@@ -15,31 +18,30 @@ GameWorld *GameWorld::shared()
 }
 
 
-void GameWorld::createWorld(Scene *scene, int width, int height,float ratio)
+void GameWorld::createWorld(Scene *scene, int width, int depth, int height, float ratio)
 {
     m_scene = scene;
     GameMap::shared()->init(ratio);
-    //int block_width = width / MAX_BLOCK;
-    //int block_height = height /MAX_BLOCK;
     m_width = width;
+    m_depth = depth;
     m_height = height;
+    Tmisc::DurationBegin();
     for(int i = 0;i< width;i++)
     {
-        for(int j=0;j<WORLD_HEIGHT;j++)
+        for(int j=0;j<m_height;j++)
         {
-            for(int k = 0; k < height; k++)
+            for(int k = 0; k < m_depth; k++)
             {
                 auto chunkA = new Chunk(i,j,k);
                 m_mainRoot->addChild(chunkA);
                 m_chunkList.push_back(chunkA);
                 m_chunkArray[i][j][k] = chunkA;
-                chunkA->loadData();
+				chunkA->load();
             }
         }
     }
-    //just for test
-    //    m_chunkArray[0][0][0]->load();
-    loadChunksAroundPlayer();
+    //loadChunksAroundPlayer();
+    std::cout <<"load world need" << Tmisc::DurationEnd() << std::endl;
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -50,17 +52,6 @@ vec3 GameWorld::worldToGrid(vec3 world)
 vec3 GameWorld::gridToChunk(vec3 grid)
 {
     return vec3(grid.x / MAX_BLOCK, grid.y / MAX_BLOCK, grid.z / MAX_BLOCK);
-}
-
-Block *GameWorld::getBlockByGrid(int x, int y, int z)
-{
-    vec3 chunkPos = gridToChunk(vec3(x,y,z));
-    Chunk * chunk = getChunkByChunk(chunkPos.x,chunkPos.y,chunkPos.z);
-    if(chunk)
-    {
-        return chunk->getBlock(x - int(chunkPos.x)*MAX_BLOCK,y-int(chunkPos.y)*MAX_BLOCK,z - int(chunkPos.z)*MAX_BLOCK);
-    }
-    return nullptr;
 }
 
 Player *GameWorld::getPlayer() const
@@ -91,7 +82,6 @@ void GameWorld::onFrameUpdate(float delta)
     timer += delta;
     if (timer >= 5.0f)
     {
-
         //loadChunksAroundPlayer();
         timer = 0.0f;
     }
@@ -129,17 +119,17 @@ void GameWorld::startGame()
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
-    GameMap::shared()->setMapType(GameMap::MapType::Noise);
-    GameMap::shared()->setMaxHeight(10);
+    GameMap::shared()->setMapType(GameMap::MapType::Plain);
+    GameMap::shared()->setMaxHeight(20);
     auto player = new Player(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
-    GameWorld::shared()->createWorld(SceneMgr::shared()->currentScene(),10,10,0.02);
-    Cube* skybox = Cube::create("./Res/User/CubeGame/texture/SkyBox/left.jpg","./Res/User/CubeGame/texture/SkyBox/right.jpg",
+    GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.02);
+    m_mainRoot->addChild(player);
+    SkyBox* skybox = SkyBox::create("./Res/User/CubeGame/texture/SkyBox/right.jpg","./Res/User/CubeGame/texture/SkyBox/left.jpg",
                                 "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
                                 "./Res/User/CubeGame/texture/SkyBox/back.jpg","./Res/User/CubeGame/texture/SkyBox/front.jpg");
-    skybox->setIsAccpectOCTtree(false);
     skybox->setScale(80,80,80);
-    m_mainRoot->addChild(skybox);
+    g_GetCurrScene()->setSkyBox(skybox);
     m_currentState = GameState::OnPlay;
 }
 
@@ -147,7 +137,7 @@ bool tzw::GameWorld::onKeyPress(int keyCode)
 {
     switch (keyCode) {
 
-    case Qt::Key_Escape:
+    case GLFW_KEY_ESCAPE:
         this->toggleMainMenu();
         break;
     default:
@@ -160,21 +150,25 @@ void GameWorld::loadChunksAroundPlayer()
     std::set<Chunk*> m_tempArray = m_activedChunkList;
     auto pos = m_player->getPos();
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-    int posY = pos.z / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-    for(int i =posX;i<=posX + 4;i++)
+    int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+    for(int i =posX - 2;i<=posX + 2;i++)
     {
-        for(int j =posY;j<=posY + 4;j++)
+        for(int j =0;j< m_height; j++)
         {
-            int k = 0;
-            auto targetChunk = m_chunkArray[i][j][k];
-            targetChunk->load();
-            auto findResult = m_tempArray.find(targetChunk);
-            if(findResult!= m_tempArray.end())
+            for( int k = posZ - 2; k <= posZ + 2; k++)
             {
-                m_tempArray.erase(findResult);
-            }else
-            {
-                m_activedChunkList.insert(m_chunkArray[i][j][k]);
+                if(i < 0 || i >= m_width || j < 0 || j >= m_height || k < 0 || k >= m_depth)
+                    continue;
+                auto targetChunk = m_chunkArray[i][j][k];
+                targetChunk->load();
+                auto findResult = m_tempArray.find(targetChunk);
+                if(findResult!= m_tempArray.end())
+                {
+                    m_tempArray.erase(findResult);
+                }else
+                {
+                    m_activedChunkList.insert(m_chunkArray[i][j][k]);
+                }
             }
         }
     }
@@ -186,10 +180,9 @@ void GameWorld::loadChunksAroundPlayer()
 
 Chunk *GameWorld::getChunkByChunk(int x, int y, int z)
 {
-    if(x >=0 && x <m_width && z >=0 && z <m_height
-            && y >=0 && y < WORLD_HEIGHT)
+    if(x >=0 && x <m_width && z >=0 && z <m_depth && y >=0 && y < m_height)
     {
-        return m_chunkArray[x][z][y];
+        return m_chunkArray[x][y][z];
     }
     else
     {
@@ -200,12 +193,12 @@ Chunk *GameWorld::getChunkByChunk(int x, int y, int z)
 GameWorld::GameWorld()
 {
     EventMgr::shared()->addFixedPiorityListener(this);
-    memset(m_chunkArray,CUBE_MAP_SIZE * CUBE_MAP_SIZE *WORLD_HEIGHT * sizeof(Chunk *),0);
+    memset(m_chunkArray,CUBE_MAP_SIZE * CUBE_MAP_SIZE * GAME_MAP_HEIGHT * sizeof(Chunk *),0);
     m_currentState = GameState::MainMenu;
     m_mainMenu = new MainMenu();
-    SceneMgr::shared()->currentScene()->addNode(m_mainMenu);
+    g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
-    SceneMgr::shared()->currentScene()->addNode(m_mainRoot);
+    g_GetCurrScene()->addNode(m_mainRoot);
 }
 
 MainMenu *GameWorld::getMainMenu() const
@@ -223,7 +216,7 @@ void GameWorld::unloadGame()
     m_mainRoot->purgeAllChildren();
     m_activedChunkList.clear();
     m_chunkList.clear();
-    memset(m_chunkArray,CUBE_MAP_SIZE * CUBE_MAP_SIZE *WORLD_HEIGHT * sizeof(Chunk *),0);
+    memset(m_chunkArray,CUBE_MAP_SIZE * CUBE_MAP_SIZE * GAME_MAP_HEIGHT * sizeof(Chunk *),0);
 }
 
 GameWorld::GameState GameWorld::getCurrentState() const

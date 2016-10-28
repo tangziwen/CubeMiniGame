@@ -8,6 +8,7 @@
 #include "OctreeScene.h"
 #include "../Lighting/DirectionalLight.h"
 #include "../Lighting/AmbientLight.h"
+#include "../3D/SkyBox.h"
 namespace tzw {
 
 class ConsolePanel;
@@ -45,6 +46,8 @@ public:
 
     BaseLight *getAmbient() const;
 
+    SkyBox *getSkyBox() const;
+    void setSkyBox(SkyBox *skyBox);
 private:
     DirectionalLight *m_dirLight;
     ConsolePanel * m_consolePanel;
@@ -55,6 +58,7 @@ private:
     AmbientLight * m_ambient;
     Node m_root;
     OctreeScene * m_octreeScene;
+    SkyBox * m_skyBox;
 };
 
 } // namespace tzw

@@ -3,7 +3,7 @@
 
 #include "../../Interface/Drawable3D.h"
 #include "../../Mesh/Mesh.h"
-#include "../Material/Material.h"
+#include "../Effect/Effect.h"
 namespace tzw {
 class Model : public Drawable3D
 {
@@ -12,12 +12,10 @@ public:
     Model();
     void initWithFile(std::string modelFilePath);
     static Model * create(std::string modelFilePath);
-    virtual void draw();
-    virtual Technique *technique() const;
+    virtual void submitDrawCmd();
 private:
-    Technique * m_technique;
     std::vector<Mesh *> m_meshList;
-    std::vector<Material *> m_materialList;
+    std::vector<Material * >m_effectList;
 };
 
 } // namespace tzw

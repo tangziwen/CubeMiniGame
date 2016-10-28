@@ -10,7 +10,7 @@ public:
     void initDevice();
     unsigned int genBuffer();
     void bindBuffer(RenderFlag::BufferTarget target,unsigned int handle);
-    void uploadBufferData(RenderFlag::BufferTarget target, unsigned int size, const void * data);
+    void submit(RenderFlag::BufferTarget target, unsigned int size, const void * data);
     void activeTextureUnit(unsigned int id);
     void enableFunction(RenderFlag::RenderFunction state);
     void disableFunction(RenderFlag::RenderFunction state);
@@ -34,6 +34,8 @@ public:
     void setBlendEquation(RenderFlag::BlendingEquation equation);
     void setBlendFactor(RenderFlag::BlendingFactor factorSrc, RenderFlag::BlendingFactor factorDst);
     void setDepthMaskWriteEnable(bool isEnable);
+    void genMipMap(unsigned int texUnitID);
+	void setClearColor(float r, float g, float b);
 private:
     static RenderBackEnd * m_instance;
     RenderBackEnd();

@@ -20,6 +20,7 @@ public:
         RightButton,
     };
     static int maxPiority;
+	static int debugPanelPiority;
     static const char * versionStr;
     static int focusPiority;
 };

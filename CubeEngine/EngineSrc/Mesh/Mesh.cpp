@@ -4,7 +4,7 @@
 namespace tzw {
 
 Mesh::Mesh()
-    :m_ibo(-1),m_vbo(-1),m_mat(nullptr)
+    :m_ibo(-1),m_vbo(-1)
 {
     m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
     m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
@@ -41,11 +41,11 @@ void Mesh::finish(bool isPassToGPU)
     calculateAABB();
     if(isPassToGPU)
     {
-        passToGPU();
+        submit();
     }
 }
 
-void Mesh::passToGPU()
+void Mesh::submit()
 {
     if(m_ibo == -1)
     {
@@ -57,17 +57,17 @@ void Mesh::passToGPU()
 
     //pass data to the IBO
     m_indexBuf->use();
-    m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(GLushort));
+    m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u));
 }
 
-Material *Mesh::getMat() const
+unsigned int Mesh::getMatIndex() const
 {
-    return m_mat;
+    return m_matIndex;
 }
 
-void Mesh::setMat(Material *mat)
+void Mesh::setMatIndex(unsigned int matIndex)
 {
-    m_mat = mat;
+    m_matIndex = matIndex;
 }
 
 void Mesh::caclNormals()
@@ -92,6 +92,27 @@ void Mesh::caclNormals()
     // Normalize all the vertex normals
     for (unsigned int i = 0 ; i < vertexCount ; i++) {
         m_vertices[i].m_normal.normalize();
+    }
+}
+
+void Mesh::calBaryCentric()
+{
+    size_t indexCount = m_indices.size();
+    // Accumulate each triangle normal into each of the triangle vertices
+    for (unsigned int i = 0 ; i < indexCount ; i += 3) {
+        short_u index0 = m_indices[i];
+        short_u index1 = m_indices[i + 1];
+        short_u index2 = m_indices[i + 2];
+
+        m_vertices[index0].m_barycentric += vec3(1.0, 0.0, 0.0);
+        m_vertices[index1].m_barycentric += vec3(0.0, 1.0, 0.0);
+        m_vertices[index2].m_barycentric += vec3(0.0, 0.0, 1.0);
+    }
+
+    size_t vertexCount = m_vertices.size();
+    // Normalize all the vertex normals
+    for (unsigned int i = 0 ; i < vertexCount ; i++) {
+        m_vertices[i].m_barycentric.normalize();
     }
 }
 
@@ -372,21 +393,21 @@ void Mesh::subDivideIter()
     }
 }
 
-GLuint Mesh::vbo() const
+integer_u Mesh::vbo() const
 {
     return m_vbo;
 }
 
-void Mesh::setVbo(const GLuint &vbo)
+void Mesh::setVbo(const integer_u &vbo)
 {
     m_vbo = vbo;
 }
-GLuint Mesh::ibo() const
+integer_u Mesh::ibo() const
 {
     return m_ibo;
 }
 
-void Mesh::setIbo(const GLuint &ibo)
+void Mesh::setIbo(const integer_u &ibo)
 {
     m_ibo = ibo;
 }

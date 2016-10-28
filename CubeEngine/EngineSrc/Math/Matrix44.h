@@ -26,6 +26,7 @@ public:
     vec3 up();
     vec3 forward();
     vec3 right();
+	void stripScale();
 private:
     float m_data[16];
 };

@@ -1,10 +1,9 @@
 #include "ShaderMgr.h"
-#include <QDebug>
 namespace tzw {
 
 TZW_SINGLETON_IMPL(ShaderMgr)
 
-ShaderProgram *ShaderMgr::createOrGet(std::string vs, std::string fs, const char * tcs, const char * tes)
+ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char * tcs, const char * tes)
 {
     shaderInfo info;
     info.fs = fs;

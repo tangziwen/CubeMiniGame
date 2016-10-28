@@ -5,6 +5,7 @@
 #include "../Engine/Engine.h"
 #include "../Scene/Scene.h"
 #include <iostream>
+#include <algorithm>
 namespace tzw {
 /**
  * @brief Node::Node 构造函数
@@ -80,15 +81,20 @@ vec3 Node::getPos() const
 void Node::setPos(const vec3 &pos)
 {
     m_pos = pos;
-    m_needToUpdate = true;
+	m_needToUpdate = true;
 }
 
-void Node::draw()
+void Node::setPos(float x, float y, float z)
+{
+	setPos(vec3(x, y, z));
+}
+
+void Node::submitDrawCmd()
 {
 
 }
 
-void Node::update(float dt)
+void Node::logicUpdate(float dt)
 {
 
 }
@@ -98,7 +104,7 @@ void Node::update(float dt)
  * @note 旋转量的x,y,z分量分别表示绕x轴,y轴,z轴旋转的角度(以角度记)，变换的顺序为roll(z)->picth(x)->yaw(y);
  * @return
  */
-vec3 Node::getRotate()
+vec3 Node::getRotateE()
 {
     float x = m_rotateE.x, y = m_rotateE.y, z = m_rotateE.z;
     m_rotateQ.toEulserAngel(&x, &y, &z);
@@ -203,7 +209,7 @@ Matrix44 Node::getScalingMatrix()
 ///
 void Node::visit()
 {
-    update(Engine::shared()->deltaTime());
+    logicUpdate(Engine::shared()->deltaTime());
     updateAction(this,Engine::shared()->deltaTime());
 
     //数据如果有变动的话，重新缓存数据
@@ -230,7 +236,7 @@ void Node::visitPost(OctreeScene *scene)
     {
         if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
         {
-            draw();
+            submitDrawCmd();
         }
         if(getNeedToUpdate() && getNodeType()==NodeType::Drawable3D && getIsAccpectOCTtree())
         {

@@ -2,6 +2,7 @@
 #include "GUITitledFrame.h"
 #include "../Engine/EngineDef.h"
 #include "../Scene/SceneMgr.h"
+#include <algorithm>
 namespace tzw {
 TZW_SINGLETON_IMPL(GUIWindowMgr)
 void GUIWindowMgr::focus(GUIWindow *window)
@@ -21,7 +22,7 @@ void GUIWindowMgr::add(GUIWindow *frame)
 {
     frameList.push_back(frame);
     frame->setLocalPiority(frameList.size());
-    SceneMgr::shared()->currentScene()->addNode(frame);
+    g_GetCurrScene()->addNode(frame);
 }
 
 GUIWindowMgr::GUIWindowMgr()

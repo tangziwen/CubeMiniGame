@@ -9,9 +9,9 @@ LabelNew::LabelNew():
     m_atlas(nullptr)
 {
     m_mesh = new Mesh();
-    m_technique = new Technique("./Res/EngineCoreRes/Shaders/Simple_v.glsl","./Res/EngineCoreRes/Shaders/Simple_f.glsl");
-    m_technique->setVar("TU_color",getUniformColor());
-    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
+    m_material->initFromEffect("Simple");
+    m_material->setVar("color",getUniformColor());
+    setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
 LabelNew *LabelNew::create(std::string theString)
@@ -63,7 +63,7 @@ void LabelNew::genMesh()
     initAtlas();
     m_mesh->clear();
     //索引可以通用,我们写在循环外
-    GLushort indices[] = {
+	unsigned short indices[] = {
          0,1,2,  0,2,3,
     };
     int penX = 0,penY =0;
@@ -88,7 +88,7 @@ void LabelNew::genMesh()
         //有些字如g,y等会下沉,需要用rows和top做个差值来移动字符位置
         int diff = - int(gNode->m_data.rows) + int(gNode->m_data.top);
         charMesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
-        charMesh->addIndices(indices,sizeof(indices)/sizeof(GLushort));
+        charMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
         charMesh->finish(false);//we don't pass it to the GPU
         Matrix44 mat;
         mat.setToIdentity();
@@ -108,12 +108,12 @@ void LabelNew::genMesh()
     m_mesh->finish();
 }
 
-void LabelNew::draw()
+void LabelNew::submitDrawCmd()
 {
-    technique()->applyFromDrawable(this);
-    technique()->setVar("TU_color",getUniformColor());
-    m_technique->setTex("TU_tex1",m_atlas->texture());
-    RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);
+    m_material->setVar("color", getUniformColor());
+    m_material->setTex("MainTexture",m_atlas->texture());
+    RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::GUI);
+    setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
 }

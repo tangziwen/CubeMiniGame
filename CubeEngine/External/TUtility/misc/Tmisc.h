@@ -3,7 +3,7 @@
 
 #include <string>
 #define T_INVALID(p) !p
-
+#include "time.h"
 namespace tzw {
 
 class Tmisc
@@ -12,6 +12,8 @@ public:
 	static std::wstring StringToWString(const std::string &str);
 	static std::string WstringToString(const std::wstring &wstr);
 	static std::string StrFormat(const char * format,...);
+	static void DurationBegin();
+	static clock_t DurationEnd();
 };
 
 } // namespace tzw

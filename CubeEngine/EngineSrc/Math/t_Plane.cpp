@@ -69,6 +69,18 @@ PointSide Plane::getSide(const vec3 &point) const
         return PointSide::IN_PLANE;
 }
 
+vec3 Plane::projectTo(const vec3 &point) const
+{
+    auto dist = dist2Plane(point);
+    return point - _normal * dist;
+}
+
+bool Plane::isFrontFacingTo(const vec3 &direction) const
+{
+    double dot = vec3::DotProduct(_normal, direction);
+    return (dot <= 0);
+}
+
 
 } // namespace tzw
 

@@ -7,15 +7,15 @@ GUIFrame::GUIFrame()
 {
     m_contentSize = vec2(100,100);
     m_mesh = new Mesh();
-    m_technique = new Technique("./Res/EngineCoreRes/Shaders/SpriteColor_v.glsl","./Res/EngineCoreRes/Shaders/SpriteColor_f.glsl");
-    m_technique->setVar("TU_color",getUniformColor());
-    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
+    m_material->initFromEffect("SpriteColor");
+    m_material->setVar("color",getUniformColor());
+    setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
 void GUIFrame::setRenderRect()
 {
     m_mesh->clear();
-    GLushort indices[] = {
+	unsigned short indices[] = {
          0,1,2,  0,2,3,
     };
     auto w = m_contentSize.x;
@@ -28,7 +28,7 @@ void GUIFrame::setRenderRect()
         vec3( 0, h,  -1.0f), // v3
     };
     m_mesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
-    m_mesh->addIndices(indices,sizeof(indices)/sizeof(GLushort));
+    m_mesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
     m_mesh->finish();
 }
 
@@ -55,11 +55,10 @@ GUIFrame *GUIFrame::create(vec2 size)
     return frame;
 }
 
-void GUIFrame::draw()
+void GUIFrame::submitDrawCmd()
 {
-    technique()->applyFromDrawable(this);
-    technique()->setVar("TU_color",getUniformColor());
-    RenderCommand command(m_mesh,technique(),RenderCommand::RenderType::GUI);
+    RenderCommand command(m_mesh, m_material, RenderCommand::RenderType::GUI);
+    setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
 }

@@ -24,7 +24,7 @@ void FontMgr::addDefaultFonts()
     //init the default font
     m_defaultFont =  getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",14);
     m_smallFont =  getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",10);
-    m_titleFont = getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",16);
+    m_titleFont = getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",14);
 }
 
 FontMgr::FontMgr()

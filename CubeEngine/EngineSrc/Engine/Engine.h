@@ -4,8 +4,8 @@
 #include "AppEntry.h"
 #include <string>
 #include "EngineSrc/Math/vec2.h"
-namespace tzw {
 
+namespace tzw {
 class Engine
 {
 public:
@@ -35,6 +35,7 @@ public:
     int getVerticesCount() const;
     bool getIsEnableOutLine() const;
     void setIsEnableOutLine(bool isEnableOutLine);
+	void setClearColor(float r, float g, float b);
 private:
     static Engine * m_instance;
     int m_drawCallCount;

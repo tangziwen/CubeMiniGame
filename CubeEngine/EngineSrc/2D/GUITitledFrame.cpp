@@ -11,7 +11,6 @@
 
 #include "../Scene/SceneMgr.h"
 #include "../Rendering/Renderer.h"
-
 namespace tzw {
 
 GUIWindow *GUIWindow::create(std::string titleText, vec4 color, vec2 size)
@@ -49,7 +48,7 @@ void GUIWindow::setTitle(const std::string &title)
 {
     m_title = title;
     m_label->setString(title);
-    m_labelFrame->setContentSize( vec2(m_contentSize.x,35));
+    m_labelFrame->setContentSize( vec2(m_contentSize.x,28));
     m_label->setPos2D(vec2(15,7));
 }
 
@@ -106,6 +105,7 @@ bool GUIWindow::onMouseMove(vec2 pos)
 void GUIWindow::initLabel()
 {
     m_label = LabelNew::create(" ",FontMgr::shared()->getTitleFont());
+	m_label->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->titleColor);
     m_labelFrame = GUIFrame::create(vec4(33.0/255,33.0/255,37.0/255,1.0));
     m_labelFrame->addChild(m_label);
     addChild(m_labelFrame);

@@ -49,7 +49,7 @@ static bool nodeEventCompare(const EventListener *a,const EventListener *b)
 void EventMgr::sortNodePiorityListener()
 {
 
-    auto root = SceneMgr::shared()->currentScene()->root();
+    auto root = g_GetCurrScene()->root();
     m_NodePioritylist.clear();
     visitNode(root);
     std::stable_sort(m_NodePioritylist.begin(),m_NodePioritylist.end(),nodeEventCompare);

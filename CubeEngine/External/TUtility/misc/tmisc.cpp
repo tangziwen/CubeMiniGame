@@ -38,4 +38,15 @@ std::string Tmisc::StrFormat(const char *format,...)
     return std::string(tmp);
 }
 
+static clock_t _theClock;
+void Tmisc::DurationBegin()
+{
+    _theClock = clock();
+}
+
+clock_t Tmisc::DurationEnd()
+{
+    return clock() - _theClock;
+}
+
 } // namespace tzw

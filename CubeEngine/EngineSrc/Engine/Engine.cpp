@@ -7,7 +7,7 @@
 #include "../BackEnd/WindowBackEndMgr.h"
 #include "../Event/EventMgr.h"
 #include "time.h"
-
+#include "EngineSrc/3D/Effect/EffectMgr.h"
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 namespace tzw {
 
@@ -34,7 +34,12 @@ bool Engine::getIsEnableOutLine() const
 
 void Engine::setIsEnableOutLine(bool isEnableOutLine)
 {
-    m_isEnableOutLine = isEnableOutLine;
+	m_isEnableOutLine = isEnableOutLine;
+}
+
+void Engine::setClearColor(float r, float g, float b)
+{
+	RenderBackEnd::shared()->setClearColor(r, g, b);
 }
 
 int Engine::getDrawCallCount()
@@ -117,7 +122,7 @@ void Engine::update(float delta)
 
 static void writeFunction(const char * str)
 {
-    SceneMgr::shared()->currentScene()->getConsolePanel()->addStr(str);
+    g_GetCurrScene()->getConsolePanel()->print(str);
 }
 
 void Engine::onStart(int width,int height)
@@ -149,6 +154,7 @@ void Engine::initSingletons()
     SceneMgr::shared()->init();
     TextureMgr::shared();
     Renderer::shared();
+    EffectMgr::shared();
 }
 
 vec2 Engine::winSize()

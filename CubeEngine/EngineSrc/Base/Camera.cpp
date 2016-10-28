@@ -15,10 +15,10 @@ Camera::Camera()
  * @param far
  * @return
  */
-Camera *Camera::CreatePerspective(float fov, float aspect, float near, float far)
+Camera *Camera::CreatePerspective(float fov, float aspect, float thenear, float thefar)
 {
     auto camera = new Camera();
-    camera->setPerspective(fov,aspect,near,far);
+    camera->setPerspective(fov,aspect,thenear, thefar);
     camera->m_frustum.initFrustumFromCamera(camera);
     return camera;
 }
@@ -141,7 +141,7 @@ void Camera::lookAt(vec3 targetPos, vec3 upFrame)
     //    setRotateE(vec3(TbaseMath::Radius2Ang(rotateX),TbaseMath::Radius2Ang(rotateY),TbaseMath::Radius2Ang(rotateZ)));
 }
 
-void Camera::update(float dt)
+void Camera::logicUpdate(float dt)
 {
 
 }

@@ -72,7 +72,7 @@ void GLFW_BackEnd::prepare()
         exit(EXIT_FAILURE);
     }
     glfwWindowHint(GLFW_RESIZABLE,0);
-    m_window = glfwCreateWindow(1024, 768, "CubeEngine ", NULL, NULL);
+    m_window = glfwCreateWindow(800, 600, EngineDef::versionStr, NULL, NULL);
     glfwMakeContextCurrent(m_window);
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
@@ -80,7 +80,7 @@ void GLFW_BackEnd::prepare()
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glfwSetCursorPosCallback(m_window, cursor_position_callback);
     glfwMakeContextCurrent(m_window);
-    AbstractDevice::shared()->init(1024,768);
+    AbstractDevice::shared()->init(800,600);
 }
 
 void GLFW_BackEnd::run()

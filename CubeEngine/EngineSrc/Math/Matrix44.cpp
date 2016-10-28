@@ -283,7 +283,29 @@ vec3 Matrix44::forward()
 
 vec3 Matrix44::right()
 {
-    return vec3(m_data[0], m_data[1], m_data[2]);
+	return vec3(m_data[0], m_data[1], m_data[2]);
+}
+
+void Matrix44::stripScale()
+{
+	auto x = vec3(m_data[0], m_data[1], m_data[2]);
+	auto y = vec3(m_data[4], m_data[5], m_data[6]);
+	auto z = vec3(m_data[8], m_data[9], m_data[10]);
+	x.normalize();
+	y.normalize();
+	z.normalize();
+
+	m_data[0] = x.x;
+	m_data[1] = x.y;
+	m_data[2] = x.z;
+
+	m_data[4] = y.x;
+	m_data[5] = y.y;
+	m_data[6] = y.z;
+
+	m_data[8] = z.x;
+	m_data[9] = z.y;
+	m_data[10] = z.z;
 }
 
 } // namespace tzw

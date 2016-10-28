@@ -1,7 +1,6 @@
 #include "Texture.h"
-#include <QImage>
 #include "External/SOIL/SOIL.h"
-#include <QDebug>
+#include "GL/glew.h"
 namespace tzw {
 
 Texture::Texture(std::string filePath)
@@ -13,7 +12,7 @@ Texture::Texture(std::string filePath)
         printf("texture create failed, no such file %s\n",filePath.c_str());
         exit(0);
     }
-    setWarp(RenderFlag::WarpAddress::Repeat);
+    initData();
 }
 
 Texture::Texture(unsigned char *rawData, int w, int h, bool needFlipY)
@@ -27,15 +26,15 @@ Texture::Texture(unsigned char *rawData, int w, int h, bool needFlipY)
     m_type = RenderFlag::TextureType::Texture2D;
     m_width = w;
     m_height = h;
-    setWarp(RenderFlag::WarpAddress::Repeat);
+    initData();
 }
 
 Texture::Texture(std::string PosXFilename, std::string NegXFilename, std::string PosYFilename, std::string NegYFilename, std::string PosZFilename, std::string NegZFilename)
 {
     this->m_textureId = SOIL_load_OGL_cubemap(PosXFilename.c_str(),NegXFilename.c_str(),PosYFilename.c_str(),NegYFilename.c_str(),PosZFilename.c_str(),NegZFilename.c_str(),
-                                              4,0,SOIL_FLAG_TEXTURE_REPEATS);
-    qDebug()<< SOIL_last_result();
+                                              3,0,SOIL_FLAG_TEXTURE_REPEATS);
     m_type = RenderFlag::TextureType::TextureCubeMap;
+    initData();
 }
 /**
  * @brief Texture::setFilter
@@ -89,6 +88,9 @@ void Texture::setMinFilter(Texture::FilterType t)
     case FilterType::Nearest:
         RenderBackEnd::shared()->setTexMIN(m_textureId,GL_NEAREST,m_type);
         break;
+    case FilterType::LinearMipMapNearest:
+        RenderBackEnd::shared()->setTexMIN(m_textureId,GL_LINEAR_MIPMAP_NEAREST,m_type);
+        break;
     }
 }
 
@@ -102,8 +104,29 @@ void Texture::setMagFilter(Texture::FilterType t)
     case FilterType::Nearest:
         RenderBackEnd::shared()->setTexMAG(m_textureId,GL_NEAREST,m_type);
         break;
+    case FilterType::LinearMipMapNearest:
+        RenderBackEnd::shared()->setTexMAG(m_textureId,GL_LINEAR_MIPMAP_NEAREST,m_type);
+        break;
     }
 }
 
+bool Texture::getIsHaveMipMap() const
+{
+    return m_isHaveMipMap;
+}
+
+void Texture::genMipMap()
+{
+    if(m_isHaveMipMap) return;
+    RenderBackEnd::shared()->genMipMap(m_textureId);
+    setFilter(FilterType::LinearMipMapNearest, 0);
+    m_isHaveMipMap = true;
+}
+
+void Texture::initData()
+{
+    setWarp(RenderFlag::WarpAddress::Repeat);
+    m_isHaveMipMap = false;
+}
 } // namespace tzw
 

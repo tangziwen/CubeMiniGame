@@ -4,8 +4,9 @@ namespace tzw {
 
 TZW_SINGLETON_IMPL(TextureMgr)
 
-Texture *TextureMgr::getOrCreateTexture(std::string filePath)
+Texture *TextureMgr::getByPath(std::string filePath, bool isNeedMipMap)
 {
+    if (filePath.empty()) return nullptr;
     auto result = m_texturePool.find(filePath);
     if(result!=m_texturePool.end())
     {
@@ -13,21 +14,26 @@ Texture *TextureMgr::getOrCreateTexture(std::string filePath)
     }else
     {
         Texture * tex = new Texture(filePath);
+        if(isNeedMipMap)
+        {
+            tex->genMipMap();
+        }
         m_texturePool.insert(std::make_pair(filePath,tex));
         return tex;
     }
 }
 
-Texture *TextureMgr::getOrCreateTexture(std::string PosXFilename, std::string NegXFilename, std::string PosYFilename, std::string NegYFilename, std::string PosZFilename, std::string NegZFilename)
+Texture *TextureMgr::getByPath(std::string PosX, std::string NegX, std::string PosY,
+							   std::string NegY, std::string PosZ, std::string NegZ)
 {
-    auto result = m_texturePool.find(PosXFilename);
+    auto result = m_texturePool.find(PosX);
     if(result!=m_texturePool.end())
     {
         return result->second;
     }else
     {
-        Texture * tex = new Texture(PosXFilename,NegXFilename,PosYFilename,NegYFilename,PosZFilename,NegZFilename);
-        m_texturePool.insert(std::make_pair(PosXFilename,tex));
+        Texture * tex = new Texture(PosX,NegX,PosY,NegY,PosZ,NegZ);
+        m_texturePool.insert(std::make_pair(PosX,tex));
         return tex;
     }
 }

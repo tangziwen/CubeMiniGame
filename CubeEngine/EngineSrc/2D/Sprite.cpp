@@ -1,12 +1,13 @@
 #include "Sprite.h"
 #include "../Rendering/Renderer.h"
 #include "../Scene/SceneMgr.h"
+#include "EngineSrc/3D/Effect/EffectMgr.h"
 namespace tzw {
 
 Sprite::Sprite()
     :m_isUseTexture(true),m_texture(nullptr)
 {
-    setCamera(SceneMgr::shared()->currentScene()->defaultGUICamera());
+    setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
 /**
@@ -37,7 +38,7 @@ void Sprite::initWithTexture(std::string texturePath)
     m_mesh->addIndex(0);
     m_mesh->addIndex(2);
     m_mesh->addIndex(3);
-    m_texture = TextureMgr::shared()->getOrCreateTexture(texturePath);
+    m_texture = TextureMgr::shared()->getByPath(texturePath);
     m_contentSize = m_texture->getSize();
     setRenderRect(m_contentSize);
     setUpTechnique();
@@ -62,6 +63,7 @@ void Sprite::initWithTexture(Texture *texture)
 void Sprite::initWithColor(vec4 color,vec2 contentSize)
 {
     m_mesh = new tzw::Mesh();
+    setUpTechnique();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
     m_mesh->addIndex(2);
@@ -71,13 +73,13 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setUniformColor(color);
     m_contentSize = contentSize;
     setRenderRect(m_contentSize);
-    setUpTechnique();
+
 }
 
-void Sprite::draw()
+void Sprite::submitDrawCmd()
 {
-    m_technique->applyFromDrawable(this);
-    RenderCommand command(m_mesh,m_technique,RenderCommand::RenderType::GUI);
+    RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::GUI);
+    setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
 }
@@ -138,15 +140,12 @@ Texture *Sprite::texture() const
 void Sprite::setTexture(Texture *texture)
 {
     m_texture = texture;
-    if(m_technique)
-    {
-        m_technique->setTex("texture_1",m_texture);
-    }
+    m_material->setTex("SpriteTexture", texture);
 }
 
 void Sprite::setTexture(std::string texturePath)
 {
-    setTexture(TextureMgr::shared()->getOrCreateTexture(texturePath));
+    setTexture(TextureMgr::shared()->getByPath(texturePath));
 }
 
 bool Sprite::isUseTexture() const
@@ -163,13 +162,14 @@ void Sprite::setUpTechnique()
 {
     if(m_texture)
     {
-        m_technique = new Technique("./Res/EngineCoreRes/Shaders/SpriteTexture_v.glsl","./Res/EngineCoreRes/Shaders/SpriteTexture_f.glsl");
-        m_technique->setTex("TU_tex1",m_texture);
+        m_material->initFromEffect("Sprite");
+        m_material->setTex("SpriteTexture", m_texture);
     }else
     {
-        m_technique = new Technique("./Res/EngineCoreRes/Shaders/SpriteColor_v.glsl","./Res/EngineCoreRes/Shaders/SpriteColor_f.glsl");
+        m_material->initFromEffect("SpriteColor");
+        m_material = Material::createFromEffect("SpriteColor");
     }
-    m_technique->setVar("TU_color",getUniformColor());
+    m_material->setVar("color",getUniformColor());
 }
 
 } // namespace tzw

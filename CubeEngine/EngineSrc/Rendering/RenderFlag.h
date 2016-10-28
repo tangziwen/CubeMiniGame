@@ -10,6 +10,7 @@ enum class BufferTarget{
     VertexBuffer
 };
 enum class IndicesType{
+	Lines,
     Triangles,
     TriangleStrip,
     Patches,

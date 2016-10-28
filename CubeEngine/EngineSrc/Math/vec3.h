@@ -13,9 +13,12 @@ public:
     vec3 operator + (const vec3 & other) const;
     vec3 operator - (const vec3 & other) const;
     vec3 operator * (float a) const;
+    vec3 operator * (const vec3 & other) const;
     vec3 operator / (float a) const;
+    vec3 operator / (const vec3 & other) const;
     vec3 operator - () const;
     vec3 operator +=(const vec3 & other);
+    vec3 operator -= (const vec3 & other);
     vec3 operator *=(float value);
     static float DotProduct(const vec3 & left, const vec3 & right);
     static vec3 CrossProduct(const vec3 & left, const vec3 & right);
@@ -28,8 +31,11 @@ public:
     float getZ() const;
     void setZ(float value);
     float length() const;
+    float squaredLength() const;
     void normalize();
+    void setLength(float newLength);
     static vec3 lerp(const vec3& from, const vec3 & to, float the_time);
+	static vec3 fromRGB(int R, int G, int B);
     std::string getStr();
 };
 

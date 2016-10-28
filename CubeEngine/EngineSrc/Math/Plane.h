@@ -68,6 +68,10 @@ public:
     */
     PointSide getSide(const vec3& point) const;
 
+    vec3 projectTo(const vec3& point) const;
+
+    bool isFrontFacingTo(const vec3& direction) const;
+
 protected:
     vec3 _normal;
     float _dist;

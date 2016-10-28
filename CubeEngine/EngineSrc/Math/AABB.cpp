@@ -1,5 +1,5 @@
 #include "AABB.h"
-#include <QVector4D>
+#include "math.h"
 namespace tzw {
 
 AABB::AABB()
@@ -187,7 +187,7 @@ std::vector<AABB> AABB::split8()
     return result;
 }
 
-bool AABB::isInside(vec3 p)
+bool AABB::isInside(vec3 p) const
 {
     if(p.x>=m_min.x&&p.y>=m_min.y && p.z>= m_min.z
             &&p.x<=m_max.x && p.y <=m_max.y && p.z <= m_max.z)

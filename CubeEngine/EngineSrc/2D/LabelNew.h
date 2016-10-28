@@ -18,7 +18,7 @@ public:
     Font *getFont() const;
     void setFont(Font *font);
     void genMesh();
-    virtual void draw();
+    virtual void submitDrawCmd();
     void initAtlas();
 private:
     GlyphAtlas * m_atlas;

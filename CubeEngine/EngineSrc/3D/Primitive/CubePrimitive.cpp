@@ -1,4 +1,5 @@
 #include "CubePrimitive.h"
+#include <algorithm>
 #include "../../Rendering/RenderCommand.h"
 #include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
@@ -9,21 +10,47 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
     m_width = width;
     m_depth = depth;
     m_height = height;
-    m_tech = new Technique("./Res/EngineCoreRes/Shaders/Color_v.glsl",
-                           "./Res/EngineCoreRes/Shaders/Color_f.glsl");
+    m_tech = Material::createFromEffect("Color");
     initMesh();
-    setCamera(SceneMgr::shared()->currentScene()->defaultCamera());
-    setIsAccpectOCTtree(false);
+    setCamera(g_GetCurrScene()->defaultCamera());
+    setIsAccpectOCTtree(true);
 }
 
-void CubePrimitive::draw()
+void CubePrimitive::submitDrawCmd()
 {
-    m_tech->applyFromDrawable(this);
-    //m_tech->setVar("TU_roughness",0.2f);
     RenderCommand command(m_mesh,m_tech,RenderCommand::RenderType::Common);
-    //command.setPrimitiveType( RenderCommand::PrimitiveType::TRIANGLE_STRIP);
+    setUpTransFormation(command.m_transInfo);
     Renderer::shared()->addRenderCommand(command);
 
+}
+
+bool CubePrimitive::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint)
+{
+    auto theMat = getTransform();
+
+    auto size = m_mesh->getIndicesSize();
+    std::vector<vec3> resultList;
+    float t = 0;
+    for (auto i =0; i< size; i+=3)
+    {
+        vec3 tmpHitPoint;
+        if(sphere.intersectWithTriangle(theMat.transformVec3(m_mesh->m_vertices[i + 2].m_pos),
+                                        theMat.transformVec3(m_mesh->m_vertices[i + 1].m_pos), theMat.transformVec3(m_mesh->m_vertices[i].m_pos), tmpHitPoint))
+        {
+            resultList.push_back(tmpHitPoint);
+        }
+    }
+    if(!resultList.empty())
+    {
+        std::sort(resultList.begin(),resultList.end(),[sphere](const vec3 & v1, const vec3 & v2)    {
+            float dist1 = sphere.centre().distance(v1);
+            float dist2 = sphere.centre().distance(v2);
+            return dist1<dist2;
+        });
+        hitPoint = resultList;
+        return true;
+    }
+    return false;
 }
 
 void CubePrimitive::initMesh()
@@ -77,19 +104,22 @@ void CubePrimitive::initMesh()
     // index of the second strip needs to be duplicated. If
     // connecting strips have same vertex order then only last
     // index of the first strip needs to be duplicated.
-    GLushort indices[] = {
+	unsigned short indices[] = {
          0,  1,  2,  1,  3,  2,     // Face 0 - triangle strip ( v0,  v1,  v2,  v3)
          4,  5,  6,  5,  7,  6, // Face 1 - triangle strip ( v4,  v5,  v6,  v7)
          8,  9,  10, 9, 11, 10, // Face 2 - triangle strip ( v8,  v9, v10, v11)
         12, 13, 14, 13, 15, 14, // Face 3 - triangle strip (v12, v13, v14, v15)
-        16, 17, 18, 18, 19, 17, // Face 4 - triangle strip (v16, v17, v18, v19)
+        16, 17, 18, 17, 19, 18, // Face 4 - triangle strip (v16, v17, v18, v19)
         20, 21, 22, 21, 23, 22,      // Face 5 - triangle strip (v20, v21, v22, v23)
     };
 
     m_mesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
-    m_mesh->addIndices(indices,sizeof(indices)/sizeof(GLushort));
+    m_mesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
     m_mesh->caclNormals();
     m_mesh->finish();
+    m_localAABB.merge(m_mesh->getAabb());
+    reCache();
+    reCacheAABB();
 }
 
 } // namespace tzw

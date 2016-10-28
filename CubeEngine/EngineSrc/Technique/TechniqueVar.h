@@ -12,6 +12,7 @@ struct TechniqueVar
 {
     enum class Type
     {
+        Invalid,
         Matrix,
         Float,
         Integer,
@@ -38,6 +39,8 @@ struct TechniqueVar
     void setV2(vec2 value);
     void setV3(vec3 value);
     void setV4(vec4 value);
+    TechniqueVar();
+    TechniqueVar * clone() const;
 };
 
 } // namespace tzw

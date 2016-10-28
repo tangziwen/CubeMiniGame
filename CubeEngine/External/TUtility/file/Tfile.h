@@ -9,7 +9,7 @@ namespace tzw
 class Tfile
 {
 public:
-    static Tfile * getInstance();
+    static Tfile * shared();
     Data getData(std::string filename, bool forString);
     std::string fullPathFromRelativeFile(const std::string &filename, const std::string &relativeFile);
     void findPreFix(const char * fileName, char * dst);
@@ -18,6 +18,7 @@ public:
     std::string getReleativePath(std::string filePath);
     std::string getFolder(std::string filePath);
     std::vector<std::string> getAbsolutlyFilePath(std::string filePath);
+	std::string toAbsFilePath(std::string filePath, std::string workingCpy);
 private:
     Tfile();
     ~Tfile();

@@ -35,10 +35,20 @@ vec3 vec3::operator *( float a) const
     return v;
 }
 
+vec3 vec3::operator *(const vec3 &other) const
+{
+    return vec3(x * other.x, y * other.y, z * other.z);
+}
+
 vec3 vec3::operator /(float a) const
 {
     auto v =vec3(x / a,y / a,z / a);
     return v;
+}
+
+vec3 vec3::operator /(const vec3 &other) const
+{
+    return vec3( x / other.x, y / other.y, z / other.z);
 }
 
 vec3 vec3::operator -() const
@@ -51,6 +61,14 @@ vec3 vec3::operator +=(const vec3 &other)
     x+=other.x;
     y+=other.y;
     z+=other.z;
+    return vec3(x,y,z);
+}
+
+vec3 vec3::operator -=(const vec3 &other)
+{
+    x -= other.x;
+    y -= other.y;
+    z -= other.z;
     return vec3(x,y,z);
 }
 
@@ -99,6 +117,11 @@ float vec3::length() const
     return sqrt(x * x + y * y + z * z);
 }
 
+float vec3::squaredLength() const
+{
+    return x * x + y * y + z * z;
+}
+
 void vec3::normalize()
 {
     float len = length();
@@ -108,6 +131,14 @@ void vec3::normalize()
     z*=len;
 }
 
+void vec3::setLength(float newLength)
+{
+    normalize();
+    x *= newLength;
+    y *= newLength;
+    z *= newLength;
+}
+
 vec3 vec3::lerp(const vec3 &from, const vec3 &to, float the_time)
 {
     vec3 delta = to - from;
@@ -115,7 +146,12 @@ vec3 vec3::lerp(const vec3 &from, const vec3 &to, float the_time)
     result.x = from.x + the_time*delta.x;
     result.y = from.x + the_time*delta.y;
     result.z = from.z + the_time*delta.z;
-    return result;
+	return result;
+}
+
+vec3 vec3::fromRGB(int R, int G, int B)
+{
+	return vec3(R / 255.0, G / 255.0, B / 255.0);
 }
 
 std::string vec3::getStr()

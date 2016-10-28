@@ -1,11 +1,13 @@
 #include "Tokenizer.h"
 #include <ctype.h>
+#include <algorithm>
 namespace tzw {
 
-auto keyWordList = {"if","else","var","goto"};
+auto keyWordList = {"if","else","var","goto","true","false", "{", "}","while", "break", "function", "return"};
 static bool isOp(char c)
 {
-    return (c =='+' || c =='-' || c =='*' || c =='/' || c=='(' || c==')' || c==',' || c==';' || c == '=');
+    return (c =='+' || c =='-' || c =='*' || c =='/' || c=='(' || c==')' || c==',' || c==';' || c == '=' || c =='>' || c =='<' || c =='!'
+			|| c == '.');
 }
 
 Tokenizer::Tokenizer(std::string theStr)
@@ -33,8 +35,17 @@ void Tokenizer::parse()
         {
            ScriptToken tk(ScriptToken::Type::Op);
            tk.m_str ="";
-           tk.m_str.append(1,buf[theIndex]);
-           theIndex++;
+		   if((buf[theIndex] == '=' || buf[theIndex] == '>' || buf[theIndex] == '<' || buf[theIndex] == '!') && buf[theIndex + 1] == '=')
+		   {
+			   tk.m_str.append(1,buf[theIndex]);
+			   tk.m_str.append(1,buf[theIndex + 1]);
+			   theIndex += 2;
+		   }else
+		   {
+			   tk.m_str.append(1,buf[theIndex]);
+			   theIndex++;
+		   }
+
            m_tokenList.push_back(tk);
         }
         //整数或浮点数
@@ -93,15 +104,27 @@ void Tokenizer::parse()
                 theIndex ++;
             }
             tk.m_str = tmpStr;
-            for(auto &str : keyWordList)
-            {
-                if( tmpStr == str)
-                {
-                    tk.m_type = ScriptToken::Type::KeyWord;
-                }
-            }
+			if(std::find(keyWordList.begin(), keyWordList.end(), tmpStr) != keyWordList.end())
+			{
+				//一些例外
+				if (tmpStr == "true" || tmpStr == "false")
+				{
+					tk.m_type = ScriptToken::Type::Boolean;
+					tk.m_boolean = (tmpStr == "true") ? true : false;
+				}else
+				{
+					tk.m_type = ScriptToken::Type::KeyWord;
+				}
+			}
             m_tokenList.push_back(tk);
         }
+		if(buf[theIndex] == '{' || buf[theIndex] == '}')
+		{
+			ScriptToken tk(ScriptToken::Type::SpecialSymbol);
+			tk.m_str.append(1,buf[theIndex]);
+			theIndex ++;
+			m_tokenList.push_back(tk);
+		}
     }
 }
 

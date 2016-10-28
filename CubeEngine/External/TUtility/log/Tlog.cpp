@@ -62,6 +62,10 @@ Tlog::Tlog(TlogLevel level)
 Tlog::~Tlog()
 {
     flush();
+	if(TlogSystem::preTlog == this)
+	{
+		TlogSystem::preTlog = nullptr;
+	}
 }
 
 Tlog &Tlog::operator <<(const char *str)

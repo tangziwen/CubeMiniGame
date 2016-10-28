@@ -2,13 +2,14 @@
 #include <stdlib.h>
 const int DATA_ROW = 10;
 #include <stdio.h>
-#include <QDebug>
 #include "External/TUtility/TUtility.h"
+#include <cmath>
 namespace tzw {
 
 GlyphAtlas::GlyphAtlas()
 {
-
+    m_buffer = nullptr;
+	m_texture = nullptr;
 }
 
 void GlyphAtlas::addGlyphData(GlyphData data)
@@ -19,6 +20,7 @@ void GlyphAtlas::addGlyphData(GlyphData data)
 
 void GlyphAtlas::generate()
 {
+	if(m_glyphList.empty()) return;
     cellWidth = m_glyphList.front().width;
     cellHeight = m_glyphList.front().rows;
     for (int i = 0;i<m_glyphList.size();i++)
@@ -81,6 +83,7 @@ void GlyphAtlas::test()
 
 void GlyphAtlas::generateGLTexture()
 {
+	if(m_glyphList.empty()) return;
     auto byteWidth = DATA_ROW * cellWidth;
     auto byteHeight = m_height *cellHeight;
     auto height_pow = TbaseMath::nextPow2(byteHeight);
@@ -90,9 +93,15 @@ void GlyphAtlas::generateGLTexture()
     auto glBuffer = new unsigned char[ 2 * width_pow * height_pow];
     for(int j=0; j <height_pow;j++) {
         for(int i=0; i < width_pow; i++){
-            glBuffer[2*(i+j*width_pow)]= glBuffer[2*(i+j*width_pow)+1] =
-                    (i>=byteWidth || j>=byteHeight) ?
-                        0 : m_buffer[i + byteWidth*j];
+			if(i>=byteWidth || j>=byteHeight)
+			{
+				glBuffer[2*(i+j*width_pow)+1] = 0;
+
+			}else
+			{
+				glBuffer[2*(i+j*width_pow)+1] = m_buffer[i + byteWidth*j];
+			}
+            glBuffer[2*(i+j*width_pow)] = glBuffer[2*(i+j*width_pow)+1];
         }
     }
     m_texture= new Texture(glBuffer,width_pow,height_pow);
@@ -118,7 +127,10 @@ void GlyphAtlas::cleanUp()
 {
     m_glyphMap.clear();
     m_glyphList.clear();
-    free(m_buffer);
+    if(m_buffer)
+    {
+        free(m_buffer);
+    }
 }
 
 GlyphAtlasNode::GlyphAtlasNode()

@@ -2,14 +2,13 @@
 #include "../log/Tlog.h"
 #include "string.h"
 #include <algorithm>
-#include <QDebug>
 #include <direct.h>
 #include <stdlib.h>
 #include <stdio.h>
 namespace tzw
 {
 Tfile * Tfile::m_instance = nullptr;
-Tfile *Tfile::getInstance()
+Tfile *Tfile::shared()
 {
     if(!m_instance) m_instance = new Tfile();
     return m_instance;
@@ -36,7 +35,7 @@ Data Tfile::getData(std::string filename, bool forString)
           FILE *fp = fopen(filename.c_str (), mode);
           if(!fp)
           {
-              qDebug()<<"Bad file :"<<filename.c_str();
+              printf("Bad file : %s\n",filename.c_str());
               exit(0);
           }
           fseek(fp,0,SEEK_END);
@@ -144,7 +143,18 @@ std::vector<std::string> Tfile::getAbsolutlyFilePath(std::string filePath)
         str.append (filePath);
         result.push_back (str);
     }
-    return result;
+	return result;
+}
+
+std::string Tfile::toAbsFilePath(std::string filePath, std::string workingCpy)
+{
+	if(filePath[0] == '.' && filePath[1] == '/')
+	{
+		filePath.erase(0, 1);
+		workingCpy.append(filePath);
+		return workingCpy;
+	}
+	return filePath;
 }
 
 Tfile::Tfile()

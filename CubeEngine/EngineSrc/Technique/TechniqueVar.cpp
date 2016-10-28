@@ -44,6 +44,19 @@ void TechniqueVar::setV4(vec4 value)
     type = Type::Vec4;
 }
 
+TechniqueVar::TechniqueVar()
+{
+    type = Type::Invalid;
+}
+
+TechniqueVar *TechniqueVar::clone() const
+{
+    auto techVar = new TechniqueVar();
+    techVar->type = type;
+    techVar->data = data;
+    return techVar;
+}
+
 
 } // namespace tzw
 

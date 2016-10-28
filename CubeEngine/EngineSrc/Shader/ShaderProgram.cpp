@@ -1,7 +1,6 @@
 #include "ShaderProgram.h"
 #include "External/TUtility/TUtility.h"
-#include <QDebug>
-
+#include <string.h>
 #define GLEW_STATIC
 #include <GL/glew.h>
 
@@ -15,8 +14,8 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
         fprintf(stderr, "Error creating shader program\n");
         exit(1);
     }
-    tzw::Data vs_data = tzw::Tfile::getInstance()->getData(pVSFileName,true);
-    tzw::Data fs_data = tzw::Tfile::getInstance()->getData(pFSFileName,true);
+    tzw::Data vs_data = tzw::Tfile::shared()->getData(pVSFileName,true);
+    tzw::Data fs_data = tzw::Tfile::shared()->getData(pFSFileName,true);
 
     if (vs_data.isNull()) {
         exit(1);
@@ -28,19 +27,19 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
 
     string vs = vs_data.getString();
     string fs = fs_data.getString();
-    AddShader(shader, vs.c_str(), GL_VERTEX_SHADER);
-    AddShader(shader, fs.c_str(), GL_FRAGMENT_SHADER);
+    addShader(shader, vs.c_str(), GL_VERTEX_SHADER);
+    addShader(shader, fs.c_str(), GL_FRAGMENT_SHADER);
 
     if(pTCSFileName)
     {
-        tzw::Data tcs_data = tzw::Tfile::getInstance()->getData(pTCSFileName,true);
-        AddShader(shader, tcs_data.getString().c_str(), GL_TESS_CONTROL_SHADER);
+        tzw::Data tcs_data = tzw::Tfile::shared()->getData(pTCSFileName,true);
+        addShader(shader, tcs_data.getString().c_str(), GL_TESS_CONTROL_SHADER);
     }
 
     if(pTESFileName)
     {
-        tzw::Data tes_data = tzw::Tfile::getInstance()->getData(pTESFileName,true);
-        AddShader(shader, tes_data.getString().c_str(), GL_TESS_EVALUATION_SHADER);
+        tzw::Data tes_data = tzw::Tfile::shared()->getData(pTESFileName,true);
+        addShader(shader, tes_data.getString().c_str(), GL_TESS_EVALUATION_SHADER);
     }
 
     GLint Success = 0;
@@ -226,7 +225,7 @@ void ShaderProgram::setAttributeBuffer(int ID, int dataType, int offset, int siz
     glVertexAttribPointer(ID,size,dataType,GL_FALSE,stride,(void *)offset);
 }
 
-void ShaderProgram::AddShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType)
+void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType)
 {
     GLuint ShaderObj = glCreateShader(ShaderType);
 

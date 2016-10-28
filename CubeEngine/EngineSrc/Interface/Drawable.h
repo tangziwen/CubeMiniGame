@@ -3,7 +3,9 @@
 
 #include "../Base/Node.h"
 #include "../Base/Camera.h"
-#include "../Technique/Technique.h"
+#include "../Technique/Material.h"
+#include "../3D/Effect/Effect.h"
+#include "../Rendering/RenderCommand.h"
 namespace tzw {
 /**
  * @brief The Drawable class Drawable类是一个接口，主要用以表征一个类是可以被实际绘制到屏幕上的，
@@ -15,18 +17,14 @@ public:
     Drawable();
     Camera *camera() const;
     void setCamera(Camera *camera);
-    Technique *technique() const;
-    void setTechnique(Technique *technique);
     virtual Node::NodeType getNodeType();
-    vec4 getUniformColor() const;
-    virtual void setUniformColor(const vec4 &uniformColor);
-    virtual void setUniformColor(const vec3 &color);
-    virtual void setAlpha(float alpha);
     virtual void reCache();
+    Material *getMaterial() const;
+    void setMaterial(Material *technique);
+    virtual void setUpTransFormation(TransformationInfo & info);
 protected:
-    vec4 m_uniformColor;
+    Material * m_material;
     Camera * m_camera;
-    Technique * m_technique;
 };
 
 } // namespace tzw

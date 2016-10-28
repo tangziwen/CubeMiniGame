@@ -8,9 +8,10 @@ class CubePrimitive : public Drawable3D
 {
 public:
     CubePrimitive(float width, float depth, float height);
-    virtual void draw();
+    virtual void submitDrawCmd();
+    bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 protected:
-    Technique * m_tech;
+    Material * m_tech;
     void initMesh();
     Mesh * m_mesh;
     float m_width, m_depth, m_height;

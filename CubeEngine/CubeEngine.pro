@@ -4,14 +4,11 @@
 #
 #-------------------------------------------------
 
-QT       += core gui
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
-QT += opengl
-
 TARGET = CubeEngine
 CONFIG += c++11
 CONFIG   -= app_bundle
-
+CONFIG -= qt
+#CONFIG += console
 TEMPLATE = app
 
 #OpenGL
@@ -48,7 +45,6 @@ SOURCES += main.cpp \
     EngineSrc/Mesh/VertexData.cpp \
     EngineSrc/Rendering/Renderer.cpp \
     EngineSrc/Rendering/RenderCommand.cpp \
-    EngineSrc/Technique/Technique.cpp \
     EngineSrc/Base/Node.cpp \
     EngineSrc/2D/Sprite.cpp \
     EngineSrc/Rendering/RenderBuffer.cpp \
@@ -75,7 +71,6 @@ SOURCES += main.cpp \
     External/TUtility/misc/tmisc.cpp \
     External/TUtility/string/Tstring.cpp \
     EngineSrc/Math/vec4.cpp \
-    EngineSrc/3D/Primitive/Cube.cpp \
     EngineSrc/Event/EventMgr.cpp \
     EngineSrc/Event/Event.cpp \
     EngineSrc/Shader/ShaderMgr.cpp \
@@ -164,16 +159,12 @@ SOURCES += main.cpp \
     EngineSrc/3D/Model/Model.cpp \
     EngineSrc/3D/Model/ModelLoader.cpp \
     EngineSrc/Action/RepeatForever.cpp \
-    EngineSrc/3D/Material/Material.cpp \
     EngineSrc/2D/TableView.cpp \
     EngineSrc/Interface/Drawable2D.cpp \
     EngineSrc/2D/GUIAttributeLabel.cpp \
     EngineSrc/2D/BoxContainer.cpp \
     EngineSrc/2D/GUIListView.cpp \
     EngineSrc/2D/GUIListViewItem.cpp \
-    Application/CubeGame/Block.cpp \
-    Application/CubeGame/BlockInfo.cpp \
-    Application/CubeGame/BlockInfoMgr.cpp \
     Application/CubeGame/Chunk.cpp \
     Application/CubeGame/FPSCamera.cpp \
     Application/CubeGame/GameMap.cpp \
@@ -185,9 +176,21 @@ SOURCES += main.cpp \
     EngineSrc/Lighting/BaseLight.cpp \
     EngineSrc/Lighting/AmbientLight.cpp \
     EngineSrc/3D/Primitive/CubePrimitive.cpp \
-    EngineSrc/3D/Terrain/TerrainChunk.cpp \
-    EngineSrc/3D/Terrain/VoxelChunk.cpp \
-    EngineSrc/3D/Terrain/MarchingCubes.cpp
+    EngineSrc/3D/Terrain/MarchingCubes.cpp \
+    EngineSrc/3D/SkyBox.cpp \
+    EngineSrc/Math/t_Sphere.cpp \
+    EngineSrc/Collision/ColliderEllipsoid.cpp \
+    EngineSrc/Collision/CollisionUtility.cpp \
+    Application/CubeGame/GameConfig.cpp \
+    EngineSrc/3D/Effect/Effect.cpp \
+    EngineSrc/3D/Effect/EffectMgr.cpp \
+    EngineSrc/Technique/MaterialPool.cpp \
+    EngineSrc/Technique/Material.cpp \
+    EngineSrc/Script/ScripStdLib.cpp \
+    EngineSrc/Script/ScriptStruct.cpp \
+    EngineSrc/3D/Primitive/LinePrimitive.cpp \
+    EngineSrc/3D/Primitive/LineGrid.cpp \
+    EngineSrc/3D/Vegetation/Grass.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -196,7 +199,6 @@ HEADERS += \
     EngineSrc/Mesh/VertexData.h \
     EngineSrc/Rendering/Renderer.h \
     EngineSrc/Rendering/RenderCommand.h \
-    EngineSrc/Technique/Technique.h \
     EngineSrc/Base/Node.h \
     EngineSrc/2D/Sprite.h \
     EngineSrc/Rendering/RenderBuffer.h \
@@ -230,7 +232,6 @@ HEADERS += \
     EngineSrc/doc/res_page.h \
     EngineSrc/doc/use_scripte.h \
     EngineSrc/Math/vec4.h \
-    EngineSrc/3D/Primitive/Cube.h \
     EngineSrc/Event/EventMgr.h \
     EngineSrc/Event/Event.h \
     EngineSrc/Shader/ShaderMgr.h \
@@ -329,14 +330,12 @@ HEADERS += \
     EngineSrc/3D/Model/Model.h \
     EngineSrc/3D/Model/ModelLoader.h \
     EngineSrc/Action/RepeatForever.h \
-    EngineSrc/3D/Material/Material.h \
     EngineSrc/2D/TableView.h \
     EngineSrc/Interface/Drawable2D.h \
     EngineSrc/2D/GUIAttributeLabel.h \
     EngineSrc/2D/BoxContainer.h \
     EngineSrc/2D/GUIListView.h \
     EngineSrc/2D/GUIListViewItem.h \
-    Application/CubeGame/Block.h \
     Application/CubeGame/BlockInfo.h \
     Application/CubeGame/BlockInfoMgr.h \
     Application/CubeGame/Chunk.h \
@@ -350,7 +349,19 @@ HEADERS += \
     EngineSrc/Lighting/BaseLight.h \
     EngineSrc/Lighting/AmbientLight.h \
     EngineSrc/3D/Primitive/CubePrimitive.h \
-    EngineSrc/3D/Terrain/TerrainChunk.h \
-    EngineSrc/3D/Terrain/VoxelChunk.h \
     EngineSrc/3D/Terrain/MCTable.h \
-    EngineSrc/3D/Terrain/MarchingCubes.h
+    EngineSrc/3D/Terrain/MarchingCubes.h \
+    EngineSrc/3D/SkyBox.h \
+    EngineSrc/Math/t_Sphere.h \
+    EngineSrc/Collision/ColliderEllipsoid.h \
+    EngineSrc/Collision/CollisionUtility.h \
+    Application/CubeGame/GameConfig.h \
+    EngineSrc/3D/Effect/Effect.h \
+    EngineSrc/3D/Effect/EffectMgr.h \
+    EngineSrc/Technique/MaterialPool.h \
+    EngineSrc/Technique/Material.h \
+    EngineSrc/Script/ScripStdLib.h \
+    EngineSrc/Script/ScriptStruct.h \
+    EngineSrc/3D/Primitive/LinePrimitive.h \
+    EngineSrc/3D/Primitive/LineGrid.h \
+    EngineSrc/3D/Vegetation/Grass.h

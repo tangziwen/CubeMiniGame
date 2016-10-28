@@ -5,6 +5,7 @@
 #include "../2D/Sprite.h"
 #include "../Event/Event.h"
 #include <deque>
+#include "EngineSrc/Script/ScriptVM.h"
 namespace tzw {
 
 ///用于输出调试信息，以及输入脚本的控制台窗口
@@ -17,7 +18,7 @@ public:
     bool isVisible() const;
     void setIsVisible(bool isVisible);
     void toggleVissible();
-    void addStr(std::string str);
+    void print(std::string str);
     unsigned int verticalSpace() const;
     void setVerticalSpace(unsigned int verticalSpace);
 
@@ -29,6 +30,7 @@ public:
 private:
     void updateTexts();
     void eraseChar();
+	void parse(std::string theStr);
     int maxList() const;
     unsigned int m_verticalSpace;
     unsigned int m_inputFrameHeight;
@@ -40,6 +42,7 @@ private:
     Sprite * m_bgFrame;
     Sprite * m_inputFrame;
     float m_heightRatio;
+	ScriptVM * m_scriptVM;
 };
 
 } // namespace tzw

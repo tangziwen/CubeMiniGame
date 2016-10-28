@@ -15,6 +15,7 @@ struct ScriptToken{
         Boolean,
         Op,
         KeyWord,
+		SpecialSymbol,
     };
     ScriptToken();
     ScriptToken(Type theType);

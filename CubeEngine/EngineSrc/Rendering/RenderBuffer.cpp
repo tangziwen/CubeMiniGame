@@ -19,10 +19,10 @@ void RenderBuffer::allocate(void *data, unsigned int amount)
     switch(m_type)
     {
     case Type::INDEX:
-        RenderBackEnd::shared()->uploadBufferData(RenderFlag::BufferTarget::IndexBuffer,amount,data);
+        RenderBackEnd::shared()->submit(RenderFlag::BufferTarget::IndexBuffer,amount,data);
         break;
     case Type::VERTEX:
-        RenderBackEnd::shared()->uploadBufferData(RenderFlag::BufferTarget::VertexBuffer,amount,data);
+        RenderBackEnd::shared()->submit(RenderFlag::BufferTarget::VertexBuffer,amount,data);
         break;
     }
 }

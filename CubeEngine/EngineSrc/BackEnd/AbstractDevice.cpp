@@ -3,7 +3,6 @@
 #include "../Engine/Engine.h"
 #include "../Event/EventMgr.h"
 #include "RenderBackEnd.h"
-#include <Qt>
 namespace tzw {
 TZW_SINGLETON_IMPL(AbstractDevice)
 
@@ -43,8 +42,6 @@ void AbstractDevice::mouseMoveEvent(vec2 pos)
 void AbstractDevice::init(int width,int height)
 {
     RenderBackEnd::shared()->initDevice();
-
-
     Engine::shared()->onStart(width,height);
     m_nowTicks = m_oldTicks = clock();
 }

@@ -120,6 +120,40 @@ bool GameMap::isSurface( vec3 pos)
     return false;
 }
 
+float GameMap::getDensity(vec3 pos)
+{
+    switch(m_mapType)
+    {
+    case MapType::Noise:
+    {
+        float height = getValue(pos.x,pos.z);
+        if(pos.y <= int(height))
+        {
+            return fabs(pos.y - height);
+        }else
+        {
+            return -fabs(pos.y - height);
+        }
+    }
+        break;
+    case MapType::Plain:
+    {
+        float height = maxHeight();
+        if(pos.y <= int(height))
+        {
+            return 1;
+        }else
+        {
+            return -1;
+        }
+    }
+        break;
+    default:
+        return 1;
+    }
+    return 1;
+}
+
 GameMap::MapType GameMap::getMapType() const
 {
     return m_mapType;

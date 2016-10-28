@@ -13,7 +13,7 @@ public:
     static GUIFrame * create(vec4 color,vec2 size);
     static GUIFrame * create(vec4 color);
     static GUIFrame * create(vec2 size);
-    virtual void draw();
+    virtual void submitDrawCmd();
     virtual void setContentSize(const vec2 &getContentSize);
     bool isInTheRect(vec2 touchPos);
 protected:

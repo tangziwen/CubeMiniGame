@@ -276,7 +276,7 @@ void MarchingCubes::generate(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, 
     //    mesh->finish();
 }
 
-void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 *points, float minValue)
+void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 *srcData, float minValue)
 {
     mesh->clear();
     int meshIndex = 0;
@@ -289,17 +289,14 @@ void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, 
                 //initialize vertices
                 vec4 verts[8];
                 int ind = i*YtimeZ + j*(ncellsZ+1) + k;
-                int lastX = ncellsX;			//left from older version
-                int lastY = ncellsY;
-                int lastZ = ncellsZ;
-                verts[0] = points[ind];
-                verts[1] = points[ind + YtimeZ];
-                verts[2] = points[ind + YtimeZ + 1];
-                verts[3] = points[ind + 1];
-                verts[4] = points[ind + (ncellsZ+1)];
-                verts[5] = points[ind + YtimeZ + (ncellsZ+1)];
-                verts[6] = points[ind + YtimeZ + (ncellsZ+1) + 1];
-                verts[7] = points[ind + (ncellsZ+1) + 1];
+                verts[0] = srcData[ind];
+                verts[1] = srcData[ind + YtimeZ];
+                verts[2] = srcData[ind + YtimeZ + 1];
+                verts[3] = srcData[ind + 1];
+                verts[4] = srcData[ind + (ncellsZ+1)];
+                verts[5] = srcData[ind + YtimeZ + (ncellsZ+1)];
+                verts[6] = srcData[ind + YtimeZ + (ncellsZ+1) + 1];
+                verts[7] = srcData[ind + (ncellsZ+1) + 1];
 
                 //get the index
                 int cubeIndex = int(0);
@@ -311,9 +308,6 @@ void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, 
 
                 //get intersection vertices on edges and save into the array
                 vec3 intVerts[12];
-                int indGrad = 0;
-                auto edgeIndex = edgeTable[cubeIndex];
-
 
                 /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
                 if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(verts[1], verts[2], minValue);

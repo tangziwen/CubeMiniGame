@@ -8,59 +8,50 @@
 #include "EngineSrc/Action/RepeatForever.h"
 #include "EngineSrc/Action/RotateBy.h"
 #include "EngineSrc/3D/Primitive/CubePrimitive.h"
-#include "EngineSrc/3D/Terrain/TerrainChunk.h"
-#include "EngineSrc/3D/Terrain/VoxelChunk.h"
 #include "noise/noise.h"
 #include "noise/noiseutils.h"
+#include "EngineSrc/Math/t_Sphere.h"
+#include <iostream>
+#include "EngineSrc/Texture/TextureAtlas.h"
+#include "EngineSrc/3D/Primitive/LinePrimitive.h"
+#include "EngineSrc/3D/Primitive/LineGrid.h"
+#include "EngineSrc/3D/Vegetation/Grass.h"
 using namespace tzw;
 GameEntry::GameEntry()
 {
-    m_ticks = 0;
+	m_ticks = 0;
 }
 
-#define MINX -4.0
-#define MAXX 5.0
-#define MINY -8.0
-#define MAXY 8.0
-#define MINZ -8.0
-#define MAXZ 8.0
 
-float Potential(vec3 p)
-{
-    auto dp1 = vec3( 0.0, -2.0,  0.0)-p;
-    auto dp2 = vec3( 0.0,  2.0,  0.0)-p;
-    auto dp3 = vec3( 2.0,  2.0,  0.0)-p;
-    auto dp4 = vec3( 0.0,  0.0,  4.0)-p;
-    auto dp5 = vec3(-0.5,  3.1, -1.0)-p;
-    auto dp6 = vec3( 0.0,  0.0, -4.0)-p;
-    return 1/dp1.length() + 1/dp2.length() + 1/dp3.length() + 1/dp4.length() + 1/dp5.length() +
-        1/dp6.length();
-
-}
 void GameEntry::onStart()
 {
-//    FPSCamera * camera = FPSCamera::create(SceneMgr::shared()->currentScene()->defaultCamera());
-//    SceneMgr::shared()->currentScene()->setDefaultCamera(camera);
-//    SceneMgr::shared()->currentScene()->addNode(camera);
-//    camera->setIsEnableGravity(false);
-//    camera->setPos(vec3(0,15,15));
-//    camera->lookAt(vec3(0,0,0));
-//    auto voxel = new VoxelChunk();
-//    int nX = 30, nY = 30, nZ = 30;
-//    auto mcPoints = new vec4[(nX+1)*(nY+1)*(nZ+1)];
-//    auto theSize = (nX+1)*(nY+1)*(nZ+1);
-//    vec3 stepSize((MAXX-MINX)/nX, (MAXY-MINY)/nY, (MAXZ-MINZ)/nZ);
-//    for(int i=0; i < nX+1; i++)
-//        for(int j=0; j < nY+1; j++)
-//            for(int k=0; k < nZ+1; k++) {
-//                vec4 vert(MINX+i*stepSize.x, MINY+j*stepSize.y, MINZ+k*stepSize.z, 0);
-//                vert.w = Potential(vert.toVec3());
-//                mcPoints[i*(nY+1)*(nZ+1) + j*(nZ+1) + k] = vert;
-//            }
-//    voxel->init(nX, nY, nZ, mcPoints, 1.8);
-//    SceneMgr::shared()->currentScene()->addNode(voxel);
-//    Engine::shared()->setIsEnableOutLine(true);
-        GameWorld::shared();
+	TextureAtlas("./Res/User/CubeGame/texture/dest/blocks.json");
+//	auto model = Model::create("./Res/TestRes/duck.tzw");
+//	g_GetCurrScene()->addNode(model);
+//	model->setPos(vec3(0, 0, -30));
+//	model->setScale(vec3(0.1, 0.1, 0.1));
+
+//	auto gridXZ = new LineGrid(10,10);
+//	gridXZ->getMaterial()->setVar("color",vec4::fromRGB(255, 0, 0,255));
+//	model->addChild(gridXZ);
+
+//	auto gridXY = new LineGrid(10,10);
+//	gridXY->setRotateE(vec3(-90, 0, 0));
+//	gridXY->getMaterial()->setVar("color",vec4::fromRGB(0, 255, 0,255));
+//	model->addChild(gridXY);
+
+//	auto gridYZ = new LineGrid(10,10);
+//	gridYZ->setRotateE(vec3(0, 0, -90));
+//	gridYZ->getMaterial()->setVar("color",vec4::fromRGB(0, 0, 255,255));
+//	model->addChild(gridYZ);
+//	model->runAction(new RepeatForever(new RotateBy(1.0, vec3(0, 60, 0))));
+//	Engine::shared()->setClearColor(104.0/ 255.0, 180.0 / 255.0, 1.0);
+//	g_GetCurrScene()->addNode(new Grass("./Res/User/CubeGame/texture/grass.png"));
+//	auto camera = g_GetCurrScene()->defaultCamera();
+//	camera->setPos(vec3(0,0,1));
+
+	//Engine::shared()->setIsEnableOutLine(true);
+	GameWorld::shared();
 }
 
 void GameEntry::onExit()
@@ -70,13 +61,6 @@ void GameEntry::onExit()
 
 void GameEntry::onUpdate(float delta)
 {
-    m_ticks += delta;
-
-    //    if (m_ticks > 1.0) //每2秒过一天
-    //    {
-    //        tzwS::GameSystem::shared()->update();
-    //        m_ticks = 0;
-    //    }
-
+	m_ticks += delta;
 }
 

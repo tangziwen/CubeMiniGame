@@ -2,7 +2,7 @@
 #define TZW_EVENT_H
 #include "../Math/vec2.h"
 #include <string>
-
+#include <GLFW/glfw3.h>
 
 namespace tzw {
 class Node;

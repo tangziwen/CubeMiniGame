@@ -6,9 +6,9 @@
 #include "../Shader/ShaderProgram.h"
 #include "TechniqueVar.h"
 #include "../Math/Matrix44.h"
-
+#include "EngineSrc/3D/Effect/Effect.h"
 namespace tzw {
-class Material;
+class StdMaterial;
 class Node;
 class Drawable;
 /**
@@ -20,26 +20,32 @@ class Drawable;
  * Technique的设计思路是泛用的，因此每一个可以被绘制的对象都能够设置Technique（通过Drawable 类），给其指定的值的种类数量都是任意的，
  * 当然对于某些特定情况下，引擎也提供了一些派生类以供简化使用，最常见的派生类为Material(其shader包含光照计算部分的代码，其值主要保存用于计算光照的参数)
  */
-class Technique
+class Material
 {
 public:
-    Technique(const char *vsFilePath,const char *fsFilePath, const char * tcsFilePath = nullptr, const char* tesFilePath = nullptr);
+    Material ();
+    Material(Effect * theEffect);
+    static Material * createFromEffect(std::string name);
+    void initFromEffect(Effect * theEffect);
+    void initFromEffect(std::string effectName);
     void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);
     void setVar(std::string name, const vec3& value);
     void setVar(std::string name, const vec4 &value);
+    void setVar(std::string name, const TechniqueVar & value);
     void setTex(std::string name,Texture * texture,int id = 0);
     void use();
     bool isExist(std::string name);
-    ShaderProgram * program();
-    void applyFromMat(Material *mat);
-    void applyFromDrawable(Drawable * node);
+    Material * clone();
+    Effect *getEffect() const;
+    void setEffect(Effect *value);
+    void loadDefaultValues();
 private:
+    Effect * m_effect;
     std::string m_vsPath;
     std::string m_fsPath;
     std::map<std::string,TechniqueVar *> m_varList;
-    ShaderProgram * m_program;
 };
 
 } // namespace tzw

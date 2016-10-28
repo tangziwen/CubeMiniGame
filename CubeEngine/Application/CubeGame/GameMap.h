@@ -22,6 +22,7 @@ public:
     double getValue(int x,int z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
+    float getDensity(vec3 pos);
     MapType getMapType() const;
     void setMapType(const MapType &mapType);
 

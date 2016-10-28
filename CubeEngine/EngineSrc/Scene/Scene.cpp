@@ -11,6 +11,7 @@ Scene::Scene()
     m_root.setScene(this);
     m_ambient = new AmbientLight();
     m_dirLight = new DirectionalLight();
+    m_skyBox = nullptr;
 }
 
 Scene *Scene::create()
@@ -45,7 +46,7 @@ void Scene::visitDraw()
     auto &visibleList = m_octreeScene->getVisibleList();
     for(auto obj : visibleList)
     {
-        obj->draw();
+        obj->submitDrawCmd();
     }
 }
 
@@ -110,6 +111,16 @@ void Scene::createDefaultCameras()
     //m_root.addChild(m_defaultCamera);
 }
 
+SkyBox *Scene::getSkyBox() const
+{
+    return m_skyBox;
+}
+
+void Scene::setSkyBox(SkyBox *skyBox)
+{
+    m_skyBox = skyBox;
+}
+
 BaseLight *Scene::getAmbient() const
 {
     return m_ambient;
@@ -141,7 +152,6 @@ void Scene::init()
     m_octreeScene->init(sceneBounding);
     m_consolePanel = new ConsolePanel(this->root());
     m_debugInfoPanel = new DebugInfoPanel();
-    m_debugInfoPanel->setLocalPiority(EngineDef::maxPiority);
     this->root()->addChild(m_debugInfoPanel);
 }
 

@@ -9,13 +9,13 @@ class TextureMgr
 {
 public:
     TZW_SINGLETON_DECL(TextureMgr)
-    Texture * getOrCreateTexture(std::string filePath);
-    Texture * getOrCreateTexture(std::string  PosXFilename,
-                                 std::string  NegXFilename,
-                                 std::string  PosYFilename,
-                                 std::string  NegYFilename,
-                                 std::string  PosZFilename,
-                                 std::string  NegZFilename);
+    Texture * getByPath(std::string filePath, bool isNeedMipMap = false);
+    Texture * getByPath(std::string  PosX,
+                                 std::string  NegX,
+                                 std::string  PosY,
+                                 std::string  NegY,
+                                 std::string  PosZ,
+                                 std::string  NegZ);
 private:
     TextureMgr();
     std::map<std::string,Texture *> m_texturePool;

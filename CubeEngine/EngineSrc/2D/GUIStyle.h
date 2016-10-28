@@ -9,6 +9,7 @@ struct GUIStyle
     vec4 backGroundColor;
     vec4 buttonFrameColor;
     vec4 buttonFrameColorHightLight;
+	vec4 titleColor;
     GUIStyle();
 };
 

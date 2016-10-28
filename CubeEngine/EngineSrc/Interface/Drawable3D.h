@@ -4,6 +4,8 @@
 #include "../Math/AABB.h"
 #include "Drawable.h"
 #include "DepthPolicy.h"
+#include "../Math/t_Sphere.h"
+#include "../Collision/ColliderEllipsoid.h"
 namespace tzw {
 class Drawable3D : public Drawable
 {
@@ -16,10 +18,12 @@ public:
     virtual NodeType getNodeType();
     virtual bool intersectByAABB(const AABB & other, vec3 &overLap);
     virtual Drawable3D * intersectByRay(const Ray & ray,vec3 &hitPoint);
+    virtual bool intersectBySphere(const t_Sphere & sphere, std::vector<vec3> &hitPoint);
     virtual void reCache();
     void reCacheAABB();
     DepthPolicy& getDepthPolicy();
     void setDepthPolicy(const DepthPolicy &depthPolicy);
+    virtual void checkCollide(ColliderEllipsoid * package);
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;
@@ -30,8 +34,10 @@ class Drawable3DGroup
 {
 public:
     Drawable3DGroup(Drawable3D ** obj,int count);
-    Drawable3D *hitByRay(const Ray& ray,vec3 & hitPoint);
+    Drawable3D *hitByRay(const Ray& ray,vec3 & hitPoint) const;
     bool hitByAABB(AABB & aabb, vec3 &minmalOverLap);
+    bool hitBySphere(t_Sphere & sphere, std::vector<vec3> &hitPoint);
+    void checkCollide(ColliderEllipsoid * package);
 private:
     std::vector<Drawable3D * >m_list;
 };

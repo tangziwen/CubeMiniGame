@@ -6,7 +6,6 @@
 #include "../Rendering/RenderBuffer.h"
 #include "../Math/AABB.h"
 #include "../Math/Matrix44.h"
-#include "../3D/Material/Material.h"
 #include "../Engine/EngineDef.h"
 namespace tzw {
 
@@ -45,11 +44,11 @@ public:
     void addVertices(VertexData * vertices,int size);
     void finish(bool isPassToGPU = true);
 
-    GLuint vbo() const;
-    void setVbo(const GLuint &vbo);
+    integer_u vbo() const;
+    void setVbo(const integer_u &vbo);
 
-    GLuint ibo() const;
-    void setIbo(const GLuint &ibo);
+    integer_u ibo() const;
+    void setIbo(const integer_u &ibo);
     size_t getIndicesSize();
     size_t getVerticesSize();
     RenderBuffer *getArrayBuf() const;
@@ -63,15 +62,18 @@ public:
     void merge(std::vector<VertexData> & vertices, std::vector<short_u> & indices, const Matrix44 &transform);
     void createBufferObject();
     void clear();
-    Material *getMat() const;
-    void setMat(Material *mat);
     void caclNormals();
+    void calBaryCentric();
     VertexData getVertex(unsigned int index);
     void setVertex(unsigned int index, VertexData vertex);
     std::vector<short_u> m_indices;
     std::vector<VertexData> m_vertices;
     void subDivide(int level = 1);
     void cloneFrom(Mesh * other);
+    void setMatIndex(unsigned int matIndex);
+
+    unsigned int getMatIndex() const;
+
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );
     void computeNewVerts ();
@@ -85,13 +87,13 @@ private:
     std::vector<SplitData> splits_;
 
     void subDivideIter();
-    void passToGPU();
+    void submit();
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;
     RenderBuffer* m_indexBuf;
 
-    Material * m_mat;
-    GLuint m_vbo,m_ibo;
+    unsigned int m_matIndex;
+    integer_u m_vbo,m_ibo;
 };
 
 } // namespace tzw

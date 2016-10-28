@@ -11,7 +11,7 @@ RotateBy::RotateBy(float duration, vec3 offset)
 
 void RotateBy::init(Node *theNode)
 {
-    m_originRotate = theNode->getRotate();
+    m_originRotate = theNode->getRotateE();
 }
 
 void RotateBy::step(Node *node, float dt)

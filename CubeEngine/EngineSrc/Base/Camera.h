@@ -15,7 +15,7 @@ class Camera : public Node
 public:
     Camera();
 
-    static Camera * CreatePerspective(float fov, float aspect, float near, float far);
+    static Camera * CreatePerspective(float fov, float aspect, float thenear, float thefar);
     static Camera * CreateOrtho(float left, float right, float bottom, float top, float near, float far);
 
     void setPerspective(float fov, float aspect, float near, float far);
@@ -26,7 +26,7 @@ public:
     Matrix44 getViewMatrix();
     Matrix44 getViewProjectionMatrix();
     void lookAt(vec3 targetPos,vec3 upFrame);
-    virtual void update(float dt);
+    virtual void logicUpdate(float dt);
     void updateFrustum();
     bool getUseCustomFrustumUpdate() const;
     void setUseCustomFrustumUpdate(bool useCustomFrustumUpdate);

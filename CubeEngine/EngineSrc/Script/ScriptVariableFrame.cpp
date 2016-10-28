@@ -9,37 +9,24 @@ ScriptVariableFrame::ScriptVariableFrame()
 
 ScriptValue ScriptVariableFrame::lookUp(std::string name)
 {
-    auto result = m_framePool.find(name);
-    if (result != m_framePool.end())
-    {
-        return result->second;
-    }else
-    {
-        return ScriptValue(ScriptValue::Type::Null);
-    }
+	auto result = m_framePool.find(name);
+	if (result != m_framePool.end())
+	{
+		return ScriptValue(&m_framePool[name]);
+	}
+	return ScriptValue(ScriptValue::Type::Impossible);
 }
 
-ScriptValue ScriptVariableFrame::setUp(std::string name, ScriptValue &value)
+ScriptValue ScriptVariableFrame::setUp(std::string name, const ScriptValue &value)
 {
-    auto result = m_framePool.find(name);
-    if (result != m_framePool.end())
-    {
-        m_framePool[name] = value;
-    }else
-    {
-        printf("the variable %s is not decleared",name.c_str());
-    }
-    return ScriptValue(ScriptValue::Type::Null);
+
+	m_framePool[name] = value;
+	return ScriptValue(&m_framePool[name]);
 }
 
-void ScriptVariableFrame::declear(std::string name)
+ScriptValue ScriptVariableFrame::define(std::string name)
 {
-    auto result = m_framePool.find(name);
-    if (result != m_framePool.end())
-    {
-        printf("the name %s has been decleared",name.c_str());
-    }
-    m_framePool[name] = ScriptValue(ScriptValue::Type::Null);
+	m_framePool[name] = ScriptValue(ScriptValue::Type::Null);
+	return ScriptValue(&m_framePool[name]);
 }
-
 } // namespace tzw

@@ -24,7 +24,7 @@ public:
     void enableAttributeArray(unsigned int attributeId);
     void setAttributeBuffer(int ID, int dataType, int offset, int size, int stride = 0);
 private:
-    void AddShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType);
+    void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType);
     std::map<std::string,unsigned int> m_locationMap;
     unsigned int shader;
 };

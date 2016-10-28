@@ -24,7 +24,7 @@ public:
     vec3 centre();
 
     std::vector<AABB> split8();
-    bool isInside(vec3 p);
+    bool isInside(vec3 p) const;
     void setMax(const vec3 &max);
     bool isCanCotain(AABB aabb);
     bool isIntersect(AABB aabb, vec3 &overLap);

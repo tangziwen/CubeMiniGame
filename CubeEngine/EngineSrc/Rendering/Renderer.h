@@ -4,7 +4,7 @@
 #include "RenderCommand.h"
 #include <vector>
 #include "RenderTarget.h"
-#include "../Shader/ShaderMgr.h"
+#include "EngineSrc/3D/Effect/Effect.h"
 namespace tzw {
 class Mesh;
 class Renderer
@@ -19,21 +19,22 @@ public:
     void renderGUI(RenderCommand &command);
     void renderCommon(RenderCommand &command);
     void clearCommands();
-    void render(RenderCommand &command);
-    void renderPrimitive(Mesh * mesh, ShaderProgram * program,RenderCommand::PrimitiveType primitiveType);
+    void render(const RenderCommand &command);
+    void renderPrimitive(Mesh * mesh, Effect *effect, RenderCommand::PrimitiveType primitiveType);
     bool enable3DRender() const;
     void setEnable3DRender(bool enable3DRender);
 
     bool enableGUIRender() const;
     void setEnableGUIRender(bool enableGUIRender);
-
 private:
     void initQuad();
     void geometryPass();
     void LightingPass();
+    void skyBoxPass();
     void directionalLightPass();
+    void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
     Mesh * m_quad;
-    ShaderProgram * m_dirLightProgram;
+    Effect * m_dirLightProgram;
     bool m_enable3DRender;
     bool m_enableGUIRender;
     std::vector<RenderCommand> m_GUICommandList;

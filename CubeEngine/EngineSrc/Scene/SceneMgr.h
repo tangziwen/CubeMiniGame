@@ -5,12 +5,13 @@
 #include "../Engine/EngineDef.h"
 namespace tzw {
 
+Scene * g_GetCurrScene();
 class SceneMgr
 {
 public:
     TZW_SINGLETON_DECL(SceneMgr)
-    Scene *currentScene() const;
-    void setCurrentScene(Scene *currentScene);
+    Scene *getCurrScene() const;
+    void setCurrentScene(Scene *getCurrScene);
     void autoSwitch();
     void doVisit();
     void doVisitPost();

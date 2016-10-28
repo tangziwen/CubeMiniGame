@@ -1,7 +1,5 @@
 #include "MainMenu.h"
 
-#include <QDebug>
-
 #include "EngineSrc/CubeEngine.h"
 #include "CubeGame/GameWorld.h"
 namespace tzw {

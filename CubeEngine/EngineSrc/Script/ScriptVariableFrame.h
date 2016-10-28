@@ -9,12 +9,12 @@ namespace tzw {
 class ScriptVariableFrame
 {
 public:
-    ScriptVariableFrame();
-    ScriptValue lookUp(std::string name);
-    ScriptValue setUp(std::string name,ScriptValue & value);
-    void declear(std::string name);
+	ScriptVariableFrame();
+	ScriptValue lookUp(std::string name);
+	ScriptValue setUp(std::string name, const ScriptValue & value);
+	ScriptValue define(std::string name);
 private:
-    std::map<std::string ,ScriptValue> m_framePool;
+	std::map<std::string ,ScriptValue> m_framePool;
 };
 
 } // namespace tzw

@@ -1,6 +1,5 @@
 #include "Font.h"
 #include "../BackEnd/FontEngine.h"
-#include <QDebug>
 #include "External/TUtility/TUtility.h"
 
 namespace tzw {

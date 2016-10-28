@@ -1,11 +1,17 @@
 #ifndef TZW_RENDERCOMMAND_H
 #define TZW_RENDERCOMMAND_H
 
-#include "../Technique/Technique.h"
+#include "../Technique/Material.h"
 #include "../Mesh/Mesh.h"
 #include "../Interface/DepthPolicy.h"
+#include "../Math/Matrix44.h"
 namespace tzw {
 
+struct TransformationInfo{
+    Matrix44 m_worldMatrix;
+    Matrix44 m_viewMatrix;
+    Matrix44 m_projectMatrix;
+};
 
 class RenderCommand
 {
@@ -26,6 +32,8 @@ public:
     ///
     enum class PrimitiveType
     {
+		///直线
+		Lines,
         ///三角形
         TRIANGLES,
         ///三角链
@@ -34,7 +42,7 @@ public:
         PATCHES,
     };
 
-    RenderCommand(Mesh * mesh,Technique * technique,RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES);
+    RenderCommand(Mesh * mesh,Material * material,RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES);
     void render();
 
     RenderType type() const;
@@ -48,10 +56,10 @@ public:
 
     DepthPolicy depthTestPolicy() const;
     void setDepthTestPolicy(const DepthPolicy &depthTestPolicy);
-
+    TransformationInfo m_transInfo;
 private:
     Mesh * m_mesh;
-    Technique *m_technique;
+    Material *m_material;
     RenderType m_type;
     PrimitiveType m_primitiveType;
     unsigned int m_Zorder;
