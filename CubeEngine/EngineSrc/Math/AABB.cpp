@@ -1,5 +1,7 @@
 #include "AABB.h"
 #include "math.h"
+#include <algorithm>
+
 namespace tzw {
 
 AABB::AABB()
@@ -14,7 +16,7 @@ AABB::~AABB()
 
 void AABB::update(vec3 *vec, int num)
 {
-    for (ssize_t i = 0; i < num; i++)
+    for (size_t i = 0; i < num; i++)
     {
         // Leftmost point.
         if (vec[i].x < m_min.x)

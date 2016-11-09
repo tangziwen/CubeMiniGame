@@ -143,6 +143,7 @@ bool tzw::GameWorld::onKeyPress(int keyCode)
     default:
         break;
     }
+	return true;
 }
 
 void GameWorld::loadChunksAroundPlayer()

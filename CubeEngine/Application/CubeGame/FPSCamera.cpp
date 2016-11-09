@@ -184,10 +184,13 @@ void FPSCamera::logicUpdate(float dt)
     AABB aabb;
     aabb.update(vec3(pos.x -3,pos.y- 10,pos.z - 3));
     aabb.update(vec3(pos.x +3,pos.y + 10 ,pos.z + 3));
-
+	
     g_GetCurrScene()->getRange(&list,aabb);
-    Drawable3DGroup group(&list[0],list.size());
-
+	Drawable3DGroup group;
+	if (!list.empty())
+	{
+		group.init(&list[0], list.size());
+	}
     AABB playerAABB;
     vec3 overLap;
     vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward;
@@ -438,6 +441,7 @@ void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
     aabb.update(vec3(pos.x - 10,pos.y - 10,pos.z - 10));
     aabb.update(vec3(pos.x + 10,pos.y + 10 ,pos.z + 10));
     g_GetCurrScene()->getRange(&list,aabb);
+	if (list.empty()) return;
     Drawable3DGroup group(&list[0],list.size());
     group.checkCollide(thePackage);
 }

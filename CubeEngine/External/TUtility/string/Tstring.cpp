@@ -34,12 +34,14 @@ const Tstring &Tstring::operator =(const Tstring &string)
 {
     clear();
     initWithCharArray (string.data ());
+	return string;
 }
 
 const Tstring &Tstring::operator =(const std::string &string)
 {
     clear();
     initWithCharArray (string.c_str ());
+	return string;
 }
 
 const Tstring &Tstring::operator +(const char *m) const

@@ -16,5 +16,4 @@ WindowBackEnd *WindowBackEndMgr::getWindowBackEnd(int type)
         return nullptr;
     }
 }
-
 } // namespace tzw

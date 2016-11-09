@@ -1,6 +1,5 @@
 #ifndef TZW_LOGSYSTEM_H
 #define TZW_LOGSYSTEM_H
-#include <QDebug>
 #include <string>
 namespace tzw {
 

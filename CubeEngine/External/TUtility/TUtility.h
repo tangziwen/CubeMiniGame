@@ -1,6 +1,7 @@
 #ifndef TUTILITY
 #define TUTILITY
 
+#include <algorithm>
 #include "string/Tstring.h"
 #include "log/Tlog.h"
 #include "log/TstatckTrace.h"

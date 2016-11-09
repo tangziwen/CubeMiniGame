@@ -151,10 +151,9 @@ std::string Tfile::toAbsFilePath(std::string filePath, std::string workingCpy)
 	if(filePath[0] == '.' && filePath[1] == '/')
 	{
 		filePath.erase(0, 1);
-		workingCpy.append(filePath);
-		return workingCpy;
 	}
-	return filePath;
+	workingCpy.append(filePath);
+	return workingCpy;
 }
 
 Tfile::Tfile()

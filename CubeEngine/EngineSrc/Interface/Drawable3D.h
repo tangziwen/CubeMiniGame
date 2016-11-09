@@ -34,6 +34,8 @@ class Drawable3DGroup
 {
 public:
     Drawable3DGroup(Drawable3D ** obj,int count);
+	Drawable3DGroup();
+	void init(Drawable3D ** obj, int count);
     Drawable3D *hitByRay(const Ray& ray,vec3 & hitPoint) const;
     bool hitByAABB(AABB & aabb, vec3 &minmalOverLap);
     bool hitBySphere(t_Sphere & sphere, std::vector<vec3> &hitPoint);

@@ -47,6 +47,7 @@ void Mesh::finish(bool isPassToGPU)
 
 void Mesh::submit()
 {
+	if (m_vertices.empty()) return;
     if(m_ibo == -1)
     {
         createBufferObject();
@@ -452,7 +453,7 @@ void Mesh::setAabb(const AABB &aabb)
 
 void Mesh::calculateAABB()
 {
-    for(int i=0;i<m_vertices.size();i++)
+    for(size_t i=0;i<m_vertices.size();i++)
     {
         m_aabb.update(m_vertices[i].m_pos);
     }

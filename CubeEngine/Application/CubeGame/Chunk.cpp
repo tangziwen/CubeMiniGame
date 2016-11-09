@@ -234,13 +234,12 @@ void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 		}
 	}
 }
-
 void Chunk::setVoxelScalar(int x, int y, int z, float scalar)
 {
 	if(!isInOutterRange(x,y,z)) return;
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 	int ind = x*YtimeZ + y*(MAX_BLOCK + 1) + z;
-	mcPoints[ind].w = scalar;
+	mcPoints[ind].w += scalar;
 }
 
 void Chunk::addVoexlScalar(int x, int y, int z, float scalar)

@@ -51,7 +51,7 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
-	    glDisable(GL_CULL_FACE);
+	glDisable(GL_CULL_FACE);
 	if(Engine::shared()->getIsEnableOutLine())
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

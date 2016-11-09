@@ -89,11 +89,22 @@ void Drawable3D::checkCollide(ColliderEllipsoid *package)
 
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 {
-    for(int i =0;i<count;i++)
-    {
-        m_list.push_back(obj[i]);
-    }
+	init(obj, count);
 }
+
+Drawable3DGroup::Drawable3DGroup()
+{
+
+}
+
+void Drawable3DGroup::init(Drawable3D ** obj, int count)
+{
+	for (int i = 0; i < count; i++)
+	{
+		m_list.push_back(obj[i]);
+	}
+}
+
 struct tmpData
 {
     Drawable3D * obj;

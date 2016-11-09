@@ -56,14 +56,14 @@ public:
      *
      * @return The size of bytes of Data.
      */
-    ssize_t getSize() const;
+    size_t getSize() const;
 
     /** Copies the buffer pointer and its size.
      *  @note This method will copy the whole buffer.
      *        Developer should free the pointer after invoking this method.
      *  @see Data::fastSet
      */
-    void copy(const unsigned char* bytes, const ssize_t size);
+    void copy(const unsigned char* bytes, const size_t size);
 
     /** Fast set the buffer pointer and its size. Please use it carefully.
      *  @param bytes The buffer pointer, note that it have to be allocated by 'malloc' or 'calloc',
@@ -72,7 +72,7 @@ public:
      *        2. The pointer should not be used outside after it was passed to this method.
      *  @see Data::copy
      */
-    void fastSet(unsigned char* bytes, const ssize_t size);
+    void fastSet(unsigned char* bytes, const size_t size);
 
     /**
      * Clears data, free buffer and reset data size.
@@ -91,7 +91,7 @@ private:
 
 private:
     unsigned char* _bytes;
-    ssize_t _size;
+    size_t _size;
 };
 
 }

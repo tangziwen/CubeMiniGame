@@ -132,7 +132,7 @@ void OctreeScene::updateObj(Drawable3D *obj)
 
 bool OctreeScene::hitByRay(const Ray &ray, vec3 &hitPoint)
 {
-    hitByRay_R(m_root,ray,hitPoint);
+    return hitByRay_R(m_root,ray,hitPoint);
 }
 
 void OctreeScene::cullingByCamera(Camera *camera)

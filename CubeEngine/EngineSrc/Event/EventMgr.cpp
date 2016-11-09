@@ -261,7 +261,7 @@ void EventMgr::removeEventListener(EventListener *event)
 
 static bool eventSort(const EventListener *a,const EventListener *b)
 {
-    return a->getFixedPiority() >= b->getFixedPiority();
+    return a->getFixedPiority() > b->getFixedPiority();
 }
 
 void EventMgr::sortFixedListener()

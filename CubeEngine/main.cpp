@@ -5,29 +5,37 @@
 #include "EngineSrc/Script/ScriptVM.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
-
+#include "External/Lua/lua.hpp"
+#include <iostream>
+using namespace std;
 using namespace tzw;
-void tmpFunc(ScriptVM * vm)
-{
 
-	int argCount = vm->userStackPop().i();
-	int result = 0;
-	while(argCount > 0)
-	{
-		result += vm->userStackPop().i();
-		argCount --;
-	}
-	vm->userStackPush(ScriptValue(result));
+FILE _iob[] = { *stdin, *stdout, *stderr };
+
+extern "C" FILE * __cdecl __iob_func(void)
+{
+	return _iob;
 }
 
 int main(int argc, char *argv[])
 {
-	ScriptVM vm;
-	vm.defineFunction("tmpFunc",tmpFunc);
-	vm.useStdLibrary();
-	vm.loadFromFile("./test.txt",0);
-	vm.excute(0);
-	return 0;
-	//return Engine::run(argc,argv,new GameEntry());
+	lua_State *L = luaL_newstate();
+	luaopen_base(L);
+	luaopen_table(L);
+	luaopen_package(L);
+	luaopen_io(L);
+	luaopen_string(L);
+	luaL_openlibs(L);
+	string str;
+	luaL_dofile(L,"./Entry.lua");
+	lua_close(L);
+
+	//	ScriptVM vm;
+	//	vm.defineFunction("tmpFunc",tmpFunc);
+	//	vm.useStdLibrary();
+	//	vm.loadFromFile("./test.txt",0);
+	//	vm.excute(0);
+	//	return 0;
+	return Engine::run(argc,argv,new GameEntry());
 }
 

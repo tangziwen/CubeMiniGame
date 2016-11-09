@@ -70,12 +70,12 @@ std::string Data::getString()
     return a;
 }
 
-ssize_t Data::getSize() const
+size_t Data::getSize() const
 {
     return _size;
 }
 
-void Data::copy(const unsigned char* bytes, const ssize_t size)
+void Data::copy(const unsigned char* bytes, const size_t size)
 {
     clear();
 
@@ -87,7 +87,7 @@ void Data::copy(const unsigned char* bytes, const ssize_t size)
     }
 }
 
-void Data::fastSet(unsigned char* bytes, const ssize_t size)
+void Data::fastSet(unsigned char* bytes, const size_t size)
 {
     _bytes = bytes;
     _size = size;
