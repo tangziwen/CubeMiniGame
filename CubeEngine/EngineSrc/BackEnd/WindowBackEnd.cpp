@@ -18,4 +18,8 @@ void WindowBackEnd::run()
 
 }
 
+void WindowBackEnd::setUnlimitedCursor(bool enable)
+{
+}
+
 } // namespace tzw

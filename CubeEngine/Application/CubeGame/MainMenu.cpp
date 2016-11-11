@@ -66,7 +66,7 @@ void MainMenu::startGame(Button * btn)
 {
     GameWorld::shared()->startGame();
     hide();
-
+	Engine::shared()->setUnlimitedCursor(true);
 }
 
 } // namespace tzw

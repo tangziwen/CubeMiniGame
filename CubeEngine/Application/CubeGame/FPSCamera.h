@@ -54,7 +54,6 @@ private:
     void collideAndSlide(vec3 vel, vec3 gravity);
     vec3 collideWithWorld(const vec3& pos, const vec3& vel, bool needSlide = true);
     void checkCollision(ColliderEllipsoid * thePackage);
-    bool m_isMouseHold;
     bool m_enableFPSFeature;
     float m_maxFallSpeed;
     float m_distToside;

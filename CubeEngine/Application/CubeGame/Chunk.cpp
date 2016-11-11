@@ -118,10 +118,10 @@ void Chunk::load()
 		m_material = Material::createFromEffect("VoxelTerrain");
 		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/grass_green_d.jpg", true));
 		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/adesert_mntn4v_d.jpg", true));
-		if((x + z + y) % 2 == 0)
-			this->getMaterial()->setVar("color",vec4::fromRGB(255, 0, 0));
-		else
-			this->getMaterial()->setVar("color",vec4::fromRGB(0, 255, 0));
+ 		if((x + z + y) % 2 == 0)
+ 			this->getMaterial()->setVar("color",vec4::fromRGB(255, 0, 0));
+ 		else
+ 			this->getMaterial()->setVar("color",vec4::fromRGB(0, 255, 0));
 	}
 	finish();
 	m_isLoaded = true;
@@ -142,15 +142,14 @@ void Chunk::deformAround(vec3 pos, float value)
 	int posX = relativePost.x;
 	int posY = relativePost.y;
 	int posZ = relativePost.z;
-	std::cout<<x<<","<< y<<","<<z<<"the POS(" << posX << " , " << posY <<" , " << posZ <<")"<<std::endl;
-	auto theDrawSize = 4;
+	auto theDrawSize = 2;
 	for (int i = -theDrawSize; i <= theDrawSize; i++)
 	{
 		for(int j = -theDrawSize; j<=theDrawSize; j++)
 		{
 			for(int k = -theDrawSize; k<= theDrawSize; k++)
 			{
-				float actualValue = value;
+				float actualValue = value * (1.0 - sqrt(i * i + j * j + k * k) / sqrt(theDrawSize * theDrawSize + theDrawSize * theDrawSize + theDrawSize * theDrawSize));
 				int X = posX + i;
 				int Y = posY + j;
 				int Z = posZ + k;

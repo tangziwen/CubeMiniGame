@@ -48,15 +48,14 @@ void SkyBox::initSkyBoxMesh()
     if(m_skyBoxMesh) return;
     m_skyBoxMesh = new tzw::Mesh();
     VertexData vertices[] = {
-        {vec3( -1.0f, 1.0f,  1.0f), vec2(0.0f, 1.0f)}, //0
-        {vec3( -1.0f,  -1.0f,  1.0f), vec2(1.0f, 0.0f)}, //1
-        {vec3( 1.0f,  -1.0f,  1.0f), vec2(1.0f, 1.0f)}, //2
-        {vec3(1.0f, 1.0f,  1.0f), vec2(0.0f, 0.0f)}, //3
-
-        {vec3( -1.0f, 1.0f,  -1.0f), vec2(0.0f, 1.0f)}, //4
-        {vec3( -1.0f,  -1.0f,  -1.0f), vec2(1.0f, 0.0f)},  //5
-        {vec3( 1.0f,  -1.0f,  -1.0f), vec2(1.0f, 1.0f)}, //6
-        {vec3(1.0f, 1.0f,  -1.0f), vec2(0.0f, 0.0f)},  //7
+        VertexData(vec3( -1.0f, 1.0f,  1.0f), vec2(0.0f, 1.0f)), //0
+        VertexData(vec3( -1.0f,  -1.0f,  1.0f), vec2(1.0f, 0.0f)), //1
+        VertexData(vec3( 1.0f,  -1.0f,  1.0f), vec2(1.0f, 1.0f)), //2
+        VertexData(vec3(1.0f, 1.0f,  1.0f), vec2(0.0f, 0.0f)), //3
+        VertexData(vec3( -1.0f, 1.0f,  -1.0f), vec2(0.0f, 1.0f)), //4
+        VertexData(vec3( -1.0f,  -1.0f,  -1.0f), vec2(1.0f, 0.0f)),  //5
+        VertexData(vec3( 1.0f,  -1.0f,  -1.0f), vec2(1.0f, 1.0f)), //6
+        VertexData(vec3(1.0f, 1.0f,  -1.0f), vec2(0.0f, 0.0f)),  //7
     };
     unsigned short indices[] = {
          3,2,1,  3,1,0,

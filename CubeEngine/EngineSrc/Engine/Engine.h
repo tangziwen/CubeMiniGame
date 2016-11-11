@@ -4,7 +4,7 @@
 #include "AppEntry.h"
 #include <string>
 #include "EngineSrc/Math/vec2.h"
-
+#include "../BackEnd/WindowBackEndMgr.h"
 namespace tzw {
 class Engine
 {
@@ -36,7 +36,9 @@ public:
     bool getIsEnableOutLine() const;
     void setIsEnableOutLine(bool isEnableOutLine);
 	void setClearColor(float r, float g, float b);
+	void setUnlimitedCursor(bool enable);
 private:
+	WindowBackEnd * m_winBackEnd;
     static Engine * m_instance;
     int m_drawCallCount;
     int m_verticesCount;

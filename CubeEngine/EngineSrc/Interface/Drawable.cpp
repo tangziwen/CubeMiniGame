@@ -50,5 +50,12 @@ void Drawable::setUpTransFormation(TransformationInfo &info)
     info.m_viewMatrix = camera()->getViewMatrix();
     info.m_worldMatrix = getTransform();
 }
+
+void Drawable::setColor(vec4 newColor)
+{
+	if (!m_material) return;
+	m_material->setVar("color", newColor);
+}
+
 } // namespace tzw
 

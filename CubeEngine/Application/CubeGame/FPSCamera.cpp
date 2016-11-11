@@ -20,7 +20,6 @@ FPSCamera::FPSCamera()
 {
     offsetToCentre = 0.6;
     m_distToFront = 0.2;
-    m_isMouseHold = false;
     m_enableFPSFeature = true;
     setUseCustomFrustumUpdate(true);
     collisionPackage = new ColliderEllipsoid();
@@ -113,7 +112,7 @@ bool FPSCamera::onKeyRelease(int keyCode)
         auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
         if(chunk)
         {
-            chunk->deformAround(hitPoint, 1.0);
+            chunk->deformAround(hitPoint, 0.2);
         }
     }
         break;
@@ -123,14 +122,12 @@ bool FPSCamera::onKeyRelease(int keyCode)
 
 bool FPSCamera::onMouseRelease(int button, vec2 pos)
 {
-    m_isMouseHold = false;
     return true;
 }
 
 bool FPSCamera::onMousePress(int button, vec2 pos)
 {
-    m_oldPosition = vec3(pos.x,pos.y,0.0);
-    m_isMouseHold = true;
+    //m_oldPosition = vec3(pos.x,pos.y,0.0);
     return true;
 }
 
@@ -144,7 +141,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
 
     auto newPosition = vec3(pos.x,pos.y,0.0);
 
-    if (m_isMouseHold)
+    if (true)
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)

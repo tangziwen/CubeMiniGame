@@ -32,10 +32,10 @@ void Grass::initMesh()
 	float halfHeight = 0.5;
 	VertexData vertices[] = {
 		// Vertex data for face 0
-		{vec3(-1.0f *halfWidth, -1.0f * halfHeight, 0.0f), vec2(0.0f, 0.0f)},  // v0
-		{vec3( 1.0f *halfWidth, -1.0f * halfHeight,  0.0f), vec2(1.0f, 0.0f)}, // v1
-		{vec3(1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(1.0f, 1.0f)},  // v2
-		{vec3( -1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(0.0f, 1.0f)}, // v3
+		VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, 0.0f), vec2(0.0f, 0.0f)),  // v0
+		VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  0.0f), vec2(1.0f, 0.0f)), // v1
+		VertexData(vec3(1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(1.0f, 1.0f)),  // v2
+		VertexData(vec3( -1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(0.0f, 1.0f)), // v3
 	};
 
 	unsigned short indices[] = {

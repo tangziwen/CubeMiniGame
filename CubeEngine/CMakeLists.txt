@@ -74,6 +74,8 @@ macro(source_group_by_dir source_files)
     endforeach(sgbd_file)
 endmacro(source_group_by_dir)
 
+#copy res
+
 file(GLOB_RECURSE project_headers *.h)
 file(GLOB_RECURSE project_cpps *.cpp *.c)
 set(all_files ${project_headers} ${project_cpps})

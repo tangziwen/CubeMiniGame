@@ -80,10 +80,10 @@ void LabelNew::genMesh()
         //顶点数据需要循环设置
         VertexData vertices[] = {
             // front
-            {vec3(0, 0,  -1.0f), gNode->UV(0.0f, 0.0f)},  // v0
-            {vec3( w,  0,  -1.0f), gNode->UV(1.0f, 0.0f)}, // v1
-            {vec3( w,  h,  -1.0f), gNode->UV(1.0f, 1.0f)},  // v2
-            {vec3( 0, h,  -1.0f), gNode->UV(0.0f, 1.0f)}, // v3
+            VertexData(vec3(0, 0,  -1.0f), gNode->UV(0.0f, 0.0f)),  // v0
+            VertexData(vec3( w,  0,  -1.0f), gNode->UV(1.0f, 0.0f)), // v1
+            VertexData(vec3( w,  h,  -1.0f), gNode->UV(1.0f, 1.0f)),  // v2
+            VertexData(vec3( 0, h,  -1.0f), gNode->UV(0.0f, 1.0f)), // v3
         };
         //有些字如g,y等会下沉,需要用rows和top做个差值来移动字符位置
         int diff = - int(gNode->m_data.rows) + int(gNode->m_data.top);

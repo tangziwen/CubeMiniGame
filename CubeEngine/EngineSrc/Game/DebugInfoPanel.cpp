@@ -29,7 +29,7 @@ DebugInfoPanel::DebugInfoPanel()
 	m_frame = GUIWindow::create("Profile Window",vec2(PANEL_WIDTH,PANEL_HEIGHT));
 	m_frame->setIsShowCloseBtn(false);
 	m_frame->setLocalPiority(EngineDef::debugPanelPiority);
-	//m_frame->setIsDragable(false);
+	m_frame->setIsDragable(false);
 	GUIWindowMgr::shared()->add(m_frame);
 	for (int i =0 ;i<= LABEL_MEMORY_USAGE;i++)
 	{

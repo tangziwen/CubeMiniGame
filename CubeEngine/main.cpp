@@ -10,13 +10,16 @@
 using namespace std;
 using namespace tzw;
 
+#if _MSC_VER >= 1900
 FILE _iob[] = { *stdin, *stdout, *stderr };
 
 extern "C" FILE * __cdecl __iob_func(void)
 {
 	return _iob;
 }
+#endif
 
+#pragma comment(linker, "/subsystem:console")
 int main(int argc, char *argv[])
 {
 	lua_State *L = luaL_newstate();

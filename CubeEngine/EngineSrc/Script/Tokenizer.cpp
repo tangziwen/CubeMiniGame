@@ -3,11 +3,22 @@
 #include <algorithm>
 namespace tzw {
 
-auto keyWordList = {"if","else","var","goto","true","false", "{", "}","while", "break", "function", "return"};
+const char * keyWordList[] = {"if","else","var","goto","true","false", "{", "}","while", "break", "function", "return"};
 static bool isOp(char c)
 {
     return (c =='+' || c =='-' || c =='*' || c =='/' || c=='(' || c==')' || c==',' || c==';' || c == '=' || c =='>' || c =='<' || c =='!'
 			|| c == '.');
+}
+
+static bool findKeyWorld(std::string theStr)
+{
+	size_t keywordCount = sizeof(keyWordList) / sizeof(char *);
+	for(size_t i = 0; i < keywordCount; i++)
+	{
+		if(!strcmp(keyWordList[i],theStr.c_str()))
+			return true;
+	}
+	return false;
 }
 
 Tokenizer::Tokenizer(std::string theStr)
@@ -104,7 +115,7 @@ void Tokenizer::parse()
                 theIndex ++;
             }
             tk.m_str = tmpStr;
-			if(std::find(keyWordList.begin(), keyWordList.end(), tmpStr) != keyWordList.end())
+			if(findKeyWorld(tmpStr))
 			{
 				//一些例外
 				if (tmpStr == "true" || tmpStr == "false")

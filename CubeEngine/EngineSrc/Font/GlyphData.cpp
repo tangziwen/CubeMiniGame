@@ -16,7 +16,6 @@ void GlyphData::initFromFace(FT_Face *face,unsigned long c)
     {
         advance = getSpecialAdvance(c,(static_cast<int>((*face)->glyph->advance.x >> 6)));
     }
-
     top = (*face)->glyph->bitmap_top;
     left = (*face)->glyph->bitmap_left;
 

@@ -22,6 +22,7 @@ public:
     Material *getMaterial() const;
     void setMaterial(Material *technique);
     virtual void setUpTransFormation(TransformationInfo & info);
+	virtual void setColor(vec4 newColor);
 protected:
     Material * m_material;
     Camera * m_camera;

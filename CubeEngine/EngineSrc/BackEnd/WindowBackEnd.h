@@ -9,6 +9,7 @@ public:
     WindowBackEnd();
     virtual void prepare();
     virtual void run();
+	virtual void setUnlimitedCursor(bool enable);
 private:
     TZW_SINGLETON_DECL(WindowBackEnd)
 };

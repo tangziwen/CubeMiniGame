@@ -2,6 +2,7 @@
 #define TZW_VOLUMEMESH_H
 #include "../../Interface/Drawable3D.h"
 #include "../../Mesh/Mesh.h"
+#include <stdint.h>
 
 
 namespace tzw {

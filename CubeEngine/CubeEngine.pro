@@ -22,20 +22,33 @@ INCLUDEPATH += ./Application
 ####External library BEGIN####
 INCLUDEPATH += ./External
 #FreeType#
-LIBS += -L$$PWD/lib -lfreetype.dll
+LIBS += -L$$PWD/libVC -lfreetype
 INCLUDEPATH += ./External/FreeType
 #GLFW 3.0#
-LIBS += -L$$PWD/lib -lglfw3dll
+LIBS += -L$$PWD/libVC -lglfw3
 INCLUDEPATH += ./External/GLFW3/include
 
 #GLEW #
-LIBS += -L$$PWD/lib -lglew32s
+LIBS += -L$$PWD/libVC -lglew32s
 INCLUDEPATH += ./External/GLEW
 
+LIBS += -L$$PWD/libVC -llibpng
+
+LIBS += -L$$PWD/libVC -lzlib
+LIBS += kernel32.lib
+LIBS += user32.lib
+LIBS += gdi32.lib
+LIBS += winspool.lib
+LIBS += shell32.lib
+LIBS += ole32.lib
+LIBS += oleaut32.lib
+LIBS += uuid.lib
+LIBS += comdlg32.lib
+LIBS += advapi32.lib
 #rapidJson
 INCLUDEPATH += ./External/rapidjson/include
 
-LIBS += -lopengl32 -lglu32 -lglut32
+LIBS += -lopengl32 -lglu32
 ####External library END####
 
 SOURCES += main.cpp \
@@ -190,7 +203,44 @@ SOURCES += main.cpp \
     EngineSrc/Script/ScriptStruct.cpp \
     EngineSrc/3D/Primitive/LinePrimitive.cpp \
     EngineSrc/3D/Primitive/LineGrid.cpp \
-    EngineSrc/3D/Vegetation/Grass.cpp
+    EngineSrc/3D/Vegetation/Grass.cpp \
+    External/Lua/lapi.c \
+    External/Lua/lauxlib.c \
+    External/Lua/lbaselib.c \
+    External/Lua/lbitlib.c \
+    External/Lua/lcode.c \
+    External/Lua/lcorolib.c \
+    External/Lua/lctype.c \
+    External/Lua/ldblib.c \
+    External/Lua/ldebug.c \
+    External/Lua/ldo.c \
+    External/Lua/ldump.c \
+    External/Lua/lfunc.c \
+    External/Lua/lgc.c \
+    External/Lua/linit.c \
+    External/Lua/liolib.c \
+    External/Lua/llex.c \
+    External/Lua/lmathlib.c \
+    External/Lua/lmem.c \
+    External/Lua/loadlib.c \
+    External/Lua/lobject.c \
+    External/Lua/lopcodes.c \
+    External/Lua/loslib.c \
+    External/Lua/lparser.c \
+    External/Lua/lstate.c \
+    External/Lua/lstring.c \
+    External/Lua/lstrlib.c \
+    External/Lua/ltable.c \
+    External/Lua/ltablib.c \
+    External/Lua/ltm.c \
+    External/Lua/lua.c \
+    External/Lua/luac.c \
+    External/Lua/lundump.c \
+    External/Lua/lutf8lib.c \
+    External/Lua/lvm.c \
+    External/Lua/lzio.c \
+    Game/WorldSystem.cpp \
+    Game/GameCamera.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -364,4 +414,32 @@ HEADERS += \
     EngineSrc/Script/ScriptStruct.h \
     EngineSrc/3D/Primitive/LinePrimitive.h \
     EngineSrc/3D/Primitive/LineGrid.h \
-    EngineSrc/3D/Vegetation/Grass.h
+    EngineSrc/3D/Vegetation/Grass.h \
+    External/Lua/lapi.h \
+    External/Lua/lauxlib.h \
+    External/Lua/lcode.h \
+    External/Lua/lctype.h \
+    External/Lua/ldebug.h \
+    External/Lua/ldo.h \
+    External/Lua/lfunc.h \
+    External/Lua/lgc.h \
+    External/Lua/llex.h \
+    External/Lua/llimits.h \
+    External/Lua/lmem.h \
+    External/Lua/lobject.h \
+    External/Lua/lopcodes.h \
+    External/Lua/lparser.h \
+    External/Lua/lprefix.h \
+    External/Lua/lstate.h \
+    External/Lua/lstring.h \
+    External/Lua/ltable.h \
+    External/Lua/ltm.h \
+    External/Lua/lua.h \
+    External/Lua/lua.hpp \
+    External/Lua/luaconf.h \
+    External/Lua/lualib.h \
+    External/Lua/lundump.h \
+    External/Lua/lvm.h \
+    External/Lua/lzio.h \
+    Game/WorldSystem.h \
+    Game/GameCamera.h

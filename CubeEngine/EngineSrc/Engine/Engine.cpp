@@ -4,7 +4,7 @@
 #include "../Rendering/Renderer.h"
 #include "TUtility/TUtility.h"
 #include "../Game/ConsolePanel.h"
-#include "../BackEnd/WindowBackEndMgr.h"
+
 #include "../Event/EventMgr.h"
 #include "time.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
@@ -40,6 +40,11 @@ void Engine::setIsEnableOutLine(bool isEnableOutLine)
 void Engine::setClearColor(float r, float g, float b)
 {
 	RenderBackEnd::shared()->setClearColor(r, g, b);
+}
+
+void Engine::setUnlimitedCursor(bool enable)
+{
+	m_winBackEnd->setUnlimitedCursor(enable);
 }
 
 int Engine::getDrawCallCount()
@@ -185,9 +190,9 @@ void Engine::setWindowWidth(float windowWidth)
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
     Engine::shared()->setDelegate(delegate);
-    auto window = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
-    window->prepare();
-    window->run();
+	Engine::shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
+	Engine::shared()->m_winBackEnd->prepare();
+	Engine::shared()->m_winBackEnd->run();
     return 0;
 }
 } // namespace tzw

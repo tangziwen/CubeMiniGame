@@ -10,7 +10,7 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
     m_width = width;
     m_depth = depth;
     m_height = height;
-    m_tech = Material::createFromEffect("Color");
+    m_material = Material::createFromEffect("Color");
     initMesh();
     setCamera(g_GetCurrScene()->defaultCamera());
     setIsAccpectOCTtree(true);
@@ -18,7 +18,7 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
 
 void CubePrimitive::submitDrawCmd()
 {
-    RenderCommand command(m_mesh,m_tech,RenderCommand::RenderType::Common);
+    RenderCommand command(m_mesh, m_material,RenderCommand::RenderType::Common);
     setUpTransFormation(command.m_transInfo);
     Renderer::shared()->addRenderCommand(command);
 
@@ -61,40 +61,40 @@ void CubePrimitive::initMesh()
     m_mesh = new Mesh();
     VertexData vertices[] = {
         // Vertex data for face 0
-        {vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.0f)},  // v0
-        {vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.0f)}, // v1
-        {vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.5f)},  // v2
-        {vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)}, // v3
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.0f)),  // v0
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.0f)), // v1
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.5f)),  // v2
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)), // v3
 
         // Vertex data for face 1
-        {vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2( 0.0f, 0.5f)}, // v4
-        {vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.5f)}, // v5
-        {vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 1.0f)},  // v6
-        {vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f)}, // v7
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2( 0.0f, 0.5f)), // v4
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.5f)), // v5
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 1.0f)),  // v6
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f)), // v7
 
         // Vertex data for face 2
-        {vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f)}, // v8
-        {vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 0.5f)},  // v9
-        {vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f)}, // v10
-        {vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 1.0f)},  // v11
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f)), // v8
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 0.5f)),  // v9
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f)), // v10
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 1.0f)),  // v11
 
         // Vertex data for face 3
-        {vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f)}, // v12
-        {vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.0f)},  // v13
-        {vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f)}, // v14
-        {vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.5f)},  // v15
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f)), // v12
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.0f)),  // v13
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f)), // v14
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.5f)),  // v15
 
         // Vertex data for face 4
-        {vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.0f)}, // v16
-        {vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f)}, // v17
-        {vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)}, // v18
-        {vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f)}, // v19
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.0f)), // v16
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f)), // v17
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)), // v18
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f)), // v19
 
         // Vertex data for face 5
-        {vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)}, // v20
-        {vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f)}, // v21
-        {vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f)}, // v22
-        {vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f)}  // v23
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)), // v20
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f)), // v21
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f)), // v22
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f))  // v23
     };
 
     // Indices for drawing cube faces using triangle strips.

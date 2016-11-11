@@ -11,6 +11,7 @@ public:
     virtual void prepare();
     virtual void run();
     GLFW_BackEnd();
+	void setUnlimitedCursor(bool enable);
 private:
     GLFWwindow * m_window;
     TZW_SINGLETON_DECL(GLFW_BackEnd)

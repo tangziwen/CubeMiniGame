@@ -77,6 +77,7 @@ void GLFW_BackEnd::prepare()
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
     glfwSetCharCallback(m_window, char_callback);
+	
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glfwSetCursorPosCallback(m_window, cursor_position_callback);
     glfwMakeContextCurrent(m_window);
@@ -99,6 +100,18 @@ void GLFW_BackEnd::run()
 GLFW_BackEnd::GLFW_BackEnd()
 {
 
+}
+
+void GLFW_BackEnd::setUnlimitedCursor(bool enable)
+{
+	if (enable) 
+	{
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+	}
+	else
+	{
+		glfwSetInputMode(m_window, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	}
 }
 
 

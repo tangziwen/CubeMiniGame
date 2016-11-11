@@ -30,7 +30,7 @@ void Model::submitDrawCmd()
 {
     for(auto mesh : m_meshList)
     {
-        auto tech = m_effectList[mesh->getMatIndex()];
+        auto tech = m_effectList[mesh->getMatIndex() - 1 ];
         RenderCommand command(mesh,tech,RenderCommand::RenderType::Common);
         setUpTransFormation(command.m_transInfo);
         Renderer::shared()->addRenderCommand(command);

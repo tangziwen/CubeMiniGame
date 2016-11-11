@@ -13,10 +13,10 @@ Player::Player(Node *mainRoot)
     m_camera->setIsEnableGravity(true);
 
     //the gun
-    m_gunModel = Model::create("./Res/TestRes/shotgun.tzw");
-    m_gunModel->setScale(vec3(0.01, 0.01,0.01));
-    m_gunModel->setRotateE(vec3(0, 90, 0));
-    m_gunModel->setPos(vec3(0.13,-0.18,-0.12));
+    m_gunModel = Model::create("./Res/diediedie.tzw");
+    m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
+    m_gunModel->setRotateE(vec3(0, -90, 0));
+    m_gunModel->setPos(vec3(0.08,0.15,-0.25));
     m_camera->addChild(m_gunModel);
 }
 
