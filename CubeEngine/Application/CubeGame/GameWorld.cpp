@@ -25,8 +25,7 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
     m_width = width;
     m_depth = depth;
     m_height = height;
-    Tmisc::DurationBegin();
-    for(int i = 0;i< width;i++)
+    for(int i = 0;i< m_width;i++)
     {
         for(int j=0;j<m_height;j++)
         {
@@ -36,12 +35,10 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
                 m_mainRoot->addChild(chunkA);
                 m_chunkList.push_back(chunkA);
                 m_chunkArray[i][j][k] = chunkA;
-				chunkA->load();
             }
         }
     }
-    //loadChunksAroundPlayer();
-    std::cout <<"load world need" << Tmisc::DurationEnd() << std::endl;
+    loadChunksAroundPlayer();
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -66,7 +63,7 @@ void GameWorld::setPlayer(Player *player)
 
 Chunk *GameWorld::getOrCreateChunk(int x, int y, int z)
 {
-    auto chunk = getChunkByChunk(x,y,z);
+    auto chunk = getChunk(x,y,z);
     if(!chunk)
     {
         chunk = createChunk(x,y,z);
@@ -82,7 +79,8 @@ void GameWorld::onFrameUpdate(float delta)
     timer += delta;
     if (timer >= 5.0f)
     {
-        //loadChunksAroundPlayer();
+		std::cout << "load around!!!!!!!!" << std::endl;
+        loadChunksAroundPlayer();
         timer = 0.0f;
     }
 }
@@ -97,8 +95,8 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::loadBlockSheet()
 {
-    m_blockSheet = new TextureAtlas("./Res/User/CubeGame/texture/dest/blocks.json");
-    m_blockSheet->texture()->setFilter(Texture::FilterType::Nearest);
+    //m_blockSheet = new TextureAtlas("./Res/User/CubeGame/texture/dest/blocks.json");
+    //m_blockSheet->texture()->setFilter(Texture::FilterType::Nearest);
 }
 
 TextureAtlas *GameWorld::getBlockSheet() const
@@ -113,6 +111,7 @@ void GameWorld::setBlockSheet(TextureAtlas *blockSheet)
 
 void GameWorld::startGame()
 {
+	Tmisc::DurationBegin();
     unloadGame();
     GameWorld::shared()->loadBlockSheet();
     crossHair = Sprite::create("./Res/User/CubeGame/texture/GUI/cross_hair.png");
@@ -179,7 +178,7 @@ void GameWorld::loadChunksAroundPlayer()
     }
 }
 
-Chunk *GameWorld::getChunkByChunk(int x, int y, int z)
+Chunk *GameWorld::getChunk(int x, int y, int z)
 {
     if(x >=0 && x <m_width && z >=0 && z <m_depth && y >=0 && y < m_height)
     {
@@ -194,7 +193,7 @@ Chunk *GameWorld::getChunkByChunk(int x, int y, int z)
 GameWorld::GameWorld()
 {
     EventMgr::shared()->addFixedPiorityListener(this);
-    memset(m_chunkArray,CUBE_MAP_SIZE * CUBE_MAP_SIZE * GAME_MAP_HEIGHT * sizeof(Chunk *),0);
+    memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GameState::MainMenu;
     m_mainMenu = new MainMenu();
     g_GetCurrScene()->addNode(m_mainMenu);
@@ -217,7 +216,7 @@ void GameWorld::unloadGame()
     m_mainRoot->purgeAllChildren();
     m_activedChunkList.clear();
     m_chunkList.clear();
-    memset(m_chunkArray,CUBE_MAP_SIZE * CUBE_MAP_SIZE * GAME_MAP_HEIGHT * sizeof(Chunk *),0);
+	memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
 }
 
 GameWorld::GameState GameWorld::getCurrentState() const

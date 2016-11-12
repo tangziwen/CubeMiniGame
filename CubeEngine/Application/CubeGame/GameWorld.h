@@ -22,7 +22,7 @@ public:
     void createWorld(Scene* scene, int blockWitdh, int depth, int height, float ratio);
     vec3 worldToGrid(vec3 world);
     vec3 gridToChunk(vec3 grid);
-    Chunk * getChunkByChunk(int x,int y,int z);
+    Chunk * getChunk(int x,int y,int z);
     Player *getPlayer() const;
     void setPlayer(Player *player);
     Chunk * getOrCreateChunk(int x,int y, int z);

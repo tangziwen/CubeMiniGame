@@ -65,7 +65,7 @@ public:
 	bool getIsDrawable() const;
 	void setIsDrawable(bool isDrawable);
 	void purgeAllChildren();
-	bool getIsAccpectOCTtree() const;
+	virtual bool getIsAccpectOCTtree() const;
 	void setIsAccpectOCTtree(bool isAccpectOCTtree);
 	void cacheTransform();
 	virtual void visit();

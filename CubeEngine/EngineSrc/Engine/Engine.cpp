@@ -8,6 +8,7 @@
 #include "../Event/EventMgr.h"
 #include "time.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
+#include <iostream>	
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 namespace tzw {
 
@@ -116,6 +117,7 @@ void Engine::update(float delta)
     SceneMgr::shared()->doVisit();
     resetDrawCallCount();
     SceneMgr::shared()->doVisitDraw();
+	Tmisc::DurationBegin();
     SceneMgr::shared()->doVisitPost();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
 

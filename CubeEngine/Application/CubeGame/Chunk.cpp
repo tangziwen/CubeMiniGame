@@ -92,7 +92,7 @@ void Chunk::logicUpdate(float delta)
 
 bool Chunk::getIsAccpectOCTtree() const
 {
-	return true;
+	return m_isLoaded;
 }
 
 void Chunk::submitDrawCmd()
@@ -118,10 +118,6 @@ void Chunk::load()
 		m_material = Material::createFromEffect("VoxelTerrain");
 		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/grass_green_d.jpg", true));
 		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/adesert_mntn4v_d.jpg", true));
- 		if((x + z + y) % 2 == 0)
- 			this->getMaterial()->setVar("color",vec4::fromRGB(255, 0, 0));
- 		else
- 			this->getMaterial()->setVar("color",vec4::fromRGB(0, 255, 0));
 	}
 	finish();
 	m_isLoaded = true;
@@ -213,7 +209,7 @@ void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 		{
 			for(int offsetZ: zList)
 			{
-				auto neighborChunk = GameWorld::shared()->getChunkByChunk(this->x + offsetX, this->y + offsetY, this->z + offsetZ);
+				auto neighborChunk = GameWorld::shared()->getChunk(this->x + offsetX, this->y + offsetY, this->z + offsetZ);
 				if(neighborChunk)
 				{
 					int nx = X;
@@ -516,7 +512,7 @@ vec4 Chunk::getPoint(int x, int y, int z)
 		{
 			offsetZ = 1;
 		}
-		auto neighborChunk = GameWorld::shared()->getChunkByChunk(this->x + offsetX, this->y + offsetY, this->z + offsetZ);
+		auto neighborChunk = GameWorld::shared()->getChunk(this->x + offsetX, this->y + offsetY, this->z + offsetZ);
 		if(neighborChunk)
 		{
 			if(!neighborChunk->m_isInitData)
@@ -570,9 +566,7 @@ bool Chunk::isEdge(int i)
 void Chunk::finish()
 {
 	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, 0.0f);
-	//genNormal();
-	m_mesh->caclNormals();
-	m_mesh->calBaryCentric();
+	genNormal();
 	m_mesh->finish();
 }
 
