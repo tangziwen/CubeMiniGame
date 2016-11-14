@@ -1,6 +1,6 @@
 #ifndef TUTILITY
 #define TUTILITY
-
+#include <assert.h>
 #include <algorithm>
 #include "string/Tstring.h"
 #include "log/Tlog.h"

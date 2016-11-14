@@ -1,6 +1,7 @@
 #include "Tstring.h"
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 namespace tzw {
 Tstring::Tstring()
     :m_data(NULL),m_size(0)
@@ -102,6 +103,7 @@ void Tstring::clear()
 void Tstring::concat(const char *str)
 {
     char * tmp = (char *)malloc(m_size*sizeof(char)+strlen (str) +sizeof(char));
+	assert(tmp);
     tmp[0] = NULL;// empty string
     strcat(tmp,m_data);
     strcat(tmp,str);

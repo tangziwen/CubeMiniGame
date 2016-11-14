@@ -6,6 +6,7 @@
 #include "../Math/Quaternion.h"
 #include <string>
 #include <vector>
+#include <deque>
 #include "External/TUtility/TUtility.h"
 #include "../Scene/OctreeScene.h"
 #include "../Action/ActionMgr.h"
@@ -90,7 +91,7 @@ public:
 	void setTag(unsigned int tag);
 protected:
 	bool m_isDrawable;
-	std::vector<Node *> m_children;
+	std::deque<Node *> m_children;
 	bool m_isValid;
 	Scene* m_scene;
 	vec3 m_scale;

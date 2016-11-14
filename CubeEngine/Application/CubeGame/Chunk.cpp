@@ -11,10 +11,14 @@ static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
+
 namespace tzw {
+
+	static int lodList[] = { 1, 2, 4, 8};
 Chunk::Chunk(int the_x, int the_y,int the_z)
 	:m_isLoaded(false),x(the_x),y(the_y),z(the_z)
 {
+	m_lod = 0;
 	m_localAABB.update(vec3(0,0,0));
 	m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,MAX_BLOCK * BLOCK_SIZE,-1 * MAX_BLOCK * BLOCK_SIZE));
 	m_basePoint = vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , -1 * z* CHUNK_SIZE);
@@ -145,7 +149,7 @@ void Chunk::deformAround(vec3 pos, float value)
 		{
 			for(int k = -theDrawSize; k<= theDrawSize; k++)
 			{
-				float actualValue = value * (1.0 - sqrt(i * i + j * j + k * k) / sqrt(theDrawSize * theDrawSize + theDrawSize * theDrawSize + theDrawSize * theDrawSize));
+				float actualValue = value;
 				int X = posX + i;
 				int Y = posY + j;
 				int Z = posZ + k;
@@ -158,7 +162,6 @@ void Chunk::deformAround(vec3 pos, float value)
 			}
 		}
 	}
-
 	finish();
 	if(!m_tmpNeighborChunk.empty())
 	{
@@ -191,15 +194,6 @@ void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 	{
 		if ( Z <= 0) zList.push_back(-1); else zList.push_back(1);
 	}
-//	//判断是否需要把自己加进去
-//	if(isInEdge(X,Y, Z))
-//	{
-
-//	}
-//	if(xList.empty()) xList.push_back(0);
-//	if(yList.empty()) yList.push_back(0);
-//	if(zList.empty()) zList.push_back(0);
-
 	xList.push_back(0);
 	yList.push_back(0);
 	zList.push_back(0);
@@ -273,35 +267,39 @@ void Chunk::genNormal()
 	auto ncellsZ = MAX_BLOCK;
 	auto ncellsY = MAX_BLOCK;
 	auto ncellsX = MAX_BLOCK;
-	float minValue = 0.0f;
+	float minValue = -1.0f;
 	int meshIndex = 0;
 	int pointsZ = ncellsZ+1;
 	int YtimeZ = (ncellsY+1)*(ncellsZ+1);
+
+	//initialize vertices
+	vec4 verts[8];
+	vec4 gradVerts[8];			//gradients at each vertex of a cube
+	vec3 grads[12];				//linearly interpolated gradients on each edge
+
+	float gradFactorX = 0.5;
+	float gradFactorY = 0.5;
+	float gradFactorZ = 0.5;
+	vec3 factor(1.0 / (2.0*gradFactorX), 1.0 / (2.0*gradFactorY), 1.0 / (2.0*gradFactorZ));
+	int lodStride = lodList[m_lod];
 	//go through all the points
-	for(int i=0; i < ncellsX; i++)//x axis
-		for(int j=0; j < ncellsY; j++)//y axis
-			for(int k=0; k < ncellsZ; k++)	//z axis
+	for(int i=0; i < ncellsX; i+= lodStride)//x axis
+		for(int j=0; j < ncellsY; j+= lodStride)//y axis
+			for(int k=0; k < ncellsZ; k+= lodStride)	//z axis
 			{
-				//initialize vertices
-				vec4 verts[8];
-				int ind = i*YtimeZ + j*(ncellsZ+1) + k;
-				vec4 gradVerts[8];			//gradients at each vertex of a cube
-				vec3 grads[12];				//linearly interpolated gradients on each edge
+				int ind = i*YtimeZ + j*(ncellsZ+1) + k;	
 				int lastX = ncellsX;			//left from older version
 				int lastY = ncellsY;
 				int lastZ = ncellsZ;
-				float gradFactorX = 0.5;
-				float gradFactorY = 0.5;
-				float gradFactorZ = 0.5;
-				vec3 factor(1.0/(2.0*gradFactorX), 1.0/(2.0*gradFactorY), 1.0/(2.0*gradFactorZ));
+
 				verts[0] = points[ind];
-				verts[1] = points[ind + YtimeZ];
-				verts[2] = points[ind + YtimeZ + 1];
-				verts[3] = points[ind + 1];
-				verts[4] = points[ind + (ncellsZ+1)];
-				verts[5] = points[ind + YtimeZ + (ncellsZ+1)];
-				verts[6] = points[ind + YtimeZ + (ncellsZ+1) + 1];
-				verts[7] = points[ind + (ncellsZ+1) + 1];
+				verts[1] = points[ind + lodStride * YtimeZ];
+				verts[2] = points[ind + lodStride * (YtimeZ + 1)];
+				verts[3] = points[ind + lodStride * 1];
+				verts[4] = points[ind + lodStride * (ncellsZ+1)];
+				verts[5] = points[ind + lodStride * (YtimeZ + (ncellsZ+1))];
+				verts[6] = points[ind + lodStride * (YtimeZ + (ncellsZ+1) + 1)];
+				verts[7] = points[ind + lodStride * ((ncellsZ+1) + 1)];
 
 				//get the index
 				int cubeIndex = int(0);
@@ -565,8 +563,10 @@ bool Chunk::isEdge(int i)
 
 void Chunk::finish()
 {
-	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, 0.0f);
+	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, -1.0f, m_lod);
 	genNormal();
+	//m_mesh->caclNormals();
+	//m_mesh->calBaryCentric();
 	m_mesh->finish();
 }
 
@@ -574,15 +574,19 @@ void Chunk::initData()
 {
 	mcPoints = new vec4[(MAX_BLOCK +1) * (MAX_BLOCK+1) * (MAX_BLOCK + 1)];
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
+	vec4 verts;
+	vec3 tmpV3;
 	for(int i =0;i<MAX_BLOCK + 1;i++)
 	{
 		for(int j=0;j<MAX_BLOCK + 1;j++)
 		{
 			for(int k=0;k<MAX_BLOCK + 1;k++)
 			{
-				vec4 verts;
 				verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) + vec4(m_basePoint, 0);
-				verts.w = GameMap::shared()->getDensity(verts.toVec3());
+				tmpV3.x = verts.x;
+				tmpV3.y = verts.y;
+				tmpV3.z = verts.z;
+				verts.w = GameMap::shared()->getDensity(tmpV3);
 				//x y z
 				int ind = i*YtimeZ + j*(MAX_BLOCK + 1) + k;
 				mcPoints[ind] = verts;
@@ -615,6 +619,16 @@ void Chunk::setUpTransFormation(TransformationInfo &info)
 	Matrix44 mat;
 	mat.setToIdentity();
 	info.m_worldMatrix = mat;
+}
+
+void Chunk::setLod(unsigned int newLod)
+{
+	m_lod = newLod;
+}
+
+unsigned int Chunk::getLod()
+{
+	return m_lod;
 }
 
 bool Chunk::isInEdge(int i, int j, int k)

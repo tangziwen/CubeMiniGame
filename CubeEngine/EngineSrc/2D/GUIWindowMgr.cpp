@@ -9,7 +9,8 @@ void GUIWindowMgr::focus(GUIWindow *window)
 {
     auto result = std::find(frameList.begin(),frameList.end(),window);
     window->setLocalPiority(frameList.size());
-    frameList.erase(result);
+	if(result != frameList.end())
+		frameList.erase(result);
     frameList.push_back(window);
     for (size_t i = 0; i<frameList.size();i++)
     {

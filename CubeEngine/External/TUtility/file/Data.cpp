@@ -1,6 +1,6 @@
 #include "Data.h"
 #include "External/TUtility/log/Tlog.h"
-
+#include <assert.h>
 namespace tzw
 {
 const Data Data::Null;
@@ -83,6 +83,7 @@ void Data::copy(const unsigned char* bytes, const size_t size)
     {
         _size = size;
         _bytes = (unsigned char*)malloc(sizeof(unsigned char) * _size);
+		assert(_bytes);
         memcpy(_bytes, bytes, _size);
     }
 }

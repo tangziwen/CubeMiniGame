@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <iostream>
+#include <assert.h>
 namespace tzw {
 
 RenderTarget::RenderTarget()
@@ -19,7 +20,7 @@ void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutput
 	m_height = height;
 	m_numOfOutputs = numOfOutputs;
 	m_isUseDepth = isUseDepth;
-
+	assert(m_numOfOutputs);
 	glGenFramebuffers(1, &m_fbo);
 	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
 

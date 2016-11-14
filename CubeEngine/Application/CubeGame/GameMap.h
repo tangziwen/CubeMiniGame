@@ -19,7 +19,7 @@ public:
     static GameMap * shared();
     float maxHeight() const;
     void setMaxHeight(float maxHeight);
-    double getValue(int x,int z);
+    double getValue(float x,float z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
     float getDensity(vec3 pos);

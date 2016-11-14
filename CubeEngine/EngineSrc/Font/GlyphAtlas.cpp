@@ -1,5 +1,6 @@
 #include "GlyphAtlas.h"
 #include <stdlib.h>
+
 const int DATA_ROW = 10;
 #include <stdio.h>
 #include "External/TUtility/TUtility.h"
@@ -35,6 +36,7 @@ void GlyphAtlas::generate()
     //申请一块足够放下所有GlyphData的glbuffer的(且是方形的)空间
     auto buffSize = (m_height * cellHeight) * (DATA_ROW * cellWidth) * sizeof(unsigned char);
     m_buffer = static_cast<unsigned char *>(malloc(buffSize));
+	assert(m_buffer);
     memset(m_buffer,0,buffSize);
     for (int i = 0;i<m_glyphList.size();i++)
     {

@@ -2,8 +2,9 @@
 
 #include "MCTable.h"
 namespace tzw {
-TZW_SINGLETON_IMPL(MarchingCubes)
+	TZW_SINGLETON_IMPL(MarchingCubes)
 
+		
 #define CALC_GRAD_VERT_0(verts) vec4(points[ind-YtimeZ].w-(verts[1]).w,points[ind-pointsZ].w-(verts[4]).w,points[ind-1].w-(verts[3]).w, (verts[0]).w);
 #define CALC_GRAD_VERT_1(verts) vec4((verts[0]).w-points[ind+2*YtimeZ].w,points[ind+YtimeZ-pointsZ].w-(verts[5]).w,points[ind+YtimeZ-1].w-(verts[2]).w, (verts[1]).w);
 #define CALC_GRAD_VERT_2(verts) vec4((verts[3]).w-points[ind+2*YtimeZ+1].w,points[ind+YtimeZ-ncellsZ].w-(verts[6]).w,(verts[1]).w-points[ind+YtimeZ+2].w, (verts[2]).w);
@@ -14,6 +15,8 @@ TZW_SINGLETON_IMPL(MarchingCubes)
 #define CALC_GRAD_VERT_7(verts) vec4(points[ind-YtimeZ+ncellsZ+2].w-(verts[6]).w,(verts[3]).w-points[ind+2*ncellsZ+3].w,(verts[4]).w-points[ind+ncellsZ+3].w, (verts[7]).w);
 
 
+		
+static int lodList[] = { 1, 2, 4, 8 };
 vec3 LinearInterp(vec4 & p1, vec4 & p2, float value)
 {
     vec3 p;
@@ -276,27 +279,29 @@ void MarchingCubes::generate(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, 
     //    mesh->finish();
 }
 
-void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 *srcData, float minValue)
+void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 *srcData, float minValue, int lodLevel)
 {
     mesh->clear();
     int meshIndex = 0;
     int YtimeZ = (ncellsY+1)*(ncellsZ+1);
+	vec4 verts[8];
+	vec3 intVerts[12];
+	int lodStride = lodList[lodLevel];
     //go through all the points
-    for(int i=0; i < ncellsX; i++)			//x axis
-        for(int j=0; j < ncellsY; j++)		//y axis
-            for(int k=0; k < ncellsZ; k++)	//z axis
+    for(int i=0; i < ncellsX; i += lodStride)			//x axis
+        for(int j=0; j < ncellsY; j += lodStride)		//y axis
+            for(int k=0; k < ncellsZ; k += lodStride)	//z axis
             {
                 //initialize vertices
-                vec4 verts[8];
                 int ind = i*YtimeZ + j*(ncellsZ+1) + k;
                 verts[0] = srcData[ind];
-                verts[1] = srcData[ind + YtimeZ];
-                verts[2] = srcData[ind + YtimeZ + 1];
-                verts[3] = srcData[ind + 1];
-                verts[4] = srcData[ind + (ncellsZ+1)];
-                verts[5] = srcData[ind + YtimeZ + (ncellsZ+1)];
-                verts[6] = srcData[ind + YtimeZ + (ncellsZ+1) + 1];
-                verts[7] = srcData[ind + (ncellsZ+1) + 1];
+                verts[1] = srcData[ind + lodStride* (YtimeZ)];
+                verts[2] = srcData[ind + lodStride* (YtimeZ + 1)];
+                verts[3] = srcData[ind + lodStride * 1];
+                verts[4] = srcData[ind + lodStride * (ncellsZ+1)];
+                verts[5] = srcData[ind + lodStride * (YtimeZ + (ncellsZ+1))];
+                verts[6] = srcData[ind + lodStride * (YtimeZ + (ncellsZ+1) + 1)];
+                verts[7] = srcData[ind + lodStride * ((ncellsZ+1) + 1)];
 
                 //get the index
                 int cubeIndex = int(0);
@@ -307,8 +312,6 @@ void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, 
                 /*(step 5)*/ if(!edgeTable[cubeIndex]) continue;
 
                 //get intersection vertices on edges and save into the array
-                vec3 intVerts[12];
-
                 /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
                 if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(verts[1], verts[2], minValue);
                 if(edgeTable[cubeIndex] & 4) intVerts[2] = LinearInterp(verts[2], verts[3], minValue);

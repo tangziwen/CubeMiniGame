@@ -5,7 +5,7 @@ namespace tzw {
 
 Drawable3D::Drawable3D()
 {
-
+	setLocalPiority(-999);
 }
 
 Drawable3D::~Drawable3D()

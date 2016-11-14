@@ -34,9 +34,8 @@ void GameMap::setMaxHeight(float maxHeight)
     m_maxHeight = maxHeight;
 }
 
-double GameMap::getValue(int x, int z)
+double GameMap::getValue(float x, float z)
 {
-
     double value = m_plane->GetValue(x_offset + x*m_ratio,y_offset + z * m_ratio);
     value = value * 0.5 + 0.5;
     if(value*m_maxHeight<= 3)
@@ -127,12 +126,13 @@ float GameMap::getDensity(vec3 pos)
     case MapType::Noise:
     {
         float height = getValue(pos.x,pos.z);
+		float delta = 0.1 * fabs(pos.y - height);
         if(pos.y <= int(height))
         {
-            return fabs(pos.y - height);
+            return delta;
         }else
         {
-            return -fabs(pos.y - height);
+            return -delta;
         }
     }
         break;

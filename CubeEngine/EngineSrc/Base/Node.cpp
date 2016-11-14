@@ -238,7 +238,7 @@ void Node::visitPost(OctreeScene *scene)
         {
             submitDrawCmd();
         }
-        if(getNeedToUpdate() && getNodeType()==NodeType::Drawable3D && getIsAccpectOCTtree())
+        if(getIsAccpectOCTtree()&& (getNeedToUpdate() || !scene->isInOctree((Drawable3D *)this)) && getNodeType()==NodeType::Drawable3D)
         {
             scene->updateObj((Drawable3D *)this);
         }
@@ -273,7 +273,7 @@ void Node::addChild(Node *node)
     }else
     {
         node->setScene(m_scene);
-        m_children.push_back(node);
+        
         //refresh the new child's transform cache
         node->setNeedToUpdate(true);
         node->m_parent = this;
@@ -281,8 +281,17 @@ void Node::addChild(Node *node)
         {
             node->setGlobalPiority(m_globalPiority);
         }
-        //sort the children
-        sortChildren();
+		//for performance issuse, the Zorder < -99 no need to sort, just insert away.
+		if (node->getLocalPiority() < -99)
+		{
+			m_children.push_front(node);
+		}
+		else
+		{
+			m_children.push_back(node);
+			//sort the children
+			sortChildren();
+		}
     }
 }
 

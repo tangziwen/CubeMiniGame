@@ -79,8 +79,7 @@ void GameWorld::onFrameUpdate(float delta)
     timer += delta;
     if (timer >= 5.0f)
     {
-		std::cout << "load around!!!!!!!!" << std::endl;
-        loadChunksAroundPlayer();
+        //loadChunksAroundPlayer();
         timer = 0.0f;
     }
 }
@@ -118,11 +117,11 @@ void GameWorld::startGame()
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
-    GameMap::shared()->setMapType(GameMap::MapType::Plain);
+    GameMap::shared()->setMapType(GameMap::MapType::Noise);
     GameMap::shared()->setMaxHeight(20);
     auto player = new Player(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
-    GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.02);
+    GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.020);
     m_mainRoot->addChild(player);
     SkyBox* skybox = SkyBox::create("./Res/User/CubeGame/texture/SkyBox/right.jpg","./Res/User/CubeGame/texture/SkyBox/left.jpg",
                                 "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
@@ -151,11 +150,12 @@ void GameWorld::loadChunksAroundPlayer()
     auto pos = m_player->getPos();
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-    for(int i =posX - 2;i<=posX + 2;i++)
+	int range = 4;
+    for(int i =posX - range;i<=posX + range;i++)
     {
         for(int j =0;j< m_height; j++)
         {
-            for( int k = posZ - 2; k <= posZ + 2; k++)
+            for( int k = posZ - range; k <= posZ + range; k++)
             {
                 if(i < 0 || i >= m_width || j < 0 || j >= m_height || k < 0 || k >= m_depth)
                     continue;

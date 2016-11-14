@@ -3,6 +3,7 @@
 
 #include "../Math/AABB.h"
 #include "../Math/Ray.h"
+#include <unordered_set>
 namespace tzw {
 class Drawable3D;
 class Camera;
@@ -27,6 +28,7 @@ public:
     void getRange(std::vector<Drawable3D *> * list,AABB aabb);
     int getAmount();
     std::vector<Drawable3D *>& getVisibleList();
+	bool isInOctree(Drawable3D * obj);
 
 private:
     int getAmount_R(OctreeNode * node);
@@ -40,6 +42,7 @@ private:
     bool hitByRay_R(OctreeNode * node,const Ray &ray, vec3 & hitPoint);
     void subDivide(OctreeNode * node,int level);
     std::vector<Drawable3D *> m_visibleList;
+	std::unordered_set<Drawable3D *> m_objList;
 };
 
 } // namespace tzw

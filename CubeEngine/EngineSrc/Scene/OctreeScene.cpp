@@ -2,7 +2,7 @@
 #include "../Interface/Drawable3D.h"
 #include <algorithm>
 #include "../base/Camera.h"
-#define MAX_DEEP 4
+#define MAX_DEEP 3
 namespace tzw {
 
 OctreeScene::OctreeScene()
@@ -34,17 +34,23 @@ std::vector<Drawable3D *> &OctreeScene::getVisibleList()
     return m_visibleList;
 }
 
+bool OctreeScene::isInOctree(Drawable3D * obj)
+{
+	return m_objList.find(obj) != m_objList.end();
+}
+
 void OctreeScene::addObj(Drawable3D *obj)
 {
     auto result = addObj_R(m_root,obj);
-    if(!result)
+    if(result)
     {
-        return;
+		m_objList.insert(obj);
     }
 }
 
 bool OctreeScene::addObj_R(OctreeNode *node, Drawable3D *obj)
 {
+	obj->getAABB();
     if(node->aabb.isCanCotain(obj->getAABB()))
     {
         if(!node->m_child[0])//terminal node

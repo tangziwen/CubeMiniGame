@@ -39,6 +39,8 @@ public:
     void initData();
     virtual void checkCollide(ColliderEllipsoid * package);
     virtual void setUpTransFormation(TransformationInfo & info);
+	void setLod(unsigned int newLod);
+	unsigned int getLod();
 private:
     bool m_isLoaded;
     bool m_isInitData;
@@ -54,6 +56,7 @@ private:
     vec4 * mcPoints;
     vec3 m_basePoint;
     std::vector<Chunk *> m_tmpNeighborChunk;
+	unsigned int m_lod;
 };
 }
 
