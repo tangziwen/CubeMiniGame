@@ -7,14 +7,20 @@
 #include "../EngineSrc/3D/Terrain/MarchingCubes.h"
 #include "GameConfig.h"
 #include <iostream>
+#include "EngineSrc/Technique/MaterialPool.h"
+#include <mutex>
+
 static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 
+#include <thread>
 namespace tzw {
 
-	static int lodList[] = { 1, 2, 4, 8};
+static std::mutex g_lock;
+static std::mutex g_normalLock;
+static int lodList[] = { 1, 2, 4, 8};
 Chunk::Chunk(int the_x, int the_y,int the_z)
 	:m_isLoaded(false),x(the_x),y(the_y),z(the_z)
 {
@@ -26,7 +32,9 @@ Chunk::Chunk(int the_x, int the_y,int the_z)
 	m_mesh = nullptr;
 	m_needToUpdate = true;
 	m_isInitData = false;
+	m_isNeedSubmitMesh = false;
 	reCacheAABB();
+	mcPoints = nullptr;
 }
 
 vec3 Chunk::getGridPos(int the_x, int the_y, int the_z)
@@ -91,7 +99,11 @@ bool Chunk::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoin
 
 void Chunk::logicUpdate(float delta)
 {
-
+	if (m_isNeedSubmitMesh)
+	{
+		m_isNeedSubmitMesh = false;
+		m_mesh->finish();
+	}
 }
 
 bool Chunk::getIsAccpectOCTtree() const
@@ -111,19 +123,43 @@ void Chunk::submitDrawCmd()
 
 void Chunk::load()
 {
+	bool isMultiThreading = true;
 	if(m_isLoaded)return;
-	if(!m_isInitData) initData();
-	setCamera(g_GetCurrScene()->defaultCamera());
-	//强制重缓存数据
 	reCache();
 	if (!m_mesh)
 	{
 		m_mesh = new Mesh();
-		m_material = Material::createFromEffect("VoxelTerrain");
+		m_material = MaterialPool::shared()->getOrCreateMaterialByEffect("VoxelTerrain");
 		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/grass_green_d.jpg", true));
 		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/adesert_mntn4v_d.jpg", true));
 	}
-	genMesh();
+
+	setCamera(g_GetCurrScene()->defaultCamera());
+	if (!m_isInitData)
+	{
+		if (isMultiThreading)
+		{
+			auto thread = std::thread([&]() {initData(); genMesh(); });
+			thread.detach();
+		}
+		else
+		{
+			initData();
+			genMesh();
+		}
+	}
+	else
+	{
+		if (isMultiThreading)
+		{
+			auto thread = std::thread([&]() {genMesh();});
+			thread.detach();
+		}
+		else
+		{
+			genMesh();
+		}
+	}
 	m_isLoaded = true;
 }
 
@@ -263,6 +299,7 @@ static vec3 LinearInterp(vec4 & p1, vec4 & p2, float value)
 
 void Chunk::genNormal()
 {
+	g_normalLock.lock();
 	auto points = mcPoints;
 	auto ncellsZ = MAX_BLOCK;
 	auto ncellsY = MAX_BLOCK;
@@ -283,11 +320,13 @@ void Chunk::genNormal()
 	vec3 factor(1.0 / (2.0*gradFactorX), 1.0 / (2.0*gradFactorY), 1.0 / (2.0*gradFactorZ));
 	int lodStride = lodList[m_lod];
 	//go through all the points
-	for(int i=0; i < ncellsX; i+= lodStride)//x axis
-		for(int j=0; j < ncellsY; j+= lodStride)//y axis
-			for(int k=0; k < ncellsZ; k+= lodStride)	//z axis
+	for (int i = 0; i < ncellsX; i += lodStride)//x axis
+	{
+		for (int j = 0; j < ncellsY; j += lodStride)//y axis
+		{
+			for (int k = 0; k < ncellsZ; k += lodStride)	//z axis
 			{
-				int ind = i*YtimeZ + j*(ncellsZ+1) + k;	
+				int ind = i*YtimeZ + j*(ncellsZ + 1) + k;
 				int lastX = ncellsX;			//left from older version
 				int lastY = ncellsY;
 				int lastZ = ncellsZ;
@@ -296,172 +335,177 @@ void Chunk::genNormal()
 				verts[1] = points[ind + lodStride * YtimeZ];
 				verts[2] = points[ind + lodStride * (YtimeZ + 1)];
 				verts[3] = points[ind + lodStride * 1];
-				verts[4] = points[ind + lodStride * (ncellsZ+1)];
-				verts[5] = points[ind + lodStride * (YtimeZ + (ncellsZ+1))];
-				verts[6] = points[ind + lodStride * (YtimeZ + (ncellsZ+1) + 1)];
-				verts[7] = points[ind + lodStride * ((ncellsZ+1) + 1)];
+				verts[4] = points[ind + lodStride * (ncellsZ + 1)];
+				verts[5] = points[ind + lodStride * (YtimeZ + (ncellsZ + 1))];
+				verts[6] = points[ind + lodStride * (YtimeZ + (ncellsZ + 1) + 1)];
+				verts[7] = points[ind + lodStride * ((ncellsZ + 1) + 1)];
 
 				//get the index
 				int cubeIndex = int(0);
-				for(int n=0; n < 8; n++)
-					/*(step 4)*/		if(verts[n].w <= minValue) cubeIndex |= (1 << n);
+				for (int n = 0; n < 8; n++)
+					/*(step 4)*/		if (verts[n].w <= minValue) cubeIndex |= (1 << n);
 
 				//check if its completely inside or outside
-				/*(step 5)*/ if(!edgeTable[cubeIndex]) continue;
+				/*(step 5)*/ if (!edgeTable[cubeIndex]) continue;
 				vec3 intVerts[12];
 				int indGrad = 0;
 				auto edgeIndex = edgeTable[cubeIndex];
-				if(edgeIndex & 1) {
+				if (edgeIndex & 1) {
 					intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
 					gradVerts[0] = CALC_GRAD_VERT_0(verts)
-							gradVerts[1] = CALC_GRAD_VERT_1(verts)
-							indGrad |= 3;
+						gradVerts[1] = CALC_GRAD_VERT_1(verts)
+						indGrad |= 3;
 					grads[0] = LinearInterp(gradVerts[0], gradVerts[1], minValue);
 					grads[0].x *= factor.x; grads[0].y *= factor.y; grads[0].z *= factor.z;
 				}
-				if(edgeIndex & 2) {
+				if (edgeIndex & 2) {
 					intVerts[1] = LinearInterp(verts[1], verts[2], minValue);
-					if(! (indGrad & 2)) {
+					if (!(indGrad & 2)) {
 						gradVerts[1] = CALC_GRAD_VERT_1(verts)
-								indGrad |= 2;
+							indGrad |= 2;
 					}
 					gradVerts[2] = CALC_GRAD_VERT_2(verts)
-							indGrad |= 4;
+						indGrad |= 4;
 					grads[1] = LinearInterp(gradVerts[1], gradVerts[2], minValue);
 					grads[1].x *= factor.x; grads[1].y *= factor.y; grads[1].z *= factor.z;
 				}
-				if(edgeIndex & 4) {
+				if (edgeIndex & 4) {
 					intVerts[2] = LinearInterp(verts[2], verts[3], minValue);
-					if(! (indGrad & 4)) {
+					if (!(indGrad & 4)) {
 						gradVerts[2] = CALC_GRAD_VERT_2(verts)
-								indGrad |= 4;
+							indGrad |= 4;
 					}
 					gradVerts[3] = CALC_GRAD_VERT_3(verts)
-							indGrad |= 8;
+						indGrad |= 8;
 					grads[2] = LinearInterp(gradVerts[2], gradVerts[3], minValue);
 					grads[2].x *= factor.x; grads[2].y *= factor.y; grads[2].z *= factor.z;
 				}
-				if(edgeIndex & 8) {
+				if (edgeIndex & 8) {
 					intVerts[3] = LinearInterp(verts[3], verts[0], minValue);
-					if(! (indGrad & 8)) {
+					if (!(indGrad & 8)) {
 						gradVerts[3] = CALC_GRAD_VERT_3(verts)
-								indGrad |= 8;
+							indGrad |= 8;
 					}
-					if(! (indGrad & 1)) {
+					if (!(indGrad & 1)) {
 						gradVerts[0] = CALC_GRAD_VERT_0(verts)
-								indGrad |= 1;
+							indGrad |= 1;
 					}
 					grads[3] = LinearInterp(gradVerts[3], gradVerts[0], minValue);
 					grads[3].x *= factor.x; grads[3].y *= factor.y; grads[3].z *= factor.z;
 				}
-				if(edgeIndex & 16) {
+				if (edgeIndex & 16) {
 					intVerts[4] = LinearInterp(verts[4], verts[5], minValue);
 					gradVerts[4] = CALC_GRAD_VERT_4(verts)
 
-							gradVerts[5] = CALC_GRAD_VERT_5(verts)
+						gradVerts[5] = CALC_GRAD_VERT_5(verts)
 
-							indGrad |= 48;
+						indGrad |= 48;
 					grads[4] = LinearInterp(gradVerts[4], gradVerts[5], minValue);
 					grads[4].x *= factor.x; grads[4].y *= factor.y; grads[4].z *= factor.z;
 				}
-				if(edgeIndex & 32) {
+				if (edgeIndex & 32) {
 					intVerts[5] = LinearInterp(verts[5], verts[6], minValue);
-					if(! (indGrad & 32)) {
+					if (!(indGrad & 32)) {
 						gradVerts[5] = CALC_GRAD_VERT_5(verts)
-								indGrad |= 32;
+							indGrad |= 32;
 					}
 
 					gradVerts[6] = CALC_GRAD_VERT_6(verts)
-							indGrad |= 64;
+						indGrad |= 64;
 					grads[5] = LinearInterp(gradVerts[5], gradVerts[6], minValue);
 					grads[5].x *= factor.x; grads[5].y *= factor.y; grads[5].z *= factor.z;
 				}
-				if(edgeIndex & 64) {
+				if (edgeIndex & 64) {
 					intVerts[6] = LinearInterp(verts[6], verts[7], minValue);
-					if(! (indGrad & 64)) {
+					if (!(indGrad & 64)) {
 						gradVerts[6] = CALC_GRAD_VERT_6(verts)
-								indGrad |= 64;
+							indGrad |= 64;
 					}
 					gradVerts[7] = CALC_GRAD_VERT_7(verts);
 					indGrad |= 128;
 					grads[6] = LinearInterp(gradVerts[6], gradVerts[7], minValue);
 					grads[6].x *= factor.x; grads[6].y *= factor.y; grads[6].z *= factor.z;
 				}
-				if(edgeIndex & 128) {
+				if (edgeIndex & 128) {
 					intVerts[7] = LinearInterp(verts[7], verts[4], minValue);
-					if(! (indGrad & 128)) {
+					if (!(indGrad & 128)) {
 						gradVerts[7] = CALC_GRAD_VERT_7(verts)
-								indGrad |= 128;
+							indGrad |= 128;
 					}
-					if(! (indGrad & 16)) {
+					if (!(indGrad & 16)) {
 						gradVerts[4] = CALC_GRAD_VERT_4(verts)
-								indGrad |= 16;
+							indGrad |= 16;
 					}
 					grads[7] = LinearInterp(gradVerts[7], gradVerts[4], minValue);
 					grads[7].x *= factor.x; grads[7].y *= factor.y; grads[7].z *= factor.z;
 				}
-				if(edgeIndex & 256) {
+				if (edgeIndex & 256) {
 					intVerts[8] = LinearInterp(verts[0], verts[4], minValue);
-					if(! (indGrad & 1)) {
+					if (!(indGrad & 1)) {
 						gradVerts[0] = CALC_GRAD_VERT_0(verts)
-								indGrad |= 1;
+							indGrad |= 1;
 					}
-					if(! (indGrad & 16)) {
+					if (!(indGrad & 16)) {
 						gradVerts[4] = CALC_GRAD_VERT_4(verts)
-								indGrad |= 16;
+							indGrad |= 16;
 					}
 					grads[8] = LinearInterp(gradVerts[0], gradVerts[4], minValue);
 					grads[8].x *= factor.x; grads[8].y *= factor.y; grads[8].z *= factor.z;
 				}
-				if(edgeIndex & 512) {
+				if (edgeIndex & 512) {
 					intVerts[9] = LinearInterp(verts[1], verts[5], minValue);
-					if(! (indGrad & 2)) {
+					if (!(indGrad & 2)) {
 						gradVerts[1] = CALC_GRAD_VERT_1(verts)
-								indGrad |= 2;
+							indGrad |= 2;
 					}
-					if(! (indGrad & 32)) {
+					if (!(indGrad & 32)) {
 						gradVerts[5] = CALC_GRAD_VERT_5(verts)
-								indGrad |= 32;
+							indGrad |= 32;
 					}
 					grads[9] = LinearInterp(gradVerts[1], gradVerts[5], minValue);
 					grads[9].x *= factor.x; grads[9].y *= factor.y; grads[9].z *= factor.z;
 				}
-				if(edgeIndex & 1024) {
+				if (edgeIndex & 1024) {
 					intVerts[10] = LinearInterp(verts[2], verts[6], minValue);
-					if(! (indGrad & 4)) {
+					if (!(indGrad & 4)) {
 						gradVerts[2] = CALC_GRAD_VERT_2(verts)
-								indGrad |= 4;
+							indGrad |= 4;
 					}
-					if(! (indGrad & 64)) {
+					if (!(indGrad & 64)) {
 						gradVerts[6] = CALC_GRAD_VERT_6(verts)
-								indGrad |= 64;
+							indGrad |= 64;
 					}
 					grads[10] = LinearInterp(gradVerts[2], gradVerts[6], minValue);
 					grads[10].x *= factor.x; grads[10].y *= factor.y; grads[10].z *= factor.z;
 				}
-				if(edgeIndex & 2048) {
+				if (edgeIndex & 2048) {
 					intVerts[11] = LinearInterp(verts[3], verts[7], minValue);
-					if(! (indGrad & 8)) {
+					if (!(indGrad & 8)) {
 						gradVerts[3] = CALC_GRAD_VERT_3(verts)
-								indGrad |= 8;
+							indGrad |= 8;
 					}
-					if(! (indGrad & 128)) {
+					if (!(indGrad & 128)) {
 						gradVerts[7] = CALC_GRAD_VERT_7(verts)
-								indGrad |= 128;
+							indGrad |= 128;
 					}
 					grads[11] = LinearInterp(gradVerts[3], gradVerts[7], minValue);
 					grads[11].x *= factor.x; grads[11].y *= factor.y; grads[11].z *= factor.z;
 				}
 
 				//now build the triangles using triTable
-				for (int n=0; triTable[cubeIndex][n] != -1; n+=3)
+				for (int n = 0; triTable[cubeIndex][n] != -1; n += 3)
 				{
-					m_mesh->m_vertices[meshIndex].m_normal = grads[triTable[cubeIndex][n+2]];
-					m_mesh->m_vertices[meshIndex + 1].m_normal = grads[triTable[cubeIndex][n+1]];
+					m_mesh->m_vertices[meshIndex].m_normal = grads[triTable[cubeIndex][n + 2]];
+					m_mesh->m_vertices[meshIndex + 1].m_normal = grads[triTable[cubeIndex][n + 1]];
 					m_mesh->m_vertices[meshIndex + 2].m_normal = grads[triTable[cubeIndex][n]];
 					meshIndex += 3;
 				}
 			}	//END OF FOR LOOP
+		}
+
+	}
+		
+	g_normalLock.unlock();
 }
 
 vec4 Chunk::getPoint(int index)
@@ -566,13 +610,16 @@ void Chunk::genMesh()
 	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, -1.0f, m_lod);
 	if (m_mesh->isEmpty()) return;
 	genNormal();
+	m_isNeedSubmitMesh = true;
 	//m_mesh->caclNormals();
 	//m_mesh->calBaryCentric();
-	m_mesh->finish();
+	//m_mesh->finish();
 }
 
 void Chunk::initData()
 {
+	//if (mcPoints) return;
+	g_lock.lock();
 	mcPoints = new vec4[(MAX_BLOCK +1) * (MAX_BLOCK+1) * (MAX_BLOCK + 1)];
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 	vec4 verts;
@@ -595,6 +642,7 @@ void Chunk::initData()
 		}
 	}
 	m_isInitData = true;
+	g_lock.unlock();
 }
 
 void Chunk::checkCollide(ColliderEllipsoid *package)

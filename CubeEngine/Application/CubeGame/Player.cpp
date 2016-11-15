@@ -1,6 +1,8 @@
 #include "Player.h"
 #include "EngineSrc/Scene/SceneMgr.h"
 #include "EngineSrc/3D/Model/Model.h"
+#include "GameConfig.h"
+#include "GameWorld.h"
 namespace tzw {
 
 Player::Player(Node *mainRoot)
@@ -18,6 +20,10 @@ Player::Player(Node *mainRoot)
     m_gunModel->setRotateE(vec3(0, -90, 0));
     m_gunModel->setPos(vec3(0.08,0.15,-0.25));
     m_camera->addChild(m_gunModel);
+
+	auto pos = getPos();
+	oldPosX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+	oldPosZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 }
 
 FPSCamera *Player::camera() const
@@ -48,5 +54,22 @@ void Player::logicUpdate(float dt)
     }
     theTime += freq * dt;
     m_gunModel->setPos(vec3(oldPos.x, -0.20 + sinf(theTime) * offset, oldPos.z));
+	if (checkIsNeedUpdateChunk())
+	{
+		GameWorld::shared()->loadChunksAroundPlayer();
+	}
+}
+bool Player::checkIsNeedUpdateChunk()
+{
+	auto pos = getPos();
+	int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+	int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+	if (posX != oldPosX || posZ != oldPosZ)
+	{
+		oldPosX = posX;
+		oldPosZ = posZ;
+		return true;
+	}
+	return false;
 }
 } // namespace tzw

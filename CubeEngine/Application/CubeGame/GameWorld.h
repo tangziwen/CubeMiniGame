@@ -42,11 +42,11 @@ public:
 
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
-
+	void loadChunksAroundPlayer();
 private:
     Node * m_mainRoot;
     GameState m_currentState;
-    void loadChunksAroundPlayer();
+    
     int m_width, m_depth, m_height;
     Chunk * m_chunkArray[128][128][16];
     TextureAtlas *m_blockSheet;

@@ -57,6 +57,7 @@ private:
     vec3 m_basePoint;
     std::vector<Chunk *> m_tmpNeighborChunk;
 	unsigned int m_lod;
+	bool m_isNeedSubmitMesh;
 };
 }
 

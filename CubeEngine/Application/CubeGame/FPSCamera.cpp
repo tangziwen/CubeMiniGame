@@ -16,7 +16,7 @@ const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera()
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_forward(0),m_slide(0)
     ,m_speed(vec3(6,2,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_isFirstLoop(true)
-    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(0.8),m_isStopUpdate(false)
+    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(0.7),m_isStopUpdate(false)
 {
     offsetToCentre = 0.6;
     m_distToFront = 0.2;

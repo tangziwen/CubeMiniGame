@@ -6,6 +6,7 @@
 #include "EngineSrc/3D/SkyBox.h"
 #include <iostream>
 #include "GameConfig.h"
+#include <thread>
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
 GameWorld *GameWorld::shared()
@@ -73,15 +74,8 @@ Chunk *GameWorld::getOrCreateChunk(int x, int y, int z)
 
 void GameWorld::onFrameUpdate(float delta)
 {
-    if(m_currentState != GameState::OnPlay)
-        return;
-    static float timer = 0;
-    timer += delta;
-    if (timer >= 5.0f)
-    {
-        loadChunksAroundPlayer();
-        timer = 0.0f;
-    }
+	if (m_currentState != GameState::OnPlay)
+		return;
 }
 
 Chunk *GameWorld::createChunk(int x, int y, int z)
@@ -118,10 +112,11 @@ void GameWorld::startGame()
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
     GameMap::shared()->setMapType(GameMap::MapType::Noise);
-    GameMap::shared()->setMaxHeight(20);
+    GameMap::shared()->setMaxHeight(13);
+	GameMap::shared()->setMinHeight(0.0);
     auto player = new Player(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
-    GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.020);
+    GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
     m_mainRoot->addChild(player);
     SkyBox* skybox = SkyBox::create("./Res/User/CubeGame/texture/SkyBox/right.jpg","./Res/User/CubeGame/texture/SkyBox/left.jpg",
                                 "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
@@ -134,7 +129,6 @@ void GameWorld::startGame()
 bool tzw::GameWorld::onKeyPress(int keyCode)
 {
     switch (keyCode) {
-
     case GLFW_KEY_ESCAPE:
         this->toggleMainMenu();
         break;

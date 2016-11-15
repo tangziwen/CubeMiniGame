@@ -28,6 +28,7 @@ GameEntry::GameEntry()
 void GameEntry::onStart()
 {
 	GameWorld::shared();
+	//GameWorld::shared()->startGame();
 }
 
 void GameEntry::onExit()

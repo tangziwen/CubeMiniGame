@@ -83,6 +83,8 @@ void RenderTarget::bindForReadingGBuffer()
 		glActiveTexture(GL_TEXTURE0 + i);
 		glBindTexture(GL_TEXTURE_2D, m_colorTexs[i]);
 	}
+	glActiveTexture(GL_TEXTURE0 + m_numOfOutputs);
+	glBindTexture(GL_TEXTURE_2D, m_depthTex);
 }
 
 void RenderTarget::bindForReading()

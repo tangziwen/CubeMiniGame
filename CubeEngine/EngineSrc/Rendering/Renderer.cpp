@@ -291,6 +291,7 @@ void Renderer::directionalLightPass()
 	program->setUniformInteger("TU_posBuffer",1);
 	program->setUniformInteger("TU_normalBuffer",2);
 	program->setUniformInteger("TU_GBUFFER4",3);
+	program->setUniformInteger("TU_Depth", 4);
 	auto cam = currScene->defaultCamera();
 
 	auto dirLight = currScene->getDirectionLight();

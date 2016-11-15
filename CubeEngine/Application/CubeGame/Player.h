@@ -13,9 +13,12 @@ public:
     void setCamera(FPSCamera *camera);
     vec3 getPos();
     virtual void logicUpdate(float dt);
+	bool checkIsNeedUpdateChunk();
 private:
     FPSCamera * m_camera;
     Model * m_gunModel;
+	int oldPosX;
+	int oldPosZ;
 };
 
 } // namespace tzw
