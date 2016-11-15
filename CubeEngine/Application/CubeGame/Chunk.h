@@ -35,7 +35,7 @@ public:
     vec4 getPoint(int index);
     vec4 getPoint(int x, int y, int z);
     int getIndex(int x, int y, int z);
-    void finish();
+    void genMesh();
     void initData();
     virtual void checkCollide(ColliderEllipsoid * package);
     virtual void setUpTransFormation(TransformationInfo & info);

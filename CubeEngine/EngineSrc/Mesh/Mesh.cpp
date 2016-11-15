@@ -66,6 +66,11 @@ unsigned int Mesh::getMatIndex() const
     return m_matIndex;
 }
 
+bool Mesh::isEmpty()
+{
+	return m_indices.empty();
+}
+
 void Mesh::setMatIndex(unsigned int matIndex)
 {
     m_matIndex = matIndex;

@@ -79,7 +79,7 @@ void GameWorld::onFrameUpdate(float delta)
     timer += delta;
     if (timer >= 5.0f)
     {
-        //loadChunksAroundPlayer();
+        loadChunksAroundPlayer();
         timer = 0.0f;
     }
 }
@@ -146,6 +146,7 @@ bool tzw::GameWorld::onKeyPress(int keyCode)
 
 void GameWorld::loadChunksAroundPlayer()
 {
+	Tmisc::DurationBegin();
     std::set<Chunk*> m_tempArray = m_activedChunkList;
     auto pos = m_player->getPos();
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
@@ -176,6 +177,7 @@ void GameWorld::loadChunksAroundPlayer()
     {
         i->unload();
     }
+	std::cout << "load chunk cost :" << Tmisc::DurationEnd() << std::endl;
 }
 
 Chunk *GameWorld::getChunk(int x, int y, int z)

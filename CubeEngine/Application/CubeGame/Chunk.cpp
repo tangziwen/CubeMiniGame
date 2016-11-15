@@ -123,7 +123,7 @@ void Chunk::load()
 		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/grass_green_d.jpg", true));
 		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/adesert_mntn4v_d.jpg", true));
 	}
-	finish();
+	genMesh();
 	m_isLoaded = true;
 }
 
@@ -162,12 +162,12 @@ void Chunk::deformAround(vec3 pos, float value)
 			}
 		}
 	}
-	finish();
+	genMesh();
 	if(!m_tmpNeighborChunk.empty())
 	{
 		for(auto chunk :m_tmpNeighborChunk)
 		{
-			chunk->finish();
+			chunk->genMesh();
 		}
 	}
 	m_tmpNeighborChunk.clear();
@@ -561,9 +561,10 @@ bool Chunk::isEdge(int i)
 	return i == 0 || i == MAX_BLOCK;
 }
 
-void Chunk::finish()
+void Chunk::genMesh()
 {
 	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, -1.0f, m_lod);
+	if (m_mesh->isEmpty()) return;
 	genNormal();
 	//m_mesh->caclNormals();
 	//m_mesh->calBaryCentric();
