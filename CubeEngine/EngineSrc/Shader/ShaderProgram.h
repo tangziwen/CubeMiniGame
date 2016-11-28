@@ -4,6 +4,7 @@
 #include "../Math/vec4.h"
 #include <string>
 #include <map>
+#include <unordered_map>
 
 namespace tzw {
 class ShaderProgram
@@ -23,9 +24,11 @@ public:
     unsigned int attributeLocation(std::string name);
     void enableAttributeArray(unsigned int attributeId);
     void setAttributeBuffer(int ID, int dataType, int offset, int size, int stride = 0);
+	int uniformLocation(std::string name);
 private:
     void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType);
     std::map<std::string,unsigned int> m_locationMap;
+	std::unordered_map<std::string, int> m_uniformMap;
     unsigned int shader;
 };
 } // namespace tzw

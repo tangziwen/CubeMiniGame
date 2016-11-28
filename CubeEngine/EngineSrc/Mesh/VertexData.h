@@ -3,6 +3,7 @@
 
 #include "../Math/vec3.h"
 #include "../Math/vec2.h"
+#include "../Math/vec4.h"
 namespace tzw {
 
 class VertexData
@@ -12,10 +13,11 @@ public:
     VertexData(vec3 pos, vec2 texCoord);
     VertexData(vec3 pos, vec3 normal,vec2 texCoord);
     VertexData(vec3 pos);
+	VertexData(vec3 pos, vec4 color);
     vec3 m_pos;
     vec3 m_normal;
     vec2 m_texCoord;
-    vec3 m_color;
+    vec4 m_color;
     vec3 m_barycentric;
 };
 

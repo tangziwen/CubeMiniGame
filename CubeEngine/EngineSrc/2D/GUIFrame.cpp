@@ -1,14 +1,17 @@
 #include "GUIFrame.h"
 #include "../Scene/SceneMgr.h"
 #include "../Rendering/Renderer.h"
+#include "GUIStyleMgr.h"
+#include "../Technique/MaterialPool.h"
 namespace tzw {
 
 GUIFrame::GUIFrame()
 {
     m_contentSize = vec2(100,100);
     m_mesh = new Mesh();
-    m_material->initFromEffect("SpriteColor");
-    m_material->setVar("color",getUniformColor());
+	m_material = MaterialPool::shared()->getOrCreateMaterialByEffect("GUIColor");
+    m_material->initFromEffect("GUIColor");
+	m_color = GUIStyleMgr::shared()->defaultPalette()->backGroundColor;
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
@@ -22,10 +25,10 @@ void GUIFrame::setRenderRect()
     auto h = m_contentSize.y;
     VertexData vertices[] = {
         // front
-        vec3(0, 0,  -1.0f),  // v0
-        vec3( w,  0,  -1.0f), // v1
-        vec3( w,  h,  -1.0f),  // v2
-        vec3( 0, h,  -1.0f), // v3
+		VertexData(vec3(0, 0,  -1.0f), m_color),  // v0
+        VertexData(vec3( w,  0,  -1.0f), m_color), // v1
+        VertexData(vec3( w,  h,  -1.0f), m_color),  // v2
+        VertexData(vec3( 0, h,  -1.0f), m_color)// v3
     };
     m_mesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
     m_mesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
@@ -81,6 +84,17 @@ bool GUIFrame::isInTheRect(vec2 touchPos)
     {
         return false;
     }
+}
+
+void GUIFrame::setUniformColor(const tzw::vec4 &color)
+{
+	m_color = color;
+	setRenderRect();
+}
+
+void GUIFrame::setUniformColor(const tzw::vec3 &color)
+{
+	this->setUniformColor(vec4(color,1.0));
 }
 
 } // namespace tzw

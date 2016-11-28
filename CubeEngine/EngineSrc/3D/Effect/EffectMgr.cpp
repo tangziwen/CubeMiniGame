@@ -34,6 +34,7 @@ void EffectMgr::initBuiltIn()
     addEffect("SpriteColor");
     addEffect("VoxelTerrain");
 	addEffect("Grass");
+	addEffect("GUIColor");
 }
 
 void EffectMgr::addEffect(std::string name, Effect *theEffect)

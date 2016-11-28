@@ -16,8 +16,11 @@ public:
     virtual void submitDrawCmd();
     virtual void setContentSize(const vec2 &getContentSize);
     bool isInTheRect(vec2 touchPos);
+	virtual void setUniformColor(const tzw::vec4 &color);
+	virtual void setUniformColor(const tzw::vec3 &color);
 protected:
 private:
+	vec4 m_color;
     Mesh * m_mesh;
 };
 

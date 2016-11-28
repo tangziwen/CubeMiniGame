@@ -111,7 +111,7 @@ void GameWorld::startGame()
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
-    GameMap::shared()->setMapType(GameMap::MapType::Noise);
+    GameMap::shared()->setMapType(GameMap::MapType::Plain);
     GameMap::shared()->setMaxHeight(13);
 	GameMap::shared()->setMinHeight(0.0);
     auto player = new Player(m_mainRoot);

@@ -48,11 +48,15 @@ static bool nodeEventCompare(const EventListener *a,const EventListener *b)
 
 void EventMgr::sortNodePiorityListener()
 {
-
     auto root = g_GetCurrScene()->root();
     m_NodePioritylist.clear();
     visitNode(root);
     std::stable_sort(m_NodePioritylist.begin(),m_NodePioritylist.end(),nodeEventCompare);
+}
+
+void EventMgr::notifyListenerChange()
+{
+	m_isNeedSortNodeListener = true;
 }
 
 void EventMgr::handleKeyPress(int keyCode)
@@ -112,7 +116,11 @@ void EventMgr::handleMouseMove(vec2 pos)
 
 void EventMgr::apply(float delta)
 {
-    sortNodePiorityListener();
+	if(m_isNeedSortNodeListener)
+	{
+		m_isNeedSortNodeListener = false;
+		sortNodePiorityListener();
+	}
     while(!m_eventDeque.empty())
     {
         EventInfo info = m_eventDeque.front();

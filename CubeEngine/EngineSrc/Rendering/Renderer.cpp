@@ -180,8 +180,8 @@ void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::Primi
 
 	int colorLocation = program->attributeLocation("a_color");
 	program->enableAttributeArray(colorLocation);
-	program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-	offset += sizeof(vec3);
+	program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
+	offset += sizeof(vec4);
 
 	int bcLoaction = program->attributeLocation("a_bc");
 	program->enableAttributeArray(bcLoaction);

@@ -56,6 +56,7 @@ void ActionMgr::stopAllAction()
 
 void ActionMgr::updateAction(Node *node, float dt)
 {
+	if(m_actionList.empty()) return;
     for(auto iter = m_actionList.begin();iter != m_actionList.end();)
     {
         Action * action = (*iter);

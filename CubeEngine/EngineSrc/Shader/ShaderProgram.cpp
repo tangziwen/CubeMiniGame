@@ -73,11 +73,7 @@ int ShaderProgram::getShaderId()
 
 void ShaderProgram::setUniformInteger(const char *str, int value)
 {
-    int current_shader=0;
-    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
-    if(current_shader == this->shader)
-    {
-        int ptr =glGetUniformLocation(this->shader,str);
+        int ptr =uniformLocation(str);
         if(ptr!=-1)
         {
             glUniform1i(ptr,value);
@@ -85,19 +81,11 @@ void ShaderProgram::setUniformInteger(const char *str, int value)
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
-    }else
-    {
-        tzw::Tlog()<<"please use this shader before set uniform";
-    }
 }
 
 void ShaderProgram::setUniformMat4v(const char *str, const float *array, bool transpose, int count)
 {
-    int current_shader=0;
-    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
-    if(current_shader == this->shader)
-    {
-        int ptr =glGetUniformLocation(this->shader,str);
+        int ptr =uniformLocation(str);
         if(ptr!=-1)
         {
             glUniformMatrix4fv(ptr,count,transpose,array);
@@ -105,19 +93,11 @@ void ShaderProgram::setUniformMat4v(const char *str, const float *array, bool tr
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
-    }else
-    {
-        tzw::Tlog()<<"please use this shader before set uniform";
-    }
 }
 
 void ShaderProgram::setUniformFloat(const char *str, float value)
 {
-    int current_shader=0;
-    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
-    if(current_shader == this->shader)
-    {
-        int ptr =glGetUniformLocation(this->shader,str);
+        int ptr =uniformLocation(str);
         if(ptr!=-1)
         {
             glUniform1f(ptr,value);
@@ -125,19 +105,11 @@ void ShaderProgram::setUniformFloat(const char *str, float value)
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
-    }else
-    {
-        tzw::Tlog()<<"please use this shader before set uniform";
-    }
 }
 
 void ShaderProgram::setUniform3Float(const char *str, float x, float y, float z)
 {
-    int current_shader=0;
-    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
-    if(current_shader == this->shader)
-    {
-        int ptr =glGetUniformLocation(this->shader,str);
+        int ptr =uniformLocation(str);
         if(ptr!=-1)
         {
             glUniform3f(ptr,x,y,z);
@@ -145,10 +117,6 @@ void ShaderProgram::setUniform3Float(const char *str, float x, float y, float z)
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
-    }else
-    {
-        tzw::Tlog()<<"please use this shader before set uniform";
-    }
 }
 
 void ShaderProgram::setUniform3Float(const char *str, vec3 v)
@@ -158,11 +126,7 @@ void ShaderProgram::setUniform3Float(const char *str, vec3 v)
 
 void ShaderProgram::setUniform2Float(const char *str, float x, float y)
 {
-    int current_shader=0;
-    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
-    if(current_shader == this->shader)
-    {
-        int ptr =glGetUniformLocation(this->shader,str);
+        int ptr =uniformLocation(str);
         if(ptr!=-1)
         {
             glUniform2f(ptr,x,y);
@@ -170,19 +134,11 @@ void ShaderProgram::setUniform2Float(const char *str, float x, float y)
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
-    }else
-    {
-        tzw::Tlog()<<"please use this shader before set uniform";
-    }
 }
 
 void ShaderProgram::setUniform4Float(const char *str, float x, float y, float z, float w)
 {
-    int current_shader=0;
-    glGetIntegerv(GL_CURRENT_PROGRAM,&current_shader);
-    if(current_shader == this->shader)
-    {
-        int ptr =glGetUniformLocation(this->shader,str);
+        int ptr =uniformLocation(str);
         if(ptr!=-1)
         {
             glUniform4f(ptr,x,y,z,w);
@@ -190,10 +146,6 @@ void ShaderProgram::setUniform4Float(const char *str, float x, float y, float z,
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
-    }else
-    {
-        tzw::Tlog()<<"please use this shader before set uniform";
-    }
 }
 
 void ShaderProgram::setUniform4Float(const char *str, vec4 v)
@@ -223,6 +175,20 @@ void ShaderProgram::enableAttributeArray(unsigned int attributeId)
 void ShaderProgram::setAttributeBuffer(int ID, int dataType, int offset, int size, int stride)
 {
     glVertexAttribPointer(ID,size,dataType,GL_FALSE,stride,(void *)offset);
+}
+
+int ShaderProgram::uniformLocation(std::string name)
+{
+	auto iter = m_uniformMap.find(name);
+	if(iter != m_uniformMap.end())
+	{
+		return iter->second;
+	}else
+	{
+		int ptr =glGetUniformLocation(this->shader,name.c_str());
+		m_uniformMap[name] = ptr;
+		return ptr;
+	}
 }
 
 void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType)

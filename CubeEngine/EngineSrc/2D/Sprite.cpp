@@ -7,6 +7,7 @@ namespace tzw {
 Sprite::Sprite()
     :m_isUseTexture(true),m_texture(nullptr)
 {
+	m_material = new Material();
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 

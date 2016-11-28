@@ -6,6 +6,7 @@
 #include "../Scene/Scene.h"
 #include <iostream>
 #include <algorithm>
+#include "../Event/EventMgr.h"
 namespace tzw {
 /**
  * @brief Node::Node 构造函数
@@ -210,16 +211,16 @@ Matrix44 Node::getScalingMatrix()
 void Node::visit()
 {
     logicUpdate(Engine::shared()->deltaTime());
-    updateAction(this,Engine::shared()->deltaTime());
+	if(!m_actionList.empty())
+		updateAction(this,Engine::shared()->deltaTime());
 
     //数据如果有变动的话，重新缓存数据
     if(getNeedToUpdate())
     {
         this->reCache();
     }
-    for(int i =0;i<m_children.size();i++)
+    for(auto child : m_children)
     {
-        Node * child = m_children[i];
         child->visit();
     }
 }
@@ -238,14 +239,13 @@ void Node::visitPost(OctreeScene *scene)
         {
             submitDrawCmd();
         }
-        if(getIsAccpectOCTtree()&& (getNeedToUpdate() || !scene->isInOctree((Drawable3D *)this)) && getNodeType()==NodeType::Drawable3D)
+        if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree((Drawable3D *)this)))
         {
             scene->updateObj((Drawable3D *)this);
         }
         //遍历子节点
-        for(int i =0;i<m_children.size();i++)
+        for(auto child : m_children)
         {
-            Node * child = m_children[i];
             child->visitPost(scene);
         }
     }
@@ -277,10 +277,6 @@ void Node::addChild(Node *node)
         //refresh the new child's transform cache
         node->setNeedToUpdate(true);
         node->m_parent = this;
-        if (node->getGlobalPiority() ==0)
-        {
-            node->setGlobalPiority(m_globalPiority);
-        }
 		//for performance issuse, the Zorder < -99 no need to sort, just insert away.
 		if (node->getLocalPiority() < -99)
 		{
@@ -293,6 +289,7 @@ void Node::addChild(Node *node)
 			sortChildren();
 		}
     }
+	EventMgr::shared()->notifyListenerChange();
 }
 
 /**
@@ -449,19 +446,12 @@ unsigned int Node::getGlobalPiority() const
 ///
 /// \brief 设置全局渲染优先级
 /// @note 全局渲染优先级和层级无关，并直接作用于renderComand中的zorder,
-/// 对于子节点而言，凡是其GlobalPiority不等于0，调用此函数后也会受到级联设置
 /// \param globalPiority 全局渲染优先级
 ///
 void Node::setGlobalPiority(unsigned int globalPiority)
 {
     m_globalPiority = globalPiority;
-    for(auto child :m_children)
-    {
-        if(child->getGlobalPiority() == 0)
-        {
-            child->setGlobalPiority(globalPiority);
-        }
-    }
+	EventMgr::shared()->notifyListenerChange();
 }
 
 size_t Node::getChildrenAmount()
@@ -589,6 +579,7 @@ void Node::setLocalPiority(int zOrder)
     {
         m_parent->sortChildren();
     }
+	EventMgr::shared()->notifyListenerChange();
 }
 
 static bool NodeSort(const Node *a,const Node *b)

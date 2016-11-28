@@ -34,8 +34,9 @@ public:
     void apply(float delta);
     void removeEventListener(EventListener * event);
     void sortFixedListener();
+	void sortNodePiorityListener();
+	void notifyListenerChange();
 private:
-    void sortNodePiorityListener();
     void visitNode(Node * node);
     void applyKeyPress(EventInfo & info);
     void applyKeyCharInput(EventInfo & info);
@@ -48,7 +49,7 @@ private:
     std::deque<EventListener *>m_NodePioritylist;
     std::deque<EventInfo>m_eventDeque;
     std::unordered_map<Node *, EventListener *> m_nodeListenerMap;
-
+	bool m_isNeedSortNodeListener;
     TZW_SINGLETON_DECL(EventMgr)
 };
 

@@ -4,7 +4,7 @@ namespace tzw {
 
 Drawable2D::Drawable2D()
 {
-    m_material = new Material();
+    m_material = nullptr;
     m_contentSize = vec2(0,0);
     m_anchorPoint = vec2(0,0);
     m_anchorPointInPoints = vec2(0,0);

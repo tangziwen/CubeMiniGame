@@ -9,6 +9,7 @@ LabelNew::LabelNew():
     m_atlas(nullptr)
 {
     m_mesh = new Mesh();
+	m_material = new Material();
     m_material->initFromEffect("Simple");
     m_material->setVar("color",getUniformColor());
     setCamera(g_GetCurrScene()->defaultGUICamera());
