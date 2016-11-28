@@ -1,4 +1,4 @@
-﻿cmake_minimum_required(VERSION 2.8.7)
+cmake_minimum_required(VERSION 2.8.7)
 #predefined variables
 set(SOURCES "")
 set(HEADERS "")
