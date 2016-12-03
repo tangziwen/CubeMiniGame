@@ -112,7 +112,8 @@ void Engine::update(float delta)
     m_deltaTime = delta;
 
     int logicBefore = clock();
-    EventMgr::shared()->apply(delta);
+	auto eventMgr = EventMgr::shared();
+    eventMgr->apply(delta);
     Engine::shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();
     resetDrawCallCount();

@@ -50,6 +50,7 @@ private:
     std::deque<EventInfo>m_eventDeque;
     std::unordered_map<Node *, EventListener *> m_nodeListenerMap;
 	bool m_isNeedSortNodeListener;
+	virtual ~EventMgr();
     TZW_SINGLETON_DECL(EventMgr)
 };
 

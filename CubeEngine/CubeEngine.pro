@@ -18,37 +18,24 @@ LIBS += -L.
 INCLUDEPATH += ./Application
 ###Application folder END###
 
-
 ####External library BEGIN####
 INCLUDEPATH += ./External
+
 #FreeType#
-LIBS += -L$$PWD/libVC -lfreetype
+LIBS += -L$$PWD/libMingw -lfreetype.dll
 INCLUDEPATH += ./External/FreeType
 #GLFW 3.0#
-LIBS += -L$$PWD/libVC -lglfw3
+LIBS += -L$$PWD/libMingw -lglfw3dll
 INCLUDEPATH += ./External/GLFW3/include
 
 #GLEW #
-LIBS += -L$$PWD/libVC -lglew32s
+LIBS += -L$$PWD/libMingw -lglew32s
 INCLUDEPATH += ./External/GLEW
 
-LIBS += -L$$PWD/libVC -llibpng
-
-LIBS += -L$$PWD/libVC -lzlib
-LIBS += kernel32.lib
-LIBS += user32.lib
-LIBS += gdi32.lib
-LIBS += winspool.lib
-LIBS += shell32.lib
-LIBS += ole32.lib
-LIBS += oleaut32.lib
-LIBS += uuid.lib
-LIBS += comdlg32.lib
-LIBS += advapi32.lib
 #rapidJson
 INCLUDEPATH += ./External/rapidjson/include
 
-LIBS += -lopengl32 -lglu32
+LIBS += -lopengl32 -lglu32 -lglut32
 ####External library END####
 
 SOURCES += main.cpp \
@@ -240,7 +227,10 @@ SOURCES += main.cpp \
     External/Lua/lvm.c \
     External/Lua/lzio.c \
     Game/WorldSystem.cpp \
-    Game/GameCamera.cpp
+    Game/GameCamera.cpp \
+    EngineSrc/2D/imgui.cpp \
+    EngineSrc/2D/imgui_demo.cpp \
+    EngineSrc/2D/imgui_draw.cpp
 
 HEADERS += \
     EngineSrc/Mesh/Mesh.h \
@@ -442,4 +432,10 @@ HEADERS += \
     External/Lua/lvm.h \
     External/Lua/lzio.h \
     Game/WorldSystem.h \
-    Game/GameCamera.h
+    Game/GameCamera.h \
+    EngineSrc/2D/imconfig.h \
+    EngineSrc/2D/imgui.h \
+    EngineSrc/2D/imgui_internal.h \
+    EngineSrc/2D/stb_rect_pack.h \
+    EngineSrc/2D/stb_textedit.h \
+    EngineSrc/2D/stb_truetype.h

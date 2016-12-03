@@ -1,6 +1,7 @@
 #include "Tokenizer.h"
 #include <ctype.h>
 #include <algorithm>
+#include <string.h>
 namespace tzw {
 
 const char * keyWordList[] = {"if","else","var","goto","true","false", "{", "}","while", "break", "function", "return"};

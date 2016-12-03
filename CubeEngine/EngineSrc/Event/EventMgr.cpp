@@ -121,43 +121,43 @@ void EventMgr::apply(float delta)
 		m_isNeedSortNodeListener = false;
 		sortNodePiorityListener();
 	}
-    while(!m_eventDeque.empty())
-    {
-        EventInfo info = m_eventDeque.front();
-        switch(info.type)
-        {
-        case EVENT_TYPE_K_PRESS:
-        {
-            applyKeyPress(info);
-        }
-            break;
-        case EVENT_TYPE_K_RELEASE:
-        {
-            applyKeyRelease(info);
-        }
-            break;
-        case EVENT_TYPE_M_MOVE:
-        {
-            applyMouseMove(info);
-        }
-            break;
-        case EVENT_TYPE_M_PRESS:
-        {
-            applyMousePress(info);
-        }
-            break;
-        case EVENT_TYPE_M_RELEASE:
-        {
-            applyMouseRelease(info);
-        }
-            break;
-        case EVENT_TYPE_K_CHAR_INPUT:
-        {
-            applyKeyCharInput(info);
-        }
-        }
-        m_eventDeque.pop_front();
-    }
+//    while(!m_eventDeque.empty())
+//    {
+//        EventInfo info = m_eventDeque.front();
+//        switch(info.type)
+//        {
+//        case EVENT_TYPE_K_PRESS:
+//        {
+//            applyKeyPress(info);
+//        }
+//            break;
+//        case EVENT_TYPE_K_RELEASE:
+//        {
+//            applyKeyRelease(info);
+//        }
+//            break;
+//        case EVENT_TYPE_M_MOVE:
+//        {
+//            applyMouseMove(info);
+//        }
+//            break;
+//        case EVENT_TYPE_M_PRESS:
+//        {
+//            applyMousePress(info);
+//        }
+//            break;
+//        case EVENT_TYPE_M_RELEASE:
+//        {
+//            applyMouseRelease(info);
+//        }
+//            break;
+//        case EVENT_TYPE_K_CHAR_INPUT:
+//        {
+//            applyKeyCharInput(info);
+//        }
+//        }
+//        m_eventDeque.pop_front();
+//    }
     for(size_t i =0;i<m_list.size();i++)
     {
         EventListener * event = m_list[i];
@@ -255,7 +255,12 @@ void EventMgr::applyMouseMove(EventInfo &info)
     for (auto event :m_NodePioritylist)
     {
         if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
-    }
+	}
+}
+
+EventMgr::~EventMgr()
+{
+	printf("on dispose");
 }
 
 void EventMgr::removeEventListener(EventListener *event)
@@ -274,7 +279,7 @@ static bool eventSort(const EventListener *a,const EventListener *b)
 
 void EventMgr::sortFixedListener()
 {
-    std::stable_sort(m_list.begin(),m_list.end(),eventSort);
+    //std::stable_sort(m_list.begin(),m_list.end(),eventSort);
 }
 
 } // namespace tzw

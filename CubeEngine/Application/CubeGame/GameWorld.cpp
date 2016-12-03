@@ -188,13 +188,18 @@ Chunk *GameWorld::getChunk(int x, int y, int z)
 
 GameWorld::GameWorld()
 {
-    EventMgr::shared()->addFixedPiorityListener(this);
+    //EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GameState::MainMenu;
     m_mainMenu = new MainMenu();
     g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
-    g_GetCurrScene()->addNode(m_mainRoot);
+	g_GetCurrScene()->addNode(m_mainRoot);
+}
+
+GameWorld::~GameWorld()
+{
+	printf("hello world");
 }
 
 MainMenu *GameWorld::getMainMenu() const

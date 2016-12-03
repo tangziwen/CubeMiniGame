@@ -58,6 +58,7 @@ private:
     GameWorld();
     std::set<Chunk*> m_activedChunkList;
     MainMenu * m_mainMenu;
+	virtual ~GameWorld();
 };
 
 } // namespace tzw
