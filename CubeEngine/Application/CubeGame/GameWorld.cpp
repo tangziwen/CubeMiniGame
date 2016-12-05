@@ -52,12 +52,12 @@ vec3 GameWorld::gridToChunk(vec3 grid)
     return vec3(grid.x / MAX_BLOCK, grid.y / MAX_BLOCK, grid.z / MAX_BLOCK);
 }
 
-Player *GameWorld::getPlayer() const
+CubePlayer *GameWorld::getPlayer() const
 {
     return m_player;
 }
 
-void GameWorld::setPlayer(Player *player)
+void GameWorld::setPlayer(CubePlayer *player)
 {
     m_player = player;
 }
@@ -114,7 +114,7 @@ void GameWorld::startGame()
     GameMap::shared()->setMapType(GameMap::MapType::Plain);
     GameMap::shared()->setMaxHeight(13);
 	GameMap::shared()->setMinHeight(0.0);
-    auto player = new Player(m_mainRoot);
+    auto player = new CubePlayer(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
     m_mainRoot->addChild(player);
@@ -188,7 +188,7 @@ Chunk *GameWorld::getChunk(int x, int y, int z)
 
 GameWorld::GameWorld()
 {
-    //EventMgr::shared()->addFixedPiorityListener(this);
+    EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GameState::MainMenu;
     m_mainMenu = new MainMenu();

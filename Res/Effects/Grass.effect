@@ -1,0 +1,16 @@
+{
+	"shaders":{
+		"vs" : "./Res/EngineCoreRes/Shaders/Grass_v.glsl",
+		"fs" : "./Res/EngineCoreRes/Shaders/Grass_f.glsl"
+	},
+	"name" : "Grass",
+	"property" : {
+		"attributes" : [
+			["roughness", "TU_roughness", "float", 5.0],
+			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+		],
+		"maps" : [
+			["diffuseMap", "TU_tex1", 0]
+		]
+	}
+}

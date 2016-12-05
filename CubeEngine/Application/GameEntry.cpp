@@ -17,6 +17,7 @@
 #include "EngineSrc/3D/Primitive/LineGrid.h"
 #include "EngineSrc/3D/Vegetation/Grass.h"
 #include "TUtility/TUtility.h"
+#include "ShelterSurvive/SS_GameSystem.h"
 using namespace tzw;
 using namespace std;
 
@@ -27,7 +28,8 @@ GameEntry::GameEntry()
 
 void GameEntry::onStart()
 {
-	GameWorld::shared();
+	SS_GameSystem::shared()->init();
+	//GameWorld::shared();
 	//GameWorld::shared()->startGame();
 }
 

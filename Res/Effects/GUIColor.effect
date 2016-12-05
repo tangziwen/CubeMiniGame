@@ -1,0 +1,14 @@
+{
+	"shaders":{
+		"vs" : "./Res/EngineCoreRes/Shaders/GUIColor_v.glsl",
+		"fs" : "./Res/EngineCoreRes/Shaders/GUIColor_f.glsl"
+	},
+	"name" : "Color",
+	"property" : {
+		"attributes" : [
+			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+		],
+		"maps" : [
+		]
+	}
+}

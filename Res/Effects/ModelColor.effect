@@ -1,0 +1,15 @@
+{
+	"shaders":{
+		"vs" : "./Res/EngineCoreRes/Shaders/GeometryPassColor_v.glsl",
+		"fs" : "./Res/EngineCoreRes/Shaders/GeometryPassColor_f.glsl"
+	},
+	"name" : "ModelColor",
+	"property" : {
+		"attributes" : [
+			["roughness", "TU_roughness", "float", 5.0],
+			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+		],
+		"maps" : [
+		]
+	}
+}

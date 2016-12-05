@@ -3,7 +3,7 @@
 
 #include "EngineSrc/CubeEngine.h"
 #include "./Chunk.h"
-#include "Player.h"
+#include "CubePlayer.h"
 #include "MainMenu.h"
 #include "GameConfig.h"
 #include <set>
@@ -23,8 +23,8 @@ public:
     vec3 worldToGrid(vec3 world);
     vec3 gridToChunk(vec3 grid);
     Chunk * getChunk(int x,int y,int z);
-    Player *getPlayer() const;
-    void setPlayer(Player *player);
+    CubePlayer *getPlayer() const;
+    void setPlayer(CubePlayer *player);
     Chunk * getOrCreateChunk(int x,int y, int z);
     virtual void onFrameUpdate(float delta);
     Chunk * createChunk(int x,int y,int z);
@@ -51,7 +51,7 @@ private:
     Chunk * m_chunkArray[128][128][16];
     TextureAtlas *m_blockSheet;
     Scene  * m_scene;
-    Player * m_player;
+    CubePlayer * m_player;
     Sprite * crossHair;
     std::vector<Chunk*> m_chunkList;
     static GameWorld *m_instance;

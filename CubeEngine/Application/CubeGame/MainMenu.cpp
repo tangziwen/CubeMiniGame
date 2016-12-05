@@ -3,6 +3,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include "CubeGame/GameWorld.h"
 namespace tzw {
+
 static void exitNow(Button * btn)
 {
     exit(0);

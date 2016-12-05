@@ -69,14 +69,14 @@ macro(source_group_by_dir source_files)
         if(sgbd_nogroup)
             set(sgbd_group_name "\\")
         endif(sgbd_nogroup)
-		message("The Group: " ${sgbd_group_name})
+		#message("The Group: " ${sgbd_group_name})
         source_group(${sgbd_group_name} FILES ${sgbd_file})
     endforeach(sgbd_file)
 endmacro(source_group_by_dir)
 
 #copy res
 
-file(GLOB_RECURSE project_headers *.h)
+file(GLOB_RECURSE project_headers *.h *.hpp)
 file(GLOB_RECURSE project_cpps *.cpp *.c)
 set(all_files ${project_headers} ${project_cpps})
 source_group_by_dir(all_files)
@@ -84,8 +84,10 @@ source_group_by_dir(all_files)
 set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(${CMAKE_BUILD_FILES_DIRECTORY}) # fixes syntax analysis in CLion
+set(EngineSrcDir "./EngineSrc/")
+INCLUDE_DIRECTORIES(${CMAKE_BUILD_FILES_DIRECTORY} ${EngineSrcDir})
 set(TARGET ${CMAKE_PROJECT_NAME})
-add_executable(${TARGET} ${project_cpps})
+add_executable(${TARGET} ${all_files})
 target_link_libraries(${TARGET} ${QMAKE_LFLAGS})
 target_link_libraries(${TARGET} ${LIBS})
 
