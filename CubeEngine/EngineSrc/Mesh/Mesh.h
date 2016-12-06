@@ -73,6 +73,7 @@ public:
     void setMatIndex(unsigned int matIndex);
 
     unsigned int getMatIndex() const;
+	unsigned unsigned int getIndex(int id);
 	bool isEmpty();
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );

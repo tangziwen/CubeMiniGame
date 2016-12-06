@@ -7,17 +7,17 @@ namespace tzw {
 	SS_Player::SS_Player(Node *mainRoot)
 	{
 		FPSCamera * camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
-		camera->setPos(vec3(5,50,-5));
+		camera->setPos(vec3(0,10,0));
 		mainRoot->addChild(camera);
 		g_GetCurrScene()->setDefaultCamera(camera);
 		m_camera = camera;
-		m_camera->setIsEnableGravity(false);
+		m_camera->setIsEnableGravity(true);
 
 		//the gun
 		m_gunModel = Model::create("./Res/diediedie.tzw");
 		m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
 		m_gunModel->setRotateE(vec3(0, -90, 0));
-		m_gunModel->setPos(vec3(0.08,0.15,-0.25));
+		m_gunModel->setPos(vec3(0.08,-0.20,-0.25));
 		m_gunModel->setIsAccpectOCTtree(false);
 		m_camera->addChild(m_gunModel);
 		EventMgr::shared()->addFixedPiorityListener(this);
@@ -40,8 +40,17 @@ namespace tzw {
 
 	void SS_Player::logicUpdate(float dt)
 	{
-
-
+		static float  theTime = 0.0f;
+		vec3 oldPos = m_gunModel->getPos();
+		float offset = 0.002;
+		float freq = 1;
+		if(m_camera->getIsMoving())
+		{
+			offset = 0.006;
+			freq = 6;
+		}
+		theTime += freq * dt;
+		m_gunModel->setPos(vec3(oldPos.x, -0.2 + sinf(theTime) * offset, oldPos.z));
 	}
 
 	bool SS_Player::onKeyPress(int keyCode)
@@ -58,5 +67,4 @@ namespace tzw {
 		}
 		return false;
 	}
-
 } // namespace tzw

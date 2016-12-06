@@ -54,7 +54,7 @@ bool FPSCamera::onKeyPress(int keyCode)
     case GLFW_KEY_SPACE:
         if(m_isEnableGravity)//now falling
         {
-            m_verticalSpeed = 0.2;
+             m_verticalSpeed = 0.2;
         }
         break;
     }
@@ -329,7 +329,7 @@ vec3 FPSCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlid
 {
     float veryCloseDistance = 0.005f;
     // do we need to worry?
-    if (collisionRecursionDepth>5)
+    if (collisionRecursionDepth > 5)
         return pos;
     // Ok, we need to worry:
     collisionPackage->velocity = vel;

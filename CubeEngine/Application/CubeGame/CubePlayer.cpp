@@ -4,6 +4,9 @@
 #include "GameConfig.h"
 #include "GameWorld.h"
 #include "EngineSrc/Event/EventMgr.h"
+#include <iostream>
+#include "3D/Primitive/CubePrimitive.h"
+#include "Action/MoveBy.h"
 namespace tzw {
 
 CubePlayer::CubePlayer(Node *mainRoot)
@@ -19,7 +22,7 @@ CubePlayer::CubePlayer(Node *mainRoot)
     m_gunModel = Model::create("./Res/diediedie.tzw");
     m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
     m_gunModel->setRotateE(vec3(0, -90, 0));
-    m_gunModel->setPos(vec3(0.08,0.15,-0.25));
+    m_gunModel->setPos(vec3(0.08,-0.2,-0.25));
     m_camera->addChild(m_gunModel);
 
 	auto pos = getPos();
@@ -56,7 +59,7 @@ void CubePlayer::logicUpdate(float dt)
         freq = 6;
     }
     theTime += freq * dt;
-    m_gunModel->setPos(vec3(oldPos.x, -0.20 + sinf(theTime) * offset, oldPos.z));
+    m_gunModel->setPos(vec3(oldPos.x, -0.2 + sinf(theTime) * offset, oldPos.z));
 	if (checkIsNeedUpdateChunk())
 	{
 		GameWorld::shared()->loadChunksAroundPlayer();
@@ -127,6 +130,15 @@ bool CubePlayer::onKeyRelease(int keyCode)
 		break;
 	}
 	return false;
+}
+
+bool CubePlayer::onMousePress(int button,vec2 pos)
+{
+	CubePrimitive * cube = new CubePrimitive(0.2, 0.2, 0.2);
+	g_GetCurrScene()->addNode(cube);
+	cube->setPos(getPos());
+	cube->runAction(new MoveBy(3.0, m_camera->getForward() * 55));
+	return true;
 }
 
 } // namespace tzw

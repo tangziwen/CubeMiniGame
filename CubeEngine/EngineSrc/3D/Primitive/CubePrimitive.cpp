@@ -3,6 +3,7 @@
 #include "../../Rendering/RenderCommand.h"
 #include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
+#include "../EngineSrc/Collision/CollisionUtility.h"
 namespace tzw {
 
 CubePrimitive::CubePrimitive(float width, float depth, float height)
@@ -51,6 +52,12 @@ bool CubePrimitive::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> 
         return true;
     }
     return false;
+}
+
+vec3 CubePrimitive::getWorldPos(vec3 localPos)
+{
+	auto theMat = getTransform();
+	return theMat.transformVec3(localPos);
 }
 
 void CubePrimitive::initMesh()
@@ -120,6 +127,21 @@ void CubePrimitive::initMesh()
     m_localAABB.merge(m_mesh->getAabb());
     reCache();
     reCacheAABB();
+}
+
+void CubePrimitive::checkCollide(ColliderEllipsoid * package)
+{
+	auto size = m_mesh->getIndicesSize();
+	std::vector<vec3> resultList;
+	float t = 0;
+	
+	for (auto i =0; i< size; i+=3)
+	{
+		CollisionUtility::checkTriangle(package,
+			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i)].m_pos)),
+			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i + 1)].m_pos)),
+			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i + 2)].m_pos)));
+	}
 }
 
 } // namespace tzw

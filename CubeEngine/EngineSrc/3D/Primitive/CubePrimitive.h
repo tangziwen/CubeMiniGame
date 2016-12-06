@@ -11,7 +11,9 @@ public:
     virtual void submitDrawCmd();
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 protected:
+	vec3 getWorldPos(vec3 localPos);
     void initMesh();
+	virtual void checkCollide(ColliderEllipsoid * package);
     Mesh * m_mesh;
     float m_width, m_depth, m_height;
 };

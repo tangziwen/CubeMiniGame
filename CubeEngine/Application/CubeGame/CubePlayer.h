@@ -16,6 +16,7 @@ public:
 	bool checkIsNeedUpdateChunk();
 	virtual bool onKeyPress(int keyCode);
 	virtual bool onKeyRelease(int keyCode);
+	virtual bool onMousePress(int button,vec2 pos);
 private:
     FPSCamera * m_camera;
     Model * m_gunModel;

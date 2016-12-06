@@ -35,11 +35,9 @@ void GameEntry::onStart()
 
 void GameEntry::onExit()
 {
-
 }
 
 void GameEntry::onUpdate(float delta)
 {
 	m_ticks += delta;
 }
-

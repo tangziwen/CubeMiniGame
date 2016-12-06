@@ -1,5 +1,7 @@
 #include "SS_GameSystem.h"
 #include "Scene/SceneMgr.h"
+#include "SS_world.h"
+#include "Engine/Engine.h"
 namespace tzw
 {
 	TZW_SINGLETON_IMPL(SS_GameSystem)
@@ -35,12 +37,15 @@ namespace tzw
 	void SS_GameSystem::startGame()
 	{
 		m_player = new SS_Player(m_mainRoot);
-
+		m_mainRoot->addChild(m_player);
 		SkyBox* skybox = SkyBox::create("./Res/User/CubeGame/texture/SkyBox/right.jpg","./Res/User/CubeGame/texture/SkyBox/left.jpg",
 			"./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
 			"./Res/User/CubeGame/texture/SkyBox/back.jpg","./Res/User/CubeGame/texture/SkyBox/front.jpg");
 		skybox->setScale(80,80,80);
 		g_GetCurrScene()->setSkyBox(skybox);
+
+		SS_World::shared()->createTest();
+		Engine::shared()->setUnlimitedCursor(true);
 	}
 
 }
