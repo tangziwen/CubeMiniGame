@@ -28,13 +28,14 @@ GameEntry::GameEntry()
 
 void GameEntry::onStart()
 {
-	SS_GameSystem::shared()->init();
-	//GameWorld::shared();
+	//SS_GameSystem::shared()->init();
+	GameWorld::shared();
 	//GameWorld::shared()->startGame();
 }
 
 void GameEntry::onExit()
 {
+
 }
 
 void GameEntry::onUpdate(float delta)

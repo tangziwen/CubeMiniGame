@@ -17,6 +17,7 @@ Renderer::Renderer()
 	m_dirLightProgram = new Effect();
 	m_dirLightProgram->load("DirectLight");
 	initQuad();
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 Renderer *Renderer::shared()
