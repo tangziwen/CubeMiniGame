@@ -119,6 +119,7 @@ void EventMgr::apply(float delta)
 		m_isNeedSortNodeListener = false;
 		sortNodePiorityListener();
 	}
+	
    while(!m_eventDeque.empty())
    {
        EventInfo info = m_eventDeque.front();

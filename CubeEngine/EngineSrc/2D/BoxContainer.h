@@ -10,7 +10,7 @@ class BoxContainer : public Drawable2D
 public:
     BoxContainer();
     static BoxContainer* create(vec2 size, vec2 boxSize);
-    void insert(Drawable2D * theElement);
+    void insert(Node * theElement);
     void format();
     vec2 boxSize() const;
     void setBoxSize(const vec2 &boxSize);
@@ -18,7 +18,7 @@ public:
     virtual void setContentSize(vec2 Size);
 private:
     GUIFrame * m_frameBG;
-    std::vector<Drawable2D *> m_elementList;
+    std::vector<Node *> m_elementList;
     vec2 m_boxSize;
 };
 

@@ -178,7 +178,7 @@ void Chunk::deformAround(vec3 pos, float value)
 	int posX = relativePost.x;
 	int posY = relativePost.y;
 	int posZ = relativePost.z;
-	auto theDrawSize = 2;
+	auto theDrawSize = 1;
 	for (int i = -theDrawSize; i <= theDrawSize; i++)
 	{
 		for(int j = -theDrawSize; j<=theDrawSize; j++)
@@ -304,7 +304,7 @@ void Chunk::genNormal()
 	auto ncellsZ = MAX_BLOCK;
 	auto ncellsY = MAX_BLOCK;
 	auto ncellsX = MAX_BLOCK;
-	float minValue = -1.0f;
+	float minValue = -0.0f;
 	int meshIndex = 0;
 	int pointsZ = ncellsZ+1;
 	int YtimeZ = (ncellsY+1)*(ncellsZ+1);
@@ -607,7 +607,7 @@ bool Chunk::isEdge(int i)
 
 void Chunk::genMesh()
 {
-	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, -1.0f, m_lod);
+	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, 0.0f, m_lod);
 	if (m_mesh->isEmpty()) return;
 	genNormal();
 	m_isNeedSubmitMesh = true;

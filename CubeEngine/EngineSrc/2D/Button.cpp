@@ -41,6 +41,8 @@ Button *Button::create(vec4 color, vec2 Size)
     btn->m_frameBG = GUIFrame::create(color,Size);
     btn->addChild(btn->m_frameBG);
     btn->m_frameBG->setLocalPiority(0);
+	//btn->setContentSize(Size);
+	btn->adjustBorders();
     return btn;
 }
 
@@ -69,6 +71,8 @@ bool Button::onMouseRelease(int button, vec2 pos)
         m_isTouched = false;
         if (m_frameBG->isInTheRect(pos))
         {
+			m_evtBtn = button;
+			m_evtPos = pos;
             if(m_onBtnClicked)
             {
                 m_onBtnClicked(this);
@@ -129,6 +133,12 @@ std::function<void (Button *)> Button::onBtnClicked() const
 void Button::setOnBtnClicked(const std::function<void (Button *)> &onBtnClicked)
 {
     m_onBtnClicked = onBtnClicked;
+}
+
+void Button::setContentSize(const vec2 &getContentSize)
+{
+	Drawable2D::setContentSize(getContentSize);
+	setFrameSize(getContentSize);
 }
 
 vec2 Button::getContentSize()

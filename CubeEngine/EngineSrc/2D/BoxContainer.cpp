@@ -12,12 +12,12 @@ BoxContainer *BoxContainer::create(vec2 size, vec2 boxSize)
     auto obj = new BoxContainer();
     obj->m_frameBG = GUIFrame::create(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
     obj->m_frameBG->setContentSize(size);
-    obj->addChild(obj->m_frameBG);
+    //obj->addChild(obj->m_frameBG);
     obj->m_boxSize = boxSize;
     return obj;
 }
 
-void BoxContainer::insert(Drawable2D *theElement)
+void BoxContainer::insert(Node *theElement)
 {
     m_elementList.push_back(theElement);
     addChild(theElement);

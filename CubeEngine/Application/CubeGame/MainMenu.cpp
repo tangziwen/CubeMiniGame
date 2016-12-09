@@ -12,7 +12,6 @@ static void exitNow(Button * btn)
 static void onOption(Button * btn)
 {
 
-
 }
 
 MainMenu::MainMenu()
@@ -32,12 +31,8 @@ MainMenu::MainMenu()
     optionBtn->setOnBtnClicked(std::bind(&onOption,std::placeholders::_1));
     m_mainFrame->addChild(optionBtn);
 
-    Button * sampleBtn = Button::create("sample");
-    sampleBtn->setPos2D(100,240);
-    m_mainFrame->addChild(sampleBtn);
-
     Button * quitBtn = Button::create("exit");
-    quitBtn->setPos2D(100,190);
+    quitBtn->setPos2D(100,240);
     quitBtn->setOnBtnClicked(&exitNow);
     m_mainFrame->addChild(quitBtn);
 }

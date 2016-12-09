@@ -406,6 +406,7 @@ bool Node::getIsDrawable() const
 void Node::setIsDrawable(bool isDrawable)
 {
     m_isDrawable = isDrawable;
+	EventMgr::shared()->notifyListenerChange();
 }
 
 void Node::purgeAllChildren()

@@ -145,7 +145,7 @@ void GUIWindow::adjustBorders()
 
 void GUIWindow::adjustCloseBtn()
 {
-    m_closeBtn->setPos2D(m_contentSize.x - 35,m_contentSize.y + 4);
+    m_closeBtn->setPos2D(m_contentSize.x - 35,m_contentSize.y);
 }
 
 bool GUIWindow::getIsShowCloseBtn() const

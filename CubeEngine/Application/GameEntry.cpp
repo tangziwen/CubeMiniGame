@@ -18,6 +18,7 @@
 #include "EngineSrc/3D/Vegetation/Grass.h"
 #include "TUtility/TUtility.h"
 #include "ShelterSurvive/SS_GameSystem.h"
+#include "GameSystem.h"
 using namespace tzw;
 using namespace std;
 
@@ -29,8 +30,8 @@ GameEntry::GameEntry()
 void GameEntry::onStart()
 {
 	//SS_GameSystem::shared()->init();
-	GameWorld::shared();
-	//GameWorld::shared()->startGame();
+	//GameWorld::shared();
+	tzwS::GameSystem::shared()->startNewGame();
 }
 
 void GameEntry::onExit()
@@ -41,4 +42,10 @@ void GameEntry::onExit()
 void GameEntry::onUpdate(float delta)
 {
 	m_ticks += delta;
+	if(m_ticks > 1.0)
+	{
+		tzwS::GameSystem::shared()->update();
+		m_ticks = 0.0;
+	}
+	
 }

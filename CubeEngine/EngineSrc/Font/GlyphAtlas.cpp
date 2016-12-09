@@ -132,6 +132,7 @@ void GlyphAtlas::cleanUp()
     if(m_buffer)
     {
         free(m_buffer);
+		m_buffer = nullptr;
     }
 }
 

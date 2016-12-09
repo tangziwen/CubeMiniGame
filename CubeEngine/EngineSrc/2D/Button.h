@@ -24,6 +24,7 @@ public:
     virtual bool onMouseMove(vec2 pos);
     std::function<void (Button *)> onBtnClicked() const;
     void setOnBtnClicked(const std::function<void (Button *)> &onBtnClicked);
+	virtual void setContentSize(const vec2 &getContentSize);
     virtual vec2 getContentSize();
     LabelNew *getLabel() const;
     vec2 getFrameSize();
@@ -42,6 +43,8 @@ private:
     bool m_isTouched;
     GUIFrame * m_frameBG;
     LabelNew * m_label;
+	int m_evtBtn;
+	vec2 m_evtPos;
 };
 
 } // namespace tzw

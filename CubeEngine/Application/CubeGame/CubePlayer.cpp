@@ -103,7 +103,7 @@ bool CubePlayer::onKeyRelease(int keyCode)
 			if(chunk)
 			{
 				auto before = clock();
-				chunk->deformAround(hitPoint, -0.2);
+				chunk->deformAround(hitPoint, -1);
 				auto delta = clock() - before;
 			}
 		}
@@ -122,7 +122,7 @@ bool CubePlayer::onKeyRelease(int keyCode)
 			auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
 			if(chunk)
 			{
-				chunk->deformAround(hitPoint, 0.2);
+				chunk->deformAround(hitPoint, 1);
 			}
 		}
 		break;
