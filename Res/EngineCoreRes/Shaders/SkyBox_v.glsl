@@ -1,3 +1,5 @@
+#version 330
+#extension GL_ARB_explicit_uniform_location : require
 #ifdef GL_ES
 // Set default precision to medium
 precision mediump int;

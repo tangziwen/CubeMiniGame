@@ -1,4 +1,5 @@
-#version 130
+#version 330
+#extension GL_ARB_explicit_uniform_location : require
 #ifdef GL_ES
 // Set default precision to medium
 precision mediump int;
@@ -6,8 +7,8 @@ precision mediump float;
 #endif
 
 
-uniform samplerCube TU_tex1;
-uniform sampler2D TU_Depth;
+layout(binding = 0)uniform samplerCube TU_tex1;
+layout(binding = 1)uniform sampler2D TU_Depth;
 
 varying vec3 v_texcoord;
 vec2 getScreenCoord()
@@ -22,7 +23,7 @@ void main()
 {
 	
 	vec4 color = textureCube(TU_tex1, v_texcoord.stp);
-	float depth = texture(TU_Depth, getScreenCoord()).r;
+	float depth = texture2D(TU_Depth, getScreenCoord()).r;
 	if(depth >= (1.0 - E))
 	{
 		gl_FragColor = color;
