@@ -104,6 +104,22 @@ void Material::setVar(std::string name, const int &value)
 	}
 }
 
+ void Material::setVar(std::string name, const vec2 & value)
+ {
+	 auto result = m_varList.find(name);
+	 if (result != m_varList.end())
+	 {
+		 TechniqueVar * var = result->second;
+		 var->setV2(value);
+	 }
+	 else
+	 {
+		 TechniqueVar * var = new TechniqueVar();
+		 var->setV2(value);
+		 m_varList.insert(std::make_pair(name, var));
+	 }
+ }
+
 /**
  * @brief Technique::setVar 设置Technique的变量
  * @param name 变量的类型

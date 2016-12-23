@@ -31,6 +31,7 @@ public:
     void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);
+	void setVar(std::string name, const vec2 & value);
     void setVar(std::string name, const vec3& value);
     void setVar(std::string name, const vec4 &value);
     void setVar(std::string name, const TechniqueVar & value);

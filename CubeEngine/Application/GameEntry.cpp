@@ -30,8 +30,8 @@ GameEntry::GameEntry()
 void GameEntry::onStart()
 {
 	//SS_GameSystem::shared()->init();
-	//GameWorld::shared();
-	tzwS::GameSystem::shared()->startNewGame();
+	GameWorld::shared();
+	//tzwS::GameSystem::shared()->startNewGame();
 }
 
 void GameEntry::onExit()

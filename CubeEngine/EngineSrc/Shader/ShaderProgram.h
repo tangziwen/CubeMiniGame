@@ -2,6 +2,7 @@
 #define TZW_SHADERPROGRAM_H
 #include "../Math/vec3.h"
 #include "../Math/vec4.h"
+#include "../Math/vec2.h"
 #include <string>
 #include <map>
 #include <unordered_map>
@@ -19,6 +20,7 @@ public:
     void setUniform3Float(const char * str,float x,float y,float z);
     void setUniform3Float(const char * str,vec3 v);
     void setUniform2Float(const char * str,float x,float y);
+	void setUniform2Float(const char * str, vec2 vec);
     void setUniform4Float(const char * str,float x,float y,float z,float w);
     void setUniform4Float(const char * str,vec4 v);
     unsigned int attributeLocation(std::string name);

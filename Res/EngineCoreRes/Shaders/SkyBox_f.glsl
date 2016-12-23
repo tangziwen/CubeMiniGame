@@ -1,5 +1,4 @@
 #version 330
-#extension GL_ARB_explicit_uniform_location : require
 #ifdef GL_ES
 // Set default precision to medium
 precision mediump int;
@@ -9,12 +8,12 @@ precision mediump float;
 
 layout(binding = 0)uniform samplerCube TU_tex1;
 layout(binding = 1)uniform sampler2D TU_Depth;
-
+uniform vec2 TU_winSize;
 varying vec3 v_texcoord;
 vec2 getScreenCoord()
 {
 	vec2 tmp = gl_FragCoord.xy;
-	tmp /= vec2(800, 600);
+	tmp /= TU_winSize;
 	return tmp;
 }
 #define E 0.000001

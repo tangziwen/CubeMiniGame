@@ -20,7 +20,7 @@ uniform sampler2D TU_posBuffer;
 uniform sampler2D TU_normalBuffer;
 uniform sampler2D TU_GBUFFER4;
 uniform sampler2D TU_Depth;
-
+uniform vec2 TU_winSize;
 
 uniform DirectionalLight gDirectionalLight;
 uniform AmbientLight gAmbientLight;
@@ -31,7 +31,7 @@ varying vec2 v_texcoord;
 vec2 getScreenCoord()
 {
 	vec2 tmp = gl_FragCoord.xy;
-	tmp /= vec2(800, 600);
+	tmp /= TU_winSize;
 	return tmp;
 }
 

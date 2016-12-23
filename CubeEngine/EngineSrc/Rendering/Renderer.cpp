@@ -276,6 +276,7 @@ void Renderer::skyBoxPass()
 	m_gbuffer->bindForReading();
 	m_gbuffer->bindDepth(1);
 	mat->setVar("TU_Depth",1);
+	mat->setVar("TU_winSize", Engine::shared()->winSize());
 	TransformationInfo info;
 	skyBox->setUpTransFormation(info);
 	applyTransform(mat->getEffect()->getProgram(), info);
@@ -293,6 +294,7 @@ void Renderer::directionalLightPass()
 	program->setUniformInteger("TU_normalBuffer",2);
 	program->setUniformInteger("TU_GBUFFER4",3);
 	program->setUniformInteger("TU_Depth", 4);
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
 	auto cam = currScene->defaultCamera();
 
 	auto dirLight = currScene->getDirectionLight();

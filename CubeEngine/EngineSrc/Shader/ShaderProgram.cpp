@@ -3,6 +3,7 @@
 #include <string.h>
 #define GLEW_STATIC
 #include <GL/glew.h>
+#include <stdio.h>
 
 using namespace std;
 namespace tzw {
@@ -16,7 +17,7 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
     }
     tzw::Data vs_data = tzw::Tfile::shared()->getData(pVSFileName,true);
     tzw::Data fs_data = tzw::Tfile::shared()->getData(pFSFileName,true);
-
+	printf("compiling... %s %s\n", pVSFileName, pFSFileName);
     if (vs_data.isNull()) {
         exit(1);
     };
@@ -134,6 +135,11 @@ void ShaderProgram::setUniform2Float(const char *str, float x, float y)
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
         }
+}
+
+void ShaderProgram::setUniform2Float(const char * str, vec2 vec)
+{
+	setUniform2Float(str, vec.x, vec.y);
 }
 
 void ShaderProgram::setUniform4Float(const char *str, float x, float y, float z, float w)
