@@ -111,9 +111,9 @@ void GameWorld::startGame()
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
-    GameMap::shared()->setMapType(GameMap::MapType::Plain);
+    GameMap::shared()->setMapType(GameMap::MapType::Noise);
     GameMap::shared()->setMaxHeight(13);
-	GameMap::shared()->setMinHeight(0.0);
+	GameMap::shared()->setMinHeight(5);
     auto player = new CubePlayer(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
@@ -145,7 +145,7 @@ void GameWorld::loadChunksAroundPlayer()
     auto pos = m_player->getPos();
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-	int range = 4;
+	int range = 5;
     for(int i =posX - range;i<=posX + range;i++)
     {
         for(int j =0;j< m_height; j++)

@@ -2,37 +2,42 @@
 #include "Chunk.h"
 namespace tzw {
 GameMap * GameMap::m_instance = nullptr;
-module::RidgedMulti mountainTerrain;
-module::ScaleBias mountainTerrainSelect;
-module::Billow baseFlatTerrain;
+module::Perlin baseMountainTerrain;
+module::Perlin baseFlatTerrain;
 module::ScaleBias flatTerrain;
+module::ScaleBias mountainTerrain;
 module::Perlin terrainType;
-module::Blend finalTerrain;
+module::Select finalTerrain;
+//module::Blend finalTerrain;
 
 GameMap::GameMap()
     :m_maxHeight(1),m_mapType(MapType::Noise)
 {
     m_plane = new noise::model::Plane(myModule);
 	myModule.SetPersistence(0.25);
-	
-	baseFlatTerrain.SetFrequency(0.5);
-	baseFlatTerrain.SetOctaveCount(2.0);
+
+	baseFlatTerrain.SetPersistence(0.4);
+	baseFlatTerrain.SetOctaveCount(3);
+	baseFlatTerrain.SetFrequency(0.06);
+
 	flatTerrain.SetSourceModule(0, baseFlatTerrain);
-	flatTerrain.SetScale(1.5);
-	flatTerrain.SetBias(10.0);
+	flatTerrain.SetScale(3.0);
+	flatTerrain.SetBias(1.5 + 4);
 
-	terrainType.SetFrequency(0.20);
-	terrainType.SetPersistence(0.25);
+	terrainType.SetFrequency (0.5);
+	terrainType.SetPersistence (0.25);
 
-	//mountainTerrain.SetFrequency(0.5);
-	mountainTerrain.SetOctaveCount(4);
-	mountainTerrainSelect.SetSourceModule(0, mountainTerrain);
-	mountainTerrainSelect.SetScale(6.0);
-	mountainTerrainSelect.SetBias(20.0);
+	baseMountainTerrain.SetFrequency(0.025);
+	baseMountainTerrain.SetOctaveCount(8);
+	baseMountainTerrain.SetPersistence(0.4);
+	baseMountainTerrain.SetLacunarity(2.0);
+	mountainTerrain.SetSourceModule(0, baseMountainTerrain);
+	mountainTerrain.SetScale(8);
+	mountainTerrain.SetBias(4);
 
-	finalTerrain.SetSourceModule(0, flatTerrain);
-	finalTerrain.SetSourceModule(1, mountainTerrainSelect);
-	finalTerrain.SetSourceModule(2, terrainType);
+	finalTerrain.SetSourceModule(1, flatTerrain);
+	finalTerrain.SetSourceModule(0, mountainTerrain);
+	finalTerrain.SetControlModule(terrainType);
 }
 
 void GameMap::init(float ratio)
@@ -64,8 +69,7 @@ void GameMap::setMaxHeight(float maxHeight)
 
 double GameMap::getValue(float x, float y, float z)
 {
-	double value = finalTerrain.GetValue(x_offset + x*m_ratio, y_offset + y * m_ratio, z_offset + z * m_ratio); //m_plane->GetModule().GetValue(x_offset + x*m_ratio, y_offset + y * m_ratio, z_offset + z * m_ratio);
-    value = value;
+	double value = mountainTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
 	return m_minHeight + value;
 }
 

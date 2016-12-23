@@ -1,4 +1,4 @@
-#version 330
+#version 420
 #ifdef GL_ES
 // Set default precision to medium
 precision mediump int;
@@ -21,8 +21,8 @@ vec2 getScreenCoord()
 void main()
 {
 	
-	vec4 color = textureCube(TU_tex1, v_texcoord.stp);
-	float depth = texture2D(TU_Depth, getScreenCoord()).r;
+	vec4 color = texture(TU_tex1, v_texcoord.stp);
+	float depth = texture(TU_Depth, getScreenCoord()).r;
 	if(depth >= (1.0 - E))
 	{
 		gl_FragColor = color;
