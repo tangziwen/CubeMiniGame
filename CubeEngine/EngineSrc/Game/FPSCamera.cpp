@@ -391,8 +391,8 @@ void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
     std::vector<Drawable3D *> list;
     vec3 pos = thePackage->R3Position;
     AABB aabb;
-    aabb.update(vec3(pos.x - 10,pos.y - 10,pos.z - 10));
-    aabb.update(vec3(pos.x + 10,pos.y + 10 ,pos.z + 10));
+    aabb.update(vec3(pos.x - 3,pos.y - 3,pos.z - 3));
+    aabb.update(vec3(pos.x + 3,pos.y + 3 ,pos.z + 3));
     g_GetCurrScene()->getRange(&list,aabb);
 	if (list.empty()) return;
     Drawable3DGroup group(&list[0],list.size());

@@ -145,7 +145,7 @@ void GameWorld::loadChunksAroundPlayer()
     auto pos = m_player->getPos();
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-	int range = 5;
+	int range = 21;
     for(int i =posX - range;i<=posX + range;i++)
     {
         for(int j =0;j< m_height; j++)

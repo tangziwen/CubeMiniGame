@@ -9,6 +9,7 @@
 #include <iostream>
 #include "EngineSrc/Technique/MaterialPool.h"
 #include <mutex>
+#include "EngineSrc/Engine/WorkerThreadSystem.h"
 
 static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
@@ -139,8 +140,9 @@ void Chunk::load()
 	{
 		if (isMultiThreading)
 		{
-			auto thread = std::thread([&]() {initData(); genMesh(); });
-			thread.detach();
+			WorkerThreadSystem::shared()->pushOrder([&]() {initData(); genMesh(); });
+			//auto thread = std::thread([&]() {initData(); genMesh(); });
+			//thread.detach();
 		}
 		else
 		{
@@ -152,8 +154,9 @@ void Chunk::load()
 	{
 		if (isMultiThreading)
 		{
-			auto thread = std::thread([&]() {genMesh();});
-			thread.detach();
+			WorkerThreadSystem::shared()->pushOrder([&]() {genMesh();});
+			//auto thread = std::thread([&]() {genMesh();});
+			//thread.detach();
 		}
 		else
 		{
@@ -299,7 +302,7 @@ static vec3 LinearInterp(vec4 & p1, vec4 & p2, float value)
 
 void Chunk::genNormal()
 {
-	g_normalLock.lock();
+	//g_normalLock.lock();
 	auto points = mcPoints;
 	auto ncellsZ = MAX_BLOCK;
 	auto ncellsY = MAX_BLOCK;
@@ -505,7 +508,7 @@ void Chunk::genNormal()
 
 	}
 		
-	g_normalLock.unlock();
+	//g_normalLock.unlock();
 }
 
 vec4 Chunk::getPoint(int index)
@@ -619,7 +622,7 @@ void Chunk::genMesh()
 void Chunk::initData()
 {
 	//if (mcPoints) return;
-	g_lock.lock();
+	//g_lock.lock();
 	mcPoints = new vec4[(MAX_BLOCK +1) * (MAX_BLOCK+1) * (MAX_BLOCK + 1)];
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 	vec4 verts;
@@ -642,7 +645,7 @@ void Chunk::initData()
 		}
 	}
 	m_isInitData = true;
-	g_lock.unlock();
+	//g_lock.unlock();
 }
 
 void Chunk::checkCollide(ColliderEllipsoid *package)
