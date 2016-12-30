@@ -111,18 +111,13 @@ float Engine::deltaTime() const
 void Engine::update(float delta)
 {
     m_deltaTime = delta;
-
     int logicBefore = clock();
 	auto eventMgr = EventMgr::shared();
 	eventMgr->apply(delta);
     Engine::shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();
     resetDrawCallCount();
-    SceneMgr::shared()->doVisitDraw();
-	Tmisc::DurationBegin();
-    SceneMgr::shared()->doVisitPost();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
-
     int applyRenderBefore = clock();
     resetVerticesIndicesCount();
     Renderer::shared()->renderAll();

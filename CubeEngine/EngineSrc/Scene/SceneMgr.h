@@ -14,8 +14,6 @@ public:
     void setCurrentScene(Scene *getCurrScene);
     void autoSwitch();
     void doVisit();
-    void doVisitPost();
-    void doVisitDraw();
     void init();
 private:
     SceneMgr();

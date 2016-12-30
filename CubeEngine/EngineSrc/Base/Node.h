@@ -47,7 +47,6 @@ public:
 	Matrix44 getTranslationMatrix();
 	Matrix44 getRotationMatrix();
 	Matrix44 getScalingMatrix();
-	void visitPost(OctreeScene *scene);
 	void addChild(Node * node);
 	Node *getParent() const;
 	std::string getName() const;

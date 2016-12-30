@@ -27,27 +27,30 @@ void Scene::addNode(Node *node)
 
 void Scene::visit()
 {
-    m_root.visit();
+	m_root.visit();
+	if(!defaultCamera()->getUseCustomFrustumUpdate())
+	{
+		defaultCamera()->updateFrustum();
+	}
+	m_octreeScene->cullingByCamera(defaultCamera());
+	auto &visibleList = m_octreeScene->getVisibleList();
+	for(auto obj : visibleList)
+	{
+		obj->submitDrawCmd();
+	}
 }
 
 void Scene::visitPost()
 {
-    m_root.visitPost(m_octreeScene);
+    //m_root.visitPost(m_octreeScene);
 }
 
 void Scene::visitDraw()
 {
-    if(!defaultCamera()->getUseCustomFrustumUpdate())
-    {
-        defaultCamera()->updateFrustum();
-    }
-    m_octreeScene->cullingByCamera(defaultCamera());
 
-    auto &visibleList = m_octreeScene->getVisibleList();
-    for(auto obj : visibleList)
-    {
-        obj->submitDrawCmd();
-    }
+    
+
+
 }
 
 Camera *Scene::defaultGUICamera() const

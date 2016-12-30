@@ -210,6 +210,7 @@ Matrix44 Node::getScalingMatrix()
 ///
 void Node::visit()
 {
+	auto scene = g_GetCurrScene()->getOctreeScene();
     logicUpdate(Engine::shared()->deltaTime());
 	if(!m_actionList.empty())
 		updateAction(this,Engine::shared()->deltaTime());
@@ -218,46 +219,35 @@ void Node::visit()
     if(getNeedToUpdate())
     {
         this->reCache();
-    }
-    for(auto child : m_children)
-    {
-        child->visit();
-    }
-}
-///
-/// \brief 递归遍历节点(绘制用)
-/// \note 该次递归遍历由当前场景的根节点出发，自顶向下进行遍历，如果物体确实可见的情况下将会调用Draw方法进行渲染提交；
-/// 同时该函数还会更新物体在八叉树上的位置或往八叉树上添加新节点，八叉树的节点添加是惰性的，只有当一个物体确实可见(自己的可绘制性以及父节点的可绘制性都为true)且尚不在八叉树上的时候，才会在该函数调用时此处被添加至八叉树，
-/// 该函数的调用在八叉树的裁剪函数执行完之后调用，因此，在此处新加入的节点的可渲染性将在下一帧开始才会受到八叉树管理的影响
-/// \param scene 场景的八叉树管理器
-///
-void Node::visitPost(OctreeScene *scene)
-{
-    if(m_isDrawable && m_isValid)
-    {
-        if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
-        {
-            submitDrawCmd();
-        }
-        if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree((Drawable3D *)this)))
-        {
-            scene->updateObj((Drawable3D *)this);
-        }
-        //遍历子节点
-        for(auto child : m_children)
-        {
-            child->visitPost(scene);
-        }
-    }
-    //一个节点从逻辑更新至渲染提交的整个流程至此已经彻底结束,将重置缓存标记
-    setNeedToUpdate(false);
 
-    //判断是否需要删除
-    if(!m_isValid)
-    {
-        getParent()->detachChild(this);
-        delete this;
+		//一个节点从逻辑更新至渲染提交的整个流程至此已经彻底结束,将重置缓存标记
+		setNeedToUpdate(false);
     }
+
+	if(m_isDrawable && m_isValid)
+	{
+		if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
+		{
+			submitDrawCmd();
+		}
+		if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree((Drawable3D *)this)))
+		{
+			scene->updateObj((Drawable3D *)this);
+		}
+		////遍历子节点
+		for(auto child : m_children)
+		{
+			child->visit();
+		}
+	}
+
+
+	//判断是否需要删除
+	if(!m_isValid)
+	{
+		getParent()->detachChild(this);
+		delete this;
+	}
 }
 
 /**

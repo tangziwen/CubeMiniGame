@@ -183,7 +183,7 @@ void FPSCamera::logicUpdate(float dt)
             }
             gravityVelocity = vec3(0,m_verticalSpeed,0);
         }
-        //collideAndSlide(userSpeed,gravityVelocity);
+        collideAndSlide(userSpeed,gravityVelocity);
     }
 }
 

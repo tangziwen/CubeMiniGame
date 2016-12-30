@@ -43,23 +43,6 @@ void SceneMgr::doVisit()
     }
 }
 
-void SceneMgr::doVisitPost()
-{
-    if(m_currentScene)
-    {
-        m_currentScene->visitPost();
-    }
-}
-
-void SceneMgr::doVisitDraw()
-{
-    if(m_currentScene)
-    {
-        m_currentScene->visitDraw();
-    }
-}
-
-
 void SceneMgr::init()
 {
     m_currentScene = new Scene();
