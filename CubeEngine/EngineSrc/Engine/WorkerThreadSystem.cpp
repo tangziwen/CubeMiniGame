@@ -54,9 +54,9 @@ namespace tzw
 
 	void WorkerThreadSystem::pushOrder(WorkerJob order)
 	{
-		m_mutex.wLock();
+		//m_mutex.wLock();
 		m_functionList.push_back(order);
-		m_mutex.wUnlock();
+		//m_mutex.wUnlock();
 	}
 
 	void WorkerThreadSystem::init()

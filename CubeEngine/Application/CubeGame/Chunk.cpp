@@ -115,6 +115,7 @@ bool Chunk::getIsAccpectOCTtree() const
 void Chunk::submitDrawCmd()
 {
 	if (!m_isLoaded) return;
+	if (m_mesh->getIndicesSize() == 0) return;
 	RenderCommand command(m_mesh, m_material, RenderCommand::RenderType::Common);
 	setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
