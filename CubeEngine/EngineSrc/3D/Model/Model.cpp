@@ -36,4 +36,10 @@ void Model::submitDrawCmd()
         Renderer::shared()->addRenderCommand(command);
     }
 }
+
+tzw::Mesh * Model::getMesh(int id)
+{
+	return m_meshList[id];
+}
+
 } // namespace tzw

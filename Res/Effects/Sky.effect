@@ -1,0 +1,20 @@
+{
+	"shaders":{
+		"vs" : "./Res/EngineCoreRes/Shaders/Sky_v.glsl",
+		"fs" : "./Res/EngineCoreRes/Shaders/Sky_f.glsl"
+	},
+	"name" : "Sky",
+	"property" : {
+		"attributes" : [
+			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+		],
+		"maps" : [
+			["MainTexture", "tint", 1],
+			["MainTexture", "tint2", 2],
+			["MainTexture", "sun", 3],
+			["MainTexture", "moon", 4],
+			["MainTexture", "clouds1", 5],
+			["MainTexture", "clouds2", 6]
+		]
+	}
+}

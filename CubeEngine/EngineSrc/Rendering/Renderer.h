@@ -26,6 +26,7 @@ public:
 
     bool enableGUIRender() const;
     void setEnableGUIRender(bool enableGUIRender);
+	void notifySortGui();
 private:
     void initQuad();
     void geometryPass();
@@ -37,6 +38,7 @@ private:
     Effect * m_dirLightProgram;
     bool m_enable3DRender;
     bool m_enableGUIRender;
+	bool m_isNeedSortGUI;
     std::vector<RenderCommand> m_GUICommandList;
     std::vector<RenderCommand> m_CommonCommand;
     static Renderer * m_instance;

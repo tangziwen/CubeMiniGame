@@ -5,6 +5,7 @@
 #include "../Engine/Engine.h"
 #include "../Scene/SceneMgr.h"
 #include "../Mesh/Mesh.h"
+#include "../3D/Sky.h"
 namespace tzw {
 
 Renderer * Renderer::m_instance = nullptr;
@@ -12,12 +13,14 @@ Renderer::Renderer()
 {
 	m_enable3DRender = true;
 	m_enableGUIRender = true;
+	m_isNeedSortGUI = true;
 	m_gbuffer = new RenderTarget();
 	m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
 	m_dirLightProgram = new Effect();
 	m_dirLightProgram->load("DirectLight");
 	initQuad();
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	glDisable(GL_CULL_FACE);
 }
 
 Renderer *Renderer::shared()
@@ -56,46 +59,25 @@ void Renderer::renderAll()
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
+	
 	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
 	RenderBackEnd::shared()->setDepthTestEnable(true);
 	m_gbuffer->bindForWriting();
 	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+	
 	if(m_enable3DRender)
 	{
 		renderAllCommon();
 	}
-
-	auto WINDOW_WIDTH = 800;
-	auto WINDOW_HEIGHT = 600;
-	GLsizei HalfWidth = (GLsizei)(WINDOW_WIDTH / 2.0f);
-	GLsizei HalfHeight = (GLsizei)(WINDOW_HEIGHT / 2.0f);
 	RenderBackEnd::shared()->bindFrameBuffer(0);
 	if(Engine::shared()->getIsEnableOutLine())
 	{
 		glPolygonMode(GL_FRONT, GL_FILL);
 	}
-
-//	m_gbuffer->setReadBuffer(0);
-//	RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//											 0, HalfHeight, HalfWidth, WINDOW_HEIGHT);
-
-//	m_gbuffer->setReadBuffer(1);
-//	RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//											 HalfWidth, HalfHeight, WINDOW_WIDTH, WINDOW_HEIGHT);
-//	glClear(GL_COLOR_BUFFER_BIT);
-//	m_gbuffer->setReadBuffer(2);
-//	RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//											 0, 0, HalfWidth, HalfHeight);
-
-//	m_gbuffer->setReadBuffer(3);
-//	RenderBackEnd::shared()->blitFramebuffer(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT,
-//											 HalfWidth, 0, WINDOW_WIDTH, HalfHeight);
-
 	LightingPass();
-
 	skyBoxPass();
+	
 
 	if(m_enableGUIRender)
 	{
@@ -119,7 +101,11 @@ void Renderer::renderAllGUI()
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
-	std::stable_sort(m_GUICommandList.begin(),m_GUICommandList.end(),GUICommandSort);
+	if (m_isNeedSortGUI)
+	{
+		m_isNeedSortGUI = false;
+		std::stable_sort(m_GUICommandList.begin(),m_GUICommandList.end(),GUICommandSort);
+	}
 	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::DepthTest);
 	for(auto i =m_GUICommandList.begin();i!=m_GUICommandList.end();i++)
 	{
@@ -136,7 +122,7 @@ void Renderer::renderGUI(RenderCommand &command)
 
 void Renderer::renderCommon(RenderCommand &command)
 {
-	RenderBackEnd::shared()->setDepthTestMethod(command.depthTestPolicy().depthTest());
+	//RenderBackEnd::shared()->setDepthTestMethod(command.depthTestPolicy().depthTest());
 	render(command);
 }
 
@@ -204,6 +190,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::Primi
 		break;
 	}
 }
+
 ///
 /// \brief 获取是否禁用3D渲染
 /// \return
@@ -239,6 +226,11 @@ void Renderer::setEnableGUIRender(bool enableGUIRender)
 	m_enableGUIRender = enableGUIRender;
 }
 
+void Renderer::notifySortGui()
+{
+	m_isNeedSortGUI = true;
+}
+
 void Renderer::initQuad()
 {
 	m_quad = new Mesh();
@@ -254,6 +246,7 @@ void Renderer::initQuad()
 void Renderer::LightingPass()
 {
 	RenderBackEnd::shared()->bindFrameBuffer(0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BITS);
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
@@ -262,25 +255,42 @@ void Renderer::LightingPass()
 	RenderBackEnd::shared()->setDepthTestEnable(false);
 
 	m_gbuffer->bindForReadingGBuffer();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BITS);
+	
+	
 	directionalLightPass();
 }
 
 void Renderer::skyBoxPass()
 {
-	auto skyBox = g_GetCurrScene()->getSkyBox();
-	if(!skyBox) return;
-	skyBox->prepare();
-	auto mat = skyBox->getMaterial();
-	mat->use();
-	m_gbuffer->bindForReading();
-	m_gbuffer->bindDepth(1);
-	mat->setVar("TU_Depth",1);
-	mat->setVar("TU_winSize", Engine::shared()->winSize());
-	TransformationInfo info;
-	skyBox->setUpTransFormation(info);
-	applyTransform(mat->getEffect()->getProgram(), info);
-	renderPrimitive(skyBox->skyBoxMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
+	if(Sky::shared()->isEnable())
+	{
+		auto mat = Sky::shared()->getMaterial();
+		mat->use();
+		m_gbuffer->bindForReading();
+		m_gbuffer->bindDepth(0);
+		mat->setVar("TU_Depth",0);
+		mat->setVar("TU_winSize", Engine::shared()->winSize());
+		TransformationInfo info;
+		Sky::shared()->setUpTransFormation(info);
+		applyTransform(mat->getEffect()->getProgram(), info);
+		Sky::shared()->prepare();
+		renderPrimitive(Sky::shared()->getMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
+	}else
+	{
+		auto skyBox = g_GetCurrScene()->getSkyBox();
+		if(!skyBox) return;
+		skyBox->prepare();
+		auto mat = skyBox->getMaterial();
+		mat->use();
+		m_gbuffer->bindForReading();
+		m_gbuffer->bindDepth(1);
+		mat->setVar("TU_Depth",1);
+		mat->setVar("TU_winSize", Engine::shared()->winSize());
+		TransformationInfo info;
+		skyBox->setUpTransFormation(info);
+		applyTransform(mat->getEffect()->getProgram(), info);
+		renderPrimitive(skyBox->skyBoxMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
+	}
 }
 
 void Renderer::directionalLightPass()

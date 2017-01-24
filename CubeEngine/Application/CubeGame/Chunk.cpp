@@ -8,19 +8,13 @@
 #include "GameConfig.h"
 #include <iostream>
 #include "EngineSrc/Technique/MaterialPool.h"
-#include <mutex>
 #include "EngineSrc/Engine/WorkerThreadSystem.h"
 
 static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
-
-#include <thread>
 namespace tzw {
-
-static std::mutex g_lock;
-static std::mutex g_normalLock;
 static int lodList[] = { 1, 2, 4, 8};
 Chunk::Chunk(int the_x, int the_y,int the_z)
 	:m_isLoaded(false),x(the_x),y(the_y),z(the_z)
@@ -125,7 +119,6 @@ void Chunk::submitDrawCmd()
 
 void Chunk::load()
 {
-	bool isMultiThreading = true;
 	if(m_isLoaded)return;
 	reCache();
 	if (!m_mesh)
@@ -135,34 +128,15 @@ void Chunk::load()
 		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/grass_green_d.jpg", true));
 		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/adesert_mntn4v_d.jpg", true));
 	}
-
 	setCamera(g_GetCurrScene()->defaultCamera());
 	if (!m_isInitData)
 	{
-		if (isMultiThreading)
-		{
-			WorkerThreadSystem::shared()->pushOrder([&]() {initData(); genMesh(); });
-			//auto thread = std::thread([&]() {initData(); genMesh(); });
-			//thread.detach();
-		}
-		else
-		{
-			initData();
-			genMesh();
-		}
+
+		WorkerThreadSystem::shared()->pushOrder([&]() {initData(); genMesh(); });
 	}
 	else
 	{
-		if (isMultiThreading)
-		{
-			WorkerThreadSystem::shared()->pushOrder([&]() {genMesh();});
-			//auto thread = std::thread([&]() {genMesh();});
-			//thread.detach();
-		}
-		else
-		{
-			genMesh();
-		}
+		WorkerThreadSystem::shared()->pushOrder([&]() {genMesh();});
 	}
 	m_isLoaded = true;
 }
@@ -173,7 +147,7 @@ void Chunk::unload()
 	m_mesh->clear();
 }
 
-void Chunk::deformAround(vec3 pos, float value)
+void Chunk::deformAround(vec3 pos, float value, float range)
 {
 	m_tmpNeighborChunk.clear();
 	vec3 relativePost = pos - m_basePoint;
@@ -182,26 +156,53 @@ void Chunk::deformAround(vec3 pos, float value)
 	int posX = relativePost.x;
 	int posY = relativePost.y;
 	int posZ = relativePost.z;
-	auto theDrawSize = 1;
-	for (int i = -theDrawSize; i <= theDrawSize; i++)
+	int theDrawSize = range;
+	int searchSize = 15;
+	for(int i = -searchSize; i<=searchSize; i++)
 	{
-		for(int j = -theDrawSize; j<=theDrawSize; j++)
+
+		for(int j = -searchSize; j <= searchSize; j++)
 		{
-			for(int k = -theDrawSize; k<= theDrawSize; k++)
+
+			for(int k = -searchSize; k <= searchSize; k++)
 			{
-				float actualValue = value;
 				int X = posX + i;
 				int Y = posY + j;
 				int Z = posZ + k;
-				if(!isInInnerRange(X, Y, Z))
+				float theDist = (m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, -Z * BLOCK_SIZE)).distance(pos);
+				if(theDist <= range)
 				{
-					deformWithNeighbor(X, Y, Z, actualValue);
-					continue;
+					float actualValue = value;//pow(value * (1.0f - theDist / range), 3.0);
+					if(!isInInnerRange(X, Y, Z))
+					{
+						deformWithNeighbor(X, Y, Z, actualValue);
+						continue;
+					}
+					setVoxelScalar(X, Y, Z, actualValue);
 				}
-				setVoxelScalar(X, Y, Z, actualValue);
 			}
 		}
 	}
+
+	//for (int i = -theDrawSize; i <= theDrawSize; i++)
+	//{
+	//	for(int j = -theDrawSize; j<=theDrawSize; j++)
+	//	{
+	//		for(int k = -theDrawSize; k<= theDrawSize; k++)
+	//		{
+	//			float actualValue = value;
+	//			int X = posX + i;
+	//			int Y = posY + j;
+	//			int Z = posZ + k;
+	//			if(!isInInnerRange(X, Y, Z))
+	//			{
+	//				deformWithNeighbor(X, Y, Z, actualValue);
+	//				continue;
+	//			}
+	//			setVoxelScalar(X, Y, Z, actualValue);
+	//		}
+	//	}
+	//}
 	genMesh();
 	if(!m_tmpNeighborChunk.empty())
 	{
@@ -303,7 +304,6 @@ static vec3 LinearInterp(vec4 & p1, vec4 & p2, float value)
 
 void Chunk::genNormal()
 {
-	//g_normalLock.lock();
 	auto points = mcPoints;
 	auto ncellsZ = MAX_BLOCK;
 	auto ncellsY = MAX_BLOCK;
@@ -508,8 +508,6 @@ void Chunk::genNormal()
 		}
 
 	}
-		
-	//g_normalLock.unlock();
 }
 
 vec4 Chunk::getPoint(int index)
@@ -623,7 +621,6 @@ void Chunk::genMesh()
 void Chunk::initData()
 {
 	//if (mcPoints) return;
-	//g_lock.lock();
 	mcPoints = new vec4[(MAX_BLOCK +1) * (MAX_BLOCK+1) * (MAX_BLOCK + 1)];
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 	vec4 verts;
@@ -646,7 +643,6 @@ void Chunk::initData()
 		}
 	}
 	m_isInitData = true;
-	//g_lock.unlock();
 }
 
 void Chunk::checkCollide(ColliderEllipsoid *package)

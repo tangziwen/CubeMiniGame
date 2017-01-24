@@ -31,6 +31,7 @@ void GameEntry::onStart()
 {
 	//SS_GameSystem::shared()->init();
 	GameWorld::shared();
+	//Engine::shared()->setIsEnableOutLine(true);
 	//tzwS::GameSystem::shared()->startNewGame();
 }
 

@@ -143,6 +143,6 @@ void main()
 	//gl_FragColor = vec4(vec3(1.0,1.0,1.0) * calculateLightPBR(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness),Data1.a);/
 	
 	vec4 finalColor = vec4(color * calculateLightPBR(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness),Data1.a);
-	float fogFactor = getFogFactor(50.0, 150.0, -1 * pos.z);
-	gl_FragColor = finalColor * (1.0 - fogFactor) + fogFactor * vec4(0.8, 0.8, 0.8, 1.0);
+	float fogFactor = getFogFactor(50.0, 250.0, -1 * pos.z);
+	gl_FragColor = finalColor * (1.0 - fogFactor) + fogFactor * vec4(176.0 / 255.0 , 171.0 / 255.0, 203.0 / 255.0, 1.0);
 }

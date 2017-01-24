@@ -7,6 +7,7 @@
 #include <iostream>
 #include <algorithm>
 #include "../Event/EventMgr.h"
+#include "../Rendering/Renderer.h"
 namespace tzw {
 /**
  * @brief Node::Node 构造函数
@@ -280,6 +281,7 @@ void Node::addChild(Node *node)
 		}
     }
 	EventMgr::shared()->notifyListenerChange();
+	Renderer::shared()->notifySortGui();
 }
 
 /**
@@ -443,6 +445,7 @@ void Node::setGlobalPiority(unsigned int globalPiority)
 {
     m_globalPiority = globalPiority;
 	EventMgr::shared()->notifyListenerChange();
+	Renderer::shared()->notifySortGui();
 }
 
 size_t Node::getChildrenAmount()
@@ -571,6 +574,7 @@ void Node::setLocalPiority(int zOrder)
         m_parent->sortChildren();
     }
 	EventMgr::shared()->notifyListenerChange();
+	Renderer::shared()->notifySortGui();
 }
 
 static bool NodeSort(const Node *a,const Node *b)

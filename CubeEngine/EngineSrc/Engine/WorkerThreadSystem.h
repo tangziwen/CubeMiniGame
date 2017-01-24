@@ -6,26 +6,7 @@
 #include <list>
 #include <thread>
 #include <mutex>
-#include <condition_variable>
 namespace tzw{
-
-
-	class RWMutex 
-	{  
-	private:  
-		std::mutex wm, rmm;  
-		std::unique_lock<std::mutex> rmtx;  
-		std::condition_variable cond;  
-		int rd_cnt; //wait for read  
-		bool wr_cnt;    //wait for write  
-	public:  
-		RWMutex();  
-		void rLock();  
-		void rUnLock();  
-		void wLock();  
-		void wUnlock();  
-	}; 
-
 	typedef std::function<void ()> WorkerJob;
 	class WorkerThreadSystem
 	{
@@ -39,7 +20,7 @@ namespace tzw{
 	private:
 		std::list<WorkerJob> m_functionList;
 		std::thread * m_thread;
-		RWMutex m_mutex;
+		std::mutex m_rwMutex;
 	};
 }
 

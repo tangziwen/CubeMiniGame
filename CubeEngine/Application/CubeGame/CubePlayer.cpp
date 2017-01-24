@@ -6,6 +6,7 @@
 #include "EngineSrc/Event/EventMgr.h"
 #include <iostream>
 #include "3D/Primitive/CubePrimitive.h"
+#include "3D/Sky.h"
 //#include "Action/MoveBy.h"
 namespace tzw {
 
@@ -28,7 +29,7 @@ CubePlayer::CubePlayer(Node *mainRoot)
 	auto pos = getPos();
 	oldPosX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 	oldPosZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-
+	Sky::shared()->setCamera(m_camera);
 	EventMgr::shared()->addFixedPiorityListener(this);
 }
 
@@ -90,22 +91,7 @@ bool CubePlayer::onKeyRelease(int keyCode)
 	{
 	case GLFW_KEY_F:
 		{
-			std::vector<Drawable3D *> list;
-			auto pos = this->getPos();
-			AABB aabb;
-			aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
-			aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
-			g_GetCurrScene()->getRange(&list,aabb);
-			Drawable3DGroup group(&list[0],list.size());
-			Ray ray(pos,m_camera->getForward());
-			vec3 hitPoint;
-			auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
-			if(chunk)
-			{
-				auto before = clock();
-				chunk->deformAround(hitPoint, -1);
-				auto delta = clock() - before;
-			}
+
 		}
 		break;
 	case GLFW_KEY_E:
@@ -132,8 +118,24 @@ bool CubePlayer::onKeyRelease(int keyCode)
 	return false;
 }
 
-bool CubePlayer::onMousePress(int button,vec2 pos)
+bool CubePlayer::onMousePress(int button,vec2 thePos)
 {
+	std::vector<Drawable3D *> list;
+	auto pos = this->getPos();
+	AABB aabb;
+	aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
+	aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
+	g_GetCurrScene()->getRange(&list,aabb);
+	Drawable3DGroup group(&list[0],list.size());
+	Ray ray(pos,m_camera->getForward());
+	vec3 hitPoint;
+	auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
+	if(chunk)
+	{
+		auto before = clock();
+		chunk->deformAround(hitPoint, -1.0, 8.0);
+		auto delta = clock() - before;
+	}
 	//CubePrimitive * cube = new CubePrimitive(0.2, 0.2, 0.2);
 	//g_GetCurrScene()->addNode(cube);
 	//cube->setPos(getPos());

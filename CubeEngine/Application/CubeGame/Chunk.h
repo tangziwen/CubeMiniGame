@@ -27,7 +27,7 @@ public:
     virtual void submitDrawCmd();
     void load();
     void unload();
-    void deformAround(vec3 pos, float value);
+    void deformAround(vec3 pos, float value, float range = 1.0f);
     void deformWithNeighbor(int X, int Y, int Z, float value);
     void setVoxelScalar(int x, int y, int z, float scalar);
     void addVoexlScalar(int x, int y, int z, float scalar);

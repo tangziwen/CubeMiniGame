@@ -48,8 +48,12 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 		{
 			mat->initFromEffect("ModelStd");
 		}
-		mat->setTex("diffuseMap",
-						  tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["diffuseMap"].GetString(), folder)));
+		auto thestr = materialData["diffuseMap"].GetString();
+		if (strcmp(thestr, "") != 0)
+		{
+			mat->setTex("diffuseMap",
+				tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["diffuseMap"].GetString(), folder)));
+		}
 		model->m_effectList.push_back(mat);
 	}
 

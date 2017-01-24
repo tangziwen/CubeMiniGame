@@ -1,48 +1,8 @@
 #include "WorkerThreadSystem.h"
-
+#include <thread>
+#include <mutex>
 namespace tzw
 { 
-	RWMutex::RWMutex() : rmtx(rmm, std::defer_lock)
-	{
-		rd_cnt = 0;
-		wr_cnt = false;
-	}
-
-	void RWMutex::rLock()
-	{
-		while (wr_cnt)  
-		{
-			cond.wait(rmtx);
-		}
-	}
-
-	void RWMutex::rUnLock()
-	{
-
-		if (!wr_cnt)  
-			cond.notify_all();
-	}
-
-	void RWMutex::wLock()
-	{
-
-		wm.lock();  
-		while (wr_cnt)  
-			cond.wait(rmtx);  
-		wr_cnt = true;  
-		wm.unlock();
-	}
-
-	void RWMutex::wUnlock()
-	{
-
-		wm.lock();  
-		wr_cnt = false;  
-		if (!wr_cnt)  
-			cond.notify_all();  
-		wm.unlock();
-	}
-
 	TZW_SINGLETON_IMPL(WorkerThreadSystem);
 
 	WorkerThreadSystem::WorkerThreadSystem()
@@ -54,9 +14,9 @@ namespace tzw
 
 	void WorkerThreadSystem::pushOrder(WorkerJob order)
 	{
-		//m_mutex.wLock();
+		m_rwMutex.lock();
 		m_functionList.push_back(order);
-		//m_mutex.wUnlock();
+		m_rwMutex.unlock();
 	}
 
 	void WorkerThreadSystem::init()
@@ -67,21 +27,21 @@ namespace tzw
 
 	void WorkerThreadSystem::workderUpdate()
 	{
-		m_mutex.rLock();
 		for(;;)
 		{
 			WorkerJob job = nullptr;
+			m_rwMutex.lock();
 			if(!m_functionList.empty())
 			{
 				job = m_functionList.front();
 				m_functionList.pop_front();
 			}
+			m_rwMutex.unlock();
 			if(job)
 			{
 				job();
 			}
 		}
-		m_mutex.rUnLock();
 	}
 
 

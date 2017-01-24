@@ -27,13 +27,13 @@ GameMap::GameMap()
 	terrainType.SetFrequency (0.5);
 	terrainType.SetPersistence (0.25);
 
-	baseMountainTerrain.SetFrequency(0.025);
+	baseMountainTerrain.SetFrequency(0.0125);
 	baseMountainTerrain.SetOctaveCount(8);
-	baseMountainTerrain.SetPersistence(0.4);
+	baseMountainTerrain.SetPersistence(0.25);
 	baseMountainTerrain.SetLacunarity(2.0);
 	mountainTerrain.SetSourceModule(0, baseMountainTerrain);
-	mountainTerrain.SetScale(8);
-	mountainTerrain.SetBias(4);
+	mountainTerrain.SetScale(10);
+	mountainTerrain.SetBias(5);
 
 	finalTerrain.SetSourceModule(1, flatTerrain);
 	finalTerrain.SetSourceModule(0, mountainTerrain);

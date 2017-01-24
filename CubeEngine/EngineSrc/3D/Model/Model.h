@@ -13,6 +13,7 @@ public:
     void initWithFile(std::string modelFilePath);
     static Model * create(std::string modelFilePath);
     virtual void submitDrawCmd();
+	Mesh * getMesh(int id);
 private:
     std::vector<Mesh *> m_meshList;
     std::vector<Material * >m_effectList;
