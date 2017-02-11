@@ -37,6 +37,7 @@ public:
     void setIsEnableOutLine(bool isEnableOutLine);
 	void setClearColor(float r, float g, float b);
 	void setUnlimitedCursor(bool enable);
+	std::string getWorkingDirectory();
 private:
 	WindowBackEnd * m_winBackEnd;
     static Engine * m_instance;

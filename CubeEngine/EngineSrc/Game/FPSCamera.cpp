@@ -262,16 +262,6 @@ void FPSCamera::setEnableFPSFeature(bool enableFPSFeature)
     m_enableFPSFeature = enableFPSFeature;
 }
 
-
-void FPSCamera::reCache()
-{
-    Node::reCache();
-    if(!m_isStopUpdate)
-    {
-        Camera::updateFrustum();
-    }
-}
-
 void FPSCamera::setRotateQ(const Quaternion &rotateQ)
 {
     Camera::setRotateQ(rotateQ);

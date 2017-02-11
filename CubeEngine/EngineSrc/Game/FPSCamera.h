@@ -42,7 +42,6 @@ public:
     std::function<void (vec3,vec3,vec3&)> collideCheck;
     bool getEnableFPSFeature() const;
     void setEnableFPSFeature(bool enableFPSFeature);
-    virtual void reCache();
     virtual void setRotateQ(const Quaternion &rotateQ);
     void lookAt( vec3 pos);
 

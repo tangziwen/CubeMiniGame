@@ -19,6 +19,8 @@
 #include "TUtility/TUtility.h"
 #include "ShelterSurvive/SS_GameSystem.h"
 #include "GameSystem.h"
+#include "FMod/fmod.hpp"
+#include "AudioSystem/AudioSystem.h"
 using namespace tzw;
 using namespace std;
 
@@ -28,7 +30,8 @@ GameEntry::GameEntry()
 }
 
 void GameEntry::onStart()
-{
+{ 
+
 	//SS_GameSystem::shared()->init();
 	GameWorld::shared();
 	//Engine::shared()->setIsEnableOutLine(true);

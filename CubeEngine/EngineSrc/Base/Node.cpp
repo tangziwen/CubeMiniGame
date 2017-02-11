@@ -215,16 +215,6 @@ void Node::visit()
     logicUpdate(Engine::shared()->deltaTime());
 	if(!m_actionList.empty())
 		updateAction(this,Engine::shared()->deltaTime());
-
-    //数据如果有变动的话，重新缓存数据
-    if(getNeedToUpdate())
-    {
-        this->reCache();
-
-		//一个节点从逻辑更新至渲染提交的整个流程至此已经彻底结束,将重置缓存标记
-		setNeedToUpdate(false);
-    }
-
 	if(m_isDrawable && m_isValid)
 	{
 		if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
@@ -241,7 +231,12 @@ void Node::visit()
 			child->visit();
 		}
 	}
-
+	//数据如果有变动的话，重新缓存数据
+	if(getNeedToUpdate())
+	{
+		this->reCache();
+		setNeedToUpdate(false); 
+	}
 
 	//判断是否需要删除
 	if(!m_isValid)
@@ -505,6 +500,12 @@ void Node::cacheTransform()
 void Node::reCache()
 {
     cacheTransform();
+	for (auto child : m_children)
+	{
+		child->reCache();
+	}
+	//将重置缓存标记
+
 }
 
 bool Node::getIsValid() const

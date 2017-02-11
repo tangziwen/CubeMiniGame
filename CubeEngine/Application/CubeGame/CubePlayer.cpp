@@ -7,11 +7,16 @@
 #include <iostream>
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Sky.h"
-//#include "Action/MoveBy.h"
+#include "Projectile.h"
+#include "AudioSystem/AudioSystem.h"
 namespace tzw {
 
+static Audio * audio;
 CubePlayer::CubePlayer(Node *mainRoot)
 {
+
+	audio = new Audio("res/m3-1.wav");
+	
     FPSCamera * camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
     camera->setPos(vec3(5,50,-5));
     mainRoot->addChild(camera);
@@ -120,26 +125,26 @@ bool CubePlayer::onKeyRelease(int keyCode)
 
 bool CubePlayer::onMousePress(int button,vec2 thePos)
 {
-	std::vector<Drawable3D *> list;
-	auto pos = this->getPos();
-	AABB aabb;
-	aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
-	aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
-	g_GetCurrScene()->getRange(&list,aabb);
-	Drawable3DGroup group(&list[0],list.size());
-	Ray ray(pos,m_camera->getForward());
-	vec3 hitPoint;
-	auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
-	if(chunk)
-	{
-		auto before = clock();
-		chunk->deformAround(hitPoint, -1.0, 8.0);
-		auto delta = clock() - before;
-	}
-	//CubePrimitive * cube = new CubePrimitive(0.2, 0.2, 0.2);
-	//g_GetCurrScene()->addNode(cube);
-	//cube->setPos(getPos());
-	//cube->runAction(new MoveBy(3.0, m_camera->getForward() * 55));
+	//std::vector<Drawable3D *> list;
+	//auto pos = this->getPos();
+	//AABB aabb;
+	//aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
+	//aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
+	//g_GetCurrScene()->getRange(&list,aabb);
+	//Drawable3DGroup group(&list[0],list.size());
+	//Ray ray(pos,m_camera->getForward());
+	//vec3 hitPoint;
+	//auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
+	//if(chunk)
+	//{
+	//	auto before = clock();
+	//	chunk->deformAround(hitPoint, -1.0, 8.0);
+	//	auto delta = clock() - before;
+	//}
+	//} 
+	audio->Play();
+	auto bullet = new Projectile(Projectile::ProjectileType::SimpleBullet);
+	bullet->launch(getPos(), m_camera->getForward(), 55);
 	return true;
 }
 

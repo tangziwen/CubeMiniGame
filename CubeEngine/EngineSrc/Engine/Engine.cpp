@@ -10,6 +10,8 @@
 #include "EngineSrc/3D/Effect/EffectMgr.h"
 #include <iostream>	
 #include "WorkerThreadSystem.h"
+#include "AudioSystem/AudioSystem.h"
+#include <windows.h>
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 namespace tzw {
 
@@ -47,6 +49,14 @@ void Engine::setClearColor(float r, float g, float b)
 void Engine::setUnlimitedCursor(bool enable)
 {
 	m_winBackEnd->setUnlimitedCursor(enable);
+}
+
+std::string Engine::getWorkingDirectory()
+{
+	int length = 32;
+	char str[32];
+	GetCurrentDirectory(length,str);
+	return str;
 }
 
 int Engine::getDrawCallCount()
@@ -121,6 +131,7 @@ void Engine::update(float delta)
     int applyRenderBefore = clock();
     resetVerticesIndicesCount();
     Renderer::shared()->renderAll();
+	AudioSystem::shared()->update();
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
 }
 

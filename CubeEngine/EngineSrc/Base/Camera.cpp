@@ -165,8 +165,14 @@ void Camera::setUseCustomFrustumUpdate(bool useCustomFrustumUpdate)
 
 void Camera::reCache()
 {
-    Node::reCache();
-    updateFrustum();
+	cacheTransform();
+	updateFrustum();
+	for (auto child : m_children)
+	{
+		child->reCache();
+	}
+	//将重置缓存标记
+	setNeedToUpdate(false); 
 }
 
 vec3 Camera::unproject(vec3 src)
