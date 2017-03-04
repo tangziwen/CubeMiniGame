@@ -112,7 +112,7 @@ void GameWorld::startGame()
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
     m_mainRoot->addChild(crossHair);
     GameMap::shared()->setMapType(GameMap::MapType::Plain);
-    GameMap::shared()->setMaxHeight(13);
+    GameMap::shared()->setMaxHeight(10);
 	GameMap::shared()->setMinHeight(5);
     auto player = new CubePlayer(m_mainRoot);
     GameWorld::shared()->setPlayer(player);

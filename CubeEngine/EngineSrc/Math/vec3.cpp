@@ -131,6 +131,13 @@ void vec3::normalize()
     z*=len;
 }
 
+tzw::vec3 vec3::normalized()
+{
+	float len = length();
+	len = 1 / len;
+	return vec3(x * len, y * len, z * len);
+}
+
 void vec3::setLength(float newLength)
 {
     normalize();

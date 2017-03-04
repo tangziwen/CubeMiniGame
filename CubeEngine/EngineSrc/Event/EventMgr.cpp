@@ -166,7 +166,7 @@ void EventMgr::apply(float delta)
 
 void EventMgr::visitNode(Node *node)
 {
-    if (!node->getIsDrawable())
+    if (!node->getIsVisible())
     {
         return;
     }

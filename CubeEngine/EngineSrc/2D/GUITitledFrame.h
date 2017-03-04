@@ -26,6 +26,7 @@ public:
     void setIsDragable(bool isDragable);
     bool getIsShowCloseBtn() const;
     void setIsShowCloseBtn(bool isShowCloseBtn);
+	Button * getCloseBtn();
 
 protected:
     void initLabel();

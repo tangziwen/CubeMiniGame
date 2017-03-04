@@ -129,7 +129,7 @@ void GUIListView::clearHightLight()
     if(relativeIndex >=0 && relativeIndex <m_pageSize)
     {
         auto frame = static_cast<GUIFrame *>(m_itemLabel[relativeIndex]->getChildByTag(0));
-        frame->setIsDrawable(false);
+        frame->setIsVisible(false);
     }
 }
 
@@ -143,15 +143,14 @@ void GUIListView::setItemHightLight(int theCurrentIndex)
     auto relativeIndex = theCurrentIndex - baseIndex;
     if(relativeIndex >=0 && relativeIndex <m_pageSize)
     {
-
         if(m_currSelectedIndex != -1 && (preLelativeIndex>=0 && preLelativeIndex < m_pageSize))
         {
             auto prev = static_cast<GUIFrame *>(m_itemLabel[preLelativeIndex]->getChildByTag(0));
-            prev->setIsDrawable(false);
+            prev->setIsVisible(false);
         }
         m_currSelectedIndex = theCurrentIndex;
         auto frame = static_cast<GUIFrame *>(m_itemLabel[relativeIndex]->getChildByTag(0));
-        frame->setIsDrawable(true);
+        frame->setIsVisible(true);
     }
 }
 
@@ -190,7 +189,7 @@ void GUIListView::initUI(vec2 theSize)
         label->setPos2D(m_margin.x,theSize.y - m_margin.y - i * (fontSize + m_itemSpace));
         label->addChild(theFrame);
         theFrame->setTag(0);
-        theFrame->setIsDrawable(false);
+        theFrame->setIsVisible(false);
         m_frame->addChild(label);
         m_itemLabel.push_back(label);
     }

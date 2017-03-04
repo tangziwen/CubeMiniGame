@@ -157,7 +157,7 @@ float GameMap::getDensity(vec3 pos)
             return delta;
         }else
         {
-            return -delta;
+            return -1.0;
         }
     }
         break;
@@ -169,7 +169,7 @@ float GameMap::getDensity(vec3 pos)
             return 1;
         }else
         {
-            return -1;
+            return -1.0;
         }
     }
         break;

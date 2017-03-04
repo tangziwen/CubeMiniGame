@@ -14,7 +14,7 @@ namespace tzw {
 static Audio * audio;
 CubePlayer::CubePlayer(Node *mainRoot)
 {
-
+	m_currMode = Mode::MODE_DEFORM_SPHERE;
 	audio = new Audio("res/m3-1.wav");
 	
     FPSCamera * camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
@@ -28,7 +28,7 @@ CubePlayer::CubePlayer(Node *mainRoot)
     m_gunModel = Model::create("./Res/diediedie.tzw");
     m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
     m_gunModel->setRotateE(vec3(0, -90, 0));
-    m_gunModel->setPos(vec3(0.08,-0.2,-0.25));
+    m_gunModel->setPos(vec3(0.04,-0.2,-0.20));
     m_camera->addChild(m_gunModel);
 
 	auto pos = getPos();
@@ -36,6 +36,11 @@ CubePlayer::CubePlayer(Node *mainRoot)
 	oldPosZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 	Sky::shared()->setCamera(m_camera);
 	EventMgr::shared()->addFixedPiorityListener(this);
+
+	m_placeHolder = new CubePrimitive(1.0,1.0,1.0);
+	m_placeHolder->setIsHitable(false);
+	g_GetCurrScene()->addNode(m_placeHolder);
+	m_placeHolder->setPos(0, 0, -5);
 }
 
 FPSCamera *CubePlayer::camera() const
@@ -70,6 +75,7 @@ void CubePlayer::logicUpdate(float dt)
 	{
 		GameWorld::shared()->loadChunksAroundPlayer();
 	}
+	updatePlaceHolder();
 }
 bool CubePlayer::checkIsNeedUpdateChunk()
 {
@@ -87,6 +93,19 @@ bool CubePlayer::checkIsNeedUpdateChunk()
 
 bool CubePlayer::onKeyPress(int keyCode)
 {
+
+	switch(keyCode)
+	{
+	case GLFW_KEY_1:
+		break;
+	case GLFW_KEY_2:
+		break;
+	case GLFW_KEY_3:
+		break;
+	case GLFW_KEY_4:
+		break;
+
+	}
 	return false;
 }
 
@@ -113,7 +132,7 @@ bool CubePlayer::onKeyRelease(int keyCode)
 			auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
 			if(chunk)
 			{
-				chunk->deformAround(hitPoint, 1);
+				chunk->deformSphere(hitPoint, 100.0, 2.0f);
 			}
 		}
 		break;
@@ -125,27 +144,103 @@ bool CubePlayer::onKeyRelease(int keyCode)
 
 bool CubePlayer::onMousePress(int button,vec2 thePos)
 {
-	//std::vector<Drawable3D *> list;
-	//auto pos = this->getPos();
-	//AABB aabb;
-	//aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
-	//aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
-	//g_GetCurrScene()->getRange(&list,aabb);
-	//Drawable3DGroup group(&list[0],list.size());
-	//Ray ray(pos,m_camera->getForward());
-	//vec3 hitPoint;
-	//auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
+
+
+	auto cube = new CubePrimitive(1.0, 1.0, 1.0);
+	g_GetCurrScene()->addNode(cube);
+	cube->setPos(m_placeHolder->getPos());
+	return true;
+	std::vector<Drawable3D *> list;
+	auto pos = this->getPos();
+	AABB aabb;
+	aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
+	aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
+	g_GetCurrScene()->getRange(&list,aabb);
+	Drawable3DGroup group(&list[0],list.size());
+	Ray ray(pos,m_camera->getForward());
+	vec3 hitPoint;
+	group.hitByRay(ray,hitPoint);
+	m_placeHolder->setPos(hitPoint);
+	//auto chunk = dynamic_cast<Chunk *>(group.hitByRay(ray,hitPoint));
 	//if(chunk)
 	//{
 	//	auto before = clock();
-	//	chunk->deformAround(hitPoint, -1.0, 8.0);
+	//	chunk->deformSphere(hitPoint, -100.0, 2.0f);
 	//	auto delta = clock() - before;
 	//}
+
 	//} 
-	audio->Play();
-	auto bullet = new Projectile(Projectile::ProjectileType::SimpleBullet);
-	bullet->launch(getPos(), m_camera->getForward(), 55);
+	//audio->Play();
+	//auto bullet = new Projectile(Projectile::ProjectileType::SimpleBullet);
+	//bullet->launch(getPos(), m_camera->getForward(), 55);
+
+	//auto sphere = new SpherePrimitive(3.0,30);
+	//g_GetCurrScene()->addNode(sphere);
+	//sphere->setPos(m_placeHolder->getWorldPos(vec3(0, 0, 0)));
 	return true;
+}
+
+void CubePlayer::modeSwitch(Mode newMode)
+{
+	m_currMode = newMode;
+}
+
+void CubePlayer::updatePlaceHolder()
+{
+	std::vector<Drawable3D *> list;
+	auto pos = this->getPos();
+	AABB aabb;
+	aabb.update(vec3(pos.x - 8,pos.y - 8,pos.z - 8));
+	aabb.update(vec3(pos.x + 8,pos.y + 8 ,pos.z + 8));
+	g_GetCurrScene()->getRange(&list,aabb);
+	Drawable3DGroup group(&list[0],list.size());
+	Ray ray(pos,m_camera->getForward());
+	vec3 hitPoint;
+	auto result = group.hitByRay(ray,hitPoint);
+	if (result)
+	{
+		if (result->getTypeID() == TYPE_CHUNK)
+		{
+			m_placeHolder->setPos(hitPoint + vec3(0, 0.5, 0.0));
+		}
+		else
+		{
+			CubePrimitive * primitive = static_cast<CubePrimitive *>(result);
+			auto aabb = result->getAABB();
+			RayAABBSide side;
+			vec3 hitPoint;
+			ray.intersectAABB(aabb,&side, hitPoint);
+			switch (side)
+			{
+			case tzw::RayAABBSide::up:
+				m_placeHolder->setPos(aabb.centre() + vec3(0, 1.0, 0));
+				break;
+			case tzw::RayAABBSide::down:
+				m_placeHolder->setPos(aabb.centre() + vec3(0, -1.0, 0));
+				break;
+			case tzw::RayAABBSide::left:
+				m_placeHolder->setPos(aabb.centre() + vec3(-1.0, 0, 0));
+				break;
+			case tzw::RayAABBSide::right:
+				m_placeHolder->setPos(aabb.centre() + vec3(1.0, 0, 0));
+				break;
+			case tzw::RayAABBSide::front:
+				m_placeHolder->setPos(aabb.centre() + vec3(0, 0, 1.0));
+				break;
+			case tzw::RayAABBSide::back:
+				m_placeHolder->setPos(aabb.centre() + vec3(0, 0, -1.0));
+				break;
+			default:
+				break;
+			}
+		}
+	}
+	else
+	{
+
+		m_placeHolder->setPos(m_camera->getForward() * 5.0 + m_camera->getPos());
+	}
+	
 }
 
 } // namespace tzw

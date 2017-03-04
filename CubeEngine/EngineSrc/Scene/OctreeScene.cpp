@@ -206,11 +206,11 @@ void OctreeScene::cullingByCamera_R(OctreeNode *node, Camera *camera)
             Drawable3D * obj = node->m_drawlist[i];
             if(!camera->isOutOfFrustum(obj->getAABB()))
             {
-                obj->setIsDrawable(true);
+                obj->setIsVisible(true);
                 m_visibleList.push_back (obj);
             }else
             {
-                obj->setIsDrawable(false);
+                obj->setIsVisible(false);
             }
         }
 
@@ -229,7 +229,7 @@ void OctreeScene::setIndrawable_R(OctreeNode *node)
     for(int i=0;i<node->m_drawlist.size();i++)
     {
         Drawable3D * obj = node->m_drawlist[i];
-        obj->setIsDrawable(false);
+        obj->setIsVisible(false);
     }
     if(!node->m_child[0]) return;//terminal node return directly
     for(int i=0;i<8;i++)
@@ -243,7 +243,7 @@ void OctreeScene::setDrawable_R(OctreeNode *node)
     for(int i=0;i<node->m_drawlist.size();i++)
     {
         Drawable3D * obj = node->m_drawlist[i];
-        obj->setIsDrawable(true);
+        obj->setIsVisible(true);
     }
     if(!node->m_child[0]) return;//terminal node return directly
     for(int i=0;i<8;i++)

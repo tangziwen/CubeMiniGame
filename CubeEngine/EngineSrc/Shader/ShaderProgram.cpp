@@ -199,6 +199,7 @@ int ShaderProgram::uniformLocation(std::string name)
 
 void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType)
 {
+	printf("create shader!");
     GLuint ShaderObj = glCreateShader(ShaderType);
 
     if (ShaderObj == 0) {

@@ -18,9 +18,9 @@
 #include "EngineSrc/3D/Vegetation/Grass.h"
 #include "TUtility/TUtility.h"
 #include "ShelterSurvive/SS_GameSystem.h"
-#include "GameSystem.h"
 #include "FMod/fmod.hpp"
 #include "AudioSystem/AudioSystem.h"
+#include "StrategyGame/s_GameSystem.h"
 using namespace tzw;
 using namespace std;
 
@@ -32,10 +32,16 @@ GameEntry::GameEntry()
 void GameEntry::onStart()
 { 
 
-	//SS_GameSystem::shared()->init();
+#if CURRGAME == GAME_MODE_PLAYGROUND
 	GameWorld::shared();
+#elif CURRGAME == GAME_MODE_STRATEGY
+	s_GameSystem::shared()->start("Strategy/scenario/1.json");
+#else
+	SS_GameSystem::shared()->init();
+#endif
+	
 	//Engine::shared()->setIsEnableOutLine(true);
-	//tzwS::GameSystem::shared()->startNewGame();
+	//
 }
 
 void GameEntry::onExit()
@@ -45,11 +51,5 @@ void GameEntry::onExit()
 
 void GameEntry::onUpdate(float delta)
 {
-	m_ticks += delta;
-	if(m_ticks > 1.0)
-	{
-		tzwS::GameSystem::shared()->update();
-		m_ticks = 0.0;
-	}
 	
 }

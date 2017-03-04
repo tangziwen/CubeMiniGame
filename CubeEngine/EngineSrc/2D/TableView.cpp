@@ -69,10 +69,10 @@ void TableView::focus(unsigned int index)
 {
     if(m_currentFocusNode)
     {
-        m_currentFocusNode->setIsDrawable(false);
+        m_currentFocusNode->setIsVisible(false);
     }
     auto node = m_tableList[index];
-    node->setIsDrawable(true);
+    node->setIsVisible(true);
     m_currentFocusNode = node;
 }
 

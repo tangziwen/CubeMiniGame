@@ -23,6 +23,7 @@ FPSCamera::FPSCamera()
     setUseCustomFrustumUpdate(true);
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
+	setLocalPiority(-1);
 }
 
 FPSCamera *FPSCamera::create(Camera *cloneObj)

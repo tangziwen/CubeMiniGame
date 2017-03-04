@@ -32,5 +32,11 @@ VertexData::VertexData(vec3 pos, vec4 color)
 
 }
 
+VertexData::VertexData(vec3 pos, vec3 normal)
+	:m_pos(pos),m_normal(normal),m_texCoord(vec2()), m_color(vec4(1.0, 1.0, 1.0, 1.0))
+{
+
+}
+
 } // namespace tzw
 

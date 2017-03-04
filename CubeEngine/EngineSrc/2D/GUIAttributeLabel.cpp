@@ -28,7 +28,7 @@ bool GUIAttributeLabel::isNeedShowBG() const
 void GUIAttributeLabel::setIsNeedShowBG(bool isNeedShowBG)
 {
     m_isNeedShowBG = isNeedShowBG;
-    m_frame->setIsDrawable(isNeedShowBG);
+    m_frame->setIsVisible(isNeedShowBG);
 }
 
 vec2 GUIAttributeLabel::getContentSize()

@@ -30,6 +30,7 @@ Chunk::Chunk(int the_x, int the_y,int the_z)
 	m_isNeedSubmitMesh = false;
 	reCacheAABB();
 	mcPoints = nullptr;
+	m_tmpNeighborChunk.clear();
 }
 
 vec3 Chunk::getGridPos(int the_x, int the_y, int the_z)
@@ -147,7 +148,7 @@ void Chunk::unload()
 	m_mesh->clear();
 }
 
-void Chunk::deformAround(vec3 pos, float value, float range)
+void Chunk::deformSphere(vec3 pos, float value, float range)
 {
 	m_tmpNeighborChunk.clear();
 	vec3 relativePost = pos - m_basePoint;
@@ -156,8 +157,7 @@ void Chunk::deformAround(vec3 pos, float value, float range)
 	int posX = relativePost.x;
 	int posY = relativePost.y;
 	int posZ = relativePost.z;
-	int theDrawSize = range;
-	int searchSize = 15;
+	int searchSize = int(range / BLOCK_SIZE) + 1;
 	for(int i = -searchSize; i<=searchSize; i++)
 	{
 
@@ -172,37 +172,12 @@ void Chunk::deformAround(vec3 pos, float value, float range)
 				float theDist = (m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, -Z * BLOCK_SIZE)).distance(pos);
 				if(theDist <= range)
 				{
-					float actualValue = value;//pow(value * (1.0f - theDist / range), 3.0);
-					if(!isInInnerRange(X, Y, Z))
-					{
-						deformWithNeighbor(X, Y, Z, actualValue);
-						continue;
-					}
-					setVoxelScalar(X, Y, Z, actualValue);
+					float actualValue = value * ((range - theDist)/ range);
+					deform(X, Y, Z, actualValue);
 				}
 			}
 		}
 	}
-
-	//for (int i = -theDrawSize; i <= theDrawSize; i++)
-	//{
-	//	for(int j = -theDrawSize; j<=theDrawSize; j++)
-	//	{
-	//		for(int k = -theDrawSize; k<= theDrawSize; k++)
-	//		{
-	//			float actualValue = value;
-	//			int X = posX + i;
-	//			int Y = posY + j;
-	//			int Z = posZ + k;
-	//			if(!isInInnerRange(X, Y, Z))
-	//			{
-	//				deformWithNeighbor(X, Y, Z, actualValue);
-	//				continue;
-	//			}
-	//			setVoxelScalar(X, Y, Z, actualValue);
-	//		}
-	//	}
-	//}
 	genMesh();
 	if(!m_tmpNeighborChunk.empty())
 	{
@@ -214,6 +189,42 @@ void Chunk::deformAround(vec3 pos, float value, float range)
 	m_tmpNeighborChunk.clear();
 }
 
+
+void Chunk::deformCube(vec3 pos, float value, float range /*= 1.0f*/)
+{
+	m_tmpNeighborChunk.clear();
+	vec3 relativePost = pos - m_basePoint;
+	relativePost = relativePost / BLOCK_SIZE;
+	relativePost.z *= -1;
+	int posX = relativePost.x;
+	int posY = relativePost.y;
+	int posZ = relativePost.z;
+	int searchSize = int(range / BLOCK_SIZE);
+	for(int i = -searchSize; i<=searchSize; i++)
+	{
+
+		for(int j = -searchSize; j <= searchSize; j++)
+		{
+
+			for(int k = -searchSize; k <= searchSize; k++)
+			{
+				int X = posX + i;
+				int Y = posY + j;
+				int Z = posZ + k;
+				deform(X, Y, Z, value);
+			}
+		}
+	}
+	genMesh();
+	if(!m_tmpNeighborChunk.empty())
+	{
+		for(auto chunk :m_tmpNeighborChunk)
+		{
+			chunk->genMesh();
+		}
+	}
+	m_tmpNeighborChunk.clear();
+}
 
 void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 {
@@ -255,7 +266,7 @@ void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 					if(offsetZ == -1) nz += MAX_BLOCK; else if(offsetZ == 1 ) nz -= MAX_BLOCK;
 					neighborChunk->setVoxelScalar(nx, ny, nz, value);
 					auto result = std::find(m_tmpNeighborChunk.begin(), m_tmpNeighborChunk.end(), neighborChunk);
-					if (result == m_tmpNeighborChunk.end() && neighborChunk != this)
+					if (result == m_tmpNeighborChunk.end() && neighborChunk != this && neighborChunk != nullptr)
 					{
 						m_tmpNeighborChunk.push_back(neighborChunk);
 					}
@@ -264,12 +275,19 @@ void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 		}
 	}
 }
-void Chunk::setVoxelScalar(int x, int y, int z, float scalar)
+void Chunk::setVoxelScalar(int x, int y, int z, float scalar, bool isAdd)
 {
 	if(!isInOutterRange(x,y,z)) return;
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 	int ind = x*YtimeZ + y*(MAX_BLOCK + 1) + z;
-	mcPoints[ind].w += scalar;
+	if (isAdd)
+	{
+		mcPoints[ind].w += scalar;
+	}
+	else
+	{
+		mcPoints[ind].w = scalar;
+	}
 }
 
 void Chunk::addVoexlScalar(int x, int y, int z, float scalar)
@@ -678,6 +696,21 @@ void Chunk::setLod(unsigned int newLod)
 unsigned int Chunk::getLod()
 {
 	return m_lod;
+}
+
+void Chunk::deform(int X, int Y, int Z, float actualVal)
+{
+	if(!isInInnerRange(X, Y, Z))
+	{
+		deformWithNeighbor(X, Y, Z, actualVal);
+		return;
+	}
+	setVoxelScalar(X, Y, Z, actualVal);
+}
+
+unsigned int Chunk::getTypeID()
+{
+	return TYPE_CHUNK;
 }
 
 bool Chunk::isInEdge(int i, int j, int k)

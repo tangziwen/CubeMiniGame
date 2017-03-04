@@ -87,6 +87,16 @@ void Drawable3D::checkCollide(ColliderEllipsoid *package)
 
 }
 
+bool Drawable3D::getIsHitable() const
+{
+	return m_isHitable;
+}
+
+void Drawable3D::setIsHitable(bool val)
+{
+	m_isHitable = val;
+}
+
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 {
 	init(obj, count);
@@ -122,6 +132,8 @@ Drawable3D *  Drawable3DGroup::hitByRay(const Ray &ray, vec3 &hitPoint) const
     for(int i =0;i<m_list.size();i++)
     {
         Drawable3D * obj = m_list[i];
+		if (! obj->getIsHitable())
+			continue;
         auto hitP = vec3();
         if(obj->intersectByRay(ray, hitP))
         {

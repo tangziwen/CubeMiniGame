@@ -15,12 +15,16 @@ Renderer::Renderer()
 	m_enableGUIRender = true;
 	m_isNeedSortGUI = true;
 	m_gbuffer = new RenderTarget();
+	
 	m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
+	m_offScreenBuffer = new RenderTarget();
+	m_offScreenBuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight(),1,false);
 	m_dirLightProgram = new Effect();
 	m_dirLightProgram->load("DirectLight");
+	m_postEffect = new Effect();
+	m_postEffect->load("postEffect");
 	initQuad();
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
-	glDisable(GL_CULL_FACE);
 }
 
 Renderer *Renderer::shared()
@@ -55,29 +59,11 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
-	if(Engine::shared()->getIsEnableOutLine())
-	{
-		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-	}
-	
-	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
-	RenderBackEnd::shared()->setDepthTestEnable(true);
-	m_gbuffer->bindForWriting();
-	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	if(m_enable3DRender)
-	{
-		renderAllCommon();
-	}
-	RenderBackEnd::shared()->bindFrameBuffer(0);
-	if(Engine::shared()->getIsEnableOutLine())
-	{
-		glPolygonMode(GL_FRONT, GL_FILL);
-	}
+
+	geometryPass();
 	LightingPass();
 	skyBoxPass();
-	
+	postEffectPass();
 
 	if(m_enableGUIRender)
 	{
@@ -243,20 +229,38 @@ void Renderer::initQuad()
 	m_quad->finish(true);
 }
 
+void Renderer::geometryPass()
+{
+	m_gbuffer->bindForWriting();
+	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	if(Engine::shared()->getIsEnableOutLine())
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	}
+	RenderBackEnd::shared()->setDepthTestEnable(true);
+	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	if(m_enable3DRender)
+	{
+		renderAllCommon();
+	}
+	if(Engine::shared()->getIsEnableOutLine())
+	{
+		glPolygonMode(GL_FRONT, GL_FILL);
+	}
+}
+
 void Renderer::LightingPass()
 {
-	RenderBackEnd::shared()->bindFrameBuffer(0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BITS);
+	m_offScreenBuffer->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
 											RenderFlag::BlendingFactor::One);
 	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
 	RenderBackEnd::shared()->setDepthTestEnable(false);
-
 	m_gbuffer->bindForReadingGBuffer();
-	
-	
 	directionalLightPass();
 }
 
@@ -264,6 +268,7 @@ void Renderer::skyBoxPass()
 {
 	if(Sky::shared()->isEnable())
 	{
+		glDisable(GL_CULL_FACE);
 		auto mat = Sky::shared()->getMaterial();
 		mat->use();
 		m_gbuffer->bindForReading();
@@ -275,6 +280,7 @@ void Renderer::skyBoxPass()
 		applyTransform(mat->getEffect()->getProgram(), info);
 		Sky::shared()->prepare();
 		renderPrimitive(Sky::shared()->getMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
+		glEnable(GL_CULL_FACE);
 	}else
 	{
 		auto skyBox = g_GetCurrScene()->getSkyBox();
@@ -291,6 +297,23 @@ void Renderer::skyBoxPass()
 		applyTransform(mat->getEffect()->getProgram(), info);
 		renderPrimitive(skyBox->skyBoxMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
 	}
+}
+
+void Renderer::postEffectPass()
+{
+	auto currScene = g_GetCurrScene();
+	m_offScreenBuffer->bindForReadingGBuffer();
+	RenderBackEnd::shared()->bindFrameBuffer(0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	
+	auto program = m_postEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	auto cam = currScene->defaultCamera();
+
+	program->use();
+	renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::directionalLightPass()

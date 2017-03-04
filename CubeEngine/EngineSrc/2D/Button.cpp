@@ -7,7 +7,8 @@
 #define BORDER_RIGHT 1
 #define BORDER_BOTTOM 2
 #define BORDER_TOP 3
-namespace tzw {
+namespace tzw
+{
 Button::Button():
     m_isTouched(false)
 {
@@ -41,8 +42,8 @@ Button *Button::create(vec4 color, vec2 Size)
     btn->m_frameBG = GUIFrame::create(color,Size);
     btn->addChild(btn->m_frameBG);
     btn->m_frameBG->setLocalPiority(0);
-	//btn->setContentSize(Size);
-	btn->adjustBorders();
+    //btn->setContentSize(Size);
+    btn->adjustBorders();
     return btn;
 }
 
@@ -60,55 +61,56 @@ void Button::setStr(std::string str)
 bool Button::onMouseRelease(int button, vec2 pos)
 {
     if(m_isTouched)
-    {
-        if(m_type == Type::SimpleText)
         {
-            m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
-            auto cs = m_frameBG->getContentSize();
-            m_label->setPos2D(cs.x/2,cs.y/2);
-        }
+            if(m_type == Type::SimpleText)
+                {
+                    m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
+                    auto cs = m_frameBG->getContentSize();
+                    m_label->setPos2D(cs.x/2,cs.y/2);
+                }
 
-        m_isTouched = false;
-        if (m_frameBG->isInTheRect(pos))
-        {
-			m_evtBtn = button;
-			m_evtPos = pos;
-            if(m_onBtnClicked)
-            {
-                m_onBtnClicked(this);
-            }
-            return true;
+            m_isTouched = false;
+            if (m_frameBG->isInTheRect(pos))
+                {
+                    m_evtBtn = button;
+                    m_evtPos = pos;
+                    if(m_onBtnClicked)
+                        {
+                            m_onBtnClicked(this);
+                        }
+                    return true;
+                }
         }
-    }
     return false;
 }
 
 bool Button::onMousePress(int button, vec2 pos)
 {
     if (m_frameBG->isInTheRect(pos))
-    {
-
-        if(m_type == Type::SimpleText)
         {
-            m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColorHightLight);
-            auto cs = m_frameBG->getContentSize();
-            m_label->setPos2D(cs.x/2 + 2,cs.y/2 -2);
+
+            if(m_type == Type::SimpleText)
+                {
+                    m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColorHightLight);
+                    auto cs = m_frameBG->getContentSize();
+                    m_label->setPos2D(cs.x/2 + 2,cs.y/2 -2);
+                }
+            m_isTouched = true;
+            return true;
         }
-        m_isTouched = true;
-        return true;
-    }
     return false;
 }
 
 bool Button::onMouseMove(vec2 pos)
 {
     if(m_isTouched)
-    {
-        return true;
-    }else
-    {
-        return false;
-    }
+        {
+            return true;
+        }
+    else
+        {
+            return false;
+        }
 }
 
 //bool Button::isInTheRect(vec2 touchPos)
@@ -137,13 +139,13 @@ void Button::setOnBtnClicked(const std::function<void (Button *)> &onBtnClicked)
 
 void Button::setContentSize(const vec2 &getContentSize)
 {
-	Drawable2D::setContentSize(getContentSize);
-	setFrameSize(getContentSize);
+    Drawable2D::setContentSize(getContentSize);
+    setFrameSize(getContentSize);
 }
 
 vec2 Button::getContentSize()
 {
-   return m_frameBG->getContentSize();
+    return m_frameBG->getContentSize();
 }
 
 LabelNew *Button::getLabel() const
@@ -161,17 +163,17 @@ void Button::setFrameSize(vec2 size)
     m_frameBG->setContentSize(size);
     adjustBorders();
     if(m_label)
-    {
-        m_label->setPos2D(size.x/2,size.y/2);
-    }
+        {
+            m_label->setPos2D(size.x/2,size.y/2);
+        }
 }
 
 void Button::manualTrigger()
 {
     if(m_onBtnClicked)
-    {
-        m_onBtnClicked(this);
-    }
+        {
+            m_onBtnClicked(this);
+        }
 }
 
 GUIFrame *Button::getFrameBG() const
@@ -205,11 +207,11 @@ void Button::adjustBorders()
 void Button::initBorders()
 {
     for (int i =0; i<4; i++)
-    {
-        m_borders[i] = GUIFrame::create(vec4(33.0/255,33.0/255,37.0/255,1.0));
-        this->addChild(m_borders[i]);
-        m_borders[i]->setLocalPiority(1);
-    }
+        {
+            m_borders[i] = GUIFrame::create(vec4(33.0/255,33.0/255,37.0/255,1.0));
+            this->addChild(m_borders[i]);
+            m_borders[i]->setLocalPiority(1);
+        }
 }
 
 

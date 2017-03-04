@@ -14,6 +14,7 @@ public:
     VertexData(vec3 pos, vec3 normal,vec2 texCoord);
     VertexData(vec3 pos);
 	VertexData(vec3 pos, vec4 color);
+	VertexData(vec3 pos, vec3 normal);
     vec3 m_pos;
     vec3 m_normal;
     vec2 m_texCoord;

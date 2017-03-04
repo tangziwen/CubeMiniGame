@@ -10,4 +10,5 @@ extern int GAME_MAP_DEPTH;
 extern int GAME_MAP_HEIGHT;
 extern int CUBE_MAP_SIZE;
 
+#define TYPE_CHUNK  100
 #endif // GAMECONFIG_H

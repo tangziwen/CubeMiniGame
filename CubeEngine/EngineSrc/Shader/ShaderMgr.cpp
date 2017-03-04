@@ -11,7 +11,9 @@ ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char *
     auto result = m_pool.find(info);
     if(result == m_pool.end())
     {
+		printf("create shader %s %s\n",vs.c_str(), fs.c_str());
         ShaderProgram * shader = new ShaderProgram(vs.c_str(),fs.c_str(), tcs, tes);
+		printf("after create shader\n");
         m_pool.insert(std::make_pair(info,shader));
         return shader;
     }else

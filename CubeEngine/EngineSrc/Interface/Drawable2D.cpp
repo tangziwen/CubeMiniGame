@@ -1,4 +1,5 @@
 #include "Drawable2D.h"
+#include "Event/EventMgr.h"
 
 namespace tzw {
 
@@ -64,6 +65,12 @@ void Drawable2D::setAlpha(float alphaValue)
 {
     m_uniformColor.w = alphaValue;
     m_material->setVar("color", m_uniformColor);
+}
+
+void Drawable2D::setIsVisible(bool isDrawable)
+{
+	Drawable::setIsVisible(isDrawable);
+	EventMgr::shared()->notifyListenerChange();
 }
 
 } // namespace tzw

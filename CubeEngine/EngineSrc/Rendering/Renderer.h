@@ -32,10 +32,12 @@ private:
     void geometryPass();
     void LightingPass();
     void skyBoxPass();
+	void postEffectPass();
     void directionalLightPass();
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
     Mesh * m_quad;
     Effect * m_dirLightProgram;
+	Effect * m_postEffect;
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;
@@ -43,6 +45,7 @@ private:
     std::vector<RenderCommand> m_CommonCommand;
     static Renderer * m_instance;
     RenderTarget * m_gbuffer;
+	RenderTarget * m_offScreenBuffer;
 };
 
 } // namespace tzw

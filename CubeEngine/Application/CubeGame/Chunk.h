@@ -27,9 +27,10 @@ public:
     virtual void submitDrawCmd();
     void load();
     void unload();
-    void deformAround(vec3 pos, float value, float range = 1.0f);
+    void deformSphere(vec3 pos, float value, float range = 1.0f);
+	void deformCube(vec3 pos, float value, float range = 1.0f);
     void deformWithNeighbor(int X, int Y, int Z, float value);
-    void setVoxelScalar(int x, int y, int z, float scalar);
+    void setVoxelScalar(int x, int y, int z, float scalar, bool isAdd = true);
     void addVoexlScalar(int x, int y, int z, float scalar);
     void genNormal();
     vec4 getPoint(int index);
@@ -41,6 +42,8 @@ public:
     virtual void setUpTransFormation(TransformationInfo & info);
 	void setLod(unsigned int newLod);
 	unsigned int getLod();
+	void deform(int x, int y, int z, float actualVal);
+	virtual unsigned int getTypeID();
 private:
     bool m_isLoaded;
     bool m_isInitData;

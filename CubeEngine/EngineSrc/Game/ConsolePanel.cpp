@@ -101,10 +101,10 @@ void ConsolePanel::setIsVisible(bool isVisible)
 	m_isVisible = isVisible;
 	if(m_isVisible)
 	{
-		m_node->setIsDrawable(true);
+		m_node->setIsVisible(true);
 	}else
 	{
-		m_node->setIsDrawable(false);
+		m_node->setIsVisible(false);
 	}
 }
 

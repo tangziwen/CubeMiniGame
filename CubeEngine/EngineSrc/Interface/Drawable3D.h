@@ -24,10 +24,13 @@ public:
     DepthPolicy& getDepthPolicy();
     void setDepthPolicy(const DepthPolicy &depthPolicy);
     virtual void checkCollide(ColliderEllipsoid * package);
+	bool getIsHitable() const;
+	void setIsHitable(bool val);
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;
     DepthPolicy m_depthPolicy;
+	bool m_isHitable;
 };
 
 class Drawable3DGroup

@@ -13,7 +13,7 @@ namespace tzw {
  * @brief Node::Node 构造函数
  */
 Node::Node()
-    :m_isDrawable(true),
+    :m_isVisible(true),
       m_isValid(true),
       m_scene(nullptr),
       m_scale(vec3(1,1,1)),
@@ -215,7 +215,13 @@ void Node::visit()
     logicUpdate(Engine::shared()->deltaTime());
 	if(!m_actionList.empty())
 		updateAction(this,Engine::shared()->deltaTime());
-	if(m_isDrawable && m_isValid)
+	//数据如果有变动的话，重新缓存数据
+	if(getNeedToUpdate())
+	{
+		this->reCache();
+		setNeedToUpdate(false); 
+	}
+	if(m_isVisible && m_isValid)
 	{
 		if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
 		{
@@ -231,12 +237,7 @@ void Node::visit()
 			child->visit();
 		}
 	}
-	//数据如果有变动的话，重新缓存数据
-	if(getNeedToUpdate())
-	{
-		this->reCache();
-		setNeedToUpdate(false); 
-	}
+
 
 	//判断是否需要删除
 	if(!m_isValid)
@@ -385,15 +386,14 @@ Node::NodeType Node::getNodeType()
 {
     return NodeType::NormalNode;
 }
-bool Node::getIsDrawable() const
+bool Node::getIsVisible() const
 {
-    return m_isDrawable;
+    return m_isVisible;
 }
 
-void Node::setIsDrawable(bool isDrawable)
+void Node::setIsVisible(bool isVisible)
 {
-    m_isDrawable = isDrawable;
-	//EventMgr::shared()->notifyListenerChange();
+    m_isVisible = isVisible;
 }
 
 void Node::purgeAllChildren()
@@ -456,6 +456,11 @@ unsigned int Node::getTag() const
 void Node::setTag(unsigned int tag)
 {
     m_tag = tag;
+}
+
+unsigned int Node::getTypeID()
+{
+	return 0;
 }
 
 ///

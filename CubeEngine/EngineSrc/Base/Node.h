@@ -62,8 +62,8 @@ public:
 	bool getNeedToUpdate() const;
 	void setNeedToUpdate(bool needToUpdate);
 	virtual NodeType getNodeType();
-	bool getIsDrawable() const;
-	void setIsDrawable(bool isDrawable);
+	bool getIsVisible() const;
+	virtual void setIsVisible(bool isVisible);
 	void purgeAllChildren();
 	virtual bool getIsAccpectOCTtree() const;
 	void setIsAccpectOCTtree(bool isAccpectOCTtree);
@@ -88,8 +88,9 @@ public:
 	size_t getChildrenAmount();
 	unsigned int getTag() const;
 	void setTag(unsigned int tag);
+	virtual unsigned int getTypeID();
 protected:
-	bool m_isDrawable;
+	bool m_isVisible;
 	std::deque<Node *> m_children;
 	bool m_isValid;
 	Scene* m_scene;

@@ -40,17 +40,17 @@ namespace tzw {
 
 	void SS_MainMenu::show()
 	{
-		setIsDrawable(true);
+		setIsVisible(true);
 	}
 
 	void SS_MainMenu::hide()
 	{
-		setIsDrawable(false);
+		setIsVisible(false);
 	}
 
 	void SS_MainMenu::toggle()
 	{
-		if (getIsDrawable())
+		if (getIsVisible())
 		{
 			hide();
 		}else

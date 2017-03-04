@@ -120,7 +120,7 @@ void GUIWindow::initCloseBtn()
     m_closeBtn->setOnBtnClicked([this](Button * button)
     {
         (void)button;
-        this->setIsDrawable(false);
+        this->setIsVisible(false);
     });
 }
 
@@ -158,11 +158,16 @@ void GUIWindow::setIsShowCloseBtn(bool isShowCloseBtn)
     m_isShowCloseBtn = isShowCloseBtn;
     if(!m_isShowCloseBtn)
     {
-        m_closeBtn->setIsDrawable(false);
+        m_closeBtn->setIsVisible(false);
     }else
     {
-        m_closeBtn->setIsDrawable(true);
+        m_closeBtn->setIsVisible(true);
     }
+}
+
+tzw::Button * GUIWindow::getCloseBtn()
+{
+	return m_closeBtn;
 }
 
 bool GUIWindow::getIsDragable() const

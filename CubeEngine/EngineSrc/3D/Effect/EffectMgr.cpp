@@ -7,6 +7,7 @@ TZW_SINGLETON_IMPL(EffectMgr);
 EffectMgr::EffectMgr()
 {
     initBuiltIn();
+	printf("init built in effect finish\n");
 }
 
 Effect *EffectMgr::get(std::string name)

@@ -39,17 +39,17 @@ MainMenu::MainMenu()
 
 void MainMenu::show()
 {
-    setIsDrawable(true);
+    setIsVisible(true);
 }
 
 void MainMenu::hide()
 {
-    setIsDrawable(false);
+    setIsVisible(false);
 }
 
 void MainMenu::toggle()
 {
-    if (getIsDrawable())
+    if (getIsVisible())
     {
         hide();
     }else
