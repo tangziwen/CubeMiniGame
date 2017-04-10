@@ -40,14 +40,23 @@ include_directories(./External/GLFW3/include)
 #GLEW #
 set(LIBS ${LIBS} glew32s)
 include_directories(./External/GLEW)
-#rapidJson
+
 #rapidJson
 include_directories(./External/rapidjson/include)
+
+#ODE
+set(LIBS ${LIBS} ode_single)
+include_directories(./External/ode)
+
+#FMOD
+set(LIBS ${LIBS} fmodex_vc)
+
 #GL
 set(LIBS ${LIBS} opengl32)
-if(MSVC)
-	set(LIBS ${LIBS} libpng zlib)
-endif(MSVC)
+
+#misc
+set(LIBS ${LIBS} libpng zlib)
+
 ####External library END####
 
 set(_src_root_path "${CMAKE_CURRENT_SOURCE_DIR}")
