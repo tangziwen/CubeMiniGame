@@ -35,6 +35,7 @@ Material * MaterialPool::getOrCreateMaterialByEffect(std::string effectName)
 	{
 		mat = Material::createFromEffect(effectName);
 		addMaterial(effectName, mat);
+		mat->initFromEffect(effectName);
 	}
 	return mat;
 }

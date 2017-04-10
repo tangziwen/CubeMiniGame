@@ -4,6 +4,7 @@
 #include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
+#include "EngineSrc/Technique/MaterialPool.h"
 namespace tzw {
 
 CubePrimitive::CubePrimitive(float width, float depth, float height)
@@ -11,6 +12,8 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
     m_width = width;
     m_depth = depth;
     m_height = height;
+	m_mesh = nullptr;
+	m_color = vec4::fromRGB(255,255,255);
     m_material = Material::createFromEffect("Color");
     initMesh();
     setCamera(g_GetCurrScene()->defaultCamera());
@@ -54,6 +57,12 @@ bool CubePrimitive::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> 
     return false;
 }
 
+void CubePrimitive::setColor(vec4 color)
+{
+	m_color = color;
+	initMesh();
+}
+
 vec3 CubePrimitive::getWorldPos(vec3 localPos)
 {
 	auto theMat = getTransform();
@@ -65,43 +74,50 @@ void CubePrimitive::initMesh()
     auto halfWidth = m_width/2.0f;
     auto halfDepth = m_depth/2.0f;
     auto halfHeight = m_height/2.0f;
-    m_mesh = new Mesh();
+	if (!m_mesh)
+	{
+		m_mesh = new Mesh();
+	}
+	else
+	{
+		m_mesh->clear();
+	}
     VertexData vertices[] = {
         // Vertex data for face 0
-        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.0f)),  // v0
-        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.0f)), // v1
-        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.5f)),  // v2
-        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)), // v3
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.0f), m_color),  // v0
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.0f), m_color), // v1
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 0.5f), m_color),  // v2
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f), m_color), // v3
 
         // Vertex data for face 1
-        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2( 0.0f, 0.5f)), // v4
-        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.5f)), // v5
-        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 1.0f)),  // v6
-        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f)), // v7
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2( 0.0f, 0.5f), m_color), // v4
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.5f), m_color), // v5
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.0f, 1.0f), m_color),  // v6
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f), m_color), // v7
 
         // Vertex data for face 2
-        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f)), // v8
-        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 0.5f)),  // v9
-        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f)), // v10
-        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 1.0f)),  // v11
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f), m_color), // v8
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 0.5f), m_color),  // v9
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f), m_color), // v10
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 1.0f), m_color),  // v11
 
         // Vertex data for face 3
-        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f)), // v12
-        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.0f)),  // v13
-        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f)), // v14
-        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.5f)),  // v15
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f), m_color), // v12
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.0f), m_color),  // v13
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.5f), m_color), // v14
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(1.0f, 0.5f), m_color),  // v15
 
         // Vertex data for face 4
-        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.0f)), // v16
-        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f)), // v17
-        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)), // v18
-        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f)), // v19
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 0.0f), m_color), // v16
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 0.0f), m_color), // v17
+        VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f), m_color), // v18
+        VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f), m_color), // v19
 
         // Vertex data for face 5
-        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f)), // v20
-        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f)), // v21
-        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f)), // v22
-        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f))  // v23
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.33f, 0.5f), m_color), // v20
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight,  1.0f * halfDepth), vec2(0.66f, 0.5f), m_color), // v21
+        VertexData(vec3(-1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.33f, 1.0f), m_color), // v22
+        VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(0.66f, 1.0f), m_color)  // v23
     };
 
     // Indices for drawing cube faces using triangle strips.
@@ -131,6 +147,7 @@ void CubePrimitive::initMesh()
 
 void CubePrimitive::checkCollide(ColliderEllipsoid * package)
 {
+	if(!m_isHitable) return;
 	auto size = m_mesh->getIndicesSize();
 	std::vector<vec3> resultList;
 	float t = 0;

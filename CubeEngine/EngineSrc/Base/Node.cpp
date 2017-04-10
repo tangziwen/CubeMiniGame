@@ -215,6 +215,7 @@ void Node::visit()
     logicUpdate(Engine::shared()->deltaTime());
 	if(!m_actionList.empty())
 		updateAction(this,Engine::shared()->deltaTime());
+	std::vector <Node *> removeList;
 	//数据如果有变动的话，重新缓存数据
 	if(getNeedToUpdate())
 	{
@@ -234,16 +235,19 @@ void Node::visit()
 		////遍历子节点
 		for(auto child : m_children)
 		{
+
 			child->visit();
+			if(!child->m_isValid)
+			{
+				removeList.push_back(child);
+			}
 		}
 	}
 
-
-	//判断是否需要删除
-	if(!m_isValid)
+	for( auto child : removeList)
 	{
-		getParent()->detachChild(this);
-		delete this;
+		detachChild(child);
+		delete child;
 	}
 }
 

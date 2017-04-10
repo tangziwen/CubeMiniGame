@@ -4,7 +4,7 @@
 #include "Game/FPSCamera.h"
 #include "EngineSrc/3D/Model/Model.h"
 #include "3D/Primitive/SpherePrimitive.h"
-#include "3D/Primitive/CubePrimitive.h"
+#include "Block.h"
 namespace tzw {
 
 class CubePlayer : public Node, public EventListener
@@ -26,6 +26,8 @@ public:
 	virtual bool onKeyRelease(int keyCode);
 	virtual bool onMousePress(int button,vec2 pos);
 	void modeSwitch(Mode newMode);
+	void insertBox();
+	void removeBox();
 private:
 	void updatePlaceHolder();
 	Mode m_currMode;
@@ -33,7 +35,7 @@ private:
     Model * m_gunModel;
 	int oldPosX;
 	int oldPosZ;
-	CubePrimitive * m_placeHolder;
+	Block * m_placeHolder;
 };
 
 } // namespace tzw

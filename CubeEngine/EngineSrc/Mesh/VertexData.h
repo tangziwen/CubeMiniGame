@@ -11,6 +11,7 @@ class VertexData
 public:
     VertexData();
     VertexData(vec3 pos, vec2 texCoord);
+	VertexData(vec3 pos, vec2 texCoord, vec4 color);
     VertexData(vec3 pos, vec3 normal,vec2 texCoord);
     VertexData(vec3 pos);
 	VertexData(vec3 pos, vec4 color);
