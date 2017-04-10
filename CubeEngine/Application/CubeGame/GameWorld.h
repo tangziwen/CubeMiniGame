@@ -28,8 +28,6 @@ public:
     Chunk * getOrCreateChunk(int x,int y, int z);
     virtual void onFrameUpdate(float delta);
     Chunk * createChunk(int x,int y,int z);
-    void loadBlockSheet();
-    TextureAtlas *getBlockSheet() const;
     void setBlockSheet(TextureAtlas *blockSheet);
     bool isTheSurfaceBlock();
     void startGame();
@@ -43,13 +41,14 @@ public:
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
 	void loadChunksAroundPlayer();
+	tzw::vec3 getMapOffset() const;
+	void setMapOffset(tzw::vec3 val);
 private:
     Node * m_mainRoot;
     GameState m_currentState;
-    
+    vec3 m_mapOffset;
     int m_width, m_depth, m_height;
     Chunk * m_chunkArray[128][128][16];
-    TextureAtlas *m_blockSheet;
     Scene  * m_scene;
     CubePlayer * m_player;
     Sprite * crossHair;

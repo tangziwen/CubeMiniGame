@@ -15,7 +15,7 @@ varying vec2 v_texcoord;
 varying vec3 pos;
 varying vec3 sun_norm;
 varying vec3 star_pos;
-vec3 sun_pos = vec3(0.5,0.1,-0.5);
+vec3 sun_pos = vec3(0.0, 1, 0.0);
 //! [0]
 void main()
 {

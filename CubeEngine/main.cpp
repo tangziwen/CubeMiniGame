@@ -9,7 +9,7 @@
 #include <iostream>
 using namespace std;
 using namespace tzw;
-
+#include "EngineSrc/Base/Log.h"
 #if _MSC_VER >= 1900
 FILE _iob[] = { *stdin, *stdout, *stderr };
 
@@ -33,12 +33,11 @@ int main(int argc, char *argv[])
 	luaL_dofile(L,"./Entry.lua");
 	lua_close(L);
 
-	//	ScriptVM vm;
-	//	vm.defineFunction("tmpFunc",tmpFunc);
-	//	vm.useStdLibrary();
-	//	vm.loadFromFile("./test.txt",0);
-	//	vm.excute(0);
-	//	return 0;
+	//ScriptVM vm;
+	//vm.useStdLibrary();
+	//vm.loadFromFile("./test.txt",0);
+	//vm.excute(0);
+	//return 0;
 	return Engine::run(argc,argv,new GameEntry());
 }
 

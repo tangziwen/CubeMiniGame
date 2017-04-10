@@ -18,8 +18,8 @@ namespace tzw
 		tintTex2 = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/tint2.tga"));
 		sunTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/sun.tga"));
 		moonTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/moon.tga"));
-		cloudTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/clouds1.tga"));
-		cloudTex2 = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/clouds2.tga"));
+		cloudTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/moon.tga"));
+		cloudTex2 = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/moon.tga"));
 
 		m_skyBoxTechnique->setTex("tint", tintTex, 1);
 		m_skyBoxTechnique->setTex("tint2", tintTex2, 2);

@@ -180,6 +180,7 @@ void main(){
         1.2e3,                          // Mie scale height
         0.758                           // Mie preferred scattering direction
     );
+	return;
 	color = 1.0 - exp(-1.0 * color);
 	
 	float pupil = 1.0f - dot(normalize(-viewdir), sun_norm)/25;

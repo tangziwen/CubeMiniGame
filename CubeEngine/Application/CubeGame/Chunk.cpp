@@ -22,7 +22,8 @@ Chunk::Chunk(int the_x, int the_y,int the_z)
 	m_lod = 0;
 	m_localAABB.update(vec3(0,0,0));
 	m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,MAX_BLOCK * BLOCK_SIZE,-1 * MAX_BLOCK * BLOCK_SIZE));
-	m_basePoint = vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , -1 * z* CHUNK_SIZE);
+	m_offset = GameWorld::shared()->getMapOffset();
+	m_basePoint = vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , -1 * z* CHUNK_SIZE) + m_offset;
 	setPos(m_basePoint);
 	m_mesh = nullptr;
 	m_needToUpdate = true;

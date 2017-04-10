@@ -44,6 +44,7 @@ public:
 	unsigned int getLod();
 	void deform(int x, int y, int z, float actualVal);
 	virtual unsigned int getTypeID();
+	vec3 m_offset;
 private:
     bool m_isLoaded;
     bool m_isInitData;

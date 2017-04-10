@@ -26,16 +26,19 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
     m_width = width;
     m_depth = depth;
     m_height = height;
+	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
+	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
+	m_mapOffset = vec3(offsetX, 0 ,offsetZ);
     for(int i = 0;i< m_width;i++)
     {
         for(int j=0;j<m_height;j++)
         {
             for(int k = 0; k < m_depth; k++)
             {
-                auto chunkA = new Chunk(i,j,k);
-                m_mainRoot->addChild(chunkA);
-                m_chunkList.push_back(chunkA);
-                m_chunkArray[i][j][k] = chunkA;
+                auto chunk = new Chunk(i,j,k);
+                m_mainRoot->addChild(chunk);
+                m_chunkList.push_back(chunk);
+                m_chunkArray[i][j][k] = chunk;
             }
         }
     }
@@ -86,27 +89,10 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
     return chunkA;
 }
 
-void GameWorld::loadBlockSheet()
-{
-    //m_blockSheet = new TextureAtlas("./Res/User/CubeGame/texture/dest/blocks.json");
-    //m_blockSheet->texture()->setFilter(Texture::FilterType::Nearest);
-}
-
-TextureAtlas *GameWorld::getBlockSheet() const
-{
-    return m_blockSheet;
-}
-
-void GameWorld::setBlockSheet(TextureAtlas *blockSheet)
-{
-    m_blockSheet = blockSheet;
-}
-
 void GameWorld::startGame()
 {
 	Tmisc::DurationBegin();
     unloadGame();
-    GameWorld::shared()->loadBlockSheet();
     crossHair = Sprite::create("./Res/User/CubeGame/texture/GUI/cross_hair.png");
     auto size = crossHair->getContentSize();
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
@@ -118,11 +104,6 @@ void GameWorld::startGame()
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
     m_mainRoot->addChild(player);
-    SkyBox* skybox = SkyBox::create("./Res/User/CubeGame/texture/SkyBox/right.jpg","./Res/User/CubeGame/texture/SkyBox/left.jpg",
-                                "./Res/User/CubeGame/texture/SkyBox/top.jpg","./Res/User/CubeGame/texture/SkyBox/bottom.jpg",
-                                "./Res/User/CubeGame/texture/SkyBox/back.jpg","./Res/User/CubeGame/texture/SkyBox/front.jpg");
-    skybox->setScale(80,80,80);
-    g_GetCurrScene()->setSkyBox(skybox);
     m_currentState = GameState::OnPlay;
 }
 
@@ -137,11 +118,11 @@ bool tzw::GameWorld::onKeyPress(int keyCode)
     }
 	return true;
 }
-
 void GameWorld::loadChunksAroundPlayer()
 {
 	Tmisc::DurationBegin();
     std::set<Chunk*> m_tempArray = m_activedChunkList;
+	std::vector<Chunk *> m_readyToLoadArray;
     auto pos = m_player->getPos();
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
@@ -155,7 +136,7 @@ void GameWorld::loadChunksAroundPlayer()
                 if(i < 0 || i >= m_width || j < 0 || j >= m_height || k < 0 || k >= m_depth)
                     continue;
                 auto targetChunk = m_chunkArray[i][j][k];
-                targetChunk->load();
+				m_readyToLoadArray.push_back(targetChunk);
                 auto findResult = m_tempArray.find(targetChunk);
                 if(findResult!= m_tempArray.end())
                 {
@@ -171,7 +152,28 @@ void GameWorld::loadChunksAroundPlayer()
     {
         i->unload();
     }
+	std::sort(m_readyToLoadArray.begin(), m_readyToLoadArray.end(),[&](Chunk * left, Chunk * right)
+	{
+		float distl = left->getPos().distance(m_player->getPos());
+		float distr = right->getPos().distance(m_player->getPos());
+		return distl < distr;
+	}
+	);
+	for(Chunk * i :m_readyToLoadArray)
+	{
+		i->load();
+	}
 	std::cout << "load chunk cost :" << Tmisc::DurationEnd() << std::endl;
+}
+
+tzw::vec3 GameWorld::getMapOffset() const
+{
+	return m_mapOffset;
+}
+
+void GameWorld::setMapOffset(tzw::vec3 val)
+{
+	m_mapOffset = val;
 }
 
 Chunk *GameWorld::getChunk(int x, int y, int z)
