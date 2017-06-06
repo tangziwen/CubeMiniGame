@@ -26,11 +26,15 @@ public:
     virtual void checkCollide(ColliderEllipsoid * package);
 	bool getIsHitable() const;
 	void setIsHitable(bool val);
+	virtual bool getIsNeedTransparent() const;
+	virtual void setIsNeedTransparent(bool val);
+	virtual void setUpCommand(RenderCommand & command);
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;
     DepthPolicy m_depthPolicy;
 	bool m_isHitable;
+	bool m_isNeedTransparent;
 };
 
 class Drawable3DGroup

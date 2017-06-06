@@ -14,7 +14,9 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
     m_height = height;
 	m_mesh = nullptr;
 	m_color = vec4::fromRGB(255,255,255);
-    m_material = Material::createFromEffect("Color");
+    m_material = Material::createFromEffect("ModelStd");
+	auto texture =  TextureMgr::shared()->getByPath("./Res/User/CubeGame/texture/rock.jpg");
+	m_material->setTex("diffuseMap", texture);
     initMesh();
     setCamera(g_GetCurrScene()->defaultCamera());
     setIsAccpectOCTtree(true);
@@ -22,10 +24,13 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
 
 void CubePrimitive::submitDrawCmd()
 {
-    RenderCommand command(m_mesh, m_material,RenderCommand::RenderType::Common);
-    setUpTransFormation(command.m_transInfo);
-    Renderer::shared()->addRenderCommand(command);
+	if(getIsVisible())
+	{
 
+		RenderCommand command(m_mesh, m_material,RenderCommand::RenderType::Common);
+		setUpCommand(command);
+		Renderer::shared()->addRenderCommand(command);
+	}
 }
 
 bool CubePrimitive::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint)

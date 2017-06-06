@@ -24,7 +24,7 @@ public:
     void onStart(int width, int height);
     float FPS();
     int getDrawCallCount();
-    void increaseDrawCallCount();
+    void setDrawCallCount(int drawCallCount);
     void resetDrawCallCount();
     void increaseVerticesIndicesCount(int v,int i);
     void resetVerticesIndicesCount();

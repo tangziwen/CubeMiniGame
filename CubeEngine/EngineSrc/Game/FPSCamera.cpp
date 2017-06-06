@@ -13,8 +13,8 @@ namespace tzw {
 
 const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera()
-    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_forward(0),m_slide(0)
-    ,m_speed(vec3(6,2,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_isFirstLoop(true)
+    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_forward(0),m_slide(0),m_up(0)
+    ,m_speed(vec3(6,5,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_isFirstLoop(true)
     ,m_verticalSpeed(0),m_gravity(0.5),distToGround(0.7),m_isStopUpdate(false)
 {
     offsetToCentre = 0.6;
@@ -57,7 +57,23 @@ bool FPSCamera::onKeyPress(int keyCode)
         {
              m_verticalSpeed = 0.2;
         }
+		else
+		{
+			m_up = 1;
+		}
         break;
+	case GLFW_KEY_LEFT_CONTROL:
+		{
+			if(m_isEnableGravity)
+			{
+
+			}
+			else
+			{
+				m_up = -1;
+			}
+		}
+		break;
     }
     return false;
 }
@@ -78,6 +94,30 @@ bool FPSCamera::onKeyRelease(int keyCode)
     case GLFW_KEY_D:
         m_slide = 0;
         break;
+	case GLFW_KEY_SPACE:
+		{
+			if(m_isEnableGravity)
+			{
+
+			}
+			else
+			{
+				m_up = 0;
+			}
+		}
+	break;
+	case GLFW_KEY_LEFT_CONTROL:
+		{
+			if(m_isEnableGravity)
+			{
+
+			}
+			else
+			{
+				m_up = 0;
+			}
+		}
+		break;
     }
     return false;
 }
@@ -125,7 +165,7 @@ void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
     auto m = getTransform().data();
-    vec3 forwardDirection,rightDirection;
+    vec3 forwardDirection,rightDirection, upDirction;
     if(m_isEnableGravity)
     {
         forwardDirection = vec3(-1*m[8],0,-1*m[10]);
@@ -135,6 +175,7 @@ void FPSCamera::logicUpdate(float dt)
         forwardDirection = vec3(-1*m[8],-1*m[9],-1*m[10]);
         rightDirection = vec3(m[0],m[1],m[2]);
     }
+	upDirction = vec3(0, 1, 0);
     forwardDirection.normalize();
     rightDirection.normalize();
     auto pos = this->getPos();
@@ -154,6 +195,7 @@ void FPSCamera::logicUpdate(float dt)
     vec3 overLap;
     vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward;
     totalSpeed += rightDirection*dt*m_speed.x*m_slide;
+	totalSpeed += upDirction * dt * m_speed.y * m_up;
 
     if(!group.hitByAABB(playerAABB,overLap) && false)//if no collid just go through TZW just for speed.
     {
@@ -162,7 +204,7 @@ void FPSCamera::logicUpdate(float dt)
         setPos(pos);
     }else
     {
-        vec3 userSpeed = vec3(totalSpeed.x, 0, totalSpeed.z);
+        vec3 userSpeed = vec3(totalSpeed.x, totalSpeed.y, totalSpeed.z);
         vec3 gravityVelocity;
         if(m_isEnableGravity)
         {

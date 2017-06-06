@@ -51,6 +51,11 @@ void Drawable::setUpTransFormation(TransformationInfo &info)
     info.m_worldMatrix = getTransform();
 }
 
+void Drawable::setUpCommand(RenderCommand & command)
+{
+	setUpTransFormation(command.m_transInfo);
+}
+
 void Drawable::setColor(vec4 newColor)
 {
 	if (!m_material) return;

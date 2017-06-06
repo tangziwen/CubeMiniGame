@@ -57,6 +57,8 @@ public:
     DepthPolicy depthTestPolicy() const;
     void setDepthTestPolicy(const DepthPolicy &depthTestPolicy);
     TransformationInfo m_transInfo;
+	bool getIsNeedTransparent() const;
+	void setIsNeedTransparent(bool val);
 private:
     Mesh * m_mesh;
     Material *m_material;
@@ -64,6 +66,7 @@ private:
     PrimitiveType m_primitiveType;
     unsigned int m_Zorder;
     DepthPolicy m_depthTestPolicy;
+	bool m_isNeedTransparent;
 };
 
 } // namespace tzw

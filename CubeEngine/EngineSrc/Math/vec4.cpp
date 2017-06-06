@@ -30,6 +30,12 @@ vec4 vec4::operator +(const vec4 &other)
 	return vec4(x + other.x, y + other.y, z + other.z, w + other.w);
 }
 
+tzw::vec4 vec4::operator*(float a) const
+{
+	vec4 v = vec4(x *a, y * a, z * a, w * a);
+	return v;
+}
+
 vec4 vec4::fromRGB(int R, int G, int B, int A)
 {
 	return vec4(R / 255.0, G / 255.0, B / 255.0, A / 255.0);

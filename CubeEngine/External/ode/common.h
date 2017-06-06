@@ -92,11 +92,9 @@ typedef duint32 dTriIndex;
 
 typedef enum {
     dSA__MIN,
-
     dSA_X = dSA__MIN,
     dSA_Y,
     dSA_Z,
-
     dSA__MAX,
 } dSpaceAxis;
 

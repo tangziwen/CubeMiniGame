@@ -5,6 +5,7 @@ namespace tzw {
 RenderCommand::RenderCommand(Mesh *mesh, Material *material, RenderType type, PrimitiveType primitiveType)
     :m_mesh(mesh),m_material(material),m_type(type),m_primitiveType(primitiveType),m_Zorder(0)
 {
+	m_isNeedTransparent = false;
 }
 
 void RenderCommand::render()
@@ -49,6 +50,16 @@ DepthPolicy RenderCommand::depthTestPolicy() const
 void RenderCommand::setDepthTestPolicy(const DepthPolicy &depthTestPolicy)
 {
     m_depthTestPolicy = depthTestPolicy;
+}
+
+bool RenderCommand::getIsNeedTransparent() const
+{
+	return m_isNeedTransparent;
+}
+
+void RenderCommand::setIsNeedTransparent(bool val)
+{
+	m_isNeedTransparent = val;
 }
 
 } // namespace tzw

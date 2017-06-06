@@ -7,6 +7,7 @@
 #include <iostream>
 #include "GameConfig.h"
 #include <thread>
+#include "Collision/PhysicsMgr.h"
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
 GameWorld *GameWorld::shared()
@@ -105,6 +106,9 @@ void GameWorld::startGame()
     GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
     m_mainRoot->addChild(player);
     m_currentState = GameState::OnPlay;
+
+	PhysicsMgr::shared()->start();
+	PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }
 
 bool tzw::GameWorld::onKeyPress(int keyCode)

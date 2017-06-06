@@ -13,6 +13,7 @@ public:
     vec3 toVec3();
     float x,y,z,w;
     vec4 operator + (const vec4 & other);
+	vec4 operator * (float a) const;
 	static vec4 fromRGB(int R, int G, int B, int A = 255);
 };
 

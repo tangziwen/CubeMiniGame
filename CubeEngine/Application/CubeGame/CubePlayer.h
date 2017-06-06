@@ -30,12 +30,14 @@ public:
 	void removeBox();
 private:
 	void updatePlaceHolder();
+	void initPlaceHolder();
 	Mode m_currMode;
     FPSCamera * m_camera;
     Model * m_gunModel;
 	int oldPosX;
 	int oldPosZ;
 	Block * m_placeHolder;
+	bool m_enableGravity;
 };
 
 } // namespace tzw

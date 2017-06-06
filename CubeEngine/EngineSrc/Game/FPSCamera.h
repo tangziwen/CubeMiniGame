@@ -61,6 +61,7 @@ private:
     vec3 m_rotateSpeed;
     int m_forward;
     int m_slide;
+	int m_up;
     vec3 m_oldPosition;
     bool m_isFirstLoop;
     float m_verticalSpeed;

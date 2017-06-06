@@ -39,9 +39,6 @@ void GameEntry::onStart()
 #else
 	SS_GameSystem::shared()->init();
 #endif
-	
-	//Engine::shared()->setIsEnableOutLine(true);
-	//
 }
 
 void GameEntry::onExit()

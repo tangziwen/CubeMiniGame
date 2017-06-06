@@ -8,15 +8,21 @@ namespace tzw
 	WorkerThreadSystem::WorkerThreadSystem()
 	{
 		m_thread = nullptr;
+		m_readyToDeathCount = 0;
 	}
 
 
 
 	void WorkerThreadSystem::pushOrder(WorkerJob order)
 	{
+
 		m_rwMutex.lock();
 		m_functionList.push_back(order);
 		m_rwMutex.unlock();
+		if(!m_thread)
+		{
+			init();
+		}
 	}
 
 	void WorkerThreadSystem::init()
@@ -40,6 +46,15 @@ namespace tzw
 			if(job)
 			{
 				job();
+			}
+			if(m_functionList.empty())
+			{
+				m_readyToDeathCount ++;
+				if(m_readyToDeathCount > 100)
+				{
+					m_thread = nullptr;
+					break;
+				}
 			}
 		}
 	}

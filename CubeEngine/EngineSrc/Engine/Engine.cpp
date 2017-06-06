@@ -64,9 +64,9 @@ int Engine::getDrawCallCount()
     return m_drawCallCount;
 }
 
-void Engine::increaseDrawCallCount()
+void Engine::setDrawCallCount(int drawCallCount)
 {
-    m_drawCallCount++;
+    m_drawCallCount = drawCallCount;
 }
 
 void Engine::resetDrawCallCount()
@@ -125,8 +125,9 @@ void Engine::update(float delta)
 	auto eventMgr = EventMgr::shared();
 	eventMgr->apply(delta);
     Engine::shared()->delegate()->onUpdate(delta);
+	
     SceneMgr::shared()->doVisit();
-    resetDrawCallCount();
+	resetDrawCallCount();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
     int applyRenderBefore = clock();
     resetVerticesIndicesCount();
@@ -147,7 +148,7 @@ void Engine::onStart(int width,int height)
     Engine::shared()->initSingletons();
     TlogSystem::get()->setWriteFunc(writeFunction);
     Engine::shared()->delegate()->onStart();
-	WorkerThreadSystem::shared()->init();
+	//WorkerThreadSystem::shared()->init();
 }
 
 float Engine::FPS()

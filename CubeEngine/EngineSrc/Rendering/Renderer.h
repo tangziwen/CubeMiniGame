@@ -15,9 +15,11 @@ public:
     void addRenderCommand(RenderCommand command);
     void renderAll();
     void renderAllCommon();
+	void renderAllTransparent();
     void renderAllGUI();
     void renderGUI(RenderCommand &command);
     void renderCommon(RenderCommand &command);
+	void renderTransparent(RenderCommand & command);
     void clearCommands();
     void render(const RenderCommand &command);
     void renderPrimitive(Mesh * mesh, Effect *effect, RenderCommand::PrimitiveType primitiveType);
@@ -43,6 +45,7 @@ private:
 	bool m_isNeedSortGUI;
     std::vector<RenderCommand> m_GUICommandList;
     std::vector<RenderCommand> m_CommonCommand;
+	std::vector<RenderCommand> m_transparentCommandList;
     static Renderer * m_instance;
     RenderTarget * m_gbuffer;
 	RenderTarget * m_offScreenBuffer;

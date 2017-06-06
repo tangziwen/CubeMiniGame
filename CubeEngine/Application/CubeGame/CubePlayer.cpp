@@ -9,6 +9,8 @@
 #include "3D/Sky.h"
 #include "Projectile.h"
 #include "AudioSystem/AudioSystem.h"
+#include "Action/RepeatForever.h"
+#include "Action/TintTo.h"
 namespace tzw {
 
 static Audio * audio;
@@ -37,11 +39,8 @@ CubePlayer::CubePlayer(Node *mainRoot)
 	Sky::shared()->setCamera(m_camera);
 	EventMgr::shared()->addFixedPiorityListener(this);
 
-	m_placeHolder = new Block();
-	m_placeHolder->setIsHitable(false);
-	m_placeHolder->setColor(vec4::fromRGB(255, 0, 0, 128));
-	g_GetCurrScene()->addNode(m_placeHolder);
-	m_placeHolder->setPos(0, 0, -5);
+	initPlaceHolder();
+	m_enableGravity = true;
 }
 
 FPSCamera *CubePlayer::camera() const
@@ -114,6 +113,13 @@ bool CubePlayer::onKeyRelease(int keyCode)
 {
 	switch(keyCode)
 	{
+	
+	case GLFW_KEY_Q:
+		{
+			m_enableGravity = !m_enableGravity;
+			m_camera->setIsEnableGravity(m_enableGravity);
+		}
+		break;
 	case GLFW_KEY_F:
 		{
 			std::vector<Drawable3D *> list;
@@ -163,8 +169,6 @@ bool CubePlayer::onMousePress(int button,vec2 thePos)
 	case 0://×ó¼ü
 		{
 			insertBox();
-
-
 		}
 		break;
 	case 1://ÓÒ¼ü
@@ -224,6 +228,8 @@ void CubePlayer::updatePlaceHolder()
 	aabb.update(vec3(pos.x - 8,pos.y - 8,pos.z - 8));
 	aabb.update(vec3(pos.x + 8,pos.y + 8 ,pos.z + 8));
 	g_GetCurrScene()->getRange(&list,aabb);
+	if (list.empty())
+		return;
 	Drawable3DGroup group(&list[0],list.size());
 	Ray ray(pos,m_camera->getForward());
 	vec3 hitPoint;
@@ -233,12 +239,18 @@ void CubePlayer::updatePlaceHolder()
 		m_placeHolder->setIsVisible(true);
 		if (result->getTypeID() == TYPE_CHUNK)
 		{
-			
-			int x = hitPoint.x / BLOCK_SIZE;
-			int z = hitPoint.z / BLOCK_SIZE;
-			hitPoint.x = BLOCK_SIZE * x;
-			hitPoint.z = BLOCK_SIZE * z;
-			m_placeHolder->setPos(hitPoint + vec3(0, BLOCK_SIZE / 2.0, 0.0));
+			if(hitPoint.distance(getPos()) < 8)
+			{
+				int x = hitPoint.x / BLOCK_SIZE;
+				int z = hitPoint.z / BLOCK_SIZE;
+				hitPoint.x = BLOCK_SIZE * x;
+				hitPoint.z = BLOCK_SIZE * z;
+				m_placeHolder->setPos(hitPoint);
+			}
+			else
+			{
+				m_placeHolder->setIsVisible(false);
+			}
 		}
 		else
 		{
@@ -276,6 +288,17 @@ void CubePlayer::updatePlaceHolder()
 	{
 		m_placeHolder->setIsVisible(false);
 	}
+}
+
+void CubePlayer::initPlaceHolder()
+{
+	m_placeHolder = new Block();
+	m_placeHolder->setIsHitable(false);
+	m_placeHolder->setColor(vec4::fromRGB(255, 0, 0, 128));
+	m_placeHolder->runAction(new RepeatForever(new TintTo(1.0, vec4::fromRGB(200, 200, 200, 128), vec4::fromRGB(255, 200, 200, 128))));
+	m_placeHolder->setIsNeedTransparent(true);
+	g_GetCurrScene()->addNode(m_placeHolder);
+	m_placeHolder->setPos(0, 0, -5);
 }
 
 } // namespace tzw

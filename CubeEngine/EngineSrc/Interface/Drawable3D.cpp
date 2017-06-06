@@ -6,6 +6,7 @@ namespace tzw {
 Drawable3D::Drawable3D()
 {
 	setLocalPiority(-999);
+	m_isNeedTransparent = false;
 }
 
 Drawable3D::~Drawable3D()
@@ -95,6 +96,22 @@ bool Drawable3D::getIsHitable() const
 void Drawable3D::setIsHitable(bool val)
 {
 	m_isHitable = val;
+}
+
+bool Drawable3D::getIsNeedTransparent() const
+{
+	return m_isNeedTransparent;
+}
+
+void Drawable3D::setIsNeedTransparent(bool val)
+{
+	m_isNeedTransparent = val;
+}
+
+void Drawable3D::setUpCommand(RenderCommand & command)
+{
+	Drawable::setUpCommand(command);
+	command.setIsNeedTransparent(m_isNeedTransparent);
 }
 
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)

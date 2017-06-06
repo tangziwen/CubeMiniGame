@@ -38,14 +38,21 @@ Renderer *Renderer::shared()
 
 void Renderer::addRenderCommand(RenderCommand command)
 {
-	Engine::shared()->increaseDrawCallCount();
 	switch(command.type())
 	{
 		case RenderCommand::RenderType::GUI:
 			m_GUICommandList.push_back(command);
 		break;
 		case RenderCommand::RenderType::Common:
-			m_CommonCommand.push_back(command);
+			if (command.getIsNeedTransparent())
+			{
+				m_transparentCommandList.push_back(command);
+			}
+			else
+			{
+				m_CommonCommand.push_back(command);
+			}
+			
 		break;
 		default:
 		break;
@@ -59,12 +66,13 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
-
+	Engine::shared()->setDrawCallCount(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size());
 	geometryPass();
 	LightingPass();
 	skyBoxPass();
-	postEffectPass();
 
+	postEffectPass();
+	
 	if(m_enableGUIRender)
 	{
 		renderAllGUI();
@@ -76,6 +84,15 @@ void Renderer::renderAll()
 void Renderer::renderAllCommon()
 {
 	for(auto i = m_CommonCommand.begin();i!=m_CommonCommand.end();i++)
+	{
+		RenderCommand &command = (*i);
+		renderCommon(command);
+	}
+}
+
+void Renderer::renderAllTransparent()
+{
+	for(auto i = m_transparentCommandList.begin();i!=m_transparentCommandList.end();i++)
 	{
 		RenderCommand &command = (*i);
 		renderCommon(command);
@@ -112,10 +129,16 @@ void Renderer::renderCommon(RenderCommand &command)
 	render(command);
 }
 
+void Renderer::renderTransparent(RenderCommand & command)
+{
+	render(command);
+}
+
 void Renderer::clearCommands()
 {
 	m_CommonCommand.clear();
 	m_GUICommandList.clear();
+	m_transparentCommandList.clear();
 }
 
 void Renderer::render(const RenderCommand &command)
@@ -243,6 +266,12 @@ void Renderer::geometryPass()
 	if(m_enable3DRender)
 	{
 		renderAllCommon();
+		if (!m_transparentCommandList.empty())
+		{
+			RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+			renderAllTransparent();	
+			RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+		}
 	}
 	if(Engine::shared()->getIsEnableOutLine())
 	{

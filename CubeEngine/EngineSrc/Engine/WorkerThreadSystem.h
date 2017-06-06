@@ -21,6 +21,7 @@ namespace tzw{
 		std::list<WorkerJob> m_functionList;
 		std::thread * m_thread;
 		std::mutex m_rwMutex;
+		int m_readyToDeathCount;
 	};
 }
 
