@@ -12,6 +12,7 @@
 #include "WorkerThreadSystem.h"
 #include "AudioSystem/AudioSystem.h"
 #include <windows.h>
+#include "ScriptPy/ScriptPyMgr.h"
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 namespace tzw {
 
@@ -133,6 +134,7 @@ void Engine::update(float delta)
     resetVerticesIndicesCount();
     Renderer::shared()->renderAll();
 	AudioSystem::shared()->update();
+	ScriptPyMgr::shared()->doScriptUpdate();
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
 }
 
@@ -148,6 +150,8 @@ void Engine::onStart(int width,int height)
     Engine::shared()->initSingletons();
     TlogSystem::get()->setWriteFunc(writeFunction);
     Engine::shared()->delegate()->onStart();
+	ScriptPyMgr::shared()->doScriptInit();
+
 	//WorkerThreadSystem::shared()->init();
 }
 
@@ -172,6 +176,7 @@ void Engine::initSingletons()
     TextureMgr::shared();
     Renderer::shared();
     EffectMgr::shared();
+	ScriptPyMgr::shared()->init();
 }
 
 vec2 Engine::winSize()

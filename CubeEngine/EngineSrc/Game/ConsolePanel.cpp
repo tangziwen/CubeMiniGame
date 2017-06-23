@@ -39,8 +39,6 @@ ConsolePanel::ConsolePanel(Node *renderNode)
 	m_isVisible = false;
 	setIsVisible(false);
 
-	m_scriptVM = new ScriptVM();
-	m_scriptVM->useStdLibrary();
 }
 
 bool ConsolePanel::onKeyPress(int keyCode)
@@ -186,8 +184,7 @@ void ConsolePanel::eraseChar()
 
 void ConsolePanel::parse(std::string theStr)
 {
-	m_scriptVM->loadFromStr(theStr,0);
-	m_scriptVM->excute(0);
+
 }
 
 float ConsolePanel::heightRatio() const
