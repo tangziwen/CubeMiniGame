@@ -17,10 +17,9 @@
 #include "EngineSrc/3D/Primitive/LineGrid.h"
 #include "EngineSrc/3D/Vegetation/Grass.h"
 #include "TUtility/TUtility.h"
-#include "ShelterSurvive/SS_GameSystem.h"
 #include "FMod/fmod.hpp"
 #include "AudioSystem/AudioSystem.h"
-#include "StrategyGame/s_GameSystem.h"
+#include "Application/SimGame/SimGameSystem.h"
 using namespace tzw;
 using namespace std;
 
@@ -34,10 +33,8 @@ void GameEntry::onStart()
 
 #if CURRGAME == GAME_MODE_PLAYGROUND
 	GameWorld::shared();
-#elif CURRGAME == GAME_MODE_STRATEGY
-	s_GameSystem::shared()->start("Strategy/scenario/1.json");
-#else
-	SS_GameSystem::shared()->init();
+#elif CURRGAME == GAME_MODE_SIM
+	SimGameSystem::shared()->init();
 #endif
 }
 

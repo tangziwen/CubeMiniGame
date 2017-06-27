@@ -8,6 +8,7 @@
 #include "GameConfig.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
+
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
 GameWorld *GameWorld::shared()

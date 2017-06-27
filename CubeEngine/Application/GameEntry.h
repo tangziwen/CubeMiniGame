@@ -3,9 +3,9 @@
 #include "EngineSrc/Engine/AppEntry.h"
 
 #define GAME_MODE_PLAYGROUND 1
-#define GAME_MODE_STRATEGY 2
+#define GAME_MODE_SIM 2
 
-#define CURRGAME GAME_MODE_PLAYGROUND
+#define CURRGAME GAME_MODE_SIM
 
 class GameEntry :public tzw::AppEntry
 {

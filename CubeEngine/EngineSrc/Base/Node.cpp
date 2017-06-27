@@ -256,7 +256,7 @@ void Node::visit()
  * @note 子Node不能重复添加,每次添加子Node的时候会重新排序子节点的顺序
  * @param node
  */
-void Node::addChild(Node *node)
+void Node::addChild(Node *node, bool isNeedSort)
 {
     if(node->m_parent)
     {
@@ -281,7 +281,10 @@ void Node::addChild(Node *node)
 		}
     }
 	EventMgr::shared()->notifyListenerChange();
-	Renderer::shared()->notifySortGui();
+	if (isNeedSort)
+	{
+		Renderer::shared()->notifySortGui();
+	}
 }
 
 /**

@@ -8,6 +8,7 @@
 #include "External/Lua/lua.hpp"
 #include <iostream>
 #include "EngineSrc/Math/Matrix44.h"
+#include <time.h>
 
 using namespace std;
 using namespace tzw;
@@ -41,6 +42,7 @@ void split(std::string& s, std::string delim,std::vector< std::string >* ret)
 
 int main(int argc, char *argv[])
 {
+	
 	lua_State *L = luaL_newstate();
 	luaopen_base(L);
 	luaopen_table(L);
@@ -50,6 +52,9 @@ int main(int argc, char *argv[])
 	luaL_openlibs(L);
 	string str;
 	luaL_dofile(L,"./Entry.lua");
+	srand(time(NULL));
+	auto result = rand() % 100;
+	printf("the result %d", result);
 	lua_close(L);
 	//ScriptVM vm;
 	//vm.useStdLibrary();
@@ -57,4 +62,3 @@ int main(int argc, char *argv[])
 	//vm.excute(0);
 	return Engine::run(argc,argv,new GameEntry());
 }
-

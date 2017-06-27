@@ -47,7 +47,7 @@ public:
 	Matrix44 getTranslationMatrix();
 	Matrix44 getRotationMatrix();
 	Matrix44 getScalingMatrix();
-	void addChild(Node * node);
+	void addChild(Node * node, bool isNeedSort = true);
 	Node *getParent() const;
 	std::string getName() const;
 	Node *getChildByName(const std::string &name);

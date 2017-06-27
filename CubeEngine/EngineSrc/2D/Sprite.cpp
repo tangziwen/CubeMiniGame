@@ -7,7 +7,6 @@ namespace tzw {
 Sprite::Sprite()
     :m_isUseTexture(true),m_texture(nullptr)
 {
-	m_material = new Material();
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
@@ -32,6 +31,7 @@ Sprite *Sprite::createWithColor(vec4 color,vec2 contentSize)
 
 void Sprite::initWithTexture(std::string texturePath)
 {
+	m_material = new Material();
     m_mesh = new tzw::Mesh();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
@@ -48,6 +48,7 @@ void Sprite::initWithTexture(std::string texturePath)
 
 void Sprite::initWithTexture(Texture *texture)
 {
+	m_material = new Material();
     m_mesh = new tzw::Mesh();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
@@ -63,6 +64,7 @@ void Sprite::initWithTexture(Texture *texture)
 
 void Sprite::initWithColor(vec4 color,vec2 contentSize)
 {
+	m_material = new Material();
     m_mesh = new tzw::Mesh();
     setUpTechnique();
     m_mesh->addIndex(0);
