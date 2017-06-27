@@ -166,15 +166,8 @@ void FPSCamera::logicUpdate(float dt)
     if(!m_enableFPSFeature) return;
     auto m = getTransform().data();
     vec3 forwardDirection,rightDirection, upDirction;
-    if(m_isEnableGravity)
-    {
-        forwardDirection = vec3(-1*m[8],0,-1*m[10]);
-        rightDirection = vec3(m[0],0,m[2]);
-    }else
-    {
-        forwardDirection = vec3(-1*m[8],-1*m[9],-1*m[10]);
-        rightDirection = vec3(m[0],m[1],m[2]);
-    }
+	forwardDirection = vec3(-1 * m[8], 0, -1 * m[10]);
+	rightDirection = vec3(m[0], 0, m[2]);
 	upDirction = vec3(0, 1, 0);
     forwardDirection.normalize();
     rightDirection.normalize();

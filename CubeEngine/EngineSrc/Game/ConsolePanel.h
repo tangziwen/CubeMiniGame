@@ -5,7 +5,7 @@
 #include "../2D/Sprite.h"
 #include "../Event/Event.h"
 #include <deque>
-#include "EngineSrc/Script/ScriptVM.h"
+
 namespace tzw {
 
 ///用于输出调试信息，以及输入脚本的控制台窗口
@@ -42,7 +42,6 @@ private:
     Sprite * m_bgFrame;
     Sprite * m_inputFrame;
     float m_heightRatio;
-	ScriptVM * m_scriptVM;
 };
 
 } // namespace tzw
