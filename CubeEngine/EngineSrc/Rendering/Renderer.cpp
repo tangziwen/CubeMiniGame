@@ -144,6 +144,7 @@ void Renderer::clearCommands()
 void Renderer::render(const RenderCommand &command)
 {
 	command.m_material->use();
+	applyRenderSetting(command.m_material->getEffect());
 	applyTransform(command.m_material->getEffect()->getProgram(), command.m_transInfo);
 	renderPrimitive(command.m_mesh, command.m_material->getEffect(), command.m_primitiveType);
 }
@@ -297,7 +298,7 @@ void Renderer::skyBoxPass()
 {
 	if(Sky::shared()->isEnable())
 	{
-		glDisable(GL_CULL_FACE);
+		RenderBackEnd::shared()->setIsCullFace(false);
 		auto mat = Sky::shared()->getMaterial();
 		mat->use();
 		m_gbuffer->bindForReading();
@@ -309,7 +310,7 @@ void Renderer::skyBoxPass()
 		applyTransform(mat->getEffect()->getProgram(), info);
 		Sky::shared()->prepare();
 		renderPrimitive(Sky::shared()->getMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
-		glEnable(GL_CULL_FACE);
+		RenderBackEnd::shared()->setIsCullFace(true);
 	}else
 	{
 		auto skyBox = g_GetCurrScene()->getSkyBox();
@@ -370,6 +371,11 @@ void Renderer::directionalLightPass()
 
 	program->use();
 	renderPrimitive(m_quad, m_dirLightProgram, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::applyRenderSetting(Effect * effect)
+{
+	RenderBackEnd::shared()->setIsCullFace(effect->getIsCullFace());
 }
 
 void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info)

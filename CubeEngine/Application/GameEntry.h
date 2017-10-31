@@ -5,7 +5,7 @@
 #define GAME_MODE_PLAYGROUND 1
 #define GAME_MODE_SIM 2
 
-#define CURRGAME GAME_MODE_SIM
+#define CURRGAME GAME_MODE_PLAYGROUND
 
 class GameEntry :public tzw::AppEntry
 {

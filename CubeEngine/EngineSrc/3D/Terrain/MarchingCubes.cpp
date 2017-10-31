@@ -304,7 +304,7 @@ void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, 
                 verts[7] = srcData[ind + lodStride * ((ncellsZ+1) + 1)];
 
                 //get the index
-                int cubeIndex = int(0);
+                int cubeIndex = 0;
                 for(int n=0; n < 8; n++)
                     /*(step 4)*/		if(verts[n].w <= minValue) cubeIndex |= (1 << n);
 

@@ -15,6 +15,8 @@ public:
         Linear,
         Nearest,
         LinearMipMapNearest,
+		LinearMipMapLinear,
+		NearestMipMapLinear,
     };
     Texture(std::string filePath);
     Texture(unsigned char * rawData,int w,int h,bool needFlipY = true);

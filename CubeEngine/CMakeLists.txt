@@ -7,7 +7,7 @@ set(FORMS "")
 set(INCLUDEPATH "")
 set(LIBS "")
 set(QMAKE_LFLAGS "")
-set(PWD "D:/Cube-Engine/CubeEngine")
+set(PWD "E:/Cube-Engine/CubeEngine")
 #-------------------------------------------------
 #-------------------------------------------------
 #
@@ -44,10 +44,6 @@ include_directories(./External/GLEW)
 #rapidJson
 include_directories(./External/rapidjson/include)
 
-#ODE
-set(LIBS ${LIBS} ode_single)
-include_directories(./External/ode)
-
 #FMOD
 set(LIBS ${LIBS} fmodex_vc)
 
@@ -55,7 +51,7 @@ set(LIBS ${LIBS} fmodex_vc)
 set(LIBS ${LIBS} opengl32)
 
 #misc
-set(LIBS ${LIBS} libpng zlib)
+set(LIBS ${LIBS} zlib libpng )
 
 ####External library END####
 

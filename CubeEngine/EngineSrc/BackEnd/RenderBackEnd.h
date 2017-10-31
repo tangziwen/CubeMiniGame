@@ -36,11 +36,14 @@ public:
     void setDepthMaskWriteEnable(bool isEnable);
     void genMipMap(unsigned int texUnitID);
 	void setClearColor(float r, float g, float b);
+	void setIsCullFace(bool val);
+	bool getIsCullFace();
 private:
     static RenderBackEnd * m_instance;
     RenderBackEnd();
     //some state cache
     RenderFlag::DepthTestMethod m_depthTestMethodCache;
+	bool m_isCullFace;
     unsigned int m_textureSlot[8];
 };
 

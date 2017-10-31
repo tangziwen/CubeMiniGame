@@ -100,9 +100,9 @@ vec3 calculateLightPBR(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,
 	specularIntensity = (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
 	specularIntensity = max(specularIntensity, 0.0);
 	}
-	vec3 colorLinear = 1.5 * lightColor * irradiance * (K + specularIntensity * (1.0 - K)) + gAmbientLight.color * gAmbientLight.intensity;
+	vec3 colorLinear = 2.2 * lightColor * irradiance * (K + specularIntensity * (1.0 - K)) + gAmbientLight.color * gAmbientLight.intensity;
     vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0 / Gamma));
-	return colorLinear;
+	return colorGammaCorrected;
 }
 
 
@@ -140,7 +140,8 @@ void main()
 	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
 	vec3 normal = normalize(texture2D(TU_normalBuffer, v_texcoord).xyz);
 	
-	gl_FragColor = vec4(color * calculateLightPBR(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness),Data1.a);
+	//gl_FragColor = vec4(color * calculateLightPBR(normal, gDirectionalLig//ht.direction, gDirectionalLight.color, pos, roughness),Data1.a);
+	gl_FragColor = vec4(color, Data1.a);
 	
 	//vec4 finalColor = vec4(color * calculateLightPBR(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness),Data1.a);
 	//float fogFactor = getFogFactor(50.0, 250.0, -1 * pos.z);

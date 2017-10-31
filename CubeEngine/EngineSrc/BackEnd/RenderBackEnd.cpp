@@ -282,6 +282,28 @@ void RenderBackEnd::setClearColor(float r, float g, float b)
 	glClearColor(r, g, b, 1);
 }
 
+void RenderBackEnd::setIsCullFace(bool val)
+{
+	if (m_isCullFace != val)
+	{
+		if (val)
+		{
+			glEnable(GL_CULL_FACE);
+			
+		}
+		else
+		{
+			glDisable(GL_CULL_FACE);
+		}
+	}
+	m_isCullFace = val;
+}
+
+bool RenderBackEnd::getIsCullFace()
+{
+	return m_isCullFace;
+}
+
 RenderBackEnd::RenderBackEnd()
 {
 	memset(m_textureSlot,0,sizeof(m_textureSlot));

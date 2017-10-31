@@ -36,6 +36,7 @@ private:
     void skyBoxPass();
 	void postEffectPass();
     void directionalLightPass();
+	void applyRenderSetting(Effect * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
     Mesh * m_quad;
     Effect * m_dirLightProgram;

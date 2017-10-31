@@ -32,6 +32,15 @@ void Effect::loadFromFile(std::string filePath)
         m_name = doc["name"].GetString();
     }
 
+	if (doc.HasMember("cullFace"))
+	{
+		m_isCullFace = doc["cullFace"].GetBool();
+	}
+	else
+	{
+		m_isCullFace = true;
+	}
+
     if(doc.HasMember("shaders"))
     {
         auto& shaders = doc["shaders"];
@@ -144,5 +153,14 @@ void Effect::getAttrList(std::map<std::string, TechniqueVar> &attrMap)
     attrMap = m_defaultValue;
 }
 
+bool Effect::getIsCullFace()
+{
+	return m_isCullFace;
+}
+
+void Effect::setIsCullFace(bool newVal)
+{
+	m_isCullFace = newVal;
+}
 
 } // namespace tzw

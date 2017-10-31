@@ -5,6 +5,10 @@ namespace tzw
 
 	Block::Block():CubePrimitive(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE)
 	{
+		printf("aaaabbbcceeddffgg");
+
+
+
 
 	}
 

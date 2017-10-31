@@ -112,6 +112,7 @@ void Chunk::submitDrawCmd()
 {
 	if (!m_isLoaded) return;
 	if (m_mesh->getIndicesSize() == 0) return;
+
 	RenderCommand command(m_mesh, m_material, RenderCommand::RenderType::Common);
 	setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
@@ -127,13 +128,12 @@ void Chunk::load()
 	{
 		m_mesh = new Mesh();
 		m_material = MaterialPool::shared()->getOrCreateMaterialByEffect("VoxelTerrain");
-		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/grass_green_d.jpg", true));
-		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/adesert_mntn4v_d.jpg", true));
+		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/GrassGreenTexture0001.jpg", true));
+		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/GrassGreenTexture0001.jpg", true));
 	}
 	setCamera(g_GetCurrScene()->defaultCamera());
 	if (!m_isInitData)
 	{
-
 		WorkerThreadSystem::shared()->pushOrder([&]() {initData(); genMesh(); });
 	}
 	else
@@ -646,18 +646,18 @@ void Chunk::initData()
 	vec3 tmpV3;
 	for(int i =0;i<MAX_BLOCK + 1;i++)
 	{
-		for(int j=0;j<MAX_BLOCK + 1;j++)
-		{
 			for(int k=0;k<MAX_BLOCK + 1;k++)
 			{
-				verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) + vec4(m_basePoint, 0);
-				tmpV3.x = verts.x;
-				tmpV3.y = verts.y;
-				tmpV3.z = verts.z;
-				verts.w = GameMap::shared()->getDensity(tmpV3);
-				//x y z
-				int ind = i*YtimeZ + j*(MAX_BLOCK + 1) + k;
-				mcPoints[ind] = verts;
+				for (int j = 0; j<MAX_BLOCK + 1; j++)//Y在最内层遍历，有效利用缓存
+				{
+					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) + vec4(m_basePoint, 0);
+					tmpV3.x = verts.x;
+					tmpV3.y = verts.y;
+					tmpV3.z = verts.z;
+					verts.w = GameMap::shared()->getDensity(tmpV3);
+					//x y z
+					int ind = i*YtimeZ + j*(MAX_BLOCK + 1) + k;
+					mcPoints[ind] = verts;
 			}
 		}
 	}

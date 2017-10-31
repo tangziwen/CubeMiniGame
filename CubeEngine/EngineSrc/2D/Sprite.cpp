@@ -76,11 +76,12 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setUniformColor(color);
     m_contentSize = contentSize;
     setRenderRect(m_contentSize);
-
 }
 
 void Sprite::submitDrawCmd()
 {
+	//getContentSize();
+	//getWorldPos2D();
     RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);

@@ -19,7 +19,6 @@
 #include "TUtility/TUtility.h"
 #include "FMod/fmod.hpp"
 #include "AudioSystem/AudioSystem.h"
-#include "Application/SimGame/SimGameSystem.h"
 using namespace tzw;
 using namespace std;
 
@@ -33,8 +32,6 @@ void GameEntry::onStart()
 
 #if CURRGAME == GAME_MODE_PLAYGROUND
 	GameWorld::shared();
-#elif CURRGAME == GAME_MODE_SIM
-	SimGameSystem::shared()->init();
 #endif
 }
 

@@ -19,7 +19,10 @@ public:
     ShaderProgram *getProgram() const;
     TechniqueVar getDefaultValue(std::string theName);
     void getAttrList(std::map<std::string, TechniqueVar> & attrMap);
+	bool getIsCullFace();
+	void setIsCullFace(bool newVal);
 protected:
+	bool m_isCullFace;
     std::string m_name;
     std::map<std::string, unsigned int> m_texSlotMap;
     std::map<std::string, std::string> m_aliasMap;

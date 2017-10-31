@@ -2,17 +2,19 @@
 
 #ifdef _DEBUG
 #undef _DEBUG
-#include <Python.h>
+#include <Python27/include/Python.h>
 #define _DEBUG
 #else
 #include <Python.h>
 #endif
+#include "Scene/SceneMgr.h"
+#include "Game/ConsolePanel.h"
 
 namespace tzw
-{
+{ 
 	TZW_SINGLETON_IMPL(ScriptPyMgr);
 	PyObject * g_mainModule = nullptr;
-	ScriptPyMgr::ScriptPyMgr()
+	ScriptPyMgr::ScriptPyMgr() 
 	{
 
 	}
@@ -21,7 +23,10 @@ namespace tzw
 	{
 		Py_Initialize();
 		initBuildInModule();
-		g_mainModule = PyImport_Import(PyString_FromString("tzw"));
+		g_mainModule = PyImport_Import(PyString_FromString("Script.tzw"));
+		if (PyErr_Occurred()) { PyErr_Print(); PyErr_Clear(); return ; }
+		PyObject *mainModuleDict = PyModule_GetDict(g_mainModule);
+		PyDict_SetItemString(mainModuleDict, "__builtins__", PyEval_GetBuiltins());
 	}
 
 	void ScriptPyMgr::finalize()
@@ -147,17 +152,35 @@ namespace tzw
 		return ConvertResult(presult, result_format, result);
 	}
 
-	static PyObject* py_haha(PyObject* self, PyObject* args)
+	static PyObject* py_log(PyObject* self, PyObject* args)
 	{
-		printf("the hahah\n");
+		const char* msg = NULL;
+		if (!PyArg_ParseTuple(args, "s", &msg))
+		{
+			return 0;
+		}
+		g_GetCurrScene()->getConsolePanel()->print(msg);
 		Py_RETURN_NONE;
 	}
 	static PyMethodDef module_methods[] = {
-		{ "haha", py_haha, METH_VARARGS, "" },
+		{ "log", py_log, METH_VARARGS, "" },
 		{ NULL }
 	};
 	void ScriptPyMgr::initBuildInModule()
 	{
-		PyObject *module = Py_InitModule3("g37misc", module_methods, "g37misc module");
+		PyObject *module = Py_InitModule3("tlib", module_methods, "tzw module");
+	}
+
+	std::string ScriptPyMgr::runString(std::string theStr)
+	{
+		
+		auto object = PyRun_String(theStr.c_str(), Py_file_input, g_mainModule, g_mainModule);
+		if (PyErr_Occurred()) { PyErr_Print(); PyErr_Clear(); return ""; }
+		if (object)
+		{
+			PyObject_Str(object);
+			return PyBytes_AS_STRING(object);
+		}
+		return "";
 	}
 }

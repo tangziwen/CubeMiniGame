@@ -4,6 +4,7 @@
 		"fs" : "./Res/EngineCoreRes/Shaders/Grass_f.glsl"
 	},
 	"name" : "Grass",
+	"cullFace" : false,
 	"property" : {
 		"attributes" : [
 			["roughness", "TU_roughness", "float", 5.0],

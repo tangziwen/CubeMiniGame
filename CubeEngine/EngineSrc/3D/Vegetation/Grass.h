@@ -13,6 +13,7 @@ public:
 	Grass(std::string filePath);
 	virtual void submitDrawCmd();
 	void initMesh();
+	unsigned int getTypeID();
 private:
 	Mesh * m_mesh;
 };

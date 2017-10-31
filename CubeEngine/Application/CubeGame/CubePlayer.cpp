@@ -11,6 +11,7 @@
 #include "AudioSystem/AudioSystem.h"
 #include "Action/RepeatForever.h"
 #include "Action/TintTo.h"
+#include "3D/Vegetation/Grass.h"
 namespace tzw {
 
 static Audio * audio;
@@ -39,7 +40,6 @@ CubePlayer::CubePlayer(Node *mainRoot)
 	Sky::shared()->setCamera(m_camera);
 	EventMgr::shared()->addFixedPiorityListener(this);
 
-	initPlaceHolder();
 	m_enableGravity = true;
 }
 
@@ -75,8 +75,8 @@ void CubePlayer::logicUpdate(float dt)
 	{
 		GameWorld::shared()->loadChunksAroundPlayer();
 	}
-	updatePlaceHolder();
 }
+
 bool CubePlayer::checkIsNeedUpdateChunk()
 {
 	auto pos = getPos();
@@ -93,10 +93,15 @@ bool CubePlayer::checkIsNeedUpdateChunk()
 
 bool CubePlayer::onKeyPress(int keyCode)
 {
-
 	switch(keyCode)
 	{
 	case GLFW_KEY_1:
+	{
+		auto grass = new Grass("Res/User/CubeGame/texture/grass1.png");
+		g_GetCurrScene()->addNode(grass);
+		grass->setPos(getPos().x, getPos().y - 0.8, getPos().z);
+		printf("set Grass Pos%s\n", getPos().getStr().c_str());
+	}
 		break;
 	case GLFW_KEY_2:
 		break;
@@ -164,141 +169,12 @@ bool CubePlayer::onKeyRelease(int keyCode)
 
 bool CubePlayer::onMousePress(int button,vec2 thePos)
 {
-	switch (button)
-	{
-	case 0://×ó¼ü
-		{
-			insertBox();
-		}
-		break;
-	case 1://ÓÒ¼ü
-		{
-			removeBox();
-
-		}
-		break;
-	default:
-		break;
-	}
-
 	return true;
 }
 
 void CubePlayer::modeSwitch(Mode newMode)
 {
 	m_currMode = newMode;
-}
-
-void CubePlayer::insertBox()
-{
-	if(m_placeHolder->getIsVisible())
-	{
-		auto cube = new CubePrimitive(BLOCK_SIZE, BLOCK_SIZE, BLOCK_SIZE);
-		g_GetCurrScene()->addNode(cube);
-		cube->setPos(m_placeHolder->getPos());
-	}
-}
-
-void CubePlayer::removeBox()
-{
-	std::vector<Drawable3D *> list;
-	auto pos = this->getPos();
-	AABB aabb;
-	aabb.update(vec3(pos.x - 8,pos.y - 8,pos.z - 8));
-	aabb.update(vec3(pos.x + 8,pos.y + 8 ,pos.z + 8));
-	g_GetCurrScene()->getRange(&list,aabb);
-	Drawable3DGroup group(&list[0],list.size());
-	Ray ray(pos,m_camera->getForward());
-	vec3 hitPoint;
-	auto result = group.hitByRay(ray,hitPoint);
-	if (result)
-	{
-		if (result->getTypeID() != TYPE_CHUNK)
-		{
-			result->removeFromParent();
-		}
-	}
-}
-
-void CubePlayer::updatePlaceHolder()
-{
-	std::vector<Drawable3D *> list;
-	auto pos = this->getPos();
-	AABB aabb;
-	aabb.update(vec3(pos.x - 8,pos.y - 8,pos.z - 8));
-	aabb.update(vec3(pos.x + 8,pos.y + 8 ,pos.z + 8));
-	g_GetCurrScene()->getRange(&list,aabb);
-	if (list.empty())
-		return;
-	Drawable3DGroup group(&list[0],list.size());
-	Ray ray(pos,m_camera->getForward());
-	vec3 hitPoint;
-	auto result = group.hitByRay(ray,hitPoint);
-	if (result)
-	{
-		m_placeHolder->setIsVisible(true);
-		if (result->getTypeID() == TYPE_CHUNK)
-		{
-			if(hitPoint.distance(getPos()) < 8)
-			{
-				int x = hitPoint.x / BLOCK_SIZE;
-				int z = hitPoint.z / BLOCK_SIZE;
-				hitPoint.x = BLOCK_SIZE * x;
-				hitPoint.z = BLOCK_SIZE * z;
-				m_placeHolder->setPos(hitPoint);
-			}
-			else
-			{
-				m_placeHolder->setIsVisible(false);
-			}
-		}
-		else
-		{
-			CubePrimitive * primitive = static_cast<CubePrimitive *>(result);
-			auto aabb = result->getAABB();
-			RayAABBSide side;
-			vec3 hitPoint;
-			ray.intersectAABB(aabb,&side, hitPoint);
-			switch (side)
-			{
-			case tzw::RayAABBSide::up:
-				m_placeHolder->setPos(aabb.centre() + vec3(0, BLOCK_SIZE, 0));
-				break;
-			case tzw::RayAABBSide::down:
-				m_placeHolder->setPos(aabb.centre() + vec3(0, -BLOCK_SIZE, 0));
-				break;
-			case tzw::RayAABBSide::left:
-				m_placeHolder->setPos(aabb.centre() + vec3(-BLOCK_SIZE, 0, 0));
-				break;
-			case tzw::RayAABBSide::right:
-				m_placeHolder->setPos(aabb.centre() + vec3(BLOCK_SIZE, 0, 0));
-				break;
-			case tzw::RayAABBSide::front:
-				m_placeHolder->setPos(aabb.centre() + vec3(0, 0, BLOCK_SIZE));
-				break;
-			case tzw::RayAABBSide::back:
-				m_placeHolder->setPos(aabb.centre() + vec3(0, 0, -BLOCK_SIZE));
-				break;
-			default:
-				break;
-			}
-		}
-	}
-	else
-	{
-		m_placeHolder->setIsVisible(false);
-	}
-}
-
-void CubePlayer::initPlaceHolder()
-{
-	m_placeHolder = new Block();
-	m_placeHolder->setIsHitable(false);
-	m_placeHolder->setColor(vec4::fromRGB(255, 0, 0, 128));
-	m_placeHolder->runAction(new RepeatForever(new TintTo(1.0, vec4::fromRGB(200, 200, 200, 128), vec4::fromRGB(255, 200, 200, 128))));
-	m_placeHolder->setIsNeedTransparent(true);
-	g_GetCurrScene()->addNode(m_placeHolder);
-	m_placeHolder->setPos(0, 0, -5);
 }
 
 } // namespace tzw

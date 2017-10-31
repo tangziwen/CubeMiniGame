@@ -26,17 +26,12 @@ public:
 	virtual bool onKeyRelease(int keyCode);
 	virtual bool onMousePress(int button,vec2 pos);
 	void modeSwitch(Mode newMode);
-	void insertBox();
-	void removeBox();
 private:
-	void updatePlaceHolder();
-	void initPlaceHolder();
 	Mode m_currMode;
     FPSCamera * m_camera;
     Model * m_gunModel;
 	int oldPosX;
 	int oldPosZ;
-	Block * m_placeHolder;
 	bool m_enableGravity;
 };
 

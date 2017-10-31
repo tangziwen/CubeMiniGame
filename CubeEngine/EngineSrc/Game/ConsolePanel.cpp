@@ -7,6 +7,7 @@
 #include "../Engine/EngineDef.h"
 #include <strstream>
 #include <iostream>
+#include "../ScriptPy/ScriptPyMgr.h"
 namespace tzw {
 
 ConsolePanel::ConsolePanel(Node *renderNode)
@@ -184,7 +185,7 @@ void ConsolePanel::eraseChar()
 
 void ConsolePanel::parse(std::string theStr)
 {
-
+	auto result = ScriptPyMgr::shared()->runString(theStr);
 }
 
 float ConsolePanel::heightRatio() const

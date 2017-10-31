@@ -67,7 +67,7 @@ void GameMap::setMaxHeight(float maxHeight)
     m_maxHeight = maxHeight;
 }
 
-double GameMap::getValue(float x, float y, float z)
+double GameMap::getNoiseValue(float x, float y, float z)
 {
 	double value = mountainTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
 	return m_minHeight + value;
@@ -80,7 +80,7 @@ bool GameMap::isBlock(Chunk * chunk,int x, int y, int z)
     case MapType::Noise:
     {
         vec3 worldPos = chunk->getGridPos(x,y,z);
-        float height = getValue(worldPos.x, worldPos.y, worldPos.z);
+        float height = getNoiseValue(worldPos.x, worldPos.y, worldPos.z);
         if(worldPos.y<= height)
         {
             return true;
@@ -116,7 +116,7 @@ bool GameMap::isSurface( vec3 pos)
     {
     case MapType::Noise:
     {
-        float height = getValue(pos.x,pos.y, pos.z);
+        float height = getNoiseValue(pos.x,pos.y, pos.z);
         if(pos.y <= int(height))
         {
             return true;
@@ -146,19 +146,24 @@ bool GameMap::isSurface( vec3 pos)
 
 float GameMap::getDensity(vec3 pos)
 {
+
     switch(m_mapType)
     {
     case MapType::Noise:
     {
-        float height = getValue(pos.x,0.0, pos.z);
-		float delta = fabs(pos.y - height);
-        if(pos.y <= height)
-        {
-            return delta;
-        }else
-        {
-            return -1.0;
-        }
+		static double oldX = -99999999.0;
+		static double oldZ = -99999999.0;
+		static float oldHeight = 0.0;
+		if (fabs(pos.x - oldX) < 0.00001 && fabs(pos.z - oldZ) < 0.00001)
+		{
+			return oldHeight - pos.y;
+		}
+        float height = getNoiseValue(pos.x,0.0, pos.z);
+		float delta = height - pos.y;
+		oldX = pos.x;
+		oldZ = pos.z;
+		oldHeight = height;
+		return delta;
     }
         break;
     case MapType::Plain:

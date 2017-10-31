@@ -91,6 +91,12 @@ void Texture::setMinFilter(Texture::FilterType t)
     case FilterType::LinearMipMapNearest:
         RenderBackEnd::shared()->setTexMIN(m_textureId,GL_LINEAR_MIPMAP_NEAREST,m_type);
         break;
+	case FilterType::LinearMipMapLinear:
+		RenderBackEnd::shared()->setTexMIN(m_textureId, GL_LINEAR_MIPMAP_LINEAR, m_type);
+		break;
+	case FilterType::NearestMipMapLinear:
+		RenderBackEnd::shared()->setTexMIN(m_textureId, GL_NEAREST_MIPMAP_LINEAR, m_type);
+		break;
     }
 }
 
@@ -107,6 +113,12 @@ void Texture::setMagFilter(Texture::FilterType t)
     case FilterType::LinearMipMapNearest:
         RenderBackEnd::shared()->setTexMAG(m_textureId,GL_LINEAR_MIPMAP_NEAREST,m_type);
         break;
+	case FilterType::LinearMipMapLinear:
+		RenderBackEnd::shared()->setTexMAG(m_textureId, GL_LINEAR_MIPMAP_LINEAR, m_type);
+		break;
+	case FilterType::NearestMipMapLinear:
+		RenderBackEnd::shared()->setTexMAG(m_textureId, GL_NEAREST_MIPMAP_LINEAR, m_type);
+		break;
     }
 }
 
@@ -118,8 +130,8 @@ bool Texture::getIsHaveMipMap() const
 void Texture::genMipMap()
 {
     if(m_isHaveMipMap) return;
-    RenderBackEnd::shared()->genMipMap(m_textureId);
-    setFilter(FilterType::LinearMipMapNearest, 0);
+	RenderBackEnd::shared()->genMipMap(m_textureId);
+    setFilter(FilterType::LinearMipMapLinear, 0);
     m_isHaveMipMap = true;
 }
 
