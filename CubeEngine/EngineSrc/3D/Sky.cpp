@@ -49,8 +49,8 @@ namespace tzw
 	{
 		Drawable::setUpTransFormation(info);
 		auto mat = m_camera->getTranslationMatrix();
-		mat.data()[13] = 0.f;
-		info.m_worldMatrix = mat * getLocalTransform();
+		//mat.data()[13] = 0.f;
+		info.m_worldMatrix = getLocalTransform();
 		m_skyBoxTechnique->setVar("viewdir",info.m_worldMatrix.forward());
 	}
 

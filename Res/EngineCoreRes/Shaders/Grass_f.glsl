@@ -15,15 +15,14 @@ varying vec2 v_texcoord;
 void main()
 {
 	vec4 albedo = texture2D(TU_tex1,v_texcoord)*TU_color;
-	if(albedo.a <0.5)
+	if(albedo.a <0.4)
 	{
 		discard;
 	}
-	albedo.a = 1.0;
     // Set fragment color from texture
-    gl_FragData[0] = texture2D(TU_tex1,v_texcoord)*TU_color;
+    gl_FragData[0] = albedo;
 	gl_FragData[1] = vec4(v_position,1.0);
-	gl_FragData[2] = vec4(normalize(v_normal),1.0);		
-	gl_FragData[3] = vec4(TU_roughness,0.0,0.0,1.0);
+	gl_FragData[2] = vec4(0.0, 1.0, 0.0,1.0);		
+	gl_FragData[3] = vec4(1.0,0.0,0.0,1.0);
 }
 //! [0]

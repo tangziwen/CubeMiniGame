@@ -232,9 +232,9 @@ void Node::visit()
 		{
 			submitDrawCmd();
 		}
-		if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree((Drawable3D *)this)))
+		if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
-			scene->updateObj((Drawable3D *)this);
+			scene->updateObj(static_cast<Drawable3D *>(this));
 		}
 		////遍历子节点
 		for(auto child : m_children)

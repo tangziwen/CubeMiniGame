@@ -173,6 +173,17 @@ void RenderBackEnd::drawElement(RenderFlag::IndicesType type, unsigned int size,
 	}
 }
 
+void RenderBackEnd::drawElementInstanced(RenderFlag::IndicesType type, unsigned int size, const void * indicesAddress, int count)
+{
+	switch (type)
+	{
+	case RenderFlag::IndicesType::Triangles:
+		
+		glDrawElementsInstancedARB(GL_TRIANGLES, size, GL_UNSIGNED_SHORT, indicesAddress, count);
+		break;
+	}
+}
+
 void RenderBackEnd::setDepthTestMethod(const RenderFlag::DepthTestMethod &method)
 {
 	if(m_depthTestMethodCache == method) return;

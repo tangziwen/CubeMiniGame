@@ -18,9 +18,9 @@ public:
     static GUIListView * create(vec2 theSize);
     void addItem(GUIListViewItem * item);
     GUIListViewItem * add(std::string name,std::function<void(GUIListViewItem*)> cb = nullptr);
-    virtual bool onMouseRelease(int button,vec2 pos);
-    virtual bool onMousePress(int button,vec2 pos);
-    virtual bool onMouseMove(vec2 pos);
+	bool onMouseRelease(int button,vec2 pos) override;
+	bool onMousePress(int button,vec2 pos) override;
+	bool onMouseMove(vec2 pos) override;
     void nextPage();
     void prevPage();
     void updateForPage();

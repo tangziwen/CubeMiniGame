@@ -21,8 +21,16 @@ public:
     vec2 m_texCoord;
     vec4 m_color;
     vec3 m_barycentric;
+	vec3 m_matIndex;
 };
 
+class VertexDataLite
+{
+public:
+	VertexDataLite();
+	vec4 m_data1;
+	vec4 m_data2;
+};
 } // namespace tzw
 
 #endif // TZW_VERTEXDATA_H

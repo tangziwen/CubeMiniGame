@@ -150,9 +150,8 @@ Tlog &Tlog::operator <<(const TlogTitleBegin &begin)
 {
     (void)begin;
     time_t rawtime;
-    struct tm * timeinfo;
-    time ( &rawtime );
-    timeinfo = localtime ( &rawtime );
+	time ( &rawtime );
+    struct tm * timeinfo = localtime ( &rawtime );
     sprintf ((char *)tmpStr,"\n--- %s",asctime (timeinfo));
     m_buffer.append (tmpStr);
     return (* this);

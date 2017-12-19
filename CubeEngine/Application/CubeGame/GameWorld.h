@@ -26,12 +26,12 @@ public:
     CubePlayer *getPlayer() const;
     void setPlayer(CubePlayer *player);
     Chunk * getOrCreateChunk(int x,int y, int z);
-    virtual void onFrameUpdate(float delta);
+	void onFrameUpdate(float delta) override;
     Chunk * createChunk(int x,int y,int z);
     void setBlockSheet(TextureAtlas *blockSheet);
     bool isTheSurfaceBlock();
     void startGame();
-    virtual bool onKeyPress(int keyCode);
+	bool onKeyPress(int keyCode) override;
     MainMenu *getMainMenu() const;
     void toggleMainMenu();
     void unloadGame();

@@ -44,14 +44,21 @@ include_directories(./External/GLEW)
 #rapidJson
 include_directories(./External/rapidjson/include)
 
+#python
+include_directories(./External/Python27/include)
+set(LIBS ${LIBS} python27)
+
 #FMOD
 set(LIBS ${LIBS} fmodex_vc)
 
 #GL
 set(LIBS ${LIBS} opengl32)
 
+
+
 #misc
 set(LIBS ${LIBS} zlib libpng )
+
 
 ####External library END####
 

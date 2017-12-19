@@ -38,8 +38,8 @@ int TbaseMath::clampI(int value, int lowBound, int upBound)
 
 float TbaseMath::randF()
 {
-    int r = rand()%100;
-    return 1.0f * r /100;
+    int r = rand()%10000;
+    return 1.0f * r / 10000;
 }
 
 float TbaseMath::randFN()

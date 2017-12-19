@@ -11,7 +11,7 @@
 namespace tzw {
 
 ConsolePanel::ConsolePanel(Node *renderNode)
-	:m_isVisible(false),m_verticalSpace(6),m_margin(vec2(15,15)),m_heightRatio(0.85f),m_inputFrameHeight(30)
+	:m_verticalSpace(6),m_inputFrameHeight(30),m_margin(vec2(15,15)),m_isVisible(false),m_heightRatio(0.85f)
 {
 	m_node = new Node();
 	auto winSize =  Engine::shared()->winSize();
@@ -164,7 +164,7 @@ void ConsolePanel::updateTexts()
 {
 	auto visibleRect = m_bgFrame->getContentSize();
 	int y = visibleRect.y;
-	for(auto iter = m_labelList.begin(); iter!= m_labelList.end() ;iter++)
+	for(auto iter = m_labelList.begin(); iter!= m_labelList.end() ;++iter)
 	{
 		LabelNew* label = (*iter);
 		label->setPos2D(m_margin.x,y - m_margin.y);

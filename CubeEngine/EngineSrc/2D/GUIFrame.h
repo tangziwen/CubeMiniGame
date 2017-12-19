@@ -13,12 +13,11 @@ public:
     static GUIFrame * create(vec4 color,vec2 size);
     static GUIFrame * create(vec4 color);
     static GUIFrame * create(vec2 size);
-    virtual void submitDrawCmd();
-    virtual void setContentSize(const vec2 &getContentSize);
+	void submitDrawCmd() override;
+	void setContentSize(const vec2 &getContentSize) override;
     bool isInTheRect(vec2 touchPos);
-	virtual void setUniformColor(const tzw::vec4 &color);
-	virtual void setUniformColor(const tzw::vec3 &color);
-protected:
+	void setUniformColor(const tzw::vec4 &color) override;
+	void setUniformColor(const tzw::vec3 &color) override;
 private:
 	vec4 m_color;
     Mesh * m_mesh;

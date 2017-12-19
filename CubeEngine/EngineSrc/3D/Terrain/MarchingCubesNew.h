@@ -201,11 +201,11 @@ namespace tzw
 						((t_voxelAccessor::voxelLength + 1) * 4));
 					vector<int32> vertexIndicesReuseLod(vertexIndicesReuseLodSize, -1);
 
-					for (uint32 x = start.x; x < (unsigned)end.x; x += 2)
+					for (uint32 x = start.x; x < static_cast<unsigned>(end.x); x += 2)
 					{
-						for (uint32 y = start.y; y < (unsigned)end.y; y += 2)
+						for (uint32 y = start.y; y < static_cast<unsigned>(end.y); y += 2)
 						{
-							for (uint32 z = start.z; z < (unsigned)end.z; z += 2)
+							for (uint32 z = start.z; z < static_cast<unsigned>(end.z); z += 2)
 							{
 								const vector3int32 voxelPos(x, y, z);
 								{

@@ -13,12 +13,12 @@ class FPSCamera : public Camera,public EventListener
 public:
     FPSCamera();
     static FPSCamera * create(Camera * cloneObj);
-    virtual bool onKeyPress(int keyCode);
-    virtual bool onKeyRelease(int keyCode);
-    virtual bool onMouseRelease(int button,vec2 pos);
-    virtual bool onMousePress(int button,vec2 pos);
-    virtual bool onMouseMove(vec2 pos);
-    virtual void logicUpdate(float dt);
+	bool onKeyPress(int keyCode) override;
+	bool onKeyRelease(int keyCode) override;
+	bool onMouseRelease(int button,vec2 pos) override;
+	bool onMousePress(int button,vec2 pos) override;
+	bool onMouseMove(vec2 pos) override;
+	void logicUpdate(float dt) override;
     vec3 speed() const;
     void setSpeed(const vec3 &speed);
 
@@ -42,7 +42,7 @@ public:
     std::function<void (vec3,vec3,vec3&)> collideCheck;
     bool getEnableFPSFeature() const;
     void setEnableFPSFeature(bool enableFPSFeature);
-    virtual void setRotateQ(const Quaternion &rotateQ);
+	void setRotateQ(const Quaternion &rotateQ) override;
     void lookAt( vec3 pos);
 
     bool getIsMoving() const;

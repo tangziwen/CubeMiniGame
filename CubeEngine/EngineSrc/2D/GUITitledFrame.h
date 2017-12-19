@@ -15,11 +15,11 @@ public:
     GUIWindow();
     std::string title() const;
     void setTitle(const std::string &title);
-    virtual void setContentSize(const vec2 &getContentSize);
+	void setContentSize(const vec2 &getContentSize) override;
     virtual vec2 getOuterContentSize();
-    virtual bool onMouseRelease(int button,vec2 pos);
-    virtual bool onMousePress(int button,vec2 pos);
-    virtual bool onMouseMove(vec2 pos);
+	bool onMouseRelease(int button,vec2 pos) override;
+	bool onMousePress(int button,vec2 pos) override;
+	bool onMouseMove(vec2 pos) override;
     bool getIsFocus() const;
     void setIsFocus(bool isFocus);
     bool getIsDragable() const;

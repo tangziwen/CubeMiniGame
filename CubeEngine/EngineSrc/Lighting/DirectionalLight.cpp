@@ -5,6 +5,7 @@ namespace tzw {
 DirectionalLight::DirectionalLight()
 {
     m_dir = vec3(-0.5,-0.5,0);
+	m_intensity = 0.4;
 }
 
 vec3 DirectionalLight::dir() const

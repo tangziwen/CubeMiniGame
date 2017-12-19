@@ -49,4 +49,9 @@ clock_t Tmisc::DurationEnd()
     return clock() - _theClock;
 }
 
+float Tmisc::clamp(float val, float minVal, float maxVal)
+{
+	return min(max(val, minVal), maxVal);
+}
+
 } // namespace tzw

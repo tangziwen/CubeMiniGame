@@ -201,7 +201,7 @@ void Material::use()
 {
 	auto program = m_effect->getProgram();
 	program->use();
-	for(auto i = m_varList.begin();i!= m_varList.end();i++)
+	for(auto i = m_varList.begin();i!= m_varList.end();++i)
 	{
 		//need to convert to alias
 		std::string name = m_effect->getAlias(i->first);

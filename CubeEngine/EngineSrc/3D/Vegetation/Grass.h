@@ -11,11 +11,15 @@ class Grass : public Drawable3D
 {
 public:
 	Grass(std::string filePath);
-	virtual void submitDrawCmd();
+	void finish();
+	void submitDrawCmd() override;
 	void initMesh();
-	unsigned int getTypeID();
-private:
+	void setUpTransFormation(TransformationInfo & info) override;
+	unsigned int getTypeID() override;
 	Mesh * m_mesh;
+	void pushCommand();
+	bool m_isFinish;
+private:
 };
 
 } // namespace tzw

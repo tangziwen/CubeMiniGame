@@ -25,7 +25,7 @@ TextureAtlas::TextureAtlas(std::string sheetFile)
 	m_height = doc["meta"]["size"]["h"].GetInt();
 	auto& frames = doc["frames"];
 
-	for(auto i = frames.MemberBegin(); i != frames.MemberEnd(); i++)
+	for(auto i = frames.MemberBegin(); i != frames.MemberEnd(); ++i)
 	{
 		auto keyStr = i->name.GetString();
 		auto frame = new TextureFrame();

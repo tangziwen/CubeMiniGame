@@ -11,9 +11,9 @@ class GameEntry :public tzw::AppEntry
 {
 public:
 	GameEntry();
-	virtual void onStart();
-	virtual void onExit();
-	virtual void onUpdate(float delta);
+	void onStart() override;
+	void onExit() override;
+	void onUpdate(float delta) override;
 private:
 	float m_ticks;
 };

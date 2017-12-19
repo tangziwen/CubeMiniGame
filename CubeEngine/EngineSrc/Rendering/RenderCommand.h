@@ -11,6 +11,7 @@ struct TransformationInfo{
     Matrix44 m_worldMatrix;
     Matrix44 m_viewMatrix;
     Matrix44 m_projectMatrix;
+	std::vector<vec3> m_instancedOffset;
 };
 
 class RenderCommand
@@ -25,7 +26,8 @@ public:
     {
         ///GUI类型，此种类型渲染时不会测试深度也不会写入深度，其绘制顺序由Zorder决定
         GUI,
-        Common
+        Common,
+		Instanced,
     };
     ///
     /// \brief 渲染基本几何体的类型

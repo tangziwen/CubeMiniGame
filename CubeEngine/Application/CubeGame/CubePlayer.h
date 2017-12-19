@@ -20,11 +20,11 @@ public:
     FPSCamera *camera() const;
     void setCamera(FPSCamera *camera);
     vec3 getPos();
-    virtual void logicUpdate(float dt);
+	void logicUpdate(float dt) override;
 	bool checkIsNeedUpdateChunk();
-	virtual bool onKeyPress(int keyCode);
-	virtual bool onKeyRelease(int keyCode);
-	virtual bool onMousePress(int button,vec2 pos);
+	bool onKeyPress(int keyCode) override;
+	bool onKeyRelease(int keyCode) override;
+	bool onMousePress(int button,vec2 pos) override;
 	void modeSwitch(Mode newMode);
 private:
 	Mode m_currMode;

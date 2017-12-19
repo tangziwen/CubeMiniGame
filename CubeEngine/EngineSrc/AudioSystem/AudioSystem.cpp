@@ -25,8 +25,7 @@ namespace tzw
 
 	AudioSystem::AudioSystem()
 	{
-		FMOD_RESULT result;
-		result = FMOD::System_Create((FMOD::System **)&m_system);
+		FMOD_RESULT result = FMOD::System_Create((FMOD::System **)&m_system);
 		FMOD::System * sys = (FMOD::System *)m_system;
 		sys->init(32, FMOD_INIT_NORMAL, 0);
 

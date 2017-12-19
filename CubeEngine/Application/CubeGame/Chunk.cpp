@@ -14,10 +14,16 @@ static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
+
+#include <random>
 namespace tzw {
+
+module::Perlin flatNoise;
+module::Perlin grassNoise;
+
 static int lodList[] = { 1, 2, 4, 8};
-Chunk::Chunk(int the_x, int the_y,int the_z)
-	:m_isLoaded(false),x(the_x),y(the_y),z(the_z)
+Chunk::Chunk(int  the_x, int the_y,int the_z)
+	:x(the_x),y(the_y),z(the_z),m_isLoaded(false)
 {
 	m_lod = 0;
 	m_localAABB.update(vec3(0,0,0));
@@ -32,6 +38,9 @@ Chunk::Chunk(int the_x, int the_y,int the_z)
 	reCacheAABB();
 	mcPoints = nullptr;
 	m_tmpNeighborChunk.clear();
+	m_grass = new Grass("Res/TestRes/blueFlower.png");
+	m_grass2 = new Grass("Res/TestRes/grass_veg.png");
+	grassNoise.SetSeed(time(NULL));
 }
 
 vec3 Chunk::getGridPos(int the_x, int the_y, int the_z)
@@ -100,6 +109,8 @@ void Chunk::logicUpdate(float delta)
 	{
 		m_isNeedSubmitMesh = false;
 		m_mesh->finish();
+		m_grass->finish();
+		m_grass2->finish();
 	}
 }
 
@@ -117,6 +128,10 @@ void Chunk::submitDrawCmd()
 	setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	Renderer::shared()->addRenderCommand(command);
+	Grass* grass = NULL;
+	
+	m_grass->pushCommand();
+	m_grass2->pushCommand();
 }
 
 
@@ -128,8 +143,9 @@ void Chunk::load()
 	{
 		m_mesh = new Mesh();
 		m_material = MaterialPool::shared()->getOrCreateMaterialByEffect("VoxelTerrain");
-		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/GrassGreenTexture0001.jpg", true));
-		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/GrassGreenTexture0001.jpg", true));
+		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/T_Ground_Grass_D.png", true));
+		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/mud2.jpg", true));
+		m_material->setTex("CliffTex", TextureMgr::shared()->getByPath("./Res/TestRes/Cliff.jpg", true));
 	}
 	setCamera(g_GetCurrScene()->defaultCamera());
 	if (!m_isInitData)
@@ -518,9 +534,10 @@ void Chunk::genNormal()
 				//now build the triangles using triTable
 				for (int n = 0; triTable[cubeIndex][n] != -1; n += 3)
 				{
-					m_mesh->m_vertices[meshIndex].m_normal = grads[triTable[cubeIndex][n + 2]];
-					m_mesh->m_vertices[meshIndex + 1].m_normal = grads[triTable[cubeIndex][n + 1]];
-					m_mesh->m_vertices[meshIndex + 2].m_normal = grads[triTable[cubeIndex][n]];
+					m_mesh->m_vertices[meshIndex].m_normal = grads[triTable[cubeIndex][n + 2]].normalized();
+					m_mesh->m_vertices[meshIndex + 1].m_normal = grads[triTable[cubeIndex][n + 1]].normalized();
+					m_mesh->m_vertices[meshIndex + 2].m_normal = grads[triTable[cubeIndex][n]].normalized();
+
 					meshIndex += 3;
 				}
 			}	//END OF FOR LOOP
@@ -631,6 +648,7 @@ void Chunk::genMesh()
 	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, 0.0f, m_lod);
 	if (m_mesh->isEmpty()) return;
 	genNormal();
+	calculatorMatID();
 	m_isNeedSubmitMesh = true;
 	//m_mesh->caclNormals();
 	//m_mesh->calBaryCentric();
@@ -712,6 +730,65 @@ void Chunk::deform(int X, int Y, int Z, float actualVal)
 unsigned int Chunk::getTypeID()
 {
 	return TYPE_CHUNK;
+}
+
+
+void Chunk::calculatorMatID()
+{
+	size_t indexCount = m_mesh->m_indices.size();
+	// Accumulate each triangle normal into each of the triangle vertices
+	for (unsigned int i = 0; i < indexCount; i += 1) {
+		short_u index0 = m_mesh->m_indices[i];
+		float step = 0.0f;
+		m_mesh->m_vertices[index0].m_normal.normalize();
+		step = std::max(vec3::DotProduct(m_mesh->m_vertices[index0].m_normal, vec3(0, 1, 0)), 0.0f);
+		step = powf(step, 4.0f);
+		auto pos = m_mesh->m_vertices[index0].m_pos;
+		if (step < 0.5)
+		{
+			step = Tmisc::clamp(step - 0.2f, 0.0f, 1.0f);
+		}
+		vec3 matID = vec3(1.0, 0.0, 0.0);
+
+		float value = flatNoise.GetValue(pos.x * 0.03, pos.z * 0.03, 0.0);
+		//the flat is grass or dirt?
+		value = value * 0.5 + 0.5;
+		//value = std::max(value - 0.2f, 0.0f);
+		value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
+		matID = vec3((1.0 - value) * (step),  (1.0 - step), value * (step));
+		m_mesh->m_vertices[index0].m_matIndex = matID;
+
+		if (step > 0.5 && (1.0 - value > 0.7))
+		{
+			
+			if (m_grassPosList.size() < 20000 && grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > -0.5)
+			{
+				auto ox = TbaseMath::randFN() * 0.5;
+				auto oz = TbaseMath::randFN() * 0.5;
+				auto scale = TbaseMath::randFN() * 0.3;
+				Grass * grass = nullptr;
+				if (rand() % 100 > 85)
+				{
+					grass = m_grass;
+				}
+				else
+				{
+					grass = m_grass2;
+				}
+				grass->m_mesh->pushInstance(vec4(pos.x + ox, pos.y, pos.z + oz, 1.0 + scale));
+			}
+		}
+
+	}
+
+	size_t vertexCount = m_mesh->m_vertices.size();
+	//
+	for (unsigned int i = 0; i < vertexCount; i++) {
+		m_mesh->m_vertices[i].m_matIndex.normalize();
+	}
+
+
+
 }
 
 bool Chunk::isInEdge(int i, int j, int k)

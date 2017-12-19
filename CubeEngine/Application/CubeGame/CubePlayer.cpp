@@ -99,7 +99,7 @@ bool CubePlayer::onKeyPress(int keyCode)
 	{
 		auto grass = new Grass("Res/User/CubeGame/texture/grass1.png");
 		g_GetCurrScene()->addNode(grass);
-		grass->setPos(getPos().x, getPos().y - 0.8, getPos().z);
+		grass->setPos(getPos().x, getPos().y - 1.9, getPos().z);
 		printf("set Grass Pos%s\n", getPos().getStr().c_str());
 	}
 		break;
@@ -133,13 +133,16 @@ bool CubePlayer::onKeyRelease(int keyCode)
 			aabb.update(vec3(pos.x -10,pos.y- 10,pos.z - 10));
 			aabb.update(vec3(pos.x +10,pos.y + 10 ,pos.z + 10));
 			g_GetCurrScene()->getRange(&list,aabb);
-			Drawable3DGroup group(&list[0],list.size());
-			Ray ray(pos,m_camera->getForward());
-			vec3 hitPoint;
-			auto chunk = static_cast<Chunk *>(group.hitByRay(ray,hitPoint));
-			if(chunk)
+			if (!list.empty())
 			{
-				chunk->deformSphere(hitPoint, -0.1, 2.0f);
+				Drawable3DGroup group(&list[0], list.size());
+				Ray ray(pos, m_camera->getForward());
+				vec3 hitPoint;
+				auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+				if (chunk)
+				{
+					chunk->deformSphere(hitPoint, -0.1, 2.0f);
+				}
 			}
 		}
 		break;

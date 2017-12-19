@@ -44,5 +44,9 @@ VertexData::VertexData(vec3 pos, vec2 texCoord, vec4 color)
 
 }
 
+VertexDataLite::VertexDataLite()
+{
+}
+
 } // namespace tzw
 

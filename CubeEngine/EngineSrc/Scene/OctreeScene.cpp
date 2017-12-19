@@ -45,12 +45,16 @@ void OctreeScene::addObj(Drawable3D *obj)
     if(result)
     {
 		m_objList.insert(obj);
-    }
+	}
+	else
+	{
+		printf("can't add Object\n");
+		assert(0);
+	}
 }
 
 bool OctreeScene::addObj_R(OctreeNode *node, Drawable3D *obj)
 {
-	obj->getAABB();
     if(node->aabb.isCanCotain(obj->getAABB()))
     {
         if(!node->m_child[0])//terminal node
@@ -64,10 +68,10 @@ bool OctreeScene::addObj_R(OctreeNode *node, Drawable3D *obj)
                 {
                     return true;
                 }
-                // the children can containt that ,so we only can put it in parent.
-                node->m_drawlist.push_back(obj);
-                return true;
             }
+			// the children can containt that ,so we only can put it in parent.
+			node->m_drawlist.push_back(obj);
+			return true;
         }
     }
     return false;
@@ -258,12 +262,11 @@ void OctreeScene::getRange_R(OctreeNode *node, std::vector<Drawable3D *> *list, 
     if(node->aabb.isIntersect(aabb,noNeedVar))
     {
         //put self
-        for(int i =0;i<node->m_drawlist.size();i++)
+        for(auto drawObj : node->m_drawlist)
         {
-            Drawable3D* obj = node->m_drawlist[i];
-            if(obj->getAABB().isIntersect(aabb,noNeedVar))
+            if(drawObj->getAABB().isIntersect(aabb,noNeedVar))
             {
-                list->push_back(node->m_drawlist[i]);
+                list->push_back(drawObj);
             }
         }
         //check sub

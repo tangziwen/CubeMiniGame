@@ -4,6 +4,7 @@
 #include "TUtility/TUtility.h"
 #include "time.h"
 #include "EngineSrc/3D/SkyBox.h"
+#include "EngineSrc/3D/Sky.h"
 #include <iostream>
 #include "GameConfig.h"
 #include <thread>
@@ -101,7 +102,7 @@ void GameWorld::startGame()
     m_mainRoot->addChild(crossHair);
     GameMap::shared()->setMapType(GameMap::MapType::Noise);
     GameMap::shared()->setMaxHeight(10);
-	GameMap::shared()->setMinHeight(5);
+	GameMap::shared()->setMinHeight(3);
     auto player = new CubePlayer(m_mainRoot);
     GameWorld::shared()->setPlayer(player);
     GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
@@ -128,10 +129,10 @@ void GameWorld::loadChunksAroundPlayer()
 	Tmisc::DurationBegin();
     std::set<Chunk*> m_tempArray = m_activedChunkList;
 	std::vector<Chunk *> m_readyToLoadArray;
-    auto pos = m_player->getPos();
+    auto pos = m_player->getPos() - m_mapOffset;
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-	int range = 21;
+	int range = ceil(150.0f / (MAX_BLOCK * BLOCK_SIZE));
     for(int i =posX - range;i<=posX + range;i++)
     {
         for(int j =0;j< m_height; j++)
@@ -202,6 +203,7 @@ GameWorld::GameWorld()
     g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
+
 }
 
 GameWorld::~GameWorld()

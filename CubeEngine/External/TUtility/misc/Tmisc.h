@@ -14,6 +14,7 @@ public:
 	static std::string StrFormat(const char * format,...);
 	static void DurationBegin();
 	static clock_t DurationEnd();
+	static float clamp(float val, float min, float max);
 };
 
 } // namespace tzw

@@ -18,6 +18,7 @@ public:
     void setTexMAG(unsigned int textureID, int param, RenderFlag::TextureType type);
     void bindTexture2D(unsigned int texUnitID,unsigned int textureID,RenderFlag::TextureType type = RenderFlag::TextureType::Texture2D);
     void drawElement(RenderFlag::IndicesType type,unsigned int size, const void *indicesAddress);
+	void drawElementInstanced(RenderFlag::IndicesType type, unsigned int size, const void *indicesAddress, int count);
     void setDepthTestMethod(const RenderFlag::DepthTestMethod & method);
     void setTextureWarp(unsigned int textureID, RenderFlag::WarpAddress warpAddress, RenderFlag::TextureType type);
     void bindFrameBuffer(unsigned int frameBufferID);

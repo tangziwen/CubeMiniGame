@@ -19,12 +19,12 @@ public:
     static Button * create(std::string str);
     static Button * create(vec4 color,vec2 Size);
     void setStr(std::string str);
-    virtual bool onMouseRelease(int button,vec2 pos);
-    virtual bool onMousePress(int button,vec2 pos);
-    virtual bool onMouseMove(vec2 pos);
+	bool onMouseRelease(int button,vec2 pos) override;
+	bool onMousePress(int button,vec2 pos) override;
+	bool onMouseMove(vec2 pos) override;
     std::function<void (Button *)> onBtnClicked() const;
     void setOnBtnClicked(const std::function<void (Button *)> &onBtnClicked);
-	virtual void setContentSize(const vec2 &getContentSize);
+	void setContentSize(const vec2 &getContentSize) override;
     virtual vec2 getContentSize();
     LabelNew *getLabel() const;
     vec2 getFrameSize();

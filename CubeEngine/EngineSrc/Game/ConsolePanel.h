@@ -13,8 +13,8 @@ class ConsolePanel : EventListener
 {
 public:
     ConsolePanel(Node * renderNode);
-    virtual bool onKeyPress(int keyCode);
-    virtual bool onCharInput(unsigned int theChar);
+	bool onKeyPress(int keyCode) override;
+	bool onCharInput(unsigned int theChar) override;
     bool isVisible() const;
     void setIsVisible(bool isVisible);
     void toggleVissible();

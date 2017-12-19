@@ -2,42 +2,59 @@
 #include "Chunk.h"
 namespace tzw {
 GameMap * GameMap::m_instance = nullptr;
+
 module::Perlin baseMountainTerrain;
-module::Perlin baseFlatTerrain;
+
+module::Billow baseFlatTerrain;
+module::Perlin baseBumpyFlatTerrain;
+
+
 module::ScaleBias flatTerrain;
+module::ScaleBias BumpyFlatTerrain;
 module::ScaleBias mountainTerrain;
+
 module::Perlin terrainType;
 module::Select finalTerrain;
-//module::Blend finalTerrain;
+
+module::Add finalFlatTerrain;
 
 GameMap::GameMap()
     :m_maxHeight(1),m_mapType(MapType::Noise)
 {
     m_plane = new noise::model::Plane(myModule);
-	myModule.SetPersistence(0.25);
+	myModule.SetPersistence(0.001);
 
-	baseFlatTerrain.SetPersistence(0.4);
-	baseFlatTerrain.SetOctaveCount(3);
-	baseFlatTerrain.SetFrequency(0.06);
-
+	baseFlatTerrain.SetFrequency(0.001);
+	baseFlatTerrain.SetPersistence(0.1);
 	flatTerrain.SetSourceModule(0, baseFlatTerrain);
-	flatTerrain.SetScale(3.0);
-	flatTerrain.SetBias(1.5 + 4);
+	flatTerrain.SetScale(8.0);
+	flatTerrain.SetBias(15.0);
 
-	terrainType.SetFrequency (0.5);
-	terrainType.SetPersistence (0.25);
+	baseBumpyFlatTerrain.SetFrequency(0.1);
+	baseBumpyFlatTerrain.SetPersistence(0.4);
 
-	baseMountainTerrain.SetFrequency(0.0125);
-	baseMountainTerrain.SetOctaveCount(8);
-	baseMountainTerrain.SetPersistence(0.25);
-	baseMountainTerrain.SetLacunarity(2.0);
+	BumpyFlatTerrain.SetSourceModule(0, baseBumpyFlatTerrain);
+	BumpyFlatTerrain.SetScale(0.8);
+
+	finalFlatTerrain.SetSourceModule(0, flatTerrain);
+	finalFlatTerrain.SetSourceModule(1, BumpyFlatTerrain);
+
+	baseMountainTerrain.SetSeed(233);
+	baseMountainTerrain.SetFrequency(0.015);
+	baseMountainTerrain.SetPersistence(0.3);
+
 	mountainTerrain.SetSourceModule(0, baseMountainTerrain);
-	mountainTerrain.SetScale(10);
-	mountainTerrain.SetBias(5);
+	mountainTerrain.SetScale(30.0);
+	mountainTerrain.SetBias(30.0);
 
-	finalTerrain.SetSourceModule(1, flatTerrain);
-	finalTerrain.SetSourceModule(0, mountainTerrain);
+	finalTerrain.SetSourceModule(0, finalFlatTerrain);
+	finalTerrain.SetSourceModule(1, mountainTerrain);
+
+	terrainType.SetFrequency(0.005);
+
 	finalTerrain.SetControlModule(terrainType);
+	finalTerrain.SetBounds(0.2, 100.0);
+	finalTerrain.SetEdgeFalloff(0.4);
 }
 
 void GameMap::init(float ratio)
@@ -69,7 +86,7 @@ void GameMap::setMaxHeight(float maxHeight)
 
 double GameMap::getNoiseValue(float x, float y, float z)
 {
-	double value = mountainTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
+	double value = finalTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
 	return m_minHeight + value;
 }
 
@@ -169,13 +186,7 @@ float GameMap::getDensity(vec3 pos)
     case MapType::Plain:
     {
         float height = maxHeight();
-        if(pos.y <= int(height))
-        {
-            return 1;
-        }else
-        {
-            return -1.0;
-        }
+		return height - pos.y;
     }
         break;
     default:

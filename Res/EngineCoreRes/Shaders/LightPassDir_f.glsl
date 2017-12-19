@@ -3,6 +3,7 @@ struct DirectionalLight
 {
     vec3 color;
     vec3 direction;
+	float intensity;
 };
 
 struct AmbientLight
@@ -13,7 +14,7 @@ struct AmbientLight
 
 uniform float F0 = 0.8;
 uniform float K = 0.7;
-uniform float Gamma = 1.4;
+uniform float Gamma = 1.1;
 
 uniform sampler2D TU_colorBuffer;
 uniform sampler2D TU_posBuffer;
@@ -100,9 +101,9 @@ vec3 calculateLightPBR(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,
 	specularIntensity = (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
 	specularIntensity = max(specularIntensity, 0.0);
 	}
-	vec3 colorLinear = 2.2 * lightColor * irradiance * (K + specularIntensity * (1.0 - K)) + gAmbientLight.color * gAmbientLight.intensity;
+	vec3 colorLinear = 2.2 * lightColor * gDirectionalLight.intensity * irradiance * (K + specularIntensity * (1.0 - K)) + gAmbientLight.color * gAmbientLight.intensity;
     vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0 / Gamma));
-	return colorGammaCorrected;
+	return colorLinear;
 }
 
 
@@ -112,7 +113,7 @@ vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 view
 	vec3 diffuseColor,ambientColor;
 	float specularIntensity =0.0;
 	float irradiance = max(0.0,dot(normal, lightDir));
-	return lightColor * irradiance + gAmbientLight.color * gAmbientLight.intensity;
+	return lightColor * irradiance * gDirectionalLight.intensity;
 }
 
 
@@ -140,10 +141,12 @@ void main()
 	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
 	vec3 normal = normalize(texture2D(TU_normalBuffer, v_texcoord).xyz);
 	
-	//gl_FragColor = vec4(color * calculateLightPBR(normal, gDirectionalLig//ht.direction, gDirectionalLight.color, pos, roughness),Data1.a);
-	gl_FragColor = vec4(color, Data1.a);
+
 	
-	//vec4 finalColor = vec4(color * calculateLightPBR(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness),Data1.a);
-	//float fogFactor = getFogFactor(50.0, 250.0, -1 * pos.z);
-	//gl_FragColor = finalColor * (1.0 - fogFactor) + fogFactor * vec4(176.0 / 255.0 , 171.0 / 255.0, 203.0 / 255.0, 1.0);
+	vec4 finalColor = vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness) + gAmbientLight.color * gAmbientLight.intensity * color,Data1.a);
+	gl_FragColor = Data1;
+	return;
+
+	float fogFactor = getFogFactor(100.0, 250.0, -1 * pos.z);
+	gl_FragColor = finalColor * (1.0 - fogFactor) + fogFactor * vec4(150.0 / 255.0 , 150.0 / 255.0, 150.0 / 255.0, 1.0);
 }

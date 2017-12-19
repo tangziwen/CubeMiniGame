@@ -3,7 +3,7 @@
 		"vs" : "./Res/EngineCoreRes/Shaders/VoxelTerrain_v.glsl",
 		"fs" : "./Res/EngineCoreRes/Shaders/VoxelTerrain_f.glsl"
 	},
-	"name" : "VoxelTerrain",
+	"name" : "ModelStd",
 	"property" : {
 		"attributes" : [
 			["roughness", "TU_roughness", "float", 5.0],
@@ -11,7 +11,8 @@
 		],
 		"maps" : [
 			["GrassTex", "TU_topGrass", 0],
-			["DirtTex", "TU_dirt", 1]
+			["DirtTex", "TU_dirt", 1],
+			["CliffTex", "TU_Cliff", 2]
 		]
 	}
 }

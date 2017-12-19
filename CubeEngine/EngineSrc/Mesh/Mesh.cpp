@@ -4,10 +4,11 @@
 namespace tzw {
 
 Mesh::Mesh()
-    :m_ibo(-1),m_vbo(-1)
+    :m_vbo(-1),m_ibo(-1)
 {
     m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
     m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
+	m_instanceBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 }
 
 void Mesh::addIndex(unsigned int index)
@@ -59,6 +60,12 @@ void Mesh::submit()
     //pass data to the IBO
     m_indexBuf->use();
     m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u));
+
+	if (m_instanceOffset.size() > 0)
+	{
+		m_instanceBuf->use();
+		m_instanceBuf->allocate(&m_instanceOffset[0], m_instanceOffset.size() * sizeof(vec4));
+	}
 }
 
 unsigned int Mesh::getMatIndex() const
@@ -71,9 +78,24 @@ unsigned unsigned int Mesh::getIndex(int id)
 	return m_indices[id];
 }
 
+int Mesh::getInstanceSize()
+{
+	return m_instanceOffset.size();
+}
+
 bool Mesh::isEmpty()
 {
 	return m_indices.empty();
+}
+
+void Mesh::pushInstance(vec4 instancePos)
+{
+	m_instanceOffset.push_back(instancePos);
+}
+
+void Mesh::pushInstances(std::vector<vec4> instancePos)
+{
+	m_instanceOffset = instancePos;
 }
 
 void Mesh::setMatIndex(unsigned int matIndex)
@@ -442,6 +464,11 @@ RenderBuffer *Mesh::getIndexBuf() const
     return m_indexBuf;
 }
 
+RenderBuffer * Mesh::getInstanceBuf() const
+{
+	return m_instanceBuf;
+}
+
 void Mesh::clearVertices()
 {
     m_vertices.clear();
@@ -516,6 +543,7 @@ void Mesh::createBufferObject()
     //create vbo and ibo buffer
     m_arrayBuf->create();
     m_indexBuf->create();
+	m_instanceBuf->create();
 
     //record the handle
     m_ibo = m_indexBuf->bufferId();

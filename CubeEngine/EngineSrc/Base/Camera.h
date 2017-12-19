@@ -26,11 +26,11 @@ public:
     Matrix44 getViewMatrix();
     Matrix44 getViewProjectionMatrix();
     void lookAt(vec3 targetPos,vec3 upFrame);
-    virtual void logicUpdate(float dt);
+	void logicUpdate(float dt) override;
     void updateFrustum();
     bool getUseCustomFrustumUpdate() const;
     void setUseCustomFrustumUpdate(bool useCustomFrustumUpdate);
-    virtual void reCache();
+	void reCache() override;
     vec3 unproject(vec3 src);
 protected:
     Frustum m_frustum;

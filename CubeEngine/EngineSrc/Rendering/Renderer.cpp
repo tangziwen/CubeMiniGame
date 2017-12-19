@@ -54,6 +54,9 @@ void Renderer::addRenderCommand(RenderCommand command)
 			}
 			
 		break;
+		case RenderCommand::RenderType::Instanced:
+			m_CommonCommand.push_back(command);
+			break;
 		default:
 		break;
 	}
@@ -146,7 +149,15 @@ void Renderer::render(const RenderCommand &command)
 	command.m_material->use();
 	applyRenderSetting(command.m_material->getEffect());
 	applyTransform(command.m_material->getEffect()->getProgram(), command.m_transInfo);
-	renderPrimitive(command.m_mesh, command.m_material->getEffect(), command.m_primitiveType);
+	if (command.type() == RenderCommand::RenderType::Instanced)
+	{
+		renderPrimitive2(command.m_mesh, command.m_material->getEffect(), command.m_primitiveType);
+	}
+	else
+	{
+		renderPrimitive(command.m_mesh, command.m_material->getEffect(), command.m_primitiveType);
+	}
+	
 }
 
 void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::PrimitiveType primitiveType)
@@ -183,6 +194,12 @@ void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::Primi
 	int bcLoaction = program->attributeLocation("a_bc");
 	program->enableAttributeArray(bcLoaction);
 	program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
+	offset += sizeof(vec3);
+
+	int matLocation = program->attributeLocation("a_mat");
+	program->enableAttributeArray(matLocation);
+	program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
 
 	switch(primitiveType)
 	{
@@ -199,6 +216,63 @@ void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::Primi
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Patches,mesh->getIndicesSize(),0);
 		break;
 	}
+}
+#define RAISE error = glGetError();printf("fuck error %d\n",error);
+void Renderer::renderPrimitive2(Mesh * mesh, Effect * effect, RenderCommand::PrimitiveType primitiveType)
+{
+	glDisable(GL_CULL_FACE);
+	int error = glGetError();
+	auto program = effect->getProgram();
+	program->use();
+	mesh->getArrayBuf()->use();
+	mesh->getIndexBuf()->use();
+	// Offset for position
+	unsigned int offset = 0;
+	Engine::shared()->increaseVerticesIndicesCount(mesh->getVerticesSize(), mesh->getIndicesSize());
+	// Tell OpenGL programmable pipeline how to locate vertex position data
+	int vertexLocation = program->attributeLocation("a_position");
+	program->enableAttributeArray(vertexLocation);
+	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	offset += sizeof(vec3);
+	int normalLocation = program->attributeLocation("a_normal");
+	program->enableAttributeArray(normalLocation);
+	program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	offset += sizeof(vec3);
+	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+	int texcoordLocation = program->attributeLocation("a_texcoord");
+	program->enableAttributeArray(texcoordLocation);
+	program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+	offset += sizeof(vec2);
+	
+	//int colorLocation = program->attributeLocation("a_color");
+	//program->enableAttributeArray(colorLocation);
+	//program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
+	//offset += sizeof(vec4);
+
+	//int bcLoaction = program->attributeLocation("a_bc");
+	//program->enableAttributeArray(bcLoaction);
+	//program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
+	//offset += sizeof(vec3);
+
+	//int matLocation = program->attributeLocation("a_mat");
+	//program->enableAttributeArray(matLocation);
+	//program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+
+
+	//RAISE
+	mesh->getInstanceBuf()->use();
+	int grassOffsetLocation = program->attributeLocation("a_instance_offset");
+	program->enableAttributeArray(grassOffsetLocation);
+	program->setAttributeBuffer(grassOffsetLocation, GL_FLOAT, 0, 4, 0);
+	glVertexAttribDivisor(grassOffsetLocation, 1);
+
+	switch (primitiveType)
+	{
+	case RenderCommand::PrimitiveType::TRIANGLES:
+		RenderBackEnd::shared()->drawElementInstanced(RenderFlag::IndicesType::Triangles, mesh->getIndicesSize(), 0, mesh->getInstanceSize());
+		break;
+	}
+	glVertexAttribDivisor(grassOffsetLocation, 0);
 }
 
 ///
@@ -240,6 +314,7 @@ void Renderer::notifySortGui()
 {
 	m_isNeedSortGUI = true;
 }
+
 
 void Renderer::initQuad()
 {
@@ -364,6 +439,7 @@ void Renderer::directionalLightPass()
 	auto dirInViewSpace = (cam->getViewMatrix() * vec4(dirLight->dir(),0.0)).toVec3();
 	program->setUniform3Float("gDirectionalLight.direction",dirInViewSpace);
 	program->setUniform3Float("gDirectionalLight.color",dirLight->color());
+	program->setUniformFloat("gDirectionalLight.intensity", dirLight->intensity());
 
 	auto ambient = currScene->getAmbient();
 	program->setUniform3Float("gAmbientLight.color",ambient->color());

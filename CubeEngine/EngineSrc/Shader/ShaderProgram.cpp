@@ -48,7 +48,7 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
     glLinkProgram(shader);
     glGetProgramiv(shader, GL_LINK_STATUS, &Success);
     if (Success == 0) {
-        glGetProgramInfoLog(shader, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
     }
@@ -56,7 +56,7 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
     glValidateProgram(shader);
     glGetProgramiv(shader, GL_VALIDATE_STATUS, &Success);
     if (!Success) {
-        glGetProgramInfoLog(shader, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
         fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
         exit(1);
     }
@@ -180,7 +180,7 @@ void ShaderProgram::enableAttributeArray(unsigned int attributeId)
 
 void ShaderProgram::setAttributeBuffer(int ID, int dataType, int offset, int size, int stride)
 {
-    glVertexAttribPointer(ID,size,dataType,GL_FALSE,stride,(void *)offset);
+    glVertexAttribPointer(ID,size,dataType,GL_FALSE,stride,reinterpret_cast<void *>(offset));
 }
 
 int ShaderProgram::uniformLocation(std::string name)
@@ -217,7 +217,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
     if (!success) {
         GLchar InfoLog[1024];
-        glGetShaderInfoLog(ShaderObj, 1024, NULL, InfoLog);
+        glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         exit(1);
     }

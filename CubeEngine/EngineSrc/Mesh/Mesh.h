@@ -53,6 +53,7 @@ public:
     size_t getVerticesSize();
     RenderBuffer *getArrayBuf() const;
     RenderBuffer *getIndexBuf() const;
+	RenderBuffer *getInstanceBuf() const;
     void clearVertices();
     void clearIndices();
     AABB getAabb() const;
@@ -74,7 +75,10 @@ public:
 
     unsigned int getMatIndex() const;
 	unsigned int getIndex(int id);
+	int getInstanceSize();
 	bool isEmpty();
+	void pushInstance(vec4 instancePos);
+	void pushInstances(std::vector<vec4> instancePos);
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );
     void computeNewVerts ();
@@ -86,12 +90,14 @@ private:
     std::vector<int> midTriangles_;
     std::vector<Triangle> tmpTriangles_;
     std::vector<SplitData> splits_;
+	std::vector<vec4> m_instanceOffset;
 
     void subDivideIter();
     void submit();
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;
     RenderBuffer* m_indexBuf;
+	RenderBuffer* m_instanceBuf;
 
     unsigned int m_matIndex;
     integer_u m_vbo,m_ibo;

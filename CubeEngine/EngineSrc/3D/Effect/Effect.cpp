@@ -14,7 +14,9 @@ Effect::Effect()
 
 void Effect::load(std::string name)
 {
+	printf("load effect %s\n", name.c_str());
     loadFromFile(std::string("./Res/Effects/") + name + ".effect");
+	printf("load effect finished %s\n", name.c_str());
 }
 
 void Effect::loadFromFile(std::string filePath)
@@ -25,6 +27,7 @@ void Effect::loadFromFile(std::string filePath)
     if (doc.HasParseError())
     {
         printf("get json data err! %d offset %d\n",doc.GetParseError(), doc.GetErrorOffset());
+		exit(0);
         return;
     }
     if(doc.HasMember("name"))
@@ -47,6 +50,11 @@ void Effect::loadFromFile(std::string filePath)
         auto vsFilePath = shaders["vs"].GetString();
         auto fsFilePath = shaders["fs"].GetString();
         m_program = ShaderMgr::shared()->getByPath(vsFilePath, fsFilePath);
+		if (!m_program)
+		{
+			printf("bad program!!!\n");
+			exit(0);
+		}
     }
     auto& MaterialInfo = doc["property"];
     if(MaterialInfo.HasMember("attributes"))
