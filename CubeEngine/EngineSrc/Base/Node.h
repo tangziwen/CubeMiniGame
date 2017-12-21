@@ -21,6 +21,7 @@ class Scene;
 class Node : public ActionMgr
 {
 public:
+
 	enum class NodeType
 	{
 		NormalNode,
@@ -30,6 +31,7 @@ public:
 
 	Node();
 	virtual ~Node();
+	//
 	static Node * create();
 	Matrix44 getTransform();
 	virtual Matrix44 getLocalTransform();

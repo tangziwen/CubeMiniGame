@@ -11,23 +11,93 @@ struct vertexInfo
 
 namespace tzw
 {
-class Chunk : public Drawable3D
+
+/// <summary>
+/// 
+/// </summary>
+/// <seealso cref="Drawable3D" />
+	class Chunk : public Drawable3D
 {
-public:
-    Chunk(int the_x, int the_y, int the_z);
+public:	
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Chunk"/> class.
+	/// </summary>
+	/// <param name="the_x">The x.</param>
+	/// <param name="the_y">The y.</param>
+	/// <param name="the_z">The z.</param>
+	Chunk(int the_x, int the_y, int the_z);
     int x;
     int y;
     int z;
-    vec3 getGridPos(int the_x, int the_y, int the_z);
+	/// <summary>
+	/// Gets the grid position.
+	/// </summary>
+	/// <param name="the_x">The x.</param>
+	/// <param name="the_y">The y.</param>
+	/// <param name="the_z">The z.</param>
+	/// <returns>
+	/// tzw.Chunk
+	/// </returns>
+	vec3 getGridPos(int the_x, int the_y, int the_z);
+	/// <summary>
+	/// Intersects the by aabb.
+	/// </summary>
+	/// <param name="other">The other.</param>
+	/// <param name="overLap">The over lap.</param>
+	/// <returns>
+	/// tzw.Chunk
+	/// </returns>
 	bool intersectByAABB(const AABB & other, vec3 &overLap) override;
-	Drawable3D * intersectByRay(const Ray & ray,vec3 &hitPoint) override;
+	/// <summary>
+	/// Intersects the by ray.
+	/// </summary>
+	/// <param name="ray">The ray.</param>
+	/// <param name="hitPoint">The hit point.</param>
+	/// <returns>
+	/// tzw.Chunk
+	/// </returns>
+	Drawable3D * intersectByRay(const Ray & ray, vec3 &hitPoint) override;
+	/// <summary>
+	/// Intersects the by sphere.
+	/// </summary>
+	/// <param name="sphere">The sphere.</param>
+	/// <param name="hitPoint">The hit point.</param>
+	/// <returns>
+	/// tzw.Chunk
+	/// </returns>
 	bool intersectBySphere(const t_Sphere & sphere, std::vector<vec3> & hitPoint) override;
+	/// <summary>
+	/// Logics the update.
+	/// </summary>
+	/// <param name="delta">The delta.</param>
 	void logicUpdate(float delta) override;
-    bool getIsAccpectOCTtree() const override;
+	/// <summary>
+	/// Gets the is accpect oc ttree.
+	/// </summary>
+	/// <returns>
+	/// tzw.Chunk
+	/// </returns>
+	bool getIsAccpectOCTtree() const override;
+	/// <summary>
+	/// Submits the draw command.
+	/// </summary>
 	void submitDrawCmd() override;
-    void load();
-    void unload();
-    void deformSphere(vec3 pos, float value, float range = 1.0f);
+	/// <summary>
+	/// Loads this instance.
+	/// </summary>
+	void load();
+	/// <summary>
+	/// Unloads this instance.
+	/// </summary>
+	void unload();
+	/// <summary>
+	/// Deforms the sphere.
+	/// </summary>
+	/// <param name="pos">The position.</param>
+	/// <param name="value">The value.</param>
+	/// <param name="range">The range.</param>
+	void deformSphere(vec3 pos, float value, float range = 1.0f);
 	void deformCube(vec3 pos, float value, float range = 1.0f);
     void deformWithNeighbor(int X, int Y, int Z, float value);
     void setVoxelScalar(int x, int y, int z, float scalar, bool isAdd = true);

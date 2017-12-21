@@ -1,3 +1,4 @@
+﻿
 #include "Chunk.h"
 #include "GameMap.h"
 #include "GameWorld.h"
@@ -10,7 +11,9 @@
 #include "EngineSrc/Technique/MaterialPool.h"
 #include "EngineSrc/Engine/WorkerThreadSystem.h"
 
+/// <summary>	The chunk offset. </summary>
 static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
+/// <summary>	Size of the chunk. </summary>
 static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
@@ -18,10 +21,14 @@ static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
 #include <random>
 namespace tzw {
 
+/// <summary>	The flat noise. </summary>
 module::Perlin flatNoise;
+/// <summary>	The grass noise. </summary>
 module::Perlin grassNoise;
 
+/// <summary>	The LOD list[]. </summary>
 static int lodList[] = { 1, 2, 4, 8};
+
 Chunk::Chunk(int  the_x, int the_y,int the_z)
 	:x(the_x),y(the_y),z(the_z),m_isLoaded(false)
 {
@@ -42,6 +49,7 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	m_grass2 = new Grass("Res/TestRes/grass_veg.png");
 	grassNoise.SetSeed(time(NULL));
 }
+
 
 vec3 Chunk::getGridPos(int the_x, int the_y, int the_z)
 {
@@ -317,6 +325,18 @@ void Chunk::addVoexlScalar(int x, int y, int z, float scalar)
 		mcPoints[ind].w = 1.0;
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	Linear interp. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="p1">   	[in,out] The first vec4. </param>
+/// <param name="p2">   	[in,out] The second vec4. </param>
+/// <param name="value">	The value. </param>
+///
+/// <returns>	A vec3. </returns>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 static vec3 LinearInterp(vec4 & p1, vec4 & p2, float value)
 {
 	vec3 p;
@@ -328,13 +348,85 @@ static vec3 LinearInterp(vec4 & p1, vec4 & p2, float value)
 		p = tp1;
 	return p;
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 0. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_0(verts) vec4(getPoint(i - 1, j, k).w-(verts[1]).w,getPoint(i, j - 1, k).w-(verts[4]).w,getPoint(i, j, k - 1).w-(verts[3]).w, (verts[0]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 1. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_1(verts) vec4((verts[0]).w-getPoint(i + 2, j, k).w,getPoint(i + 1, j - 1, k ).w-(verts[5]).w,getPoint(i + 1, j, k - 1).w-(verts[2]).w, (verts[1]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 2. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_2(verts) vec4((verts[3]).w-getPoint(i + 2, j, k + 1).w,getPoint(i + 1, j - 1, k + 1).w-(verts[6]).w,(verts[1]).w-getPoint(i + 1, j, k + 2).w, (verts[2]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 3. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_3(verts) vec4(getPoint(i - 1, j, k + 1).w-(verts[2]).w,getPoint(i, j - 1, k + 1).w-(verts[7]).w,(verts[0]).w-getPoint(i, j, k + 2).w, (verts[3]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 4. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_4(verts) vec4(getPoint(i - 1, j + 1, k).w-(verts[5]).w,(verts[0]).w-getPoint(i, j + 2, k).w,getPoint(i, j + 1, k - 1).w-(verts[7]).w, (verts[4]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 5. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_5(verts) vec4((verts[4]).w-getPoint(i + 2, j + 1, k).w,(verts[1]).w-getPoint(i + 1, j + 2, k).w,getPoint(i + 1, j + 1, k -1 ).w-(verts[6]).w, (verts[5]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 6. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_6(verts) vec4((verts[7]).w-getPoint(i + 2, j + 1, k + 1).w,(verts[2]).w-getPoint(i + 1, j + 2, k + 1).w,(verts[5]).w-getPoint(i + 1, j + 1, k + 2).w, (verts[6]).w);
+
+////////////////////////////////////////////////////////////////////////////////////////////////////
+/// <summary>	A macro that defines Calculate Graduated Vertical 7. </summary>
+///
+/// <remarks>	Tzwn, 2017/12/21. </remarks>
+///
+/// <param name="verts">	The vertices. </param>
+////////////////////////////////////////////////////////////////////////////////////////////////////
+
 #define CALC_GRAD_VERT_7(verts) vec4(getPoint(i - 1, j + 1, k + 1).w-(verts[6]).w,(verts[3]).w-getPoint(i, j + 2, k  + 1).w,(verts[4]).w-getPoint(i, j + 1, k + 2).w, (verts[7]).w);
 
 void Chunk::genNormal()
@@ -757,7 +849,6 @@ void Chunk::calculatorMatID()
 		value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
 		matID = vec3((1.0 - value) * (step),  (1.0 - step), value * (step));
 		m_mesh->m_vertices[index0].m_matIndex = matID;
-
 		if (step > 0.5 && (1.0 - value > 0.7))
 		{
 			
