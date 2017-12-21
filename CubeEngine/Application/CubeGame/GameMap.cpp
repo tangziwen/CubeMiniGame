@@ -18,6 +18,9 @@ module::Select finalTerrain;
 
 module::Add finalFlatTerrain;
 
+/// <summary>
+/// Initializes a new instance of the <see cref="GameMap"/> class.
+/// </summary>
 GameMap::GameMap()
     :m_maxHeight(1),m_mapType(MapType::Noise)
 {
@@ -46,6 +49,8 @@ GameMap::GameMap()
 	mountainTerrain.SetSourceModule(0, baseMountainTerrain);
 	mountainTerrain.SetScale(30.0);
 	mountainTerrain.SetBias(30.0);
+
+	printf("hello , test");
 
 	finalTerrain.SetSourceModule(0, finalFlatTerrain);
 	finalTerrain.SetSourceModule(1, mountainTerrain);

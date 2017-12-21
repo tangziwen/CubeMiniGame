@@ -127,6 +127,10 @@ bool Chunk::getIsAccpectOCTtree() const
 	return m_isLoaded;
 }
 
+
+/// <summary>
+/// Submits the draw command.
+/// </summary>
 void Chunk::submitDrawCmd()
 {
 	if (!m_isLoaded) return;
