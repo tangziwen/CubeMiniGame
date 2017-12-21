@@ -165,3 +165,4 @@ CubeEngine.pro.user
 *.dll
 *.a
 Res
+/nsight_profiler.cfg
