@@ -5,7 +5,7 @@
 #include "TUtility/TUtility.h"
 #include "../Engine/EngineDef.h"
 
-#include "../2D/GUIWindowMgr.h"
+#include "2d/GUISystem.h"
 #define PANEL_WIDTH 220
 #define PANEL_HEIGHT 180
 
@@ -22,69 +22,68 @@
 #define LABEL_INDICES_COUNT 5
 #define LABEL_MEMORY_USAGE 6
 
+
+
 namespace tzw {
+static float values[30] = { 60.0f };
+static float lastCalculateTime = 0.0f;
+
 DebugInfoPanel::DebugInfoPanel()
-	:m_curTime(0),m_isInit(false)
 {
-	m_frame = GUIWindow::create("Profile Window",vec2(PANEL_WIDTH,PANEL_HEIGHT));
-	m_frame->setIsShowCloseBtn(false);
-	m_frame->setLocalPiority(EngineDef::debugPanelPiority);
-	m_frame->setIsDragable(false);
-	GUIWindowMgr::shared()->add(m_frame);
-	for (int i =0 ;i<= LABEL_MEMORY_USAGE;i++)
+	// init FPS
+	for (int i = 0; i < IM_ARRAYSIZE(values); i++)
 	{
-		auto l = LabelNew::create(" ",FontMgr::shared()->getSmallFont());
-		l->setPos2D(MARGIN_X,PANEL_HEIGHT - i * LINE_SPACE - MARGIN_Y);
-		m_frame->addChild(l);
-		m_labelList.push_back(l);
+		values[i] = 60.0f;
 	}
-	//加一点点透明度
-	m_frame->setAlpha(0.7f);
-	setInfo();
-	m_isInit = true;
+
+	currFPS = 60.0f;
+	drawCall = 0;
+	logicUpdateTime = 0;
+	renderUpdateTime = 0;
+	verticesCount = 0;
+	//GUISystem::shared()->addObject(this);
 
 }
 
-void DebugInfoPanel::logicUpdate(float dt)
+void DebugInfoPanel::drawIMGUI(bool * isOpen)
 {
-	m_curTime += dt;
-	if(m_curTime > 1.0)
-	{
-		this->setInfo();
-		m_curTime = 0.0f;
-	}
+	ImGui::Begin("Profiler", isOpen, ImGuiWindowFlags_AlwaysAutoResize);
+	static float f = 0.0f;
+	updateInfo();
+	ImGui::Text("Draw Call:%d", drawCall);
+	ImGui::Text("logicUpdate:%d ms", logicUpdateTime);
+	ImGui::Text("applyRender:%d ms", renderUpdateTime);
+	ImGui::Text("indices:%d", verticesCount);
+	static int values_offset = 0;
+
+	char buff[100];
+	snprintf(buff, sizeof(buff), "FPS %f", currFPS);
+	ImGui::PlotLines("ABC", values, IM_ARRAYSIZE(values), values_offset, buff, 0.0f, 60.0f, ImVec2(0, 80));
+	ImGui::End();
 }
 
 void DebugInfoPanel::setInfo()
 {
-	static char tmp[100];
-	float fps = 60.0f;
-	int drawCallCount = 10;
-	if(m_isInit)
-	{
-		fps = Engine::shared()->FPS();
-		drawCallCount = Engine::shared()->getDrawCallCount();
-	}
-
-	sprintf_s(tmp,sizeof(tmp),"FPS:%f",fps);
-	m_labelList[LABEL_FPS]->setString(tmp);
-
-	sprintf_s(tmp,sizeof(tmp),"DrawCalls:%d",drawCallCount);
-	m_labelList[LABEL_DRAWCALLS]->setString(tmp);
-
-	sprintf_s(tmp,sizeof(tmp),"logicUpdate:%d ms",Engine::shared()->getLogicUpdateTime());
-	m_labelList[LABEL_LOGIC_UPDATE]->setString(tmp);
-
-	sprintf_s(tmp,sizeof(tmp),"applyRender:%d ms",Engine::shared()->getApplyRenderTime());
-	m_labelList[LABEL_APPLYRENDER]->setString(tmp);
-
-	sprintf_s(tmp,sizeof(tmp),"vertices:%d",Engine::shared()->getVerticesCount());
-	m_labelList[LABEL_VERTICES_COUNT]->setString(tmp);
-
-	sprintf_s(tmp,sizeof(tmp),"indices:%d",Engine::shared()->getIndicesCount());
-	m_labelList[LABEL_INDICES_COUNT]->setString(tmp);
-
-	sprintf_s(tmp,sizeof(tmp),"mem: 20M");
-	m_labelList[LABEL_MEMORY_USAGE]->setString(tmp);
 }
+
+void DebugInfoPanel::updateInfo()
+{
+	lastCalculateTime += ImGui::GetIO().DeltaTime;
+	if (lastCalculateTime > 0.5f)
+	{
+		currFPS = Engine::shared()->FPS();
+		drawCall = Engine::shared()->getDrawCallCount();
+		logicUpdateTime = Engine::shared()->getLogicUpdateTime();
+		renderUpdateTime = Engine::shared()->getApplyRenderTime();
+		verticesCount = Engine::shared()->getIndicesCount();
+
+		for (int i = 0; i < IM_ARRAYSIZE(values) - 1; i++)
+		{
+			values[i] = values[i + 1];
+		}
+		values[IM_ARRAYSIZE(values) - 1] = currFPS;
+		lastCalculateTime = 0.0f;
+	}
+}
+
 } // namespace tzw

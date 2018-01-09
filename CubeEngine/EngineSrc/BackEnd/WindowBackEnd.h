@@ -10,6 +10,8 @@ public:
     virtual void prepare();
     virtual void run();
 	virtual void setUnlimitedCursor(bool enable);
+	virtual void getMousePos(double* posX, double* posY);
+	virtual int getMouseButton(int button);
 private:
     TZW_SINGLETON_DECL(WindowBackEnd)
 };

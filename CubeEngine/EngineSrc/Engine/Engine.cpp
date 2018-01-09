@@ -13,7 +13,9 @@
 #include "AudioSystem/AudioSystem.h"
 #include <windows.h>
 #include "ScriptPy/ScriptPyMgr.h"
+#include "2D/GUISystem.h"
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
+#include "Game/ConsolePanel.h"
 namespace tzw {
 
 Engine * Engine::m_instance = nullptr;
@@ -58,6 +60,11 @@ std::string Engine::getWorkingDirectory()
 	char str[32];
 	GetCurrentDirectory(length,str);
 	return str;
+}
+
+int Engine::getMouseButton(int mouseButton)
+{
+	return m_winBackEnd->getMouseButton(mouseButton);
 }
 
 int Engine::getDrawCallCount()
@@ -140,7 +147,8 @@ void Engine::update(float delta)
 
 static void writeFunction(const char * str)
 {
-    g_GetCurrScene()->getConsolePanel()->print(str);
+	ConsolePanel::shared()->AddLog(str);
+    //g_GetCurrScene()->getConsolePanel()->print(str);
 }
 
 void Engine::onStart(int width,int height)
@@ -151,6 +159,7 @@ void Engine::onStart(int width,int height)
     TlogSystem::get()->setWriteFunc(writeFunction);
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
+	GUISystem::shared()->initGUI();
 
 	//WorkerThreadSystem::shared()->init();
 }
@@ -182,6 +191,13 @@ void Engine::initSingletons()
 vec2 Engine::winSize()
 {
     return vec2(m_windowWidth,m_windowHeight);
+}
+
+tzw::vec2 Engine::getMousePos()
+{
+	double x, y;
+	m_winBackEnd->getMousePos(&x, &y);
+	return vec2(x, y);
 }
 
 float Engine::windowHeight() const

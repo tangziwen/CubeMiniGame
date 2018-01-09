@@ -8,10 +8,12 @@ namespace tzw {
 class GLFW_BackEnd : public WindowBackEnd
 {
 public:
-    virtual void prepare();
-    virtual void run();
+    void prepare() override;
+    void run() override;
     GLFW_BackEnd();
-	void setUnlimitedCursor(bool enable);
+	void setUnlimitedCursor(bool enable) override;
+	void getMousePos(double* posX, double* posY) override;
+	int getMouseButton(int buttonMode) override;
 private:
     GLFWwindow * m_window;
     TZW_SINGLETON_DECL(GLFW_BackEnd)

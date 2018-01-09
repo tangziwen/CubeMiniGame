@@ -50,8 +50,6 @@ GameMap::GameMap()
 	mountainTerrain.SetScale(30.0);
 	mountainTerrain.SetBias(30.0);
 
-	printf("hello , test");
-
 	finalTerrain.SetSourceModule(0, finalFlatTerrain);
 	finalTerrain.SetSourceModule(1, mountainTerrain);
 

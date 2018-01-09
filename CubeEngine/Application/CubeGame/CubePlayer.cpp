@@ -12,6 +12,7 @@
 #include "Action/RepeatForever.h"
 #include "Action/TintTo.h"
 #include "3D/Vegetation/Grass.h"
+
 namespace tzw {
 
 static Audio * audio;
@@ -95,7 +96,7 @@ bool CubePlayer::onKeyPress(int keyCode)
 {
 	switch(keyCode)
 	{
-	case GLFW_KEY_1:
+	case TZW_KEY_1:
 	{
 		auto grass = new Grass("Res/User/CubeGame/texture/grass1.png");
 		g_GetCurrScene()->addNode(grass);
@@ -103,11 +104,11 @@ bool CubePlayer::onKeyPress(int keyCode)
 		printf("set Grass Pos%s\n", getPos().getStr().c_str());
 	}
 		break;
-	case GLFW_KEY_2:
+	case TZW_KEY_2:
 		break;
-	case GLFW_KEY_3:
+	case TZW_KEY_3:
 		break;
-	case GLFW_KEY_4:
+	case TZW_KEY_4:
 		break;
 
 	}
@@ -119,13 +120,13 @@ bool CubePlayer::onKeyRelease(int keyCode)
 	switch(keyCode)
 	{
 	
-	case GLFW_KEY_Q:
+	case TZW_KEY_Q:
 		{
 			m_enableGravity = !m_enableGravity;
 			m_camera->setIsEnableGravity(m_enableGravity);
 		}
 		break;
-	case GLFW_KEY_F:
+	case TZW_KEY_F:
 		{
 			std::vector<Drawable3D *> list;
 			auto pos = this->getPos();
@@ -146,7 +147,7 @@ bool CubePlayer::onKeyRelease(int keyCode)
 			}
 		}
 		break;
-	case GLFW_KEY_E:
+	case TZW_KEY_E:
 		{
 			std::vector<Drawable3D *> list;
 			auto pos = this->getPos();

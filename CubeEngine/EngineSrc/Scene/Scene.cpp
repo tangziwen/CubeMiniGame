@@ -153,9 +153,7 @@ void Scene::init()
     sceneBounding.update(vec3(2000,512,2000));
     m_octreeScene = new OctreeScene();
     m_octreeScene->init(sceneBounding);
-    m_consolePanel = new ConsolePanel(this->root());
-    m_debugInfoPanel = new DebugInfoPanel();
-    this->root()->addChild(m_debugInfoPanel);
+    //m_debugInfoPanel = new DebugInfoPanel();
 }
 
 } // namespace tzw

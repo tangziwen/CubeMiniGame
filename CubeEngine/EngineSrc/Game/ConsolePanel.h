@@ -1,47 +1,43 @@
 #ifndef TZW_CONSOLEPANEL_H
 #define TZW_CONSOLEPANEL_H
 
-#include "../2D/LabelNew.h"
-#include "../2D/Sprite.h"
-#include "../Event/Event.h"
-#include <deque>
 
+#include "Engine/EngineDef.h"
+#include "2D/imgui.h"
 namespace tzw {
 
 ///用于输出调试信息，以及输入脚本的控制台窗口
-class ConsolePanel : EventListener
+struct ConsolePanel
 {
-public:
-    ConsolePanel(Node * renderNode);
-	bool onKeyPress(int keyCode) override;
-	bool onCharInput(unsigned int theChar) override;
-    bool isVisible() const;
-    void setIsVisible(bool isVisible);
-    void toggleVissible();
-    void print(std::string str);
-    unsigned int verticalSpace() const;
-    void setVerticalSpace(unsigned int verticalSpace);
+	TZW_SINGLETON_DECL(ConsolePanel);
+	char                  InputBuf[256];
+	ImVector<char*>       Items;
+	bool                  ScrollToBottom;
+	ImVector<char*>       History;
+	int                   HistoryPos;    // -1: new line, 0..History.Size-1 browsing history.
+	ImVector<const char*> Commands;
 
-    vec2 margin() const;
-    void setMargin(vec2 margin);
+	ConsolePanel();
+	~ConsolePanel();
 
-    float heightRatio() const;
-    void setHeightRatio(float heightRatio);
-private:
-    void updateTexts();
-    void eraseChar();
-	void parse(std::string theStr);
-    int maxList() const;
-    unsigned int m_verticalSpace;
-    unsigned int m_inputFrameHeight;
-    vec2 m_margin;
-    std::deque<LabelNew *> m_labelList;
-    bool m_isVisible;
-    Node * m_node;
-    LabelNew * m_label;
-    Sprite * m_bgFrame;
-    Sprite * m_inputFrame;
-    float m_heightRatio;
+	// Portable helpers
+	static int   Stricmp(const char* str1, const char* str2);
+	static int   Strnicmp(const char* str1, const char* str2, int n);
+	static char* Strdup(const char *str);
+
+	void    ClearLog();
+
+	void    AddLog(const char* fmt, ...) IM_FMTARGS(2);
+
+	void    AddLog(const char* fmt, va_list argList);
+
+	void    Draw(const char* title, bool* p_open);
+
+	void    ExecCommand(const char* command_line);
+
+	static int TextEditCallbackStub(ImGuiTextEditCallbackData* data); // In C++11 you are better off using lambdas for this sort of forwarding callbacks
+
+	int     TextEditCallback(ImGuiTextEditCallbackData* data);
 };
 
 } // namespace tzw

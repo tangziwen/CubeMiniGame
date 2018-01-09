@@ -1,5 +1,5 @@
 #include "EffectMgr.h"
-
+#include "Base/Log.h"
 #include <iostream>
 namespace tzw {
 
@@ -7,7 +7,7 @@ TZW_SINGLETON_IMPL(EffectMgr);
 EffectMgr::EffectMgr()
 {
     initBuiltIn();
-	printf("init built in effect finish\n");
+	tlog("init built in effect finish\n");
 }
 
 Effect *EffectMgr::get(std::string name)

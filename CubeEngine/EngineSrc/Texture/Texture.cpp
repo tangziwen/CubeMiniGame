@@ -1,6 +1,7 @@
 #include "Texture.h"
 #include "External/SOIL/SOIL.h"
 #include "GL/glew.h"
+#include "Base/Log.h"
 namespace tzw {
 
 Texture::Texture(std::string filePath)
@@ -9,7 +10,7 @@ Texture::Texture(std::string filePath)
     m_type = RenderFlag::TextureType::Texture2D;
     if (!m_textureId)
     {
-        printf("texture create failed, no such file %s\n",filePath.c_str());
+        tlog("texture create failed, no such file %s\n",filePath.c_str());
         exit(0);
     }
     initData();

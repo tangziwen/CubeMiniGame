@@ -4,7 +4,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <stdio.h>
-
+#include "Base/Log.h"
 using namespace std;
 namespace tzw {
 
@@ -17,7 +17,7 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
     }
     tzw::Data vs_data = tzw::Tfile::shared()->getData(pVSFileName,true);
     tzw::Data fs_data = tzw::Tfile::shared()->getData(pFSFileName,true);
-	printf("compiling... %s %s\n", pVSFileName, pFSFileName);
+	tlog("compiling... %s %s\n", pVSFileName, pFSFileName);
     if (vs_data.isNull()) {
         exit(1);
     };

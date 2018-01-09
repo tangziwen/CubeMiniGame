@@ -115,4 +115,14 @@ void GLFW_BackEnd::setUnlimitedCursor(bool enable)
 }
 
 
+void GLFW_BackEnd::getMousePos(double* posX, double* posY)
+{
+	glfwGetCursorPos(m_window, posX, posY);
+}
+
+int GLFW_BackEnd::getMouseButton(int buttonMode)
+{
+	return glfwGetMouseButton(m_window, buttonMode);
+}
+
 } // namespace tzw

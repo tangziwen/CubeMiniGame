@@ -22,4 +22,14 @@ void WindowBackEnd::setUnlimitedCursor(bool enable)
 {
 }
 
+void WindowBackEnd::getMousePos(double* posX, double* posY)
+{
+
+}
+
+int WindowBackEnd::getMouseButton(int button)
+{
+	return 0;
+}
+
 } // namespace tzw

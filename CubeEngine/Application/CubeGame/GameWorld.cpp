@@ -116,7 +116,7 @@ void GameWorld::startGame()
 bool tzw::GameWorld::onKeyPress(int keyCode)
 {
     switch (keyCode) {
-    case GLFW_KEY_ESCAPE:
+    case TZW_KEY_ESCAPE:
         this->toggleMainMenu();
         break;
     default:
@@ -199,8 +199,9 @@ GameWorld::GameWorld()
     EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GameState::MainMenu;
-    m_mainMenu = new MainMenu();
-    g_GetCurrScene()->addNode(m_mainMenu);
+	m_mainMenu = MainMenu::shared();
+	m_mainMenu->init();
+	//g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
 

@@ -46,6 +46,7 @@ public:
     void setLevel(const TlogLevel &level);
     void setWriteFunc(writeFunc func);
     writeFunc getWriteFunc();
+	
     static Tlog * preTlog;
 private:
     TlogSystem();
@@ -73,6 +74,7 @@ public:
     Tlog &operator <<(const TlogTitleEnd & el) ;
     Tlog &operator <<(const TlogTitleBegin & begin);
     void flush();
+	static void print(const char * fmt, ...);
 private:
     bool m_isFlushed;
     std::string m_buffer;

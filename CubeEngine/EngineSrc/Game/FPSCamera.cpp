@@ -8,6 +8,7 @@
 #include "EngineSrc/Math/t_Sphere.h"
 #include "EngineSrc/Math/Plane.h"
 #include <cmath>
+#include "CubeGame/MainMenu.h"
 
 namespace tzw {
 
@@ -35,24 +36,26 @@ FPSCamera *FPSCamera::create(Camera *cloneObj)
 
 bool FPSCamera::onKeyPress(int keyCode)
 {
+	if (MainMenu::shared()->isVisible())
+		return false;
     switch(keyCode)
     {
-    case GLFW_KEY_W:
+    case TZW_KEY_W:
         m_forward = 1;
         break;
-    case GLFW_KEY_A:
+    case TZW_KEY_A:
         m_slide = -1;
         break;
-    case GLFW_KEY_S:
+    case TZW_KEY_S:
         m_forward = -1;
         break;
-    case GLFW_KEY_D:
+    case TZW_KEY_D:
         m_slide = 1;
         break;
-    case GLFW_KEY_Q:
+    case TZW_KEY_Q:
         m_isStopUpdate = !m_isStopUpdate;
         break;
-    case GLFW_KEY_SPACE:
+    case TZW_KEY_SPACE:
         if(m_isEnableGravity)//now falling
         {
              m_verticalSpeed = 0.2;
@@ -62,7 +65,7 @@ bool FPSCamera::onKeyPress(int keyCode)
 			m_up = 1;
 		}
         break;
-	case GLFW_KEY_LEFT_CONTROL:
+	case TZW_KEY_LEFT_CONTROL:
 		{
 			if(m_isEnableGravity)
 			{
@@ -80,21 +83,23 @@ bool FPSCamera::onKeyPress(int keyCode)
 
 bool FPSCamera::onKeyRelease(int keyCode)
 {
+	if (MainMenu::shared()->isVisible())
+		return false;
     switch(keyCode)
     {
-    case GLFW_KEY_W:
+    case TZW_KEY_W:
         m_forward = 0;
         break;
-    case GLFW_KEY_A:
+    case TZW_KEY_A:
         m_slide = 0;
         break;
-    case GLFW_KEY_S:
+    case TZW_KEY_S:
         m_forward = 0;
         break;
-    case GLFW_KEY_D:
+    case TZW_KEY_D:
         m_slide = 0;
         break;
-	case GLFW_KEY_SPACE:
+	case TZW_KEY_SPACE:
 		{
 			if(m_isEnableGravity)
 			{
@@ -106,7 +111,7 @@ bool FPSCamera::onKeyRelease(int keyCode)
 			}
 		}
 	break;
-	case GLFW_KEY_LEFT_CONTROL:
+	case TZW_KEY_LEFT_CONTROL:
 		{
 			if(m_isEnableGravity)
 			{
@@ -134,7 +139,7 @@ bool FPSCamera::onMousePress(int button, vec2 pos)
 }
 
 bool FPSCamera::onMouseMove(vec2 pos)
-{
+{		
     if(m_isFirstLoop)
     {
         m_oldPosition = vec3(pos.x,pos.y,0.0);
@@ -143,7 +148,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
 
     auto newPosition = vec3(pos.x,pos.y,0.0);
 
-    if (true)
+    if (!MainMenu::shared()->isVisible())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)

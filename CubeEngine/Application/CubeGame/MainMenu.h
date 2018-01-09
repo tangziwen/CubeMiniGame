@@ -1,20 +1,33 @@
 #ifndef TZW_MAINMENU_H
 #define TZW_MAINMENU_H
-#include "EngineSrc/2D/GUITitledFrame.h"
-#include "EngineSrc/2D/Button.h"
+#include "2D/GUISystem.h"
+#include "Game/DebugInfoPanel.h"
+#include "Event/Event.h"
+#include "Engine/EngineDef.h"
 namespace tzw {
-
-class MainMenu : public Node
+class MainMenu : public IMGUIObject, public EventListener
 {
 public:
+	TZW_SINGLETON_DECL(MainMenu);
     MainMenu();
+	void init();
     void show();
     void hide();
     void toggle();
+	void drawIMGUI() override;
+	bool onKeyPress(int keyCode) override;
+
+	bool isVisible() const;
+	void setVisible(bool val);
 private:
-    void startGame(Button *btn);
-    GUIWindow * m_mainFrame;
-    Button * m_buttons[5];
+	bool m_isVisible = true;
+    void startGame();
+	void drawToolsMenu();
+	void ShowExampleAppLog(bool* p_open);
+	void ShowExampleAppConsole(bool* p_open);
+	bool m_isShowLog;
+	bool m_isShowConsole;
+	DebugInfoPanel m_debugInfoPanel;
 };
 
 } // namespace tzw

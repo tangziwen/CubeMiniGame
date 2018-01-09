@@ -19,6 +19,7 @@ public:
     void setDelegate(AppEntry *delegate);
     void initSingletons();
     vec2 winSize();
+	vec2 getMousePos();
     float deltaTime() const;
     void update(float delta);
     void onStart(int width, int height);
@@ -38,6 +39,7 @@ public:
 	void setClearColor(float r, float g, float b);
 	void setUnlimitedCursor(bool enable);
 	std::string getWorkingDirectory();
+	int getMouseButton(int mouseButton);
 private:
 	WindowBackEnd * m_winBackEnd;
     static Engine * m_instance;

@@ -159,7 +159,7 @@ namespace tzw
 		{
 			return 0;
 		}
-		g_GetCurrScene()->getConsolePanel()->print(msg);
+		//g_GetCurrScene()->getConsolePanel()->print(msg);
 		Py_RETURN_NONE;
 	}
 	static PyMethodDef module_methods[] = {

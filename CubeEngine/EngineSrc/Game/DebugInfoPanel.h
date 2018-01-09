@@ -1,19 +1,20 @@
 #ifndef TZW_DEBUGINFOPANEL_H
 #define TZW_DEBUGINFOPANEL_H
-#include "../2D/GUITitledFrame.h"
+
 namespace tzw {
-class LabelNew;
-class DebugInfoPanel : public Node
+class DebugInfoPanel
 {
 public:
     DebugInfoPanel();
-	void logicUpdate(float dt) override;
+	void drawIMGUI(bool * isOpen);
     void setInfo();
+	void updateInfo();
 private:
-    GUIWindow * m_frame;
-    std::vector<LabelNew*> m_labelList;
-    float m_curTime;
-    bool m_isInit;
+	float currFPS;
+	int drawCall;
+	int logicUpdateTime;
+	int renderUpdateTime;
+	int verticesCount;
 };
 
 } // namespace tzw

@@ -6,6 +6,7 @@
 #include "EngineSrc/Texture/TextureMgr.h"
 #include "EngineSrc/Interface/Drawable.h"
 #include "EngineSrc/Shader/ShaderMgr.h"
+#include "Base/Log.h"
 namespace tzw {
 
 Effect::Effect()
@@ -14,9 +15,9 @@ Effect::Effect()
 
 void Effect::load(std::string name)
 {
-	printf("load effect %s\n", name.c_str());
+	tlog("load effect %s\n", name.c_str());
     loadFromFile(std::string("./Res/Effects/") + name + ".effect");
-	printf("load effect finished %s\n", name.c_str());
+	tlog("load effect finished %s\n", name.c_str());
 }
 
 void Effect::loadFromFile(std::string filePath)
@@ -26,7 +27,7 @@ void Effect::loadFromFile(std::string filePath)
     doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
     if (doc.HasParseError())
     {
-        printf("get json data err! %d offset %d\n",doc.GetParseError(), doc.GetErrorOffset());
+        tlog("[error] get json data err! %d offset %d\n",doc.GetParseError(), doc.GetErrorOffset());
 		exit(0);
         return;
     }
@@ -52,7 +53,7 @@ void Effect::loadFromFile(std::string filePath)
         m_program = ShaderMgr::shared()->getByPath(vsFilePath, fsFilePath);
 		if (!m_program)
 		{
-			printf("bad program!!!\n");
+			tlog("[error] bad program!!!\n");
 			exit(0);
 		}
     }

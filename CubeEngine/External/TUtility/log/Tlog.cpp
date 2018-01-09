@@ -7,7 +7,7 @@
 #ifdef  USE_QT
 #include <QDebug>
 #endif
-
+#include <stdarg.h>
 namespace tzw {
 
 TlogTitleBegin TlogBegin;
@@ -168,6 +168,17 @@ void Tlog::flush()
     }
 }
 
+void Tlog::print(const char * fmt, ...)
+{
+	char buf[1024];
+	va_list args;
+	va_start(args, fmt);
+	vsnprintf(buf, 1024, fmt, args);
+	buf[1024 - 1] = 0;
+	va_end(args);
+	writeToScreen(buf);
+}
+
 TlogSystem *TlogSystem::get()
 {
     if(!TlogSystem::system)
@@ -213,6 +224,8 @@ writeFunc TlogSystem::getWriteFunc()
 {
     return m_writeFunc;
 }
+
+
 
 FILE *TlogSystem::getFileHandle() const
 {

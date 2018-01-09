@@ -6,6 +6,7 @@
 #include "../Scene/SceneMgr.h"
 #include "../Mesh/Mesh.h"
 #include "../3D/Sky.h"
+#include "../2D/GUISystem.h"
 namespace tzw {
 
 Renderer * Renderer::m_instance = nullptr;
@@ -107,17 +108,21 @@ void Renderer::renderAllGUI()
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
-	if (m_isNeedSortGUI)
-	{
-		m_isNeedSortGUI = false;
-		std::stable_sort(m_GUICommandList.begin(),m_GUICommandList.end(),GUICommandSort);
-	}
-	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::DepthTest);
-	for(auto i =m_GUICommandList.begin();i!=m_GUICommandList.end();i++)
-	{
-		RenderCommand &command = (*i);
-		renderGUI(command);
-	}
+
+	GUISystem::shared()->tryRender();
+
+	//if (m_isNeedSortGUI)
+	//{
+	//	m_isNeedSortGUI = false;
+	//	std::stable_sort(m_GUICommandList.begin(),m_GUICommandList.end(),GUICommandSort);
+	//}
+	//RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::DepthTest);
+	//for(auto i =m_GUICommandList.begin();i!=m_GUICommandList.end();i++)
+	//{
+	//	RenderCommand &command = (*i);
+	//	renderGUI(command);
+	//}
+
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::DepthTest);
 }
 
