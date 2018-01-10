@@ -14,7 +14,7 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
     m_height = height;
 	m_mesh = nullptr;
 	m_color = vec4::fromRGB(255,255,255);
-    m_material = Material::createFromEffect("ModelStd");
+    m_material = Material::createFromTemplate("ModelStd");
 	auto texture =  TextureMgr::shared()->getByPath("./Res/User/CubeGame/texture/rock.jpg");
 	m_material->setTex("diffuseMap", texture);
     initMesh();

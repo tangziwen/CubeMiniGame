@@ -24,10 +24,10 @@ class Material
 {
 public:
     Material ();
-    Material(Effect * theEffect);
-    static Material * createFromEffect(std::string name);
-    void initFromEffect(Effect * theEffect);
-    void initFromEffect(std::string effectName);
+	void loadFromTemplate(std::string name);
+	void loadFromFile(std::string filePath);
+    static Material * createFromTemplate(std::string name);
+	static Material * createFromFile(std::string matPath);
     void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);
@@ -37,16 +37,27 @@ public:
     void setVar(std::string name, const TechniqueVar & value);
     void setTex(std::string name,Texture * texture,int id = 0);
     void use();
-    bool isExist(std::string name);
+	unsigned int getMapSlot(std::string mapName);
+	unsigned int getMapSlotWithAlias(std::string mapName);
+	std::string getAlias(std::string theName);
+	ShaderProgram *getProgram() const;
+	bool isExist(std::string name);
     Material * clone();
-    Effect *getEffect() const;
-    void setEffect(Effect *value);
-    void loadDefaultValues();
+
+	bool getIsCullFace();
+
+	void setIsCullFace(bool newVal);
+
 private:
-    Effect * m_effect;
     std::string m_vsPath;
     std::string m_fsPath;
     std::map<std::string,TechniqueVar *> m_varList;
+
+	bool m_isCullFace;
+	std::string m_name;
+	std::map<std::string, unsigned int> m_texSlotMap;
+	std::map<std::string, std::string> m_aliasMap;
+	ShaderProgram * m_program;
 };
 
 } // namespace tzw

@@ -2,6 +2,7 @@
 #include "GameMap.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include "TUtility/TUtility.h"
+#include "Base/Log.h"
 #include "time.h"
 #include "EngineSrc/3D/SkyBox.h"
 #include "EngineSrc/3D/Sky.h"
@@ -9,6 +10,7 @@
 #include "GameConfig.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
+
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -20,7 +22,6 @@ GameWorld *GameWorld::shared()
     }
     return m_instance;
 }
-
 
 void GameWorld::createWorld(Scene *scene, int width, int depth, int height, float ratio)
 {
@@ -169,7 +170,7 @@ void GameWorld::loadChunksAroundPlayer()
 	{
 		i->load();
 	}
-	std::cout << "load chunk cost :" << Tmisc::DurationEnd() << std::endl;
+	tlog("load chunk cost : %d", Tmisc::DurationEnd());
 }
 
 tzw::vec3 GameWorld::getMapOffset() const

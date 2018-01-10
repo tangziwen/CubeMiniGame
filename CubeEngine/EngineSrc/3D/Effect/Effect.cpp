@@ -136,7 +136,6 @@ std::string Effect::getAlias(std::string theName)
     {
         return m_aliasMap[theName];
     }
-
 }
 
 ShaderProgram *Effect::getProgram() const

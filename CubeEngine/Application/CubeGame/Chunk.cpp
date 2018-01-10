@@ -154,11 +154,12 @@ void Chunk::load()
 	if (!m_mesh)
 	{
 		m_mesh = new Mesh();
-		m_material = MaterialPool::shared()->getOrCreateMaterialByEffect("VoxelTerrain");
+		m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/T_Ground_Grass_D.png", true));
 		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/mud2.jpg", true));
 		m_material->setTex("CliffTex", TextureMgr::shared()->getByPath("./Res/TestRes/Cliff.jpg", true));
 	}
+
 	setCamera(g_GetCurrScene()->defaultCamera());
 	if (!m_isInitData)
 	{

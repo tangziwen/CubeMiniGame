@@ -12,7 +12,7 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 		m_mesh->addIndex(indices[i]);
 	}
 	m_mesh->finish();
-	m_material = Material::createFromEffect("Color");
+	m_material = Material::createFromTemplate("Color");
 	setCamera(g_GetCurrScene()->defaultCamera());
 	reCache();
 	setIsAccpectOCTtree(false);

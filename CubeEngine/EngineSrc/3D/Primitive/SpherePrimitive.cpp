@@ -12,7 +12,7 @@ namespace tzw
 	{
 		m_radius = radius;
 		m_resolution = resolution;
-		m_material = Material::createFromEffect("Color");
+		m_material = Material::createFromTemplate("Color");
 		initMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());
 		setIsAccpectOCTtree(false);

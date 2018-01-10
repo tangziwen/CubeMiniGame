@@ -57,7 +57,7 @@ void LinePrimitive::append(vec3 begin, vec3 end)
 
 void LinePrimitive::init()
 {
-	m_material = Material::createFromEffect("Color");
+	m_material = Material::createFromTemplate("Color");
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 } // namespace tzw

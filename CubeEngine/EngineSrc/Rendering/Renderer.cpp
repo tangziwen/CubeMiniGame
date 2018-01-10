@@ -20,10 +20,10 @@ Renderer::Renderer()
 	m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
 	m_offScreenBuffer = new RenderTarget();
 	m_offScreenBuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight(),1,false);
-	m_dirLightProgram = new Effect();
-	m_dirLightProgram->load("DirectLight");
-	m_postEffect = new Effect();
-	m_postEffect->load("postEffect");
+	m_dirLightProgram = new Material();
+	m_dirLightProgram->loadFromTemplate("DirectLight");
+	m_postEffect = new Material();
+	m_postEffect->loadFromTemplate("postEffect");
 	initQuad();
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
@@ -152,20 +152,20 @@ void Renderer::clearCommands()
 void Renderer::render(const RenderCommand &command)
 {
 	command.m_material->use();
-	applyRenderSetting(command.m_material->getEffect());
-	applyTransform(command.m_material->getEffect()->getProgram(), command.m_transInfo);
+	applyRenderSetting(command.m_material);
+	applyTransform(command.m_material->getProgram(), command.m_transInfo);
 	if (command.type() == RenderCommand::RenderType::Instanced)
 	{
-		renderPrimitive2(command.m_mesh, command.m_material->getEffect(), command.m_primitiveType);
+		renderPrimitive2(command.m_mesh, command.m_material, command.m_primitiveType);
 	}
 	else
 	{
-		renderPrimitive(command.m_mesh, command.m_material->getEffect(), command.m_primitiveType);
+		renderPrimitive(command.m_mesh, command.m_material, command.m_primitiveType);
 	}
 	
 }
 
-void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::PrimitiveType primitiveType)
+void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::PrimitiveType primitiveType)
 {
 	auto program = effect->getProgram();
 	program->use();
@@ -223,7 +223,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Effect * effect,RenderCommand::Primi
 	}
 }
 #define RAISE error = glGetError();printf("fuck error %d\n",error);
-void Renderer::renderPrimitive2(Mesh * mesh, Effect * effect, RenderCommand::PrimitiveType primitiveType)
+void Renderer::renderPrimitive2(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
 {
 	glDisable(GL_CULL_FACE);
 	int error = glGetError();
@@ -387,9 +387,9 @@ void Renderer::skyBoxPass()
 		mat->setVar("TU_winSize", Engine::shared()->winSize());
 		TransformationInfo info;
 		Sky::shared()->setUpTransFormation(info);
-		applyTransform(mat->getEffect()->getProgram(), info);
+		applyTransform(mat->getProgram(), info);
 		Sky::shared()->prepare();
-		renderPrimitive(Sky::shared()->getMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
+		renderPrimitive(Sky::shared()->getMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
 		RenderBackEnd::shared()->setIsCullFace(true);
 	}else
 	{
@@ -404,8 +404,8 @@ void Renderer::skyBoxPass()
 		mat->setVar("TU_winSize", Engine::shared()->winSize());
 		TransformationInfo info;
 		skyBox->setUpTransFormation(info);
-		applyTransform(mat->getEffect()->getProgram(), info);
-		renderPrimitive(skyBox->skyBoxMesh(), mat->getEffect(), RenderCommand::PrimitiveType::TRIANGLES);
+		applyTransform(mat->getProgram(), info);
+		renderPrimitive(skyBox->skyBoxMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
 	}
 }
 
@@ -454,9 +454,9 @@ void Renderer::directionalLightPass()
 	renderPrimitive(m_quad, m_dirLightProgram, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
-void Renderer::applyRenderSetting(Effect * effect)
+void Renderer::applyRenderSetting(Material * mat)
 {
-	RenderBackEnd::shared()->setIsCullFace(effect->getIsCullFace());
+	RenderBackEnd::shared()->setIsCullFace(mat->getIsCullFace());
 }
 
 void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info)

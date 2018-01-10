@@ -12,7 +12,7 @@ public:
     Material * getMaterialByName(std::string name);
     void addMaterial(std::string materialName, Material * mat);
     std::string getModelMangleedName(std::string modelName);
-	Material * getOrCreateMaterialByEffect(std::string effectName);
+	Material * getMatFromTemplate(std::string effectName);
 private:
     std::map<std::string, Material *> m_materialMap;
     TZW_SINGLETON_DECL(MaterialPool);

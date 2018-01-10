@@ -22,7 +22,7 @@ void SkyBox::init(std::string PosXFilename, std::string NegXFilename, std::strin
     m_skyBoxTexture = TextureMgr::shared()->getByPath(PosXFilename,NegXFilename,PosYFilename,NegYFilename,PosZFilename,NegZFilename);
     m_skyBoxTexture->setFilter(Texture::FilterType::Linear);
     m_skyBoxTexture->setWarp(RenderFlag::WarpAddress::Clamp);
-    m_skyBoxTechnique = Material::createFromEffect("SkyBox");
+    m_skyBoxTechnique = Material::createFromTemplate("SkyBox");
     m_skyBoxTechnique->setTex("TU_tex1",m_skyBoxTexture);
     setIsAccpectOCTtree(false);
 }

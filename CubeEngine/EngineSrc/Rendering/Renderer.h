@@ -22,8 +22,8 @@ public:
 	void renderTransparent(RenderCommand & command);
     void clearCommands();
     void render(const RenderCommand &command);
-    void renderPrimitive(Mesh * mesh, Effect *effect, RenderCommand::PrimitiveType primitiveType);
-	void renderPrimitive2(Mesh * mesh, Effect *effect, RenderCommand::PrimitiveType primitiveType);
+    void renderPrimitive(Mesh * mesh, Material *effect, RenderCommand::PrimitiveType primitiveType);
+	void renderPrimitive2(Mesh * mesh, Material *effect, RenderCommand::PrimitiveType primitiveType);
     bool enable3DRender() const;
     void setEnable3DRender(bool enable3DRender);
 
@@ -37,11 +37,11 @@ private:
     void skyBoxPass();
 	void postEffectPass();
     void directionalLightPass();
-	void applyRenderSetting(Effect * effect);
+	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
     Mesh * m_quad;
-    Effect * m_dirLightProgram;
-	Effect * m_postEffect;
+    Material * m_dirLightProgram;
+	Material * m_postEffect;
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;

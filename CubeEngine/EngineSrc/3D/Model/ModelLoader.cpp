@@ -43,10 +43,10 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 		}
 		if(materialData.HasMember("effectType"))
 		{
-			mat->initFromEffect(materialData["effectType"].GetString());
+			mat->loadFromTemplate(materialData["effectType"].GetString());
 		}else
 		{
-			mat->initFromEffect("ModelStd");
+			mat->loadFromTemplate("ModelStd");
 		}
 		auto thestr = materialData["diffuseMap"].GetString();
 		if (strcmp(thestr, "") != 0)

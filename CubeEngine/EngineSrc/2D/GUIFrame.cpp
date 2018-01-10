@@ -9,7 +9,7 @@ GUIFrame::GUIFrame()
 {
     m_contentSize = vec2(100,100);
     m_mesh = new Mesh();
-	m_material = MaterialPool::shared()->getOrCreateMaterialByEffect("GUIColor");
+	m_material = MaterialPool::shared()->getMatFromTemplate("GUIColor");
 	m_color = GUIStyleMgr::shared()->defaultPalette()->backGroundColor;
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }

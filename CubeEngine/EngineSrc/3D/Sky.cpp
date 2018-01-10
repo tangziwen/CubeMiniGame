@@ -9,7 +9,7 @@ namespace tzw
 		Sky::Sky()
 	{
 		m_isEnable = true;
-		m_skyBoxTechnique = Material::createFromEffect("Sky");
+		m_skyBoxTechnique = Material::createFromTemplate("Sky");
 		m_model = Model::create("Res/EngineCoreRes/Models/sphere.tzw");
 		setCamera(g_GetCurrScene()->defaultCamera());
 		setScale(vec3(6360000.0f, 6360000.0f, 6360000.0f));

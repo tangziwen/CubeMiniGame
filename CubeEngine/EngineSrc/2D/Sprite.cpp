@@ -166,12 +166,12 @@ void Sprite::setUpTechnique()
 {
     if(m_texture)
     {
-        m_material->initFromEffect("Sprite");
+        m_material->loadFromFile("Sprite");
         m_material->setTex("SpriteTexture", m_texture);
     }else
     {
-        m_material->initFromEffect("SpriteColor");
-        m_material = Material::createFromEffect("SpriteColor");
+        m_material->loadFromFile("SpriteColor");
+        m_material = Material::createFromTemplate("SpriteColor");
     }
     m_material->setVar("color",getUniformColor());
 }

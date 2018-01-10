@@ -28,17 +28,15 @@ std::string MaterialPool::getModelMangleedName(std::string modelName)
     return std::string("model_") + modelName;
 }
 
-Material * MaterialPool::getOrCreateMaterialByEffect(std::string effectName)
+Material * MaterialPool::getMatFromTemplate(std::string effectName)
 {
 	auto mat = getMaterialByName(effectName);
 	if (!mat)
 	{
-		mat = Material::createFromEffect(effectName);
+		mat = Material::createFromTemplate(effectName);
 		addMaterial(effectName, mat);
-		mat->initFromEffect(effectName);
 	}
 	return mat;
 }
-
 
 } // namespace tzw

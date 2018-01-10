@@ -11,7 +11,7 @@ Grass::Grass(std::string filePath)
 	auto mat = MaterialPool::shared()->getMaterialByName("grassMaterial");
 	if (!mat)
 	{
-		mat = Material::createFromEffect("Grass");
+		mat = Material::createFromTemplate("Grass");
 		auto tex = TextureMgr::shared()->getByPath(filePath);
 		tex->genMipMap();
 		mat->setTex("diffuseMap", tex);
