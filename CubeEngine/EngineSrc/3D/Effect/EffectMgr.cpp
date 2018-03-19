@@ -25,18 +25,18 @@ Effect *EffectMgr::get(std::string name)
 
 void EffectMgr::initBuiltIn()
 {
-    addEffect("Color");
-    addEffect("DirectLight");
-    addEffect("ModelColor");
-    addEffect("ModelStd");
-    addEffect("Simple");
-    addEffect("SkyBox");
-    addEffect("Sprite");
-    addEffect("SpriteColor");
-    addEffect("VoxelTerrain");
-	addEffect("Grass");
-	addEffect("Sky");
-	addEffect("GUIColor");
+ //   addEffect("Color");
+ //   addEffect("DirectLight");
+ //   addEffect("ModelColor");
+ //   addEffect("ModelStd");
+ //   addEffect("Simple");
+ //   addEffect("SkyBox");
+ //   addEffect("Sprite");
+ //   addEffect("SpriteColor");
+ //   addEffect("VoxelTerrain");
+	//addEffect("Grass");
+	//addEffect("Sky");
+	//addEffect("GUIColor");
 }
 
 void EffectMgr::addEffect(std::string name, Effect *theEffect)
@@ -46,9 +46,6 @@ void EffectMgr::addEffect(std::string name, Effect *theEffect)
 
 void EffectMgr::addEffect(std::string effectName)
 {
-    auto effect = new Effect();
-    effect->load(effectName);
-    addEffect(effectName, effect);
 }
 
 } // namespace tzw

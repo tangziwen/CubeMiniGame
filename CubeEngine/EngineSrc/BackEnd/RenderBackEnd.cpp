@@ -111,7 +111,7 @@ void RenderBackEnd::disableFunction(RenderFlag::RenderFunction state)
 
 void RenderBackEnd::setTexMIN(unsigned int textureID, int param, RenderFlag::TextureType type)
 {
-	bindTexture2D(0,textureID,type);
+	bindTexture2DAndUnit(0,textureID,type);
 	switch (type) {
 		case RenderFlag::TextureType::Texture2D:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
@@ -126,7 +126,7 @@ void RenderBackEnd::setTexMIN(unsigned int textureID, int param, RenderFlag::Tex
 
 void RenderBackEnd::setTexMAG(unsigned int textureID, int param, RenderFlag::TextureType type)
 {
-	bindTexture2D(0,textureID,type);
+	bindTexture2DAndUnit(0,textureID,type);
 	switch (type) {
 		case RenderFlag::TextureType::Texture2D:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
@@ -139,7 +139,7 @@ void RenderBackEnd::setTexMAG(unsigned int textureID, int param, RenderFlag::Tex
 	}
 }
 
-void RenderBackEnd::bindTexture2D(unsigned int texUnitID, unsigned int textureID, RenderFlag::TextureType type)
+void RenderBackEnd::bindTexture2DAndUnit(unsigned int texUnitID, unsigned int textureID, RenderFlag::TextureType type)
 {
 	//    if (m_textureSlot[texUnitID] == textureID) return;
 	m_textureSlot[texUnitID] = textureID;
@@ -201,7 +201,7 @@ void RenderBackEnd::setDepthTestMethod(const RenderFlag::DepthTestMethod &method
 
 void RenderBackEnd::setTextureWarp(unsigned int textureID, RenderFlag::WarpAddress warpAddress, RenderFlag::TextureType type)
 {
-	bindTexture2D(0,textureID,type);
+	bindTexture2DAndUnit(0,textureID,type);
 	unsigned int flag = 0;
 	switch (warpAddress) {
 		case RenderFlag::WarpAddress::Clamp:
@@ -313,6 +313,31 @@ void RenderBackEnd::setIsCullFace(bool val)
 bool RenderBackEnd::getIsCullFace()
 {
 	return m_isCullFace;
+}
+
+void RenderBackEnd::deleteFramebuffers(unsigned count, unsigned * obj)
+{
+	glDeleteFramebuffers(count, obj);
+}
+
+void RenderBackEnd::DeleteTextures(unsigned count, unsigned * obj)
+{
+	glDeleteTextures(count, obj);
+}
+
+void RenderBackEnd::GenFramebuffers(unsigned count, unsigned * obj)
+{
+	glGenFramebuffers(count, obj);
+}
+
+void RenderBackEnd::GenTextures(unsigned count, unsigned * obj)
+{
+	glGenTextures(count, obj);
+}
+
+void RenderBackEnd::TexImage2D(unsigned target, int level, int internalformat, int width, int height, int border, unsigned format, unsigned type, const void * pixels)
+{
+	glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
 }
 
 RenderBackEnd::RenderBackEnd()

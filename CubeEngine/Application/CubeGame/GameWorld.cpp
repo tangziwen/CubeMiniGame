@@ -26,6 +26,7 @@ GameWorld *GameWorld::shared()
 void GameWorld::createWorld(Scene *scene, int width, int depth, int height, float ratio)
 {
     m_scene = scene;
+
     GameMap::shared()->init(ratio);
     m_width = width;
     m_depth = depth;
@@ -110,8 +111,8 @@ void GameWorld::startGame()
     m_mainRoot->addChild(player);
     m_currentState = GameState::OnPlay;
 
-	PhysicsMgr::shared()->start();
-	PhysicsMgr::shared()->createPlane(0,1,0, 10);
+	//PhysicsMgr::shared()->start();
+	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }
 
 bool tzw::GameWorld::onKeyPress(int keyCode)

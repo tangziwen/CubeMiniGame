@@ -4,6 +4,9 @@
 #include "CubeGame/GameWorld.h"
 #include "Game/ConsolePanel.h"
 #include "Event/EventMgr.h"
+#include "Technique/MaterialPool.h"
+#include "3D/Sky.h"
+#include "Collision/PhysicsMgr.h"
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -74,14 +77,54 @@ void MainMenu::drawIMGUI()
 				ImGui::EndMenu();
 			}
 			drawToolsMenu();
+			static bool isOpenTerrain = false;
+			if (ImGui::BeginMenu("Run-time Config"))
+			{
+
+				ImGui::MenuItem("terrain", NULL, &isOpenTerrain);
+				ImGui::EndMenu();
+			}
+			if (isOpenTerrain)
+			{
+				ImGui::Begin("Terrain Inspector", &isOpenTerrain);
+				ImGui::Text("Terrain Inspector");
+				auto material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
+				material->inspectIMGUI("uv_grass", 0.1f, 15.0f);
+				material->inspectIMGUI("uv_dirt", 0.1f, 15.0f);
+				material->inspectIMGUI("uv_cliff", 0.1f, 15.0f);
+				material->inspectIMGUI("near_dist", 0.1f, 100.0f);
+				material->inspectIMGUI("far_dist", 0.1f, 200.0f);
+				material->inspectIMGUI("large_factor", 1.0f, 10.0f);
+
+				auto lightMat = MaterialPool::shared()->getMatFromTemplate("DirectLight");
+				lightMat->inspectIMGUI("fog_near", 20.0f, 150.0f);
+				lightMat->inspectIMGUI("fog_far", 50.0f, 300.0f);
+
+				auto sunMat = Sky::shared()->getMaterial();
+				sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
+
+				if (ImGui::Button("dump to file"))
+				{
+					//
+				}
+				ImGui::End();
+			}
+			if (ImGui::BeginMenu("Test"))
+			{
+
+				if (ImGui::MenuItem("test phys", NULL))
+				{
+					PhysicsMgr::shared()->start();
+				}
+				ImGui::EndMenu();
+			}
+
 			if (ImGui::BeginMenu("?"))
 			{
-				
 				if (ImGui::MenuItem("About", NULL)) {
 					isOpenAbout = true;
 				}
 				ImGui::EndMenu();
-
 			}
 			ImGui::EndMainMenuBar();
 

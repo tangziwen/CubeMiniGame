@@ -33,6 +33,13 @@ CubePlayer::CubePlayer(Node *mainRoot)
     m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
     m_gunModel->setRotateE(vec3(0, -90, 0));
     m_gunModel->setPos(vec3(0.04,-0.2,-0.20));
+
+	auto testModel = Model::create("./Res/diediedie.tzw");
+	testModel->setScale(vec3(0.3, 0.3, 0.3));
+	testModel->setRotateE(vec3(0, -90, 0));
+	testModel->setPos(vec3(5, 10, -5));
+	g_GetCurrScene()->addNode(testModel);
+
     m_camera->addChild(m_gunModel);
 
 	auto pos = getPos();
@@ -111,6 +118,13 @@ bool CubePlayer::onKeyPress(int keyCode)
 	case TZW_KEY_4:
 		break;
 
+	case TZW_KEY_R:
+	{
+		auto cube = new CubePrimitive(1, 1, 1);
+		g_GetCurrScene()->addNode(cube);
+		cube->setPos(getPos().x, getPos().y + 10, getPos().z);
+	}
+		break;
 	}
 	return false;
 }

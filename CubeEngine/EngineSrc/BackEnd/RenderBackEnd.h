@@ -16,7 +16,7 @@ public:
     void disableFunction(RenderFlag::RenderFunction state);
     void setTexMIN(unsigned int textureID, int param, RenderFlag::TextureType type);
     void setTexMAG(unsigned int textureID, int param, RenderFlag::TextureType type);
-    void bindTexture2D(unsigned int texUnitID,unsigned int textureID,RenderFlag::TextureType type = RenderFlag::TextureType::Texture2D);
+    void bindTexture2DAndUnit(unsigned int texUnitID,unsigned int textureID,RenderFlag::TextureType type = RenderFlag::TextureType::Texture2D);
     void drawElement(RenderFlag::IndicesType type,unsigned int size, const void *indicesAddress);
 	void drawElementInstanced(RenderFlag::IndicesType type, unsigned int size, const void *indicesAddress, int count);
     void setDepthTestMethod(const RenderFlag::DepthTestMethod & method);
@@ -39,6 +39,11 @@ public:
 	void setClearColor(float r, float g, float b);
 	void setIsCullFace(bool val);
 	bool getIsCullFace();
+	void deleteFramebuffers(unsigned count, unsigned * obj);
+	void DeleteTextures(unsigned count, unsigned * obj);
+	void GenFramebuffers(unsigned count, unsigned * obj);
+	void GenTextures(unsigned count, unsigned * obj);
+	void TexImage2D(unsigned target, int level, int internalformat, int width, int height, int border, unsigned format, unsigned type, const void *pixels);
 private:
     static RenderBackEnd * m_instance;
     RenderBackEnd();

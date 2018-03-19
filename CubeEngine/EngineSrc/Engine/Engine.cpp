@@ -16,6 +16,7 @@
 #include "2D/GUISystem.h"
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 #include "Game/ConsolePanel.h"
+#include "Collision/PhysicsMgr.h"
 namespace tzw {
 
 Engine * Engine::m_instance = nullptr;
@@ -130,9 +131,10 @@ void Engine::update(float delta)
 {
     m_deltaTime = delta;
     int logicBefore = clock();
-	auto eventMgr = EventMgr::shared();
-	eventMgr->apply(delta);
+	EventMgr::shared()->apply(delta);
+	PhysicsMgr::shared()->stepSimulation(delta);
     Engine::shared()->delegate()->onUpdate(delta);
+	
 	
     SceneMgr::shared()->doVisit();
 	resetDrawCallCount();
@@ -143,6 +145,8 @@ void Engine::update(float delta)
 	AudioSystem::shared()->update();
 	ScriptPyMgr::shared()->doScriptUpdate();
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
+
+	
 }
 
 static void writeFunction(const char * str)

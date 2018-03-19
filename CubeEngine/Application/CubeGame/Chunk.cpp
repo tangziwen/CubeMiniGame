@@ -832,6 +832,9 @@ unsigned int Chunk::getTypeID()
 
 void Chunk::calculatorMatID()
 {
+	m_grassPosList.clear();
+	m_grass->m_mesh->clearInstances();
+	m_grass2->m_mesh->clearInstances();
 	size_t indexCount = m_mesh->m_indices.size();
 	// Accumulate each triangle normal into each of the triangle vertices
 	for (unsigned int i = 0; i < indexCount; i += 1) {

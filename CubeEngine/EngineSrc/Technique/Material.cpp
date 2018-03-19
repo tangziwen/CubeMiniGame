@@ -10,6 +10,7 @@
 #include <rapidjson/document.h>
 #include "Base/Log.h"
 #include "EngineSrc/Shader/ShaderMgr.h"
+#include "2D/GUISystem.h"
 namespace tzw {
 
 /**
@@ -24,9 +25,9 @@ Material::Material()
 
 void Material::loadFromTemplate(std::string name)
 {
-	tlog("load effect %s\n", name.c_str());
+	tlog("load Material %s\n", name.c_str());
 	loadFromFile(std::string("./Res/MatTemplate/") + name + ".mat");
-	tlog("load effect finished %s\n", name.c_str());
+	tlog("load Material finished %s\n", name.c_str());
 }
 
 void Material::loadFromFile(std::string filePath)
@@ -289,9 +290,14 @@ void Material::setTex(std::string name, Texture *texture, int id)
  * @brief Technique::use 使用当前technique所维护的shader进行渲染，并将technique维护的所有值提交到
  * shader端
  */
-void Material::use()
+void Material::use(ShaderProgram * extraProgram)
 {
-	m_program->use();
+	ShaderProgram * program = m_program;
+	if (extraProgram)
+	{
+		program = extraProgram;
+	}
+	program->use();
 	for(auto i = m_varList.begin();i!= m_varList.end();++i)
 	{
 		//need to convert to alias
@@ -300,30 +306,30 @@ void Material::use()
 		switch(var->type)
 		{
 			case TechniqueVar::Type::Float:
-				m_program->setUniformFloat(name.c_str(),var->data.f);
+				program->setUniformFloat(name.c_str(),var->data.f);
 			break;
 			case TechniqueVar::Type::Integer:
-				m_program->setUniformInteger(name.c_str(),var->data.i);
+				program->setUniformInteger(name.c_str(),var->data.i);
 			break;
 			case TechniqueVar::Type::Matrix:
-				m_program->setUniformMat4v(name.c_str(),var->data.m.data());
+				program->setUniformMat4v(name.c_str(),var->data.m.data());
 			break;
 			case TechniqueVar::Type::Vec4:
 				{
 					auto v = var->data.v4;
-					m_program->setUniform4Float(name.c_str(),v);
+					program->setUniform4Float(name.c_str(),v);
 				}
 			break;
 			case TechniqueVar::Type::Vec3:
 				{
 					auto v = var->data.v3;
-					m_program->setUniform3Float(name.c_str(),v);
+					program->setUniform3Float(name.c_str(),v);
 				}
 			break;
 			case TechniqueVar::Type::Vec2:
 				{
 					auto v = var->data.v2;
-					m_program->setUniform2Float(name.c_str(),v.x,v.y);
+					program->setUniform2Float(name.c_str(),v.x,v.y);
 				}
 			break;
 			case TechniqueVar::Type::Texture:
@@ -333,8 +339,8 @@ void Material::use()
 					auto tex = var->data.tex;
 					if(!tex) break;
 					auto id = getMapSlot(name);
-					RenderBackEnd::shared()->bindTexture2D(id,tex->handle(),tex->getType());
-					m_program->setUniformInteger(name.c_str(),id);
+					RenderBackEnd::shared()->bindTexture2DAndUnit(id,tex->handle(),tex->getType());
+					program->setUniformInteger(name.c_str(),id);
 				}
 			break;
 			case TechniqueVar::Type::Invalid:
@@ -391,6 +397,18 @@ bool Material::getIsCullFace()
 void Material::setIsCullFace(bool newVal)
 {
 	m_isCullFace = newVal;
+}
+
+tzw::TechniqueVar * Material::get(std::string name)
+{
+	return m_varList[name];
+}
+
+void Material::inspectIMGUI(std::string name, float min, float max, const char * fmt /*= "%.2f"*/)
+{
+	float uvSize = get(name)->data.f;
+	ImGui::SliderFloat(name.c_str(), &uvSize, min, max, fmt);
+	setVar(name, uvSize);
 }
 
 /**

@@ -166,11 +166,11 @@ void Sprite::setUpTechnique()
 {
     if(m_texture)
     {
-        m_material->loadFromFile("Sprite");
+        m_material->loadFromTemplate("Sprite");
         m_material->setTex("SpriteTexture", m_texture);
     }else
     {
-        m_material->loadFromFile("SpriteColor");
+        m_material->loadFromTemplate("SpriteColor");
         m_material = Material::createFromTemplate("SpriteColor");
     }
     m_material->setVar("color",getUniformColor());

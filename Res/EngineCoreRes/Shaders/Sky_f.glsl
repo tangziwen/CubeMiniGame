@@ -17,6 +17,7 @@ varying vec2 v_texcoord;
 varying vec3 pos;
 varying vec3 sun_norm;
 varying vec3 star_pos;
+uniform float sun_intensity;
 uniform float weather;//mixing factor (0.5 to 1.0)
 uniform float time;
 
@@ -33,8 +34,8 @@ out vec3 color;
 
 
 #define PI 3.141592
-#define iSteps 32
-#define jSteps 16
+#define iSteps 16
+#define jSteps 8
 
 vec2 rsi(vec3 r0, vec3 rd, float sr) {
     // ray-sphere intersection that assumes
@@ -51,7 +52,7 @@ vec2 rsi(vec3 r0, vec3 rd, float sr) {
     );
 }
 
-vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, vec3 kMie, float shRlh, float shMie, float g) {
+vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAtmos, vec3 kRlh, float kMie, float shRlh, float shMie, float g) {
     // Normalize the sun and view directions.
     pSun = normalize(pSun);
     r = normalize(r);
@@ -140,20 +141,6 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
     return iSun * (pRlh * kRlh * totalRlh + pMie * kMie * totalMie);
 }
 
-
-//---------NOISE GENERATION------------
-//Noise generation based on a simple hash, to ensure that if a given point on the dome
-//(after taking into account the rotation of the sky) is a star, it remains a star all night long
-float Hash( float n ){
-        return fract( (1.0 + sin(n)) * 415.92653);
-}
-float Noise3d( vec3 x ){
-    float xhash = Hash(round(400*x.x) * 37.0);
-    float yhash = Hash(round(400*x.y) * 57.0);
-    float zhash = Hash(round(400*x.z) * 67.0);
-    return fract(xhash + yhash + zhash);
-}
-
 //---------MAIN------------
 void main(){
 	float depth = texture(TU_Depth, getScreenCoord()).r;
@@ -163,22 +150,21 @@ void main(){
 		return;
 	}
     vec3 pos_norm = normalize(pos);
-    float dist = dot(sun_norm,pos_norm);
 	
 	color = atmosphere(
-        normalize(pos),           // normalized ray direction
+        pos_norm,           // normalized ray direction
         vec3(0,6372e3,0),               // ray origin
         sun_norm,                        // position of the sun
-        22.0,                           // intensity of the sun
+        sun_intensity,                           // intensity of the sun
         6371e3,                         // radius of the planet in meters
         6471e3,                         // radius of the atmosphere in meters
-        vec3(5.8e-6, 13.5e-6, 33.1e-6), // Rayleigh scattering coefficient
-        //21e-6,                          // Mie scattering coefficient
-		vec3(2.2e-5, 2.2e-5, 2.2e-5),
-        10e3,                            // Rayleigh scale height
+        vec3(5.5e-6, 13.0e-6, 22.4e-6), // Rayleigh scattering coefficient
+        21e-6,                          // Mie scattering coefficient
+        8e3,                            // Rayleigh scale height
         1.2e3,                          // Mie scale height
         0.758                           // Mie preferred scattering direction
-    );
+);
+	color = 1.0 - exp(-1.0 * color);
 	return;
 }
 //! [0]

@@ -7,6 +7,16 @@
 	"property" : {
 		"attributes" : [
 			["roughness", "TU_roughness", "float", 5.0],
+
+			["uv_grass", "uv_grass", "float", 5.0],
+			["uv_dirt", "uv_dirt", "float", 5.0],
+			["uv_cliff", "uv_cliff", "float", 5.0],
+
+			["disturb_factor_near", "disturb_factor_near", "float", 0.3],
+			["disturb_factor_far", "disturb_factor_far", "float", 0.05],
+			["near_dist", "near_dist", "float", 15.0],
+			["far_dist", "far_dist", "float", 30.0],
+			["large_factor", "large_factor", "float", 2.0],
 			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
 		],
 		"maps" : [

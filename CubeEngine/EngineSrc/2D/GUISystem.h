@@ -32,8 +32,5 @@ namespace tzw
 		std::vector<IMGUIObject *> m_objList;
 		bool m_isInit = false;
 		unsigned int tick = 0;
-
-
 	};
-
 }

@@ -36,7 +36,7 @@ public:
     void setVar(std::string name, const vec4 &value);
     void setVar(std::string name, const TechniqueVar & value);
     void setTex(std::string name,Texture * texture,int id = 0);
-    void use();
+    void use(ShaderProgram * extraProgram = nullptr);
 	unsigned int getMapSlot(std::string mapName);
 	unsigned int getMapSlotWithAlias(std::string mapName);
 	std::string getAlias(std::string theName);
@@ -47,6 +47,10 @@ public:
 	bool getIsCullFace();
 
 	void setIsCullFace(bool newVal);
+
+	TechniqueVar * get(std::string);
+
+	void inspectIMGUI(std::string name, float min, float max, const char * fmt = "%.2f");
 
 private:
     std::string m_vsPath;

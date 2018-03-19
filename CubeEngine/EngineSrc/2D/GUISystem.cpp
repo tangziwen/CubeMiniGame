@@ -187,6 +187,7 @@ namespace tzw
 		m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
 		m_indexBuf->create();
 
+
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeyMap[ImGuiKey_Tab] = TZW_KEY_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		io.KeyMap[ImGuiKey_LeftArrow] = TZW_KEY_LEFT;
@@ -210,6 +211,11 @@ namespace tzw
 		//ImGui::StyleColorsClassic();
 		io.RenderDrawListsFn = ImGui_ImplGlfwGL2_RenderDrawLists;
 		ImGui::StyleColorsLight();
+		ImGuiStyle& style = ImGui::GetStyle();
+		style.WindowBorderSize = 2.0f;
+		style.FrameBorderSize = 2.0f;
+		style.FrameRounding = 6.0f;
+		style.GrabRounding = style.FrameRounding;
 
 		// Load Fonts
 		// - If no fonts are loaded, dear imgui will use the default font. You can also load multiple fonts and use ImGui::PushFont()/PopFont() to select them. 

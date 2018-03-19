@@ -10,6 +10,14 @@ uniform sampler2D TU_topGrass;
 uniform sampler2D TU_dirt;
 uniform sampler2D TU_Cliff;
 
+uniform float uv_grass;
+uniform float uv_cliff;
+uniform float uv_dirt;
+uniform float disturb_factor_near;
+uniform float disturb_factor_far;
+uniform float near_dist;
+uniform float far_dist;
+uniform float large_factor;
 uniform vec4 TU_color;
 uniform float TU_roughness;
 varying vec3 v_position;
@@ -237,6 +245,10 @@ float getDistFactor(float start, float end, float dist)
 	{
 		return 1.0;
 	}
+	if(dist < start)
+	{
+		return 0.0;
+	}
 	return (dist - start)/ (end - start);
 }
 
@@ -249,13 +261,11 @@ vec3 noiseDisturb(vec3 color, float scaleFactor, float minVal, float maxVal)
 
 vec4 getTerrainTex(sampler2D samp)
 {
-	float uvSize = 5.0;
-	vec3 detailTex = v_mat.x * triplanarSample(samp, 1.0 / uvSize).xyz + v_mat.y * triplanarSample(TU_Cliff, 1.0 / uvSize).xyz + v_mat.z * triplanarSample(TU_dirt, 1.0/ 5.0).xyz;
-	detailTex = noiseDisturb(detailTex, 0.3, 0.95, 1.0); 
-	float large_uvSize = 12.456666;
-	vec3 largeTex = v_mat.x * triplanarSample(samp, 1.0 / large_uvSize).xyz + v_mat.y * triplanarSample(TU_Cliff, 1.0 / large_uvSize).xyz + v_mat.z * triplanarSample(TU_dirt, 1.0/ large_uvSize).xyz;
-	largeTex = noiseDisturb(largeTex, 0.05, 0.9, 1.0); 
-	return vec4(mix(detailTex, largeTex, getDistFactor(15.0, 30.0, -1 * v_position.z)), 1.0);
+	vec3 detailTex = v_mat.x * triplanarSample(samp, 1.0 / uv_grass).xyz + v_mat.y * triplanarSample(TU_Cliff, 1.0 / uv_cliff).xyz + v_mat.z * triplanarSample(TU_dirt, 1.0/ uv_dirt).xyz;
+	detailTex = noiseDisturb(detailTex, disturb_factor_near, 0.95, 1.0); 
+	vec3 largeTex = v_mat.x * triplanarSample(samp, 1.0 / (uv_grass * large_factor)).xyz + v_mat.y * triplanarSample(TU_Cliff, 1.0 / (uv_cliff * large_factor)).xyz + v_mat.z * triplanarSample(TU_dirt, 1.0/ (uv_dirt * large_factor)).xyz;
+	largeTex = noiseDisturb(largeTex, disturb_factor_far, 0.9, 1.0); 
+	return vec4(mix(detailTex, largeTex, getDistFactor(near_dist, far_dist, -1 * v_position.z)), 1.0); 
 }
 
 vec4 texturePlain(sampler2D samp, in vec2 uv)
@@ -266,8 +276,8 @@ vec4 texturePlain(sampler2D samp, in vec2 uv)
 void main()
 {
     gl_FragData[0] = getTerrainTex(TU_topGrass);
-	gl_FragData[1] = vec4(v_position,1.0);
-	gl_FragData[2] = vec4(normalize(v_normal),1.0);		
+	gl_FragData[1] = vec4(v_worldPos,1.0);
+	gl_FragData[2] = vec4(normalize(v_normal),1.0);
 	gl_FragData[3] = vec4(TU_roughness,0.0,0.0,1.0);
 }
 //! [0]

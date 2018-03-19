@@ -16,12 +16,19 @@ uniform float F0 = 0.8;
 uniform float K = 0.7;
 uniform float Gamma = 1.1;
 
+uniform float fog_near;
+uniform float fog_far;
+uniform vec4 fog_color;
 uniform sampler2D TU_colorBuffer;
 uniform sampler2D TU_posBuffer;
 uniform sampler2D TU_normalBuffer;
 uniform sampler2D TU_GBUFFER4;
 uniform sampler2D TU_Depth;
+uniform sampler2D TU_ShadowMap;
+
+uniform mat4 TU_LightVP;
 uniform vec2 TU_winSize;
+
 
 uniform DirectionalLight gDirectionalLight;
 uniform AmbientLight gAmbientLight;
@@ -133,20 +140,32 @@ vec3 calculateLightBlinnPhong(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 v
 	return lightColor * irradiance + gAmbientLight.color * gAmbientLight.intensity;
 }
 
+
+float CalcShadowFactor(vec4 LightSpacePos)                                                  
+{                                                                                           
+    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;                                  
+    vec2 UVCoords;                                                                          
+    UVCoords.x =0.5 * ProjCoords.x + 0.5;                                                  
+    UVCoords.y = 0.5 * ProjCoords.y + 0.5;                                                  
+    float z = 0.5 * ProjCoords.z + 0.5;                                                     
+	//return z;
+    float Depth = texture2D(TU_ShadowMap, UVCoords).r;                                          
+	return Depth;
+    if (Depth < z + 0.00001)                                                                 
+        return 0.5;                                                                         
+    else                                                                                    
+        return 1.0;                                                                         
+}
+
+
 void main()
 {
 	vec4 Data1 = texture2D(TU_colorBuffer, v_texcoord);
 	vec3 color = Data1.xyz;
 	float roughness = texture2D(TU_GBUFFER4, v_texcoord).r;
 	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
+	float shadowFactor = CalcShadowFactor(TU_LightVP * texture2D(TU_posBuffer, v_texcoord));
 	vec3 normal = normalize(texture2D(TU_normalBuffer, v_texcoord).xyz);
-	
-
-	
-	vec4 finalColor = vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness) + gAmbientLight.color * gAmbientLight.intensity * color,Data1.a);
-	gl_FragColor = Data1;
-	return;
-
-	float fogFactor = getFogFactor(100.0, 250.0, -1 * pos.z);
-	gl_FragColor = finalColor * (1.0 - fogFactor) + fogFactor * vec4(150.0 / 255.0 , 150.0 / 255.0, 150.0 / 255.0, 1.0);
+	//vec4 finalColor = shadowFactor * vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness) + gAmbientLight.color * gAmbientLight.intensity * color, 1.0);
+	gl_FragColor = vec4(shadowFactor,shadowFactor,shadowFactor, 1.0);
 }

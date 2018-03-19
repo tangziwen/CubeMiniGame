@@ -98,6 +98,11 @@ void Mesh::pushInstances(std::vector<vec4> instancePos)
 	m_instanceOffset = instancePos;
 }
 
+void Mesh::clearInstances()
+{
+	m_instanceOffset.clear();
+}
+
 void Mesh::setMatIndex(unsigned int matIndex)
 {
     m_matIndex = matIndex;

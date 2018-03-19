@@ -7,6 +7,9 @@
 #include "../Mesh/Mesh.h"
 #include "../3D/Sky.h"
 #include "../2D/GUISystem.h"
+#include "Technique/MaterialPool.h"
+#include "../3D/ShadowMap/ShadowMap.h"
+
 namespace tzw {
 
 Renderer * Renderer::m_instance = nullptr;
@@ -20,8 +23,7 @@ Renderer::Renderer()
 	m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
 	m_offScreenBuffer = new RenderTarget();
 	m_offScreenBuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight(),1,false);
-	m_dirLightProgram = new Material();
-	m_dirLightProgram->loadFromTemplate("DirectLight");
+	m_dirLightProgram = MaterialPool::shared()->getMatFromTemplate("DirectLight");
 	m_postEffect = new Material();
 	m_postEffect->loadFromTemplate("postEffect");
 	initQuad();
@@ -56,7 +58,9 @@ void Renderer::addRenderCommand(RenderCommand command)
 			
 		break;
 		case RenderCommand::RenderType::Instanced:
-			m_CommonCommand.push_back(command);
+		{
+			//m_CommonCommand.push_back(command);
+		}	
 			break;
 		default:
 		break;
@@ -71,10 +75,23 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 void Renderer::renderAll()
 {
 	Engine::shared()->setDrawCallCount(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size());
+
+	shadowPass();
 	geometryPass();
+	//prepareDeferred();
+	m_offScreenBuffer->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
+	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
+		RenderFlag::BlendingFactor::One);
+	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
+	RenderBackEnd::shared()->setDepthTestEnable(false);
+	m_gbuffer->bindForReadingGBuffer();
 	LightingPass();
 	skyBoxPass();
-
 	postEffectPass();
 	
 	if(m_enableGUIRender)
@@ -92,6 +109,20 @@ void Renderer::renderAllCommon()
 		RenderCommand &command = (*i);
 		renderCommon(command);
 	}
+}
+
+void Renderer::renderAllShadow()
+{
+	for (auto i = m_CommonCommand.begin(); i != m_CommonCommand.end(); i++)
+	{
+		RenderCommand &command = (*i);
+		renderShadow(command);
+	}
+	//for (auto i = m_transparentCommandList.begin(); i != m_transparentCommandList.end(); i++)
+	//{
+	//	RenderCommand &command = (*i);
+	//	renderShadow(command);
+	//}
 }
 
 void Renderer::renderAllTransparent()
@@ -137,6 +168,26 @@ void Renderer::renderCommon(RenderCommand &command)
 	render(command);
 }
 
+void Renderer::renderShadow(RenderCommand &command)
+{
+	//replace by the shadow shader, a little bit hack
+	command.m_material->use(ShadowMap::shared()->getProgram());
+	applyRenderSetting(command.m_material);
+	auto cpyTransInfo = command.m_transInfo;
+	// one more little hack for light view & project matrix
+	cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+	cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix();
+	applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
+	if (command.type() == RenderCommand::RenderType::Instanced)
+	{
+		//renderPrimitive2(command.m_mesh, command.m_material, command.m_primitiveType);
+	}
+	else
+	{
+		renderPrimitive(command.m_mesh, command.m_material, command.m_primitiveType, ShadowMap::shared()->getProgram());
+	}
+}
+
 void Renderer::renderTransparent(RenderCommand & command)
 {
 	render(command);
@@ -165,9 +216,14 @@ void Renderer::render(const RenderCommand &command)
 	
 }
 
-void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::PrimitiveType primitiveType)
+void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram)
 {
 	auto program = effect->getProgram();
+	if (extraProgram)
+	{
+		program = extraProgram;
+	}
+
 	program->use();
 	mesh->getArrayBuf()->use();
 	mesh->getIndexBuf()->use();
@@ -362,16 +418,21 @@ void Renderer::geometryPass()
 
 void Renderer::LightingPass()
 {
-	m_offScreenBuffer->bindForWriting();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
-	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
-											RenderFlag::BlendingFactor::One);
-	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
-	RenderBackEnd::shared()->setDepthTestEnable(false);
-	m_gbuffer->bindForReadingGBuffer();
 	directionalLightPass();
+}
+
+void Renderer::shadowPass()
+{
+	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
+	RenderBackEnd::shared()->setDepthTestEnable(true);
+	auto shadowBuffer = ShadowMap::shared()->getFBO();
+	ShadowMap::shared()->getProgram()->use();
+	shadowBuffer->BindForWriting();
+	glClear(GL_DEPTH_BUFFER_BIT);
+	if (m_enable3DRender)
+	{
+		renderAllShadow();
+	}
 }
 
 void Renderer::skyBoxPass()
@@ -380,11 +441,14 @@ void Renderer::skyBoxPass()
 	{
 		RenderBackEnd::shared()->setIsCullFace(false);
 		auto mat = Sky::shared()->getMaterial();
+		mat->setVar("TU_Depth", 0);
+		auto dirLight = g_GetCurrScene()->getDirectionLight();
+		mat->setVar("sun_pos",  dirLight->dir() * -1);
+		mat->setVar("TU_winSize", Engine::shared()->winSize());
 		mat->use();
 		m_gbuffer->bindForReading();
 		m_gbuffer->bindDepth(0);
-		mat->setVar("TU_Depth",0);
-		mat->setVar("TU_winSize", Engine::shared()->winSize());
+
 		TransformationInfo info;
 		Sky::shared()->setUpTransFormation(info);
 		applyTransform(mat->getProgram(), info);
@@ -430,6 +494,8 @@ void Renderer::directionalLightPass()
 {
 
 	auto currScene = g_GetCurrScene();
+
+	m_dirLightProgram->use();
 	auto program = m_dirLightProgram->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
@@ -437,7 +503,14 @@ void Renderer::directionalLightPass()
 	program->setUniformInteger("TU_normalBuffer",2);
 	program->setUniformInteger("TU_GBUFFER4",3);
 	program->setUniformInteger("TU_Depth", 4);
+
+	program->setUniformInteger("TU_ShadowMap", 5);
+	ShadowMap::shared()->getFBO()->BindForReading(5);
+
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	//light vp
+	auto lightVP = ShadowMap::shared()->getLightProjectionMatrix() * ShadowMap::shared()->getLightViewMatrix();
+	program->setUniformMat4v("TU_LightVP", lightVP.data());
 	auto cam = currScene->defaultCamera();
 
 	auto dirLight = currScene->getDirectionLight();
@@ -476,8 +549,18 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 	program->setUniformMat4v("TU_normalMatrix", (v * m).inverted().transpose().data());
 }
 
-
-
+void Renderer::prepareDeferred()
+{
+	m_offScreenBuffer->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
+	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
+		RenderFlag::BlendingFactor::One);
+	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
+	RenderBackEnd::shared()->setDepthTestEnable(false);
+	m_gbuffer->bindForReadingGBuffer();
+}
 
 } // namespace tzw
 
