@@ -32,21 +32,37 @@ static int lodList[] = { 1, 2, 4, 8};
 Chunk::Chunk(int  the_x, int the_y,int the_z)
 	:x(the_x),y(the_y),z(the_z),m_isLoaded(false)
 {
+	 
 	m_lod = 0;
+	 
 	m_localAABB.update(vec3(0,0,0));
+	 
 	m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,MAX_BLOCK * BLOCK_SIZE,-1 * MAX_BLOCK * BLOCK_SIZE));
+	 
 	m_offset = GameWorld::shared()->getMapOffset();
+	 
 	m_basePoint = vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , -1 * z* CHUNK_SIZE) + m_offset;
+	 
 	setPos(m_basePoint);
+	 
 	m_mesh = nullptr;
+	 
 	m_needToUpdate = true;
+	 
 	m_isInitData = false;
+	 
 	m_isNeedSubmitMesh = false;
+	 
 	reCacheAABB();
+	 
 	mcPoints = nullptr;
+	 
 	m_tmpNeighborChunk.clear();
+	 
 	m_grass = new Grass("Res/TestRes/blueFlower.png");
-	m_grass2 = new Grass("Res/TestRes/grass_veg.png");
+	 
+	m_grass2 = new Grass("Res/TestRes/blueFlower.png");
+	 
 	grassNoise.SetSeed(time(NULL));
 }
 
@@ -116,7 +132,9 @@ void Chunk::logicUpdate(float delta)
 	if (m_isNeedSubmitMesh)
 	{
 		m_isNeedSubmitMesh = false;
+		 
 		m_mesh->finish();
+		 
 		m_grass->finish();
 		m_grass2->finish();
 	}

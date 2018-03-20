@@ -8,6 +8,7 @@ uniform mat4 TU_mvpMatrix;
 uniform mat4 TU_mvMatrix;
 uniform mat4 TU_mMatrix;
 uniform mat4 TU_normalMatrix;
+uniform mat4 TU_lightVP;
 uniform float TU_roughness;
 attribute vec3 a_position;
 attribute vec3 a_normal;
@@ -30,5 +31,5 @@ varying vec3 v_mat;
 void main()
 {
     // Calculate vertex position in screen space
-    gl_Position = TU_mvpMatrix * vec4(a_position,1.0);
+    gl_Position = TU_lightVP * TU_mMatrix * vec4(a_position,1.0);
 }

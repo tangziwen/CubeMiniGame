@@ -3,23 +3,34 @@
 #include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "EngineSrc/3D/Vegetation/Grass.h"
-
 namespace tzw {
 Grass::Grass(std::string filePath)
 {
+	 
 	m_isFinish = false;
+	 
 	auto mat = MaterialPool::shared()->getMaterialByName("grassMaterial");
+	 
 	if (!mat)
 	{
+
 		mat = Material::createFromTemplate("Grass");
+		 
 		auto tex = TextureMgr::shared()->getByPath(filePath);
-		tex->genMipMap();
+		 
+		//tex->genMipMap();
+		 
 		mat->setTex("diffuseMap", tex);
+		 
 	}
 	setMaterial(mat);
+	 
 	setIsAccpectOCTtree(false);
+	 
 	setCamera(g_GetCurrScene()->defaultCamera());
+	 
 	initMesh();
+	 
 }
 
 

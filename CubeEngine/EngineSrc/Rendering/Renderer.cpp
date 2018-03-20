@@ -11,7 +11,6 @@
 #include "../3D/ShadowMap/ShadowMap.h"
 
 namespace tzw {
-
 Renderer * Renderer::m_instance = nullptr;
 Renderer::Renderer()
 {
@@ -74,31 +73,45 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
+	int errorCode = 0;
+	errorCode = glGetError();
 	Engine::shared()->setDrawCallCount(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size());
 
 	shadowPass();
+	errorCode = glGetError();
 	geometryPass();
+	errorCode = glGetError();
 	//prepareDeferred();
-	m_offScreenBuffer->bindForWriting();
+	//m_offScreenBuffer->bindForWriting();
+	m_gbuffer->bindForReadingGBuffer();
+	errorCode = glGetError();
+	RenderBackEnd::shared()->bindFrameBuffer(0);
+	errorCode = glGetError();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
+	errorCode = glGetError();
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	errorCode = glGetError();
 	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
+	errorCode = glGetError();
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
 		RenderFlag::BlendingFactor::One);
+	errorCode = glGetError();
 	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
 	RenderBackEnd::shared()->setDepthTestEnable(false);
-	m_gbuffer->bindForReadingGBuffer();
-	LightingPass();
-	skyBoxPass();
-	postEffectPass();
 	
+	directionalLightPass();
+	errorCode = glGetError();
+	//LightingPass();
+	//skyBoxPass();
+	//postEffectPass();
+	errorCode = glGetError();
+	errorCode = glGetError();
 	if(m_enableGUIRender)
 	{
+		errorCode = glGetError();
 		renderAllGUI();
+		errorCode = glGetError();
 	}
-
 	clearCommands();
 }
 
@@ -113,10 +126,12 @@ void Renderer::renderAllCommon()
 
 void Renderer::renderAllShadow()
 {
+	int index = 0;
 	for (auto i = m_CommonCommand.begin(); i != m_CommonCommand.end(); i++)
 	{
 		RenderCommand &command = (*i);
 		renderShadow(command);
+		index += 1;
 	}
 	//for (auto i = m_transparentCommandList.begin(); i != m_transparentCommandList.end(); i++)
 	//{
@@ -141,6 +156,7 @@ void Renderer::renderAllGUI()
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
 
 	GUISystem::shared()->tryRender();
+	 
 
 	//if (m_isNeedSortGUI)
 	//{
@@ -153,8 +169,8 @@ void Renderer::renderAllGUI()
 	//	RenderCommand &command = (*i);
 	//	renderGUI(command);
 	//}
-
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::DepthTest);
+	 
 }
 
 void Renderer::renderGUI(RenderCommand &command)
@@ -172,12 +188,20 @@ void Renderer::renderShadow(RenderCommand &command)
 {
 	//replace by the shadow shader, a little bit hack
 	command.m_material->use(ShadowMap::shared()->getProgram());
+	  
 	applyRenderSetting(command.m_material);
+	  
 	auto cpyTransInfo = command.m_transInfo;
+	  
 	// one more little hack for light view & project matrix
 	cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+	  
 	cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix();
+	  
 	applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
+	  
+	ShadowMap::shared()->getProgram()->setUniformMat4v("TU_lightVP", (ShadowMap::shared()->getLightProjectionMatrix() * ShadowMap::shared()->getLightViewMatrix()).data());
+	  
 	if (command.type() == RenderCommand::RenderType::Instanced)
 	{
 		//renderPrimitive2(command.m_mesh, command.m_material, command.m_primitiveType);
@@ -219,47 +243,84 @@ void Renderer::render(const RenderCommand &command)
 void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram)
 {
 	auto program = effect->getProgram();
+	  
 	if (extraProgram)
 	{
 		program = extraProgram;
 	}
-
+	  
 	program->use();
+	  
 	mesh->getArrayBuf()->use();
+	  
 	mesh->getIndexBuf()->use();
+	  
 	// Offset for position
 	unsigned int offset = 0;
+	  
 	Engine::shared()->increaseVerticesIndicesCount(mesh->getVerticesSize(), mesh->getIndicesSize());
+	  
 	// Tell OpenGL programmable pipeline how to locate vertex position data
 	int vertexLocation = program->attributeLocation("a_position");
+	  
 	program->enableAttributeArray(vertexLocation);
+	  
 	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	  
 	offset += sizeof(vec3);
 
 	int normalLocation = program->attributeLocation("a_normal");
-	program->enableAttributeArray(normalLocation);
-	program->setAttributeBuffer(normalLocation,GL_FLOAT,offset,3,sizeof(VertexData));
+	  
+	if (normalLocation > 0)
+	{
+		program->enableAttributeArray(normalLocation);
+		program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+		  
+	}
+	  
 	offset += sizeof(vec3);
 
 	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
 	int texcoordLocation = program->attributeLocation("a_texcoord");
-	program->enableAttributeArray(texcoordLocation);
-	program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
-	offset += sizeof(vec2);
+	  
+	if (texcoordLocation > 0)
+	{
+		program->enableAttributeArray(texcoordLocation);
+		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+		offset += sizeof(vec2);
+		  
+	}
+	
 
 	int colorLocation = program->attributeLocation("a_color");
-	program->enableAttributeArray(colorLocation);
-	program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
-	offset += sizeof(vec4);
+	  
+	if (colorLocation > 0)
+	{
+		program->enableAttributeArray(colorLocation);
+		program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
+		offset += sizeof(vec4);
+		  
+	}
+	  
 
 	int bcLoaction = program->attributeLocation("a_bc");
-	program->enableAttributeArray(bcLoaction);
-	program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
+	  
+	if (bcLoaction > 0)
+	{
+		program->enableAttributeArray(bcLoaction);
+		program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
+		  
+	}
 	offset += sizeof(vec3);
 
 	int matLocation = program->attributeLocation("a_mat");
-	program->enableAttributeArray(matLocation);
-	program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	  
+	if (matLocation > 0)
+	{
+		program->enableAttributeArray(matLocation);
+		program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	}
+	  
 
 
 	switch(primitiveType)
@@ -268,7 +329,9 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Lines,mesh->getIndicesSize(),0);
 		break;
 		case RenderCommand::PrimitiveType::TRIANGLES:
+			  
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Triangles,mesh->getIndicesSize(),0);
+			  
 		break;
 		case RenderCommand::PrimitiveType::TRIANGLE_STRIP:
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::TriangleStrip,mesh->getIndicesSize(),0);
@@ -443,7 +506,7 @@ void Renderer::skyBoxPass()
 		auto mat = Sky::shared()->getMaterial();
 		mat->setVar("TU_Depth", 0);
 		auto dirLight = g_GetCurrScene()->getDirectionLight();
-		mat->setVar("sun_pos",  dirLight->dir() * -1);
+		mat->setVar("sun_pos",  dirLight->dir());
 		mat->setVar("TU_winSize", Engine::shared()->winSize());
 		mat->use();
 		m_gbuffer->bindForReading();
@@ -475,56 +538,81 @@ void Renderer::skyBoxPass()
 
 void Renderer::postEffectPass()
 {
-	auto currScene = g_GetCurrScene();
-	m_offScreenBuffer->bindForReadingGBuffer();
+	//auto currScene = g_GetCurrScene();
+	//m_offScreenBuffer->bindForReadingGBuffer();
 	RenderBackEnd::shared()->bindFrameBuffer(0);
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	
-	auto program = m_postEffect->getProgram();
-	program->use();
-	program->setUniformInteger("TU_colorBuffer",0);
-	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-	auto cam = currScene->defaultCamera();
-
-	program->use();
-	renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
+	//auto program = m_postEffect->getProgram();
+	//program->use();
+	//program->setUniformInteger("TU_colorBuffer",0);
+	//program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	//auto cam = currScene->defaultCamera();
+	//program->use();
+	//renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::directionalLightPass()
 {
-
+	int errorCode = 0;
 	auto currScene = g_GetCurrScene();
-
+	  
 	m_dirLightProgram->use();
+	  
 	auto program = m_dirLightProgram->getProgram();
+	  
 	program->use();
+	  
 	program->setUniformInteger("TU_colorBuffer",0);
+	  
 	program->setUniformInteger("TU_posBuffer",1);
+	  
 	program->setUniformInteger("TU_normalBuffer",2);
+	  
 	program->setUniformInteger("TU_GBUFFER4",3);
+	  
 	program->setUniformInteger("TU_Depth", 4);
-
+	  
 	program->setUniformInteger("TU_ShadowMap", 5);
+	  
 	ShadowMap::shared()->getFBO()->BindForReading(5);
+	  
 
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	  
 	//light vp
 	auto lightVP = ShadowMap::shared()->getLightProjectionMatrix() * ShadowMap::shared()->getLightViewMatrix();
+	  
 	program->setUniformMat4v("TU_LightVP", lightVP.data());
+	  
 	auto cam = currScene->defaultCamera();
+	  
 
 	auto dirLight = currScene->getDirectionLight();
+	  
 	auto dirInViewSpace = (cam->getViewMatrix() * vec4(dirLight->dir(),0.0)).toVec3();
+	  
 	program->setUniform3Float("gDirectionalLight.direction",dirInViewSpace);
+	  
 	program->setUniform3Float("gDirectionalLight.color",dirLight->color());
+	  
 	program->setUniformFloat("gDirectionalLight.intensity", dirLight->intensity());
+	  
+	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
+	
+	program->setUniformMat4v("TU_viewInverted", cam->getViewMatrix().inverted().data());
 
 	auto ambient = currScene->getAmbient();
+	  
 	program->setUniform3Float("gAmbientLight.color",ambient->color());
+	  
 	program->setUniformFloat("gAmbientLight.intensity",ambient->intensity());
+	  
 
 	program->use();
+	  
 	renderPrimitive(m_quad, m_dirLightProgram, RenderCommand::PrimitiveType::TRIANGLES);
+	  
 }
 
 void Renderer::applyRenderSetting(Material * mat)

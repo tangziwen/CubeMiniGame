@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <assert.h>
 namespace tzw {
 RenderBackEnd * RenderBackEnd::m_instance = nullptr;
 RenderBackEnd *RenderBackEnd::shared()
@@ -163,7 +164,9 @@ void RenderBackEnd::drawElement(RenderFlag::IndicesType type, unsigned int size,
 			glDrawElements(GL_LINES,size, GL_UNSIGNED_SHORT, indicesAddress);
 		break;
 		case RenderFlag::IndicesType::Triangles:
+			checkGL();
 			glDrawElements(GL_TRIANGLES,size, GL_UNSIGNED_SHORT, indicesAddress);
+			checkGL(1285);
 		break;
 		case RenderFlag::IndicesType::TriangleStrip:
 			glDrawElements(GL_TRIANGLE_STRIP, size, GL_UNSIGNED_SHORT, indicesAddress);
@@ -284,6 +287,7 @@ void RenderBackEnd::setDepthMaskWriteEnable(bool isEnable)
 
 void RenderBackEnd::genMipMap(unsigned int texUnitID)
 {
+	//generate Mip Map may faield
 	glBindTexture(GL_TEXTURE_2D, texUnitID);
 	glGenerateMipmap(GL_TEXTURE_2D);
 }
@@ -338,6 +342,24 @@ void RenderBackEnd::GenTextures(unsigned count, unsigned * obj)
 void RenderBackEnd::TexImage2D(unsigned target, int level, int internalformat, int width, int height, int border, unsigned format, unsigned type, const void * pixels)
 {
 	glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+}
+
+void RenderBackEnd::checkGL(int except_val)
+{
+	return;
+	int errorCode = 0;
+	bool isFuckedUp = false;
+	while ((errorCode = glGetError()) != GL_NO_ERROR)
+	{
+		printf("gl error %d\n", errorCode);
+		if (errorCode == except_val)
+			continue;
+		isFuckedUp = true;
+	}
+	if (isFuckedUp)
+	{
+		assert(0);
+	}
 }
 
 RenderBackEnd::RenderBackEnd()

@@ -8,6 +8,7 @@
 #include "Rendering/RenderBuffer.h"
 #include "Math/Matrix44.h"
 #include "Event/EventMgr.h"
+#include "BackEnd/RenderBackEnd.h"
 namespace tzw
 {
 	ShaderProgram * g_program;
@@ -21,6 +22,10 @@ namespace tzw
 		// Note that this implementation is little overcomplicated because we are saving/setting up/restoring every OpenGL state explicitly, in order to be able to run within any OpenGL engine that doesn't do so. 
 		// If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
 	{
+		int errorCode = 0;
+
+		 
+
 		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
 		ImGuiIO& io = ImGui::GetIO();
 		int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
@@ -34,6 +39,7 @@ namespace tzw
 		GLint last_polygon_mode[2]; glGetIntegerv(GL_POLYGON_MODE, last_polygon_mode);
 		GLint last_viewport[4]; glGetIntegerv(GL_VIEWPORT, last_viewport);
 		GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
+		 
 		glEnable(GL_BLEND);
 		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_CULL_FACE);
@@ -44,36 +50,45 @@ namespace tzw
 		Matrix44 projection;
 		projection.ortho(0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 0.1f, 10.0f);
 		g_program->use();
+		 
 		g_program->setUniformMat4v("TU_projMat", projection.data());
+		 
+		g_program->setUniformInteger("TU_tex1", 0);
+		 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		 
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+		 
 		// Render command lists
 #define OFFSETOF(TYPE, ELEMENT) ((size_t)&(((TYPE *)0)->ELEMENT))
 		for (int n = 0; n < draw_data->CmdListsCount; n++)
 		{
+
 			const ImDrawList* cmd_list = draw_data->CmdLists[n];
 			const ImDrawVert* vtx_buffer = cmd_list->VtxBuffer.Data;
 			const ImDrawIdx* idx_buffer = cmd_list->IdxBuffer.Data;
-
+			 
 			m_arrayBuf->use();
 			m_arrayBuf->allocate((void *)vtx_buffer, cmd_list->VtxBuffer.size() * sizeof(ImDrawVert));
 
 
+			 
 
 			g_program->use();
 			int vertexLocation = g_program->attributeLocation("a_position");
 			g_program->enableAttributeArray(vertexLocation);
 			g_program->setAttributeBuffer(vertexLocation, GL_FLOAT, (int)(OFFSETOF(ImDrawVert, pos)), 2, sizeof(ImDrawVert));
-
+			 
 
 			int texcoordLocation = g_program->attributeLocation("a_texcoord");
 			g_program->enableAttributeArray(texcoordLocation);
 			g_program->setAttributeBuffer(texcoordLocation, GL_FLOAT, (int)(OFFSETOF(ImDrawVert, uv)), 2, sizeof(ImDrawVert));
-
+			 
 
 			int colorLocation = g_program->attributeLocation("a_color");
 			g_program->enableAttributeArray(colorLocation);
 			g_program->setAttributeBuffer(colorLocation, GL_UNSIGNED_BYTE, (int)(OFFSETOF(ImDrawVert, col)), 4, sizeof(ImDrawVert));
+			 
 
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
 			{
@@ -88,8 +103,9 @@ namespace tzw
 				{
 					m_indexBuf->use();
 					m_indexBuf->allocate((void *)idx_buffer, (GLsizei)pcmd->ElemCount * sizeof(ImDrawIdx));
+					glActiveTexture(GL_TEXTURE0);
 					glBindTexture(GL_TEXTURE_2D, (GLuint)(intptr_t)pcmd->TextureId);
-					glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
+					//glScissor((int)pcmd->ClipRect.x, (int)(fb_height - pcmd->ClipRect.w), (int)(pcmd->ClipRect.z - pcmd->ClipRect.x), (int)(pcmd->ClipRect.w - pcmd->ClipRect.y));
 					glDrawElements(GL_TRIANGLES, (GLsizei)pcmd->ElemCount, sizeof(ImDrawIdx) == 2 ? GL_UNSIGNED_SHORT : GL_UNSIGNED_INT, 0);
 				}
 				idx_buffer += pcmd->ElemCount;
@@ -111,12 +127,13 @@ namespace tzw
 	void GUISystem::renderData()
 	{
 		if (!m_isInit) return;
-
+		 
 
 		for (auto obj : m_objList)
 		{
 			obj->drawIMGUI();
 		}
+		 
 		ImGui::Render();
 	}
 

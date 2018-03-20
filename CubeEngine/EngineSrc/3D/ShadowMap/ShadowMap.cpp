@@ -10,7 +10,7 @@ namespace tzw
 		m_program = ShaderMgr::shared()->getByPath("./Res/EngineCoreRes/Shaders/ShadowNaive_v.glsl", "./Res/EngineCoreRes/Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
 		m_shadowMap = new ShadowMapFBO();
-		m_shadowMap->Init(1024, 1024);
+		m_shadowMap->Init(1024, 768);
 	}
 
 	ShaderProgram * ShadowMap::getProgram()
@@ -28,9 +28,10 @@ namespace tzw
 	Matrix44 ShadowMap::getLightProjectionMatrix()
 	{
 		Matrix44 mat;
-		mat.ortho(-100, 100, -100, 100, -100, 100);
+		mat.ortho(-50, 50, -50, 50, -50, 50);
 		return mat;
 	}
+
 	ShadowMapFBO * ShadowMap::getFBO()
 	{
 		return m_shadowMap;

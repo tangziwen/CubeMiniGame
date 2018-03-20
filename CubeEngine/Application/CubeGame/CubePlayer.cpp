@@ -29,18 +29,23 @@ CubePlayer::CubePlayer(Node *mainRoot)
     m_camera->setIsEnableGravity(true);
 
     //the gun
-    m_gunModel = Model::create("./Res/diediedie.tzw");
-    m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
-    m_gunModel->setRotateE(vec3(0, -90, 0));
-    m_gunModel->setPos(vec3(0.04,-0.2,-0.20));
+    //m_gunModel = Model::create("./Res/diediedie.tzw");
+    //m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
+    //m_gunModel->setRotateE(vec3(0, -90, 0));
+    //m_gunModel->setPos(vec3(0.04,-0.2,-0.20));
 
 	auto testModel = Model::create("./Res/diediedie.tzw");
-	testModel->setScale(vec3(0.3, 0.3, 0.3));
+	testModel->setScale(vec3(0.5, 0.5, 0.5));
 	testModel->setRotateE(vec3(0, -90, 0));
-	testModel->setPos(vec3(5, 10, -5));
+	testModel->setPos(vec3(25, 20, -5));
 	g_GetCurrScene()->addNode(testModel);
 
-    m_camera->addChild(m_gunModel);
+
+	auto testWall = new CubePrimitive(1, 50, 50);
+	testWall->setPos(vec3(-5, 15, -5));
+	g_GetCurrScene()->addNode(testWall);
+
+    //m_camera->addChild(m_gunModel);
 
 	auto pos = getPos();
 	oldPosX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
@@ -69,7 +74,7 @@ vec3 CubePlayer::getPos()
 void CubePlayer::logicUpdate(float dt)
 {
     static float  theTime = 0.0f;
-    vec3 oldPos = m_gunModel->getPos();
+    //vec3 oldPos = m_gunModel->getPos();
     float offset = 0.002;
     float freq = 1;
     if(m_camera->getIsMoving())
@@ -78,7 +83,7 @@ void CubePlayer::logicUpdate(float dt)
         freq = 6;
     }
     theTime += freq * dt;
-    m_gunModel->setPos(vec3(oldPos.x, -0.2 + sinf(theTime) * offset, oldPos.z));
+   // m_gunModel->setPos(vec3(oldPos.x, -0.2 + sinf(theTime) * offset, oldPos.z));
 	if (checkIsNeedUpdateChunk())
 	{
 		GameWorld::shared()->loadChunksAroundPlayer();

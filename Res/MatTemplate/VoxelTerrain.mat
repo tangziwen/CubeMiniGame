@@ -3,7 +3,7 @@
 		"vs" : "./Res/EngineCoreRes/Shaders/VoxelTerrain_v.glsl",
 		"fs" : "./Res/EngineCoreRes/Shaders/VoxelTerrain_f.glsl"
 	},
-	"name" : "ModelStd",
+	"name" : "Terrain",
 	"property" : {
 		"attributes" : [
 			["roughness", "TU_roughness", "float", 5.0],

@@ -10,7 +10,7 @@
 #include "GameConfig.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
-
+#include "BackEnd/RenderBackEnd.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -25,15 +25,23 @@ GameWorld *GameWorld::shared()
 
 void GameWorld::createWorld(Scene *scene, int width, int depth, int height, float ratio)
 {
+	 
     m_scene = scene;
-
+	 
     GameMap::shared()->init(ratio);
+	 
     m_width = width;
+	 
     m_depth = depth;
+	 
     m_height = height;
+	 
 	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
+	 
 	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
+	 
 	m_mapOffset = vec3(offsetX, 0 ,offsetZ);
+	 
     for(int i = 0;i< m_width;i++)
     {
         for(int j=0;j<m_height;j++)
@@ -41,13 +49,19 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             for(int k = 0; k < m_depth; k++)
             {
                 auto chunk = new Chunk(i,j,k);
+				 
                 m_mainRoot->addChild(chunk);
+				 
                 m_chunkList.push_back(chunk);
+				 
                 m_chunkArray[i][j][k] = chunk;
+				 
             }
         }
     }
+	 
     loadChunksAroundPlayer();
+	 
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -96,19 +110,31 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::startGame()
 {
+	 
 	Tmisc::DurationBegin();
+	 
     unloadGame();
+	 
     crossHair = Sprite::create("./Res/User/CubeGame/texture/GUI/cross_hair.png");
+	 
     auto size = crossHair->getContentSize();
+	 
     crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
+	 
     m_mainRoot->addChild(crossHair);
+	 
     GameMap::shared()->setMapType(GameMap::MapType::Noise);
     GameMap::shared()->setMaxHeight(10);
+	 
 	GameMap::shared()->setMinHeight(3);
     auto player = new CubePlayer(m_mainRoot);
+	 
     GameWorld::shared()->setPlayer(player);
+	 
     GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+	 
     m_mainRoot->addChild(player);
+	 
     m_currentState = GameState::OnPlay;
 
 	//PhysicsMgr::shared()->start();
@@ -128,13 +154,20 @@ bool tzw::GameWorld::onKeyPress(int keyCode)
 }
 void GameWorld::loadChunksAroundPlayer()
 {
+	 
 	Tmisc::DurationBegin();
+	 
     std::set<Chunk*> m_tempArray = m_activedChunkList;
+	 
 	std::vector<Chunk *> m_readyToLoadArray;
+	 
     auto pos = m_player->getPos() - m_mapOffset;
+	 
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+	 
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-	int range = ceil(150.0f / (MAX_BLOCK * BLOCK_SIZE));
+	int range = ceil(100.0f / (MAX_BLOCK * BLOCK_SIZE));
+	 
     for(int i =posX - range;i<=posX + range;i++)
     {
         for(int j =0;j< m_height; j++)
@@ -143,9 +176,13 @@ void GameWorld::loadChunksAroundPlayer()
             {
                 if(i < 0 || i >= m_width || j < 0 || j >= m_height || k < 0 || k >= m_depth)
                     continue;
+				 
                 auto targetChunk = m_chunkArray[i][j][k];
+				 
 				m_readyToLoadArray.push_back(targetChunk);
+				 
                 auto findResult = m_tempArray.find(targetChunk);
+				 
                 if(findResult!= m_tempArray.end())
                 {
                     m_tempArray.erase(findResult);
@@ -158,7 +195,9 @@ void GameWorld::loadChunksAroundPlayer()
     }
     for(Chunk* i:m_tempArray)
     {
+		 
         i->unload();
+		 
     }
 	std::sort(m_readyToLoadArray.begin(), m_readyToLoadArray.end(),[&](Chunk * left, Chunk * right)
 	{
@@ -169,7 +208,9 @@ void GameWorld::loadChunksAroundPlayer()
 	);
 	for(Chunk * i :m_readyToLoadArray)
 	{
+		 
 		i->load();
+		 
 	}
 	tlog("load chunk cost : %d", Tmisc::DurationEnd());
 }
@@ -206,6 +247,7 @@ GameWorld::GameWorld()
 	//g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
+	//startGame();
 
 }
 

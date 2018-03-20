@@ -27,6 +27,8 @@ uniform sampler2D TU_Depth;
 uniform sampler2D TU_ShadowMap;
 
 uniform mat4 TU_LightVP;
+uniform mat4 TU_viewProjectInverted;
+uniform mat4 TU_viewInverted;
 uniform vec2 TU_winSize;
 
 
@@ -116,7 +118,6 @@ vec3 calculateLightPBR(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,
 
 vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness)
 {
-	lightDir = -lightDir;
 	vec3 diffuseColor,ambientColor;
 	float specularIntensity =0.0;
 	float irradiance = max(0.0,dot(normal, lightDir));
@@ -126,7 +127,6 @@ vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 view
 
 vec3 calculateLightBlinnPhong(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness)
 {
-	lightDir = -lightDir;
 	vec3 diffuseColor,ambientColor;
 	float specularIntensity =0.0;
 	float irradiance = max(0.0,dot(normal, lightDir));
@@ -140,23 +140,31 @@ vec3 calculateLightBlinnPhong(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 v
 	return lightColor * irradiance + gAmbientLight.color * gAmbientLight.intensity;
 }
 
+vec4 getWorldPosFromDepth()
+{
+  vec4 clipSpaceLocation;
+  clipSpaceLocation.xy = v_texcoord * 2.0 - 1.0;
+  clipSpaceLocation.z = texture(TU_Depth, v_texcoord).x*2.0 - 1.0;
+  clipSpaceLocation.w = 1.0;
+  vec4 homogenousLocation = TU_viewProjectInverted * clipSpaceLocation;
+  return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
+}
 
 float CalcShadowFactor(vec4 LightSpacePos)                                                  
-{                                                                                           
+{   
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;                                  
     vec2 UVCoords;                                                                          
     UVCoords.x =0.5 * ProjCoords.x + 0.5;                                                  
-    UVCoords.y = 0.5 * ProjCoords.y + 0.5;                                                  
-    float z = 0.5 * ProjCoords.z + 0.5;                                                     
-	//return z;
-    float Depth = texture2D(TU_ShadowMap, UVCoords).r;                                          
-	return Depth;
-    if (Depth < z + 0.00001)                                                                 
+    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
+    float z = 0.5 * ProjCoords.z + 0.5;
+	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
+		return 1.0;
+    float Depth = texture(TU_ShadowMap, UVCoords).x;
+    if ((Depth + 0.00005)  < (z ))                                                                 
         return 0.5;                                                                         
     else                                                                                    
-        return 1.0;                                                                         
+        return 1.0;
 }
-
 
 void main()
 {
@@ -164,8 +172,8 @@ void main()
 	vec3 color = Data1.xyz;
 	float roughness = texture2D(TU_GBUFFER4, v_texcoord).r;
 	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
-	float shadowFactor = CalcShadowFactor(TU_LightVP * texture2D(TU_posBuffer, v_texcoord));
+	float shadowFactor = CalcShadowFactor(TU_LightVP * TU_viewInverted * vec4(texture(TU_posBuffer, v_texcoord).xyz, 1.0));
 	vec3 normal = normalize(texture2D(TU_normalBuffer, v_texcoord).xyz);
-	//vec4 finalColor = shadowFactor * vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness) + gAmbientLight.color * gAmbientLight.intensity * color, 1.0);
-	gl_FragColor = vec4(shadowFactor,shadowFactor,shadowFactor, 1.0);
+	vec4 finalColor = shadowFactor * vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness) + gAmbientLight.color * gAmbientLight.intensity * color, 1.0);
+	gl_FragColor = finalColor;
 }
