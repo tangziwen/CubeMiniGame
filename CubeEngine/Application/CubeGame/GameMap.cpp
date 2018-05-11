@@ -110,7 +110,6 @@ bool GameMap::isBlock(Chunk * chunk,int x, int y, int z)
             return false;
         }
     }
-        break;
     case MapType::Plain:
     {
         vec3 worldPos = chunk->getGridPos(x,y,z);
@@ -123,11 +122,9 @@ bool GameMap::isBlock(Chunk * chunk,int x, int y, int z)
             return false;
         }
     }
-        break;
     default:
         return false;
     }
-    return false;
 }
 
 bool GameMap::isSurface( vec3 pos)
@@ -145,23 +142,18 @@ bool GameMap::isSurface( vec3 pos)
             return false;
         }
     }
-        break;
     case MapType::Plain:
     {
         float height = maxHeight();
         if(pos.y <= int(height))
         {
             return true;
-        }else
-        {
-            return false;
         }
+	    return false;
     }
-        break;
     default:
         return false;
     }
-    return false;
 }
 
 float GameMap::getDensity(vec3 pos)
@@ -185,17 +177,14 @@ float GameMap::getDensity(vec3 pos)
 		oldHeight = height;
 		return delta;
     }
-        break;
     case MapType::Plain:
     {
         float height = maxHeight();
 		return height - pos.y;
     }
-        break;
     default:
         return 1;
     }
-    return 1;
 }
 
 GameMap::MapType GameMap::getMapType() const

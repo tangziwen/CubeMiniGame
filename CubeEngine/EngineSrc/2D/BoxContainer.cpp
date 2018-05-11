@@ -50,14 +50,14 @@ void BoxContainer::setBoxSize(const vec2 &boxSize)
     m_boxSize = boxSize;
 }
 
-vec2 BoxContainer::getContentSize()
+vec2 BoxContainer::getContentSize() const
 {
     return m_frameBG->getContentSize();
 }
 
-void BoxContainer::setContentSize(vec2 Size)
+void BoxContainer::setContentSize(const vec2 &contentSize)
 {
-    m_frameBG->setContentSize(Size);
+    m_frameBG->setContentSize(contentSize);
     format();
 }
 

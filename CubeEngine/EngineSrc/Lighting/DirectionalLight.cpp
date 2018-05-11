@@ -4,7 +4,8 @@ namespace tzw {
 
 DirectionalLight::DirectionalLight()
 {
-    m_dir = vec3(-1, -1.7, 0);
+    m_dir = vec3(1.0f, -1.0f, 0);
+	//m_dir.normalize();
 	m_intensity = 0.4;
 }
 

@@ -26,7 +26,7 @@ void main()
     v_texcoord = a_texcoord;
 	//Sun pos being a constant vector, we can normalize it in the vshader
     //and pass it to the fshader without having to re-normalize it
-    sun_norm = normalize(sun_pos);
+    sun_norm = normalize(-sun_pos);
 
     //And we compute an approximate star position using the special rotation matrix
     star_pos = normalize(a_position);//rot_stars * normalize(a_position);

@@ -13,7 +13,7 @@ public:
     static GUIFrame * create(vec4 color,vec2 size);
     static GUIFrame * create(vec4 color);
     static GUIFrame * create(vec2 size);
-	void submitDrawCmd() override;
+	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	void setContentSize(const vec2 &getContentSize) override;
     bool isInTheRect(vec2 touchPos);
 	void setUniformColor(const tzw::vec4 &color) override;

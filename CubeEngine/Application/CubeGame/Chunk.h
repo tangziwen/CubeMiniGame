@@ -82,7 +82,7 @@ public:
 	/// <summary>
 	/// Submits the draw command.
 	/// </summary>
-	void submitDrawCmd() override;
+	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	/// <summary>
 	/// Loads this instance.
 	/// </summary>

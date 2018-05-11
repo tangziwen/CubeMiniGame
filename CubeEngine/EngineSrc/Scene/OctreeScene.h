@@ -13,6 +13,8 @@ struct OctreeNode
     AABB aabb;
     std::vector<Drawable3D *> m_drawlist;
     OctreeNode * m_child[8];
+	int m_index;
+	void genID();
 };
 
 class OctreeScene
@@ -43,6 +45,7 @@ private:
     void subDivide(OctreeNode * node,int level);
     std::vector<Drawable3D *> m_visibleList;
 	std::unordered_set<Drawable3D *> m_objList;
+	std::vector<OctreeNode *> m_nodeList;
 };
 
 } // namespace tzw

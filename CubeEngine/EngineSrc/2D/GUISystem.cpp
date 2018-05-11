@@ -11,7 +11,7 @@
 #include "BackEnd/RenderBackEnd.h"
 namespace tzw
 {
-	ShaderProgram * g_program;
+	ShaderProgram * g_imguiShader;
 	RenderBuffer * m_arrayBuf;
 	RenderBuffer * m_indexBuf;
 	static bool g_MouseJustPressed[3] = { false, false, false };
@@ -23,13 +23,10 @@ namespace tzw
 		// If text or lines are blurry when integrating ImGui in your engine: in your Render function, try translating your projection matrix by (0.5f,0.5f) or (0.375f,0.375f)
 	{
 		int errorCode = 0;
-
-		 
-
 		// Avoid rendering when minimized, scale coordinates for retina displays (screen coordinates != framebuffer coordinates)
 		ImGuiIO& io = ImGui::GetIO();
-		int fb_width = (int)(io.DisplaySize.x * io.DisplayFramebufferScale.x);
-		int fb_height = (int)(io.DisplaySize.y * io.DisplayFramebufferScale.y);
+		auto fb_width = static_cast<int>(io.DisplaySize.x * io.DisplayFramebufferScale.x);
+		auto fb_height = static_cast<int>(io.DisplaySize.y * io.DisplayFramebufferScale.y);
 		if (fb_width == 0 || fb_height == 0)
 			return;
 		draw_data->ScaleClipRects(io.DisplayFramebufferScale);
@@ -46,14 +43,14 @@ namespace tzw
 		//glDisable(GL_DEPTH_TEST);
 
 		//// Setup viewport, orthographic projection matrix
-		//glViewport(0, 0, (GLsizei)fb_width, (GLsizei)fb_height);
+		glViewport(0, 0, static_cast<int>(io.DisplaySize.x), static_cast<int>(io.DisplaySize.y));
 		Matrix44 projection;
 		projection.ortho(0.0f, io.DisplaySize.x, io.DisplaySize.y, 0.0f, 0.1f, 10.0f);
-		g_program->use();
+		g_imguiShader->use();
 		 
-		g_program->setUniformMat4v("TU_projMat", projection.data());
+		g_imguiShader->setUniformMat4v("TU_projMat", projection.data());
 		 
-		g_program->setUniformInteger("TU_tex1", 0);
+		g_imguiShader->setUniformInteger("TU_tex1", 0);
 		 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		 
@@ -74,26 +71,27 @@ namespace tzw
 
 			 
 
-			g_program->use();
-			int vertexLocation = g_program->attributeLocation("a_position");
-			g_program->enableAttributeArray(vertexLocation);
-			g_program->setAttributeBuffer(vertexLocation, GL_FLOAT, (int)(OFFSETOF(ImDrawVert, pos)), 2, sizeof(ImDrawVert));
+			g_imguiShader->use();
+			int vertexLocation = g_imguiShader->attributeLocation("a_position");
+			g_imguiShader->enableAttributeArray(vertexLocation);
+			g_imguiShader->setAttributeBuffer(vertexLocation, GL_FLOAT, (int)(OFFSETOF(ImDrawVert, pos)), 2, sizeof(ImDrawVert));
 			 
 
-			int texcoordLocation = g_program->attributeLocation("a_texcoord");
-			g_program->enableAttributeArray(texcoordLocation);
-			g_program->setAttributeBuffer(texcoordLocation, GL_FLOAT, (int)(OFFSETOF(ImDrawVert, uv)), 2, sizeof(ImDrawVert));
+			int texcoordLocation = g_imguiShader->attributeLocation("a_texcoord");
+			g_imguiShader->enableAttributeArray(texcoordLocation);
+			g_imguiShader->setAttributeBuffer(texcoordLocation, GL_FLOAT, (int)(OFFSETOF(ImDrawVert, uv)), 2, sizeof(ImDrawVert));
 			 
 
-			int colorLocation = g_program->attributeLocation("a_color");
-			g_program->enableAttributeArray(colorLocation);
-			g_program->setAttributeBuffer(colorLocation, GL_UNSIGNED_BYTE, (int)(OFFSETOF(ImDrawVert, col)), 4, sizeof(ImDrawVert));
+			int colorLocation = g_imguiShader->attributeLocation("a_color");
+			g_imguiShader->enableAttributeArray(colorLocation);
+			g_imguiShader->setAttributeBuffer(colorLocation, GL_UNSIGNED_BYTE, (int)(OFFSETOF(ImDrawVert, col)), 4, sizeof(ImDrawVert));
 			 
 
 			for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
 			{
 
 
+				glDisable(GL_CULL_FACE);
 				const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 				if (pcmd->UserCallback)
 				{
@@ -114,9 +112,9 @@ namespace tzw
 #undef OFFSETOF
 
 		// Restore modified state
-		glBindTexture(GL_TEXTURE_2D, (GLuint)last_texture);
+		glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(last_texture));
 		//glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
-		glScissor(last_scissor_box[0], last_scissor_box[1], (GLsizei)last_scissor_box[2], (GLsizei)last_scissor_box[3]);
+		glScissor(last_scissor_box[0], last_scissor_box[1], static_cast<GLsizei>(last_scissor_box[2]), static_cast<GLsizei>(last_scissor_box[3]));
 	}
 
 	GUISystem::GUISystem()
@@ -154,7 +152,7 @@ namespace tzw
 		glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		// Store our identifier
-		io.Fonts->TexID = (void *)(intptr_t)g_FontTexture;
+		io.Fonts->TexID = reinterpret_cast<void *>(static_cast<intptr_t>(g_FontTexture));
 
 		// Restore state
 		glBindTexture(GL_TEXTURE_2D, last_texture);
@@ -183,7 +181,7 @@ namespace tzw
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		if (c > 0 && c < 0x10000)
-			io.AddInputCharacter((unsigned short)c);
+			io.AddInputCharacter(static_cast<unsigned short>(c));
 		return false;
 	}
 
@@ -198,7 +196,7 @@ namespace tzw
 	void GUISystem::initGUI()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
-		g_program = ShaderMgr::shared()->getByPath("./Res/EngineCoreRes/Shaders/IMGUI_v.glsl", "./Res/EngineCoreRes/Shaders/IMGUI_f.glsl");
+		g_imguiShader = ShaderMgr::shared()->getByPath("./Res/EngineCoreRes/Shaders/IMGUI_v.glsl", "./Res/EngineCoreRes/Shaders/IMGUI_f.glsl");
 		m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 		m_arrayBuf->create();
 		m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
@@ -285,7 +283,8 @@ namespace tzw
 		auto& io = ImGui::GetIO();
 		auto w = Engine::shared()->windowHeight();
 		auto h = Engine::shared()->windowWidth();
-		io.DisplaySize = ImVec2(1024, 768);
+
+		io.DisplaySize = ImVec2(w, h);
 		io.DisplayFramebufferScale = ImVec2(1.0, 1.0);
 		auto mousePos = Engine::shared()->getMousePos();
 		io.MousePos = ImVec2(mousePos.x, mousePos.y);

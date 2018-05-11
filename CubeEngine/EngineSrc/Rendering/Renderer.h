@@ -15,7 +15,7 @@ public:
     void addRenderCommand(RenderCommand command);
     void renderAll();
     void renderAllCommon();
-	void renderAllShadow();
+	void renderAllShadow(int index);
 	void renderAllTransparent();
     void renderAllGUI();
     void renderGUI(RenderCommand &command);
@@ -31,7 +31,7 @@ public:
     bool enableGUIRender() const;
     void setEnableGUIRender(bool enableGUIRender);
 	void notifySortGui();
-	void renderShadow(RenderCommand &command);
+	void renderShadow(RenderCommand& command, int index);
 private:
     void initQuad();
     void geometryPass();
@@ -45,6 +45,7 @@ private:
     void directionalLightPass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
+	void bindScreenForWriting();
     Mesh * m_quad;
     Material * m_dirLightProgram;
 	Material * m_postEffect;
@@ -54,6 +55,7 @@ private:
     std::vector<RenderCommand> m_GUICommandList;
     std::vector<RenderCommand> m_CommonCommand;
 	std::vector<RenderCommand> m_transparentCommandList;
+	std::vector<RenderCommand> m_shadowCommandList;
     static Renderer * m_instance;
     RenderTarget * m_gbuffer;
 	RenderTarget * m_offScreenBuffer;

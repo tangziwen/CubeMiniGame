@@ -174,6 +174,11 @@ void RenderBackEnd::drawElement(RenderFlag::IndicesType type, unsigned int size,
 		case RenderFlag::IndicesType::Patches:
 			glDrawElements(GL_PATCHES, size, GL_UNSIGNED_SHORT, indicesAddress);
 	}
+	auto errorCode = glGetError();
+	if (errorCode != GL_NO_ERROR)
+	{
+		//printf("dead!");
+	}
 }
 
 void RenderBackEnd::drawElementInstanced(RenderFlag::IndicesType type, unsigned int size, const void * indicesAddress, int count)

@@ -77,6 +77,7 @@ bool FPSCamera::onKeyPress(int keyCode)
 			}
 		}
 		break;
+    default: ;
     }
     return false;
 }
@@ -159,7 +160,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
         {
             mouseForce.y = 0;
         }
-        auto deltaRot = vec3(mouseForce.y * 0.1,-1 * mouseForce.x * 0.1, 0);
+        auto deltaRot = vec3(mouseForce.y * -0.1, mouseForce.x * 0.1, 0);
         setRotateE(getRotateE()  + deltaRot);
     }
     m_oldPosition = newPosition;
@@ -171,7 +172,7 @@ void FPSCamera::logicUpdate(float dt)
     if(!m_enableFPSFeature) return;
     auto m = getTransform().data();
     vec3 forwardDirection,rightDirection, upDirction;
-	forwardDirection = vec3(-1 * m[8], 0, -1 * m[10]);
+	forwardDirection = vec3( m[8], 0, m[10]);
 	rightDirection = vec3(m[0], 0, m[2]);
 	upDirction = vec3(0, 1, 0);
     forwardDirection.normalize();
@@ -195,7 +196,7 @@ void FPSCamera::logicUpdate(float dt)
     totalSpeed += rightDirection*dt*m_speed.x*m_slide;
 	totalSpeed += upDirction * dt * m_speed.y * m_up;
 
-    if(!group.hitByAABB(playerAABB,overLap) && false)//if no collid just go through TZW just for speed.
+    if(false)//if no collid just go through TZW just for speed.
     {
         vec3 test = pos + totalSpeed;
         pos = test;
@@ -311,7 +312,6 @@ void FPSCamera::setRotateQ(const Quaternion &rotateQ)
 void FPSCamera::lookAt(vec3 pos)
 {
     Camera::lookAt(pos,vec3(0.f, 1.f,0.f));
-    std::cout<< "the rotation is "<<getRotateE().getStr()<<std::endl;
 }
 
 void FPSCamera::init(Camera *cloneObj)
@@ -321,6 +321,7 @@ void FPSCamera::init(Camera *cloneObj)
     setRotateE(cloneObj->getRotateE());
     setScale(vec3(1.0,1.0,1.0));
     EventMgr::shared()->addFixedPiorityListener(this);
+	cloneObj->getPerspectInfo(&m_fov, &m_aspect, &m_near, &m_far);
 }
 
 void FPSCamera::collideAndSlide(vec3 vel, vec3 gravity)
@@ -373,7 +374,7 @@ vec3 FPSCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlid
     // Application specific!!
     checkCollision(collisionPackage);
     // If no collision we just move along the velocity
-    if (collisionPackage->foundCollision == false) {
+    if (!collisionPackage->foundCollision) {
         return pos + vel;
     }
     // *** Collision occured ***

@@ -3,6 +3,7 @@
 #include "../External/TUtility/TUtility.h"
 #include <stdlib.h>
 #include <iostream>
+
 namespace tzw {
 
 Quaternion::Quaternion()
@@ -17,6 +18,8 @@ Quaternion::Quaternion(float theX, float theY, float theZ, float theW)
     z = theZ;
     w = theW;
 }
+
+
 
 void Quaternion::fromEulerAngle(vec3 rotate)
 {

@@ -109,7 +109,7 @@ void LabelNew::genMesh()
     m_mesh->finish();
 }
 
-void LabelNew::submitDrawCmd()
+void LabelNew::submitDrawCmd(RenderCommand::RenderType passType)
 {
     m_material->setVar("color", getUniformColor());
     m_material->setTex("MainTexture",m_atlas->texture());

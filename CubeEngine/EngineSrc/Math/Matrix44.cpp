@@ -116,34 +116,28 @@ vec4 Matrix44::operator *(const vec4 &other) const
     return result;
 }
 
-void Matrix44::ortho(float left, float right, float bottom, float top, float near, float far)
-{
-    float rl = (right - left),
-            tb = (top - bottom),
-            fn = (far - near);
-    m_data[0] = 2 / rl;
-    m_data[1] = 0;
-    m_data[2] = 0;
-    m_data[3] = 0;
-    m_data[4] = 0;
-    m_data[5] = 2 / tb;
-    m_data[6] = 0;
-    m_data[7] = 0;
-    m_data[8] = 0;
-    m_data[9] = 0;
-    m_data[10] = -2 / fn;
-    m_data[11] = 0;
-    m_data[12] = -(left + right) / rl;
-    m_data[13] = -(top + bottom) / tb;
-    m_data[14] = -(far + near) / fn;
-    m_data[15] = 1;
-}
+	void Matrix44::ortho(float left, float right, float bottom, float top, float near, float far)
+	{
+    m_data[0] = 2.0f/(right - left); m_data[4] = 0.0f;         m_data[8] = 0.0f;         m_data[12] = -(right + left)/(right - left);
+    m_data[1] = 0.0f;         m_data[5] = 2.0f/(top - bottom); m_data[9] = 0.0f;         m_data[13] = -(top + bottom)/(top - bottom);
+    m_data[2] = 0.0f;         m_data[6] = 0.0f;         m_data[10] = 2.0f/(far - near); m_data[14] = -(far + near)/(far - near);
+    m_data[3] = 0.0f;         m_data[7] = 0.0f;         m_data[11] = 0.0f;         m_data[15] = 1.0;     
+	}
 
+#define M_PI 3.141592654
+#define ToRadian(x) (float)(((x) * M_PI / 180.0f))
 void Matrix44::perspective(float fovy, float aspect, float near, float far)
 {
-    float top = near * float(tan(fovy * 3.14159265358979323846 / 360.0)),
-            right = top * aspect;
-    frustum(-right, right, -top, top, near, far);
+
+    const float ar         = aspect;
+    const float zRange     = near - far;
+    const float tanHalfFOV = tanf(ToRadian(fovy / 2.0f));
+
+    m_data[0] = 1.0f/(tanHalfFOV * ar); m_data[4] = 0.0f;            m_data[8] = 0.0f;            m_data[12] = 0.0;
+    m_data[1] = 0.0f;                   m_data[5] = 1.0f/tanHalfFOV; m_data[9] = 0.0f;            m_data[13] = 0.0;
+    m_data[2] = 0.0f;                   m_data[6] = 0.0f;            m_data[10] = (-near - far)/zRange;m_data[14] = 2.0f*far*near/zRange;
+    m_data[3] = 0.0f;                   m_data[7] = 0.0f;            m_data[11] = 1.0f;            m_data[15] = 0.0;
+
 }
 
 Matrix44 Matrix44::inverted(bool *invertible)

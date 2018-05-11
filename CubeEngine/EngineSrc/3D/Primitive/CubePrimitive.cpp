@@ -22,12 +22,11 @@ CubePrimitive::CubePrimitive(float width, float depth, float height)
     setIsAccpectOCTtree(true);
 }
 
-void CubePrimitive::submitDrawCmd()
+void CubePrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 {
 	if(getIsVisible())
 	{
-
-		RenderCommand command(m_mesh, m_material,RenderCommand::RenderType::Common);
+		RenderCommand command(m_mesh, m_material,passType);
 		setUpCommand(command);
 		Renderer::shared()->addRenderCommand(command);
 	}

@@ -17,5 +17,7 @@ namespace tzw
 	private:
 		unsigned m_fbo;
 		unsigned m_shadowMap;
+		unsigned m_w;
+		unsigned m_h;
 	};
 }

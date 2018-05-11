@@ -19,7 +19,7 @@ namespace tzw
 		initMesh();
 	}
 
-	void SpherePrimitive::submitDrawCmd()
+	void SpherePrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 		RenderCommand command(m_mesh, m_material,RenderCommand::RenderType::Common);
 		setUpTransFormation(command.m_transInfo);

@@ -15,7 +15,7 @@ public:
     virtual vec2 anchorPoint() const;
     virtual void setAnchorPoint(const vec2 &anchorPoint);
 
-    virtual Matrix44 getLocalTransform();
+	Matrix44 getLocalTransform() override;
     virtual void setUniformColor(const tzw::vec4 &color);
     virtual void setUniformColor(const tzw::vec3 &color);
     virtual vec4 getUniformColor();

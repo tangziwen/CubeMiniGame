@@ -41,19 +41,19 @@ public:
 	std::string getWorkingDirectory();
 	int getMouseButton(int mouseButton);
 private:
-	WindowBackEnd * m_winBackEnd;
+	WindowBackEnd * m_winBackEnd{};
     static Engine * m_instance;
-    int m_drawCallCount;
-    int m_verticesCount;
-    int m_indicesCount;
-    int m_logicUpdateTime;
-    int m_applyRenderTime;
+    int m_drawCallCount{};
+    int m_verticesCount{};
+    int m_indicesCount{};
+    int m_logicUpdateTime{};
+    int m_applyRenderTime{};
     Engine();
-    float m_deltaTime;
-    float m_windowWidth;
-    float m_windowHeight;
+    float m_deltaTime{};
+    float m_windowWidth{};
+    float m_windowHeight{};
     bool m_isEnableOutLine;
-    AppEntry * m_delegate;
+    AppEntry * m_delegate{};
 };
 
 } // namespace tzw

@@ -6,7 +6,7 @@
     },
     "materialList": [
         {
-            "diffuseMap": "./phoenix.png",
+            "diffuseMap": "phoenix.png",
             "specularMap": "",
             "ambientMap": "",
             "emissiveMap": "",

@@ -11,7 +11,7 @@ namespace tzw
 	{
 	public:
 		SpherePrimitive(float radius, int resolution);
-		virtual void submitDrawCmd();
+		virtual void submitDrawCmd(RenderCommand::RenderType passType);
 		bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 		vec3 pointOnSurface(float u, float v);
 		vec3 getWorldPos(vec3 localPos);

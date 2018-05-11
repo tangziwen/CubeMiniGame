@@ -11,7 +11,6 @@ WindowBackEnd *WindowBackEndMgr::getWindowBackEnd(int type)
     {
         return GLFW_BackEnd::shared();
     }
-        break;
     default:
         return nullptr;
     }

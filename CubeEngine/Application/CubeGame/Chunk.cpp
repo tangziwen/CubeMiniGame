@@ -1,4 +1,4 @@
-﻿
+
 #include "Chunk.h"
 #include "GameMap.h"
 #include "GameWorld.h"
@@ -11,10 +11,8 @@
 #include "EngineSrc/Technique/MaterialPool.h"
 #include "EngineSrc/Engine/WorkerThreadSystem.h"
 
-/// <summary>	The chunk offset. </summary>
-static int CHUNK_OFFSET  =BLOCK_SIZE * MAX_BLOCK / 2;
 /// <summary>	Size of the chunk. </summary>
-static int CHUNK_SIZE = BLOCK_SIZE * MAX_BLOCK;
+static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 
@@ -41,7 +39,7 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	 
 	m_offset = GameWorld::shared()->getMapOffset();
 	 
-	m_basePoint = vec3(x*CHUNK_SIZE,y* CHUNK_SIZE , -1 * z* CHUNK_SIZE) + m_offset;
+	m_basePoint = vec3(x*g_chunkSize,y* g_chunkSize , -1 * z* g_chunkSize) + m_offset;
 	 
 	setPos(m_basePoint);
 	 
@@ -63,7 +61,7 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	 
 	m_grass2 = new Grass("Res/TestRes/blueFlower.png");
 	 
-	grassNoise.SetSeed(time(NULL));
+	grassNoise.SetSeed(time(nullptr));
 }
 
 
@@ -106,7 +104,7 @@ bool Chunk::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoin
 	auto size = m_mesh->getIndicesSize();
 	std::vector<vec3> resultList;
 	float t = 0;
-	for (auto i =0; i< size; i+=3)
+	for (size_t i =0; i< size; i+=3)
 	{
 		vec3 tmpHitPoint;
 		if(sphere.intersectWithTriangle(m_mesh->m_vertices[i + 2].m_pos, m_mesh->m_vertices[i + 1].m_pos, m_mesh->m_vertices[i].m_pos, tmpHitPoint))
@@ -149,16 +147,17 @@ bool Chunk::getIsAccpectOCTtree() const
 /// <summary>
 /// Submits the draw command.
 /// </summary>
-void Chunk::submitDrawCmd()
+void Chunk::submitDrawCmd(RenderCommand::RenderType passType)
 {
+	///just for test
 	if (!m_isLoaded) return;
 	if (m_mesh->getIndicesSize() == 0) return;
 
-	RenderCommand command(m_mesh, m_material, RenderCommand::RenderType::Common);
+	RenderCommand command(m_mesh, m_material, passType);
 	setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	Renderer::shared()->addRenderCommand(command);
-	Grass* grass = NULL;
+	Grass* grass = nullptr;
 	
 	m_grass->pushCommand();
 	m_grass2->pushCommand();
@@ -804,7 +803,7 @@ void Chunk::checkCollide(ColliderEllipsoid *package)
 	auto size = m_mesh->getIndicesSize();
 	std::vector<vec3> resultList;
 	float t = 0;
-	for (auto i =0; i< size; i+=3)
+	for (size_t i =0; i< size; i+=3)
 	{
 		CollisionUtility::checkTriangle(package,
 										package->toE(m_mesh->m_vertices[i + 2].m_pos),
@@ -921,7 +920,7 @@ bool Chunk::hitAny(Ray &ray, vec3 &result)
 {
 	auto size = m_mesh->getIndicesSize();
 	float t = 0;
-	for (auto i =0; i< size; i+=3)
+	for (size_t i =0; i< size; i+=3)
 	{
 		if(ray.intersectTriangle(m_mesh->m_vertices[i].m_pos,m_mesh->m_vertices[i + 1].m_pos,m_mesh->m_vertices[i + 2].m_pos, &t))
 		{

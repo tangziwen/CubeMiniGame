@@ -27,7 +27,7 @@ void Scene::addNode(Node *node)
 
 void Scene::visit()
 {
-	m_root.visit();
+	m_root.visit(RenderCommand::RenderType::Common);
 	if(!defaultCamera()->getUseCustomFrustumUpdate())
 	{
 		defaultCamera()->updateFrustum();
@@ -36,7 +36,7 @@ void Scene::visit()
 	auto &visibleList = m_octreeScene->getVisibleList();
 	for(auto obj : visibleList)
 	{
-		obj->submitDrawCmd();
+		obj->submitDrawCmd(RenderCommand::RenderType::Common);
 	}
 }
 
@@ -109,7 +109,7 @@ void Scene::setDebugInfoPanel(DebugInfoPanel *debugInfoPanel)
 
 void Scene::createDefaultCameras()
 {
-    m_defaultCamera = Camera::CreatePerspective(89,1.0f* Engine::shared()->windowWidth()/Engine::shared()->windowHeight(),0.1,300);
+    m_defaultCamera = Camera::CreatePerspective(90.0,1.0f* Engine::shared()->windowWidth()/Engine::shared()->windowHeight(),1.0,200);
     m_defaultGUICamera = Camera::CreateOrtho(0,Engine::shared()->windowWidth(),0,Engine::shared()->windowHeight(),-1,100);
 	//m_root.addChild(m_defaultCamera);
 }

@@ -45,7 +45,7 @@ void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutput
 		glGenTextures(1, &m_depthTex);
 
 		glBindTexture(GL_TEXTURE_2D, m_depthTex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
@@ -75,6 +75,7 @@ void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutput
 
 void RenderTarget::bindForWriting()
 {
+	glViewport(0, 0, m_width, m_height);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
 }
 

@@ -91,7 +91,7 @@ void Node::setPos(float x, float y, float z)
 	setPos(vec3(x, y, z));
 }
 
-void Node::submitDrawCmd()
+void Node::submitDrawCmd(RenderCommand::RenderType passType)
 {
 
 }
@@ -209,7 +209,7 @@ Matrix44 Node::getScalingMatrix()
 /// \note 该次递归函数在整个逻辑-渲染流程的最开始，对于使用场景管理的3D物体仅用于逻辑更新用，其递归时不会提交任何的render Command
 /// 对于其他类型的Node，会在其执行完逻辑update后，立即
 ///
-void Node::visit()
+void Node::visit(RenderCommand::RenderType passType)
 {
 	auto scene = g_GetCurrScene()->getOctreeScene();
     logicUpdate(Engine::shared()->deltaTime());
@@ -230,7 +230,7 @@ void Node::visit()
 	{
 		if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
 		{
-			submitDrawCmd();
+			submitDrawCmd(passType);
 		}
 		if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
@@ -240,7 +240,7 @@ void Node::visit()
 		for(auto child : m_children)
 		{
 
-			child->visit();
+			child->visit(passType);
 			if(!child->m_isValid)
 			{
 				removeList.push_back(child);

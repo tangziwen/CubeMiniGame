@@ -12,7 +12,7 @@ public:
     Model();
     void initWithFile(std::string modelFilePath);
     static Model * create(std::string modelFilePath);
-	void submitDrawCmd() override;
+	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	Mesh * getMesh(int id);
 private:
     std::vector<Mesh *> m_meshList;

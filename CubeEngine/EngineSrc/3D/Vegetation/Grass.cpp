@@ -65,7 +65,7 @@ void Grass::finish()
 	m_isFinish = true;
 }
 
-void Grass::submitDrawCmd()
+void Grass::submitDrawCmd(RenderCommand::RenderType passType)
 {
 	RenderCommand command(m_mesh, m_material, RenderCommand::RenderType::Common);
 	setUpTransFormation(command.m_transInfo);

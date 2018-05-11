@@ -5,13 +5,17 @@ struct DirectionalLight
     vec3 direction;
 	float intensity;
 };
-
+#ifdef GL_ES
+// Set default precision to medium
+precision mediump int;
+precision highp float;
+#endif
 struct AmbientLight
 {
     vec3 color;
     float intensity;
 };
-
+const int NUM_CASCADES = 3;
 uniform float F0 = 0.8;
 uniform float K = 0.7;
 uniform float Gamma = 1.1;
@@ -24,9 +28,10 @@ uniform sampler2D TU_posBuffer;
 uniform sampler2D TU_normalBuffer;
 uniform sampler2D TU_GBUFFER4;
 uniform sampler2D TU_Depth;
-uniform sampler2D TU_ShadowMap;
+uniform sampler2D TU_ShadowMap[NUM_CASCADES];
 
-uniform mat4 TU_LightVP;
+uniform mat4 TU_LightVP[NUM_CASCADES];
+uniform float TU_ShadowMapEnd[NUM_CASCADES];
 uniform mat4 TU_viewProjectInverted;
 uniform mat4 TU_viewInverted;
 uniform vec2 TU_winSize;
@@ -120,7 +125,7 @@ vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 view
 {
 	vec3 diffuseColor,ambientColor;
 	float specularIntensity =0.0;
-	float irradiance = max(0.0,dot(normal, lightDir));
+	float irradiance = max(0.0,dot(normal, -lightDir));
 	return lightColor * irradiance * gDirectionalLight.intensity;
 }
 
@@ -142,6 +147,7 @@ vec3 calculateLightBlinnPhong(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 v
 
 vec4 getWorldPosFromDepth()
 {
+	// return vec4(texture(TU_posBuffer, v_texcoord).xyz, 1.0);
   vec4 clipSpaceLocation;
   clipSpaceLocation.xy = v_texcoord * 2.0 - 1.0;
   clipSpaceLocation.z = texture(TU_Depth, v_texcoord).x*2.0 - 1.0;
@@ -150,7 +156,12 @@ vec4 getWorldPosFromDepth()
   return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
 }
 
-float CalcShadowFactor(vec4 LightSpacePos)                                                  
+float getBias(vec3 normal, vec3 dirLight)
+{
+	return max(0.02 * (1.0 - dot(normal, dirLight)), 0.005);
+}
+
+float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 lightDir)                                                  
 {   
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;                                  
     vec2 UVCoords;                                                                          
@@ -159,10 +170,10 @@ float CalcShadowFactor(vec4 LightSpacePos)
     float z = 0.5 * ProjCoords.z + 0.5;
 	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
 		return 1.0;
-    float Depth = texture(TU_ShadowMap, UVCoords).x;
-    if ((Depth + 0.00005)  < (z ))                                                                 
-        return 0.5;                                                                         
-    else                                                                                    
+    float depthInTex = texture(TU_ShadowMap[index], UVCoords).x;
+    if (depthInTex + getBias(surfaceNormal, lightDir) < z)
+        return 0.5;
+    else  
         return 1.0;
 }
 
@@ -172,8 +183,19 @@ void main()
 	vec3 color = Data1.xyz;
 	float roughness = texture2D(TU_GBUFFER4, v_texcoord).r;
 	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
-	float shadowFactor = CalcShadowFactor(TU_LightVP * TU_viewInverted * vec4(texture(TU_posBuffer, v_texcoord).xyz, 1.0));
+	vec4 worldPos = getWorldPosFromDepth();
+	float depth = texture(TU_Depth, v_texcoord).x;
+	float shadowFactor = 0.0;
 	vec3 normal = normalize(texture2D(TU_normalBuffer, v_texcoord).xyz);
-	vec4 finalColor = shadowFactor * vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness) + gAmbientLight.color * gAmbientLight.intensity * color, 1.0);
+	for(int i = 0; i < NUM_CASCADES; i++)
+	{
+		if(depth < TU_ShadowMapEnd[i])
+		{
+			shadowFactor = CalcShadowFactor(i, TU_LightVP[i] * worldPos, normal, gDirectionalLight.direction);
+			break;
+		}
+	}
+	
+	vec4 finalColor = shadowFactor * vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness), 1.0);
 	gl_FragColor = finalColor;
 }

@@ -42,7 +42,7 @@ void main()
     //vec3 rock_color = pow(texture2D(rock, uv*rock_factor).rgb, vec3(0.5)) * 1.5;
 	
     gl_FragData[0] = vec4(color.rgb, 1.0);
-	gl_FragData[1] = vec4(v_position,1.0);
+	gl_FragData[1] = vec4(v_worldPos,1.0);
 	gl_FragData[2] = vec4(normalize(rockNormal),1.0);		
 	gl_FragData[3] = vec4(TU_roughness,0.0,0.0,1.0);
 }

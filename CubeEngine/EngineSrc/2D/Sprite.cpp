@@ -78,7 +78,7 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setRenderRect(m_contentSize);
 }
 
-void Sprite::submitDrawCmd()
+void Sprite::submitDrawCmd(RenderCommand::RenderType passType)
 {
 	//getContentSize();
 	//getWorldPos2D();

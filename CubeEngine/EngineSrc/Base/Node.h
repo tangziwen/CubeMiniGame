@@ -9,6 +9,7 @@
 #include <deque>
 #include "External/TUtility/TUtility.h"
 #include "../Scene/OctreeScene.h"
+#include "Rendering/RenderCommand.h"
 #include "../Action/ActionMgr.h"
 namespace tzw {
 /**
@@ -38,7 +39,7 @@ public:
 	vec3 getPos() const;
 	void setPos(const vec3 &pos);
 	void setPos(float x, float y, float z);
-	virtual void submitDrawCmd();
+	virtual void submitDrawCmd(RenderCommand::RenderType passType);
 	virtual void logicUpdate(float dt);
 	vec3 getRotateE();
 	void setRotateE(const vec3 &rotate);
@@ -70,7 +71,7 @@ public:
 	virtual bool getIsAccpectOCTtree() const;
 	void setIsAccpectOCTtree(bool isAccpectOCTtree);
 	void cacheTransform();
-	virtual void visit();
+	virtual void visit(RenderCommand::RenderType passType);
 	virtual void reCache();
 	bool getIsValid() const;
 	void setIsValid(bool isValid);

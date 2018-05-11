@@ -14,8 +14,8 @@ public:
     void format();
     vec2 boxSize() const;
     void setBoxSize(const vec2 &boxSize);
-    virtual vec2 getContentSize();
-    virtual void setContentSize(vec2 Size);
+    vec2 getContentSize() const override;
+    void setContentSize(const vec2 &contentSize) override;
 private:
     GUIFrame * m_frameBG;
     std::vector<Node *> m_elementList;

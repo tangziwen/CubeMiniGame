@@ -30,6 +30,7 @@ void MainMenu::init()
 	GUISystem::shared()->addObject(this);
 	m_isShowLog = false;
 	m_isShowConsole = false;
+	//hide();
 }
 
 void MainMenu::show()

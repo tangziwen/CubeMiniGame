@@ -56,10 +56,13 @@ void Renderer::addRenderCommand(RenderCommand command)
 			}
 			
 		break;
+		case RenderCommand::RenderType::Shadow:
+			m_shadowCommandList.push_back(command);
+		break;
 		case RenderCommand::RenderType::Instanced:
 		{
 			//m_CommonCommand.push_back(command);
-		}	
+		}
 			break;
 		default:
 		break;
@@ -73,76 +76,52 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
-	int errorCode = 0;
-	errorCode = glGetError();
 	Engine::shared()->setDrawCallCount(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size());
 
 	shadowPass();
-	errorCode = glGetError();
 	geometryPass();
-	errorCode = glGetError();
 	//prepareDeferred();
-	//m_offScreenBuffer->bindForWriting();
+	m_offScreenBuffer->bindForWriting();
 	m_gbuffer->bindForReadingGBuffer();
-	errorCode = glGetError();
-	RenderBackEnd::shared()->bindFrameBuffer(0);
-	errorCode = glGetError();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	errorCode = glGetError();
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-	errorCode = glGetError();
 	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
-	errorCode = glGetError();
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
 		RenderFlag::BlendingFactor::One);
-	errorCode = glGetError();
 	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
 	RenderBackEnd::shared()->setDepthTestEnable(false);
-	
 	directionalLightPass();
-	errorCode = glGetError();
 	//LightingPass();
-	//skyBoxPass();
-	//postEffectPass();
-	errorCode = glGetError();
-	errorCode = glGetError();
+	skyBoxPass();
+	postEffectPass();
 	if(m_enableGUIRender)
 	{
-		errorCode = glGetError();
 		renderAllGUI();
-		errorCode = glGetError();
 	}
 	clearCommands();
 }
 
 void Renderer::renderAllCommon()
 {
-	for(auto i = m_CommonCommand.begin();i!=m_CommonCommand.end();i++)
+	for(auto i = m_CommonCommand.begin();i!=m_CommonCommand.end();++i)
 	{
 		RenderCommand &command = (*i);
 		renderCommon(command);
 	}
 }
 
-void Renderer::renderAllShadow()
+void Renderer::renderAllShadow(int index)
 {
-	int index = 0;
-	for (auto i = m_CommonCommand.begin(); i != m_CommonCommand.end(); i++)
+	for (auto i = m_shadowCommandList.begin(); i != m_shadowCommandList.end(); ++i)
 	{
 		RenderCommand &command = (*i);
-		renderShadow(command);
-		index += 1;
+		renderShadow(command, index);
 	}
-	//for (auto i = m_transparentCommandList.begin(); i != m_transparentCommandList.end(); i++)
-	//{
-	//	RenderCommand &command = (*i);
-	//	renderShadow(command);
-	//}
 }
 
 void Renderer::renderAllTransparent()
 {
-	for(auto i = m_transparentCommandList.begin();i!=m_transparentCommandList.end();i++)
+	for(auto i = m_transparentCommandList.begin();i!=m_transparentCommandList.end();++i)
 	{
 		RenderCommand &command = (*i);
 		renderCommon(command);
@@ -184,7 +163,7 @@ void Renderer::renderCommon(RenderCommand &command)
 	render(command);
 }
 
-void Renderer::renderShadow(RenderCommand &command)
+void Renderer::renderShadow(RenderCommand &command,int index)
 {
 	//replace by the shadow shader, a little bit hack
 	command.m_material->use(ShadowMap::shared()->getProgram());
@@ -195,13 +174,15 @@ void Renderer::renderShadow(RenderCommand &command)
 	  
 	// one more little hack for light view & project matrix
 	cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
-	  
-	cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix();
+	cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(index);
 	  
 	applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
-	  
-	ShadowMap::shared()->getProgram()->setUniformMat4v("TU_lightVP", (ShadowMap::shared()->getLightProjectionMatrix() * ShadowMap::shared()->getLightViewMatrix()).data());
-	  
+
+	auto viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+	auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * viewMatrix * cpyTransInfo.m_worldMatrix;
+	ShadowMap::shared()->getProgram()->setUniformMat4v("TU_lightWVP", lightWVP.data());
+	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
+	RenderBackEnd::shared()->setDepthTestEnable(true);
 	if (command.type() == RenderCommand::RenderType::Instanced)
 	{
 		//renderPrimitive2(command.m_mesh, command.m_material, command.m_primitiveType);
@@ -222,6 +203,7 @@ void Renderer::clearCommands()
 	m_CommonCommand.clear();
 	m_GUICommandList.clear();
 	m_transparentCommandList.clear();
+	m_shadowCommandList.clear();
 }
 
 void Renderer::render(const RenderCommand &command)
@@ -345,7 +327,6 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 void Renderer::renderPrimitive2(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
 {
 	glDisable(GL_CULL_FACE);
-	int error = glGetError();
 	auto program = effect->getProgram();
 	program->use();
 	mesh->getArrayBuf()->use();
@@ -395,6 +376,10 @@ void Renderer::renderPrimitive2(Mesh * mesh, Material * effect, RenderCommand::P
 	case RenderCommand::PrimitiveType::TRIANGLES:
 		RenderBackEnd::shared()->drawElementInstanced(RenderFlag::IndicesType::Triangles, mesh->getIndicesSize(), 0, mesh->getInstanceSize());
 		break;
+	case RenderCommand::PrimitiveType::Lines: break;
+	case RenderCommand::PrimitiveType::TRIANGLE_STRIP: break;
+	case RenderCommand::PrimitiveType::PATCHES: break;
+	default: ;
 	}
 	glVertexAttribDivisor(grassOffsetLocation, 0);
 }
@@ -486,23 +471,39 @@ void Renderer::LightingPass()
 
 void Renderer::shadowPass()
 {
-	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
-	RenderBackEnd::shared()->setDepthTestEnable(true);
-	auto shadowBuffer = ShadowMap::shared()->getFBO();
-	ShadowMap::shared()->getProgram()->use();
-	shadowBuffer->BindForWriting();
-	glClear(GL_DEPTH_BUFFER_BIT);
-	if (m_enable3DRender)
+	
+	ShadowMap::shared()->calculateProjectionMatrix();
+	auto aabb = ShadowMap::shared()->getPotentialRange();
+	std::vector<Drawable3D *> shadowNeedDrawList;
+	g_GetCurrScene()->getRange(&shadowNeedDrawList, aabb);
+	for(auto obj:shadowNeedDrawList)
 	{
-		renderAllShadow();
+		obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
 	}
+
+	
+	ShadowMap::shared()->getProgram()->use();
+
+	glDepthMask (true);
+	for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
+	{
+		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
+		shadowBuffer->BindForWriting();
+		glClear(GL_DEPTH_BUFFER_BIT);
+		if (m_enable3DRender)
+		{
+			renderAllShadow(i);
+		}
+	}
+
+
 }
 
 void Renderer::skyBoxPass()
 {
 	if(Sky::shared()->isEnable())
 	{
-		RenderBackEnd::shared()->setIsCullFace(false);
+		RenderBackEnd::shared()->setIsCullFace(true);
 		auto mat = Sky::shared()->getMaterial();
 		mat->setVar("TU_Depth", 0);
 		auto dirLight = g_GetCurrScene()->getDirectionLight();
@@ -538,23 +539,20 @@ void Renderer::skyBoxPass()
 
 void Renderer::postEffectPass()
 {
-	//auto currScene = g_GetCurrScene();
-	//m_offScreenBuffer->bindForReadingGBuffer();
-	RenderBackEnd::shared()->bindFrameBuffer(0);
-	//glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	
-	//auto program = m_postEffect->getProgram();
-	//program->use();
-	//program->setUniformInteger("TU_colorBuffer",0);
-	//program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-	//auto cam = currScene->defaultCamera();
-	//program->use();
-	//renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
+	auto currScene = g_GetCurrScene();
+	m_offScreenBuffer->bindForReadingGBuffer();
+	bindScreenForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	auto program = m_postEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	program->use();
+	renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::directionalLightPass()
 {
-	int errorCode = 0;
 	auto currScene = g_GetCurrScene();
 	  
 	m_dirLightProgram->use();
@@ -572,18 +570,36 @@ void Renderer::directionalLightPass()
 	program->setUniformInteger("TU_GBUFFER4",3);
 	  
 	program->setUniformInteger("TU_Depth", 4);
-	  
-	program->setUniformInteger("TU_ShadowMap", 5);
-	  
-	ShadowMap::shared()->getFBO()->BindForReading(5);
+
+
+	program->setUniformInteger("TU_ShadowMap[0]", 5);
+	ShadowMap::shared()->getFBO(0)->BindForReading(5);
+
+	program->setUniformInteger("TU_ShadowMap[1]", 6);
+	ShadowMap::shared()->getFBO(1)->BindForReading(6);
+
+	program->setUniformInteger("TU_ShadowMap[2]", 7);
+	ShadowMap::shared()->getFBO(2)->BindForReading(7);
 	  
 
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-	  
-	//light vp
-	auto lightVP = ShadowMap::shared()->getLightProjectionMatrix() * ShadowMap::shared()->getLightViewMatrix();
-	  
-	program->setUniformMat4v("TU_LightVP", lightVP.data());
+	 
+	
+	for(int i = 0; i< SHADOWMAP_CASCADE_NUM; i++)
+	{	
+		char name[128] = { 0 };
+
+		//Light View Projection Matrix
+		auto lightVP = ShadowMap::shared()->getLightProjectionMatrix(i) * ShadowMap::shared()->getLightViewMatrix();
+        sprintf_s(name, sizeof(name), "TU_LightVP[%d]", i);
+		program->setUniformMat4v(name, lightVP.data());	
+
+
+		//shadow Map cascade End distance
+		sprintf_s(name, sizeof(name), "TU_ShadowMapEnd[%d]", i);
+		program->setUniformFloat(name, ShadowMap::shared()->getCascadeEnd(i));
+	}
+
 	  
 	auto cam = currScene->defaultCamera();
 	  
@@ -617,7 +633,8 @@ void Renderer::directionalLightPass()
 
 void Renderer::applyRenderSetting(Material * mat)
 {
-	RenderBackEnd::shared()->setIsCullFace(mat->getIsCullFace());
+	RenderBackEnd::shared()->setIsCullFace(true);
+	glCullFace(GL_FRONT);
 }
 
 void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info)
@@ -637,7 +654,14 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 	program->setUniformMat4v("TU_normalMatrix", (v * m).inverted().transpose().data());
 }
 
-void Renderer::prepareDeferred()
+void Renderer::bindScreenForWriting()
+{
+	auto size = Engine::shared()->winSize();
+	glViewport(0, 0, int(size.x), int(size.y));
+	RenderBackEnd::shared()->bindFrameBuffer(0);
+}
+
+	void Renderer::prepareDeferred()
 {
 	m_offScreenBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

@@ -28,6 +28,7 @@ public:
         GUI,
         Common,
 		Instanced,
+		Shadow,
     };
     ///
     /// \brief 渲染基本几何体的类型

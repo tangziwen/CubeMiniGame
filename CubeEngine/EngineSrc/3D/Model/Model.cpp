@@ -16,7 +16,12 @@ void Model::initWithFile(std::string modelFilePath)
 {
     ModelLoader::shared()->loadModel(this,modelFilePath);
     setCamera(g_GetCurrScene()->defaultCamera());
-    setIsAccpectOCTtree(false);
+    for(auto mesh : m_meshList)
+    {
+		mesh->calculateAABB();
+		m_localAABB.merge(mesh->getAabb());
+	}
+    setIsAccpectOCTtree(true);
 }
 
 Model *Model::create(std::string modelFilePath)
@@ -26,12 +31,13 @@ Model *Model::create(std::string modelFilePath)
     return theModel;
 }
 
-void Model::submitDrawCmd()
+void Model::submitDrawCmd(RenderCommand::RenderType passType)
 {
+	auto type = passType;
     for(auto mesh : m_meshList)
     {
-        auto tech = m_effectList[mesh->getMatIndex() - 1 ];
-        RenderCommand command(mesh,tech,RenderCommand::RenderType::Common);
+        auto tech = m_effectList[0];
+        RenderCommand command(mesh,tech,type);
         setUpTransFormation(command.m_transInfo);
         Renderer::shared()->addRenderCommand(command);
     }

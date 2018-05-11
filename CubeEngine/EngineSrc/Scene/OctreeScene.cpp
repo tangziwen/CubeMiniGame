@@ -4,6 +4,12 @@
 #include "../base/Camera.h"
 #define MAX_DEEP 3
 namespace tzw {
+static int g_nodeIndex = 0;
+void OctreeNode::genID()
+{
+	m_index = g_nodeIndex;
+	g_nodeIndex += 1;
+}
 
 OctreeScene::OctreeScene()
 {
@@ -14,6 +20,7 @@ void OctreeScene::init(AABB range)
 {
     m_root = new OctreeNode();
     m_root->aabb = range;
+	m_nodeList.push_back(m_root);
     subDivide(m_root,1);
 }
 
@@ -23,9 +30,11 @@ void OctreeScene::subDivide(OctreeNode *node, int level)
     auto subAABBList = node->aabb.split8();
     for(int i =0;i<8;i++)
     {
-        node->m_child[i] = new OctreeNode();
-        node->m_child[i]->aabb = subAABBList[i];
-        subDivide(node->m_child[i],level + 1 );
+		auto child = new OctreeNode();
+		m_nodeList.push_back(child);
+        child->aabb = subAABBList[i];
+		node->m_child[i] = child;
+        subDivide(child,level + 1 );
     }
 }
 
@@ -285,6 +294,7 @@ OctreeNode::OctreeNode()
     {
         m_child[i] = nullptr;
     }
+	genID();
 }
 
 } // namespace tzw

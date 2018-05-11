@@ -8,14 +8,12 @@
 #include "../Event/EventMgr.h"
 #include "time.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
-#include <iostream>	
 #include "WorkerThreadSystem.h"
 #include "AudioSystem/AudioSystem.h"
 #include <windows.h>
 #include "ScriptPy/ScriptPyMgr.h"
 #include "2D/GUISystem.h"
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
-#include "Game/ConsolePanel.h"
 #include "Collision/PhysicsMgr.h"
 namespace tzw {
 
@@ -30,12 +28,12 @@ Engine *Engine::shared()
     return m_instance;
 }
 
-Engine::Engine()
-{
-    m_isEnableOutLine = false;
-}
+Engine::Engine(): m_winBackEnd(nullptr)
+	{
+		m_isEnableOutLine = false;
+	}
 
-bool Engine::getIsEnableOutLine() const
+	bool Engine::getIsEnableOutLine() const
 {
     return m_isEnableOutLine;
 }

@@ -32,9 +32,11 @@ public:
     void setUseCustomFrustumUpdate(bool useCustomFrustumUpdate);
 	void reCache() override;
     vec3 unproject(vec3 src);
+	void getPerspectInfo(float * fov, float * aspect, float * near, float * far);
 protected:
     Frustum m_frustum;
     bool m_useCustomFrustumUpdate;
+	float m_fov, m_aspect, m_near, m_far;
 private:
 
     Matrix44 m_projection;

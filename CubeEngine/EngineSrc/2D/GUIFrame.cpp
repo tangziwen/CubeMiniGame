@@ -57,7 +57,7 @@ GUIFrame *GUIFrame::create(vec2 size)
     return frame;
 }
 
-void GUIFrame::submitDrawCmd()
+void GUIFrame::submitDrawCmd(RenderCommand::RenderType passType)
 {
     RenderCommand command(m_mesh, m_material, RenderCommand::RenderType::GUI);
     setUpTransFormation(command.m_transInfo);

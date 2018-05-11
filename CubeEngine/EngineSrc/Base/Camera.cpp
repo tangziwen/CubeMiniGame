@@ -49,6 +49,10 @@ Camera *Camera::CreateOrtho(float left, float right, float bottom, float top, fl
 void Camera::setPerspective(float fov,float aspect,float near,float far)
 {
     m_projection.perspective(fov,aspect,near,far);
+	m_fov = fov;
+	m_aspect = aspect;
+	m_near = near;
+	m_far = far;
 }
 
 /**
@@ -104,18 +108,48 @@ Matrix44 Camera::getViewProjectionMatrix()
     return m_projection * view ;
 }
 
+Matrix44 lookTo(vec3 dir, vec3 up)
+{
+	Matrix44 rotateInv;
+	Matrix44 translateInv;
+	rotateInv.setToIdentity();
+	translateInv.setToIdentity();
+	auto data = rotateInv.data();
+
+	//vec3 const f((center).normalized());
+	//vec3 const s(vec3::CrossProduct(f, up).normalized());
+	//vec3 const u(vec3::CrossProduct(s, f));
+
+	vec3 N = dir;
+	N.normalize();
+	vec3 U = up;
+	U = vec3::CrossProduct(U, N);
+	U.normalize();
+	vec3 V = vec3::CrossProduct(N, U);
+
+	data[0] = U.x;
+	data[1] = U.y;
+	data[2] = U.z;
+	data[3] = 0.0f;
+
+	data[4] = V.x;
+	data[5] = V.y;
+	data[6] = V.z;
+	data[7] = 0.0f;
+
+	data[8] = N.x;
+	data[9] = N.y;
+	data[10] =N.z;
+	data[11] = 0.0f;
+
+	return rotateInv;
+}
 void Camera::lookAt(vec3 targetPos, vec3 upFrame)
 {
-
-    auto aixZ = (targetPos - m_pos);
-    aixZ.normalize();
-    auto aixX = vec3::CrossProduct(aixZ,upFrame);
-    aixX.normalize();
-
-    auto aixY = vec3::CrossProduct(aixX,aixZ);
-    aixY.normalize();
+	auto rotateM = lookTo(targetPos - m_pos, upFrame);
     Quaternion q;
-    q.fromAxises(aixX,aixY,-aixZ);
+	auto m = rotateM.data();
+    q.fromAxises(vec3(m[0], m[1], m[2]),vec3(m[4], m[5], m[6]),vec3(m[8], m[9], m[10]));
     //m_rotateQ = q;
     setRotateQ(q);
     reCache();
@@ -194,5 +228,13 @@ vec3 Camera::unproject(vec3 src)
     }
     return vec3(screen.x,screen.y,screen.z);
 }
+
+	void Camera::getPerspectInfo(float* fov, float* aspect, float* near, float* far)
+	{
+	(*fov) = m_fov;
+	(*aspect) = m_aspect;
+	(*near) = m_near;
+	(*far) = m_far;
+	}
 } // namespace tzw
 

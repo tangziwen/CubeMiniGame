@@ -11,7 +11,7 @@
 #include "../3D/SkyBox.h"
 namespace tzw {
 
-class ConsolePanel;
+struct ConsolePanel;
 class DebugInfoPanel;
 
 class Scene

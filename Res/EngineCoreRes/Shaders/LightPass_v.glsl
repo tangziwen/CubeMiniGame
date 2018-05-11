@@ -1,7 +1,7 @@
 #ifdef GL_ES
 // Set default precision to medium
 precision mediump int;
-precision mediump float;
+precision highp float;
 #endif
 
 attribute vec3 a_position;
