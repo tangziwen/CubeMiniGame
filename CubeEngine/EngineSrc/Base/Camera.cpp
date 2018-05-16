@@ -139,17 +139,71 @@ Matrix44 lookTo(vec3 dir, vec3 up)
 
 	data[8] = N.x;
 	data[9] = N.y;
-	data[10] =N.z;
+	data[10] = N.z;
 	data[11] = 0.0f;
 
 	return rotateInv;
 }
+static Matrix44 targetTo(vec3 eye, vec3 target, vec3 up)
+{
+	Matrix44 mat;
+	auto out = mat.data();
+  float eyex = eye.x,
+      eyey = eye.y,
+      eyez = eye.z,
+      upx = up.x,
+      upy = up.y,
+      upz = up.z;
+
+  float z0 = eyex - target.x,
+      z1 = eyey - target.y,
+      z2 = eyez - target.z;
+
+  float len = z0*z0 + z1*z1 + z2*z2;
+  if (len > 0) {
+    len = 1 / sqrt(len);
+    z0 *= len;
+    z1 *= len;
+    z2 *= len;
+  }
+
+  float x0 = upy * z2 - upz * z1,
+      x1 = upz * z0 - upx * z2,
+      x2 = upx * z1 - upy * z0;
+
+  len = x0*x0 + x1*x1 + x2*x2;
+  if (len > 0) {
+    len = 1 / sqrt(len);
+    x0 *= len;
+    x1 *= len;
+    x2 *= len;
+  }
+
+	out[0] = x0;
+	out[1] = x1;
+	out[2] = x2;
+	out[3] = 0;
+	out[4] = z1 * x2 - z2 * x1;
+	out[5] = z2 * x0 - z0 * x2;
+	out[6] = z0 * x1 - z1 * x0;
+	out[7] = 0;
+	out[8] = z0;
+	out[9] = z1;
+	out[10] = z2;
+	out[11] = 0;
+	out[12] = eyex;
+	out[13] = eyey;
+	out[14] = eyez;
+	out[15] = 1;
+	return mat;
+}
+
 void Camera::lookAt(vec3 targetPos, vec3 upFrame)
 {
-	auto rotateM = lookTo(targetPos - m_pos, upFrame);
+	auto rotateM = targetTo(m_pos, targetPos, upFrame);
     Quaternion q;
 	auto m = rotateM.data();
-    q.fromAxises(vec3(m[0], m[1], m[2]),vec3(m[4], m[5], m[6]),vec3(m[8], m[9], m[10]));
+    q.fromAxises(vec3(m[0], m[1], m[2]),vec3(m[4], m[5], m[6]),vec3(m[8], m[9],m[10]));
     //m_rotateQ = q;
     setRotateQ(q);
     reCache();

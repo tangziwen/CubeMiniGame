@@ -232,7 +232,7 @@ void Node::visit(RenderCommand::RenderType passType)
 		{
 			submitDrawCmd(passType);
 		}
-		if(getIsAccpectOCTtree() && getNodeType()==NodeType::Drawable3D && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
+		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOCTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
 			scene->updateObj(static_cast<Drawable3D *>(this));
 		}

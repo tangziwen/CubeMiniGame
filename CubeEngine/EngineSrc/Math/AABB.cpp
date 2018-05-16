@@ -107,8 +107,8 @@ void AABB::transForm(Matrix44 mat)
 
 void AABB::reset()
 {
-    m_min = vec3(999,999,999);
-    m_max = vec3(-999,-999,-999);
+    m_min = vec3(999999,999999,999999);
+    m_max = vec3(-999999,-999999,-999999);
 }
 
 void AABB::merge(AABB box)

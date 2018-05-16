@@ -5,10 +5,18 @@
 #define MAX_DEEP 3
 namespace tzw {
 static int g_nodeIndex = 0;
-void OctreeNode::genID()
+void OctreeNode::genId()
 {
 	m_index = g_nodeIndex;
 	g_nodeIndex += 1;
+}
+OctreeNode::OctreeNode()
+{
+    for(int i =0;i<8;i++)
+    {
+        m_child[i] = nullptr;
+    }
+	genId();
 }
 
 OctreeScene::OctreeScene()
@@ -45,7 +53,7 @@ std::vector<Drawable3D *> &OctreeScene::getVisibleList()
 
 bool OctreeScene::isInOctree(Drawable3D * obj)
 {
-	return m_objList.find(obj) != m_objList.end();
+	return m_objSet.find(obj) != m_objSet.end();
 }
 
 void OctreeScene::addObj(Drawable3D *obj)
@@ -53,9 +61,8 @@ void OctreeScene::addObj(Drawable3D *obj)
     auto result = addObj_R(m_root,obj);
     if(result)
     {
-		m_objList.insert(obj);
-	}
-	else
+		m_objSet.insert(obj);
+	}else
 	{
 		printf("can't add Object\n");
 		assert(0);
@@ -69,6 +76,7 @@ bool OctreeScene::addObj_R(OctreeNode *node, Drawable3D *obj)
         if(!node->m_child[0])//terminal node
         {
             node->m_drawlist.push_back(obj);
+			obj->setOctNodeIndex(node->m_index);
             return true;
         }else {
             for(int i =0;i<8;i++)
@@ -89,6 +97,22 @@ bool OctreeScene::addObj_R(OctreeNode *node, Drawable3D *obj)
 void OctreeScene::removeObj(Drawable3D *obj)
 {
     removeObj_R(m_root,obj);
+
+	{	
+		auto iter = m_objMap.find(obj);
+		if (iter != m_objMap.end())
+		{
+			m_objMap.erase(iter);
+		}
+	}
+
+	{	
+		auto iter = m_objSet.find(obj);
+		if (iter != m_objSet.end())
+		{
+			m_objSet.erase(iter);
+		}
+	}
 }
 
 bool OctreeScene::removeObj_R(OctreeNode *node, Drawable3D *obj)
@@ -145,6 +169,14 @@ bool OctreeScene::hitByRay_R(OctreeNode *node, const Ray &ray, vec3 &hitPoint)
 
 void OctreeScene::updateObj(Drawable3D *obj)
 {
+	//if(m_objMap.find(obj) != m_objMap.end())
+	//{
+	//	int oldIndex = m_objMap[obj];
+	//	if (oldIndex == obj->getOctNodeIndex())
+	//	{
+	//		return;
+	//	}
+	//}
     removeObj(obj);
     addObj(obj);
 }
@@ -187,8 +219,8 @@ int OctreeScene::getAmount_R(OctreeNode *node)
 static Camera * currentCamera = nullptr;
 static int compare(const void * a, const void * b)
 {
-    OctreeNode * nodeA = (OctreeNode *)a;
-    OctreeNode * nodeB = (OctreeNode *)b;
+	auto nodeA = (OctreeNode *)a;
+	auto nodeB = (OctreeNode *)b;
     auto vA = nodeA->aabb.centre() - currentCamera->getPos();
     auto vB = nodeB->aabb.centre() - currentCamera->getPos();
     auto distA  = fabs(vA.x) + fabs(vA.y) + fabs(vA.z);
@@ -288,14 +320,7 @@ void OctreeScene::getRange_R(OctreeNode *node, std::vector<Drawable3D *> *list, 
 }
 
 
-OctreeNode::OctreeNode()
-{
-    for(int i =0;i<8;i++)
-    {
-        m_child[i] = nullptr;
-    }
-	genID();
-}
+
 
 } // namespace tzw
 

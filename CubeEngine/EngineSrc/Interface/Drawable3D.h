@@ -29,12 +29,15 @@ public:
 	virtual bool getIsNeedTransparent() const;
 	virtual void setIsNeedTransparent(bool val);
 	virtual void setUpCommand(RenderCommand & command);
+	int setOctNodeIndex(int index);
+	int getOctNodeIndex();
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;
     DepthPolicy m_depthPolicy;
 	bool m_isHitable;
 	bool m_isNeedTransparent;
+	int m_octNodeIndex;
 };
 
 class Drawable3DGroup

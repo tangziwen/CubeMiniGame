@@ -114,6 +114,17 @@ void Drawable3D::setUpCommand(RenderCommand & command)
 	command.setIsNeedTransparent(m_isNeedTransparent);
 }
 
+int Drawable3D::setOctNodeIndex(int index)
+{
+	m_octNodeIndex = index;
+	return index;
+}
+
+int Drawable3D::getOctNodeIndex()
+{
+	return m_octNodeIndex;
+}
+
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 {
 	init(obj, count);

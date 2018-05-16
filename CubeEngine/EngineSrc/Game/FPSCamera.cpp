@@ -160,7 +160,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
         {
             mouseForce.y = 0;
         }
-        auto deltaRot = vec3(mouseForce.y * -0.1, mouseForce.x * 0.1, 0);
+        auto deltaRot = vec3(mouseForce.y * 0.1, mouseForce.x * -1 * 0.1, 0);
         setRotateE(getRotateE()  + deltaRot);
     }
     m_oldPosition = newPosition;
@@ -192,7 +192,7 @@ void FPSCamera::logicUpdate(float dt)
 	}
     AABB playerAABB;
     vec3 overLap;
-    vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward;
+    vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward * -1;
     totalSpeed += rightDirection*dt*m_speed.x*m_slide;
 	totalSpeed += upDirction * dt * m_speed.y * m_up;
 

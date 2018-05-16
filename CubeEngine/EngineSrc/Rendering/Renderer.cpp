@@ -492,6 +492,7 @@ void Renderer::shadowPass()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		if (m_enable3DRender)
 		{
+			glDisable(GL_CULL_FACE);
 			renderAllShadow(i);
 		}
 	}
@@ -633,8 +634,9 @@ void Renderer::directionalLightPass()
 
 void Renderer::applyRenderSetting(Material * mat)
 {
-	RenderBackEnd::shared()->setIsCullFace(true);
-	glCullFace(GL_FRONT);
+	glDisable(GL_CULL_FACE);
+	//RenderBackEnd::shared()->setIsCullFace(true);
+	//glCullFace(GL_NONE);
 }
 
 void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info)

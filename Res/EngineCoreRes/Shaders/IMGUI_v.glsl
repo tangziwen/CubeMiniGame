@@ -16,7 +16,7 @@ varying vec4 v_color;
 void main()
 {
     // Calculate vertex position in screen space
-    gl_Position = TU_projMat * vec4(a_position, 1.0 , 1.0);
+    gl_Position = TU_projMat * vec4(a_position, -1.0 , 1.0);
 
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces

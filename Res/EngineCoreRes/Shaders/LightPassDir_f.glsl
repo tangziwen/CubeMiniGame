@@ -171,7 +171,7 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
 		return 1.0;
     float depthInTex = texture(TU_ShadowMap[index], UVCoords).x;
-    if (depthInTex + getBias(surfaceNormal, lightDir) < z)
+    if (depthInTex < z)
         return 0.5;
     else  
         return 1.0;
