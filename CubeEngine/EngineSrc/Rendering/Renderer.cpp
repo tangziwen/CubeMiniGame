@@ -61,7 +61,7 @@ void Renderer::addRenderCommand(RenderCommand command)
 		break;
 		case RenderCommand::RenderType::Instanced:
 		{
-			//m_CommonCommand.push_back(command);
+			m_CommonCommand.push_back(command);
 		}
 			break;
 		default:
@@ -108,6 +108,7 @@ void Renderer::renderAllCommon()
 		RenderCommand &command = (*i);
 		renderCommon(command);
 	}
+
 }
 
 void Renderer::renderAllShadow(int index)
@@ -480,8 +481,6 @@ void Renderer::shadowPass()
 	{
 		obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
 	}
-
-	
 	ShadowMap::shared()->getProgram()->use();
 
 	glDepthMask (true);
