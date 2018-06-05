@@ -11,13 +11,11 @@
 #include "Base/Log.h"
 #include "EngineSrc/Shader/ShaderMgr.h"
 #include "2D/GUISystem.h"
+#include "Texture/TextureMgr.h"
+#include "Utility/file/Tfile.h"
+
 namespace tzw {
 
-/**
- * @brief Technique::Technique 构造函数
- * @param vsFilePath 顶点shader的文件路径
- * @param fsFilePath 片段shader的文件路径
- */
 Material::Material()
 {
 
@@ -117,6 +115,11 @@ void Material::loadFromFile(std::string filePath)
 			auto aliasName = tex[1].GetString();
 			m_aliasMap[name] = aliasName;
 			m_texSlotMap[m_aliasMap[name]] = tex[2].GetInt();
+
+			if(tex.Size() > 3)
+			{
+				setTex(name, TextureMgr::shared()->getByPath(tex[3].GetString(), true));
+			}
 		}
 	}
 }

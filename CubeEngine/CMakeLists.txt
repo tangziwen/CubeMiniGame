@@ -93,6 +93,8 @@ macro(source_group_by_dir source_files)
 endmacro(source_group_by_dir)
 
 #copy res
+#define
+add_definitions(-DB3_USE_CLEW)
 
 file(GLOB_RECURSE project_headers *.h *.hpp)
 file(GLOB_RECURSE project_cpps *.cpp *.c)

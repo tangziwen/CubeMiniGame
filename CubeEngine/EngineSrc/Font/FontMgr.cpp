@@ -22,9 +22,9 @@ Font *FontMgr::getFont(std::string fontFile, unsigned int fontSize)
 void FontMgr::addDefaultFonts()
 {
     //init the default font
-    m_defaultFont =  getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",14);
-    m_smallFont =  getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",10);
-    m_titleFont = getFont("./res/EngineCoreRes/fonts/wenquanyi_zhenghei.ttf",14);
+    m_defaultFont =  getFont("./res/fonts/wenquanyi_zhenghei.ttf",14);
+    m_smallFont =  getFont("./res/fonts/wenquanyi_zhenghei.ttf",10);
+    m_titleFont = getFont("./res/fonts/wenquanyi_zhenghei.ttf",14);
 }
 
 FontMgr::FontMgr()

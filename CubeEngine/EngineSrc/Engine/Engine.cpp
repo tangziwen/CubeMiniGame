@@ -2,7 +2,6 @@
 #include "../Scene/SceneMgr.h"
 #include "../Texture/TextureMgr.h"
 #include "../Rendering/Renderer.h"
-#include "TUtility/TUtility.h"
 #include "../Game/ConsolePanel.h"
 
 #include "../Event/EventMgr.h"
@@ -15,6 +14,8 @@
 #include "2D/GUISystem.h"
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 #include "Collision/PhysicsMgr.h"
+#include "Utility/log/Tlog.h"
+
 namespace tzw {
 
 Engine * Engine::m_instance = nullptr;
@@ -93,9 +94,9 @@ void Engine::resetVerticesIndicesCount()
     m_indicesCount = 0;
 }
 
-std::string Engine::getUserPath(std::string path)
+std::string Engine::getFilePath(std::string path)
 {
-    return "./Res/User/" + path;
+    return "./Res/" + path;
 }
 
 int Engine::getApplyRenderTime() const

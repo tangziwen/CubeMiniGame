@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/PostEffect_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/PostEffect_f.glsl"
+		"vs" : "./Res/Shaders/PostEffect_v.glsl",
+		"fs" : "./Res/Shaders/PostEffect_f.glsl"
 	},
 	"name" : "PostEffect",
 	"property" : {

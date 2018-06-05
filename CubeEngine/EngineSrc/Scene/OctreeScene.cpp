@@ -2,6 +2,7 @@
 #include "../Interface/Drawable3D.h"
 #include <algorithm>
 #include "../base/Camera.h"
+#include <cassert>
 #define MAX_DEEP 3
 namespace tzw {
 static int g_nodeIndex = 0;

@@ -7,10 +7,6 @@
 #include "../3D/Effect/Effect.h"
 #include "../Rendering/RenderCommand.h"
 namespace tzw {
-/**
- * @brief The Drawable class Drawable类是一个接口，主要用以表征一个类是可以被实际绘制到屏幕上的，
- * 所有能触发实际绘制的类，都必须实现该接口
- */
 class Drawable : public Node
 {
 public:

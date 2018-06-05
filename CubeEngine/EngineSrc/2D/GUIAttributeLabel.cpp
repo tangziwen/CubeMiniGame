@@ -1,5 +1,5 @@
 #include "GUIAttributeLabel.h"
-#include "../External/TUtility/TUtility.h"
+#include "Utility/misc/Tmisc.h"
 namespace tzw {
 
 GUIAttributeLabel::GUIAttributeLabel(std::string theDesc, float theValue)

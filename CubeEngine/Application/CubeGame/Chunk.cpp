@@ -7,10 +7,10 @@
 #include "../EngineSrc/Texture/TextureMgr.h"
 #include "../EngineSrc/3D/Terrain/MarchingCubes.h"
 #include "GameConfig.h"
-#include <iostream>
 #include "EngineSrc/Technique/MaterialPool.h"
 #include "EngineSrc/Engine/WorkerThreadSystem.h"
-
+#include "Utility/misc/Tmisc.h"
+#include "Utility/math/TbaseMath.h"
 /// <summary>	Size of the chunk. </summary>
 static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
@@ -57,9 +57,9 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	 
 	m_tmpNeighborChunk.clear();
 	 
-	m_grass = new Grass("Res/TestRes/grass.tga");
+	m_grass = new Grass("Texture/grass.tga");
 	 
-	m_grass2 = new Grass("Res/TestRes/grass.tga");
+	m_grass2 = new Grass("Texture/grass.tga");
 	 
 	grassNoise.SetSeed(time(nullptr));
 }
@@ -175,9 +175,6 @@ void Chunk::load()
 	{
 		m_mesh = new Mesh();
 		m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
-		m_material->setTex("GrassTex", TextureMgr::shared()->getByPath("./Res/TestRes/T_Ground_Grass_D.png", true));
-		m_material->setTex("DirtTex", TextureMgr::shared()->getByPath("./Res/TestRes/mud2.jpg", true));
-		m_material->setTex("CliffTex", TextureMgr::shared()->getByPath("./Res/TestRes/Cliff.jpg", true));
 	}
 
 	setCamera(g_GetCurrScene()->defaultCamera());
@@ -284,7 +281,7 @@ void Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 	std::vector<int> yList;
 	std::vector<int> zList;
 
-	//判断是否需要邻近的chunk
+	//check is need to calculate neighbors chunk
 	if(X <= 0 || X >= MAX_BLOCK)
 	{
 		if ( X <= 0) xList.push_back(-1); else xList.push_back(1);
@@ -682,7 +679,7 @@ vec4 Chunk::getPoint(int x, int y, int z)
 		return mcPoints[theIndex];
 	}else
 	{
-		//确定象限,这里和deform不同，不需要考虑边缘的情况
+		
 		int offsetX = 0;
 		int offsetY = 0;
 		int offsetZ = 0;
@@ -784,7 +781,7 @@ void Chunk::initData()
 	{
 			for(int k=0;k<MAX_BLOCK + 1;k++)
 			{
-				for (int j = 0; j<MAX_BLOCK + 1; j++)//Y在最内层遍历，有效利用缓存
+				for (int j = 0; j<MAX_BLOCK + 1; j++)//Y in the most inner loop, cache friendly
 				{
 					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) + vec4(m_basePoint, 0);
 					tmpV3.x = verts.x;

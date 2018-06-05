@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/LightPass_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/LightPassDir_f.glsl"
+		"vs" : "./Res/Shaders/LightPass_v.glsl",
+		"fs" : "./Res/Shaders/LightPassDir_f.glsl"
 	},
 	"name" : "DirectLight",
 	"property" : {

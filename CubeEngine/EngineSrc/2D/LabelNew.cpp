@@ -2,7 +2,8 @@
 #include "../Rendering/Renderer.h"
 #include "../Scene/SceneMgr.h"
 #include "../Font/FontMgr.h"
-#include "External/TUtility/TUtility.h"
+#include "Utility/misc/Tmisc.h"
+#include <algorithm>
 namespace tzw {
 
 LabelNew::LabelNew():
@@ -63,13 +64,12 @@ void LabelNew::genMesh()
 {
     initAtlas();
     m_mesh->clear();
-    //索引可以通用,我们写在循环外
 	unsigned short indices[] = {
          0,1,2,  0,2,3,
     };
     int penX = 0,penY =0;
     int preMaxWidth = 0;
-    auto wideCharStr = tzw::Tmisc::StringToWString(m_string);
+    auto wideCharStr = Tmisc::StringToWString(m_string);
     for(auto c:wideCharStr)
     {
         auto charMesh = new Mesh();
@@ -77,8 +77,6 @@ void LabelNew::genMesh()
 //        if (!gNode) continue;
         float w = gNode->m_data.width;
         float h = gNode->m_data.rows;
-        //因为所有字都被batch到一张纹理上了,所以每个子mesh的实际UV坐标都不同,
-        //顶点数据需要循环设置
         VertexData vertices[] = {
             // front
             VertexData(vec3(0, 0,  -1.0f), gNode->UV(0.0f, 0.0f)),  // v0
@@ -86,7 +84,6 @@ void LabelNew::genMesh()
             VertexData(vec3( w,  h,  -1.0f), gNode->UV(1.0f, 1.0f)),  // v2
             VertexData(vec3( 0, h,  -1.0f), gNode->UV(0.0f, 1.0f)), // v3
         };
-        //有些字如g,y等会下沉,需要用rows和top做个差值来移动字符位置
         int diff = - int(gNode->m_data.rows) + int(gNode->m_data.top);
         charMesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
         charMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));

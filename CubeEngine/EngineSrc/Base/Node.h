@@ -7,17 +7,10 @@
 #include <string>
 #include <vector>
 #include <deque>
-#include "External/TUtility/TUtility.h"
 #include "../Scene/OctreeScene.h"
 #include "Rendering/RenderCommand.h"
 #include "../Action/ActionMgr.h"
 namespace tzw {
-/**
- * @brief The Node class 该类定义了一个节点类，用于控制变换
- *
- * Node支持层次结构，可以使用addChild将其它的Node加入成自己的子节点，子节点的变换参照： 父节点的变换矩阵* 子节点的变换矩阵
- * 大多数在引擎中能渲染的的实体都会继承该类
- */
 class Scene;
 class Node : public ActionMgr
 {

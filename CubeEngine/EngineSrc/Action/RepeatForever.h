@@ -5,10 +5,6 @@
 #include "ActionInterval.h"
 namespace tzw {
 
-///
-/// \brief The RepeatForever class 用于重复执行某一动作的包装动作
-/// 其内部包含了一个需要被执行的动作，并在其执行完毕后，是其再次重新执行
-///
 class RepeatForever : public Action
 {
 public:

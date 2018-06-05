@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/SkyBox_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/SkyBox_f.glsl"
+		"vs" : "./Res/Shaders/SkyBox_v.glsl",
+		"fs" : "./Res/Shaders/SkyBox_f.glsl"
 	},
 	"name" : "Color",
 	"property" : {

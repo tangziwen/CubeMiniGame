@@ -8,8 +8,6 @@
 namespace tzw {
 
 class Font;
-///表征的是一个字符串的数据信息，该对象是易变的
-///每次调用都会使原有数据失效
 struct GlyphData{
     unsigned int rows;
     unsigned int width;

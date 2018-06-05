@@ -1,10 +1,12 @@
 #include "GlyphAtlas.h"
 #include <stdlib.h>
+#include <cassert>
+#include "Utility/math/TbaseMath.h"
 
 const int DATA_ROW = 10;
 #include <stdio.h>
-#include "External/TUtility/TUtility.h"
 #include <cmath>
+#include <algorithm>
 namespace tzw {
 
 GlyphAtlas::GlyphAtlas()

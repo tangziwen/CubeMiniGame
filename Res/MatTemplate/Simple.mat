@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/Simple_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/Simple_f.glsl"
+		"vs" : "./Res/Shaders/Simple_v.glsl",
+		"fs" : "./Res/Shaders/Simple_f.glsl"
 	},
 	"name" : "Simple",
 	"property" : {

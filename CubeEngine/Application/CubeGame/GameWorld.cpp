@@ -1,9 +1,10 @@
 #include "GameWorld.h"
 #include "GameMap.h"
 #include "EngineSrc/Event/EventMgr.h"
-#include "TUtility/TUtility.h"
 #include "Base/Log.h"
 #include "time.h"
+#include "Utility/misc/Tmisc.h"
+#include <algorithm>
 #include "EngineSrc/3D/SkyBox.h"
 #include "EngineSrc/3D/Sky.h"
 #include <iostream>
@@ -115,7 +116,7 @@ void GameWorld::startGame()
 	 
     unloadGame();
 	 
-    crossHair = Sprite::create("./Res/User/CubeGame/texture/GUI/cross_hair.png");
+    crossHair = Sprite::create("Texture/cross_hair.png");
 	 
     auto size = crossHair->getContentSize();
 	 

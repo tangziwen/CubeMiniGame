@@ -1,4 +1,5 @@
 #include "GUIRadioFrame.h"
+#include <algorithm>
 
 namespace tzw {
 
@@ -25,7 +26,7 @@ GUIRadioFrame *GUIRadioFrame::create(std::string titleText, vec4 color, vec2 siz
 
 tzw::GUIRadioFrame *tzw::GUIRadioFrame::create(std::string titleText, vec2 size)
 {
-    return GUIRadioFrame::create(titleText,vec4(53.0/255,53.0/255,53.0/255,1.0),size);
+    return GUIRadioFrame::create(titleText,vec4(53.0f/255,53.0f/255,53.0f/255,1.0f),size);
 }
 
 GUIRadioFrame *GUIRadioFrame::create(std::string titleText)
@@ -86,11 +87,7 @@ void tzw::GUIRadioFrame::flushVertical()
 
 void tzw::GUIRadioFrame::flushHorizontal()
 {
-	//以水平方向重新输出控件,我们首先要决定控件的总大小
-	//控件的总大小为:宽 = max(tips.width,buttons.width,detail.width)
-    //高 = max(tips.height + max(buttons.height) + detail.height,preHeight);
-
-	int advance_y = m_stride;
+	float advance_y = m_stride;
     float frame_width = 0;
     float frame_height = 0;
 	float buttonWidth = 0;
@@ -102,13 +99,13 @@ void tzw::GUIRadioFrame::flushHorizontal()
 	}
     frame_width = std::max(std::max(m_detailLabel->getContentSize().x,m_tipsLabel->getContentSize().x),buttonWidth) + m_marginHorizontal.x + m_marginHorizontal.y;
     frame_height = m_tipsLabel->getContentSize().y + buttonHeight + m_tipsLabel->getContentSize().y + 4 * m_stride;
-    auto preFrameHeight = getContentSize().y;//原先的高度
+    auto preFrameHeight = getContentSize().y;
     setContentSize(vec2(frame_width,std::max(frame_height,preFrameHeight)));
     auto offsetY = preFrameHeight - frame_height;
-	//重新调整一下位置
+
     m_detailLabel->setPos2D(m_marginHorizontal.x,advance_y+offsetY);
     advance_y+=m_detailLabel->getContentSize().y + m_stride;
-    int advance_x = m_marginHorizontal.x;
+    float advance_x = m_marginHorizontal.x;
 	for(auto btn:m_btnList)
 	{
         btn->setPos2D(advance_x,advance_y+offsetY);

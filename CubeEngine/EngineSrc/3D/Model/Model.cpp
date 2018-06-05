@@ -1,10 +1,9 @@
 #include "Model.h"
 
 #include "ModelLoader.h"
-#include "../../External/TUtility/TUtility.h"
 #include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
-
+#include "Utility/misc/Tmisc.h"
 namespace tzw {
 
 Model::Model()

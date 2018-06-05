@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/Grass_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/Grass_f.glsl"
+		"vs" : "./Res/Shaders/Grass_v.glsl",
+		"fs" : "./Res/Shaders/Grass_f.glsl"
 	},
 	"name" : "Grass",
 	"cullFace" : false,

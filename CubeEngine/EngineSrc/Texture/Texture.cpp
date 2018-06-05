@@ -2,11 +2,13 @@
 #include "External/SOIL/SOIL.h"
 #include "GL/glew.h"
 #include "Base/Log.h"
+#include "Engine/Engine.h"
 namespace tzw {
 
 Texture::Texture(std::string filePath)
 {
-    this->m_textureId =SOIL_load_OGL_texture (filePath.c_str(),0,0,SOIL_FLAG_INVERT_Y ,&m_width,&m_height);
+	std::string resultFilePath = Engine::shared()->getFilePath(filePath);
+    this->m_textureId =SOIL_load_OGL_texture (resultFilePath.c_str(),0,0,SOIL_FLAG_INVERT_Y ,&m_width,&m_height);
     m_type = RenderFlag::TextureType::Texture2D;
     if (!m_textureId)
     {

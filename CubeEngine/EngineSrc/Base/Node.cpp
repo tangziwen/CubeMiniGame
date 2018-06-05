@@ -8,10 +8,10 @@
 #include <algorithm>
 #include "../Event/EventMgr.h"
 #include "../Rendering/Renderer.h"
+#include "Utility/log/Tlog.h"
+
 namespace tzw {
-/**
- * @brief Node::Node 构造函数
- */
+
 Node::Node()
     :m_isVisible(true),
       m_isValid(true),
@@ -34,21 +34,13 @@ Node::~Node()
 
 }
 
-/**
- * @brief Node::create 静态工厂方法
- * @return
- */
 Node *Node::create()
 {
     Node * node = new Node();
     return node;
 }
 
-/**
- * @brief Node::getTransform 获取节点的变换矩阵
- * @note 该变换是级联的，包括其父节点(如果有的话)的变换
- * @return 变换矩阵
- */
+
 Matrix44 Node::getTransform()
 {
     if(m_needToUpdate)
@@ -57,29 +49,17 @@ Matrix44 Node::getTransform()
     }
     return m_worldTransformCache;
 }
-/**
- * @brief Node::getLocalTransform 获取节点的局部变换矩阵
- * @note 该方法返回的矩阵不回受层次关系影响，仅为本节点的局部变换
- * @return 局部变换矩阵
- */
+
 Matrix44 Node::getLocalTransform()
 {
     return getTranslationMatrix() * getRotationMatrix() * getScalingMatrix();
 }
 
-/**
- * @brief Node::getPos 获取节点的坐标
- * @return 节点的坐标
- */
 vec3 Node::getPos() const
 {
     return m_pos;
 }
 
-/**
- * @brief Node::setPos 设置节点的坐标
- * @param pos 节点的新坐标
- */
 void Node::setPos(const vec3 &pos)
 {
     m_pos = pos;
@@ -101,11 +81,6 @@ void Node::logicUpdate(float dt)
 
 }
 
-/**
- * @brief Node::getRotate 获取节点的旋转欧拉角
- * @note 旋转量的x,y,z分量分别表示绕x轴,y轴,z轴旋转的角度(以角度记)，变换的顺序为roll(z)->picth(x)->yaw(y);
- * @return
- */
 vec3 Node::getRotateE()
 {
     float x = m_rotateE.x, y = m_rotateE.y, z = m_rotateE.z;
@@ -115,11 +90,6 @@ vec3 Node::getRotateE()
     //return vec3 (TbaseMath::Radius2Ang(theEulerAngle.x),TbaseMath::Radius2Ang(theEulerAngle.y),TbaseMath::Radius2Ang(theEulerAngle.z));
 }
 
-/**
- * @brief Node::setRotate 设置节点的节点的旋转欧拉角
- * @note 旋转量的x,y,z分量分别表示绕x轴,y轴,z轴旋转的角度(以角度记)，变换的顺序为roll(z)->picth(x)->yaw(y);
- * @param rotate
- */
 void Node::setRotateE(const vec3 &rotate)
 {
     m_rotateE = rotate;
@@ -128,51 +98,28 @@ void Node::setRotateE(const vec3 &rotate)
     m_rotateQ.fromEulerAngle(m_rotateE);
     m_needToUpdate = true;
 }
-/**
- * @brief Node::setRotate设置节点的节点的旋转欧拉角
- * @note 旋转量的x,y,z分量分别表示绕x轴,y轴,z轴旋转的角度(以角度记)，变换的顺序为roll(z)->picth(x)->yaw(y);
- * @param x
- * @param y
- * @param z
- */
+
 void Node::setRotateE(float x, float y, float z)
 {
     setRotateE(vec3(x,y,z));
 }
 
-/**
- * @brief Node::getScale 获取缩放向量
- * @return
- */
 vec3 Node::getScale() const
 {
     return m_scale;
 }
 
-/**
- * @brief Node::setScale 设置缩放向量
- * @param scale
- */
 void Node::setScale(const vec3 &scale)
 {
     m_scale = scale;
     m_needToUpdate = true;
 }
-/**
- * @brief Node::setScale 设置缩放向量
- * @param x
- * @param y
- * @param z
- */
+
 void Node::setScale(float x, float y, float z)
 {
     setScale(vec3(x,y,z));
 }
 
-/**
- * @brief Node::getTranslationMatrix 获取平移矩阵
- * @return
- */
 Matrix44 Node::getTranslationMatrix()
 {
     Matrix44 mat;
@@ -181,10 +128,7 @@ Matrix44 Node::getTranslationMatrix()
 }
 
 #define PI_OVER_180 (3.14159 / 180)
-/**
- * @brief Node::getRotationMatrix 获取旋转矩阵
- * @return
- */
+
 Matrix44 Node::getRotationMatrix()
 {
     Matrix44 rotateMatrix;
@@ -194,21 +138,13 @@ Matrix44 Node::getRotationMatrix()
     return rotateMatrix;
 }
 
-/**
- * @brief Node::getScalingMatrix 获取缩放矩阵
- * @return
- */
 Matrix44 Node::getScalingMatrix()
 {
     Matrix44 s;
     s.scale(m_scale);
     return s;
 }
-///
-/// \brief 递归遍历节点(逻辑更新用)
-/// \note 该次递归函数在整个逻辑-渲染流程的最开始，对于使用场景管理的3D物体仅用于逻辑更新用，其递归时不会提交任何的render Command
-/// 对于其他类型的Node，会在其执行完逻辑update后，立即
-///
+
 void Node::visit(RenderCommand::RenderType passType)
 {
 	auto scene = g_GetCurrScene()->getOctreeScene();
@@ -216,7 +152,7 @@ void Node::visit(RenderCommand::RenderType passType)
 	if(!m_actionList.empty())
 		updateAction(this,Engine::shared()->deltaTime());
 	std::vector <Node *> removeList;
-	//数据如果有变动的话，重新缓存数据
+
 	if(getNeedToUpdate())
 	{
 		this->reCache();
@@ -236,10 +172,9 @@ void Node::visit(RenderCommand::RenderType passType)
 		{
 			scene->updateObj(static_cast<Drawable3D *>(this));
 		}
-		////遍历子节点
+		////traversal the children
 		for(auto child : m_children)
 		{
-
 			child->visit(passType);
 			if(!child->m_isValid)
 			{
@@ -255,11 +190,6 @@ void Node::visit(RenderCommand::RenderType passType)
 	}
 }
 
-/**
- * @brief Node::addChild 向该Node添加子Node
- * @note 子Node不能重复添加,每次添加子Node的时候会重新排序子节点的顺序
- * @param node
- */
 void Node::addChild(Node *node, bool isNeedSort)
 {
     if(node->m_parent)
@@ -291,21 +221,11 @@ void Node::addChild(Node *node, bool isNeedSort)
 	}
 }
 
-/**
- * @brief Node::getParent 获取该Node的父节点
- * @note 初始时值为nullptr_t
- * @return
- */
 Node *Node::getParent() const
 {
     return m_parent;
 }
 
-/**
- * @brief Node::getName 获取该Node的名称
- * @note 名称并无实际意义，只是方便调试与打印
- * @return
- */
 std::string Node::getName() const
 {
     return m_name;
@@ -334,11 +254,6 @@ Node *Node::getChildByIndex(size_t index)
     return m_children[index];
 }
 
-/**
- * @brief Node::setName 设置该Node的名称
- * @note 名称并无实际意义，只是方便调试与打印
- * @param name
- */
 void Node::setName(const std::string &name)
 {
     m_name = name;
@@ -370,10 +285,7 @@ vec2 Node::getWorldPos2D()
     auto p = getWorldPos();
     return vec2(p.x,p.y);
 }
-///
-/// \brief 判断该节点的几何信息是否被更新，只有当该函数返回true的时候，一些相关的响应动作：如重新计算矩阵、在八叉树上更新位置才会被触发
-/// \return
-///
+
 bool Node::getNeedToUpdate() const
 {
     bool parentNeedToUpdate = false;
@@ -383,11 +295,7 @@ bool Node::getNeedToUpdate() const
     }
     return m_needToUpdate || parentNeedToUpdate;
 }
-///
-/// \brief 设置该节点的几何信息是否需要被更新，只有当该函数返回true的时候，一些相关的响应动作：如重新计算矩阵、在八叉树上更新位置才会被触发，
-/// 当调用一些涉及到几何信息的函数，如平移、缩放、旋转时，该函数将会被隐式的调用
-/// \param needToUpdate
-///
+
 void Node::setNeedToUpdate(bool needToUpdate)
 {
     m_needToUpdate = needToUpdate;
@@ -432,21 +340,11 @@ void Node::removeAllChildren_r()
     delete this;
 }
 
-///
-/// \brief 获得全局渲染优先级
-/// @note 全局渲染优先级和层级无关，并直接作用于renderComand中的zorder
-/// \return 全局渲染优先级
-///
 unsigned int Node::getGlobalPiority() const
 {
     return m_globalPiority;
 }
 
-///
-/// \brief 设置全局渲染优先级
-/// @note 全局渲染优先级和层级无关，并直接作用于renderComand中的zorder,
-/// \param globalPiority 全局渲染优先级
-///
 void Node::setGlobalPiority(unsigned int globalPiority)
 {
     m_globalPiority = globalPiority;
@@ -474,22 +372,11 @@ unsigned int Node::getTypeID()
 	return 0;
 }
 
-///
-/// \brief 获取该节点是否能够被场景的八叉树管理器的影响，八叉树管理器会影响到该节点的可绘制性。
-/// \note 八叉树管理器使用惰性添加的方式处理新的节点，最快能够在其加入到场景树后能够直接被绘制的第二帧开始受到八叉树管理器的管理
-/// \return
-///
 bool Node::getIsAccpectOCTtree() const
 {
     return m_isAccpectOCTtree;
 }
 
-///
-/// \brief 设置该节点是否能够被场景的八叉树管理器的影响，八叉树管理器会影响到该节点的可绘制性。
-/// \note 八叉树管理器使用惰性添加的方式处理新的节点，最快能够在其加入到场景树后能够直接被绘制的第二帧开始受到八叉树管理器的管理，
-/// 设置是否被八叉树管理只影响到其可绘制性，用户仍然可以强制设置可绘制性的方式来进行渲染
-/// \return
-///
 void Node::setIsAccpectOCTtree(bool isAccpectOCTtree)
 {
     m_isAccpectOCTtree = isAccpectOCTtree;
@@ -510,9 +397,6 @@ void Node::cacheTransform()
     }
 }
 
-///
-/// \brief 重新缓存各种几何信息，世界矩阵，世界坐标下的AABB等
-///
 void Node::reCache()
 {
     cacheTransform();
@@ -520,7 +404,6 @@ void Node::reCache()
 	{
 		child->reCache();
 	}
-	//将重置缓存标记
 
 }
 
@@ -534,10 +417,6 @@ void Node::setIsValid(bool isValid)
     m_isValid = isValid;
 }
 
-///
-/// \brief 将一个指定的子节点分离出去
-/// \param node
-///
 void Node::detachChild(Node *node)
 {
     auto result = std::find(m_children.begin(),m_children.end(),node);
@@ -547,9 +426,6 @@ void Node::detachChild(Node *node)
     }
 }
 
-///
-/// \brief 从父节点处删除
-///
 void Node::removeFromParent()
 {
     setIsValid(false);
@@ -566,23 +442,11 @@ vec3 Node::getForward()
     return vec3(-m[8],-m[9],-m[10]);
 }
 
-///
-/// \brief 设置局部渲染优先级
-/// @note 局部渲染优先级，只与本层级有关，关系到该节点在本层次被渲染时遍历的先后顺序(即与兄弟之间的次序)，但是其对应rendering Command 的Zorder仍然保持不变，故
-/// 不能影响到全局渲染优先级
-/// \param zOrder 局部渲染优先级
-///
 int Node::getLocalPiority() const
 {
     return m_localPiority;
 }
 
-///
-/// \brief 设置局部渲染优先级
-/// @note 局部渲染优先级，只与本层级有关，关系到该节点在本层次被渲染时遍历的先后顺序(即与兄弟之间的次序)，但是其对应rendering Command 的Zorder仍然保持不变，故
-/// 不能影响到全局渲染优先级
-/// \param zOrder 局部渲染优先级
-///
 void Node::setLocalPiority(int zOrder)
 {
     m_localPiority = zOrder;

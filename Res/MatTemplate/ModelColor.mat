@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/GeometryPassColor_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/GeometryPassColor_f.glsl"
+		"vs" : "./Res/Shaders/GeometryPassColor_v.glsl",
+		"fs" : "./Res/Shaders/GeometryPassColor_f.glsl"
 	},
 	"name" : "ModelColor",
 	"property" : {

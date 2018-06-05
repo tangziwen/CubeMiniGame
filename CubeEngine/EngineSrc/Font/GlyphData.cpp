@@ -1,5 +1,6 @@
 #include "GlyphData.h"
-#include "External/TUtility/TUtility.h"
+#include "Utility/math/TbaseMath.h"
+
 namespace tzw {
 
 void GlyphData::initFromFace(FT_Face *face,unsigned long c)

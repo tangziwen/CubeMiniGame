@@ -5,12 +5,13 @@
 #define M_PI 3.141592653
 #define ToRadian(x) (float)(((x) * M_PI / 180.0f))
 #define ToDegree(x) (float)(((x) * 180.0f / M_PI))
+#include <algorithm>
 namespace tzw
 {
 	TZW_SINGLETON_IMPL(ShadowMap)
 	ShadowMap::ShadowMap()
 	{
-		m_program = ShaderMgr::shared()->getByPath("./Res/EngineCoreRes/Shaders/ShadowNaive_v.glsl", "./Res/EngineCoreRes/Shaders/ShadowNaive_f.glsl");
+		m_program = ShaderMgr::shared()->getByPath("./Res/Shaders/ShadowNaive_v.glsl", "./Res/Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
 		int shadowMapSize[] = {512, 512, 512};
 		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
@@ -90,7 +91,7 @@ namespace tzw
 		{
 			auto result = projection * vec4(0.0, 0.0, -1 * m_zlistView[i], 1.0);
 			result.z /= result.w;
-			m_zlistNDC[i] = result.z * 0.5 + 0.5;
+			m_zlistNDC[i] = result.z * 0.5f + 0.5f;
 		}
 		return;
 	}
@@ -145,7 +146,7 @@ namespace tzw
 			Matrix44 mat;
 			auto min_val = aabb.min();
 			auto max_val = aabb.max();
-			//注意后两位和前面的差异！！！！ 
+			//look at the last 2 parameters! 
 			mat.ortho(min_val.x, max_val.x, min_val.y, max_val.y, -1 * maxZ - 50,  -1 * minZ);
 			m_projectMatList[i] = mat;
 			aabb.reset();

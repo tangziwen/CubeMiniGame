@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/GeometryPass_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/GeometryPass_f.glsl"
+		"vs" : "./Res/Shaders/GeometryPass_v.glsl",
+		"fs" : "./Res/Shaders/GeometryPass_f.glsl"
 	},
 	"name" : "ModelStd",
 	"property" : {

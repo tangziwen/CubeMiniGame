@@ -2,7 +2,6 @@
 #include "../Engine/Engine.h"
 #include "../2d/LabelNew.h"
 #include "../Font/FontMgr.h"
-#include "TUtility/TUtility.h"
 #include "../Engine/EngineDef.h"
 
 #include "2d/GUISystem.h"

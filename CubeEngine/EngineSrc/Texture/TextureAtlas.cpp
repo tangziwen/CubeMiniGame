@@ -1,9 +1,10 @@
 #include "TextureAtlas.h"
 #include "TextureMgr.h"
-#include "External/TUtility/file/Tfile.h"
+
 
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
+#include "Utility/file/Tfile.h"
 
 namespace tzw {
 

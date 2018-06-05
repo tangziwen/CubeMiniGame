@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/SpriteTexture_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/SpriteTexture_f.glsl"
+		"vs" : "./Res/Shaders/SpriteTexture_v.glsl",
+		"fs" : "./Res/Shaders/SpriteTexture_f.glsl"
 	},
 	"name" : "Sprite",
 	"property" : {

@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/VoxelTerrain_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/VoxelTerrain_f.glsl"
+		"vs" : "./Res/Shaders/VoxelTerrain_v.glsl",
+		"fs" : "./Res/Shaders/VoxelTerrain_f.glsl"
 	},
 	"name" : "Terrain",
 	"property" : {
@@ -20,9 +20,9 @@
 			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
 		],
 		"maps" : [
-			["GrassTex", "TU_topGrass", 0],
-			["DirtTex", "TU_dirt", 1],
-			["CliffTex", "TU_Cliff", 2]
+			["GrassTex", "TU_topGrass", 0, "Texture/T_Ground_Grass_D.png"],
+			["DirtTex", "TU_dirt", 1, "Texture/mud2.jpg"],
+			["CliffTex", "TU_Cliff", 2, "Texture/Cliff.jpg"]
 		]
 	}
 }

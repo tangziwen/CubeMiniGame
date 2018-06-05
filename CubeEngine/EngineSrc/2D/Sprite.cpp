@@ -10,11 +10,7 @@ Sprite::Sprite()
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
-/**
- * @brief Sprite::create 创建精灵的工厂方法
- * @param texturePath 制定的纹理路径
- * @return 被创建的精灵
- */
+
 Sprite *Sprite::create(std::string texturePath)
 {
     auto newObj = new Sprite();
@@ -87,12 +83,7 @@ void Sprite::submitDrawCmd(RenderCommand::RenderType passType)
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);
 }
-/**
- * @brief Sprite::setRenderRect 设置精灵的渲染区域，分别指定了精灵在屏幕上的大小，以及其渲染的纹理的区域大小
- * @param size 在场景中的实际尺寸
- * @param lb 渲染纹理的区域的左下角
- * @param rt 渲染纹理区域的右上角
- */
+
 void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt)
 {
     auto width = size.x;
@@ -126,10 +117,6 @@ void Sprite::setRenderRect( vec4 v1, vec4 v2,vec4 v3, vec4 v4)
 }
 
 
-/**
- * @brief Sprite::setContentSize 设置精灵的当前尺寸
- * @param contentSize 精灵的新尺寸
- */
 void Sprite::setContentSize(const vec2 &contentSize)
 {
     m_contentSize = contentSize;

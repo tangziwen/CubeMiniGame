@@ -3,7 +3,6 @@
 #include "../Event/EventMgr.h"
 #include "../Font/FontMgr.h"
 #include "../Action/MoveTo.h"
-#include "../External/TUtility/TUtility.h"
 #include "../Engine/EngineDef.h"
 #include <strstream>
 #include <iostream>

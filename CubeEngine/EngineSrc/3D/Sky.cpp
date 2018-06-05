@@ -10,16 +10,16 @@ namespace tzw
 	{
 		m_isEnable = true;
 		m_skyBoxTechnique = Material::createFromTemplate("Sky");
-		m_model = Model::create("Res/EngineCoreRes/Models/sphere.tzw");
+		m_model = Model::create("Models/sphere.tzw");
 		setCamera(g_GetCurrScene()->defaultCamera());
 		setScale(vec3(6360000.0f, 6360000.0f, 6360000.0f));
 		reCache();
-		tintTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/tint.tga"));
-		tintTex2 = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/tint2.tga"));
-		sunTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/sun.tga"));
-		moonTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/moon.tga"));
-		cloudTex = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/moon.tga"));
-		cloudTex2 = TextureMgr::shared()->getByPath(Engine::shared()->getUserPath("CubeGame/Sky/moon.tga"));
+		tintTex = TextureMgr::shared()->getByPath("Texture/Sky/tint.tga");
+		tintTex2 = TextureMgr::shared()->getByPath("Texture/Sky/tint2.tga");
+		sunTex = TextureMgr::shared()->getByPath("Texture/Sky/sun.tga");
+		moonTex = TextureMgr::shared()->getByPath("Texture/Sky/moon.tga");
+		cloudTex = TextureMgr::shared()->getByPath("Texture/Sky/moon.tga");
+		cloudTex2 = TextureMgr::shared()->getByPath("Texture/Sky/moon.tga");
 
 		m_skyBoxTechnique->setTex("tint", tintTex, 1);
 		m_skyBoxTechnique->setTex("tint2", tintTex2, 2);

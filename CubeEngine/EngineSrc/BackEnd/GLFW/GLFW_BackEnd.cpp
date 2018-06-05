@@ -2,7 +2,6 @@
 #include "GL/glew.h"
 #include "../RenderBackEnd.h"
 #include "EngineSrc/BackEnd/AbstractDevice.h"
-#include "External/TUtility/TUtility.h"
 #include "../../Scene/SceneMgr.h"
 #include <strstream>
 #include "GLFW/glfw3.h"

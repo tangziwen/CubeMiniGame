@@ -1,7 +1,7 @@
 {
 	"shaders":{
-		"vs" : "./Res/EngineCoreRes/Shaders/Sky_v.glsl",
-		"fs" : "./Res/EngineCoreRes/Shaders/Sky_f.glsl"
+		"vs" : "./Res/Shaders/Sky_v.glsl",
+		"fs" : "./Res/Shaders/Sky_f.glsl"
 	},
 	"name" : "Sky",
 	"property" : {

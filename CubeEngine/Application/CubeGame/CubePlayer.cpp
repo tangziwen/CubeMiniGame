@@ -36,13 +36,13 @@ namespace tzw
 		//m_gunModel->setPos(vec3(0.04,-0.2,-0.20));
 		auto NUM_MESHES = 5;
         for (int i = 0; i < NUM_MESHES ; i++) {
-			auto testModel = Model::create("./Res/TestRes/phoenix_ugv.tzw");
+			auto testModel = Model::create("Models/phoenix_ugv.tzw");
 			testModel->setScale(vec3(0.2, 0.2, 0.2));
 			testModel->setPos(vec3(-15.0f, 30.0f, 3.0f + i * 30.0f));
 			g_GetCurrScene()->addNode(testModel);
         }          
 
-		auto testWall = Model::create("./Res/TestRes/quad.tzw");
+		auto testWall = Model::create("Models/quad.tzw");
 		testWall->setPos(vec3(0, 0, 90));
 		testWall->setRotateE(90, 0, 0);
 		testWall->setScale(50, 100, 100);

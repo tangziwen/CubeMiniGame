@@ -4,6 +4,9 @@
 #include "../Effect/Effect.h"
 #include "EngineSrc/Technique/MaterialPool.h"
 #include <iostream>
+#include "Utility/file/Tfile.h"
+#include "Utility/misc/Tmisc.h"
+
 namespace tzw {
 TZW_SINGLETON_IMPL(ModelLoader)
 
@@ -15,18 +18,17 @@ ModelLoader::ModelLoader()
 void ModelLoader::loadModel(Model *model, std::string filePath)
 {
 	rapidjson::Document doc;
-	auto data = Tfile::shared()->getData(filePath,true);
+	auto data = Tfile::shared()->getData(Tmisc::getUserPath(filePath),true);
 	auto relativeFilePath = Tfile::shared()->getReleativePath(filePath);
 	auto folder = Tfile::shared()->getFolder(filePath);
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
-	//判断读取成功与否 和 是否为数组类型
 	if (doc.HasParseError())
 	{
 		printf("get json data err!");
 		return;
 	}
 
-	//获得material
+	//get the material
 	auto matPool = MaterialPool::shared();
 	auto tmgr = TextureMgr::shared();
 	auto& materialList = doc["materialList"];
@@ -57,7 +59,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 		model->m_effectList.push_back(mat);
 	}
 
-	//获得Mesh
+	//get the Mesh
 	auto& meshList = doc["MeshList"];
 	for (unsigned int i = 0;i<meshList.Size();i++)
 	{

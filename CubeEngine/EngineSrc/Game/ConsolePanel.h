@@ -6,7 +6,6 @@
 #include "2D/imgui.h"
 namespace tzw {
 
-///用于输出调试信息，以及输入脚本的控制台窗口
 struct ConsolePanel
 {
 	TZW_SINGLETON_DECL(ConsolePanel);

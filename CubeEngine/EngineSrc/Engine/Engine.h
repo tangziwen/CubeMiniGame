@@ -29,7 +29,7 @@ public:
     void resetDrawCallCount();
     void increaseVerticesIndicesCount(int v,int i);
     void resetVerticesIndicesCount();
-    std::string getUserPath(std::string path);
+    std::string getFilePath(std::string path);
     int getApplyRenderTime() const;
     int getLogicUpdateTime() const;
     int getIndicesCount() const;

@@ -1,8 +1,8 @@
 #include "Quaternion.h"
 #include <math.h>
-#include "../External/TUtility/TUtility.h"
 #include <stdlib.h>
 #include <iostream>
+#include "Utility/math/TbaseMath.h"
 
 namespace tzw {
 
