@@ -25,9 +25,9 @@ Material::Material()
 
 void Material::loadFromTemplate(std::string name)
 {
-	tlog("load Material %s\n", name.c_str());
+	//tlog("load Material %s\n", name.c_str());
 	loadFromFile(std::string("./Res/MatTemplate/") + name + ".mat");
-	tlog("load Material finished %s\n", name.c_str());
+	//tlog("load Material finished %s\n", name.c_str());
 }
 
 void Material::loadFromFile(std::string filePath)

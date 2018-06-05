@@ -73,7 +73,7 @@ unsigned int Mesh::getMatIndex() const
     return m_matIndex;
 }
 
-unsigned unsigned int Mesh::getIndex(int id)
+unsigned int Mesh::getIndex(int id)
 {
 	return m_indices[id];
 }

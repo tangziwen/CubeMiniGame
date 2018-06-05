@@ -29,7 +29,8 @@ void main()
 	
 	v_position = (TU_mvMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
 	v_worldPos = (TU_mMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
-	v_normal = (TU_normalMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz;
+	// v_normal = (TU_normalMatrix * ).xyz;
+    v_normal = (TU_normalMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz;
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces
     v_texcoord = a_texcoord;	

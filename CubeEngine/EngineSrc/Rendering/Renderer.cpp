@@ -25,6 +25,7 @@ Renderer::Renderer()
 	m_dirLightProgram = MaterialPool::shared()->getMatFromTemplate("DirectLight");
 	m_postEffect = new Material();
 	m_postEffect->loadFromTemplate("postEffect");
+	RenderBackEnd::shared()->setIsCheckGL(false);
 	initQuad();
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
@@ -186,7 +187,7 @@ void Renderer::renderShadow(RenderCommand &command,int index)
 	RenderBackEnd::shared()->setDepthTestEnable(true);
 	if (command.type() == RenderCommand::RenderType::Instanced)
 	{
-		//renderPrimitive2(command.m_mesh, command.m_material, command.m_primitiveType);
+		//renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType);
 	}
 	else
 	{
@@ -214,7 +215,7 @@ void Renderer::render(const RenderCommand &command)
 	applyTransform(command.m_material->getProgram(), command.m_transInfo);
 	if (command.type() == RenderCommand::RenderType::Instanced)
 	{
-		renderPrimitive2(command.m_mesh, command.m_material, command.m_primitiveType);
+		renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType);
 	}
 	else
 	{
@@ -270,29 +271,26 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	{
 		program->enableAttributeArray(texcoordLocation);
 		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
-		offset += sizeof(vec2);
+		
 		  
 	}
 	
-
+	offset += sizeof(vec2);
 	int colorLocation = program->attributeLocation("a_color");
 	  
 	if (colorLocation > 0)
 	{
 		program->enableAttributeArray(colorLocation);
 		program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
-		offset += sizeof(vec4);
-		  
 	}
-	  
-
+	//  
+	offset += sizeof(vec4);
 	int bcLoaction = program->attributeLocation("a_bc");
 	  
 	if (bcLoaction > 0)
 	{
 		program->enableAttributeArray(bcLoaction);
 		program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
-		  
 	}
 	offset += sizeof(vec3);
 
@@ -303,18 +301,16 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 		program->enableAttributeArray(matLocation);
 		program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 	}
-	  
 
-
+	mesh->getArrayBuf()->use();
+	mesh->getIndexBuf()->use();
 	switch(primitiveType)
 	{
 		case RenderCommand::PrimitiveType::Lines:
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Lines,mesh->getIndicesSize(),0);
 		break;
 		case RenderCommand::PrimitiveType::TRIANGLES:
-			  
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Triangles,mesh->getIndicesSize(),0);
-			  
 		break;
 		case RenderCommand::PrimitiveType::TRIANGLE_STRIP:
 			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::TriangleStrip,mesh->getIndicesSize(),0);
@@ -325,7 +321,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	}
 }
 #define RAISE error = glGetError();printf("fuck error %d\n",error);
-void Renderer::renderPrimitive2(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
+void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
 {
 	glDisable(GL_CULL_FACE);
 	auto program = effect->getProgram();
@@ -341,13 +337,19 @@ void Renderer::renderPrimitive2(Mesh * mesh, Material * effect, RenderCommand::P
 	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 	offset += sizeof(vec3);
 	int normalLocation = program->attributeLocation("a_normal");
-	program->enableAttributeArray(normalLocation);
-	program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	if(normalLocation >= 0)
+	{
+		program->enableAttributeArray(normalLocation);
+		program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	}
 	offset += sizeof(vec3);
 	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
 	int texcoordLocation = program->attributeLocation("a_texcoord");
-	program->enableAttributeArray(texcoordLocation);
-	program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+	if(texcoordLocation >= 0)
+	{
+		program->enableAttributeArray(texcoordLocation);
+		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+	}
 	offset += sizeof(vec2);
 	
 	//int colorLocation = program->attributeLocation("a_color");
@@ -443,9 +445,11 @@ void Renderer::geometryPass()
 	m_gbuffer->bindForWriting();
 	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RenderBackEnd::shared()->selfCheck();
 	if(Engine::shared()->getIsEnableOutLine())
 	{
 		glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+		RenderBackEnd::shared()->selfCheck();
 	}
 	RenderBackEnd::shared()->setDepthTestEnable(true);
 	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
@@ -462,6 +466,7 @@ void Renderer::geometryPass()
 	if(Engine::shared()->getIsEnableOutLine())
 	{
 		glPolygonMode(GL_FRONT, GL_FILL);
+		RenderBackEnd::shared()->selfCheck();
 	}
 }
 
@@ -484,14 +489,17 @@ void Renderer::shadowPass()
 	ShadowMap::shared()->getProgram()->use();
 
 	glDepthMask (true);
+	RenderBackEnd::shared()->selfCheck();
 	for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
 	{
 		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 		shadowBuffer->BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);
+		RenderBackEnd::shared()->selfCheck();
 		if (m_enable3DRender)
 		{
 			glDisable(GL_CULL_FACE);
+			RenderBackEnd::shared()->selfCheck();
 			renderAllShadow(i);
 		}
 	}
@@ -634,6 +642,7 @@ void Renderer::directionalLightPass()
 void Renderer::applyRenderSetting(Material * mat)
 {
 	glDisable(GL_CULL_FACE);
+	RenderBackEnd::shared()->selfCheck();
 	//RenderBackEnd::shared()->setIsCullFace(true);
 	//glCullFace(GL_NONE);
 }
@@ -659,6 +668,7 @@ void Renderer::bindScreenForWriting()
 {
 	auto size = Engine::shared()->winSize();
 	glViewport(0, 0, int(size.x), int(size.y));
+	RenderBackEnd::shared()->selfCheck();
 	RenderBackEnd::shared()->bindFrameBuffer(0);
 }
 
@@ -666,6 +676,7 @@ void Renderer::bindScreenForWriting()
 {
 	m_offScreenBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	RenderBackEnd::shared()->selfCheck();
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,

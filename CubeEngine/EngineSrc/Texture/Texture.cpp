@@ -133,7 +133,8 @@ void Texture::genMipMap()
 	
     if(m_isHaveMipMap) return;
 	RenderBackEnd::shared()->genMipMap(m_textureId);
-    setFilter(FilterType::LinearMipMapLinear, 0);
+    setFilter(FilterType::Linear, 2);
+	setFilter(FilterType::LinearMipMapLinear, 1);
     m_isHaveMipMap = true;
 }
 

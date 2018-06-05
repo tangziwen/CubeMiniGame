@@ -18,7 +18,7 @@ Grass::Grass(std::string filePath)
 		 
 		auto tex = TextureMgr::shared()->getByPath(filePath);
 		 
-		//tex->genMipMap();
+		tex->genMipMap();
 		 
 		mat->setTex("diffuseMap", tex);
 		 

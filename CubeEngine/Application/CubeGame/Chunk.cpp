@@ -57,9 +57,9 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	 
 	m_tmpNeighborChunk.clear();
 	 
-	m_grass = new Grass("Res/TestRes/blueFlower.png");
+	m_grass = new Grass("Res/TestRes/grass.tga");
 	 
-	m_grass2 = new Grass("Res/TestRes/blueFlower.png");
+	m_grass2 = new Grass("Res/TestRes/grass.tga");
 	 
 	grassNoise.SetSeed(time(nullptr));
 }
@@ -152,15 +152,18 @@ void Chunk::submitDrawCmd(RenderCommand::RenderType passType)
 	///just for test
 	if (!m_isLoaded) return;
 	if (m_mesh->getIndicesSize() == 0) return;
+	if (m_isNeedSubmitMesh) return;
 
 	RenderCommand command(m_mesh, m_material, passType);
 	setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	Renderer::shared()->addRenderCommand(command);
-	Grass* grass = nullptr;
-	
-	m_grass->pushCommand();
-	m_grass2->pushCommand();
+	auto player = GameWorld::shared()->getPlayer();
+	if (player->getPos().distance(m_worldAABBCache.centre()) < 50.0f)
+	{
+		m_grass->pushCommand();
+		m_grass2->pushCommand();
+	}
 }
 
 
@@ -180,11 +183,13 @@ void Chunk::load()
 	setCamera(g_GetCurrScene()->defaultCamera());
 	if (!m_isInitData)
 	{
+		//initData(); genMesh();
 		WorkerThreadSystem::shared()->pushOrder([&]() {initData(); genMesh(); });
 	}
 	else
 	{
 		WorkerThreadSystem::shared()->pushOrder([&]() {genMesh();});
+		//genMesh();
 	}
 	m_isLoaded = true;
 }
@@ -651,7 +656,6 @@ void Chunk::genNormal()
 					m_mesh->m_vertices[meshIndex].m_normal = grads[triTable[cubeIndex][n + 2]].normalized();
 					m_mesh->m_vertices[meshIndex + 1].m_normal = grads[triTable[cubeIndex][n + 1]].normalized();
 					m_mesh->m_vertices[meshIndex + 2].m_normal = grads[triTable[cubeIndex][n]].normalized();
-
 					meshIndex += 3;
 				}
 			}	//END OF FOR LOOP
@@ -762,7 +766,7 @@ void Chunk::genMesh()
 	MarchingCubes::shared()->generateWithoutNormal(m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, 0.0f, m_lod);
 	if (m_mesh->isEmpty()) return;
 	genNormal();
-	calculatorMatID();
+	calculateMatID();
 	m_isNeedSubmitMesh = true;
 	//m_mesh->caclNormals();
 	//m_mesh->calBaryCentric();
@@ -847,7 +851,7 @@ unsigned int Chunk::getTypeID()
 }
 
 
-void Chunk::calculatorMatID()
+void Chunk::calculateMatID()
 {
 	m_grassPosList.clear();
 	m_grass->m_mesh->clearInstances();
@@ -876,8 +880,7 @@ void Chunk::calculatorMatID()
 		m_mesh->m_vertices[index0].m_matIndex = matID;
 		if (step > 0.5 && (1.0 - value > 0.7))
 		{
-			
-			if (m_grassPosList.size() < 20000 && grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > -0.5)
+			if (m_grassPosList.size() < 500 && grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > 0.2)
 			{
 				auto ox = TbaseMath::randFN() * 0.5;
 				auto oz = TbaseMath::randFN() * 0.5;
@@ -894,7 +897,6 @@ void Chunk::calculatorMatID()
 				grass->m_mesh->pushInstance(vec4(pos.x + ox, pos.y, pos.z + oz, 1.0 + scale));
 			}
 		}
-
 	}
 
 	size_t vertexCount = m_mesh->m_vertices.size();
@@ -902,9 +904,6 @@ void Chunk::calculatorMatID()
 	for (unsigned int i = 0; i < vertexCount; i++) {
 		m_mesh->m_vertices[i].m_matIndex.normalize();
 	}
-
-
-
 }
 
 bool Chunk::isInEdge(int i, int j, int k)
@@ -939,7 +938,7 @@ bool Chunk::hitFirst(const Ray &ray, vec3 &result)
 	float t = 0;
 	bool isFind = false;
 	vec3 minP = vec3(-99999, -99999, -99999);
-	for (auto i =0; i< size; i+=3)
+	for (size_t i =0; i< size; i+=3)
 	{
 		if(ray.intersectTriangle(m_mesh->m_vertices[i + 2].m_pos,m_mesh->m_vertices[i + 1].m_pos,m_mesh->m_vertices[i].m_pos, &t))
 		{

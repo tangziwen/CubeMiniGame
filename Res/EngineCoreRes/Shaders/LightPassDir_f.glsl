@@ -121,11 +121,13 @@ vec3 calculateLightPBR(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,
 }
 
 
-vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness)
+vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness, float shadowFactor)
 {
 	vec3 diffuseColor,ambientColor;
 	float specularIntensity =0.0;
-	float irradiance = max(0.0,dot(normal, -lightDir));
+	float lambert = max(0.5, dot(normal, -lightDir));
+
+	float irradiance = min(shadowFactor, lambert);
 	return lightColor * irradiance * gDirectionalLight.intensity;
 }
 
@@ -171,7 +173,7 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
 		return 1.0;
     float depthInTex = texture(TU_ShadowMap[index], UVCoords).x;
-    if (depthInTex < z)
+    if (depthInTex + getBias(surfaceNormal, lightDir) < z)
         return 0.5;
     else  
         return 1.0;
@@ -195,7 +197,8 @@ void main()
 			break;
 		}
 	}
-	
-	vec4 finalColor = shadowFactor * vec4(color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness), 1.0);
+
+	vec3 lambert = color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness, shadowFactor);
+	vec4 finalColor = vec4( lambert, 1.0);
 	gl_FragColor = finalColor;
 }

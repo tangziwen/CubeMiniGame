@@ -45,7 +45,10 @@ public:
 	void GenTextures(unsigned count, unsigned * obj);
 	void TexImage2D(unsigned target, int level, int internalformat, int width, int height, int border, unsigned format, unsigned type, const void *pixels);
 	void checkGL(int except_val = -1);
+	void selfCheck();
+	void setIsCheckGL(bool newVal);
 private:
+	bool m_isCheckGL;
     static RenderBackEnd * m_instance;
     RenderBackEnd();
     //some state cache

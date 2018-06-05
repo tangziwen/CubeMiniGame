@@ -115,7 +115,7 @@ public:
 	void deform(int x, int y, int z, float actualVal);
 	unsigned int getTypeID() override;
 	vec3 m_offset;
-	void calculatorMatID();
+	void calculateMatID();
 private:
 	Grass * m_grass;
 	Grass * m_grass2;

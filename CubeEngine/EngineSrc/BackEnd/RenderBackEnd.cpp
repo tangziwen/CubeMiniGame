@@ -7,6 +7,40 @@
 #include <assert.h>
 namespace tzw {
 RenderBackEnd * RenderBackEnd::m_instance = nullptr;
+
+void RenderBackEnd::selfCheck()
+{
+	if (!m_isCheckGL)
+		return;
+
+	bool isBad = false;
+	while(1)
+	{
+		auto errorCode = glGetError();
+		if(errorCode == GL_NO_ERROR)
+		{
+			break;
+		}
+		//ignore GL_OUT_OF_MEMORY
+		if (errorCode != 1285)
+		{
+			printf("error %d",errorCode);
+			isBad = true;
+		}
+
+	}
+	if(isBad)
+	{
+		abort();
+	}
+
+}
+
+void RenderBackEnd::setIsCheckGL(bool newVal)
+{
+	m_isCheckGL = newVal;
+}
+
 RenderBackEnd *RenderBackEnd::shared()
 {
 	if(!m_instance)
@@ -29,22 +63,27 @@ void RenderBackEnd::initDevice()
 
 	// Set the background color
 	glClearColor(0, 0, 0, 1);
+	selfCheck();
 
 	// Enable depth buffer
 	glEnable(GL_DEPTH_TEST);
-
+	selfCheck();
 	// Enable back face culling
 	glEnable(GL_CULL_FACE);
+	selfCheck();
 
 	// Enable alpha blending
 	glEnable(GL_BLEND);
+	selfCheck();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	selfCheck();
 }
 
 unsigned int RenderBackEnd::genBuffer()
 {
 	unsigned int handle;
 	glGenBuffers(1,&handle);
+	selfCheck();
 	return handle;
 }
 
@@ -54,9 +93,11 @@ void RenderBackEnd::bindBuffer(RenderFlag::BufferTarget target, unsigned int han
 	{
 		case RenderFlag::BufferTarget::VertexBuffer:
 			glBindBuffer(GL_ARRAY_BUFFER,handle);
+			selfCheck();
 		break;
 		case RenderFlag::BufferTarget::IndexBuffer:
 			glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,handle);
+			selfCheck();
 		break;
 		default:
 
@@ -70,9 +111,11 @@ void RenderBackEnd::submit(RenderFlag::BufferTarget target, unsigned int size, c
 	{
 		case RenderFlag::BufferTarget::VertexBuffer:
 			glBufferData(GL_ARRAY_BUFFER,size,data,GL_STATIC_DRAW);
+			selfCheck();
 		break;
 		case RenderFlag::BufferTarget::IndexBuffer:
 			glBufferData(GL_ELEMENT_ARRAY_BUFFER,size,data,GL_STATIC_DRAW);
+			selfCheck();
 		break;
 		default:
 		break;
@@ -82,6 +125,7 @@ void RenderBackEnd::submit(RenderFlag::BufferTarget target, unsigned int size, c
 void RenderBackEnd::activeTextureUnit(unsigned int id)
 {
 	glActiveTexture(GL_TEXTURE0 + id);
+	selfCheck();
 }
 
 void RenderBackEnd::enableFunction(RenderFlag::RenderFunction state)
@@ -90,9 +134,11 @@ void RenderBackEnd::enableFunction(RenderFlag::RenderFunction state)
 	{
 		case RenderFlag::RenderFunction::DepthTest:
 			glEnable(GL_DEPTH_TEST);
+			selfCheck();
 		break;
 		case RenderFlag::RenderFunction::AlphaBlend:
 			glEnable(GL_BLEND);
+			selfCheck();
 		break;
 	}
 }
@@ -103,9 +149,11 @@ void RenderBackEnd::disableFunction(RenderFlag::RenderFunction state)
 	{
 		case RenderFlag::RenderFunction::DepthTest:
 			glDisable(GL_DEPTH_TEST);
+			selfCheck();
 		break;
 		case RenderFlag::RenderFunction::AlphaBlend:
 			glDisable(GL_BLEND);
+			selfCheck();
 		break;
 	}
 }
@@ -116,9 +164,11 @@ void RenderBackEnd::setTexMIN(unsigned int textureID, int param, RenderFlag::Tex
 	switch (type) {
 		case RenderFlag::TextureType::Texture2D:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, param);
+			selfCheck();
 		break;
 		case RenderFlag::TextureType::TextureCubeMap:
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, param);
+			selfCheck();
 		break;
 		default:
 		break;
@@ -131,9 +181,11 @@ void RenderBackEnd::setTexMAG(unsigned int textureID, int param, RenderFlag::Tex
 	switch (type) {
 		case RenderFlag::TextureType::Texture2D:
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
+			selfCheck();
 		break;
 		case RenderFlag::TextureType::TextureCubeMap:
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, param);
+			selfCheck();
 		break;
 		default:
 		break;
@@ -145,13 +197,16 @@ void RenderBackEnd::bindTexture2DAndUnit(unsigned int texUnitID, unsigned int te
 	//    if (m_textureSlot[texUnitID] == textureID) return;
 	m_textureSlot[texUnitID] = textureID;
 	glActiveTexture(GL_TEXTURE0 + texUnitID);
+	selfCheck();
 	switch(type)
 	{
 		case RenderFlag::TextureType::Texture2D:
 			glBindTexture(GL_TEXTURE_2D,textureID);
+			selfCheck();
 		break;
 		case RenderFlag::TextureType::TextureCubeMap:
 			glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
+			selfCheck();
 		break;
 	}
 }
@@ -162,22 +217,21 @@ void RenderBackEnd::drawElement(RenderFlag::IndicesType type, unsigned int size,
 	{
 		case RenderFlag::IndicesType::Lines:
 			glDrawElements(GL_LINES,size, GL_UNSIGNED_SHORT, indicesAddress);
+			selfCheck();
 		break;
 		case RenderFlag::IndicesType::Triangles:
-			checkGL();
+			selfCheck();
 			glDrawElements(GL_TRIANGLES,size, GL_UNSIGNED_SHORT, indicesAddress);
-			checkGL(1285);
+			selfCheck();
 		break;
 		case RenderFlag::IndicesType::TriangleStrip:
 			glDrawElements(GL_TRIANGLE_STRIP, size, GL_UNSIGNED_SHORT, indicesAddress);
+			selfCheck();
 		break;
 		case RenderFlag::IndicesType::Patches:
 			glDrawElements(GL_PATCHES, size, GL_UNSIGNED_SHORT, indicesAddress);
-	}
-	auto errorCode = glGetError();
-	if (errorCode != GL_NO_ERROR)
-	{
-		//printf("dead!");
+			selfCheck();
+		break;
 	}
 }
 
@@ -188,7 +242,12 @@ void RenderBackEnd::drawElementInstanced(RenderFlag::IndicesType type, unsigned 
 	case RenderFlag::IndicesType::Triangles:
 		
 		glDrawElementsInstancedARB(GL_TRIANGLES, size, GL_UNSIGNED_SHORT, indicesAddress, count);
+		selfCheck();
 		break;
+	case RenderFlag::IndicesType::Lines: break;
+	case RenderFlag::IndicesType::TriangleStrip: break;
+	case RenderFlag::IndicesType::Patches: break;
+	default: ;
 	}
 }
 
@@ -200,9 +259,11 @@ void RenderBackEnd::setDepthTestMethod(const RenderFlag::DepthTestMethod &method
 	{
 		case RenderFlag::DepthTestMethod::Less:
 			glDepthFunc(GL_LESS);
+			selfCheck();
 		break;
 		case RenderFlag::DepthTestMethod::LessOrEqual:
 			glDepthFunc(GL_LEQUAL);
+			selfCheck();
 		break;
 	}
 }
@@ -225,26 +286,32 @@ void RenderBackEnd::setTextureWarp(unsigned int textureID, RenderFlag::WarpAddre
 		break;
 	}
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, flag);
+	selfCheck();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, flag);
+	selfCheck();
 }
 
 void RenderBackEnd::bindFrameBuffer(unsigned int frameBufferID)
 {
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, frameBufferID);
+	selfCheck();
 }
 
 void RenderBackEnd::blitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1)
 {
 	glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
+	selfCheck();
 }
 
 void RenderBackEnd::setDepthTestEnable(bool isEnable)
 {
 	if(isEnable){
 		glEnable(GL_DEPTH_TEST);
+		selfCheck();
 	}
 	else{
 		glDisable(GL_DEPTH_TEST);
+		selfCheck();
 	}
 }
 
@@ -254,6 +321,7 @@ void RenderBackEnd::setBlendEquation(RenderFlag::BlendingEquation equation)
 	{
 		case RenderFlag::BlendingEquation::Add:
 			glBlendEquation(GL_FUNC_ADD);
+			selfCheck();
 		break;
 	}
 }
@@ -277,6 +345,7 @@ static unsigned int getGLFactor(RenderFlag::BlendingFactor factor)
 void RenderBackEnd::setBlendFactor(RenderFlag::BlendingFactor factorSrc, RenderFlag::BlendingFactor factorDst)
 {
 	glBlendFunc(getGLFactor(factorSrc),getGLFactor(factorDst));
+	selfCheck();
 }
 
 void RenderBackEnd::setDepthMaskWriteEnable(bool isEnable)
@@ -284,9 +353,11 @@ void RenderBackEnd::setDepthMaskWriteEnable(bool isEnable)
 	if(isEnable)
 	{
 		glDepthMask(GL_TRUE);
+		selfCheck();
 	}else
 	{
 		glDepthMask(GL_FALSE);
+		selfCheck();
 	}
 }
 
@@ -294,12 +365,15 @@ void RenderBackEnd::genMipMap(unsigned int texUnitID)
 {
 	//generate Mip Map may faield
 	glBindTexture(GL_TEXTURE_2D, texUnitID);
+	selfCheck();
 	glGenerateMipmap(GL_TEXTURE_2D);
+	selfCheck();
 }
 
 void RenderBackEnd::setClearColor(float r, float g, float b)
 {
 	glClearColor(r, g, b, 1);
+	selfCheck();
 }
 
 void RenderBackEnd::setIsCullFace(bool val)
@@ -309,11 +383,13 @@ void RenderBackEnd::setIsCullFace(bool val)
 		if (val)
 		{
 			glEnable(GL_CULL_FACE);
+			selfCheck();
 			
 		}
 		else
 		{
 			glDisable(GL_CULL_FACE);
+			selfCheck();
 		}
 	}
 	m_isCullFace = val;
@@ -327,26 +403,31 @@ bool RenderBackEnd::getIsCullFace()
 void RenderBackEnd::deleteFramebuffers(unsigned count, unsigned * obj)
 {
 	glDeleteFramebuffers(count, obj);
+	selfCheck();
 }
 
 void RenderBackEnd::DeleteTextures(unsigned count, unsigned * obj)
 {
 	glDeleteTextures(count, obj);
+	selfCheck();
 }
 
 void RenderBackEnd::GenFramebuffers(unsigned count, unsigned * obj)
 {
 	glGenFramebuffers(count, obj);
+	selfCheck();
 }
 
 void RenderBackEnd::GenTextures(unsigned count, unsigned * obj)
 {
 	glGenTextures(count, obj);
+	selfCheck();
 }
 
 void RenderBackEnd::TexImage2D(unsigned target, int level, int internalformat, int width, int height, int border, unsigned format, unsigned type, const void * pixels)
 {
 	glTexImage2D(target, level, internalformat, width, height, border, format, type, pixels);
+	selfCheck();
 }
 
 void RenderBackEnd::checkGL(int except_val)
@@ -371,6 +452,7 @@ RenderBackEnd::RenderBackEnd()
 {
 	memset(m_textureSlot,0,sizeof(m_textureSlot));
 	m_depthTestMethodCache = RenderFlag::DepthTestMethod::Less;
+	m_isCheckGL = false;
 }
 
 } // namespace tzw

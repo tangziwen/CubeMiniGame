@@ -20,14 +20,13 @@ uniform float far_dist;
 uniform float large_factor;
 uniform vec4 TU_color;
 uniform float TU_roughness;
-varying vec3 v_position;
-varying vec3 v_normal;
-varying vec2 v_texcoord;
-varying vec3 v_worldPos;
-varying vec3 v_worldNormal;
-varying vec3 v_color;
-varying vec3 v_bc;
-in vec3 v_heightColor;
+in vec3 v_position;
+in vec3 v_normal;
+in vec2 v_texcoord;
+in vec3 v_worldPos;
+in vec3 v_worldNormal;
+in vec3 v_color;
+in vec3 v_bc;
 in vec3 v_mat;
 //! [0]
 float edgeFactor(){

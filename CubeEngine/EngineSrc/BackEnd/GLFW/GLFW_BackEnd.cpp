@@ -1,4 +1,4 @@
-#include "GLFW_BackEnd.h"
+﻿#include "GLFW_BackEnd.h"
 #include "GL/glew.h"
 #include "../RenderBackEnd.h"
 #include "EngineSrc/BackEnd/AbstractDevice.h"
@@ -6,6 +6,7 @@
 #include "../../Scene/SceneMgr.h"
 #include <strstream>
 #include "GLFW/glfw3.h"
+#include <iostream>
 
 namespace tzw {
 TZW_SINGLETON_IMPL(GLFW_BackEnd)
@@ -74,8 +75,11 @@ void GLFW_BackEnd::prepare()
 	int w = 1024;
 	int h = 1024;
     glfwWindowHint(GLFW_RESIZABLE,0);
+
     m_window = glfwCreateWindow(w, h, EngineDef::versionStr, NULL, NULL);
     glfwMakeContextCurrent(m_window);
+	GLint flags;
+
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
     glfwSetCharCallback(m_window, char_callback);

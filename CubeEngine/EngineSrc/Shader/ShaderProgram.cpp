@@ -5,6 +5,7 @@
 #include <GL/glew.h>
 #include <stdio.h>
 #include "Base/Log.h"
+#include "BackEnd/RenderBackEnd.h"
 using namespace std;
 namespace tzw {
 
@@ -65,6 +66,7 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
 void ShaderProgram::use()
 {
     glUseProgram(shader);
+
 }
 
 int ShaderProgram::getShaderId()
@@ -78,6 +80,7 @@ void ShaderProgram::setUniformInteger(const char *str, int value)
         if(ptr!=-1)
         {
             glUniform1i(ptr,value);
+			RenderBackEnd::shared()->selfCheck();
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
@@ -90,6 +93,7 @@ void ShaderProgram::setUniformMat4v(const char *str, const float *array, bool tr
         if(ptr!=-1)
         {
             glUniformMatrix4fv(ptr,count,transpose,array);
+			RenderBackEnd::shared()->selfCheck();
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
@@ -102,6 +106,7 @@ void ShaderProgram::setUniformFloat(const char *str, float value)
         if(ptr!=-1)
         {
             glUniform1f(ptr,value);
+			RenderBackEnd::shared()->selfCheck();
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
@@ -114,6 +119,7 @@ void ShaderProgram::setUniform3Float(const char *str, float x, float y, float z)
         if(ptr!=-1)
         {
             glUniform3f(ptr,x,y,z);
+			RenderBackEnd::shared()->selfCheck();
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
@@ -131,6 +137,7 @@ void ShaderProgram::setUniform2Float(const char *str, float x, float y)
         if(ptr!=-1)
         {
             glUniform2f(ptr,x,y);
+			RenderBackEnd::shared()->selfCheck();
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
@@ -148,6 +155,7 @@ void ShaderProgram::setUniform4Float(const char *str, float x, float y, float z,
         if(ptr!=-1)
         {
             glUniform4f(ptr,x,y,z,w);
+			RenderBackEnd::shared()->selfCheck();
         }
         else{
             //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
@@ -168,6 +176,7 @@ unsigned int ShaderProgram::attributeLocation(string name)
     }else
     {
         auto location = glGetAttribLocation(shader,name.c_str());
+		RenderBackEnd::shared()->selfCheck();
         m_locationMap.insert(std::make_pair(name,location));
         return location;
     }
@@ -176,11 +185,13 @@ unsigned int ShaderProgram::attributeLocation(string name)
 void ShaderProgram::enableAttributeArray(unsigned int attributeId)
 {
     glEnableVertexAttribArray(attributeId);
+	RenderBackEnd::shared()->selfCheck();
 }
 
 void ShaderProgram::setAttributeBuffer(int ID, int dataType, int offset, int size, int stride)
 {
     glVertexAttribPointer(ID,size,dataType,GL_FALSE,stride,reinterpret_cast<void *>(offset));
+	RenderBackEnd::shared()->selfCheck();
 }
 
 int ShaderProgram::uniformLocation(std::string name)
@@ -192,6 +203,7 @@ int ShaderProgram::uniformLocation(std::string name)
 	}else
 	{
 		int ptr =glGetUniformLocation(this->shader,name.c_str());
+		RenderBackEnd::shared()->selfCheck();
 		m_uniformMap[name] = ptr;
 		return ptr;
 	}
@@ -201,6 +213,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
 {
 	printf("create shader!");
     GLuint ShaderObj = glCreateShader(ShaderType);
+	RenderBackEnd::shared()->selfCheck();
 
     if (ShaderObj == 0) {
         fprintf(stderr, "Error creating shader type %d\n", ShaderType);
@@ -212,9 +225,12 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
     GLint Lengths[1];
     Lengths[0]= strlen(pShaderText);
     glShaderSource(ShaderObj, 1, p, Lengths);
+	RenderBackEnd::shared()->selfCheck();
     glCompileShader(ShaderObj);
+	RenderBackEnd::shared()->selfCheck();
     GLint success;
     glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
+	RenderBackEnd::shared()->selfCheck();
     if (!success) {
         GLchar InfoLog[1024];
         glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
@@ -222,6 +238,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
         exit(1);
     }
     glAttachShader(ShaderProgram, ShaderObj);
+	RenderBackEnd::shared()->selfCheck();
 }
 
 } // namespace tzw
