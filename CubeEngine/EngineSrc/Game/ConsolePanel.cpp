@@ -274,7 +274,6 @@ namespace tzw {
 					data->DeleteChars((int)(word_start - data->Buf), (int)(word_end - word_start));
 					data->InsertChars(data->CursorPos, candidates[0], candidates[0] + match_len);
 				}
-
 				// List matches
 				AddLog("Possible matches:\n");
 				for (int i = 0; i < candidates.Size; i++)

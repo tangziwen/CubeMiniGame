@@ -4,7 +4,6 @@
 #include "../Scene/SceneMgr.h"
 #include "../Engine/Engine.h"
 #include "../Scene/Scene.h"
-#include <iostream>
 #include <algorithm>
 #include "../Event/EventMgr.h"
 #include "../Rendering/Renderer.h"

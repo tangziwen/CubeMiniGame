@@ -5,13 +5,9 @@
 #include "time.h"
 #include "Utility/misc/Tmisc.h"
 #include <algorithm>
-#include "EngineSrc/3D/SkyBox.h"
-#include "EngineSrc/3D/Sky.h"
-#include <iostream>
 #include "GameConfig.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
-#include "BackEnd/RenderBackEnd.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;

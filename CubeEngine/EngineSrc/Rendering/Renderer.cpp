@@ -25,6 +25,7 @@ Renderer::Renderer()
 	m_dirLightProgram = MaterialPool::shared()->getMatFromTemplate("DirectLight");
 	m_postEffect = new Material();
 	m_postEffect->loadFromTemplate("postEffect");
+	MaterialPool::shared()->addMaterial("postEffect", m_postEffect);
 	RenderBackEnd::shared()->setIsCheckGL(false);
 	initQuad();
 	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
@@ -271,8 +272,6 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	{
 		program->enableAttributeArray(texcoordLocation);
 		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
-		
-		  
 	}
 	
 	offset += sizeof(vec2);
@@ -301,9 +300,6 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 		program->enableAttributeArray(matLocation);
 		program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 	}
-
-	mesh->getArrayBuf()->use();
-	mesh->getIndexBuf()->use();
 	switch(primitiveType)
 	{
 		case RenderCommand::PrimitiveType::Lines:
@@ -548,13 +544,19 @@ void Renderer::skyBoxPass()
 void Renderer::postEffectPass()
 {
 	auto currScene = g_GetCurrScene();
+	m_gbuffer->bindForReading();
+	m_gbuffer->bindDepth(1);
 	m_offScreenBuffer->bindForReadingGBuffer();
 	bindScreenForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_postEffect->use();
 	auto program = m_postEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniformInteger("TU_Depth",1);
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	auto cam = currScene->defaultCamera();
+	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
 	program->use();
 	renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }

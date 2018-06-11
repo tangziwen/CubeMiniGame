@@ -1,7 +1,6 @@
 #include "Sky.h"
 #include "../Scene/SceneMgr.h"
 #include "../Engine/Engine.h"
-#include "Engine/Engine.h"
 namespace tzw
 {
 	TZW_SINGLETON_IMPL(Sky)

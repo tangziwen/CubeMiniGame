@@ -8,7 +8,7 @@
 #include <Python.h>
 #endif
 #include "Scene/SceneMgr.h"
-#include "Game/ConsolePanel.h"
+#include "ScriptBase.h"
 
 namespace tzw
 { 
@@ -22,7 +22,7 @@ namespace tzw
 	void ScriptPyMgr::init()
 	{
 		Py_Initialize();
-		initBuildInModule();
+		ScriptBase::initModules();
 		g_mainModule = PyImport_Import(PyString_FromString("Script.tzw"));
 		if (PyErr_Occurred()) { PyErr_Print(); PyErr_Clear(); return ; }
 		PyObject *mainModuleDict = PyModule_GetDict(g_mainModule);
@@ -151,26 +151,6 @@ namespace tzw
 
 		return ConvertResult(presult, result_format, result);
 	}
-
-	static PyObject* py_log(PyObject* self, PyObject* args)
-	{
-		const char* msg = NULL;
-		if (!PyArg_ParseTuple(args, "s", &msg))
-		{
-			return 0;
-		}
-		//g_GetCurrScene()->getConsolePanel()->print(msg);
-		Py_RETURN_NONE;
-	}
-	static PyMethodDef module_methods[] = {
-		{ "log", py_log, METH_VARARGS, "" },
-		{ NULL }
-	};
-	void ScriptPyMgr::initBuildInModule()
-	{
-		PyObject *module = Py_InitModule3("tlib", module_methods, "tzw module");
-	}
-
 	std::string ScriptPyMgr::runString(std::string theStr)
 	{
 		

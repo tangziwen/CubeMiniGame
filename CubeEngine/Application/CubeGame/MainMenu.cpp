@@ -97,9 +97,11 @@ void MainMenu::drawIMGUI()
 				material->inspectIMGUI("far_dist", 0.1f, 200.0f);
 				material->inspectIMGUI("large_factor", 1.0f, 10.0f);
 
-				auto lightMat = MaterialPool::shared()->getMatFromTemplate("DirectLight");
-				lightMat->inspectIMGUI("fog_near", 20.0f, 150.0f);
-				lightMat->inspectIMGUI("fog_far", 50.0f, 300.0f);
+				auto PostMat = MaterialPool::shared()->getMaterialByName("postEffect");
+				PostMat->inspectIMGUI("fog_near", 20.0f, 150.0f);
+				PostMat->inspectIMGUI("fog_far", 50.0f, 300.0f);
+				PostMat->inspectIMGUI("fog_height_min", -100.0f, 50.0f);
+				PostMat->inspectIMGUI("fog_height_max", 0.0f, 150.0f);
 
 				auto sunMat = Sky::shared()->getMaterial();
 				sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);

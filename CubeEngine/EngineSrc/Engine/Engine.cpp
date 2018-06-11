@@ -15,6 +15,7 @@
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 #include "Collision/PhysicsMgr.h"
 #include "Utility/log/Tlog.h"
+#include "BackEnd/RenderBackEnd.h"
 
 namespace tzw {
 

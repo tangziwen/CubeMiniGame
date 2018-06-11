@@ -3,6 +3,8 @@
 #include "GL/glew.h"
 #include "Base/Log.h"
 #include "Engine/Engine.h"
+#include "BackEnd/RenderBackEnd.h"
+
 namespace tzw {
 
 Texture::Texture(std::string filePath)
@@ -39,11 +41,7 @@ Texture::Texture(std::string PosXFilename, std::string NegXFilename, std::string
     m_type = RenderFlag::TextureType::TextureCubeMap;
     initData();
 }
-/**
- * @brief Texture::setFilter
- * @param type 过滤类型
- * @param filter 指定过滤器,1代表min_filter,2代表mag_filter,0是两者皆设置
- */
+
 void Texture::setFilter(Texture::FilterType type, int filter)
 {
     switch(filter)
