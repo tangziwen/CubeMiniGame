@@ -1,0 +1,13 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/SSAOComposite_v.glsl",
+		"fs" : "./Res/Shaders/SSAOComposite_f.glsl"
+	},
+	"name" : "PostEffect",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}

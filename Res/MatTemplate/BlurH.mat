@@ -1,0 +1,23 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/BlurH_v.glsl",
+		"fs" : "./Res/Shaders/BlurH_f.glsl"
+	},
+	"name" : "BlurH",
+	"property" : {
+		"attributes" : [
+			["fog_near", "fog_near", "float", 50.0],
+			["fog_far", "fog_far", "float", 200.0],
+			["fog_height_min", "fog_height_min", "float", -50.0],
+			["fog_height_max", "fog_height_max", "float", 50.0],
+			["AO_distant", "AO_distant", "float", 1.0],
+			["AO_strength", "AO_strength", "float", 1.0],
+			["AO_bias", "AO_bias", "float", 0.025],
+			["roughness", "TU_roughness", "float", 5.0],
+			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+			
+		],
+		"maps" : [
+		]
+	}
+}
