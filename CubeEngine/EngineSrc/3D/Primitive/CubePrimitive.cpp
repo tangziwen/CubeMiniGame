@@ -5,6 +5,7 @@
 #include "../../Scene/SceneMgr.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 #include "EngineSrc/Technique/MaterialPool.h"
+#include "EngineSrc/Collision/PhysicsMgr.h"
 namespace tzw {
 
 CubePrimitive::CubePrimitive(float width, float depth, float height)
@@ -164,5 +165,4 @@ void CubePrimitive::checkCollide(ColliderEllipsoid * package)
 			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i + 2)].m_pos)));
 	}
 }
-
 } // namespace tzw

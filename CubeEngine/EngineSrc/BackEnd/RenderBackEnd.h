@@ -1,6 +1,8 @@
 #ifndef TZW_RENDERBACKEND_H
 #define TZW_RENDERBACKEND_H
 #include "../Rendering/RenderFlag.h"
+#include <string>
+
 namespace tzw {
 
 class RenderBackEnd
@@ -47,6 +49,8 @@ public:
 	void checkGL(int except_val = -1);
 	void selfCheck();
 	void setIsCheckGL(bool newVal);
+	std::string getCurrVersion();
+	std::string getShaderSupportVersion();
 private:
 	bool m_isCheckGL;
     static RenderBackEnd * m_instance;

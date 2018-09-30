@@ -1,10 +1,11 @@
 #include "DebugInfoPanel.h"
 #include "../Engine/Engine.h"
-#include "../2d/LabelNew.h"
 #include "../Font/FontMgr.h"
 #include "../Engine/EngineDef.h"
+#include "Scene/SceneMgr.h"
 
 #include "2d/GUISystem.h"
+#include "BackEnd/RenderBackEnd.h"
 #define PANEL_WIDTH 220
 #define PANEL_HEIGHT 180
 
@@ -40,6 +41,7 @@ DebugInfoPanel::DebugInfoPanel()
 	logicUpdateTime = 0;
 	renderUpdateTime = 0;
 	verticesCount = 0;
+	sceneCurrNodes = 0;
 	//GUISystem::shared()->addObject(this);
 
 }
@@ -49,15 +51,18 @@ void DebugInfoPanel::drawIMGUI(bool * isOpen)
 	ImGui::Begin("Profiler", isOpen, ImGuiWindowFlags_AlwaysAutoResize);
 	static float f = 0.0f;
 	updateInfo();
-	ImGui::Text("Draw Call:%d", drawCall);
-	ImGui::Text("logicUpdate:%d ms", logicUpdateTime);
-	ImGui::Text("applyRender:%d ms", renderUpdateTime);
-	ImGui::Text("indices:%d", verticesCount);
+	ImGui::Text("Scene Nodes Amount: %d", sceneCurrNodes);
+	ImGui::Text("Draw Call: %d", drawCall);
+	ImGui::Text("logicUpdate: %d ms", logicUpdateTime);
+	ImGui::Text("applyRender: %d ms", renderUpdateTime);
+	ImGui::Text("indices: %d", verticesCount);
+	ImGui::Text("GL Ver: %s", RenderBackEnd::shared()->getCurrVersion().c_str());
+	ImGui::Text("GLSL Ver: %s", RenderBackEnd::shared()->getShaderSupportVersion().c_str());
 	static int values_offset = 0;
-
+	
 	char buff[100];
 	snprintf(buff, sizeof(buff), "FPS %f", currFPS);
-	ImGui::PlotLines("ABC", values, IM_ARRAYSIZE(values), values_offset, buff, 0.0f, 60.0f, ImVec2(0, 80));
+	ImGui::PlotLines("FPS", values, IM_ARRAYSIZE(values), values_offset, buff, 0.0f, 60.0f, ImVec2(0, 80));
 	ImGui::End();
 }
 
@@ -67,6 +72,7 @@ void DebugInfoPanel::setInfo()
 
 void DebugInfoPanel::updateInfo()
 {
+	auto currentScene = g_GetCurrScene();
 	lastCalculateTime += ImGui::GetIO().DeltaTime;
 	if (lastCalculateTime > 0.5f)
 	{
@@ -75,7 +81,6 @@ void DebugInfoPanel::updateInfo()
 		logicUpdateTime = Engine::shared()->getLogicUpdateTime();
 		renderUpdateTime = Engine::shared()->getApplyRenderTime();
 		verticesCount = Engine::shared()->getIndicesCount();
-
 		for (int i = 0; i < IM_ARRAYSIZE(values) - 1; i++)
 		{
 			values[i] = values[i + 1];

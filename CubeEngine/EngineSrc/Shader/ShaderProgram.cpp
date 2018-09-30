@@ -101,7 +101,21 @@ void ShaderProgram::setUniformMat4v(const char *str, const float *array, bool tr
         }
 }
 
-void ShaderProgram::setUniformFloat(const char *str, float value)
+	void ShaderProgram::setUniform3Floatv(const char* str, const vec3* array, int count)
+	{
+        int ptr =uniformLocation(str);
+        if(ptr!=-1)
+        {
+			glUniform3fv(ptr, count, (const GLfloat*)&array[0]);  
+			RenderBackEnd::shared()->selfCheck();
+        }
+        else{
+            //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
+        }
+		
+	}
+
+	void ShaderProgram::setUniformFloat(const char *str, float value)
 {
         int ptr =uniformLocation(str);
         if(ptr!=-1)

@@ -1,4 +1,4 @@
-#include "RenderTarget.h"
+#include "FrameBuffer.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <stdlib.h>
@@ -7,14 +7,14 @@
 #include <assert.h>
 namespace tzw {
 
-RenderTarget::RenderTarget()
+FrameBuffer::FrameBuffer()
 {
 	m_fbo = 0;
 	m_depthTex = 0;
 	m_colorTexs = nullptr;
 }
 
-void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutputs, bool isUseDepth)
+void FrameBuffer::init(integer_u width, integer_u height, integer_u numOfOutputs, bool isUseDepth)
 {
 	m_width = width;
 	m_height = height;
@@ -73,13 +73,13 @@ void RenderTarget::init(integer_u width, integer_u height, integer_u numOfOutput
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
-void RenderTarget::bindForWriting()
+void FrameBuffer::bindForWriting()
 {
 	glViewport(0, 0, m_width, m_height);
 	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, m_fbo);
 }
 
-void RenderTarget::bindForReadingGBuffer()
+void FrameBuffer::bindForReadingGBuffer()
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
 	for (unsigned int i = 0 ; i < m_numOfOutputs; i++) {
@@ -94,20 +94,29 @@ void RenderTarget::bindForReadingGBuffer()
 
 }
 
-void RenderTarget::bindForReading()
+void FrameBuffer::bindRtToTexture(integer_u gbufferID, integer_u index)
+{
+	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
+	glActiveTexture(GL_TEXTURE0 + index);
+	glBindTexture(GL_TEXTURE_2D, m_colorTexs[gbufferID]);
+}
+
+void FrameBuffer::bindForReading()
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
 }
 
-void RenderTarget::bindDepth(int index)
+void FrameBuffer::bindDepth(int index)
 {
 	glActiveTexture(GL_TEXTURE0 + index);
 	glBindTexture(GL_TEXTURE_2D, m_depthTex);
 }
 
-void RenderTarget::setReadBuffer(integer_u index)
+void FrameBuffer::setReadBuffer(integer_u index)
 {
 	glReadBuffer(GL_COLOR_ATTACHMENT0 + index);
 }
+
+
 
 } // namespace tzw

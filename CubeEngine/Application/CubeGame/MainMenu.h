@@ -25,7 +25,7 @@ private:
 	void drawToolsMenu();
 	void ShowExampleAppLog(bool* p_open);
 	void ShowExampleAppConsole(bool* p_open);
-	bool m_isShowLog;
+	bool m_isShowProfiler;
 	bool m_isShowConsole;
 	DebugInfoPanel m_debugInfoPanel;
 };

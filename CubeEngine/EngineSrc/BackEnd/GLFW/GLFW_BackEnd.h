@@ -8,7 +8,7 @@ namespace tzw {
 class GLFW_BackEnd : public WindowBackEnd
 {
 public:
-    void prepare() override;
+    void prepare(int width, int height) override;
     void run() override;
     GLFW_BackEnd();
 	void setUnlimitedCursor(bool enable) override;

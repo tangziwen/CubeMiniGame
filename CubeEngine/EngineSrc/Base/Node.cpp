@@ -12,20 +12,20 @@
 namespace tzw {
 
 Node::Node()
-    :m_isVisible(true),
-      m_isValid(true),
-      m_scene(nullptr),
-      m_scale(vec3(1,1,1)),
-      m_rotateQ(Quaternion(0.0f,0.0f,0.0f,1.0f)),
-      m_pos(vec3()),
-      m_needToUpdate(true),
-      m_localPiority(0),
-      m_globalPiority(0),
-      m_isAccpectOCTtree(true),
-      m_name("default"),
-      m_parent(nullptr)
+	: m_isVisible(true),
+	  m_isValid(true),
+	  m_scene(nullptr),
+	  m_scale(vec3(1, 1, 1)),
+	  m_rotateQ(Quaternion(0.0f, 0.0f, 0.0f, 1.0f)),
+	  m_pos(vec3()),
+	  m_needToUpdate(true),
+	  m_localPiority(0),
+	  m_globalPiority(0),
+	  m_isAccpectOCTtree(true),
+	  m_name("default"),
+	  m_parent(nullptr), m_tag(0)
 {
-    m_name = "default";
+	m_name = "default";
 }
 
 Node::~Node()

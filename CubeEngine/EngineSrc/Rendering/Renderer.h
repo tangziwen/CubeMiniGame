@@ -3,7 +3,7 @@
 
 #include "RenderCommand.h"
 #include <vector>
-#include "RenderTarget.h"
+#include "FrameBuffer.h"
 #include "EngineSrc/3D/Effect/Effect.h"
 namespace tzw {
 class Mesh;
@@ -12,7 +12,7 @@ class Renderer
 public:
     Renderer();
     static Renderer * shared();
-    void addRenderCommand(RenderCommand command);
+    void addRenderCommand(RenderCommand& command);
     void renderAll();
     void renderAllCommon();
 	void renderAllShadow(int index);
@@ -32,16 +32,21 @@ public:
     void setEnableGUIRender(bool enableGUIRender);
 	void notifySortGui();
 	void renderShadow(RenderCommand& command, int index);
+	void init();
 private:
     void initQuad();
+	void initMaterials();
+	void initBuffer();
     void geometryPass();
     void LightingPass();
 	void shadowPass();
 
-	void prepareDeferred();
-
 	void skyBoxPass();
-	void postEffectPass();
+	void ssaoSetup();
+	void SSAOPass();
+	void SSAOBlurVPass();
+	void SSAOBlurHPass();
+	void SSAOBlurCompossitPass();
     void directionalLightPass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
@@ -49,6 +54,9 @@ private:
     Mesh * m_quad;
     Material * m_dirLightProgram;
 	Material * m_postEffect;
+	Material * m_blurVEffect;
+	Material * m_blurHEffect;
+	Material * m_ssaoCompositeEffect;
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;
@@ -57,8 +65,10 @@ private:
 	std::vector<RenderCommand> m_transparentCommandList;
 	std::vector<RenderCommand> m_shadowCommandList;
     static Renderer * m_instance;
-    RenderTarget * m_gbuffer;
-	RenderTarget * m_offScreenBuffer;
+    FrameBuffer * m_gbuffer;
+	FrameBuffer * m_offScreenBuffer;
+	FrameBuffer * m_ssaoBuffer1;
+	FrameBuffer * m_ssaoBuffer2;
 };
 
 } // namespace tzw

@@ -4,16 +4,17 @@
 #include <vector>
 namespace tzw {
 
-class RenderTarget
+class FrameBuffer
 {
 public:
-    RenderTarget();
+    FrameBuffer();
     void init(integer_u width, integer_u height, integer_u numOfOutputs = 4, bool isUseDepth = true);
     void bindForWriting();
     void bindForReadingGBuffer();
     void bindForReading();
     void bindDepth(int index);
     void setReadBuffer(integer_u index);
+	void bindRtToTexture(integer_u gbufferID, integer_u index);
 private:
     integer_u m_width;
     integer_u m_height;

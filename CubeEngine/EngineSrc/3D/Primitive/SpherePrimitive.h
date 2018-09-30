@@ -15,10 +15,12 @@ namespace tzw
 		bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 		vec3 pointOnSurface(float u, float v);
 		vec3 getWorldPos(vec3 localPos);
+		float radius() const;
+		void setRadius(float radius);
+		int resolution() const;
+		void setResolution(int resolution);
 	protected:
-		
 		void initMesh();
-		
 		virtual void checkCollide(ColliderEllipsoid * package);
 		Mesh * m_mesh;
 		float m_radius;

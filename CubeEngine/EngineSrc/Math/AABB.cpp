@@ -262,6 +262,16 @@ bool AABB::isIntersect(AABB aabb,vec3 &overLap)
     }
     return isHit;
 }
+
+vec3 AABB::half()
+{
+	return size() / 2.0f;
+}
+
+vec3 AABB::size()
+{
+	return max() - min();
+}
 } // namespace tzw
 
 

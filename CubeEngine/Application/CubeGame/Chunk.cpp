@@ -17,6 +17,7 @@ static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/Collision/CollisionUtility.h"
 
 #include <random>
+#include "EngineSrc/Collision/PhysicsMgr.h"
 namespace tzw {
 
 /// <summary>	The flat noise. </summary>
@@ -132,7 +133,8 @@ void Chunk::logicUpdate(float delta)
 		m_isNeedSubmitMesh = false;
 		 
 		m_mesh->finish();
-		 
+		auto rig = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh, nullptr);
+		rig->setFriction(10.0);
 		m_grass->finish();
 		m_grass2->finish();
 	}
@@ -817,7 +819,7 @@ void Chunk::setUpTransFormation(TransformationInfo &info)
 {
 	info.m_projectMatrix = camera()->projection();
 	info.m_viewMatrix = camera()->getViewMatrix();
-	Matrix44 mat;
+	Matrix44 mat;//mesh it self contain world position
 	mat.setToIdentity();
 	info.m_worldMatrix = mat;
 }

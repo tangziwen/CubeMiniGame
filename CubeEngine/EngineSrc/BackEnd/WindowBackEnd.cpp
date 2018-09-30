@@ -8,7 +8,7 @@ WindowBackEnd::WindowBackEnd()
 
 }
 
-void WindowBackEnd::prepare()
+void WindowBackEnd::prepare(int width, int height)
 {
 
 }

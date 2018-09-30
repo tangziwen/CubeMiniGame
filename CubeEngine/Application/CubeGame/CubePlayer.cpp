@@ -6,11 +6,14 @@
 #include "EngineSrc/Event/EventMgr.h"
 #include <iostream>
 #include "3D/Primitive/CubePrimitive.h"
+#include "3D/Primitive/SpherePrimitive.h"
 #include "3D/Sky.h"
 #include "Projectile.h"
 #include "AudioSystem/AudioSystem.h"
 
 #include "3D/Vegetation/Grass.h"
+#include "EngineSrc/Collision/PhysicsMgr.h"
+#include "BuildingSystem.h"
 
 namespace tzw
 {
@@ -106,31 +109,94 @@ namespace tzw
 		}
 		return false;
 	}
+	static PhysicsRigidBody *wheelFrontLeft = NULL;
+	static PhysicsRigidBody *wheelFrontRight = NULL;
 
+	static PhysicsHingeConstraint * constraint1 = NULL;
+	static PhysicsHingeConstraint * constraint2 = NULL;
 	bool CubePlayer::onKeyPress(int keyCode)
 	{
 		switch (keyCode)
 		{
 		case TZW_KEY_1:
 			{
-				auto grass = new Grass("Res/User/CubeGame/texture/grass1.png");
-				g_GetCurrScene()->addNode(grass);
-				grass->setPos(getPos().x, getPos().y - 1.9, getPos().z);
-				printf("set Grass Pos%s\n", getPos().getStr().c_str());
+				BuildingSystem::shared()->createNewToeHold(getPos() + m_camera->getForward() * 5);
 			}
 			break;
 		case TZW_KEY_2:
+			{
+				BuildingSystem::shared()->cook();
+			}
 			break;
-		case TZW_KEY_3:
 			break;
 		case TZW_KEY_4:
 			break;
-
 		case TZW_KEY_R:
 			{
-				auto cube = new CubePrimitive(1, 1, 1);
-				g_GetCurrScene()->addNode(cube);
-				cube->setPos(getPos().x, getPos().y + 10, getPos().z);
+
+				//left front wheel
+				auto wheelA = new SpherePrimitive(0.7,10);
+				g_GetCurrScene()->addNode(wheelA);
+				wheelA->setPos(getPos().x - 3, getPos().y + 10, getPos().z);
+				auto rigA = PhysicsMgr::shared()->createRigidBodySphere(1.0, wheelA->getTranslationMatrix(), wheelA->radius());
+				rigA->attach(wheelA);
+				
+				//right front wheel
+				auto wheelB = new SpherePrimitive(0.7,10);
+				g_GetCurrScene()->addNode(wheelB);
+				wheelB->setPos(getPos().x + 3, getPos().y + 10, getPos().z);
+				auto mat = wheelB->getTranslationMatrix();
+				auto rigB = PhysicsMgr::shared()->createRigidBodySphere(1.0, mat, wheelB->radius());
+				rigB->attach(wheelB);
+
+
+				//left back wheel
+				auto wheelC = new SpherePrimitive(0.7,10);
+				g_GetCurrScene()->addNode(wheelC);
+				wheelC->setPos(getPos().x - 3, getPos().y + 10, getPos().z);
+				auto rigC = PhysicsMgr::shared()->createRigidBodySphere(1.0, wheelC->getTranslationMatrix(), wheelC->radius());
+				rigC->attach(wheelC);
+
+				//right back wheel
+				auto wheelD = new SpherePrimitive(0.7,10);
+				g_GetCurrScene()->addNode(wheelD);
+				wheelD->setPos(getPos().x + 3, getPos().y + 10, getPos().z);
+				auto rigD = PhysicsMgr::shared()->createRigidBodySphere(1.0, wheelD->getTranslationMatrix(), wheelD->radius());
+				rigD->attach(wheelD);
+
+
+				float carWidth = 3.0f;
+				float carDepth = 4.0f;
+				auto chasis = new CubePrimitive(carWidth, carDepth, 0.2f);
+				g_GetCurrScene()->addNode(chasis);
+				chasis->setPos(getPos().x, getPos().y + 10, getPos().z);
+				auto mat2 = wheelB->getTranslationMatrix();
+				auto rigChasis = PhysicsMgr::shared()->createRigidBody(1.0, mat2, chasis->getAABB());
+				rigChasis->attach(chasis);
+
+				//front
+				//connected to left wheel
+				constraint1 = PhysicsMgr::shared()->createHingeConstraint(rigChasis, rigA, vec3(-carWidth / 2.0f, 0.0, carDepth / 2.0f), vec3(0.7 + 0.05, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), false);
+
+				//connected to right wheel
+				constraint2 = PhysicsMgr::shared()->createHingeConstraint(rigChasis, rigB, vec3(carWidth / 2.0f, 0.0, carDepth / 2.0f), vec3(-(0.7 + 0.05), 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), false);
+
+				//back
+				//connected to left wheel
+				PhysicsMgr::shared()->createHingeConstraint(rigChasis, rigC, vec3(-carWidth / 2.0f, 0.0, -carDepth / 2.0f), vec3(0.7 + 0.05, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), false);
+
+				//connected to right wheel
+				PhysicsMgr::shared()->createHingeConstraint(rigChasis, rigD, vec3(carWidth / 2.0f, 0.0, -carDepth / 2.0f), vec3(-(0.7 + 0.05), 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), false);
+
+				wheelFrontLeft = rigA;
+
+				wheelFrontRight = rigB;
+			}
+			break;
+		case TZW_KEY_T:
+			{
+				constraint1->enableAngularMotor(true, -10, 100);
+				constraint2->enableAngularMotor(true, -10, 100);
 			}
 			break;
 		}
@@ -149,6 +215,8 @@ namespace tzw
 			break;
 		case TZW_KEY_F:
 			{
+				BuildingSystem::shared()->createPlaceByHit(getPos(),m_camera->getForward(), 15);
+				break;
 				std::vector<Drawable3D *> list;
 				auto pos = this->getPos();
 				AABB aabb;

@@ -12,10 +12,14 @@
 #include <windows.h>
 #include "ScriptPy/ScriptPyMgr.h"
 #include "2D/GUISystem.h"
+#include <rapidjson/rapidjson.h>
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 #include "Collision/PhysicsMgr.h"
 #include "Utility/log/Tlog.h"
 #include "BackEnd/RenderBackEnd.h"
+#include "Utility/misc/Tmisc.h"
+#include "Utility/file/Tfile.h"
+#include "rapidjson/document.h"
 
 namespace tzw {
 
@@ -66,6 +70,26 @@ std::string Engine::getWorkingDirectory()
 int Engine::getMouseButton(int mouseButton)
 {
 	return m_winBackEnd->getMouseButton(mouseButton);
+}
+
+void Engine::loadConfig()
+{
+	rapidjson::Document doc;
+	auto data = Tfile::shared()->getData("config.json",true);
+	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+	if (doc.HasParseError())
+	{
+		printf("get json data err!");
+		return;
+	}
+	auto width = doc["width"].GetInt();
+	auto height = doc["height"].GetInt();
+	setWindowWidth(width);
+	setWindowHeight(height);
+	auto enable3D = doc["3DEnable"].GetBool();
+	auto enable2D = doc["2DEnable"].GetBool();
+	Renderer::shared()->setEnable3DRender(enable3D);
+	Renderer::shared()->setEnableGUIRender(enable2D);
 }
 
 int Engine::getDrawCallCount()
@@ -155,15 +179,14 @@ static void writeFunction(const char * str)
     //g_GetCurrScene()->getConsolePanel()->print(str);
 }
 
-void Engine::onStart(int width,int height)
+void Engine::onStart()
 {
-    Engine::shared()->setWindowWidth(width);
-    Engine::shared()->setWindowHeight(height);
     Engine::shared()->initSingletons();
     TlogSystem::get()->setWriteFunc(writeFunction);
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();
+	Renderer::shared()->init();
 
 	//WorkerThreadSystem::shared()->init();
 }
@@ -226,10 +249,11 @@ void Engine::setWindowWidth(float windowWidth)
 
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
-    Engine::shared()->setDelegate(delegate);
-	Engine::shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
-	Engine::shared()->m_winBackEnd->prepare();
-	Engine::shared()->m_winBackEnd->run();
+    shared()->setDelegate(delegate);
+	shared()->loadConfig();
+	shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
+	shared()->m_winBackEnd->prepare(shared()->windowWidth(), shared()->windowHeight());
+	shared()->m_winBackEnd->run();
     return 0;
 }
 } // namespace tzw

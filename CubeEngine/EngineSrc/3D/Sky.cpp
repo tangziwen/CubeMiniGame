@@ -17,8 +17,8 @@ namespace tzw
 		tintTex2 = TextureMgr::shared()->getByPath("Texture/Sky/tint2.tga");
 		sunTex = TextureMgr::shared()->getByPath("Texture/Sky/sun.tga");
 		moonTex = TextureMgr::shared()->getByPath("Texture/Sky/moon.tga");
-		cloudTex = TextureMgr::shared()->getByPath("Texture/Sky/moon.tga");
-		cloudTex2 = TextureMgr::shared()->getByPath("Texture/Sky/moon.tga");
+		cloudTex = TextureMgr::shared()->getByPath("Texture/Sky/clouds1.png");
+		cloudTex2 = TextureMgr::shared()->getByPath("Texture/Sky/clouds2.png");
 
 		m_skyBoxTechnique->setTex("tint", tintTex, 1);
 		m_skyBoxTechnique->setTex("tint2", tintTex2, 2);

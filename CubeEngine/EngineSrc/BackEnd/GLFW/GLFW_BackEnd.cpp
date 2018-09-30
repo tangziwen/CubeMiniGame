@@ -65,14 +65,14 @@ static void char_callback(GLFWwindow *, unsigned int theChar)
     AbstractDevice::shared()->charInputEvent(theChar);
 }
 
-void GLFW_BackEnd::prepare()
+void GLFW_BackEnd::prepare(int width, int height)
 {
     if (!glfwInit())
     {
         exit(EXIT_FAILURE);
     }
-	int w = 1024;
-	int h = 1024;
+	int w = width;
+	int h = height;
     glfwWindowHint(GLFW_RESIZABLE,0);
 
     m_window = glfwCreateWindow(w, h, EngineDef::versionStr, NULL, NULL);

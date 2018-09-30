@@ -7,6 +7,9 @@
 #include "Technique/MaterialPool.h"
 #include "3D/Sky.h"
 #include "Collision/PhysicsMgr.h"
+#include "Utility/math/TbaseMath.h"
+#include "BuildingSystem.h"
+
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -19,16 +22,15 @@ static void onOption(Button * btn)
 
 }
 
-MainMenu::MainMenu()
+MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false)
 {
-
 }
 
 void MainMenu::init()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
 	GUISystem::shared()->addObject(this);
-	m_isShowLog = false;
+	m_isShowProfiler = false;
 	m_isShowConsole = false;
 	//hide();
 }
@@ -97,14 +99,30 @@ void MainMenu::drawIMGUI()
 				material->inspectIMGUI("far_dist", 0.1f, 200.0f);
 				material->inspectIMGUI("large_factor", 1.0f, 10.0f);
 
-				auto PostMat = MaterialPool::shared()->getMaterialByName("postEffect");
+				auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
 				PostMat->inspectIMGUI("fog_near", 20.0f, 150.0f);
 				PostMat->inspectIMGUI("fog_far", 50.0f, 300.0f);
 				PostMat->inspectIMGUI("fog_height_min", -100.0f, 50.0f);
 				PostMat->inspectIMGUI("fog_height_max", 0.0f, 150.0f);
 
+				PostMat->inspectIMGUI("AO_distant", 0.5f, 5.0f);
+
+				PostMat->inspectIMGUI("AO_strength", 0.00f, 1.0f);
+
+
+				PostMat->inspectIMGUI("AO_bias", 0.001f, 0.1f);
 				auto sunMat = Sky::shared()->getMaterial();
 				sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
+
+				auto dirLight = g_GetCurrScene()->getDirectionLight();
+
+
+				float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
+				ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
+				dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
+
+				//auto sunMat = Sky::shared()->getMaterial();
+				//sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
 
 				if (ImGui::Button("dump to file"))
 				{
@@ -170,13 +188,13 @@ void MainMenu::drawToolsMenu()
 {
 	if (ImGui::BeginMenu("Tools"))
 	{
-		ImGui::MenuItem("Profiler", nullptr, &m_isShowLog);
+		ImGui::MenuItem("Profiler", nullptr, &m_isShowProfiler);
 		ImGui::MenuItem("Console", nullptr, &m_isShowConsole);
 		ImGui::EndMenu();
 	}
-	if (m_isShowLog)
+	if (m_isShowProfiler)
 	{
-		m_debugInfoPanel.drawIMGUI(&m_isShowLog);
+		m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
 	}
 	if (m_isShowConsole)
 	{

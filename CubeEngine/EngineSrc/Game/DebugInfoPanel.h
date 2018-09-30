@@ -15,6 +15,7 @@ private:
 	int logicUpdateTime;
 	int renderUpdateTime;
 	int verticesCount;
+	int sceneCurrNodes;
 };
 
 } // namespace tzw

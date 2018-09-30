@@ -22,7 +22,7 @@ public:
 	vec2 getMousePos();
     float deltaTime() const;
     void update(float delta);
-    void onStart(int width, int height);
+    void onStart();
     float FPS();
     int getDrawCallCount();
     void setDrawCallCount(int drawCallCount);
@@ -40,6 +40,7 @@ public:
 	void setUnlimitedCursor(bool enable);
 	std::string getWorkingDirectory();
 	int getMouseButton(int mouseButton);
+	void loadConfig();
 private:
 	WindowBackEnd * m_winBackEnd{};
     static Engine * m_instance;

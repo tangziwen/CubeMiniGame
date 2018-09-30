@@ -7,7 +7,7 @@ class WindowBackEnd
 {
 public:
     WindowBackEnd();
-    virtual void prepare();
+	virtual void prepare(int width, int height);
     virtual void run();
 	virtual void setUnlimitedCursor(bool enable);
 	virtual void getMousePos(double* posX, double* posY);

@@ -12,7 +12,9 @@ namespace tzw
 	{
 		m_radius = radius;
 		m_resolution = resolution;
-		m_material = Material::createFromTemplate("Color");
+		m_material = Material::createFromTemplate("ModelStd");
+		auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
+		m_material->setTex("diffuseMap", texture);
 		initMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());
 		setIsAccpectOCTtree(false);
@@ -70,17 +72,17 @@ namespace tzw
 					// other parametric surfaces.
 					// Output the first triangle of this grid square
 						
-					m_mesh->addVertex(VertexData(p0, p0.normalized()));
-					m_mesh->addVertex(VertexData(p2, p2.normalized()));
-					m_mesh->addVertex(VertexData(p1, p1.normalized()));
+					m_mesh->addVertex(VertexData(p0, p0.normalized(), vec2(u, v)));
+					m_mesh->addVertex(VertexData(p2, p2.normalized(), vec2(un, v)));
+					m_mesh->addVertex(VertexData(p1, p1.normalized(), vec2(u, vn)));
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 
 
-					m_mesh->addVertex(VertexData(p3, p3.normalized()));
-					m_mesh->addVertex(VertexData(p1, p1.normalized()));
-					m_mesh->addVertex(VertexData(p2, p2.normalized()));
+					m_mesh->addVertex(VertexData(p3, p3.normalized(), vec2(un, vn)));
+					m_mesh->addVertex(VertexData(p1, p1.normalized(), vec2(u, vn)));
+					m_mesh->addVertex(VertexData(p2, p2.normalized(), vec2(un, v)));
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
@@ -106,4 +108,23 @@ namespace tzw
 		}
 	}
 
+float SpherePrimitive::radius() const
+{
+	return m_radius;
+}
+
+void SpherePrimitive::setRadius(float radius)
+{
+	m_radius = radius;
+}
+
+int SpherePrimitive::resolution() const
+{
+	return m_resolution;
+}
+
+void SpherePrimitive::setResolution(int resolution)
+{
+	m_resolution = resolution;
+}
 }

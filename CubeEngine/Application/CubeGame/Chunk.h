@@ -1,7 +1,6 @@
 #ifndef CHUNK_H
 #define CHUNK_H
 #include "EngineSrc/CubeEngine.h"
-#include <string>
 #include <vector>
 #include "3D/Vegetation/Grass.h"
 struct vertexInfo

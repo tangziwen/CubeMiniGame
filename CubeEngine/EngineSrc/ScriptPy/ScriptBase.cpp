@@ -1,4 +1,5 @@
 #include "ScriptBase.h"
+#include "Base/Log.h"
 #ifdef _DEBUG
 #undef _DEBUG
 #include <Python27/include/Python.h>
@@ -17,6 +18,7 @@ namespace tzw
 			{
 				return 0;
 			}
+			tlog("%s\n", msg);
 			Py_RETURN_NONE;
 		}
 		static PyMethodDef module_methods[] = {
@@ -25,7 +27,8 @@ namespace tzw
 		};
 		void initModules()
 		{
-			PyObject *module = Py_InitModule3("tzw", module_methods, "tzw module");
+			PyObject *module = Py_InitModule3("tlib", module_methods, "tzw module");
+			if (PyErr_Occurred()) { PyErr_Print(); PyErr_Clear(); return ; }
 		}
 	}
 }

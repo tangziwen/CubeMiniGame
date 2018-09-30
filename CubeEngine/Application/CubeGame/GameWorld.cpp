@@ -107,7 +107,7 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::startGame()
 {
-	 
+	PhysicsMgr::shared()->start();
 	Tmisc::DurationBegin();
 	 
     unloadGame();

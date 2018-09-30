@@ -28,6 +28,8 @@ public:
     void setMax(const vec3 &max);
     bool isCanCotain(AABB aabb);
     bool isIntersect(AABB aabb, vec3 &overLap);
+	vec3 half();
+	vec3 size();
 private:
     vec3 m_min;
     vec3 m_max;

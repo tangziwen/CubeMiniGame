@@ -124,6 +124,11 @@ void Scene::setSkyBox(SkyBox *skyBox)
     m_skyBox = skyBox;
 }
 
+int Scene::getCurrNodesAmount()
+{
+	return 0;
+}
+
 BaseLight *Scene::getAmbient() const
 {
     return m_ambient;

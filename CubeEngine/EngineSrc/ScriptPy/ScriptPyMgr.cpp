@@ -9,6 +9,7 @@
 #endif
 #include "Scene/SceneMgr.h"
 #include "ScriptBase.h"
+#include "Base/Log.h"
 
 namespace tzw
 { 
@@ -23,7 +24,7 @@ namespace tzw
 	{
 		Py_Initialize();
 		ScriptBase::initModules();
-		g_mainModule = PyImport_Import(PyString_FromString("Script.tzw"));
+		g_mainModule = PyImport_Import(PyString_FromString("Res.Script.tzw"));
 		if (PyErr_Occurred()) { PyErr_Print(); PyErr_Clear(); return ; }
 		PyObject *mainModuleDict = PyModule_GetDict(g_mainModule);
 		PyDict_SetItemString(mainModuleDict, "__builtins__", PyEval_GetBuiltins());
@@ -40,6 +41,8 @@ namespace tzw
 			auto pFunc = PyObject_GetAttrString(g_mainModule, "init");
 			auto pArgs = PyTuple_New(0);
 			PyObject_CallObject(pFunc, pArgs);
+            if (PyErr_Occurred())
+                PyErr_Print();
 		}
 	}
 
@@ -52,7 +55,20 @@ namespace tzw
 		}
 	}
 
-
+	static PyObject* py_log(PyObject* self, PyObject* args)
+	{
+		const char* msg = NULL;
+		if (!PyArg_ParseTuple(args, "s", &msg))
+		{
+			return 0;
+		}
+		tlog("%s\n", msg);
+		Py_RETURN_NONE;
+	}
+	static PyMethodDef module_methods[] = {
+		{ "log", py_log, METH_VARARGS, "" },
+		{ NULL }
+	};
 
 	static int ConvertResult(PyObject *presult, const char *result_format, void *result)
 	{

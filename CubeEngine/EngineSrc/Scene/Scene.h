@@ -48,6 +48,7 @@ public:
 
     SkyBox *getSkyBox() const;
     void setSkyBox(SkyBox *skyBox);
+	int getCurrNodesAmount();
 private:
     DirectionalLight *m_dirLight;
     ConsolePanel * m_consolePanel;

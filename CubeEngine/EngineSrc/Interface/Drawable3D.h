@@ -7,6 +7,8 @@
 #include "../Math/t_Sphere.h"
 #include "../Collision/ColliderEllipsoid.h"
 namespace tzw {
+class Ray;
+
 class Drawable3D : public Drawable
 {
 public:

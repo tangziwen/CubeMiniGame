@@ -42,7 +42,7 @@ void AbstractDevice::mouseMoveEvent(vec2 pos)
 void AbstractDevice::init(int width,int height)
 {
     RenderBackEnd::shared()->initDevice();
-    Engine::shared()->onStart(width,height);
+    Engine::shared()->onStart();
     m_nowTicks = m_oldTicks = clock();
 }
 

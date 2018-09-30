@@ -9,6 +9,7 @@
 #include "../2D/GUISystem.h"
 #include "Technique/MaterialPool.h"
 #include "../3D/ShadowMap/ShadowMap.h"
+#include <random>
 
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
@@ -17,18 +18,6 @@ Renderer::Renderer()
 	m_enable3DRender = true;
 	m_enableGUIRender = true;
 	m_isNeedSortGUI = true;
-	m_gbuffer = new RenderTarget();
-	
-	m_gbuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight());
-	m_offScreenBuffer = new RenderTarget();
-	m_offScreenBuffer->init(Engine::shared()->windowWidth(),Engine::shared()->windowHeight(),1,false);
-	m_dirLightProgram = MaterialPool::shared()->getMatFromTemplate("DirectLight");
-	m_postEffect = new Material();
-	m_postEffect->loadFromTemplate("postEffect");
-	MaterialPool::shared()->addMaterial("postEffect", m_postEffect);
-	RenderBackEnd::shared()->setIsCheckGL(false);
-	initQuad();
-	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 }
 
 Renderer *Renderer::shared()
@@ -40,7 +29,7 @@ Renderer *Renderer::shared()
 	return Renderer::m_instance;
 }
 
-void Renderer::addRenderCommand(RenderCommand command)
+void Renderer::addRenderCommand(RenderCommand& command)
 {
 	switch(command.type())
 	{
@@ -78,26 +67,32 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 
 void Renderer::renderAll()
 {
-	Engine::shared()->setDrawCallCount(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size());
-
-	shadowPass();
-	geometryPass();
-	//prepareDeferred();
-	m_offScreenBuffer->bindForWriting();
-	m_gbuffer->bindForReadingGBuffer();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
-	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
-		RenderFlag::BlendingFactor::One);
-	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
-	RenderBackEnd::shared()->setDepthTestEnable(false);
-	directionalLightPass();
-	//LightingPass();
-	skyBoxPass();
-	postEffectPass();
+	Engine::shared()->setDrawCallCount(int(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size()));
+	if(m_enable3DRender)
+	{
+		shadowPass();
+		geometryPass();
+		m_offScreenBuffer->bindForWriting();
+		m_gbuffer->bindForReadingGBuffer();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+		RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
+		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
+			RenderFlag::BlendingFactor::One);
+		RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
+		RenderBackEnd::shared()->setDepthTestEnable(false);
+		directionalLightPass();
+		//LightingPass();
+		skyBoxPass();
+		SSAOPass();
+		SSAOBlurVPass();
+		SSAOBlurHPass();
+		SSAOBlurCompossitPass();
+	}
+	bindScreenForWriting();
 	if(m_enableGUIRender)
 	{
+		RenderBackEnd::shared()->setDepthTestEnable(false);
 		renderAllGUI();
 	}
 	clearCommands();
@@ -136,22 +131,12 @@ void Renderer::renderAllGUI()
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
-
 	GUISystem::shared()->tryRender();
-	 
-
-	//if (m_isNeedSortGUI)
-	//{
-	//	m_isNeedSortGUI = false;
-	//	std::stable_sort(m_GUICommandList.begin(),m_GUICommandList.end(),GUICommandSort);
-	//}
-	//RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::DepthTest);
-	//for(auto i =m_GUICommandList.begin();i!=m_GUICommandList.end();i++)
-	//{
-	//	RenderCommand &command = (*i);
-	//	renderGUI(command);
-	//}
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::DepthTest);
+	for(auto iter:m_GUICommandList)
+	{
+		renderGUI(iter);
+	}
 	 
 }
 
@@ -194,6 +179,16 @@ void Renderer::renderShadow(RenderCommand &command,int index)
 	{
 		renderPrimitive(command.m_mesh, command.m_material, command.m_primitiveType, ShadowMap::shared()->getProgram());
 	}
+}
+
+void Renderer::init()
+{
+	initBuffer();
+	initMaterials();
+	RenderBackEnd::shared()->setIsCheckGL(false);
+	initQuad();
+	glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+	ssaoSetup();
 }
 
 void Renderer::renderTransparent(RenderCommand & command)
@@ -243,7 +238,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	// Offset for position
 	unsigned int offset = 0;
 	  
-	Engine::shared()->increaseVerticesIndicesCount(mesh->getVerticesSize(), mesh->getIndicesSize());
+	Engine::shared()->increaseVerticesIndicesCount(int(mesh->getVerticesSize()), int(mesh->getIndicesSize()));
 	  
 	// Tell OpenGL programmable pipeline how to locate vertex position data
 	int vertexLocation = program->attributeLocation("a_position");
@@ -303,16 +298,16 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	switch(primitiveType)
 	{
 		case RenderCommand::PrimitiveType::Lines:
-			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Lines,mesh->getIndicesSize(),0);
+			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Lines, (unsigned)mesh->getIndicesSize(),0);
 		break;
 		case RenderCommand::PrimitiveType::TRIANGLES:
-			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Triangles,mesh->getIndicesSize(),0);
+			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Triangles, (unsigned)mesh->getIndicesSize(),0);
 		break;
 		case RenderCommand::PrimitiveType::TRIANGLE_STRIP:
-			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::TriangleStrip,mesh->getIndicesSize(),0);
+			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::TriangleStrip, (unsigned)mesh->getIndicesSize(),0);
 		break;
 		case RenderCommand::PrimitiveType::PATCHES:
-			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Patches,mesh->getIndicesSize(),0);
+			RenderBackEnd::shared()->drawElement(RenderFlag::IndicesType::Patches, (unsigned)mesh->getIndicesSize(),0);
 		break;
 	}
 }
@@ -436,6 +431,44 @@ void Renderer::initQuad()
 	m_quad->finish(true);
 }
 
+void Renderer::initMaterials()
+{
+	m_dirLightProgram = MaterialPool::shared()->getMatFromTemplate("DirectLight");
+
+	m_postEffect = new Material();
+	m_postEffect->loadFromTemplate("SSAO");
+	MaterialPool::shared()->addMaterial("SSAO", m_postEffect);
+
+	m_blurVEffect = new Material();
+	m_blurVEffect->loadFromTemplate("blurV");
+	MaterialPool::shared()->addMaterial("blurV", m_blurVEffect);
+
+	m_blurHEffect = new Material();
+	m_blurHEffect->loadFromTemplate("blurH");
+	MaterialPool::shared()->addMaterial("blurV", m_blurHEffect);
+
+	m_ssaoCompositeEffect = new Material();
+	m_ssaoCompositeEffect->loadFromTemplate("SSAOComposite");
+	MaterialPool::shared()->addMaterial("SSAOComposite", m_ssaoCompositeEffect);
+}
+
+void Renderer::initBuffer()
+{
+	int w = Engine::shared()->windowWidth();
+	int h = Engine::shared()->windowHeight();
+	m_gbuffer = new FrameBuffer();
+	m_gbuffer->init(w, h);
+
+	m_offScreenBuffer = new FrameBuffer();
+	m_offScreenBuffer->init(w, h,1,false);
+
+	m_ssaoBuffer1 = new FrameBuffer();
+	m_ssaoBuffer1->init(w, h, 1, false);
+
+	m_ssaoBuffer2 = new FrameBuffer();
+	m_ssaoBuffer2->init(w, h, 1, false);
+}
+
 void Renderer::geometryPass()
 {
 	m_gbuffer->bindForWriting();
@@ -540,25 +573,116 @@ void Renderer::skyBoxPass()
 		renderPrimitive(skyBox->skyBoxMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
 	}
 }
+const int KERNEL_SIZE = 64;
+static vec3 kernel[KERNEL_SIZE];
+const int NOISE_SIZE = 16;
+static vec3 noiseRandom[NOISE_SIZE];
+static unsigned int noiseTexture;
 
-void Renderer::postEffectPass()
+static float lerp(float a, float b, float f)
+{
+    return a + f * (b - a);
+}
+void Renderer::ssaoSetup()
+{
+
+    std::uniform_real_distribution<GLfloat> randomFloats(0.0f, 1.0f); // generates random floats between 0.0 and 1.0
+    std::default_random_engine generator;
+    for (unsigned int i = 0; i < 64; ++i)
+    {
+        vec3 sample(randomFloats(generator) * 2.0f - 1.0f, randomFloats(generator) * 2.0f - 1.0f, randomFloats(generator));
+        sample = sample.normalized();
+        sample *= randomFloats(generator);
+        float scale = float(i) / KERNEL_SIZE;
+
+        // scale samples s.t. they're more aligned to center of kernel
+        scale = lerp(0.1f, 1.0f, scale * scale);
+        sample *= scale;
+		kernel[i] = sample;
+	}
+
+    for (unsigned int i = 0; i < NOISE_SIZE; i++)
+    {
+        vec3 noise(randomFloats(generator) * 2.0f - 1.0f, randomFloats(generator) * 2.0f - 1.0f, 0.0f); // rotate around z-axis (in tangent space)
+		noiseRandom[i] = noise;
+	}
+    glGenTextures(1, &noiseTexture);
+    glBindTexture(GL_TEXTURE_2D, noiseTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, 4, 4, 0, GL_RGB, GL_FLOAT, &noiseRandom[0]);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+}
+
+void Renderer::SSAOPass()
 {
 	auto currScene = g_GetCurrScene();
 	m_gbuffer->bindForReading();
 	m_gbuffer->bindDepth(1);
 	m_offScreenBuffer->bindForReadingGBuffer();
-	bindScreenForWriting();
+	m_ssaoBuffer1->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_postEffect->use();
 	auto program = m_postEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniformInteger("TU_Depth",1);
+	m_gbuffer->bindRtToTexture(2, 2);
+	program->setUniformInteger("TU_normalBuffer",2);
+	m_gbuffer->bindRtToTexture(1, 3);
+	program->setUniformInteger("TU_positionBuffer",3);
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
 	auto cam = currScene->defaultCamera();
 	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
+	program->setUniformMat4v("TU_Project", cam->projection().data());
+	program->setUniformMat4v("TU_view", cam->getViewMatrix().data());
+	
+	program->setUniform3Floatv("gKernel",kernel,KERNEL_SIZE);
+	glActiveTexture(GL_TEXTURE0 + 6);
+	glBindTexture(GL_TEXTURE_2D, noiseTexture);
+	program->setUniformInteger("gNoise",6);
 	program->use();
 	renderPrimitive(m_quad, m_postEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::SSAOBlurVPass()
+{
+	m_ssaoBuffer1->bindRtToTexture(0, 0);
+	m_ssaoBuffer2->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_blurVEffect->use();
+	auto program = m_blurVEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize() * 0.5f);
+	renderPrimitive(m_quad, m_blurVEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::SSAOBlurHPass()
+{
+	m_ssaoBuffer2->bindRtToTexture(0, 0);
+	m_ssaoBuffer1->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_blurHEffect->use();
+	auto program = m_blurHEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize() * 0.5f);
+	renderPrimitive(m_quad, m_blurHEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::SSAOBlurCompossitPass()
+{
+	m_offScreenBuffer->bindRtToTexture(0, 0);
+	m_ssaoBuffer1->bindRtToTexture(0,1);
+	bindScreenForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	auto program = m_ssaoCompositeEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniformInteger("TU_SSAOBuffer",1);
+	renderPrimitive(m_quad, m_ssaoCompositeEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::directionalLightPass()
@@ -672,20 +796,6 @@ void Renderer::bindScreenForWriting()
 	glViewport(0, 0, int(size.x), int(size.y));
 	RenderBackEnd::shared()->selfCheck();
 	RenderBackEnd::shared()->bindFrameBuffer(0);
-}
-
-	void Renderer::prepareDeferred()
-{
-	m_offScreenBuffer->bindForWriting();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-	RenderBackEnd::shared()->selfCheck();
-	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-	RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
-	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
-		RenderFlag::BlendingFactor::One);
-	RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
-	RenderBackEnd::shared()->setDepthTestEnable(false);
-	m_gbuffer->bindForReadingGBuffer();
 }
 
 } // namespace tzw

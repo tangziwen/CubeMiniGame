@@ -250,5 +250,6 @@ vec3 Camera::unproject(vec3 src)
 	(*near) = m_near;
 	(*far) = m_far;
 	}
+
 } // namespace tzw
 

@@ -16,6 +16,7 @@ public:
     int getShaderId();
     void setUniformInteger(const char * str,int value);
     void setUniformMat4v(const char * str, const float *array, bool transpose = false, int count = 1);
+	void setUniform3Floatv(const char * str, const vec3 * array, int count);
     void setUniformFloat(const char * str,float value);
     void setUniform3Float(const char * str,float x,float y,float z);
     void setUniform3Float(const char * str,vec3 v);

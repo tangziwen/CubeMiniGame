@@ -13,7 +13,7 @@ namespace tzw
 	{
 		m_program = ShaderMgr::shared()->getByPath("./Res/Shaders/ShadowNaive_v.glsl", "./Res/Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
-		int shadowMapSize[] = {512, 512, 512};
+		int shadowMapSize[] = {2048, 1024, 1024};
 		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
 		{
 			auto shadowMap = new ShadowMapFBO();

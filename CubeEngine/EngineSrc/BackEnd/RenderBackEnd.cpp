@@ -41,6 +41,16 @@ void RenderBackEnd::setIsCheckGL(bool newVal)
 	m_isCheckGL = newVal;
 }
 
+std::string RenderBackEnd::getCurrVersion()
+{
+	return reinterpret_cast<const char *>(glGetString(GL_VERSION));
+}
+
+std::string RenderBackEnd::getShaderSupportVersion()
+{
+	return reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION ));
+}
+
 RenderBackEnd *RenderBackEnd::shared()
 {
 	if(!m_instance)

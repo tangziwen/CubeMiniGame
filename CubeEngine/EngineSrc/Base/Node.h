@@ -7,7 +7,6 @@
 #include <string>
 #include <vector>
 #include <deque>
-#include "../Scene/OctreeScene.h"
 #include "Rendering/RenderCommand.h"
 #include "../Action/ActionMgr.h"
 namespace tzw {
