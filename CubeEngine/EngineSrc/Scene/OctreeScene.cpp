@@ -20,9 +20,8 @@ OctreeNode::OctreeNode()
 	genId();
 }
 
-OctreeScene::OctreeScene()
+OctreeScene::OctreeScene(): m_root(nullptr)
 {
-
 }
 
 void OctreeScene::init(AABB range)

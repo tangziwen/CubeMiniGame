@@ -8,11 +8,11 @@ namespace tzw {
 class RepeatForever : public Action
 {
 public:
-    RepeatForever(ActionInterval * act);
+	explicit RepeatForever(ActionInterval * act);
 
-    virtual void init(Node * theNode);
-    virtual void update(Node * node, float dt);
-    virtual bool isDone();
+	void init(Node * theNode) override;
+	void update(Node * node, float dt) override;
+	bool isDone() override;
     virtual ~RepeatForever();
 private:
     ActionInterval * m_internalAct;

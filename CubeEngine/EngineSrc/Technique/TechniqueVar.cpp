@@ -44,9 +44,9 @@ void TechniqueVar::setV4(vec4 value)
     type = Type::Vec4;
 }
 
-TechniqueVar::TechniqueVar()
+TechniqueVar::TechniqueVar(): data()
 {
-    type = Type::Invalid;
+	type = Type::Invalid;
 }
 
 TechniqueVar *TechniqueVar::clone() const

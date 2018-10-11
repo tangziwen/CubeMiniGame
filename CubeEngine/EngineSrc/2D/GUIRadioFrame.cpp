@@ -3,13 +3,13 @@
 
 namespace tzw {
 
-GUIRadioFrame::GUIRadioFrame()
+GUIRadioFrame::GUIRadioFrame(): m_tipsLabel(nullptr), m_detailLabel(nullptr)
 {
 	m_expandType = ExpandType::Horizontal;
 	m_focusBtn = nullptr;
-    m_stride = 10;
+	m_stride = 10;
 	m_btnsStride = 10;
-    m_marginHorizontal = vec2(10,10);
+	m_marginHorizontal = vec2(10, 10);
 }
 
 GUIRadioFrame *GUIRadioFrame::create(std::string titleText, vec4 color, vec2 size)

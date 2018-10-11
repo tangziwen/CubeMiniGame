@@ -458,12 +458,11 @@ void RenderBackEnd::checkGL(int except_val)
 	}
 }
 
-RenderBackEnd::RenderBackEnd()
+RenderBackEnd::RenderBackEnd(): m_isCullFace(false)
 {
-	memset(m_textureSlot,0,sizeof(m_textureSlot));
+	memset(m_textureSlot, 0, sizeof(m_textureSlot));
 	m_depthTestMethodCache = RenderFlag::DepthTestMethod::Less;
 	m_isCheckGL = false;
 }
-
 } // namespace tzw
 

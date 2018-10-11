@@ -9,9 +9,9 @@ const int DATA_ROW = 10;
 #include <algorithm>
 namespace tzw {
 
-GlyphAtlas::GlyphAtlas()
+GlyphAtlas::GlyphAtlas(): m_height(0), cellWidth(0), cellHeight(0)
 {
-    m_buffer = nullptr;
+	m_buffer = nullptr;
 	m_texture = nullptr;
 }
 
@@ -59,8 +59,8 @@ void GlyphAtlas::generate()
         auto node =new GlyphAtlasNode();
         node->parent = this;
         node->m_data = glyphData;
-        node->x = destCellX * cellWidth;
-        node->y = destCellY * cellHeight;
+        node->m_x = destCellX * cellWidth;
+        node->m_y = destCellY * cellHeight;
         m_glyphMap[glyphData.m_char] = node;
     }
 }
@@ -138,9 +138,8 @@ void GlyphAtlas::cleanUp()
     }
 }
 
-GlyphAtlasNode::GlyphAtlasNode()
+GlyphAtlasNode::GlyphAtlasNode(): m_data(), m_x(0), m_y(0), parent(nullptr)
 {
-
 }
 
 vec2 GlyphAtlasNode::UV(float u, float v)
@@ -151,7 +150,7 @@ vec2 GlyphAtlasNode::UV(float u, float v)
 float GlyphAtlasNode::U(float fakeU)
 {
     auto texSize = parent->texture()->getSize();
-    int pos = x + m_data.width*fakeU;
+    int pos = m_x + m_data.width*fakeU;
     return 1.0f*pos / texSize.x;
 }
 
@@ -159,7 +158,7 @@ float GlyphAtlasNode::V(float fakeV)
 {
     auto texSize = parent->texture()->getSize();
     fakeV = 1.0 - fakeV;
-    auto theY = texSize.y - y;
+    auto theY = texSize.y - m_y;
     int pos = theY - m_data.rows*fakeV;
     return 1.0f*pos / texSize.y;
 }

@@ -16,9 +16,8 @@
 
 namespace tzw {
 
-Material::Material()
+Material::Material(): m_isCullFace(false), m_program(nullptr)
 {
-
 }
 
 void Material::loadFromTemplate(std::string name)
@@ -37,7 +36,6 @@ void Material::loadFromFile(std::string filePath)
 	{
 		tlog("[error] get json data err! %d offset %d\n", doc.GetParseError(), doc.GetErrorOffset());
 		exit(0);
-		return;
 	}
 	if (doc.HasMember("name"))
 	{

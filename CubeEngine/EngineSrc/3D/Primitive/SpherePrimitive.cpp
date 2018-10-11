@@ -17,7 +17,7 @@ namespace tzw
 		m_material->setTex("diffuseMap", texture);
 		initMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());
-		setIsAccpectOCTtree(false);
+		setIsAccpectOcTtree(false);
 		initMesh();
 	}
 

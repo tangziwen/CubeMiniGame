@@ -7,7 +7,8 @@ namespace tzw {
 class AppEntry
 {
 public:
-    AppEntry();
+	virtual ~AppEntry() = default;
+	AppEntry();
     virtual void onStart() =0;
     virtual void onExit() =0;
     virtual void onUpdate(float delta) =0;

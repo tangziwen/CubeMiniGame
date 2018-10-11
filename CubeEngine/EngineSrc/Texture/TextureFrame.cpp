@@ -2,9 +2,8 @@
 #include "TextureAtlas.h"
 namespace tzw {
 
-TextureFrame::TextureFrame()
+TextureFrame::TextureFrame(): x(0), y(0), w(0), h(0), m_sheet(nullptr)
 {
-
 }
 
 TextureAtlas *TextureFrame::sheet() const

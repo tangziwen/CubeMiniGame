@@ -11,9 +11,9 @@ class RotateBy :public ActionInterval
 {
 public:
     RotateBy(float duration,vec3 offset);
-    virtual void init(Node * theNode);
-    virtual void step(Node *node, float dt);
-    virtual void final(Node * node);
+	void init(Node * theNode) override;
+	void step(Node *node, float dt) override;
+	void final(Node * node) override;
     virtual ~RotateBy();
 private:
     vec3 m_offset;

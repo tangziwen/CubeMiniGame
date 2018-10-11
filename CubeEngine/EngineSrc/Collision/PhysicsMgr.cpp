@@ -18,7 +18,12 @@ namespace tzw
 {
 	TZW_SINGLETON_IMPL(PhysicsMgr)
 
-	btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
+PhysicsMgr::PhysicsMgr(): m_collisionConfiguration(nullptr), m_dispatcher(nullptr), m_broadphase(nullptr),
+                          m_solver(nullptr), m_dynamicsWorld(nullptr)
+{
+}
+
+btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 	{
 		btBoxShape* box = new btBoxShape(halfExtents);
 		return box;

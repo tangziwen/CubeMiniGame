@@ -26,6 +26,7 @@ namespace tzw
 class PhysicsMgr{
 	public:
 		TZW_SINGLETON_DECL(PhysicsMgr);
+		PhysicsMgr();
 		void start();
 		void createEmptyDynamicsWorld();
 		void stop();

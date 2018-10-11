@@ -13,7 +13,9 @@
 
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
-Renderer::Renderer()
+Renderer::Renderer(): m_quad(nullptr), m_dirLightProgram(nullptr), m_postEffect(nullptr), m_blurVEffect(nullptr),
+                      m_blurHEffect(nullptr), m_ssaoCompositeEffect(nullptr), m_gbuffer(nullptr),
+                      m_offScreenBuffer(nullptr), m_ssaoBuffer1(nullptr), m_ssaoBuffer2(nullptr)
 {
 	m_enable3DRender = true;
 	m_enableGUIRender = true;

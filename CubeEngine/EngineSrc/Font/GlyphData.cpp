@@ -39,10 +39,8 @@ unsigned int GlyphData::getSpecialAdvance(unsigned long c,unsigned int baseAdvan
     {
     case '\n':
         return 0;
-        break;
     case '\t':
         return 4*baseAdvance;
-        break;
     default:
         return 0;
     }

@@ -2,9 +2,8 @@
 #include "GUIStyleMgr.h"
 namespace tzw {
 
-BoxContainer::BoxContainer()
+BoxContainer::BoxContainer(): m_frameBG(nullptr)
 {
-
 }
 
 BoxContainer *BoxContainer::create(vec2 size, vec2 boxSize)

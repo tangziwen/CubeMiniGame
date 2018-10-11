@@ -20,7 +20,7 @@ void Model::initWithFile(std::string modelFilePath)
 		mesh->calculateAABB();
 		m_localAABB.merge(mesh->getAabb());
 	}
-    setIsAccpectOCTtree(true);
+    setIsAccpectOcTtree(true);
 }
 
 Model *Model::create(std::string modelFilePath)

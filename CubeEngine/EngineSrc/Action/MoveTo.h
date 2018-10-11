@@ -9,8 +9,8 @@ class MoveTo :public ActionInterval
 {
 public:
     MoveTo(float duration,vec3 from,vec3 to);
-    virtual void step(Node *node, float dt);
-    virtual void final(Node * node);
+	void step(Node *node, float dt) override;
+	void final(Node * node) override;
     virtual ~MoveTo();
 private:
     vec3 m_fromPos;

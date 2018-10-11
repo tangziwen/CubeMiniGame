@@ -25,7 +25,7 @@ Grass::Grass(std::string filePath)
 	}
 	setMaterial(mat);
 	 
-	setIsAccpectOCTtree(false);
+	setIsAccpectOcTtree(false);
 	 
 	setCamera(g_GetCurrScene()->defaultCamera());
 	 
@@ -43,7 +43,7 @@ void Grass::setUpTransFormation(TransformationInfo &info)
 	info.m_worldMatrix = mat;
 }
 
-unsigned int Grass::getTypeID()
+unsigned int Grass::getTypeId()
 {
 	return 2333;
 }
