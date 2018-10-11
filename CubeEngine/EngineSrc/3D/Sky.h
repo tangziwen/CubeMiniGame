@@ -20,7 +20,7 @@ namespace tzw{
 		void setWeather(float val);
 	private:
 		float m_weather;
-		Model * m_model;
+		Mesh * m_mesh;
 		Material * m_skyBoxTechnique;
 		Texture * m_cloudTexture;
 		bool m_isEnable;

@@ -127,4 +127,9 @@ void SpherePrimitive::setResolution(int resolution)
 {
 	m_resolution = resolution;
 }
+
+Mesh* SpherePrimitive::getMesh()
+{
+		return m_mesh;
+}
 }
