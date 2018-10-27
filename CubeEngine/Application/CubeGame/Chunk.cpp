@@ -140,7 +140,7 @@ void Chunk::logicUpdate(float delta)
 	}
 }
 
-bool Chunk::getIsAccpectOCTtree() const
+bool Chunk::getIsAccpectOcTtree() const
 {
 	return m_isLoaded;
 }
@@ -844,7 +844,7 @@ void Chunk::deform(int X, int Y, int Z, float actualVal)
 	setVoxelScalar(X, Y, Z, actualVal);
 }
 
-unsigned int Chunk::getTypeID()
+unsigned int Chunk::getTypeId()
 {
 	return TYPE_CHUNK;
 }

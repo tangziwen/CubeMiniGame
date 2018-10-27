@@ -22,9 +22,9 @@ module::Add finalFlatTerrain;
 /// Initializes a new instance of the <see cref="GameMap"/> class.
 /// </summary>
 GameMap::GameMap()
-    :m_maxHeight(1),m_mapType(MapType::Noise)
+	: x_offset(0), y_offset(0), z_offset(0), m_maxHeight(1), m_ratio(0), m_minHeight(0), m_mapType(MapType::Noise)
 {
-    m_plane = new noise::model::Plane(myModule);
+	m_plane = new noise::model::Plane(myModule);
 	myModule.SetPersistence(0.001);
 
 	baseFlatTerrain.SetFrequency(0.001);

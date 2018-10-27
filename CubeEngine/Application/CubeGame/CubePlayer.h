@@ -16,7 +16,7 @@ namespace tzw
 			MODE_PLACE_SPHERE,
 		};
 
-		CubePlayer(Node* mainRoot);
+		explicit CubePlayer(Node* mainRoot);
 		FPSCamera* camera() const;
 		void setCamera(FPSCamera* camera);
 		vec3 getPos();

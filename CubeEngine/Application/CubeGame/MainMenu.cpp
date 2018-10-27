@@ -84,7 +84,7 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginMenu("Run-time Config"))
 			{
 
-				ImGui::MenuItem("terrain", NULL, &isOpenTerrain);
+				ImGui::MenuItem("terrain", nullptr, &isOpenTerrain);
 				ImGui::EndMenu();
 			}
 			if (isOpenTerrain)
@@ -133,7 +133,7 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginMenu("Test"))
 			{
 
-				if (ImGui::MenuItem("test phys", NULL))
+				if (ImGui::MenuItem("test phys", nullptr))
 				{
 					PhysicsMgr::shared()->start();
 				}
@@ -142,7 +142,7 @@ void MainMenu::drawIMGUI()
 
 			if (ImGui::BeginMenu("?"))
 			{
-				if (ImGui::MenuItem("About", NULL)) {
+				if (ImGui::MenuItem("About", nullptr)) {
 					isOpenAbout = true;
 				}
 				ImGui::EndMenu();
@@ -150,7 +150,7 @@ void MainMenu::drawIMGUI()
 			ImGui::EndMainMenuBar();
 
 			if (isOpenAbout) ImGui::OpenPopup("About");
-			if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
 				ImGui::Separator();
@@ -225,7 +225,7 @@ struct ExampleAppLog
 		ScrollToBottom = true;
 	}
 
-	void    Draw(const char* title, bool* p_open = NULL)
+	void    Draw(const char* title, bool* p_open = nullptr)
 	{
 		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
 		ImGui::Begin(title, p_open);
@@ -242,12 +242,12 @@ struct ExampleAppLog
 		{
 			const char* buf_begin = Buf.begin();
 			const char* line = buf_begin;
-			for (int line_no = 0; line != NULL; line_no++)
+			for (int line_no = 0; line != nullptr; line_no++)
 			{
-				const char* line_end = (line_no < LineOffsets.Size) ? buf_begin + LineOffsets[line_no] : NULL;
+				const char* line_end = (line_no < LineOffsets.Size) ? buf_begin + LineOffsets[line_no] : nullptr;
 				if (Filter.PassFilter(line, line_end))
 					ImGui::TextUnformatted(line, line_end);
-				line = line_end && line_end[1] ? line_end + 1 : NULL;
+				line = line_end && line_end[1] ? line_end + 1 : nullptr;
 			}
 		}
 		else

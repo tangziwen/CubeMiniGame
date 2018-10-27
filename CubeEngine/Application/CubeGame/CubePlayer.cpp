@@ -9,7 +9,6 @@
 #include "3D/Primitive/SpherePrimitive.h"
 #include "3D/Sky.h"
 #include "Projectile.h"
-#include "AudioSystem/AudioSystem.h"
 
 #include "3D/Vegetation/Grass.h"
 #include "EngineSrc/Collision/PhysicsMgr.h"
@@ -17,12 +16,10 @@
 
 namespace tzw
 {
-	static Audio* audio;
 
 	CubePlayer::CubePlayer(Node* mainRoot)
 	{
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
-		audio = new Audio("res/m3-1.wav");
 
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
 		camera->setPos(vec3(5, 50, -5));
@@ -32,11 +29,7 @@ namespace tzw
 		camera->reCache();
 		m_camera->setIsEnableGravity(true);
 
-		//the gun
-		//m_gunModel = Model::create("./Res/diediedie.tzw");
-		//m_gunModel->setScale(vec3(0.005, 0.005, 0.005));
-		//m_gunModel->setRotateE(vec3(0, -90, 0));
-		//m_gunModel->setPos(vec3(0.04,-0.2,-0.20));
+
 		auto NUM_MESHES = 5;
         for (int i = 0; i < NUM_MESHES ; i++) {
 			auto testModel = Model::create("Models/phoenix_ugv.tzw");
@@ -109,11 +102,11 @@ namespace tzw
 		}
 		return false;
 	}
-	static PhysicsRigidBody *wheelFrontLeft = NULL;
-	static PhysicsRigidBody *wheelFrontRight = NULL;
+	static PhysicsRigidBody *wheelFrontLeft = nullptr;
+	static PhysicsRigidBody *wheelFrontRight = nullptr;
 
-	static PhysicsHingeConstraint * constraint1 = NULL;
-	static PhysicsHingeConstraint * constraint2 = NULL;
+	static PhysicsHingeConstraint * constraint1 = nullptr;
+	static PhysicsHingeConstraint * constraint2 = nullptr;
 	bool CubePlayer::onKeyPress(int keyCode)
 	{
 		switch (keyCode)
@@ -127,7 +120,6 @@ namespace tzw
 			{
 				BuildingSystem::shared()->cook();
 			}
-			break;
 			break;
 		case TZW_KEY_4:
 			break;

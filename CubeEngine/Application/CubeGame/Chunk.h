@@ -77,7 +77,7 @@ public:
 	/// <returns>
 	/// tzw.Chunk
 	/// </returns>
-	bool getIsAccpectOCTtree() const override;
+	bool getIsAccpectOcTtree() const override;
 	/// <summary>
 	/// Submits the draw command.
 	/// </summary>
@@ -112,7 +112,7 @@ public:
 	void setLod(unsigned int newLod);
 	unsigned int getLod();
 	void deform(int x, int y, int z, float actualVal);
-	unsigned int getTypeID() override;
+	unsigned int getTypeId() override;
 	vec3 m_offset;
 	void calculateMatID();
 private:
