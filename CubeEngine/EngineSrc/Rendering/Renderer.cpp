@@ -83,13 +83,13 @@ void Renderer::renderAll()
 			RenderFlag::BlendingFactor::One);
 		RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
 		RenderBackEnd::shared()->setDepthTestEnable(false);
-		directionalLightPass();
-		//LightingPass();
+		LightingPass();
 		skyBoxPass();
 		SSAOPass();
 		SSAOBlurVPass();
 		SSAOBlurHPass();
 		SSAOBlurCompossitPass();
+		FogPass();
 	}
 	bindScreenForWriting();
 	if(m_enableGUIRender)
@@ -452,6 +452,11 @@ void Renderer::initMaterials()
 	m_ssaoCompositeEffect = new Material();
 	m_ssaoCompositeEffect->loadFromTemplate("SSAOComposite");
 	MaterialPool::shared()->addMaterial("SSAOComposite", m_ssaoCompositeEffect);
+
+
+	m_fogEffect = new Material();
+	m_fogEffect->loadFromTemplate("GlobalFog");
+	MaterialPool::shared()->addMaterial("GlobalFog", m_fogEffect);
 }
 
 void Renderer::initBuffer()
@@ -510,27 +515,26 @@ void Renderer::shadowPass()
 {
 	
 	ShadowMap::shared()->calculateProjectionMatrix();
-	auto aabb = ShadowMap::shared()->getPotentialRange();
-	std::vector<Drawable3D *> shadowNeedDrawList;
-	g_GetCurrScene()->getRange(&shadowNeedDrawList, aabb);
-	for(auto obj:shadowNeedDrawList)
-	{
-		obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
-	}
+
 	ShadowMap::shared()->getProgram()->use();
 
 	glDepthMask (true);
-	RenderBackEnd::shared()->selfCheck();
 	for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
 	{
+		m_shadowCommandList.clear();
+		auto aabb = ShadowMap::shared()->getPotentialRange(i);
+		std::vector<Drawable3D *> shadowNeedDrawList;
+		g_GetCurrScene()->getRange(&shadowNeedDrawList, aabb);
+		for(auto obj:shadowNeedDrawList)
+		{
+			obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
+		}
 		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 		shadowBuffer->BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);
-		RenderBackEnd::shared()->selfCheck();
 		if (m_enable3DRender)
 		{
 			glDisable(GL_CULL_FACE);
-			RenderBackEnd::shared()->selfCheck();
 			renderAllShadow(i);
 		}
 	}
@@ -685,6 +689,21 @@ void Renderer::SSAOBlurCompossitPass()
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniformInteger("TU_SSAOBuffer",1);
 	renderPrimitive(m_quad, m_ssaoCompositeEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::FogPass()
+{
+	m_gbuffer->bindForReading();
+	m_gbuffer->bindDepth(0);
+	auto shader = m_fogEffect->getProgram();
+	shader->use();
+	m_fogEffect->use();
+	shader->setUniformInteger("TU_Depth",0);
+	shader->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
+											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
+	renderPrimitive(m_quad, m_fogEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::directionalLightPass()

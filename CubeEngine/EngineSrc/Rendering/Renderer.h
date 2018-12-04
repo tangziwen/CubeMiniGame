@@ -47,6 +47,7 @@ private:
 	void SSAOBlurVPass();
 	void SSAOBlurHPass();
 	void SSAOBlurCompossitPass();
+	void FogPass();
     void directionalLightPass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
@@ -57,6 +58,7 @@ private:
 	Material * m_blurVEffect;
 	Material * m_blurHEffect;
 	Material * m_ssaoCompositeEffect;
+	Material * m_fogEffect;
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;

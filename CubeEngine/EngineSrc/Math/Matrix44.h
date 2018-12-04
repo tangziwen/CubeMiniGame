@@ -21,12 +21,14 @@ public:
     Matrix44 transpose();
     vec4 operator * (const vec4 & v );
     vec3 transformVec3(vec3 v);
+	vec4 transofrmVec4(vec4 v);
     void frustum(float left, float right, float bottom, float top, float near, float far);
     float * data();
     vec3 up();
     vec3 forward();
     vec3 right();
 	void stripScale();
+	vec3 getTranslation();
 private:
     float m_data[16];
 };

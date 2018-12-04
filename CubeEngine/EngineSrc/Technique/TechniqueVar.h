@@ -30,6 +30,12 @@ struct TechniqueVar
         vec2 v2;
         vec4 v4;
         Texture *tex;
+
+		//only for inspect UI
+		float f_min;
+		float f_max;
+		int i_min;
+		int i_max;
     }data;
     Type type;
     void setT(Texture * tex);

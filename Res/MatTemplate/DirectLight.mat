@@ -6,11 +6,8 @@
 	"name" : "DirectLight",
 	"property" : {
 		"attributes" : [
-			["fog_near", "fog_near", "float", 50.0],
-			["fog_far", "fog_far", "float", 200.0],
-			["fog_color", "fog_color", "vec4", [150.0, 150.0, 150.0, 1.0]],
-			["roughness", "TU_roughness", "float", 5.0],
-			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+			{"name" : "TU_roughness", "type":"float", "default":5.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
 		]

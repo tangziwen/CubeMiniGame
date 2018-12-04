@@ -6,18 +6,15 @@
 	"name" : "Terrain",
 	"property" : {
 		"attributes" : [
-			["roughness", "TU_roughness", "float", 5.0],
-
-			["uv_grass", "uv_grass", "float", 5.0],
-			["uv_dirt", "uv_dirt", "float", 5.0],
-			["uv_cliff", "uv_cliff", "float", 5.0],
-
-			["disturb_factor_near", "disturb_factor_near", "float", 0.3],
-			["disturb_factor_far", "disturb_factor_far", "float", 0.05],
-			["near_dist", "near_dist", "float", 15.0],
-			["far_dist", "far_dist", "float", 30.0],
-			["large_factor", "large_factor", "float", 2.0],
-			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+			{"name" : "uv_grass", "type":"float", "default":5.0, "ui_info":{"range":[0.1, 15.0]}},
+			{"name" : "uv_dirt", "type":"float", "default":5.0, "ui_info":{"range":[0.0, 15.0]}},
+			{"name" : "uv_cliff", "type":"float", "default":5.0, "ui_info":{"range":[0.0, 15.0]}},
+			{"name" : "disturb_factor_near", "type":"float", "default":0.3},
+			{"name" : "disturb_factor_far", "type":"float", "default":0.05},
+			{"name" : "near_dist", "type":"float", "default":15.0, "ui_info":{"range":[0.1, 100.0]}},
+			{"name" : "far_dist", "type":"float", "default":30.0, "ui_info":{"range":[0.1, 200.0]}},
+			{"name" : "large_factor", "type":"float", "default":2.0, "ui_info":{"range":[1.0, 10.0]}},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
 			["GrassTex", "TU_topGrass", 0, "Texture/T_Ground_Grass_D.png"],

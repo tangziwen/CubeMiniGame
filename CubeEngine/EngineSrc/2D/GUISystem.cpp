@@ -222,9 +222,9 @@ namespace tzw
 		io.KeyMap[ImGuiKey_X] = TZW_KEY_X;
 		io.KeyMap[ImGuiKey_Y] = TZW_KEY_Y;
 		io.KeyMap[ImGuiKey_Z] = TZW_KEY_Z;
-		ImGui::StyleColorsClassic();
+		//ImGui::StyleColorsClassic();
 		io.RenderDrawListsFn = ImGui_ImplGlfwGL2_RenderDrawLists;
-		//ImGui::StyleColorsDark();
+		ImGui::StyleColorsDark();
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowBorderSize = 2.0f;
 		style.FrameBorderSize = 2.0f;

@@ -138,7 +138,7 @@ void GameWorld::startGame()
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }
 
-bool tzw::GameWorld::onKeyPress(int keyCode)
+bool GameWorld::onKeyPress(int keyCode)
 {
     switch (keyCode) {
     case TZW_KEY_ESCAPE:

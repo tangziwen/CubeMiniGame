@@ -42,7 +42,7 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
     }
 }
 
-tzw::Mesh * Model::getMesh(int id)
+Mesh * Model::getMesh(int id)
 {
 	return m_meshList[id];
 }

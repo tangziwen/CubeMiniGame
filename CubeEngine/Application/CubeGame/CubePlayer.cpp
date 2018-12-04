@@ -111,6 +111,22 @@ namespace tzw
 	{
 		switch (keyCode)
 		{
+		case TZW_KEY_4:
+			break;
+		case TZW_KEY_T:
+			{
+				constraint1->enableAngularMotor(true, -10, 100);
+				constraint2->enableAngularMotor(true, -10, 100);
+			}
+			break;
+		}
+		return false;
+	}
+
+	bool CubePlayer::onKeyRelease(int keyCode)
+	{
+		switch (keyCode)
+		{
 		case TZW_KEY_1:
 			{
 				BuildingSystem::shared()->createNewToeHold(getPos() + m_camera->getForward() * 5);
@@ -121,18 +137,15 @@ namespace tzw
 				BuildingSystem::shared()->cook();
 			}
 			break;
-		case TZW_KEY_4:
-			break;
 		case TZW_KEY_R:
 			{
-
 				//left front wheel
 				auto wheelA = new SpherePrimitive(0.7,10);
 				g_GetCurrScene()->addNode(wheelA);
 				wheelA->setPos(getPos().x - 3, getPos().y + 10, getPos().z);
 				auto rigA = PhysicsMgr::shared()->createRigidBodySphere(1.0, wheelA->getTranslationMatrix(), wheelA->radius());
 				rigA->attach(wheelA);
-				
+				  
 				//right front wheel
 				auto wheelB = new SpherePrimitive(0.7,10);
 				g_GetCurrScene()->addNode(wheelB);
@@ -185,20 +198,6 @@ namespace tzw
 				wheelFrontRight = rigB;
 			}
 			break;
-		case TZW_KEY_T:
-			{
-				constraint1->enableAngularMotor(true, -10, 100);
-				constraint2->enableAngularMotor(true, -10, 100);
-			}
-			break;
-		}
-		return false;
-	}
-
-	bool CubePlayer::onKeyRelease(int keyCode)
-	{
-		switch (keyCode)
-		{
 		case TZW_KEY_Q:
 			{
 				m_enableGravity = !m_enableGravity;
@@ -209,41 +208,44 @@ namespace tzw
 			{
 				BuildingSystem::shared()->createPlaceByHit(getPos(),m_camera->getForward(), 15);
 				break;
-				std::vector<Drawable3D *> list;
-				auto pos = this->getPos();
-				AABB aabb;
-				aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-				aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-				g_GetCurrScene()->getRange(&list, aabb);
-				if (!list.empty())
-				{
-					Drawable3DGroup group(&list[0], list.size());
-					Ray ray(pos, m_camera->getForward());
-					vec3 hitPoint;
-					auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
-					if (chunk)
-					{
-						chunk->deformSphere(hitPoint, -0.1, 2.0f);
-					}
-				}
+				//std::vector<Drawable3D *> list;
+				//auto pos = this->getPos();
+				//AABB aabb;
+				//aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+				//aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+				//g_GetCurrScene()->getRange(&list, aabb);
+				//if (!list.empty())
+				//{
+				//	Drawable3DGroup group(&list[0], list.size());
+				//	Ray ray(pos, m_camera->getForward());
+				//	vec3 hitPoint;
+				//	auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+				//	if (chunk)
+				//	{
+				//		chunk->deformSphere(hitPoint, -0.1, 2.0f);
+				//	}
+				//}
 			}
 			break;
 		case TZW_KEY_E:
 			{
-				std::vector<Drawable3D *> list;
-				auto pos = this->getPos();
-				AABB aabb;
-				aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-				aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-				g_GetCurrScene()->getRange(&list, aabb);
-				Drawable3DGroup group(&list[0], list.size());
-				Ray ray(pos, m_camera->getForward());
-				vec3 hitPoint;
-				auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
-				if (chunk)
-				{
-					chunk->deformSphere(hitPoint, 0.1, 2.0f);
-				}
+				BuildingSystem::shared()->createBearByHit(getPos(),m_camera->getForward(), 15);
+				break;
+
+				//std::vector<Drawable3D *> list;
+				//auto pos = this->getPos();
+				//AABB aabb;
+				//aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+				//aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+				//g_GetCurrScene()->getRange(&list, aabb);
+				//Drawable3DGroup group(&list[0], list.size());
+				//Ray ray(pos, m_camera->getForward());
+				//vec3 hitPoint;
+				//auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+				//if (chunk)
+				//{
+				//	chunk->deformSphere(hitPoint, 0.1, 2.0f);
+				//}
 			}
 			break;
 		default:

@@ -6,7 +6,7 @@
 	"name" : "Color",
 	"property" : {
 		"attributes" : [
-			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
 		]

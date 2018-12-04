@@ -47,6 +47,10 @@ void TechniqueVar::setV4(vec4 value)
 TechniqueVar::TechniqueVar(): data()
 {
 	type = Type::Invalid;
+	data.f_max = 999;
+	data.f_min = -999;
+	data.i_max = 999;
+	data.i_min = 0;
 }
 
 TechniqueVar *TechniqueVar::clone() const

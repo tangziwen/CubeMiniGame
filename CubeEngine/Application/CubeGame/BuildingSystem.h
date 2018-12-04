@@ -3,6 +3,9 @@
 #include "Base/Node.h"
 #include "BlockPart.h"
 #include <set>
+#include "Island.h"
+#include "Math/Ray.h"
+
 namespace tzw
 {
 
@@ -12,12 +15,14 @@ namespace tzw
 	public:
 		BuildingSystem();
 		void createNewToeHold(vec3 pos);
+		void placeNearBearing(std::vector<BlockPart*>::value_type iter, Drawable3D* node, RayAABBSide side);
 		void createPlaceByHit(vec3 pos, vec3 dir, float dist);
+		void createBearByHit(vec3 pos, vec3 dir, float dist);
 		void cook();
-		Drawable3D * getNode();
+		void findPiovtAndAxis(BearPart * bear, BlockPart * part, vec3 & pivot, vec3 & asix);
 	private:
-		std::set<BlockPart * > m_partList;
-		Drawable3D* m_node;
+		std::set<Island *> m_IslandList;
+		std::set<BearPart* > m_bearList;
 	};
 
 

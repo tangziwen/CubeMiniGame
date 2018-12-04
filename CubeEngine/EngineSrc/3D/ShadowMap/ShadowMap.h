@@ -17,7 +17,7 @@ namespace tzw
 		Matrix44 getLightProjectionMatrix(int index);
 		void calculateProjectionMatrix();
 		ShadowMapFBO * getFBO(int index);
-		AABB getPotentialRange();
+		AABB getPotentialRange(int index);
 		void getFrustumCorners(std::vector<vec3>& corners, Matrix44 projection, float zStart, float zEnd);
 		void setupRead();
 		void calculateZList();

@@ -196,6 +196,70 @@ float random(vec3 seed, int i){
 	return fract(sin(dot_product) * 43758.5453);
 }
 
+vec4 step4(vec4 value1, vec4 value2)
+{
+	vec4 result;
+	result.x = step(value1.x, value2.x);
+	result.y = step(value1.y, value2.y);
+	result.z = step(value1.z, value2.z);
+	result.w = step(value1.w, value2.w);
+	return result;
+}
+
+#define SampleShadowMap(index, UV, result) result = texture( TU_ShadowMap[index], UV).z;
+float pcf_3x3(vec2 pInLitTC, float litZ, vec2 vInvShadowMapWH, int shadowIndex)
+{
+	vec2 TexelPos = pInLitTC / vInvShadowMapWH - 0.5;	// bias to be consistent with texture filtering hardware
+	vec2 Fraction = fract(TexelPos);
+	vec2 TexelCenter = floor(TexelPos) + 0.5;	// bias to get reliable texel center content
+	vec2 Sample00TexelCenter = TexelCenter - vec2(1, 1);
+	
+	vec4 Values0, Values1, Values2, Values3;// Valuesi in row i from left to right: x,y,z,w
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,0))*vInvShadowMapWH, Values0.x );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,0))*vInvShadowMapWH, Values0.y );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,0))*vInvShadowMapWH, Values0.z );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,0))*vInvShadowMapWH, Values0.w );
+	Values0 = step4(Values0, vec4(litZ, litZ, litZ, litZ));
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,1))*vInvShadowMapWH, Values1.x );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,1))*vInvShadowMapWH, Values1.y );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,1))*vInvShadowMapWH, Values1.z );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,1))*vInvShadowMapWH, Values1.w );
+	Values1 = step4(Values1, vec4(litZ, litZ, litZ, litZ));
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,2))*vInvShadowMapWH, Values2.x );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,2))*vInvShadowMapWH, Values2.y );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,2))*vInvShadowMapWH, Values2.z );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,2))*vInvShadowMapWH, Values2.w );
+	Values2 = step4(Values2, vec4(litZ, litZ, litZ, litZ));
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,3))*vInvShadowMapWH, Values3.x );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,3))*vInvShadowMapWH, Values3.y );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,3))*vInvShadowMapWH, Values3.z );
+	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,3))*vInvShadowMapWH, Values3.w );
+	Values3 = step4(Values3, vec4(litZ, litZ, litZ, litZ));
+
+	vec2 VerticalLerp00 = mix(vec2(Values0.x, Values1.x), vec2(Values0.y, Values1.y), Fraction.xx);
+	float PCFResult00 = mix(VerticalLerp00.x, VerticalLerp00.y, Fraction.y);
+	vec2 VerticalLerp10 = mix(vec2(Values0.y, Values1.y), vec2(Values0.z, Values1.z), Fraction.xx);
+	float PCFResult10 = mix(VerticalLerp10.x, VerticalLerp10.y, Fraction.y);
+	vec2 VerticalLerp20 = mix(vec2(Values0.z, Values1.z), vec2(Values0.w, Values1.w), Fraction.xx);
+	float PCFResult20 = mix(VerticalLerp20.x, VerticalLerp20.y, Fraction.y);
+
+	vec2 VerticalLerp01 = mix(vec2(Values1.x, Values2.x), vec2(Values1.y, Values2.y), Fraction.xx);
+	float PCFResult01 = mix(VerticalLerp01.x, VerticalLerp01.y, Fraction.y);
+	vec2 VerticalLerp11 = mix(vec2(Values1.y, Values2.y), vec2(Values1.z, Values2.z), Fraction.xx);
+	float PCFResult11 = mix(VerticalLerp11.x, VerticalLerp11.y, Fraction.y);
+	vec2 VerticalLerp21 = mix(vec2(Values1.z, Values2.z), vec2(Values1.w, Values2.w), Fraction.xx);
+	float PCFResult21 = mix(VerticalLerp21.x, VerticalLerp21.y, Fraction.y);
+
+	vec2 VerticalLerp02 = mix(vec2(Values2.x, Values3.x), vec2(Values2.y, Values3.y), Fraction.xx);
+	float PCFResult02 = mix(VerticalLerp02.x, VerticalLerp02.y, Fraction.y);
+	vec2 VerticalLerp12 = mix(vec2(Values2.y, Values3.y), vec2(Values2.z, Values3.z), Fraction.xx);
+	float PCFResult12 = mix(VerticalLerp12.x, VerticalLerp12.y, Fraction.y);
+	vec2 VerticalLerp22 = mix(vec2(Values2.z, Values3.z), vec2(Values2.w, Values3.w), Fraction.xx);
+	float PCFResult22 = mix(VerticalLerp22.x, VerticalLerp22.y, Fraction.y);
+	
+	return (PCFResult00 + PCFResult10 + PCFResult20 + PCFResult01 + PCFResult11 + PCFResult21 + PCFResult02 + PCFResult12 + PCFResult22) * .11111;
+}
+
 float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 lightDir)                                                  
 {   
     vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;                                  
@@ -206,10 +270,13 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
 		return 1.0;
     //
+	
+	return clamp(1.0 - pcf_3x3(UVCoords.xy, z - getBias(surfaceNormal, lightDir), vec2(1.0 / 512.0, 1.0 / 512.0), index), 0.5, 1.0);
+	/*
 	float visibility=0.0;
 	for (int i=0;i<16;i++){
 		int DiskIdx = int(16.0*random(gl_FragCoord.xyy, i))%16;
-		if ( texture( TU_ShadowMap[index], UVCoords.xy + poissonDisk[DiskIdx] / 2048.0 * 1.5 ).z  <  z- getBias(surfaceNormal, lightDir))
+		if ( texture( TU_ShadowMap[index], UVCoords.xy + poissonDisk[DiskIdx] / 1024.0 * 1.5 ).z  <  z- getBias(surfaceNormal, lightDir))
 		{
 			visibility += 0.3;
 		}
@@ -220,6 +287,7 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 	}
 	visibility /= 16.0;
 	return visibility;
+	*/
 	/*
 	float depthInTex = texture(TU_ShadowMap[index], UVCoords).x;
     if (depthInTex + getBias(surfaceNormal, lightDir) < z)

@@ -9,7 +9,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
 #include "BuildingSystem.h"
-
+#include "2D/GUISystem.h"
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -91,38 +91,21 @@ void MainMenu::drawIMGUI()
 			{
 				ImGui::Begin("Terrain Inspector", &isOpenTerrain);
 				ImGui::Text("Terrain Inspector");
-				auto material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
-				material->inspectIMGUI("uv_grass", 0.1f, 15.0f);
-				material->inspectIMGUI("uv_dirt", 0.1f, 15.0f);
-				material->inspectIMGUI("uv_cliff", 0.1f, 15.0f);
-				material->inspectIMGUI("near_dist", 0.1f, 100.0f);
-				material->inspectIMGUI("far_dist", 0.1f, 200.0f);
-				material->inspectIMGUI("large_factor", 1.0f, 10.0f);
+				auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
+				terrainMat->inspect();
+
+				auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
+				fogMat->inspect();
 
 				auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
-				PostMat->inspectIMGUI("fog_near", 20.0f, 150.0f);
-				PostMat->inspectIMGUI("fog_far", 50.0f, 300.0f);
-				PostMat->inspectIMGUI("fog_height_min", -100.0f, 50.0f);
-				PostMat->inspectIMGUI("fog_height_max", 0.0f, 150.0f);
+				PostMat->inspect();
 
-				PostMat->inspectIMGUI("AO_distant", 0.5f, 5.0f);
-
-				PostMat->inspectIMGUI("AO_strength", 0.00f, 1.0f);
-
-
-				PostMat->inspectIMGUI("AO_bias", 0.001f, 0.1f);
 				auto sunMat = Sky::shared()->getMaterial();
 				sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
-
 				auto dirLight = g_GetCurrScene()->getDirectionLight();
-
-
 				float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
 				ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
 				dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
-
-				//auto sunMat = Sky::shared()->getMaterial();
-				//sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
 
 				if (ImGui::Button("dump to file"))
 				{

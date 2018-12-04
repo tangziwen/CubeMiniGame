@@ -6,8 +6,8 @@
 	"name" : "Sky",
 	"property" : {
 		"attributes" : [
-			["sun_intensity", "sun_intensity", "float", 22.0],
-			["color", "TU_color", "vec4", [1.0, 1.0, 1.0, 1.0]]
+			{"name" : "sun_intensity", "type":"float", "default":22.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
 			["MainTexture", "tint", 1],

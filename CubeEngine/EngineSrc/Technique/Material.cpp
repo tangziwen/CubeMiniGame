@@ -34,7 +34,7 @@ void Material::loadFromFile(std::string filePath)
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
-		tlog("[error] get json data err! %d offset %d\n", doc.GetParseError(), doc.GetErrorOffset());
+		tlog("[error] get json data err! %s %d offset %d\n", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
 		exit(0);
 	}
 	if (doc.HasMember("name"))
@@ -71,22 +71,40 @@ void Material::loadFromFile(std::string filePath)
 		{
 			auto& attribute = attributes[i];
 
-			auto theName = attribute[0].GetString();
-			auto aliasName = attribute[1].GetString();
-			auto& val = attribute[3];
-			std::string typeStr = attribute[2].GetString();
+			auto theName = attribute["name"].GetString();
+			auto aliasName = theName;
+			auto& val = attribute["default"];
+			std::string typeStr = attribute["type"].GetString();
 			m_aliasMap[theName] = aliasName;
 			if (typeStr == "int")
 			{
 				auto var = new TechniqueVar();
 				var->setI(val.GetInt());
 				m_varList[theName] = var;
+				if(attribute.HasMember("ui_info"))
+				{
+					auto&uiInfo = attribute["ui_info"];
+					if(uiInfo.HasMember("range"))
+					{
+						var->data.i_min = uiInfo["range"][0].GetInt();
+						var->data.i_max = uiInfo["range"][1].GetInt();
+					}
+				}
 			}
 			else if (typeStr == "float")
 			{
 				auto var = new TechniqueVar();
 				var->setF(val.GetDouble());
 				m_varList[theName] = var;
+				if(attribute.HasMember("ui_info"))
+				{
+					auto&uiInfo = attribute["ui_info"];
+					if(uiInfo.HasMember("range"))
+					{
+						var->data.f_min = uiInfo["range"][0].GetDouble();
+						var->data.f_max = uiInfo["range"][1].GetDouble();
+					}
+				}
 			}
 			else if (typeStr == "vec3")
 			{
@@ -405,11 +423,48 @@ tzw::TechniqueVar * Material::get(std::string name)
 	return m_varList[name];
 }
 
+void Material::inspect()
+{
+	for(auto &iter:m_varList)
+	{
+		auto var = iter.second;
+		switch (var->type)
+		{
+
+		case TechniqueVar::Type::Float:
+		{
+	
+			bindFloat(iter.first, &var->data.f,var->data.f_min, var->data.f_max, "%.2f");
+	
+		}
+			break;
+
+
+		default:
+			break;
+		}
+	}
+}
+
 void Material::inspectIMGUI(std::string name, float min, float max, const char * fmt /*= "%.2f"*/)
 {
 	float uvSize = get(name)->data.f;
 	ImGui::SliderFloat(name.c_str(), &uvSize, min, max, fmt);
 	setVar(name, uvSize);
+}
+
+void Material::inspectIMGUI_Color(std::string name)
+{
+	auto src = get(name)->data.v3;
+	static ImVec4 color = ImVec4(src.x, src.y, src.z, 1.0);
+	static bool alpha_preview = false;
+	static bool alpha_half_preview = false;
+	static bool drag_and_drop = true;
+	static bool options_menu = true;
+	static bool hdr = false;
+	int misc_flags = (hdr ? ImGuiColorEditFlags_HDR : 0) | (drag_and_drop ? 0 : 1<<9) | (alpha_half_preview ? ImGuiColorEditFlags_AlphaPreviewHalf : (alpha_preview ? ImGuiColorEditFlags_AlphaPreview : 0)) | (options_menu ? 0 : ImGuiColorEditFlags_NoOptions);
+	ImGui::ColorEdit3(name.c_str(), (float*)&color, misc_flags);
+	setVar(name, vec3(color.x, color.y, color.z));
 }
 
 /**
