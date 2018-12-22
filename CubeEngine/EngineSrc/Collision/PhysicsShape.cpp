@@ -3,6 +3,7 @@
 #include "BulletCollision/CollisionShapes/btSphereShape.h"
 #include "Math/AABB.h"
 #include "BulletCollision/CollisionShapes/btCompoundShape.h"
+#include "BulletCollision/CollisionShapes/btCylinderShape.h"
 
 namespace tzw
 {
@@ -25,6 +26,11 @@ void PhysicsShape::initBoxShape(vec3 size)
 void PhysicsShape::initSphereShape(float radius)
 {
 	m_shape = new btSphereShape(radius);
+}
+
+void PhysicsShape::initCylinderShape(float width, float height, float radius)
+{
+	m_shape = new btCylinderShape(btVector3(width, radius, height));
 }
 
 btCollisionShape* PhysicsShape::getRawShape()

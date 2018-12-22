@@ -23,62 +23,20 @@ void BuildingSystem::createNewToeHold(vec3 pos)
 	newIsland->insert(part);
 }
 
-void BuildingSystem::placeNearBearing(std::vector<BlockPart*>::value_type iter, Drawable3D* node, RayAABBSide side)
+void BuildingSystem::placeNearBearing(Attachment * attach)
 {
-	auto bearing = iter->m_bearPart[int(side)];
-	auto m = node->getTransform().data();
-	vec3 up(m[4], m[5], m[6]);
-	vec3 forward(-m[8], -m[9], -m[10]);
-	vec3 right(m[0], m[1], m[2]);
-	auto island = new Island(vec3());
+	auto iter = dynamic_cast<BlockPart * >(attach->m_parent);
+	auto bearing = attach->m_bearPart;
+	vec3 pos, n, up;
+	attach->getAttachmentInfoWorld(pos, n, up);
+	auto island = new Island(pos);
 	m_IslandList.insert(island);
 	auto part = new BlockPart();
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
 	bearing->m_a = part;
 	bearing->m_b = iter;
-	float offset = 0.5 + bearingGap;// a small gap for constraint
-	switch (side)
-	{
-	case RayAABBSide::up:
-		{
-			island->m_node->setPos(node->getWorldPos() + up * offset);
-			part->m_bearPart[int(RayAABBSide::down)] = bearing;
-		}
-		break;
-	case RayAABBSide::down:
-		{
-			island->m_node->setPos(node->getWorldPos() + up * -offset);
-			part->m_bearPart[int(RayAABBSide::up)] = bearing;
-		}
-		break;
-	case RayAABBSide::left:
-		{
-			island->m_node->setPos(node->getWorldPos() + right * -offset);
-			part->m_bearPart[int(RayAABBSide::right)] = bearing;
-		}
-		break;
-	case RayAABBSide::right:
-		{
-			island->m_node->setPos(node->getWorldPos() + right * offset);
-			part->m_bearPart[int(RayAABBSide::left)] = bearing;
-		}
-		break;
-	case RayAABBSide::front:
-		{
-			island->m_node->setPos(node->getWorldPos() + forward * -offset);
-			part->m_bearPart[int(RayAABBSide::back)] = bearing;
-		}
-		break;
-	case RayAABBSide::back:
-		{
-			island->m_node->setPos(node->getWorldPos() + forward * offset);
-			part->m_bearPart[int(RayAABBSide::front)] = bearing;
-		}
-		break;
-	default:
-		break;
-	}
+	part->attachToFromOtherIsland(attach);
 }
 
 void BuildingSystem::createPlaceByHit(vec3 pos, vec3 dir, float dist)
@@ -123,56 +81,32 @@ void BuildingSystem::createPlaceByHit(vec3 pos, vec3 dir, float dist)
 			if (isHit)
 			{
 				newPart = new BlockPart();
-				if (iter->m_bearPart[int(side)]) // have some bear?
+				/*if (iter->m_bearPart[int(side)]) // have some bear?
 				{
 					placeNearBearing(iter, node, side);
 				}
-				else
+				else*/
 				{
 					vec3 attachPos, attachNormal, attachUp;
-					iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
-					newPart->attachTo(attachPos, attachNormal, attachUp);
-		/*			switch (side)
+					auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
+					if(attach)
 					{
-					case RayAABBSide::up:
-					{
-						
-						newPart->getNode()->setPos(node->getPos() + up * 0.5);
+						if(!attach->m_bearPart)
+						{
+							newPart->attachTo(attach);
+							if (newPart)
+							{
+								island->m_node->addChild(newPart->getNode());
+								island->insert(newPart);
+							}
+						}
+						else // have some bear?
+						{
+							placeNearBearing(attach);
+							//todo
+						}
 					}
-					break;
-					case RayAABBSide::down:
-					{
-						newPart->getNode()->setPos(node->getPos() + up * -0.5);
-					}
-					break;
-					case RayAABBSide::left:
-					{
-						newPart->getNode()->setPos(node->getPos() + right * -0.5);
-					}
-					break;
-					case RayAABBSide::right:
-					{
-						newPart->getNode()->setPos(node->getPos() + right * 0.5);
-					}
-					break;
-					case RayAABBSide::front:
-					{
-						newPart->getNode()->setPos(node->getPos() + forward * -0.5);
-					}
-					break;
-					case RayAABBSide::back:
-					{
-						newPart->getNode()->setPos(node->getPos() + forward * 0.5);
-					}
-					break;
-					default:
-						break;
-					}*/
-					if (newPart)
-					{
-						island->m_node->addChild(newPart->getNode());
-						island->insert(newPart);
-					}
+
 				}
 			return;
 			}
@@ -215,11 +149,14 @@ void BuildingSystem::createBearByHit(vec3 pos, vec3 dir, float dist)
 		up.normalize();
 		forward.normalize();
 		right.normalize();
-		if (isHit)
+		vec3 a,b,c;
+		auto attachment = iter->findProperAttachPoint(r, a, b, c);
+		if (attachment)
 		{
 			//connect a BearPart
 			auto bear = new BearPart();
-			iter->m_bearPart[int(side)] = bear;
+			bear->m_b = iter;
+			attachment->m_bearPart = bear;
 			m_bearList.insert(bear);
 			break;
 		}
@@ -256,6 +193,7 @@ void BuildingSystem::cook()
 
 }
 
+//toDo
 void BuildingSystem::findPiovtAndAxis(BearPart * bear, BlockPart * part, vec3 & pivot, vec3 & asix)
 {
 	auto sideA = 0;

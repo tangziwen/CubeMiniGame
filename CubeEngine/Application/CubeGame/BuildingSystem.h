@@ -15,7 +15,7 @@ namespace tzw
 	public:
 		BuildingSystem();
 		void createNewToeHold(vec3 pos);
-		void placeNearBearing(std::vector<BlockPart*>::value_type iter, Drawable3D* node, RayAABBSide side);
+		void placeNearBearing(Attachment * attach);
 		void createPlaceByHit(vec3 pos, vec3 dir, float dist);
 		void createBearByHit(vec3 pos, vec3 dir, float dist);
 		void cook();

@@ -13,6 +13,7 @@
 #include "3D/Vegetation/Grass.h"
 #include "EngineSrc/Collision/PhysicsMgr.h"
 #include "BuildingSystem.h"
+#include "3D/Primitive/CylinderPrimitive.h"
 
 namespace tzw
 {
@@ -139,6 +140,14 @@ namespace tzw
 			break;
 		case TZW_KEY_R:
 			{
+				auto testCylinder = new CylinderPrimitive(0.5, 0.5, 1);
+				g_GetCurrScene()->addNode(testCylinder);
+				testCylinder->setPos(getPos().x - 3, getPos().y + 10, getPos().z);
+				auto rigCylinder = PhysicsMgr::shared()->createRigidBodyCylinder(1.0, 0.5, 0.5, 1.0, testCylinder->getTranslationMatrix());
+				rigCylinder->attach(testCylinder);
+				break;
+
+
 				//left front wheel
 				auto wheelA = new SpherePrimitive(0.7,10);
 				g_GetCurrScene()->addNode(wheelA);
@@ -231,7 +240,6 @@ namespace tzw
 			{
 				BuildingSystem::shared()->createBearByHit(getPos(),m_camera->getForward(), 15);
 				break;
-
 				//std::vector<Drawable3D *> list;
 				//auto pos = this->getPos();
 				//AABB aabb;

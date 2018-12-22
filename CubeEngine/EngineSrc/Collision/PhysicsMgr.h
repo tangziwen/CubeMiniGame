@@ -37,6 +37,7 @@ class PhysicsMgr{
 		void syncPhysicsToGraphics();
 		PhysicsRigidBody * createRigidBody(float mass, Matrix44& transform, AABB& aabb);
 		PhysicsRigidBody * createRigidBodySphere(float mass, Matrix44 transform, float radius);
+		PhysicsRigidBody * createRigidBodyCylinder(float mass, float topRadius, float bottomRadius, float height,  Matrix44 transform);
 		PhysicsRigidBody * createRigidBodyMesh(Mesh * obj, Matrix44* transform);
 		PhysicsRigidBody * createRigidBodyFromCompund(float mass, Matrix44 * transform, PhysicsCompoundShape * shape);
 		PhysicsHingeConstraint * createHingeConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, const vec3& pivotInA,const vec3& pivotInB, const vec3& axisInA,const vec3& axisInB, bool useReferenceFrameA = false);

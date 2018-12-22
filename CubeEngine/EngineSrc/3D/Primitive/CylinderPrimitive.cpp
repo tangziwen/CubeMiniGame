@@ -86,32 +86,51 @@ void CylinderPrimitive::initMesh()
 		m_mesh->clear();
 	}
 	int seg = 20;
-	float step = 2 * 3.14 / seg;
+	float step = 2 * 3.141592654 / seg;
 	float theta = 0.0;
+	int index = 0;
 	for(int i = 0; i < seg; i++)
 	{
-		//middle 
+		
 		vec3 down_1 = getSegPos(theta, 0);
 		vec3 down_2 = getSegPos(theta + step, 0);
 		vec3 up_1 = getSegPos(theta, 1);
 		vec3 up_2 = getSegPos(theta + step, 1);
-	
+		//middle 
 		m_mesh->addVertex(VertexData(up_1, vec2(0.0f, 0.0f), m_color));
 		m_mesh->addVertex(VertexData(down_2, vec2(0.0f, 0.0f), m_color));
 		m_mesh->addVertex(VertexData(down_1, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addIndex(i);
-		m_mesh->addIndex(i + 1);
-		m_mesh->addIndex(i + 2);
+		m_mesh->addIndex(index);
+		m_mesh->addIndex(index + 1);
+		m_mesh->addIndex(index + 2);
 
 		m_mesh->addVertex(VertexData(down_2, vec2(0.0f, 0.0f), m_color));
 		m_mesh->addVertex(VertexData(up_1, vec2(0.0f, 0.0f), m_color));
 		m_mesh->addVertex(VertexData(up_2, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addIndex(i + 3);
-		m_mesh->addIndex(i + 4);
-		m_mesh->addIndex(i + 5);
+		m_mesh->addIndex(index + 3);
+		m_mesh->addIndex(index + 4);
+		m_mesh->addIndex(index + 5);
 
+		float halfHeight = m_height / 2.0;
+		//top
+		vec3 centerTop = vec3(0.0, 0.0, halfHeight);
+		m_mesh->addVertex(VertexData(up_1, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addVertex(VertexData(up_2, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addVertex(VertexData(centerTop, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addIndex(index + 6);
+		m_mesh->addIndex(index + 7);
+		m_mesh->addIndex(index + 8);
 
+		//bottom
+		vec3 centerBottom = vec3(0.0, 0.0, -halfHeight);
+		m_mesh->addVertex(VertexData(down_2, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addVertex(VertexData(down_1, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addVertex(VertexData(centerBottom, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addIndex(index + 9);
+		m_mesh->addIndex(index + 10);
+		m_mesh->addIndex(index + 11);
 		theta += step;
+		index += 12;
 
 	}
     m_mesh->caclNormals();
@@ -123,31 +142,24 @@ void CylinderPrimitive::initMesh()
 
 void CylinderPrimitive::checkCollide(ColliderEllipsoid * package)
 {
-	if(!m_isHitable) return;
-	auto size = m_mesh->getIndicesSize();
-	std::vector<vec3> resultList;
-	float t = 0;
-	
-	for (auto i =0; i< size; i+=3)
-	{
-		CollisionUtility::checkTriangle(package,
-			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i)].m_pos)),
-			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i + 1)].m_pos)),
-			package->toE(getWorldPos (m_mesh->m_vertices[m_mesh->getIndex(i + 2)].m_pos)));
-	}
+	return;
 }
 vec3 CylinderPrimitive::getSegPos(float theta, int side)
 {
-	float x = cos(theta);
-	float y = sin(theta);
-	float halfHeight = m_height / 2.0;
+	float radius = 0.0;
+	float halfHeight = 0.0;
 	if (side)
 	{
-		return vec3(x, y, halfHeight);
+		radius = m_radiusTop;
+		halfHeight = m_height / 2.0;
 	}
 	else
 	{
-		return vec3(x, y, -halfHeight);
+		halfHeight = -m_height / 2.0;
+		radius = m_radiusBottom;
 	}
+	float x = cos(theta) * radius;
+	float y = sin(theta) * radius;
+	return vec3(x, y, halfHeight);
 }
 } // namespace tzw

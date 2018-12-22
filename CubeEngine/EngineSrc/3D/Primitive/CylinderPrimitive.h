@@ -7,7 +7,7 @@ namespace tzw {
 class CylinderPrimitive : public Drawable3D
 {
 public:
-    CylinderPrimitive(float width, float depth, float height);
+    CylinderPrimitive(float radiusTop, float radiusBottom, float height);
     virtual void submitDrawCmd(RenderCommand::RenderType passType);
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);

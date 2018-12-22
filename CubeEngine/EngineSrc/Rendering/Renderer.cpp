@@ -513,7 +513,6 @@ void Renderer::LightingPass()
 
 void Renderer::shadowPass()
 {
-	
 	ShadowMap::shared()->calculateProjectionMatrix();
 
 	ShadowMap::shared()->getProgram()->use();
@@ -788,9 +787,9 @@ void Renderer::directionalLightPass()
 
 void Renderer::applyRenderSetting(Material * mat)
 {
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	RenderBackEnd::shared()->selfCheck();
-	//RenderBackEnd::shared()->setIsCullFace(true);
+	RenderBackEnd::shared()->setIsCullFace(true);
 	//glCullFace(GL_NONE);
 }
 

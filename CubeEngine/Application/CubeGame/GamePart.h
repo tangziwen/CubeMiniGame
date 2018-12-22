@@ -4,14 +4,29 @@
 #include "Math/Ray.h"
 namespace tzw
 {
+	class GamePart;
+	class BearPart;
+	struct Attachment
+	{
+		vec3 m_pos;
+		vec3 m_normal;
+		vec3 m_up;
+		Attachment(vec3 thePos, vec3 n, vec3 f, GamePart * parent);
+		Attachment();
+		void getAttachmentInfo(vec3 & pos, vec3 & N, vec3 & up);
+		void getAttachmentInfoWorld(vec3 & pos, vec3 & N, vec3 & up);
+		GamePart * m_parent;
+		BearPart * m_bearPart;
+	};
 	class GamePart
 	{
 	public:
 		virtual Drawable3D* getNode() const;
 		virtual void setNode(Drawable3D* node);
 		virtual PhysicsShape * getShape();
-		virtual bool findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up);
-		virtual void attachTo(vec3 attachPosition, vec3 Normal, vec3 up);
+		virtual Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up);
+		virtual void attachTo(Attachment * attach);
+		virtual void attachToFromOtherIsland(Attachment * attach);
 	protected:
 		PhysicsShape * m_shape;
 		Drawable3D * m_node;

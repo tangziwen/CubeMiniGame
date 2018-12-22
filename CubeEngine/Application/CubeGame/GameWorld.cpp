@@ -8,6 +8,7 @@
 #include "GameConfig.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
+#include "3D/Primitive/CylinderPrimitive.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -244,6 +245,7 @@ GameWorld::GameWorld()
 	//g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
+	
 	//startGame();
 
 }

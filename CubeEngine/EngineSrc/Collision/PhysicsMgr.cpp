@@ -238,6 +238,28 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodySphere(float massValue, Matrix44 tr
 	return rig;
 }
 
+PhysicsRigidBody * PhysicsMgr::createRigidBodyCylinder(float massValue, float topRadius, float bottomRadius, float height, Matrix44 transform)
+{
+	auto rig = new PhysicsRigidBody();
+	btScalar	mass(massValue);
+	btTransform startTransform;
+	startTransform.setIdentity();
+	bool isDynamic = (mass != 0.f);
+	btCylinderShape* colShape = new btCylinderShapeZ(btVector3(topRadius, bottomRadius, height * 0.5));
+	btVector3 localInertia(0, 0, 0);
+	if (isDynamic)
+	{
+		colShape->calculateLocalInertia(mass, localInertia);
+	}	
+	startTransform.setFromOpenGLMatrix(transform.data());
+	auto btRig = shared()->createRigidBodyInternal(mass, startTransform, colShape, btVector4(1, 0, 0, 1));
+	rig->setRigidBody(btRig);
+	rig->genUserIndex();
+	btRig->setUserIndex(rig->userIndex());
+	btRig->setUserPointer(rig);
+	return rig;
+}
+
 
 PhysicsRigidBody* PhysicsMgr::createRigidBodyMesh(Mesh* mesh, Matrix44* transform)
 {
