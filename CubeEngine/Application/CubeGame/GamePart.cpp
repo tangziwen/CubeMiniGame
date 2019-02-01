@@ -62,7 +62,7 @@ namespace tzw
 	{
 	}
 
-	void GamePart::attachToFromOtherIsland(Attachment * attach)
+	void GamePart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	{
 	}
 

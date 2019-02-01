@@ -1,8 +1,9 @@
 #pragma once
 #include "Engine/EngineDef.h"
 #include "Base/Node.h"
-#include "BlockPart.h"
+#include "GamePart.h"
 #include <set>
+#include <vector>
 
 
 namespace tzw
@@ -12,11 +13,11 @@ class PhysicsRigidBody;
 class Island
 {
 public:
-	std::set<BlockPart * > m_partList;
+	std::vector<GamePart * > m_partList;
 	Drawable3D * m_node;
 	Island(vec3 pos);
 	PhysicsRigidBody * m_rigid;
-	void insert(BlockPart * part);
+	void insert(GamePart * part);
 };
 
 

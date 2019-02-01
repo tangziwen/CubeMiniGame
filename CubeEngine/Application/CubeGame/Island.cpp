@@ -11,9 +11,9 @@ namespace tzw
 		m_rigid = nullptr;
 	}
 
-	void Island::insert(BlockPart * part)
+	void Island::insert(GamePart * part)
 	{
-		m_partList.insert(part);
+		m_partList.push_back(part);
 		part->m_parent = this;
 	}
 

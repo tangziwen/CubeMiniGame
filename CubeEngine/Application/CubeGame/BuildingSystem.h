@@ -15,11 +15,11 @@ namespace tzw
 	public:
 		BuildingSystem();
 		void createNewToeHold(vec3 pos);
-		void placeNearBearing(Attachment * attach);
-		void createPlaceByHit(vec3 pos, vec3 dir, float dist);
-		void createBearByHit(vec3 pos, vec3 dir, float dist);
+		void placePartNearBearing(Attachment * attach, int type);
+		void placePartByHit(vec3 pos, vec3 dir, float dist, int type);
+		void placeBearByHit(vec3 pos, vec3 dir, float dist);
 		void cook();
-		void findPiovtAndAxis(BearPart * bear, BlockPart * part, vec3 & pivot, vec3 & asix);
+		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	private:
 		std::set<Island *> m_IslandList;
 		std::set<BearPart* > m_bearList;

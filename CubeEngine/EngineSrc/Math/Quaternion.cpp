@@ -23,7 +23,11 @@ void Quaternion::fromRotationMatrix(Matrix44 *mat)
 {
         // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
         // article "Quaternion Calculus and Fast Animation".
-		float (*kRot)[4] = (float(*)[4])mat->data();
+
+		//要转置才对，我们是列主序
+		auto transposeMat = mat->transpose();
+		auto data = mat->data();
+		float (*kRot)[4] = (float(*)[4])transposeMat.data();
         float fTrace = kRot[0][0]+kRot[1][1]+kRot[2][2];
         float fRoot;
 

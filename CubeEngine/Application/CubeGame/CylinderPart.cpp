@@ -1,25 +1,27 @@
-#include "BlockPart.h"
+#include "CylinderPart.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
+#include "3D/Primitive/CylinderPrimitive.h"
+
 namespace tzw
 {
 const float blockSize = 0.5;
-BlockPart::BlockPart()
+CylinderPart::CylinderPart()
 {
-	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
+	m_topRadius = 0.5;
+	m_bottomRadius = 0.5;
+	m_height = 0.25;
+	m_node = new CylinderPrimitive(m_topRadius, m_bottomRadius, m_height);
 	m_shape = new PhysicsShape();
-	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
+	m_shape->initCylinderShapeZ(m_topRadius, m_bottomRadius, m_height);
 	m_parent = nullptr;
-	for(int i = 0; i < 6; i++)
-	{
-		m_bearPart[i] = nullptr;
-	}
 	initAttachments();
 }
 
-Attachment * BlockPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
+
+Attachment * CylinderPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
 {
 	RayAABBSide side;
 	vec3 hitPoint;
@@ -74,13 +76,13 @@ Attachment * BlockPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec
 	return attachPtr;
 }
 
-void BlockPart::attachTo(Attachment * attach)
+void CylinderPart::attachTo(Attachment * attach)
 {
 	vec3 attachPosition,  Normal,  up;
 	attach->getAttachmentInfo(attachPosition, Normal, up);
 	//we use m_attachment[0]
-	Normal = Normal * -1;
 	auto selfAttah = m_attachment[0];
+	Normal = Normal * -1;
 	vec3 right = vec3::CrossProduct(Normal, up);
 	Matrix44 transformForAttachPoint;
 	auto data = transformForAttachPoint.data();
@@ -108,6 +110,7 @@ void BlockPart::attachTo(Attachment * attach)
 	Matrix44 attachmentTrans;
 	data = attachmentTrans.data();
 	auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
+	vec3 invertNormal = selfAttah->m_normal * -1;
 	data[0] = rightForAttach.x;
 	data[1] = rightForAttach.y;
 	data[2] = rightForAttach.z;
@@ -136,7 +139,7 @@ void BlockPart::attachTo(Attachment * attach)
 	m_node->setRotateQ(q);
 }
 
-void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
+void CylinderPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 {
 	auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
 	vec3 attachPosition,  Normal,  up;
@@ -206,25 +209,16 @@ void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	m_node->setRotateQ(q);
 	m_node->reCache();
 	auto mat = m_node->getLocalTransform();
-	printf("fuck,a %d",mat);
 }
 
-void BlockPart::initAttachments()
+void CylinderPart::initAttachments()
 {
-	//forward backward
-	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
-	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
-
-	//right left
-	m_attachment[2] = new Attachment(vec3(blockSize / 2.0, 0.0, 0.0), vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0) ,this);
-	m_attachment[3] = new Attachment(vec3(-blockSize / 2.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0) ,this);
-
-	//up down
-	m_attachment[4] = new Attachment(vec3(0.0, blockSize / 2.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
-	m_attachment[5] = new Attachment(vec3(0.0, -blockSize / 2.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
+	//top bottom
+	m_attachment[0] = new Attachment(vec3(0.0, 0.0, m_height / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
+	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
 }
 
-Attachment * BlockPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)
+Attachment * CylinderPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)
 {
 	auto mat = m_node->getLocalTransform();
 	auto atta = m_attachment[index];
@@ -237,7 +231,7 @@ Attachment * BlockPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 
 	return m_attachment[index];
 }
 
-void BlockPart::cook()
+void CylinderPart::cook()
 {
 	auto mat2 = m_node->getTranslationMatrix();
 	auto aabb = m_node->getAABB();

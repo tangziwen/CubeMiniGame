@@ -4,10 +4,10 @@
 namespace tzw
 {
 	class Island;
-	class BlockPart : public GamePart
+	class CylinderPart : public GamePart
 	{
 	public:
-		BlockPart();
+		CylinderPart();
 		Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up) override;
 		void attachTo(Attachment * attach) override;
 		void attachToFromOtherIsland(Attachment * attach, BearPart * bearing) override;
@@ -16,6 +16,6 @@ namespace tzw
 	public:
 		void cook();
 		Attachment * m_attachment[6];
-		BearPart * m_bearPart[6];
+		float m_topRadius, m_bottomRadius, m_height;
 	};
 }

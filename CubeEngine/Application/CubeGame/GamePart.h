@@ -6,6 +6,7 @@ namespace tzw
 {
 	class GamePart;
 	class BearPart;
+	class Island;
 	struct Attachment
 	{
 		vec3 m_pos;
@@ -26,7 +27,8 @@ namespace tzw
 		virtual PhysicsShape * getShape();
 		virtual Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up);
 		virtual void attachTo(Attachment * attach);
-		virtual void attachToFromOtherIsland(Attachment * attach);
+		virtual void attachToFromOtherIsland(Attachment * attach, BearPart * bearing);
+		Island * m_parent;
 	protected:
 		PhysicsShape * m_shape;
 		Drawable3D * m_node;

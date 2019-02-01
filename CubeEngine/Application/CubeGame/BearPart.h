@@ -2,11 +2,12 @@
 namespace tzw
 {
 class BlockPart;
+struct Attachment;
 class BearPart
 {
 public:
 	BearPart();
-	BlockPart * m_a;
-	BlockPart * m_b;
+	Attachment * m_a;
+	Attachment * m_b;
 };
 }

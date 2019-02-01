@@ -64,8 +64,8 @@ void OctreeScene::addObj(Drawable3D *obj)
 		m_objSet.insert(obj);
 	}else
 	{
-		printf("can't add Object\n");
-		assert(0);
+		//printf("can't add Object\n");
+		//assert(0);
 	}
 }
 

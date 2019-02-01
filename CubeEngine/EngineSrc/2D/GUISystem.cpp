@@ -280,8 +280,8 @@ namespace tzw
 			ImGui_ImplGlfwGL2_CreateDeviceObjects();
 		}
 		auto& io = ImGui::GetIO();
-		auto w = Engine::shared()->windowHeight();
-		auto h = Engine::shared()->windowWidth();
+		auto h = Engine::shared()->windowHeight();
+		auto w = Engine::shared()->windowWidth();
 
 		io.DisplaySize = ImVec2(w, h);
 		io.DisplayFramebufferScale = ImVec2(1.0, 1.0);

@@ -5,6 +5,7 @@
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsCompoundShape.h"
 #include "Collision/PhysicsMgr.h"
+#include "CylinderPart.h"
 
 namespace tzw
 {
@@ -23,25 +24,32 @@ void BuildingSystem::createNewToeHold(vec3 pos)
 	newIsland->insert(part);
 }
 
-void BuildingSystem::placeNearBearing(Attachment * attach)
+void BuildingSystem::placePartNearBearing(Attachment * attach, int type)
 {
 	auto iter = dynamic_cast<BlockPart * >(attach->m_parent);
 	auto bearing = attach->m_bearPart;
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
-	auto island = new Island(pos);
+	auto island = new Island(pos + n * 0.5);
 	m_IslandList.insert(island);
-	auto part = new BlockPart();
+	GamePart * part = nullptr;
+	switch (type)
+	{
+	case 0:
+		part = new BlockPart();
+		break;
+	case 1:
+		part = new CylinderPart();
+		break;
+	}
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
-	bearing->m_a = part;
-	bearing->m_b = iter;
-	part->attachToFromOtherIsland(attach);
+	part->attachToFromOtherIsland(attach, bearing);
 }
 
-void BuildingSystem::createPlaceByHit(vec3 pos, vec3 dir, float dist)
+void BuildingSystem::placePartByHit(vec3 pos, vec3 dir, float dist, int type)
 {
-	std::vector<BlockPart *> tmp;
+	std::vector<GamePart *> tmp;
 	//search island
 	for (auto island : m_IslandList)
 	{
@@ -51,7 +59,7 @@ void BuildingSystem::createPlaceByHit(vec3 pos, vec3 dir, float dist)
 			tmp.push_back(iter);
 		}
 	}
-	std::sort(tmp.begin(), tmp.end(), [&](BlockPart * left, BlockPart * right)
+	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
 	{
 		float distl = left->getNode()->getWorldPos().distance(pos);
 		float distr = right->getNode()->getWorldPos().distance(pos);
@@ -77,45 +85,44 @@ void BuildingSystem::createPlaceByHit(vec3 pos, vec3 dir, float dist)
 			up.normalize();
 			forward.normalize();
 			right.normalize();
-			BlockPart * newPart = nullptr;
+			GamePart * newPart = nullptr;
 			if (isHit)
 			{
-				newPart = new BlockPart();
-				/*if (iter->m_bearPart[int(side)]) // have some bear?
+				if(type == 0)
 				{
-					placeNearBearing(iter, node, side);
+					newPart = new BlockPart();
 				}
-				else*/
+				else if (type == 1)
 				{
-					vec3 attachPos, attachNormal, attachUp;
-					auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
-					if(attach)
+					newPart = new CylinderPart();
+				}
+				vec3 attachPos, attachNormal, attachUp;
+				auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
+				if(attach)
+				{
+					if(!attach->m_bearPart)
 					{
-						if(!attach->m_bearPart)
+						newPart->attachTo(attach);
+						if (newPart)
 						{
-							newPart->attachTo(attach);
-							if (newPart)
-							{
-								island->m_node->addChild(newPart->getNode());
-								island->insert(newPart);
-							}
-						}
-						else // have some bear?
-						{
-							placeNearBearing(attach);
-							//todo
+							island->m_node->addChild(newPart->getNode());
+							island->insert(newPart);
 						}
 					}
-
+					else // have some bearing?
+					{
+						placePartNearBearing(attach, type);
+						//todo
+					}
 				}
 			return;
 			}
 		}
 }
 
-void BuildingSystem::createBearByHit(vec3 pos, vec3 dir, float dist)
+void BuildingSystem::placeBearByHit(vec3 pos, vec3 dir, float dist)
 {
-	std::vector<BlockPart *> tmp;
+	std::vector<GamePart *> tmp;
 	for (auto island : m_IslandList)
 	{
 		
@@ -124,7 +131,7 @@ void BuildingSystem::createBearByHit(vec3 pos, vec3 dir, float dist)
 			tmp.push_back(iter);
 		}
 	}
-	std::sort(tmp.begin(), tmp.end(), [&](BlockPart * left, BlockPart * right)
+	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
 	{
 		float distl = left->getNode()->getWorldPos().distance(pos);
 		float distr = right->getNode()->getWorldPos().distance(pos);
@@ -155,7 +162,7 @@ void BuildingSystem::createBearByHit(vec3 pos, vec3 dir, float dist)
 		{
 			//connect a BearPart
 			auto bear = new BearPart();
-			bear->m_b = iter;
+			bear->m_b = attachment;
 			attachment->m_bearPart = bear;
 			m_bearList.insert(bear);
 			break;
@@ -174,86 +181,47 @@ void BuildingSystem::cook()
 			auto mat = iter->getNode()->getLocalTransform();
 			compundShape->addChildShape(&mat, iter->getShape()->getRawShape());
 		}
-		compundShape->finish();
+		//compundShape->finish();
 		auto compundMat = island->m_node->getTransform();
 		auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(1.0, &compundMat,compundShape);
+		
 		rig->attach(island->m_node);
 		island->m_rigid = rig;
 	}
 
 	for (auto bear : m_bearList)
 	{
-		auto partA = bear->m_a;
-		auto partB = bear->m_b;
-		vec3 pivotA, pivotB, axisA, asixB;
-		findPiovtAndAxis(bear, partA, pivotA, axisA);
-		findPiovtAndAxis(bear, partB, pivotB, asixB);
-		PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, asixB, false);
-	}
+		auto attachA = bear->m_a;
+		auto attachB = bear->m_b;
+		auto partA = static_cast<BlockPart *>(attachA->m_parent);
+		auto partB = static_cast<BlockPart *>(attachB->m_parent);
 
+		vec3 worldPosA, worldNormalA, worldUpA;
+		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+		vec3 worldPosB, worldNormalB, worldUpB;
+		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+		vec3 hingeDir = (worldPosB - worldPosA).normalized();
+		vec3 pivotA, pivotB, axisA, axisB;
+		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+
+		//Õâ¸öhinge tmdÕæ¿Ó
+		PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+	}
 }
 
 //toDo
-void BuildingSystem::findPiovtAndAxis(BearPart * bear, BlockPart * part, vec3 & pivot, vec3 & asix)
+void BuildingSystem::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
-	auto sideA = 0;
-	for(int i = 0; i< 6; i++)
-	{
-		if(part->m_bearPart[i] == bear)
-		{
-			sideA = i;
-			break;
-		}
-	}
-	auto node = part->getNode();
-	auto m = node->getLocalTransform().data();
-	vec3 up(m[4], m[5], m[6]);
-	vec3 forward(-m[8], -m[9], -m[10]);
-	vec3 right(m[0], m[1], m[2]);
-	float offset = 0.25 + bearingGap / 2.0;
-	switch (RayAABBSide(sideA))
-	{
-		{
-		case RayAABBSide::up:
-		{
-			pivot = node->getPos() + up * offset;
-			asix = up;
-		}
-		break;
-		case RayAABBSide::down:
-		{
-			pivot = node->getPos() + up * -offset;
-			asix = up;
-		}
-		break;
-		case RayAABBSide::left:
-		{
-			pivot = node->getPos() + right * -offset;
-			asix = right;
-		}
-		break;
-		case RayAABBSide::right:
-		{
-			pivot = node->getPos() + right * offset;
-			asix = right;
-		}
-		break;
-		case RayAABBSide::front:
-		{
-			pivot = node->getPos() + forward * -offset;
-			asix = forward;
-		}
-		break;
-		case RayAABBSide::back:
-		{
-			pivot = node->getPos() + forward * offset;
-			asix = forward;
-		}
-		break;
-		default:
-			break;
-		}
-	}
+	auto part = static_cast<BlockPart * >(attach->m_parent);
+	auto island = part->m_parent;
+	auto islandInvertedMatrix = island->m_node->getLocalTransform().inverted();
+	
+	auto transform = part->getNode()->getLocalTransform();
+	auto normalInIsland = transform.transofrmVec4(vec4(attach->m_normal, 0.0)).toVec3();
+
+	pivot = transform.transofrmVec4(vec4(attach->m_pos, 1.0)).toVec3();
+	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
 }
 
 }

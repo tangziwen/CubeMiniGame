@@ -14,6 +14,11 @@ void PhysicsCompoundShape::addChildShape(Matrix44* mat, btCollisionShape* shape)
 	m_shape->addChildShape(transform, shape);
 }
 
+void PhysicsCompoundShape::getChildShapeTransform(int index, float * data)
+{
+	m_shape->getChildTransform(index).getOpenGLMatrix(data);
+}
+
 btCompoundShape* PhysicsCompoundShape::getShape()
 {
 	return m_shape;
