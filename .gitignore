@@ -166,3 +166,5 @@ CubeEngine.pro.user
 *.a
 Res
 /nsight_profiler.cfg
+/nsight_profiler.cfg
+/Res/Models/dragon.tzw
