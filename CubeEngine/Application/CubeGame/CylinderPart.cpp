@@ -166,9 +166,9 @@ void CylinderPart::attachToFromOtherIsland(Attachment * attach, BearPart * beari
 	data[6] = up.z;
 	data[7] = 0.0;
 
-	data[8] = InvertedNormal.x;
-	data[9] = InvertedNormal.y;
-	data[10] = InvertedNormal.z;
+	data[8] = -InvertedNormal.x;
+	data[9] = -InvertedNormal.y;
+	data[10] = -InvertedNormal.z;
 	data[11] = 0.0;
 
 	data[12] = attachPosition.x;
@@ -192,9 +192,9 @@ void CylinderPart::attachToFromOtherIsland(Attachment * attach, BearPart * beari
 	data[7] = 0.0;
 
 	//use invert
-	data[8] = normalForAttach.x;
-	data[9] = normalForAttach.y;
-	data[10] = normalForAttach.z;
+	data[8] = -normalForAttach.x;
+	data[9] = -normalForAttach.y;
+	data[10] = -normalForAttach.z;
 	data[11] = 0.0;
 
 	data[12] = selfAttah->m_pos.x;

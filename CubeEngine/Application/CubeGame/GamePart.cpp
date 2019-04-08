@@ -38,6 +38,33 @@ namespace tzw
 		up = mat.transofrmVec4(a_up).toVec3();
 	}
 
+	Matrix44 Attachment::getAttachmentInfoMat44()
+	{
+		vec3 right = vec3::CrossProduct(m_normal, m_up);
+		Matrix44 transformForAttachPoint;
+		auto data = transformForAttachPoint.data();
+		data[0] = right.x;
+		data[1] = right.y;
+		data[2] = right.z;
+		data[3] = 0.0;
+
+		data[4] = m_up.x;
+		data[5] = m_up.y;
+		data[6] = m_up.z;
+		data[7] = 0.0;
+		//right hand
+		data[8] = -m_normal.x;
+		data[9] = -m_normal.y;
+		data[10] = -m_normal.z;
+		data[11] = 0.0;
+
+		data[12] = m_pos.x;
+		data[13] = m_pos.y;
+		data[14] = m_pos.z;
+		data[15] = 1.0;
+		return transformForAttachPoint;
+	}
+
 	Drawable3D * GamePart::getNode() const
 	{
 		return m_node;

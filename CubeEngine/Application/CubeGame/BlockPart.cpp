@@ -94,9 +94,9 @@ void BlockPart::attachTo(Attachment * attach)
 	data[6] = up.z;
 	data[7] = 0.0;
 
-	data[8] = Normal.x;
-	data[9] = Normal.y;
-	data[10] = Normal.z;
+	data[8] = -Normal.x;
+	data[9] = -Normal.y;
+	data[10] = -Normal.z;
 	data[11] = 0.0;
 
 	data[12] = attachPosition.x;
@@ -119,9 +119,9 @@ void BlockPart::attachTo(Attachment * attach)
 	data[7] = 0.0;
 
 	//use invert
-	data[8] = selfAttah->m_normal.x;
-	data[9] = selfAttah->m_normal.y;
-	data[10] = selfAttah->m_normal.z;
+	data[8] = -selfAttah->m_normal.x;
+	data[9] = -selfAttah->m_normal.y;
+	data[10] = -selfAttah->m_normal.z;
 	data[11] = 0.0;
 
 	data[12] = selfAttah->m_pos.x;
@@ -163,9 +163,9 @@ void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	data[6] = up.z;
 	data[7] = 0.0;
 
-	data[8] = InvertedNormal.x;
-	data[9] = InvertedNormal.y;
-	data[10] = InvertedNormal.z;
+	data[8] = -InvertedNormal.x;
+	data[9] = -InvertedNormal.y;
+	data[10] = -InvertedNormal.z;
 	data[11] = 0.0;
 
 	data[12] = attachPosition.x;
@@ -189,9 +189,9 @@ void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	data[7] = 0.0;
 
 	//use invert
-	data[8] = normalForAttach.x;
-	data[9] = normalForAttach.y;
-	data[10] = normalForAttach.z;
+	data[8] = -normalForAttach.x;
+	data[9] = -normalForAttach.y;
+	data[10] = -normalForAttach.z;
 	data[11] = 0.0;
 
 	data[12] = selfAttah->m_pos.x;
@@ -205,8 +205,6 @@ void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	m_node->setPos(result.getTranslation());
 	m_node->setRotateQ(q);
 	m_node->reCache();
-	auto mat = m_node->getLocalTransform();
-	printf("fuck,a %d",mat);
 }
 
 void BlockPart::initAttachments()

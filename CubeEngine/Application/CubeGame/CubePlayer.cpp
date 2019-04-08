@@ -114,13 +114,6 @@ namespace tzw
 		{
 		case TZW_KEY_4:
 			break;
-		case TZW_KEY_T:
-
-			{
-				constraint1->enableAngularMotor(true, -10, 100);
-				constraint2->enableAngularMotor(true, -10, 100);
-			}
-			break;
 		}
 		return false;
 	}
@@ -245,7 +238,7 @@ namespace tzw
 			break;
 		case TZW_KEY_E:
 			{
-				BuildingSystem::shared()->placeBearByHit(getPos(),m_camera->getForward(), 15);
+				BuildingSystem::shared()->placeBearingByHit(getPos(),m_camera->getForward(), 15);
 				break;
 				//std::vector<Drawable3D *> list;
 				//auto pos = this->getPos();
@@ -263,6 +256,17 @@ namespace tzw
 				//}
 			}
 			break;
+		case TZW_KEY_T:
+			{
+				BuildingSystem::shared()->tmpMoveWheel();
+				//constraint1->enableAngularMotor(true, -10, 100);
+				//constraint2->enableAngularMotor(true, -10, 100);
+			}
+			break;
+		case TZW_KEY_H:
+			{
+				BuildingSystem::shared()->flipBearingByHit(getPos(),m_camera->getForward(), 15);
+			}
 		default:
 			break;
 		}
