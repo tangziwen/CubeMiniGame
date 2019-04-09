@@ -276,9 +276,9 @@ void BuildingSystem::tmpMoveWheel()
 {
 	for(auto constrain : m_constrainList)
 	{
-		constrain->enableAngularMotor(true, -2, 100);
+		constrain->enableAngularMotor(true, -10, 100);
 	}
-	
+
 }
 
 }

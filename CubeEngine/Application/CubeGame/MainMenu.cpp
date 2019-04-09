@@ -69,6 +69,7 @@ void MainMenu::drawIMGUI()
 	if (isVisible())
 	{
 		bool isOpenAbout = false;
+		bool isOpenHelp = false;
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("Game"))
@@ -128,6 +129,9 @@ void MainMenu::drawIMGUI()
 				if (ImGui::MenuItem("About", nullptr)) {
 					isOpenAbout = true;
 				}
+				if (ImGui::MenuItem("Help", nullptr)) {
+					isOpenHelp = true;
+				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
@@ -136,6 +140,22 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
+				ImGui::Separator();
+				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+				ImGui::EndPopup();
+			}
+
+
+			if (isOpenHelp) ImGui::OpenPopup("Help");
+			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("WASD to move");
+				ImGui::Text("Press 1 to create a toehold");
+				ImGui::Text("Press F to place a block");
+				ImGui::Text("Press G to place a wheel");
+				ImGui::Text("Press E to insert a bearing");
+				ImGui::Text("Press H to flip bearing rotate direction");
+				ImGui::Text("Press 2 to cook the physics");
 				ImGui::Separator();
 				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 				ImGui::EndPopup();

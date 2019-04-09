@@ -61,6 +61,8 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	m_grass = new Grass("Texture/grass.tga");
 	 
 	m_grass2 = new Grass("Texture/grass.tga");
+
+	m_isHitable = true;
 	 
 	grassNoise.SetSeed(time(nullptr));
 }

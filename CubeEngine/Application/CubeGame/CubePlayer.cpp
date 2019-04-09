@@ -240,20 +240,20 @@ namespace tzw
 			{
 				BuildingSystem::shared()->placeBearingByHit(getPos(),m_camera->getForward(), 15);
 				break;
-				//std::vector<Drawable3D *> list;
-				//auto pos = this->getPos();
-				//AABB aabb;
-				//aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-				//aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-				//g_GetCurrScene()->getRange(&list, aabb);
-				//Drawable3DGroup group(&list[0], list.size());
-				//Ray ray(pos, m_camera->getForward());
-				//vec3 hitPoint;
-				//auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
-				//if (chunk)
-				//{
-				//	chunk->deformSphere(hitPoint, 0.1, 2.0f);
-				//}
+				std::vector<Drawable3D *> list;
+				auto pos = this->getPos();
+				AABB aabb;
+				aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+				aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+				g_GetCurrScene()->getRange(&list, aabb);
+				Drawable3DGroup group(&list[0], list.size());
+				Ray ray(pos, m_camera->getForward());
+				vec3 hitPoint;
+				auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+				if (chunk)
+				{
+					chunk->deformSphere(hitPoint, 0.1, 2.0f);
+				}
 			}
 			break;
 		case TZW_KEY_T:
