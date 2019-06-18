@@ -7,6 +7,7 @@
 #include "Rendering/RenderBuffer.h"
 #include "Math/Matrix44.h"
 #include "Event/EventMgr.h"
+#include "imnodes.h"
 
 namespace tzw
 {
@@ -201,7 +202,8 @@ namespace tzw
 		m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
 		m_indexBuf->create();
 
-
+		ImGui::CreateContext();
+		imnodes::Initialize();
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeyMap[ImGuiKey_Tab] = TZW_KEY_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		io.KeyMap[ImGuiKey_LeftArrow] = TZW_KEY_LEFT;

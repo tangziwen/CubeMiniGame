@@ -401,9 +401,9 @@ inline float get_distance_to_cubic_bezier(
     const ImVec2& p3)
 {
     const int segments = 5;
-    const float length = ImSqrt(ImLengthSqr(p3 - p2)) +
-                         ImSqrt(ImLengthSqr(p2 - p1)) +
-                         ImSqrt(ImLengthSqr(p1 - p0));
+    const float length = sqrtf(ImLengthSqr(p3 - p2)) +
+                         sqrtf(ImLengthSqr(p2 - p1)) +
+                         sqrtf(ImLengthSqr(p1 - p0));
     const float iterations_per_length = 0.01f;
     const int iterations =
         int(ImClamp(length * iterations_per_length, 2.0f, 8.f));
@@ -413,7 +413,7 @@ inline float get_distance_to_cubic_bezier(
     ImVec2 point_on_curve = eval_bezier(t, p0, p1, p2, p3);
 
     const ImVec2 to_curve = point_on_curve - pos;
-    return ImSqrt(ImLengthSqr(to_curve));
+    return sqrtf(ImLengthSqr(to_curve));
 }
 
 inline LinkBezierData get_link_renderable(
@@ -426,11 +426,14 @@ inline LinkBezierData get_link_renderable(
         (start_type == AttributeType_Output));
     if (start_type == AttributeType_Input)
     {
-        ImSwap(start, end);
+		auto tmp = end;
+		end = start;
+		start = tmp;
+        //ImSwap(start, end);
     }
     // function arguments assed by value, since we mutate them
     const ImVec2 delta = end - start;
-    const float link_length = ImSqrt(ImLengthSqr(delta));
+    const float link_length = sqrtf(ImLengthSqr(delta));
     const ImVec2 offset = ImVec2(0.25f * link_length, 0.f);
     LinkBezierData bezier;
     bezier.p0 = start;
