@@ -24,26 +24,26 @@ namespace tzw
 
 	void Audio::Play()
 	{
-		FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		sys->playSound(FMOD_CHANNEL_REUSE,(FMOD::Sound *)m_ptr, false, (FMOD::Channel **)&m_channel);
+		//FMOD::SYSTEM * SYS = (FMOD::SYSTEM *)AUDIOSYSTEM::SHARED()->GETPTR();
+		//SYS->PLAYSOUND(FMOD_CHANNEL_REUSE,(FMOD::SOUND *)M_PTR, FALSE, (FMOD::CHANNEL **)&M_CHANNEL);
 	}
 
 	void Audio::pause()
 	{
-		FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		((FMOD::Channel *)m_channel)->setPaused(true);
+		//FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
+		//((FMOD::Channel *)m_channel)->setPaused(true);
 	}
 
 	void Audio::resume()
 	{
-		FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		((FMOD::Channel *)m_channel)->setPaused(false);
+		//FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
+		//((FMOD::Channel *)m_channel)->setPaused(false);
 	}
 
 	void Audio::stop()
 	{
-		FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		((FMOD::Channel *)m_channel)->stop();
+		//FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
+		//((FMOD::Channel *)m_channel)->stop();
 	}
 
 	Audio::~Audio()
