@@ -17,4 +17,14 @@ namespace tzw
 		part->m_parent = this;
 	}
 
+	void Island::remove(GamePart * part)
+	{
+		auto result = std::find(m_partList.begin(), m_partList.end(), part);
+		if (result != m_partList.end())
+		{
+			m_partList.erase(result);
+		}
+		part->m_parent = this;
+	}
+
 }

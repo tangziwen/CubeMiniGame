@@ -112,6 +112,60 @@ void BuildingSystem::placePartByHit(vec3 pos, vec3 dir, float dist, int type)
 			return;
 			}
 		}
+		//any island intersect can't find, so we need create a new toehold
+		createNewToeHold(pos + dir * 5.0f);
+}
+
+void BuildingSystem::removePartByHit(vec3 pos, vec3 dir, float dist)
+{
+	std::vector<GamePart *> tmp;
+	//search island
+	for (auto island : m_IslandList)
+	{
+		for (auto iter : island->m_partList)
+		{
+			tmp.push_back(iter);
+		}
+	}
+	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
+	{
+		float distl = left->getNode()->getWorldPos().distance(pos);
+		float distr = right->getNode()->getWorldPos().distance(pos);
+		return distl < distr;
+	}
+	);
+	for (auto iter : tmp)
+	{
+		auto island = iter->m_parent;
+		auto node = iter->getNode();
+		auto invertedMat = node->getTransform().inverted();
+		vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
+		vec4 originInLocal = invertedMat * vec4(pos, 1.0);
+		auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
+		RayAABBSide side;
+		vec3 hitPoint;
+		auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
+		if (isHit)
+		{
+			vec3 attachPos, attachNormal, attachUp;
+			auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal, attachUp);
+			if (attach)
+			{
+				if (!attach->m_bearPart)
+				{
+					iter->getNode()->removeFromParent();
+					island->remove(iter);
+				}
+				else // have some bearing?
+				{
+					attach->m_bearPart->m_node->removeFromParent();
+					m_bearList.erase(m_bearList.find(attach->m_bearPart));
+					attach->m_bearPart = nullptr;
+				}
+			}
+			return;
+		}
+	}
 }
 
 void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
@@ -136,9 +190,9 @@ void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
 	{
 		auto node = iter->getNode();
 		auto invertedMat = node->getTransform().inverted();
-		vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
-		vec4 originInLocal = invertedMat * vec4(pos, 1.0);
-		auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
+		auto dirInLocal = invertedMat * vec4(dir, 0.0);
+		auto originInLocal = invertedMat * vec4(pos, 1.0);
+		const auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
 		vec3 a,b,c;
 		auto attachment = iter->findProperAttachPoint(r, a, b, c);
 		if (attachment && !attachment->m_bearPart)
@@ -217,6 +271,18 @@ void BuildingSystem::flipBearingByHit(vec3 pos, vec3 dir, float dist)
 	}
 }
 
+void BuildingSystem::placeItem(GameItem * item, vec3 pos, vec3 dir, float dist)
+{
+	if (item->m_type >= 0)
+	{
+		placePartByHit(pos, dir, dist, item->m_type);
+	}
+	else
+	{
+		placeBearingByHit(pos, dir, dist);
+	}
+}
+
 void BuildingSystem::cook()
 {
 	//each island, we create a rigid
@@ -247,12 +313,13 @@ void BuildingSystem::cook()
 		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
 		vec3 worldPosB, worldNormalB, worldUpB;
 		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-		vec3 hingeDir = (worldPosB - worldPosA).normalized();
+		int isFlipped = bear->m_isFlipped ? -1 : 1;
+		vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
 		vec3 pivotA, pivotB, axisA, axisB;
 		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
 		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
 
-		//Õâ¸öhinge tmdÕæ¿Ó
+		//ï¿½ï¿½ï¿½hinge tmdï¿½ï¿½ï¿½
 		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 		m_constrainList.push_back(constrain);
 	}
@@ -278,7 +345,6 @@ void BuildingSystem::tmpMoveWheel()
 	{
 		constrain->enableAngularMotor(true, -10, 100);
 	}
-
 }
 
 }

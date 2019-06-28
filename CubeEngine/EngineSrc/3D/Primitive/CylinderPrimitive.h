@@ -11,11 +11,16 @@ public:
     virtual void submitDrawCmd(RenderCommand::RenderType passType);
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);
+	vec3 XYZ2RhoPhiZ(vec3 xyz);
+	void setTex(Texture * texture);
+	void setTopBottomTex(Texture * texture);
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();
 	virtual void checkCollide(ColliderEllipsoid * package);
     Mesh * m_mesh;
+	Mesh * m_topBottomMesh;
+	Material * m_topBottomMaterial;
     float m_radiusTop, m_radiusBottom, m_height;
 	vec4 m_color;
 	vec3 getSegPos(float theta, int side);

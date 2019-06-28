@@ -2,6 +2,7 @@
 #define TZW_VEC3_H
 
 #include <string>
+#include "vec2.h"
 namespace tzw {
 
 class vec3
@@ -37,6 +38,11 @@ public:
     void setLength(float newLength);
     static vec3 lerp(const vec3& from, const vec3 & to, float the_time);
 	static vec3 fromRGB(int R, int G, int B);
+	vec2 xy();
+	vec2 xz();
+	vec2 yz();
+	vec3 xzy();
+
     std::string getStr();
 };
 

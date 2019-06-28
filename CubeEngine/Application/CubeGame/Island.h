@@ -18,6 +18,7 @@ public:
 	Island(vec3 pos);
 	PhysicsRigidBody * m_rigid;
 	void insert(GamePart * part);
+	void remove(GamePart * part);
 };
 
 

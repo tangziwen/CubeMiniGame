@@ -14,10 +14,18 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
     m_radiusBottom = radiusBottom;
     m_height = height;
 	m_mesh = nullptr;
+	m_topBottomMesh = nullptr;
 	m_color = vec4::fromRGB(255,255,255);
+
+
     m_material = Material::createFromTemplate("ModelStd");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
 	m_material->setTex("diffuseMap", texture);
+
+	m_topBottomMaterial = Material::createFromTemplate("ModelStd");
+	auto arrowTexture = TextureMgr::shared()->getByPath("Texture/rock.jpg");
+	m_topBottomMaterial->setTex("diffuseMap", arrowTexture);
+
     initMesh();
     setCamera(g_GetCurrScene()->defaultCamera());
     setIsAccpectOcTtree(true);
@@ -27,9 +35,14 @@ void CylinderPrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 {
 	if(getIsVisible())
 	{
-		RenderCommand command(m_mesh, m_material,passType);
+		RenderCommand command(m_mesh, m_material, passType);
 		setUpCommand(command);
 		Renderer::shared()->addRenderCommand(command);
+
+		RenderCommand commandTopBottom(m_topBottomMesh, m_topBottomMaterial, passType);
+		setUpCommand(commandTopBottom);
+		Renderer::shared()->addRenderCommand(commandTopBottom);
+
 	}
 }
 
@@ -74,67 +87,105 @@ vec3 CylinderPrimitive::getWorldPos(vec3 localPos)
 	return theMat.transformVec3(localPos);
 }
 
+vec3 CylinderPrimitive::XYZ2RhoPhiZ(vec3 xyz)
+{
+	vec3 result;
+	result.z = (xyz.z / (this->m_height * 0.5)) * 0.5 + 0.5;
+
+	//Rho
+	result.x = sqrt(xyz.x * xyz.x + xyz.y * xyz.y);
+
+	//phi
+	result.y = atan2f(xyz.y, xyz.x);
+	return result;
+}
+
+void CylinderPrimitive::setTex(Texture * texture)
+{
+	m_material->setTex("diffuseMap", texture);
+}
+
+
+void CylinderPrimitive::setTopBottomTex(Texture * texture)
+{
+	m_topBottomMaterial->setTex("diffuseMap", texture);
+}
+
+vec2 circleUV(vec3 point, vec3 centre, float radius)
+{
+	return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, (point.y - centre.y) / (2.0 * radius) + 0.5);
+
+}
 void CylinderPrimitive::initMesh()
 {
 
 	if (!m_mesh)
 	{
 		m_mesh = new Mesh();
+		m_topBottomMesh = new Mesh();
 	}
 	else
 	{
+		m_topBottomMesh->clear();
 		m_mesh->clear();
 	}
+
 	int seg = 20;
 	float step = 2 * 3.141592654 / seg;
 	float theta = 0.0;
 	int index = 0;
+	int topBottomIndex = 0;
 	for(int i = 0; i < seg; i++)
 	{
-		
+
 		vec3 down_1 = getSegPos(theta, 0);
 		vec3 down_2 = getSegPos(theta + step, 0);
 		vec3 up_1 = getSegPos(theta, 1);
 		vec3 up_2 = getSegPos(theta + step, 1);
 		//middle 
-		m_mesh->addVertex(VertexData(up_1, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(down_2, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(down_1, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addVertex(VertexData(up_1, vec2(theta / (2 * 3.14), 1.0), m_color));
+		m_mesh->addVertex(VertexData(down_2, vec2((theta + step) / (2 * 3.14), 0.0), m_color));
+		m_mesh->addVertex(VertexData(down_1, vec2(theta / (2 * 3.14), 0.0), m_color));
 		m_mesh->addIndex(index);
 		m_mesh->addIndex(index + 1);
 		m_mesh->addIndex(index + 2);
 
-		m_mesh->addVertex(VertexData(down_2, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(up_1, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(up_2, vec2(0.0f, 0.0f), m_color));
+		m_mesh->addVertex(VertexData(down_2, vec2((theta + step) / (2 * 3.14), 0.0), m_color));
+		m_mesh->addVertex(VertexData(up_1, vec2(theta / (2 * 3.14), 1.0), m_color));
+		m_mesh->addVertex(VertexData(up_2, vec2((theta + step) / (2 * 3.14), 1.0), m_color));
 		m_mesh->addIndex(index + 3);
 		m_mesh->addIndex(index + 4);
 		m_mesh->addIndex(index + 5);
 
 		float halfHeight = m_height / 2.0;
+
 		//top
 		vec3 centerTop = vec3(0.0, 0.0, halfHeight);
-		m_mesh->addVertex(VertexData(up_1, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(up_2, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(centerTop, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addIndex(index + 6);
-		m_mesh->addIndex(index + 7);
-		m_mesh->addIndex(index + 8);
+		m_topBottomMesh->addVertex(VertexData(up_1, circleUV(up_1, centerTop, m_radiusTop), m_color));
+		m_topBottomMesh->addVertex(VertexData(up_2, circleUV(up_2, centerTop, m_radiusTop), m_color));
+		m_topBottomMesh->addVertex(VertexData(centerTop, vec2(0.5, 0.5), m_color));
+		m_topBottomMesh->addIndex(topBottomIndex + 0);
+		m_topBottomMesh->addIndex(topBottomIndex + 1);
+		m_topBottomMesh->addIndex(topBottomIndex + 2);
 
 		//bottom
 		vec3 centerBottom = vec3(0.0, 0.0, -halfHeight);
-		m_mesh->addVertex(VertexData(down_2, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(down_1, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addVertex(VertexData(centerBottom, vec2(0.0f, 0.0f), m_color));
-		m_mesh->addIndex(index + 9);
-		m_mesh->addIndex(index + 10);
-		m_mesh->addIndex(index + 11);
+		m_topBottomMesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom), m_color));
+		m_topBottomMesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom), m_color));
+		m_topBottomMesh->addVertex(VertexData(centerBottom, vec2(0.5, 0.5), m_color));
+		m_topBottomMesh->addIndex(topBottomIndex + 3);
+		m_topBottomMesh->addIndex(topBottomIndex + 4);
+		m_topBottomMesh->addIndex(topBottomIndex + 5);
 		theta += step;
-		index += 12;
+		index += 6;
+		topBottomIndex += 6;
 
 	}
     m_mesh->caclNormals();
     m_mesh->finish();
+
+	m_topBottomMesh->caclNormals();
+	m_topBottomMesh->finish();
     m_localAABB.merge(m_mesh->getAabb());
     reCache();
     reCacheAABB();

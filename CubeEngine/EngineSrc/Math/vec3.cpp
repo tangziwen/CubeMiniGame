@@ -1,5 +1,6 @@
 #include "vec3.h"
 #include "math.h"
+
 namespace tzw {
 
 vec3::vec3()
@@ -159,6 +160,26 @@ vec3 vec3::lerp(const vec3 &from, const vec3 &to, float the_time)
 vec3 vec3::fromRGB(int R, int G, int B)
 {
 	return vec3(R / 255.0, G / 255.0, B / 255.0);
+}
+
+vec2 vec3::xy()
+{
+	return vec2(x, y);
+}
+
+vec2 vec3::xz()
+{
+	return vec2(x, z);
+}
+
+vec2 vec3::yz()
+{
+	return vec2(y, z);
+}
+
+vec3 vec3::xzy()
+{
+	return vec3(x, z, y);
 }
 
 std::string vec3::getStr()

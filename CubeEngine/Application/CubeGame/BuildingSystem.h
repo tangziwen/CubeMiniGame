@@ -5,7 +5,7 @@
 #include <set>
 #include "Island.h"
 #include "Math/Ray.h"
-
+#include "GameItem.h"
 namespace tzw
 {
 class PhysicsHingeConstraint;
@@ -20,9 +20,11 @@ class BuildingSystem
 		void placePartByHit(vec3 pos, vec3 dir, float dist, int type);
 		void placeBearingByHit(vec3 pos, vec3 dir, float dist);
 		void flipBearingByHit(vec3 pos, vec3 dir, float dist);
+		void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 		void cook();
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 		void tmpMoveWheel();
+		void removePartByHit(vec3 pos, vec3 dir, float dist);
 	private:
 		std::set<Island *> m_IslandList;
 		std::set<BearPart* > m_bearList;

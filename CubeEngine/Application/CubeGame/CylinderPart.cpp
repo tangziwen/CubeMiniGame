@@ -148,7 +148,7 @@ void CylinderPart::attachToFromOtherIsland(Attachment * attach, BearPart * beari
 	attachPosition = islandMatrixInverted.transformVec3(attachPosition);
 	Normal = islandMatrixInverted.transofrmVec4(vec4(Normal, 0.0)).toVec3();
 	vec3 InvertedNormal = Normal * -1;
-	attachPosition = attachPosition + Normal * 0.5;
+	attachPosition = attachPosition + Normal * 0.01;
 	up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
 	//we use m_attachment[0]
 	auto selfAttah = m_attachment[0];
