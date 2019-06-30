@@ -12,7 +12,8 @@ namespace tzw
 			SimpleBullet,
 			SimpleArrow,
 		};
-		Projectile(ProjectileType type);
+
+		explicit Projectile(ProjectileType type);
 		void launch(vec3 from, vec3 direction, float speed);
 
 	private:

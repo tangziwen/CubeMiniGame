@@ -7,6 +7,7 @@
 #include "Rendering/RenderBuffer.h"
 #include "Math/Matrix44.h"
 #include "Event/EventMgr.h"
+#include "imnodes.h"
 
 namespace tzw
 {
@@ -201,7 +202,8 @@ namespace tzw
 		m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
 		m_indexBuf->create();
 
-
+		ImGui::CreateContext();
+		imnodes::Initialize();
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeyMap[ImGuiKey_Tab] = TZW_KEY_TAB;                     // Keyboard mapping. ImGui will use those indices to peek into the io.KeyDown[] array.
 		io.KeyMap[ImGuiKey_LeftArrow] = TZW_KEY_LEFT;
@@ -222,9 +224,9 @@ namespace tzw
 		io.KeyMap[ImGuiKey_X] = TZW_KEY_X;
 		io.KeyMap[ImGuiKey_Y] = TZW_KEY_Y;
 		io.KeyMap[ImGuiKey_Z] = TZW_KEY_Z;
-		ImGui::StyleColorsClassic();
+		//ImGui::StyleColorsClassic();
 		io.RenderDrawListsFn = ImGui_ImplGlfwGL2_RenderDrawLists;
-		//ImGui::StyleColorsDark();
+		ImGui::StyleColorsDark();
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowBorderSize = 2.0f;
 		style.FrameBorderSize = 2.0f;
@@ -280,8 +282,8 @@ namespace tzw
 			ImGui_ImplGlfwGL2_CreateDeviceObjects();
 		}
 		auto& io = ImGui::GetIO();
-		auto w = Engine::shared()->windowHeight();
-		auto h = Engine::shared()->windowWidth();
+		auto h = Engine::shared()->windowHeight();
+		auto w = Engine::shared()->windowWidth();
 
 		io.DisplaySize = ImVec2(w, h);
 		io.DisplayFramebufferScale = ImVec2(1.0, 1.0);

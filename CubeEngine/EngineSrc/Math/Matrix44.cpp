@@ -266,6 +266,11 @@ vec3 Matrix44::transformVec3(vec3 v)
     return vec3(result.x, result.y, result.z);
 }
 
+vec4 Matrix44::transofrmVec4(vec4 v)
+{
+	return *this * v;
+}
+
 void Matrix44::frustum(float left, float right, float bottom, float top, float near, float far)
 {
     float rl = (right - left),
@@ -329,6 +334,11 @@ void Matrix44::stripScale()
 	m_data[8] = z.x;
 	m_data[9] = z.y;
 	m_data[10] = z.z;
+}
+
+vec3 Matrix44::getTranslation()
+{
+	return vec3(m_data[12], m_data[13], m_data[14]);
 }
 
 } // namespace tzw

@@ -1,6 +1,8 @@
 #include "Sky.h"
 #include "../Scene/SceneMgr.h"
 #include "../Engine/Engine.h"
+#include "Primitive/SpherePrimitive.h"
+
 namespace tzw
 {
 	TZW_SINGLETON_IMPL(Sky)
@@ -9,7 +11,8 @@ namespace tzw
 	{
 		m_isEnable = true;
 		m_skyBoxTechnique = Material::createFromTemplate("Sky");
-		m_model = Model::create("Models/sphere.tzw");
+		auto sphere = SpherePrimitive(1.0f, 24);
+		m_mesh = sphere.getMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());
 		setScale(vec3(6360000.0f, 6360000.0f, 6360000.0f));
 		reCache();
@@ -55,7 +58,7 @@ namespace tzw
 
 	tzw::Mesh * Sky::getMesh()
 	{
-		return m_model->getMesh(0);
+		return m_mesh;
 	}
 
 	void Sky::prepare()

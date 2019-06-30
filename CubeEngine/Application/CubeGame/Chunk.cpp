@@ -61,6 +61,8 @@ Chunk::Chunk(int  the_x, int the_y,int the_z)
 	m_grass = new Grass("Texture/grass.tga");
 	 
 	m_grass2 = new Grass("Texture/grass.tga");
+
+	m_isHitable = true;
 	 
 	grassNoise.SetSeed(time(nullptr));
 }
@@ -140,7 +142,7 @@ void Chunk::logicUpdate(float delta)
 	}
 }
 
-bool Chunk::getIsAccpectOCTtree() const
+bool Chunk::getIsAccpectOcTtree() const
 {
 	return m_isLoaded;
 }
@@ -844,7 +846,7 @@ void Chunk::deform(int X, int Y, int Z, float actualVal)
 	setVoxelScalar(X, Y, Z, actualVal);
 }
 
-unsigned int Chunk::getTypeID()
+unsigned int Chunk::getTypeId()
 {
 	return TYPE_CHUNK;
 }

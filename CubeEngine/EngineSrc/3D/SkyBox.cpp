@@ -24,7 +24,7 @@ void SkyBox::init(std::string PosXFilename, std::string NegXFilename, std::strin
     m_skyBoxTexture->setWarp(RenderFlag::WarpAddress::Clamp);
     m_skyBoxTechnique = Material::createFromTemplate("SkyBox");
     m_skyBoxTechnique->setTex("TU_tex1",m_skyBoxTexture);
-    setIsAccpectOCTtree(false);
+    setIsAccpectOcTtree(false);
 }
 
 Material *SkyBox::getMaterial() const

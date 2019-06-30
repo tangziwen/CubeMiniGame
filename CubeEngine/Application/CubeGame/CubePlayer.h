@@ -3,10 +3,11 @@
 
 #include "Game/FPSCamera.h"
 #include "EngineSrc/3D/Model/Model.h"
-
+#include "2D/GUISystem.h"
 namespace tzw
 {
-	class CubePlayer : public Node, public EventListener
+	class GameItem;
+	class CubePlayer : public Node, public EventListener, public IMGUIObject
 	{
 	public:
 		enum class Mode
@@ -16,7 +17,7 @@ namespace tzw
 			MODE_PLACE_SPHERE,
 		};
 
-		CubePlayer(Node* mainRoot);
+		explicit CubePlayer(Node* mainRoot);
 		FPSCamera* camera() const;
 		void setCamera(FPSCamera* camera);
 		vec3 getPos();
@@ -26,12 +27,18 @@ namespace tzw
 		bool onKeyRelease(int keyCode) override;
 		bool onMousePress(int button, vec2 pos) override;
 		void modeSwitch(Mode newMode);
+		void drawIMGUI() override;
+		void initSlots();
+		void handleItemPrimaryUse(GameItem * item);
+		void handleItemSecondaryUse(GameItem * item);
 	private:
+		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
 		FPSCamera* m_camera;
 		Model* m_gunModel;
 		int oldPosX;
 		int oldPosZ;
+		int m_currSelectItemIndex;
 		bool m_enableGravity;
 	};
 } // namespace tzw

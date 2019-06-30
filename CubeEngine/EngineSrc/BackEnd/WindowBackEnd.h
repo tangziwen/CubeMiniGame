@@ -6,7 +6,8 @@ namespace tzw {
 class WindowBackEnd
 {
 public:
-    WindowBackEnd();
+	virtual ~WindowBackEnd() = default;
+	WindowBackEnd();
 	virtual void prepare(int width, int height);
     virtual void run();
 	virtual void setUnlimitedCursor(bool enable);

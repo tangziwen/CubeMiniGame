@@ -8,7 +8,7 @@ namespace tzw
 	{
 	public:
 		MoveBy(float duration, vec3 speed);
-		virtual void step(Node *node, float dt);
+		void step(Node *node, float dt) override;
 		virtual void final(Node * node);
 		virtual ~MoveBy();
 	private:

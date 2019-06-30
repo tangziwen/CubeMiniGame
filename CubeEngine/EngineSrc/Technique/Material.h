@@ -7,11 +7,12 @@
 #include "TechniqueVar.h"
 #include "../Math/Matrix44.h"
 #include "EngineSrc/3D/Effect/Effect.h"
+#include "2D/InspectableUI.h"
 namespace tzw {
 class StdMaterial;
 class Node;
 class Drawable;
-class Material
+class Material : public InspectableUI
 {
 public:
     Material ();
@@ -41,7 +42,9 @@ public:
 
 	TechniqueVar * get(std::string);
 
+	void inspect() override;
 	void inspectIMGUI(std::string name, float min, float max, const char * fmt = "%.2f");
+	void inspectIMGUI_Color(std::string name);
 
 private:
     std::string m_vsPath;

@@ -2,9 +2,8 @@
 
 namespace tzw {
 
-ColliderEllipsoid::ColliderEllipsoid()
+ColliderEllipsoid::ColliderEllipsoid(): foundCollision(false), nearestDistance(0)
 {
-
 }
 
 vec3 ColliderEllipsoid::toE(vec3 theVec)

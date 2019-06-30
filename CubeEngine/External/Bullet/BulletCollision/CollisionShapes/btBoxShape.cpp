@@ -42,6 +42,7 @@ void	btBoxShape::calculateLocalInertia(btScalar mass,btVector3& inertia) const
 	btScalar lx=btScalar(2.)*(halfExtents.x());
 	btScalar ly=btScalar(2.)*(halfExtents.y());
 	btScalar lz=btScalar(2.)*(halfExtents.z());
+	
 
 	inertia.setValue(mass/(btScalar(12.0)) * (ly*ly + lz*lz),
 					mass/(btScalar(12.0)) * (lx*lx + lz*lz),

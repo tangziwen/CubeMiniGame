@@ -11,7 +11,7 @@ Drawable3D::Drawable3D()
 
 Drawable3D::~Drawable3D()
 {
-    if(this->getIsAccpectOCTtree())
+    if(this->Node::getIsAccpectOcTtree())
     {
         m_scene->getOctreeScene()->removeObj(this);
     }

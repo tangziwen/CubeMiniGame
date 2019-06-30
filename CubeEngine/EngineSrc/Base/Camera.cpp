@@ -3,9 +3,8 @@
 namespace tzw {
 
 Camera::Camera()
-    :m_useCustomFrustumUpdate(false)
+	: m_useCustomFrustumUpdate(false), m_fov(0), m_aspect(0), m_near(0), m_far(0)
 {
-
 }
 
 

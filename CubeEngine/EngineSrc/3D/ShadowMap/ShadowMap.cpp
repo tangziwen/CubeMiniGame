@@ -13,7 +13,7 @@ namespace tzw
 	{
 		m_program = ShaderMgr::shared()->getByPath("./Res/Shaders/ShadowNaive_v.glsl", "./Res/Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
-		int shadowMapSize[] = {2048, 1024, 1024};
+		int shadowMapSize[] = {512, 1024, 1024};
 		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
 		{
 			auto shadowMap = new ShadowMapFBO();
@@ -83,7 +83,7 @@ namespace tzw
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
 		m_zlistView[0] = near;
 		m_zlistView[1] = 25.0f;
-		m_zlistView[2] = 75.0;
+		m_zlistView[2] = 75.0f;
 		m_zlistView[3] = far;
 
 		auto projection = camera->projection();
@@ -106,6 +106,11 @@ namespace tzw
 		return m_projectMatList[index];
 	}
 
+	float snap(float src, float tileSize)
+	{
+		return floor(src / tileSize) * tileSize;
+	}
+
 	void ShadowMap::calculateProjectionMatrix()
 	{
 		auto camera = g_GetCurrScene()->defaultCamera();
@@ -115,6 +120,7 @@ namespace tzw
 		calculateZList();
 		float fov, aspect,near,far;
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
+		int shadowMapSize[] = {512, 1024, 1024};
 		for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
 		{
 			AABB aabb;
@@ -124,30 +130,46 @@ namespace tzw
 			getFrustumCorners(frustumCorners, camera->projection(), m_zlistView[i], m_zlistView[i+1]);
 			camera->reCache();
 			std::vector<vec3> frustumCornersL;
-            float minX = std::numeric_limits<float>::max();
-            float maxX = std::numeric_limits<float>::min();
-            float minY = std::numeric_limits<float>::max();
-            float maxY = std::numeric_limits<float>::min();
-            float minZ = std::numeric_limits<float>::max();
-            float maxZ = std::numeric_limits<float>::min();
 			for (unsigned j = 0 ; j < NUM_FRUSTUM_CORNERS ; j++) 
 			{
 				vec4 coord_in_world = camInv * vec4(frustumCorners[j], 1.0);
 				vec4 coord_in_LightView =  lightView * coord_in_world;
 				aabb.update(vec3(coord_in_LightView.x, coord_in_LightView.y, coord_in_LightView.z));
-                minX = std::min(minX, coord_in_LightView.x);
-                maxX = std::max(maxX, coord_in_LightView.x);
-                minY = std::min(minY, coord_in_LightView.y);
-                maxY = std::max(maxY, coord_in_LightView.y);
-                minZ = std::min(minZ, coord_in_LightView.z);
-                maxZ = std::max(maxZ, coord_in_LightView.z);
 				frustumCornersL.push_back(coord_in_LightView.toVec3());
 			}
 			Matrix44 mat;
 			auto min_val = aabb.min();
 			auto max_val = aabb.max();
+
+
+			//fit to scene
+			vec3 vDiagonal = frustumCorners[0] - frustumCorners[6];
+			vDiagonal = vec3(vDiagonal.length(), vDiagonal.length(), vDiagonal.length());
+			float fCascadeBound = vDiagonal.x;
+			vec3 halfVec = vec3(0.5, 0.5, 0.5);
+            vec3 vBoarderOffset = ( vDiagonal - ( max_val - min_val ) ) * halfVec;
+			vBoarderOffset.z = 0.0;
+            // Add the offsets to the projection.
+            max_val += vBoarderOffset;
+            min_val -= vBoarderOffset;
+
+
+			vec2 vWorldUnitsPerTexel;
+            // The world units per texel are used to snap the shadow the orthographic projection
+            // to texel sized increments.  This keeps the edges of the shadows from shimmering.
+            float fWorldUnitsPerTexel = fCascadeBound / (float)shadowMapSize[i];
+            vWorldUnitsPerTexel = vec2( fWorldUnitsPerTexel, fWorldUnitsPerTexel);
+
+
+			//snap to texel
+			min_val.x = snap(min_val.x, vWorldUnitsPerTexel.x);
+			min_val.y = snap(min_val.y, vWorldUnitsPerTexel.y);
+
+			max_val.x = snap(max_val.x, vWorldUnitsPerTexel.x);
+			max_val.y = snap(max_val.y, vWorldUnitsPerTexel.y);
+
 			//look at the last 2 parameters! 
-			mat.ortho(min_val.x, max_val.x, min_val.y, max_val.y, -1 * maxZ - 50,  -1 * minZ);
+			mat.ortho(min_val.x, max_val.x, min_val.y, max_val.y, -1 * max_val.z - 50,  -1 * min_val.z);
 			m_projectMatList[i] = mat;
 			aabb.reset();
 		}
@@ -158,7 +180,7 @@ namespace tzw
 		return m_shadowMapList[index];
 	}
 
-	AABB ShadowMap::getPotentialRange()
+	AABB ShadowMap::getPotentialRange(int index)
 	{
 		AABB aabb;
 		auto camera = g_GetCurrScene()->defaultCamera();
@@ -167,12 +189,27 @@ namespace tzw
 		std::vector<vec3> frustumCorners;
 		float fov, aspect,near,far;
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
+
+		near = m_zlistView[index];
+		far = m_zlistView[index + 1];
 		getFrustumCorners(frustumCorners, camera->projection(),near, far);
 		auto camInv = camera->getTransform();
+		auto lightView = getLightViewMatrix();
         for (unsigned j = 0 ; j < NUM_FRUSTUM_CORNERS ; j++) {
             vec4 coord_in_world = camInv * vec4(frustumCorners[j], 1.0);
+			vec4 coord_in_LightView =  lightView * coord_in_world;
 			aabb.update(coord_in_world.toVec3());
         }
+		//in the light space, we modify the max_z & min_z
+		auto theMax = aabb.max();
+		theMax.z += 20;
+		auto theMin = aabb.min();
+		theMin.z -= 20;
+		aabb.update(theMax);
+		aabb.update(theMin);
+
+		//then we turn to world coordinate
+		aabb.transForm(lightView.inverted());
 		return aabb;
 	}
 }

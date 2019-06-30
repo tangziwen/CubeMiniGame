@@ -11,8 +11,8 @@ class RotateTo :public ActionInterval
 {
 public:
     RotateTo(float duration,vec3 from,vec3 to);
-    virtual void step(Node *node, float dt);
-    virtual void final(Node * node);
+	void step(Node *node, float dt) override;
+	void final(Node * node) override;
     virtual ~RotateTo();
 private:
     Quaternion m_fromQ,m_toQ;

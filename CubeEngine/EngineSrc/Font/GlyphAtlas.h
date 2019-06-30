@@ -10,8 +10,9 @@ class GlyphAtlas;
 struct GlyphAtlasNode{
     GlyphAtlasNode();
     GlyphData m_data;
-    int x,y;
-    vec2 UV(float u,float v);
+	int m_x;
+	int m_y;
+	vec2 UV(float u,float v);
     GlyphAtlas * parent;
     float U(float fakeU);
     float V(float fakeV);

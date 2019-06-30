@@ -9,7 +9,8 @@
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
 #include "BuildingSystem.h"
-
+#include "2D/GUISystem.h"
+#include "../../EngineSrc/2D/imnodes.h"
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -69,6 +70,7 @@ void MainMenu::drawIMGUI()
 	if (isVisible())
 	{
 		bool isOpenAbout = false;
+		bool isOpenHelp = false;
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu("Game"))
@@ -84,45 +86,28 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginMenu("Run-time Config"))
 			{
 
-				ImGui::MenuItem("terrain", NULL, &isOpenTerrain);
+				ImGui::MenuItem("terrain", nullptr, &isOpenTerrain);
 				ImGui::EndMenu();
 			}
 			if (isOpenTerrain)
 			{
 				ImGui::Begin("Terrain Inspector", &isOpenTerrain);
 				ImGui::Text("Terrain Inspector");
-				auto material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
-				material->inspectIMGUI("uv_grass", 0.1f, 15.0f);
-				material->inspectIMGUI("uv_dirt", 0.1f, 15.0f);
-				material->inspectIMGUI("uv_cliff", 0.1f, 15.0f);
-				material->inspectIMGUI("near_dist", 0.1f, 100.0f);
-				material->inspectIMGUI("far_dist", 0.1f, 200.0f);
-				material->inspectIMGUI("large_factor", 1.0f, 10.0f);
+				auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
+				terrainMat->inspect();
+
+				auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
+				fogMat->inspect();
 
 				auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
-				PostMat->inspectIMGUI("fog_near", 20.0f, 150.0f);
-				PostMat->inspectIMGUI("fog_far", 50.0f, 300.0f);
-				PostMat->inspectIMGUI("fog_height_min", -100.0f, 50.0f);
-				PostMat->inspectIMGUI("fog_height_max", 0.0f, 150.0f);
+				PostMat->inspect();
 
-				PostMat->inspectIMGUI("AO_distant", 0.5f, 5.0f);
-
-				PostMat->inspectIMGUI("AO_strength", 0.00f, 1.0f);
-
-
-				PostMat->inspectIMGUI("AO_bias", 0.001f, 0.1f);
 				auto sunMat = Sky::shared()->getMaterial();
 				sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
-
 				auto dirLight = g_GetCurrScene()->getDirectionLight();
-
-
 				float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
 				ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
 				dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
-
-				//auto sunMat = Sky::shared()->getMaterial();
-				//sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
 
 				if (ImGui::Button("dump to file"))
 				{
@@ -133,7 +118,7 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginMenu("Test"))
 			{
 
-				if (ImGui::MenuItem("test phys", NULL))
+				if (ImGui::MenuItem("test phys", nullptr))
 				{
 					PhysicsMgr::shared()->start();
 				}
@@ -142,22 +127,42 @@ void MainMenu::drawIMGUI()
 
 			if (ImGui::BeginMenu("?"))
 			{
-				if (ImGui::MenuItem("About", NULL)) {
+				if (ImGui::MenuItem("About", nullptr)) {
 					isOpenAbout = true;
+				}
+				if (ImGui::MenuItem("Help", nullptr)) {
+					isOpenHelp = true;
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
 
 			if (isOpenAbout) ImGui::OpenPopup("About");
-			if (ImGui::BeginPopupModal("About", NULL, ImGuiWindowFlags_AlwaysAutoResize))
+			if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
 				ImGui::Separator();
 				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 				ImGui::EndPopup();
 			}
+
+
+			if (isOpenHelp) ImGui::OpenPopup("Help");
+			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("WASD to move");
+				ImGui::Text("Press 1 to create a toehold");
+				ImGui::Text("Press F to place a block");
+				ImGui::Text("Press G to place a wheel");
+				ImGui::Text("Press E to insert a bearing");
+				ImGui::Text("Press H to flip bearing rotate direction");
+				ImGui::Text("Press 2 to cook the physics");
+				ImGui::Separator();
+				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+				ImGui::EndPopup();
+			}
 		}
+
 	}
 }
 
@@ -225,7 +230,7 @@ struct ExampleAppLog
 		ScrollToBottom = true;
 	}
 
-	void    Draw(const char* title, bool* p_open = NULL)
+	void    Draw(const char* title, bool* p_open = nullptr)
 	{
 		ImGui::SetNextWindowSize(ImVec2(500, 400), ImGuiCond_FirstUseEver);
 		ImGui::Begin(title, p_open);
@@ -242,12 +247,12 @@ struct ExampleAppLog
 		{
 			const char* buf_begin = Buf.begin();
 			const char* line = buf_begin;
-			for (int line_no = 0; line != NULL; line_no++)
+			for (int line_no = 0; line != nullptr; line_no++)
 			{
-				const char* line_end = (line_no < LineOffsets.Size) ? buf_begin + LineOffsets[line_no] : NULL;
+				const char* line_end = (line_no < LineOffsets.Size) ? buf_begin + LineOffsets[line_no] : nullptr;
 				if (Filter.PassFilter(line, line_end))
 					ImGui::TextUnformatted(line, line_end);
-				line = line_end && line_end[1] ? line_end + 1 : NULL;
+				line = line_end && line_end[1] ? line_end + 1 : nullptr;
 			}
 		}
 		else

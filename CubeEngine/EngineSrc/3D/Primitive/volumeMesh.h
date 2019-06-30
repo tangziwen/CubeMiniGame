@@ -13,7 +13,7 @@ public:
 	SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint32_t * indices, uint32_t indicesSize);
 	virtual void submitDrawCmd(RenderCommand::RenderType passType);
 	void initBuffer();
-	virtual bool getIsAccpectOCTtree() const;
+	virtual bool getIsAccpectOcTtree() const;
 private:
 	Mesh * m_mesh;
 };

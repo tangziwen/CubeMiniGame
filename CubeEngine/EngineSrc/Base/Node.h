@@ -60,8 +60,8 @@ public:
 	bool getIsVisible() const;
 	virtual void setIsVisible(bool isVisible);
 	void purgeAllChildren();
-	virtual bool getIsAccpectOCTtree() const;
-	void setIsAccpectOCTtree(bool isAccpectOCTtree);
+	virtual bool getIsAccpectOcTtree() const;
+	void setIsAccpectOcTtree(bool isAccpectOCTtree);
 	void cacheTransform();
 	virtual void visit(RenderCommand::RenderType passType);
 	virtual void reCache();
@@ -83,7 +83,7 @@ public:
 	size_t getChildrenAmount();
 	unsigned int getTag() const;
 	void setTag(unsigned int tag);
-	virtual unsigned int getTypeID();
+	virtual unsigned int getTypeId();
 protected:
 	bool m_isVisible;
 	std::deque<Node *> m_children;
@@ -102,7 +102,7 @@ protected:
 	Node * m_parent;
 	unsigned int m_tag;
 protected:
-	void removeAllChildren_r();
+	void removeAllChildrenR();
 };
 
 } // namespace tzw

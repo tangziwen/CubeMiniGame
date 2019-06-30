@@ -2,9 +2,8 @@
 #include "Ray.h"
 namespace tzw {
 
-t_Sphere::t_Sphere()
+t_Sphere::t_Sphere(): m_radius(0)
 {
-
 }
 
 vec3 t_Sphere::centre() const

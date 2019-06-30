@@ -8,6 +8,7 @@
 #include "GameConfig.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
+#include "3D/Primitive/CylinderPrimitive.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -138,7 +139,7 @@ void GameWorld::startGame()
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }
 
-bool tzw::GameWorld::onKeyPress(int keyCode)
+bool GameWorld::onKeyPress(int keyCode)
 {
     switch (keyCode) {
     case TZW_KEY_ESCAPE:
@@ -244,6 +245,7 @@ GameWorld::GameWorld()
 	//g_GetCurrScene()->addNode(m_mainMenu);
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
+	
 	//startGame();
 
 }

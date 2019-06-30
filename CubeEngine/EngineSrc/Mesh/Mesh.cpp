@@ -4,10 +4,10 @@
 namespace tzw {
 
 Mesh::Mesh()
-    :m_vbo(-1),m_ibo(-1)
+	: m_matIndex(0), m_vbo(-1), m_ibo(-1)
 {
-    m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
-    m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
+	m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
+	m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
 	m_instanceBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 }
 

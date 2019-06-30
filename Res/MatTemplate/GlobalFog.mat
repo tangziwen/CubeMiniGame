@@ -1,0 +1,65 @@
+{
+    "shaders": {
+        "vs": "./Res/Shaders/GlobalFog_v.glsl",
+        "fs": "./Res/Shaders/GlobalFog_f.glsl"
+    },
+  "name": "PostEffect",
+  "property": {
+    "attributes": [
+      {
+        "name": "fog_near",
+        "type": "float",
+        "default": 50,
+        "ui_info": {
+          "range": [
+            0,
+            150
+          ]
+        }
+      },
+      {
+        "name": "fog_far",
+        "type": "float",
+        "default": 200,
+        "ui_info": {
+          "range": [
+            0,
+            150
+          ]
+        }
+      },
+      {
+        "name": "fog_height_min",
+        "type": "float",
+        "default": -50,
+        "ui_info": {
+          "range": [
+            -50,
+            50
+          ]
+        }
+      },
+      {
+        "name": "fog_height_max",
+        "type": "float",
+        "default": 50,
+        "ui_info": {
+          "range": [
+            0,
+            200
+          ]
+        }
+      },
+      {
+        "name": "fog_color",
+        "type": "vec3",
+        "default": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "maps": []
+  }
+}

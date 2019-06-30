@@ -20,7 +20,7 @@ void Model::initWithFile(std::string modelFilePath)
 		mesh->calculateAABB();
 		m_localAABB.merge(mesh->getAabb());
 	}
-    setIsAccpectOCTtree(true);
+    setIsAccpectOcTtree(true);
 }
 
 Model *Model::create(std::string modelFilePath)
@@ -42,7 +42,7 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
     }
 }
 
-tzw::Mesh * Model::getMesh(int id)
+Mesh * Model::getMesh(int id)
 {
 	return m_meshList[id];
 }

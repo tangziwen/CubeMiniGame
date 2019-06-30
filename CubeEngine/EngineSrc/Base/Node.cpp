@@ -163,11 +163,11 @@ void Node::visit(RenderCommand::RenderType passType)
 	//}
 	if(m_isVisible && m_isValid)
 	{
-		if(!getIsAccpectOCTtree() || this->getNodeType() != NodeType::Drawable3D )
+		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )
 		{
 			submitDrawCmd(passType);
 		}
-		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOCTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
+		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
 			scene->updateObj(static_cast<Drawable3D *>(this));
 		}
@@ -320,19 +320,19 @@ void Node::purgeAllChildren()
     {
         for( Node * node :m_children)
         {
-            node->removeAllChildren_r();
+            node->removeAllChildrenR();
         }
         m_children.clear();
     }
 }
 
-void Node::removeAllChildren_r()
+void Node::removeAllChildrenR()
 {
     if(!m_children.empty())
     {
         for( Node * node :m_children)
         {
-            node->removeAllChildren_r();
+            node->removeAllChildrenR();
         }
         m_children.clear();
     }
@@ -366,17 +366,17 @@ void Node::setTag(unsigned int tag)
     m_tag = tag;
 }
 
-unsigned int Node::getTypeID()
+unsigned int Node::getTypeId()
 {
 	return 0;
 }
 
-bool Node::getIsAccpectOCTtree() const
+bool Node::getIsAccpectOcTtree() const
 {
     return m_isAccpectOCTtree;
 }
 
-void Node::setIsAccpectOCTtree(bool isAccpectOCTtree)
+void Node::setIsAccpectOcTtree(bool isAccpectOCTtree)
 {
     m_isAccpectOCTtree = isAccpectOCTtree;
 }

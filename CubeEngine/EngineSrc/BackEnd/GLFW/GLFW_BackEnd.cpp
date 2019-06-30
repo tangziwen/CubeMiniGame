@@ -102,9 +102,8 @@ void GLFW_BackEnd::run()
     exit(EXIT_SUCCESS);
 }
 
-GLFW_BackEnd::GLFW_BackEnd()
+GLFW_BackEnd::GLFW_BackEnd(): m_window(nullptr)
 {
-
 }
 
 void GLFW_BackEnd::setUnlimitedCursor(bool enable)

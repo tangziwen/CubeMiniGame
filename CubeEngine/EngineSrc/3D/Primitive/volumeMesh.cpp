@@ -15,7 +15,7 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 	m_material = Material::createFromTemplate("Color");
 	setCamera(g_GetCurrScene()->defaultCamera());
 	reCache();
-	setIsAccpectOCTtree(false);
+	setIsAccpectOcTtree(false);
 }
 
 void SimpleMesh::submitDrawCmd(RenderCommand::RenderType passType)
@@ -26,7 +26,7 @@ void SimpleMesh::submitDrawCmd(RenderCommand::RenderType passType)
 	Renderer::shared()->addRenderCommand(command);
 }
 
-bool SimpleMesh::getIsAccpectOCTtree() const
+bool SimpleMesh::getIsAccpectOcTtree() const
 {
 	return false;
 }

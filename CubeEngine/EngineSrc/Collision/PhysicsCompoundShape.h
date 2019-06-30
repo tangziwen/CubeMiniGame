@@ -13,7 +13,7 @@ class PhysicsCompoundShape
 	public:
 		PhysicsCompoundShape();
 		void addChildShape(Matrix44* mat, btCollisionShape * shape);
-
+		void getChildShapeTransform(int index, float * data);
 		btCompoundShape * getShape();
 		void finish();
 	private:

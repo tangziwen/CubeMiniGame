@@ -17,7 +17,7 @@ namespace tzw
 		m_material->setTex("diffuseMap", texture);
 		initMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());
-		setIsAccpectOCTtree(false);
+		setIsAccpectOcTtree(false);
 		initMesh();
 	}
 
@@ -126,5 +126,10 @@ int SpherePrimitive::resolution() const
 void SpherePrimitive::setResolution(int resolution)
 {
 	m_resolution = resolution;
+}
+
+Mesh* SpherePrimitive::getMesh()
+{
+		return m_mesh;
 }
 }
