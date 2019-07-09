@@ -11,6 +11,8 @@
 #include "BuildingSystem.h"
 #include "2D/GUISystem.h"
 #include "../../EngineSrc/2D/imnodes.h"
+#include "ScriptPy/ScriptPyMgr.h"
+
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -78,6 +80,7 @@ void MainMenu::drawIMGUI()
 				if (ImGui::MenuItem("Start", "CTRL+Z")) { startGame(); }
 				if (ImGui::MenuItem("Load", "CTRL+Z")) {}
 				if (ImGui::MenuItem("Option", "CTRL+Z")) {}
+				if (ImGui::MenuItem("Reload", "CTRL+Z")) {ScriptPyMgr::shared()->reload();}
 				if (ImGui::MenuItem("Exit", "CTRL+Z")) { exit(0); }
 				ImGui::EndMenu();
 			}

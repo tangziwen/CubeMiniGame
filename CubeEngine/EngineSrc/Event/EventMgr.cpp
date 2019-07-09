@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "../Scene/SceneMgr.h"
 #include "../Base/Node.h"
+#include "ScriptPy/ScriptPyMgr.h"
 
 #define EVENT_TYPE_K_RELEASE 0
 #define EVENT_TYPE_K_PRESS 1
@@ -127,7 +128,8 @@ void EventMgr::apply(float delta)
        {
        case EVENT_TYPE_K_PRESS:
        {
-           applyKeyPress(info);
+			applyKeyPress(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_K_RELEASE:
@@ -154,6 +156,7 @@ void EventMgr::apply(float delta)
        {
            applyKeyCharInput(info);
        }
+       default: ;
        }
        m_eventDeque.pop_front();
    }

@@ -167,7 +167,7 @@ void Engine::update(float delta)
     resetVerticesIndicesCount();
     Renderer::shared()->renderAll();
 	AudioSystem::shared()->update();
-	ScriptPyMgr::shared()->doScriptUpdate();
+	
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
 
 	
