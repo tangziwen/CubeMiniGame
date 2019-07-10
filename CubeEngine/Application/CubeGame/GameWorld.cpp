@@ -94,7 +94,7 @@ Chunk *GameWorld::getOrCreateChunk(int x, int y, int z)
 
 void GameWorld::onFrameUpdate(float delta)
 {
-	if (m_currentState != GameState::OnPlay)
+	if (m_currentState != GAME_STATE_RUNNING)
 		return;
 }
 
@@ -133,7 +133,7 @@ void GameWorld::startGame()
 	 
     m_mainRoot->addChild(player);
 	 
-    m_currentState = GameState::OnPlay;
+    m_currentState = GAME_STATE_RUNNING;
 
 	//PhysicsMgr::shared()->start();
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
@@ -239,7 +239,7 @@ GameWorld::GameWorld()
 {
     EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
-    m_currentState = GameState::MainMenu;
+    m_currentState = GAME_STATE_MAIN_MENU;
 	m_mainMenu = MainMenu::shared();
 	m_mainMenu->init();
 	//g_GetCurrScene()->addNode(m_mainMenu);
@@ -273,12 +273,12 @@ void GameWorld::unloadGame()
 	memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
 }
 
-GameWorld::GameState GameWorld::getCurrentState() const
+int GameWorld::getCurrentState() const
 {
     return m_currentState;
 }
 
-void GameWorld::setCurrentState(const GameState &currentState)
+void GameWorld::setCurrentState(const int &currentState)
 {
     m_currentState = currentState;
 }

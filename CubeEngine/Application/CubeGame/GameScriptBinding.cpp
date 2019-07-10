@@ -15,6 +15,12 @@
 #define BIND_BEGIN_CLASS(className) .beginClass<className>(#className)
 #define BIND_END_CLASS .endClass();
 #define BIND_EMPTY_CONSTRUCT .addConstructor <void (*) ()> ()
+
+#define SET_TABLE_CONST(luaState, TABLE_NAME, KEY_NAME, CONST_VAL) 		{lua_getglobal(luaState, TABLE_NAME);\
+		lua_pushinteger( luaState, CONST_VAL );\
+		lua_setfield( luaState, -2, KEY_NAME );}
+
+#define SET_G(luaState, name, intVal) {	lua_pushinteger( luaState, intVal ); lua_setglobal( luaState, -2, name );}
 namespace tzw 
 {
 	void g_binding_game_objects()
@@ -32,9 +38,9 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(GameWorld)
 		.addStaticFunction ("shared", &GameWorld::shared)
+		BIND_FUNC(GameWorld, getCurrentState)
 		BIND_FUNC(GameWorld, getPlayer)
 		BIND_END_CLASS
-
 
 		//GameItem
 		BIND_START(luaState)
@@ -92,6 +98,17 @@ namespace tzw
 		BIND_PROP(BearPart, m_isFlipped)
 		BIND_FUNC(BearPart, updateFlipped)
 		BIND_END_CLASS
+
+		//GAME constant
+		lua_newtable(luaState);
+		lua_setglobal(luaState,"CPP_GAME");
+
+		lua_getglobal(luaState, "CPP_GAME");
+		lua_pushinteger( luaState, 0 );
+		lua_setfield( luaState, -2, "GAME_STATE_MAIN_MENU" );
+
+		SET_TABLE_CONST(luaState, "CPP_GAME", "GAME_STATE_MAIN_MENU", 0)
+		SET_TABLE_CONST(luaState, "CPP_GAME", "GAME_STATE_RUNNING", 1)
 
 	}
 }

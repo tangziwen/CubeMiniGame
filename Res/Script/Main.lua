@@ -49,8 +49,9 @@ EVENT_TYPE_K_CHAR_INPUT = 5
 local isOpenTestWindow = true
 --ui update
 function tzw_engine_ui_update(dt)
-	--print ("engine update", dt)
-	drawHud()
+	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+		drawHud()
+	end
 end
 
 local m_itemSlots = {}
@@ -123,6 +124,8 @@ end
 function handleItemSecondaryUse(item)
 
 end
+
+
 function onMouseRelease(input_event)
 	if input_event.arg == 0 then --left mouse
 		handleItemPrimaryUse(m_itemSlots[m_currIndex])
@@ -133,10 +136,12 @@ end
 
 --input event
 function tzw_engine_input_event(input_event)
-	if input_event.type == EVENT_TYPE_K_RELEASE then 
-		onKeyRelease(input_event)
-	elseif input_event.type == EVENT_TYPE_M_RELEASE then 
-		onMouseRelease(input_event)
+	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+		if input_event.type == EVENT_TYPE_K_RELEASE then 
+			onKeyRelease(input_event)
+		elseif input_event.type == EVENT_TYPE_M_RELEASE then 
+			onMouseRelease(input_event)
+		end
 	end
 end
 

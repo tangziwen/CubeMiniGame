@@ -46,7 +46,7 @@ void MainMenu::show()
 
 void MainMenu::hide()
 {
-	if (GameWorld::shared()->getCurrentState() == GameWorld::GameState::OnPlay)
+	if (GameWorld::shared()->getCurrentState() == GAME_STATE_RUNNING)
 	{
 		Engine::shared()->setUnlimitedCursor(true);
 	}
@@ -286,7 +286,6 @@ void MainMenu::ShowExampleAppLog(bool* p_open)
 	//}
 	log.Draw("LogMenu", p_open);
 }
-
 
 void MainMenu::ShowExampleAppConsole(bool* p_open)
 {
