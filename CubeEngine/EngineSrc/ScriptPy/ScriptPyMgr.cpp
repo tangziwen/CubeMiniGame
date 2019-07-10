@@ -91,10 +91,7 @@ namespace tzw
 	{
 		lua_getglobal(g_lua_state, "tzw_engine_ui_update");
 		lua_pushnumber(g_lua_state, Engine::shared()->deltaTime());
-		if (lua_pcall(g_lua_state, 1, 0, 0) != 0)
-		{
-			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
-		}
+		lua_pcall(g_lua_state, 1, 0, 0);
 	}
 
 	std::string ScriptPyMgr::runString(std::string theStr)
@@ -109,7 +106,7 @@ namespace tzw
 		{
 		printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
-		if(luaL_loadfile(g_lua_state,"./Res/Script/tzw.lua"))
+		if(luaL_loadfile(g_lua_state,"./Res/Script/tzw.lua")!= 0)
 		{
 			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}

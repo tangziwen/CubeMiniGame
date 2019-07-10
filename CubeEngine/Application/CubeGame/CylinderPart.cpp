@@ -76,69 +76,6 @@ Attachment * CylinderPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, 
 	return attachPtr;
 }
 
-void CylinderPart::attachTo(Attachment * attach)
-{
-	vec3 attachPosition,  Normal,  up;
-	attach->getAttachmentInfo(attachPosition, Normal, up);
-	//we use m_attachment[0]
-	auto selfAttah = m_attachment[0];
-	Normal = Normal * -1;
-	vec3 right = vec3::CrossProduct(Normal, up);
-	Matrix44 transformForAttachPoint;
-	auto data = transformForAttachPoint.data();
-	data[0] = right.x;
-	data[1] = right.y;
-	data[2] = right.z;
-	data[3] = 0.0;
-
-	data[4] = up.x;
-	data[5] = up.y;
-	data[6] = up.z;
-	data[7] = 0.0;
-
-	data[8] = Normal.x;
-	data[9] = Normal.y;
-	data[10] = Normal.z;
-	data[11] = 0.0;
-
-	data[12] = attachPosition.x;
-	data[13] = attachPosition.y;
-	data[14] = attachPosition.z;
-	data[15] = 1.0;
-
-
-	Matrix44 attachmentTrans;
-	data = attachmentTrans.data();
-	auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
-	vec3 invertNormal = selfAttah->m_normal * -1;
-	data[0] = rightForAttach.x;
-	data[1] = rightForAttach.y;
-	data[2] = rightForAttach.z;
-	data[3] = 0.0;
-
-	data[4] = selfAttah->m_up.x;
-	data[5] = selfAttah->m_up.y;
-	data[6] = selfAttah->m_up.z;
-	data[7] = 0.0;
-
-	//use invert
-	data[8] = selfAttah->m_normal.x;
-	data[9] = selfAttah->m_normal.y;
-	data[10] = selfAttah->m_normal.z;
-	data[11] = 0.0;
-
-	data[12] = selfAttah->m_pos.x;
-	data[13] = selfAttah->m_pos.y;
-	data[14] = selfAttah->m_pos.z;
-	data[15] = 1.0;
-
-	auto result = transformForAttachPoint * attachmentTrans.inverted();
-	Quaternion q;
-	q.fromRotationMatrix(&result);
-	m_node->setPos(result.getTranslation());
-	m_node->setRotateQ(q);
-}
-
 void CylinderPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 {
 	auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
@@ -229,6 +166,11 @@ Attachment * CylinderPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, ve
 	N = mat.transofrmVec4(a_n).toVec3();
 	up = mat.transofrmVec4(a_up).toVec3();
 	return m_attachment[index];
+}
+
+Attachment* CylinderPart::getFirstAttachment()
+{
+	return m_attachment[0];
 }
 
 void CylinderPart::cook()

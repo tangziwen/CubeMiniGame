@@ -17,7 +17,6 @@
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
 #define BIND_START(state) luabridge::getGlobalNamespace(state)
 #define BIND_BEGIN_CLASS(className) .beginClass<className>(#className)
-
 #define BIND_END_CLASS .endClass();
 namespace tzw
 {
@@ -50,6 +49,8 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(vec3)
 		.addConstructor <void (*) ()> ()
+		.addFunction("__add", &vec3::operator+)
+		.addFunction("scale", &vec3::scale)
 		BIND_PROP(vec3, x)
 		BIND_PROP(vec3, y)
 		BIND_PROP(vec3, z)
@@ -82,6 +83,7 @@ namespace tzw
 		BIND_BEGIN_CLASS(Engine)
 		.addStaticFunction ("shared", &Engine::shared)
 		BIND_FUNC(Engine, getFilePath)
+		BIND_FUNC(Engine, winSize)
 		BIND_END_CLASS
 
 
@@ -118,9 +120,10 @@ namespace tzw
 		BIND_FUNC(ImGui, BeginDragDropTarget)
 		BIND_FUNC(ImGui, EndDragDropTarget)
 		BIND_FUNC(ImGui, Separator)
-		.addFunction("Text", static_cast<bool (*)(const char*, bool)>(ImGui::RadioButton))
+		.addFunction("RadioButton", static_cast<bool (*)(const char*, bool)>(ImGui::RadioButton))
 		.addFunction("Text", &imgui_text)
 		BIND_FUNC(ImGui, SameLine)
+		BIND_FUNC(ImGui, SetNextWindowPos)
 		BIND_FUNC(ImGui, ColorButton)
 		.endNamespace ();
 

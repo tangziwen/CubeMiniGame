@@ -25,6 +25,12 @@ class BuildingSystem
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 		void tmpMoveWheel();
 		void removePartByHit(vec3 pos, vec3 dir, float dist);
+		void placeGamePart(GamePart * part, vec3 pos);
+		void attachGamePartToBearing(GamePart * part, Attachment * attach);
+		void attachGamePartNormal(GamePart * part, Attachment * attach);
+		BearPart * placeBearingToAttach(Attachment * attach);
+		Island * createIsland(vec3 pos);
+		Attachment * rayTest(vec3 pos, vec3 dir, float dist);
 	private:
 		std::set<Island *> m_IslandList;
 		std::set<BearPart* > m_bearList;

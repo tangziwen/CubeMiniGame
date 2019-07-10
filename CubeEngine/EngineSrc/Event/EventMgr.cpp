@@ -134,22 +134,25 @@ void EventMgr::apply(float delta)
            break;
        case EVENT_TYPE_K_RELEASE:
        {
-           applyKeyRelease(info);
+			applyKeyRelease(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_M_MOVE:
        {
-           applyMouseMove(info);
+			applyMouseMove(info);
        }
            break;
        case EVENT_TYPE_M_PRESS:
        {
-           applyMousePress(info);
+			applyMousePress(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_M_RELEASE:
        {
-           applyMouseRelease(info);
+			applyMouseRelease(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_K_CHAR_INPUT:

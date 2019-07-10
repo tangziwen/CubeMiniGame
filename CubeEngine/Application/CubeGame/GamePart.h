@@ -2,6 +2,7 @@
 #include "Interface/Drawable3D.h"
 #include "Collision/PhysicsShape.h"
 #include "Math/Ray.h"
+
 namespace tzw
 {
 	class GamePart;
@@ -29,6 +30,7 @@ namespace tzw
 		virtual Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up);
 		virtual void attachTo(Attachment * attach);
 		virtual void attachToFromOtherIsland(Attachment * attach, BearPart * bearing);
+		virtual Attachment * getFirstAttachment();
 		Island * m_parent;
 	protected:
 		PhysicsShape * m_shape;

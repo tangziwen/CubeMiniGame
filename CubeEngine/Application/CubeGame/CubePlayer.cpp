@@ -196,16 +196,16 @@ namespace tzw
 	{
 		if (MainMenu::shared()->isVisible())
 				return false;
-		switch(button) 
-		{
-		case 0://left mouse
-			handleItemPrimaryUse(m_itemSlots[m_currSelectItemIndex]);
-			break;
-		case 1://right mouse
-			handleItemSecondaryUse(m_itemSlots[m_currSelectItemIndex]);
-			break;
-		default: break;
-		}
+		//switch(button) 
+		//{
+		//case 0://left mouse
+		//	handleItemPrimaryUse(m_itemSlots[m_currSelectItemIndex]);
+		//	break;
+		//case 1://right mouse
+		//	handleItemSecondaryUse(m_itemSlots[m_currSelectItemIndex]);
+		//	break;
+		//default: break;
+		//}
 		return true;
 	}
 
@@ -215,20 +215,20 @@ namespace tzw
 	}
 	void CubePlayer::drawIMGUI()
 	{
-		auto screenSize = Engine::shared()->winSize();
-		float yOffset = 20.0;
-		ImVec2 window_pos = ImVec2(screenSize.x / 2.0, screenSize.y - yOffset);
-		ImVec2 window_pos_pivot = ImVec2(0.5, 1.0);
-		ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-		bool isOpen;
-		
-		ImGui::Begin("Profiler", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
-		
-		for (size_t i = 0; i < m_itemSlots.size(); i++)
-		{
-			ImGui::RadioButton(m_itemSlots[i]->m_name.c_str(), m_currSelectItemIndex == i); ImGui::SameLine();
-		}
-		ImGui::End();
+		//auto screenSize = Engine::shared()->winSize();
+		//float yOffset = 20.0;
+		//ImVec2 window_pos = ImVec2(screenSize.x / 2.0, screenSize.y - yOffset);
+		//ImVec2 window_pos_pivot = ImVec2(0.5, 1.0);
+		//ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+		//bool isOpen;
+		//
+		//ImGui::Begin("Profiler", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+		//
+		//for (size_t i = 0; i < m_itemSlots.size(); i++)
+		//{
+		//	ImGui::RadioButton(m_itemSlots[i]->m_name.c_str(), m_currSelectItemIndex == i); ImGui::SameLine();
+		//}
+		//ImGui::End();
 	}
 
 	void CubePlayer::initSlots()
@@ -293,5 +293,10 @@ namespace tzw
 				}
 			}
 		}
+	}
+
+	vec3 CubePlayer::getForward() const
+	{
+		return m_camera->getForward();
 	}
 } // namespace tzw
