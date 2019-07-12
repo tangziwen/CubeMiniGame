@@ -15,6 +15,7 @@ namespace tzw
 		Attachment * getFirstAttachment() override;
 	public:
 		void cook();
+		int getType() override;
 		Attachment * m_attachment[6];
 		float m_topRadius, m_bottomRadius, m_height;
 	};

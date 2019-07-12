@@ -7,6 +7,8 @@
 #include "Collision/PhysicsMgr.h"
 #include "CylinderPart.h"
 #include "3D/Primitive/CylinderPrimitive.h"
+#include "Chunk.h"
+
 
 namespace tzw
 {
@@ -189,6 +191,55 @@ void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 	auto island = attach->m_parent->m_parent;
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
+}
+
+vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
+{
+	std::vector<Drawable3D *> list;
+	AABB aabb;
+	aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+	aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+	g_GetCurrScene()->getRange(&list, aabb);
+	if (!list.empty())
+	{
+		Drawable3DGroup group(&list[0], list.size());
+		Ray ray(pos, dir);
+		vec3 hitPoint;
+		auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+		if (chunk)
+		{
+			return hitPoint;
+		}
+	}
+	return vec3(999, 999, 999);
+}
+
+void BuildingSystem::placeLiftPart(vec3 wherePos)
+{
+	auto part = new LiftPart();
+	auto newIsland = new Island(wherePos);
+	m_IslandList.insert(newIsland);
+	newIsland->m_node->addChild(part->getNode());
+	newIsland->insert(part);
+	m_liftPart = part;
+}
+
+GamePart* BuildingSystem::createPart(int type)
+{
+	switch(type)
+	{
+    case 0:
+		return new BlockPart();
+		break;
+    case 1:
+		return new CylinderPart();
+		break;
+    case 2:
+		return new LiftPart();
+		break;
+	default: ;
+	}
+	return nullptr;
 }
 
 BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
@@ -386,15 +437,18 @@ void BuildingSystem::cook()
 	for (auto island : m_IslandList)
 	{
 		auto compundShape = new PhysicsCompoundShape();
-		for(auto iter:island->m_partList)
+		for(auto part:island->m_partList)
 		{
-			auto mat = iter->getNode()->getLocalTransform();
-			compundShape->addChildShape(&mat, iter->getShape()->getRawShape());
+			if(part->getType() != GAME_PART_LIFT)
+			{
+				auto mat = part->getNode()->getLocalTransform();
+				compundShape->addChildShape(&mat, part->getShape()->getRawShape());   
+			}
 		}
 		//compundShape->finish();
 		auto compundMat = island->m_node->getTransform();
 		auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(1.0 * island->m_partList.size(), &compundMat,compundShape);
-		
+
 		rig->attach(island->m_node);
 		island->m_rigid = rig;
 	}
@@ -403,6 +457,8 @@ void BuildingSystem::cook()
 	{
 		auto attachA = bear->m_a;
 		auto attachB = bear->m_b;
+		if (attachA && attachB) 
+		{
 		auto partA = static_cast<BlockPart *>(attachA->m_parent);
 		auto partB = static_cast<BlockPart *>(attachB->m_parent);
 
@@ -419,7 +475,12 @@ void BuildingSystem::cook()
 		//���hinge tmd���
 		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 		m_constrainList.push_back(constrain);
+		
+		}
 	}
+
+	m_liftPart->getNode()->removeFromParent();
+	m_liftPart->m_parent->remove(m_liftPart);
 }
 
 //toDo

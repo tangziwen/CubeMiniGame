@@ -181,4 +181,9 @@ void CylinderPart::cook()
 	rigChasis->attach(m_node);
 }
 
+int CylinderPart::getType()
+{
+	return GAME_PART_CYLINDER;
+}
+
 }

@@ -55,10 +55,12 @@ function tzw_engine_ui_update(dt)
 end
 
 local m_itemSlots = {}
-m_itemSlots[1] = {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0}
-m_itemSlots[2] = {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1}
-m_itemSlots[3] = {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1}
-m_itemSlots[4] = {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0}
+
+table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 0})
+table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0})
+table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1})
+table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1})
+table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0})
 
 local m_currIndex = 1
 function drawHud()
@@ -84,6 +86,8 @@ function onKeyRelease(input_event)
 		m_currIndex = 3
 	elseif input_event.keycode == TZW_KEY_4 then
 		m_currIndex = 4
+	elseif input_event.keycode == TZW_KEY_5 then
+		m_currIndex = 5
 	end
 end
 
@@ -91,12 +95,7 @@ function placeItem(item)
 	local player = GameWorld.shared():getPlayer()
 	local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
 	if item.ItemType >= 0 then
-		local aBlock = nil
-		if item.ItemType == 0 then
-			aBlock = BlockPart()
-		else
-			aBlock = CylinderPart()
-		end
+		local aBlock = BuildingSystem.shared():createPart(item.ItemType)
 		if result == nil then
 			BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
@@ -114,10 +113,15 @@ function placeItem(item)
 end
 
 function handleItemPrimaryUse(item)
+	local player = GameWorld.shared():getPlayer()
 	if (item.ItemClass == "PlaceableBlock") then
 		placeItem(item)
 	elseif (item.ItemClass == "TerrainForm") then
 	
+	elseif (item.ItemClass == "Lift") then
+		local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
+		BuildingSystem.shared():placeLiftPart(resultPos)
+		print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
 	end
 end
 

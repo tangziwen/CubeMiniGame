@@ -156,4 +156,14 @@ namespace tzw
 	{
 		return nullptr;
 	}
+
+	GamePart::~GamePart()
+	{
+
+	}
+
+	int GamePart::getType()
+	{
+		return GAME_PART_NOT_VALID;
+	}
 }

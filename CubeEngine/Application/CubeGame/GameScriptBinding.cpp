@@ -7,6 +7,7 @@
 #include "GameItem.h"
 #include "BuildingSystem.h"
 #include "CylinderPart.h"
+#include "LiftPart.h"
 
 
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
@@ -61,7 +62,10 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, attachGamePartNormal)
 		BIND_FUNC(BuildingSystem, attachGamePartToBearing)
 		BIND_FUNC(BuildingSystem, placeBearingToAttach)
+		BIND_FUNC(BuildingSystem, createPart)
+		BIND_FUNC(BuildingSystem, hitTerrain)
 		BIND_FUNC(BuildingSystem, rayTest)
+		BIND_FUNC(BuildingSystem, placeLiftPart)
 		BIND_END_CLASS
 
 
@@ -97,6 +101,12 @@ namespace tzw
 		BIND_PROP(BearPart, m_b)
 		BIND_PROP(BearPart, m_isFlipped)
 		BIND_FUNC(BearPart, updateFlipped)
+		BIND_END_CLASS
+
+		//Lift Part
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(LiftPart)
+		BIND_EMPTY_CONSTRUCT
 		BIND_END_CLASS
 
 		//GAME constant
