@@ -7,6 +7,8 @@
 #include "Collision/PhysicsMgr.h"
 #include "CylinderPart.h"
 #include "3D/Primitive/CylinderPrimitive.h"
+#include "Chunk.h"
+
 
 namespace tzw
 {
@@ -27,7 +29,7 @@ void BuildingSystem::createNewToeHold(vec3 pos)
 
 void BuildingSystem::placePartNextToBearing(Attachment * attach, int type)
 {
-	auto iter = dynamic_cast<BlockPart * >(attach->m_parent);
+	
 	auto bearing = attach->m_bearPart;
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
@@ -97,11 +99,6 @@ void BuildingSystem::placePartByHit(vec3 pos, vec3 dir, float dist, int type)
 					if(!attach->m_bearPart)
 					{
 						newPart->attachTo(attach);
-						if (newPart)
-						{
-							island->m_node->addChild(newPart->getNode());
-							island->insert(newPart);
-						}
 					}
 					else // have some bearing?
 					{
@@ -166,6 +163,157 @@ void BuildingSystem::removePartByHit(vec3 pos, vec3 dir, float dist)
 			return;
 		}
 	}
+}
+
+void BuildingSystem::placeGamePart(GamePart* part, vec3 pos)
+{
+	auto newIsland = new Island(pos);
+	m_IslandList.insert(newIsland);
+	newIsland->m_node->addChild(part->getNode());
+	newIsland->insert(part);
+}
+
+void BuildingSystem::attachGamePartToBearing(GamePart* part,Attachment * attach)
+{
+	auto bearing = attach->m_bearPart;
+	vec3 pos, n, up;
+	attach->getAttachmentInfoWorld(pos, n, up);
+	auto island = new Island(pos + n * 0.5);
+	m_IslandList.insert(island);
+	island->m_node->addChild(part->getNode());
+	island->insert(part);
+	part->attachToFromOtherIsland(attach, bearing);
+}
+
+void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
+{
+	part->attachTo(attach);
+	auto island = attach->m_parent->m_parent;
+	island->m_node->addChild(part->getNode());
+	island->insert(part);
+}
+
+vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
+{
+	std::vector<Drawable3D *> list;
+	AABB aabb;
+	aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+	aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+	g_GetCurrScene()->getRange(&list, aabb);
+	if (!list.empty())
+	{
+		Drawable3DGroup group(&list[0], list.size());
+		Ray ray(pos, dir);
+		vec3 hitPoint;
+		auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+		if (chunk)
+		{
+			return hitPoint;
+		}
+	}
+	return vec3(999, 999, 999);
+}
+
+void BuildingSystem::placeLiftPart(vec3 wherePos)
+{
+	auto part = new LiftPart();
+	auto newIsland = new Island(wherePos);
+	m_IslandList.insert(newIsland);
+	newIsland->m_node->addChild(part->getNode());
+	newIsland->insert(part);
+	m_liftPart = part;
+}
+
+GamePart* BuildingSystem::createPart(int type)
+{
+	switch(type)
+	{
+    case 0:
+		return new BlockPart();
+		break;
+    case 1:
+		return new CylinderPart();
+		break;
+    case 2:
+		return new LiftPart();
+		break;
+	default: ;
+	}
+	return nullptr;
+}
+
+BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
+{
+	auto bear = new BearPart();
+	bear->m_b = attachment;
+	attachment->m_bearPart = bear;
+	m_bearList.insert(bear);
+//			create a indicate model
+	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
+	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
+	auto mat = attachment->getAttachmentInfoMat44();
+	Quaternion q;
+	q.fromRotationMatrix(&mat);
+	cylinderIndicator->setPos(mat.getTranslation());
+	cylinderIndicator->setRotateQ(q);
+	cylinderIndicator->reCache();
+	bear->m_node = cylinderIndicator;
+	bear->updateFlipped();
+	attachment->m_parent->getNode()->addChild(cylinderIndicator);
+	return bear;
+}
+
+Island* BuildingSystem::createIsland(vec3 pos)
+{
+	auto island = new Island(pos);
+	m_IslandList.insert(island);
+	return island;
+}
+
+Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
+{
+	std::vector<GamePart *> tmp;
+	//search island
+	for (auto island : m_IslandList)
+	{
+		
+		for (auto iter : island->m_partList)
+		{
+			tmp.push_back(iter);
+		}
+	}
+	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
+	{
+		float distl = left->getNode()->getWorldPos().distance(pos);
+		float distr = right->getNode()->getWorldPos().distance(pos);
+		return distl < distr;
+	}
+	);
+	for (auto iter : tmp)
+	{
+		auto island = iter->m_parent;
+		auto node = iter->getNode();
+		auto invertedMat = node->getTransform().inverted();
+		vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
+		vec4 originInLocal = invertedMat * vec4(pos, 1.0);
+
+		auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
+		RayAABBSide side;
+		vec3 hitPoint;
+		auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
+		GamePart * newPart = nullptr;
+		if (isHit)
+		{
+			vec3 attachPos, attachNormal, attachUp;
+			auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
+			if(attach)
+			{
+				return attach;
+			}
+		}
+	}
+	//any island intersect can't find, return null
+	return nullptr;
 }
 
 void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
@@ -289,15 +437,18 @@ void BuildingSystem::cook()
 	for (auto island : m_IslandList)
 	{
 		auto compundShape = new PhysicsCompoundShape();
-		for(auto iter:island->m_partList)
+		for(auto part:island->m_partList)
 		{
-			auto mat = iter->getNode()->getLocalTransform();
-			compundShape->addChildShape(&mat, iter->getShape()->getRawShape());
+			if(part->getType() != GAME_PART_LIFT)
+			{
+				auto mat = part->getNode()->getLocalTransform();
+				compundShape->addChildShape(&mat, part->getShape()->getRawShape());   
+			}
 		}
 		//compundShape->finish();
 		auto compundMat = island->m_node->getTransform();
 		auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(1.0 * island->m_partList.size(), &compundMat,compundShape);
-		
+
 		rig->attach(island->m_node);
 		island->m_rigid = rig;
 	}
@@ -306,6 +457,8 @@ void BuildingSystem::cook()
 	{
 		auto attachA = bear->m_a;
 		auto attachB = bear->m_b;
+		if (attachA && attachB) 
+		{
 		auto partA = static_cast<BlockPart *>(attachA->m_parent);
 		auto partB = static_cast<BlockPart *>(attachB->m_parent);
 
@@ -322,7 +475,12 @@ void BuildingSystem::cook()
 		//���hinge tmd���
 		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 		m_constrainList.push_back(constrain);
+		
+		}
 	}
+
+	m_liftPart->getNode()->removeFromParent();
+	m_liftPart->m_parent->remove(m_liftPart);
 }
 
 //toDo

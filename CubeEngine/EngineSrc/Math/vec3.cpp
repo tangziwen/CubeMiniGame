@@ -139,6 +139,12 @@ tzw::vec3 vec3::normalized()
 	return vec3(x * len, y * len, z * len);
 }
 
+vec3 vec3::scale(float value) const
+{
+    auto v =vec3(x * value,y * value,z * value);
+    return v;
+}
+
 void vec3::setLength(float newLength)
 {
     normalize();

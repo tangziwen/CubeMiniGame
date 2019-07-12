@@ -9,15 +9,11 @@
 #include <set>
 namespace tzw {
 
+#define GAME_STATE_MAIN_MENU 0
+#define GAME_STATE_RUNNING 1
 class GameWorld : public EventListener
 {
 public:
-    enum class GameState
-    {
-        MainMenu,
-        OnPlay,
-    };
-
     static GameWorld * shared();
     void createWorld(Scene* scene, int blockWitdh, int depth, int height, float ratio);
     vec3 worldToGrid(vec3 world);
@@ -35,8 +31,8 @@ public:
     MainMenu *getMainMenu() const;
     void toggleMainMenu();
     void unloadGame();
-    GameState getCurrentState() const;
-    void setCurrentState(const GameState &currentState);
+    int getCurrentState() const;
+    void setCurrentState(const int &currentState);
 
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
@@ -45,7 +41,7 @@ public:
 	void setMapOffset(tzw::vec3 val);
 private:
     Node * m_mainRoot;
-    GameState m_currentState;
+    int m_currentState;
     vec3 m_mapOffset;
     int m_width, m_depth, m_height;
     Chunk * m_chunkArray[128][128][16];

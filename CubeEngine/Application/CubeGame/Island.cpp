@@ -13,6 +13,10 @@ namespace tzw
 
 	void Island::insert(GamePart * part)
 	{
+		if (!part->getNode()) 
+		{
+			printf("shit\n");
+		}
 		m_partList.push_back(part);
 		part->m_parent = this;
 	}

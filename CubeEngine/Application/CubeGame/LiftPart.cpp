@@ -1,4 +1,4 @@
-#include "BlockPart.h"
+#include "LiftPart.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
@@ -6,9 +6,11 @@
 namespace tzw
 {
 const float blockSize = 0.5;
-BlockPart::BlockPart()
+LiftPart::LiftPart()
 {
-	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
+	m_node = new CubePrimitive(blockSize, blockSize, 3.0);
+	auto texture =  TextureMgr::shared()->getByPath("Texture/mud.jpg");
+	m_node->getMaterial()->setTex("diffuseMap", texture);
 	m_shape = new PhysicsShape();
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
@@ -19,7 +21,7 @@ BlockPart::BlockPart()
 	initAttachments();
 }
 
-Attachment * BlockPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
+Attachment * LiftPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
 {
 	RayAABBSide side;
 	vec3 hitPoint;
@@ -74,7 +76,7 @@ Attachment * BlockPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec
 	return attachPtr;
 }
 
-void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
+void LiftPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 {
 	auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
 	vec3 attachPosition,  Normal,  up;
@@ -145,7 +147,7 @@ void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	m_node->reCache();
 }
 
-void BlockPart::initAttachments()
+void LiftPart::initAttachments()
 {
 	//forward backward
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
@@ -156,11 +158,11 @@ void BlockPart::initAttachments()
 	m_attachment[3] = new Attachment(vec3(-blockSize / 2.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0) ,this);
 
 	//up down
-	m_attachment[4] = new Attachment(vec3(0.0, blockSize / 2.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
+	m_attachment[4] = new Attachment(vec3(0.0, 3.0 / 2.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
 	m_attachment[5] = new Attachment(vec3(0.0, -blockSize / 2.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
 }
 
-Attachment * BlockPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)
+Attachment * LiftPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)
 {
 	auto mat = m_node->getLocalTransform();
 	auto atta = m_attachment[index];
@@ -173,12 +175,12 @@ Attachment * BlockPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 
 	return m_attachment[index];
 }
 
-Attachment* BlockPart::getFirstAttachment()
+Attachment* LiftPart::getFirstAttachment()
 {
 	return m_attachment[0];
 }
 
-void BlockPart::cook()
+void LiftPart::cook()
 {
 	auto mat2 = m_node->getTranslationMatrix();
 	auto aabb = m_node->getAABB();
@@ -186,8 +188,8 @@ void BlockPart::cook()
 	rigChasis->attach(m_node);
 }
 
-int BlockPart::getType()
+int LiftPart::getType()
 {
-	return GAME_PART_BLOCK;
+	return GAME_PART_LIFT;
 }
 }

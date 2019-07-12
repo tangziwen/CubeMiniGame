@@ -31,6 +31,7 @@ namespace tzw
 		void initSlots();
 		void handleItemPrimaryUse(GameItem * item);
 		void handleItemSecondaryUse(GameItem * item);
+		vec3 getForward() const;
 	private:
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;

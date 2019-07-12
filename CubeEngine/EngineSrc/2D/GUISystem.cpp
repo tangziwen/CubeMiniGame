@@ -8,6 +8,7 @@
 #include "Math/Matrix44.h"
 #include "Event/EventMgr.h"
 #include "imnodes.h"
+#include "ScriptPy/ScriptPyMgr.h"
 
 namespace tzw
 {
@@ -189,8 +190,11 @@ namespace tzw
 	{
 		auto& io = ImGui::GetIO();
 		io.DeltaTime = Engine::shared()->deltaTime();
+		
 		NewFrame();
+		ScriptPyMgr::shared()->doScriptUIUpdate();
 		renderData();
+		
 	}
 
 	void GUISystem::initGUI()

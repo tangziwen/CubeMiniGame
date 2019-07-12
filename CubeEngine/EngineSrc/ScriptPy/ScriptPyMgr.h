@@ -2,8 +2,10 @@
 #include "Engine/EngineDef.h"
 #include <string>
 
+
 namespace tzw
 {
+	class EventInfo;
 	class ScriptPyMgr
 	{
 		TZW_SINGLETON_DECL(ScriptPyMgr)
@@ -11,10 +13,12 @@ namespace tzw
 		ScriptPyMgr();
 		void init();
 		void doScriptInit();
-		void doScriptUpdate();
+		void doScriptUIUpdate();
 		void finalize();
-		int XRunFunction(const char *module, const char *function,const char *result_format, void *result, const char *args_format, ...);
+		void raiseInputEvent(EventInfo eventInfo);
 		std::string runString(std::string theStr);
+		void reload();
+		void * getState();
 	private:
 
 	};

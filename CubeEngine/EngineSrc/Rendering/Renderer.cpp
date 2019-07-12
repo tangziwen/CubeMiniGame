@@ -513,6 +513,7 @@ void Renderer::LightingPass()
 
 void Renderer::shadowPass()
 {
+	
 	ShadowMap::shared()->calculateProjectionMatrix();
 
 	ShadowMap::shared()->getProgram()->use();

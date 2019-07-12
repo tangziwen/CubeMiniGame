@@ -35,6 +35,7 @@ public:
     float squaredLength() const;
     void normalize();
 	vec3 normalized();
+	vec3 scale(float value) const;
     void setLength(float newLength);
     static vec3 lerp(const vec3& from, const vec3 & to, float the_time);
 	static vec3 fromRGB(int R, int G, int B);
