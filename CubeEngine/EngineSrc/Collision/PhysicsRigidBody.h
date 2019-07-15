@@ -4,6 +4,7 @@ class btRigidBody;
 
 namespace tzw
 {
+	class PhysicsShape;
 	class Drawable3D;
 	class PhysicsRigidBody
 	{
@@ -24,6 +25,12 @@ namespace tzw
 		float getFriction();
 		void setRollingFriction(float rollingFriction);
 		float getRollingFriction();
+		void setMass(float mass, vec3 localInertia);
+		float getMass() const;
+		void setCollisionShape(PhysicsShape * shape);
+		void setWorldTransform(Matrix44& transform);
+		void updateInertiaTensor();
+		void activate();
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

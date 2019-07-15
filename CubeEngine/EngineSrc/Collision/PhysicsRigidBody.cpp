@@ -1,6 +1,7 @@
 #include "PhysicsRigidBody.h"
 #include "Interface/Drawable3D.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
+#include "PhysicsShape.h"
 
 namespace tzw
 {
@@ -92,5 +93,40 @@ void PhysicsRigidBody::setRollingFriction(float rollingFriction)
 float PhysicsRigidBody::getRollingFriction()
 {
 	return m_rigidBody->getRollingFriction();
+}
+
+void PhysicsRigidBody::setMass(float mass, vec3 localInertia)
+{
+	m_rigidBody->setMassProps(mass, btVector3(localInertia.x, localInertia.y, localInertia.z));
+}
+
+float PhysicsRigidBody::getMass() const
+{
+	return 1.0f  / m_rigidBody->getInvMass();
+}
+
+void PhysicsRigidBody::setCollisionShape(PhysicsShape * shape)
+{
+	m_rigidBody->setCollisionShape(shape->getRawShape());
+}
+
+void PhysicsRigidBody::setWorldTransform(Matrix44& transform)
+{
+	btTransform startTransform;
+	startTransform.setIdentity();
+	startTransform.setFromOpenGLMatrix(transform.data());
+	m_rigidBody->setWorldTransform(startTransform);
+	m_rigidBody->setInterpolationWorldTransform(startTransform);
+}
+
+void PhysicsRigidBody::updateInertiaTensor()
+{
+	m_rigidBody->updateInertiaTensor();
+	
+}
+
+void PhysicsRigidBody::activate()
+{
+	m_rigidBody->activate();
 }
 }

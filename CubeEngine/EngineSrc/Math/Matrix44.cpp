@@ -299,6 +299,14 @@ float *Matrix44::data()
     return m_data;
 }
 
+void Matrix44::copyFromArray(float* data)
+{
+	for (int i = 0; i < 16; i++) 
+	{
+		m_data[i] = data[i];
+	}
+}
+
 vec3 Matrix44::up()
 {
     return vec3(m_data[4], m_data[5], m_data[6]);

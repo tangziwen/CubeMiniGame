@@ -44,4 +44,11 @@ btCollisionShape* PhysicsShape::getRawShape()
 {
 	return m_shape;
 }
+
+vec3 PhysicsShape::calculateLocalInertia(float mass) const
+{
+	btVector3 localInertia;
+	m_shape->calculateLocalInertia(mass, localInertia);
+	return vec3(localInertia.getX(), localInertia.getY(), localInertia.getZ());
+}
 }

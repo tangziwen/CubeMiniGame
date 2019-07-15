@@ -8,7 +8,7 @@ namespace tzw
 const float blockSize = 0.5;
 LiftPart::LiftPart()
 {
-	m_node = new CubePrimitive(blockSize, blockSize, 3.0);
+	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
 	auto texture =  TextureMgr::shared()->getByPath("Texture/mud.jpg");
 	m_node->getMaterial()->setTex("diffuseMap", texture);
 	m_shape = new PhysicsShape();
@@ -158,7 +158,7 @@ void LiftPart::initAttachments()
 	m_attachment[3] = new Attachment(vec3(-blockSize / 2.0, 0.0, 0.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0) ,this);
 
 	//up down
-	m_attachment[4] = new Attachment(vec3(0.0, 3.0 / 2.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
+	m_attachment[4] = new Attachment(vec3(0.0, blockSize / 2.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
 	m_attachment[5] = new Attachment(vec3(0.0, -blockSize / 2.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
 }
 

@@ -1,7 +1,6 @@
 #include "BuildingSystem.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include <algorithm>
-#include "BulletCollision/CollisionShapes/btCompoundShape.h"
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsCompoundShape.h"
 #include "Collision/PhysicsMgr.h"
@@ -436,21 +435,7 @@ void BuildingSystem::cook()
 	//each island, we create a rigid
 	for (auto island : m_IslandList)
 	{
-		auto compundShape = new PhysicsCompoundShape();
-		for(auto part:island->m_partList)
-		{
-			if(part->getType() != GAME_PART_LIFT)
-			{
-				auto mat = part->getNode()->getLocalTransform();
-				compundShape->addChildShape(&mat, part->getShape()->getRawShape());   
-			}
-		}
-		//compundShape->finish();
-		auto compundMat = island->m_node->getTransform();
-		auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(1.0 * island->m_partList.size(), &compundMat,compundShape);
-
-		rig->attach(island->m_node);
-		island->m_rigid = rig;
+		island->cook();
 	}
 
 	for (auto bear : m_bearList)
@@ -459,28 +444,30 @@ void BuildingSystem::cook()
 		auto attachB = bear->m_b;
 		if (attachA && attachB) 
 		{
-		auto partA = static_cast<BlockPart *>(attachA->m_parent);
-		auto partB = static_cast<BlockPart *>(attachB->m_parent);
+			auto partA = static_cast<BlockPart *>(attachA->m_parent);
+			auto partB = static_cast<BlockPart *>(attachB->m_parent);
 
-		vec3 worldPosA, worldNormalA, worldUpA;
-		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-		vec3 worldPosB, worldNormalB, worldUpB;
-		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-		int isFlipped = bear->m_isFlipped ? -1 : 1;
-		vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
-		vec3 pivotA, pivotB, axisA, axisB;
-		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+			vec3 worldPosA, worldNormalA, worldUpA;
+			attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+			vec3 worldPosB, worldNormalB, worldUpB;
+			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+			int isFlipped = bear->m_isFlipped ? -1 : 1;
+			vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
+			vec3 pivotA, pivotB, axisA, axisB;
+			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
 
-		//���hinge tmd���
-		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
-		m_constrainList.push_back(constrain);
-		
+			//���hinge tmd���
+			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+			m_constrainList.push_back(constrain);
 		}
 	}
+	if(m_liftPart) 
+	{
+		m_liftPart->getNode()->removeFromParent();
+		m_liftPart->m_parent->remove(m_liftPart);
+	}
 
-	m_liftPart->getNode()->removeFromParent();
-	m_liftPart->m_parent->remove(m_liftPart);
 }
 
 //toDo

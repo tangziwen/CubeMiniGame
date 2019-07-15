@@ -166,4 +166,9 @@ namespace tzw
 	{
 		return GAME_PART_NOT_VALID;
 	}
+
+	float GamePart::getMass()
+	{
+		return 1.0f;
+	}
 }

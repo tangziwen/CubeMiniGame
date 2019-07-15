@@ -38,6 +38,7 @@ namespace tzw
 		Island * m_parent;
 		virtual ~GamePart();
 		virtual int getType();
+		virtual float getMass();
 	protected:
 		PhysicsShape * m_shape;
 		Drawable3D * m_node;
