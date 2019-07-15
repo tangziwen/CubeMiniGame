@@ -177,7 +177,10 @@ void BuildingSystem::attachGamePartToBearing(GamePart* part,Attachment * attach)
 	auto bearing = attach->m_bearPart;
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
+	
 	auto island = new Island(pos + n * 0.5);
+	attach->m_parent->m_parent->addNeighbor(island);
+	island->addNeighbor(attach->m_parent->m_parent);
 	m_IslandList.insert(island);
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
@@ -313,6 +316,11 @@ Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 	}
 	//any island intersect can't find, return null
 	return nullptr;
+}
+
+LiftPart* BuildingSystem::getLift() const
+{
+	return m_liftPart;
 }
 
 void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)

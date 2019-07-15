@@ -111,9 +111,18 @@ void CylinderPrimitive::setTopBottomTex(Texture * texture)
 	m_topBottomMaterial->setTex("diffuseMap", texture);
 }
 
-vec2 circleUV(vec3 point, vec3 centre, float radius)
+vec2 circleUV(vec3 point, vec3 centre, float radius, bool flipped = false)
 {
 	return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, (point.y - centre.y) / (2.0 * radius) + 0.5);
+	if(!flipped) 
+	{
+		return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, (point.y - centre.y) / (2.0 * radius) + 0.5);
+	} 
+	else 
+	{
+		return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, 1.0 - ((point.y - centre.y) / (2.0 * radius) + 0.5));
+	}
+	
 
 }
 void CylinderPrimitive::initMesh()
@@ -170,8 +179,8 @@ void CylinderPrimitive::initMesh()
 
 		//bottom
 		vec3 centerBottom = vec3(0.0, 0.0, -halfHeight);
-		m_topBottomMesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom), m_color));
-		m_topBottomMesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom), m_color));
+		m_topBottomMesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom, true), m_color));
+		m_topBottomMesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom, true), m_color));
 		m_topBottomMesh->addVertex(VertexData(centerBottom, vec2(0.5, 0.5), m_color));
 		m_topBottomMesh->addIndex(topBottomIndex + 3);
 		m_topBottomMesh->addIndex(topBottomIndex + 4);

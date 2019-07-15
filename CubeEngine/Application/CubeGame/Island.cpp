@@ -154,4 +154,23 @@ namespace tzw
 		rig->attach(m_node);
 		m_rigid = rig;
 	}
+
+	void Island::addNeighbor(Island* island)
+	{
+		m_neighborIslands.insert(island);
+	}
+
+	void Island::removeNeighbor(Island* island)
+	{
+		auto result = m_neighborIslands.find(island);
+		if (result != m_neighborIslands.end()) 
+		{
+			m_neighborIslands.erase(result);
+		}
+	}
+
+	const std::set<Island*> Island::getNeighBor() const
+	{
+		return m_neighborIslands;
+	}
 }

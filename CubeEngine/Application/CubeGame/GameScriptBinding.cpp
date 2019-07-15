@@ -66,6 +66,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, hitTerrain)
 		BIND_FUNC(BuildingSystem, rayTest)
 		BIND_FUNC(BuildingSystem, placeLiftPart)
+		BIND_FUNC(BuildingSystem, getLift)
 		BIND_END_CLASS
 
 
@@ -106,6 +107,7 @@ namespace tzw
 		//Lift Part
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(LiftPart)
+		BIND_FUNC(LiftPart, liftUp)
 		BIND_EMPTY_CONSTRUCT
 		BIND_END_CLASS
 

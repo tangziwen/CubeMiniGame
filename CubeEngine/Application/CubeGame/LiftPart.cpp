@@ -3,11 +3,14 @@
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
+#include <algorithm>
+
 namespace tzw
 {
 const float blockSize = 0.5;
 LiftPart::LiftPart()
 {
+	m_liftHeight = 0.0;
 	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
 	auto texture =  TextureMgr::shared()->getByPath("Texture/mud.jpg");
 	m_node->getMaterial()->setTex("diffuseMap", texture);
@@ -178,6 +181,24 @@ Attachment * LiftPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 &
 Attachment* LiftPart::getFirstAttachment()
 {
 	return m_attachment[0];
+}
+
+void LiftPart::liftUp(float val)
+{
+	if (m_parent) 
+	{
+		m_liftHeight += val;
+		m_liftHeight = std::min(m_liftHeight, 10.0f);
+		auto oldPos = m_parent->m_node->getPos();
+		oldPos.y += val;
+		m_parent->m_node->setPos(oldPos);
+		for (auto island: m_parent->getNeighBor()) 
+		{
+			oldPos = island->m_node->getPos();
+			oldPos.y += val;
+			island->m_node->setPos(oldPos);
+		}
+	}
 }
 
 void LiftPart::cook()

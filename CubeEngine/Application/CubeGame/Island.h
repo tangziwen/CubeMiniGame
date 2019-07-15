@@ -25,7 +25,11 @@ public:
 	void recalculateCompound();
 	float getMass();
 	void cook();
+	void addNeighbor(Island * island);
+	void removeNeighbor(Island * island);
+	const std::set<Island*> getNeighBor() const;
 private:
+	std::set<Island *> m_neighborIslands;
 	PhysicsCompoundShape * m_compound_shape;
 };
 

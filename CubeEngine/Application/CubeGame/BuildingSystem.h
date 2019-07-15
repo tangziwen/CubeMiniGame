@@ -35,6 +35,7 @@ class BuildingSystem
 		BearPart * placeBearingToAttach(Attachment * attach);
 		Island * createIsland(vec3 pos);
 		Attachment * rayTest(vec3 pos, vec3 dir, float dist);
+		LiftPart * getLift() const;
 	private:
 		LiftPart * m_liftPart;
 		std::set<Island *> m_IslandList;
