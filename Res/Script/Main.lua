@@ -45,12 +45,14 @@ EVENT_TYPE_M_RELEASE = 2
 EVENT_TYPE_M_PRESS = 3
 EVENT_TYPE_M_MOVE = 4
 EVENT_TYPE_K_CHAR_INPUT = 5
-
+local m_currIndex = 1
+local lift_state = 0
 local isOpenTestWindow = true
 --ui update
 function tzw_engine_ui_update(dt)
 	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 		drawHud()
+		updateLifting(dt)
 	end
 end
 
@@ -62,7 +64,16 @@ table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", Item
 table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1})
 table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0})
 
-local m_currIndex = 1
+
+function updateLifting(dt)
+	if lift_state ~= 0 then
+		local lift = BuildingSystem.shared():getLift()
+		if lift ~= nil then
+			lift:liftUp(lift_state * dt * 2.0);
+		end
+	end
+end
+
 function drawHud()
 	local screenSize = Engine:shared():winSize()
 	local yOffset = 20.0;
@@ -77,6 +88,15 @@ function drawHud()
 	end
 	ImGui.End()
 end
+
+function onKeyPress(input_event)
+	if input_event.keycode == TZW_KEY_UP then
+		lift_state = 1
+	elseif input_event.keycode == TZW_KEY_DOWN then
+		lift_state = -1
+	end
+end
+
 function onKeyRelease(input_event)
 	if input_event.keycode == TZW_KEY_1 then
 		m_currIndex = 1
@@ -88,6 +108,10 @@ function onKeyRelease(input_event)
 		m_currIndex = 4
 	elseif input_event.keycode == TZW_KEY_5 then
 		m_currIndex = 5
+	elseif input_event.keycode == TZW_KEY_UP then
+		lift_state = lift_state - 1
+	elseif input_event.keycode == TZW_KEY_DOWN then
+		lift_state = lift_state + 1
 	end
 end
 
@@ -143,6 +167,8 @@ function tzw_engine_input_event(input_event)
 	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 		if input_event.type == EVENT_TYPE_K_RELEASE then 
 			onKeyRelease(input_event)
+		elseif input_event.type == EVENT_TYPE_K_PRESS then 
+			onKeyPress(input_event)
 		elseif input_event.type == EVENT_TYPE_M_RELEASE then 
 			onMouseRelease(input_event)
 		end
