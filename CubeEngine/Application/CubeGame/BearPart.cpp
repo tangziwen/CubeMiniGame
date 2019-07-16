@@ -2,6 +2,9 @@
 #include "Interface/Drawable3D.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Texture/TextureMgr.h"
+#include "GameNodeEditor.h"
+#include "MainMenu.h"
+
 namespace tzw
 {
 BearPart::BearPart()
@@ -10,7 +13,15 @@ BearPart::BearPart()
 	m_b = nullptr;
 	m_isFlipped = false;
 	m_node = nullptr;
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto node  = new GameNodeEditorNode();
+	node->addIn("active");
+	char a[512];
+	sprintf(a, "bearPart#%d",this);
+	node->name = a;
+	nodeEditor->addNode(node);
 }
+
 void BearPart::updateFlipped()
 {
 	if(!m_node) return;

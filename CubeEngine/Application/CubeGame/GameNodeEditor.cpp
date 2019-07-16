@@ -3,39 +3,48 @@
 
 namespace tzw
 {
-	void GameNodeEditor::drawIMGUI()
+	void GameNodeEditor::drawIMGUI(bool * isOpen)
 	{
+		ImGui::Begin("Node Editor", isOpen);
+		if (ImGui::Button("Key Binding")) 
+		{
+			static int idx = 0;
+			auto node  = new GameNodeEditorNode();
+			node->addOut("to");
+			char a[512];
+			sprintf(a, "onKeyPress#%d",idx);
+			idx += 1;
+			node->name = a;
+			addNode(node);
+		}
 		imnodes::BeginNodeEditor();
 
-		imnodes::BeginNode(2);
-		imnodes::Name("output node");
-	    imnodes::BeginInputAttribute(3);
-	    ImGui::Text("input2");
-		imnodes::EndAttribute();
-		const int output_attr_id = 2;
-		imnodes::BeginOutputAttribute(output_attr_id);
-		// in between Begin|EndAttribute calls, you can call ImGui
-		// UI functions
-		ImGui::Text("output pin");
-		imnodes::EndAttribute();
-		imnodes::EndNode();
+		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+		{
+			auto node = m_gameNodes[i];
+			imnodes::BeginNode(i);
+			imnodes::Name(node->name.c_str());
 
-		imnodes::BeginNode(3);
-		imnodes::Name("output node");
-	    imnodes::BeginInputAttribute(5);
-	    ImGui::Text("input2");
-		imnodes::EndAttribute();
+			auto inAttrList = node->getInAttrs();
+			for (auto attr : inAttrList) 
+			{
+			    imnodes::BeginInputAttribute(attr->gID);
+			    ImGui::Text(attr->m_name.c_str());
+				imnodes::EndAttribute();
+			}
 
-		imnodes::BeginInputAttribute(6);
-	    ImGui::Text("input2");
-		imnodes::EndAttribute();
-
-		imnodes::BeginOutputAttribute(4);
-		// in between Begin|EndAttribute calls, you can call ImGui
-		// UI functions
-		ImGui::Text("output pin");
-		imnodes::EndAttribute();
-		imnodes::EndNode();
+			auto outAttrList = node->getOuAttrs();
+			for (auto attr : outAttrList) 
+			{
+				imnodes::BeginOutputAttribute(attr->gID);
+				// in between Begin|EndAttribute calls, you can call ImGui
+				// UI functions
+				ImGui::Text(attr->m_name.c_str());
+				imnodes::EndAttribute();
+				
+			}
+			imnodes::EndNode();
+		}
 
 		for (int i = 0; i < m_links.size(); ++i)
 		{
@@ -53,6 +62,11 @@ namespace tzw
 		{
 		  m_links.push_back(std::make_pair(start_attr, end_attr));
 		}
+		ImGui::End();
 	}
 
+	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
+	{
+		m_gameNodes.push_back(newNode);
+	}
 }

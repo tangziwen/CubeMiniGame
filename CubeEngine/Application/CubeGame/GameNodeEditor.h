@@ -1,5 +1,6 @@
 #pragma once
 #include "2D/GUISystem.h"
+#include "GameNodeEditorNode.h"
 
 namespace tzw {
 
@@ -8,10 +9,13 @@ namespace tzw {
 class GameNodeEditor : public IMGUIObject
 {
 public:
-  // 通过 IMGUIObject 继承
-  void drawIMGUI() override;
+	// 通过 IMGUIObject 继承
+	void drawIMGUI(bool * isOpen);
 
+	void addNode(GameNodeEditorNode * newNode);
+ 
 protected:
-  std::vector<std::pair<int, int>> m_links;
+	std::vector<GameNodeEditorNode * > m_gameNodes;
+	std::vector<std::pair<int, int>> m_links;
 };
 }

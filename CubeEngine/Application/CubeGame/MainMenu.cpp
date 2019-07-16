@@ -160,7 +160,7 @@ void MainMenu::drawIMGUI()
 	}
 	if(m_isShowNodeEditor) 
 	{
-        m_nodeEditor->drawIMGUI();
+        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
 	}
 }
 

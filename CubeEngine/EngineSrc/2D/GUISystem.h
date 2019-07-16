@@ -9,7 +9,11 @@ namespace tzw
 	class IMGUIObject
 	{
 	public:
-		virtual void drawIMGUI() = 0;
+		virtual ~IMGUIObject() = default;
+
+		virtual void drawIMGUI()
+		{
+		}
 	};
 
 	class GUISystem: public EventListener
