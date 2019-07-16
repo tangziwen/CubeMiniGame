@@ -67,6 +67,8 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, rayTest)
 		BIND_FUNC(BuildingSystem, placeLiftPart)
 		BIND_FUNC(BuildingSystem, getLift)
+		BIND_FUNC(BuildingSystem, removePartByAttach)
+		BIND_FUNC(BuildingSystem, terrainForm)
 		BIND_END_CLASS
 
 

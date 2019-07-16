@@ -5,9 +5,9 @@ namespace tzw
 	
 	class NodeEditor : public IMGUIObject
 	{
-
+	public:
 		// Í¨¹ý IMGUIObject ¼Ì³Ð
-		virtual void drawIMGUI() override;
+		void drawIMGUI() override;
 
 	};
 

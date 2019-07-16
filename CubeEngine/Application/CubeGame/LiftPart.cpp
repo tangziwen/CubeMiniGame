@@ -81,73 +81,7 @@ Attachment * LiftPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3
 
 void LiftPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 {
-	auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
-	vec3 attachPosition,  Normal,  up;
-	attach->getAttachmentInfoWorld(attachPosition, Normal, up);
-	//transform other island attachment to our island
-	attachPosition = islandMatrixInverted.transformVec3(attachPosition);
-	Normal = islandMatrixInverted.transofrmVec4(vec4(Normal, 0.0)).toVec3();
-	vec3 InvertedNormal = Normal * -1;
-	attachPosition = attachPosition + Normal * 0.5;
-	up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
-	//we use m_attachment[0]
-	auto selfAttah = m_attachment[0];
-	bearing->m_a = selfAttah;
-	vec3 right = vec3::CrossProduct(InvertedNormal, up);
-	Matrix44 transformForAttachPoint;
-	auto data = transformForAttachPoint.data();
-	data[0] = right.x;
-	data[1] = right.y;
-	data[2] = right.z;
-	data[3] = 0.0;
 
-	data[4] = up.x;
-	data[5] = up.y;
-	data[6] = up.z;
-	data[7] = 0.0;
-
-	data[8] = -InvertedNormal.x;
-	data[9] = -InvertedNormal.y;
-	data[10] = -InvertedNormal.z;
-	data[11] = 0.0;
-
-	data[12] = attachPosition.x;
-	data[13] = attachPosition.y;
-	data[14] = attachPosition.z;
-	data[15] = 1.0;
-
-
-	Matrix44 attachmentTrans;
-	data = attachmentTrans.data();
-	auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
-	vec3 normalForAttach = selfAttah->m_normal;
-	data[0] = rightForAttach.x;
-	data[1] = rightForAttach.y;
-	data[2] = rightForAttach.z;
-	data[3] = 0.0;
-
-	data[4] = selfAttah->m_up.x;
-	data[5] = selfAttah->m_up.y;
-	data[6] = selfAttah->m_up.z;
-	data[7] = 0.0;
-
-	//use invert
-	data[8] = -normalForAttach.x;
-	data[9] = -normalForAttach.y;
-	data[10] = -normalForAttach.z;
-	data[11] = 0.0;
-
-	data[12] = selfAttah->m_pos.x;
-	data[13] = selfAttah->m_pos.y;
-	data[14] = selfAttah->m_pos.z;
-	data[15] = 1.0;
-
-	auto result = transformForAttachPoint * attachmentTrans.inverted();
-	Quaternion q;
-	q.fromRotationMatrix(&result);
-	m_node->setPos(result.getTranslation());
-	m_node->setRotateQ(q);
-	m_node->reCache();
 }
 
 void LiftPart::initAttachments()

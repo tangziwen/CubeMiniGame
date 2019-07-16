@@ -13,6 +13,8 @@
 #include "ScriptPyMgr.h"
 #include "2D/imgui.h"
 
+#include "2D/imnodes.h"
+
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
 #define BIND_START(state) luabridge::getGlobalNamespace(state)
@@ -31,6 +33,28 @@ namespace tzw
 	void imgui_text(const char* name)
 	{
 		ImGui::Text(name);
+	}
+	struct imnodes_link_info
+	{
+		int start_attr;
+		int end_attr;
+		bool isCreated;
+		imnodes_link_info()
+		{
+			isCreated = false;
+			start_attr = 0;
+			end_attr = 0;
+		}
+	};
+
+	imnodes_link_info imnodes_IsLinkCreated()
+	{
+		int start_attr, end_attr;
+		imnodes_link_info info;
+		info.isCreated = imnodes::IsLinkCreated(&start_attr, &end_attr);
+		info.start_attr = start_attr;
+		info.end_attr = end_attr;
+		return info;
 	}
 
 	void g_init_engine_libs()
@@ -127,6 +151,30 @@ namespace tzw
 		BIND_FUNC(ImGui, ColorButton)
 		.endNamespace ();
 
+
+		//IMGUI Node
+		BIND_START(luaState)
+		.beginNamespace("imnodes")
+		BIND_FUNC(imnodes, BeginNodeEditor)
+		BIND_FUNC(imnodes, BeginNode)
+		BIND_FUNC(imnodes, Name)
+		BIND_FUNC(imnodes, BeginInputAttribute)
+		BIND_FUNC(imnodes, EndAttribute)
+		BIND_FUNC(imnodes, BeginOutputAttribute)
+		BIND_FUNC(imnodes, EndNode)
+		BIND_FUNC(imnodes, Link)
+		BIND_FUNC(imnodes, EndNodeEditor)
+		//BIND_FUNC(imnodes, IsLinkCreated)
+		.addFunction("IsLinkCreated", imnodes_IsLinkCreated)
+		.endNamespace();
+
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(imnodes_link_info)
+		.addConstructor <void (*) ()> ()
+		BIND_PROP(imnodes_link_info, start_attr)
+		BIND_PROP(imnodes_link_info, end_attr)
+		BIND_PROP(imnodes_link_info, isCreated)
+		BIND_END_CLASS
 		//Scene
 		
 		BIND_START(luaState)

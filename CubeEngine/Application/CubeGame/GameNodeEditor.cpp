@@ -1,10 +1,9 @@
-#include "NodeEditor.h"
-#include "imnodes.h"
+#include "GameNodeEditor.h"
+#include "2D/imnodes.h"
 
 namespace tzw
 {
-	std::vector<std::pair<int, int>> links;
-	void NodeEditor::drawIMGUI()
+	void GameNodeEditor::drawIMGUI()
 	{
 		imnodes::BeginNodeEditor();
 
@@ -38,9 +37,9 @@ namespace tzw
 		imnodes::EndAttribute();
 		imnodes::EndNode();
 
-		for (int i = 0; i < links.size(); ++i)
+		for (int i = 0; i < m_links.size(); ++i)
 		{
-			const std::pair<int, int> p = links[i];
+			const std::pair<int, int> p = m_links[i];
 			// in this case, we just use the array index of the link
 			// as the unique identifier
 			imnodes::Link(i, p.first, p.second);
@@ -52,7 +51,7 @@ namespace tzw
 		int start_attr, end_attr;
 		if (imnodes::IsLinkCreated(&start_attr, &end_attr))
 		{
-		  links.push_back(std::make_pair(start_attr, end_attr));
+		  m_links.push_back(std::make_pair(start_attr, end_attr));
 		}
 	}
 

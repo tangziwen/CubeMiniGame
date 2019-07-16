@@ -25,10 +25,11 @@ class BuildingSystem
 		void cook();
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 		void tmpMoveWheel();
-		void removePartByHit(vec3 pos, vec3 dir, float dist);
+		void removePartByAttach(Attachment * attach);
 		void placeGamePart(GamePart * part, vec3 pos);
 		void attachGamePartToBearing(GamePart * part, Attachment * attach);
 		void attachGamePartNormal(GamePart * part, Attachment * attach);
+		void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
 		vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 		void placeLiftPart(vec3 wherePos);
 		GamePart * createPart(int type);

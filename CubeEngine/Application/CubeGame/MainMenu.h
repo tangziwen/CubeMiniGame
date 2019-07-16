@@ -4,6 +4,8 @@
 #include "Game/DebugInfoPanel.h"
 #include "Event/Event.h"
 #include "Engine/EngineDef.h"
+#include "GameNodeEditor.h"
+
 namespace tzw {
 class MainMenu : public IMGUIObject, public EventListener
 {
@@ -19,6 +21,7 @@ public:
 
 	bool isVisible() const;
 	void setVisible(bool val);
+	GameNodeEditor * getNodeEditor();
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -27,7 +30,9 @@ private:
 	void ShowExampleAppConsole(bool* p_open);
 	bool m_isShowProfiler;
 	bool m_isShowConsole;
+	bool m_isShowNodeEditor;
 	DebugInfoPanel m_debugInfoPanel;
+	GameNodeEditor * m_nodeEditor;
 };
 
 } // namespace tzw
