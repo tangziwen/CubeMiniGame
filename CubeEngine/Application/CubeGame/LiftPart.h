@@ -13,7 +13,9 @@ namespace tzw
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
+		void liftUp(float val);
 	public:
+		float m_liftHeight;
 		void cook();
 		int getType() override;
 		Attachment * m_attachment[6];

@@ -27,6 +27,7 @@ static void onOption(Button * btn)
 
 MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false)
 {
+
 }
 
 void MainMenu::init()
@@ -35,6 +36,7 @@ void MainMenu::init()
 	GUISystem::shared()->addObject(this);
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
+	m_nodeEditor = new GameNodeEditor();
 	//hide();
 }
 
@@ -88,7 +90,6 @@ void MainMenu::drawIMGUI()
 			static bool isOpenTerrain = false;
 			if (ImGui::BeginMenu("Run-time Config"))
 			{
-
 				ImGui::MenuItem("terrain", nullptr, &isOpenTerrain);
 				ImGui::EndMenu();
 			}
@@ -118,16 +119,6 @@ void MainMenu::drawIMGUI()
 				}
 				ImGui::End();
 			}
-			if (ImGui::BeginMenu("Test"))
-			{
-
-				if (ImGui::MenuItem("test phys", nullptr))
-				{
-					PhysicsMgr::shared()->start();
-				}
-				ImGui::EndMenu();
-			}
-
 			if (ImGui::BeginMenu("?"))
 			{
 				if (ImGui::MenuItem("About", nullptr)) {
@@ -167,6 +158,10 @@ void MainMenu::drawIMGUI()
 		}
 
 	}
+	if(m_isShowNodeEditor) 
+	{
+        m_nodeEditor->drawIMGUI();
+	}
 }
 
 bool MainMenu::onKeyPress(int keyCode)
@@ -186,6 +181,11 @@ void MainMenu::setVisible(bool val)
 	m_isVisible = val;
 }
 
+GameNodeEditor* MainMenu::getNodeEditor()
+{
+	return m_nodeEditor;
+}
+
 void MainMenu::startGame()
 {
     GameWorld::shared()->startGame();
@@ -196,6 +196,7 @@ void MainMenu::drawToolsMenu()
 {
 	if (ImGui::BeginMenu("Tools"))
 	{
+		ImGui::MenuItem("NodeEditor", nullptr, &m_isShowNodeEditor);
 		ImGui::MenuItem("Profiler", nullptr, &m_isShowProfiler);
 		ImGui::MenuItem("Console", nullptr, &m_isShowConsole);
 		ImGui::EndMenu();
@@ -208,6 +209,7 @@ void MainMenu::drawToolsMenu()
 	{
 		ShowExampleAppConsole(&m_isShowConsole);
 	}
+
 }
 
 
@@ -274,16 +276,6 @@ struct ExampleAppLog
 void MainMenu::ShowExampleAppLog(bool* p_open)
 {
 	static ExampleAppLog log;
-
-	// Demo: add random items (unless Ctrl is held)
-	//static float last_time = -1.0f;
-	//float time = ImGui::GetTime();
-	//if (time - last_time >= 0.20f && !ImGui::GetIO().KeyCtrl)
-	//{
-	//	const char* random_words[] = { "system", "info", "warning", "error", "fatal", "notice", "log" };
-	//	log.AddLog("[%s] Hello, time is %.1f, frame count is %d\n", random_words[rand() % IM_ARRAYSIZE(random_words)], time, ImGui::GetFrameCount());
-	//	last_time = time;
-	//}
 	log.Draw("LogMenu", p_open);
 }
 

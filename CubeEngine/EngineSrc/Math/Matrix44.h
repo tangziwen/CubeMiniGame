@@ -24,6 +24,7 @@ public:
 	vec4 transofrmVec4(vec4 v);
     void frustum(float left, float right, float bottom, float top, float near, float far);
     float * data();
+	void copyFromArray(float * data);
     vec3 up();
     vec3 forward();
     vec3 right();

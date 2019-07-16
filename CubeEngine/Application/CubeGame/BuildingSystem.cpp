@@ -1,7 +1,6 @@
 #include "BuildingSystem.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include <algorithm>
-#include "BulletCollision/CollisionShapes/btCompoundShape.h"
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsCompoundShape.h"
 #include "Collision/PhysicsMgr.h"
@@ -113,54 +112,22 @@ void BuildingSystem::placePartByHit(vec3 pos, vec3 dir, float dist, int type)
 		createNewToeHold(pos + dir * 5.0f);
 }
 
-void BuildingSystem::removePartByHit(vec3 pos, vec3 dir, float dist)
+void BuildingSystem::removePartByAttach(Attachment* attach)
 {
-	std::vector<GamePart *> tmp;
-	//search island
-	for (auto island : m_IslandList)
+	if (attach)
 	{
-		for (auto iter : island->m_partList)
+		auto part = attach->m_parent;
+		auto island = part->m_parent;
+		if (!attach->m_bearPart)
 		{
-			tmp.push_back(iter);
+			part->getNode()->removeFromParent();
+			island->remove(part);
 		}
-	}
-	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
-	{
-		float distl = left->getNode()->getWorldPos().distance(pos);
-		float distr = right->getNode()->getWorldPos().distance(pos);
-		return distl < distr;
-	}
-	);
-	for (auto iter : tmp)
-	{
-		auto island = iter->m_parent;
-		auto node = iter->getNode();
-		auto invertedMat = node->getTransform().inverted();
-		vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
-		vec4 originInLocal = invertedMat * vec4(pos, 1.0);
-		auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
-		RayAABBSide side;
-		vec3 hitPoint;
-		auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
-		if (isHit)
+		else // have some bearing?
 		{
-			vec3 attachPos, attachNormal, attachUp;
-			auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal, attachUp);
-			if (attach)
-			{
-				if (!attach->m_bearPart)
-				{
-					iter->getNode()->removeFromParent();
-					island->remove(iter);
-				}
-				else // have some bearing?
-				{
-					attach->m_bearPart->m_node->removeFromParent();
-					m_bearList.erase(m_bearList.find(attach->m_bearPart));
-					attach->m_bearPart = nullptr;
-				}
-			}
-			return;
+			attach->m_bearPart->m_node->removeFromParent();
+			m_bearList.erase(m_bearList.find(attach->m_bearPart));
+			attach->m_bearPart = nullptr;
 		}
 	}
 }
@@ -178,7 +145,10 @@ void BuildingSystem::attachGamePartToBearing(GamePart* part,Attachment * attach)
 	auto bearing = attach->m_bearPart;
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
+	
 	auto island = new Island(pos + n * 0.5);
+	attach->m_parent->m_parent->addNeighbor(island);
+	island->addNeighbor(attach->m_parent->m_parent);
 	m_IslandList.insert(island);
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
@@ -191,6 +161,26 @@ void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 	auto island = attach->m_parent->m_parent;
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
+}
+
+void BuildingSystem::terrainForm(vec3 pos, vec3 dir, float dist, float value, float range)
+{
+	std::vector<Drawable3D *> list;
+	AABB aabb;
+	aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+	aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+	g_GetCurrScene()->getRange(&list, aabb);
+	if (!list.empty())
+	{
+		Drawable3DGroup group(&list[0], list.size());
+		Ray ray(pos, dir);
+		vec3 hitPoint;
+		auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
+		if (chunk)
+		{
+			chunk->deformSphere(hitPoint, value, range);
+		}
+	}
 }
 
 vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
@@ -316,6 +306,11 @@ Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 	return nullptr;
 }
 
+LiftPart* BuildingSystem::getLift() const
+{
+	return m_liftPart;
+}
+
 void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
 {
 	std::vector<GamePart *> tmp;
@@ -436,21 +431,7 @@ void BuildingSystem::cook()
 	//each island, we create a rigid
 	for (auto island : m_IslandList)
 	{
-		auto compundShape = new PhysicsCompoundShape();
-		for(auto part:island->m_partList)
-		{
-			if(part->getType() != GAME_PART_LIFT)
-			{
-				auto mat = part->getNode()->getLocalTransform();
-				compundShape->addChildShape(&mat, part->getShape()->getRawShape());   
-			}
-		}
-		//compundShape->finish();
-		auto compundMat = island->m_node->getTransform();
-		auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(1.0 * island->m_partList.size(), &compundMat,compundShape);
-
-		rig->attach(island->m_node);
-		island->m_rigid = rig;
+		island->cook();
 	}
 
 	for (auto bear : m_bearList)
@@ -459,28 +440,30 @@ void BuildingSystem::cook()
 		auto attachB = bear->m_b;
 		if (attachA && attachB) 
 		{
-		auto partA = static_cast<BlockPart *>(attachA->m_parent);
-		auto partB = static_cast<BlockPart *>(attachB->m_parent);
+			auto partA = static_cast<BlockPart *>(attachA->m_parent);
+			auto partB = static_cast<BlockPart *>(attachB->m_parent);
 
-		vec3 worldPosA, worldNormalA, worldUpA;
-		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-		vec3 worldPosB, worldNormalB, worldUpB;
-		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-		int isFlipped = bear->m_isFlipped ? -1 : 1;
-		vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
-		vec3 pivotA, pivotB, axisA, axisB;
-		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+			vec3 worldPosA, worldNormalA, worldUpA;
+			attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+			vec3 worldPosB, worldNormalB, worldUpB;
+			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+			int isFlipped = bear->m_isFlipped ? -1 : 1;
+			vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
+			vec3 pivotA, pivotB, axisA, axisB;
+			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
 
-		//���hinge tmd���
-		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
-		m_constrainList.push_back(constrain);
-		
+			//���hinge tmd���
+			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+			m_constrainList.push_back(constrain);
 		}
 	}
+	if(m_liftPart) 
+	{
+		m_liftPart->getNode()->removeFromParent();
+		m_liftPart->m_parent->remove(m_liftPart);
+	}
 
-	m_liftPart->getNode()->removeFromParent();
-	m_liftPart->m_parent->remove(m_liftPart);
 }
 
 //toDo

@@ -8,7 +8,8 @@
 
 namespace tzw
 {
-class PhysicsRigidBody;
+	class PhysicsCompoundShape;
+	class PhysicsRigidBody;
 
 class Island
 {
@@ -19,6 +20,17 @@ public:
 	PhysicsRigidBody * m_rigid;
 	void insert(GamePart * part);
 	void remove(GamePart * part);
+	PhysicsCompoundShape * getCompoundShape() const;
+	void setCompoundShape(PhysicsCompoundShape * compoundShape);
+	void recalculateCompound();
+	float getMass();
+	void cook();
+	void addNeighbor(Island * island);
+	void removeNeighbor(Island * island);
+	const std::set<Island*> getNeighBor() const;
+private:
+	std::set<Island *> m_neighborIslands;
+	PhysicsCompoundShape * m_compound_shape;
 };
 
 

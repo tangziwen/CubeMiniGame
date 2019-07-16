@@ -41,7 +41,9 @@ class PhysicsMgr{
 		PhysicsRigidBody * createRigidBodyMesh(Mesh * obj, Matrix44* transform);
 		PhysicsRigidBody * createRigidBodyFromCompund(float mass, Matrix44 * transform, PhysicsCompoundShape * shape);
 		PhysicsHingeConstraint * createHingeConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, const vec3& pivotInA,const vec3& pivotInB, const vec3& axisInA,const vec3& axisInB, bool useReferenceFrameA = false);
-		
+
+		void addRigidBody(PhysicsRigidBody * body) const;
+		void removeRigidBody(PhysicsRigidBody * body) const;
 	private:
 		btBoxShape* createBoxShape(const btVector3& halfExtents);
 		btRigidBody* createRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color);

@@ -107,7 +107,7 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 		m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_broadphase, m_solver, m_collisionConfiguration);
 
 		m_dynamicsWorld->setGravity(btVector3(0, -10, 0));
-		m_dynamicsWorld->setForceUpdateAllAabbs(false);
+		m_dynamicsWorld->setForceUpdateAllAabbs(true);
 	}
 
 	void PhysicsMgr::stop()
@@ -163,7 +163,6 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 		btRigidBody* body = new btRigidBody(mass, 0, shape, localInertia);
 		body->setWorldTransform(startTransform);
 #endif//
-
 		body->setUserIndex(-1);
 		m_dynamicsWorld->addRigidBody(body);
 		return body;
@@ -299,7 +298,7 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 	auto rig = new PhysicsRigidBody();
 	bool isDynamic = (mass != 0.f);
 	btVector3 localInertia(0, 0, 0);
-	auto shape = tzwShape->getShape();
+	auto shape = tzwShape->getRawShape();
 	if (isDynamic)
 		shape->calculateLocalInertia(mass, localInertia);
 	btTransform startTransform;
@@ -315,13 +314,22 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 PhysicsHingeConstraint* PhysicsMgr::createHingeConstraint(PhysicsRigidBody * rbA, PhysicsRigidBody * rbB,
 	const vec3& pivotInA, const vec3& pivotInB, const vec3& axisInA, const vec3& axisInB, bool useReferenceFrameA)
 {
-		auto & rigA = *(rbA->rigidBody());
-		auto & rigB = *(rbB->rigidBody());
-		auto bthinge = new btHingeConstraint(rigA, rigB, btVector3(pivotInA.x, pivotInA.y, pivotInA.z), btVector3(pivotInB.x, pivotInB.y, pivotInB.z), btVector3(axisInA.x, axisInA.y, axisInA.z), btVector3(axisInB.x, axisInB.y, axisInB.z), useReferenceFrameA);
-		auto hinge = new PhysicsHingeConstraint(bthinge);
-		bthinge->setUserConstraintPtr(hinge);
-		m_dynamicsWorld->addConstraint(bthinge);
-		return hinge;
+	auto & rigA = *(rbA->rigidBody());
+	auto & rigB = *(rbB->rigidBody());
+	auto bthinge = new btHingeConstraint(rigA, rigB, btVector3(pivotInA.x, pivotInA.y, pivotInA.z), btVector3(pivotInB.x, pivotInB.y, pivotInB.z), btVector3(axisInA.x, axisInA.y, axisInA.z), btVector3(axisInB.x, axisInB.y, axisInB.z), useReferenceFrameA);
+	auto hinge = new PhysicsHingeConstraint(bthinge);
+	bthinge->setUserConstraintPtr(hinge);
+	m_dynamicsWorld->addConstraint(bthinge);
+	return hinge;
 }
 
+	void PhysicsMgr::addRigidBody(PhysicsRigidBody* body) const
+	{
+		m_dynamicsWorld->addRigidBody(body->rigidBody());
+	}
+
+	void PhysicsMgr::removeRigidBody(PhysicsRigidBody* body) const
+	{
+		m_dynamicsWorld->removeRigidBody(body->rigidBody());
+	}
 }

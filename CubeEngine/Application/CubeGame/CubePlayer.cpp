@@ -270,7 +270,7 @@ namespace tzw
 	{
 		if (item->m_class == "PlaceableBlock")
 		{
-			BuildingSystem::shared()->removePartByHit(getPos(), m_camera->getForward(), 15);
+			//BuildingSystem::shared()->removePartByHit(getPos(), m_camera->getForward(), 15);
 		}
 		else if (item->m_class == "TerrainForm")
 		{

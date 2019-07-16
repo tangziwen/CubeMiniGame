@@ -1,4 +1,5 @@
 #include "Ray.h"
+#include <algorithm>
 #define EPSILON 0.000001
 namespace tzw {
 
@@ -43,7 +44,11 @@ vec3 Ray::intersectPlane(Plane p)
     auto result = m_origin + m_direction*r;
     return result;
 }
-
+struct AABBHitInfo
+{
+	vec3 hitPos;
+	RayAABBSide side;
+};
 bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
 {
     vec3 ptOnPlane;
@@ -52,7 +57,7 @@ bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
 
     const vec3& origin = m_origin;
     const vec3& dir = m_direction;
-
+	std::vector <AABBHitInfo>candidateList;
     float t;
 
     if(origin.x>min.x && origin.y>min.y && origin.z>min.z
@@ -60,7 +65,7 @@ bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
     {
         return false;
     }
-
+	AABBHitInfo info;
     if (dir.x != 0.f)
     {
         if (dir.x > 0)
@@ -75,14 +80,13 @@ bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
             if (min.y < ptOnPlane.y && ptOnPlane.y < max.y && min.z < ptOnPlane.z && ptOnPlane.z < max.z)
             {
                 hitPoint = ptOnPlane;
-                if(side)
-                {
-                    if(ptOnPlane.x<max.x)
-                        (*side) = RayAABBSide::left;
-                    else
-                        (*side) = RayAABBSide::right;
-                }
-                return true;
+				info.hitPos = hitPoint;
+				
+                if(ptOnPlane.x<max.x)
+                    info.side = RayAABBSide::left;
+                else
+                    info.side = RayAABBSide::right;
+				candidateList.push_back(info);
             }
         }
     }
@@ -101,14 +105,13 @@ bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
             if (min.z < ptOnPlane.z && ptOnPlane.z < max.z && min.x < ptOnPlane.x && ptOnPlane.x < max.x)
             {
                 hitPoint = ptOnPlane;
-                if(side)
-                {
-                    if(ptOnPlane.y<max.y)
-                        (*side) = RayAABBSide::down;
-                    else
-                        (*side) = RayAABBSide::up;
-                }
-                return true;
+				info.hitPos = hitPoint;
+				
+                if(ptOnPlane.y<max.y)
+                    info.side = RayAABBSide::down;
+                else
+                    info.side = RayAABBSide::up;
+				candidateList.push_back(info);
             }
         }
     }
@@ -127,17 +130,32 @@ bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
             if (min.x < ptOnPlane.x && ptOnPlane.x < max.x && min.y < ptOnPlane.y && ptOnPlane.y < max.y)
             {
                 hitPoint = ptOnPlane;
-                if(side)
-                {
-                    if(ptOnPlane.z<max.z)
-                        (*side) = RayAABBSide::back;
-                    else
-                        (*side) = RayAABBSide::front;
-                }
-                return true;
+				info.hitPos = hitPoint;
+                if(ptOnPlane.z<max.z)
+                    info.side = RayAABBSide::back;
+                else
+                    info.side = RayAABBSide::front;
+				candidateList.push_back(info);
             }
         }
     }
+	if(!candidateList.empty()) 
+	{	
+		std::sort(candidateList.begin(), candidateList.end(), [origin](AABBHitInfo & left, AABBHitInfo & right)
+		{
+			float distl = left.hitPos.distance(origin);
+			float distr = right.hitPos.distance(origin);
+			return distl < distr;
+		}
+		);
+		if(side) 
+		{
+			(*side) = candidateList[0].side;        
+			
+		}
+		return true;
+	}
+
     return false;
 }
 
