@@ -25,6 +25,7 @@ namespace tzw
 			imnodes::BeginNode(i);
 			imnodes::Name(node->name.c_str());
 
+			node->privateDraw();
 			auto inAttrList = node->getInAttrs();
 			for (auto attr : inAttrList) 
 			{
@@ -60,7 +61,8 @@ namespace tzw
 		int start_attr, end_attr;
 		if (imnodes::IsLinkCreated(&start_attr, &end_attr))
 		{
-		  m_links.push_back(std::make_pair(start_attr, end_attr));
+			m_links.push_back(std::make_pair(start_attr, end_attr));
+			raiseEventToNode(start_attr, end_attr);
 		}
 		ImGui::End();
 	}
@@ -68,5 +70,40 @@ namespace tzw
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
+	}
+
+	void GameNodeEditor::raiseEventToNode(int startAttr, int endAttr)
+	{
+		GameNodeEditorNode * startNode = nullptr;
+		GameNodeEditorNode * endNode = nullptr;
+		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+		{
+			auto node = m_gameNodes[i];
+			if (!startNode) 
+			{     
+				if(node->checkOutNodeAttr(startAttr)) 
+				{
+					startNode = node;
+				}
+            }
+			if (!endNode) 
+			{     
+				if(node->checkInNodeAttr(endAttr)) 
+				{
+					endNode = node;
+				}
+            }
+			if (endNode && startNode) 
+			{     
+				break;
+            }
+		}
+
+		if(startNode && endNode) 
+		{
+			startNode->onLinkOut(startAttr, endAttr, endNode);
+			endNode->onLinkIn(startAttr, endAttr, startNode);
+		}
+
 	}
 }

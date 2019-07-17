@@ -7,6 +7,8 @@
 #include "Math/Ray.h"
 #include "GameItem.h"
 #include "LiftPart.h"
+#include "ControlPart.h"
+
 namespace tzw
 {
 class PhysicsHingeConstraint;
@@ -24,7 +26,7 @@ class BuildingSystem
 		void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 		void cook();
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
-		void tmpMoveWheel();
+		void tmpMoveWheel(bool isOpen);
 		void removePartByAttach(Attachment * attach);
 		void placeGamePart(GamePart * part, vec3 pos);
 		void attachGamePartToBearing(GamePart * part, Attachment * attach);
@@ -37,7 +39,9 @@ class BuildingSystem
 		Island * createIsland(vec3 pos);
 		Attachment * rayTest(vec3 pos, vec3 dir, float dist);
 		LiftPart * getLift() const;
+		ControlPart * getControlPart();
 	private:
+		ControlPart * m_controlPart;
 		LiftPart * m_liftPart;
 		std::set<Island *> m_IslandList;
 		std::set<BearPart* > m_bearList;

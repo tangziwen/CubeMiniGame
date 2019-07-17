@@ -112,15 +112,8 @@ void GameWorld::startGame()
 	Tmisc::DurationBegin();
 	 
     unloadGame();
-	 
-    crossHair = Sprite::create("Texture/cross_hair.png");
-	 
-    auto size = crossHair->getContentSize();
-	 
-    crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
-	 
-    m_mainRoot->addChild(crossHair);
-	 
+
+	MainMenu::shared()->initInGame();
     GameMap::shared()->setMapType(GameMap::MapType::Noise);
     GameMap::shared()->setMaxHeight(10);
 	 

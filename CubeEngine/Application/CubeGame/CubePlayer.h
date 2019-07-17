@@ -32,6 +32,8 @@ namespace tzw
 		void handleItemPrimaryUse(GameItem * item);
 		void handleItemSecondaryUse(GameItem * item);
 		vec3 getForward() const;
+		void dropOnControlPart();
+		void seatOnControlPart();
 	private:
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
@@ -41,6 +43,8 @@ namespace tzw
 		int oldPosZ;
 		int m_currSelectItemIndex;
 		bool m_enableGravity;
+		bool m_isSeatOnControlPart;
+		float m_seatAngle = 0.0;
 	};
 } // namespace tzw
 

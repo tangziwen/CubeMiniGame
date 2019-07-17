@@ -7,6 +7,7 @@
 #include "CylinderPart.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Chunk.h"
+#include "ControlPart.h"
 
 
 namespace tzw
@@ -227,6 +228,13 @@ GamePart* BuildingSystem::createPart(int type)
     case 2:
 		return new LiftPart();
 		break;
+    case 3: 
+		{
+			auto control_part =  new ControlPart();
+			m_controlPart = control_part;
+			return m_controlPart;
+    	}
+		break;
 	default: ;
 	}
 	return nullptr;
@@ -309,6 +317,11 @@ Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 LiftPart* BuildingSystem::getLift() const
 {
 	return m_liftPart;
+}
+
+ControlPart* BuildingSystem::getControlPart()
+{
+	return m_controlPart;
 }
 
 void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
@@ -476,15 +489,16 @@ void BuildingSystem::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 
 	auto transform = part->getNode()->getLocalTransform();
 	auto normalInIsland = transform.transofrmVec4(vec4(attach->m_normal, 0.0)).toVec3();
 
-	pivot = transform.transofrmVec4(vec4(attach->m_pos, 1.0)).toVec3();
+	pivot = transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * 0.05, 1.0)).toVec3();
 	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
 }
 
-void BuildingSystem::tmpMoveWheel()
+void BuildingSystem::tmpMoveWheel(bool isOpen)
 {
 	for(auto constrain : m_constrainList)
 	{
-		constrain->enableAngularMotor(true, -10, 100);
+		printf("move Wheel\n");
+		constrain->enableAngularMotor(isOpen, 10, 100);
 	}
 }
 

@@ -71,6 +71,11 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, terrainForm)
 		BIND_END_CLASS
 
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(MainMenu)
+		.addStaticFunction ("shared", &MainMenu::shared)
+		BIND_FUNC(MainMenu, isVisible)
+		BIND_END_CLASS
 
 		//GamePart and it's derived classes
 		BIND_START(luaState)

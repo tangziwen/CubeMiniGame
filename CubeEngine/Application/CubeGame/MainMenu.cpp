@@ -44,6 +44,7 @@ void MainMenu::show()
 {
 	Engine::shared()->setUnlimitedCursor(false);
 	setVisible(true);
+	m_crossHair->setIsVisible(false);
 }
 
 void MainMenu::hide()
@@ -53,6 +54,7 @@ void MainMenu::hide()
 		Engine::shared()->setUnlimitedCursor(true);
 	}
 	setVisible(false);
+	m_crossHair->setIsVisible(true);
     //setIsVisible(false);
 }
 
@@ -157,11 +159,12 @@ void MainMenu::drawIMGUI()
 			}
 		}
 
+		if(m_isShowNodeEditor) 
+		{
+	        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
+		}
 	}
-	if(m_isShowNodeEditor) 
-	{
-        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
-	}
+
 }
 
 bool MainMenu::onKeyPress(int keyCode)
@@ -282,5 +285,16 @@ void MainMenu::ShowExampleAppLog(bool* p_open)
 void MainMenu::ShowExampleAppConsole(bool* p_open)
 {
 	ConsolePanel::shared()->Draw("Console", p_open);
+}
+
+void MainMenu::initInGame()
+{
+    m_crossHair = Sprite::create("Texture/cross_hair.png");
+	 
+    auto size = m_crossHair->getContentSize();
+	 
+    m_crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
+	 
+    GameWorld::shared()->getMainRoot()->addChild(m_crossHair);
 }
 } // namespace tzw

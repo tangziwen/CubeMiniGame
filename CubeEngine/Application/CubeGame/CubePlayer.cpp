@@ -90,6 +90,20 @@ namespace tzw
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
 		}
+
+		if(m_isSeatOnControlPart) 
+		{
+			auto control_part = BuildingSystem::shared()->getControlPart();
+			auto mat = control_part->getNode()->getTransform();
+			
+			m_camera->setPos(control_part->getNode()->getWorldPos() + mat.up() * 0.5);
+			Quaternion q;
+			Quaternion qExtra;
+			q.fromRotationMatrix(&mat);
+			qExtra.fromEulerAngle(vec3(0, m_seatAngle, 0));
+			m_camera->setRotateQ(q * qExtra);
+			//control_part->getNode()->setIsVisible(false);
+		}
 	}
 
 	bool CubePlayer::checkIsNeedUpdateChunk()
@@ -126,35 +140,6 @@ namespace tzw
 		return false;
 		switch (keyCode)
 		{
-		case TZW_KEY_1:
-			{
-				m_currSelectItemIndex = 0;
-				//BuildingSystem::shared()->createNewToeHold(getPos() + m_camera->getForward() * 5);
-			}
-			break;
-		case TZW_KEY_2:
-			{
-				m_currSelectItemIndex = 1;
-				//
-			}
-			break;
-
-		case TZW_KEY_3:
-			{
-				m_currSelectItemIndex = 2;
-			}
-			break;
-
-		case TZW_KEY_4:
-			{
-				m_currSelectItemIndex = 3;
-			}
-			break;
-		case TZW_KEY_5:
-			{
-				m_currSelectItemIndex = 4;
-			}
-			break;
 		case TZW_KEY_R:
 			{
 				BuildingSystem::shared()->flipBearingByHit(getPos(), m_camera->getForward(), 15);
@@ -167,27 +152,49 @@ namespace tzw
 				m_camera->setIsEnableGravity(m_enableGravity);
 			}
 			break;
-		case TZW_KEY_F:
-			{
-				BuildingSystem::shared()->placePartByHit(getPos(),m_camera->getForward(), 15, 0);
-				break;
-			}
-			break;
-		case TZW_KEY_E:
-			{
-			}
-			break;
 		case TZW_KEY_T:
 			{
-				BuildingSystem::shared()->tmpMoveWheel();
+				BuildingSystem::shared()->tmpMoveWheel(true);
+			}
+			break;
+		case TZW_KEY_G:
+			{
+				BuildingSystem::shared()->tmpMoveWheel(false);
 			}
 			break;
 		case TZW_KEY_H:
 			{
 				BuildingSystem::shared()->cook();
 			}
+			break;
+		case TZW_KEY_O:
+		{
+			auto control_part = BuildingSystem::shared()->getControlPart();
+			if(control_part) 
+			{
+				if(m_isSeatOnControlPart) 
+				{
+					dropOnControlPart();
+				} 
+				else 
+				{
+					seatOnControlPart();
+				}
+			}
+		}
+			break;
+        case TZW_KEY_L:
+            {
+                m_seatAngle += 90.0;
+				if(m_seatAngle >= 360.0) m_seatAngle = 0.0;
+            }
+		break;
 		default:
 			break;
+		}
+		if(m_isSeatOnControlPart) 
+		{
+			auto control_part = BuildingSystem::shared()->getControlPart();
 		}
 		return false;
 	}
@@ -297,5 +304,15 @@ namespace tzw
 	vec3 CubePlayer::getForward() const
 	{
 		return m_camera->getForward();
+	}
+
+	void CubePlayer::dropOnControlPart()
+	{
+		m_isSeatOnControlPart = false;
+	}
+
+	void CubePlayer::seatOnControlPart()
+	{
+		m_isSeatOnControlPart = true;
 	}
 } // namespace tzw

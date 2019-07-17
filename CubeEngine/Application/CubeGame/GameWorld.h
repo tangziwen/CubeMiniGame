@@ -47,7 +47,6 @@ private:
     Chunk * m_chunkArray[128][128][16];
     Scene  * m_scene;
     CubePlayer * m_player;
-    Sprite * crossHair;
     std::vector<Chunk*> m_chunkList;
     static GameWorld *m_instance;
     GameWorld();

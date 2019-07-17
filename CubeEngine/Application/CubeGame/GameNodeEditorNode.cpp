@@ -9,22 +9,24 @@ namespace tzw
 	{
 		g_attr_uid += 1;
 	}
-	void GameNodeEditorNode::addIn(std::string attrName)
+	NodeAttr* GameNodeEditorNode::addIn(std::string attrName)
 	{
 		increaseAttrGID();
 		auto attr = new NodeAttr();
 		attr->m_name = attrName;
 		attr->gID = g_attr_uid;
 		m_inAttr.push_back(attr);
+		return attr;
 	}
 
-	void GameNodeEditorNode::addOut(std::string attrName)
+	NodeAttr* GameNodeEditorNode::addOut(std::string attrName)
 	{
 		increaseAttrGID();
 		auto attr = new NodeAttr();
 		attr->m_name = attrName;
 		attr->gID = g_attr_uid;
 		m_outAttr.push_back(attr);
+		return attr;
 	}
 
 	GameNodeEditorNode::GameNodeEditorNode()
@@ -39,5 +41,50 @@ namespace tzw
 	std::vector<NodeAttr*>& GameNodeEditorNode::getOuAttrs()
 	{
 		return m_outAttr;
+	}
+
+	void GameNodeEditorNode::privateDraw()
+	{
+
+	}
+
+	NodeAttr* GameNodeEditorNode::checkInNodeAttr(int gid)
+	{
+		for(auto attr: m_inAttr) 
+		{
+			if (attr->gID == gid) return attr;  
+		}
+		return nullptr;
+	}
+
+	NodeAttr* GameNodeEditorNode::checkOutNodeAttr(int gid)
+	{
+		for(auto attr: m_outAttr) 
+		{
+			if (attr->gID == gid) return attr;  
+		}
+		return nullptr;
+	}
+
+	void GameNodeEditorNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	{
+	}
+
+	void GameNodeEditorNode::onLinkIn(int startID, int endID, GameNodeEditorNode* other)
+	{
+	}
+
+	NodeAttr* GameNodeEditorNode::getAttrByGid(int GID)
+	{
+		for(auto attr : m_inAttr) {
+			if(attr->gID == GID)
+				return attr;
+		}
+
+		for(auto attr : m_outAttr) {
+			if(attr->gID == GID)
+				return attr;
+		}
+		return nullptr;
 	}
 }

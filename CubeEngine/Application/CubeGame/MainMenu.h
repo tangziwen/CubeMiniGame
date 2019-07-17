@@ -5,6 +5,7 @@
 #include "Event/Event.h"
 #include "Engine/EngineDef.h"
 #include "GameNodeEditor.h"
+#include "2D/Sprite.h"
 
 namespace tzw {
 class MainMenu : public IMGUIObject, public EventListener
@@ -21,6 +22,7 @@ public:
 
 	bool isVisible() const;
 	void setVisible(bool val);
+	void initInGame();
 	GameNodeEditor * getNodeEditor();
 private:
 	bool m_isVisible = true;
@@ -28,11 +30,13 @@ private:
 	void drawToolsMenu();
 	void ShowExampleAppLog(bool* p_open);
 	void ShowExampleAppConsole(bool* p_open);
+	
 	bool m_isShowProfiler;
 	bool m_isShowConsole;
 	bool m_isShowNodeEditor;
 	DebugInfoPanel m_debugInfoPanel;
 	GameNodeEditor * m_nodeEditor;
+	Sprite * m_crossHair;
 };
 
 } // namespace tzw
