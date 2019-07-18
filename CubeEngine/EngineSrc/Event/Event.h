@@ -151,13 +151,13 @@ public:
     void setFixedPiority(unsigned int getFixedPiority);
     bool isSwallow() const;
     void setIsSwallow(bool isSwallow);
-    EventMgr *parent() const;
-    void setParent(EventMgr *parent);
+    EventMgr *getMgr() const;
+    void setMgr(EventMgr *parent);
     Node *attachNode() const;
     void setAttachNode(Node *attachNode);
 protected:
     Node * m_attachNode;
-    EventMgr * m_parent;
+    EventMgr * m_mgr;
     bool m_isSwallow;
     unsigned int m_fixedPiority;
 };

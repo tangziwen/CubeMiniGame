@@ -90,20 +90,6 @@ namespace tzw
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
 		}
-
-		if(m_isSeatOnControlPart) 
-		{
-			auto control_part = BuildingSystem::shared()->getControlPart();
-			auto mat = control_part->getNode()->getTransform();
-			
-			m_camera->setPos(control_part->getNode()->getWorldPos() + mat.up() * 0.5);
-			Quaternion q;
-			Quaternion qExtra;
-			q.fromRotationMatrix(&mat);
-			qExtra.fromEulerAngle(vec3(0, m_seatAngle, 0));
-			m_camera->setRotateQ(q * qExtra);
-			//control_part->getNode()->setIsVisible(false);
-		}
 	}
 
 	bool CubePlayer::checkIsNeedUpdateChunk()
@@ -126,18 +112,12 @@ namespace tzw
 	static PhysicsHingeConstraint * constraint2 = nullptr;
 	bool CubePlayer::onKeyPress(int keyCode)
 	{
-		switch (keyCode)
-		{
-		case TZW_KEY_4:
-			break;
-		}
 		return false;
 	}
 
 	bool CubePlayer::onKeyRelease(int keyCode)
 	{
-	if (MainMenu::shared()->isVisible())
-		return false;
+		if (MainMenu::shared()->isVisible()) return false;
 		switch (keyCode)
 		{
 		case TZW_KEY_R:
@@ -152,36 +132,10 @@ namespace tzw
 				m_camera->setIsEnableGravity(m_enableGravity);
 			}
 			break;
-		case TZW_KEY_T:
-			{
-				BuildingSystem::shared()->tmpMoveWheel(true);
-			}
-			break;
-		case TZW_KEY_G:
-			{
-				BuildingSystem::shared()->tmpMoveWheel(false);
-			}
-			break;
 		case TZW_KEY_H:
 			{
 				BuildingSystem::shared()->cook();
 			}
-			break;
-		case TZW_KEY_O:
-		{
-			auto control_part = BuildingSystem::shared()->getControlPart();
-			if(control_part) 
-			{
-				if(m_isSeatOnControlPart) 
-				{
-					dropOnControlPart();
-				} 
-				else 
-				{
-					seatOnControlPart();
-				}
-			}
-		}
 			break;
         case TZW_KEY_L:
             {
@@ -191,10 +145,6 @@ namespace tzw
 		break;
 		default:
 			break;
-		}
-		if(m_isSeatOnControlPart) 
-		{
-			auto control_part = BuildingSystem::shared()->getControlPart();
 		}
 		return false;
 	}
@@ -219,23 +169,6 @@ namespace tzw
 	void CubePlayer::modeSwitch(Mode newMode)
 	{
 		m_currMode = newMode;
-	}
-	void CubePlayer::drawIMGUI()
-	{
-		//auto screenSize = Engine::shared()->winSize();
-		//float yOffset = 20.0;
-		//ImVec2 window_pos = ImVec2(screenSize.x / 2.0, screenSize.y - yOffset);
-		//ImVec2 window_pos_pivot = ImVec2(0.5, 1.0);
-		//ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-		//bool isOpen;
-		//
-		//ImGui::Begin("Profiler", &isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
-		//
-		//for (size_t i = 0; i < m_itemSlots.size(); i++)
-		//{
-		//	ImGui::RadioButton(m_itemSlots[i]->m_name.c_str(), m_currSelectItemIndex == i); ImGui::SameLine();
-		//}
-		//ImGui::End();
 	}
 
 	void CubePlayer::initSlots()
@@ -306,13 +239,19 @@ namespace tzw
 		return m_camera->getForward();
 	}
 
-	void CubePlayer::dropOnControlPart()
+	void CubePlayer::attachCamToGamePart(GamePart * part)
 	{
-		m_isSeatOnControlPart = false;
+		m_camera->removeFromParent();
+		m_camera->setIsEnableGravity(false);
+		part->getNode()->addChild(m_camera);
+		m_camera->setPos(0, 0, 0);
+		m_camera->setRotateE(0, 0, 0);
+		m_camera->reCache();
 	}
 
-	void CubePlayer::seatOnControlPart()
+	void CubePlayer::attachCamToWorld()
 	{
-		m_isSeatOnControlPart = true;
+		m_camera->removeFromParent();
+		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 	}
 } // namespace tzw

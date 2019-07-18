@@ -28,7 +28,7 @@ void EventMgr::addListener(EventListener *listener, Node *node)
 void EventMgr::addFixedPiorityListener(EventListener *event)
 {
     m_list.push_back(event);
-    event->setParent(this);
+    event->setMgr(this);
     sortFixedListener();
 }
 

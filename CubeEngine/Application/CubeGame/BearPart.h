@@ -6,6 +6,7 @@ namespace tzw
 class Drawable3D;
 class BlockPart;
 struct Attachment;
+class PhysicsHingeConstraint;
 class BearPart
 {
 public:
@@ -15,6 +16,7 @@ public:
 	bool m_isFlipped;
 	Drawable3D * m_node;
 	void updateFlipped();
+	PhysicsHingeConstraint * m_constrain;
 
 };
 }

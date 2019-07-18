@@ -29,7 +29,6 @@ void BuildingSystem::createNewToeHold(vec3 pos)
 
 void BuildingSystem::placePartNextToBearing(Attachment * attach, int type)
 {
-	
 	auto bearing = attach->m_bearPart;
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
@@ -123,6 +122,7 @@ void BuildingSystem::removePartByAttach(Attachment* attach)
 		{
 			part->getNode()->removeFromParent();
 			island->remove(part);
+			delete part;
 		}
 		else // have some bearing?
 		{
@@ -213,6 +213,21 @@ void BuildingSystem::placeLiftPart(vec3 wherePos)
 	newIsland->m_node->addChild(part->getNode());
 	newIsland->insert(part);
 	m_liftPart = part;
+}
+
+void BuildingSystem::setCurrentControlPart(GamePart* controlPart)
+{
+	auto part = dynamic_cast<ControlPart *> (controlPart);
+	if(part) 
+	{
+		part->setActivate(true);
+		m_controlPart = part;
+	}
+}
+
+ControlPart* BuildingSystem::getCurrentControlPart() const
+{
+	return m_controlPart;
 }
 
 GamePart* BuildingSystem::createPart(int type)
@@ -439,6 +454,7 @@ void BuildingSystem::placeItem(GameItem * item, vec3 pos, vec3 dir, float dist)
 	}
 }
 
+
 void BuildingSystem::cook()
 {
 	//each island, we create a rigid
@@ -466,9 +482,9 @@ void BuildingSystem::cook()
 			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
 			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
 
-			//���hinge tmd���
 			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 			m_constrainList.push_back(constrain);
+			bear->m_constrain = constrain;
 		}
 	}
 	if(m_liftPart) 

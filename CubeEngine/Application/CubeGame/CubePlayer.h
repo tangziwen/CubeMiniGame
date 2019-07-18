@@ -7,6 +7,7 @@
 namespace tzw
 {
 	class GameItem;
+	class GamePart;
 	class CubePlayer : public Node, public EventListener, public IMGUIObject
 	{
 	public:
@@ -27,13 +28,12 @@ namespace tzw
 		bool onKeyRelease(int keyCode) override;
 		bool onMousePress(int button, vec2 pos) override;
 		void modeSwitch(Mode newMode);
-		void drawIMGUI() override;
 		void initSlots();
 		void handleItemPrimaryUse(GameItem * item);
 		void handleItemSecondaryUse(GameItem * item);
 		vec3 getForward() const;
-		void dropOnControlPart();
-		void seatOnControlPart();
+		void attachCamToGamePart(GamePart * part);
+		void attachCamToWorld();
 	private:
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
@@ -43,7 +43,6 @@ namespace tzw
 		int oldPosZ;
 		int m_currSelectItemIndex;
 		bool m_enableGravity;
-		bool m_isSeatOnControlPart;
 		float m_seatAngle = 0.0;
 	};
 } // namespace tzw

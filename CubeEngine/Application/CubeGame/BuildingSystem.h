@@ -34,6 +34,9 @@ class BuildingSystem
 		void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
 		vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 		void placeLiftPart(vec3 wherePos);
+
+		void setCurrentControlPart(GamePart * controlPart);
+		ControlPart * getCurrentControlPart() const;
 		GamePart * createPart(int type);
 		BearPart * placeBearingToAttach(Attachment * attach);
 		Island * createIsland(vec3 pos);

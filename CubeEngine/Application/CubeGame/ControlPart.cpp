@@ -5,18 +5,25 @@
 #include "Island.h"
 #include "MainMenu.h"
 #include "NodeEditorNodes/ControlPartNode.h"
+#include "Event/EventMgr.h"
+#include "GameWorld.h"
 
 namespace tzw
 {
 const float blockSize = 0.5;
 ControlPart::ControlPart()
 {
+	
+	m_forward = 0;
+	m_side = 0;
+	m_isActivate = false;
 	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
 	m_shape = new PhysicsShape();
 	auto texture =  TextureMgr::shared()->getByPath("Texture/trestraou2_Base_Color.jpg");
 	m_node->getMaterial()->setTex("diffuseMap", texture);
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
+	getNode()->setIsAccpectOcTtree(false);
 	for(int i = 0; i < 6; i++)
 	{
 		m_bearPart[i] = nullptr;
@@ -25,6 +32,7 @@ ControlPart::ControlPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	auto node = new ControlPartNode(this);
 	nodeEditor->addNode(node);
+	EventMgr::shared()->addFixedPiorityListener(this);
 }
 
 Attachment * ControlPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
@@ -196,36 +204,139 @@ void ControlPart::addSidewardBearing(BearPart* bearing)
 	m_sidewardBearing.push_back(bearing);
 }
 
-void ControlPart::handleKeyPress(int keyCode)
+bool ControlPart::onKeyPress(int keyCode)
 {
+	if(!m_isActivate) return false;
+	bool isKeyActivate = false;
 	switch(keyCode)
 	{
-    case TZW_KEY_W: 
+	    case TZW_KEY_W: 
+		{
+			m_forward += 1;
+			isKeyActivate = true;
+	    }
+		break;
+	    case TZW_KEY_S: 
+		{
+			m_forward -= 1;
+			isKeyActivate = true;
+	    }
+		break;
+	    case TZW_KEY_A: 
+		{
+			m_side -= 1;
+			isKeyActivate = true;
+	    }
+		break;
+	    case TZW_KEY_D: 
+		{
+			m_side += 1;
+			isKeyActivate = true;
+	    }
+		break;
+	}
+	handleBearings();
+	return false;
+}
+
+bool ControlPart::onKeyRelease(int keyCode)
+{
+	if(!m_isActivate) return false;
+	bool isKeyActivate = false;
+	switch(keyCode)
+	{
+	    case TZW_KEY_W: 
+		{
+			isKeyActivate = true;
+			m_forward -= 1;
+	    }
+		break;
+	    case TZW_KEY_S: 
+		{
+			isKeyActivate = true;
+			m_forward += 1;
+	    }
+		break;
+	    case TZW_KEY_A: 
+		{
+			m_side += 1;
+			isKeyActivate = true;
+	    }
+		break;
+	    case TZW_KEY_D: 
+		{
+			m_side -= 1;
+			isKeyActivate = true;
+	    }
+		break;
+	}
+	if(isKeyActivate)
+		handleBearings();
+	return false;
+}
+
+bool ControlPart::getIsActivate() const
+{
+	return m_isActivate;
+}
+
+void ControlPart::setActivate(bool value)
+{
+	
+	if (value) 
+	{
+		//GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
+		getNode()->setIsVisible(false);
+	}
+	else
+	{	
+		if(m_isActivate) 
+		{
+			//GameWorld::shared()->getPlayer()->attachCamToWorld();
+		}
+		getNode()->setIsVisible(true);
+	}
+	m_isActivate = value;
+}
+
+void ControlPart::onFrameUpdate(float delta)
+{
+}
+
+void ControlPart::handleBearings()
+{
+	if (m_forward != 0) 
 	{
 		for (auto bearing : m_forwardBearing) 
 		{
-			
+			bearing->m_constrain->enableAngularMotor(true, 10.0f *m_forward, 50);
 		}
-   
-    }
-		break;
+	} else 
+	{
+		for (auto bearing : m_forwardBearing) 
+		{
+			bearing->m_constrain->enableAngularMotor(false, 10.0f, 50);
+		}
 	}
-}
 
-void ControlPart::handleKeyRelease(int keyCode)
-{
-}
-
-void ControlPart::cook()
-{
-	auto mat2 = m_node->getTranslationMatrix();
-	auto aabb = m_node->getAABB();
-	auto rigChasis = PhysicsMgr::shared()->createRigidBody(1.0, mat2, aabb);
-	rigChasis->attach(m_node);
+	if (m_side != 0) 
+	{
+		for (auto bearing : m_sidewardBearing) 
+		{
+			bearing->m_constrain->enableAngularMotor(true, 1.0f *m_side, 50);
+		}
+	} else 
+	{
+		for (auto bearing : m_sidewardBearing) 
+		{
+			bearing->m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
+		}
+	}
 }
 
 int ControlPart::getType()
 {
-	return GAME_PART_BLOCK;
+	return GAME_PART_CONTROL;
 }
+
 }

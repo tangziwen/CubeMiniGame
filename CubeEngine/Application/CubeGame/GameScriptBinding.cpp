@@ -69,6 +69,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, getLift)
 		BIND_FUNC(BuildingSystem, removePartByAttach)
 		BIND_FUNC(BuildingSystem, terrainForm)
+		BIND_FUNC(BuildingSystem, setCurrentControlPart)
 		BIND_END_CLASS
 
 		BIND_START(luaState)
@@ -81,14 +82,17 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(GamePart)
 		BIND_EMPTY_CONSTRUCT
+		BIND_FUNC(GamePart, getType)
 		.endClass()
 		.deriveClass<BlockPart, GamePart>("BlockPart")
+		BIND_EMPTY_CONSTRUCT
+		.endClass()
+		.deriveClass<ControlPart, GamePart>("ControlPart")
 		BIND_EMPTY_CONSTRUCT
 		.endClass()
 		.deriveClass<CylinderPart, GamePart>("CylinderPart")
 		BIND_EMPTY_CONSTRUCT
 		BIND_END_CLASS
-
 
 		//Attachment
 		BIND_START(luaState)

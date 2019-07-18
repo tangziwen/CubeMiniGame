@@ -43,7 +43,7 @@ void EventListener::onFrameUpdate(float delta)
 }
 
 EventListener::EventListener()
-		: m_attachNode(nullptr), m_parent(nullptr), m_isSwallow(false), m_fixedPiority(0)
+		: m_attachNode(nullptr), m_mgr(nullptr), m_isSwallow(false), m_fixedPiority(0)
 {
 
 }
@@ -56,9 +56,9 @@ unsigned int EventListener::getFixedPiority() const
 void EventListener::setFixedPiority(unsigned int eventPiority)
 {
     m_fixedPiority = eventPiority;
-    if (m_parent)
+    if (m_mgr)
     {
-        m_parent->sortFixedListener();
+        m_mgr->sortFixedListener();
     }
 }
 
@@ -72,14 +72,14 @@ void EventListener::setIsSwallow(bool isSwallow)
     m_isSwallow = isSwallow;
 }
 
-EventMgr *EventListener::parent() const
+EventMgr *EventListener::getMgr() const
 {
-    return m_parent;
+    return m_mgr;
 }
 
-void EventListener::setParent(EventMgr *parent)
+void EventListener::setMgr(EventMgr *parent)
 {
-    m_parent = parent;
+    m_mgr = parent;
 }
 
 Node *EventListener::attachNode() const

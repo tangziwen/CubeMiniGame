@@ -185,7 +185,7 @@ void Node::visit(RenderCommand::RenderType passType)
 	for( auto child : removeList)
 	{
 		detachChild(child);
-		delete child;
+		//delete child;
 	}
 }
 
@@ -428,6 +428,7 @@ void Node::detachChild(Node *node)
 void Node::removeFromParent()
 {
     setIsValid(false);
+	m_parent = nullptr;
 }
 
 void Node::setParent(Node *parent)

@@ -13,6 +13,7 @@ BearPart::BearPart()
 	m_b = nullptr;
 	m_isFlipped = false;
 	m_node = nullptr;
+	m_constrain = nullptr;
 	
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	auto node = new BearingPartNode(this);

@@ -159,7 +159,8 @@ namespace tzw
 
 	GamePart::~GamePart()
 	{
-
+		m_node->removeFromParent();
+		delete m_node;
 	}
 
 	int GamePart::getType()

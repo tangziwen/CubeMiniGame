@@ -1,11 +1,13 @@
 #pragma once
 #include "BearPart.h"
 #include "GamePart.h"
+#include "Event/Event.h"
+
 namespace tzw
 {
 	class Island;
 	class BearPart;
-	class ControlPart : public GamePart
+	class ControlPart : public GamePart, public EventListener
 	{
 	public:
 		ControlPart();
@@ -17,14 +19,22 @@ namespace tzw
 		void addForwardBearing(BearPart * bearing);
 		void addSidewardBearing(BearPart * bearing);
 
-		void handleKeyPress(int keyCode);
-		void handleKeyRelease(int keyCode);
+
+		bool onKeyPress(int keyCode) override;
+		bool onKeyRelease(int keyCode) override;
+
+		bool getIsActivate() const;
+		void setActivate(bool value);
+		void onFrameUpdate(float delta) override;
+		void handleBearings();
 	public:
-		void cook();
+		int m_forward;
+		int m_side;
 		int getType() override;
 		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 		std::vector<BearPart * > m_forwardBearing;
 		std::vector<BearPart *> m_sidewardBearing;
+		bool m_isActivate;
 	};
 }
