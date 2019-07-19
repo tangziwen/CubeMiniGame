@@ -3,6 +3,7 @@
 
 namespace tzw
 {
+class vec3;
 class Drawable3D;
 class BlockPart;
 struct Attachment;
@@ -17,6 +18,9 @@ public:
 	Drawable3D * m_node;
 	void updateFlipped();
 	PhysicsHingeConstraint * m_constrain;
+	void enablePhysics(bool isEnable);
+private:
+	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 
 };
 }

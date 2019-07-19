@@ -123,7 +123,6 @@ namespace tzw
 		case TZW_KEY_R:
 			{
 				BuildingSystem::shared()->flipBearingByHit(getPos(), m_camera->getForward(), 15);
-				break;
 			}
 			break;
 		case TZW_KEY_Q:
@@ -134,15 +133,14 @@ namespace tzw
 			break;
 		case TZW_KEY_H:
 			{
-				BuildingSystem::shared()->cook();
+				BuildingSystem::shared()->dropFromLift();
 			}
 			break;
-        case TZW_KEY_L:
-            {
-                m_seatAngle += 90.0;
-				if(m_seatAngle >= 360.0) m_seatAngle = 0.0;
-            }
-		break;
+		case TZW_KEY_J:
+			{
+				BuildingSystem::shared()->replaceToLift();
+			}
+			break;
 		default:
 			break;
 		}

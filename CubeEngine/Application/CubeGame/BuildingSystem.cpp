@@ -158,10 +158,27 @@ void BuildingSystem::attachGamePartToBearing(GamePart* part,Attachment * attach)
 
 void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 {
-	part->attachTo(attach);
-	auto island = attach->m_parent->m_parent;
-	island->m_node->addChild(part->getNode());
-	island->insert(part);
+	if (attach->m_parent->getType() == GAME_PART_LIFT) 
+	{
+		auto liftPart = dynamic_cast<LiftPart *>(attach->m_parent);
+		vec3 pos, n, up;
+		attach->getAttachmentInfoWorld(pos, n, up);
+		auto newIsland = new Island(pos);
+		m_IslandList.insert(newIsland);
+		newIsland->m_node->addChild(part->getNode());
+		newIsland->insert(part);
+		part->attachToFromOtherIsland(attach, nullptr);
+		liftPart->setEffectedIsland(newIsland);
+		
+	} else
+	{
+		part->attachTo(attach);
+		auto island = attach->m_parent->m_parent;
+		island->m_node->addChild(part->getNode());
+		island->insert(part);
+		
+	}
+
 }
 
 void BuildingSystem::terrainForm(vec3 pos, vec3 dir, float dist, float value, float range)
@@ -208,10 +225,14 @@ vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
 void BuildingSystem::placeLiftPart(vec3 wherePos)
 {
 	auto part = new LiftPart();
-	auto newIsland = new Island(wherePos);
-	m_IslandList.insert(newIsland);
-	newIsland->m_node->addChild(part->getNode());
-	newIsland->insert(part);
+	//TODO
+
+	//auto newIsland = new Island(wherePos);
+	//m_IslandList.insert(newIsland);
+	//newIsland->m_node->addChild(part->getNode());
+	//newIsland->insert(part);
+	part->getNode()->setPos(wherePos);
+	g_GetCurrScene()->addNode(part->getNode());
 	m_liftPart = part;
 }
 
@@ -295,6 +316,8 @@ Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 			tmp.push_back(iter);
 		}
 	}
+	//add extra lift part
+	tmp.push_back(m_liftPart);
 	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
 	{
 		float distl = left->getNode()->getWorldPos().distance(pos);
@@ -455,43 +478,39 @@ void BuildingSystem::placeItem(GameItem * item, vec3 pos, vec3 dir, float dist)
 }
 
 
-void BuildingSystem::cook()
+void BuildingSystem::dropFromLift()
 {
 	//each island, we create a rigid
 	for (auto island : m_IslandList)
 	{
-		island->cook();
+		island->enablePhysics(true);
 	}
 
 	for (auto bear : m_bearList)
 	{
-		auto attachA = bear->m_a;
-		auto attachB = bear->m_b;
-		if (attachA && attachB) 
-		{
-			auto partA = static_cast<BlockPart *>(attachA->m_parent);
-			auto partB = static_cast<BlockPart *>(attachB->m_parent);
-
-			vec3 worldPosA, worldNormalA, worldUpA;
-			attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-			vec3 worldPosB, worldNormalB, worldUpB;
-			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-			int isFlipped = bear->m_isFlipped ? -1 : 1;
-			vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
-			vec3 pivotA, pivotB, axisA, axisB;
-			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-
-			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
-			m_constrainList.push_back(constrain);
-			bear->m_constrain = constrain;
-		}
+		bear->enablePhysics(true);
 	}
 	if(m_liftPart) 
 	{
-		m_liftPart->getNode()->removeFromParent();
-		m_liftPart->m_parent->remove(m_liftPart);
+		//m_liftPart->getNode()->removeFromParent();
+		//m_liftPart->m_parent->remove(m_liftPart);
 	}
+
+}
+
+void BuildingSystem::replaceToLift()
+{
+	//disable physics and put them back to lift position
+	for (auto island : m_IslandList)
+	{
+		island->enablePhysics(false);
+	}
+	for (auto bear : m_bearList)
+	{
+		bear->enablePhysics(false);
+	}
+
+	//put them back to the lift
 
 }
 

@@ -332,4 +332,14 @@ PhysicsHingeConstraint* PhysicsMgr::createHingeConstraint(PhysicsRigidBody * rbA
 	{
 		m_dynamicsWorld->removeRigidBody(body->rigidBody());
 	}
+
+	void PhysicsMgr::addConstraint(PhysicsHingeConstraint* constraint)
+	{
+		m_dynamicsWorld->addConstraint(constraint->constraint());
+	}
+
+	void PhysicsMgr::removeConstraint(PhysicsHingeConstraint* constraint)
+	{
+		m_dynamicsWorld->removeConstraint(constraint->constraint());
+	}
 }

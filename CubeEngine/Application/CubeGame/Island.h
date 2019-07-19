@@ -23,6 +23,7 @@ public:
 	PhysicsCompoundShape * getCompoundShape() const;
 	void setCompoundShape(PhysicsCompoundShape * compoundShape);
 	void recalculateCompound();
+	void enablePhysics(bool isEnable);
 	float getMass();
 	void cook();
 	void addNeighbor(Island * island);

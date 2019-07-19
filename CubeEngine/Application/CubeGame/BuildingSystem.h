@@ -24,7 +24,8 @@ class BuildingSystem
 		void placeBearingByHit(vec3 pos, vec3 dir, float dist);
 		void flipBearingByHit(vec3 pos, vec3 dir, float dist);
 		void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
-		void cook();
+		void dropFromLift();
+		void replaceToLift();
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 		void tmpMoveWheel(bool isOpen);
 		void removePartByAttach(Attachment * attach);

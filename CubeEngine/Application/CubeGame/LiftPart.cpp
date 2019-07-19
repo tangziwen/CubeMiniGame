@@ -17,6 +17,7 @@ LiftPart::LiftPart()
 	m_shape = new PhysicsShape();
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
+	m_effectedIsland = nullptr;
 	for(int i = 0; i < 6; i++)
 	{
 		m_bearPart[i] = nullptr;
@@ -119,20 +120,25 @@ Attachment* LiftPart::getFirstAttachment()
 
 void LiftPart::liftUp(float val)
 {
-	if (m_parent) 
+	if (m_effectedIsland) 
 	{
 		m_liftHeight += val;
 		m_liftHeight = std::min(m_liftHeight, 10.0f);
-		auto oldPos = m_parent->m_node->getPos();
+		auto oldPos = m_effectedIsland->m_node->getPos();
 		oldPos.y += val;
-		m_parent->m_node->setPos(oldPos);
-		for (auto island: m_parent->getNeighBor()) 
+		m_effectedIsland->m_node->setPos(oldPos);
+		for (auto island: m_effectedIsland->getNeighBor()) 
 		{
 			oldPos = island->m_node->getPos();
 			oldPos.y += val;
 			island->m_node->setPos(oldPos);
 		}
 	}
+}
+
+void LiftPart::setEffectedIsland(Island* island)
+{
+	m_effectedIsland = island;
 }
 
 void LiftPart::cook()

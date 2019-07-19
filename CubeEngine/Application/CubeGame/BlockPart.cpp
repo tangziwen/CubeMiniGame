@@ -87,6 +87,7 @@ void BlockPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
 	up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
 	//we use m_attachment[0]
 	auto selfAttah = m_attachment[0];
+	if (bearing)
 	bearing->m_a = selfAttah;
 	vec3 right = vec3::CrossProduct(InvertedNormal, up);
 	Matrix44 transformForAttachPoint;
