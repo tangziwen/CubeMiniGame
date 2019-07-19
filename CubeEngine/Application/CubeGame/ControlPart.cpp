@@ -23,7 +23,6 @@ ControlPart::ControlPart()
 	m_node->getMaterial()->setTex("diffuseMap", texture);
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
-	getNode()->setIsAccpectOcTtree(false);
 	for(int i = 0; i < 6; i++)
 	{
 		m_bearPart[i] = nullptr;

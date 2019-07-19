@@ -50,18 +50,23 @@ local lift_state = 0
 local isOpenTestWindow = true
 --ui update
 function tzw_engine_ui_update(dt)
-	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
-		drawHud()
-		updateLifting(dt)
+	if MainMenu.shared():isVisible() then
+		return
+	else
+		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+			drawHud()
+			updateLifting(dt)
+		end
 	end
 end
 
 local m_itemSlots = {}
 
-table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 0})
+table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 2})
 table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0})
 table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1})
 table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1})
+table.insert(m_itemSlots, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = 3})
 table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0})
 
 
@@ -98,6 +103,7 @@ function onKeyPress(input_event)
 end
 
 function onKeyRelease(input_event)
+	local player = GameWorld.shared():getPlayer()
 	if input_event.keycode == TZW_KEY_1 then
 		m_currIndex = 1
 	elseif input_event.keycode == TZW_KEY_2 then
@@ -108,10 +114,17 @@ function onKeyRelease(input_event)
 		m_currIndex = 4
 	elseif input_event.keycode == TZW_KEY_5 then
 		m_currIndex = 5
+	elseif input_event.keycode == TZW_KEY_6 then
+		m_currIndex = 6
 	elseif input_event.keycode == TZW_KEY_UP then
 		lift_state = lift_state - 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = lift_state + 1
+	elseif input_event.keycode == TZW_KEY_E then
+		local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
+		if result and result.m_parent:getType() == 3 then
+			BuildingSystem.shared():setCurrentControlPart(result.m_parent)
+		end
 	end
 end
 
@@ -140,8 +153,8 @@ function handleItemPrimaryUse(item)
 	local player = GameWorld.shared():getPlayer()
 	if (item.ItemClass == "PlaceableBlock") then
 		placeItem(item)
-	elseif (item.ItemClass == "TerrainForm") then
-	
+	elseif (item.ItemClass == "TerrainTool") then --fill the terrain
+		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	elseif (item.ItemClass == "Lift") then
 		local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
 		BuildingSystem.shared():placeLiftPart(resultPos)
@@ -150,7 +163,15 @@ function handleItemPrimaryUse(item)
 end
 
 function handleItemSecondaryUse(item)
-
+	local player = GameWorld.shared():getPlayer()
+	if (item.ItemClass == "PlaceableBlock") then
+		local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
+		if result then
+			BuildingSystem.shared():removePartByAttach(result)
+		end
+	elseif (item.ItemClass == "TerrainTool") then --dig the terrain
+		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
+	end
 end
 
 
@@ -164,13 +185,17 @@ end
 
 --input event
 function tzw_engine_input_event(input_event)
-	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
-		if input_event.type == EVENT_TYPE_K_RELEASE then 
-			onKeyRelease(input_event)
-		elseif input_event.type == EVENT_TYPE_K_PRESS then 
-			onKeyPress(input_event)
-		elseif input_event.type == EVENT_TYPE_M_RELEASE then 
-			onMouseRelease(input_event)
+	if MainMenu.shared():isVisible() then
+		return
+	else
+		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+			if input_event.type == EVENT_TYPE_K_RELEASE then 
+				onKeyRelease(input_event)
+			elseif input_event.type == EVENT_TYPE_K_PRESS then 
+				onKeyPress(input_event)
+			elseif input_event.type == EVENT_TYPE_M_RELEASE then 
+				onMouseRelease(input_event)
+			end
 		end
 	end
 end
