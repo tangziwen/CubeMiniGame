@@ -9,7 +9,6 @@ namespace tzw
 	public:
 		LiftPart();
 		Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up) override;
-		void attachToFromOtherIsland(Attachment * attach, BearPart * bearing) override;
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;

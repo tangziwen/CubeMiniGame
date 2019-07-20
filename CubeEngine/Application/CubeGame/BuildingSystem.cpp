@@ -352,6 +352,15 @@ Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 	return nullptr;
 }
 
+Island* BuildingSystem::rayTestIsland(vec3 pos, vec3 dir, float dist)
+{
+	auto attach = rayTest(pos, dir, dist);
+	if(attach)
+		return attach->m_parent->m_parent;
+    else
+		return nullptr;
+}
+
 LiftPart* BuildingSystem::getLift() const
 {
 	return m_liftPart;
@@ -498,7 +507,7 @@ void BuildingSystem::dropFromLift()
 
 }
 
-void BuildingSystem::replaceToLift()
+void BuildingSystem::replaceToLift(vec3 pos, vec3 dir, float dist)
 {
 	//disable physics and put them back to lift position
 	for (auto island : m_IslandList)
@@ -511,6 +520,23 @@ void BuildingSystem::replaceToLift()
 	}
 
 	//put them back to the lift
+
+	auto island = rayTestIsland(pos, dir, dist);
+	if(island) 
+	{
+		vec3 attachPos, n, up;
+		auto attach = m_liftPart->getFirstAttachment();
+		attach->getAttachmentInfoWorld(attachPos, n, up);
+
+		island->m_node->setPos(attachPos);
+		island->m_node->setRotateE(0.0f, 0.0f, 0.0f);
+	}
+	//auto newIsland = new Island(pos);
+	//m_IslandList.insert(newIsland);
+	//newIsland->m_node->addChild(part->getNode());
+	//newIsland->insert(part);
+	//part->attachToFromOtherIsland(attach, nullptr);
+	//liftPart->setEffectedIsland(newIsland);
 
 }
 

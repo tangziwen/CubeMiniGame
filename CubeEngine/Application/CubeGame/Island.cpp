@@ -131,6 +131,8 @@ Island::enablePhysics(bool isEnable)
 		}
 		else 
 		{
+			auto mat = m_node->getTransform();
+			m_rigid->setWorldTransform(mat);
 			PhysicsMgr::shared()->addRigidBody(m_rigid);
 		}
 	} else 

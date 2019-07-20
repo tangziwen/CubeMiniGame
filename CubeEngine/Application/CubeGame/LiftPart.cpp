@@ -80,11 +80,6 @@ Attachment * LiftPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3
 	return attachPtr;
 }
 
-void LiftPart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
-{
-
-}
-
 void LiftPart::initAttachments()
 {
 	//forward backward
@@ -133,6 +128,9 @@ void LiftPart::liftUp(float val)
 			oldPos.y += val;
 			island->m_node->setPos(oldPos);
 		}
+		oldPos = m_node->getPos();
+		oldPos.y += val;
+		m_node->setPos(oldPos);
 	}
 }
 

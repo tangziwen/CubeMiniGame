@@ -138,7 +138,7 @@ namespace tzw
 			break;
 		case TZW_KEY_J:
 			{
-				BuildingSystem::shared()->replaceToLift();
+				BuildingSystem::shared()->replaceToLift(getPos(), m_camera->getForward(), 15);
 			}
 			break;
 		default:

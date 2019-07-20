@@ -25,7 +25,7 @@ class BuildingSystem
 		void flipBearingByHit(vec3 pos, vec3 dir, float dist);
 		void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 		void dropFromLift();
-		void replaceToLift();
+		void replaceToLift(vec3 pos, vec3 dir, float dist);
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 		void tmpMoveWheel(bool isOpen);
 		void removePartByAttach(Attachment * attach);
@@ -42,6 +42,7 @@ class BuildingSystem
 		BearPart * placeBearingToAttach(Attachment * attach);
 		Island * createIsland(vec3 pos);
 		Attachment * rayTest(vec3 pos, vec3 dir, float dist);
+		Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
 		LiftPart * getLift() const;
 		ControlPart * getControlPart();
 	private:
