@@ -223,24 +223,17 @@ namespace tzw
 		return result;
 	}
 
-	Matrix44 GamePart::attachToFromOtherIslandAlterSelfIsland(Attachment* attach, BearPart* bearing)
+	Matrix44 GamePart::attachToFromOtherIslandAlterSelfIsland(Attachment* attach)
 	{
-		auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
 		vec3 attachPosition,  Normal,  up;
 		attach->getAttachmentInfoWorld(attachPosition, Normal, up);
-		//transform other island attachment to our island
-		attachPosition = islandMatrixInverted.transformVec3(attachPosition);
-		Normal = islandMatrixInverted.transofrmVec4(vec4(Normal, 0.0)).toVec3();
 		vec3 InvertedNormal = Normal * -1;
 		attachPosition = attachPosition + Normal * 0.01;
-		up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
 		//we use m_attachment[0]
 		auto selfAttah = getFirstAttachment();
-		if (bearing)
-			bearing->m_a = selfAttah;
 		vec3 right = vec3::CrossProduct(InvertedNormal, up);
-		Matrix44 transformForAttachPoint;
-		auto data = transformForAttachPoint.data();
+		Matrix44 attachOuterWorldMat;
+		auto data = attachOuterWorldMat.data();
 		data[0] = right.x;
 		data[1] = right.y;
 		data[2] = right.z;
@@ -287,12 +280,13 @@ namespace tzw
 		data[14] = selfAttah->m_pos.z;
 		data[15] = 1.0;
 
-		auto result = transformForAttachPoint * attachmentTrans.inverted();
+		auto result = attachOuterWorldMat * attachmentTrans.inverted() * getNode()->getLocalTransform().inverted();
+
 		Quaternion q;
 		q.fromRotationMatrix(&result);
-		m_node->setPos(result.getTranslation());
-		m_node->setRotateQ(q);
-		m_node->reCache();
+		m_parent->m_node->setPos(result.getTranslation());
+		m_parent->m_node->setRotateQ(q);
+		m_parent->m_node->reCache();
 		return result;
 	}
 

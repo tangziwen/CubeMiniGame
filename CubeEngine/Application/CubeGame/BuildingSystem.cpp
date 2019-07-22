@@ -528,8 +528,7 @@ void BuildingSystem::replaceToLift(vec3 pos, vec3 dir, float dist)
 		auto attach = m_liftPart->getFirstAttachment();
 		attach->getAttachmentInfoWorld(attachPos, n, up);
 
-		island->m_node->setPos(attachPos);
-		island->m_node->setRotateE(0.0f, 0.0f, 0.0f);
+		island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(attach);
 	}
 	//auto newIsland = new Island(pos);
 	//m_IslandList.insert(newIsland);

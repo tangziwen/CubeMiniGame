@@ -36,7 +36,7 @@ namespace tzw
 		virtual Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up);
 		virtual void attachTo(Attachment * attach);
 		virtual Matrix44 attachToFromOtherIsland(Attachment * attach, BearPart * bearing);
-		virtual Matrix44 attachToFromOtherIslandAlterSelfIsland(Attachment * attach, BearPart * bearing);
+		virtual Matrix44 attachToFromOtherIslandAlterSelfIsland(Attachment * attach);
 		virtual Attachment * getFirstAttachment();
 		Island * m_parent;
 		virtual ~GamePart();
