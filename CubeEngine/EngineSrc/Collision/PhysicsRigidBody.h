@@ -31,6 +31,7 @@ namespace tzw
 		void setWorldTransform(Matrix44& transform);
 		void updateInertiaTensor();
 		void activate();
+		void clearAll();
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

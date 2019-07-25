@@ -4,16 +4,21 @@
 #include "Collision/PhysicsCompoundShape.h"
 #include "Collision/PhysicsMgr.h"
 #include "Collision/PhysicsRigidBody.h"
+#include "rapidjson/document.h"
+#include "rapidjson/writer.h"
+#include "BlockPart.h"
+#include "BuildingSystem.h"
+#include "CylinderPart.h"
 
 namespace tzw {
 Island::Island(vec3 pos)
 {
-  // the toehold here
-  m_node = new Drawable3D();
-  m_node->setPos(pos);
-  g_GetCurrScene()->addNode(m_node);
-  m_rigid = nullptr;
-  m_compound_shape = nullptr;
+	// the toehold here
+	m_node = new Drawable3D();
+	m_node->setPos(pos);
+	g_GetCurrScene()->addNode(m_node);
+	m_rigid = nullptr;
+	m_compound_shape = nullptr;
 }
 
 void
@@ -140,6 +145,7 @@ Island::enablePhysics(bool isEnable)
         if(m_rigid) 
 		{
 			PhysicsMgr::shared()->removeRigidBody(m_rigid);
+			m_rigid->clearAll();
         }
 	}
 }
@@ -194,4 +200,100 @@ Island::getNeighBor() const
 {
   return m_neighborIslands;
 }
+
+void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& allocator)
+{
+	rapidjson::Value partList(rapidjson::kArrayType);
+	island.AddMember("UID", std::string(getGUID()), allocator);
+	for(auto i : m_partList)
+	{
+		rapidjson::Value partDocObj(rapidjson::kObjectType);
+		//pos
+		auto pos = i->getNode()->getPos();
+		partDocObj.AddMember("UID", std::string(i->getGUID()), allocator);
+		rapidjson::Value posList(rapidjson::kArrayType);
+		posList.PushBack(pos.x, allocator).PushBack(pos.y, allocator).PushBack(pos.z, allocator);
+		partDocObj.AddMember("pos", posList, allocator);
+		
+
+		//rotate
+		auto rotate = i->getNode()->getRotateQ();
+		rapidjson::Value rotateList(rapidjson::kArrayType);
+		rotateList.PushBack(rotate.x, allocator).PushBack(rotate.y, allocator).PushBack(rotate.z, allocator).PushBack(rotate.w, allocator);
+
+		partDocObj.AddMember("rotate", rotateList, allocator);
+
+		//type
+		partDocObj.AddMember("type", i->getType(), allocator);
+
+
+
+		rapidjson::Value attachList(rapidjson::kArrayType);
+		int count = i->getAttachmentCount();
+		for(int k = 0; k < count; k++)
+		{
+			auto attach = i->getAttachment(k);
+			rapidjson::Value attachObj(rapidjson::kObjectType);
+			attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
+			if(attach->m_bearPart)
+			{
+
+				//TODO
+
+				Attachment * other = nullptr;
+				if(attach->m_bearPart->m_a == attach)
+				{
+					other = attach->m_bearPart->m_b;
+				}
+				else if(attach->m_bearPart->m_b == attach)
+				{
+					other = attach->m_bearPart->m_a;
+				}
+				attachObj.AddMember("attachTo", std::string(other->getGUID()), allocator);
+				attachObj.AddMember("Type", std::string("Bearing"), allocator);
+			}
+			attachList.PushBack(attachObj, allocator);
+			
+		}
+		partDocObj.AddMember("attachList", attachList, allocator);
+		partList.PushBack(partDocObj, allocator);
+	}
+	island.AddMember("name", 100.0, allocator);
+	island.AddMember("partList", partList, allocator);
+}
+
+void Island::load(rapidjson::Value& island)
+{
+	setGUID(island["UID"].GetString());
+	if (island.HasMember("partList"))
+	{
+		auto& partList = island["partList"];
+		for (unsigned int i = 0; i < partList.Size(); i++)
+		{
+			auto& item = partList[i];
+			switch(item["type"].GetInt())
+			{
+				case GAME_PART_BLOCK:
+				{
+					auto part = new BlockPart();
+					part->load(item);
+					m_node->addChild(part->getNode());
+					insert(part);
+                }
+				break;
+
+				case GAME_PART_CYLINDER:
+					{
+						auto part = new CylinderPart();
+						part->load(item);
+						m_node->addChild(part->getNode());
+						insert(part);
+					}
+				break;
+
+			}
+		}
+	}
+}
+
 }

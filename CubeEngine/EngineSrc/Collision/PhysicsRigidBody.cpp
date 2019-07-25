@@ -129,4 +129,12 @@ void PhysicsRigidBody::activate()
 {
 	m_rigidBody->activate();
 }
+
+void PhysicsRigidBody::clearAll()
+{
+	btVector3 zeroVector(0,0,0);
+	m_rigidBody->clearForces();
+	m_rigidBody->setLinearVelocity(zeroVector);
+	m_rigidBody->setAngularVelocity(zeroVector);
+}
 }

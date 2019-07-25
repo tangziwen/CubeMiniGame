@@ -110,7 +110,7 @@ Attachment * LiftPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 &
 
 Attachment* LiftPart::getFirstAttachment()
 {
-	return m_attachment[0];
+	return m_attachment[4];
 }
 
 void LiftPart::liftUp(float val)

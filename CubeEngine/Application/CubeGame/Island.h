@@ -4,14 +4,14 @@
 #include "GamePart.h"
 #include <set>
 #include <vector>
-
-
+#include "rapidjson/document.h"
+#include "Base/GuidObj.h"
 namespace tzw
 {
 	class PhysicsCompoundShape;
 	class PhysicsRigidBody;
 
-class Island
+class Island : public GuidObj
 {
 public:
 	std::vector<GamePart * > m_partList;
@@ -29,6 +29,8 @@ public:
 	void addNeighbor(Island * island);
 	void removeNeighbor(Island * island);
 	const std::set<Island*> getNeighBor() const;
+	void dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& allocator);
+	void load(rapidjson::Value &island);
 private:
 	std::set<Island *> m_neighborIslands;
 	PhysicsCompoundShape * m_compound_shape;

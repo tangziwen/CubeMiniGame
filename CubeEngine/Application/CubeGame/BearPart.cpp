@@ -87,5 +87,15 @@ void BearPart::enablePhysics(bool isEnable)
 		}
 	}
 }
+
+void BearPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
+{
+	partData.AddMember("Type", "Bearing", allocator);
+	partData.AddMember("from", std::string(m_b->getGUID()), allocator);
+	if(m_a)
+	{
+		partData.AddMember("to", std::string(m_a->getGUID()), allocator);
+	}
+}
 }
 

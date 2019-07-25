@@ -12,6 +12,9 @@
 #include "2D/GUISystem.h"
 #include "../../EngineSrc/2D/imnodes.h"
 #include "ScriptPy/ScriptPyMgr.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/writer.h"
+#include "rapidjson/document.h"
 
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
@@ -27,7 +30,6 @@ static void onOption(Button * btn)
 
 MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false)
 {
-
 }
 
 void MainMenu::init()
@@ -82,7 +84,8 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginMenu("Game"))
 			{
 				if (ImGui::MenuItem("Start", "CTRL+Z")) { startGame(); }
-				if (ImGui::MenuItem("Load", "CTRL+Z")) {}
+				if (ImGui::MenuItem("write", "CTRL+Z")) {BuildingSystem::shared()->dump();}
+				if (ImGui::MenuItem("Load", "CTRL+Z")) {BuildingSystem::shared()->load();}
 				if (ImGui::MenuItem("Option", "CTRL+Z")) {}
 				if (ImGui::MenuItem("Reload", "CTRL+Z")) {ScriptPyMgr::shared()->reload();}
 				if (ImGui::MenuItem("Exit", "CTRL+Z")) { exit(0); }

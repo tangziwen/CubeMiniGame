@@ -1,5 +1,5 @@
 #pragma once
-
+#include "rapidjson/document.h"
 
 namespace tzw
 {
@@ -19,6 +19,7 @@ public:
 	void updateFlipped();
 	PhysicsHingeConstraint * m_constrain;
 	void enablePhysics(bool isEnable);
+	void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator);
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 

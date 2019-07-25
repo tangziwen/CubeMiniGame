@@ -32,7 +32,7 @@ RAPIDJSON_DIAG_OFF(effc++)
 
 ///////////////////////////////////////////////////////////////////////////////
 // RAPIDJSON_HAS_STDSTRING
-
+#define RAPIDJSON_HAS_STDSTRING 1
 #ifndef RAPIDJSON_HAS_STDSTRING
 #ifdef RAPIDJSON_DOXYGEN_RUNNING
 #define RAPIDJSON_HAS_STDSTRING 1 // force generation of documentation

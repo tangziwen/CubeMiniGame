@@ -159,7 +159,7 @@ namespace tzw
 		attachPosition = islandMatrixInverted.transformVec3(attachPosition);
 		Normal = islandMatrixInverted.transofrmVec4(vec4(Normal, 0.0)).toVec3();
 		vec3 InvertedNormal = Normal * -1;
-		attachPosition = attachPosition + Normal * 0.01;
+		attachPosition = attachPosition + Normal * 0.01f;
 		up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
 		//we use m_attachment[0]
 		auto selfAttah = getFirstAttachment();
@@ -223,14 +223,23 @@ namespace tzw
 		return result;
 	}
 
-	Matrix44 GamePart::attachToFromOtherIslandAlterSelfIsland(Attachment* attach)
+	Matrix44 GamePart::attachToFromOtherIslandAlterSelfIsland(Attachment* attach, Attachment * ownAttachment)
 	{
 		vec3 attachPosition,  Normal,  up;
 		attach->getAttachmentInfoWorld(attachPosition, Normal, up);
 		vec3 InvertedNormal = Normal * -1;
-		attachPosition = attachPosition + Normal * 0.01;
+		attachPosition = attachPosition + Normal * 0.01f;
 		//we use m_attachment[0]
-		auto selfAttah = getFirstAttachment();
+		Attachment * selfAttah = nullptr;
+		if (!ownAttachment) 
+		{
+			selfAttah = getFirstAttachment();  
+		}
+		else 
+		{
+            selfAttah = ownAttachment;
+		}
+		
 		vec3 right = vec3::CrossProduct(InvertedNormal, up);
 		Matrix44 attachOuterWorldMat;
 		auto data = attachOuterWorldMat.data();
@@ -295,8 +304,24 @@ namespace tzw
 		return nullptr;
 	}
 
+	Attachment* GamePart::getBottomAttachment()
+	{
+		return getFirstAttachment();
+	}
+
+	Attachment* GamePart::getAttachment(int index)
+	{
+		return nullptr;
+	}
+
+	int GamePart::getAttachmentCount()
+	{
+		return 0;
+	}
+
 	GamePart::~GamePart()
 	{
+		
 		m_node->removeFromParent();
 		delete m_node;
 	}
@@ -309,5 +334,27 @@ namespace tzw
 	float GamePart::getMass()
 	{
 		return 1.0f;
+	}
+
+	void GamePart::load(rapidjson::Value& partData)
+	{
+		setGUID(partData["UID"].GetString());
+		getNode()->setPos(vec3(partData["pos"][0].GetDouble(),partData["pos"][1].GetDouble(), partData["pos"][2].GetDouble()));
+		auto q = Quaternion(partData["rotate"][0].GetDouble(),partData["rotate"][1].GetDouble(), partData["rotate"][2].GetDouble(), partData["rotate"][3].GetDouble());
+		getNode()->setRotateQ(q);
+		if (partData.HasMember("attachList"))
+		{
+			auto& attachList = partData["attachList"];
+			for(unsigned int i =0; i < attachList.Size(); i ++)
+			{
+				auto &attachData = attachList[i];
+				std::string guid_str = attachData["UID"].GetString();
+				if(guid_str == "fef0344a-4e9b-41dc-82c2-d28c86548b08")
+				{
+					printf("aaaaa");
+				}
+				getAttachment(i)->setGUID(guid_str.c_str());
+			}
+        }
 	}
 }

@@ -17,9 +17,9 @@
 #include "Collision/PhysicsMgr.h"
 #include "Utility/log/Tlog.h"
 #include "BackEnd/RenderBackEnd.h"
-#include "Utility/misc/Tmisc.h"
 #include "Utility/file/Tfile.h"
 #include "rapidjson/document.h"
+#include "Base/uuid4.h"
 
 namespace tzw {
 
@@ -187,7 +187,7 @@ void Engine::onStart()
 	ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();
 	Renderer::shared()->init();
-
+	uuid4_init();
 	//WorkerThreadSystem::shared()->init();
 }
 

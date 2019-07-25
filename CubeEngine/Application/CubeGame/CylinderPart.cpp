@@ -101,6 +101,32 @@ Attachment* CylinderPart::getFirstAttachment()
 	return m_attachment[0];
 }
 
+Attachment * CylinderPart::getBottomAttachment()
+{
+	int theSmallIndex = -1;
+	float smallDist = 99999.0f;
+	for(int i =0; i < getAttachmentCount(); i++) 
+	{
+		vec3 pos, n, up;
+		getAttachmentInfo(i, pos, n, up);
+		if(pos.y < smallDist) 
+		{
+			smallDist = pos.y;
+			theSmallIndex = i;
+		}
+	}
+	return m_attachment[theSmallIndex];
+}
+
+Attachment* CylinderPart::getAttachment(int index)
+{
+	return m_attachment[index];
+}
+
+int CylinderPart::getAttachmentCount()
+{
+	return 2;
+}
 void CylinderPart::cook()
 {
 	auto mat2 = m_node->getTranslationMatrix();

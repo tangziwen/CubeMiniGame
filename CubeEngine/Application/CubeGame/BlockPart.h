@@ -12,6 +12,9 @@ namespace tzw
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
+		Attachment * getBottomAttachment() override;
+		Attachment * getAttachment(int index) override;
+		int getAttachmentCount() override;
 	public:
 		void cook();
 		int getType() override;

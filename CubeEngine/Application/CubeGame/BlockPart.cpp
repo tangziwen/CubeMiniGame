@@ -108,6 +108,34 @@ Attachment* BlockPart::getFirstAttachment()
 	return m_attachment[0];
 }
 
+Attachment* BlockPart::getBottomAttachment()
+{
+	int theSmallIndex = -1;
+	float smallDist = 99999.0f;
+	for(int i =0; i < 6; i++) 
+	{
+		vec3 pos, n, up;
+		getAttachmentInfo(i, pos, n, up);
+		if(pos.y < smallDist) 
+		{
+			smallDist = pos.y;
+			theSmallIndex = i;
+		}
+		
+	}
+	return m_attachment[theSmallIndex];
+}
+
+Attachment* BlockPart::getAttachment(int index)
+{
+	return m_attachment[index];
+}
+
+int BlockPart::getAttachmentCount()
+{
+	return 6;
+}
+
 void BlockPart::cook()
 {
 	auto mat2 = m_node->getTranslationMatrix();

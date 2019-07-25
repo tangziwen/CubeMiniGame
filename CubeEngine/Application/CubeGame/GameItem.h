@@ -1,10 +1,5 @@
 #pragma once
-#include "Engine/EngineDef.h"
-#include "Base/Node.h"
-#include "BlockPart.h"
-#include <set>
-#include "Island.h"
-#include "Math/Ray.h"
+
 
 namespace tzw
 {

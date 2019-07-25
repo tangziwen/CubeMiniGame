@@ -8,6 +8,11 @@
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Chunk.h"
 #include "ControlPart.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
+#include "Utility/file/Tfile.h"
+#include "Base/Log.h"
+#include "Base/GuidMgr.h"
 
 
 namespace tzw
@@ -21,7 +26,7 @@ BuildingSystem::BuildingSystem()
 void BuildingSystem::createNewToeHold(vec3 pos)
 {
 	auto newIsland = new Island(pos);
-	m_IslandList.insert(newIsland);
+	m_IslandList.push_back(newIsland);
 	auto part = new BlockPart();
 	newIsland->m_node->addChild(part->getNode());
 	newIsland->insert(part);
@@ -33,7 +38,7 @@ void BuildingSystem::placePartNextToBearing(Attachment * attach, int type)
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
 	auto island = new Island(pos + n * 0.5);
-	m_IslandList.insert(island);
+	m_IslandList.push_back(island);
 	GamePart * part = nullptr;
 	switch (type)
 	{
@@ -136,7 +141,7 @@ void BuildingSystem::removePartByAttach(Attachment* attach)
 void BuildingSystem::placeGamePart(GamePart* part, vec3 pos)
 {
 	auto newIsland = new Island(pos);
-	m_IslandList.insert(newIsland);
+	m_IslandList.push_back(newIsland);
 	newIsland->m_node->addChild(part->getNode());
 	newIsland->insert(part);
 }
@@ -150,7 +155,7 @@ void BuildingSystem::attachGamePartToBearing(GamePart* part,Attachment * attach)
 	auto island = new Island(pos + n * 0.5);
 	attach->m_parent->m_parent->addNeighbor(island);
 	island->addNeighbor(attach->m_parent->m_parent);
-	m_IslandList.insert(island);
+	m_IslandList.push_back(island);
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
 	part->attachToFromOtherIsland(attach, bearing);
@@ -164,7 +169,7 @@ void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 		vec3 pos, n, up;
 		attach->getAttachmentInfoWorld(pos, n, up);
 		auto newIsland = new Island(pos);
-		m_IslandList.insert(newIsland);
+		m_IslandList.push_back(newIsland);
 		newIsland->m_node->addChild(part->getNode());
 		newIsland->insert(part);
 		part->attachToFromOtherIsland(attach, nullptr);
@@ -176,9 +181,7 @@ void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 		auto island = attach->m_parent->m_parent;
 		island->m_node->addChild(part->getNode());
 		island->insert(part);
-		
 	}
-
 }
 
 void BuildingSystem::terrainForm(vec3 pos, vec3 dir, float dist, float value, float range)
@@ -253,27 +256,28 @@ ControlPart* BuildingSystem::getCurrentControlPart() const
 
 GamePart* BuildingSystem::createPart(int type)
 {
+	GamePart * resultPart = nullptr;
 	switch(type)
 	{
     case 0:
-		return new BlockPart();
+		resultPart = new BlockPart();
 		break;
     case 1:
-		return new CylinderPart();
+		resultPart = new CylinderPart();
 		break;
     case 2:
-		return new LiftPart();
+		resultPart = new LiftPart();
 		break;
     case 3: 
 		{
 			auto control_part =  new ControlPart();
 			m_controlPart = control_part;
-			return m_controlPart;
+			resultPart = m_controlPart;
     	}
 		break;
 	default: ;
 	}
-	return nullptr;
+	return resultPart;
 }
 
 BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
@@ -282,7 +286,7 @@ BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
 	bear->m_b = attachment;
 	attachment->m_bearPart = bear;
 	m_bearList.insert(bear);
-//			create a indicate model
+//create a indicate model
 	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
 	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
 	auto mat = attachment->getAttachmentInfoMat44();
@@ -300,7 +304,7 @@ BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
 Island* BuildingSystem::createIsland(vec3 pos)
 {
 	auto island = new Island(pos);
-	m_IslandList.insert(island);
+	m_IslandList.push_back(island);
 	return island;
 }
 
@@ -370,6 +374,91 @@ ControlPart* BuildingSystem::getControlPart()
 {
 	return m_controlPart;
 }
+
+void BuildingSystem::dump()
+{
+	rapidjson::Document doc;
+	doc.SetObject();
+	rapidjson::Value islandList(rapidjson::kArrayType);
+	for (auto island : m_IslandList)
+	{
+		rapidjson::Value islandObject(rapidjson::kObjectType);
+		island->dump(islandObject, doc.GetAllocator());
+		islandList.PushBack(islandObject, doc.GetAllocator());
+	}
+	doc.AddMember("islandList", islandList, doc.GetAllocator());
+
+	rapidjson::Value constraintList(rapidjson::kArrayType);
+	for(auto bearing :m_bearList)
+	{
+		rapidjson::Value bearingObj(rapidjson::kObjectType);
+		bearing->dump(bearingObj, doc.GetAllocator());
+		constraintList.PushBack(bearingObj, doc.GetAllocator());
+		
+	}
+	doc.AddMember("constraintList", constraintList, doc.GetAllocator());
+	rapidjson::StringBuffer buffer;
+	auto file = fopen("./test_island.txt", "w");
+	char writeBuffer[65536];
+	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+	writer.SetIndent('\t', 1);
+	doc.Accept(writer);
+	fclose(file);
+}
+
+void BuildingSystem::load()
+{
+	
+	rapidjson::Document doc;
+	std::string filePath = "./test_island.txt";
+	auto data = Tfile::shared()->getData(filePath, true);
+	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+	if (doc.HasParseError())
+	{
+		tlog("[error] get json data err! %s %d offset %d\n", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
+		exit(0);
+	}
+	//island
+	if (doc.HasMember("islandList"))
+	{
+		auto& items = doc["islandList"];
+		for (unsigned int i = 0; i < items.Size(); i++)
+		{
+			auto& item = items[i];
+			auto newIsland = new Island(vec3());
+			m_IslandList.push_back(newIsland);
+			newIsland->load(item);
+		}
+	}
+	auto island = m_IslandList[0];
+	replaceToLift(island);
+	//constraint
+	if (doc.HasMember("constraintList"))
+	{
+		auto& items = doc["constraintList"];
+		for (unsigned int i = 0; i < items.Size(); i++)
+		{
+			auto& item = items[i];
+			auto GUID = item["from"].GetString();
+			auto fromAttach = reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
+			placeBearingToAttach(fromAttach);
+			if(item.HasMember("to"))
+			{
+				auto GUID = item["to"].GetString();
+				auto toAttach = reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
+				auto bearing = fromAttach->m_bearPart;
+				fromAttach->m_parent->m_parent->addNeighbor(toAttach->m_parent->m_parent);
+				toAttach->m_parent->m_parent->addNeighbor(fromAttach->m_parent->m_parent);
+				toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(fromAttach, toAttach);
+				bearing->m_a = toAttach;
+			}
+		}
+	}
+
+	printf("aaaaaaa");
+}
+
 
 void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
 {
@@ -507,7 +596,7 @@ void BuildingSystem::dropFromLift()
 
 }
 
-void BuildingSystem::replaceToLift(vec3 pos, vec3 dir, float dist)
+void BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
 {
 	//disable physics and put them back to lift position
 	for (auto island : m_IslandList)
@@ -522,21 +611,43 @@ void BuildingSystem::replaceToLift(vec3 pos, vec3 dir, float dist)
 	//put them back to the lift
 
 	auto island = rayTestIsland(pos, dir, dist);
+	replaceToLift(island);
+}
+
+void BuildingSystem::replaceToLift(Island* island)
+{
 	if(island) 
 	{
 		vec3 attachPos, n, up;
 		auto attach = m_liftPart->getFirstAttachment();
 		attach->getAttachmentInfoWorld(attachPos, n, up);
 
-		island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(attach);
-	}
-	//auto newIsland = new Island(pos);
-	//m_IslandList.insert(newIsland);
-	//newIsland->m_node->addChild(part->getNode());
-	//newIsland->insert(part);
-	//part->attachToFromOtherIsland(attach, nullptr);
-	//liftPart->setEffectedIsland(newIsland);
+		island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(attach, island->m_partList[0]->getBottomAttachment());
 
+		m_liftPart->setEffectedIsland(island);
+
+		for(auto part : island->m_partList) 
+		{
+			int count = part->getAttachmentCount();
+			for(int i = 0; i < count; i++)
+			{
+				auto attach = part->getAttachment(i);
+				if(attach->m_bearPart)
+				{
+					Attachment * other = nullptr;
+					if(attach->m_bearPart->m_a == attach)
+					{
+						other = attach->m_bearPart->m_b;
+					}else
+					{
+						other = attach->m_bearPart->m_a;
+					}
+					other->m_parent->attachToFromOtherIslandAlterSelfIsland(attach, other);
+				}
+			}
+
+		}
+	}
 }
 
 //toDo
