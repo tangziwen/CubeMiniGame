@@ -7,6 +7,7 @@
 #include "Math/AABB.h"
 #include "PhysicsHingeConstraint.h"
 #include "PhysicsCompoundShape.h"
+#include "Physics6DOFSprintConstraint.h"
 #define dSINGLE
 class btRigidBody;
 class btTransform;
@@ -41,7 +42,7 @@ class PhysicsMgr{
 		PhysicsRigidBody * createRigidBodyMesh(Mesh * obj, Matrix44* transform);
 		PhysicsRigidBody * createRigidBodyFromCompund(float mass, Matrix44 * transform, PhysicsCompoundShape * shape);
 		PhysicsHingeConstraint * createHingeConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, const vec3& pivotInA,const vec3& pivotInB, const vec3& axisInA,const vec3& axisInB, bool useReferenceFrameA = false);
-
+		Physics6DofConstraint * create6DOFSprintConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, Matrix44 frameInA, Matrix44 frameInB);
 		void addRigidBody(PhysicsRigidBody * body) const;
 		void removeRigidBody(PhysicsRigidBody * body) const;
 
