@@ -301,6 +301,26 @@ BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
 	return bear;
 }
 
+SpringPart* BuildingSystem::placeSpringToAttach(Attachment* attachment)
+{
+	auto bear = new SpringPart();
+	bear->m_b = attachment;
+	//attachment->m_bearPart = bear;
+	//m_bearList.insert(bear);
+//create a indicate model
+	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
+	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
+	auto mat = attachment->getAttachmentInfoMat44();
+	Quaternion q;
+	q.fromRotationMatrix(&mat);
+	cylinderIndicator->setPos(mat.getTranslation());
+	cylinderIndicator->setRotateQ(q);
+	cylinderIndicator->reCache();
+	bear->m_node = cylinderIndicator;
+	attachment->m_parent->getNode()->addChild(cylinderIndicator);
+	return bear;
+}
+
 Island* BuildingSystem::createIsland(vec3 pos)
 {
 	auto island = new Island(pos);

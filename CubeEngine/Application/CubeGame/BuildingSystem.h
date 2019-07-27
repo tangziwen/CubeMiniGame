@@ -42,7 +42,7 @@ class BuildingSystem
 		ControlPart * getCurrentControlPart() const;
 		GamePart * createPart(int type);
 		BearPart * placeBearingToAttach(Attachment * attach);
-		SpringPart * placeSprintToAttach(Attachment * attach);
+		SpringPart * placeSpringToAttach(Attachment * attach);
 		Island * createIsland(vec3 pos);
 		Attachment * rayTest(vec3 pos, vec3 dir, float dist);
 		Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
