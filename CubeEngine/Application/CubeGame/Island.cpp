@@ -9,6 +9,7 @@
 #include "BlockPart.h"
 #include "BuildingSystem.h"
 #include "CylinderPart.h"
+#include "Base/GuidMgr.h"
 
 namespace tzw {
 Island::Island(vec3 pos)
@@ -19,6 +20,7 @@ Island::Island(vec3 pos)
 	g_GetCurrScene()->addNode(m_node);
 	m_rigid = nullptr;
 	m_compound_shape = nullptr;
+	m_isSpecial = false;
 }
 
 void
@@ -128,6 +130,7 @@ Island::recalculateCompound()
 void
 Island::enablePhysics(bool isEnable)
 {
+	if(m_isSpecial) return;
 	if(isEnable) 
 	{
 		if (!m_rigid) // has been created yet
@@ -205,6 +208,7 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 {
 	rapidjson::Value partList(rapidjson::kArrayType);
 	island.AddMember("UID", std::string(getGUID()), allocator);
+	island.AddMember("IslandGroup", std::string(m_islandGroup), allocator);
 	for(auto i : m_partList)
 	{
 		rapidjson::Value partDocObj(rapidjson::kObjectType);
@@ -235,23 +239,12 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 			auto attach = i->getAttachment(k);
 			rapidjson::Value attachObj(rapidjson::kObjectType);
 			attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
-			if(attach->m_bearPart)
+			std::string UID = "empty";
+            if (attach->m_connected) 
 			{
-
-				//TODO
-
-				Attachment * other = nullptr;
-				if(attach->m_bearPart->m_a == attach)
-				{
-					other = attach->m_bearPart->m_b;
-				}
-				else if(attach->m_bearPart->m_b == attach)
-				{
-					other = attach->m_bearPart->m_a;
-				}
-				attachObj.AddMember("attachTo", std::string(other->getGUID()), allocator);
-				attachObj.AddMember("Type", std::string("Bearing"), allocator);
-			}
+            	UID = attach->m_connected->getGUID();
+            }
+			attachObj.AddMember("to", std::string(UID), allocator);
 			attachList.PushBack(attachObj, allocator);
 			
 		}
@@ -296,4 +289,8 @@ void Island::load(rapidjson::Value& island)
 	}
 }
 
+void Island::genIslandGroup()
+{
+	m_islandGroup = GUIDMgr::shared()->genGUID();
+}
 }

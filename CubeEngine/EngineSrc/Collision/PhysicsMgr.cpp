@@ -130,7 +130,6 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 			m_dynamicsWorld->stepSimulation(deltaTime);
 			syncPhysicsToGraphics();
 		}
-		
 	}
 
 
@@ -332,7 +331,7 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 		btFrameInA.setFromOpenGLMatrix(frameInA.data());
 		btTransform btFrameInB;
 		btFrameInB.setFromOpenGLMatrix(frameInB.data());
-		auto bt6DOFSpring = new btGeneric6DofSpringConstraint(rigA, rigB, btFrameInA, btFrameInB, true);
+		auto bt6DOFSpring = new btGeneric6DofSpring2Constraint(rigA, rigB, btFrameInA, btFrameInB);
 		auto spring6DOF = new Physics6DofConstraint(bt6DOFSpring);
 		m_dynamicsWorld->addConstraint(bt6DOFSpring);
 		return spring6DOF;
@@ -349,12 +348,12 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 		m_dynamicsWorld->removeRigidBody(body->rigidBody());
 	}
 
-	void PhysicsMgr::addConstraint(PhysicsHingeConstraint* constraint)
+	void PhysicsMgr::addConstraint(PhysicsConstraint* constraint)
 	{
 		m_dynamicsWorld->addConstraint(constraint->constraint());
 	}
 
-	void PhysicsMgr::removeConstraint(PhysicsHingeConstraint* constraint)
+	void PhysicsMgr::removeConstraint(PhysicsConstraint* constraint)
 	{
 		m_dynamicsWorld->removeConstraint(constraint->constraint());
 	}

@@ -1,6 +1,7 @@
 #pragma once
 #include "Engine/EngineDef.h"
 #include "Base/Node.h"
+#include "GameConstraint.h"
 #include "BlockPart.h"
 #include <set>
 #include "Island.h"
@@ -20,9 +21,6 @@ class BuildingSystem
 	public:
 		BuildingSystem();
 		void createNewToeHold(vec3 pos);
-		void placePartNextToBearing(Attachment * attach, int type);
-		void placePartByHit(vec3 pos, vec3 dir, float dist, int type);
-		void placeBearingByHit(vec3 pos, vec3 dir, float dist);
 		void flipBearingByHit(vec3 pos, vec3 dir, float dist);
 		void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 		void dropFromLift();
@@ -32,7 +30,7 @@ class BuildingSystem
 		void tmpMoveWheel(bool isOpen);
 		void removePartByAttach(Attachment * attach);
 		void placeGamePart(GamePart * part, vec3 pos);
-		void attachGamePartToBearing(GamePart * part, Attachment * attach);
+		void attachGamePartToConstraint(GamePart * part, Attachment * attach);
 		void attachGamePartNormal(GamePart * part, Attachment * attach);
 		void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
 		vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
@@ -48,6 +46,7 @@ class BuildingSystem
 		Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
 		LiftPart * getLift() const;
 		ControlPart * getControlPart();
+		void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
 		void dump();
 		void load();
 	private:
@@ -55,7 +54,7 @@ class BuildingSystem
 		LiftPart * m_liftPart;
 		unsigned int m_baseIndex;
 		std::vector<Island *> m_IslandList;
-		std::set<BearPart* > m_bearList;
+		std::set<GameConstraint* > m_bearList;
 		std::list<PhysicsHingeConstraint *> m_constrainList;
 	};
 

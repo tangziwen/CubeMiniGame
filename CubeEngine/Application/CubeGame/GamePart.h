@@ -4,6 +4,7 @@
 #include "Math/Ray.h"
 #include "Base/GuidObj.h"
 #include "rapidjson/document.h"
+#include "Attachment.h"
 
 #define GAME_PART_BLOCK 0
 #define GAME_PART_CYLINDER 1
@@ -16,19 +17,7 @@ namespace tzw
 	class GamePart;
 	class BearPart;
 	class Island;
-	struct Attachment : public GuidObj
-	{
-		vec3 m_pos;
-		vec3 m_normal;
-		vec3 m_up;
-		Attachment(vec3 thePos, vec3 n, vec3 up, GamePart * parent);
-		Attachment();
-		void getAttachmentInfo(vec3 & pos, vec3 & N, vec3 & up);
-		void getAttachmentInfoWorld(vec3 & pos, vec3 & N, vec3 & up);
-		Matrix44 getAttachmentInfoMat44();
-		GamePart * m_parent;
-		BearPart * m_bearPart;
-	};
+
 	class GamePart : public GuidObj 
 	{
 	public:
@@ -37,17 +26,21 @@ namespace tzw
 		virtual PhysicsShape * getShape();
 		virtual Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up);
 		virtual void attachTo(Attachment * attach);
-		virtual Matrix44 attachToFromOtherIsland(Attachment * attach, BearPart * bearing);
+		virtual Matrix44 attachToFromOtherIsland(Attachment * attach);
 		virtual Matrix44 attachToFromOtherIslandAlterSelfIsland(Attachment * attach, Attachment * ownAttachment = nullptr);
 		virtual Attachment * getFirstAttachment();
 		virtual Attachment * getBottomAttachment();
+		virtual Attachment * getTopAttachment();
 		virtual Attachment * getAttachment(int index);
 		virtual int getAttachmentCount();
+		virtual Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Island * m_parent;
 		virtual ~GamePart();
 		virtual int getType();
 		virtual float getMass();
 		virtual void load(rapidjson::Value& partData);
+		virtual bool isConstraint();
+		virtual vec3 getWorldPos();
 	protected:
 		PhysicsShape * m_shape;
 		Drawable3D * m_node;

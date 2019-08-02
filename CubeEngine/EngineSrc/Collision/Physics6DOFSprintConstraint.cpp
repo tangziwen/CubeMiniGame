@@ -1,22 +1,22 @@
 #include "Physics6DOFSprintConstraint.h"
-#include "BulletDynamics/ConstraintSolver/btGeneric6DofSpringConstraint.h"
+#include "BulletDynamics/ConstraintSolver/btGeneric6DofSpring2Constraint.h"
 #include "Math/vec3.h"
 
 namespace tzw
 {
-	Physics6DofConstraint::Physics6DofConstraint(btGeneric6DofSpringConstraint* constraint)
+	Physics6DofConstraint::Physics6DofConstraint(btGeneric6DofSpring2Constraint* constraint)
 	{
 		m_constraint = constraint;
 	}
 
-	btGeneric6DofSpringConstraint* Physics6DofConstraint::constraint() const
+	btTypedConstraint* Physics6DofConstraint::constraint() const
 	{
 		return m_constraint;
 	}
 
-	void Physics6DofConstraint::setConstraint(btGeneric6DofSpringConstraint* constraint)
+	void Physics6DofConstraint::setConstraint(btTypedConstraint* constraint)
 	{
-		m_constraint = constraint;
+		m_constraint = static_cast<btGeneric6DofSpring2Constraint *>(constraint);
 	}
 
 	void Physics6DofConstraint::setLinearUpperLimit(vec3 linearHigh)

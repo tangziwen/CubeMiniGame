@@ -1,4 +1,5 @@
 #include "GuidMgr.h"
+#include "uuid4.h"
 namespace tzw
 {
 	TZW_SINGLETON_IMPL(GUIDMgr)
@@ -15,9 +16,7 @@ namespace tzw
 
 	void GUIDMgr::update(std::string newGUID, std::string oldGUID)
 	{
-		if(newGUID.compare("64193964-4e4f-4bc3-9906-3939eeaed724") ==0) {
-			printf("aaaaaaaa");
-			}
+
 		auto ptr = get(oldGUID);
 		if(ptr)
 		{
@@ -38,6 +37,13 @@ namespace tzw
 		{
 			m_map.erase(iter);
 		}
+	}
+
+	std::string GUIDMgr::genGUID()
+	{
+		char uuid[UUID4_LEN];
+		uuid4_generate(uuid);
+		return uuid;
 	}
 
 	GUIDMgr::GUIDMgr()

@@ -60,7 +60,7 @@ namespace tzw
 		.addStaticFunction ("shared", &BuildingSystem::shared)
 		BIND_FUNC(BuildingSystem, placeGamePart)
 		BIND_FUNC(BuildingSystem, attachGamePartNormal)
-		BIND_FUNC(BuildingSystem, attachGamePartToBearing)
+		BIND_FUNC(BuildingSystem, attachGamePartToConstraint)
 		BIND_FUNC(BuildingSystem, placeBearingToAttach)
 		BIND_FUNC(BuildingSystem, createPart)
 		BIND_FUNC(BuildingSystem, hitTerrain)
@@ -102,7 +102,6 @@ namespace tzw
 		BIND_PROP(Attachment, m_pos)
 		BIND_PROP(Attachment, m_normal)
 		BIND_PROP(Attachment, m_up)
-		BIND_PROP(Attachment, m_bearPart)
 		BIND_END_CLASS
 
 		//BearPart

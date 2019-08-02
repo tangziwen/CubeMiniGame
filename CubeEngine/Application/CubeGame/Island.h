@@ -31,6 +31,9 @@ public:
 	const std::set<Island*> getNeighBor() const;
 	void dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& allocator);
 	void load(rapidjson::Value &island);
+	bool m_isSpecial;
+	std::string m_islandGroup;
+	void genIslandGroup();
 private:
 	std::set<Island *> m_neighborIslands;
 	PhysicsCompoundShape * m_compound_shape;

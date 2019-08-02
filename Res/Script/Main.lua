@@ -136,11 +136,7 @@ function placeItem(item)
 		if result == nil then
 			BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
-			if result.m_bearPart == nil then
-				BuildingSystem.shared():attachGamePartNormal(aBlock, result)
-			else
-				BuildingSystem.shared():attachGamePartToBearing(aBlock, result)
-			end
+			BuildingSystem.shared():attachGamePartNormal(aBlock, result)
 		end
 	else
 		if result then

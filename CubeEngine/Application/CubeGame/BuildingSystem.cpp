@@ -32,98 +32,13 @@ void BuildingSystem::createNewToeHold(vec3 pos)
 	newIsland->insert(part);
 }
 
-void BuildingSystem::placePartNextToBearing(Attachment * attach, int type)
-{
-	auto bearing = attach->m_bearPart;
-	vec3 pos, n, up;
-	attach->getAttachmentInfoWorld(pos, n, up);
-	auto island = new Island(pos + n * 0.5);
-	m_IslandList.push_back(island);
-	GamePart * part = nullptr;
-	switch (type)
-	{
-	case 0:
-		part = new BlockPart();
-		break;
-	case 1:
-		part = new CylinderPart();
-		break;
-	}
-	island->m_node->addChild(part->getNode());
-	island->insert(part);
-	part->attachToFromOtherIsland(attach, bearing);
-}
-
-void BuildingSystem::placePartByHit(vec3 pos, vec3 dir, float dist, int type)
-{
-	std::vector<GamePart *> tmp;
-	//search island
-	for (auto island : m_IslandList)
-	{
-		
-		for (auto iter : island->m_partList)
-		{
-			tmp.push_back(iter);
-		}
-	}
-	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
-	{
-		float distl = left->getNode()->getWorldPos().distance(pos);
-		float distr = right->getNode()->getWorldPos().distance(pos);
-		return distl < distr;
-	}
-	);
-		for (auto iter : tmp)
-		{
-			auto island = iter->m_parent;
-			auto node = iter->getNode();
-			auto invertedMat = node->getTransform().inverted();
-			vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
-			vec4 originInLocal = invertedMat * vec4(pos, 1.0);
-
-			auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
-			RayAABBSide side;
-			vec3 hitPoint;
-			auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
-			GamePart * newPart = nullptr;
-			if (isHit)
-			{
-				if(type == 0)
-				{
-					newPart = new BlockPart();
-				}
-				else if (type == 1)
-				{
-					newPart = new CylinderPart();
-				}
-				vec3 attachPos, attachNormal, attachUp;
-				auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
-				if(attach)
-				{
-					if(!attach->m_bearPart)
-					{
-						newPart->attachTo(attach);
-					}
-					else // have some bearing?
-					{
-						placePartNextToBearing(attach, type);
-						//todo
-					}
-				}
-			return;
-			}
-		}
-		//any island intersect can't find, so we need create a new toehold
-		createNewToeHold(pos + dir * 5.0f);
-}
-
 void BuildingSystem::removePartByAttach(Attachment* attach)
 {
 	if (attach)
 	{
 		auto part = attach->m_parent;
 		auto island = part->m_parent;
-		if (!attach->m_bearPart)
+		if (!attach->m_parent->isConstraint())
 		{
 			part->getNode()->removeFromParent();
 			island->remove(part);
@@ -131,9 +46,9 @@ void BuildingSystem::removePartByAttach(Attachment* attach)
 		}
 		else // have some bearing?
 		{
-			attach->m_bearPart->m_node->removeFromParent();
-			m_bearList.erase(m_bearList.find(attach->m_bearPart));
-			attach->m_bearPart = nullptr;
+			auto bearing = static_cast<GameConstraint * > (attach->m_parent);
+			bearing->getNode()->removeFromParent();
+			m_bearList.erase(m_bearList.find(bearing));
 		}
 	}
 }
@@ -146,19 +61,20 @@ void BuildingSystem::placeGamePart(GamePart* part, vec3 pos)
 	newIsland->insert(part);
 }
 
-void BuildingSystem::attachGamePartToBearing(GamePart* part,Attachment * attach)
+void BuildingSystem::attachGamePartToConstraint(GamePart* part,Attachment * attach)
 {
-	auto bearing = attach->m_bearPart;
 	vec3 pos, n, up;
 	attach->getAttachmentInfoWorld(pos, n, up);
 	
 	auto island = new Island(pos + n * 0.5);
-	attach->m_parent->m_parent->addNeighbor(island);
-	island->addNeighbor(attach->m_parent->m_parent);
+	auto constraint = static_cast<GameConstraint *>(attach->m_parent);
+	constraint->m_b->m_parent->m_parent->addNeighbor(island);
+	island->addNeighbor(constraint->m_b->m_parent->m_parent);
 	m_IslandList.push_back(island);
 	island->m_node->addChild(part->getNode());
 	island->insert(part);
-	part->attachToFromOtherIsland(attach, bearing);
+	island->m_islandGroup = attach->m_parent->m_parent->m_islandGroup;
+	part->attachToFromOtherIsland(attach);
 }
 
 void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
@@ -172,15 +88,22 @@ void BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 		m_IslandList.push_back(newIsland);
 		newIsland->m_node->addChild(part->getNode());
 		newIsland->insert(part);
-		part->attachToFromOtherIsland(attach, nullptr);
-		liftPart->setEffectedIsland(newIsland);
+		part->attachToFromOtherIsland(attach);
+		newIsland->genIslandGroup();
+		liftPart->setEffectedIsland(newIsland->m_islandGroup);
 		
 	} else
 	{
-		part->attachTo(attach);
-		auto island = attach->m_parent->m_parent;
-		island->m_node->addChild(part->getNode());
-		island->insert(part);
+		if(!attach->m_parent->isConstraint())
+		{
+			part->attachTo(attach);
+			auto island = attach->m_parent->m_parent;
+			island->m_node->addChild(part->getNode());
+			island->insert(part);
+		}else
+		{
+			attachGamePartToConstraint(part, attach);
+		}
 	}
 }
 
@@ -282,11 +205,18 @@ GamePart* BuildingSystem::createPart(int type)
 
 BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
 {
+	vec3 pos, n, up;
+	attachment->getAttachmentInfoWorld(pos, n, up);
+	
+	auto island = new Island(pos + n * 0.5);
+	auto constraint = static_cast<GameConstraint *>(attachment->m_parent);
+	m_IslandList.push_back(island);
+	island->m_isSpecial = true;
 	auto bear = new BearPart();
 	bear->m_b = attachment;
-	attachment->m_bearPart = bear;
 	m_bearList.insert(bear);
-//create a indicate model
+	island->insert(bear);
+	//create a indicate model
 	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
 	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
 	auto mat = attachment->getAttachmentInfoMat44();
@@ -295,20 +225,30 @@ BearPart * BuildingSystem::placeBearingToAttach(Attachment* attachment)
 	cylinderIndicator->setPos(mat.getTranslation());
 	cylinderIndicator->setRotateQ(q);
 	cylinderIndicator->reCache();
-	bear->m_node = cylinderIndicator;
+	bear->setNode(cylinderIndicator);
 	bear->updateFlipped();
-	attachment->m_parent->getNode()->addChild(cylinderIndicator);
+	bear->attachToFromOtherIslandAlterSelfIsland(attachment, bear->getFirstAttachment());
+	island->m_node->addChild(cylinderIndicator);
+	island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 	return bear;
 }
 
 SpringPart* BuildingSystem::placeSpringToAttach(Attachment* attachment)
 {
+
+	vec3 pos, n, up;
+	attachment->getAttachmentInfoWorld(pos, n, up);
+	
+	auto island = new Island(pos + n * 0.5);
+	auto constraint = static_cast<GameConstraint *>(attachment->m_parent);
+	m_IslandList.push_back(island);
+	island->m_isSpecial = true;
 	auto bear = new SpringPart();
 	bear->m_b = attachment;
-	//attachment->m_bearPart = bear;
-	//m_bearList.insert(bear);
-//create a indicate model
-	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
+	m_bearList.insert(bear);
+	island->insert(bear);
+	//create a indicate model
+	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.5);
 	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
 	auto mat = attachment->getAttachmentInfoMat44();
 	Quaternion q;
@@ -316,8 +256,10 @@ SpringPart* BuildingSystem::placeSpringToAttach(Attachment* attachment)
 	cylinderIndicator->setPos(mat.getTranslation());
 	cylinderIndicator->setRotateQ(q);
 	cylinderIndicator->reCache();
-	bear->m_node = cylinderIndicator;
-	attachment->m_parent->getNode()->addChild(cylinderIndicator);
+	bear->setNode(cylinderIndicator);
+	bear->attachToFromOtherIslandAlterSelfIsland(attachment, bear->getFirstAttachment());
+	island->m_node->addChild(cylinderIndicator);
+	island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 	return bear;
 }
 
@@ -331,6 +273,10 @@ Island* BuildingSystem::createIsland(vec3 pos)
 Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 {
 	std::vector<GamePart *> tmp;
+	for (auto constraint : m_bearList) 
+	{
+		tmp.push_back(constraint);
+	}
 	//search island
 	for (auto island : m_IslandList)
 	{
@@ -344,8 +290,8 @@ Attachment* BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 	tmp.push_back(m_liftPart);
 	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
 	{
-		float distl = left->getNode()->getWorldPos().distance(pos);
-		float distr = right->getNode()->getWorldPos().distance(pos);
+		float distl = left->getWorldPos().distance(pos);
+		float distr = right->getWorldPos().distance(pos);
 		return distl < distr;
 	}
 	);
@@ -395,6 +341,14 @@ ControlPart* BuildingSystem::getControlPart()
 	return m_controlPart;
 }
 
+void BuildingSystem::getIslandsByGroup(std::string islandGroup, std::vector<Island*>& groupList)
+{
+	for (auto island : m_IslandList)
+	{
+		if(island->m_islandGroup == islandGroup) groupList.push_back(island);
+	}
+}
+
 void BuildingSystem::dump()
 {
 	rapidjson::Document doc;
@@ -402,6 +356,7 @@ void BuildingSystem::dump()
 	rapidjson::Value islandList(rapidjson::kArrayType);
 	for (auto island : m_IslandList)
 	{
+		if(island->m_isSpecial) continue;
 		rapidjson::Value islandObject(rapidjson::kObjectType);
 		island->dump(islandObject, doc.GetAllocator());
 		islandList.PushBack(islandObject, doc.GetAllocator());
@@ -409,10 +364,10 @@ void BuildingSystem::dump()
 	doc.AddMember("islandList", islandList, doc.GetAllocator());
 
 	rapidjson::Value constraintList(rapidjson::kArrayType);
-	for(auto bearing :m_bearList)
+	for(auto constraint :m_bearList)
 	{
 		rapidjson::Value bearingObj(rapidjson::kObjectType);
-		bearing->dump(bearingObj, doc.GetAllocator());
+		constraint->dump(bearingObj, doc.GetAllocator());
 		constraintList.PushBack(bearingObj, doc.GetAllocator());
 		
 	}
@@ -448,6 +403,7 @@ void BuildingSystem::load()
 			auto& item = items[i];
 			auto newIsland = new Island(vec3());
 			m_IslandList.push_back(newIsland);
+			newIsland->m_islandGroup = item["IslandGroup"].GetString();
 			newIsland->load(item);
 		}
 	}
@@ -460,77 +416,42 @@ void BuildingSystem::load()
 		for (unsigned int i = 0; i < items.Size(); i++)
 		{
 			auto& item = items[i];
+			std::string constraintType =  item["Type"].GetString();
 			auto GUID = item["from"].GetString();
 			auto fromAttach = reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
-			placeBearingToAttach(fromAttach);
+			GameConstraint * constraint = nullptr;
+			if(constraintType.compare("Spring") == 0)
+			{
+				constraint = placeSpringToAttach(fromAttach);
+			}
+			else if(constraintType.compare("Bearing") == 0) 
+			{
+				constraint = placeBearingToAttach(fromAttach);
+            }
+			//update constraint's attachment GUID
+			auto & attachList = item["attachList"];
+            for (unsigned int j = 0; j < attachList.Size(); j++) 
+			{
+				auto& constraintAttach = attachList[j];
+            	constraint->getAttachment(j)->setGUID(constraintAttach["UID"].GetString());
+            }
 			if(item.HasMember("to"))
 			{
 				auto GUID = item["to"].GetString();
 				auto toAttach = reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
-				auto bearing = fromAttach->m_bearPart;
-				fromAttach->m_parent->m_parent->addNeighbor(toAttach->m_parent->m_parent);
-				toAttach->m_parent->m_parent->addNeighbor(fromAttach->m_parent->m_parent);
-				toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(fromAttach, toAttach);
-				bearing->m_a = toAttach;
+				auto constraintAttach_target = reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(toAttach->m_connectedGUID));
+				toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(constraintAttach_target, toAttach);
+				constraint->m_a = toAttach;
+				//auto bearing = fromAttach->m_bearPart;
+				//fromAttach->m_parent->m_parent->addNeighbor(toAttach->m_parent->m_parent);
+				//toAttach->m_parent->m_parent->addNeighbor(fromAttach->m_parent->m_parent);
+				//toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(fromAttach, toAttach);
+				
 			}
 		}
 	}
 
 	printf("aaaaaaa");
-}
-
-
-void BuildingSystem::placeBearingByHit(vec3 pos, vec3 dir, float dist)
-{
-	std::vector<GamePart *> tmp;
-	for (auto island : m_IslandList)
-	{
-		
-		for (auto iter : island->m_partList)
-		{
-			tmp.push_back(iter);
-		}
-	}
-	std::sort(tmp.begin(), tmp.end(), [&](GamePart * left, GamePart * right)
-	{
-		float distl = left->getNode()->getWorldPos().distance(pos);
-		float distr = right->getNode()->getWorldPos().distance(pos);
-		return distl < distr;
-	}
-	);
-	for (auto iter : tmp)
-	{
-		auto node = iter->getNode();
-		auto invertedMat = node->getTransform().inverted();
-		auto dirInLocal = invertedMat * vec4(dir, 0.0);
-		auto originInLocal = invertedMat * vec4(pos, 1.0);
-		const auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
-		vec3 a,b,c;
-		auto attachment = iter->findProperAttachPoint(r, a, b, c);
-		if (attachment && !attachment->m_bearPart)
-		{
-			//connect a BearPart
-			auto bear = new BearPart();
-			bear->m_b = attachment;
-			attachment->m_bearPart = bear;
-			m_bearList.insert(bear);
-
-//			create a indicate model
-			auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
-			cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
-			auto mat = attachment->getAttachmentInfoMat44();
-			Quaternion q;
-			q.fromRotationMatrix(&mat);
-			cylinderIndicator->setPos(mat.getTranslation());
-			cylinderIndicator->setRotateQ(q);
-			cylinderIndicator->reCache();
-			bear->m_node = cylinderIndicator;
-			bear->updateFlipped();
-			iter->getNode()->addChild(cylinderIndicator);
-
-			break;
-		}
-	}
 }
 
 void BuildingSystem::flipBearingByHit(vec3 pos, vec3 dir, float dist)
@@ -572,10 +493,11 @@ void BuildingSystem::flipBearingByHit(vec3 pos, vec3 dir, float dist)
 			auto attach = iter->findProperAttachPoint(r, attachPos, attachNormal,attachUp);
 			if(attach)
 			{
-				if(attach->m_bearPart)
+				if(attach->m_parent->isConstraint())
 				{
-					attach->m_bearPart->m_isFlipped = ! attach->m_bearPart->m_isFlipped;
-					attach->m_bearPart->updateFlipped();
+					auto bearPart = static_cast<BearPart *> (attach->m_parent);
+					bearPart->m_isFlipped = ! bearPart->m_isFlipped;
+					bearPart->updateFlipped();
 				}
 			}
 			return;
@@ -585,14 +507,6 @@ void BuildingSystem::flipBearingByHit(vec3 pos, vec3 dir, float dist)
 
 void BuildingSystem::placeItem(GameItem * item, vec3 pos, vec3 dir, float dist)
 {
-	if (item->m_type >= 0)
-	{
-		placePartByHit(pos, dir, dist, item->m_type);
-	}
-	else
-	{
-		placeBearingByHit(pos, dir, dist);
-	}
 }
 
 
@@ -644,7 +558,7 @@ void BuildingSystem::replaceToLift(Island* island)
 
 		island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(attach, island->m_partList[0]->getBottomAttachment());
 
-		m_liftPart->setEffectedIsland(island);
+		m_liftPart->setEffectedIsland(island->m_islandGroup);
 
 		for(auto part : island->m_partList) 
 		{
@@ -652,15 +566,16 @@ void BuildingSystem::replaceToLift(Island* island)
 			for(int i = 0; i < count; i++)
 			{
 				auto attach = part->getAttachment(i);
-				if(attach->m_bearPart)
+				if(attach->m_parent->isConstraint())
 				{
 					Attachment * other = nullptr;
-					if(attach->m_bearPart->m_a == attach)
+					auto constraint = static_cast<GameConstraint * >(attach->m_parent);
+					if(constraint->m_a == attach)
 					{
-						other = attach->m_bearPart->m_b;
+						other = constraint->m_b;
 					}else
 					{
-						other = attach->m_bearPart->m_a;
+						other = constraint->m_a;
 					}
 					other->m_parent->attachToFromOtherIslandAlterSelfIsland(attach, other);
 				}

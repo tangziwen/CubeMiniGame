@@ -4,6 +4,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
 #include <algorithm>
+#include "BuildingSystem.h"
 
 namespace tzw
 {
@@ -17,7 +18,7 @@ LiftPart::LiftPart()
 	m_shape = new PhysicsShape();
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
-	m_effectedIsland = nullptr;
+	m_effectedIslandGroup = "";
 	for(int i = 0; i < 6; i++)
 	{
 		m_bearPart[i] = nullptr;
@@ -115,28 +116,28 @@ Attachment* LiftPart::getFirstAttachment()
 
 void LiftPart::liftUp(float val)
 {
-	if (m_effectedIsland) 
+	if (m_effectedIslandGroup.size()> 0) 
 	{
 		m_liftHeight += val;
 		m_liftHeight = std::min(m_liftHeight, 10.0f);
-		auto oldPos = m_effectedIsland->m_node->getPos();
-		oldPos.y += val;
-		m_effectedIsland->m_node->setPos(oldPos);
-		for (auto island: m_effectedIsland->getNeighBor()) 
+
+		std::vector<Island *> groupList;
+		BuildingSystem::shared()->getIslandsByGroup(m_effectedIslandGroup, groupList);
+        for (auto island : groupList) 
 		{
-			oldPos = island->m_node->getPos();
+			auto oldPos = island->m_node->getPos();
 			oldPos.y += val;
 			island->m_node->setPos(oldPos);
-		}
-		oldPos = m_node->getPos();
+        }
+		vec3 oldPos = m_node->getPos();
 		oldPos.y += val;
 		m_node->setPos(oldPos);
 	}
 }
 
-void LiftPart::setEffectedIsland(Island* island)
+void LiftPart::setEffectedIsland(std::string islandGroup)
 {
-	m_effectedIsland = island;
+	m_effectedIslandGroup = islandGroup;
 }
 
 void LiftPart::cook()

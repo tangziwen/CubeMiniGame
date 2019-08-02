@@ -21,6 +21,10 @@ BearPart::BearPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	auto node = new BearingPartNode(this);
 	nodeEditor->addNode(node);
+	float blockSize = 0.10;
+	//forward backward
+	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
+	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
 }
 
 void BearPart::updateFlipped()
@@ -36,6 +40,12 @@ void BearPart::updateFlipped()
 		cylinder->setTopBottomTex(TextureMgr::shared()->getByPath("Texture/bear.png"));
 	}
 }
+
+int BearPart::getAttachmentCount()
+{
+	return 2;
+}
+
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
@@ -96,6 +106,27 @@ void BearPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorTy
 	{
 		partData.AddMember("to", std::string(m_a->getGUID()), allocator);
 	}
+	rapidjson::Value attachList(rapidjson::kArrayType);
+	int count = getAttachmentCount();
+	for(int k = 0; k < count; k++)
+	{
+		auto attach = getAttachment(k);
+		rapidjson::Value attachObj(rapidjson::kObjectType);
+		attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
+		attachList.PushBack(attachObj, allocator);
+		
+	}
+	partData.AddMember("attachList", attachList, allocator);
+}
+
+Attachment* BearPart::getFirstAttachment()
+{
+	return m_attachment[0];
+}
+
+Attachment* BearPart::getAttachment(int index)
+{
+	return m_attachment[index];
 }
 }
 

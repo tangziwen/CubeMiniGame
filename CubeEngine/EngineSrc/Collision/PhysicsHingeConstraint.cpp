@@ -8,14 +8,14 @@ namespace tzw
 	{
 	}
 
-btHingeConstraint* PhysicsHingeConstraint::constraint() const
+btTypedConstraint* PhysicsHingeConstraint::constraint() const
 {
 	return m_constraint;
 }
 
-void PhysicsHingeConstraint::setConstraint(btHingeConstraint* constraint)
+void PhysicsHingeConstraint::setConstraint(btTypedConstraint* constraint)
 {
-	m_constraint = constraint;
+	m_constraint = static_cast<btHingeConstraint *>(constraint);
 }
 
 void PhysicsHingeConstraint::enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse)

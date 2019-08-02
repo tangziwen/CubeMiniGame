@@ -1,16 +1,18 @@
 #pragma once
-class btGeneric6DofSpringConstraint;
+#include "PhysicsConstraint.h"
+class btGeneric6DofSpring2Constraint;
+class btTypedConstraint;
 namespace tzw
 {
 	class vec3;
 
-	class Physics6DofConstraint
+	class Physics6DofConstraint : public PhysicsConstraint
 	{
 	public:
 
-		explicit Physics6DofConstraint(btGeneric6DofSpringConstraint* constraint);
-		btGeneric6DofSpringConstraint* constraint() const;
-		void setConstraint(btGeneric6DofSpringConstraint* constraint);
+		explicit Physics6DofConstraint(btGeneric6DofSpring2Constraint* constraint);
+		btTypedConstraint* constraint() const;
+		void setConstraint(btTypedConstraint* constraint);
 		void setLinearUpperLimit(vec3 linearHigh);
 		void setLinearLowerLimit(vec3 linearLow);
 
@@ -21,6 +23,6 @@ namespace tzw
 		void setDamping(int index, float damping);
 		void setEquilibriumPoint();
 	protected:
-		btGeneric6DofSpringConstraint * m_constraint;
+		btGeneric6DofSpring2Constraint * m_constraint;
 	};
 }

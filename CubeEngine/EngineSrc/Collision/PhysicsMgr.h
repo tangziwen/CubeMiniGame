@@ -46,8 +46,8 @@ class PhysicsMgr{
 		void addRigidBody(PhysicsRigidBody * body) const;
 		void removeRigidBody(PhysicsRigidBody * body) const;
 
-		void addConstraint(PhysicsHingeConstraint * constraint);
-		void removeConstraint(PhysicsHingeConstraint * constraint);
+		void addConstraint(PhysicsConstraint * constraint);
+		void removeConstraint(PhysicsConstraint * constraint);
 	private:
 		btBoxShape* createBoxShape(const btVector3& halfExtents);
 		btRigidBody* createRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color);

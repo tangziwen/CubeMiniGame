@@ -143,6 +143,9 @@ namespace tzw
 			break;
 		case TZW_KEY_P:
 			{
+				auto attach = BuildingSystem::shared()->rayTest(getPos(), m_camera->getForward(), 15);
+				BuildingSystem::shared()->placeSpringToAttach(attach);
+				break;
 				float blockSize = 0.5;
 				auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
 				boxA->setPos(getPos() +m_camera->getForward() * 2.0 + vec3(0, 5, 0));

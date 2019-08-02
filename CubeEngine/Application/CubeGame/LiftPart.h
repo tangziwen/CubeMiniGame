@@ -13,13 +13,13 @@ namespace tzw
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
 		void liftUp(float val);
-		void setEffectedIsland(Island * island);
+		void setEffectedIsland(std::string islandGroup);
 	public:
 		float m_liftHeight;
 		void cook();
 		int getType() override;
 		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
-		Island * m_effectedIsland;
+		std::string m_effectedIslandGroup;
 	};
 }

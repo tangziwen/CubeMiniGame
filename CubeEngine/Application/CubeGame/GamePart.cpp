@@ -5,69 +5,6 @@
 namespace tzw
 {
 
-	Attachment::Attachment(vec3 thePos, vec3 n, vec3 up, GamePart * parent)
-	{
-		m_pos = thePos;
-		m_normal = n;
-		m_up = up;
-		m_bearPart = nullptr;
-		m_parent = parent;
-	}
-
-	Attachment::Attachment()
-	{
-		m_bearPart = nullptr;
-	}
-
-	void Attachment::getAttachmentInfo(vec3 & pos, vec3 & N, vec3 & up)
-	{
-		auto mat = m_parent->getNode()->getLocalTransform();
-		vec4 a_pos = vec4(m_pos, 1.0);
-		vec4 a_n = vec4(m_normal, 0.0);
-		vec4 a_up = vec4(m_up, 0.0);
-		pos = mat.transofrmVec4(a_pos).toVec3();
-		N = mat.transofrmVec4(a_n).toVec3();
-		up = mat.transofrmVec4(a_up).toVec3();
-	}
-
-	void Attachment::getAttachmentInfoWorld(vec3 & pos, vec3 & N, vec3 & up)
-	{
-		auto mat = m_parent->getNode()->getTransform();
-		vec4 a_pos = vec4(m_pos, 1.0);
-		vec4 a_n = vec4(m_normal, 0.0);
-		vec4 a_up = vec4(m_up, 0.0);
-		pos = mat.transofrmVec4(a_pos).toVec3();
-		N = mat.transofrmVec4(a_n).toVec3();
-		up = mat.transofrmVec4(a_up).toVec3();
-	}
-
-	Matrix44 Attachment::getAttachmentInfoMat44()
-	{
-		vec3 right = vec3::CrossProduct(m_normal, m_up);
-		Matrix44 transformForAttachPoint;
-		auto data = transformForAttachPoint.data();
-		data[0] = right.x;
-		data[1] = right.y;
-		data[2] = right.z;
-		data[3] = 0.0;
-
-		data[4] = m_up.x;
-		data[5] = m_up.y;
-		data[6] = m_up.z;
-		data[7] = 0.0;
-		//right hand
-		data[8] = -m_normal.x;
-		data[9] = -m_normal.y;
-		data[10] = -m_normal.z;
-		data[11] = 0.0;
-
-		data[12] = m_pos.x;
-		data[13] = m_pos.y;
-		data[14] = m_pos.z;
-		data[15] = 1.0;
-		return transformForAttachPoint;
-	}
-
 	Drawable3D * GamePart::getNode() const
 	{
 		return m_node;
@@ -85,7 +22,27 @@ namespace tzw
 
 	Attachment * GamePart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up)
 	{
-		return false;
+		float minDist = 99999999.0;
+		int resultIndx = -1.0;
+		for (auto i = 0; i < getAttachmentCount(); i++) 
+		{
+			auto attach = getAttachment(i);
+			vec3 hitPointLocal;
+			if(attach->isHit(ray, hitPointLocal)) 
+			{
+				if (hitPointLocal.distance(ray.origin()) < minDist) 
+				{
+					resultIndx = i;
+					minDist = hitPointLocal.distance(ray.origin());
+				}
+	        }
+		}
+		if (resultIndx >= 0) 
+		{
+			auto attachPtr = getAttachmentInfo(resultIndx, attachPosition, Normal, up);
+			return attachPtr;
+		}
+		return nullptr;
 	}
 
 	void GamePart::attachTo(Attachment * attach)
@@ -150,7 +107,7 @@ namespace tzw
 		m_node->setRotateQ(q);
 	}
 
-	Matrix44 GamePart::attachToFromOtherIsland(Attachment * attach, BearPart * bearing)
+	Matrix44 GamePart::attachToFromOtherIsland(Attachment * attach)
 	{
 		auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
 		vec3 attachPosition,  Normal,  up;
@@ -163,8 +120,11 @@ namespace tzw
 		up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
 		//we use m_attachment[0]
 		auto selfAttah = getFirstAttachment();
-		if (bearing)
-			bearing->m_a = selfAttah;
+        if (attach->m_parent->isConstraint()) 
+		{
+			static_cast<GameConstraint *>(attach->m_parent)->m_a = selfAttah;
+        	selfAttah->m_connected = attach;
+        }
 		vec3 right = vec3::CrossProduct(InvertedNormal, up);
 		Matrix44 transformForAttachPoint;
 		auto data = transformForAttachPoint.data();
@@ -239,7 +199,11 @@ namespace tzw
 		{
             selfAttah = ownAttachment;
 		}
-		
+        if (attach->m_parent->isConstraint()) 
+		{
+			static_cast<GameConstraint *>(attach->m_parent)->m_a = selfAttah;
+        	selfAttah->m_connected = attach;
+        }
 		vec3 right = vec3::CrossProduct(InvertedNormal, up);
 		Matrix44 attachOuterWorldMat;
 		auto data = attachOuterWorldMat.data();
@@ -309,6 +273,11 @@ namespace tzw
 		return getFirstAttachment();
 	}
 
+	Attachment* GamePart::getTopAttachment()
+	{
+		return getFirstAttachment();
+	}
+
 	Attachment* GamePart::getAttachment(int index)
 	{
 		return nullptr;
@@ -317,6 +286,19 @@ namespace tzw
 	int GamePart::getAttachmentCount()
 	{
 		return 0;
+	}
+
+	Attachment* GamePart::getAttachmentInfo(int index, vec3& pos, vec3& N, vec3& up)
+	{
+		auto mat = m_node->getLocalTransform();
+		auto atta = getAttachment(index);
+		vec4 a_pos = vec4(atta->m_pos, 1.0);
+		vec4 a_n = vec4(atta->m_normal, 0.0);
+		vec4 a_up = vec4(atta->m_up, 0.0);
+		pos = mat.transofrmVec4(a_pos).toVec3();
+		N = mat.transofrmVec4(a_n).toVec3();
+		up = mat.transofrmVec4(a_up).toVec3();
+		return atta;
 	}
 
 	GamePart::~GamePart()
@@ -349,12 +331,19 @@ namespace tzw
 			{
 				auto &attachData = attachList[i];
 				std::string guid_str = attachData["UID"].GetString();
-				if(guid_str == "fef0344a-4e9b-41dc-82c2-d28c86548b08")
-				{
-					printf("aaaaa");
-				}
 				getAttachment(i)->setGUID(guid_str.c_str());
+				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
 			}
         }
+	}
+
+	bool GamePart::isConstraint()
+	{
+		return false;
+	}
+
+	vec3 GamePart::getWorldPos()
+	{
+		return m_node->getWorldPos();
 	}
 }
