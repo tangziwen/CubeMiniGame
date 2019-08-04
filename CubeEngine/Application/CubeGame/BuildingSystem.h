@@ -49,6 +49,7 @@ class BuildingSystem
 		void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
 		void dump();
 		void load();
+		void updateBearing(float dt);
 	private:
 		ControlPart * m_controlPart;
 		LiftPart * m_liftPart;

@@ -61,6 +61,7 @@ void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivo
 
 void BearPart::enablePhysics(bool isEnable)
 {
+	GameConstraint::enablePhysics(isEnable);
 	if(isEnable) 
 	{
 		if(!m_constrain) 

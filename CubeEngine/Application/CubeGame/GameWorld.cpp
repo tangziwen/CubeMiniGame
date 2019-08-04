@@ -9,6 +9,7 @@
 #include <thread>
 #include "Collision/PhysicsMgr.h"
 #include "3D/Primitive/CylinderPrimitive.h"
+#include "BuildingSystem.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -96,6 +97,7 @@ void GameWorld::onFrameUpdate(float delta)
 {
 	if (m_currentState != GAME_STATE_RUNNING)
 		return;
+	BuildingSystem::shared()->updateBearing(delta);
 }
 
 Chunk *GameWorld::createChunk(int x, int y, int z)

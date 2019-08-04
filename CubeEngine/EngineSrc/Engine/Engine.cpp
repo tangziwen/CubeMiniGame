@@ -19,7 +19,11 @@
 #include "BackEnd/RenderBackEnd.h"
 #include "Utility/file/Tfile.h"
 #include "rapidjson/document.h"
-#include "Base/uuid4.h"
+extern "C"
+{
+	#include "Base/uuid4.h"
+}
+
 
 namespace tzw {
 

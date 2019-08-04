@@ -1,5 +1,9 @@
 #include "GuidMgr.h"
+extern "C"
+{
 #include "uuid4.h"
+}
+
 namespace tzw
 {
 	TZW_SINGLETON_IMPL(GUIDMgr)

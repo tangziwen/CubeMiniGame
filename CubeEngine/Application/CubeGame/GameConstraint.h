@@ -17,7 +17,9 @@ public:
 	virtual void enablePhysics(bool isEnable);
 	virtual void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator);
 	bool isConstraint() override;
-private:
+	void updateTransform(float dt);
+protected:
+	bool m_isEnablePhysics;
 
 };
 }

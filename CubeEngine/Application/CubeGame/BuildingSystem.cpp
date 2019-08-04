@@ -454,6 +454,14 @@ void BuildingSystem::load()
 	printf("aaaaaaa");
 }
 
+void BuildingSystem::updateBearing(float dt)
+{
+	for(auto constrain :m_bearList)
+	{
+		constrain->updateTransform(dt);
+	}
+}
+
 void BuildingSystem::flipBearingByHit(vec3 pos, vec3 dir, float dist)
 {
 
