@@ -20,6 +20,5 @@ public:
 	void updateTransform(float dt);
 protected:
 	bool m_isEnablePhysics;
-
 };
 }

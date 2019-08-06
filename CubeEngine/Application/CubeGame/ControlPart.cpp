@@ -213,14 +213,14 @@ void ControlPart::setActivate(bool value)
 	
 	if (value) 
 	{
-		//GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
+		GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
 		getNode()->setIsVisible(false);
 	}
 	else
 	{	
 		if(m_isActivate) 
 		{
-			//GameWorld::shared()->getPlayer()->attachCamToWorld();
+			GameWorld::shared()->getPlayer()->attachCamToWorld();
 		}
 		getNode()->setIsVisible(true);
 	}

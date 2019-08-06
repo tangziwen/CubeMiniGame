@@ -73,6 +73,11 @@ namespace tzw
 		return m_camera->getPos();
 	}
 
+	void CubePlayer::setPos(vec3 newPos)
+	{
+		m_camera->setPos(newPos);
+	}
+
 	void CubePlayer::logicUpdate(float dt)
 	{
 		static float theTime = 0.0f;
@@ -289,6 +294,7 @@ namespace tzw
 	void CubePlayer::attachCamToWorld()
 	{
 		m_camera->removeFromParent();
+		m_camera->setIsEnableGravity(true);
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 	}
 } // namespace tzw

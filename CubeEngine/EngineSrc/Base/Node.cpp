@@ -194,8 +194,10 @@ void Node::addChild(Node *node, bool isNeedSort)
     if(node->m_parent)
     {
         Tlog()<<"can not multiple adding";
+    	exit(1);
     }else
     {
+    	node->setIsValid(true);
         node->setScene(m_scene);
         
         //refresh the new child's transform cache

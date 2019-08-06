@@ -20,11 +20,14 @@ void PhysicsHingeConstraint::setConstraint(btTypedConstraint* constraint)
 
 void PhysicsHingeConstraint::enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse)
 {
+  if (m_constraint) 
+  {
 	//let the rigidBody wake up
 	m_constraint->getRigidBodyA().activate();
 	m_constraint->getRigidBodyB().activate();
-	printf("aaaaaa%d, %d\n",m_constraint->getRigidBodyA().getActivationState(), m_constraint->getRigidBodyB().getActivationState());
 	m_constraint->enableAngularMotor(enableMotor, targetVelocity, maxMotorImpulse);
+  }
+
 }
 
 }

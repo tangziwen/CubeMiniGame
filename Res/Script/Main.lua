@@ -66,8 +66,10 @@ table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 2})
 table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0})
 table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1})
 table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1})
+table.insert(m_itemSlots, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = -2})
 table.insert(m_itemSlots, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = 3})
 table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0})
+
 
 
 function updateLifting(dt)
@@ -101,7 +103,7 @@ function onKeyPress(input_event)
 		lift_state = -1
 	end
 end
-
+oldPlayerPos = nil
 function onKeyRelease(input_event)
 	local player = GameWorld.shared():getPlayer()
 	if input_event.keycode == TZW_KEY_1 then
@@ -116,14 +118,22 @@ function onKeyRelease(input_event)
 		m_currIndex = 5
 	elseif input_event.keycode == TZW_KEY_6 then
 		m_currIndex = 6
+	elseif input_event.keycode == TZW_KEY_7 then
+		m_currIndex = 7
 	elseif input_event.keycode == TZW_KEY_UP then
 		lift_state = lift_state - 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = lift_state + 1
 	elseif input_event.keycode == TZW_KEY_E then
-		local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-		if result and result.m_parent:getType() == 3 then
-			BuildingSystem.shared():setCurrentControlPart(result.m_parent)
+		if BuildingSystem.shared():getCurrentControlPart() == nil then
+			local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
+			if result and result.m_parent:getType() == 3 then
+				oldPlayerPos = player:getPos()
+				BuildingSystem.shared():setCurrentControlPart(result.m_parent)
+			end
+		else
+			player:setPos(oldPlayerPos)
+			BuildingSystem.shared():setCurrentControlPart(nil)
 		end
 	end
 end
@@ -139,8 +149,10 @@ function placeItem(item)
 			BuildingSystem.shared():attachGamePartNormal(aBlock, result)
 		end
 	else
-		if result then
+		if item.ItemType == -1 then
 			BuildingSystem.shared():placeBearingToAttach(result)
+		elseif item.ItemType == -2 then
+			BuildingSystem.shared():placeSpringToAttach(result)
 		end
 	end
 end

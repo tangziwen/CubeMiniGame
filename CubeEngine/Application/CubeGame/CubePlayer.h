@@ -22,6 +22,7 @@ namespace tzw
 		FPSCamera* camera() const;
 		void setCamera(FPSCamera* camera);
 		vec3 getPos();
+		void setPos(vec3 newPos);
 		void logicUpdate(float dt) override;
 		bool checkIsNeedUpdateChunk();
 		bool onKeyPress(int keyCode) override;

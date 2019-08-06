@@ -32,6 +32,7 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(CubePlayer)
 		BIND_FUNC(CubePlayer, getPos)
+		BIND_FUNC(CubePlayer, setPos)
 		BIND_FUNC(CubePlayer, getForward)
 		BIND_END_CLASS
 
@@ -62,6 +63,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, attachGamePartNormal)
 		BIND_FUNC(BuildingSystem, attachGamePartToConstraint)
 		BIND_FUNC(BuildingSystem, placeBearingToAttach)
+		BIND_FUNC(BuildingSystem, placeSpringToAttach)
 		BIND_FUNC(BuildingSystem, createPart)
 		BIND_FUNC(BuildingSystem, hitTerrain)
 		BIND_FUNC(BuildingSystem, rayTest)
@@ -70,6 +72,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, removePartByAttach)
 		BIND_FUNC(BuildingSystem, terrainForm)
 		BIND_FUNC(BuildingSystem, setCurrentControlPart)
+		BIND_FUNC(BuildingSystem, getCurrentControlPart)
 		BIND_END_CLASS
 
 		BIND_START(luaState)
