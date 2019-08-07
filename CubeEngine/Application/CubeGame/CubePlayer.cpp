@@ -148,41 +148,15 @@ namespace tzw
 			break;
 		case TZW_KEY_P:
 			{
-				auto attach = BuildingSystem::shared()->rayTest(getPos(), m_camera->getForward(), 15);
-				BuildingSystem::shared()->placeSpringToAttach(attach);
-				break;
-				float blockSize = 0.5;
+				float blockSize = 0.3;
 				auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
-				boxA->setPos(getPos() +m_camera->getForward() * 2.0 + vec3(0, 5, 0));
+				boxA->setPos(getPos() +m_camera->getForward() * 2.0 + vec3(0, 0, 0));
 				auto transform = boxA->getTransform();
 				auto aabb = boxA->localAABB();
 				auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
 				rigA->attach(boxA);
+				rigA->setVelocity(m_camera->getForward() * 20.0);
 				g_GetCurrScene()->addNode(boxA);
-
-				auto boxB = new CubePrimitive(blockSize, blockSize, blockSize);
-				boxB->setPos(getPos() +m_camera->getForward() * 2.0 + vec3(0, 3, 0));
-				transform = boxB->getTransform();
-				aabb = boxB->localAABB();
-				auto rigB = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
-				rigB->attach(boxB);
-				g_GetCurrScene()->addNode(boxB);
-
-				auto boxAFrame = boxA->getLocalTransform();
-				boxAFrame.translate(vec3(0, -0.25, 0.0));
-				auto boxBFrame = boxB->getLocalTransform();
-				boxBFrame.translate(vec3(0, 0.25, 0.0));
-				auto constraint = PhysicsMgr::shared()->create6DOFSprintConstraint(rigA, rigB, boxAFrame, boxBFrame);
-
-				constraint->enableSpring(1, true);
-				constraint->setLinearLowerLimit(vec3(0, 100, 0));
-				constraint->setAngularUpperLimit(vec3(0, -100, 0));
-				constraint->setAngularLowerLimit(vec3(0, 0, 0));
-				constraint->setAngularUpperLimit(vec3(0, 0, 0));
-				constraint->setStiffness(1, 600.0f);
-				constraint->setDamping(1, 2.0f);
-				constraint->setEquilibriumPoint();
-
 			}
 			break;
 		default:

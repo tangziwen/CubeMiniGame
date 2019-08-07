@@ -3,6 +3,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include <vector>
 #include "3D/Vegetation/Grass.h"
+
 struct vertexInfo
 {
     unsigned int index;
@@ -10,7 +11,7 @@ struct vertexInfo
 
 namespace tzw
 {
-
+class PhysicsRigidBody;
 /// <summary>
 /// 
 /// </summary>
@@ -135,6 +136,7 @@ private:
 	std::vector<vec4> m_grassPosList;
 	unsigned int m_lod;
 	bool m_isNeedSubmitMesh;
+	PhysicsRigidBody * m_rigidBody;
 };
 }
 

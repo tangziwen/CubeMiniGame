@@ -32,6 +32,7 @@ namespace tzw
 		void updateInertiaTensor();
 		void activate();
 		void clearAll();
+		void setVelocity(vec3 velocity);
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

@@ -375,6 +375,7 @@ BuildingSystem::dump()
   rapidjson::Value constraintList(rapidjson::kArrayType);
   for (auto constraint : m_bearList) {
     rapidjson::Value bearingObj(rapidjson::kObjectType);
+  	bearingObj.AddMember("IslandGroup", constraint->m_parent->m_islandGroup, doc.GetAllocator());
     constraint->dump(bearingObj, doc.GetAllocator());
     constraintList.PushBack(bearingObj, doc.GetAllocator());
   }
@@ -426,12 +427,13 @@ BuildingSystem::load()
       auto GUID = item["from"].GetString();
       auto fromAttach =
         reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
-      GameConstraint* constraint = nullptr;
+      GameConstraint* constraint = nullptr; 
       if (constraintType.compare("Spring") == 0) {
         constraint = placeSpringToAttach(fromAttach);
       } else if (constraintType.compare("Bearing") == 0) {
         constraint = placeBearingToAttach(fromAttach);
       }
+    	constraint->m_parent->m_islandGroup = item["IslandGroup"].GetString();
       // update constraint's attachment GUID
       auto& attachList = item["attachList"];
       for (unsigned int j = 0; j < attachList.Size(); j++) {
@@ -443,11 +445,14 @@ BuildingSystem::load()
         auto GUID = item["to"].GetString();
         auto toAttach =
           reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
+
         auto constraintAttach_target = reinterpret_cast<Attachment*>(
           GUIDMgr::shared()->get(toAttach->m_connectedGUID));
         toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(
           constraintAttach_target, toAttach);
         constraint->m_a = toAttach;
+      	if(toAttach->m_parent->getType() == GAME_PART_CYLINDER)
+			printf("cylinder%s\n",toAttach->m_parent->getWorldPos().getStr().c_str());
         // auto bearing = fromAttach->m_bearPart;
         // fromAttach->m_parent->m_parent->addNeighbor(toAttach->m_parent->m_parent);
         // toAttach->m_parent->m_parent->addNeighbor(fromAttach->m_parent->m_parent);
@@ -456,8 +461,7 @@ BuildingSystem::load()
       }
     }
   }
-
-  printf("aaaaaaa");
+	
 }
 
 void

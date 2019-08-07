@@ -33,6 +33,7 @@ Chunk::Chunk(int the_x, int the_y, int the_z)
   , y(the_y)
   , z(the_z)
   , m_isLoaded(false)
+	,m_rigidBody(nullptr)
 {
 
   m_lod = 0;
@@ -143,8 +144,14 @@ Chunk::logicUpdate(float delta)
     m_isNeedSubmitMesh = false;
 
     m_mesh->finish();
-    auto rig = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh, nullptr);
-    rig->setFriction(10.0);
+   if (m_rigidBody) 
+  {
+  	PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
+  	delete m_rigidBody;
+  	m_rigidBody = nullptr;
+   }
+    m_rigidBody = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh, nullptr);
+    m_rigidBody->setFriction(10.0);
     m_grass->finish();
     m_grass2->finish();
   }
@@ -245,7 +252,9 @@ Chunk::deformSphere(vec3 pos, float value, float range)
       }
     }
   }
-  genMesh();
+	genMesh();
+
+
   if (!m_tmpNeighborChunk.empty()) {
     for (auto chunk : m_tmpNeighborChunk) {
       chunk->genMesh();

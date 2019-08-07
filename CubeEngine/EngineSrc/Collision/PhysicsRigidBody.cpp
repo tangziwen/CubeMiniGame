@@ -35,6 +35,7 @@ btRigidBody* PhysicsRigidBody::rigidBody() const
 void PhysicsRigidBody::setRigidBody(btRigidBody* rigid_body)
 {
 	m_rigidBody = rigid_body;
+	
 }
 
 Drawable3D* PhysicsRigidBody::parent() const
@@ -136,5 +137,10 @@ void PhysicsRigidBody::clearAll()
 	m_rigidBody->clearForces();
 	m_rigidBody->setLinearVelocity(zeroVector);
 	m_rigidBody->setAngularVelocity(zeroVector);
+}
+
+void PhysicsRigidBody::setVelocity(vec3 velocity)
+{
+	m_rigidBody->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
 }
 }
