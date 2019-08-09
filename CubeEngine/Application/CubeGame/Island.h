@@ -35,6 +35,7 @@ public:
 	std::string m_islandGroup;
 	void genIslandGroup();
 private:
+	bool m_enablePhysics;
 	std::set<Island *> m_neighborIslands;
 	PhysicsCompoundShape * m_compound_shape;
 };

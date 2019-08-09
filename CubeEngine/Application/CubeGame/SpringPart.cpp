@@ -97,7 +97,7 @@ void SpringPart::enablePhysics(bool isEnable)
 			constraint->setAngularUpperLimit(vec3(0, 0, -100));
 			constraint->setAngularLowerLimit(vec3(0, 0, 0));
 			constraint->setAngularUpperLimit(vec3(0, 0, 0));
-			constraint->setStiffness(2, 500.0f);
+			constraint->setStiffness(2, 600.0f);
 			constraint->setDamping(2, 0.8f);
 			constraint->setEquilibriumPoint();
 			m_constrain = constraint;

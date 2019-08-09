@@ -21,6 +21,7 @@ Island::Island(vec3 pos)
 	m_rigid = nullptr;
 	m_compound_shape = nullptr;
 	m_isSpecial = false;
+	m_enablePhysics = false;
 }
 
 void
@@ -130,7 +131,15 @@ Island::recalculateCompound()
 void
 Island::enablePhysics(bool isEnable)
 {
-	if(m_isSpecial) return;
+	if(m_isSpecial)
+	{
+		
+	}else
+	{
+		
+	}
+	if (m_enablePhysics == isEnable) return;
+	m_enablePhysics = isEnable;
 	if(isEnable) 
 	{
 		if (!m_rigid) // has been created yet

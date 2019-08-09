@@ -28,6 +28,8 @@ namespace tzw
 		virtual void attachTo(Attachment * attach);
 		virtual Matrix44 attachToFromOtherIsland(Attachment * attach);
 		virtual Matrix44 attachToFromOtherIslandAlterSelfIsland(Attachment * attach, Attachment * ownAttachment = nullptr);
+		virtual Matrix44 adjustFromOtherIslandAlterSelfIsland(Attachment * attach, Attachment * selfAttach);
+		virtual Matrix44 adjustFromOtherIsland(Attachment * attach, Attachment * selfAttach);
 		virtual Attachment * getFirstAttachment();
 		virtual Attachment * getBottomAttachment();
 		virtual Attachment * getTopAttachment();
