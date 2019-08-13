@@ -28,7 +28,7 @@ static void onOption(Button * btn)
 
 }
 
-MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false)
+MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isOpenTerrain(false)
 {
 }
 
@@ -46,7 +46,11 @@ void MainMenu::show()
 {
 	Engine::shared()->setUnlimitedCursor(false);
 	setVisible(true);
-	m_crossHair->setIsVisible(false);
+	if(m_crossHair)
+	{
+		m_crossHair->setIsVisible(false);
+	}
+	
 }
 
 void MainMenu::hide()
@@ -56,8 +60,10 @@ void MainMenu::hide()
 		Engine::shared()->setUnlimitedCursor(true);
 	}
 	setVisible(false);
-	m_crossHair->setIsVisible(true);
-    //setIsVisible(false);
+	if(m_crossHair)
+	{
+		m_crossHair->setIsVisible(true);	
+	}
 }
 
 void MainMenu::toggle()
@@ -81,63 +87,51 @@ void MainMenu::drawIMGUI()
 		bool isOpenHelp = false;
 		if (ImGui::BeginMainMenuBar())
 		{
-			if (ImGui::BeginMenu("Game"))
+			if (ImGui::BeginMenu(u8"游戏"))
 			{
-				if (ImGui::MenuItem("Start", "CTRL+Z")) { startGame(); }
-				if (ImGui::MenuItem("write", "CTRL+Z")) {BuildingSystem::shared()->dump();}
-				if (ImGui::MenuItem("Load", "CTRL+Z")) {BuildingSystem::shared()->load();}
-				if (ImGui::MenuItem("Option", "CTRL+Z")) {}
-				if (ImGui::MenuItem("Reload", "CTRL+Z")) {ScriptPyMgr::shared()->reload();}
-				if (ImGui::MenuItem("Exit", "CTRL+Z")) { exit(0); }
+				if (ImGui::MenuItem(u8"开始", "CTRL+Z")) { startGame(); }
+				if (ImGui::MenuItem(u8"保存载具", "CTRL+Z")) {BuildingSystem::shared()->dump();}
+				if (ImGui::MenuItem(u8"读取载具", "CTRL+Z")) {BuildingSystem::shared()->load();}
+				if (ImGui::MenuItem(u8"选项", "CTRL+Z")) {}
+				if (ImGui::MenuItem(u8"重载脚本", "CTRL+Z")) {ScriptPyMgr::shared()->reload();}
+				if (ImGui::MenuItem(u8"退出", "CTRL+Z")) { exit(0); }
 				ImGui::EndMenu();
 			}
 			drawToolsMenu();
 			static bool isOpenTerrain = false;
-			if (ImGui::BeginMenu("Run-time Config"))
+			if (ImGui::BeginMenu(u8"调试工具"))
 			{
-				ImGui::MenuItem("terrain", nullptr, &isOpenTerrain);
+				ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
+				ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
 				ImGui::EndMenu();
 			}
-			if (isOpenTerrain)
+			if (m_isShowProfiler)
 			{
-				ImGui::Begin("Terrain Inspector", &isOpenTerrain);
-				ImGui::Text("Terrain Inspector");
-				auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
-				terrainMat->inspect();
-
-				auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
-				fogMat->inspect();
-
-				auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
-				PostMat->inspect();
-
-				auto sunMat = Sky::shared()->getMaterial();
-				sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
-				auto dirLight = g_GetCurrScene()->getDirectionLight();
-				float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
-				ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
-				dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
-
-				if (ImGui::Button("dump to file"))
-				{
-					//
-				}
-				ImGui::End();
+				m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
 			}
+			if (m_isShowConsole)
+			{
+				ShowExampleAppConsole(&m_isShowConsole);
+			}
+			
 			if (ImGui::BeginMenu("?"))
 			{
-				if (ImGui::MenuItem("About", nullptr)) {
+				if (ImGui::MenuItem(u8"关于", nullptr)) {
 					isOpenAbout = true;
 				}
-				if (ImGui::MenuItem("Help", nullptr)) {
+				if (ImGui::MenuItem(u8"帮助", nullptr)) {
 					isOpenHelp = true;
 				}
 				ImGui::EndMenu();
 			}
 			ImGui::EndMainMenuBar();
 
-			if (isOpenAbout) ImGui::OpenPopup("About");
-			if (ImGui::BeginPopupModal("About", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			if (isOpenAbout) 
+			{
+                ImGui::OpenPopup(u8"关于");
+				isOpenAbout = false;
+            }
+			if (ImGui::BeginPopupModal(u8"关于", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
 				ImGui::Separator();
@@ -146,19 +140,10 @@ void MainMenu::drawIMGUI()
 			}
 
 
-			if (isOpenHelp) ImGui::OpenPopup("Help");
-			if (ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+			if (isOpenHelp)
 			{
-				ImGui::Text("WASD to move");
-				ImGui::Text("Press 1 to create a toehold");
-				ImGui::Text("Press F to place a block");
-				ImGui::Text("Press G to place a wheel");
-				ImGui::Text("Press E to insert a bearing");
-				ImGui::Text("Press H to flip bearing rotate direction");
-				ImGui::Text("Press 2 to cook the physics");
-				ImGui::Separator();
-				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-				ImGui::EndPopup();
+
+				ScriptPyMgr::shared()->callFunV("showHelpPage");
 			}
 		}
 
@@ -200,22 +185,38 @@ void MainMenu::startGame()
 
 void MainMenu::drawToolsMenu()
 {
-	if (ImGui::BeginMenu("Tools"))
+	if (ImGui::BeginMenu(u8"工具"))
 	{
-		ImGui::MenuItem("NodeEditor", nullptr, &m_isShowNodeEditor);
-		ImGui::MenuItem("Profiler", nullptr, &m_isShowProfiler);
-		ImGui::MenuItem("Console", nullptr, &m_isShowConsole);
+		ImGui::MenuItem(u8"节点编辑器", nullptr, &m_isShowNodeEditor);
+		ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
 		ImGui::EndMenu();
 	}
-	if (m_isShowProfiler)
+	if (m_isOpenTerrain)
 	{
-		m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
-	}
-	if (m_isShowConsole)
-	{
-		ShowExampleAppConsole(&m_isShowConsole);
-	}
+		ImGui::Begin("Terrain Inspector", &m_isOpenTerrain);
+		ImGui::Text("Terrain Inspector");
+		auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
+		terrainMat->inspect();
 
+		auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
+		fogMat->inspect();
+
+		auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
+		PostMat->inspect();
+
+		auto sunMat = Sky::shared()->getMaterial();
+		sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
+		auto dirLight = g_GetCurrScene()->getDirectionLight();
+		float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
+		ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
+		dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
+
+		if (ImGui::Button("dump to file"))
+		{
+			//
+		}
+		ImGui::End();
+	}
 }
 
 

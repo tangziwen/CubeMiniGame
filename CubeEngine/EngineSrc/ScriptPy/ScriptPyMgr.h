@@ -16,6 +16,7 @@ namespace tzw
 		void doScriptUIUpdate();
 		void finalize();
 		void raiseInputEvent(EventInfo eventInfo);
+		void callFunV(std::string funcName);
 		std::string runString(std::string theStr);
 		void reload();
 		void * getState();

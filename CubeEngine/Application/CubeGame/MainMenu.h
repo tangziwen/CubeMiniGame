@@ -34,6 +34,7 @@ private:
 	bool m_isShowProfiler;
 	bool m_isShowConsole;
 	bool m_isShowNodeEditor;
+	bool m_isOpenTerrain;
 	DebugInfoPanel m_debugInfoPanel;
 	GameNodeEditor * m_nodeEditor;
 	Sprite * m_crossHair;

@@ -42,6 +42,7 @@ namespace tzw
 		.addStaticFunction ("shared", &GameWorld::shared)
 		BIND_FUNC(GameWorld, getCurrentState)
 		BIND_FUNC(GameWorld, getPlayer)
+		BIND_FUNC(GameWorld, startGame)
 		BIND_END_CLASS
 
 		//GameItem

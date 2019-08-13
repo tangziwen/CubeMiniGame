@@ -78,6 +78,15 @@ namespace tzw
 		}
 	}
 
+	void ScriptPyMgr::callFunV(std::string funcName)
+	{
+		lua_getglobal(g_lua_state, funcName.c_str());
+		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
+		{
+			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+		}
+	}
+
 	void ScriptPyMgr::doScriptInit()
 	{
 		lua_getglobal(g_lua_state, "tzw_engine_init");
@@ -91,7 +100,10 @@ namespace tzw
 	{
 		lua_getglobal(g_lua_state, "tzw_engine_ui_update");
 		lua_pushnumber(g_lua_state, Engine::shared()->deltaTime());
-		lua_pcall(g_lua_state, 1, 0, 0);
+		if(lua_pcall(g_lua_state, 1, 0, 0))
+		{
+		printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+		}
 	}
 
 	std::string ScriptPyMgr::runString(std::string theStr)

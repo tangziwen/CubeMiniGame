@@ -15,6 +15,7 @@ void GameEntry::onStart()
 
 #if CURRGAME == GAME_MODE_PLAYGROUND
 	GameWorld::shared();
+	GameWorld::shared()->init();
 #endif
 	g_binding_game_objects();
 }

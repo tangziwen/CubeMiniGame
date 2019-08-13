@@ -49,26 +49,33 @@ local m_currIndex = 1
 local lift_state = 0
 local isOpenTestWindow = true
 --ui update
+local isPop = true
 function tzw_engine_ui_update(dt)
+	popText()
+	if isShowHelpPage then
+		drawHelpPage()
+	end
 	if MainMenu.shared():isVisible() then
 		return
 	else
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 			drawHud()
 			updateLifting(dt)
+		elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
+			drawEntryInterface()
 		end
 	end
 end
 
 local m_itemSlots = {}
 
-table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 2})
-table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0})
-table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1})
-table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1})
-table.insert(m_itemSlots, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = -2})
-table.insert(m_itemSlots, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = 3})
-table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0})
+table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 2, desc = "升降工作台"})
+table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0, desc = "普通方块"})
+table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1, desc = "轮子"})
+table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1, desc = "轴承"})
+table.insert(m_itemSlots, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = -2, desc = "弹簧"})
+table.insert(m_itemSlots, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = 3, desc = "控制方块"})
+table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"})
 
 
 
@@ -81,6 +88,33 @@ function updateLifting(dt)
 	end
 end
 
+function drawHelpPage()
+	isShowHelpPage = ImGui.Begin("帮助页面", ImGuiWindowFlags_NoResize)
+
+	if ImGui.CollapsingHeader("基础操作", 0) then
+		ImGui.TextWrapped("WASD 来控制相机四方向移动，鼠标移动控制视线方向，空格键跳跃")
+		ImGui.TextWrapped("'~'键切换显示菜单")
+	end
+	if ImGui.CollapsingHeader("升降工作台", 0) then
+		ImGui.TextWrapped("玩家可以在地面上放置升降控制台，并可以将物块放在上面，在升降控制台上的物体不开启物理效果，")
+		ImGui.TextWrapped("可以更方面的建造，同时小键盘的上下方向键可以竖直平移工作台")
+		ImGui.TextWrapped("玩家按下H键后，工作台上的物体将开启物理并脱离工作台控制，对准活动的方块按J键可以将其放回工作台")
+	end
+	if ImGui.CollapsingHeader("约束", 0) then
+		ImGui.TextWrapped("目前玩家可放置的有两种约束，弹簧和轴承，放置普通方块时，物体会自动连接成一个刚体，如果放置一个约束")
+		ImGui.TextWrapped("则刚体之前可以活动，可以使用这个来建造小车")
+	end
+	if ImGui.CollapsingHeader("关于", 0) then
+		ImGui.TextWrapped("Cube Engine By tzw")
+		ImGui.TextWrapped("任何疑问皆可发送至 tzwtangziwen@163.com")
+	end
+	ImGui.End()
+end
+
+function showHelpPage()
+	isShowHelpPage = true
+end
+
 function drawHud()
 	local screenSize = Engine:shared():winSize()
 	local yOffset = 20.0;
@@ -90,9 +124,50 @@ function drawHud()
 	
 	ImGui.Begin("Profiler", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 	for k, v in pairs(m_itemSlots) do
-		ImGui.RadioButton(v.name, m_currIndex == k)
+		ImGui.RadioButton(v.desc, m_currIndex == k)
 		ImGui.SameLine(0, -1.0)
 	end
+	ImGui.End()
+end
+
+function popText()
+	-- ImGui.Begin("test", 0)
+	if isPop then
+		ImGui.OpenPopup("abcdefg");
+		print "popText A"
+		-- isPop = false
+	end
+	if (ImGui.BeginPopupModal("abcdefg", ImGuiWindowFlags_AlwaysAutoResize)) then
+		print "herere"
+		if ImGui.Button("开始游戏", ImGui.ImVec2(160, 35)) then
+			ImGui.Button("End Button", ImGui.ImVec2(160, 35))
+			print "popText B"
+			isPop = false
+			ImGui.CloseCurrentPopup()
+		end
+		ImGui.EndPopup()
+	end
+	-- ImGui.End("End", 0)
+end
+
+function drawEntryInterface()
+	local screenSize = Engine:shared():winSize()
+	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImGui.ImVec2(0.5, 0.5));
+	ImGui.BeginNoClose("CubeEngine",ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse)
+	
+	if(ImGui.Button("开始游戏", ImGui.ImVec2(160, 35))) then
+		GameWorld.shared():startGame()
+		Engine:shared():setUnlimitedCursor(true)
+	end
+	ImGui.Spacing()
+	if(ImGui.Button("帮助", ImGui.ImVec2(160, 35))) then
+		print "help btn clicked"
+	end
+	ImGui.Spacing()
+	if(ImGui.Button("退出", ImGui.ImVec2(160, 35))) then
+		print "on Exit"
+	end
+	ImGui.Spacing()
 	ImGui.End()
 end
 
@@ -103,6 +178,7 @@ function onKeyPress(input_event)
 		lift_state = -1
 	end
 end
+
 oldPlayerPos = nil
 function onKeyRelease(input_event)
 	local player = GameWorld.shared():getPlayer()
@@ -135,6 +211,9 @@ function onKeyRelease(input_event)
 			player:setPos(oldPlayerPos)
 			BuildingSystem.shared():setCurrentControlPart(nil)
 		end
+	elseif input_event.keycode == TZW_KEY_Y then
+		print "hehehehehehe"
+		isPop = true
 	end
 end
 

@@ -30,9 +30,24 @@ namespace tzw
 		return isOpen;
 	}
 
+	bool imgui_begin_no_close(const char* name, int flags)
+	{
+		ImGui::Begin(name, NULL, flags);
+		return true;
+	}
 	void imgui_text(const char* name)
 	{
 		ImGui::Text(name);
+	}
+
+	void imgui_textwrapped(const char* name)
+	{
+		ImGui::TextWrapped(name);
+	}
+
+	bool imgui_begin_popup_modal(const char * name, int flags)
+	{
+		return ImGui::BeginPopupModal(name,NULL, flags);
 	}
 	struct imnodes_link_info
 	{
@@ -108,6 +123,7 @@ namespace tzw
 		.addStaticFunction ("shared", &Engine::shared)
 		BIND_FUNC(Engine, getFilePath)
 		BIND_FUNC(Engine, winSize)
+		BIND_FUNC(Engine, setUnlimitedCursor)
 		BIND_END_CLASS
 
 
@@ -127,6 +143,7 @@ namespace tzw
 		BIND_PROP(ImVec4, w)
 		.endClass()
 		.addFunction("Begin", &imgui_begin)
+		.addFunction("BeginNoClose", &imgui_begin_no_close)
 		.addFunction("End", &ImGui::End)
 		BIND_FUNC(ImGui, SmallButton)
 		//BIND_FUNC(ImGui, SliderFloat)
@@ -135,20 +152,29 @@ namespace tzw
 		BIND_FUNC(ImGui, EndMenu)
 		//BIND_FUNC(ImGui, MenuItem)
 		BIND_FUNC(ImGui, BeginPopup)
+		BIND_FUNC(ImGui, OpenPopup)
+		
 		BIND_FUNC(ImGui, EndPopup)
 		
 		BIND_FUNC(ImGui, BeginGroup)
 		BIND_FUNC(ImGui, EndGroup)
-		.addFunction("Text", static_cast<void (*)(int)>(ImGui::PushID))
+		.addFunction("PushID", static_cast<void (*)(int)>(ImGui::PushID))
+		
 		BIND_FUNC(ImGui, PopID)
 		BIND_FUNC(ImGui, BeginDragDropTarget)
 		BIND_FUNC(ImGui, EndDragDropTarget)
 		BIND_FUNC(ImGui, Separator)
 		.addFunction("RadioButton", static_cast<bool (*)(const char*, bool)>(ImGui::RadioButton))
 		.addFunction("Text", &imgui_text)
+		.addFunction("TextWrapped", &imgui_textwrapped)
 		BIND_FUNC(ImGui, SameLine)
+		BIND_FUNC(ImGui, Spacing)
 		BIND_FUNC(ImGui, SetNextWindowPos)
+		BIND_FUNC(ImGui, SetNextWindowSize)
 		BIND_FUNC(ImGui, ColorButton)
+		BIND_FUNC(ImGui, CloseCurrentPopup)
+		.addFunction("BeginPopupModal", &imgui_begin_popup_modal)
+		.addFunction("CollapsingHeader", static_cast<bool (*)(const char*, int)>(ImGui::CollapsingHeader))
 		.endNamespace ();
 
 

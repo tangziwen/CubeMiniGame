@@ -39,6 +39,7 @@ public:
 	void loadChunksAroundPlayer();
 	tzw::vec3 getMapOffset() const;
 	void setMapOffset(tzw::vec3 val);
+	void init();
 private:
     Node * m_mainRoot;
     int m_currentState;

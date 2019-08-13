@@ -110,26 +110,25 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::startGame()
 {
+	m_currentState = GAME_STATE_RUNNING;
 	PhysicsMgr::shared()->start();
 	Tmisc::DurationBegin();
 	 
-    unloadGame();
+	unloadGame();
 
 	MainMenu::shared()->initInGame();
-    GameMap::shared()->setMapType(GameMap::MapType::Noise);
-    GameMap::shared()->setMaxHeight(10);
+	GameMap::shared()->setMapType(GameMap::MapType::Noise);
+	GameMap::shared()->setMaxHeight(10);
 	 
 	GameMap::shared()->setMinHeight(3);
-    auto player = new CubePlayer(m_mainRoot);
+	auto player = new CubePlayer(m_mainRoot);
 	 
-    GameWorld::shared()->setPlayer(player);
+	GameWorld::shared()->setPlayer(player);
 	 
-    GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+	GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 	 
-    m_mainRoot->addChild(player);
+	m_mainRoot->addChild(player);
 	 
-    m_currentState = GAME_STATE_RUNNING;
-
 	//PhysicsMgr::shared()->start();
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }
@@ -218,6 +217,15 @@ void GameWorld::setMapOffset(tzw::vec3 val)
 	m_mapOffset = val;
 }
 
+void GameWorld::init()
+{
+	m_mainMenu = MainMenu::shared();
+	m_mainMenu->init();
+	m_mainMenu->hide();
+    m_mainRoot = new Node();
+	g_GetCurrScene()->addNode(m_mainRoot);
+}
+
 Chunk *GameWorld::getChunk(int x, int y, int z)
 {
     if(x >=0 && x <m_width && z >=0 && z <m_depth && y >=0 && y < m_height)
@@ -235,13 +243,6 @@ GameWorld::GameWorld()
     EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GAME_STATE_MAIN_MENU;
-	m_mainMenu = MainMenu::shared();
-	m_mainMenu->init();
-	//g_GetCurrScene()->addNode(m_mainMenu);
-    m_mainRoot = new Node();
-	g_GetCurrScene()->addNode(m_mainRoot);
-	
-	//startGame();
 
 }
 

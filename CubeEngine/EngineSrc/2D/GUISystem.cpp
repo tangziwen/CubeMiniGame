@@ -249,8 +249,9 @@ namespace tzw
 		//io.Fonts->AddFontFromFileTTF("./Res/font/Cousine-Regular.ttf", 15.0f);
 		//io.Fonts->AddFontFromFileTTF("./Res/font/DroidSans.ttf", 16.0f);
 		//io.Fonts->AddFontFromFileTTF("./Res/font/ProggyTiny.ttf", 10.0f);
-		//ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\ArialUni.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesDefault());
-		//IM_ASSERT(font != NULL);
+
+		ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 14.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+		IM_ASSERT(font != NULL);
 		m_isInit = true;
 	}
 
