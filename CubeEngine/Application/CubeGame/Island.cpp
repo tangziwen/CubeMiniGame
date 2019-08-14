@@ -131,35 +131,38 @@ Island::recalculateCompound()
 void
 Island::enablePhysics(bool isEnable)
 {
-	if(m_isSpecial)
-	{
-		
-	}else
-	{
-		
-	}
 	if (m_enablePhysics == isEnable) return;
 	m_enablePhysics = isEnable;
-	if(isEnable) 
+	if(m_isSpecial)
 	{
-		if (!m_rigid) // has been created yet
-		{
-		  cook();
-		}
-		else 
-		{
-			auto mat = m_node->getTransform();
-			m_rigid->setWorldTransform(mat);
-			PhysicsMgr::shared()->addRigidBody(m_rigid);
-		}
-	} else 
-	{
-        if(m_rigid) 
-		{
-			PhysicsMgr::shared()->removeRigidBody(m_rigid);
-			m_rigid->clearAll();
-        }
+		//auto constraint = static_cast<GameConstraint*>(m_partList[0]);
+		//constraint->enablePhysics(isEnable);
 	}
+	else
+	{
+		if(isEnable) 
+		{
+			if (!m_rigid) // has been created yet
+			{
+			  cook();
+			}
+			else 
+			{
+				auto mat = m_node->getTransform();
+				m_rigid->setWorldTransform(mat);
+				PhysicsMgr::shared()->addRigidBody(m_rigid);
+			}
+		} else 
+		{
+	        if(m_rigid) 
+			{
+				PhysicsMgr::shared()->removeRigidBody(m_rigid);
+				m_rigid->clearAll();
+	        }
+		}
+	}
+
+
 }
 
 float

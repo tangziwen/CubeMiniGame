@@ -13,6 +13,8 @@ public:
 	void drawIMGUI(bool * isOpen);
 
 	void addNode(GameNodeEditorNode * newNode);
+	void removeNode(GameNodeEditorNode * node);
+	void removeAllLink(GameNodeEditorNode * node);
 	void raiseEventToNode(int startAttr, int endAttr);
 protected:
 	std::vector<GameNodeEditorNode * > m_gameNodes;

@@ -429,8 +429,13 @@ void Node::detachChild(Node *node)
 
 void Node::removeFromParent()
 {
+	auto scene = g_GetCurrScene()->getOctreeScene();
     setIsValid(false);
 	m_parent = nullptr;
+	if(m_isAccpectOCTtree)
+	{
+		scene->removeObj(static_cast<Drawable3D *>(this));
+	}
 }
 
 void Node::setParent(Node *parent)

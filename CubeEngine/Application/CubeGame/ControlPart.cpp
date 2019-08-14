@@ -29,8 +29,8 @@ ControlPart::ControlPart()
 	}
 	initAttachments();
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
-	auto node = new ControlPartNode(this);
-	nodeEditor->addNode(node);
+	m_graphNode = new ControlPartNode(this);
+	nodeEditor->addNode(m_graphNode);
 	EventMgr::shared()->addFixedPiorityListener(this);
 }
 
@@ -213,7 +213,7 @@ void ControlPart::setActivate(bool value)
 	
 	if (value) 
 	{
-		GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
+		//GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
 		getNode()->setIsVisible(false);
 	}
 	else
@@ -260,6 +260,13 @@ void ControlPart::handleBearings()
 			bearing->m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
 		}
 	}
+}
+
+ControlPart::~ControlPart()
+{
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
+	delete m_graphNode;
 }
 
 int ControlPart::getType()

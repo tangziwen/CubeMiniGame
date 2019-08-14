@@ -5,7 +5,7 @@ namespace tzw
 {
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
 	{
-		ImGui::Begin("Node Editor", isOpen);
+		ImGui::Begin("½Úµã±à¼­Æ÷", isOpen);
 		if (ImGui::Button("Key Binding")) 
 		{
 			static int idx = 0;
@@ -42,7 +42,6 @@ namespace tzw
 				// UI functions
 				ImGui::Text(attr->m_name.c_str());
 				imnodes::EndAttribute();
-				
 			}
 			imnodes::EndNode();
 		}
@@ -70,6 +69,33 @@ namespace tzw
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
+	}
+
+	void GameNodeEditor::removeNode(GameNodeEditorNode* node)
+	{
+		auto result = std::find(m_gameNodes.begin(), m_gameNodes.end(), node);
+		if(result != m_gameNodes.end())
+		{
+			m_gameNodes.erase(result);
+			removeAllLink(node);
+		}
+		
+	}
+
+	void GameNodeEditor::removeAllLink(GameNodeEditorNode* node)
+	{
+		for (auto i = m_links.begin(); i != m_links.end();)
+		{
+			const std::pair<int, int> p = *i;
+			if(node->checkInNodeAttr(p.first) || node->checkOutNodeAttr(p.second))
+			{
+				i = m_links.erase(i);
+			}
+			else
+			{
+				++i;
+			}
+		}
 	}
 
 	void GameNodeEditor::raiseEventToNode(int startAttr, int endAttr)

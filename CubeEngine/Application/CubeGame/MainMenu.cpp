@@ -16,6 +16,9 @@
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
 
+
+#include "dirent.h"
+
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -39,6 +42,7 @@ void MainMenu::init()
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
 	m_nodeEditor = new GameNodeEditor();
+	m_fileBrowser = new GUIFileBrowser();
 	//hide();
 }
 
@@ -90,8 +94,26 @@ void MainMenu::drawIMGUI()
 			if (ImGui::BeginMenu(u8"游戏"))
 			{
 				if (ImGui::MenuItem(u8"开始", "CTRL+Z")) { startGame(); }
-				if (ImGui::MenuItem(u8"保存载具", "CTRL+Z")) {BuildingSystem::shared()->dump();}
-				if (ImGui::MenuItem(u8"读取载具", "CTRL+Z")) {BuildingSystem::shared()->load();}
+				if (ImGui::MenuItem(u8"保存载具", "CTRL+Z"))
+				{
+					m_fileBrowser->open(u8"保存为", u8"保存");
+					m_fileBrowser->m_callBack = [&](std::string fileName)
+					{
+						BuildingSystem::shared()->dump(fileName);
+						m_fileBrowser->close();
+					};
+					
+				}
+				if (ImGui::MenuItem(u8"读取载具", "CTRL+Z"))
+				{
+					m_fileBrowser->open(u8"选择载具文件", u8"打开");
+					m_fileBrowser->m_callBack = [&](std::string fileName)
+					{
+						BuildingSystem::shared()->load(fileName);
+						m_fileBrowser->close();
+					};
+					//BuildingSystem::shared()->load();
+				}
 				if (ImGui::MenuItem(u8"选项", "CTRL+Z")) {}
 				if (ImGui::MenuItem(u8"重载脚本", "CTRL+Z")) {ScriptPyMgr::shared()->reload();}
 				if (ImGui::MenuItem(u8"退出", "CTRL+Z")) { exit(0); }
@@ -151,6 +173,8 @@ void MainMenu::drawIMGUI()
 		{
 	        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
 		}
+
+		m_fileBrowser->drawIMGUI();
 	}
 
 }

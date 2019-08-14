@@ -6,6 +6,7 @@
 #include "Engine/EngineDef.h"
 #include "GameNodeEditor.h"
 #include "2D/Sprite.h"
+#include "2D/GUIFileBrowser.h"
 
 namespace tzw {
 class MainMenu : public IMGUIObject, public EventListener
@@ -37,6 +38,7 @@ private:
 	bool m_isOpenTerrain;
 	DebugInfoPanel m_debugInfoPanel;
 	GameNodeEditor * m_nodeEditor;
+	GUIFileBrowser * m_fileBrowser;
 	Sprite * m_crossHair;
 };
 

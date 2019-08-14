@@ -10,6 +10,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "BuildingSystem.h"
+#include "ScriptPy/ScriptPyMgr.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -224,6 +225,7 @@ void GameWorld::init()
 	m_mainMenu->hide();
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
+	ScriptPyMgr::shared()->callFunV("tzw_on_game_ready");
 }
 
 Chunk *GameWorld::getChunk(int x, int y, int z)
@@ -243,7 +245,6 @@ GameWorld::GameWorld()
     EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GAME_STATE_MAIN_MENU;
-
 }
 
 GameWorld::~GameWorld()

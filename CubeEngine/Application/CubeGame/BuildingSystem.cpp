@@ -39,15 +39,28 @@ namespace tzw
 		if (attach)
 		{
 			auto part = attach->m_parent;
-			auto island = part->m_parent;
-			if (attach->m_parent->isConstraint())
+			if(part == m_liftPart)
 			{
-				auto bearing = static_cast<GameConstraint*>(attach->m_parent);
-				m_bearList.erase(m_bearList.find(bearing));
+
+				dropFromLift();
+				m_liftPart->getNode()->removeFromParent();
+				delete m_liftPart;
+				m_liftPart = nullptr;
+				//m_liftPart->m_parent->remove(m_liftPart);
 			}
-			part->getNode()->removeFromParent();
-			island->remove(part);
-			delete part;
+			else
+			{
+				auto island = part->m_parent;
+				if (attach->m_parent->isConstraint())
+				{
+					auto bearing = static_cast<GameConstraint*>(attach->m_parent);
+					m_bearList.erase(m_bearList.find(bearing));
+				}
+				part->getNode()->removeFromParent();
+				island->remove(part);
+				delete part;
+			}
+
 		}
 	}
 
@@ -380,8 +393,7 @@ namespace tzw
 		}
 	}
 
-	void
-	BuildingSystem::dump()
+void BuildingSystem::dump(std::string filePath)
 	{
 		rapidjson::Document doc;
 		doc.SetObject();
@@ -406,7 +418,7 @@ namespace tzw
 		}
 		doc.AddMember("constraintList", constraintList, doc.GetAllocator());
 		rapidjson::StringBuffer buffer;
-		auto file = fopen("./test_island.txt", "w");
+		auto file = fopen(filePath.c_str(), "w");
 		char writeBuffer[65536];
 		rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
 		rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
@@ -416,10 +428,9 @@ namespace tzw
 	}
 
 	void
-	BuildingSystem::load()
+	BuildingSystem::load(std::string filePath)
 	{
 		rapidjson::Document doc;
-		std::string filePath = "./test_island.txt";
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 		if (doc.HasParseError())
@@ -557,18 +568,16 @@ namespace tzw
 	{
 	}
 
-	void
-	BuildingSystem::dropFromLift()
+void BuildingSystem::dropFromLift()
 	{
-		// each island, we create a rigid
+		// each island, for normal island we create a rigid, for constraint island, we create a constraint
 		for (auto island : m_IslandList)
 		{
 			island->enablePhysics(true);
 		}
-
-		for (auto bear : m_bearList)
+		for(auto constraint :m_bearList)
 		{
-			bear->enablePhysics(true);
+			constraint->enablePhysics(true);
 		}
 		if (m_liftPart)
 		{
@@ -577,8 +586,7 @@ namespace tzw
 		}
 	}
 
-	void
-	BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
+void BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
 	{
 		// put them back to the lift
 		auto island = rayTestIsland(pos, dir, dist);
@@ -589,9 +597,9 @@ namespace tzw
 			{
 				island->enablePhysics(false);
 			}
-			for (auto bear : m_bearList)
+			for(auto constraint :m_bearList)
 			{
-				bear->enablePhysics(false);
+				constraint->enablePhysics(false);
 			}
 			replaceToLift(island);
 		}

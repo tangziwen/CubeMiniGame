@@ -32,8 +32,7 @@ namespace tzw
 
 	bool imgui_begin_no_close(const char* name, int flags)
 	{
-		ImGui::Begin(name, NULL, flags);
-		return true;
+		return ImGui::Begin(name, NULL, flags);
 	}
 	void imgui_text(const char* name)
 	{
