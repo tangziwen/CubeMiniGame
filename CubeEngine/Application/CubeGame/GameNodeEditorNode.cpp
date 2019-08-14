@@ -87,4 +87,9 @@ namespace tzw
 		}
 		return nullptr;
 	}
+
+	GameNodeEditorNode::~GameNodeEditorNode()
+	{
+
+	}
 }

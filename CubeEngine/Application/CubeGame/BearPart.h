@@ -7,6 +7,7 @@ class Drawable3D;
 class BlockPart;
 struct Attachment;
 class PhysicsHingeConstraint;
+	class GameNodeEditorNode;
 class BearPart : public GameConstraint
 {
 public:
@@ -19,9 +20,11 @@ public:
 	Attachment* getFirstAttachment() override;
 	Attachment * getAttachment(int index) override;
 	int getAttachmentCount() override;
+	~BearPart();
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	Attachment * m_attachment[6];
+	GameNodeEditorNode * m_graphNode;
 
 };
 }

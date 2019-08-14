@@ -26,6 +26,7 @@ namespace tzw
 		void setActivate(bool value);
 		void onFrameUpdate(float delta) override;
 		void handleBearings();
+		~ControlPart();
 	public:
 		int m_forward;
 		int m_side;
@@ -35,5 +36,6 @@ namespace tzw
 		std::vector<BearPart * > m_forwardBearing;
 		std::vector<BearPart *> m_sidewardBearing;
 		bool m_isActivate;
+		GameNodeEditorNode * m_graphNode;
 	};
 }

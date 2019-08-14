@@ -19,8 +19,8 @@ BearPart::BearPart()
 	m_constrain = nullptr;
 	
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
-	auto node = new BearingPartNode(this);
-	nodeEditor->addNode(node);
+	m_graphNode = new BearingPartNode(this);
+	nodeEditor->addNode(m_graphNode);
 	float blockSize = 0.10;
 	//forward backward
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
@@ -44,6 +44,13 @@ void BearPart::updateFlipped()
 int BearPart::getAttachmentCount()
 {
 	return 2;
+}
+
+BearPart::~BearPart()
+{
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
+	delete m_graphNode;
 }
 
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -86,7 +93,8 @@ void BearPart::enablePhysics(bool isEnable)
 			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 			m_constrain = constrain;
 		}
-		} else 
+		}
+		else 
 		{
 			PhysicsMgr::shared()->addConstraint(m_constrain);
 		}

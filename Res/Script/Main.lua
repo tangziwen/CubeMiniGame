@@ -1,10 +1,15 @@
 include("KeyConfig")
+include("UiUtil")
 Main = {}
 --init
 function tzw_engine_init()
 	print("lua init")
 end
 
+
+function tzw_on_game_ready()
+	UiUtil.popText("基本版本 弹出框测试")
+end
 
 ImGuiCond_Always        = 1 << 0   -- Set the variable
 ImGuiCond_Once          = 1 << 1   -- Set the variable once per runtime session (only the first call with succeed)
@@ -49,9 +54,7 @@ local m_currIndex = 1
 local lift_state = 0
 local isOpenTestWindow = true
 --ui update
-local isPop = true
 function tzw_engine_ui_update(dt)
-	popText()
 	if isShowHelpPage then
 		drawHelpPage()
 	end
@@ -65,6 +68,7 @@ function tzw_engine_ui_update(dt)
 			drawEntryInterface()
 		end
 	end
+	UiUtil.handlePopText()
 end
 
 local m_itemSlots = {}
@@ -130,45 +134,26 @@ function drawHud()
 	ImGui.End()
 end
 
-function popText()
-	-- ImGui.Begin("test", 0)
-	if isPop then
-		ImGui.OpenPopup("abcdefg");
-		print "popText A"
-		-- isPop = false
-	end
-	if (ImGui.BeginPopupModal("abcdefg", ImGuiWindowFlags_AlwaysAutoResize)) then
-		print "herere"
-		if ImGui.Button("开始游戏", ImGui.ImVec2(160, 35)) then
-			ImGui.Button("End Button", ImGui.ImVec2(160, 35))
-			print "popText B"
-			isPop = false
-			ImGui.CloseCurrentPopup()
-		end
-		ImGui.EndPopup()
-	end
-	-- ImGui.End("End", 0)
-end
-
 function drawEntryInterface()
 	local screenSize = Engine:shared():winSize()
 	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImGui.ImVec2(0.5, 0.5));
-	ImGui.BeginNoClose("CubeEngine",ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse)
-	
-	if(ImGui.Button("开始游戏", ImGui.ImVec2(160, 35))) then
-		GameWorld.shared():startGame()
-		Engine:shared():setUnlimitedCursor(true)
+	if ImGui.BeginNoClose("CubeEngine",ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse) then
+
+		if(ImGui.Button("开始游戏", ImGui.ImVec2(160, 35))) then
+			GameWorld.shared():startGame()
+			Engine:shared():setUnlimitedCursor(true)
+		end
+		ImGui.Spacing()
+		if(ImGui.Button("帮助", ImGui.ImVec2(160, 35))) then
+			print "help btn clicked"
+		end
+		ImGui.Spacing()
+		if(ImGui.Button("退出", ImGui.ImVec2(160, 35))) then
+			print "on Exit"
+		end
+		ImGui.Spacing()
+		ImGui.End()
 	end
-	ImGui.Spacing()
-	if(ImGui.Button("帮助", ImGui.ImVec2(160, 35))) then
-		print "help btn clicked"
-	end
-	ImGui.Spacing()
-	if(ImGui.Button("退出", ImGui.ImVec2(160, 35))) then
-		print "on Exit"
-	end
-	ImGui.Spacing()
-	ImGui.End()
 end
 
 function onKeyPress(input_event)
@@ -211,9 +196,6 @@ function onKeyRelease(input_event)
 			player:setPos(oldPlayerPos)
 			BuildingSystem.shared():setCurrentControlPart(nil)
 		end
-	elseif input_event.keycode == TZW_KEY_Y then
-		print "hehehehehehe"
-		isPop = true
 	end
 end
 
@@ -251,7 +233,7 @@ end
 
 function handleItemSecondaryUse(item)
 	local player = GameWorld.shared():getPlayer()
-	if (item.ItemClass == "PlaceableBlock") then
+	if (item.ItemClass == "PlaceableBlock" or item.ItemClass == "Lift") then
 		local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
 		if result then
 			BuildingSystem.shared():removePartByAttach(result)

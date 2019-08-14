@@ -24,6 +24,7 @@ public:
 	virtual void onLinkOut(int startID, int endID, GameNodeEditorNode * other);
 	virtual void onLinkIn(int startID, int endID, GameNodeEditorNode * other);
 	NodeAttr * getAttrByGid(int GID);
+	virtual ~GameNodeEditorNode();
 protected:
 	std::vector<NodeAttr *> m_inAttr;
 	std::vector<NodeAttr *> m_outAttr;

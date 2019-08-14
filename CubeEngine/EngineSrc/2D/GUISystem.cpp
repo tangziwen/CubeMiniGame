@@ -132,7 +132,7 @@ namespace tzw
 		{
 			obj->drawIMGUI();
 		}
-		 
+		ScriptPyMgr::shared()->doScriptUIUpdate();
 		ImGui::Render();
 	}
 
@@ -192,7 +192,7 @@ namespace tzw
 		io.DeltaTime = Engine::shared()->deltaTime();
 		
 		NewFrame();
-		ScriptPyMgr::shared()->doScriptUIUpdate();
+		
 		renderData();
 		
 	}

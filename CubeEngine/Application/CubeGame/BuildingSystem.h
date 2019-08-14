@@ -48,8 +48,8 @@ class BuildingSystem
 		LiftPart * getLift() const;
 		ControlPart * getControlPart();
 		void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
-		void dump();
-		void load();
+		void dump(std::string filePath);
+		void load(std::string filePath);
 		void updateBearing(float dt);
 	private:
 		ControlPart * m_controlPart;
