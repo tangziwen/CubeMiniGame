@@ -31,7 +31,8 @@ static void onOption(Button * btn)
 
 }
 
-MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isOpenTerrain(false)
+MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isShowNodeEditor(false),
+                      m_isOpenTerrain(false), m_nodeEditor(nullptr), m_fileBrowser(nullptr), m_crossHair(nullptr)
 {
 }
 

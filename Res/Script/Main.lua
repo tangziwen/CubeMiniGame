@@ -102,7 +102,7 @@ function drawHelpPage()
 	if ImGui.CollapsingHeader("升降工作台", 0) then
 		ImGui.TextWrapped("玩家可以在地面上放置升降控制台，并可以将物块放在上面，在升降控制台上的物体不开启物理效果，")
 		ImGui.TextWrapped("可以更方面的建造，同时小键盘的上下方向键可以竖直平移工作台")
-		ImGui.TextWrapped("玩家按下H键后，工作台上的物体将开启物理并脱离工作台控制，对准活动的方块按J键可以将其放回工作台")
+		ImGui.TextWrapped("删除升降台后将开启载具的物理，相反的，建造好升降台后，准心对准活动的方块按J键可以将其放回工作台")
 	end
 	if ImGui.CollapsingHeader("约束", 0) then
 		ImGui.TextWrapped("目前玩家可放置的有两种约束，弹簧和轴承，放置普通方块时，物体会自动连接成一个刚体，如果放置一个约束")
