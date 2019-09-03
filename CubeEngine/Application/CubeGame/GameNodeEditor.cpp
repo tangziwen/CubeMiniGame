@@ -1,22 +1,28 @@
 #include "GameNodeEditor.h"
 #include "2D/imnodes.h"
+#include "NodeEditorNodes/ControlPartNode.h"
+#include "NodeEditorNodes/BearingPartNode.h"
+//#include <minwindef.h>
+#include "Base/GuidMgr.h"
+#include "ControlPart.h"
 
 namespace tzw
 {
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
 	{
-		ImGui::Begin("节点编辑器", isOpen);
-		if (ImGui::Button("Key Binding")) 
-		{
-			static int idx = 0;
-			auto node  = new GameNodeEditorNode();
-			node->addOut("to");
-			char a[512];
-			sprintf(a, "onKeyPress#%d",idx);
-			idx += 1;
-			node->name = a;
-			addNode(node);
-		}
+		ImGui::Begin(u8"节点编辑器", isOpen);
+		//if (ImGui::Button(u8"控制器节点")) 
+		//{
+		//	auto graphNode = new ControlPartNode(nullptr);
+		//	addNode(graphNode);
+		//}
+		//ImGui::SameLine();
+		//if (ImGui::Button(u8"轴承节点")) 
+		//{
+		//	auto bearPartNode = new BearingPartNode(nullptr);
+		//	addNode(bearPartNode);
+		//}
+	
 		imnodes::BeginNodeEditor();
 
 		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
@@ -131,5 +137,113 @@ namespace tzw
 			endNode->onLinkIn(startAttr, endAttr, startNode);
 		}
 
+	}
+
+	void GameNodeEditor::handleLinkDump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		rapidjson::Value NodeGraphObj(rapidjson::kObjectType);
+
+		rapidjson::Value NodeListObj(rapidjson::kArrayType);
+		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+		{
+			rapidjson::Value NodeObj(rapidjson::kObjectType);
+			auto node = m_gameNodes[i];
+			node->dump(NodeObj, allocator);
+			NodeListObj.PushBack(NodeObj, allocator);
+		}
+		NodeGraphObj.AddMember("NodeList", NodeListObj, allocator);
+
+		rapidjson::Value linkListDoc(rapidjson::kArrayType);
+		for (auto i = m_links.begin(); i != m_links.end(); ++i)
+		{
+			const std::pair<int, int> p = *i;
+			auto startAttr = i->first;
+			auto endAttr = i->second;
+			GameNodeEditorNode * startNode = nullptr;
+			GameNodeEditorNode * endNode = nullptr;
+			for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+			{
+				auto node = m_gameNodes[i];
+				if (!startNode) 
+				{     
+					if(node->checkOutNodeAttr(startAttr)) 
+					{
+						startNode = node;
+					}
+	            }
+				if (!endNode) 
+				{     
+					if(node->checkInNodeAttr(endAttr)) 
+					{
+						endNode = node;
+					}
+	            }
+				if (endNode && startNode) 
+				{     
+					break;
+	            }
+			}
+
+			if(startNode && endNode)
+			{
+				rapidjson::Value linkObj(rapidjson::kObjectType);
+				linkObj.AddMember("from", std::string(startNode->getGUID()), allocator);
+				linkObj.AddMember("to", std::string(endNode->getGUID()), allocator);
+				linkObj.AddMember("fromOutputID", startNode->getOutputAttrLocalIndexByGid(startAttr), allocator);
+				linkObj.AddMember("toInputID", endNode->getInputAttrLocalIndexByGid(endAttr), allocator);
+				linkListDoc.PushBack(linkObj, allocator);
+			}
+		}
+		NodeGraphObj.AddMember("NodeLinkList", linkListDoc, allocator);
+		partDocObj.AddMember("NodeGraph", NodeGraphObj, allocator);
+	}
+
+	void GameNodeEditor::handleLinkLoad(rapidjson::Value& NodeGraphObj)
+	{
+		//read node
+		
+		auto& NodeList = NodeGraphObj["NodeList"];
+		for(unsigned int i = 0; i < NodeList.Size(); i++)
+		{
+			auto& node = NodeList[i];
+			//we skip create resource Node, but find exist resource node, and set properly UID
+			if(strcmp(node["Type"].GetString(), "Resource") == 0)
+			{
+				if(strcmp(node["ResType"].GetString(), "ControlPart") == 0)//ControlPart
+				{
+					auto resUID = node["ResUID"].GetString();
+					auto controlPart = reinterpret_cast<ControlPart*>(GUIDMgr::shared()->get(resUID));
+					//update UID
+					controlPart->getGraphNode()->setGUID(node["UID"].GetString());
+				}
+				else if(strcmp(node["ResType"].GetString(), "BearPart") == 0)//BearPart
+				{
+					auto resUID = node["ResUID"].GetString();
+					auto bearPart = reinterpret_cast<BearPart*>(GUIDMgr::shared()->get(resUID));
+					//update UID
+					bearPart->getGraphNode()->setGUID(node["UID"].GetString());
+				}
+			}
+		}
+		//read link
+
+		auto& linkList = NodeGraphObj["NodeLinkList"];
+		for(unsigned int i = 0; i < linkList.Size(); i++) 
+		{
+			auto& linkObj = linkList[i];
+			GameNodeEditorNode * nodeA = reinterpret_cast<GameNodeEditorNode*>(GUIDMgr::shared()->get(linkObj["from"].GetString()));
+			GameNodeEditorNode * nodeB = reinterpret_cast<GameNodeEditorNode*>(GUIDMgr::shared()->get(linkObj["to"].GetString()));
+			int fromOutputID = linkObj["fromOutputID"].GetInt();
+			int toInputID = linkObj["toInputID"].GetInt();
+			makeLinkByNode(nodeA, nodeB, fromOutputID, toInputID);
+		}
+	}
+
+
+	void GameNodeEditor::makeLinkByNode(GameNodeEditorNode* NodeA, GameNodeEditorNode* NodeB, int indexOfA, int indeOfB)
+	{
+		int start_attr = NodeA->getOutByIndex(indexOfA)->gID;
+		int end_attr = NodeB->getInByIndex(indeOfB)->gID;
+		m_links.push_back(std::make_pair(start_attr, end_attr));
 	}
 }

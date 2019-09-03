@@ -1,6 +1,6 @@
 #include "Data.h"
 #include <assert.h>
-#include "Utility/log/Tlog.h"
+#include "Utility/log/Log.h"
 
 namespace tzw
 {
@@ -23,7 +23,7 @@ Data::Data(const Data& other) :
 _bytes(nullptr),
 _size(0)
 {
-    Tlog()<<("In the copy constructor of Data.");
+    tlog("In the copy constructor of Data.");
     copy(other._bytes, other._size);
 }
 
@@ -34,14 +34,14 @@ Data::~Data()
 
 Data& Data::operator= (const Data& other)
 {
-    Tlog()<<("In the copy assignment of Data.");
+    tlog("In the copy assignment of Data.");
     copy(other._bytes, other._size);
     return *this;
 }
 
 Data& Data::operator= (Data&& other)
 {
-    Tlog()<<("In the move assignment of Data.");
+    tlog("In the move assignment of Data.");
     move(other);
     return *this;
 }

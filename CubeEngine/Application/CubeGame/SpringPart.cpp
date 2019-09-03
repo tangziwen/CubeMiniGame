@@ -134,6 +134,7 @@ void SpringPart::dump(rapidjson::Value& partData, rapidjson::Document::Allocator
 		
 	}
 	partData.AddMember("attachList", attachList, allocator);
+	partData.AddMember("UID", std::string(getGUID()), allocator);
 }
 
 Attachment* SpringPart::getFirstAttachment()

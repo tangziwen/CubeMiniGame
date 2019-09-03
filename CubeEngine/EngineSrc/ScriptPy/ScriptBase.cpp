@@ -1,5 +1,5 @@
 #include "ScriptBase.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #ifdef _DEBUG
 #undef _DEBUG
 #include <Python27/include/Python.h>
@@ -18,7 +18,7 @@ namespace tzw
 			{
 				return 0;
 			}
-			tlog("%s\n", msg);
+			tlog("%s", msg);
 			Py_RETURN_NONE;
 		}
 		static PyMethodDef module_methods[] = {

@@ -1,5 +1,5 @@
 #include "EffectMgr.h"
-#include "Base/Log.h"
+#include "utility/log/Log.h"
 #include <iostream>
 namespace tzw {
 

@@ -5,6 +5,7 @@
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
 #include "Utility/file/Tfile.h"
+#include "Utility/log/Log.h"
 
 namespace tzw {
 
@@ -16,7 +17,7 @@ TextureAtlas::TextureAtlas(std::string sheetFile)
 	//判断读取成功与否 和 是否为数组类型
 	if (doc.HasParseError())
 	{
-		printf("get json data err!");
+		tlogError("get json data err!");
 		return;
 	}
 	auto imagePath = doc["meta"]["image"].GetString();

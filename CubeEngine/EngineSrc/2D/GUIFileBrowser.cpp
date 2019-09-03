@@ -1,6 +1,7 @@
 #include "GUIFileBrowser.h"
 #include "imgui.h"
 #include "dirent.h"
+#include "Utility/log/Log.h"
 
 static void list_directory (const char* dirname, std::vector<tzw::fileInfo_broswer *> &fileNameList)
 {
@@ -28,23 +29,23 @@ static void list_directory (const char* dirname, std::vector<tzw::fileInfo_brosw
 				{
 				auto a = new tzw::fileInfo_broswer();
 				a->fileName = ent->d_name;
-				printf("%s\n", ent->d_name);
+				tzw::tlog("%s\n", ent->d_name);
 				fileNameList.push_back(a);
 				}
 				break;
 			case DT_DIR:
 
-				printf("%s/\n", ent->d_name);
+				tzw::tlog("%s/\n", ent->d_name);
 				break;
 
 			case DT_LNK:
 
-				printf("%s@\n", ent->d_name);
+				tzw::tlog("%s@\n", ent->d_name);
 				break;
 
 			default:
 
-				printf("%s*\n", ent->d_name);
+				tzw::tlog("%s*\n", ent->d_name);
 			}
 		}
 

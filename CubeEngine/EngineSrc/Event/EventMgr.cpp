@@ -265,7 +265,7 @@ void EventMgr::applyMouseMove(EventInfo &info)
 
 EventMgr::~EventMgr()
 {
-	printf("on dispose");
+	tlogError("on dispose");
 }
 
 void EventMgr::removeEventListener(EventListener *event)

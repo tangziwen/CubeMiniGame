@@ -1,7 +1,7 @@
 #include "Texture.h"
 #include "External/SOIL/SOIL.h"
 #include "GL/glew.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "Engine/Engine.h"
 #include "BackEnd/RenderBackEnd.h"
 

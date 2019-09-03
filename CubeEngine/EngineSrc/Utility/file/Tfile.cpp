@@ -1,10 +1,12 @@
 #include "Tfile.h"
-#include "../log/Tlog.h"
+#include "../log/Log.h"
 #include "string.h"
 #include <algorithm>
 #include <direct.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "Utility/log/Log.h"
+
 namespace tzw
 {
 Tfile * Tfile::m_instance = nullptr;
@@ -35,7 +37,7 @@ Data Tfile::getData(std::string filename, bool forString)
           FILE *fp = fopen(filename.c_str (), mode);
           if(!fp)
           {
-              printf("Bad file : %s\n",filename.c_str());
+              tlogError("Bad file : %s\n",filename.c_str());
               exit(0);
           }
           fseek(fp,0,SEEK_END);
@@ -60,7 +62,7 @@ Data Tfile::getData(std::string filename, bool forString)
 
       if (nullptr == buffer || 0 == readsize)
       {
-          Tlog()<<"Get data from file"<<filename.c_str()<<"failed";
+          tlogError("Get data from file %s failed", filename.c_str());
       }
       else
       {

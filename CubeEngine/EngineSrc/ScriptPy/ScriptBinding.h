@@ -6,7 +6,7 @@
 
 #include "Scene/SceneMgr.h"
 #include "ScriptBase.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "Engine/Engine.h"
 #include "Event/EventMgr.h"
 

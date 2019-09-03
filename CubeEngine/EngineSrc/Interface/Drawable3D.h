@@ -6,6 +6,7 @@
 #include "DepthPolicy.h"
 #include "../Math/t_Sphere.h"
 #include "../Collision/ColliderEllipsoid.h"
+#include "Utility/log/Log.h"
 namespace tzw {
 class Ray;
 

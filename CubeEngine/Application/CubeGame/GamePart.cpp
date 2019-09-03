@@ -350,6 +350,48 @@ namespace tzw
 				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
 			}
         }
+
+
+	}
+
+	void GamePart::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		//pos
+		auto pos = getNode()->getPos();
+		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+		rapidjson::Value posList(rapidjson::kArrayType);
+		posList.PushBack(pos.x, allocator).PushBack(pos.y, allocator).PushBack(pos.z, allocator);
+		partDocObj.AddMember("pos", posList, allocator);
+		
+
+		//rotate
+		auto rotate = getNode()->getRotateQ();
+		rapidjson::Value rotateList(rapidjson::kArrayType);
+		rotateList.PushBack(rotate.x, allocator).PushBack(rotate.y, allocator).PushBack(rotate.z, allocator).PushBack(rotate.w, allocator);
+
+		partDocObj.AddMember("rotate", rotateList, allocator);
+
+		//type
+		partDocObj.AddMember("type", getType(), allocator);
+
+
+
+		rapidjson::Value attachList(rapidjson::kArrayType);
+		int count = getAttachmentCount();
+		for(int k = 0; k < count; k++)
+		{
+			auto attach = getAttachment(k);
+			rapidjson::Value attachObj(rapidjson::kObjectType);
+			attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
+			std::string UID = "empty";
+            if (attach->m_connected) 
+			{
+            	UID = attach->m_connected->getGUID();
+            }
+			attachObj.AddMember("to", std::string(UID), allocator);
+			attachList.PushBack(attachObj, allocator);
+		}
+		partDocObj.AddMember("attachList", attachList, allocator);
 	}
 
 	bool GamePart::isConstraint()

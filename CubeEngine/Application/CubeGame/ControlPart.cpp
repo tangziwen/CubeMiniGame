@@ -7,6 +7,7 @@
 #include "NodeEditorNodes/ControlPartNode.h"
 #include "Event/EventMgr.h"
 #include "GameWorld.h"
+#include "Base/GuidMgr.h"
 
 namespace tzw
 {
@@ -262,11 +263,61 @@ void ControlPart::handleBearings()
 	}
 }
 
+void ControlPart::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+{
+	GamePart::dump(partDocObj, allocator);
+	//rapidjson::Value forwardBearingList(rapidjson::kArrayType);
+	//for (auto bearing : m_forwardBearing) 
+	//{
+	//	rapidjson::Value bearingDoc(rapidjson::kObjectType);
+	//	bearingDoc.AddMember("UID", std::string(bearing->getGUID()), allocator);
+	//	forwardBearingList.PushBack(bearingDoc, allocator);
+	//}
+	//partDocObj.AddMember("forwardBearingList", forwardBearingList, allocator);
+
+	//rapidjson::Value sideBearingList(rapidjson::kArrayType);
+	//for (auto bearing : m_sidewardBearing) 
+	//{
+	//	rapidjson::Value bearingDoc(rapidjson::kObjectType);
+	//	bearingDoc.AddMember("UID", std::string(bearing->getGUID()), allocator);
+	//	sideBearingList.PushBack(bearingDoc, allocator);
+	//}
+	//partDocObj.AddMember("sideBearingList", sideBearingList, allocator);
+}
+
+void ControlPart::load(rapidjson::Value& partData)
+{
+	GamePart::load(partData);
+	//auto& forwardBearingList = partData["forwardBearingList"];
+	//for(unsigned int i = 0; i < forwardBearingList.Size(); i++) 
+	//{
+	//	auto &bearingData = forwardBearingList[i];
+	//	auto bearPart =
+	//		reinterpret_cast<BearPart*>(GUIDMgr::shared()->get(bearingData["UID"].GetString()));
+	//	m_forwardBearing.push_back(bearPart);
+	//}
+}
+
+Attachment* ControlPart::getAttachment(int index)
+{
+	return m_attachment[index];
+}
+
+int ControlPart::getAttachmentCount()
+{
+	return 6;
+}
+
 ControlPart::~ControlPart()
 {
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
+}
+
+GameNodeEditorNode* ControlPart::getGraphNode()
+{
+	return m_graphNode;
 }
 
 int ControlPart::getType()

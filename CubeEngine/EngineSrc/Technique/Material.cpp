@@ -8,7 +8,7 @@
 #include "EngineSrc/3D/Effect/EffectMgr.h"
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "EngineSrc/Shader/ShaderMgr.h"
 #include "2D/GUISystem.h"
 #include "Texture/TextureMgr.h"
@@ -34,7 +34,7 @@ void Material::loadFromFile(std::string filePath)
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
-		tlog("[error] get json data err! %s %d offset %d\n", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
+		tlog("[error] get json data err! %s %d offset %d", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
 		exit(0);
 	}
 	if (doc.HasMember("name"))
@@ -59,7 +59,7 @@ void Material::loadFromFile(std::string filePath)
 		m_program = ShaderMgr::shared()->getByPath(vsFilePath, fsFilePath);
 		if (!m_program)
 		{
-			tlog("[error] bad program!!!\n");
+			tlog("[error] bad program!!!");
 			exit(0);
 		}
 	}

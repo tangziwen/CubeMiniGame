@@ -4,6 +4,8 @@
 #include <GL/glew.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include "Utility/log/Log.h"
+
 namespace tzw
 {
 	ShadowMapFBO::ShadowMapFBO()
@@ -52,7 +54,7 @@ namespace tzw
 		GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 		if (Status != GL_FRAMEBUFFER_COMPLETE) {
-			printf("FB error, status: 0x%x\n", Status);
+			tlogError("FB error, status: 0x%x\n", Status);
 			return false;
 		}
 		return true;
@@ -65,7 +67,7 @@ namespace tzw
 		GLenum Status = glCheckFramebufferStatus( GL_DRAW_FRAMEBUFFER);
 		if (Status != GL_FRAMEBUFFER_COMPLETE) 
 		{
-			printf("FB error, status: 0x%x\n", Status);
+			tlogError("FB error, status: 0x%x\n", Status);
 		}
 	}
 

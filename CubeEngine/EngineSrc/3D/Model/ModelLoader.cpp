@@ -24,7 +24,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
-		printf("get json data err!");
+		tlogError("get json data err!");
 		return;
 	}
 

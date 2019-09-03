@@ -313,7 +313,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 		break;
 	}
 }
-#define RAISE error = glGetError();printf("fuck error %d\n",error);
+#define RAISE error = glGetError();tlogError("raise error %d\n",error);
 void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
 {
 	glDisable(GL_CULL_FACE);

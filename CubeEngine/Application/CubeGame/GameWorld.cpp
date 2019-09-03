@@ -1,7 +1,7 @@
 #include "GameWorld.h"
 #include "GameMap.h"
 #include "EngineSrc/Event/EventMgr.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "time.h"
 #include "Utility/misc/Tmisc.h"
 #include <algorithm>
@@ -249,7 +249,7 @@ GameWorld::GameWorld()
 
 GameWorld::~GameWorld()
 {
-	printf("hello world");
+	tlog("hello world");
 }
 
 MainMenu *GameWorld::getMainMenu() const

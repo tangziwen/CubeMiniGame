@@ -53,6 +53,11 @@ BearPart::~BearPart()
 	delete m_graphNode;
 }
 
+GameNodeEditorNode* BearPart::getGraphNode()
+{
+	return m_graphNode;
+}
+
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
@@ -126,6 +131,7 @@ void BearPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorTy
 		
 	}
 	partData.AddMember("attachList", attachList, allocator);
+	partData.AddMember("UID", std::string(getGUID()), allocator);
 }
 
 Attachment* BearPart::getFirstAttachment()

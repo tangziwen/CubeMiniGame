@@ -1,6 +1,8 @@
 #include "Mesh.h"
 #include <iostream>
 #include <assert.h>
+#include "Utility/log/Log.h"
+
 namespace tzw {
 
 Mesh::Mesh()
@@ -253,7 +255,7 @@ void Mesh::triangleSplit(int index, int callee, int newPoint, int t1, int t2)
 
             if(midTriangles_[tv] == -1)
             {
-                printf("assert A\n");
+                tlogError("assert A\n");
             }
             //assert ( midTriangles_[tvnext] != -1 );
 

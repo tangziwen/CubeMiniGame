@@ -21,6 +21,7 @@ public:
 	Attachment * getAttachment(int index) override;
 	int getAttachmentCount() override;
 	~BearPart();
+	GameNodeEditorNode * getGraphNode();
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	Attachment * m_attachment[6];

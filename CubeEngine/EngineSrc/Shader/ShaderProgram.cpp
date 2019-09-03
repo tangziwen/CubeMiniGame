@@ -3,7 +3,7 @@
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <stdio.h>
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "BackEnd/RenderBackEnd.h"
 #include "Utility/file/Data.h"
 #include "Utility/file/Tfile.h"
@@ -19,7 +19,7 @@ ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, c
     }
     tzw::Data vs_data = tzw::Tfile::shared()->getData(pVSFileName,true);
     tzw::Data fs_data = tzw::Tfile::shared()->getData(pFSFileName,true);
-	tlog("compiling... %s %s\n", pVSFileName, pFSFileName);
+	tlog("compiling... %s %s", pVSFileName, pFSFileName);
     if (vs_data.isNull()) {
         exit(1);
     };
@@ -226,7 +226,7 @@ int ShaderProgram::uniformLocation(std::string name)
 
 void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType)
 {
-	printf("create shader!");
+	tlog("create shader!");
     GLuint ShaderObj = glCreateShader(ShaderType);
 	RenderBackEnd::shared()->selfCheck();
 

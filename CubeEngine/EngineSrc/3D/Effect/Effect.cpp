@@ -5,7 +5,7 @@
 #include "EngineSrc/Texture/TextureMgr.h"
 #include "EngineSrc/Interface/Drawable.h"
 #include "EngineSrc/Shader/ShaderMgr.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 namespace tzw {
 
 Effect::Effect()

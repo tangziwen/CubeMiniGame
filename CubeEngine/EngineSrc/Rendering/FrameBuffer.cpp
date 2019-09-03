@@ -5,6 +5,8 @@
 #include <stdio.h>
 #include <iostream>
 #include <assert.h>
+#include "Utility/log/Log.h"
+
 namespace tzw {
 
 FrameBuffer::FrameBuffer()
@@ -66,7 +68,7 @@ void FrameBuffer::init(integer_u width, integer_u height, integer_u numOfOutputs
 	GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
 	if (Status != GL_FRAMEBUFFER_COMPLETE) {
-		printf("FB error, status: 0x%x\n", Status);
+		tlogError("FB error, status: 0x%x\n", Status);
 	}
 
 	// restore default FBO

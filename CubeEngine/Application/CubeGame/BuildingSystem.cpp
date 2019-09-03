@@ -2,7 +2,7 @@
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Base/GuidMgr.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "Chunk.h"
 #include "Collision/PhysicsCompoundShape.h"
 #include "Collision/PhysicsMgr.h"
@@ -13,6 +13,7 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include <algorithm>
+#include "MainMenu.h"
 
 namespace tzw
 {
@@ -393,7 +394,7 @@ namespace tzw
 		}
 	}
 
-void BuildingSystem::dump(std::string filePath)
+	void BuildingSystem::dump(std::string filePath)
 	{
 		rapidjson::Document doc;
 		doc.SetObject();
@@ -408,6 +409,8 @@ void BuildingSystem::dump(std::string filePath)
 		}
 		doc.AddMember("islandList", islandList, doc.GetAllocator());
 
+
+		//constraint
 		rapidjson::Value constraintList(rapidjson::kArrayType);
 		for (auto constraint : m_bearList)
 		{
@@ -417,6 +420,13 @@ void BuildingSystem::dump(std::string filePath)
 			constraintList.PushBack(bearingObj, doc.GetAllocator());
 		}
 		doc.AddMember("constraintList", constraintList, doc.GetAllocator());
+
+
+		//Node Editor
+		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		nodeEditor->handleLinkDump(doc, doc.GetAllocator());
+		
+		
 		rapidjson::StringBuffer buffer;
 		auto file = fopen(filePath.c_str(), "w");
 		char writeBuffer[65536];
@@ -435,7 +445,7 @@ void BuildingSystem::dump(std::string filePath)
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 		if (doc.HasParseError())
 		{
-			tlog("[error] get json data err! %s %d offset %d\n",
+			tlog("[error] get json data err! %s %d offset %d",
 				filePath.c_str(),
 				doc.GetParseError(),
 				doc.GetErrorOffset());
@@ -476,6 +486,7 @@ void BuildingSystem::dump(std::string filePath)
 					constraint = placeBearingToAttach(fromAttach);
 				}
 				constraint->m_parent->m_islandGroup = item["IslandGroup"].GetString();
+				constraint->setGUID(item["UID"].GetString());
 				// update constraint's attachment GUID
 				auto& attachList = item["attachList"];
 				for (unsigned int j = 0; j < attachList.Size(); j++)
@@ -496,10 +507,15 @@ void BuildingSystem::dump(std::string filePath)
 						constraintAttach_target, toAttach);
 					constraint->m_a = toAttach;
 					if (toAttach->m_parent->getType() == GAME_PART_CYLINDER)
-						printf("cylinder%s\n", toAttach->m_parent->getWorldPos().getStr().c_str());
+						tlog("cylinder%s", toAttach->m_parent->getWorldPos().getStr().c_str());
 				}
 			}
 		}
+
+		//Node Editor
+		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		nodeEditor->handleLinkLoad(doc["NodeGraph"]);
+
 		auto island = m_IslandList[0];
 		replaceToLift(island);
 	}
@@ -709,7 +725,7 @@ void BuildingSystem::tmpMoveWheel(bool isOpen)
 {
 	for (auto constrain : m_constrainList)
 	{
-		printf("move Wheel\n");
+		tlog("move Wheel");
 		constrain->enableAngularMotor(isOpen, 10, 100);
 	}
 }

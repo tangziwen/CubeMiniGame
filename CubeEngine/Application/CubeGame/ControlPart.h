@@ -26,7 +26,12 @@ namespace tzw
 		void setActivate(bool value);
 		void onFrameUpdate(float delta) override;
 		void handleBearings();
+		virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
+		void load(rapidjson::Value& partData) override;
+		Attachment* getAttachment(int index) override;
+		int getAttachmentCount() override;
 		~ControlPart();
+		GameNodeEditorNode * getGraphNode();
 	public:
 		int m_forward;
 		int m_side;

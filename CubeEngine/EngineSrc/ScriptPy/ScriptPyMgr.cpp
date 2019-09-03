@@ -6,7 +6,7 @@
 
 #include "Scene/SceneMgr.h"
 #include "ScriptBase.h"
-#include "Base/Log.h"
+#include "Utility/log/Log.h"
 #include "Engine/Engine.h"
 #include "Event/EventMgr.h"
 
@@ -74,7 +74,7 @@ namespace tzw
 		luabridge::push(g_lua_state, eventInfo);
 		if (lua_pcall(g_lua_state, 1, 0, 0) != 0)
 		{
-			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 	}
 
@@ -83,7 +83,7 @@ namespace tzw
 		lua_getglobal(g_lua_state, funcName.c_str());
 		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
 		{
-			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 	}
 
@@ -92,7 +92,7 @@ namespace tzw
 		lua_getglobal(g_lua_state, "tzw_engine_init");
 		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
 		{
-			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 	}
 
@@ -102,7 +102,7 @@ namespace tzw
 		lua_pushnumber(g_lua_state, Engine::shared()->deltaTime());
 		if(lua_pcall(g_lua_state, 1, 0, 0))
 		{
-		printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 	}
 
@@ -116,11 +116,11 @@ namespace tzw
 		lua_getglobal(g_lua_state, "tzw_engine_reload");
 		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
 		{
-		printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 		if(luaL_loadfile(g_lua_state,"./Res/Script/tzw.lua")!= 0)
 		{
-			printf("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 	}
 

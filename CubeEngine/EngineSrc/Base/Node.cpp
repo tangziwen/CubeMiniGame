@@ -7,7 +7,7 @@
 #include <algorithm>
 #include "../Event/EventMgr.h"
 #include "../Rendering/Renderer.h"
-#include "Utility/log/Tlog.h"
+#include "Utility/log/Log.h"
 
 namespace tzw {
 
@@ -193,7 +193,7 @@ void Node::addChild(Node *node, bool isNeedSort)
 {
     if(node->m_parent)
     {
-        Tlog()<<"can not multiple adding";
+        tlogError("can not multiple adding");
     	exit(1);
     }else
     {

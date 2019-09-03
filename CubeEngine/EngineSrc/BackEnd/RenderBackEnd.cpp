@@ -5,6 +5,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <assert.h>
+#include "Utility/log/Log.h"
+
 namespace tzw {
 RenderBackEnd * RenderBackEnd::m_instance = nullptr;
 
@@ -24,7 +26,7 @@ void RenderBackEnd::selfCheck()
 		//ignore GL_OUT_OF_MEMORY
 		if (errorCode != 1285)
 		{
-			printf("error %d",errorCode);
+			tlogError("error %d",errorCode);
 			isBad = true;
 		}
 
@@ -67,7 +69,7 @@ void RenderBackEnd::initDevice()
 	auto result = glewInit();
 	if(result != GLEW_OK)
 	{
-		printf("opengl device init error!\n");
+		tlogError("opengl device init error!\n");
 		exit(0);
 	}
 
@@ -447,7 +449,7 @@ void RenderBackEnd::checkGL(int except_val)
 	bool isFuckedUp = false;
 	while ((errorCode = glGetError()) != GL_NO_ERROR)
 	{
-		printf("gl error %d\n", errorCode);
+		tlogError("gl error %d\n", errorCode);
 		if (errorCode == except_val)
 			continue;
 		isFuckedUp = true;

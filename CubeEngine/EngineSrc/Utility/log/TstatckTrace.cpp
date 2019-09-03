@@ -1,5 +1,5 @@
 #include "TstatckTrace.h"
-#include "../log/Tlog.h"
+#include "log.h"
 namespace tzw {
 
 TstatckTrace * TstatckTrace::instance = NULL;
@@ -27,15 +27,15 @@ void TstatckTrace::pop()
 
 void TstatckTrace::traceStack(Tstring file, int line, Tstring func)
 {
-    Tlog out;
-    out<<TlogBegin;
-    out<<"at "<<file<<", lines: "<<line<<", in func: "<< func<<" trace back.";
-    while(!m_trace.empty ())
-    {
-        out<<m_trace.top ();
-        m_trace.pop();
-    }
-    out<<TlogEnd;
+    //Tlog out;
+    //out<<TlogBegin;
+    //out<<"at "<<file<<", lines: "<<line<<", in func: "<< func<<" trace back.";
+    //while(!m_trace.empty ())
+    //{
+    //    out<<m_trace.top ();
+    //    m_trace.pop();
+    //}
+    //out<<TlogEnd;
 }
 
 TstatckTrace::TstatckTrace()

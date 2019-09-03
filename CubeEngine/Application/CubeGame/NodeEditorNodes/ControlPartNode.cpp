@@ -32,4 +32,16 @@ namespace tzw
 			m_part->addSidewardBearing(a->getProxy());
 		}
 	}
+
+	void ControlPartNode::load(rapidjson::Value& partData)
+	{
+	}
+
+	void ControlPartNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		partDocObj.AddMember("Type", std::string("Resource"), allocator);
+		partDocObj.AddMember("ResType", std::string("ControlPart"), allocator);
+		partDocObj.AddMember("ResUID", std::string(m_part->getGUID()), allocator);
+		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+	}
 }

@@ -15,10 +15,11 @@
 #include <rapidjson/rapidjson.h>
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 #include "Collision/PhysicsMgr.h"
-#include "Utility/log/Tlog.h"
+#include "Utility/log/Log.h"
 #include "BackEnd/RenderBackEnd.h"
 #include "Utility/file/Tfile.h"
 #include "rapidjson/document.h"
+
 extern "C"
 {
 	#include "Base/uuid4.h"
@@ -79,11 +80,12 @@ int Engine::getMouseButton(int mouseButton)
 void Engine::loadConfig()
 {
 	rapidjson::Document doc;
+
 	auto data = Tfile::shared()->getData("config.json",true);
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
-		printf("get json data err!");
+		tlogError("get json data err!");
 		return;
 	}
 	auto width = doc["width"].GetInt();
@@ -177,16 +179,11 @@ void Engine::update(float delta)
 	
 }
 
-static void writeFunction(const char * str)
-{
-	ConsolePanel::shared()->AddLog(str);
-    //g_GetCurrScene()->getConsolePanel()->print(str);
-}
-
 void Engine::onStart()
 {
+	initLogSystem();
+	tlog("Cube-Engine By tzw%s", EngineDef::versionStr);
     Engine::shared()->initSingletons();
-    TlogSystem::get()->setWriteFunc(writeFunction);
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();

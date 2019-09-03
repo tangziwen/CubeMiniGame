@@ -1,6 +1,7 @@
 #pragma once
 #include "2D/GUISystem.h"
-
+#include "Base/GuidObj.h"
+#include "rapidjson/document.h"
 namespace tzw {
 
 struct NodeAttr
@@ -9,7 +10,7 @@ struct NodeAttr
 	int gID;
 	int tag;
 };
-struct GameNodeEditorNode
+struct GameNodeEditorNode: public GuidObj 
 {
 public:
 	NodeAttr* addIn(std::string attrName);
@@ -25,6 +26,12 @@ public:
 	virtual void onLinkIn(int startID, int endID, GameNodeEditorNode * other);
 	NodeAttr * getAttrByGid(int GID);
 	virtual ~GameNodeEditorNode();
+	int getInputAttrLocalIndexByGid(int GID);
+	int getOutputAttrLocalIndexByGid(int GID);
+	NodeAttr * getInByIndex(int localIndex);
+	NodeAttr * getOutByIndex(int localIndex);
+	virtual void load(rapidjson::Value& partData);
+	virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
 protected:
 	std::vector<NodeAttr *> m_inAttr;
 	std::vector<NodeAttr *> m_outAttr;

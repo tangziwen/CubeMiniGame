@@ -41,6 +41,8 @@ namespace tzw
 		virtual int getType();
 		virtual float getMass();
 		virtual void load(rapidjson::Value& partData);
+		virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
+		
 		virtual bool isConstraint();
 		virtual vec3 getWorldPos();
 	protected:

@@ -92,4 +92,41 @@ namespace tzw
 	{
 
 	}
+
+	int GameNodeEditorNode::getInputAttrLocalIndexByGid(int GID)
+	{
+		for(int i = 0; i < m_inAttr.size(); i++) {
+			if(m_inAttr[i]->gID == GID)
+				return i;
+		}
+		return -1;
+	}
+
+	int GameNodeEditorNode::getOutputAttrLocalIndexByGid(int GID)
+	{
+		for(int i = 0; i < m_outAttr.size(); i++) {
+			if(m_outAttr[i]->gID == GID)
+				return i;
+		}
+		return -1;
+	}
+
+	NodeAttr* GameNodeEditorNode::getInByIndex(int localIndex)
+	{
+		return m_inAttr[localIndex];
+	}
+
+	NodeAttr* GameNodeEditorNode::getOutByIndex(int localIndex)
+	{
+		return m_outAttr[localIndex];
+	}
+
+	void GameNodeEditorNode::load(rapidjson::Value& partData)
+	{
+	}
+
+	void GameNodeEditorNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+	}
 }

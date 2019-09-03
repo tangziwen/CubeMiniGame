@@ -28,7 +28,7 @@ void
 Island::insert(GamePart* part)
 {
   if (!part->getNode()) {
-    printf("shit\n");
+    tlog("shit\n");
   }
   m_partList.push_back(part);
   part->m_parent = this;
@@ -224,43 +224,7 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 	for(auto i : m_partList)
 	{
 		rapidjson::Value partDocObj(rapidjson::kObjectType);
-		//pos
-		auto pos = i->getNode()->getPos();
-		partDocObj.AddMember("UID", std::string(i->getGUID()), allocator);
-		rapidjson::Value posList(rapidjson::kArrayType);
-		posList.PushBack(pos.x, allocator).PushBack(pos.y, allocator).PushBack(pos.z, allocator);
-		partDocObj.AddMember("pos", posList, allocator);
-		
-
-		//rotate
-		auto rotate = i->getNode()->getRotateQ();
-		rapidjson::Value rotateList(rapidjson::kArrayType);
-		rotateList.PushBack(rotate.x, allocator).PushBack(rotate.y, allocator).PushBack(rotate.z, allocator).PushBack(rotate.w, allocator);
-
-		partDocObj.AddMember("rotate", rotateList, allocator);
-
-		//type
-		partDocObj.AddMember("type", i->getType(), allocator);
-
-
-
-		rapidjson::Value attachList(rapidjson::kArrayType);
-		int count = i->getAttachmentCount();
-		for(int k = 0; k < count; k++)
-		{
-			auto attach = i->getAttachment(k);
-			rapidjson::Value attachObj(rapidjson::kObjectType);
-			attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
-			std::string UID = "empty";
-            if (attach->m_connected) 
-			{
-            	UID = attach->m_connected->getGUID();
-            }
-			attachObj.AddMember("to", std::string(UID), allocator);
-			attachList.PushBack(attachObj, allocator);
-			
-		}
-		partDocObj.AddMember("attachList", attachList, allocator);
+		i->dump(partDocObj, allocator);
 		partList.PushBack(partDocObj, allocator);
 	}
 	island.AddMember("name", 100.0, allocator);
@@ -295,7 +259,14 @@ void Island::load(rapidjson::Value& island)
 						insert(part);
 					}
 				break;
-
+				case GAME_PART_CONTROL:
+					{
+						auto part = new ControlPart();
+						part->load(item);
+						m_node->addChild(part->getNode());
+						insert(part);
+					}
+				break;
 			}
 		}
 	}
