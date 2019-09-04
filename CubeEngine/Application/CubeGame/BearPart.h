@@ -22,10 +22,13 @@ public:
 	int getAttachmentCount() override;
 	~BearPart();
 	GameNodeEditorNode * getGraphNode();
+	void load(rapidjson::Value& partData) override;
+	void setIsSteering(bool isSteering);
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	Attachment * m_attachment[6];
 	GameNodeEditorNode * m_graphNode;
+	bool m_isSteering;
 
 };
 }

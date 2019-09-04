@@ -58,7 +58,7 @@ void Camera::setProjection(const Matrix44 &projection)
 
 Matrix44 Camera::getViewMatrix()
 {
-    return getTransform().inverted();
+    return this->getTransform().inverted();
 }
 
 Matrix44 Camera::getViewProjectionMatrix()

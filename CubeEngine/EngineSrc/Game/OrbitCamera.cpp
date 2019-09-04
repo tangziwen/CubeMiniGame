@@ -1,4 +1,4 @@
-#include "FPSCamera.h"
+#include "OrbitCamera.h"
 #include "EngineSrc/Engine/Engine.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include "EngineSrc/Scene/SceneMgr.h"
@@ -13,7 +13,7 @@
 namespace tzw {
 
 const float HeightThreadHold = 0.01;
-FPSCamera::FPSCamera()
+OrbitCamera::OrbitCamera()
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(6,5,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true)
     ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false)
@@ -25,16 +25,19 @@ FPSCamera::FPSCamera()
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
 	setLocalPiority(-1);
+	m_longitude = 0.0;
+	m_latitude = 0.0 * 3.14 / 180.0f;
+	m_focusNode = nullptr;
 }
 
-FPSCamera *FPSCamera::create(Camera *cloneObj)
+OrbitCamera *OrbitCamera::create(Camera *cloneObj)
 {
-    auto camera =new  FPSCamera();
+    auto camera =new  OrbitCamera();
     camera->init(cloneObj);
     return camera;
 }
 
-bool FPSCamera::onKeyPress(int keyCode)
+bool OrbitCamera::onKeyPress(int keyCode)
 {
 	if (MainMenu::shared()->isVisible())
 		return false;
@@ -82,7 +85,7 @@ bool FPSCamera::onKeyPress(int keyCode)
     return false;
 }
 
-bool FPSCamera::onKeyRelease(int keyCode)
+bool OrbitCamera::onKeyRelease(int keyCode)
 {
 	if (MainMenu::shared()->isVisible())
 		return false;
@@ -128,18 +131,18 @@ bool FPSCamera::onKeyRelease(int keyCode)
     return false;
 }
 
-bool FPSCamera::onMouseRelease(int button, vec2 pos)
+bool OrbitCamera::onMouseRelease(int button, vec2 pos)
 {
     return true;
 }
 
-bool FPSCamera::onMousePress(int button, vec2 pos)
+bool OrbitCamera::onMousePress(int button, vec2 pos)
 {
     //m_oldPosition = vec3(pos.x,pos.y,0.0);
     return true;
 }
 
-bool FPSCamera::onMouseMove(vec2 pos)
+bool OrbitCamera::onMouseMove(vec2 pos)
 {		
     if(m_isFirstLoop)
     {
@@ -160,161 +163,124 @@ bool FPSCamera::onMouseMove(vec2 pos)
         {
             mouseForce.y = 0;
         }
-        auto deltaRot = vec3(mouseForce.y * 0.1, mouseForce.x * -1 * 0.1, 0);
-        setRotateE(getRotateE()  + deltaRot);
+    	m_longitude += mouseForce.x * 0.01;
+    	if(m_longitude > 2.0 * 3.14)
+    	{
+    		m_longitude = 0.0f;
+    	}else
+    	if(m_longitude < 0.0)
+    	{
+    		m_longitude = 2.0 * 3.14;
+    	}
+    	m_latitude += mouseForce.y * 0.005;
+    	if(m_latitude > 3.14f)
+    	{
+    		m_latitude = 3.14f;
+    	} else
+		if(m_latitude < 0.0f)
+    	{
+    		m_latitude = 0.0f;
+    	}
+
+    	//tlog("m_latitude%s", m_latitude);
     }
-    m_oldPosition = newPosition;
-    return false;
-}
-
-void FPSCamera::logicUpdate(float dt)
-{
-    if(!m_enableFPSFeature) return;
-    auto m = getTransform().data();
-    vec3 forwardDirection,rightDirection, upDirction;
-	forwardDirection = vec3( m[8], 0, m[10]);
-	rightDirection = vec3(m[0], 0, m[2]);
-	upDirction = vec3(0, 1, 0);
-    forwardDirection.normalize();
-    rightDirection.normalize();
-    auto pos = this->getPos();
-
-    std::vector<Drawable3D *> list;
-    AABB aabb;
-    aabb.update(vec3(pos.x -3,pos.y- 10,pos.z - 3));
-    aabb.update(vec3(pos.x +3,pos.y + 10 ,pos.z + 3));
 	
-    g_GetCurrScene()->getRange(&list,aabb);
-	Drawable3DGroup group;
-	if (!list.empty())
-	{
-		group.init(&list[0], list.size());
-	}
-    AABB playerAABB;
-    vec3 overLap;
-    vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward * -1;
-    totalSpeed += rightDirection*dt*m_speed.x*m_slide;
-	totalSpeed += upDirction * dt * m_speed.y * m_up;
+    m_oldPosition = newPosition;
+    return true;
+}
 
-    if(false)//if no collid just go through TZW just for speed.
-    {
-        vec3 test = pos + totalSpeed;
-        pos = test;
-        setPos(pos);
-    }else
-    {
-        vec3 userSpeed = vec3(totalSpeed.x, totalSpeed.y, totalSpeed.z);
-        vec3 gravityVelocity;
-        if(m_isEnableGravity)
-        {
-            Ray ray(m_pos,vec3(0, -1, 0));
-            vec3 hitPoint;
-            if(group.hitByRay(ray,hitPoint) && hitPoint.distance(m_pos) <= (distToGround + offsetToCentre + 0.05) && m_verticalSpeed < 0.0f)
-            {
-                m_verticalSpeed = 0.0;
-            }else
-            {
-                if(m_verticalSpeed <= -0.5)
-                {
-                    m_verticalSpeed = -0.5;
-                }
-                else
-                {
-                    m_verticalSpeed -= 0.005;
-                }
-            }
-            gravityVelocity = vec3(0,m_verticalSpeed,0);
-        }
-        collideAndSlide(userSpeed,gravityVelocity);
-    }
+void OrbitCamera::logicUpdate(float dt)
+{
+	m_frustum.initFrustumFromCamera(this);
+    return;
 }
 
 
-vec3 FPSCamera::speed() const
+vec3 OrbitCamera::speed() const
 {
     return m_speed;
 }
 
-void FPSCamera::setSpeed(const vec3 &speed)
+void OrbitCamera::setSpeed(const vec3 &speed)
 {
     m_speed = speed;
 }
-vec3 FPSCamera::rotateSpeed() const
+vec3 OrbitCamera::rotateSpeed() const
 {
     return m_rotateSpeed;
 }
 
-void FPSCamera::setRotateSpeed(const vec3 &rotateSpeed)
+void OrbitCamera::setRotateSpeed(const vec3 &rotateSpeed)
 {
     m_rotateSpeed = rotateSpeed;
 }
 
-float FPSCamera::getDistToGround() const
+float OrbitCamera::getDistToGround() const
 {
     return distToGround;
 }
 
-void FPSCamera::setDistToGround(float value)
+void OrbitCamera::setDistToGround(float value)
 {
     distToGround = value;
 }
-float FPSCamera::getGravity() const
+float OrbitCamera::getGravity() const
 {
     return m_gravity;
 }
 
-void FPSCamera::setGravity(float gravity)
+void OrbitCamera::setGravity(float gravity)
 {
     m_gravity = gravity;
 }
-bool FPSCamera::getIsEnableGravity() const
+bool OrbitCamera::getIsEnableGravity() const
 {
     return m_isEnableGravity;
 }
 
-void FPSCamera::setIsEnableGravity(bool isEnableGravity)
+void OrbitCamera::setIsEnableGravity(bool isEnableGravity)
 {
     m_isEnableGravity = isEnableGravity;
 }
-float FPSCamera::getDistToside() const
+float OrbitCamera::getDistToside() const
 {
     return m_distToside;
 }
 
-void FPSCamera::setDistToside(float distToside)
+void OrbitCamera::setDistToside(float distToside)
 {
     m_distToside = distToside;
 }
-float FPSCamera::getMaxFallSpeed() const
+float OrbitCamera::getMaxFallSpeed() const
 {
     return m_maxFallSpeed;
 }
 
-void FPSCamera::setMaxFallSpeed(float maxFallSpeed)
+void OrbitCamera::setMaxFallSpeed(float maxFallSpeed)
 {
     m_maxFallSpeed = maxFallSpeed;
 }
-bool FPSCamera::getEnableFPSFeature() const
+bool OrbitCamera::getEnableFPSFeature() const
 {
     return m_enableFPSFeature;
 }
 
-void FPSCamera::setEnableFPSFeature(bool enableFPSFeature)
+void OrbitCamera::setEnableFPSFeature(bool enableFPSFeature)
 {
     m_enableFPSFeature = enableFPSFeature;
 }
 
-void FPSCamera::setRotateQ(const Quaternion &rotateQ)
+void OrbitCamera::setRotateQ(const Quaternion &rotateQ)
 {
     Camera::setRotateQ(rotateQ);
 }
 
-void FPSCamera::lookAt(vec3 pos)
+void OrbitCamera::lookAt(vec3 pos)
 {
     Camera::lookAt(pos,vec3(0.f, 1.f,0.f));
 }
 
-void FPSCamera::init(Camera *cloneObj)
+void OrbitCamera::init(Camera *cloneObj)
 {
     setProjection(cloneObj->projection());
     setPos(cloneObj->getPos());
@@ -324,7 +290,7 @@ void FPSCamera::init(Camera *cloneObj)
 	cloneObj->getPerspectInfo(&m_fov, &m_aspect, &m_near, &m_far);
 }
 
-void FPSCamera::collideAndSlide(vec3 vel, vec3 gravity)
+void OrbitCamera::collideAndSlide(vec3 vel, vec3 gravity)
 {
     // Do collision detection:
     collisionPackage->R3Position = m_pos - vec3(0, offsetToCentre, 0);
@@ -357,7 +323,7 @@ void FPSCamera::collideAndSlide(vec3 vel, vec3 gravity)
     setPos(finalPosition + vec3(0, offsetToCentre,0));
 }
 
-vec3 FPSCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlide)
+vec3 OrbitCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlide)
 {
     float veryCloseDistance = 0.005f;
     // do we need to worry?
@@ -418,7 +384,7 @@ vec3 FPSCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlid
     return collideWithWorld(newBasePoint,newVelocityVector);
 }
 
-void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
+void OrbitCamera::checkCollision(ColliderEllipsoid * thePackage)
 {
     std::vector<Drawable3D *> list;
     vec3 pos = thePackage->R3Position;
@@ -431,14 +397,94 @@ void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
     group.checkCollide(thePackage);
 }
 
-bool FPSCamera::getIsMoving() const
+bool OrbitCamera::getIsMoving() const
 {
     return m_isMoving;
 }
 
-void FPSCamera::setIsMoving(bool isMoving)
+void OrbitCamera::setIsMoving(bool isMoving)
 {
     m_isMoving = isMoving;
 }
+
+void OrbitCamera::setFocusNode(Node* focusNode)
+{
+	m_focusNode = focusNode;
+}
+static Matrix44 targetTo(vec3 eye, vec3 target, vec3 up)
+{
+	Matrix44 mat;
+	auto out = mat.data();
+  float eyex = eye.x,
+      eyey = eye.y,
+      eyez = eye.z,
+      upx = up.x,
+      upy = up.y,
+      upz = up.z;
+
+  float z0 = eyex - target.x,
+      z1 = eyey - target.y,
+      z2 = eyez - target.z;
+
+  float len = z0*z0 + z1*z1 + z2*z2;
+  if (len > 0) {
+    len = 1 / sqrt(len);
+    z0 *= len;
+    z1 *= len;
+    z2 *= len;
+  }
+
+  float x0 = upy * z2 - upz * z1,
+      x1 = upz * z0 - upx * z2,
+      x2 = upx * z1 - upy * z0;
+
+  len = x0*x0 + x1*x1 + x2*x2;
+  if (len > 0) {
+    len = 1 / sqrt(len);
+    x0 *= len;
+    x1 *= len;
+    x2 *= len;
+  }
+
+	out[0] = x0;
+	out[1] = x1;
+	out[2] = x2;
+	out[3] = 0;
+	out[4] = z1 * x2 - z2 * x1;
+	out[5] = z2 * x0 - z0 * x2;
+	out[6] = z0 * x1 - z1 * x0;
+	out[7] = 0;
+	out[8] = z0;
+	out[9] = z1;
+	out[10] = z2;
+	out[11] = 0;
+	out[12] = eyex;
+	out[13] = eyey;
+	out[14] = eyez;
+	out[15] = 1;
+	return mat;
+}
+Matrix44 OrbitCamera::getTransform()
+{
+	if(m_focusNode) 
+	{
+		m_focusNode->reCache();
+		auto centrePos = m_focusNode->getTransform().getTranslation();
+		vec3 dir;
+		dir.x = m_dist * -1.0f * cosf(m_longitude) * sinf(m_latitude);
+		dir.z = m_dist * -1.0f * sinf(m_longitude) * sinf(m_latitude);
+		dir.y = m_dist * cosf(m_latitude);
+		auto camPos = centrePos + dir;
+		auto resultMat = targetTo(camPos, centrePos, vec3(0, 1, 0));
+		
+		return resultMat;
+	}else
+	{
+		Matrix44 mat;
+		mat.setToIdentity();
+		return mat;
+	}
+}
+	
 } // namespace tzw
 

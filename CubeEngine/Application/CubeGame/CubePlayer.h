@@ -4,6 +4,7 @@
 #include "Game/FPSCamera.h"
 #include "EngineSrc/3D/Model/Model.h"
 #include "2D/GUISystem.h"
+#include "Game/OrbitCamera.h"
 namespace tzw
 {
 	class GameItem;
@@ -39,6 +40,7 @@ namespace tzw
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
 		FPSCamera* m_camera;
+		OrbitCamera * m_orbitcamera;
 		Model* m_gunModel;
 		int oldPosX;
 		int oldPosZ;

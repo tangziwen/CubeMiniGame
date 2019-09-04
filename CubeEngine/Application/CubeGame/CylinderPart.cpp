@@ -10,9 +10,9 @@ namespace tzw
 const float blockSize = 0.5;
 CylinderPart::CylinderPart()
 {
-	m_topRadius = 0.5;
-	m_bottomRadius = 0.5;
-	m_height = 0.25;
+	m_topRadius = 0.4;
+	m_bottomRadius = 0.4;
+	m_height = 0.15;
 	m_node = new CylinderPrimitive(m_topRadius, m_bottomRadius, m_height);
 	m_shape = new PhysicsShape();
 	m_shape->initCylinderShapeZ(m_topRadius, m_bottomRadius, m_height);

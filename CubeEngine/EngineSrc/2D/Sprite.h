@@ -32,7 +32,7 @@ public:
     bool isUseTexture() const;
     void setIsUseTexture(bool isUseTexture);
     void setUpTechnique();
-
+	void setUpTransFormation(TransformationInfo &info) override;
 protected:
     bool m_isUseTexture;
     Texture * m_texture;

@@ -36,8 +36,9 @@ Grass::Grass(std::string filePath)
 
 void Grass::setUpTransFormation(TransformationInfo &info)
 {
-	info.m_projectMatrix = camera()->projection();
-	info.m_viewMatrix = camera()->getViewMatrix();
+	auto currCam = g_GetCurrScene()->defaultCamera();
+	info.m_projectMatrix = currCam->projection();
+	info.m_viewMatrix = currCam->getViewMatrix();
 	Matrix44 mat;
 	mat.setToIdentity();
 	info.m_worldMatrix = mat;

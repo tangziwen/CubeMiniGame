@@ -26,7 +26,7 @@ public:
 	virtual ~Node();
 	//
 	static Node * create();
-	Matrix44 getTransform();
+	virtual Matrix44 getTransform();
 	virtual Matrix44 getLocalTransform();
 	vec3 getPos() const;
 	void setPos(const vec3 &pos);

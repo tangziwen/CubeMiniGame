@@ -7,6 +7,7 @@ class TbaseMath
 {
 public:
     static double PI;
+	static double PI_OVER_180;
     static float randF();
     static float randFN();
     static float randPI();

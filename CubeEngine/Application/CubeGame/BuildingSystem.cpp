@@ -325,8 +325,12 @@ namespace tzw
 				tmp.push_back(iter);
 			}
 		}
-		// add extra lift part
-		tmp.push_back(m_liftPart);
+		
+		if(m_liftPart)// add extra lift part
+		{
+			tmp.push_back(m_liftPart);
+		}
+		
 		std::sort(tmp.begin(), tmp.end(), [&](GamePart* left, GamePart* right)
 		{
 			float distl = left->getWorldPos().distance(pos);
@@ -477,11 +481,11 @@ namespace tzw
 				auto fromAttach =
 					reinterpret_cast<Attachment*>(GUIDMgr::shared()->get(GUID));
 				GameConstraint* constraint = nullptr;
-				if (constraintType.compare("Spring") == 0)
+				if (constraintType == "Spring")
 				{
 					constraint = placeSpringToAttach(fromAttach);
 				}
-				else if (constraintType.compare("Bearing") == 0)
+				else if (constraintType == "Bearing")
 				{
 					constraint = placeBearingToAttach(fromAttach);
 				}
@@ -506,9 +510,8 @@ namespace tzw
 					toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(
 						constraintAttach_target, toAttach);
 					constraint->m_a = toAttach;
-					if (toAttach->m_parent->getType() == GAME_PART_CYLINDER)
-						tlog("cylinder%s", toAttach->m_parent->getWorldPos().getStr().c_str());
 				}
+				constraint->load(item);
 			}
 		}
 

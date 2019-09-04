@@ -30,4 +30,14 @@ void PhysicsHingeConstraint::enableAngularMotor(bool enableMotor, float targetVe
 
 }
 
+void PhysicsHingeConstraint::setLimit(float low, float high, float _softness, float _biasFactor, float _relaxationFactor)
+{
+  if (m_constraint) 
+  {
+	//let the rigidBody wake up
+	m_constraint->getRigidBodyA().activate();
+	m_constraint->getRigidBodyB().activate();
+	m_constraint->setLimit(low, high,  _softness,  _biasFactor,  _relaxationFactor);
+  }
+}
 }

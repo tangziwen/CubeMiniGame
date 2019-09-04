@@ -11,9 +11,9 @@ namespace tzw
 		char formatName[512];
 		sprintf_s(formatName, 512, "Control %p",part);
 		name = formatName;
-		auto attr = addOut("Forward/Backward");
+		auto attr = addOut(u8"前进/后退");
 		attr->tag = 1;
-		attr = addOut("Leftward/Rightward");
+		attr = addOut(u8"向左/向右");
 		attr->tag = 2;
 	}
 

@@ -19,6 +19,11 @@ void GameConstraint::dump(rapidjson::Value& partData, rapidjson::Document::Alloc
 {
 }
 
+void GameConstraint::load(rapidjson::Value& partData)
+{
+	
+}
+
 bool GameConstraint::isConstraint()
 {
 	return true;

@@ -131,6 +131,7 @@ void ControlPart::addForwardBearing(BearPart* bearing)
 void ControlPart::addSidewardBearing(BearPart* bearing)
 {
 	m_sidewardBearing.push_back(bearing);
+	bearing->setIsSteering(true);
 }
 
 bool ControlPart::onKeyPress(int keyCode)
@@ -214,8 +215,8 @@ void ControlPart::setActivate(bool value)
 	
 	if (value) 
 	{
-		//GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
-		getNode()->setIsVisible(false);
+		GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
+		//getNode()->setIsVisible(false);
 	}
 	else
 	{	
@@ -223,7 +224,7 @@ void ControlPart::setActivate(bool value)
 		{
 			GameWorld::shared()->getPlayer()->attachCamToWorld();
 		}
-		getNode()->setIsVisible(true);
+		//getNode()->setIsVisible(true);
 	}
 	m_isActivate = value;
 }

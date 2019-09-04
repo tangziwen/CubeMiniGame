@@ -910,11 +910,12 @@ Chunk::checkCollide(ColliderEllipsoid* package)
 void
 Chunk::setUpTransFormation(TransformationInfo& info)
 {
-  info.m_projectMatrix = camera()->projection();
-  info.m_viewMatrix = camera()->getViewMatrix();
-  Matrix44 mat; // mesh it self contain world position
-  mat.setToIdentity();
-  info.m_worldMatrix = mat;
+	auto currCam = g_GetCurrScene()->defaultCamera();
+	info.m_projectMatrix = currCam->projection();
+	info.m_viewMatrix = currCam->getViewMatrix();
+	Matrix44 mat; // mesh it self contain world position
+	mat.setToIdentity();
+	info.m_worldMatrix = mat;
 }
 
 void

@@ -223,10 +223,13 @@ namespace tzw
 					//update UID
 					bearPart->getGraphNode()->setGUID(node["UID"].GetString());
 				}
+			}else //normal logic & function node
+			{
+
+				
 			}
 		}
 		//read link
-
 		auto& linkList = NodeGraphObj["NodeLinkList"];
 		for(unsigned int i = 0; i < linkList.Size(); i++) 
 		{
@@ -245,5 +248,6 @@ namespace tzw
 		int start_attr = NodeA->getOutByIndex(indexOfA)->gID;
 		int end_attr = NodeB->getInByIndex(indeOfB)->gID;
 		m_links.push_back(std::make_pair(start_attr, end_attr));
+		raiseEventToNode(start_attr, end_attr);
 	}
 }

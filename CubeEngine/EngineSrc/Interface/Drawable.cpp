@@ -1,4 +1,5 @@
 #include "Drawable.h"
+#include "Scene/SceneMgr.h"
 
 namespace tzw {
 
@@ -46,8 +47,9 @@ void Drawable::setMaterial(Material *technique)
 
 void Drawable::setUpTransFormation(TransformationInfo &info)
 {
-    info.m_projectMatrix = camera()->projection();
-    info.m_viewMatrix = camera()->getViewMatrix();
+	auto currCam = g_GetCurrScene()->defaultCamera();
+    info.m_projectMatrix = currCam->projection();
+    info.m_viewMatrix = currCam->getViewMatrix();
     info.m_worldMatrix = getTransform();
 }
 

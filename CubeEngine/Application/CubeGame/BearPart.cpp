@@ -7,6 +7,7 @@
 #include "GamePart.h"
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
+#include "Utility/math/TbaseMath.h"
 
 namespace tzw
 {
@@ -22,6 +23,7 @@ BearPart::BearPart()
 	m_graphNode = new BearingPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	float blockSize = 0.10;
+	m_isSteering = false;
 	//forward backward
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
 	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
@@ -56,6 +58,17 @@ BearPart::~BearPart()
 GameNodeEditorNode* BearPart::getGraphNode()
 {
 	return m_graphNode;
+}
+
+void BearPart::load(rapidjson::Value& constraintData)
+{
+	m_isFlipped = constraintData["isFlipped"].GetBool();
+	updateFlipped();
+}
+
+void BearPart::setIsSteering(bool isSteering)
+{
+	m_isSteering = isSteering;
 }
 
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -97,6 +110,11 @@ void BearPart::enablePhysics(bool isEnable)
 
 			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 			m_constrain = constrain;
+			if(m_isSteering)
+			{
+				m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
+				m_constrain->setLimit(-30.0f* (TbaseMath::PI_OVER_180), 30.0f * (TbaseMath::PI_OVER_180));
+			}
 		}
 		}
 		else 
@@ -132,6 +150,7 @@ void BearPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorTy
 	}
 	partData.AddMember("attachList", attachList, allocator);
 	partData.AddMember("UID", std::string(getGUID()), allocator);
+	partData.AddMember("isFlipped", m_isFlipped, allocator);
 }
 
 Attachment* BearPart::getFirstAttachment()

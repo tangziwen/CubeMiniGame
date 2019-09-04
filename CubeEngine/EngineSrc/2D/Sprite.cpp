@@ -163,5 +163,12 @@ void Sprite::setUpTechnique()
     m_material->setVar("color",getUniformColor());
 }
 
+void Sprite::setUpTransFormation(TransformationInfo& info)
+{
+	auto currCam = g_GetCurrScene()->defaultGUICamera();
+    info.m_projectMatrix = currCam->projection();
+    info.m_viewMatrix = currCam->getViewMatrix();
+    info.m_worldMatrix = getTransform();
+}
 } // namespace tzw
 

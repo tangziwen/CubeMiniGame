@@ -4,6 +4,7 @@
 namespace tzw {
 double TbaseMath::PI = 3.141592654;
 
+double TbaseMath::PI_OVER_180 = TbaseMath::PI / 180.0;
 float TbaseMath::Ang2Radius(float angle)
 {
     return TbaseMath::PI * angle /180;

@@ -16,6 +16,7 @@ public:
 	Attachment * m_b;
 	virtual void enablePhysics(bool isEnable);
 	virtual void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator);
+	void load(rapidjson::Value& partData) override;
 	bool isConstraint() override;
 	void updateTransform(float dt);
 protected:
