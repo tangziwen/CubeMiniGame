@@ -31,6 +31,7 @@ namespace tzw
 
 	GameNodeEditorNode::GameNodeEditorNode()
 	{
+		m_nodeID = 0;
 	}
 
 	std::vector<NodeAttr*>& GameNodeEditorNode::getInAttrs()

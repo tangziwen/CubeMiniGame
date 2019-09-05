@@ -100,6 +100,13 @@ void Link(int id, int start_attr, int end_attr);
 // position before the node has been created with BeginNode().
 void SetNodePos(int node_id, const ImVec2& pos);
 
+// Get the node's origin
+ImVec2 GetNodeOrigin(int node_id);
+
+
+// Set the node's origin
+void SetNodeOrigin(int node_id, const ImVec2& pos);
+
 // The following functions return true if a UI element is being hovered over by
 // the mouse cursor. Assigns the id of the UI element being hovered over to the
 // function argument. Use these functions after EndNodeEditor() has been called.

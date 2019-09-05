@@ -8,6 +8,12 @@
 
 namespace tzw
 {
+	GameNodeEditor::GameNodeEditor()
+	{
+		m_nodeGlobalCount = 0;
+		
+	}
+
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
 	{
 		ImGui::Begin(u8"½Úµã±à¼­Æ÷", isOpen);
@@ -28,7 +34,7 @@ namespace tzw
 		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
 		{
 			auto node = m_gameNodes[i];
-			imnodes::BeginNode(i);
+			imnodes::BeginNode(node->m_nodeID);
 			imnodes::Name(node->name.c_str());
 
 			node->privateDraw();
@@ -75,6 +81,8 @@ namespace tzw
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
+		m_nodeGlobalCount +=1;
+		newNode->m_nodeID = m_nodeGlobalCount;
 	}
 
 	void GameNodeEditor::removeNode(GameNodeEditorNode* node)
@@ -148,6 +156,10 @@ namespace tzw
 		{
 			rapidjson::Value NodeObj(rapidjson::kObjectType);
 			auto node = m_gameNodes[i];
+			auto origin = imnodes::GetNodeOrigin(node->m_nodeID);
+
+			NodeObj.AddMember("orgin_x", origin.x, allocator);
+			NodeObj.AddMember("orgin_y", origin.y, allocator);
 			node->dump(NodeObj, allocator);
 			NodeListObj.PushBack(NodeObj, allocator);
 		}
@@ -201,33 +213,37 @@ namespace tzw
 	void GameNodeEditor::handleLinkLoad(rapidjson::Value& NodeGraphObj)
 	{
 		//read node
-		
 		auto& NodeList = NodeGraphObj["NodeList"];
 		for(unsigned int i = 0; i < NodeList.Size(); i++)
 		{
 			auto& node = NodeList[i];
+			GameNodeEditorNode * newNode = nullptr;
 			//we skip create resource Node, but find exist resource node, and set properly UID
 			if(strcmp(node["Type"].GetString(), "Resource") == 0)
 			{
+				auto resUID = node["ResUID"].GetString();
 				if(strcmp(node["ResType"].GetString(), "ControlPart") == 0)//ControlPart
 				{
-					auto resUID = node["ResUID"].GetString();
 					auto controlPart = reinterpret_cast<ControlPart*>(GUIDMgr::shared()->get(resUID));
-					//update UID
-					controlPart->getGraphNode()->setGUID(node["UID"].GetString());
+					newNode = controlPart->getGraphNode();
+					
 				}
 				else if(strcmp(node["ResType"].GetString(), "BearPart") == 0)//BearPart
 				{
-					auto resUID = node["ResUID"].GetString();
 					auto bearPart = reinterpret_cast<BearPart*>(GUIDMgr::shared()->get(resUID));
-					//update UID
-					bearPart->getGraphNode()->setGUID(node["UID"].GetString());
+					newNode = bearPart->getGraphNode();
 				}
-			}else //normal logic & function node
+			}
+			else //normal logic & function node, we need create here
 			{
 
 				
 			}
+			//load Node Origin from file
+			imnodes::SetNodeOrigin(newNode->m_nodeID, ImVec2(node["orgin_x"].GetDouble(), node["orgin_y"].GetDouble()));
+
+			//update UID from file
+			newNode->setGUID(node["UID"].GetString());
 		}
 		//read link
 		auto& linkList = NodeGraphObj["NodeLinkList"];
@@ -241,6 +257,8 @@ namespace tzw
 			makeLinkByNode(nodeA, nodeB, fromOutputID, toInputID);
 		}
 	}
+
+
 
 
 	void GameNodeEditor::makeLinkByNode(GameNodeEditorNode* NodeA, GameNodeEditorNode* NodeB, int indexOfA, int indeOfB)

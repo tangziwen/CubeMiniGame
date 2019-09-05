@@ -1141,6 +1141,19 @@ void SetNodePos(int node_id, const ImVec2& screen_space_pos)
         screen_space_pos - editor_context_get().panning - g.grid_origin;
 }
 
+ImVec2 GetNodeOrigin(int node_id)
+{
+    EditorContext& editor = editor_context_get();
+    NodeData& node = editor.nodes.find_or_create_new(node_id);
+	return node.origin;
+}
+void SetNodeOrigin(int node_id, const ImVec2& pos)
+{
+    assert(initialized);
+    EditorContext& editor = editor_context_get();
+    NodeData& node = editor.nodes.find_or_create_new(node_id);
+    node.origin = pos;
+}
 bool IsNodeHovered(int* const node_id)
 {
     assert(g.current_scope == Scope_None);

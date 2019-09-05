@@ -32,11 +32,13 @@ public:
 	NodeAttr * getOutByIndex(int localIndex);
 	virtual void load(rapidjson::Value& partData);
 	virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
+	int m_nodeID;
 protected:
 	std::vector<NodeAttr *> m_inAttr;
 	std::vector<NodeAttr *> m_outAttr;
 	std::map<int, int> m_inGlobalMap;
 	std::map<int, int> m_OutGlobalMap;
+	
 };
 
 }

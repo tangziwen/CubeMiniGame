@@ -11,6 +11,7 @@ namespace tzw {
 class GameNodeEditor : public IMGUIObject
 {
 public:
+	GameNodeEditor();
 	// Í¨¹ý IMGUIObject ¼Ì³Ð
 	void drawIMGUI(bool * isOpen);
 
@@ -20,10 +21,11 @@ public:
 	void raiseEventToNode(int startAttr, int endAttr);
 	void handleLinkDump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
 	void handleLinkLoad(rapidjson::Value &partDocObj);
-
+	int getNodeIdByNode(GameNodeEditorNode * node);
 	void makeLinkByNode(GameNodeEditorNode * NodeA, GameNodeEditorNode * NodeB, int indexOfA, int indeOfB);
 protected:
 	std::vector<GameNodeEditorNode * > m_gameNodes;
 	std::vector<std::pair<int, int>> m_links;
+	int m_nodeGlobalCount;
 };
 }
