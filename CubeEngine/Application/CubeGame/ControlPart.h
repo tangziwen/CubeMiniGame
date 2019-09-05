@@ -31,7 +31,7 @@ namespace tzw
 		Attachment* getAttachment(int index) override;
 		int getAttachmentCount() override;
 		~ControlPart();
-		GameNodeEditorNode * getGraphNode();
+		GameNodeEditorNode * getGraphNode() const;
 	public:
 		int m_forward;
 		int m_side;

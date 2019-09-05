@@ -5,6 +5,7 @@
 //#include <minwindef.h>
 #include "Base/GuidMgr.h"
 #include "ControlPart.h"
+#include "SpringPart.h"
 
 namespace tzw
 {
@@ -231,6 +232,11 @@ namespace tzw
 				else if(strcmp(node["ResType"].GetString(), "BearPart") == 0)//BearPart
 				{
 					auto bearPart = reinterpret_cast<BearPart*>(GUIDMgr::shared()->get(resUID));
+					newNode = bearPart->getGraphNode();
+				}
+				else if(strcmp(node["ResType"].GetString(), "SpringPart") == 0)//SpringPart
+				{
+					auto bearPart = reinterpret_cast<SpringPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = bearPart->getGraphNode();
 				}
 			}

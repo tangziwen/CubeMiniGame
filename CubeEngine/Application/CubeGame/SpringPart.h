@@ -1,5 +1,6 @@
 #pragma once
 #include "GameConstraint.h"
+#include "GameNodeEditorNode.h"
 
 namespace tzw
 {
@@ -18,9 +19,17 @@ public:
 	Attachment* getFirstAttachment() override;
 	Attachment * getAttachment(int index) override;
 	int getAttachmentCount() override;
+	float getStiffness() const;
+	float getDamping() const;
+	void setStiffness(float stiffness);
+	void setDamping(float damping);
+	GameNodeEditorNode * getGraphNode() const;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
-	Attachment * m_attachment[6];
+	Attachment * m_attachment[6]{};
+	GameNodeEditorNode * m_graphNode;
+	float m_stiffness;
+	float m_damping;
 
 };
 }

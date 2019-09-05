@@ -316,7 +316,7 @@ ControlPart::~ControlPart()
 	delete m_graphNode;
 }
 
-GameNodeEditorNode* ControlPart::getGraphNode()
+GameNodeEditorNode* ControlPart::getGraphNode() const
 {
 	return m_graphNode;
 }

@@ -7,6 +7,7 @@
 #include "GamePart.h"
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
+#include "NodeEditorNodes/SpringPartNode.h"
 
 namespace tzw
 {
@@ -16,11 +17,17 @@ SpringPart::SpringPart()
 	m_b = nullptr;
 	m_node = nullptr;
 	m_constrain = nullptr;
-	
+
+	m_stiffness = 600.0f;
+	m_damping = 0.8f;
 	//forward backward
 	float blockSize = 0.50f;
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
 	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
+
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	m_graphNode = new SpringPartNode(this);
+	nodeEditor->addNode(m_graphNode);
 }
 
 void SpringPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -150,6 +157,39 @@ Attachment* SpringPart::getAttachment(int index)
 int SpringPart::getAttachmentCount()
 {
 	return 2;
+}
+
+float SpringPart::getStiffness() const
+{
+	return m_stiffness;
+}
+
+float SpringPart::getDamping() const
+{
+	return m_damping;
+}
+
+void SpringPart::setStiffness(float stiffness)
+{
+	m_stiffness = stiffness;
+	if(m_constrain && m_isEnablePhysics)
+	{
+		m_constrain->setStiffness(2, m_stiffness);
+	}
+}
+
+void SpringPart::setDamping(float damping)
+{
+	m_damping = damping;
+	if(m_constrain && m_isEnablePhysics)
+	{
+		m_constrain->setDamping(2, m_damping);
+	}
+}
+
+GameNodeEditorNode* SpringPart::getGraphNode() const
+{
+	return m_graphNode;
 }
 }
 

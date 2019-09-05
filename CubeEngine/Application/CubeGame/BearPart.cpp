@@ -24,6 +24,9 @@ BearPart::BearPart()
 	nodeEditor->addNode(m_graphNode);
 	float blockSize = 0.10;
 	m_isSteering = false;
+	m_isAngleLimit = false;
+	m_angleLimitLow = -30.0f;
+	m_angleLimitHigh = 30.0f;
 	//forward backward
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
 	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
@@ -69,6 +72,48 @@ void BearPart::load(rapidjson::Value& constraintData)
 void BearPart::setIsSteering(bool isSteering)
 {
 	m_isSteering = isSteering;
+	if(m_constrain && m_isEnablePhysics)
+	{
+		if(m_isSteering)
+		{
+			m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
+		}
+		else 
+		{
+			m_constrain->enableAngularMotor(false, 0.0f, 10000.0f);
+		}
+	}
+
+}
+
+bool BearPart::getIsSteering() const
+{
+	return m_isSteering;
+}
+
+void BearPart::setAngleLimit(bool isAngleLimit, float low, float high)
+{
+	m_isAngleLimit = isAngleLimit;
+	m_angleLimitLow = low;
+	m_angleLimitHigh = high;
+	if(m_constrain && m_isEnablePhysics)
+	{
+		if(m_isAngleLimit)
+		{
+			m_constrain->setLimit(m_angleLimitLow* (TbaseMath::PI_OVER_180), m_angleLimitHigh * (TbaseMath::PI_OVER_180));
+		}
+		else 
+		{
+			m_constrain->setLimit(0, 0);
+		}
+	}
+}
+
+void BearPart::getAngleLimit(bool& isAngleLimit, float& low, float& high) const
+{
+	isAngleLimit = m_isAngleLimit;
+	low = m_angleLimitLow;
+	high = m_angleLimitHigh;
 }
 
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -91,35 +136,40 @@ void BearPart::enablePhysics(bool isEnable)
 	{
 		if(!m_constrain) 
 		{
-		auto attachA = m_a;
-		auto attachB = m_b;
-		if (attachA && attachB) 
-		{
-			auto partA = attachA->m_parent;
-			auto partB = attachB->m_parent;
-
-			vec3 worldPosA, worldNormalA, worldUpA;
-			attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-			vec3 worldPosB, worldNormalB, worldUpB;
-			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-			int isFlipped = m_isFlipped ? -1 : 1;
-			vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
-			vec3 pivotA, pivotB, axisA, axisB;
-			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-
-			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
-			m_constrain = constrain;
-			if(m_isSteering)
+			auto attachA = m_a;
+			auto attachB = m_b;
+			if (attachA && attachB) 
 			{
-				m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
-				m_constrain->setLimit(-30.0f* (TbaseMath::PI_OVER_180), 30.0f * (TbaseMath::PI_OVER_180));
+				auto partA = attachA->m_parent;
+				auto partB = attachB->m_parent;
+
+				vec3 worldPosA, worldNormalA, worldUpA;
+				attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+				vec3 worldPosB, worldNormalB, worldUpB;
+				attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+				int isFlipped = m_isFlipped ? -1 : 1;
+				vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
+				vec3 pivotA, pivotB, axisA, axisB;
+				findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+				findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+
+				auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+				m_constrain = constrain;
+
 			}
-		}
 		}
 		else 
 		{
 			PhysicsMgr::shared()->addConstraint(m_constrain);
+		}
+		if(m_isSteering)
+		{
+			m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
+		}
+
+		if(m_isAngleLimit)
+		{
+			m_constrain->setLimit(m_angleLimitLow* (TbaseMath::PI_OVER_180), m_angleLimitHigh * (TbaseMath::PI_OVER_180));
 		}
 	} else 
 	{

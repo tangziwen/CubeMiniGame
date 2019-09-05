@@ -24,11 +24,17 @@ public:
 	GameNodeEditorNode * getGraphNode();
 	void load(rapidjson::Value& partData) override;
 	void setIsSteering(bool isSteering);
+	bool getIsSteering() const;
+	void setAngleLimit(bool isAngleLimit, float low, float high);
+	void getAngleLimit(bool&isAngleLimit, float&low, float&high) const;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	Attachment * m_attachment[6];
 	GameNodeEditorNode * m_graphNode;
 	bool m_isSteering;
+	bool m_isAngleLimit;
+	float m_angleLimitLow;
+	float m_angleLimitHigh;
 
 };
 }
