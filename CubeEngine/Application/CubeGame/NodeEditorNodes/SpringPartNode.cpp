@@ -8,14 +8,12 @@ namespace tzw
 	SpringPartNode::SpringPartNode(SpringPart * part)
 	{
 		m_part = part;
-		char formatName[512];
-		sprintf_s(formatName, 512, u8"µ¯»É %p",part);
-		name = formatName;
+		SpringPartNode::syncName();
 	}
 
 	void SpringPartNode::privateDraw()
 	{
-		
+		handleNameEdit();
 		float stiffness, damping;
 		stiffness = m_part->getStiffness();
 		damping = m_part->getDamping();
@@ -30,6 +28,11 @@ namespace tzw
 		{
 			m_part->setStiffness(damping);
 		}
+	}
+
+	GamePart* SpringPartNode::getProxy()
+	{
+		return m_part;
 	}
 
 	void SpringPartNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
@@ -47,5 +50,12 @@ namespace tzw
 		partDocObj.AddMember("ResType", std::string("SpringPart"), allocator);
 		partDocObj.AddMember("ResUID", std::string(m_part->getGUID()), allocator);
 		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+	}
+
+	void SpringPartNode::syncName()
+	{
+		char formatName[512];
+		sprintf_s(formatName, 512, u8"µ¯»É %s",m_part->getName().c_str());
+		name = formatName;
 	}
 }

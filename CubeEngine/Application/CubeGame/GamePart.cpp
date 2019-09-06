@@ -316,6 +316,11 @@ namespace tzw
 		return atta;
 	}
 
+	GamePart::GamePart()
+	{
+		m_name = "empty";
+	}
+
 	GamePart::~GamePart()
 	{
 		
@@ -350,8 +355,6 @@ namespace tzw
 				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
 			}
         }
-
-
 	}
 
 	void GamePart::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
@@ -402,5 +405,15 @@ namespace tzw
 	vec3 GamePart::getWorldPos()
 	{
 		return m_node->getWorldPos();
+	}
+
+	std::string GamePart::getName() const
+	{
+		return m_name;
+	}
+
+	void GamePart::setName(std::string newName)
+	{
+		m_name = newName;
 	}
 }

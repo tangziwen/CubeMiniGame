@@ -37,6 +37,7 @@ namespace tzw
 		virtual int getAttachmentCount();
 		virtual Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Island * m_parent;
+		GamePart();
 		virtual ~GamePart();
 		virtual int getType();
 		virtual float getMass();
@@ -45,7 +46,10 @@ namespace tzw
 		
 		virtual bool isConstraint();
 		virtual vec3 getWorldPos();
+		std::string getName() const;
+		void setName(std::string newName);
 	protected:
+		std::string m_name;
 		PhysicsShape * m_shape;
 		Drawable3D * m_node;
 

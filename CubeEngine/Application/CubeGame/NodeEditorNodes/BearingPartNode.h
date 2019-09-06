@@ -1,19 +1,19 @@
 #pragma once
 #include "2D/GUISystem.h"
-
-#include "CubeGame/GameNodeEditorNode.h"
+#include "CubeGame/ResNode.h"
 namespace tzw {
 class BearPart;
-struct BearingPartNode : public GameNodeEditorNode
+struct BearingPartNode : public ResNode
 {
 public:
 	BearingPartNode(BearPart * bear);
 	void privateDraw() override;
-	BearPart * getProxy();
+	virtual GamePart * getProxy();
 	virtual void load(rapidjson::Value& partData);
 	virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
+	void syncName() override;
 private:
-	BearPart * m_bear;
+	BearPart * m_part;
 };
 
 }
