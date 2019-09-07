@@ -259,7 +259,7 @@ void ControlPart::handleBearings()
 	{
 		for (auto bearing : m_sidewardBearing) 
 		{
-			bearing->m_constrain->enableAngularMotor(true, 0.0f, 10000.0f);
+			bearing->m_constrain->enableAngularMotor(true, 0, 10000000.0f);
 		}
 	}
 }

@@ -32,7 +32,7 @@ void ItemMgr::loadFromFile(std::string filePath)
 	if (doc.HasParseError())
 	{
 		tlog("[error] get json data err! %s %d offset %d\n", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
-		exit(0);
+		exit(1);
 	}
 	if (doc.HasMember("Items"))
 	{

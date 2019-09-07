@@ -11,7 +11,7 @@ LabelNew::LabelNew():
 {
     m_mesh = new Mesh();
 	m_material = new Material();
-    m_material->loadFromFile("Simple");
+    m_material = Material::createFromTemplate("ModelStd");
     m_material->setVar("color",getUniformColor());
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }

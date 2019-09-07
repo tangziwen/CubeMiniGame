@@ -1,8 +1,13 @@
 #include "ResNode.h"
-#include "2D/imnodes.h"
+
 
 namespace tzw
 {
+	ResNode::ResNode()
+	{
+
+	}
+
 	void ResNode::syncName()
 	{
 

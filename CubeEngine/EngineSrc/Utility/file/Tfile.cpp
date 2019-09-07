@@ -38,7 +38,7 @@ Data Tfile::getData(std::string filename, bool forString)
           if(!fp)
           {
               tlogError("Bad file : %s\n",filename.c_str());
-              exit(0);
+              exit(1);
           }
           fseek(fp,0,SEEK_END);
           size = ftell(fp);

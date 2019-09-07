@@ -28,6 +28,8 @@ SpringPart::SpringPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	m_graphNode = new SpringPartNode(this);
 	nodeEditor->addNode(m_graphNode);
+
+	generateName();
 }
 
 void SpringPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -190,6 +192,13 @@ void SpringPart::setDamping(float damping)
 GameNodeEditorNode* SpringPart::getGraphNode() const
 {
 	return m_graphNode;
+}
+
+void SpringPart::generateName()
+{
+	char formatName[512];
+	sprintf_s(formatName, 512, u8"µ¯»É %s",genShortName().c_str());
+	setName(formatName);
 }
 }
 

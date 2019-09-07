@@ -47,7 +47,11 @@ namespace tzw
 		virtual bool isConstraint();
 		virtual vec3 getWorldPos();
 		std::string getName() const;
-		void setName(std::string newName);
+		virtual void setName(std::string newName);
+		virtual void initInfoRes();
+		virtual void drawInfo(float delta);
+		virtual void generateName();
+		std::string genShortName();
 	protected:
 		std::string m_name;
 		PhysicsShape * m_shape;

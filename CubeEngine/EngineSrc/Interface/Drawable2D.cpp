@@ -1,5 +1,6 @@
 #include "Drawable2D.h"
 #include "Event/EventMgr.h"
+#include "Scene/SceneMgr.h"
 
 namespace tzw {
 
@@ -29,6 +30,14 @@ vec2 Drawable2D::anchorPoint() const
     return m_anchorPoint;
 }
 
+
+void Drawable2D::setUpTransFormation(TransformationInfo &info)
+{
+	auto currCam = g_GetCurrScene()->defaultGUICamera();
+    info.m_projectMatrix = currCam->projection();
+    info.m_viewMatrix = currCam->getViewMatrix();
+    info.m_worldMatrix = getTransform();
+}
 void Drawable2D::setAnchorPoint(const vec2 &anchorPoint)
 {
     m_anchorPoint = anchorPoint;

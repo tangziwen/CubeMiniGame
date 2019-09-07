@@ -8,6 +8,7 @@ class Drawable3D;
 class BlockPart;
 struct Attachment;
 class PhysicsHingeConstraint;
+class LabelNew;
 class GameConstraint : public GamePart
 {
 public:
@@ -19,7 +20,12 @@ public:
 	void load(rapidjson::Value& partData) override;
 	bool isConstraint() override;
 	void updateTransform(float dt);
+	void initInfoRes() override;
+	void drawInfo(float delta) override;
+	void setName(std::string newName) override;
+	virtual ~GameConstraint();
 protected:
 	bool m_isEnablePhysics;
+	LabelNew * m_label;
 };
 }

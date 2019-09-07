@@ -30,8 +30,10 @@ BearPart::BearPart()
 	//forward backward
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
 	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
-}
 
+	generateName();
+}
+ 
 void BearPart::updateFlipped()
 {
 	if(!m_node) return;
@@ -116,6 +118,13 @@ void BearPart::getAngleLimit(bool& isAngleLimit, float& low, float& high) const
 	high = m_angleLimitHigh;
 }
 
+void BearPart::generateName()
+{
+	char formatName[512];
+	sprintf_s(formatName, 512, u8"Öá³Ð %s",genShortName().c_str());
+	setName(formatName);
+}
+
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
@@ -182,8 +191,19 @@ void BearPart::enablePhysics(bool isEnable)
 
 void BearPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
 {
+	GameConstraint::dump(partData, allocator);
 	partData.AddMember("Type", "Bearing", allocator);
+	
 	partData.AddMember("from", std::string(m_b->getGUID()), allocator);
+
+	partData.AddMember("isSteering", getIsSteering(), allocator);
+
+	bool isLimit;
+	float low,high;
+	getAngleLimit(isLimit, low, high);
+	partData.AddMember("isAngleLimit", isLimit, allocator);
+	partData.AddMember("AngleLimitLow", low, allocator);
+	partData.AddMember("AngleLimitHigh", high, allocator);
 	if(m_a)
 	{
 		partData.AddMember("to", std::string(m_a->getGUID()), allocator);

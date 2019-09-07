@@ -416,4 +416,32 @@ namespace tzw
 	{
 		m_name = newName;
 	}
+
+	void GamePart::initInfoRes()
+	{
+		
+	}
+
+	void GamePart::drawInfo(float delta)
+	{
+
+	}
+
+	void GamePart::generateName()
+	{
+	}
+
+	static char randomChar()
+	{
+		char randomList[] = {'A', 'B', 'C', 'D', 'E', 'F', '1', '2', '3','4','5','6','7','8','9'};
+		return randomList[rand() % sizeof(randomList)];
+		
+	}
+	std::string GamePart::genShortName()
+	{
+		//4 char short random name
+		char formatName[512];
+		sprintf_s(formatName, 512, u8"%c%c%c%c",randomChar(), randomChar(), randomChar(), randomChar());
+		return formatName;
+	}
 }

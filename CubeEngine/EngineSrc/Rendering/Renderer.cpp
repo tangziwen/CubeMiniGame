@@ -133,12 +133,13 @@ void Renderer::renderAllGUI()
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
-	GUISystem::shared()->tryRender();
+	
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::DepthTest);
 	for(auto iter:m_GUICommandList)
 	{
 		renderGUI(iter);
 	}
+	GUISystem::shared()->renderIMGUI();
 	 
 }
 

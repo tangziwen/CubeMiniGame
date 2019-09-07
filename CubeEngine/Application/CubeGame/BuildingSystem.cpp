@@ -266,6 +266,7 @@ namespace tzw
 		attachment->m_connected = bear->getFirstAttachment();
 		island->m_node->addChild(cylinderIndicator);
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
+		
 		return bear;
 	}
 
@@ -453,7 +454,7 @@ namespace tzw
 				filePath.c_str(),
 				doc.GetParseError(),
 				doc.GetErrorOffset());
-			exit(0);
+			exit(1);
 		}
 		// island
 		if (doc.HasMember("islandList"))
@@ -487,10 +488,24 @@ namespace tzw
 				}
 				else if (constraintType == "Bearing")
 				{
+					
 					constraint = placeBearingToAttach(fromAttach);
+					auto bear = reinterpret_cast<BearPart*>(constraint);
+					if(item.HasMember("isSteering")) 
+					{
+						bear->setIsSteering(item["isSteering"].GetBool());
+					}
+					
+					if(item.HasMember("isAngleLimit"))
+					{
+						
+						bear->setAngleLimit(item["isAngleLimit"].GetBool(), 
+							item["AngleLimitLow"].GetDouble(), item["AngleLimitHigh"].GetDouble());
+					}
 				}
 				constraint->m_parent->m_islandGroup = item["IslandGroup"].GetString();
 				constraint->setGUID(item["UID"].GetString());
+				constraint->setName(item["Name"].GetString());
 				// update constraint's attachment GUID
 				auto& attachList = item["attachList"];
 				for (unsigned int j = 0; j < attachList.Size(); j++)
@@ -529,6 +544,14 @@ namespace tzw
 		for (auto constrain : m_bearList)
 		{
 			constrain->updateTransform(dt);
+		}
+	}
+
+	void BuildingSystem::showNameTips(float dt)
+	{
+		for(auto constraint :m_bearList)
+		{
+			constraint->drawInfo(dt);
 		}
 	}
 
@@ -722,14 +745,5 @@ void BuildingSystem::findPiovtAndAxis(Attachment* attach,
 		transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * 0.05, 1.0))
 				.toVec3();
 	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
-}
-
-void BuildingSystem::tmpMoveWheel(bool isOpen)
-{
-	for (auto constrain : m_constrainList)
-	{
-		tlog("move Wheel");
-		constrain->enableAngularMotor(isOpen, 10, 100);
-	}
 }
 }

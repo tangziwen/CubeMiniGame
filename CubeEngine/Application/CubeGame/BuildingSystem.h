@@ -13,6 +13,7 @@
 
 namespace tzw
 {
+class LabelNew;
 class PhysicsHingeConstraint;
 
 class BuildingSystem
@@ -51,13 +52,14 @@ class BuildingSystem
 		void dump(std::string filePath);
 		void load(std::string filePath);
 		void updateBearing(float dt);
+		void showNameTips(float dt);
 	private:
 		ControlPart * m_controlPart;
 		LiftPart * m_liftPart;
 		unsigned int m_baseIndex;
 		std::vector<Island *> m_IslandList;
 		std::set<GameConstraint* > m_bearList;
-		std::list<PhysicsHingeConstraint *> m_constrainList;
+		std::map<GamePart *, LabelNew *> m_partToLabel;
 	};
 
 

@@ -27,6 +27,7 @@ public:
 	bool getIsSteering() const;
 	void setAngleLimit(bool isAngleLimit, float low, float high);
 	void getAngleLimit(bool&isAngleLimit, float&low, float&high) const;
+	void generateName() override;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	Attachment * m_attachment[6];

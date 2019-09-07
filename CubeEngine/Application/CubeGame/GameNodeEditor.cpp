@@ -36,6 +36,7 @@ namespace tzw
 		{
 			auto node = m_gameNodes[i];
 			imnodes::BeginNode(node->m_nodeID);
+			ImGui::PushItemWidth(80);
 			imnodes::Name(node->name.c_str());
 
 			node->privateDraw();
@@ -56,6 +57,7 @@ namespace tzw
 				ImGui::Text(attr->m_name.c_str());
 				imnodes::EndAttribute();
 			}
+			ImGui::PopItemWidth();
 			imnodes::EndNode();
 		}
 

@@ -242,7 +242,22 @@ vec3 Camera::unproject(vec3 src)
     return vec3(screen.x,screen.y,screen.z);
 }
 
-	void Camera::getPerspectInfo(float* fov, float* aspect, float* near, float* far)
+vec3 Camera::worldToScreen(vec3 worldPos)
+{
+    auto viewport = Engine::shared()->winSize();
+    auto vp = getViewProjectionMatrix();
+    vec4 screen = vp * vec4(worldPos, 1.0f);
+    if (screen.w != 0.0f)
+    {
+        float w = screen.w;
+        screen.x = (screen.x / w) * 0.5 + 0.5;
+        screen.y = (screen.y / w) * 0.5 + 0.5;
+        screen.z = (screen.z / w);
+    }
+    return vec3(screen.x * viewport.x,screen.y * viewport.y, screen.z);
+}
+
+void Camera::getPerspectInfo(float* fov, float* aspect, float* near, float* far)
 	{
 	(*fov) = m_fov;
 	(*aspect) = m_aspect;

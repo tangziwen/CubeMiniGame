@@ -35,7 +35,7 @@ void Material::loadFromFile(std::string filePath)
 	if (doc.HasParseError())
 	{
 		tlog("[error] get json data err! %s %d offset %d", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
-		exit(0);
+		exit(1);
 	}
 	if (doc.HasMember("name"))
 	{
@@ -60,7 +60,7 @@ void Material::loadFromFile(std::string filePath)
 		if (!m_program)
 		{
 			tlog("[error] bad program!!!");
-			exit(0);
+			exit(1);
 		}
 	}
 	auto& MaterialInfo = doc["property"];

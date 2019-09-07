@@ -26,6 +26,7 @@ public:
     void setUseCustomFrustumUpdate(bool useCustomFrustumUpdate);
 	void reCache() override;
     vec3 unproject(vec3 src);
+	vec3 worldToScreen(vec3 worldPos);
 	void getPerspectInfo(float * fov, float * aspect, float * near, float * far);
 protected:
     Frustum m_frustum;

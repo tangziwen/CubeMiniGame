@@ -20,7 +20,8 @@ public:
     virtual void setUniformColor(const tzw::vec3 &color);
     virtual vec4 getUniformColor();
     virtual void setAlpha(float alphaValue);
-	virtual void setIsVisible(bool isDrawable);
+	void setIsVisible(bool isDrawable) override;
+	void setUpTransFormation(TransformationInfo &info) override;
 protected:
     vec4 m_uniformColor;
     vec2 m_contentSize;

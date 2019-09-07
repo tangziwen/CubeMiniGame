@@ -186,7 +186,7 @@ namespace tzw
 		return false;
 	}
 
-	void GUISystem::tryRender()
+	void GUISystem::renderIMGUI()
 	{
 		auto& io = ImGui::GetIO();
 		io.DeltaTime = Engine::shared()->deltaTime();
