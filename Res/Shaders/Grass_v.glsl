@@ -27,7 +27,7 @@ void main()
     // Calculate vertex position in screen space
     gl_Position = TU_mvpMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0);
 	
-	v_position = (TU_mvMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
+	v_position = (TU_mMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
 	v_worldPos = (TU_mMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
 	// v_normal = (TU_normalMatrix * ).xyz;
     v_normal = (TU_normalMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz;

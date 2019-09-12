@@ -14,65 +14,19 @@ FrameBuffer::FrameBuffer()
 	m_fbo = 0;
 	m_depthTex = 0;
 	m_colorTexs = nullptr;
+	m_isUseDepth = false;
+	m_isHDRCompatible = false;
+	m_isLinearFilter = true;
 }
 
-void FrameBuffer::init(integer_u width, integer_u height, integer_u numOfOutputs, bool isUseDepth)
+void FrameBuffer::init(integer_u width, integer_u height, integer_u numOfOutputs, bool isUseDepth, bool isHDRCompatible)
 {
 	m_width = width;
 	m_height = height;
 	m_numOfOutputs = numOfOutputs;
 	m_isUseDepth = isUseDepth;
-	assert(m_numOfOutputs);
-	glGenFramebuffers(1, &m_fbo);
-	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+	m_isHDRCompatible = isHDRCompatible;
 
-	m_colorTexs = static_cast<integer_u *>(malloc(sizeof (integer_u) * m_numOfOutputs));
-
-	//color buffers
-	if(m_numOfOutputs>0)
-	{
-		glGenTextures(m_numOfOutputs, m_colorTexs);
-		for (unsigned int i = 0 ; i < m_numOfOutputs ; i++) {
-			glBindTexture(GL_TEXTURE_2D, m_colorTexs[i]);
-			glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB32F, width, height, 0, GL_RGB, GL_FLOAT, NULL);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorTexs[i], 0);
-		}
-	}
-
-	// depth buffer
-	if(isUseDepth)
-	{
-		glGenTextures(1, &m_depthTex);
-
-		glBindTexture(GL_TEXTURE_2D, m_depthTex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, width, height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
-		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTex, 0);
-	}
-
-	//match the draw buffers;
-	GLenum DrawBuffers[] = { GL_COLOR_ATTACHMENT0,
-							 GL_COLOR_ATTACHMENT1,
-							 GL_COLOR_ATTACHMENT2,
-							 GL_COLOR_ATTACHMENT3 };
-
-	glDrawBuffers(m_numOfOutputs, DrawBuffers);
-
-	GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
-
-	if (Status != GL_FRAMEBUFFER_COMPLETE) {
-		tlogError("FB error, status: 0x%x\n", Status);
-	}
-
-	// restore default FBO
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 }
 
 void FrameBuffer::bindForWriting()
@@ -101,6 +55,87 @@ void FrameBuffer::bindRtToTexture(integer_u gbufferID, integer_u index)
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);
 	glActiveTexture(GL_TEXTURE0 + index);
 	glBindTexture(GL_TEXTURE_2D, m_colorTexs[gbufferID]);
+}
+
+vec2 FrameBuffer::getFrameSize() const
+{
+	return vec2(m_width, m_height);
+}
+
+void FrameBuffer::gen()
+{
+	assert(m_numOfOutputs);
+	glGenFramebuffers(1, &m_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, m_fbo);
+
+	m_colorTexs = static_cast<integer_u *>(malloc(sizeof (integer_u) * m_numOfOutputs));
+
+	//color buffers
+	if(m_numOfOutputs>0)
+	{
+		glGenTextures(m_numOfOutputs, m_colorTexs);
+		for (unsigned int i = 0 ; i < m_numOfOutputs ; i++) {
+			glBindTexture(GL_TEXTURE_2D, m_colorTexs[i]);
+			int internalFormat = GL_RGB8;
+			if(m_isHDRCompatible)
+			{
+				internalFormat = GL_RGB16F;
+			}
+			int filterSetting = GL_NEAREST;
+			if(m_isLinearFilter) {
+				filterSetting = GL_LINEAR;
+			}
+			glTexImage2D(GL_TEXTURE_2D, 0, internalFormat, m_width, m_height, 0, GL_RGB, GL_FLOAT, NULL);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filterSetting);
+			glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, filterSetting);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+			glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0 + i, GL_TEXTURE_2D, m_colorTexs[i], 0);
+		}
+	}
+
+	// depth buffer
+	if(m_isUseDepth)
+	{
+		glGenTextures(1, &m_depthTex);
+
+		glBindTexture(GL_TEXTURE_2D, m_depthTex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT32, m_width, m_height, 0, GL_DEPTH_COMPONENT, GL_FLOAT, NULL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_MODE, GL_NONE);
+		//glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_COMPARE_FUNC, GL_LEQUAL);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+		glFramebufferTexture2D(GL_DRAW_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, m_depthTex, 0);
+	}
+
+	//match the draw buffers;
+	GLenum DrawBuffers[] = { GL_COLOR_ATTACHMENT0,
+							 GL_COLOR_ATTACHMENT1,
+							 GL_COLOR_ATTACHMENT2,
+							 GL_COLOR_ATTACHMENT3 };
+
+	glDrawBuffers(m_numOfOutputs, DrawBuffers);
+
+	GLenum Status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+
+	if (Status != GL_FRAMEBUFFER_COMPLETE) {
+		tlogError("FB error, status: 0x%x\n", Status);
+	}
+
+	// restore default FBO
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+}
+
+void FrameBuffer::setIsLinearFilter(bool isUseLinear)
+{
+	m_isLinearFilter = isUseLinear;
+}
+
+bool FrameBuffer::getIsLinearFilter() const
+{
+	return m_isLinearFilter;
 }
 
 void FrameBuffer::bindForReading()

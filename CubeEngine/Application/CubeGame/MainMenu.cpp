@@ -229,17 +229,16 @@ void MainMenu::drawToolsMenu()
 		auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
 		PostMat->inspect();
 
-		auto sunMat = Sky::shared()->getMaterial();
-		sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
+		//auto sunMat = Sky::shared()->getMaterial();
+		//sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
 		auto dirLight = g_GetCurrScene()->getDirectionLight();
 		float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
 		ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
 		dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
 
-		if (ImGui::Button("dump to file"))
-		{
-			//
-		}
+		float sunIntensity = dirLight->intensity();
+		ImGui::SliderFloat("SunIntensity", &sunIntensity, 0.0, 50.0);
+		dirLight->setIntensity(sunIntensity);
 		ImGui::End();
 	}
 }

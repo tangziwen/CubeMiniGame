@@ -48,6 +48,10 @@ private:
 	void SSAOBlurHPass();
 	void SSAOBlurCompossitPass();
 	void FogPass();
+	void BloomBrightPass();
+	void BloomBlurVPass();
+	void BloomBlurHPass();
+	void BloomCompossitPass();
     void directionalLightPass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
@@ -57,8 +61,13 @@ private:
 	Material * m_postEffect;
 	Material * m_blurVEffect;
 	Material * m_blurHEffect;
+	Material * m_BloomBlurHEffect;
+	Material * m_BloomBlurVEffect;
+	Material * m_bloomBrightPassEffect;
+	Material * m_BloomCompositePassEffect;
 	Material * m_ssaoCompositeEffect;
 	Material * m_fogEffect;
+
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;
@@ -69,8 +78,11 @@ private:
     static Renderer * m_instance;
     FrameBuffer * m_gbuffer;
 	FrameBuffer * m_offScreenBuffer;
+	FrameBuffer * m_offScreenBuffer2;
 	FrameBuffer * m_ssaoBuffer1;
 	FrameBuffer * m_ssaoBuffer2;
+	FrameBuffer * m_bloomBuffer1;
+	FrameBuffer * m_bloomBuffer2;
 };
 
 } // namespace tzw

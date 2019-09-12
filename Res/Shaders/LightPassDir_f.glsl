@@ -35,6 +35,7 @@ uniform float TU_ShadowMapEnd[NUM_CASCADES];
 uniform mat4 TU_viewProjectInverted;
 uniform mat4 TU_viewInverted;
 uniform vec2 TU_winSize;
+uniform vec3 TU_camPos;
 
 
 uniform DirectionalLight gDirectionalLight;
@@ -42,6 +43,9 @@ uniform AmbientLight gAmbientLight;
 
 varying vec2 v_texcoord;
 
+#define Square(x) (x*x)
+#define PI (3.14159264)
+#define MIN_ROUGHNESS (0.08)
 
 vec2 getScreenCoord()
 {
@@ -76,54 +80,146 @@ float getFogFactorEXP(float density, float dist)
 {
 	return 1.0 - 1.0/pow(2.71828,pow(dist * density, 2.0));
 }
-vec3 calculateLightPBR(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness)
+
+// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
+// [Lagarde 2012, "Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel"]
+vec3 F_Schlick( vec3 SpecularColor, float VoH )
 {
-	lightDir = -lightDir;
-	vec3 diffuseColor,ambientColor;
-	float specularIntensity =0.0;
-	float irradiance = max(0.0,dot(normal, lightDir));
-	if(irradiance > 0.0)
-	{
+	// Anything less than 2% is physically impossible and is instead considered to be shadowing 
+	return SpecularColor + ( clamp( 50.0 * SpecularColor.g , 0.0, 1.0) - SpecularColor ) * exp2( (-5.55473 * VoH - 6.98316) * VoH );
+
+	//float Fc = exp2( (-5.55473 * VoH - 6.98316) * VoH );	// 1 mad, 1 mul, 1 exp 	//float Fc = pow( 1 - VoH, 5 );
+	//return Fc + (1 - Fc) * SpecularColor;					// 1 add, 3 mad
+}
+
+// Tuned to match behavior of Vis_Smith
+// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
+float G_Schlick( float Roughness, float NoV, float NoL )
+{
+	float k = Square( Roughness ) * 0.5;
+	float Vis_SchlickV = NoV * (1 - k) + k;
+	float Vis_SchlickL = NoL * (1 - k) + k;
+	return 0.25 / mix(0.05, 1, Vis_SchlickV * Vis_SchlickL);
+}
+
+
+// GGX / Trowbridge-Reitz
+// [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
+float D_GGX( float Roughness, float NoH )
+{
+	float m = Roughness * Roughness;
+	float m2 = m * m;
+	float d = ( NoH * m2 - NoH ) * NoH + 1;	// 2 mad
+	return m2 / ( PI*d*d );					// 2 mul, 1 rcp
+}
+
+
+// Vis = G / (4*NoL*NoV)
+float GeometricVisibility( float Roughness, float NoV, float NoL, float VoH )
+{
+	return G_Schlick( Roughness, NoV, NoL );
+}
+
+vec3 PbrBRDF_SPEC(in vec3 L, in vec3 N, in vec3 V, in float NoV, in float NoL,
+	in vec3 SpecularColor, in float Roughness)
+{
+	vec3 H = normalize(V + L);
+	float NoH = clamp( dot(N, H), 0.0, 1.0);
+	float VoH = clamp( dot(V, H), 0.0, 1.0);
+
+	float VoL = clamp( dot(V, L), 0.0, 1.0);
+	float LoH = clamp( dot(L, H), 0.0, 1.0);
+
+	Roughness = max(MIN_ROUGHNESS, Roughness);
+
+	// return EvaluateSphericalAreaGGX(NoL, NoV, VoL, LoH, 3, 10, Roughness * Roughness, Roughness, SpecularColor);
 	
-		vec3 viewDir = normalize(-viewPos);
-		vec3 halfDir = normalize(lightDir + viewDir);
-		
-		float NdotL = irradiance;
-		float NdotH = max(dot(normal, halfDir), 0.0);
-		float NdotV = max(dot(normal, viewDir), 0.0);
-		float VdotH = max(dot(viewDir, halfDir), 0.0);
-		float mSquared = Roughness * Roughness;
+	float D = D_GGX(Roughness, NoH );
+	// half D = BRDFSpecOverPI(NoH, VoH, max(MIN_ROUGHNESS, Roughness));
+	float G = GeometricVisibility( Roughness, NoV, NoL, VoH);
+	// G = G_Implicit();
+	vec3 F = F_Schlick( SpecularColor, VoH );
+	// F = F_None(SpecularColor);
 
-		// geometric attenuation
-        float NH2 = 2.0 * NdotH;
-        float g1 = (NH2 * NdotV) / VdotH;
-        float g2 = (NH2 * NdotL) / VdotH;
-        float geoAtt = min(1.0, min(g1, g2));		
+	return D*G*F;
+}
 
-		// roughness (or: microfacet distribution function)
-        // beckmann distribution function
-        float r1 = 1.0 / ( 4.0 * mSquared * pow(NdotH, 4.0));
-        float r2 = (NdotH * NdotH - 1.0) / (mSquared * NdotH * NdotH);
-        float roughness = r1 * exp(r2);
 
-		// fresnel
-        // Schlick approximation
-        float fresnel = pow(1.0 - VdotH, 5.0);
-        fresnel *= (1.0 - F0);
-        fresnel += F0;
-        
-	specularIntensity = (fresnel * geoAtt * roughness) / (NdotV * NdotL * 3.14);
-	specularIntensity = max(specularIntensity, 0.0);
-	}
-	vec3 colorLinear = 2.2 * lightColor * gDirectionalLight.intensity * irradiance * (K + specularIntensity * (1.0 - K)) + gAmbientLight.color * gAmbientLight.intensity;
-    vec3 colorGammaCorrected = pow(colorLinear, vec3(1.0 / Gamma));
-	return colorLinear;
+float DistributionGGX(vec3 N, vec3 H, float roughness)
+{
+    float a      = roughness*roughness;
+    float a2     = a*a;
+    float NdotH  = max(dot(N, H), 0.0);
+    float NdotH2 = NdotH*NdotH;
+
+    float nom   = a2;
+    float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+    denom = PI * denom * denom;
+
+    return nom / denom;
+}
+
+float GeometrySchlickGGX(float NdotV, float roughness)
+{
+    float r = (roughness + 1.0);
+    float k = (r*r) / 8.0;
+
+    float nom   = NdotV;
+    float denom = NdotV * (1.0 - k) + k;
+
+    return nom / denom;
+}
+float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
+{
+    float NdotV = max(dot(N, V), 0.0);
+    float NdotL = max(dot(N, L), 0.0);
+    float ggx2  = GeometrySchlickGGX(NdotV, roughness);
+    float ggx1  = GeometrySchlickGGX(NdotL, roughness);
+
+    return ggx1 * ggx2;
+}
+
+vec3 fresnelSchlick(float cosTheta, vec3 F0)
+{
+    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+}
+
+vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness)
+{
+	L = -L;
+
+	vec3 F0 = vec3(0.04); 
+	F0 = mix(F0, albedo, metallic);
+
+	float NoV = max(0.0, dot(N, V));
+
+	// Roughness = 0.0;
+	// calculate per-light radiance
+	vec3 H = normalize(V + L);
+	vec3 radiance     = lightColor;
+
+	// cook-torrance brdf
+	float NDF = DistributionGGX(N, H, Roughness);        
+	float G   = GeometrySmith(N, V, L, Roughness);      
+	vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+
+	vec3 kS = F;
+	vec3 kD = vec3(1.0) - kS;
+	kD *= 1.0 - metallic;
+
+	vec3 nominator    = NDF * G * F;
+	float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0); 
+	vec3 specular     = nominator / max(denominator, 0.001);
+
+	// add to outgoing radiance Lo
+	float NdotL = max(dot(N, L), 0.0);
+	return (kD * albedo / PI + specular) * radiance * NdotL;
 }
 
 
 vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness, float shadowFactor)
 {
-	vec3 diffuseColor,ambientColor;
+	vec3 diffuseResult,ambientColor;
 	float specularIntensity =0.0;
 	float lambert = max(0.5, dot(normal, -lightDir));
 
@@ -297,6 +393,17 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 	*/
 }
 
+// knarkowicz
+vec3 ACES_Knarkowicz( vec3 x )
+{
+    float a = 2.51;
+    float b = 0.03;
+    float c = 2.43;
+    float d = 0.59;
+    float s = 0.14;
+    return (x*(a*x+b))/(x*(c*x+d)+s);
+}
+
 void main()
 {
 	vec4 Data1 = texture2D(TU_colorBuffer, v_texcoord);
@@ -316,6 +423,8 @@ void main()
 		}
 	}
 
-	vec3 lambert = color * calculateLightLambert(normal, gDirectionalLight.direction, gDirectionalLight.color, pos, roughness, shadowFactor);
+	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
+	vec3 lambert =  calculateLightPBR(color, 0.0, normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, roughness);
+
 	gl_FragColor = vec4(lambert, 1.0);
 }

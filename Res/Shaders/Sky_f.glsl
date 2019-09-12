@@ -21,6 +21,10 @@ uniform float sun_intensity;
 uniform float weather;//mixing factor (0.5 to 1.0)
 uniform float time;
 
+vec4 decodeGamma(vec4 col)
+{
+    return vec4(pow(col.xyz, vec3(2.2)), col.w);
+}
 
 vec2 getScreenCoord()
 {
@@ -210,7 +214,7 @@ void main(){
         radius = radius/0.05;
         if(radius < 1.0-0.001){//< we need a small bias to avoid flickering on the border of the texture
             //We read the alpha value from a texture where x = radius and y=height in the sky (~time)
-            vec4 sun_color = texture(sun,vec2(radius,time));
+            vec4 sun_color = decodeGamma(texture(sun,vec2(radius,time)));
             color = mix(color,sun_color.rgb,sun_color.a);
         }
     }
@@ -230,7 +234,7 @@ void main(){
         float compensation = 1.4;
         //And we read in the texture of the moon. The projection we did previously allows us to have an undeformed moon
         //(for the sun we didn't care as there are no details on it)
-        color = mix(color,texture(moon,vec2(x,y)*scale*compensation+vec2(0.5)).rgb,clamp(-sun_norm.y*3,0,1));
+        color = mix(color,decodeGamma(texture(moon,vec2(x,y)*scale*compensation+vec2(0.5))).rgb,clamp(-sun_norm.y*3,0,1));
     }
 
     //Final mix

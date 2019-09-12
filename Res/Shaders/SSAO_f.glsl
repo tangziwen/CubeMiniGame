@@ -108,8 +108,8 @@ void main()
 	color.rgb = mix(color.rgb, color.rgb * vignette, 0.3);
 
 	vec2 noiseScale = vec2(TU_winSize.x/4.0, TU_winSize.y/4.0);
-    vec3 fragPos = texture(TU_positionBuffer, v_texcoord).xyz;
-    vec3 normal = normalize(texture(TU_normalBuffer, v_texcoord).rgb);
+    vec3 fragPos = (TU_view * vec4(texture(TU_positionBuffer, v_texcoord).xyz, 1.0)).rgb;
+    vec3 normal = normalize((TU_view * vec4(texture(TU_normalBuffer, v_texcoord).rgb, 0.0)).rgb);
     vec3 randomVec = normalize(texture(gNoise, v_texcoord * noiseScale).xyz);
     // create TBN change-of-basis matrix: from tangent-space to view-space
     vec3 tangent = normalize(randomVec - normal * dot(randomVec, normal));
@@ -134,11 +134,11 @@ void main()
 		offset.x = clamp(offset.x, 0.0, 1.0);
 		offset.y = clamp(offset.y, 0.0, 1.0);
         // get sample depth
-        float sampleDepth = texture(TU_positionBuffer, offset.xy).z; // get depth value of kernel sample
+        float sampleDepth = (TU_view * vec4(texture(TU_positionBuffer, offset.xy).xyz, 1.0)).z; // get depth value of kernel sample
         
         // range check & accumulate
         float rangeCheck = smoothstep(0.0, 1.0, AO_distant / abs(fragPos.z - sampleDepth));
-        occlusion += (sampleDepth >= sample.z + AO_bias ? 1.0 : 0.0) * rangeCheck;           
+        occlusion += (sampleDepth >= sample.z + AO_bias ? 1.0 : 0.0) * rangeCheck * AO_strength;
     }
 	occlusion = 1.0 - (occlusion / MAX_KERNEL_SIZE);
 	gl_FragColor = vec4(occlusion);

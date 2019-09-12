@@ -74,9 +74,6 @@ void Renderer::renderAll()
 	{
 		shadowPass();
 		geometryPass();
-		m_offScreenBuffer->bindForWriting();
-		m_gbuffer->bindForReadingGBuffer();
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 		RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
 		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
@@ -84,12 +81,29 @@ void Renderer::renderAll()
 		RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
 		RenderBackEnd::shared()->setDepthTestEnable(false);
 		LightingPass();
-		skyBoxPass();
+		skyBoxPass();// same with lighting pass
+		FogPass();// same with lighting pass
+
+		//watch out the blend!!!!
+		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+
 		SSAOPass();
-		SSAOBlurVPass();
-		SSAOBlurHPass();
+		for(int i = 0; i < 5; i++) 
+		{
+			SSAOBlurVPass();
+			SSAOBlurHPass();
+		}
 		SSAOBlurCompossitPass();
-		FogPass();
+		BloomBrightPass();
+		for(int i = 0; i < 5; i++)
+		{
+			BloomBlurVPass();
+			BloomBlurHPass();	
+		}
+
+		BloomCompossitPass();
+
+		
 	}
 	bindScreenForWriting();
 	if(m_enableGUIRender)
@@ -448,12 +462,31 @@ void Renderer::initMaterials()
 
 	m_blurHEffect = new Material();
 	m_blurHEffect->loadFromTemplate("blurH");
-	MaterialPool::shared()->addMaterial("blurV", m_blurHEffect);
+	MaterialPool::shared()->addMaterial("blurH", m_blurHEffect);
 
 	m_ssaoCompositeEffect = new Material();
 	m_ssaoCompositeEffect->loadFromTemplate("SSAOComposite");
 	MaterialPool::shared()->addMaterial("SSAOComposite", m_ssaoCompositeEffect);
 
+
+
+	m_BloomBlurVEffect = new Material();
+	m_BloomBlurVEffect->loadFromTemplate("BloomBlurV");
+	MaterialPool::shared()->addMaterial("BloomBlurV", m_BloomBlurVEffect);
+
+	m_BloomBlurHEffect = new Material();
+	m_BloomBlurHEffect->loadFromTemplate("BloomBlurH");
+	MaterialPool::shared()->addMaterial("BloomBlurH", m_BloomBlurHEffect);
+
+	m_bloomBrightPassEffect = new Material();
+	m_bloomBrightPassEffect->loadFromTemplate("BloomBrightPass");
+	MaterialPool::shared()->addMaterial("BloomBrightPass", m_bloomBrightPassEffect);
+
+	
+
+	m_BloomCompositePassEffect = new Material();
+	m_BloomCompositePassEffect->loadFromTemplate("BloomCompositePass");
+	MaterialPool::shared()->addMaterial("BloomCompositePass", m_BloomCompositePassEffect);
 
 	m_fogEffect = new Material();
 	m_fogEffect->loadFromTemplate("GlobalFog");
@@ -462,19 +495,36 @@ void Renderer::initMaterials()
 
 void Renderer::initBuffer()
 {
-	int w = Engine::shared()->windowWidth();
-	int h = Engine::shared()->windowHeight();
+	float w = Engine::shared()->windowWidth();
+	float h = Engine::shared()->windowHeight();
 	m_gbuffer = new FrameBuffer();
-	m_gbuffer->init(w, h);
+	m_gbuffer->init(w, h,4,true,true);
+	m_gbuffer->setIsLinearFilter(false);
+	m_gbuffer->gen();
 
 	m_offScreenBuffer = new FrameBuffer();
-	m_offScreenBuffer->init(w, h,1,false);
+	m_offScreenBuffer->init(w, h,1,false, true);
+	m_offScreenBuffer->gen();
+
+	m_offScreenBuffer2 = new FrameBuffer();
+	m_offScreenBuffer2->init(w, h,1,false, true);
+	m_offScreenBuffer2->gen();
 
 	m_ssaoBuffer1 = new FrameBuffer();
-	m_ssaoBuffer1->init(w, h, 1, false);
+	m_ssaoBuffer1->init(w * 0.5, h * 0.5, 1, false, true);
+	m_ssaoBuffer1->gen();
 
 	m_ssaoBuffer2 = new FrameBuffer();
-	m_ssaoBuffer2->init(w, h, 1, false);
+	m_ssaoBuffer2->init(w * 0.5, h * 0.5, 1, false,true);
+	m_ssaoBuffer2->gen();
+
+	m_bloomBuffer1 = new FrameBuffer();
+	m_bloomBuffer1->init(w * 0.5, h * 0.5, 1, false,true);
+	m_bloomBuffer1->gen();
+
+	m_bloomBuffer2 = new FrameBuffer();
+	m_bloomBuffer2->init(w* 0.5, h* 0.5, 1, false,true);
+	m_bloomBuffer2->gen();
 }
 
 void Renderer::geometryPass()
@@ -509,6 +559,10 @@ void Renderer::geometryPass()
 
 void Renderer::LightingPass()
 {
+	m_offScreenBuffer->bindForWriting();
+	//bindScreenForWriting();
+	m_gbuffer->bindForReadingGBuffer();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	directionalLightPass();
 }
 
@@ -518,7 +572,6 @@ void Renderer::shadowPass()
 	ShadowMap::shared()->calculateProjectionMatrix();
 
 	ShadowMap::shared()->getProgram()->use();
-
 	glDepthMask (true);
 	for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
 	{
@@ -545,6 +598,8 @@ void Renderer::shadowPass()
 
 void Renderer::skyBoxPass()
 {
+	m_gbuffer->bindForReading();
+	m_offScreenBuffer->bindForWriting();
 	if(Sky::shared()->isEnable())
 	{
 		RenderBackEnd::shared()->setIsCullFace(true);
@@ -554,7 +609,7 @@ void Renderer::skyBoxPass()
 		mat->setVar("sun_pos",  dirLight->dir());
 		mat->setVar("TU_winSize", Engine::shared()->winSize());
 		mat->use();
-		m_gbuffer->bindForReading();
+		
 		m_gbuffer->bindDepth(0);
 
 		TransformationInfo info;
@@ -639,6 +694,7 @@ void Renderer::SSAOPass()
 	program->setUniformInteger("TU_normalBuffer",2);
 	m_gbuffer->bindRtToTexture(1, 3);
 	program->setUniformInteger("TU_positionBuffer",3);
+	program->setUniformInteger("TU_GBUFFER4",4);
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
 	auto cam = currScene->defaultCamera();
 	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
@@ -657,7 +713,7 @@ void Renderer::SSAOBlurVPass()
 {
 	m_ssaoBuffer1->bindRtToTexture(0, 0);
 	m_ssaoBuffer2->bindForWriting();
-	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	glClear(GL_COLOR_BUFFER_BIT| GL_DEPTH_BUFFER_BIT);
 	m_blurVEffect->use();
 	auto program = m_blurVEffect->getProgram();
 	program->use();
@@ -683,7 +739,7 @@ void Renderer::SSAOBlurCompossitPass()
 {
 	m_offScreenBuffer->bindRtToTexture(0, 0);
 	m_ssaoBuffer1->bindRtToTexture(0,1);
-	bindScreenForWriting();
+	m_offScreenBuffer2->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	auto program = m_ssaoCompositeEffect->getProgram();
 	program->use();
@@ -695,6 +751,7 @@ void Renderer::SSAOBlurCompossitPass()
 void Renderer::FogPass()
 {
 	m_gbuffer->bindForReading();
+	m_offScreenBuffer->bindForWriting();
 	m_gbuffer->bindDepth(0);
 	auto shader = m_fogEffect->getProgram();
 	shader->use();
@@ -705,6 +762,59 @@ void Renderer::FogPass()
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
 	renderPrimitive(m_quad, m_fogEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::BloomBrightPass()
+{
+	m_offScreenBuffer2->bindRtToTexture(0, 0);
+	m_bloomBuffer1->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	auto program = m_bloomBrightPassEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", m_bloomBuffer1->getFrameSize());
+	renderPrimitive(m_quad, m_bloomBrightPassEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::BloomBlurVPass()
+{
+	m_bloomBuffer1->bindRtToTexture(0, 0);
+	m_bloomBuffer2->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_BloomBlurVEffect->use();
+	auto program = m_BloomBlurVEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", m_bloomBuffer2->getFrameSize());
+	renderPrimitive(m_quad, m_BloomBlurVEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::BloomBlurHPass()
+{
+	m_bloomBuffer2->bindRtToTexture(0, 0);
+	m_bloomBuffer1->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_BloomBlurHEffect->use();
+	auto program = m_BloomBlurHEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", m_bloomBuffer1->getFrameSize());
+	renderPrimitive(m_quad, m_BloomBlurHEffect, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::BloomCompossitPass()
+{
+	m_offScreenBuffer2->bindRtToTexture(0, 0);
+	m_bloomBuffer1->bindRtToTexture(0, 1);
+	bindScreenForWriting();
+	//m_offScreenBuffer->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_BloomCompositePassEffect->use();
+	auto program = m_BloomCompositePassEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniformInteger("TU_BloomBuffer",1);
+	renderPrimitive(m_quad, m_BloomCompositePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::directionalLightPass()
@@ -739,7 +849,9 @@ void Renderer::directionalLightPass()
 	  
 
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-	 
+
+	
+	program->setUniform3Float("TU_camPos", g_GetCurrScene()->defaultCamera()->getWorldPos());
 	
 	for(int i = 0; i< SHADOWMAP_CASCADE_NUM; i++)
 	{	
@@ -762,9 +874,7 @@ void Renderer::directionalLightPass()
 
 	auto dirLight = currScene->getDirectionLight();
 	  
-	auto dirInViewSpace = (cam->getViewMatrix() * vec4(dirLight->dir(),0.0)).toVec3();
-	  
-	program->setUniform3Float("gDirectionalLight.direction",dirInViewSpace);
+	program->setUniform3Float("gDirectionalLight.direction",dirLight->dir());
 	  
 	program->setUniform3Float("gDirectionalLight.color",dirLight->color());
 	  
@@ -809,7 +919,7 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 	program->setUniformMat4v("TU_vMatrix", v.data());
 
 	program->setUniformMat4v("TU_mMatrix", m.data());
-	program->setUniformMat4v("TU_normalMatrix", (v * m).inverted().transpose().data());
+	program->setUniformMat4v("TU_normalMatrix", (m).inverted().transpose().data());
 }
 
 void Renderer::bindScreenForWriting()

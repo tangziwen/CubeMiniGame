@@ -23,7 +23,7 @@ const int MAX_KERNEL_SIZE = 64;
 const int MAX_NOISE_SIZE = 16;
 uniform vec3 gKernel[MAX_KERNEL_SIZE];
 uniform sampler2D gNoise;
-
+#define E 0.000001
 uniform float AO_bias;
 
 
@@ -91,8 +91,15 @@ const float SOFTNESS = 0.45;
 
 void main()
 {
+	float depth = texture(TU_Depth, getScreenCoord()).r;
+	if(depth >= (1.0 - E))
+	{
+		discard;
+		return;
+	}
 	float nonLinearDepth = texture2D(TU_Depth, getScreenCoord()).r * 0.5;
 	float fogFactor = getFogFactor();
 	float linearDepthResult = getDist(0.01, 200.0);
 	gl_FragColor = vec4(fog_color.xyz, fogFactor);
+	// gl_FragColor = vec4(0.0);
 }

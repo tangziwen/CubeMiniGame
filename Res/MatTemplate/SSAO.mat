@@ -8,9 +8,7 @@
 		"attributes" : [
 			{"name" : "AO_distant", "type":"float", "default":1.0, "ui_info":{"range":[0.5, 5.0]}},
 			{"name" : "AO_strength", "type":"float", "default":1.0, "ui_info":{"range":[0.0, 1.0]}},
-			{"name" : "AO_bias", "type":"float", "default":0.025, "ui_info":{"range":[0.001, 0.1]}},
-			{"name" : "TU_roughness", "type":"float", "default":5.0},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+			{"name" : "AO_bias", "type":"float", "default":0.025, "ui_info":{"range":[0.001, 0.1]}}
 		],
 		"maps" : [
 		]

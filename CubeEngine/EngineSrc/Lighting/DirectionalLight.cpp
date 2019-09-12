@@ -6,7 +6,7 @@ DirectionalLight::DirectionalLight()
 {
     m_dir = vec3(1.0f, -1.0f, 0);
 	m_dir.normalize();
-	m_intensity = 1.0;
+	m_intensity = 3.0;
 	getAngleFromDir();
 }
 

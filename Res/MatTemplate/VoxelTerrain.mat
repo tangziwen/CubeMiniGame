@@ -14,7 +14,8 @@
 			{"name" : "near_dist", "type":"float", "default":15.0, "ui_info":{"range":[0.1, 100.0]}},
 			{"name" : "far_dist", "type":"float", "default":30.0, "ui_info":{"range":[0.1, 200.0]}},
 			{"name" : "large_factor", "type":"float", "default":2.0, "ui_info":{"range":[1.0, 10.0]}},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]},
+			{"name" : "TU_roughness", "type":"float", "default":1.0, "ui_info":{"range":[0.0, 1.0]}}
 		],
 		"maps" : [
 			["GrassTex", "TU_topGrass", 0, "Texture/T_Ground_Grass_D.png"],
