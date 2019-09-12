@@ -1,0 +1,13 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/BloomComposite_v.glsl",
+		"fs" : "./Res/Shaders/BloomComposite_f.glsl"
+	},
+	"name" : "BloomCompositPass",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}

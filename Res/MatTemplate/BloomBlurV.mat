@@ -1,0 +1,13 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/BloomBlurV_v.glsl",
+		"fs" : "./Res/Shaders/BloomBlurV_f.glsl"
+	},
+	"name" : "BlurV",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}

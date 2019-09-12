@@ -1,0 +1,13 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/BloomBlurH_v.glsl",
+		"fs" : "./Res/Shaders/BloomBlurH_f.glsl"
+	},
+	"name" : "BlurH",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}

@@ -1,0 +1,13 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/BloomBrightPass_v.glsl",
+		"fs" : "./Res/Shaders/BloomBrightPass_f.glsl"
+	},
+	"name" : "PostEffect",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}
