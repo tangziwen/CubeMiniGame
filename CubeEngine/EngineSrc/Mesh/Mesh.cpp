@@ -41,6 +41,7 @@ void Mesh::addVertices(VertexData *vertices, int size)
 
 void Mesh::finish(bool isPassToGPU)
 {
+	calcTangents();
     calculateAABB();
     if(isPassToGPU)
     {
@@ -103,6 +104,52 @@ void Mesh::pushInstances(std::vector<vec4> instancePos)
 void Mesh::clearInstances()
 {
 	m_instanceOffset.clear();
+}
+
+void Mesh::calcTangents()
+{
+    size_t indexCount = m_indices.size();
+    // Accumulate each triangle normal into each of the triangle vertices
+    for (unsigned int i = 0 ; i < indexCount ; i += 3) {
+        short_u index0 = m_indices[i];
+        short_u index1 = m_indices[i + 1];
+        short_u index2 = m_indices[i + 2];
+
+
+	    auto& v0 = m_vertices[index0];
+	    auto& v1 = m_vertices[index1];
+	    auto& v2 = m_vertices[index2];
+   
+	    vec3 Edge1 = v1.m_pos - v0.m_pos;
+	    vec3 Edge2 = v2.m_pos - v0.m_pos;
+
+	    float DeltaU1 = v1.m_texCoord.x - v0.m_texCoord.x;
+	    float DeltaV1 = v1.m_texCoord.y - v0.m_texCoord.y;
+	    float DeltaU2 = v2.m_texCoord.x - v0.m_texCoord.x;
+	    float DeltaV2 = v2.m_texCoord.y - v0.m_texCoord.y;
+
+	    float f = 1.0f / (DeltaU1 * DeltaV2 - DeltaU2 * DeltaV1);
+
+	    vec3 Tangent, Bitangent;
+
+	    Tangent.x = f * (DeltaV2 * Edge1.x - DeltaV1 * Edge2.x);
+	    Tangent.y = f * (DeltaV2 * Edge1.y - DeltaV1 * Edge2.y);
+	    Tangent.z = f * (DeltaV2 * Edge1.z - DeltaV1 * Edge2.z);
+
+	    Bitangent.x = f * (-DeltaU2 * Edge1.x - DeltaU1 * Edge2.x);
+	    Bitangent.y = f * (-DeltaU2 * Edge1.y - DeltaU1 * Edge2.y);
+	    Bitangent.z = f * (-DeltaU2 * Edge1.z - DeltaU1 * Edge2.z);
+
+	    v0.m_tangent += Tangent;
+	    v1.m_tangent += Tangent;
+	    v2.m_tangent += Tangent;
+    }
+
+    size_t vertexCount = m_vertices.size();
+    // Normalize all the vertex normals
+    for (unsigned int i = 0 ; i < vertexCount ; i++) {
+        m_vertices[i].m_tangent.normalize();
+    }
 }
 
 void Mesh::setMatIndex(unsigned int matIndex)

@@ -10,6 +10,7 @@
 #include "Technique/MaterialPool.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 #include <random>
+#include "Utility/math/TbaseMath.h"
 
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
@@ -84,8 +85,7 @@ void Renderer::renderAll()
 		skyBoxPass();// same with lighting pass
 		FogPass();// same with lighting pass
 
-		//watch out the blend!!!!
-		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+
 
 		SSAOPass();
 		for(int i = 0; i < 5; i++) 
@@ -94,6 +94,8 @@ void Renderer::renderAll()
 			SSAOBlurHPass();
 		}
 		SSAOBlurCompossitPass();
+		//get the average luminance
+		autoExposurePass();
 		BloomBrightPass();
 		for(int i = 0; i < 5; i++)
 		{
@@ -312,6 +314,15 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 		program->enableAttributeArray(matLocation);
 		program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
 	}
+	offset += sizeof(vec3);
+
+	int tangentLocation = program->attributeLocation("a_tangent");
+	if (tangentLocation > 0)
+	{
+		program->enableAttributeArray(tangentLocation);
+		program->setAttributeBuffer(tangentLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+	}
+
 	switch(primitiveType)
 	{
 		case RenderCommand::PrimitiveType::Lines:
@@ -488,11 +499,23 @@ void Renderer::initMaterials()
 	m_BloomCompositePassEffect->loadFromTemplate("BloomCompositePass");
 	MaterialPool::shared()->addMaterial("BloomCompositePass", m_BloomCompositePassEffect);
 
+
+	m_autoExposurePassEffect = new Material();
+	m_autoExposurePassEffect->loadFromTemplate("AutoExposurePass");
+	MaterialPool::shared()->addMaterial("AutoExposurePass", m_autoExposurePassEffect);
+
 	m_fogEffect = new Material();
 	m_fogEffect->loadFromTemplate("GlobalFog");
 	MaterialPool::shared()->addMaterial("GlobalFog", m_fogEffect);
 }
 
+
+static FrameBuffer * m_autoExposure0;
+static FrameBuffer * m_autoExposure1;
+static FrameBuffer * m_autoExposure2;
+static FrameBuffer * m_autoExposure3;
+static FrameBuffer * m_autoExposure4;
+std::vector<FrameBuffer *> autoExposureList;
 void Renderer::initBuffer()
 {
 	float w = Engine::shared()->windowWidth();
@@ -525,6 +548,18 @@ void Renderer::initBuffer()
 	m_bloomBuffer2 = new FrameBuffer();
 	m_bloomBuffer2->init(w* 0.5, h* 0.5, 1, false,true);
 	m_bloomBuffer2->gen();
+
+
+
+
+	int sizeArray[] = {512, 256, 128, 64, 32, 16, 8, 4, 2, 1};
+	for(auto i = 0; i < sizeof(sizeArray) / sizeof(int); i ++) 
+	{
+		auto fb = new FrameBuffer();
+		fb->init(sizeArray[i], sizeArray[i], 1, false,true);
+		fb->gen();
+		autoExposureList.push_back(fb);
+	}
 }
 
 void Renderer::geometryPass()
@@ -762,6 +797,8 @@ void Renderer::FogPass()
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
 	renderPrimitive(m_quad, m_fogEffect, RenderCommand::PrimitiveType::TRIANGLES);
+	//watch out the blend!!!!
+	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
 }
 
 void Renderer::BloomBrightPass()
@@ -806,6 +843,7 @@ void Renderer::BloomCompossitPass()
 {
 	m_offScreenBuffer2->bindRtToTexture(0, 0);
 	m_bloomBuffer1->bindRtToTexture(0, 1);
+	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 2);
 	bindScreenForWriting();
 	//m_offScreenBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -814,6 +852,7 @@ void Renderer::BloomCompossitPass()
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniformInteger("TU_BloomBuffer",1);
+	program->setUniformInteger("TU_AverageLuminance",2);
 	renderPrimitive(m_quad, m_BloomCompositePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
@@ -895,6 +934,35 @@ void Renderer::directionalLightPass()
 	  
 	renderPrimitive(m_quad, m_dirLightProgram, RenderCommand::PrimitiveType::TRIANGLES);
 	  
+}
+
+void Renderer::autoExposurePass()
+{
+
+	//pass 1
+	m_offScreenBuffer->bindRtToTexture(0, 0);
+	autoExposureList[0]->bindForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_autoExposurePassEffect->use();
+	auto program = m_autoExposurePassEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	renderPrimitive(m_quad, m_autoExposurePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
+
+
+	for(int i = 0; i < autoExposureList.size() - 1; i++)
+	{
+		//pass2
+		autoExposureList[i]->bindRtToTexture(0, 0);
+		autoExposureList[i + 1]->bindForWriting();
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+		m_autoExposurePassEffect->use();
+		program = m_autoExposurePassEffect->getProgram();
+		program->use();
+		program->setUniformInteger("TU_colorBuffer",0);
+		renderPrimitive(m_quad, m_autoExposurePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
+	}
+	
 }
 
 void Renderer::applyRenderSetting(Material * mat)

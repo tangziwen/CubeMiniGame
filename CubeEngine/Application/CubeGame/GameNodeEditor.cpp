@@ -17,21 +17,10 @@ namespace tzw
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
 	{
-		ImGui::Begin(u8"节点编辑器", isOpen);
-		//if (ImGui::Button(u8"控制器节点")) 
-		//{
-		//	auto graphNode = new ControlPartNode(nullptr);
-		//	addNode(graphNode);
-		//}
-		//ImGui::SameLine();
-		//if (ImGui::Button(u8"轴承节点")) 
-		//{
-		//	auto bearPartNode = new BearingPartNode(nullptr);
-		//	addNode(bearPartNode);
-		//}
-	
+		ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
+		ImGui::SetNextWindowContentSize(ImVec2(1280, 960));
+		ImGui::Begin(u8"节点编辑器", isOpen, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
 		imnodes::BeginNodeEditor();
-
 		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
 		{
 			auto node = m_gameNodes[i];
@@ -68,8 +57,9 @@ namespace tzw
 			// as the unique identifier
 			imnodes::Link(i, p.first, p.second);
 		}
-		imnodes::EndNodeEditor();
 
+
+		imnodes::EndNodeEditor();
 
 
 		int start_attr, end_attr;

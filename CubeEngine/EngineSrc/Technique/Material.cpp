@@ -35,7 +35,7 @@ void Material::loadFromFile(std::string filePath)
 	if (doc.HasParseError())
 	{
 		tlog("[error] get json data err! %s %d offset %d", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
-		exit(1);
+		abort();
 	}
 	if (doc.HasMember("name"))
 	{

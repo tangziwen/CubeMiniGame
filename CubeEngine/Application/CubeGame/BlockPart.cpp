@@ -8,7 +8,23 @@ namespace tzw
 const float blockSize = 0.5;
 BlockPart::BlockPart()
 {
-	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
+	m_node = new CubePrimitive(blockSize, blockSize, blockSize, false);
+
+    auto m_material = Material::createFromTemplate("ModelPBR");
+	auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
+	m_material->setTex("DiffuseMap", texture);
+
+	auto metallicTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_metallic.png");
+	m_material->setTex("MetallicMap", metallicTexture);
+
+	auto roughnessTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_roughness.png");
+	m_material->setTex("RoughnessMap", roughnessTexture);
+
+
+	auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
+	m_material->setTex("NormalMap", normalMapTexture);
+	m_node->setMaterial(m_material);
+
 	m_shape = new PhysicsShape();
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;

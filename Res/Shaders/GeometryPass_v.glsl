@@ -13,12 +13,14 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_texcoord;
 attribute vec4 a_color;
+attribute vec3 a_tangent;
 
 varying vec3 v_position;
 varying vec3 v_normal;
 varying vec2 v_texcoord;
 varying vec4 v_color;
 varying vec3 v_worldPos;
+varying vec3 v_tangent;
 
 
 
@@ -30,6 +32,7 @@ void main()
 	
 	v_position = (TU_mMatrix * vec4(a_position,1.0)).xyz;
 	v_normal = (TU_normalMatrix * vec4(a_normal,0.0)).xyz;
+    v_tangent = (TU_normalMatrix * vec4(a_tangent,0.0)).xyz;
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces
     v_texcoord = a_texcoord;

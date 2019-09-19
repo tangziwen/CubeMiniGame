@@ -515,6 +515,8 @@ void draw_grid(const EditorContext& editor)
 {
     const ImVec2 offset = editor.panning;
     const ImVec2 canvas_size = ImGui::GetWindowSize();
+   	auto winPos = ImGui::GetWindowPos();
+	ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
     for (float x = fmodf(offset.x, GRID_SIZE); x < canvas_size.x;
          x += GRID_SIZE)
     {
@@ -603,6 +605,9 @@ void draw_node(const EditorContext& editor, int node_idx)
     }
 
     {
+
+   		auto winPos = ImGui::GetWindowPos();
+
         // node base
         editor.grid_draw_list->AddRectFilled(
             node_rect.Min,

@@ -80,6 +80,7 @@ public:
 	void pushInstance(vec4 instancePos);
 	void pushInstances(std::vector<vec4> instancePos);
 	void clearInstances();
+	void calcTangents();
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );
     void computeNewVerts ();

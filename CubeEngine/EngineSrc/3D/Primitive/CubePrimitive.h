@@ -7,7 +7,7 @@ namespace tzw {
 class CubePrimitive : public Drawable3D
 {
 public:
-    CubePrimitive(float width, float depth, float height);
+    CubePrimitive(float width, float depth, float height, bool isNeedPreGenerateMat = true);
     virtual void submitDrawCmd(RenderCommand::RenderType passType);
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);

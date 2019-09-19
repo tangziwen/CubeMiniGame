@@ -8,16 +8,24 @@
 #include "EngineSrc/Collision/PhysicsMgr.h"
 namespace tzw {
 
-CubePrimitive::CubePrimitive(float width, float depth, float height)
+CubePrimitive::CubePrimitive(float width, float depth, float height, bool isNeedPreGenerateMat)
 {
     m_width = width;
     m_depth = depth;
     m_height = height;
 	m_mesh = nullptr;
 	m_color = vec4::fromRGB(255,255,255);
-    m_material = Material::createFromTemplate("ModelStd");
-	auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
-	m_material->setTex("diffuseMap", texture);
+	if(isNeedPreGenerateMat)
+	{
+	    m_material = Material::createFromTemplate("ModelSTD");
+		auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
+		m_material->setTex("DiffuseMap", texture);
+	}
+	else
+	{
+		m_material = nullptr;
+	}
+
     initMesh();
     setCamera(g_GetCurrScene()->defaultCamera());
     setIsAccpectOcTtree(true);

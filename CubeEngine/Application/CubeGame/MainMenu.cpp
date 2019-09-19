@@ -223,6 +223,11 @@ void MainMenu::drawToolsMenu()
 		auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		terrainMat->inspect();
 
+		auto ambient = g_GetCurrScene()->getAmbient();
+		auto ambientIntensity = ambient->intensity();
+
+		ImGui::SliderFloat("Ambient Intensity", &ambientIntensity, 0.0, 50.0);
+		ambient->setIntensity(ambientIntensity);
 		auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
 		fogMat->inspect();
 

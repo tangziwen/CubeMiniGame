@@ -213,7 +213,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * albedo / PI + specular) * radiance * NdotL;
+	return (kD * albedo / PI + specular) * radiance * NdotL + gAmbientLight.color * gAmbientLight.intensity * albedo;
 }
 
 
@@ -408,7 +408,7 @@ void main()
 {
 	vec4 Data1 = texture2D(TU_colorBuffer, v_texcoord);
 	vec3 color = Data1.xyz;
-	float roughness = texture2D(TU_GBUFFER4, v_texcoord).r;
+	vec3 surfaceData = texture2D(TU_GBUFFER4, v_texcoord).rgb;
 	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
 	vec4 worldPos = getWorldPosFromDepth();
 	float depth = texture(TU_Depth, v_texcoord).x;
@@ -424,7 +424,7 @@ void main()
 	}
 
 	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
-	vec3 lambert =  calculateLightPBR(color, 0.0, normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, roughness);
+	vec3 lambert =  calculateLightPBR(color, surfaceData[1], normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, surfaceData[0]);
 
 	gl_FragColor = vec4(lambert, 1.0);
 }

@@ -53,6 +53,7 @@ private:
 	void BloomBlurHPass();
 	void BloomCompossitPass();
     void directionalLightPass();
+	void autoExposurePass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
 	void bindScreenForWriting();
@@ -65,6 +66,7 @@ private:
 	Material * m_BloomBlurVEffect;
 	Material * m_bloomBrightPassEffect;
 	Material * m_BloomCompositePassEffect;
+	Material * m_autoExposurePassEffect;
 	Material * m_ssaoCompositeEffect;
 	Material * m_fogEffect;
 

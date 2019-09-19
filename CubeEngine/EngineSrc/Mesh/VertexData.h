@@ -22,6 +22,7 @@ public:
     vec4 m_color;
     vec3 m_barycentric;
 	vec3 m_matIndex;
+	vec3 m_tangent;
 };
 
 class VertexDataLite
