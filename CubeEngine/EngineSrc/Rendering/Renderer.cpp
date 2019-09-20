@@ -104,7 +104,7 @@ void Renderer::renderAll()
 		}
 
 		BloomCompossitPass();
-
+		AAPass();
 		
 	}
 	bindScreenForWriting();
@@ -504,6 +504,11 @@ void Renderer::initMaterials()
 	m_autoExposurePassEffect->loadFromTemplate("AutoExposurePass");
 	MaterialPool::shared()->addMaterial("AutoExposurePass", m_autoExposurePassEffect);
 
+
+	m_FXAAEffect = new Material();
+	m_FXAAEffect->loadFromTemplate("FXAA");
+	MaterialPool::shared()->addMaterial("FXAA", m_FXAAEffect);
+
 	m_fogEffect = new Material();
 	m_fogEffect->loadFromTemplate("GlobalFog");
 	MaterialPool::shared()->addMaterial("GlobalFog", m_fogEffect);
@@ -844,8 +849,8 @@ void Renderer::BloomCompossitPass()
 	m_offScreenBuffer2->bindRtToTexture(0, 0);
 	m_bloomBuffer1->bindRtToTexture(0, 1);
 	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 2);
-	bindScreenForWriting();
-	//m_offScreenBuffer->bindForWriting();
+
+	m_offScreenBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_BloomCompositePassEffect->use();
 	auto program = m_BloomCompositePassEffect->getProgram();
@@ -963,6 +968,20 @@ void Renderer::autoExposurePass()
 		renderPrimitive(m_quad, m_autoExposurePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
 	}
 	
+}
+
+void Renderer::AAPass()
+{
+	m_offScreenBuffer->bindRtToTexture(0, 0);
+	bindScreenForWriting();
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_FXAAEffect->use();
+	auto program = m_FXAAEffect->getProgram();
+	program = m_FXAAEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	renderPrimitive(m_quad, m_FXAAEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
 void Renderer::applyRenderSetting(Material * mat)

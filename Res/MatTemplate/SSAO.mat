@@ -1,6 +1,6 @@
 {
 	"shaders":{
-		"vs" : "./Res/Shaders/SSAO_v.glsl",
+		"vs" : "./Res/Shaders/ScreenQuad_v.glsl",
 		"fs" : "./Res/Shaders/SSAO_f.glsl"
 	},
 	"name" : "PostEffect",

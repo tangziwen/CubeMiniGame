@@ -1,6 +1,6 @@
 {
 	"shaders":{
-		"vs" : "./Res/Shaders/BloomComposite_v.glsl",
+		"vs" : "./Res/Shaders/ScreenQuad_v.glsl",
 		"fs" : "./Res/Shaders/BloomComposite_f.glsl"
 	},
 	"name" : "BloomCompositPass",

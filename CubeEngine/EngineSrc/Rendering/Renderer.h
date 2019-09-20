@@ -54,6 +54,7 @@ private:
 	void BloomCompossitPass();
     void directionalLightPass();
 	void autoExposurePass();
+	void AAPass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
 	void bindScreenForWriting();
@@ -69,7 +70,8 @@ private:
 	Material * m_autoExposurePassEffect;
 	Material * m_ssaoCompositeEffect;
 	Material * m_fogEffect;
-
+	Material * m_FXAAEffect;
+	
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;

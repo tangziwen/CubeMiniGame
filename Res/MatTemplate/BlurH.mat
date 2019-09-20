@@ -1,6 +1,6 @@
 {
 	"shaders":{
-		"vs" : "./Res/Shaders/BlurH_v.glsl",
+		"vs" : "./Res/Shaders/ScreenQuad_v.glsl",
 		"fs" : "./Res/Shaders/BlurH_f.glsl"
 	},
 	"name" : "BlurH",
