@@ -45,6 +45,7 @@ public:
 	void inspect() override;
 	void inspectIMGUI(std::string name, float min, float max, const char * fmt = "%.2f");
 	void inspectIMGUI_Color(std::string name);
+	void handleSemanticValuePassing(TechniqueVar * val, std::string name, ShaderProgram * program);
 
 private:
     std::string m_vsPath;

@@ -19,7 +19,20 @@ struct TechniqueVar
         Vec4,
         Vec3,
         Vec2,
-        Texture
+        Texture,
+    	Semantic,
+    };
+
+    enum class SemanticType
+    {
+    	NO_SEMANTIC,
+    	WIN_SIZE,
+    	ModelViewProj,
+    	Model,
+    	View,
+    	Project,
+    	InvertedProj,
+    	CamPos,
     };
 
     struct {
@@ -36,6 +49,8 @@ struct TechniqueVar
 		float f_max;
 		int i_min;
 		int i_max;
+
+    
     }data;
     Type type;
     void setT(Texture * tex);
@@ -45,8 +60,10 @@ struct TechniqueVar
     void setV2(vec2 value);
     void setV3(vec3 value);
     void setV4(vec4 value);
+	void setAsSemantic(SemanticType semanticValue);
     TechniqueVar();
     TechniqueVar * clone() const;
+	SemanticType semantic;
 };
 
 } // namespace tzw

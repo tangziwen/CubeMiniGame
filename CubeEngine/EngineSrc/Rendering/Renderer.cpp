@@ -980,7 +980,6 @@ void Renderer::AAPass()
 	program = m_FXAAEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
-	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
 	renderPrimitive(m_quad, m_FXAAEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 

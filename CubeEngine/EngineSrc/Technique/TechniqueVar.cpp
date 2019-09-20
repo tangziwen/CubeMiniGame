@@ -44,6 +44,12 @@ void TechniqueVar::setV4(vec4 value)
     type = Type::Vec4;
 }
 
+void TechniqueVar::setAsSemantic(SemanticType semanticValue)
+{
+	type = Type::Semantic;
+	semantic = semanticValue;
+}
+
 TechniqueVar::TechniqueVar(): data()
 {
 	type = Type::Invalid;
@@ -51,6 +57,7 @@ TechniqueVar::TechniqueVar(): data()
 	data.f_min = -999;
 	data.i_max = 999;
 	data.i_min = 0;
+	semantic = SemanticType::NO_SEMANTIC;
 }
 
 TechniqueVar *TechniqueVar::clone() const

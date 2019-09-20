@@ -13,6 +13,7 @@
 #include "2D/GUISystem.h"
 #include "Texture/TextureMgr.h"
 #include "Utility/file/Tfile.h"
+#include "Engine/Engine.h"
 
 namespace tzw {
 
@@ -74,13 +75,18 @@ void Material::loadFromFile(std::string filePath)
 			auto theName = attribute["name"].GetString();
 			auto aliasName = theName;
 			auto& val = attribute["default"];
+			bool hasDefaultVal = true;
+			if (val.IsArray() && val.Size() <= 0)
+				hasDefaultVal = false;
 			std::string typeStr = attribute["type"].GetString();
 			m_aliasMap[theName] = aliasName;
+			auto var = new TechniqueVar();
 			if (typeStr == "int")
 			{
-				auto var = new TechniqueVar();
-				var->setI(val.GetInt());
-				m_varList[theName] = var;
+				if(hasDefaultVal) 
+				{
+					var->setI(val.GetInt());
+				}
 				if(attribute.HasMember("ui_info"))
 				{
 					auto&uiInfo = attribute["ui_info"];
@@ -93,9 +99,11 @@ void Material::loadFromFile(std::string filePath)
 			}
 			else if (typeStr == "float")
 			{
-				auto var = new TechniqueVar();
-				var->setF(val.GetDouble());
-				m_varList[theName] = var;
+
+				if(hasDefaultVal) 
+				{
+					var->setF(val.GetDouble());
+                }
 				if(attribute.HasMember("ui_info"))
 				{
 					auto&uiInfo = attribute["ui_info"];
@@ -106,18 +114,40 @@ void Material::loadFromFile(std::string filePath)
 					}
 				}
 			}
+			else if (typeStr == "vec2")
+			{
+				if(hasDefaultVal)
+				{
+					var->setV2(vec2(val[0].GetDouble(), val[1].GetDouble()));
+				}
+			}
 			else if (typeStr == "vec3")
 			{
-				auto var = new TechniqueVar();
-				var->setV3(vec3(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble()));
-				m_varList[theName] = var;
+				if(hasDefaultVal) 
+				{
+					var->setV3(vec3(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble()));
+				}
 			}
 			else if (typeStr == "vec4")
 			{
-				auto var = new TechniqueVar();
-				var->setV4(vec4(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble(), val[3].GetDouble()));
-				m_varList[theName] = var;
+				if(hasDefaultVal) 
+				{
+					var->setV4(vec4(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble(), val[3].GetDouble()));
+				}
 			}
+			//semantics
+			else if(typeStr.find("semantic_") == 0)
+			{
+				if(typeStr == "semantic_WinSize")
+				{
+					var->setAsSemantic(TechniqueVar::SemanticType::WIN_SIZE);
+				}
+				else if(typeStr == "semantic_Model")
+				{
+					var->setAsSemantic(TechniqueVar::SemanticType::Model);
+				}
+			}
+			m_varList[theName] = var;
 		}
 	}
 
@@ -322,6 +352,8 @@ void Material::use(ShaderProgram * extraProgram)
 		//need to convert to alias
 		std::string name = getAlias(i->first);
 		TechniqueVar* var = i->second;
+
+		//extra semantic pass
 		switch(var->type)
 		{
 			case TechniqueVar::Type::Float:
@@ -360,6 +392,11 @@ void Material::use(ShaderProgram * extraProgram)
 					auto id = getMapSlot(name);
 					RenderBackEnd::shared()->bindTexture2DAndUnit(id,tex->handle(),tex->getType());
 					program->setUniformInteger(name.c_str(),id);
+				}
+			break;
+			case TechniqueVar::Type::Semantic:
+				{
+					handleSemanticValuePassing(var, name, program);
 				}
 			break;
 			case TechniqueVar::Type::Invalid:
@@ -465,6 +502,26 @@ void Material::inspectIMGUI_Color(std::string name)
 	int misc_flags = (hdr ? ImGuiColorEditFlags_HDR : 0) | (drag_and_drop ? 0 : 1<<9) | (alpha_half_preview ? ImGuiColorEditFlags_AlphaPreviewHalf : (alpha_preview ? ImGuiColorEditFlags_AlphaPreview : 0)) | (options_menu ? 0 : ImGuiColorEditFlags_NoOptions);
 	ImGui::ColorEdit3(name.c_str(), (float*)&color, misc_flags);
 	setVar(name, vec3(color.x, color.y, color.z));
+}
+
+void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string name, ShaderProgram * program)
+{
+	switch(val->semantic)
+	{
+		case TechniqueVar::SemanticType::NO_SEMANTIC: break;
+        case TechniqueVar::SemanticType::WIN_SIZE:
+		{
+        	program->setUniform2Float(name.c_str(), Engine::shared()->winSize());
+        }
+		break;
+		case TechniqueVar::SemanticType::ModelViewProj: break;
+		case TechniqueVar::SemanticType::Model: break;
+		case TechniqueVar::SemanticType::View: break;
+		case TechniqueVar::SemanticType::Project: break;
+		case TechniqueVar::SemanticType::InvertedProj: break;
+		case TechniqueVar::SemanticType::CamPos: break;
+		default: ;
+	}
 }
 
 /**

@@ -101,5 +101,4 @@ void main()
 	float fogFactor = getFogFactor();
 	float linearDepthResult = getDist(0.01, 200.0);
 	gl_FragColor = vec4(fog_color.xyz, fogFactor);
-	// gl_FragColor = vec4(0.0);
 }
