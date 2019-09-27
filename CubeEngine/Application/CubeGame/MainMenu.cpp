@@ -15,7 +15,7 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"
-
+#include "UIHelper.h"
 
 #include "dirent.h"
 
@@ -126,6 +126,10 @@ void MainMenu::drawIMGUI()
 			{
 				ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
 				ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
+				if(ImGui::MenuItem(u8"弹出窗口", nullptr)) 
+				{
+					popFloatTips("test");
+				}
 				ImGui::EndMenu();
 			}
 			if (m_isShowProfiler)
@@ -136,7 +140,7 @@ void MainMenu::drawIMGUI()
 			{
 				ShowExampleAppConsole(&m_isShowConsole);
 			}
-			
+
 			if (ImGui::BeginMenu("?"))
 			{
 				if (ImGui::MenuItem(u8"关于", nullptr)) {
@@ -200,6 +204,11 @@ void MainMenu::setVisible(bool val)
 GameNodeEditor* MainMenu::getNodeEditor()
 {
 	return m_nodeEditor;
+}
+
+void MainMenu::popFloatTips(std::string floatString)
+{
+	UIHelper::shared()->showFloatTips(floatString);
 }
 
 void MainMenu::startGame()

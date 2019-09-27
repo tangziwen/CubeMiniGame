@@ -276,4 +276,10 @@ void Island::genIslandGroup()
 {
 	m_islandGroup = GUIDMgr::shared()->genGUID();
 }
+
+void Island::killAllParts()
+{
+
+	
+}
 }

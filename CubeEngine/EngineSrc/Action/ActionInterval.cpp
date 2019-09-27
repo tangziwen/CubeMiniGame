@@ -8,6 +8,12 @@ ActionInterval::ActionInterval()
 
 }
 
+ActionInterval::ActionInterval(float duration)
+	:m_duration(duration),m_currentTime(0.0f)
+{
+	
+}
+
 void ActionInterval::update(Node *node, float dt)
 {
     if(m_currentTime<=m_duration)

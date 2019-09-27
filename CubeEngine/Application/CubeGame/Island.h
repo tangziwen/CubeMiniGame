@@ -34,6 +34,7 @@ public:
 	bool m_isSpecial;
 	std::string m_islandGroup;
 	void genIslandGroup();
+	void killAllParts();
 private:
 	bool m_enablePhysics;
 	std::set<Island *> m_neighborIslands;

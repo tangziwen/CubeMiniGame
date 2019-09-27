@@ -60,8 +60,13 @@ namespace tzw
 				part->getNode()->removeFromParent();
 				island->remove(part);
 				delete part;
+				//is the last island, remove it
+				if(island->m_partList.empty())
+				{
+					m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
+					delete island;
+				}
 			}
-
 		}
 	}
 
@@ -173,13 +178,8 @@ namespace tzw
 	void
 	BuildingSystem::placeLiftPart(vec3 wherePos)
 	{
+		if(m_liftPart) return;
 		auto part = new LiftPart();
-		// TODO
-
-		// auto newIsland = new Island(wherePos);
-		// m_IslandList.insert(newIsland);
-		// newIsland->m_node->addChild(part->getNode());
-		// newIsland->insert(part);
 		part->getNode()->setPos(wherePos);
 		g_GetCurrScene()->addNode(part->getNode());
 		m_liftPart = part;
@@ -445,6 +445,8 @@ namespace tzw
 	void
 	BuildingSystem::load(std::string filePath)
 	{
+
+		
 		rapidjson::Document doc;
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
@@ -456,6 +458,7 @@ namespace tzw
 				doc.GetErrorOffset());
 			exit(1);
 		}
+		removeLiftConnected();
 		// island
 		if (doc.HasMember("islandList"))
 		{
@@ -533,7 +536,7 @@ namespace tzw
 		//Node Editor
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
 		nodeEditor->handleLinkLoad(doc["NodeGraph"]);
-
+		
 		auto island = m_IslandList[0];
 		replaceToLift(island);
 	}
@@ -553,6 +556,34 @@ namespace tzw
 		{
 			constraint->drawInfo(dt);
 		}
+	}
+
+	void BuildingSystem::removeLiftConnected()
+	{
+		if(!m_liftPart) return;
+		std::vector<Island *> groupList;
+		getIslandsByGroup(m_liftPart->m_effectedIslandGroup, groupList);
+		for(auto island : groupList)
+		{
+			removeIsland(island);
+		}
+	}
+
+	void BuildingSystem::removeIsland(Island* island)
+	{
+		for (auto iter : island->m_partList)
+		{
+			if (iter->isConstraint())
+			{
+				auto bearing = static_cast<GameConstraint*>(iter);
+				m_bearList.erase(m_bearList.find(bearing));
+			}
+			iter->getNode()->removeFromParent();
+			island->remove(iter);
+			delete iter;
+		}
+		m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
+		delete island;
 	}
 
 	void

@@ -37,7 +37,6 @@ class BuildingSystem
 		void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
 		vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 		void placeLiftPart(vec3 wherePos);
-
 		void setCurrentControlPart(GamePart * controlPart);
 		ControlPart * getCurrentControlPart() const;
 		GamePart * createPart(int type);
@@ -53,6 +52,9 @@ class BuildingSystem
 		void load(std::string filePath);
 		void updateBearing(float dt);
 		void showNameTips(float dt);
+
+		void removeLiftConnected();
+		void removeIsland(Island * island);
 	private:
 		ControlPart * m_controlPart;
 		LiftPart * m_liftPart;

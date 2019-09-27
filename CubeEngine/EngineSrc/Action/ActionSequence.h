@@ -1,14 +1,15 @@
-#ifndef TZW_ACTIONINTERVAL_H
-#define TZW_ACTIONINTERVAL_H
+#pragma once
 #include "Action.h"
+#include "ActionInterval.h"
+#include <vector>
+#include <deque>
 
 namespace tzw {
 
-class ActionInterval :public Action
+class ActionSequence :public ActionInterval
 {
 public:
-    ActionInterval();
-	explicit ActionInterval(float duration);
+    ActionSequence(std::vector<Action *> &actionList);
 	void update(Node * node, float dt) override;
 	void step(Node * node,float dt) override;
     float duration() const;
@@ -17,11 +18,11 @@ public:
     float currentTime() const;
     void setCurrentTime(float currentTime);
     virtual void final(Node * node);
+	void addAction(Action * action);
 protected:
+	std::deque<Action *> m_actionList;
     float m_duration;
     float m_currentTime;
 };
 
 } // namespace tzw
-
-#endif // TZW_ACTIONINTERVAL_H
