@@ -11,7 +11,7 @@ LabelNew::LabelNew():
 {
     m_mesh = new Mesh();
 	m_material = new Material();
-    m_material = Material::createFromTemplate("ModelStd");
+    m_material = Material::createFromTemplate("Text");
     m_material->setVar("color",getUniformColor());
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
@@ -108,8 +108,8 @@ void LabelNew::genMesh()
 
 void LabelNew::submitDrawCmd(RenderCommand::RenderType passType)
 {
-    m_material->setVar("color", getUniformColor());
-    m_material->setTex("MainTexture",m_atlas->texture());
+    //m_material->setVar("color", getUniformColor());
+    m_material->setTex("SpriteTexture",m_atlas->texture());
     RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
@@ -128,6 +128,7 @@ void LabelNew::initAtlas()
     }
     m_atlas->generate();
     m_atlas->generateGLTexture();
+	m_atlas->texture()->setFilter(Texture::FilterType::Linear, 0);
 }
 
 } // namespace tzw

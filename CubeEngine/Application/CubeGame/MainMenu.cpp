@@ -229,6 +229,9 @@ void MainMenu::drawToolsMenu()
 	{
 		ImGui::Begin("Terrain Inspector", &m_isOpenTerrain);
 		ImGui::Text("Terrain Inspector");
+		auto bloomComposisit = MaterialPool::shared()->getMatFromTemplate("BloomCompositePass");
+		bloomComposisit->inspect();
+		
 		auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		terrainMat->inspect();
 

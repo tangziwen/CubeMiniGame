@@ -88,17 +88,11 @@ const float RADIUS = 0.8;
 //softness of our vignette, between 0.0 and 1.0
 const float SOFTNESS = 0.45;
 
-
 void main()
 {
 	float depth = texture(TU_Depth, getScreenCoord()).r;
-	if(depth >= (1.0 - E))
-	{
-		discard;
-		return;
-	}
 	float nonLinearDepth = texture2D(TU_Depth, getScreenCoord()).r * 0.5;
 	float fogFactor = getFogFactor();
-	float linearDepthResult = getDist(0.01, 200.0);
-	gl_FragColor = vec4(fog_color.xyz, fogFactor);
+	vec3 worldPos = getWorldPosFromDepth().xyz;
+	gl_FragColor = vec4(fog_color.rgb, fogFactor);
 }

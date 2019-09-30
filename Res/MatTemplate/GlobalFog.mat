@@ -6,6 +6,7 @@
   "name": "PostEffect",
   "property": {
     "attributes": [
+		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
       {
         "name": "fog_near",
         "type": "float",
@@ -20,7 +21,7 @@
       {
         "name": "fog_far",
         "type": "float",
-        "default": 200,
+        "default": 100,
         "ui_info": {
           "range": [
             0,
@@ -42,7 +43,7 @@
       {
         "name": "fog_height_max",
         "type": "float",
-        "default": 50,
+        "default": 120,
         "ui_info": {
           "range": [
             0,

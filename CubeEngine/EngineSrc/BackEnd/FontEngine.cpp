@@ -16,7 +16,9 @@ void FontEngine::initFont(Font *font, std::string fontFilePath,unsigned int font
     auto face = font->face();
     FT_New_Face( *m_library,fontFilePath.c_str(),0,face);
 
-    FT_Set_Char_Size(*face,fontSize<<6,0,96,96);
+    FT_Set_Char_Size(*face,fontSize<<6,fontSize<<6,100,100);
+
+	//FT_Set_Pixel_Sizes()
 }
 
 FontEngine::FontEngine()

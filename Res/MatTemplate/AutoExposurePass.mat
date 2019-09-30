@@ -1,12 +1,11 @@
 {
 	"shaders":{
 		"vs" : "./Res/Shaders/ScreenQuad_v.glsl",
-		"fs" : "./Res/Shaders/BloomComposite_f.glsl"
+		"fs" : "./Res/Shaders/AutoExposurePass_f.glsl"
 	},
 	"name" : "BloomCompositPass",
 	"property" : {
 		"attributes" : [
-		{"name" : "BloomStrength", "type":"float", "default":0.5, "ui_info":{"range":[0.0, 2.0]}}
 		],
 		"maps" : [
 		]

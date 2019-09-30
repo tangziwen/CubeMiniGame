@@ -1,0 +1,15 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/SpriteTexture_v.glsl",
+		"fs" : "./Res/Shaders/Text_f.glsl"
+	},
+	"name" : "Sprite",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["SpriteTexture", "TU_tex1", 0]
+		]
+	}
+}

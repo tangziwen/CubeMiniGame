@@ -1,0 +1,19 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/GeometryPass_v.glsl",
+		"fs" : "./Res/Shaders/GeometryPassPBR_f.glsl"
+	},
+	"name" : "ModelPBR",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_roughness", "type":"float", "default":5.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["DiffuseMap", "TU_DiffuseMap", 0],
+			["MetallicMap", "TU_MetallicMap", 1],
+			["RoughnessMap", "TU_RoughnessMap", 2],
+			["NormalMap", "TU_NormalMap", 3]
+		]
+	}
+}

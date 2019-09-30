@@ -4,6 +4,7 @@
 #include "Utility/file/Tfile.h"
 #include "rapidjson/filewritestream.h"
 #include <algorithm>
+#include <utility>
 
 #include "UIHelper.h"
 #include "Action/MoveBy.h"
@@ -21,10 +22,10 @@ namespace tzw
 
 	void UIHelper::showFloatTips(std::string str, float duration, float disappearDuration)
 	{
-		auto label = LabelNew::create(str);
+		auto label = LabelNew::create(std::move(str));
 
 		auto size = Engine::shared()->winSize();
-		label->setPos2D(size.x / 2.0, size.y - 250);
+		label->setPos2D(size.x / 2.0f - label->getContentSize().x / 2.0f, size.y - 150);
 		g_GetCurrScene()->addNode(label);
 		std::vector<Action * > seq;
 		seq.push_back(new ActionInterval(duration));

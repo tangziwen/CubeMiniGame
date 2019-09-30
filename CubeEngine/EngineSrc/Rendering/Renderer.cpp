@@ -22,7 +22,19 @@ Renderer::Renderer(): m_quad(nullptr), m_dirLightProgram(nullptr), m_postEffect(
 	m_enableGUIRender = true;
 	m_isNeedSortGUI = true;
 }
+static FrameBuffer * m_autoExposure0;
+static FrameBuffer * m_autoExposure1;
+static FrameBuffer * m_autoExposure2;
+static FrameBuffer * m_autoExposure3;
+static FrameBuffer * m_autoExposure4;
 
+
+static FrameBuffer * m_bloomBuffer_half1;
+static FrameBuffer * m_bloomBuffer_half2;
+static FrameBuffer * m_bloomBuffer_quad1;
+static FrameBuffer * m_bloomBuffer_quad2;
+static FrameBuffer * m_bloomBuffer_octave1;
+static FrameBuffer * m_bloomBuffer_octave2;
 Renderer *Renderer::shared()
 {
 	if(!Renderer::m_instance)
@@ -97,12 +109,34 @@ void Renderer::renderAll()
 		//get the average luminance
 		autoExposurePass();
 		BloomBrightPass();
-		for(int i = 0; i < 5; i++)
+
+		//copy to multiple bloom
+		copyToFrame(m_bloomBuffer1, m_bloomBuffer_half1, m_copyEffect);
+		copyToFrame(m_bloomBuffer1, m_bloomBuffer_quad1, m_copyEffect);
+		copyToFrame(m_bloomBuffer1, m_bloomBuffer_octave1, m_copyEffect);
+
+		//ping pong
+		for(int i = 0; i<3; i++) 
 		{
-			BloomBlurVPass();
-			BloomBlurHPass();	
+		copyToFrame(m_bloomBuffer1, m_bloomBuffer2, m_BloomBlurVEffect);
+		copyToFrame(m_bloomBuffer2, m_bloomBuffer1, m_BloomBlurHEffect);
 		}
 
+		for(int i = 0; i<3; i++) 
+		{
+		copyToFrame(m_bloomBuffer_half1, m_bloomBuffer_half2, m_BloomBlurVEffect);
+		copyToFrame(m_bloomBuffer_half2, m_bloomBuffer_half1, m_BloomBlurHEffect);
+                }
+		for(int i = 0; i<3; i++) 
+		{
+		copyToFrame(m_bloomBuffer_quad1, m_bloomBuffer_quad2, m_BloomBlurVEffect);
+		copyToFrame(m_bloomBuffer_quad2, m_bloomBuffer_quad1, m_BloomBlurHEffect);
+                }
+				for(int i = 0; i<3; i++) 
+		{
+		copyToFrame(m_bloomBuffer_octave1, m_bloomBuffer_octave2, m_BloomBlurVEffect);
+		copyToFrame(m_bloomBuffer_octave2, m_bloomBuffer_octave1, m_BloomBlurHEffect);
+                                }
 		BloomCompossitPass();
 		AAPass();
 		
@@ -512,14 +546,15 @@ void Renderer::initMaterials()
 	m_fogEffect = new Material();
 	m_fogEffect->loadFromTemplate("GlobalFog");
 	MaterialPool::shared()->addMaterial("GlobalFog", m_fogEffect);
+
+	m_copyEffect = new Material();
+	m_copyEffect->loadFromTemplate("CopyToFrame");
+	MaterialPool::shared()->addMaterial("CopyToFrame", m_copyEffect);
 }
 
 
-static FrameBuffer * m_autoExposure0;
-static FrameBuffer * m_autoExposure1;
-static FrameBuffer * m_autoExposure2;
-static FrameBuffer * m_autoExposure3;
-static FrameBuffer * m_autoExposure4;
+
+
 std::vector<FrameBuffer *> autoExposureList;
 void Renderer::initBuffer()
 {
@@ -547,15 +582,40 @@ void Renderer::initBuffer()
 	m_ssaoBuffer2->gen();
 
 	m_bloomBuffer1 = new FrameBuffer();
-	m_bloomBuffer1->init(w * 0.5, h * 0.5, 1, false,true);
+	m_bloomBuffer1->init(w * 0.5, h  * 0.5, 1, false,true);
 	m_bloomBuffer1->gen();
 
 	m_bloomBuffer2 = new FrameBuffer();
-	m_bloomBuffer2->init(w* 0.5, h* 0.5, 1, false,true);
+	m_bloomBuffer2->init(w * 0.5, h * 0.5, 1, false,true);
 	m_bloomBuffer2->gen();
 
 
+	m_bloomBuffer_half1 = new FrameBuffer();
+	m_bloomBuffer_half1->init(w / 4.0f, h / 4.0f, 1, false,true);
+	m_bloomBuffer_half1->gen();
 
+	m_bloomBuffer_half2 = new FrameBuffer();
+	m_bloomBuffer_half2->init(w / 4.0f, h / 4.0f, 1, false,true);
+	m_bloomBuffer_half2->gen();
+
+
+	m_bloomBuffer_quad1 = new FrameBuffer();
+	m_bloomBuffer_quad1->init(w / 8.0f, h / 8.0f, 1, false,true);
+	m_bloomBuffer_quad1->gen();
+
+
+	m_bloomBuffer_quad2 = new FrameBuffer();
+	m_bloomBuffer_quad2->init(w / 8.0f, h / 8.0f, 1, false,true);
+	m_bloomBuffer_quad2->gen();
+
+
+	m_bloomBuffer_octave1 = new FrameBuffer();
+	m_bloomBuffer_octave1->init(w / 16.0f, h / 16.0f, 1, false,true);
+	m_bloomBuffer_octave1->gen();
+
+	m_bloomBuffer_octave2 = new FrameBuffer();
+	m_bloomBuffer_octave2->init(w / 16.0f, h / 16.0f, 1, false,true);
+	m_bloomBuffer_octave2->gen();
 
 	int sizeArray[] = {512, 256, 128, 64, 32, 16, 8, 4, 2, 1};
 	for(auto i = 0; i < sizeof(sizeArray) / sizeof(int); i ++) 
@@ -758,7 +818,7 @@ void Renderer::SSAOBlurVPass()
 	auto program = m_blurVEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
-	program->setUniform2Float("TU_winSize", Engine::shared()->winSize() * 0.5f);
+	program->setUniform2Float("TU_winSize", m_ssaoBuffer2->getFrameSize());
 	renderPrimitive(m_quad, m_blurVEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
@@ -771,7 +831,7 @@ void Renderer::SSAOBlurHPass()
 	auto program = m_blurHEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
-	program->setUniform2Float("TU_winSize", Engine::shared()->winSize() * 0.5f);
+	program->setUniform2Float("TU_winSize", m_ssaoBuffer1->getFrameSize());
 	renderPrimitive(m_quad, m_blurHEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
@@ -848,7 +908,10 @@ void Renderer::BloomCompossitPass()
 {
 	m_offScreenBuffer2->bindRtToTexture(0, 0);
 	m_bloomBuffer1->bindRtToTexture(0, 1);
-	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 2);
+	m_bloomBuffer_half1->bindRtToTexture(0, 2);
+	m_bloomBuffer_quad1->bindRtToTexture(0, 3);
+	m_bloomBuffer_octave1->bindRtToTexture(0, 4);
+	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 5);
 
 	m_offScreenBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -857,7 +920,10 @@ void Renderer::BloomCompossitPass()
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniformInteger("TU_BloomBuffer",1);
-	program->setUniformInteger("TU_AverageLuminance",2);
+	program->setUniformInteger("TU_BloomBufferHalf",2);
+	program->setUniformInteger("TU_BloomBufferQuad",3);
+	program->setUniformInteger("TU_BloomBufferOctave",4);
+	program->setUniformInteger("TU_AverageLuminance",5);
 	renderPrimitive(m_quad, m_BloomCompositePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
@@ -1016,5 +1082,17 @@ void Renderer::bindScreenForWriting()
 	RenderBackEnd::shared()->bindFrameBuffer(0);
 }
 
+void Renderer::copyToFrame(FrameBuffer* bufferSrc, FrameBuffer* bufferDst, Material * mat)
+{
+	bufferDst->bindForWriting();
+	bufferSrc->bindRtToTexture(0, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	mat->use();
+	auto program = mat->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", bufferDst->getFrameSize());
+	renderPrimitive(m_quad, mat, RenderCommand::PrimitiveType::TRIANGLES);
+}
 } // namespace tzw
 

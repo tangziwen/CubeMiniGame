@@ -28,7 +28,8 @@ unsigned int Font::getCharIndex(unsigned long c)
 
 GlyphData Font::getGlyphDataFromChar(unsigned long c)
 {
-    FT_Load_Char(*m_face,c,FT_LOAD_DEFAULT|FT_LOAD_RENDER);
+    FT_Load_Char(*m_face,c,FT_LOAD_DEFAULT | FT_LOAD_RENDER);
+	//FT_Render_Glyph((*m_face)->glyph, FT_RENDER_MODE_NORMAL);
     GlyphData g;
     g.initFromFace(m_face,c);
     return g;

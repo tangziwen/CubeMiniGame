@@ -33,6 +33,7 @@ struct TechniqueVar
     	Project,
     	InvertedProj,
     	CamPos,
+    	InvertedViewProj
     };
 
     struct {

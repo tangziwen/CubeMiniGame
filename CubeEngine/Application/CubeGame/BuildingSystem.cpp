@@ -14,6 +14,7 @@
 #include "rapidjson/prettywriter.h"
 #include <algorithm>
 #include "MainMenu.h"
+#include "UIHelper.h"
 
 namespace tzw
 {
@@ -178,7 +179,11 @@ namespace tzw
 	void
 	BuildingSystem::placeLiftPart(vec3 wherePos)
 	{
-		if(m_liftPart) return;
+		if(m_liftPart) 
+		{
+			UIHelper::shared()->showFloatTips(u8"升降台只能放一个");
+            return;
+        }
 		auto part = new LiftPart();
 		part->getNode()->setPos(wherePos);
 		g_GetCurrScene()->addNode(part->getNode());

@@ -130,7 +130,8 @@ void GameWorld::startGame()
 	GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 	 
 	m_mainRoot->addChild(player);
-	 
+
+
 	//PhysicsMgr::shared()->start();
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }

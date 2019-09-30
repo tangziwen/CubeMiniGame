@@ -14,6 +14,7 @@
 #include "Texture/TextureMgr.h"
 #include "Utility/file/Tfile.h"
 #include "Engine/Engine.h"
+#include "Scene/SceneMgr.h"
 
 namespace tzw {
 
@@ -145,6 +146,10 @@ void Material::loadFromFile(std::string filePath)
 				else if(typeStr == "semantic_Model")
 				{
 					var->setAsSemantic(TechniqueVar::SemanticType::Model);
+				}
+				else if(typeStr =="semantic_ViewProjectInverted") 
+				{
+					var->setAsSemantic(TechniqueVar::SemanticType::InvertedViewProj);
 				}
 			}
 			m_varList[theName] = var;
@@ -396,6 +401,7 @@ void Material::use(ShaderProgram * extraProgram)
 			break;
 			case TechniqueVar::Type::Semantic:
 				{
+
 					handleSemanticValuePassing(var, name, program);
 				}
 			break;
@@ -520,6 +526,13 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 		case TechniqueVar::SemanticType::Project: break;
 		case TechniqueVar::SemanticType::InvertedProj: break;
 		case TechniqueVar::SemanticType::CamPos: break;
+        case TechniqueVar::SemanticType::InvertedViewProj:
+		{
+			auto currScene = g_GetCurrScene();
+			auto cam = currScene->defaultCamera();
+        	program->setUniformMat4v(name.c_str(), cam->getViewProjectionMatrix().inverted().data());
+        }
+		break;
 		default: ;
 	}
 }

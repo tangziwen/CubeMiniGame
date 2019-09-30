@@ -1,0 +1,14 @@
+{
+	"shaders":{
+		"vs" : "./Res/Shaders/ScreenQuad_v.glsl",
+		"fs" : "./Res/Shaders/FXAA_f.glsl"
+	},
+	"name" : "FXAA",
+	"property" : {
+		"attributes" : [
+		{"name" : "TU_winSize", "type":"semantic_WinSize"}
+		],
+		"maps" : [
+		]
+	}
+}

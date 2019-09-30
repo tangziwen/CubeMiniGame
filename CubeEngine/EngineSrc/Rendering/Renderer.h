@@ -58,6 +58,7 @@ private:
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
 	void bindScreenForWriting();
+	void copyToFrame(FrameBuffer * bufferSrc, FrameBuffer *bufferDst, Material * mat);
     Mesh * m_quad;
     Material * m_dirLightProgram;
 	Material * m_postEffect;
@@ -71,6 +72,7 @@ private:
 	Material * m_ssaoCompositeEffect;
 	Material * m_fogEffect;
 	Material * m_FXAAEffect;
+	Material * m_copyEffect;
 	
     bool m_enable3DRender;
     bool m_enableGUIRender;
