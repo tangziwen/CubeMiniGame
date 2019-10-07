@@ -423,7 +423,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_0(verts)                                                \
   vec4(getPoint(i - 1, j, k).w - (verts[1]).w,                                 \
        getPoint(i, j - 1, k).w - (verts[4]).w,                                 \
-       getPoint(i, j, k - 1).w - (verts[3]).w,                                 \
+       (verts[3]).w - getPoint(i, j, k - 1).w,                                 \
        (verts[0]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -437,7 +437,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_1(verts)                                                \
   vec4((verts[0]).w - getPoint(i + 2, j, k).w,                                 \
        getPoint(i + 1, j - 1, k).w - (verts[5]).w,                             \
-       getPoint(i + 1, j, k - 1).w - (verts[2]).w,                             \
+       (verts[2]).w - getPoint(i + 1, j, k - 1).w,                             \
        (verts[1]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -451,7 +451,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_2(verts)                                                \
   vec4((verts[3]).w - getPoint(i + 2, j, k + 1).w,                             \
        getPoint(i + 1, j - 1, k + 1).w - (verts[6]).w,                         \
-       (verts[1]).w - getPoint(i + 1, j, k + 2).w,                             \
+       getPoint(i + 1, j, k + 2).w - (verts[1]).w,                             \
        (verts[2]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -465,7 +465,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_3(verts)                                                \
   vec4(getPoint(i - 1, j, k + 1).w - (verts[2]).w,                             \
        getPoint(i, j - 1, k + 1).w - (verts[7]).w,                             \
-       (verts[0]).w - getPoint(i, j, k + 2).w,                                 \
+       getPoint(i, j, k + 2).w - (verts[0]).w,                                 \
        (verts[3]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -479,7 +479,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_4(verts)                                                \
   vec4(getPoint(i - 1, j + 1, k).w - (verts[5]).w,                             \
        (verts[0]).w - getPoint(i, j + 2, k).w,                                 \
-       getPoint(i, j + 1, k - 1).w - (verts[7]).w,                             \
+       (verts[7]).w - getPoint(i, j + 1, k - 1).w,                             \
        (verts[4]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -493,7 +493,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_5(verts)                                                \
   vec4((verts[4]).w - getPoint(i + 2, j + 1, k).w,                             \
        (verts[1]).w - getPoint(i + 1, j + 2, k).w,                             \
-       getPoint(i + 1, j + 1, k - 1).w - (verts[6]).w,                         \
+       (verts[6]).w - getPoint(i + 1, j + 1, k - 1).w,                         \
        (verts[5]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -507,7 +507,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_6(verts)                                                \
   vec4((verts[7]).w - getPoint(i + 2, j + 1, k + 1).w,                         \
        (verts[2]).w - getPoint(i + 1, j + 2, k + 1).w,                         \
-       (verts[5]).w - getPoint(i + 1, j + 1, k + 2).w,                         \
+       getPoint(i + 1, j + 1, k + 2).w - (verts[5]).w,                         \
        (verts[6]).w);
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -521,7 +521,7 @@ LinearInterp(vec4& p1, vec4& p2, float value)
 #define CALC_GRAD_VERT_7(verts)                                                \
   vec4(getPoint(i - 1, j + 1, k + 1).w - (verts[6]).w,                         \
        (verts[3]).w - getPoint(i, j + 2, k + 1).w,                             \
-       (verts[4]).w - getPoint(i, j + 1, k + 2).w,                             \
+       getPoint(i, j + 1, k + 2).w - (verts[4]).w,                             \
        (verts[7]).w);
 
 void
@@ -742,6 +742,7 @@ Chunk::genNormal()
   }
 }
 
+
 vec4
 Chunk::getPoint(int index)
 {
@@ -854,9 +855,10 @@ Chunk::genMesh()
     m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, mcPoints, 0.0f, m_lod);
   if (m_mesh->isEmpty())
     return;
-  genNormal();
-  calculateMatID();
-  m_isNeedSubmitMesh = true;
+	genNormal();
+	// m_mesh->caclNormals();
+	calculateMatID();
+	m_isNeedSubmitMesh = true;
   // m_mesh->caclNormals();
   // m_mesh->calBaryCentric();
   // m_mesh->finish();
