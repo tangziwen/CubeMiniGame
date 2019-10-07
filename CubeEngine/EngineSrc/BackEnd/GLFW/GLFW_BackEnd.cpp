@@ -78,6 +78,7 @@ void GLFW_BackEnd::prepare(int width, int height)
 
     m_window = glfwCreateWindow(w, h, EngineDef::versionStr, NULL, NULL);
     glfwMakeContextCurrent(m_window);
+	glfwSetWindowCenter(m_window);
 	GLint flags;
 
     glfwSwapInterval(1);
@@ -88,7 +89,6 @@ void GLFW_BackEnd::prepare(int width, int height)
     glfwSetCursorPosCallback(m_window, cursor_position_callback);
     glfwMakeContextCurrent(m_window);
     AbstractDevice::shared()->init(w, h);
-	glfwSetWindowCenter(m_window);
 }
 
 void GLFW_BackEnd::run()

@@ -137,7 +137,7 @@ void ShaderProgram::setUniform3Float(const char *str, float x, float y, float z)
 			RenderBackEnd::shared()->selfCheck();
         }
         else{
-            //T_LOG<<"there is no uniform called:"<<str<<"in shader :"<<this->shader;
+            //printf("there is no uniform called:%s in shader : %d",str,this->shader);
         }
 }
 
