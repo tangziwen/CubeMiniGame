@@ -20,6 +20,7 @@ public:
 	PhysicsRigidBody * m_rigid;
 	void insert(GamePart * part);
 	void remove(GamePart * part);
+	void removeAll();
 	PhysicsCompoundShape * getCompoundShape() const;
 	void setCompoundShape(PhysicsCompoundShape * compoundShape);
 	void recalculateCompound();

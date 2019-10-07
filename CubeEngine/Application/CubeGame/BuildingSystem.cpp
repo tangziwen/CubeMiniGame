@@ -46,9 +46,9 @@ namespace tzw
 
 				dropFromLift();
 				m_liftPart->getNode()->removeFromParent();
+				m_liftPart->getFirstAttachment()->breakConnection();
 				delete m_liftPart;
 				m_liftPart = nullptr;
-				//m_liftPart->m_parent->remove(m_liftPart);
 			}
 			else
 			{
@@ -252,7 +252,7 @@ namespace tzw
 		island->m_isSpecial = true;
 		auto bear = new BearPart();
 		bear->m_b = attachment;
-
+		bear->m_parent = island;
 		m_bearList.insert(bear);
 		island->insert(bear);
 		// create a indicate model
@@ -269,6 +269,10 @@ namespace tzw
 		bear->attachToFromOtherIslandAlterSelfIsland(attachment,
 													bear->getFirstAttachment());
 		attachment->m_connected = bear->getFirstAttachment();
+		if(!attachment->m_connected->m_parent->m_parent) 
+		{
+			tlog("wrong");
+		}
 		island->m_node->addChild(cylinderIndicator);
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		
@@ -287,6 +291,7 @@ namespace tzw
 		island->m_isSpecial = true;
 		auto bear = new SpringPart();
 		bear->m_b = attachment;
+		bear->m_parent = island;
 		m_bearList.insert(bear);
 		island->insert(bear);
 		// create a indicate model
@@ -302,6 +307,10 @@ namespace tzw
 		bear->attachToFromOtherIslandAlterSelfIsland(attachment,
 													bear->getFirstAttachment());
 		attachment->m_connected = bear->getFirstAttachment();
+		if(!attachment->m_connected->m_parent->m_parent) 
+		{
+			tlog("wrong");
+		}
 		island->m_node->addChild(cylinderIndicator);
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		return bear;
@@ -543,7 +552,12 @@ namespace tzw
 		nodeEditor->handleLinkLoad(doc["NodeGraph"]);
 		
 		auto island = m_IslandList[0];
-		replaceToLift(island);
+		
+		tempPlace(island);
+		//readjust
+		auto attach = replaceToLiftIslands(island->m_islandGroup);
+		attach->m_parent->getNode()->setColor(vec4(1.0, 0.0, 0.0, 1.0));
+		replaceToLift(attach->m_parent->m_parent, attach);
 	}
 
 	void
@@ -576,7 +590,7 @@ namespace tzw
 
 	void BuildingSystem::removeIsland(Island* island)
 	{
-		for (auto iter : island->m_partList)
+		for (auto& iter : island->m_partList)
 		{
 			if (iter->isConstraint())
 			{
@@ -584,9 +598,9 @@ namespace tzw
 				m_bearList.erase(m_bearList.find(bearing));
 			}
 			iter->getNode()->removeFromParent();
-			island->remove(iter);
 			delete iter;
 		}
+		island->removeAll();
 		m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
 		delete island;
 	}
@@ -679,22 +693,51 @@ void BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
 			{
 				constraint->enablePhysics(false);
 			}
-			replaceToLift(island);
+			tempPlace(island);
+			//readjust
+			auto attach = replaceToLiftIslands(island->m_islandGroup);
+			replaceToLift(attach->m_parent->m_parent, attach);
 		}
 	}
 
-void BuildingSystem::replaceToLift(Island* island)
+void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 {
-	if (island)
+	if (!island) return;
+	vec3 attachPos, n, up;
+	auto attach = m_liftPart->getFirstAttachment();
+	attach->getAttachmentInfoWorld(attachPos, n, up);
+
+	if(!attachment)
 	{
-		vec3 attachPos, n, up;
-		auto attach = m_liftPart->getFirstAttachment();
-		attach->getAttachmentInfoWorld(attachPos, n, up);
+	island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(
+		attach, island->m_partList[0]->getBottomAttachment());
+	}else 
+	{
+	attachment->m_parent->attachToFromOtherIslandAlterSelfIsland(
+		attach, attachment);
+	}
+	m_liftPart->setEffectedIsland(island->m_islandGroup);
+	std::set<Island *> closeSet;
+	closeSet.insert(island);
+	for (auto part : island->m_partList)
+	{
+		int count = part->getAttachmentCount();
+		for (int i = 0; i < count; i++)
+		{
+			auto attach = part->getAttachment(i);
+			auto connectedAttach = attach->m_connected;
+			if (connectedAttach && connectedAttach->m_parent->isConstraint())
+			{
+				Attachment* other = nullptr;
+				replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet);
+			}
+		}
+	}
+}
 
-		island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(
-			attach, island->m_partList[0]->getBottomAttachment());
-
-		m_liftPart->setEffectedIsland(island->m_islandGroup);
+	void BuildingSystem::tempPlace(Island* island)
+	{
+		if (!island) return;
 		std::set<Island *> closeSet;
 		closeSet.insert(island);
 		for (auto part : island->m_partList)
@@ -712,7 +755,53 @@ void BuildingSystem::replaceToLift(Island* island)
 			}
 		}
 	}
-}
+
+	Attachment * BuildingSystem::replaceToLiftIslands(std::string islandGroupStrID)
+	{
+		std::vector<Island*> islandGroup;
+		getIslandsByGroup(islandGroupStrID, islandGroup);
+
+		std::vector<Attachment *> attachmentList;
+		AABB aabb;
+		for(auto island : islandGroup)
+		{
+			for(auto part: island->m_partList)
+			{
+				for(int i = 0; i < part->getAttachmentCount(); i++)
+				{
+					auto atta = part->getAttachment(i);
+					//remove lift part
+					if(atta->m_connected && atta->m_connected->m_parent == m_liftPart)
+					{
+						atta->m_connected = nullptr;
+					}
+					if(!atta->m_connected) 
+					{
+						attachmentList.push_back(atta);
+						vec3 p,n,up;
+						atta->getAttachmentInfoWorld(p, n, up);
+						aabb.update(p);
+					}
+				}
+			}
+		}
+		auto center = aabb.centre();
+		std::sort(attachmentList.begin(), attachmentList.end(), 
+			[center](Attachment * l, Attachment * r) -> bool
+		{
+			vec3 pl, nl, upl;
+			vec3 pr, nr, upr;
+			l->getAttachmentInfoWorld(pl, nl, upl);
+			r->getAttachmentInfoWorld(pr, nr, upr);
+			float distFactorL = vec3(pl.x, 0, pl.z).distance(vec3(center.x, 0, center.z));
+			float distFactorR = vec3(pr.x, 0, pr.z).distance(vec3(center.x, 0, center.z));
+
+			float lowFactorL = pl.y;
+			float lowFactorR = pr.y;
+			return (distFactorL * 10.0 + lowFactorL) < (distFactorR * 10.0 + lowFactorR);
+		});
+		return attachmentList[0];
+	}
 
 	void BuildingSystem::replaceToLift_R(Island* island, std::set<Island*>& closeList)
 	{
@@ -726,7 +815,7 @@ void BuildingSystem::replaceToLift(Island* island)
 			{
 				auto attach = constraint->getAttachment(i);
 				auto connectedAttach = attach->m_connected;
-				if (connectedAttach)
+				if (connectedAttach && connectedAttach->m_parent != m_liftPart)
 				{
 					if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 					{
@@ -744,11 +833,12 @@ void BuildingSystem::replaceToLift(Island* island)
 			for (auto part : island->m_partList)
 			{
 				int count = part->getAttachmentCount();
+				Attachment * connectedAttach = nullptr;
 				for (int i = 0; i < count; i++)
 				{
 					auto attach = part->getAttachment(i);
-					auto connectedAttach = attach->m_connected;
-					if (connectedAttach)
+					connectedAttach = attach->m_connected;
+					if (connectedAttach && connectedAttach->m_parent != m_liftPart)
 					{
 						if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 						{

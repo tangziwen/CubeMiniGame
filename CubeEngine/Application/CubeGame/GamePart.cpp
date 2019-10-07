@@ -116,7 +116,14 @@ namespace tzw
         }
         selfAttah->m_connected = attach;
         attach->m_connected = selfAttah;
-
+		if(!selfAttah->m_connected->m_parent->m_parent) 
+		{
+			tlog("wrong");
+		}
+		if(!attach->m_connected->m_parent->m_parent) 
+		{
+			tlog("wrong");
+		}
 		return adjustFromOtherIsland(attach, selfAttah);
 	}
 

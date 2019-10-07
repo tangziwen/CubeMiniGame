@@ -84,6 +84,11 @@ Island::remove(GamePart* part)
   part->m_parent = this;
 }
 
+void Island::removeAll()
+{
+	m_partList.clear();
+}
+
 PhysicsCompoundShape*
 Island::getCompoundShape() const
 {

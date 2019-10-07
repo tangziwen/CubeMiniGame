@@ -89,4 +89,13 @@ namespace tzw
         }
 		return false;
 	}
+
+	void Attachment::breakConnection()
+	{
+		if(m_connected) 
+		{
+			m_connected->m_connected = nullptr;
+			m_connected = nullptr;
+		}
+	}
 }

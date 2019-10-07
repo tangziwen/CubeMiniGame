@@ -26,7 +26,9 @@ class BuildingSystem
 		void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 		void dropFromLift();
 		void replaceToLiftByRay(vec3 pos, vec3 dir, float dist);
-		void replaceToLift(Island * island);
+		void replaceToLift(Island * island, Attachment * attachment = nullptr);
+		void tempPlace(Island * island);
+		Attachment* replaceToLiftIslands(std::string islandGroup);
 		void replaceToLift_R(Island * island, std::set<Island *> & closeList);
 		void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 		void tmpMoveWheel(bool isOpen);
