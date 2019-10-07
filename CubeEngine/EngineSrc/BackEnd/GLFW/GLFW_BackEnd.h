@@ -16,6 +16,7 @@ public:
 	int getMouseButton(int buttonMode) override;
 private:
     GLFWwindow * m_window;
+	bool glfwSetWindowCenter( GLFWwindow * window );
     TZW_SINGLETON_DECL(GLFW_BackEnd)
 };
 
