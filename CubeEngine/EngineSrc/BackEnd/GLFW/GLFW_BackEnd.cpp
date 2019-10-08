@@ -66,6 +66,11 @@ static void char_callback(GLFWwindow *, unsigned int theChar)
     AbstractDevice::shared()->charInputEvent(theChar);
 }
 
+
+static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    AbstractDevice::shared()->scrollEvent(xoffset, yoffset);
+}
 void GLFW_BackEnd::prepare(int width, int height)
 {
     if (!glfwInit())
@@ -84,6 +89,7 @@ void GLFW_BackEnd::prepare(int width, int height)
     glfwSwapInterval(1);
     glfwSetKeyCallback(m_window, key_callback);
     glfwSetCharCallback(m_window, char_callback);
+	glfwSetScrollCallback(m_window, scroll_callback);
 	
     glfwSetMouseButtonCallback(m_window, mouse_button_callback);
     glfwSetCursorPosCallback(m_window, cursor_position_callback);

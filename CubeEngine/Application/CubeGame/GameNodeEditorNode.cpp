@@ -15,6 +15,7 @@ namespace tzw
 		auto attr = new NodeAttr();
 		attr->m_name = attrName;
 		attr->gID = g_attr_uid;
+		attr->type = NodeAttr::Type::INPUT_ATTR;
 		m_inAttr.push_back(attr);
 		return attr;
 	}
@@ -25,6 +26,7 @@ namespace tzw
 		auto attr = new NodeAttr();
 		attr->m_name = attrName;
 		attr->gID = g_attr_uid;
+		attr->type = NodeAttr::Type::OUTPUT_ATTR;
 		m_outAttr.push_back(attr);
 		return attr;
 	}
@@ -32,6 +34,7 @@ namespace tzw
 	GameNodeEditorNode::GameNodeEditorNode()
 	{
 		m_nodeID = 0;
+		isShowed = false;
 	}
 
 	std::vector<NodeAttr*>& GameNodeEditorNode::getInAttrs()
@@ -120,6 +123,26 @@ namespace tzw
 	NodeAttr* GameNodeEditorNode::getOutByIndex(int localIndex)
 	{
 		return m_outAttr[localIndex];
+	}
+
+	NodeAttr* GameNodeEditorNode::getInByGid(int globalIndex)
+	{
+		auto index = getInputAttrLocalIndexByGid(globalIndex);
+		if( index>= 0)
+		{
+			return m_inAttr[index];
+		}
+		return nullptr;
+	}
+
+	NodeAttr* GameNodeEditorNode::getOutByGid(int globalIndex)
+	{
+		auto index = getOutputAttrLocalIndexByGid(globalIndex);
+		if( index>= 0)
+		{
+			return m_outAttr[index];
+		}
+		return nullptr;
 	}
 
 	void GameNodeEditorNode::load(rapidjson::Value& partData)

@@ -15,6 +15,7 @@ struct EventInfo
     unsigned int theChar;
     int arg;
     vec2 pos;
+	vec2 offset;
 };
 class EventListener;
 class EventMgr
@@ -31,6 +32,7 @@ public:
     void handleCharInput(unsigned int theChar);
     void handleMouseRelease(int button,vec2 pos);
     void handleMouseMove(vec2 pos);
+	void handleScroll(vec2 offset);
     void apply(float delta);
     void removeEventListener(EventListener * event);
     void sortFixedListener();
@@ -44,6 +46,7 @@ private:
     void applyMousePress(EventInfo & info);
     void applyMouseRelease(EventInfo & info);
     void applyMouseMove(EventInfo & info);
+	void applyScroll(EventInfo & info);
 private:
     std::vector<EventListener *>m_list;
     std::deque<EventListener *>m_NodePioritylist;

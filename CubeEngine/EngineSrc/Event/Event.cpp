@@ -37,6 +37,11 @@ bool EventListener::onMouseMove(vec2 pos)
     return false;
 }
 
+bool EventListener::onScroll(vec2 offset)
+{
+	return false;
+}
+
 void EventListener::onFrameUpdate(float delta)
 {
 

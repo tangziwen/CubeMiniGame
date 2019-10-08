@@ -856,7 +856,7 @@ Chunk::genMesh()
   if (m_mesh->isEmpty())
     return;
 	genNormal();
-	// m_mesh->caclNormals();
+	//m_mesh->caclNormals();
 	calculateMatID();
 	m_isNeedSubmitMesh = true;
   // m_mesh->caclNormals();

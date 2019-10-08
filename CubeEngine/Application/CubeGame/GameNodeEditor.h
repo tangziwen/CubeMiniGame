@@ -6,7 +6,12 @@
 
 namespace tzw {
 
-
+struct LinkInfo
+{
+	int	Id;
+	int  InputId;
+    int  OutputId;
+};
 
 class GameNodeEditor : public IMGUIObject
 {
@@ -23,9 +28,12 @@ public:
 	void handleLinkLoad(rapidjson::Value &partDocObj);
 	int getNodeIdByNode(GameNodeEditorNode * node);
 	void makeLinkByNode(GameNodeEditorNode * NodeA, GameNodeEditorNode * NodeB, int indexOfA, int indeOfB);
+	void newNodeEditorDraw(bool * isOpen);
+	NodeAttr * findAttr(int attrID);
+	void drawPinIcon(const NodeAttr* pin, bool connected, int alpha);
 protected:
 	std::vector<GameNodeEditorNode * > m_gameNodes;
-	std::vector<std::pair<int, int>> m_links;
+	std::vector<LinkInfo> m_links;
 	int m_nodeGlobalCount;
 };
 }

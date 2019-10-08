@@ -16,6 +16,7 @@ public:
     void mousePressEvent(int buttonCode, vec2 pos);
     void mouseReleaseEvent(int buttonCode, vec2 pos);
     void mouseMoveEvent(vec2 pos);
+	void scrollEvent(float x, float y);
     void init(int width, int height);
     void resizeGL(int w, int h);
     void update();

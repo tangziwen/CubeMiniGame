@@ -24,7 +24,6 @@ in vec3 v_position;
 in vec3 v_normal;
 in vec2 v_texcoord;
 in vec3 v_worldPos;
-in vec3 v_worldNormal;
 in vec3 v_color;
 in vec3 v_bc;
 in vec3 v_mat;
@@ -121,7 +120,7 @@ vec4 triplanarSample(sampler2D sampler, float scaleFactor)
 {
 	float plateauSize = 0.25;
 	float transitionSpeed = 1.0;
-	vec3 blending = abs( normalize(v_worldNormal));
+	vec3 blending = abs( normalize(v_normal));
 	blending = clamp(blending - plateauSize, 0.0, 1.0);
 	blending = powVec(blending, transitionSpeed);
 	blending /= dot(blending, vec3(1.0, 1.0, 1.0));
@@ -275,8 +274,8 @@ vec4 texturePlain(sampler2D samp, in vec2 uv)
 void main()
 {
   gl_FragData[0] = vec4(pow(getTerrainTex(TU_topGrass).rgb, vec3(2.2)), 1.0);
-	gl_FragData[1] = vec4(v_position,1.0);
-	gl_FragData[2] = vec4(normalize(v_normal),1.0);
-	gl_FragData[3] = vec4(TU_roughness,0.0,0.0,1.0);
+  gl_FragData[1] = vec4(v_position,1.0);
+  gl_FragData[2] = vec4(normalize(v_normal),1.0);
+  gl_FragData[3] = vec4(TU_roughness,0.0,0.0,1.0);
 }
 //! [0]

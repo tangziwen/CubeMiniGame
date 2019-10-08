@@ -49,8 +49,10 @@ namespace tzw
 		if(isCurrAngleLimit)
 		{
 			bool isInput = false;
+			ImGui::PushItemWidth(80);
 			isInput |= ImGui::InputFloat(u8"最小角度", &angle_low);
 			isInput |= ImGui::InputFloat(u8"最大角度", &angle_high);
+			ImGui::PopItemWidth();
 			if(isInput)
 			{
 				m_part->setAngleLimit(true, angle_low, angle_high);

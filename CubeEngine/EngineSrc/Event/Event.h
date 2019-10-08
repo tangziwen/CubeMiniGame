@@ -145,6 +145,7 @@ public:
     virtual bool onMouseRelease(int button,vec2 pos);
     virtual bool onMousePress(int button,vec2 pos);
     virtual bool onMouseMove(vec2 pos);
+	virtual bool onScroll(vec2 offset);
     virtual void onFrameUpdate(float delta);
     EventListener();
     unsigned int getFixedPiority() const;

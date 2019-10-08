@@ -22,7 +22,6 @@ out vec3 v_position;
 out vec3 v_normal;
 out vec2 v_texcoord;
 out vec3 v_worldPos;
-out vec3 v_worldNormal;
 out vec3 v_color;
 out vec3 v_bc;
 out vec3 v_heightColor;
@@ -39,7 +38,6 @@ void main()
     v_texcoord = a_texcoord;
 	v_worldPos = (TU_mMatrix * vec4(a_position, 1.0)).xyz;
 	v_bc = a_bc;
-	v_worldNormal = (TU_mMatrix * vec4(a_normal, 0.0)).xyz;
 	v_color = a_color;
 	v_mat = a_mat;
 

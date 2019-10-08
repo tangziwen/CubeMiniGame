@@ -187,6 +187,14 @@ namespace tzw
 		return false;
 	}
 
+	bool GUISystem::onScroll(vec2 offset)
+	{
+	    ImGuiIO& io = ImGui::GetIO();
+	    io.MouseWheelH += offset.x;
+	    io.MouseWheel += offset.y;
+		return false;
+	}
+
 	void GUISystem::renderIMGUI()
 	{
 		auto& io = ImGui::GetIO();

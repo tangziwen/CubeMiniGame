@@ -796,8 +796,8 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 			float distFactorL = vec3(pl.x, 0, pl.z).distance(vec3(center.x, 0, center.z));
 			float distFactorR = vec3(pr.x, 0, pr.z).distance(vec3(center.x, 0, center.z));
 
-			float lowFactorL = pl.y;
-			float lowFactorR = pr.y;
+			float lowFactorL = pl.y - center.y;
+			float lowFactorR = pr.y - center.y;
 			return (distFactorL * 10.0 + lowFactorL) < (distFactorR * 10.0 + lowFactorR);
 		});
 		return attachmentList[0];

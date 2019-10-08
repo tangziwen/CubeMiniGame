@@ -11,6 +11,7 @@
 #define EVENT_TYPE_M_PRESS 3
 #define EVENT_TYPE_M_MOVE 4
 #define EVENT_TYPE_K_CHAR_INPUT 5
+#define EVENT_TYPE_M_SCROLL 6
 namespace tzw {
 
 TZW_SINGLETON_IMPL(EventMgr)
@@ -113,6 +114,14 @@ void EventMgr::handleMouseMove(vec2 pos)
     m_eventDeque.push_back(info);
 }
 
+void EventMgr::handleScroll(vec2 offset)
+{
+    EventInfo info;
+    info.offset = offset;
+    info.type = EVENT_TYPE_M_SCROLL;
+    m_eventDeque.push_back(info);
+}
+
 void EventMgr::apply(float delta)
 {
 	if(m_isNeedSortNodeListener)
@@ -141,6 +150,11 @@ void EventMgr::apply(float delta)
        case EVENT_TYPE_M_MOVE:
        {
 			applyMouseMove(info);
+       }
+           break;
+       case EVENT_TYPE_M_SCROLL:
+       {
+			applyScroll(info);
        }
            break;
        case EVENT_TYPE_M_PRESS:
@@ -260,6 +274,18 @@ void EventMgr::applyMouseMove(EventInfo &info)
     for (auto event :m_NodePioritylist)
     {
         if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
+	}
+}
+
+void EventMgr::applyScroll(EventInfo& info)
+{
+    for(auto event : m_list)
+    {
+        if(event->onScroll(info.offset)&& event->isSwallow()) return;
+    }
+    for (auto event :m_NodePioritylist)
+    {
+        if(event->onScroll(info.offset)&& event->isSwallow()) return;
 	}
 }
 

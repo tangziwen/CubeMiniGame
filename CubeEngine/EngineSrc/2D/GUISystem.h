@@ -31,6 +31,7 @@ namespace tzw
 		bool onMousePress(int button, vec2 pos) override;
 		void addObject(IMGUIObject * obj);
 		bool onCharInput(unsigned int theChar) override;
+		bool onScroll(vec2 offset) override;
 		void renderIMGUI();
 	protected:
 		std::vector<IMGUIObject *> m_objList;

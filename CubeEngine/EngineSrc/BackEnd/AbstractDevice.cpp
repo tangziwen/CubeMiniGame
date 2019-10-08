@@ -39,6 +39,11 @@ void AbstractDevice::mouseMoveEvent(vec2 pos)
     EventMgr::shared()->handleMouseMove(vec2(pos.x,height - pos.y));
 }
 
+void AbstractDevice::scrollEvent(float x, float y)
+{
+	EventMgr::shared()->handleScroll(vec2(x, y));
+}
+
 void AbstractDevice::init(int width,int height)
 {
     RenderBackEnd::shared()->initDevice();

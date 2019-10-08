@@ -260,6 +260,8 @@ namespace tzw
 	{
 		m_camera->removeFromParent();
 		m_camera->setIsEnableGravity(true);
+		m_camera->setEnableFPSFeature(true);
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
+		g_GetCurrScene()->setDefaultCamera(m_camera);
 	}
 } // namespace tzw
