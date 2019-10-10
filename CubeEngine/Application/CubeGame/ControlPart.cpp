@@ -245,13 +245,13 @@ void ControlPart::handleBearings()
 	{
 		for (auto bearing : m_forwardBearing) 
 		{
-			bearing->m_constrain->enableAngularMotor(true, 10.0f *m_forward, 50);
+			bearing->enableAngularMotor(true, 10.0f *m_forward, 50);
 		}
 	} else 
 	{
 		for (auto bearing : m_forwardBearing) 
 		{
-			bearing->m_constrain->enableAngularMotor(false, 10.0f, 50);
+			bearing->enableAngularMotor(false, 10.0f, 50);
 		}
 	}
 
@@ -259,13 +259,13 @@ void ControlPart::handleBearings()
 	{
 		for (auto bearing : m_sidewardBearing) 
 		{
-			bearing->m_constrain->enableAngularMotor(true, 1.0f *m_side, 50);
+			bearing->enableAngularMotor(true, 1.0f *m_side, 50);
 		}
 	} else 
 	{
 		for (auto bearing : m_sidewardBearing) 
 		{
-			bearing->m_constrain->enableAngularMotor(true, 0, 10000000.0f);
+			bearing->enableAngularMotor(true, 0, 10000000.0f);
 		}
 	}
 }

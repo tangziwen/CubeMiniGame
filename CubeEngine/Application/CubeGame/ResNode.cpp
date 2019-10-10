@@ -5,7 +5,9 @@ namespace tzw
 {
 	ResNode::ResNode()
 	{
-
+		auto atr = addOut(u8"Self");
+		atr->m_localAttrValue.usrPtr = this;
+		atr->m_localAttrValue.m_type = NodeAttrValue::Type::USER_PTR;
 	}
 
 	void ResNode::syncName()
@@ -18,6 +20,7 @@ namespace tzw
 		return nullptr;
 	}
 
+	
 	void ResNode::handleNameEdit()
 	{
 		if(getProxy())
@@ -34,5 +37,10 @@ namespace tzw
 			}
 		}
 
+	}
+
+	vec3 ResNode::getNodeColor()
+	{
+		return vec3(95.0f/ 255.0f, 127.0f/255.0f, 90.0f / 255.0f);
 	}
 }

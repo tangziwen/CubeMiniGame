@@ -1,5 +1,6 @@
 #include "GameNodeEditorNode.h"
 #include "2D/imnodes.h"
+#include "MainMenu.h"
 
 namespace tzw
 {
@@ -9,6 +10,50 @@ namespace tzw
 	{
 		g_attr_uid += 1;
 	}
+
+	NodeAttrValue::NodeAttrValue(int val)
+	{
+		int_val = val;
+		m_type = Type::INT;
+	}
+
+	NodeAttrValue::NodeAttrValue(float val)
+	{
+		float_val = val;
+		m_type = Type::FLOAT;
+	}
+
+	NodeAttrValue::NodeAttrValue(void* val)
+	{
+		usrPtr = val;
+		m_type = Type::USER_PTR;
+	}
+
+	NodeAttrValue::NodeAttrValue()
+	{
+		usrPtr = nullptr;
+		m_type = Type::USER_PTR;
+	}
+
+	NodeAttr::NodeAttr()
+	{
+		m_localAttrValue = NodeAttrValue(nullptr);
+	}
+
+	NodeAttrValue NodeAttr::eval()
+	{
+		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto attr = nodeEditor->findAttrLinksFromAttr(this);
+		if(attr)
+		{
+			return attr->eval();
+		}
+		else 
+		{
+			return m_localAttrValue;
+		}
+	}
+
 	NodeAttr* GameNodeEditorNode::addIn(std::string attrName)
 	{
 		increaseAttrGID();
@@ -72,6 +117,14 @@ namespace tzw
 	}
 
 	void GameNodeEditorNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	{
+	}
+
+	void GameNodeEditorNode::onRemoveLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	{
+	}
+
+	void GameNodeEditorNode::onRemoveLinkIn(int startID, int endID, GameNodeEditorNode* other)
 	{
 	}
 
@@ -146,6 +199,11 @@ namespace tzw
 		return nullptr;
 	}
 
+	vec3 GameNodeEditorNode::getNodeColor()
+	{
+		return vec3(1, 1, 1);
+	}
+
 	void GameNodeEditorNode::load(rapidjson::Value& partData)
 	{
 	}
@@ -153,5 +211,10 @@ namespace tzw
 	void GameNodeEditorNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
 		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+	}
+
+	int GameNodeEditorNode::getType()
+	{
+		return Node_TYPE_OTHERS;
 	}
 }

@@ -5,13 +5,11 @@
 
 namespace tzw {
 
-struct ResNode: public GameNodeEditorNode 
+struct BehaviorNode: public GameNodeEditorNode 
 {
 public:
-	ResNode();
-	virtual void syncName();
-	virtual GamePart * getProxy();
-	virtual void handleNameEdit();
+	BehaviorNode();
+	virtual void execute(GameNodeEditorNode * from);
 	vec3 getNodeColor() override;
 protected:
 

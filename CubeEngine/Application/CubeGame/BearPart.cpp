@@ -11,6 +11,7 @@
 
 namespace tzw
 {
+	float blockSize = 0.10;
 BearPart::BearPart()
 {
 	m_a = nullptr;
@@ -22,7 +23,7 @@ BearPart::BearPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	m_graphNode = new BearingPartNode(this);
 	nodeEditor->addNode(m_graphNode);
-	float blockSize = 0.10;
+	
 	m_isSteering = false;
 	m_isAngleLimit = false;
 	m_angleLimitLow = -30.0f;
@@ -126,6 +127,15 @@ void BearPart::generateName()
 	setName(formatName);
 }
 
+	void BearPart::enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse)
+	{
+		if(m_constrain)
+		{
+			float factor = m_isFlipped?-1.0f:1.0f;
+			m_constrain->enableAngularMotor(enableMotor, targetVelocity * factor, maxMotorImpulse);
+		}
+	}
+
 void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
@@ -135,7 +145,7 @@ void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivo
 	auto transform = part->getNode()->getLocalTransform();
 	auto normalInIsland = transform.transofrmVec4(vec4(attach->m_normal, 0.0)).toVec3();
 
-	pivot = transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * 0.05, 1.0)).toVec3();
+	pivot = transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * (blockSize / 2.0), 1.0)).toVec3();
 	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
 }
 
@@ -157,8 +167,7 @@ void BearPart::enablePhysics(bool isEnable)
 				attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
 				vec3 worldPosB, worldNormalB, worldUpB;
 				attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-				int isFlipped = m_isFlipped ? -1 : 1;
-				vec3 hingeDir = (worldPosB - worldPosA).normalized() * isFlipped;
+				vec3 hingeDir = (worldPosB - worldPosA).normalized();
 				vec3 pivotA, pivotB, axisA, axisB;
 				findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
 				findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);

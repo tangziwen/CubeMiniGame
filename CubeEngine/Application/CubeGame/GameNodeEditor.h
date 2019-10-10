@@ -3,6 +3,7 @@
 #include "GameNodeEditorNode.h"
 #include "rapidjson/document.h"
 #include "Base/GuidObj.h"
+#include "TriggerNode.h"
 
 namespace tzw {
 
@@ -13,7 +14,7 @@ struct LinkInfo
     int  OutputId;
 };
 
-class GameNodeEditor : public IMGUIObject
+class GameNodeEditor : public IMGUIObject, public EventListener
 {
 public:
 	GameNodeEditor();
@@ -33,8 +34,16 @@ public:
 	void drawPinIcon(const NodeAttr* pin, bool connected, int alpha);
 	void ShowLeftPane(float paneWidth);
 	GameNodeEditorNode * findNode(int nodeID);
+	bool onKeyPress(int keyCode) override;
+	bool onKeyRelease(int keyCode) override;
+	void findNodeLinksToAttr(NodeAttr * attr, std::vector<GameNodeEditorNode*>&nodeList);
+	GameNodeEditorNode * findNodeByAttr(NodeAttr * attr);
+	GameNodeEditorNode * findNodeByAttrGid(unsigned int gid);
+	GameNodeEditorNode * findNodeLinksFromAttr(NodeAttr * attr);
+	NodeAttr * findAttrLinksFromAttr(NodeAttr * attr);
 protected:
 	std::vector<GameNodeEditorNode * > m_gameNodes;
 	std::vector<LinkInfo> m_links;
+	std::vector<TriggerNode * > m_triggerList;
 };
 }

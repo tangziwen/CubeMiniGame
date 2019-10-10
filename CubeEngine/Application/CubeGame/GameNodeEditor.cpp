@@ -13,7 +13,11 @@
 #include "NodeEditor/BlueprintUtilities/Include/ax/Widgets.h"
 #include "NodeEditor/BlueprintUtilities/Include/ax/Builders.h"
 #include "Texture/TextureMgr.h"
-
+#include "BehaviorNode.h"
+#include "TriggerNode.h"
+#include "NodeEditorNodes/SpinNode.h"
+#include "NodeEditorNodes/KeyTriggerNode.h"
+#include "Event/EventMgr.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -25,7 +29,7 @@ namespace util = ax::NodeEditor::Utilities;
 
 namespace tzw
 {
-	enum class PinType
+enum class PinType
 {
     Flow,
     Bool,
@@ -40,7 +44,7 @@ namespace tzw
 	using IconType = ax::Drawing::IconType;
 	int g_uniqueLinkIndex;
 	static ed::EditorContext* g_Context = nullptr;
-
+	static bool * g_isOpen = nullptr;
 	static Texture* s_SaveIcon;
 	static Texture * s_HeaderBackground;
 	static Texture * s_RestoreIcon;
@@ -50,6 +54,7 @@ namespace tzw
 	    s_HeaderBackground = TextureMgr::shared()->getByPath("./Texture/NodeEditor/BlueprintBackground.png");
 	    s_SaveIcon         = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_save_white_24dp.png");
 	    s_RestoreIcon      = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
+		EventMgr::shared()->addFixedPiorityListener(this);
 	}
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
@@ -120,6 +125,10 @@ namespace tzw
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
+		if(newNode->getType() == Node_TYPE_KEY_TRIGGER)
+		{
+			m_triggerList.push_back(static_cast<KeyTriggerNode *> (newNode));
+		}
 		//m_nodeGlobalCount +=1;
 		//newNode->m_nodeID = m_nodeGlobalCount;
 	}
@@ -193,8 +202,7 @@ namespace tzw
 		for (auto node : m_gameNodes)
 		{
 			rapidjson::Value NodeObj(rapidjson::kObjectType);
-			auto origin = imnodes::GetNodeOrigin(node->m_nodeID);
-
+			auto origin = ed::GetNodePosition(node->m_nodeID);
 			NodeObj.AddMember("orgin_x", origin.x, allocator);
 			NodeObj.AddMember("orgin_y", origin.y, allocator);
 			node->dump(NodeObj, allocator);
@@ -326,6 +334,17 @@ namespace tzw
 	    ImGui::Spring(0.0f, 0.0f);
 	    if (ImGui::Button(u8"调整视图"))
 	        ed::NavigateToContent();
+		if(ImGui::Button(u8"退出"))
+			(*g_isOpen) = false;
+		if(ImGui::Button(u8"旋转节点"))
+		{
+			addNode(new SpinNode());
+		}
+		if(ImGui::Button(u8"案件输入节点"))
+		{
+			addNode(new KeyTriggerNode());
+		}
+
 	    ImGui::Spring(0.0f);
 	    ImGui::Spring();
 	    ImGui::EndHorizontal();
@@ -441,10 +460,94 @@ namespace tzw
 		return nullptr;
 	}
 
-	void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
+bool GameNodeEditor::onKeyPress(int keyCode)
+{
+	for(auto trigger : m_triggerList)
+	{
+		if(trigger->getType() == Node_TYPE_KEY_TRIGGER)
+		{
+			static_cast<KeyTriggerNode *>(trigger)->handleKeyPress(keyCode);
+		}
+		
+	}
+	return false;
+}
+
+bool GameNodeEditor::onKeyRelease(int keyCode)
+{
+	for(auto trigger : m_triggerList)
+	{
+		if(trigger->getType() == Node_TYPE_KEY_TRIGGER)
+		{
+			static_cast<KeyTriggerNode *>(trigger)->handleKeyRelease(keyCode);
+		}
+	}
+	return false;
+}
+
+void GameNodeEditor::findNodeLinksToAttr(NodeAttr* attr, std::vector<GameNodeEditorNode*>&nodeList)
+{
+	for(auto link : m_links) 
+	{
+		if(link.InputId == attr->gID)
+		{
+			nodeList.push_back(findNodeByAttrGid(link.OutputId));
+		}
+	}
+}
+
+GameNodeEditorNode* GameNodeEditor::findNodeByAttr(NodeAttr* attr)
+{
+	for(auto node :m_gameNodes)
+	{
+		if(node->getAttrByGid(attr->gID)) 
+		{
+			return node;
+		}
+	}
+	return nullptr;
+}
+
+GameNodeEditorNode* GameNodeEditor::findNodeByAttrGid(unsigned gid)
+{
+	for(auto node :m_gameNodes)
+	{
+		if(node->getAttrByGid(gid)) 
+		{
+			return node;
+		}
+	}
+	return nullptr;
+}
+
+GameNodeEditorNode* GameNodeEditor::findNodeLinksFromAttr(NodeAttr* attr)
+{
+	for(auto link : m_links) 
+	{
+		if(link.OutputId == attr->gID)
+		{
+			return findNodeByAttrGid(link.InputId);
+		}
+	}
+	return nullptr;
+}
+
+NodeAttr* GameNodeEditor::findAttrLinksFromAttr(NodeAttr* attr)
+{
+	for(auto link : m_links) 
+	{
+		if(link.OutputId == attr->gID)
+		{
+			return findAttr(link.InputId);
+		}
+	}
+	return nullptr;
+}
+
+void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 	{
 		static bool g_FirstFrame = true;
-
+		g_isOpen = isOpen;
 		auto screenSize = Engine::shared()->winSize();
 		float m_initW = 500.0f;
 		float m_initH = 400.0f;
@@ -483,7 +586,8 @@ namespace tzw
 				ed::SetNodePosition(node->m_nodeID, ImVec2(node->m_origin.x, node->m_origin.y));
 				node->isShowed = true;
 			}
-			builder.Header();
+			auto nodeCol = node->getNodeColor();
+			builder.Header(ImVec4(nodeCol.x, nodeCol.y, nodeCol.z, 1));
 				ImGui::Spring(0);
                 ImGui::TextUnformatted(node->name.c_str());
                 ImGui::Spring(1);

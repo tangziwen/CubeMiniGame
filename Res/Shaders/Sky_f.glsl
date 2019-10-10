@@ -193,7 +193,7 @@ void main(){
     //Reading from the clouds maps
     //mixing according to the weather (1.0 -> clouds1 (sunny), 0.5 -> clouds2 (rainy))
     //+ time translation along the u-axis (horizontal) for the clouds movement
-    float transparency = mix(texture(clouds2,vec2(u+time,v)).r,texture(clouds1,vec2(u+time,v)).r,(weather-0.5)*2.0);
+    float transparency = mix(decodeGamma(texture(clouds2,vec2(u+time,v))).r,decodeGamma(texture(clouds1,vec2(u+time,v))).r,(weather-0.5)*2.0);
     // Stars
     if(sun_norm.y<0.1){//Night or dawn
         float threshold = 0.99;

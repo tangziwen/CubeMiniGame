@@ -32,6 +32,18 @@ namespace tzw
 		}
 	}
 
+	void ControlPartNode::onRemoveLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	{
+		auto a = static_cast<BearingPartNode *>(other);
+		auto attr = getAttrByGid(startID);
+		if (attr->tag == 1) {
+            m_part->addForwardBearing(reinterpret_cast<BearPart*>(a->getProxy()));
+		} else if(attr->tag == 2) 
+		{
+			m_part->addSidewardBearing(reinterpret_cast<BearPart*>(a->getProxy()));
+		}
+	}
+
 	void ControlPartNode::load(rapidjson::Value& partData)
 	{
 	}
