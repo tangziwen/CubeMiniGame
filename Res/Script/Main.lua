@@ -236,7 +236,7 @@ function handleItemSecondaryUse(item)
 	if (item.ItemClass == "PlaceableBlock" or item.ItemClass == "Lift") then
 		local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
 		if result then
-			BuildingSystem.shared():removePartByAttach(result)
+			player:removePartByAttach(result)
 		end
 	elseif (item.ItemClass == "TerrainTool") then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)

@@ -34,6 +34,7 @@ namespace tzw
 		BIND_FUNC(CubePlayer, getPos)
 		BIND_FUNC(CubePlayer, setPos)
 		BIND_FUNC(CubePlayer, getForward)
+		BIND_FUNC(CubePlayer, removePartByAttach)
 		BIND_END_CLASS
 
 		//GameWorld

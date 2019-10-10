@@ -84,19 +84,23 @@ namespace tzw
 			GameWorld::shared()->loadChunksAroundPlayer();
 		}
 		auto part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
-		if(part && m_currPointPart != part)
+		if(part)
 		{
-			part->highLight();
-			if(m_currPointPart)
+			if(m_currPointPart != part)
 			{
-				m_currPointPart->unhighLight();
+				part->highLight();
+				if(m_currPointPart)
+				{
+					m_currPointPart->unhighLight();
+				}
+				m_currPointPart = part;
 			}
-			m_currPointPart = part;
 		}else
 		{
 			if(m_currPointPart)
 			{
 				m_currPointPart->unhighLight();
+				m_currPointPart = nullptr;
 			}
 		}
 	}
@@ -281,5 +285,11 @@ namespace tzw
 		m_camera->setEnableFPSFeature(true);
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 		g_GetCurrScene()->setDefaultCamera(m_camera);
+	}
+
+	void CubePlayer::removePartByAttach(Attachment* attach)
+	{
+		BuildingSystem::shared()->removePartByAttach(attach);
+		m_currPointPart = nullptr;
 	}
 } // namespace tzw

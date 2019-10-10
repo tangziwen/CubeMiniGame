@@ -7,6 +7,7 @@
 #include "Game/OrbitCamera.h"
 namespace tzw
 {
+	struct Attachment;
 	class GameItem;
 	class GamePart;
 	class CubePlayer : public Node, public EventListener, public IMGUIObject
@@ -36,6 +37,7 @@ namespace tzw
 		vec3 getForward() const;
 		void attachCamToGamePart(GamePart * part);
 		void attachCamToWorld();
+		void removePartByAttach(Attachment* attach);
 	private:
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
