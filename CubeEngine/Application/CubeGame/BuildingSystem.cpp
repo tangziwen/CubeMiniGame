@@ -608,6 +608,7 @@ namespace tzw
 			tempPlace(island);
 			//readjust
 			auto attach = replaceToLiftIslands(island->m_islandGroup);
+			attach->m_parent->getNode()->setColor(vec4(0, 1, 0, 1));
 			replaceToLift(attach->m_parent->m_parent, attach);
 		}else 
 		{
@@ -784,6 +785,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 			if (connectedAttach && connectedAttach->m_parent->isConstraint())
 			{
 				Attachment* other = nullptr;
+				connectedAttach->m_parent->adjustFromOtherIslandAlterSelfIsland(attach, connectedAttach);
 				replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet);
 			}
 		}
@@ -816,38 +818,38 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 		std::vector<Island*> islandGroup;
 		getIslandsByGroup(islandGroupStrID, islandGroup);
 
-		std::vector<Attachment *> attachmentList;
+		std::vector<GamePart *> attachmentList;
 		AABB aabb;
 		for(auto island : islandGroup)
 		{
 			for(auto part: island->m_partList)
 			{
-				for(int i = 0; i < part->getAttachmentCount(); i++)
-				{
-					auto atta = part->getAttachment(i);
-					//remove lift part
-					if(atta->m_connected && atta->m_connected->m_parent == m_liftPart)
-					{
-						atta->m_connected = nullptr;
-					}
-					if(!atta->m_connected) 
-					{
-						attachmentList.push_back(atta);
-						vec3 p,n,up;
-						atta->getAttachmentInfoWorld(p, n, up);
-						aabb.update(p);
-					}
-				}
+				attachmentList.push_back(part);
+				aabb.update(part->getWorldPos());
+				//for(int i = 0; i < part->getAttachmentCount(); i++)
+				//{
+				//	auto atta = part->getAttachment(i);
+				//	//remove lift part
+				//	if(atta->m_connected && atta->m_connected->m_parent == m_liftPart)
+				//	{
+				//		atta->m_connected = nullptr;
+				//	}
+				//	if(!atta->m_connected) 
+				//	{
+				//		attachmentList.push_back(atta);
+				//		vec3 p,n,up;
+				//		atta->getAttachmentInfoWorld(p, n, up);
+				//		aabb.update(p);
+				//	}
+				//}
 			}
 		}
 		auto center = aabb.centre();
 		std::sort(attachmentList.begin(), attachmentList.end(), 
-			[center](Attachment * l, Attachment * r) -> bool
+			[center](GamePart * l, GamePart * r) -> bool
 		{
-			vec3 pl, nl, upl;
-			vec3 pr, nr, upr;
-			l->getAttachmentInfoWorld(pl, nl, upl);
-			r->getAttachmentInfoWorld(pr, nr, upr);
+			vec3 pl = l->getWorldPos();
+			vec3 pr = r->getWorldPos();
 			float distFactorL = vec3(pl.x, 0, pl.z).distance(vec3(center.x, 0, center.z));
 			float distFactorR = vec3(pr.x, 0, pr.z).distance(vec3(center.x, 0, center.z));
 
@@ -855,7 +857,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 			float lowFactorR = pr.y - center.y;
 			return (distFactorL * 10.0 + lowFactorL) < (distFactorR * 10.0 + lowFactorR);
 		});
-		return attachmentList[0];
+		return attachmentList[0]->getBottomAttachment();
 	}
 
 	void BuildingSystem::replaceToLift_R(Island* island, std::set<Island*>& closeList)
@@ -877,6 +879,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 						attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach);
 					} else
 					{
+						connectedAttach->m_parent->adjustFromOtherIslandAlterSelfIsland(attach, connectedAttach);
 						replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
 					}
 					
@@ -900,6 +903,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 							attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach);
 						} else
 						{
+							connectedAttach->m_parent->adjustFromOtherIslandAlterSelfIsland(attach, connectedAttach);
 							replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
 						}
 					}
