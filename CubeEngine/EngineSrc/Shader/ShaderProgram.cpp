@@ -12,56 +12,21 @@ namespace tzw {
 
 ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, const char *pTCSFileName, const char* pTESFileName)
 {
-    this->shader = glCreateProgram();
-    if (shader == 0) {
-        fprintf(stderr, "Error creating shader program\n");
-        exit(1);
-    }
-    tzw::Data vs_data = tzw::Tfile::shared()->getData(pVSFileName,true);
-    tzw::Data fs_data = tzw::Tfile::shared()->getData(pFSFileName,true);
-	tlog("compiling... %s %s", pVSFileName, pFSFileName);
-    if (vs_data.isNull()) {
-        exit(1);
-    };
 
-    if (fs_data.isNull()) {
-        exit(1);
-    };
-
-    string vs = vs_data.getString();
-    string fs = fs_data.getString();
-    addShader(shader, vs.c_str(), GL_VERTEX_SHADER);
-    addShader(shader, fs.c_str(), GL_FRAGMENT_SHADER);
-
-    if(pTCSFileName)
-    {
-        tzw::Data tcs_data = tzw::Tfile::shared()->getData(pTCSFileName,true);
-        addShader(shader, tcs_data.getString().c_str(), GL_TESS_CONTROL_SHADER);
-    }
-
-    if(pTESFileName)
-    {
-        tzw::Data tes_data = tzw::Tfile::shared()->getData(pTESFileName,true);
-        addShader(shader, tes_data.getString().c_str(), GL_TESS_EVALUATION_SHADER);
-    }
-
-    GLint Success = 0;
-    GLchar ErrorLog[2048] = { 0 };
-    glLinkProgram(shader);
-    glGetProgramiv(shader, GL_LINK_STATUS, &Success);
-    if (Success == 0) {
-        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
-        exit(1);
-    }
-
-    glValidateProgram(shader);
-    glGetProgramiv(shader, GL_VALIDATE_STATUS, &Success);
-    if (!Success) {
-        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
-        exit(1);
-    }
+	m_fragmentShader = pFSFileName;
+	m_vertexShader = pVSFileName;
+	m_tessellationControlShader.clear();
+	shader = 0;
+	if(pTCSFileName)
+	{
+		m_tessellationControlShader = pTCSFileName;
+	}
+	m_tessellationEvaluationShader.clear();
+	if(pTESFileName)
+	{
+		m_tessellationEvaluationShader = pTESFileName;
+	}
+	createShader(true);
 }
 
 void ShaderProgram::use()
@@ -224,15 +189,91 @@ int ShaderProgram::uniformLocation(std::string name)
 	}
 }
 
-void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType)
+void ShaderProgram::reload()
+{
+	auto oldShader = shader;
+	shader = 0;
+	m_uniformMap.clear();
+	createShader(false);
+	if(shader)
+	{
+		glDeleteProgram(oldShader);
+	}
+}
+
+void ShaderProgram::createShader(bool isStrict)
+{
+    this->shader = glCreateProgram();
+    if (shader == 0) {
+        fprintf(stderr, "Error creating shader program\n");
+        exit(1);
+    }
+    tzw::Data vs_data = tzw::Tfile::shared()->getData(m_vertexShader,true);
+    tzw::Data fs_data = tzw::Tfile::shared()->getData(m_fragmentShader,true);
+	tlog("compiling... %s %s", m_vertexShader.c_str(), m_fragmentShader.c_str());
+    if (vs_data.isNull()) {
+        exit(1);
+    };
+
+    if (fs_data.isNull()) {
+        exit(1);
+    };
+
+    string vs = vs_data.getString();
+    string fs = fs_data.getString();
+    addShader(shader, vs.c_str(), GL_VERTEX_SHADER, isStrict);
+    addShader(shader, fs.c_str(), GL_FRAGMENT_SHADER, isStrict);
+
+    if(!m_tessellationControlShader.empty())
+    {
+        tzw::Data tcs_data = tzw::Tfile::shared()->getData(m_tessellationControlShader,true);
+        addShader(shader, tcs_data.getString().c_str(), GL_TESS_CONTROL_SHADER, isStrict);
+    }
+
+    if(!m_tessellationEvaluationShader.empty())
+    {
+        tzw::Data tes_data = tzw::Tfile::shared()->getData(m_tessellationEvaluationShader,true);
+        addShader(shader, tes_data.getString().c_str(), GL_TESS_EVALUATION_SHADER, isStrict);
+    }
+
+    GLint Success = 0;
+    GLchar ErrorLog[2048] = { 0 };
+    glLinkProgram(shader);
+    glGetProgramiv(shader, GL_LINK_STATUS, &Success);
+    if (Success == 0) {
+        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
+        fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+    	if(isStrict)
+    	{
+    		exit(1);
+    	}
+        
+    }
+
+    glValidateProgram(shader);
+    glGetProgramiv(shader, GL_VALIDATE_STATUS, &Success);
+    if (!Success) {
+        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
+        fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
+       	if(isStrict)
+    	{
+        exit(1);
+        }
+    }
+}
+
+void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType, bool isStrict)
 {
 	tlog("create shader!");
     GLuint ShaderObj = glCreateShader(ShaderType);
 	RenderBackEnd::shared()->selfCheck();
 
     if (ShaderObj == 0) {
-        fprintf(stderr, "Error creating shader type %d\n", ShaderType);
-        exit(0);
+        fprintf(stderr, "Error Compile shader type %d\n", ShaderType);
+    	if(isStrict)
+    	{
+    		exit(0);
+    	}
     }
 
     const GLchar* p[1];
@@ -250,7 +291,10 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
         GLchar InfoLog[1024];
         glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
         fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
-        exit(1);
+        if (isStrict) 
+		{
+          exit(1);
+        }
     }
     glAttachShader(ShaderProgram, ShaderObj);
 	RenderBackEnd::shared()->selfCheck();

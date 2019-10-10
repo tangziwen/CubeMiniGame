@@ -12,6 +12,8 @@
 #include "NodeEditor/BlueprintUtilities/Include/ax/Drawing.h"
 #include "NodeEditor/BlueprintUtilities/Include/ax/Widgets.h"
 #include "NodeEditor/BlueprintUtilities/Include/ax/Builders.h"
+#include "Texture/TextureMgr.h"
+
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -38,10 +40,16 @@ namespace tzw
 	using IconType = ax::Drawing::IconType;
 	int g_uniqueLinkIndex;
 	static ed::EditorContext* g_Context = nullptr;
+
+	static Texture* s_SaveIcon;
+	static Texture * s_HeaderBackground;
+	static Texture * s_RestoreIcon;
 	GameNodeEditor::GameNodeEditor()
 	{
-		m_nodeGlobalCount = 0;
 		g_Context = ed::CreateEditor();
+	    s_HeaderBackground = TextureMgr::shared()->getByPath("./Texture/NodeEditor/BlueprintBackground.png");
+	    s_SaveIcon         = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_save_white_24dp.png");
+	    s_RestoreIcon      = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
 	}
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
@@ -112,8 +120,8 @@ namespace tzw
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
-		m_nodeGlobalCount +=1;
-		newNode->m_nodeID = m_nodeGlobalCount;
+		//m_nodeGlobalCount +=1;
+		//newNode->m_nodeID = m_nodeGlobalCount;
 	}
 
 	void GameNodeEditor::removeNode(GameNodeEditorNode* node)
@@ -147,9 +155,8 @@ namespace tzw
 	{
 		GameNodeEditorNode * startNode = nullptr;
 		GameNodeEditorNode * endNode = nullptr;
-		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+		for (auto node : m_gameNodes)
 		{
-			auto node = m_gameNodes[i];
 			if (!startNode) 
 			{     
 				if(node->checkOutNodeAttr(startAttr)) 
@@ -183,10 +190,9 @@ namespace tzw
 		rapidjson::Value NodeGraphObj(rapidjson::kObjectType);
 
 		rapidjson::Value NodeListObj(rapidjson::kArrayType);
-		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+		for (auto node : m_gameNodes)
 		{
 			rapidjson::Value NodeObj(rapidjson::kObjectType);
-			auto node = m_gameNodes[i];
 			auto origin = imnodes::GetNodeOrigin(node->m_nodeID);
 
 			NodeObj.AddMember("orgin_x", origin.x, allocator);
@@ -197,16 +203,15 @@ namespace tzw
 		NodeGraphObj.AddMember("NodeList", NodeListObj, allocator);
 
 		rapidjson::Value linkListDoc(rapidjson::kArrayType);
-		for (auto i = m_links.begin(); i != m_links.end(); ++i)
+		for (auto& m_link : m_links)
 		{
 
-			auto startAttr = i->InputId;
-			auto endAttr = i->OutputId;
+			auto startAttr = m_link.InputId;
+			auto endAttr = m_link.OutputId;
 			GameNodeEditorNode * startNode = nullptr;
 			GameNodeEditorNode * endNode = nullptr;
-			for (size_t i = 0; i < m_gameNodes.size(); i ++) 
+			for (auto node : m_gameNodes)
 			{
-				auto node = m_gameNodes[i];
 				if (!startNode) 
 				{     
 					if(node->checkOutNodeAttr(startAttr)) 
@@ -308,6 +313,133 @@ namespace tzw
 		m_links.push_back(info);
 		raiseEventToNode(start_attr, end_attr);
 	}
+	void GameNodeEditor::ShowLeftPane(float paneWidth)
+	{
+	    auto& io = ImGui::GetIO();
+
+	    ImGui::BeginChild("Selection", ImVec2(paneWidth, 0));
+
+	    paneWidth = ImGui::GetContentRegionAvailWidth();
+
+	    
+		ImGui::BeginHorizontal("Style Editor", ImVec2(paneWidth, 0));
+	    ImGui::Spring(0.0f, 0.0f);
+	    if (ImGui::Button(u8"调整视图"))
+	        ed::NavigateToContent();
+	    ImGui::Spring(0.0f);
+	    ImGui::Spring();
+	    ImGui::EndHorizontal();
+
+	    std::vector<ed::NodeId> selectedNodes;
+	    std::vector<ed::LinkId> selectedLinks;
+	    selectedNodes.resize(ed::GetSelectedObjectCount());
+	    selectedLinks.resize(ed::GetSelectedObjectCount());
+
+	    int nodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+	    int linkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
+
+	    selectedNodes.resize(nodeCount);
+	    selectedLinks.resize(linkCount);
+
+	    int saveIconWidth     = s_SaveIcon->getSize().x;//Application_GetTextureWidth(s_SaveIcon);
+	    int saveIconHeight    = s_SaveIcon->getSize().y;//Application_GetTextureWidth(s_SaveIcon);
+	    int restoreIconWidth  = s_RestoreIcon->getSize().x;//Application_GetTextureWidth(s_RestoreIcon);
+	    int restoreIconHeight = s_RestoreIcon->getSize().y;//Application_GetTextureWidth(s_RestoreIcon);
+
+	    ImGui::GetWindowDrawList()->AddRectFilled(
+	        ImGui::GetCursorScreenPos(),
+	        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
+	        ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]), ImGui::GetTextLineHeight() * 0.25f);
+	    ImGui::Spacing(); ImGui::SameLine();
+	    ImGui::TextUnformatted(u8"节点列表");
+	    ImGui::Indent();
+	    for (auto& node : m_gameNodes)
+	    {
+	        ImGui::PushID(node->m_nodeID);
+	        auto start = ImGui::GetCursorScreenPos();
+
+	        bool isSelected = std::find(selectedNodes.begin(), selectedNodes.end(), ax::NodeEditor::NodeId(node->m_nodeID)) != selectedNodes.end();
+	        if (ImGui::Selectable((node->name + "##" + std::to_string(node->m_nodeID)).c_str(), &isSelected))
+	        {
+	            if (io.KeyCtrl)
+	            {
+	                if (isSelected)
+	                    ed::SelectNode(node->m_nodeID, true);
+	                else
+	                    ed::DeselectNode(node->m_nodeID);
+	            }
+	            else
+	                ed::SelectNode(node->m_nodeID, false);
+
+	            ed::NavigateToSelection();
+	        }
+
+	        auto id = std::string("(") + std::to_string(node->m_nodeID) + ")";
+	        auto textSize = ImGui::CalcTextSize(id.c_str(), nullptr);
+	        auto iconPanelPos = start + ImVec2(
+	            paneWidth - ImGui::GetStyle().FramePadding.x - ImGui::GetStyle().IndentSpacing - saveIconWidth - restoreIconWidth - ImGui::GetStyle().ItemInnerSpacing.x * 1,
+	            (ImGui::GetTextLineHeight() - saveIconHeight) / 2);
+	        ImGui::GetWindowDrawList()->AddText(
+	            ImVec2(iconPanelPos.x - textSize.x - ImGui::GetStyle().ItemInnerSpacing.x, start.y),
+	            IM_COL32(255, 255, 255, 255), id.c_str(), nullptr);
+
+	        auto drawList = ImGui::GetWindowDrawList();
+	        ImGui::SetCursorScreenPos(iconPanelPos);
+	        ImGui::SetItemAllowOverlap();
+
+	        ImGui::Dummy(ImVec2(float(saveIconWidth), float(saveIconHeight)));
+	        drawList->AddImage(reinterpret_cast<ImTextureID>(s_SaveIcon->handle()), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 32));
+
+
+	        ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+	        ImGui::SetItemAllowOverlap();
+            ImGui::Dummy(ImVec2(float(restoreIconWidth), float(restoreIconHeight)));
+            drawList->AddImage(reinterpret_cast<ImTextureID>(s_RestoreIcon->handle()), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 32));
+	        ImGui::SameLine(0, 0);
+	        ImGui::SetItemAllowOverlap();
+	        ImGui::Dummy(ImVec2(0, float(restoreIconHeight)));
+
+	        ImGui::PopID();
+	    }
+	    ImGui::Unindent();
+
+	    static int changeCount = 0;
+
+	    ImGui::GetWindowDrawList()->AddRectFilled(
+	        ImGui::GetCursorScreenPos(),
+	        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
+	        ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]), ImGui::GetTextLineHeight() * 0.25f);
+	    ImGui::Spacing(); ImGui::SameLine();
+	    ImGui::TextUnformatted(u8"选中");
+
+	    ImGui::BeginHorizontal("Selection Stats", ImVec2(paneWidth, 0));
+	    ImGui::Text("Changed %d time%s", changeCount, changeCount > 1 ? "s" : "");
+	    ImGui::Spring();
+	    if (ImGui::Button(u8"全部取消选中"))
+	        ed::ClearSelection();
+	    ImGui::EndHorizontal();
+	    ImGui::Indent();
+	    for (int i = 0; i < nodeCount; ++i) ImGui::Text(u8"节点 %s", findNode(selectedNodes[i].Get())->name.c_str());
+	    for (int i = 0; i < linkCount; ++i) ImGui::Text(u8"连接 (%p)", selectedLinks[i].AsPointer());
+	    ImGui::Unindent();
+
+	    if (ed::HasSelectionChanged())
+	        ++changeCount;
+
+	    ImGui::EndChild();
+	}
+
+	GameNodeEditorNode* GameNodeEditor::findNode(int nodeID)
+	{
+		for(auto node:m_gameNodes)
+		{
+			if(nodeID == node->m_nodeID)
+			{
+				return node;
+			}
+		}
+		return nullptr;
+	}
 
 	void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 	{
@@ -323,14 +455,19 @@ namespace tzw
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
         ImGui::Begin("Content", nullptr,
-            ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_NoBringToFrontOnFocus);
-	    ed::SetCurrentEditor(g_Context);
+		ed::SetCurrentEditor(g_Context);
+		static float leftPaneWidth  = 300.0f;
+	    ShowLeftPane(leftPaneWidth - 4.0f);
+
+	    ImGui::SameLine(0.0f, 12.0f);
+	    
 
 	    ed::Begin("My Editor");
 		auto cursorTopLeft = ImGui::GetCursorScreenPos();
-		util::BlueprintNodeBuilder builder;
+		util::BlueprintNodeBuilder builder(reinterpret_cast<ImTextureID>(s_HeaderBackground->handle()), s_HeaderBackground->getSize().x, s_HeaderBackground->getSize().y);;
 
 
 
@@ -359,8 +496,8 @@ namespace tzw
 			for (auto attr : inAttrList) 
 			{
 				builder.Input(attr->gID);
-				drawPinIcon(attr, true, (int)(1.0 * 255));
-				ImGui::Text(attr->m_name.c_str());
+				drawPinIcon(attr, true, int(1.0 * 255));
+				ImGui::TextUnformatted(attr->m_name.c_str());
 				builder.EndInput();
 			}
 
@@ -371,7 +508,7 @@ namespace tzw
 				builder.Output(attr->gID);
 				// in between Begin|EndAttribute calls, you can call ImGui
 				// UI functions
-				ImGui::Text(attr->m_name.c_str());
+				ImGui::TextUnformatted(attr->m_name.c_str());
 				drawPinIcon(attr, true, (int)(1.0 * 255));
 				//ed::EndPin();
 				builder.EndOutput();
@@ -382,9 +519,8 @@ namespace tzw
 			//ed::EndNode();
 		}
 
-		for (int i = 0; i < m_links.size(); ++i)
+		for (auto info : m_links)
 		{
-			auto info = m_links[i];
 			// in this case, we just use the array index of the link
 			// as the unique identifier
 			ed::Link(info.Id, info.InputId, info.OutputId);
@@ -424,7 +560,7 @@ namespace tzw
 				{
 	                if (ed::AcceptNewItem())
 	                {
-                		LinkInfo info = { ++g_uniqueLinkIndex, inputPinId.Get(), outputPinId.Get() };
+                		LinkInfo info = { ++g_uniqueLinkIndex, int(inputPinId.Get()), int(outputPinId.Get()) };
                 		
 	                    // Since we accepted new link, lets add one to our list of links.
 	                    m_links.push_back(info);

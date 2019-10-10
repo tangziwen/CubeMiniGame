@@ -67,7 +67,7 @@ void Mesh::submit()
 	if (m_instanceOffset.size() > 0)
 	{
 		m_instanceBuf->use();
-		m_instanceBuf->allocate(&m_instanceOffset[0], m_instanceOffset.size() * sizeof(vec4));
+		m_instanceBuf->allocate(&m_instanceOffset[0], m_instanceOffset.size() * sizeof(InstanceData));
 	}
 }
 
@@ -91,12 +91,12 @@ bool Mesh::isEmpty()
 	return m_indices.empty();
 }
 
-void Mesh::pushInstance(vec4 instancePos)
+void Mesh::pushInstance(InstanceData instancePos)
 {
 	m_instanceOffset.push_back(instancePos);
 }
 
-void Mesh::pushInstances(std::vector<vec4> instancePos)
+void Mesh::pushInstances(std::vector<InstanceData> instancePos)
 {
 	m_instanceOffset = instancePos;
 }

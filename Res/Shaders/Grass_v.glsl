@@ -13,6 +13,7 @@ attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_texcoord;
 attribute vec4 a_instance_offset;
+attribute vec4 a_instance_offset2;
 
 varying vec3 v_position;
 varying vec3 v_normal;
@@ -25,13 +26,12 @@ void main()
 {
 
     // Calculate vertex position in screen space
-    gl_Position = TU_mvpMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0);
+    gl_Position = TU_mvpMatrix * vec4(a_position  + a_instance_offset.xyz,1.0);
 	
 	v_position = (TU_mMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
 	v_worldPos = (TU_mMatrix * vec4(a_position * a_instance_offset.w  + a_instance_offset.xyz,1.0)).xyz;
-	// v_normal = (TU_normalMatrix * ).xyz;
-    v_normal = (TU_normalMatrix * vec4(0.0, 1.0, 0.0, 0.0)).xyz;
+    v_normal = (TU_mMatrix * vec4(a_instance_offset2.xyz, 0.0)).xyz;
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces
-    v_texcoord = a_texcoord;	
+    v_texcoord = a_texcoord;
 }

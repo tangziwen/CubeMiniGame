@@ -380,6 +380,55 @@ namespace tzw
 		return nullptr;
 	}
 
+	GamePart* BuildingSystem::rayTestPart(vec3 pos, vec3 dir, float dist)
+	{
+		std::vector<GamePart*> tmp;
+		for (auto constraint : m_bearList)
+		{
+			tmp.push_back(constraint);
+		}
+		// search island
+		for (auto island : m_IslandList)
+		{
+			for (auto iter : island->m_partList)
+			{
+				tmp.push_back(iter);
+			}
+		}
+		
+		if(m_liftPart)// add extra lift part
+		{
+			tmp.push_back(m_liftPart);
+		}
+		
+		std::sort(tmp.begin(), tmp.end(), [&](GamePart* left, GamePart* right)
+		{
+			float distl = left->getWorldPos().distance(pos);
+			float distr = right->getWorldPos().distance(pos);
+			return distl < distr;
+		});
+		for (auto iter : tmp)
+		{
+			auto island = iter->m_parent;
+			auto node = iter->getNode();
+			auto invertedMat = node->getTransform().inverted();
+			vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
+			vec4 originInLocal = invertedMat * vec4(pos, 1.0);
+
+			auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
+			RayAABBSide side;
+			vec3 hitPoint;
+			auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
+			GamePart* newPart = nullptr;
+			if (isHit)
+			{
+				return iter;
+			}
+		}
+		// any island intersect can't find, return null
+		return nullptr;
+	}
+
 	Island*
 	BuildingSystem::rayTestIsland(vec3 pos, vec3 dir, float dist)
 	{
@@ -552,16 +601,21 @@ namespace tzw
 		nodeEditor->handleLinkLoad(doc["NodeGraph"]);
 		
 		auto island = m_IslandList[0];
-		
-		tempPlace(island);
-		//readjust
-		auto attach = replaceToLiftIslands(island->m_islandGroup);
-		attach->m_parent->getNode()->setColor(vec4(1.0, 0.0, 0.0, 1.0));
-		replaceToLift(attach->m_parent->m_parent, attach);
+
+		if(m_liftPart)// for no run test, if we not yet loaded the world & placed the lift, we still can debug the Node Editor problems.
+		{
+			tempPlace(island);
+			//readjust
+			auto attach = replaceToLiftIslands(island->m_islandGroup);
+			replaceToLift(attach->m_parent->m_parent, attach);
+		}else 
+		{
+			//for debugging purpose
+			MainMenu::shared()->setIsShowNodeEditor(true);
+		}
 	}
 
-	void
-	BuildingSystem::updateBearing(float dt)
+	void BuildingSystem::updateBearing(float dt)
 	{
 		for (auto constrain : m_bearList)
 		{

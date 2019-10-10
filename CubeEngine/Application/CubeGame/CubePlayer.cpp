@@ -43,6 +43,7 @@ namespace tzw
 		EventMgr::shared()->addFixedPiorityListener(this);
 
 		m_enableGravity = true;
+		m_currPointPart = nullptr;
 	}
 
 	FPSCamera* CubePlayer::camera() const
@@ -81,6 +82,22 @@ namespace tzw
 		if (checkIsNeedUpdateChunk())
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
+		}
+		auto part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
+		if(part && m_currPointPart != part)
+		{
+			part->highLight();
+			if(m_currPointPart)
+			{
+				m_currPointPart->unhighLight();
+			}
+			m_currPointPart = part;
+		}else
+		{
+			if(m_currPointPart)
+			{
+				m_currPointPart->unhighLight();
+			}
 		}
 	}
 
@@ -181,6 +198,7 @@ namespace tzw
 		m_itemSlots.push_back(ItemMgr::shared()->getItem("Bearing"));
 		m_itemSlots.push_back(ItemMgr::shared()->getItem("TerrainFormer"));
 	}
+
 	void CubePlayer::handleItemPrimaryUse(GameItem * item)
 	{
 		if (item->m_class == "PlaceableBlock")

@@ -989,8 +989,10 @@ Chunk::calculateMatID()
         } else {
           grass = m_grass2;
         }
-        grass->m_mesh->pushInstance(
-          vec4(pos.x + ox, pos.y, pos.z + oz, 1.0 + scale));
+      	InstanceData instance;
+      	instance.posAndScale = vec4(pos.x, pos.y, pos.z, 1.0 + scale);
+      	instance.extraInfo = vec4(m_mesh->m_vertices[index0].m_normal, 0);
+        grass->m_mesh->pushInstance(instance);
       }
     }
   }

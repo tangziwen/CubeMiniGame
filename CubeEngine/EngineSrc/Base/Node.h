@@ -101,7 +101,6 @@ protected:
 	std::string m_name;
 	Node * m_parent;
 	unsigned int m_tag;
-protected:
 	void removeAllChildrenR();
 };
 

@@ -52,6 +52,8 @@ namespace tzw
 		virtual void drawInfo(float delta);
 		virtual void generateName();
 		std::string genShortName();
+		virtual void highLight();
+		virtual void unhighLight();
 	protected:
 		std::string m_name;
 		PhysicsShape * m_shape;

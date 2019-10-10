@@ -32,6 +32,7 @@ namespace tzw
 		int getAttachmentCount() override;
 		~ControlPart();
 		GameNodeEditorNode * getGraphNode() const;
+		void generateName();
 	public:
 		int m_forward;
 		int m_side;

@@ -20,6 +20,7 @@ class ShaderMgr
 public:
     TZW_SINGLETON_DECL(ShaderMgr)
     ShaderProgram * getByPath(std::string vs, std::string fs, const char *tcs = nullptr, const char *tes = nullptr);
+	void reloadAllShaders();
 private:
     ShaderMgr();
     std::map<shaderInfo,ShaderProgram*> m_pool;

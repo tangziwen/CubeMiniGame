@@ -33,7 +33,8 @@ namespace tzw
 
 	GameNodeEditorNode::GameNodeEditorNode()
 	{
-		m_nodeID = 0;
+		increaseAttrGID();
+		m_nodeID = g_attr_uid;
 		isShowed = false;
 	}
 

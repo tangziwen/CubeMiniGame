@@ -215,7 +215,7 @@ void main(){
         if(radius < 1.0-0.001){//< we need a small bias to avoid flickering on the border of the texture
             //We read the alpha value from a texture where x = radius and y=height in the sky (~time)
             vec4 sun_color = decodeGamma(texture(sun,vec2(radius,time)));
-            color = mix(color,sun_color.rgb,sun_color.a);
+            color = mix(color,sun_color.rgb * 6.0,sun_color.a);
         }
     }
     //Moon

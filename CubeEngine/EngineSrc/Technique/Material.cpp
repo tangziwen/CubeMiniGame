@@ -151,6 +151,10 @@ void Material::loadFromFile(std::string filePath)
 				{
 					var->setAsSemantic(TechniqueVar::SemanticType::InvertedViewProj);
 				}
+				else if(typeStr =="semantic_CameraPos") 
+				{
+					var->setAsSemantic(TechniqueVar::SemanticType::CamPos);
+				}
 			}
 			m_varList[theName] = var;
 		}
@@ -525,7 +529,11 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 		case TechniqueVar::SemanticType::View: break;
 		case TechniqueVar::SemanticType::Project: break;
 		case TechniqueVar::SemanticType::InvertedProj: break;
-		case TechniqueVar::SemanticType::CamPos: break;
+		case TechniqueVar::SemanticType::CamPos:
+		{
+			program->setUniform3Float(name.c_str(), g_GetCurrScene()->defaultCamera()->getWorldPos());
+		}
+		break;
         case TechniqueVar::SemanticType::InvertedViewProj:
 		{
 			auto currScene = g_GetCurrScene();

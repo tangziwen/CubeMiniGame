@@ -31,9 +31,10 @@ public:
 	void newNodeEditorDraw(bool * isOpen);
 	NodeAttr * findAttr(int attrID);
 	void drawPinIcon(const NodeAttr* pin, bool connected, int alpha);
+	void ShowLeftPane(float paneWidth);
+	GameNodeEditorNode * findNode(int nodeID);
 protected:
 	std::vector<GameNodeEditorNode * > m_gameNodes;
 	std::vector<LinkInfo> m_links;
-	int m_nodeGlobalCount;
 };
 }

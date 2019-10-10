@@ -234,11 +234,28 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 	}
 	island.AddMember("name", 100.0, allocator);
 	island.AddMember("partList", partList, allocator);
+
+	
+	//rotation, island need to record the rotation(where the vehicle is in the lift part) too!!!! because if we don't do that, the next we load ,
+	//we can not determine which attachment is the correct center-bottom one to dock at the lift.
+	auto rotate = m_node->getRotateQ();
+	rapidjson::Value rotateList(rapidjson::kArrayType);
+	rotateList.PushBack(rotate.x, allocator).PushBack(rotate.y, allocator).PushBack(rotate.z, allocator).PushBack(rotate.w, allocator);
+
+	island.AddMember("rotate", rotateList, allocator);
 }
 
 void Island::load(rapidjson::Value& island)
 {
 	setGUID(island["UID"].GetString());
+
+	//rotate
+	if(island.HasMember("rotate"))
+	{
+		auto q = Quaternion(island["rotate"][0].GetDouble(),island["rotate"][1].GetDouble(), island["rotate"][2].GetDouble(), island["rotate"][3].GetDouble());
+		m_node->setRotateQ(q);
+	}
+
 	if (island.HasMember("partList"))
 	{
 		auto& partList = island["partList"];

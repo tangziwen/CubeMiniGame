@@ -6,6 +6,7 @@
 	"name" : "BloomCompositPass",
 	"property" : {
 		"attributes" : [
+			{"name" : "TU_winSize", "type":"semantic_WinSize"}
 		],
 		"maps" : [
 		]

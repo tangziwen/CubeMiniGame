@@ -22,6 +22,14 @@ ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char *
     }
 }
 
+void ShaderMgr::reloadAllShaders()
+{
+	for(auto i : m_pool)
+	{
+		i.second->reload();
+	}
+}
+
 ShaderMgr::ShaderMgr()
 {
 

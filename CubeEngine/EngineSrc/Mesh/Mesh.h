@@ -27,6 +27,14 @@ public:
     int mode;
 };
 
+#pragma pack(push,1)
+struct InstanceData
+{
+	vec4 posAndScale;
+	vec4 extraInfo;
+};
+#pragma pack(pop)
+
 class SplitData
 {
 public:
@@ -77,8 +85,8 @@ public:
 	unsigned int getIndex(int id);
 	int getInstanceSize();
 	bool isEmpty();
-	void pushInstance(vec4 instancePos);
-	void pushInstances(std::vector<vec4> instancePos);
+	void pushInstance(InstanceData instanceData);
+	void pushInstances(std::vector<InstanceData> instancePos);
 	void clearInstances();
 	void calcTangents();
 private:
@@ -92,7 +100,7 @@ private:
     std::vector<int> midTriangles_;
     std::vector<Triangle> tmpTriangles_;
     std::vector<SplitData> splits_;
-	std::vector<vec4> m_instanceOffset;
+	std::vector<InstanceData> m_instanceOffset;
 
     void subDivideIter();
     void submit();

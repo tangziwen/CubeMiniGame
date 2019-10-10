@@ -47,6 +47,7 @@ namespace tzw
 		int m_currSelectItemIndex;
 		bool m_enableGravity;
 		float m_seatAngle = 0.0;
+		GamePart * m_currPointPart;
 	};
 } // namespace tzw
 

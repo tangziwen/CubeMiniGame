@@ -25,7 +25,7 @@ public:
 	void setVisible(bool val);
 	void initInGame();
 	GameNodeEditor * getNodeEditor();
-
+	void setIsShowNodeEditor(bool isShow);
 	void popFloatTips(std::string floatString);
 private:
 	bool m_isVisible = true;

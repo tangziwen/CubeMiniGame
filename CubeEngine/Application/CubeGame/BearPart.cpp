@@ -60,7 +60,7 @@ BearPart::~BearPart()
 	delete m_graphNode;
 }
 
-GameNodeEditorNode* BearPart::getGraphNode()
+GameNodeEditorNode* BearPart::getGraphNode() const
 {
 	return m_graphNode;
 }
@@ -69,6 +69,7 @@ void BearPart::load(rapidjson::Value& constraintData)
 {
 	m_isFlipped = constraintData["isFlipped"].GetBool();
 	updateFlipped();
+    static_cast<ResNode *> (m_graphNode)->syncName();
 }
 
 void BearPart::setIsSteering(bool isSteering)

@@ -362,6 +362,10 @@ namespace tzw
 				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
 			}
         }
+		if(partData.HasMember("Name"))
+		{
+			m_name = partData["Name"].GetString();
+		}
 	}
 
 	void GamePart::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
@@ -384,6 +388,7 @@ namespace tzw
 		//type
 		partDocObj.AddMember("type", getType(), allocator);
 
+		partDocObj.AddMember("Name", m_name, allocator);
 
 
 		rapidjson::Value attachList(rapidjson::kArrayType);
@@ -450,5 +455,21 @@ namespace tzw
 		char formatName[512];
 		sprintf_s(formatName, 512, u8"%c%c%c%c",randomChar(), randomChar(), randomChar(), randomChar());
 		return formatName;
+	}
+
+	void GamePart::highLight()
+	{
+		if(m_node)
+		{
+			m_node->setColor(vec4(1.0, 0.5, 0.5, 1.0));
+		}
+	}
+
+	void GamePart::unhighLight()
+	{
+		if(m_node)
+		{
+			m_node->setColor(vec4(1.0, 1.0, 1.0, 1.0));
+		}
 	}
 }

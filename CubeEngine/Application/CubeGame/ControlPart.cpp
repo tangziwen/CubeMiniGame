@@ -33,8 +33,16 @@ ControlPart::ControlPart()
 	m_graphNode = new ControlPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	EventMgr::shared()->addFixedPiorityListener(this);
+	ControlPart::generateName();
 }
 
+
+void ControlPart::generateName()
+{
+	char formatName[512];
+	sprintf_s(formatName, 512, u8"Öá³Ð %s",genShortName().c_str());
+	setName(formatName);
+}
 Attachment * ControlPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
 {
 	RayAABBSide side;
@@ -287,6 +295,7 @@ void ControlPart::dump(rapidjson::Value& partDocObj, rapidjson::Document::Alloca
 void ControlPart::load(rapidjson::Value& partData)
 {
 	GamePart::load(partData);
+	static_cast<ResNode *>(m_graphNode)->syncName();
 	//auto& forwardBearingList = partData["forwardBearingList"];
 	//for(unsigned int i = 0; i < forwardBearingList.Size(); i++) 
 	//{

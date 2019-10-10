@@ -28,11 +28,17 @@ public:
     void enableAttributeArray(unsigned int attributeId);
     void setAttributeBuffer(int ID, int dataType, int offset, int size, int stride = 0);
 	int uniformLocation(std::string name);
+	void reload();
 private:
-    void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType);
+	void createShader(bool isStrict);
+    void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType, bool isStrict);
     std::map<std::string,unsigned int> m_locationMap;
 	std::unordered_map<std::string, int> m_uniformMap;
     unsigned int shader;
+	std::string m_fragmentShader;
+	std::string m_vertexShader;
+	std::string m_tessellationControlShader;
+	std::string m_tessellationEvaluationShader;
 };
 } // namespace tzw
 

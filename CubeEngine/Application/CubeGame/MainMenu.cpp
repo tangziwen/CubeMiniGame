@@ -18,6 +18,7 @@
 #include "UIHelper.h"
 
 #include "dirent.h"
+#include "Shader/ShaderMgr.h"
 
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
@@ -126,9 +127,11 @@ void MainMenu::drawIMGUI()
 			{
 				ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
 				ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
-				if(ImGui::MenuItem(u8"弹出窗口", nullptr)) 
+
+
+				if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
 				{
-					popFloatTips("test");
+					ShaderMgr::shared()->reloadAllShaders();
 				}
 				ImGui::EndMenu();
 			}
@@ -204,6 +207,11 @@ void MainMenu::setVisible(bool val)
 GameNodeEditor* MainMenu::getNodeEditor()
 {
 	return m_nodeEditor;
+}
+
+void MainMenu::setIsShowNodeEditor(bool isShow)
+{
+	m_isShowNodeEditor = isShow;
 }
 
 void MainMenu::popFloatTips(std::string floatString)

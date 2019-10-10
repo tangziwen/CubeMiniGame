@@ -424,9 +424,13 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 	mesh->getInstanceBuf()->use();
 	int grassOffsetLocation = program->attributeLocation("a_instance_offset");
 	program->enableAttributeArray(grassOffsetLocation);
-	program->setAttributeBuffer(grassOffsetLocation, GL_FLOAT, 0, 4, 0);
+	program->setAttributeBuffer(grassOffsetLocation, GL_FLOAT, 0, 4, sizeof(InstanceData));
 	glVertexAttribDivisor(grassOffsetLocation, 1);
-
+	
+	int extraInstanceOffsetLocation = program->attributeLocation("a_instance_offset2");
+	program->enableAttributeArray(extraInstanceOffsetLocation);
+	program->setAttributeBuffer(extraInstanceOffsetLocation, GL_FLOAT, offsetof(InstanceData, extraInfo.x), 4, sizeof(InstanceData));
+	glVertexAttribDivisor(extraInstanceOffsetLocation, 1);
 	switch (primitiveType)
 	{
 	case RenderCommand::PrimitiveType::TRIANGLES:
@@ -438,6 +442,7 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 	default: ;
 	}
 	glVertexAttribDivisor(grassOffsetLocation, 0);
+	glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
 }
 
 ///

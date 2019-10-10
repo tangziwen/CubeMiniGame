@@ -424,7 +424,7 @@ void main()
 	}
 
 	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
-	vec3 lambert =  calculateLightPBR(color, surfaceData[1], normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, surfaceData[0]);
+	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, surfaceData[0]);
 
-	gl_FragColor = vec4(lambert, 1.0);
+	gl_FragColor = vec4(resultColor, 1.0);
 }
