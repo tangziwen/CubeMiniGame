@@ -11,6 +11,7 @@ public:
 	TriggerNode();
 	virtual void trigger();
 	vec3 getNodeColor() override;
+	int getType() override;
 protected:
 
 };

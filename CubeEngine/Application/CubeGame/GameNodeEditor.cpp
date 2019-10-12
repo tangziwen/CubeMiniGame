@@ -471,7 +471,7 @@ enum class PinType
 
 bool GameNodeEditor::onKeyPress(int keyCode)
 {
-	if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
+	//if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
 		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER)
@@ -485,7 +485,7 @@ bool GameNodeEditor::onKeyPress(int keyCode)
 
 bool GameNodeEditor::onKeyRelease(int keyCode)
 {
-	if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
+	//if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
 		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER)
