@@ -13,6 +13,7 @@ public:
 	virtual GamePart * getProxy();
 	virtual void handleNameEdit();
 	vec3 getNodeColor() override;
+	int getType() override;
 protected:
 
 };

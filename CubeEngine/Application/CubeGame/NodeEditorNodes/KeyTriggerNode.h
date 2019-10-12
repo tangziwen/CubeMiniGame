@@ -8,9 +8,9 @@ struct KeyTriggerNode: public TriggerNode
 public:
 	KeyTriggerNode();
 	virtual void trigger();
-	int getType() override;
 	void handleKeyPress(int keyCode);
 	void handleKeyRelease(int keyCode);
+	int getNodeClass() override;
 protected:
 	int m_forward;
 	int m_side;

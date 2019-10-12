@@ -7,7 +7,8 @@ struct SpinNode: public BehaviorNode
 {
 public:
 	SpinNode();
-	void execute(GameNodeEditorNode * from) override;
+	NodeAttrValue execute() override;
+	int getNodeClass() override;
 protected:
 	NodeAttr * m_bearingAttr;
 	NodeAttr * m_signalAttr;

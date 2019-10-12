@@ -9,8 +9,9 @@ struct BehaviorNode: public GameNodeEditorNode
 {
 public:
 	BehaviorNode();
-	virtual void execute(GameNodeEditorNode * from);
+	NodeAttrValue execute() override;
 	vec3 getNodeColor() override;
+	int getType() override;
 protected:
 
 };

@@ -37,21 +37,32 @@ namespace tzw
 
 	NodeAttr::NodeAttr()
 	{
+		dataType = DataType::DATA;
 		m_localAttrValue = NodeAttrValue(nullptr);
 	}
 
 	NodeAttrValue NodeAttr::eval()
 	{
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
-		auto attr = nodeEditor->findAttrLinksFromAttr(this);
-		if(attr)
+		
+		if(this->dataType ==DataType::RETURN_VALUE)//is a return value, must execute
 		{
-			return attr->eval();
+			//all pass
+			return (m_parent)->execute();
 		}
-		else 
+		else
 		{
-			return m_localAttrValue;
+			auto attr = nodeEditor->findAttrLinksFromAttr(this);
+			if(attr)
+			{
+				return attr->eval();
+			}
+			else 
+			{
+				return m_localAttrValue;
+			}
 		}
+
 	}
 
 	NodeAttr* GameNodeEditorNode::addIn(std::string attrName)
@@ -65,6 +76,13 @@ namespace tzw
 		return attr;
 	}
 
+	NodeAttr* GameNodeEditorNode::addInExe(std::string attrName)
+	{
+		auto node = addIn(attrName);
+		node->dataType = NodeAttr::DataType::EXECUTE;
+		return node;
+	}
+
 	NodeAttr* GameNodeEditorNode::addOut(std::string attrName)
 	{
 		increaseAttrGID();
@@ -74,6 +92,20 @@ namespace tzw
 		attr->type = NodeAttr::Type::OUTPUT_ATTR;
 		m_outAttr.push_back(attr);
 		return attr;
+	}
+
+	NodeAttr* GameNodeEditorNode::addOutExe(std::string attrName)
+	{
+		auto node = addOut(attrName);
+		node->dataType = NodeAttr::DataType::EXECUTE;
+		return node;
+	}
+
+	NodeAttr* GameNodeEditorNode::addOutReturn()
+	{
+		auto node = addOut("Return");
+		node->dataType = NodeAttr::DataType::RETURN_VALUE;
+		return node;
 	}
 
 	GameNodeEditorNode::GameNodeEditorNode()
@@ -206,15 +238,30 @@ namespace tzw
 
 	void GameNodeEditorNode::load(rapidjson::Value& partData)
 	{
+		//load Node Origin from file
+		m_origin = vec2(partData["orgin_x"].GetDouble(), partData["orgin_y"].GetDouble());
+		this->setGUID(partData["UID"].GetString());
 	}
 
 	void GameNodeEditorNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
 		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+		partDocObj.AddMember("NodeType", getType(), allocator);
+		partDocObj.AddMember("NodeClass", getNodeClass(), allocator);
+	}
+
+	NodeAttrValue GameNodeEditorNode::execute()
+	{
+		return NodeAttrValue(nullptr);
 	}
 
 	int GameNodeEditorNode::getType()
 	{
 		return Node_TYPE_OTHERS;
+	}
+
+	int GameNodeEditorNode::getNodeClass()
+	{
+		return Node_CLASS_WTF;
 	}
 }

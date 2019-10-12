@@ -8,8 +8,8 @@ namespace tzw
 	KeyTriggerNode::KeyTriggerNode()
 	{
 		name =u8"按键输入";
-		m_forwardAttr =addOut(u8"前后");
-		m_sideAttr = addOut(u8"左右");
+		m_forwardAttr =addOutExe(u8"前后");
+		m_sideAttr = addOutExe(u8"左右");
 		m_forwardSignalAttr = addOut(u8"前后信号");
 		m_sideSignalAttr = addOut(u8"左右信号");
 		m_forward = 0;
@@ -25,14 +25,9 @@ namespace tzw
 		{
 			if(node->getType() == Node_TYPE_BEHAVIOR)
 			{
-				static_cast<BehaviorNode *>(node)->execute(this);
+				static_cast<BehaviorNode *>(node)->execute();
 			}
 		}
-	}
-
-	int KeyTriggerNode::getType()
-	{
-		return Node_TYPE_KEY_TRIGGER;
 	}
 
 	void KeyTriggerNode::handleKeyPress(int keyCode)
@@ -64,12 +59,10 @@ namespace tzw
 				isKeyActivate = true;
 		    }
 			break;
-            case TZW_KEY_I:
-				trigger();
-			break;
 		}
 		m_forwardSignalAttr->m_localAttrValue.int_val = m_forward;
 		m_sideSignalAttr->m_localAttrValue.int_val = m_side;
+		trigger();
 	}
 
 	void KeyTriggerNode::handleKeyRelease(int keyCode)
@@ -104,6 +97,11 @@ namespace tzw
 		}
 		m_forwardSignalAttr->m_localAttrValue.int_val = m_forward;
 		m_sideSignalAttr->m_localAttrValue.int_val = m_side;
-		//trigger();
+		trigger();
+	}
+
+	int KeyTriggerNode::getNodeClass()
+	{
+		return Node_CLASS_KEY_TRIGGER;
 	}
 }

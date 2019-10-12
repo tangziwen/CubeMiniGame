@@ -7,7 +7,6 @@ namespace tzw
 	{
 		m_part = bear;
 		BearingPartNode::syncName();
-		addIn(u8" ‰»Î");
 	}
 
 	void BearingPartNode::privateDraw()

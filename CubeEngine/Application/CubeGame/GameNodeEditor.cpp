@@ -18,6 +18,7 @@
 #include "NodeEditorNodes/SpinNode.h"
 #include "NodeEditorNodes/KeyTriggerNode.h"
 #include "Event/EventMgr.h"
+#include "BuildingSystem.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -125,7 +126,7 @@ enum class PinType
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
-		if(newNode->getType() == Node_TYPE_KEY_TRIGGER)
+		if(newNode->getType() == Node_TYPE_TRIGGER)
 		{
 			m_triggerList.push_back(static_cast<KeyTriggerNode *> (newNode));
 		}
@@ -205,6 +206,7 @@ enum class PinType
 			auto origin = ed::GetNodePosition(node->m_nodeID);
 			NodeObj.AddMember("orgin_x", origin.x, allocator);
 			NodeObj.AddMember("orgin_y", origin.y, allocator);
+			
 			node->dump(NodeObj, allocator);
 			NodeListObj.PushBack(NodeObj, allocator);
 		}
@@ -263,7 +265,7 @@ enum class PinType
 			auto& node = NodeList[i];
 			GameNodeEditorNode * newNode = nullptr;
 			//we skip create resource Node, but find exist resource node, and set properly UID
-			if(strcmp(node["Type"].GetString(), "Resource") == 0)
+			if(node["NodeType"].GetInt() == Node_TYPE_RES)
 			{
 				auto resUID = node["ResUID"].GetString();
 				if(strcmp(node["ResType"].GetString(), "ControlPart") == 0)//ControlPart
@@ -285,14 +287,19 @@ enum class PinType
 			}
 			else //normal logic & function node, we need create here
 			{
-
+				switch(node["NodeClass"].GetInt())
+				{
+                case Node_CLASS_KEY_TRIGGER:
+					newNode = new KeyTriggerNode();
+					break;
+                case Node_CLASS_SPIN:
+					newNode = new SpinNode();
+					break;
+				}
 				
+				addNode(newNode);
 			}
-			//load Node Origin from file
-			//imnodes::SetNodeOrigin(newNode->m_nodeID, ImVec2(node["orgin_x"].GetDouble(), node["orgin_y"].GetDouble()));
-			newNode->m_origin = vec2(node["orgin_x"].GetDouble(), node["orgin_y"].GetDouble());
-			//update UID from file
-			newNode->setGUID(node["UID"].GetString());
+			newNode->load(node);
 		}
 		//read link
 		auto& linkList = NodeGraphObj["NodeLinkList"];
@@ -336,19 +343,21 @@ enum class PinType
 	        ed::NavigateToContent();
 		if(ImGui::Button(u8"退出"))
 			(*g_isOpen) = false;
+	    ImGui::Spring(0.0f);
+	    ImGui::Spring();
+	    ImGui::EndHorizontal();
 		if(ImGui::Button(u8"旋转节点"))
 		{
 			addNode(new SpinNode());
 		}
-		if(ImGui::Button(u8"案件输入节点"))
+		if(ImGui::Button(u8"标准输入"))
 		{
 			addNode(new KeyTriggerNode());
 		}
-
-	    ImGui::Spring(0.0f);
-	    ImGui::Spring();
-	    ImGui::EndHorizontal();
-
+		//if(ImGui::Button(u8"If"))
+		//{
+		//	addNode(new KeyTriggerNode());
+		//}
 	    std::vector<ed::NodeId> selectedNodes;
 	    std::vector<ed::LinkId> selectedLinks;
 	    selectedNodes.resize(ed::GetSelectedObjectCount());
@@ -462,9 +471,10 @@ enum class PinType
 
 bool GameNodeEditor::onKeyPress(int keyCode)
 {
+	if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
-		if(trigger->getType() == Node_TYPE_KEY_TRIGGER)
+		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER)
 		{
 			static_cast<KeyTriggerNode *>(trigger)->handleKeyPress(keyCode);
 		}
@@ -475,9 +485,10 @@ bool GameNodeEditor::onKeyPress(int keyCode)
 
 bool GameNodeEditor::onKeyRelease(int keyCode)
 {
+	if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
-		if(trigger->getType() == Node_TYPE_KEY_TRIGGER)
+		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER)
 		{
 			static_cast<KeyTriggerNode *>(trigger)->handleKeyRelease(keyCode);
 		}
@@ -617,6 +628,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				//ed::EndPin();
 				builder.EndOutput();
 			}
+			ImGui::Spring(0);
 			node->privateDraw();
 			builder.End();
 
@@ -627,11 +639,19 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 		{
 			// in this case, we just use the array index of the link
 			// as the unique identifier
-			ed::Link(info.Id, info.InputId, info.OutputId);
+			ImColor color(255, 255, 255);
+			float thickness = 1.0f;
+			switch(findAttr(info.InputId)->dataType)
+			{
+			case NodeAttr::DataType::EXECUTE: color = ImColor(255, 255, 255); thickness = 2.0f;break;
+			case NodeAttr::DataType::DATA: color = ImColor(255, 255, 0);thickness = 1.0f;break;
+			default: ;
+			}
+			ed::Link(info.Id, info.InputId, info.OutputId, color, thickness);
 		}
 
  // Handle creation action, returns true if editor want to create new object (node or link)
-    if (ed::BeginCreate(ImVec4(0, 1, 0, 1), 5.0f))
+    if (ed::BeginCreate(ImVec4(0, 1, 0, 1), 3.0f))
     {
         ed::PinId inputPinId, outputPinId;
         if (ed::QueryNewLink(&inputPinId, &outputPinId))
@@ -654,11 +674,15 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
             	auto outAttr = findAttr(outputPinId.Get());
             	if(inputPinId == outputPinId)
             	{
-            		ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+            		ed::RejectNewItem(ImColor(255, 0, 0), 5.0f);
             	}
             	else if(inAttr->type == outAttr->type)
             	{
-            		ed::RejectNewItem(ImColor(255, 0, 0), 2.0f);
+            		ed::RejectNewItem(ImColor(255, 0, 0), 5.0f);
+            	}
+             	else if(inAttr->dataType != outAttr->dataType)
+            	{
+            		ed::RejectNewItem(ImColor(255, 0, 0), 5.0f);
             	}
             	else 
 				{
@@ -740,40 +764,36 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 		}
 		return nullptr;
 	}
-	ImColor GetIconColor(PinType type)
+	ImColor GetIconColor(NodeAttr::DataType type)
 	{
 	    switch (type)
 	    {
-	        default:
-	        case PinType::Flow:     return ImColor(255, 255, 255);
-	        case PinType::Bool:     return ImColor(220,  48,  48);
-	        case PinType::Int:      return ImColor( 68, 201, 156);
-	        case PinType::Float:    return ImColor(147, 226,  74);
-	        case PinType::String:   return ImColor(124,  21, 153);
-	        case PinType::Object:   return ImColor( 51, 150, 215);
-	        case PinType::Function: return ImColor(218,   0, 183);
-	        case PinType::Delegate: return ImColor(255,  48,  48);
+		case NodeAttr::DataType::EXECUTE: return ImColor(255, 255, 255);
+		case NodeAttr::DataType::DATA: return ImColor(255, 255, 0);
+	    case NodeAttr::DataType::RETURN_VALUE: return ImColor(255, 255, 0);
+		default: return ImColor(255, 255, 255);
 	    }
 	}
 	static const int            s_PinIconSize = 24;
 	void GameNodeEditor::drawPinIcon(const NodeAttr* pin, bool connected, int alpha)
 	{
 		ax::Drawing::IconType iconType;
-		auto type =PinType::Int;
+		auto type = pin->dataType;
 	    ImColor  color = GetIconColor(type);
 	    color.Value.w = alpha / 255.0f;
 	    switch (type)
 	    {
-	        case PinType::Flow:     iconType = IconType::Flow;   break;
-	        case PinType::Bool:     iconType = IconType::Circle; break;
-	        case PinType::Int:      iconType = IconType::Circle; break;
-	        case PinType::Float:    iconType = IconType::Circle; break;
-	        case PinType::String:   iconType = IconType::Circle; break;
-	        case PinType::Object:   iconType = IconType::Circle; break;
-	        case PinType::Function: iconType = IconType::Circle; break;
-	        case PinType::Delegate: iconType = IconType::Square; break;
-	        default:
-	            return;
+          case NodeAttr::DataType::DATA:
+            iconType = IconType::Circle;
+            break;
+	    case NodeAttr::DataType::EXECUTE:
+            iconType = IconType::Flow;
+            break;
+        case NodeAttr::DataType::RETURN_VALUE:
+            iconType = IconType::Grid;
+            break;
+        default:
+            return;
 	    }
 
 	    ax::Widgets::Icon(ImVec2(s_PinIconSize, s_PinIconSize), iconType, connected, color, ImColor(32, 32, 32, alpha));

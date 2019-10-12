@@ -43,4 +43,9 @@ namespace tzw
 	{
 		return vec3(95.0f/ 255.0f, 127.0f/255.0f, 90.0f / 255.0f);
 	}
+
+	int ResNode::getType()
+	{
+		return Node_TYPE_RES;
+	}
 }

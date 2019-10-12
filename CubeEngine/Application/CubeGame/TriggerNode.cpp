@@ -5,7 +5,6 @@ namespace tzw
 {
 	TriggerNode::TriggerNode()
 	{
-		addOut(u8"");
 	}
 
 	void TriggerNode::trigger()

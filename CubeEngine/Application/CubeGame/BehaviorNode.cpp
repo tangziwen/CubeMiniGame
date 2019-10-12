@@ -5,17 +5,22 @@ namespace tzw
 {
 	BehaviorNode::BehaviorNode()
 	{
-		addIn(u8"执行");
-		addOut(u8"顺序");
+		addInExe(u8"执行");
+		addOutExe(u8"接续");
 	}
 
-	void BehaviorNode::execute(GameNodeEditorNode* from)
+	NodeAttrValue BehaviorNode::execute()
 	{
-		
+		return NodeAttrValue(nullptr);
 	}
 
 	vec3 BehaviorNode::getNodeColor()
 	{
 		return vec3(0.3, 0.3, 1.0);
+	}
+
+	int BehaviorNode::getType()
+	{
+		return Node_TYPE_BEHAVIOR;
 	}
 }
