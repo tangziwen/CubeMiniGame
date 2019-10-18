@@ -49,15 +49,13 @@ class BuildingSystem
 		GamePart * rayTestPart(vec3 pos, vec3 dir, float dist);
 		Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
 		LiftPart * getLift() const;
-		ControlPart * getControlPart();
 		void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
 		void dump(std::string filePath);
 		void load(std::string filePath);
 		void updateBearing(float dt);
-		void showNameTips(float dt);
-
 		void removeLiftConnected();
 		void removeIsland(Island * island);
+		std::set<GameConstraint *> &getConstraintList();
 	private:
 		ControlPart * m_controlPart;
 		LiftPart * m_liftPart;

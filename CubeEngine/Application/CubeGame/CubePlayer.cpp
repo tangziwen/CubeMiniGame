@@ -13,6 +13,7 @@
 #include "EngineSrc/Collision/PhysicsMgr.h"
 #include "BuildingSystem.h"
 #include "ItemMgr.h"
+#include "AssistDrawSystem.h"
 
 namespace tzw
 {
@@ -125,6 +126,16 @@ namespace tzw
 	static PhysicsHingeConstraint * constraint2 = nullptr;
 	bool CubePlayer::onKeyPress(int keyCode)
 	{
+		switch (keyCode)
+		{		
+			case TZW_KEY_T:
+			{
+				AssistDrawSystem::shared()->setIsShowAssistInfo(true);
+			}
+			break;
+		default:
+		  break;
+		}
 		return false;
 	}
 
@@ -144,9 +155,9 @@ namespace tzw
 				m_camera->setIsEnableGravity(m_enableGravity);
 			}
 			break;
-		case TZW_KEY_H:
+		case TZW_KEY_T:
 			{
-				BuildingSystem::shared()->dropFromLift();
+				AssistDrawSystem::shared()->setIsShowAssistInfo(false);
 			}
 			break;
 		case TZW_KEY_J:
@@ -273,7 +284,8 @@ namespace tzw
 		//m_camera->setPos(0, 0, 0);
 		//m_camera->setRotateE(0, 0, 0);
 		//m_camera->reCache();
-		
+
+		m_orbitcamera->resetDirection();
 		m_orbitcamera->setFocusNode(part->getNode());
 		g_GetCurrScene()->setDefaultCamera(m_orbitcamera);
 	}

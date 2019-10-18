@@ -25,7 +25,7 @@ Matrix44 PhysicsCompoundShape::adjustPrincipalAxis()
 	btScalar * masses = (btScalar *)malloc(sizeof(btScalar) * shape->getNumChildShapes());
 	for(int i = 0; i < shape->getNumChildShapes(); i++)
 	{
-		masses[i] = 1.0;
+		masses[i] = 50.0;
 	}
 	btTransform principal;
 	btVector3 inertia;

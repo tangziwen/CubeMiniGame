@@ -20,8 +20,6 @@ public:
 	void load(rapidjson::Value& partData) override;
 	bool isConstraint() override;
 	void updateTransform(float dt);
-	void initInfoRes() override;
-	void drawInfo(float delta) override;
 	void setName(std::string newName) override;
 	virtual ~GameConstraint();
 protected:

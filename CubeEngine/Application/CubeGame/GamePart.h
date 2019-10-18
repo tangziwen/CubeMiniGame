@@ -48,12 +48,11 @@ namespace tzw
 		virtual vec3 getWorldPos();
 		std::string getName() const;
 		virtual void setName(std::string newName);
-		virtual void initInfoRes();
-		virtual void drawInfo(float delta);
 		virtual void generateName();
 		std::string genShortName();
 		virtual void highLight();
 		virtual void unhighLight();
+		virtual void use();
 	protected:
 		std::string m_name;
 		PhysicsShape * m_shape;

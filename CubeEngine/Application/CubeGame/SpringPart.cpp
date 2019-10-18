@@ -25,10 +25,6 @@ SpringPart::SpringPart()
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
 	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
 
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
-	m_graphNode = new SpringPartNode(this);
-	nodeEditor->addNode(m_graphNode);
-
 	generateName();
 }
 
@@ -199,6 +195,13 @@ void SpringPart::generateName()
 	char formatName[512];
 	sprintf_s(formatName, 512, u8"µ¯»É %s",genShortName().c_str());
 	setName(formatName);
+}
+
+SpringPart::~SpringPart()
+{
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
+	delete m_graphNode;
 }
 }
 

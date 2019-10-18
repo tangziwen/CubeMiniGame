@@ -12,8 +12,9 @@ public:
 	NodeAttrValue execute() override;
 	vec3 getNodeColor() override;
 	int getType() override;
+	void handleExeOut() override;
 protected:
-
+	NodeAttr * m_out;
 };
 
 }

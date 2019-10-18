@@ -20,7 +20,7 @@ public:
 	Attachment* getFirstAttachment() override;
 	Attachment * getAttachment(int index) override;
 	int getAttachmentCount() override;
-	~BearPart();
+	virtual ~BearPart();
 	GameNodeEditorNode * getGraphNode() const;
 	void load(rapidjson::Value& partData) override;
 	void setIsSteering(bool isSteering);

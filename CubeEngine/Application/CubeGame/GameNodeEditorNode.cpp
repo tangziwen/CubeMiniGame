@@ -11,34 +11,76 @@ namespace tzw
 		g_attr_uid += 1;
 	}
 
-	NodeAttrValue::NodeAttrValue(int val)
+	NodeAttrValuePrimitive::NodeAttrValuePrimitive(int val)
 	{
 		int_val = val;
 		m_type = Type::INT;
 	}
 
-	NodeAttrValue::NodeAttrValue(float val)
+	NodeAttrValuePrimitive::NodeAttrValuePrimitive(float val)
 	{
 		float_val = val;
 		m_type = Type::FLOAT;
 	}
 
-	NodeAttrValue::NodeAttrValue(void* val)
+	NodeAttrValuePrimitive::NodeAttrValuePrimitive(void* val)
 	{
 		usrPtr = val;
 		m_type = Type::USER_PTR;
 	}
 
+	NodeAttrValuePrimitive::NodeAttrValuePrimitive()
+	{
+		m_type = Type::VOID;
+	}
+
 	NodeAttrValue::NodeAttrValue()
 	{
-		usrPtr = nullptr;
-		m_type = Type::USER_PTR;
+		
+	}
+
+	int NodeAttrValue::getInt()
+	{
+		return m_list[0].int_val;
+	}
+
+	float NodeAttrValue::getFloat()
+	{
+		return m_list[0].float_val;
+	}
+
+	void* NodeAttrValue::getUsrPtr()
+	{
+		return m_list[0].usrPtr;
+	}
+
+	void NodeAttrValue::setInt(int value)
+	{
+		m_list.clear();
+		m_list.push_back(NodeAttrValuePrimitive(value));
+	}
+
+	void NodeAttrValue::setFloat(float value)
+	{
+		m_list.clear();
+		m_list.push_back(NodeAttrValuePrimitive(value));
+	}
+
+	void NodeAttrValue::setUsrPtr(void* value)
+	{
+		m_list.clear();
+		m_list.push_back(NodeAttrValuePrimitive(value));
+	}
+
+	NodeAttrValuePrimitive NodeAttrValue::getFirst()
+	{
+		return m_list[0];
 	}
 
 	NodeAttr::NodeAttr()
 	{
 		dataType = DataType::DATA;
-		m_localAttrValue = NodeAttrValue(nullptr);
+		m_localAttrValue = NodeAttrValue();
 	}
 
 	NodeAttrValue NodeAttr::eval()
@@ -252,7 +294,12 @@ namespace tzw
 
 	NodeAttrValue GameNodeEditorNode::execute()
 	{
-		return NodeAttrValue(nullptr);
+		return NodeAttrValue();
+	}
+
+	void GameNodeEditorNode::handleExeOut()
+	{
+		
 	}
 
 	int GameNodeEditorNode::getType()

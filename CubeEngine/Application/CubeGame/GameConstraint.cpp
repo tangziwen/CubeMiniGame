@@ -10,7 +10,6 @@ GameConstraint::GameConstraint()
 	m_a = nullptr;
 	m_b = nullptr;
 	m_isEnablePhysics = false;
-	GameConstraint::initInfoRes();
 }
 
 void GameConstraint::enablePhysics(bool isEnable)
@@ -39,18 +38,6 @@ void GameConstraint::updateTransform(float dt)
 	{
 		attachToFromOtherIslandAlterSelfIsland(m_b);
 	}
-}
-
-void GameConstraint::initInfoRes()
-{
-	m_label = LabelNew::create(m_name);
-	g_GetCurrScene()->addNode(m_label);
-}
-
-void GameConstraint::drawInfo(float delta)
-{
-	auto posIn2D = g_GetCurrScene()->defaultCamera()->worldToScreen(getWorldPos());
-	m_label->setPos2D(posIn2D.xy());
 }
 
 void GameConstraint::setName(std::string newName)

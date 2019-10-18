@@ -11,6 +11,7 @@
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "BuildingSystem.h"
 #include "ScriptPy/ScriptPyMgr.h"
+#include "AssistDrawSystem.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -99,7 +100,7 @@ void GameWorld::onFrameUpdate(float delta)
 	if (m_currentState != GAME_STATE_RUNNING)
 		return;
 	BuildingSystem::shared()->updateBearing(delta);
-	BuildingSystem::shared()->showNameTips(delta);
+	AssistDrawSystem::shared()->handleDraw(delta);
 }
 
 Chunk *GameWorld::createChunk(int x, int y, int z)

@@ -264,7 +264,7 @@ int	btComputeGjkEpaPenetration(const btConvexTemplate& a, const btConvexTemplate
         bool catchDegeneratePenetrationCase =
         (m_catchDegeneracies &&  m_degenerateSimplex && ((distance+margin) < 0.01));
         
-        //if (checkPenetration && !isValid)
+        //if (checkPenetration && !isPlayerOnSeat)
         if (checkPenetration && (!isValid || catchDegeneratePenetrationCase ))
         {
             //penetration case

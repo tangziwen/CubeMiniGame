@@ -29,11 +29,12 @@ ControlPart::ControlPart()
 		m_bearPart[i] = nullptr;
 	}
 	initAttachments();
+
+	EventMgr::shared()->addFixedPiorityListener(this);
+	ControlPart::generateName();
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	m_graphNode = new ControlPartNode(this);
 	nodeEditor->addNode(m_graphNode);
-	EventMgr::shared()->addFixedPiorityListener(this);
-	ControlPart::generateName();
 }
 
 

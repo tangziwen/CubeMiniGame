@@ -30,7 +30,7 @@ namespace tzw
 		void load(rapidjson::Value& partData) override;
 		Attachment* getAttachment(int index) override;
 		int getAttachmentCount() override;
-		~ControlPart();
+		virtual ~ControlPart();
 		GameNodeEditorNode * getGraphNode() const;
 		void generateName();
 	public:

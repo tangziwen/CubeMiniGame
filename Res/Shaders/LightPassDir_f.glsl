@@ -184,7 +184,7 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
-vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness)
+vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness, float shadowFactor)
 {
 	L = -L;
 
@@ -213,7 +213,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * albedo / PI + specular) * radiance * NdotL + gAmbientLight.color * gAmbientLight.intensity * albedo;
+	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + gAmbientLight.color * gAmbientLight.intensity * albedo;
 }
 
 
@@ -367,7 +367,7 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 		return 1.0;
     //
 	
-	return clamp(1.0 - pcf_3x3(UVCoords.xy, z - getBias(surfaceNormal, lightDir), vec2(1.0 / 512.0, 1.0 / 512.0), index), 0.5, 1.0);
+	return clamp(1.0 - pcf_3x3(UVCoords.xy, z - getBias(surfaceNormal, lightDir), vec2(1.0 / 512.0, 1.0 / 512.0), index), 0.1, 1.0);
 	/*
 	float visibility=0.0;
 	for (int i=0;i<16;i++){
@@ -424,7 +424,7 @@ void main()
 	}
 
 	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
-	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, surfaceData[0]);
+	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, surfaceData[0], shadowFactor);
 
 	gl_FragColor = vec4(resultColor, 1.0);
 }

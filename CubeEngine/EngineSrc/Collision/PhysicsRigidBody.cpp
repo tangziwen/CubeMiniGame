@@ -142,5 +142,26 @@ void PhysicsRigidBody::clearAll()
 void PhysicsRigidBody::setVelocity(vec3 velocity)
 {
 	m_rigidBody->setLinearVelocity(btVector3(velocity.x, velocity.y, velocity.z));
+	
+}
+
+void PhysicsRigidBody::applyCentralForce(vec3 force)
+{
+	m_rigidBody->applyCentralForce(btVector3(force.x, force.y, force.z));
+}
+
+void PhysicsRigidBody::applyForce(vec3 force, vec3 localposition)
+{
+	m_rigidBody->applyForce(btVector3(force.x, force.y, force.z), btVector3(localposition.x, localposition.y, localposition.z));
+}
+
+void PhysicsRigidBody::applyCentralImpulse(vec3 force)
+{
+	m_rigidBody->applyCentralImpulse(btVector3(force.x, force.y, force.z));
+}
+
+void PhysicsRigidBody::applyImpulse(vec3 force, vec3 localposition)
+{
+	m_rigidBody->applyImpulse(btVector3(force.x, force.y, force.z), btVector3(localposition.x, localposition.y, localposition.z));
 }
 }

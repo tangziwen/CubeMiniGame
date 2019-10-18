@@ -15,6 +15,7 @@
 #include <algorithm>
 #include "MainMenu.h"
 #include "UIHelper.h"
+#include "CannonPart.h"
 
 namespace tzw
 {
@@ -24,9 +25,7 @@ namespace tzw
 	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0)
 	{
 	}
-
-	void
-	BuildingSystem::createNewToeHold(vec3 pos)
+	void BuildingSystem::createNewToeHold(vec3 pos)
 	{
 		auto newIsland = new Island(pos);
 		m_IslandList.push_back(newIsland);
@@ -35,8 +34,7 @@ namespace tzw
 		newIsland->insert(part);
 	}
 
-	void
-	BuildingSystem::removePartByAttach(Attachment* attach)
+	void BuildingSystem::removePartByAttach(Attachment* attach)
 	{
 		if (attach)
 		{
@@ -236,6 +234,9 @@ namespace tzw
 				auto control_part = new ControlPart();
 				resultPart = control_part;
 			}
+			break;
+		case 4:
+			resultPart = new CannonPart();
 			break;
 		default: ;
 		}
@@ -446,12 +447,6 @@ namespace tzw
 		return m_liftPart;
 	}
 
-	ControlPart*
-	BuildingSystem::getControlPart()
-	{
-		return m_controlPart;
-	}
-
 	void
 	BuildingSystem::getIslandsByGroup(std::string islandGroup,
 									std::vector<Island*>& groupList)
@@ -493,7 +488,7 @@ namespace tzw
 
 		//Node Editor
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
-		nodeEditor->handleLinkDump(doc, doc.GetAllocator());
+		nodeEditor->dump(doc, doc.GetAllocator());
 		
 		
 		rapidjson::StringBuffer buffer;
@@ -509,8 +504,6 @@ namespace tzw
 	void
 	BuildingSystem::load(std::string filePath)
 	{
-
-		
 		rapidjson::Document doc;
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
@@ -599,7 +592,7 @@ namespace tzw
 
 		//Node Editor
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
-		nodeEditor->handleLinkLoad(doc["NodeGraph"]);
+		nodeEditor->load(doc["NodeGraph"]);
 		
 		auto island = m_IslandList[0];
 
@@ -622,14 +615,6 @@ namespace tzw
 		for (auto constrain : m_bearList)
 		{
 			constrain->updateTransform(dt);
-		}
-	}
-
-	void BuildingSystem::showNameTips(float dt)
-	{
-		for(auto constraint :m_bearList)
-		{
-			constraint->drawInfo(dt);
 		}
 	}
 
@@ -659,6 +644,11 @@ namespace tzw
 		island->removeAll();
 		m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
 		delete island;
+	}
+
+	std::set<GameConstraint*>& BuildingSystem::getConstraintList()
+	{
+		return m_bearList;
 	}
 
 	void

@@ -308,7 +308,7 @@ void btGjkPairDetector::getClosestPointsNonVirtual(const ClosestPointInput& inpu
 		bool catchDegeneratePenetrationCase = 
 			(m_catchDegeneracies && m_penetrationDepthSolver && m_degenerateSimplex && ((distance+margin) < gGjkEpaPenetrationTolerance));
 
-		//if (checkPenetration && !isValid)
+		//if (checkPenetration && !isPlayerOnSeat)
 		if (checkPenetration && (!isValid || catchDegeneratePenetrationCase ))
 		{
 			//penetration case

@@ -1,16 +1,16 @@
 {
 	"islandList": [
 		{
-			"UID": "d56499a5-71d6-41c9-8b86-58da67fbac30",
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
+			"UID": "eb684cac-8cd2-4345-b737-b2c8926f36a8",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
 			"name": 100.0,
 			"partList": [
 				{
-					"UID": "689d26a1-958c-4a1a-8531-c11cdb97dbad",
+					"UID": "3cdd5f95-9468-425b-b2e0-1f5d9a04b313",
 					"pos": [
 						0.0,
-						0.04545450210571289,
-						0.5909091234207153
+						-0.25,
+						-2.9802322387695315e-8
 					],
 					"rotate": [
 						0.70710688829422,
@@ -22,79 +22,212 @@
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "904ca594-9d4d-43f4-830d-53b4d22195c6",
+							"UID": "099b71a3-7710-4476-afb3-0af57bfbf01d",
 							"to": "empty"
 						},
 						{
-							"UID": "383d0aff-8431-4613-a7e3-bd97ecc4a0c5",
+							"UID": "dd5dcb3b-4a30-4ee6-a803-97e3e88fd839",
 							"to": "empty"
 						},
 						{
-							"UID": "74f0179c-11db-4386-9124-a92e7c67c7ae",
+							"UID": "869b8f27-5d99-4a1d-9e5e-8a5b2cf38973",
+							"to": "f3bae4d0-2524-42ef-9af6-ef86a28e785a"
+						},
+						{
+							"UID": "b5cf6998-4825-4191-bfbc-5899f8049953",
+							"to": "d9fb6d8f-1304-4b78-afb2-30d294d9cba1"
+						},
+						{
+							"UID": "a9a05907-6f75-48a0-8c0d-29bc72e30c05",
 							"to": "empty"
 						},
 						{
-							"UID": "5331d8de-37e8-42fa-be2a-f52a209e6324",
-							"to": "empty"
-						},
-						{
-							"UID": "2d357df5-b358-4900-a3a3-7f4ba7461d83",
-							"to": "empty"
-						},
-						{
-							"UID": "ebc6b70d-bfe4-4b10-b709-b770fd5ddff7",
+							"UID": "e691dad3-4792-4b25-8e0f-5b04c6526dba",
 							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "c2b280ff-898b-4345-b593-7339286d25c3",
+					"UID": "08e82efd-8464-4632-b7f2-715648f77096",
 					"pos": [
+						0.0,
+						0.25,
+						2.9802322387695315e-8
+					],
+					"rotate": [
+						0.7071068286895752,
+						0.0,
+						0.0,
+						0.7071067094802856
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "0eff355d-a724-43ee-9a6b-910a44ff60b8",
+							"to": "empty"
+						},
+						{
+							"UID": "11ffb970-e809-46ab-b873-acaa0552995d",
+							"to": "13e53e39-80a8-49d3-8d05-0071d1c32409"
+						},
+						{
+							"UID": "a45e6976-dd1e-4329-8389-5f226e11497f",
+							"to": "empty"
+						},
+						{
+							"UID": "20925592-7dea-45c6-a5df-efc7c3db6063",
+							"to": "empty"
+						},
+						{
+							"UID": "b4173d93-4076-4f2b-b0dd-8d7856f440c2",
+							"to": "empty"
+						},
+						{
+							"UID": "ea0feaf6-0d4b-47fc-995d-c91f3ee44935",
+							"to": "empty"
+						}
+					]
+				}
+			],
+			"rotate": [
+				-4.21468548950088e-8,
+				0.7071068286895752,
+				6.322027701344268e-8,
+				0.7071067094802856
+			]
+		},
+		{
+			"UID": "8628f5f1-fd82-4bb5-b591-b1b099f994a3",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"name": 100.0,
+			"partList": [
+				{
+					"UID": "46b9ecd7-b715-4671-bd52-9121b5b69d03",
+					"pos": [
+						-2.9802322387695315e-8,
+						0.0,
+						0.0
+					],
+					"rotate": [
 						0.5,
-						0.045454561710357669,
-						0.09090900421142578
+						0.5,
+						0.5000001192092896,
+						0.49999988079071047
+					],
+					"type": 1,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "c3410f44-8e70-4666-807b-d2c6d1ab691f",
+							"to": "eb16c8ca-3519-431f-a323-6f83108c174b"
+						},
+						{
+							"UID": "0fa39943-054f-437e-ac29-17ad8cd2c3e0",
+							"to": "empty"
+						}
+					]
+				}
+			],
+			"rotate": [
+				-1.4751397259260558e-7,
+				0.7071068286895752,
+				-1.4751397259260558e-7,
+				0.7071067094802856
+			]
+		},
+		{
+			"UID": "52b48027-6e4f-4e8f-9462-6ea8b36c9f94",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"name": 100.0,
+			"partList": [
+				{
+					"UID": "d20df737-01e6-48db-879b-3aed9f92c7b7",
+					"pos": [
+						2.9802322387695315e-8,
+						0.0,
+						0.0
 					],
 					"rotate": [
+						-0.5,
+						0.5,
+						0.5000001192092896,
+						-0.49999988079071047
+					],
+					"type": 1,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "973948df-cc27-44d0-95d7-f29e3852e893",
+							"to": "489cab85-522f-456c-a4a6-c8b564c21082"
+						},
+						{
+							"UID": "fdb11abc-e291-4e4b-9e53-673057f91be4",
+							"to": "empty"
+						}
+					]
+				}
+			],
+			"rotate": [
+				1.6858744800174464e-7,
+				0.7071068286895752,
+				1.685874053691805e-7,
+				0.7071068286895752
+			]
+		},
+		{
+			"UID": "6e75e179-521d-4742-94fc-ea34aff4fb5e",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"name": 100.0,
+			"partList": [
+				{
+					"UID": "d05b933f-8591-4ddb-a712-3cc5a7def018",
+					"pos": [
 						0.0,
-						-2.107343277657492e-8,
-						0.70710688829422,
+						0.15624983608722688,
+						1.46875
+					],
+					"rotate": [
+						0.7071068286895752,
+						0.0,
+						0.0,
 						0.7071067094802856
 					],
 					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "cbf3e900-a125-4380-b81f-765f8e652f05",
+							"UID": "74b02511-b520-4abc-bf5f-974bb0e5a5f2",
+							"to": "65904a4b-dc7d-4853-8ef9-478956a2e6aa"
+						},
+						{
+							"UID": "97cb2f18-29b2-4bca-a8c8-47863044c15b",
 							"to": "empty"
 						},
 						{
-							"UID": "b1b0ceda-ca7c-4446-aca3-c9be23c36139",
+							"UID": "94abb13a-4f15-4767-82cb-f2dd40068ef2",
 							"to": "empty"
 						},
 						{
-							"UID": "75ad3598-7af1-484b-b247-ba038fba6955",
+							"UID": "2bc78e2f-43b3-480d-b4d1-f98a8da56d09",
 							"to": "empty"
 						},
 						{
-							"UID": "a5493ae7-79f6-4936-8588-88b84b6a1c9d",
+							"UID": "3d867e1e-6973-4e48-90da-f5944544ad88",
 							"to": "empty"
 						},
 						{
-							"UID": "8445230e-fbc8-47d6-9cab-de33160a7def",
-							"to": "empty"
-						},
-						{
-							"UID": "c7510979-3e07-4fc8-86d1-60f40236d3cc",
+							"UID": "b3f84d81-5381-4ed4-ab62-c7cecb2f4e5f",
 							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "cde8032c-c02f-4fa7-b48e-803484335e26",
+					"UID": "e77d31c2-a7c0-4b10-91b9-041319d36fde",
 					"pos": [
 						0.0,
-						0.045454561710357669,
-						0.09090906381607056
+						0.15624989569187165,
+						0.96875
 					],
 					"rotate": [
 						0.0,
@@ -106,121 +239,37 @@
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "731b80bf-e706-49e4-8cb6-4996774d4bb9",
+							"UID": "eae6fee7-f0b0-4e9b-a870-fcdcf49c75ed",
 							"to": "empty"
 						},
 						{
-							"UID": "4fbeca7c-cc56-4246-b5cf-fa684e4231ce",
+							"UID": "cd3eae20-6add-4fc4-a8d7-bdc44e7c0a5b",
 							"to": "empty"
 						},
 						{
-							"UID": "4e4aac36-14e0-486a-82b8-e928ec4393ec",
+							"UID": "42766074-977b-4a48-b104-e758a1dfb9ed",
 							"to": "empty"
 						},
 						{
-							"UID": "c98d381f-c6bb-4e22-a12e-ec131376d702",
+							"UID": "d80156e1-6c20-4683-b5fd-33866c7caaaf",
 							"to": "empty"
 						},
 						{
-							"UID": "7f44b930-8326-4029-b97b-24892d7ac5f7",
+							"UID": "998667ae-ef43-4b8f-a27e-fdc1d552decf",
 							"to": "empty"
 						},
 						{
-							"UID": "0082e5da-4728-4991-b623-b5dbee16afc8",
+							"UID": "7d57754d-2898-49d1-8271-f5b327d36c9b",
 							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "92125bd1-4d1b-49df-a1e0-f2e78ef3f596",
-					"pos": [
-						-0.5,
-						0.045454561710357669,
-						0.09090900421142578
-					],
-					"rotate": [
-						0.0,
-						2.107343277657492e-8,
-						-0.70710688829422,
-						0.7071067094802856
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "0fcbd9c6-50ee-4434-b518-50bf60d3d75e",
-							"to": "empty"
-						},
-						{
-							"UID": "9770e4eb-f53b-4ef6-a052-4a2e10b26b7c",
-							"to": "empty"
-						},
-						{
-							"UID": "344a3e30-5f31-49e3-9041-3fbc081337e0",
-							"to": "empty"
-						},
-						{
-							"UID": "cfb88468-e6d8-4f46-b372-67b689f99bac",
-							"to": "empty"
-						},
-						{
-							"UID": "f4ab4079-3f54-4f82-bfa2-e0870c05ee5b",
-							"to": "empty"
-						},
-						{
-							"UID": "73114daf-3ff4-49f0-9447-47b1b985bbb2",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "e8854796-eeb8-40dc-a659-19efdb654d31",
-					"pos": [
-						0.5,
-						0.045454561710357669,
-						-0.4090909957885742
-					],
-					"rotate": [
-						0.0,
-						-2.1073434552931759e-8,
-						0.70710688829422,
-						0.7071066498756409
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "b106865d-9066-4b7a-b407-93f8ff35b5d9",
-							"to": "empty"
-						},
-						{
-							"UID": "0fa424cf-fcca-473c-a18d-b195e837a532",
-							"to": "empty"
-						},
-						{
-							"UID": "6d163d12-e3ee-4b8f-b34a-ba3f25d14205",
-							"to": "empty"
-						},
-						{
-							"UID": "1b643172-f4f4-44ba-a773-65c6a90945dd",
-							"to": "empty"
-						},
-						{
-							"UID": "bcda923c-7abe-4070-8c44-e482b8933736",
-							"to": "empty"
-						},
-						{
-							"UID": "66607bd8-611c-4649-9cca-b29c025a9a05",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "47c9a519-9c4c-44a8-b954-5d81b705be18",
+					"UID": "715be828-5b78-45eb-a3b3-db87858085c9",
 					"pos": [
 						0.0,
-						0.04545462131500244,
-						-0.40909087657928469
+						0.15624995529651643,
+						0.46875
 					],
 					"rotate": [
 						0.0,
@@ -232,205 +281,373 @@
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "bc08a22f-73b9-4c6f-9289-09cc4676573b",
+							"UID": "a1bb597d-4f9d-4b78-95e0-be9f47d73e44",
 							"to": "empty"
 						},
 						{
-							"UID": "07b6694c-8344-4354-ae5c-737623b9cb42",
+							"UID": "fb59bcd4-734f-4b31-88a8-5ef95f2d6c6b",
 							"to": "empty"
 						},
 						{
-							"UID": "c3e01548-9221-4096-85bd-e593d53ea03e",
+							"UID": "ff01349c-3f97-4189-b03d-fbf79cb67c90",
 							"to": "empty"
 						},
 						{
-							"UID": "498b9b42-f463-4e3e-b8c6-eefff3624933",
+							"UID": "bbe6efbc-f48e-4f2b-b8e9-13308ef33bb7",
 							"to": "empty"
 						},
 						{
-							"UID": "053dc0c0-0d01-41e4-a9f2-22fc7baea52d",
+							"UID": "ecce0d65-ce53-4993-83a2-304c4e54da66",
 							"to": "empty"
 						},
 						{
-							"UID": "89731263-b850-4b0c-bcda-9d2e2d6d8c58",
+							"UID": "aa5c88e2-36c3-4fe5-acbc-0435f72cf12f",
 							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "b2af86a8-5c45-4291-842e-f4ca8d2a50cf",
+					"UID": "8bfa90da-0c52-4301-a8cf-172ab0cd1e5f",
+					"pos": [
+						0.5,
+						0.15624995529651643,
+						0.46875
+					],
+					"rotate": [
+						0.7071068286895752,
+						4.214684778958144e-8,
+						-0.7071067690849304,
+						-4.214684778958144e-8
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "a832c0c3-910a-407c-ba56-e75bca403319",
+							"to": "empty"
+						},
+						{
+							"UID": "fa5c67b6-d852-4b73-924d-ac7c56f8a5af",
+							"to": "empty"
+						},
+						{
+							"UID": "5ba1b114-ac14-4143-bac1-c80a8af31955",
+							"to": "empty"
+						},
+						{
+							"UID": "d663e275-b82a-4248-9c62-c9a48d32d6c3",
+							"to": "empty"
+						},
+						{
+							"UID": "1653936f-5e97-4c7e-88a7-d63bb855ba8f",
+							"to": "a8a76208-8bd0-43ca-ab4f-9df44b878ea7"
+						},
+						{
+							"UID": "cb92cfe6-f422-4267-ba07-12140dc0d5a5",
+							"to": "empty"
+						}
+					]
+				},
+				{
+					"UID": "2b067942-a626-4c1f-8f2d-81e9d42ef5a2",
 					"pos": [
 						-0.5,
-						0.045454561710357669,
-						-0.4090909957885742
+						0.15624995529651643,
+						0.46875
 					],
 					"rotate": [
-						0.0,
-						2.1073434552931759e-8,
-						-0.70710688829422,
-						0.7071066498756409
+						0.7071068286895752,
+						-4.214684778958144e-8,
+						0.7071067690849304,
+						-4.214684778958144e-8
 					],
 					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "3b7d4e7a-f6f4-414c-8767-7a8407fb1925",
+							"UID": "fc6b3578-bed2-4231-b7d3-5e575253e98e",
 							"to": "empty"
 						},
 						{
-							"UID": "ee3f88ef-c74b-4603-9804-f91ccd43cf9e",
+							"UID": "c7268c6a-c47d-47d6-abc4-bf26c10998e6",
 							"to": "empty"
 						},
 						{
-							"UID": "c13ffa6f-2e69-48be-a3b3-754c4c02ce47",
+							"UID": "f092766f-bec3-43c9-acf3-efc0f1a54395",
 							"to": "empty"
 						},
 						{
-							"UID": "92ee2f6e-6d8a-4eaa-af3c-50c65b04db4c",
+							"UID": "1902c40b-d014-4f12-a257-e09557abc9db",
 							"to": "empty"
 						},
 						{
-							"UID": "73075f11-5993-42d8-8ab4-8f230f7fac9c",
+							"UID": "9d3d8b60-65b0-4f57-8a9d-0fcf5dcfb195",
 							"to": "empty"
 						},
 						{
-							"UID": "ec580c2f-636d-40c7-ac84-e5556e962ced",
+							"UID": "43ba92ac-1af7-4fe6-bcc0-a27174637f3f",
 							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "f189dfb6-3305-454e-b245-f8e7c407737c",
+					"UID": "0cca9390-b5b1-4a86-8104-175efdaeca1a",
 					"pos": [
-						0.0,
-						0.045454442501068118,
-						1.0909092426300049
+						-0.4999999403953552,
+						0.1562500149011612,
+						-0.03125
 					],
 					"rotate": [
+						-5.960463766996327e-8,
+						-5.960463766996327e-8,
 						1.0,
-						0.0,
-						0.0,
-						-5.960464477539063e-8
+						3.5527132552840274e-15
 					],
 					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "db5e3436-9f59-4c1d-8eeb-93047a8f8636",
+							"UID": "1cc8e5cb-4534-4ed4-9216-6835239da58f",
 							"to": "empty"
 						},
 						{
-							"UID": "bd9f1fd1-4518-4e55-a629-1e21a132af02",
+							"UID": "abc23b79-7274-4141-b23c-7081c2dfd79d",
 							"to": "empty"
 						},
 						{
-							"UID": "f80d8abc-258e-408c-bcd3-d176515e63d4",
+							"UID": "4dc312d6-4036-4fbb-ae4b-94c65913ee90",
 							"to": "empty"
 						},
 						{
-							"UID": "dbd276e4-0568-4e42-90f1-e831efa0da53",
+							"UID": "a41fac8d-c03b-4aa6-b3b3-45bc2a98c2f0",
 							"to": "empty"
 						},
 						{
-							"UID": "5ae92541-7a5e-486a-ae35-97247604716e",
-							"to": "e4ddf1c7-1b1d-4089-9e35-f5833a18c1ca"
+							"UID": "433026cd-2b81-491e-952e-4978c574342c",
+							"to": "empty"
 						},
 						{
-							"UID": "1c1c22ed-0ed7-4195-b767-18f38b1b573d",
+							"UID": "fb608492-dffb-4428-b936-4743c3eb0514",
 							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "12b9be1c-02e6-42ee-8964-c46362609771",
+					"UID": "4feb71e1-1b85-4f4a-853c-f6535b9c9b3d",
 					"pos": [
-						-0.5000002384185791,
-						-0.45454543828964236,
-						-0.4090909957885742
-					],
-					"rotate": [
-						0.5000001192092896,
-						0.49999988079071047,
-						0.5000000596046448,
-						-0.4999999403953552
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "bf0ba4ab-026f-4a94-bfdd-8797ce31f72e",
-							"to": "empty"
-						},
-						{
-							"UID": "641f63ea-f1b7-4bcb-8a6e-803adbbb1f5e",
-							"to": "empty"
-						},
-						{
-							"UID": "ee763209-0e1d-4f11-a11d-caf0a77a8fc6",
-							"to": "empty"
-						},
-						{
-							"UID": "59704a86-83ca-4977-bda5-cf3b82569963",
-							"to": "empty"
-						},
-						{
-							"UID": "5cbc8c47-5cbf-44f8-9fd3-f206736c355f",
-							"to": "empty"
-						},
-						{
-							"UID": "b7eb70ab-8cbb-4824-981a-cd95b7401375",
-							"to": "fac19b10-26f7-4b16-a348-af54ac3e52b1"
-						}
-					]
-				},
-				{
-					"UID": "dfff0649-4572-4291-887e-4a2b77d09a0c",
-					"pos": [
-						0.5000002384185791,
-						-0.45454543828964236,
-						-0.4090909957885742
-					],
-					"rotate": [
-						0.5000001192092896,
 						-0.49999988079071047,
-						-0.5000000596046448,
-						-0.4999999403953552
+						0.15625007450580598,
+						-0.53125
+					],
+					"rotate": [
+						-5.960463766996327e-8,
+						-5.960463766996327e-8,
+						1.0,
+						3.5527132552840274e-15
 					],
 					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "7a5e6b71-7f00-4031-9714-7630a268d6c0",
+							"UID": "f2b01d89-86ff-4033-9d24-f9bdf43b6858",
 							"to": "empty"
 						},
 						{
-							"UID": "1094f761-c759-4f36-b4b9-61cd6b5be714",
+							"UID": "0976e9d0-3955-4d03-ad7d-97b72afc58ec",
 							"to": "empty"
 						},
 						{
-							"UID": "4dd8841c-0da8-4c02-92f2-76023403004a",
+							"UID": "ded3e488-e447-41a0-b720-5b0f4c03cfde",
 							"to": "empty"
 						},
 						{
-							"UID": "5ada07c3-e435-4f90-9870-99c7cbbf6509",
+							"UID": "9ac406e9-4754-45e2-962f-46f5039b91a5",
 							"to": "empty"
 						},
 						{
-							"UID": "a4cd59d1-492d-408f-add9-70718697e5d8",
+							"UID": "8248d254-5a9a-451d-bf8f-bdc604e45d4c",
 							"to": "empty"
 						},
 						{
-							"UID": "d34b2c34-8ae5-4675-920b-3a802d451c27",
-							"to": "26887bee-f3dc-4bdb-bccf-e5b2baace943"
+							"UID": "3c0ab909-076c-4b4e-8297-973ff54da2e2",
+							"to": "empty"
 						}
 					]
 				},
 				{
-					"UID": "8c5aca49-ec3f-45a6-a26f-b1190d95e396",
+					"UID": "5b575337-5d47-43ac-933e-a821decceeaa",
+					"pos": [
+						0.4999999403953552,
+						0.1562500149011612,
+						-0.03125
+					],
+					"rotate": [
+						5.960463766996327e-8,
+						-5.960463766996327e-8,
+						1.0,
+						-3.5527132552840274e-15
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "dc007ec4-a0c0-4366-af11-2b36e76b8ac5",
+							"to": "empty"
+						},
+						{
+							"UID": "f337782e-adde-41f6-93ce-7073b7a4472c",
+							"to": "empty"
+						},
+						{
+							"UID": "4ef62a0a-04d9-48d5-ba73-23b27d98c7c5",
+							"to": "empty"
+						},
+						{
+							"UID": "dd5d9eef-b0f5-4d02-b3b5-4cb890439076",
+							"to": "empty"
+						},
+						{
+							"UID": "e6ead0e2-7523-4239-bedb-6a117744c761",
+							"to": "empty"
+						},
+						{
+							"UID": "f11a522e-063a-4388-ad16-d08f85251322",
+							"to": "empty"
+						}
+					]
+				},
+				{
+					"UID": "9597b314-7b56-4108-a4ea-51650585c104",
+					"pos": [
+						0.49999988079071047,
+						0.15625007450580598,
+						-0.53125
+					],
+					"rotate": [
+						5.960463766996327e-8,
+						-5.960463766996327e-8,
+						1.0,
+						-3.5527132552840274e-15
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "f1ae57cd-e0dd-47c6-a86a-37ca7a5b5973",
+							"to": "empty"
+						},
+						{
+							"UID": "c4d20227-fcda-4ec4-8ae3-482dc963dc40",
+							"to": "empty"
+						},
+						{
+							"UID": "a7a61a07-e9c6-4618-ba76-10a68834eacd",
+							"to": "empty"
+						},
+						{
+							"UID": "c29dccd0-aad3-4df0-882e-07b025f0dfb8",
+							"to": "empty"
+						},
+						{
+							"UID": "e9a08b3f-9e56-4757-9bb7-bc39bc9337ce",
+							"to": "empty"
+						},
+						{
+							"UID": "960727e3-4d3b-4874-a40f-1d39d830dc7c",
+							"to": "empty"
+						}
+					]
+				},
+				{
+					"UID": "659af33d-3a8e-4135-a6bc-0b273d2728ee",
 					"pos": [
 						0.0,
-						0.5454545617103577,
-						0.09090915322303772
+						0.1562500149011612,
+						-0.03125
+					],
+					"rotate": [
+						0.0,
+						-5.960464477539063e-8,
+						1.0,
+						0.0
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "3b4f05fb-5f0c-466c-98e6-7f10d1a80468",
+							"to": "empty"
+						},
+						{
+							"UID": "0ea99261-e407-4406-b7e9-2b02ac0039aa",
+							"to": "empty"
+						},
+						{
+							"UID": "0ca1317f-09ad-43f5-9f18-b7adf7457337",
+							"to": "empty"
+						},
+						{
+							"UID": "eccb22ed-9903-4ee5-947c-f6acf11d3548",
+							"to": "empty"
+						},
+						{
+							"UID": "9d52e578-b46b-40d4-9a1d-2fb534eb5c51",
+							"to": "empty"
+						},
+						{
+							"UID": "ad5c82f8-6ac9-4a6e-9ba4-7f096d6b920f",
+							"to": "empty"
+						}
+					]
+				},
+				{
+					"UID": "1118859b-7b54-4c59-a691-9fc937ad85f3",
+					"pos": [
+						0.0,
+						0.15625007450580598,
+						-0.53125
+					],
+					"rotate": [
+						0.0,
+						-5.960464477539063e-8,
+						1.0,
+						0.0
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "aecf31a5-5753-4bb4-851a-77ffd94281a2",
+							"to": "empty"
+						},
+						{
+							"UID": "074180d6-ba7b-46a3-b491-3896da1157e2",
+							"to": "empty"
+						},
+						{
+							"UID": "0193793c-fd71-4000-a0da-985f9dc4467e",
+							"to": "empty"
+						},
+						{
+							"UID": "6cb09c8d-2c96-4589-b8bb-7b8bce254582",
+							"to": "empty"
+						},
+						{
+							"UID": "c5306bd1-96fe-4293-80af-daf710d54986",
+							"to": "empty"
+						},
+						{
+							"UID": "0f7e6264-813b-43b6-af06-d2fde9004661",
+							"to": "empty"
+						}
+					]
+				},
+				{
+					"UID": "abac99b2-a208-4bbb-a75a-6622983c8aa0",
+					"pos": [
+						0.0,
+						0.65625,
+						-0.03125
 					],
 					"rotate": [
 						5.960464477539063e-8,
@@ -439,430 +656,547 @@
 						1.0
 					],
 					"type": 3,
-					"Name": "控制块 122D",
+					"Name": "轴承 7C56",
 					"attachList": [
 						{
-							"UID": "b634b83d-0ec2-472d-814a-6924a876644e",
+							"UID": "c0345018-4d6e-4fbe-ac09-09ed93e527be",
 							"to": "empty"
 						},
 						{
-							"UID": "e4b459d6-4a5f-415d-8397-ee047f4c7dbd",
+							"UID": "fcd750ea-f1ea-4fe0-82d9-a4363469afb1",
 							"to": "empty"
 						},
 						{
-							"UID": "e446a0bf-f7d4-4625-846f-7c5e7eeb3458",
+							"UID": "dcad8019-a94d-47ff-ba09-ade024880a0a",
 							"to": "empty"
 						},
 						{
-							"UID": "51e88d3e-c23b-4753-bd3f-3029578bc5b0",
+							"UID": "382b17ba-f822-4b3a-a284-a179bb469ead",
 							"to": "empty"
 						},
 						{
-							"UID": "ebf28e75-8878-443b-87e2-6f1640c9c81b",
+							"UID": "93a792f9-f99f-456b-bd28-29e8befc6934",
 							"to": "empty"
 						},
 						{
-							"UID": "da050fc5-1f2c-4d30-9adb-bb0d33fe8669",
+							"UID": "4b4ef825-1777-4593-b595-e5cc66fc0acb",
 							"to": "empty"
 						}
 					]
-				}
-			],
-			"rotate": [
-				-1.7881393432617188e-7,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"UID": "c89a6ae8-b806-4fb1-84bc-d644126fd4de",
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"name": 100.0,
-			"partList": [
+				},
 				{
-					"UID": "eb6af75f-7044-4e55-a1c7-8f49a5fe6f35",
+					"UID": "e0240c09-cf94-4919-945b-6d5e5e7075c0",
 					"pos": [
-						0.0,
-						0.0,
-						0.0
+						-0.49999988079071047,
+						-0.34374991059303286,
+						-0.53125
 					],
 					"rotate": [
-						-0.7071066498756409,
-						0.0,
-						0.0,
-						0.70710688829422
+						-4.2146840684154088e-8,
+						0.7071066498756409,
+						0.7071069478988648,
+						4.2146840684154088e-8
 					],
 					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "f783c557-9f2a-488f-bc0f-e4ef66212d5e",
-							"to": "88f47db0-e88a-44cd-9a86-748b532a55cf"
-						},
-						{
-							"UID": "278aacc3-a277-4fa7-a866-922d562f0db7",
+							"UID": "b829835a-0135-412c-ac8c-d3da319d8b4d",
 							"to": "empty"
 						},
 						{
-							"UID": "2c7ed465-c287-48f9-a70c-65da869d62d7",
-							"to": "d1c79804-a562-417b-8322-652cd822acd3"
-						},
-						{
-							"UID": "a931721d-36af-44b6-b3ed-7f4e3966e570",
-							"to": "afbc55f6-769f-46ea-950c-97118aad8d73"
-						},
-						{
-							"UID": "fbd65933-d458-41fa-ae32-b31b3aeeb917",
+							"UID": "5569e0d3-86f5-426b-817d-2c1c1176e677",
 							"to": "empty"
 						},
 						{
-							"UID": "0446a1b1-e556-40f3-9f06-f236ba0675f4",
+							"UID": "43dfcd5f-0028-44d1-962f-1b28cdaacf74",
+							"to": "empty"
+						},
+						{
+							"UID": "5d110f41-048a-4c7d-b161-e42cfda6b6b5",
+							"to": "empty"
+						},
+						{
+							"UID": "3fbe49f4-d1a5-482b-bf46-f87b4f6c7388",
+							"to": "empty"
+						},
+						{
+							"UID": "8217466a-0353-423d-86f0-61054c812f0d",
 							"to": "empty"
 						}
 					]
-				}
-			],
-			"rotate": [
-				-2.980233091420814e-7,
-				0.0,
-				0.0,
-				1.0
-			]
-		},
-		{
-			"UID": "3c91ac95-c358-4be6-97d3-24fc733dc3c6",
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"name": 100.0,
-			"partList": [
+				},
 				{
-					"UID": "794c68ea-98af-4aae-a00d-dbe53006c502",
+					"UID": "06e82496-4c4a-40d4-bb18-b7b82cc8b4aa",
 					"pos": [
-						0.0,
-						0.0,
-						0.0
+						-0.49999988079071047,
+						-0.8437498807907105,
+						-0.53125
 					],
 					"rotate": [
-						-0.4999999403953552,
-						0.5000000596046448,
-						-0.5,
-						0.4999999403953552
+						-4.214684778958144e-8,
+						0.7071068286895752,
+						0.7071068286895752,
+						4.214685134229512e-8
 					],
-					"type": 1,
+					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "5f89ea58-9b0f-4002-a2ea-bffbb54985ee",
-							"to": "a86e6093-343d-42a6-98c4-9827b264b42c"
+							"UID": "e732b776-e5b0-4614-85c3-d52ab5a49abc",
+							"to": "empty"
 						},
 						{
-							"UID": "9b6eca0c-a97a-4d8c-8711-0bdc6f61a3f8",
+							"UID": "84985531-c0a6-455d-82a0-39e0d677cb8f",
+							"to": "empty"
+						},
+						{
+							"UID": "e512cb43-ed71-4d7c-8927-4d78424c04b6",
+							"to": "987763f7-cded-4f33-adb7-4df1484e4483"
+						},
+						{
+							"UID": "bf8518d1-dc84-477c-9c53-00e4388d53a1",
+							"to": "empty"
+						},
+						{
+							"UID": "0458d951-db3e-469a-9bb0-de06d2aa82c4",
+							"to": "empty"
+						},
+						{
+							"UID": "ea10e536-7a54-4045-b1e2-c962ff02753a",
 							"to": "empty"
 						}
 					]
-				}
-			],
-			"rotate": [
-				-2.235174747511337e-7,
-				-1.4901158529312397e-8,
-				7.450582728552036e-8,
-				1.0
-			]
-		},
-		{
-			"UID": "81b539d3-bb4d-46da-9f2c-bcea1de96bca",
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"name": 100.0,
-			"partList": [
+				},
 				{
-					"UID": "3d8dcd91-fb5e-4481-8809-8b0c64ef45d3",
+					"UID": "9e783dd6-5e45-4094-87f8-a0b34df0e1eb",
 					"pos": [
-						0.0,
-						0.0,
-						0.0
+						0.49999988079071047,
+						-0.34374991059303286,
+						-0.53125
 					],
 					"rotate": [
-						0.5,
-						0.5000001192092896,
-						-0.5000000596046448,
-						-0.5
-					],
-					"type": 1,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "b5b046b2-797e-47f3-91b4-e043db449795",
-							"to": "27a0eaa4-49b0-4a19-afb3-3f8869bcd0df"
-						},
-						{
-							"UID": "b1afd609-5fb7-45bd-9096-f07bc23fca14",
-							"to": "empty"
-						}
-					]
-				}
-			],
-			"rotate": [
-				-1.6391280155403366e-7,
-				7.450576333667414e-8,
-				-1.341104365337742e-7,
-				1.0
-			]
-		},
-		{
-			"UID": "fbb560ca-d8a2-480b-8a0f-e367e001d3ee",
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"name": 100.0,
-			"partList": [
-				{
-					"UID": "9983edc8-dbd1-4063-a981-8acb285fc854",
-					"pos": [
-						0.0,
-						0.0,
-						0.0
-					],
-					"rotate": [
-						1.685874053691805e-7,
+						4.2146840684154088e-8,
+						0.7071066498756409,
 						0.7071069478988648,
-						-1.1590385184945262e-7,
-						0.7071066498756409
+						-4.2146840684154088e-8
 					],
-					"type": 1,
+					"type": 0,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "b77a3a70-f26d-42f2-b9e5-cf847844eadf",
-							"to": "cb03b129-fb91-4f45-8d93-b687d15d6ec4"
+							"UID": "fab74653-d2ba-4148-8305-2b2444bdb9d4",
+							"to": "empty"
 						},
 						{
-							"UID": "e1eeb8b7-dba0-42b4-86c8-364700c09d19",
+							"UID": "d6f2dba1-89e4-453b-a373-401bbeed36f4",
+							"to": "empty"
+						},
+						{
+							"UID": "401c1bf2-c244-47f9-87e2-e838cf89a181",
+							"to": "empty"
+						},
+						{
+							"UID": "4cedb0fb-0bde-4c80-a1e3-c5c9a6057c38",
+							"to": "empty"
+						},
+						{
+							"UID": "3f9183f7-004e-4fa4-b6ab-4a60bbd4f89f",
+							"to": "empty"
+						},
+						{
+							"UID": "e68f228d-de6e-4dfd-9993-1e625a132a6b",
+							"to": "empty"
+						}
+					]
+				},
+				{
+					"UID": "134fc07a-320b-4beb-9381-c36b41956356",
+					"pos": [
+						0.49999988079071047,
+						-0.8437498807907105,
+						-0.53125
+					],
+					"rotate": [
+						4.214684778958144e-8,
+						0.7071068286895752,
+						0.7071068286895752,
+						-4.214685134229512e-8
+					],
+					"type": 0,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "a2afaa8f-a8f5-40ea-ac0f-94e4d754f97c",
+							"to": "empty"
+						},
+						{
+							"UID": "36f49ac6-f4be-4956-bb12-c19f77cb8ff3",
+							"to": "empty"
+						},
+						{
+							"UID": "5e3352b9-f795-4b86-8caf-7838bee7bdb1",
+							"to": "empty"
+						},
+						{
+							"UID": "66b18aed-3bb9-44a6-8d19-76636d15144e",
+							"to": "98006b62-5407-4148-ab1d-99d55b55d2ee"
+						},
+						{
+							"UID": "32d22a31-9cff-4b01-b4f6-1ff7aaae308f",
+							"to": "empty"
+						},
+						{
+							"UID": "df20559e-fd16-4f43-9b37-95dc3c85b620",
 							"to": "empty"
 						}
 					]
 				}
 			],
 			"rotate": [
-				-2.756715389296005e-7,
-				-1.7881387748275302e-7,
-				-7.450472239156625e-9,
-				1.0
+				-4.214685134229512e-8,
+				0.7071068286895752,
+				4.214684778958144e-8,
+				0.7071067094802856
 			]
 		},
 		{
-			"UID": "65e783fc-2343-4711-ad95-f8056a296e6e",
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
+			"UID": "ad709840-fbbd-4d55-bd27-bc8360448cf5",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
 			"name": 100.0,
 			"partList": [
 				{
-					"UID": "53579f16-55a1-4fef-a8a8-0404006dd1b6",
+					"UID": "500683d1-1552-45d7-8570-915f65451b76",
 					"pos": [
-						0.0,
+						2.9802322387695315e-8,
 						0.0,
 						0.0
 					],
 					"rotate": [
-						1.685874053691805e-7,
-						-0.7071069478988648,
-						1.1590385184945262e-7,
-						0.7071066498756409
+						0.5000000596046448,
+						-0.4999999403953552,
+						-0.5000000596046448,
+						0.5000000596046448
 					],
 					"type": 1,
 					"Name": "empty",
 					"attachList": [
 						{
-							"UID": "f72b154a-04ae-4e87-be44-f2a0f25e3f6d",
-							"to": "77f9b006-6f90-4fd4-a4e3-f28241753b67"
+							"UID": "a6cae06c-a0ea-4eb6-9b9d-4fce91cc557e",
+							"to": "d45c1e78-2337-42b4-9e3e-e73f14308947"
 						},
 						{
-							"UID": "844fb049-cb45-4313-93b1-a4c956e5d510",
+							"UID": "89c76621-03f8-4b8c-bc25-6fa5601b8989",
 							"to": "empty"
 						}
 					]
 				}
 			],
 			"rotate": [
-				-2.756715389296005e-7,
-				1.7881387748275302e-7,
-				7.450472239156625e-9,
-				1.0
+				-6.322030543515211e-8,
+				0.7071068286895752,
+				-6.32202912242974e-8,
+				0.7071067690849304
+			]
+		},
+		{
+			"UID": "cc8096b2-4e52-4d72-82e8-e00f8c64508c",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"name": 100.0,
+			"partList": [
+				{
+					"UID": "a935d665-f67d-45a6-894a-95983cb58d82",
+					"pos": [
+						-2.9802322387695315e-8,
+						0.0,
+						0.0
+					],
+					"rotate": [
+						0.5000000596046448,
+						0.4999999403953552,
+						0.5000000596046448,
+						0.5000000596046448
+					],
+					"type": 1,
+					"Name": "empty",
+					"attachList": [
+						{
+							"UID": "1f6fdcdc-fa28-44a8-bfc0-4cab199c92cf",
+							"to": "508906fb-172c-437b-98d1-599c9903f1ae"
+						},
+						{
+							"UID": "8029e86d-8f5c-454d-9b43-8075f96719b1",
+							"to": "empty"
+						}
+					]
+				}
+			],
+			"rotate": [
+				-6.322026990801533e-8,
+				0.7071067690849304,
+				2.1073415013006526e-8,
+				0.7071068286895752
 			]
 		}
 	],
 	"constraintList": [
 		{
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"Name": "轴承 前1",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"Name": "前轮2",
 			"Type": "Bearing",
-			"from": "a931721d-36af-44b6-b3ed-7f4e3966e570",
+			"from": "869b8f27-5d99-4a1d-9e5e-8a5b2cf38973",
 			"isSteering": false,
 			"isAngleLimit": false,
 			"AngleLimitLow": -30.0,
 			"AngleLimitHigh": 30.0,
-			"to": "5f89ea58-9b0f-4002-a2ea-bffbb54985ee",
+			"to": "973948df-cc27-44d0-95d7-f29e3852e893",
 			"attachList": [
 				{
-					"UID": "afbc55f6-769f-46ea-950c-97118aad8d73"
+					"UID": "f3bae4d0-2524-42ef-9af6-ef86a28e785a"
 				},
 				{
-					"UID": "a86e6093-343d-42a6-98c4-9827b264b42c"
+					"UID": "489cab85-522f-456c-a4a6-c8b564c21082"
 				}
 			],
-			"UID": "fa94fe6e-f2ea-486b-8da6-4e845bd1b528",
-			"isFlipped": false
+			"UID": "d7875a05-fae4-42f4-a900-6d86c5f28b35",
+			"isFlipped": true
 		},
 		{
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"Name": "轴承 从动2",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"Name": "轴承 122D",
 			"Type": "Bearing",
-			"from": "b7eb70ab-8cbb-4824-981a-cd95b7401375",
+			"from": "e512cb43-ed71-4d7c-8927-4d78424c04b6",
 			"isSteering": false,
 			"isAngleLimit": false,
 			"AngleLimitLow": -30.0,
 			"AngleLimitHigh": 30.0,
-			"to": "b77a3a70-f26d-42f2-b9e5-cf847844eadf",
+			"to": "1f6fdcdc-fa28-44a8-bfc0-4cab199c92cf",
 			"attachList": [
 				{
-					"UID": "fac19b10-26f7-4b16-a348-af54ac3e52b1"
+					"UID": "987763f7-cded-4f33-adb7-4df1484e4483"
 				},
 				{
-					"UID": "cb03b129-fb91-4f45-8d93-b687d15d6ec4"
+					"UID": "508906fb-172c-437b-98d1-599c9903f1ae"
 				}
 			],
-			"UID": "f041de85-864c-4615-bb73-b0380f9043c3",
+			"UID": "9c305ab2-e990-4a11-97c3-b314b4d9ba8f",
 			"isFlipped": false
 		},
 		{
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"Name": "轴承 从动1",
-			"Type": "Bearing",
-			"from": "d34b2c34-8ae5-4675-920b-3a802d451c27",
-			"isSteering": false,
-			"isAngleLimit": false,
-			"AngleLimitLow": -30.0,
-			"AngleLimitHigh": 30.0,
-			"to": "f72b154a-04ae-4e87-be44-f2a0f25e3f6d",
-			"attachList": [
-				{
-					"UID": "26887bee-f3dc-4bdb-bccf-e5b2baace943"
-				},
-				{
-					"UID": "77f9b006-6f90-4fd4-a4e3-f28241753b67"
-				}
-			],
-			"UID": "7c2f58da-57a2-4172-bb41-1d601761eb80",
-			"isFlipped": false
-		},
-		{
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
 			"Name": "轴承 转向",
 			"Type": "Bearing",
-			"from": "5ae92541-7a5e-486a-ae35-97247604716e",
+			"from": "11ffb970-e809-46ab-b873-acaa0552995d",
 			"isSteering": true,
 			"isAngleLimit": true,
 			"AngleLimitLow": -30.0,
 			"AngleLimitHigh": 30.0,
-			"to": "f783c557-9f2a-488f-bc0f-e4ef66212d5e",
+			"to": "74b02511-b520-4abc-bf5f-974bb0e5a5f2",
 			"attachList": [
 				{
-					"UID": "e4ddf1c7-1b1d-4089-9e35-f5833a18c1ca"
+					"UID": "13e53e39-80a8-49d3-8d05-0071d1c32409"
 				},
 				{
-					"UID": "88f47db0-e88a-44cd-9a86-748b532a55cf"
+					"UID": "65904a4b-dc7d-4853-8ef9-478956a2e6aa"
 				}
 			],
-			"UID": "c568f665-4118-4fba-977b-27eebc43a855",
-			"isFlipped": false
+			"UID": "74959fa3-9f3f-426e-92b2-60da734d0308",
+			"isFlipped": true
 		},
 		{
-			"IslandGroup": "d95d45af-e173-4744-8b78-6748a8136665",
-			"Name": "轴承 前2",
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"Name": "轴承 C411",
 			"Type": "Bearing",
-			"from": "2c7ed465-c287-48f9-a70c-65da869d62d7",
+			"from": "66b18aed-3bb9-44a6-8d19-76636d15144e",
 			"isSteering": false,
 			"isAngleLimit": false,
 			"AngleLimitLow": -30.0,
 			"AngleLimitHigh": 30.0,
-			"to": "b5b046b2-797e-47f3-91b4-e043db449795",
+			"to": "a6cae06c-a0ea-4eb6-9b9d-4fce91cc557e",
 			"attachList": [
 				{
-					"UID": "d1c79804-a562-417b-8322-652cd822acd3"
+					"UID": "98006b62-5407-4148-ab1d-99d55b55d2ee"
 				},
 				{
-					"UID": "27a0eaa4-49b0-4a19-afb3-3f8869bcd0df"
+					"UID": "d45c1e78-2337-42b4-9e3e-e73f14308947"
 				}
 			],
-			"UID": "03ae0234-0ed3-4b0e-9621-b3b69b2a6680",
+			"UID": "010bdcd7-4ded-4add-a95c-791bf9216c16",
 			"isFlipped": true
+		},
+		{
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"Name": "前轮1",
+			"Type": "Bearing",
+			"from": "b5cf6998-4825-4191-bfbc-5899f8049953",
+			"isSteering": false,
+			"isAngleLimit": false,
+			"AngleLimitLow": -30.0,
+			"AngleLimitHigh": 30.0,
+			"to": "c3410f44-8e70-4666-807b-d2c6d1ab691f",
+			"attachList": [
+				{
+					"UID": "d9fb6d8f-1304-4b78-afb2-30d294d9cba1"
+				},
+				{
+					"UID": "eb16c8ca-3519-431f-a323-6f83108c174b"
+				}
+			],
+			"UID": "de48773c-a485-4460-8d83-c1d6d780db28",
+			"isFlipped": false
 		}
 	],
 	"NodeGraph": {
 		"NodeList": [
 			{
-				"orgin_x": 21.0,
-				"orgin_y": 108.0,
+				"orgin_x": -446.0,
+				"orgin_y": 204.0,
+				"UID": "7d3365c6-730e-41c8-92f2-f1f87b62bc87",
+				"NodeType": 1,
+				"NodeClass": 0,
 				"Type": "Resource",
 				"ResType": "ControlPart",
-				"ResUID": "8c5aca49-ec3f-45a6-a26f-b1190d95e396",
-				"UID": "2b9b4f57-cfe4-4a95-8d7e-7cb37c31b4d5"
+				"ResUID": "abac99b2-a208-4bbb-a75a-6622983c8aa0",
+				"UID": "7d3365c6-730e-41c8-92f2-f1f87b62bc87"
 			},
 			{
-				"orgin_x": 520.0,
+				"orgin_x": -804.0,
+				"orgin_y": -500.0,
+				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "74959fa3-9f3f-426e-92b2-60da734d0308",
+				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912"
+			},
+			{
+				"orgin_x": -884.0,
+				"orgin_y": 268.0,
+				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "010bdcd7-4ded-4add-a95c-791bf9216c16",
+				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702"
+			},
+			{
+				"orgin_x": -1316.0,
+				"orgin_y": 12.0,
+				"UID": "ed93ae25-fc43-4f07-a96f-7060ae2b3640",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "d7875a05-fae4-42f4-a900-6d86c5f28b35",
+				"UID": "ed93ae25-fc43-4f07-a96f-7060ae2b3640"
+			},
+			{
+				"orgin_x": -1316.0,
+				"orgin_y": -244.0,
+				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "de48773c-a485-4460-8d83-c1d6d780db28",
+				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0"
+			},
+			{
+				"orgin_x": -1092.0,
 				"orgin_y": 220.0,
+				"UID": "4273916b-dfab-4b27-9d34-eb9a594938dc",
+				"NodeType": 1,
+				"NodeClass": 0,
 				"Type": "Resource",
 				"ResType": "BearPart",
-				"ResUID": "fa94fe6e-f2ea-486b-8da6-4e845bd1b528",
-				"UID": "58a28dde-73af-4dd4-bed9-bd66f0d91e66"
+				"ResUID": "9c305ab2-e990-4a11-97c3-b314b4d9ba8f",
+				"UID": "4273916b-dfab-4b27-9d34-eb9a594938dc"
 			},
 			{
-				"orgin_x": 392.0,
-				"orgin_y": -68.0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "03ae0234-0ed3-4b0e-9621-b3b69b2a6680",
-				"UID": "328df2a8-db99-45c1-8f90-bf96e356b01f"
+				"orgin_x": -1040.0,
+				"orgin_y": -268.0,
+				"UID": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
+				"NodeType": 0,
+				"NodeClass": 1
 			},
 			{
-				"orgin_x": 360.0,
-				"orgin_y": 364.0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "c568f665-4118-4fba-977b-27eebc43a855",
-				"UID": "9ce5a331-5a33-4b65-883d-52e45b438a50"
+				"orgin_x": -548.0,
+				"orgin_y": -256.0,
+				"UID": "5f17e464-fe2e-416d-a2d0-f19376b4c89e",
+				"NodeType": 2,
+				"NodeClass": 2
 			},
 			{
-				"orgin_x": -216.0,
-				"orgin_y": -164.0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "7c2f58da-57a2-4172-bb41-1d601761eb80",
-				"UID": "394810dd-b4b7-478a-8423-83f8d55c7ecf"
+				"orgin_x": -886.0,
+				"orgin_y": -32.0,
+				"UID": "e6017b69-304f-4798-badc-baae6d25c2db",
+				"NodeType": 2,
+				"NodeClass": 3
 			},
 			{
-				"orgin_x": -40.0,
-				"orgin_y": -164.0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "f041de85-864c-4615-bb73-b0380f9043c3",
-				"UID": "e40c207f-88e7-4af4-a55a-dbce98dd34ca"
+				"orgin_x": -639.0,
+				"orgin_y": 16.0,
+				"UID": "3fef4a01-c7c2-4472-b2f9-5fe1da751704",
+				"NodeType": 2,
+				"NodeClass": 2
 			}
 		],
 		"NodeLinkList": [
 			{
-				"from": "2b9b4f57-cfe4-4a95-8d7e-7cb37c31b4d5",
-				"to": "9ce5a331-5a33-4b65-883d-52e45b438a50",
+				"from": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
+				"to": "5f17e464-fe2e-416d-a2d0-f19376b4c89e",
 				"fromOutputID": 1,
 				"toInputID": 0
 			},
 			{
-				"from": "2b9b4f57-cfe4-4a95-8d7e-7cb37c31b4d5",
-				"to": "58a28dde-73af-4dd4-bed9-bd66f0d91e66",
+				"from": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
+				"to": "5f17e464-fe2e-416d-a2d0-f19376b4c89e",
+				"fromOutputID": 3,
+				"toInputID": 2
+			},
+			{
+				"from": "f5f920f3-96ef-47a6-8c80-879084c80912",
+				"to": "5f17e464-fe2e-416d-a2d0-f19376b4c89e",
+				"fromOutputID": 0,
+				"toInputID": 1
+			},
+			{
+				"from": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
+				"to": "e6017b69-304f-4798-badc-baae6d25c2db",
 				"fromOutputID": 0,
 				"toInputID": 0
 			},
 			{
-				"from": "2b9b4f57-cfe4-4a95-8d7e-7cb37c31b4d5",
-				"to": "328df2a8-db99-45c1-8f90-bf96e356b01f",
+				"from": "e6017b69-304f-4798-badc-baae6d25c2db",
+				"to": "3fef4a01-c7c2-4472-b2f9-5fe1da751704",
 				"fromOutputID": 0,
 				"toInputID": 0
+			},
+			{
+				"from": "e6017b69-304f-4798-badc-baae6d25c2db",
+				"to": "3fef4a01-c7c2-4472-b2f9-5fe1da751704",
+				"fromOutputID": 1,
+				"toInputID": 1
+			},
+			{
+				"from": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
+				"to": "3fef4a01-c7c2-4472-b2f9-5fe1da751704",
+				"fromOutputID": 2,
+				"toInputID": 2
+			},
+			{
+				"from": "ed93ae25-fc43-4f07-a96f-7060ae2b3640",
+				"to": "e6017b69-304f-4798-badc-baae6d25c2db",
+				"fromOutputID": 0,
+				"toInputID": 1
+			},
+			{
+				"from": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0",
+				"to": "e6017b69-304f-4798-badc-baae6d25c2db",
+				"fromOutputID": 0,
+				"toInputID": 1
 			}
 		]
 	}

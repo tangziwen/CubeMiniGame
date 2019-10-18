@@ -4,20 +4,23 @@
 namespace tzw
 {
 	class Island;
-	class CylinderPart : public GamePart
+	class CannonPart : public GamePart
 	{
 	public:
-		CylinderPart();
-		Attachment * findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up) override;
+		CannonPart();
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
 		Attachment * getBottomAttachment() override;
 		Attachment * getAttachment(int index) override;
 		int getAttachmentCount() override;
-	public:
+		void generateName() override;
 		int getType() override;
 		Attachment * m_attachment[6];
+		BearPart * m_bearPart[6];
+		void use() override;
+    private:
 		float m_topRadius, m_bottomRadius, m_height;
+		GameNodeEditorNode * m_graphNode;
 	};
 }

@@ -25,6 +25,7 @@ public:
 	void setDamping(float damping);
 	GameNodeEditorNode * getGraphNode() const;
 	void generateName() override;
+	virtual ~SpringPart();
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	Attachment * m_attachment[6]{};

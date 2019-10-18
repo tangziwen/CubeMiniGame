@@ -49,6 +49,7 @@ public:
 
 	void setFocusNode(Node * focusNode);
 	virtual Matrix44 getTransform();
+	void resetDirection();
 private:
     void init(Camera * cloneObj);
     void collideAndSlide(vec3 vel, vec3 gravity);

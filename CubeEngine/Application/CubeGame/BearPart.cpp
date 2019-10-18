@@ -20,10 +20,7 @@ BearPart::BearPart()
 	m_node = nullptr;
 	m_constrain = nullptr;
 	
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
-	m_graphNode = new BearingPartNode(this);
-	nodeEditor->addNode(m_graphNode);
-	
+
 	m_isSteering = false;
 	m_isAngleLimit = false;
 	m_angleLimitLow = -30.0f;
@@ -31,8 +28,11 @@ BearPart::BearPart()
 	//forward backward
 	m_attachment[0] = new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
 	m_attachment[1] = new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
-
-	generateName();
+	BearPart::generateName();
+	
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	m_graphNode = new BearingPartNode(this);
+	nodeEditor->addNode(m_graphNode);
 }
  
 void BearPart::updateFlipped()

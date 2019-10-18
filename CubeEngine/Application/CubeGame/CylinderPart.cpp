@@ -7,7 +7,6 @@
 
 namespace tzw
 {
-const float blockSize = 0.5;
 CylinderPart::CylinderPart()
 {
 	m_topRadius = 0.4;
@@ -126,13 +125,6 @@ Attachment* CylinderPart::getAttachment(int index)
 int CylinderPart::getAttachmentCount()
 {
 	return 2;
-}
-void CylinderPart::cook()
-{
-	auto mat2 = m_node->getTranslationMatrix();
-	auto aabb = m_node->getAABB();
-	auto rigChasis = PhysicsMgr::shared()->createRigidBody(1.0, mat2, aabb);
-	rigChasis->attach(m_node);
 }
 
 int CylinderPart::getType()

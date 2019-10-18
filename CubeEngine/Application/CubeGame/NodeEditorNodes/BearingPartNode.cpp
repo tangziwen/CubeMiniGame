@@ -70,14 +70,7 @@ namespace tzw
 
 	void BearingPartNode::load(rapidjson::Value& partData)
 	{
-	}
-
-	void BearingPartNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
-	{
-		partDocObj.AddMember("Type", std::string("Resource"), allocator);
-		partDocObj.AddMember("ResType", std::string("BearPart"), allocator);
-		partDocObj.AddMember("ResUID", std::string(m_part->getGUID()), allocator);
-		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+		ResNode::load(partData);
 	}
 
 	void BearingPartNode::syncName()
@@ -85,5 +78,10 @@ namespace tzw
 		char formatName[512];
 		sprintf_s(formatName, 512, u8"Öá³Ð %s",m_part->getName().c_str());
 		name = formatName;
+	}
+
+	std::string BearingPartNode::getResType()
+	{
+		return "BearPart";
 	}
 }

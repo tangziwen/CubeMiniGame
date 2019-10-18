@@ -35,6 +35,11 @@ namespace tzw
 		return m_part;
 	}
 
+	std::string SpringPartNode::getResType()
+	{
+		return "SpringPart";
+	}
+
 	void SpringPartNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
 	{
 		
@@ -42,14 +47,7 @@ namespace tzw
 
 	void SpringPartNode::load(rapidjson::Value& partData)
 	{
-	}
-
-	void SpringPartNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
-	{
-		partDocObj.AddMember("Type", std::string("Resource"), allocator);
-		partDocObj.AddMember("ResType", std::string("SpringPart"), allocator);
-		partDocObj.AddMember("ResUID", std::string(m_part->getGUID()), allocator);
-		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+		ResNode::load(partData);
 	}
 
 	void SpringPartNode::syncName()

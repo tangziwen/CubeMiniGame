@@ -12,27 +12,43 @@
 #define Node_CLASS_WTF 0
 #define Node_CLASS_KEY_TRIGGER 1
 #define Node_CLASS_SPIN 2
+#define Node_CLASS_VECTOR 3
+#define Node_CLASS_USE 4
+#define Node_CLASS_CONSTANT_INT 5
+#define Node_CLASS_KEY_ANY_TRIGGER 6
 
 namespace tzw {
 struct GameNodeEditorNode;
-struct NodeAttrValue
+
+struct NodeAttrValuePrimitive
 {
-  enum class Type
-  {
-    INT,
-    FLOAT,
-  	USER_PTR,
-  };
-	NodeAttrValue(int val);
-	NodeAttrValue(float val);
-	NodeAttrValue(void * val);
-	NodeAttrValue();
-	Type getType();
+	enum class Type
+	{
+		VOID,
+	    INT,
+	    FLOAT,
+  		USER_PTR,
+	};
+	NodeAttrValuePrimitive(int val);
+	NodeAttrValuePrimitive(float val);
+	NodeAttrValuePrimitive(void * val);
+	NodeAttrValuePrimitive();
+	Type m_type;
 	int int_val;
 	float float_val;
 	void * usrPtr;
-	Type m_type;
-	
+};
+struct NodeAttrValue
+{
+	NodeAttrValue();
+	int getInt();
+	float getFloat();
+	void * getUsrPtr();
+	void setInt(int value);
+	void setFloat(float value);
+	void setUsrPtr(void * value);
+	NodeAttrValuePrimitive getFirst();
+	std::vector<NodeAttrValuePrimitive> m_list;
 };
 	
 struct NodeAttr
@@ -96,6 +112,7 @@ public:
 	virtual void dump(rapidjson::Value& partDocObj,
 	                rapidjson::Document::AllocatorType& allocator);
 	virtual NodeAttrValue execute();
+	virtual void handleExeOut();
 	int m_nodeID;
 	vec2 m_origin;
 	bool isShowed;

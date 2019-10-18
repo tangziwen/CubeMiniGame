@@ -79,7 +79,7 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 {
 	return a.Zorder() < b.Zorder();
 }
-
+std::vector<FrameBuffer *> autoExposureList;
 void Renderer::renderAll()
 {
 	Engine::shared()->setDrawCallCount(int(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size()));
@@ -132,12 +132,13 @@ void Renderer::renderAll()
 		copyToFrame(m_bloomBuffer_quad1, m_bloomBuffer_quad2, m_BloomBlurVEffect);
 		copyToFrame(m_bloomBuffer_quad2, m_bloomBuffer_quad1, m_BloomBlurHEffect);
                 }
-				for(int i = 0; i<3; i++) 
+		for(int i = 0; i<3; i++) 
 		{
 		copyToFrame(m_bloomBuffer_octave1, m_bloomBuffer_octave2, m_BloomBlurVEffect);
 		copyToFrame(m_bloomBuffer_octave2, m_bloomBuffer_octave1, m_BloomBlurHEffect);
-                                }
+        }
 		BloomCompossitPass();
+		toneMappingPass();
 		AAPass();
 		
 	}
@@ -555,12 +556,16 @@ void Renderer::initMaterials()
 	m_copyEffect = new Material();
 	m_copyEffect->loadFromTemplate("CopyToFrame");
 	MaterialPool::shared()->addMaterial("CopyToFrame", m_copyEffect);
+
+	m_ToneMappingPassEffect = new Material();
+	m_ToneMappingPassEffect->loadFromTemplate("ToneMappingPass");
+	MaterialPool::shared()->addMaterial("ToneMappingPass", m_ToneMappingPassEffect);
 }
 
 
 
 
-std::vector<FrameBuffer *> autoExposureList;
+
 void Renderer::initBuffer()
 {
 	float w = Engine::shared()->windowWidth();
@@ -916,7 +921,6 @@ void Renderer::BloomCompossitPass()
 	m_bloomBuffer_half1->bindRtToTexture(0, 2);
 	m_bloomBuffer_quad1->bindRtToTexture(0, 3);
 	m_bloomBuffer_octave1->bindRtToTexture(0, 4);
-	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 5);
 
 	m_offScreenBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -928,7 +932,6 @@ void Renderer::BloomCompossitPass()
 	program->setUniformInteger("TU_BloomBufferHalf",2);
 	program->setUniformInteger("TU_BloomBufferQuad",3);
 	program->setUniformInteger("TU_BloomBufferOctave",4);
-	program->setUniformInteger("TU_AverageLuminance",5);
 	renderPrimitive(m_quad, m_BloomCompositePassEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
@@ -1043,7 +1046,7 @@ void Renderer::autoExposurePass()
 
 void Renderer::AAPass()
 {
-	m_offScreenBuffer->bindRtToTexture(0, 0);
+	m_offScreenBuffer2->bindRtToTexture(0, 0);
 	bindScreenForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_FXAAEffect->use();
@@ -1077,6 +1080,22 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 
 	program->setUniformMat4v("TU_mMatrix", m.data());
 	program->setUniformMat4v("TU_normalMatrix", (m).inverted().transpose().data());
+}
+
+void Renderer::toneMappingPass()
+{
+	m_offScreenBuffer2->bindForWriting();
+	m_offScreenBuffer->bindRtToTexture(0, 0);
+	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 1);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	m_ToneMappingPassEffect->use();
+	auto program = m_ToneMappingPassEffect->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniformInteger("TU_AverageLuminance",1);
+	program->setUniform2Float("TU_winSize", m_offScreenBuffer2->getFrameSize());
+	renderPrimitive(m_quad, m_ToneMappingPassEffect, RenderCommand::PrimitiveType::TRIANGLES);
+	
 }
 
 void Renderer::bindScreenForWriting()

@@ -9,10 +9,6 @@ namespace tzw
 	{
 		m_part = part;
 		ControlPartNode::syncName();
-		auto attr = addOut(u8"前进/后退");
-		attr->tag = 1;
-		attr = addOut(u8"向左/向右");
-		attr->tag = 2;
 	}
 
 	void ControlPartNode::privateDraw()
@@ -22,49 +18,33 @@ namespace tzw
 
 	void ControlPartNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
 	{
-		auto a = static_cast<BearingPartNode *>(other);
-		auto attr = getAttrByGid(startID);
-		if (attr->tag == 1) {
-            m_part->addForwardBearing(reinterpret_cast<BearPart*>(a->getProxy()));
-		} else if(attr->tag == 2) 
-		{
-			m_part->addSidewardBearing(reinterpret_cast<BearPart*>(a->getProxy()));
-		}
+
 	}
 
 	void ControlPartNode::onRemoveLinkOut(int startID, int endID, GameNodeEditorNode* other)
 	{
-		auto a = static_cast<BearingPartNode *>(other);
-		auto attr = getAttrByGid(startID);
-		if (attr->tag == 1) {
-            m_part->addForwardBearing(reinterpret_cast<BearPart*>(a->getProxy()));
-		} else if(attr->tag == 2) 
-		{
-			m_part->addSidewardBearing(reinterpret_cast<BearPart*>(a->getProxy()));
-		}
+
 	}
 
 	void ControlPartNode::load(rapidjson::Value& partData)
 	{
-	}
-
-	void ControlPartNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
-	{
-		partDocObj.AddMember("Type", std::string("Resource"), allocator);
-		partDocObj.AddMember("ResType", std::string("ControlPart"), allocator);
-		partDocObj.AddMember("ResUID", std::string(m_part->getGUID()), allocator);
-		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+		ResNode::load(partData);
 	}
 
 	void ControlPartNode::syncName()
 	{
 		char formatName[512];
-		sprintf_s(formatName, 512, u8"控制模块 %s",m_part->getName().c_str());
+		sprintf_s(formatName, 512, u8"座位 %s",m_part->getName().c_str());
 		name = formatName;
 	}
 
 	GamePart* ControlPartNode::getProxy()
 	{
 		return m_part;
+	}
+
+	std::string ControlPartNode::getResType()
+	{
+		return "ControlPart";
 	}
 }

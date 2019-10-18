@@ -57,6 +57,7 @@ private:
 	void AAPass();
 	void applyRenderSetting(Material * effect);
     void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
+	void toneMappingPass();
 	void bindScreenForWriting();
 	void copyToFrame(FrameBuffer * bufferSrc, FrameBuffer *bufferDst, Material * mat);
     Mesh * m_quad;
@@ -73,6 +74,7 @@ private:
 	Material * m_fogEffect;
 	Material * m_FXAAEffect;
 	Material * m_copyEffect;
+	Material * m_ToneMappingPassEffect;
 	
     bool m_enable3DRender;
     bool m_enableGUIRender;

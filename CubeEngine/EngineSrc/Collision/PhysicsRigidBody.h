@@ -33,6 +33,10 @@ namespace tzw
 		void activate();
 		void clearAll();
 		void setVelocity(vec3 velocity);
+		void applyCentralForce(vec3 force);
+		void applyForce(vec3 force, vec3 localposition);
+		void applyCentralImpulse(vec3 force);
+		void applyImpulse(vec3 force, vec3 localposition);
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

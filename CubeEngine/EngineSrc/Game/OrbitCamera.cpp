@@ -25,8 +25,7 @@ OrbitCamera::OrbitCamera()
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
 	setLocalPiority(-1);
-	m_longitude = 0.0;
-	m_latitude = 0.0 * 3.14 / 180.0f;
+	resetDirection();
 	m_focusNode = nullptr;
 }
 
@@ -415,23 +414,23 @@ static Matrix44 targetTo(vec3 eye, vec3 target, vec3 up)
 {
 	Matrix44 mat;
 	auto out = mat.data();
-  float eyex = eye.x,
-      eyey = eye.y,
-      eyez = eye.z,
-      upx = up.x,
-      upy = up.y,
-      upz = up.z;
+	float eyex = eye.x,
+	eyey = eye.y,
+	eyez = eye.z,
+	upx = up.x,
+	upy = up.y,
+	upz = up.z;
 
-  float z0 = eyex - target.x,
-      z1 = eyey - target.y,
-      z2 = eyez - target.z;
+	float z0 = eyex - target.x,
+	z1 = eyey - target.y,
+	z2 = eyez - target.z;
 
-  float len = z0*z0 + z1*z1 + z2*z2;
-  if (len > 0) {
-    len = 1 / sqrt(len);
-    z0 *= len;
-    z1 *= len;
-    z2 *= len;
+	float len = z0*z0 + z1*z1 + z2*z2;
+	if (len > 0) {
+	len = 1 / sqrt(len);
+	z0 *= len;
+	z1 *= len;
+	z2 *= len;
   }
 
   float x0 = upy * z2 - upz * z1,
@@ -485,6 +484,11 @@ Matrix44 OrbitCamera::getTransform()
 		return mat;
 	}
 }
-	
+
+void OrbitCamera::resetDirection()
+{
+	m_longitude = 0.0;
+	m_latitude = 60.0 * 3.14 / 180.0f;
+}
 } // namespace tzw
 

@@ -1,6 +1,7 @@
 #include "KeyTriggerNode.h"
 #include "CubeGame/MainMenu.h"
 #include "CubeGame/BehaviorNode.h"
+#include "CubeGame/BuildingSystem.h"
 
 
 namespace tzw
@@ -12,12 +13,131 @@ namespace tzw
 		m_sideAttr = addOutExe(u8"×óÓÒ");
 		m_forwardSignalAttr = addOut(u8"Ç°ºóÐÅºÅ");
 		m_sideSignalAttr = addOut(u8"×óÓÒÐÅºÅ");
+
+		m_zKeyAttr =addOutExe(u8"Z¼ü");
+		m_xKeyAttr =addOutExe(u8"X¼ü");
+		m_cKeyAttr =addOutExe(u8"C¼ü");
 		m_forward = 0;
 		m_side = 0;
 	}
 
 	void KeyTriggerNode::trigger()
 	{
+
+	}
+
+	void KeyTriggerNode::handleKeyPress(int keyCode)
+	{
+		bool isForwardEffect = false;
+		bool isSideEffect = false;
+		switch(keyCode)
+		{
+		    case TZW_KEY_W: 
+			{
+				m_forward += 1;
+		    	isForwardEffect = true;
+		    }
+			break;
+		    case TZW_KEY_S: 
+			{
+				m_forward -= 1;
+		    	isForwardEffect = true;
+		    }
+			break;
+		    case TZW_KEY_A: 
+			{
+				m_side -= 1;
+		    	isSideEffect = true;
+		    }
+			break;
+		    case TZW_KEY_D: 
+			{
+				m_side += 1;
+		    	isSideEffect = true;
+		    }
+			break;
+		}
+		m_forwardSignalAttr->m_localAttrValue.setInt(m_forward);
+		m_sideSignalAttr->m_localAttrValue.setInt(m_side);
+		if(isForwardEffect)
+		{
+			triggerForward();
+		}
+
+		if(isSideEffect)
+		{
+			triggerSide();
+		}
+	}
+
+	void KeyTriggerNode::handleKeyRelease(int keyCode)
+	{
+
+		bool isForwardEffect = false;
+		bool isSideEffect = false;
+		switch(keyCode)
+		{
+		    case TZW_KEY_W: 
+			{
+				m_forward -= 1;
+		    	isForwardEffect = true;
+		    }
+			break;
+		    case TZW_KEY_S: 
+			{
+				m_forward += 1;
+		    	isForwardEffect = true;
+		    }
+			break;
+		    case TZW_KEY_A: 
+			{
+				m_side += 1;
+		    	isSideEffect = true;
+		    }
+			break;
+		    case TZW_KEY_D: 
+			{
+				m_side -= 1;
+		    	isSideEffect = true;
+		    }
+			break;
+		    case TZW_KEY_Z: 
+			{
+		    	triggerZ();
+		    }
+			break;
+		    case TZW_KEY_X: 
+			{
+				triggerX();
+		    }
+			break;
+		    case TZW_KEY_C: 
+			{
+				triggerC();
+		    }
+			break;
+		}
+		m_forwardSignalAttr->m_localAttrValue.setInt(m_forward);
+		m_sideSignalAttr->m_localAttrValue.setInt(m_side);
+		if(isForwardEffect)
+		{
+			triggerForward();
+		}
+
+		if(isSideEffect)
+		{
+			triggerSide();
+		}
+	}
+
+	int KeyTriggerNode::getNodeClass()
+	{
+		return Node_CLASS_KEY_TRIGGER;
+	}
+
+	void KeyTriggerNode::triggerForward()
+	{
+		if(!isPlayerOnSeat()) return;
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_forwardAttr, node_list);
@@ -25,83 +145,53 @@ namespace tzw
 		{
 			if(node->getType() == Node_TYPE_BEHAVIOR)
 			{
-				static_cast<BehaviorNode *>(node)->execute();
+				nodeEditor->pushToStack(node);
+				//static_cast<BehaviorNode *>(node)->execute();
 			}
 		}
 	}
 
-	void KeyTriggerNode::handleKeyPress(int keyCode)
+	void KeyTriggerNode::triggerSide()
 	{
-		bool isKeyActivate = false;
-		switch(keyCode)
+		if(!isPlayerOnSeat()) return;
+		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		std::vector<GameNodeEditorNode * > node_list;
+		nodeEditor->findNodeLinksToAttr(m_sideAttr, node_list);
+		for(auto node : node_list)
 		{
-		    case TZW_KEY_W: 
+			if(node->getType() == Node_TYPE_BEHAVIOR)
 			{
-				m_forward += 1;
-				isKeyActivate = true;
-		    }
-			break;
-		    case TZW_KEY_S: 
-			{
-				m_forward -= 1;
-				isKeyActivate = true;
-		    }
-			break;
-		    case TZW_KEY_A: 
-			{
-				m_side -= 1;
-				isKeyActivate = true;
-		    }
-			break;
-		    case TZW_KEY_D: 
-			{
-				m_side += 1;
-				isKeyActivate = true;
-		    }
-			break;
+				nodeEditor->pushToStack(node);
+				//static_cast<BehaviorNode *>(node)->execute();
+			}
 		}
-		m_forwardSignalAttr->m_localAttrValue.int_val = m_forward;
-		m_sideSignalAttr->m_localAttrValue.int_val = m_side;
-		trigger();
 	}
 
-	void KeyTriggerNode::handleKeyRelease(int keyCode)
+	void KeyTriggerNode::triggerZ()
 	{
-		bool isKeyActivate = false;
-		switch(keyCode)
+		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		std::vector<GameNodeEditorNode * > node_list;
+		nodeEditor->findNodeLinksToAttr(m_zKeyAttr, node_list);
+		for(auto node : node_list)
 		{
-		    case TZW_KEY_W: 
+			if(node->getType() == Node_TYPE_BEHAVIOR)
 			{
-				isKeyActivate = true;
-				m_forward -= 1;
-		    }
-			break;
-		    case TZW_KEY_S: 
-			{
-				isKeyActivate = true;
-				m_forward += 1;
-		    }
-			break;
-		    case TZW_KEY_A: 
-			{
-				m_side += 1;
-				isKeyActivate = true;
-		    }
-			break;
-		    case TZW_KEY_D: 
-			{
-				m_side -= 1;
-				isKeyActivate = true;
-		    }
-			break;
+				nodeEditor->pushToStack(node);
+				//static_cast<BehaviorNode *>(node)->execute();
+			}
 		}
-		m_forwardSignalAttr->m_localAttrValue.int_val = m_forward;
-		m_sideSignalAttr->m_localAttrValue.int_val = m_side;
-		trigger();
 	}
 
-	int KeyTriggerNode::getNodeClass()
+	void KeyTriggerNode::triggerX()
 	{
-		return Node_CLASS_KEY_TRIGGER;
+	}
+
+	void KeyTriggerNode::triggerC()
+	{
+	}
+
+	bool KeyTriggerNode::isPlayerOnSeat()
+	{
+		return BuildingSystem::shared()->getCurrentControlPart() && BuildingSystem::shared()->getCurrentControlPart()->getIsActivate();
 	}
 }

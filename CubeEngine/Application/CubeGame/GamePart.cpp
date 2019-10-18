@@ -429,16 +429,6 @@ namespace tzw
 		m_name = newName;
 	}
 
-	void GamePart::initInfoRes()
-	{
-		
-	}
-
-	void GamePart::drawInfo(float delta)
-	{
-
-	}
-
 	void GamePart::generateName()
 	{
 	}
@@ -471,5 +461,9 @@ namespace tzw
 		{
 			m_node->setColor(vec4(1.0, 1.0, 1.0, 1.0));
 		}
+	}
+
+	void GamePart::use()
+	{
 	}
 }

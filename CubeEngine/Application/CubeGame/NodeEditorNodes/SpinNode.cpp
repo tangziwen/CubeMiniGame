@@ -14,30 +14,32 @@ namespace tzw
 	NodeAttrValue SpinNode::execute()
 	{
 		auto attrVal = m_bearingAttr->eval();
-
-		auto node = static_cast<ResNode *>(attrVal.usrPtr);
-		auto constraint = dynamic_cast<BearPart *>(node->getProxy());
-
-		int signal = m_signalAttr->eval().int_val;
-		if(constraint)
+		for(auto val : attrVal.m_list)
 		{
-			if(constraint->getIsSteering())
+			auto node = static_cast<ResNode *>(val.usrPtr);
+			auto constraint = dynamic_cast<BearPart *>(node->getProxy());
+
+			int signal = m_signalAttr->eval().getInt();
+			if(constraint)
 			{
-				if(signal!= 0)
+				if(constraint->getIsSteering())
 				{
-					constraint->enableAngularMotor(true, 1.0f * signal, 50);
+					if(signal!= 0)
+					{
+						constraint->enableAngularMotor(true, 1.0f * signal, 50);
+					}else
+					{
+						constraint->enableAngularMotor(true, 0, 10000000.0f);
+					}
 				}else
 				{
-					constraint->enableAngularMotor(false, 0, 10000000.0f);
-				}
-			}else
-			{
-				if(signal!= 0)
-				{
-					constraint->enableAngularMotor(true, 10.0f * signal, 50);
-				}else
-				{
-					constraint->enableAngularMotor(false, 10.0f, 50);
+					if(signal!= 0)
+					{
+						constraint->enableAngularMotor(true, 10.0f * signal, 50);
+					}else
+					{
+						constraint->enableAngularMotor(false, 10.0f, 50);
+					}
 				}
 			}
 		}

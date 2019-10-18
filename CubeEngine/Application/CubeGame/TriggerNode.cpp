@@ -21,4 +21,12 @@ namespace tzw
 	{
 		return Node_TYPE_TRIGGER;
 	}
+
+	void TriggerNode::handleKeyPress(int keyCode)
+	{
+	}
+
+	void TriggerNode::handleKeyRelease(int keyCode)
+	{
+	}
 }

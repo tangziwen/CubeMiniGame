@@ -6,8 +6,7 @@ namespace tzw
 	ResNode::ResNode()
 	{
 		auto atr = addOut(u8"Self");
-		atr->m_localAttrValue.usrPtr = this;
-		atr->m_localAttrValue.m_type = NodeAttrValue::Type::USER_PTR;
+		atr->m_localAttrValue.setUsrPtr(this);
 	}
 
 	void ResNode::syncName()
@@ -47,5 +46,20 @@ namespace tzw
 	int ResNode::getType()
 	{
 		return Node_TYPE_RES;
+	}
+
+	std::string ResNode::getResType()
+	{
+		return "baseRes";
+	}
+
+	void ResNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		GameNodeEditorNode::dump(partDocObj, allocator);
+		partDocObj.AddMember("Type", std::string("Resource"), allocator);
+		partDocObj.AddMember("ResType", getResType(), allocator);
+		partDocObj.AddMember("ResUID", std::string(getProxy()->getGUID()), allocator);
+		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
+		
 	}
 }

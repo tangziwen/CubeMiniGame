@@ -4,6 +4,7 @@
 #include "rapidjson/document.h"
 #include "Base/GuidObj.h"
 #include "TriggerNode.h"
+#include <queue>
 
 namespace tzw {
 
@@ -25,8 +26,8 @@ public:
 	void removeNode(GameNodeEditorNode * node);
 	void removeAllLink(GameNodeEditorNode * node);
 	void raiseEventToNode(int startAttr, int endAttr);
-	void handleLinkDump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
-	void handleLinkLoad(rapidjson::Value &partDocObj);
+	void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
+	void load(rapidjson::Value &partDocObj);
 	int getNodeIdByNode(GameNodeEditorNode * node);
 	void makeLinkByNode(GameNodeEditorNode * NodeA, GameNodeEditorNode * NodeB, int indexOfA, int indeOfB);
 	void newNodeEditorDraw(bool * isOpen);
@@ -41,7 +42,10 @@ public:
 	GameNodeEditorNode * findNodeByAttrGid(unsigned int gid);
 	GameNodeEditorNode * findNodeLinksFromAttr(NodeAttr * attr);
 	NodeAttr * findAttrLinksFromAttr(NodeAttr * attr);
+	std::vector<NodeAttr *> findAllAttrLinksFromAttr(NodeAttr * attr);
+	void pushToStack(GameNodeEditorNode * node);
 protected:
+	std::queue<GameNodeEditorNode *> m_rt_exe_chain;
 	std::vector<GameNodeEditorNode * > m_gameNodes;
 	std::vector<LinkInfo> m_links;
 	std::vector<TriggerNode * > m_triggerList;

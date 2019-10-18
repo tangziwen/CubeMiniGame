@@ -19,6 +19,11 @@
 #include "NodeEditorNodes/KeyTriggerNode.h"
 #include "Event/EventMgr.h"
 #include "BuildingSystem.h"
+#include "NodeEditorNodes/DebugBehaviorNode.h"
+#include "NodeEditorNodes/VectorNode.h"
+#include "NodeEditorNodes/UseNode.h"
+#include "NodeEditorNodes/ConstantIntNode.h"
+#include "NodeEditorNodes/KeyAnyTriggerNode.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -60,67 +65,7 @@ enum class PinType
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
 	{
-
 		newNodeEditorDraw(isOpen);
-	return;
-		/*
-		auto screenSize = Engine::shared()->winSize();
-		float m_initW = 300.0f;
-		float m_initH = 300.0f;
-		ImGui::SetNextWindowSize(ImVec2(300, 300), ImGuiCond_Once);
-		ImGui::SetNextWindowPos(ImVec2(screenSize.x/ 2.0f - m_initW / 2.0f, screenSize.y / 2.0f - m_initH / 2.0f), ImGuiCond_Once);
-		ImGui::SetNextWindowContentSize(ImVec2(1280, 960));
-		ImGui::Begin(u8"节点编辑器", isOpen, ImGuiWindowFlags_AlwaysVerticalScrollbar | ImGuiWindowFlags_AlwaysHorizontalScrollbar);
-		imnodes::BeginNodeEditor();
-		for (size_t i = 0; i < m_gameNodes.size(); i ++) 
-		{
-			auto node = m_gameNodes[i];
-			imnodes::BeginNode(node->m_nodeID);
-			ImGui::PushItemWidth(80);
-			imnodes::Name(node->name.c_str());
-
-			node->privateDraw();
-			auto inAttrList = node->getInAttrs();
-			for (auto attr : inAttrList) 
-			{
-			    imnodes::BeginInputAttribute(attr->gID);
-			    ImGui::Text(attr->m_name.c_str());
-				imnodes::EndAttribute();
-			}
-
-			auto outAttrList = node->getOuAttrs();
-			for (auto attr : outAttrList) 
-			{
-				imnodes::BeginOutputAttribute(attr->gID);
-				// in between Begin|EndAttribute calls, you can call ImGui
-				// UI functions
-				ImGui::Text(attr->m_name.c_str());
-				imnodes::EndAttribute();
-			}
-			ImGui::PopItemWidth();
-			imnodes::EndNode();
-		}
-
-		for (int i = 0; i < m_links.size(); ++i)
-		{
-			const std::pair<int, int> p = m_links[i];
-			// in this case, we just use the array index of the link
-			// as the unique identifier
-			imnodes::Link(i, p.first, p.second);
-		}
-
-
-		imnodes::EndNodeEditor();
-
-
-		int start_attr, end_attr;
-		if (imnodes::IsLinkCreated(&start_attr, &end_attr))
-		{
-			m_links.push_back(std::make_pair(start_attr, end_attr));
-			raiseEventToNode(start_attr, end_attr);
-		}
-		ImGui::End();
-		*/
 	}
 
 	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
@@ -195,8 +140,9 @@ enum class PinType
 
 	}
 
-	void GameNodeEditor::handleLinkDump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	void GameNodeEditor::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
+		ed::SetCurrentEditor(g_Context);
 		rapidjson::Value NodeGraphObj(rapidjson::kObjectType);
 
 		rapidjson::Value NodeListObj(rapidjson::kArrayType);
@@ -256,7 +202,7 @@ enum class PinType
 		partDocObj.AddMember("NodeGraph", NodeGraphObj, allocator);
 	}
 
-	void GameNodeEditor::handleLinkLoad(rapidjson::Value& NodeGraphObj)
+	void GameNodeEditor::load(rapidjson::Value& NodeGraphObj)
 	{
 		//read node
 		auto& NodeList = NodeGraphObj["NodeList"];
@@ -284,16 +230,30 @@ enum class PinType
 					auto bearPart = reinterpret_cast<SpringPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = bearPart->getGraphNode();
 				}
+				if(newNode)
+				{
+					newNode->setGUID(node["UID"].GetString());
+				}
 			}
 			else //normal logic & function node, we need create here
 			{
-				switch(node["NodeClass"].GetInt())
+				auto nodeClass = node["NodeClass"].GetInt();
+				switch(nodeClass)
 				{
                 case Node_CLASS_KEY_TRIGGER:
 					newNode = new KeyTriggerNode();
 					break;
                 case Node_CLASS_SPIN:
 					newNode = new SpinNode();
+					break;
+                case Node_CLASS_VECTOR:
+					newNode = new VectorNode();
+					break;
+                case Node_CLASS_USE:
+					newNode = new UseNode();
+					break;
+                case Node_CLASS_CONSTANT_INT:
+					newNode = new ConstantIntNode();
 					break;
 				}
 				
@@ -354,10 +314,22 @@ enum class PinType
 		{
 			addNode(new KeyTriggerNode());
 		}
-		//if(ImGui::Button(u8"If"))
-		//{
-		//	addNode(new KeyTriggerNode());
-		//}
+		if(ImGui::Button(u8"按键输入"))
+		{
+			addNode(new KeyAnyTriggerNode());
+		}
+		if(ImGui::Button(u8"使用节点"))
+		{
+			addNode(new UseNode());
+		}
+		if(ImGui::Button(u8"Vector"))
+		{
+			addNode(new VectorNode());
+		}
+		if(ImGui::Button(u8"Constant"))
+		{
+			addNode(new ConstantIntNode());
+		}
 	    std::vector<ed::NodeId> selectedNodes;
 	    std::vector<ed::LinkId> selectedLinks;
 	    selectedNodes.resize(ed::GetSelectedObjectCount());
@@ -474,11 +446,19 @@ bool GameNodeEditor::onKeyPress(int keyCode)
 	//if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
-		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER)
+		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_ANY_TRIGGER)
 		{
-			static_cast<KeyTriggerNode *>(trigger)->handleKeyPress(keyCode);
+
+				static_cast<TriggerNode *>(trigger)->handleKeyPress(keyCode);
+
 		}
-		
+	}
+	while(!m_rt_exe_chain.empty())
+	{
+		auto node = m_rt_exe_chain.front();
+		m_rt_exe_chain.pop();
+		node->execute();
+		node->handleExeOut();
 	}
 	return false;
 }
@@ -488,10 +468,17 @@ bool GameNodeEditor::onKeyRelease(int keyCode)
 	//if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
-		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER)
+		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_ANY_TRIGGER)
 		{
-			static_cast<KeyTriggerNode *>(trigger)->handleKeyRelease(keyCode);
+			static_cast<TriggerNode *>(trigger)->handleKeyRelease(keyCode);
 		}
+	}
+	while(!m_rt_exe_chain.empty())
+	{
+		auto node = m_rt_exe_chain.front();
+		m_rt_exe_chain.pop();
+		node->execute();
+		node->handleExeOut();
 	}
 	return false;
 }
@@ -553,6 +540,24 @@ NodeAttr* GameNodeEditor::findAttrLinksFromAttr(NodeAttr* attr)
 		}
 	}
 	return nullptr;
+}
+
+std::vector<NodeAttr*> GameNodeEditor::findAllAttrLinksFromAttr(NodeAttr* attr)
+{
+	std::vector<NodeAttr * > attrList;
+	for(auto link : m_links) 
+	{
+		if(link.OutputId == attr->gID)
+		{
+			attrList.push_back(findAttr(link.InputId));
+		}
+	}
+	return attrList;
+}
+
+void GameNodeEditor::pushToStack(GameNodeEditorNode* node)
+{
+	m_rt_exe_chain.push(node);
 }
 
 void GameNodeEditor::newNodeEditorDraw(bool* isOpen)

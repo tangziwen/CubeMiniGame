@@ -76,6 +76,7 @@ local m_itemSlots = {}
 table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 2, desc = "升降工作台"})
 table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0, desc = "普通方块"})
 table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1, desc = "轮子"})
+table.insert(m_itemSlots, {name = "Cannon", ItemClass = "PlaceableBlock", ItemType = 4, desc = "炮筒"})
 table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1, desc = "轴承"})
 table.insert(m_itemSlots, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = -2, desc = "弹簧"})
 table.insert(m_itemSlots, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = 3, desc = "控制方块"})
