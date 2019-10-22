@@ -99,7 +99,7 @@ void GameWorld::onFrameUpdate(float delta)
 {
 	if (m_currentState != GAME_STATE_RUNNING)
 		return;
-	BuildingSystem::shared()->updateBearing(delta);
+	BuildingSystem::shared()->update(delta);
 	AssistDrawSystem::shared()->handleDraw(delta);
 }
 

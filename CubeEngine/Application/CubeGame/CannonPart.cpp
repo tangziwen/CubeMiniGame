@@ -90,7 +90,7 @@ void CannonPart::generateName()
 
 int CannonPart::getType()
 {
-	return GAME_PART_CYLINDER;
+	return GAME_PART_CANNON;
 }
 
 void CannonPart::use()

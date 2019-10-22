@@ -24,6 +24,8 @@
 #include "NodeEditorNodes/UseNode.h"
 #include "NodeEditorNodes/ConstantIntNode.h"
 #include "NodeEditorNodes/KeyAnyTriggerNode.h"
+#include "NodeEditorNodes/ToggleNode.h"
+#include "ThrusterPart.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -214,20 +216,26 @@ enum class PinType
 			if(node["NodeType"].GetInt() == Node_TYPE_RES)
 			{
 				auto resUID = node["ResUID"].GetString();
-				if(strcmp(node["ResType"].GetString(), "ControlPart") == 0)//ControlPart
+				auto resType = node["ResType"].GetString();
+				if(strcmp(resType, "ControlPart") == 0)//ControlPart
 				{
 					auto controlPart = reinterpret_cast<ControlPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = controlPart->getGraphNode();
 					
 				}
-				else if(strcmp(node["ResType"].GetString(), "BearPart") == 0)//BearPart
+				else if(strcmp(resType, "BearPart") == 0)//BearPart
 				{
 					auto bearPart = reinterpret_cast<BearPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = bearPart->getGraphNode();
 				}
-				else if(strcmp(node["ResType"].GetString(), "SpringPart") == 0)//SpringPart
+				else if(strcmp(resType, "SpringPart") == 0)//SpringPart
 				{
 					auto bearPart = reinterpret_cast<SpringPart*>(GUIDMgr::shared()->get(resUID));
+					newNode = bearPart->getGraphNode();
+				}
+				else if(strcmp(resType, "Thruster") == 0)//Thruster
+				{
+					auto bearPart = reinterpret_cast<ThrusterPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = bearPart->getGraphNode();
 				}
 				if(newNode)
@@ -243,6 +251,9 @@ enum class PinType
                 case Node_CLASS_KEY_TRIGGER:
 					newNode = new KeyTriggerNode();
 					break;
+                case Node_CLASS_KEY_ANY_TRIGGER:
+					newNode = new KeyAnyTriggerNode();
+					break;
                 case Node_CLASS_SPIN:
 					newNode = new SpinNode();
 					break;
@@ -254,6 +265,9 @@ enum class PinType
 					break;
                 case Node_CLASS_CONSTANT_INT:
 					newNode = new ConstantIntNode();
+					break;
+                case Node_CLASS_TOGGLE:
+					newNode = new ToggleNode();
 					break;
 				}
 				
@@ -329,6 +343,10 @@ enum class PinType
 		if(ImGui::Button(u8"Constant"))
 		{
 			addNode(new ConstantIntNode());
+		}
+		if(ImGui::Button(u8"Toggle"))
+		{
+			addNode(new ToggleNode());
 		}
 	    std::vector<ed::NodeId> selectedNodes;
 	    std::vector<ed::LinkId> selectedLinks;

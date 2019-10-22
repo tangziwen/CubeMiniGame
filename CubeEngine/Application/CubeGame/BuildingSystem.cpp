@@ -16,6 +16,7 @@
 #include "MainMenu.h"
 #include "UIHelper.h"
 #include "CannonPart.h"
+#include "ThrusterPart.h"
 
 namespace tzw
 {
@@ -224,7 +225,7 @@ namespace tzw
 			resultPart = new BlockPart();
 			break;
 		case 1:
-			resultPart = new CylinderPart();
+			resultPart = new ThrusterPart();//new CylinderPart();
 			break;
 		case 2:
 			resultPart = new LiftPart();
@@ -447,6 +448,16 @@ namespace tzw
 		return m_liftPart;
 	}
 
+	void BuildingSystem::addThruster(GamePart* thruster)
+	{
+		m_thrusterList.insert(thruster);
+	}
+
+	void BuildingSystem::removeThruster(GamePart* thrsuter)
+	{
+		m_thrusterList.erase(m_thrusterList.find(thrsuter));
+	}
+
 	void
 	BuildingSystem::getIslandsByGroup(std::string islandGroup,
 									std::vector<Island*>& groupList)
@@ -649,6 +660,17 @@ namespace tzw
 	std::set<GameConstraint*>& BuildingSystem::getConstraintList()
 	{
 		return m_bearList;
+	}
+
+	void BuildingSystem::update(float dt)
+	{
+		updateBearing(dt);
+
+		//update thrusters
+		for(auto thruster : m_thrusterList)
+		{
+			static_cast<ThrusterPart * >(thruster)->updateForce(dt);
+		}
 	}
 
 	void

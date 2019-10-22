@@ -298,8 +298,8 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 	bool isDynamic = (mass != 0.f);
 	btVector3 localInertia(0, 0, 0);
 	auto shape = tzwShape->getRawShape();
-	if (isDynamic)
-		shape->calculateLocalInertia(mass, localInertia);
+	//if (isDynamic)
+	//	shape->calculateLocalInertia(mass, localInertia);
 	btTransform startTransform;
 	startTransform.setFromOpenGLMatrix(transform->data());
 	auto btRig = shared()->createRigidBodyInternal(mass, startTransform, shape, btVector4(1, 0, 0, 1));

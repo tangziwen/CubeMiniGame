@@ -10,6 +10,8 @@
 #include "BuildingSystem.h"
 #include "CylinderPart.h"
 #include "Base/GuidMgr.h"
+#include "ThrusterPart.h"
+#include "CannonPart.h"
 
 namespace tzw {
 Island::Island(vec3 pos)
@@ -258,6 +260,22 @@ void Island::load(rapidjson::Value& island)
 				case GAME_PART_CONTROL:
 					{
 						auto part = new ControlPart();
+						part->load(item);
+						m_node->addChild(part->getNode());
+						insert(part);
+					}
+				break;
+				case GAME_PART_CANNON:
+					{
+						auto part = new CannonPart();
+						part->load(item);
+						m_node->addChild(part->getNode());
+						insert(part);
+					}
+				break;
+				case GAME_PART_THRUSTER:
+					{
+						auto part = new ThrusterPart();
 						part->load(item);
 						m_node->addChild(part->getNode());
 						insert(part);

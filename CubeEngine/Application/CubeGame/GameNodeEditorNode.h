@@ -16,6 +16,7 @@
 #define Node_CLASS_USE 4
 #define Node_CLASS_CONSTANT_INT 5
 #define Node_CLASS_KEY_ANY_TRIGGER 6
+#define Node_CLASS_TOGGLE 7
 
 namespace tzw {
 struct GameNodeEditorNode;

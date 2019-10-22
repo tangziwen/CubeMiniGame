@@ -52,7 +52,7 @@ namespace tzw
 
 	int KeyAnyTriggerNode::getNodeClass()
 	{
-		return Node_CLASS_KEY_TRIGGER;
+		return Node_CLASS_KEY_ANY_TRIGGER;
 	}
 
 	void KeyAnyTriggerNode::triggerPress()
