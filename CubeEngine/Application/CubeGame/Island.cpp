@@ -28,60 +28,25 @@ void
 Island::insert(GamePart* part)
 {
   if (!part->getNode()) {
-    tlog("shit\n");
+    tlog("insert \n");
   }
   m_partList.push_back(part);
   part->m_parent = this;
 
-  // recalculate Princilpal axis
-
-#if 0 // water code
-		if(m_rigid)
-		{   
-			PhysicsMgr::shared()->removeRigidBody(m_rigid);
-			delete m_rigid;
-			m_rigid = nullptr;
-			if(getCompoundShape()) 
-			{
-				recalculateCompound();
-			}
-			cook();
-		}
-#else // below should work, but in fact not, i don't know why (edit: after i add
-      // activate, it works!)
-
-  if (m_rigid) {
-    PhysicsMgr::shared()->removeRigidBody(m_rigid);
-    if (getCompoundShape()) {
-      recalculateCompound();
-      m_rigid->setMass(getMass(),
-                       getCompoundShape()->calculateLocalInertia(getMass()));
-      m_rigid->updateInertiaTensor();
-      // recalculate will modify the transform position, though the final
-      // islandMatrix * childMatrix will remain the same, we need to recalculate
-      // the rigid-body position
-      auto startTransform = m_node->getTransform();
-      m_rigid->setWorldTransform(startTransform);
-    }
-    m_rigid->setCollisionShape(getCompoundShape());
-    m_rigid->updateInertiaTensor();
-    PhysicsMgr::shared()->addRigidBody(m_rigid);
-    m_rigid->updateInertiaTensor();
-
-    //没有activate是不会生效的，因为可能物体已经sleep了，所以会悬着
-    m_rigid->activate();
-  }
-#endif
+	//we need update physics related
+	updatePhysics();
 }
 
-void
-Island::remove(GamePart* part)
+void Island::remove(GamePart* part)
 {
-  auto result = std::find(m_partList.begin(), m_partList.end(), part);
-  if (result != m_partList.end()) {
-    m_partList.erase(result);
-  }
-  part->m_parent = this;
+	auto result = std::find(m_partList.begin(), m_partList.end(), part);
+	if (result != m_partList.end()) {
+	m_partList.erase(result);
+	}
+	part->m_parent = this;
+
+	//we need update physics related
+	updatePhysics();
 }
 
 void Island::removeAll()
@@ -104,33 +69,43 @@ Island::setCompoundShape(PhysicsCompoundShape* compoundShape)
 void
 Island::recalculateCompound()
 {
-  if (!getCompoundShape())
-    return;
-  for (auto part : m_partList) {
-    if (part->getType() != GAME_PART_LIFT) {
-      auto mat = part->getNode()->getLocalTransform();
-      m_compound_shape->addChildShape(&mat, part->getShape()->getRawShape());
-    } else {
-    }
-  }
-  auto principleMat = m_compound_shape->adjustPrincipalAxis();
-  for (auto part : m_partList) {
-    if (part->getType() != GAME_PART_LIFT) {
-      auto mat = part->getNode()->getLocalTransform();
-      mat = principleMat.inverted() * mat;
-      part->getNode()->setPos(mat.getTranslation());
-      Quaternion q;
-      q.fromRotationMatrix(&mat);
-      part->getNode()->setRotateQ(q);
-    }
-  }
-  auto mat = m_node->getLocalTransform();
-  mat = principleMat * mat;
-  m_node->setPos(mat.getTranslation());
-  Quaternion q;
-  q.fromRotationMatrix(&mat);
-  m_node->setRotateQ(q);
-  m_node->reCache();
+	if (!getCompoundShape())
+	return;
+	for (auto part : m_partList) {
+	if (part->getType() != GAME_PART_LIFT) {
+	  auto mat = part->getNode()->getLocalTransform();
+	  m_compound_shape->addChildShape(&mat, part->getShape()->getRawShape());
+	} else 
+	{
+		
+	}
+	}
+
+	//!!!ATTENTION
+	//After adjustPrincipalAxis
+	//All parts' LocalMat = inverse(principleMat) * localMat
+	//The island's islandMat = islandMat * principleMat
+
+	auto principleMat = m_compound_shape->adjustPrincipalAxis([this](int index) { return m_partList[index]->getMass(); });
+	for (auto part : m_partList) {
+	if (part->getType() != GAME_PART_LIFT) {
+	  auto mat = part->getNode()->getLocalTransform();
+	  mat = principleMat.inverted() * mat;
+	  part->getNode()->setPos(mat.getTranslation());
+	  Quaternion q;
+	  q.fromRotationMatrix(&mat);
+	  part->getNode()->setRotateQ(q);
+	}
+	}
+	m_compound_shape->calculateLocalInertia(getMass());
+	auto mat = m_node->getLocalTransform();
+	mat =  mat * principleMat;
+	m_node->setPos(mat.getTranslation());
+	Quaternion q;
+	q.fromRotationMatrix(&mat);
+	m_node->setRotateQ(q);
+	m_node->reCache();
+
 }
 
 void
@@ -176,8 +151,6 @@ Island::getMass()
   float mass = 0.0f;
   for (auto part : m_partList) {
     if (part->getType() != GAME_PART_LIFT) {
-      auto mat = part->getNode()->getLocalTransform();
-      m_compound_shape->addChildShape(&mat, part->getShape()->getRawShape());
       mass += part->getMass();
     }
   }
@@ -194,8 +167,9 @@ Island::cook()
   }
   recalculateCompound();
   auto partMat = m_node->getTransform();
+	float theMass = getMass();
   auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(
-    1.0 * m_partList.size(), &partMat, compoundShape);
+    theMass, &partMat, compoundShape);
   rig->attach(m_node);
   m_rigid = rig;
 }
@@ -303,5 +277,34 @@ void Island::killAllParts()
 {
 
 	
+}
+
+void Island::updatePhysics()
+{
+	if (m_rigid) 
+	{
+		PhysicsMgr::shared()->removeRigidBody(m_rigid);
+		if (getCompoundShape()) 
+		{
+			//delete old compound shape, there may be a better performance method.
+			delete m_compound_shape;
+		    setCompoundShape(new PhysicsCompoundShape());
+			recalculateCompound();
+			m_rigid->setMass(getMass(), getCompoundShape()->calculateLocalInertia(getMass()));
+			m_rigid->updateInertiaTensor();
+			// recalculate will modify the transform position, though the final
+			// islandMatrix * childMatrix will remain the same, we need to recalculate
+			// the rigid-body position
+			auto startTransform = m_node->getTransform();
+			m_rigid->setWorldTransform(startTransform);
+		}
+		m_rigid->setCollisionShape(getCompoundShape());
+		m_rigid->updateInertiaTensor();
+		PhysicsMgr::shared()->addRigidBody(m_rigid);
+		m_rigid->updateInertiaTensor();
+
+		//没有activate是不会生效的，因为可能物体已经sleep了，所以会悬着
+		m_rigid->activate();
+	}
 }
 }

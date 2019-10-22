@@ -1,4 +1,6 @@
 #include "PhysicsCompoundShape.h"
+#include <functional>
+
 namespace tzw
 {
 
@@ -19,13 +21,13 @@ void PhysicsCompoundShape::getChildShapeTransform(int index, float * data)
 	getRawShape()->getChildTransform(index).getOpenGLMatrix(data);
 }
 
-Matrix44 PhysicsCompoundShape::adjustPrincipalAxis()
+Matrix44 PhysicsCompoundShape::adjustPrincipalAxis(std::function<float (int index)> getMassFunc)
 {
 	auto shape = getRawShape();
 	btScalar * masses = (btScalar *)malloc(sizeof(btScalar) * shape->getNumChildShapes());
 	for(int i = 0; i < shape->getNumChildShapes(); i++)
 	{
-		masses[i] = 50.0;
+		masses[i] = getMassFunc(i);
 	}
 	btTransform principal;
 	btVector3 inertia;
