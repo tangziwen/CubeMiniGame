@@ -10,6 +10,7 @@ class TextureMgr
 public:
     TZW_SINGLETON_DECL(TextureMgr)
     Texture * getByPath(std::string filePath, bool isNeedMipMap = false);
+	Texture * getByPathSimple(std::string filePath);
     Texture * getByPath(std::string  PosX,
                                  std::string  NegX,
                                  std::string  PosY,

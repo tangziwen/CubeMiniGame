@@ -74,7 +74,7 @@ Island::recalculateCompound()
 	if (!getCompoundShape())
 	return;
 	for (auto part : m_partList) {
-	if (part->getType() != GAME_PART_LIFT) {
+	if (part->getType() != GamePartType::GAME_PART_LIFT) {
 	  auto mat = part->getNode()->getLocalTransform();
 	  m_compound_shape->addChildShape(&mat, part->getShape()->getRawShape());
 	} else 
@@ -90,7 +90,7 @@ Island::recalculateCompound()
 
 	auto principleMat = m_compound_shape->adjustPrincipalAxis([this](int index) { return m_partList[index]->getMass(); });
 	for (auto part : m_partList) {
-	if (part->getType() != GAME_PART_LIFT) {
+	if (part->getType() != GamePartType::GAME_PART_LIFT) {
 	  auto mat = part->getNode()->getLocalTransform();
 	  mat = principleMat.inverted() * mat;
 	  part->getNode()->setPos(mat.getTranslation());
@@ -152,7 +152,7 @@ Island::getMass()
 {
   float mass = 0.0f;
   for (auto part : m_partList) {
-    if (part->getType() != GAME_PART_LIFT) {
+    if (part->getType() != GamePartType::GAME_PART_LIFT) {
       mass += part->getMass();
     }
   }
@@ -238,9 +238,9 @@ void Island::load(rapidjson::Value& island)
 		for (unsigned int i = 0; i < partList.Size(); i++)
 		{
 			auto& item = partList[i];
-			switch(item["type"].GetInt())
+			switch((GamePartType)item["type"].GetInt())
 			{
-				case GAME_PART_BLOCK:
+				case GamePartType::GAME_PART_BLOCK:
 				{
 					auto part = new BlockPart();
 					part->load(item);
@@ -249,7 +249,7 @@ void Island::load(rapidjson::Value& island)
                 }
 				break;
 
-				case GAME_PART_CYLINDER:
+				case GamePartType::GAME_PART_CYLINDER:
 					{
 						auto part = new CylinderPart();
 						part->load(item);
@@ -257,7 +257,7 @@ void Island::load(rapidjson::Value& island)
 						insert(part);
 					}
 				break;
-				case GAME_PART_CONTROL:
+				case GamePartType::GAME_PART_CONTROL:
 					{
 						auto part = new ControlPart();
 						part->load(item);
@@ -265,7 +265,7 @@ void Island::load(rapidjson::Value& island)
 						insert(part);
 					}
 				break;
-				case GAME_PART_CANNON:
+				case GamePartType::GAME_PART_CANNON:
 					{
 						auto part = new CannonPart();
 						part->load(item);
@@ -273,7 +273,7 @@ void Island::load(rapidjson::Value& island)
 						insert(part);
 					}
 				break;
-				case GAME_PART_THRUSTER:
+				case GamePartType::GAME_PART_THRUSTER:
 					{
 						auto part = new ThrusterPart();
 						part->load(item);

@@ -16,7 +16,7 @@ namespace tzw
 		int getAttachmentCount() override;
 	public:
 		void cook();
-		int getType() override;
+		GamePartType getType() override;
 		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 	};

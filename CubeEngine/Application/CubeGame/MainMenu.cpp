@@ -20,7 +20,8 @@
 
 #include "dirent.h"
 #include "Shader/ShaderMgr.h"
-
+#include "2D/imgui_internal.h"
+#include "algorithm"
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -34,10 +35,11 @@ static void onOption(Button * btn)
 }
 
 MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isShowNodeEditor(false),
-                      m_isOpenTerrain(false), m_nodeEditor(nullptr), m_fileBrowser(nullptr), m_crossHair(nullptr)
+					m_isOpenTerrain(false), m_isOpenAssetEditor(false), m_nodeEditor(nullptr), m_fileBrowser(nullptr),
+					m_crossHair(nullptr)
 {
 }
-
+Texture * testIcon = nullptr;
 void MainMenu::init()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
@@ -46,6 +48,7 @@ void MainMenu::init()
 	m_isShowConsole = false;
 	m_nodeEditor = new GameNodeEditor();
 	m_fileBrowser = new GUIFileBrowser();
+	testIcon = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
 	//hide();
 }
 
@@ -182,7 +185,45 @@ void MainMenu::drawIMGUI()
 		{
 	        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
 		}
-
+		if(m_isOpenAssetEditor)
+		{
+			ImGui::Begin(u8"资产浏览器");
+			for(int i =0; i < 25; i++)
+			{
+				//
+				auto s = ImGui::GetStyle();
+				auto spaceX = s.ItemSpacing.x;
+				auto padding = s.FramePadding.x;
+				auto size = ImGui::GetWindowWidth() - s.IndentSpacing;
+				int coloum = int(size / (50 + spaceX * 2 + padding * 2)) + 1;
+				if ((i % coloum) != 0)
+					ImGui::SameLine();
+				ImGui::PushID(i);
+				ImGui::BeginGroup();
+				ImGui::ImageButton(reinterpret_cast<ImTextureID> (testIcon->handle()), ImVec2(50, 50));
+				//ImGui::Button("ABCDEFG", ImVec2(50, 50));
+                // Our buttons are both drag sources and drag targets here!
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
+                {
+                    ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(int));    // Set payload to carry the index of our item (could be anything)
+					ImGui::Text("Copy %d", i);   // Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
+                    ImGui::EndDragDropSource();
+                }
+				ImGui::Text("fuck %d", i);
+				ImGui::EndGroup();
+				ImGui::PopID();
+                if (ImGui::BeginDragDropTarget())
+                {
+                	tlog("aaaaaaaaaaa");
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL")) 
+					{
+                    	tlog("drop!!!!!");
+					}
+					ImGui::EndDragDropTarget();
+                }
+			}
+			ImGui::End();
+		}
 		m_fileBrowser->drawIMGUI();
 	}
 
@@ -231,6 +272,7 @@ void MainMenu::drawToolsMenu()
 	if (ImGui::BeginMenu(u8"工具"))
 	{
 		ImGui::MenuItem(u8"节点编辑器", nullptr, &m_isShowNodeEditor);
+		ImGui::MenuItem(u8"资产浏览器", nullptr, &m_isOpenAssetEditor);
 		ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
 		ImGui::EndMenu();
 	}

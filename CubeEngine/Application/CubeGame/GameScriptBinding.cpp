@@ -75,6 +75,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, terrainForm)
 		BIND_FUNC(BuildingSystem, setCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getCurrentControlPart)
+		BIND_FUNC(BuildingSystem, getGamePartTypeInt)
 		BIND_END_CLASS
 
 		BIND_START(luaState)
@@ -87,7 +88,7 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(GamePart)
 		BIND_EMPTY_CONSTRUCT
-		BIND_FUNC(GamePart, getType)
+		//BIND_FUNC(GamePart, getType)
 		.endClass()
 		.deriveClass<BlockPart, GamePart>("BlockPart")
 		BIND_EMPTY_CONSTRUCT

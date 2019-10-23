@@ -335,9 +335,9 @@ namespace tzw
 		delete m_node;
 	}
 
-	int GamePart::getType()
+	GamePartType GamePart::getType()
 	{
-		return GAME_PART_NOT_VALID;
+		return GamePartType::GAME_PART_NOT_VALID;
 	}
 
 	float GamePart::getMass()
@@ -386,7 +386,7 @@ namespace tzw
 		partDocObj.AddMember("rotate", rotateList, allocator);
 
 		//type
-		partDocObj.AddMember("type", getType(), allocator);
+		partDocObj.AddMember("type", int(getType()), allocator);
 
 		partDocObj.AddMember("Name", m_name, allocator);
 

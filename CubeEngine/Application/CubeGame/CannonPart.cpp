@@ -88,9 +88,9 @@ void CannonPart::generateName()
 	setName(formatName);
 }
 
-int CannonPart::getType()
+GamePartType CannonPart::getType()
 {
-	return GAME_PART_CANNON;
+	return GamePartType::GAME_PART_CANNON;
 }
 
 void CannonPart::use()

@@ -1,15 +1,11 @@
 #pragma once
+#include "GamePartType.h"
 #include "Interface/Drawable3D.h"
 #include "Collision/PhysicsShape.h"
 #include "Math/Ray.h"
 #include "Base/GuidObj.h"
 #include "rapidjson/document.h"
 
-#define GAME_PART_BLOCK 0
-#define GAME_PART_CYLINDER 1
-#define GAME_PART_LIFT 2
-#define GAME_PART_CONTROL 3
-#define GAME_PART_NOT_VALID 999
 
 namespace tzw
 {

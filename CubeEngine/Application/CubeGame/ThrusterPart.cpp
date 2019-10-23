@@ -97,9 +97,9 @@ void ThrusterPart::generateName()
 	setName(formatName);
 }
 
-int ThrusterPart::getType()
+GamePartType ThrusterPart::getType()
 {
-	return GAME_PART_THRUSTER;
+	return GamePartType::GAME_PART_THRUSTER;
 }
 
 void ThrusterPart::toggle(int openSignal)

@@ -104,8 +104,8 @@ void BlockPart::cook()
 	rigChasis->attach(m_node);
 }
 
-int BlockPart::getType()
+GamePartType BlockPart::getType()
 {
-	return GAME_PART_BLOCK;
+	return GamePartType::GAME_PART_BLOCK;
 }
 }

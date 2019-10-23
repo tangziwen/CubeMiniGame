@@ -1,10 +1,8 @@
 include("KeyConfig")
 include("UiUtil")
+include("math")
 Main = {}
---init
-function tzw_engine_init()
-	print("lua init")
-end
+
 
 
 function tzw_on_game_ready()
@@ -50,19 +48,39 @@ EVENT_TYPE_M_RELEASE = 2
 EVENT_TYPE_M_PRESS = 3
 EVENT_TYPE_M_MOVE = 4
 EVENT_TYPE_K_CHAR_INPUT = 5
+
+GAME_PART_BLOCK = 0
+GAME_PART_CYLINDER = 1
+GAME_PART_LIFT = 2
+GAME_PART_CONTROL = 3
+GAME_PART_THRUSTER = 4
+GAME_PART_CANNON = 5
+GAME_PART_BEARING = 6
+GAME_PART_SPRING = 7
+GAME_PART_NOT_VALID = 9999
+
 local m_currIndex = 1
 local lift_state = 0
 local isOpenTestWindow = true
+local testIcon = nil
+
+local m_isDragingInventory = false
+--init
+function tzw_engine_init()
+	print("lua init")
+	testIcon = TextureMgr.shared():getByPathSimple("./Texture/NodeEditor/ic_restore_white_24dp.png")
+end
+
 --ui update
 function tzw_engine_ui_update(dt)
 	if isShowHelpPage then
 		drawHelpPage()
 	end
+	drawHud()
 	if MainMenu.shared():isVisible() then
-		return
+		drawInventory()
 	else
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
-			drawHud()
 			updateLifting(dt)
 		elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
 			drawEntryInterface()
@@ -73,16 +91,23 @@ end
 
 local m_itemSlots = {}
 
-table.insert(m_itemSlots, {name = "Lift", ItemClass = "Lift", ItemType = 2, desc = "升降工作台"})
-table.insert(m_itemSlots, {name = "Block", ItemClass = "PlaceableBlock", ItemType = 0, desc = "普通方块"})
-table.insert(m_itemSlots, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = 1, desc = "轮子"})
-table.insert(m_itemSlots, {name = "Cannon", ItemClass = "PlaceableBlock", ItemType = 4, desc = "炮筒"})
-table.insert(m_itemSlots, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = -1, desc = "轴承"})
-table.insert(m_itemSlots, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = -2, desc = "弹簧"})
-table.insert(m_itemSlots, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = 3, desc = "控制方块"})
-table.insert(m_itemSlots, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"})
+for i = 1, 5 do
+	table.insert(m_itemSlots, {target = nil})
+end
 
 
+
+-- inventory
+local m_inventory = {}
+table.insert(m_inventory, {name = "Lift", ItemClass = "Lift", ItemType = GAME_PART_LIFT, desc = "升降台"})
+table.insert(m_inventory, {name = "Block", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BLOCK, desc = "普通方块"})
+table.insert(m_inventory, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CYLINDER, desc = "轮子"})
+table.insert(m_inventory, {name = "Cannon", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CANNON, desc = "炮筒"})
+table.insert(m_inventory, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_THRUSTER, desc = "喷射器"})
+table.insert(m_inventory, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BEARING, desc = "轴承"})
+table.insert(m_inventory, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_SPRING, desc = "弹簧"})
+table.insert(m_inventory, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"})
+table.insert(m_inventory, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"})
 
 function updateLifting(dt)
 	if lift_state ~= 0 then
@@ -120,16 +145,79 @@ function showHelpPage()
 	isShowHelpPage = true
 end
 
+function drawInventory()
+	ImGui.Begin("资产浏览器", 0)
+	local i = 0
+	local itemSize = 80
+	m_isDragingInventory = false
+	for k, v in pairs(m_inventory) do
+		local s = ImGui.GetStyle();
+		local spaceX = s.ItemSpacing.x;
+		local padding = s.FramePadding.x;
+		
+		local size = ImGui.GetWindowWidth() - s.IndentSpacing;
+		local coloum = math.floor(size / (itemSize + spaceX * 2 + padding * 2)) + 1
+		if ((i % coloum) ~= 0) then
+			ImGui.SameLine(0, -1);
+		end
+		ImGui.PushID_str("inventory" .. i);
+		ImGui.BeginGroup();
+		ImGui.ImageButton(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+		-- Our buttons are both drag sources and drag targets here!
+		if (ImGui.BeginDragDropSource()) then
+			ImGui.SetDragDropPayload("DND_DEMO_CELL", k);    -- Set payload to carry the index of our item (could be anything)
+			ImGui.Text("拖拽" .. v.desc);   -- Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
+			ImGui.EndDragDropSource();
+			m_isDragingInventory = true
+		end
+		ImGui.Text(v.desc);
+		ImGui.EndGroup();
+		ImGui.PopID();
+		i = i + 1
+	end
+	ImGui.End();
+end
+
 function drawHud()
 	local screenSize = Engine:shared():winSize()
-	local yOffset = 20.0;
+	local yOffset = 15.0;
 	local window_pos = ImGui.ImVec2(screenSize.x / 2.0, screenSize.y - yOffset);
 	local window_pos_pivot = ImGui.ImVec2(0.5, 1.0);
 	ImGui.SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	
+	local itemSize = 80
 	ImGui.Begin("Profiler", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 	for k, v in pairs(m_itemSlots) do
-		ImGui.RadioButton(v.desc, m_currIndex == k)
+		-- ImGui.RadioButton(v.desc, m_currIndex == k)
+		ImGui.BeginGroup();
+		local needPop = false
+		if v["target"] == nil then
+			ImGui.ImageButton(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+			if m_currIndex == k then
+				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
+				needPop = true
+			end
+			ImGui.Text("Empty");
+		else
+			ImGui.ImageButton(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+			if m_currIndex == k then
+				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
+				needPop = true
+			end
+			ImGui.Text(m_inventory[v["target"]].desc);
+		end
+		if needPop then
+			ImGui.PopStyleColor()
+		end
+		ImGui.EndGroup();
+		if ImGui.BeginDragDropTargetAnyWindow() then
+			local payLoad = ImGui.AcceptDragDropPayload("DND_DEMO_CELL", 0)
+			-- print("payLoad", payLoad)
+			if payLoad ~= nil then
+				local payLoadIdx = ImGui.GetPayLoadData2Int(payLoad)
+				m_itemSlots[k]["target"] = payLoadIdx
+			end
+			ImGui.EndDragDropTarget()
+		end
 		ImGui.SameLine(0, -1.0)
 	end
 	ImGui.End()
@@ -211,9 +299,9 @@ function placeItem(item)
 			BuildingSystem.shared():attachGamePartNormal(aBlock, result)
 		end
 	else
-		if item.ItemType == -1 then
+		if item.ItemType == GAME_PART_BEARING then
 			BuildingSystem.shared():placeBearingToAttach(result)
-		elseif item.ItemType == -2 then
+		elseif item.ItemType == GAME_PART_SPRING then
 			BuildingSystem.shared():placeSpringToAttach(result)
 		end
 	end
@@ -244,12 +332,15 @@ function handleItemSecondaryUse(item)
 	end
 end
 
+function getItemFromSlotIndex()
+	return m_inventory[m_itemSlots[m_currIndex]["target"]]
+end
 
 function onMouseRelease(input_event)
 	if input_event.arg == 0 then --left mouse
-		handleItemPrimaryUse(m_itemSlots[m_currIndex])
+		handleItemPrimaryUse(getItemFromSlotIndex())
 	elseif input_event.arg == 1 then --right mouse
-		handleItemSecondaryUse(m_itemSlots[m_currIndex])
+		handleItemSecondaryUse(getItemFromSlotIndex())
 	end
 end
 
@@ -269,5 +360,6 @@ function tzw_engine_input_event(input_event)
 		end
 	end
 end
+
 
 return Main

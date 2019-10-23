@@ -23,6 +23,11 @@ Texture *TextureMgr::getByPath(std::string filePath, bool isNeedMipMap)
     }
 }
 
+Texture* TextureMgr::getByPathSimple(std::string filePath)
+{
+	return getByPath(filePath, false);
+}
+
 Texture *TextureMgr::getByPath(std::string PosX, std::string NegX, std::string PosY,
 							   std::string NegY, std::string PosZ, std::string NegZ)
 {

@@ -28,6 +28,7 @@ public:
 	void setAngleLimit(bool isAngleLimit, float low, float high);
 	void getAngleLimit(bool&isAngleLimit, float&low, float&high) const;
 	void generateName() override;
+	GamePartType getType() override;
 	void enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse);
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);

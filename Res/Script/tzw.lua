@@ -1,8 +1,9 @@
 package.path = Engine.shared():getFilePath("Script/?.lua;") .. package.path
 g_include_module = {}
 function include(moduleName)
-	require(moduleName)
+	local r = require(moduleName)
 	g_include_module[moduleName] = 1
+	return r
 end
 
 function tzw_engine_reload()

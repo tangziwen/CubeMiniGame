@@ -15,7 +15,7 @@ namespace tzw
 		Attachment * getAttachment(int index) override;
 		int getAttachmentCount() override;
 		void generateName() override;
-		int getType() override;
+		GamePartType getType() override;
 		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 		void use() override;

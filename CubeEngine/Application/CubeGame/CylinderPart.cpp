@@ -127,9 +127,9 @@ int CylinderPart::getAttachmentCount()
 	return 2;
 }
 
-int CylinderPart::getType()
+GamePartType CylinderPart::getType()
 {
-	return GAME_PART_CYLINDER;
+	return GamePartType::GAME_PART_CYLINDER;
 }
 
 }

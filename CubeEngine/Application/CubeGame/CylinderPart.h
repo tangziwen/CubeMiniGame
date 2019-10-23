@@ -16,7 +16,7 @@ namespace tzw
 		Attachment * getAttachment(int index) override;
 		int getAttachmentCount() override;
 	public:
-		int getType() override;
+		GamePartType getType() override;
 		Attachment * m_attachment[6];
 		float m_topRadius, m_bottomRadius, m_height;
 	};

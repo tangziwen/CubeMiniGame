@@ -17,7 +17,7 @@ namespace tzw
 	public:
 		float m_liftHeight;
 		void cook();
-		int getType() override;
+		GamePartType getType() override;
 		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 		std::string m_effectedIslandGroup;

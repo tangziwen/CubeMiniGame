@@ -71,6 +71,37 @@ namespace tzw
 		return info;
 	}
 
+	int imgui_getPayLoadData2Int(const ImGuiPayload * payLoad)
+	{
+		
+		return *(const int*)payLoad->Data;
+	}
+
+	bool imgui_BeginDragDropSource()
+	{
+		return ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID);
+	}
+
+	void imgui_SetDragDropPayload(std::string payloadStr, int val)
+	{
+		ImGui::SetDragDropPayload("DND_DEMO_CELL", &val, sizeof(int)); 
+	}
+
+	void imgui_ImageButton(unsigned int val, ImVec2 size)
+	{
+		ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size);
+	}
+
+	void imgui_PushStyleColor(int styleEnum, ImVec4 color)
+	{
+		ImGui::PushStyleColor(styleEnum, color);
+	}
+
+	void imgui_PopStyleColor()
+	{
+		ImGui::PopStyleColor(1);
+	}
+
 	void g_init_engine_libs()
 	{
 		auto luaState = static_cast<lua_State *>(ScriptPyMgr::shared()->getState());
@@ -125,6 +156,14 @@ namespace tzw
 		BIND_FUNC(Engine, setUnlimitedCursor)
 		BIND_END_CLASS
 
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(Texture)
+		BIND_FUNC(Texture, handle)
+		.endClass()
+		BIND_BEGIN_CLASS(TextureMgr)
+		.addStaticFunction ("shared", &TextureMgr::shared)
+		.addFunction("getByPathSimple", &TextureMgr::getByPathSimple)
+		BIND_END_CLASS
 
 		//IMGUI
 		BIND_START(luaState)
@@ -134,6 +173,7 @@ namespace tzw
 		BIND_PROP(ImVec2, x)
 		BIND_PROP(ImVec2, y)
 		.endClass()
+
 		BIND_BEGIN_CLASS(ImVec4)
 		.addConstructor <void (*) (float, float, float, float)> ()
 		BIND_PROP(ImVec4, x)
@@ -141,26 +181,40 @@ namespace tzw
 		BIND_PROP(ImVec4, z)
 		BIND_PROP(ImVec4, w)
 		.endClass()
+		BIND_BEGIN_CLASS(ImGuiPayload)
+		.endClass()
+		.addFunction("GetPayLoadData2Int",&imgui_getPayLoadData2Int)
 		.addFunction("Begin", &imgui_begin)
 		.addFunction("BeginNoClose", &imgui_begin_no_close)
 		.addFunction("End", &ImGui::End)
 		BIND_FUNC(ImGui, SmallButton)
 		//BIND_FUNC(ImGui, SliderFloat)
 		BIND_FUNC(ImGui, Button)
+		.addFunction("ImageButton", imgui_ImageButton)
 		BIND_FUNC(ImGui, BeginMenu)
 		BIND_FUNC(ImGui, EndMenu)
+		.addFunction("BeginDragDropSource", &imgui_BeginDragDropSource)
+		.addFunction("SetDragDropPayload", &imgui_SetDragDropPayload)
+		BIND_FUNC(ImGui, EndDragDropSource)
 		//BIND_FUNC(ImGui, MenuItem)
 		BIND_FUNC(ImGui, BeginPopup)
 		BIND_FUNC(ImGui, OpenPopup)
-		
+		BIND_FUNC(ImGui, GetWindowWidth)
+		BIND_BEGIN_CLASS(ImGuiStyle)
+		BIND_PROP(ImGuiStyle, ItemSpacing)
+		BIND_PROP(ImGuiStyle, FramePadding)
+		BIND_PROP(ImGuiStyle, IndentSpacing)
+		.endClass()
+		BIND_FUNC(ImGui, GetStyle)
 		BIND_FUNC(ImGui, EndPopup)
 		
 		BIND_FUNC(ImGui, BeginGroup)
 		BIND_FUNC(ImGui, EndGroup)
 		.addFunction("PushID", static_cast<void (*)(int)>(ImGui::PushID))
-		
+		.addFunction("PushID_str", static_cast<void (*)(const char *)>(ImGui::PushID))
 		BIND_FUNC(ImGui, PopID)
 		BIND_FUNC(ImGui, BeginDragDropTarget)
+		BIND_FUNC(ImGui, BeginDragDropTargetAnyWindow)
 		BIND_FUNC(ImGui, EndDragDropTarget)
 		BIND_FUNC(ImGui, Separator)
 		.addFunction("RadioButton", static_cast<bool (*)(const char*, bool)>(ImGui::RadioButton))
@@ -172,6 +226,12 @@ namespace tzw
 		BIND_FUNC(ImGui, SetNextWindowSize)
 		BIND_FUNC(ImGui, ColorButton)
 		BIND_FUNC(ImGui, CloseCurrentPopup)
+		BIND_FUNC(ImGui, BeginDragDropTarget)
+		BIND_FUNC(ImGui, EndDragDropTarget)
+		BIND_FUNC(ImGui, EndDragDropTarget)
+		BIND_FUNC(ImGui, AcceptDragDropPayload)
+		.addFunction("PushStyleColor", &imgui_PushStyleColor)
+		.addFunction("PopStyleColor", &imgui_PopStyleColor)
 		.addFunction("BeginPopupModal", &imgui_begin_popup_modal)
 		.addFunction("CollapsingHeader", static_cast<bool (*)(const char*, int)>(ImGui::CollapsingHeader))
 		.endNamespace ();

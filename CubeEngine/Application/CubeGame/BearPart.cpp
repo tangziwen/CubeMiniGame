@@ -127,6 +127,11 @@ void BearPart::generateName()
 	setName(formatName);
 }
 
+	GamePartType BearPart::getType()
+	{
+		return GamePartType::GAME_PART_BEARING;
+	}
+
 	void BearPart::enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse)
 	{
 		if(m_constrain)

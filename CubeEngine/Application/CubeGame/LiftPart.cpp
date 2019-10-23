@@ -148,8 +148,8 @@ void LiftPart::cook()
 	rigChasis->attach(m_node);
 }
 
-int LiftPart::getType()
+GamePartType LiftPart::getType()
 {
-	return GAME_PART_LIFT;
+	return GamePartType::GAME_PART_LIFT;
 }
 }

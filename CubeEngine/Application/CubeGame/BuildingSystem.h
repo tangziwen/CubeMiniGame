@@ -40,6 +40,7 @@ public:
 	vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 	void placeLiftPart(vec3 wherePos);
 	void setCurrentControlPart(GamePart * controlPart);
+	int getGamePartTypeInt(GamePart *);
 	ControlPart * getCurrentControlPart() const;
 	GamePart * createPart(int type);
 	BearPart * placeBearingToAttach(Attachment * attach);

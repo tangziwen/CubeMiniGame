@@ -9974,9 +9974,37 @@ bool ImGui::BeginDragDropTarget()
 
     ImGuiWindow* window = g.CurrentWindow;
     if (!(window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_HoveredRect))
+	{
         return false;
+    }
     if (g.HoveredWindow == NULL || window->RootWindow != g.HoveredWindow->RootWindow)
+    {
+    	return false;
+    }
+    const ImRect& display_rect = (window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_HasDisplayRect) ? window->DC.LastItemDisplayRect : window->DC.LastItemRect;
+    ImGuiID id = window->DC.LastItemId;
+    if (id == 0)
+        id = window->GetIDFromRectangle(display_rect);
+    if (g.DragDropPayload.SourceId == id)
         return false;
+
+    IM_ASSERT(g.DragDropWithinSourceOrTarget == false);
+    g.DragDropTargetRect = display_rect;
+    g.DragDropTargetId = id;
+    g.DragDropWithinSourceOrTarget = true;
+    return true;
+}
+
+bool ImGui::BeginDragDropTargetAnyWindow()
+{
+    ImGuiContext& g = *GImGui;
+    if (!g.DragDropActive)
+        return false;
+    ImGuiWindow* window = g.CurrentWindow;
+    if (!(window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_HoveredRect))
+        return false;
+    //if (g.HoveredWindow == NULL || window->RootWindow != g.HoveredWindow->RootWindow)
+    //    return false;
 
     const ImRect& display_rect = (window->DC.LastItemStatusFlags & ImGuiItemStatusFlags_HasDisplayRect) ? window->DC.LastItemDisplayRect : window->DC.LastItemRect;
     ImGuiID id = window->DC.LastItemId;

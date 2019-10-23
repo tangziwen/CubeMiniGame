@@ -329,9 +329,9 @@ GameNodeEditorNode* ControlPart::getGraphNode() const
 	return m_graphNode;
 }
 
-int ControlPart::getType()
+GamePartType ControlPart::getType()
 {
-	return GAME_PART_CONTROL;
+	return GamePartType::GAME_PART_CONTROL;
 }
 
 }

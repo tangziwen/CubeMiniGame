@@ -100,7 +100,7 @@ namespace tzw
 	void
 	BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
 	{
-		if (attach->m_parent->getType() == GAME_PART_LIFT)
+		if (attach->m_parent->getType() == GamePartType::GAME_PART_LIFT)
 		{
 			auto liftPart = dynamic_cast<LiftPart*>(attach->m_parent);
 			vec3 pos, n, up;
@@ -207,6 +207,11 @@ namespace tzw
 			m_controlPart->setActivate(false);
 			m_controlPart = nullptr;
 		}
+	}
+
+	int BuildingSystem::getGamePartTypeInt(GamePart* part)
+	{
+		return int(part->getType());
 	}
 
 	ControlPart*
