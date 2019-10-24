@@ -165,19 +165,6 @@ namespace tzw
 				BuildingSystem::shared()->replaceToLiftByRay(getPos(), m_camera->getForward(), 15);
 			}
 			break;
-		case TZW_KEY_P:
-			{
-				float blockSize = 0.3;
-				auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
-				boxA->setPos(getPos() +m_camera->getForward() * 2.0 + vec3(0, 0, 0));
-				auto transform = boxA->getTransform();
-				auto aabb = boxA->localAABB();
-				auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
-				rigA->attach(boxA);
-				rigA->setVelocity(m_camera->getForward() * 20.0);
-				g_GetCurrScene()->addNode(boxA);
-			}
-			break;
 		default:
 			break;
 		}

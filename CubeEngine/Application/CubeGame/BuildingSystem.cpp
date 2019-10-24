@@ -81,7 +81,7 @@ namespace tzw
 	}
 
 	void
-	BuildingSystem::attachGamePartToConstraint(GamePart* part, Attachment* attach)
+	BuildingSystem::attachGamePartToConstraint(GamePart* part, Attachment* attach, float degree)
 	{
 		vec3 pos, n, up;
 		attach->getAttachmentInfoWorld(pos, n, up);
@@ -94,11 +94,12 @@ namespace tzw
 		island->m_node->addChild(part->getNode());
 		island->insert(part);
 		island->m_islandGroup = attach->m_parent->m_parent->m_islandGroup;
-		part->attachToFromOtherIsland(attach);
+		//part->attachToOtherIslandByAlterSelfPart(attach);
+		part->attachToOtherIslandByAlterSelfIsland(attach, part->getFirstAttachment(), degree);
 	}
 
 	void
-	BuildingSystem::attachGamePartNormal(GamePart* part, Attachment* attach)
+	BuildingSystem::attachGamePart(GamePart* part, Attachment* attach, float degree)
 	{
 		if (attach->m_parent->getType() == GamePartType::GAME_PART_LIFT)
 		{
@@ -109,7 +110,7 @@ namespace tzw
 			m_IslandList.push_back(newIsland);
 			newIsland->m_node->addChild(part->getNode());
 			newIsland->insert(part);
-			part->attachToFromOtherIsland(attach);
+			part->attachToOtherIslandByAlterSelfPart(attach);
 			newIsland->genIslandGroup();
 			liftPart->setEffectedIsland(newIsland->m_islandGroup);
 		}
@@ -117,14 +118,14 @@ namespace tzw
 		{
 			if (!attach->m_parent->isConstraint())
 			{
-				part->attachTo(attach);
+				part->attachTo(attach, degree);
 				auto island = attach->m_parent->m_parent;
 				island->m_node->addChild(part->getNode());
 				island->insert(part);
 			}
 			else
 			{
-				attachGamePartToConstraint(part, attach);
+				attachGamePartToConstraint(part, attach, degree);
 			}
 		}
 	}
@@ -274,8 +275,8 @@ namespace tzw
 		cylinderIndicator->reCache();
 		bear->setNode(cylinderIndicator);
 		bear->updateFlipped();
-		bear->attachToFromOtherIslandAlterSelfIsland(attachment,
-													bear->getFirstAttachment());
+		bear->attachToOtherIslandByAlterSelfIsland(attachment,
+													bear->getFirstAttachment(), 0);
 		attachment->m_connected = bear->getFirstAttachment();
 		if(!attachment->m_connected->m_parent->m_parent) 
 		{
@@ -297,11 +298,11 @@ namespace tzw
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
 		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
-		auto bear = new SpringPart();
-		bear->m_b = attachment;
-		bear->m_parent = island;
-		m_bearList.insert(bear);
-		island->insert(bear);
+		auto spring = new SpringPart();
+		spring->m_b = attachment;
+		spring->m_parent = island;
+		m_bearList.insert(spring);
+		island->insert(spring);
 		// create a indicate model
 		auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.5);
 		cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
@@ -311,17 +312,17 @@ namespace tzw
 		cylinderIndicator->setPos(mat.getTranslation());
 		cylinderIndicator->setRotateQ(q);
 		cylinderIndicator->reCache();
-		bear->setNode(cylinderIndicator);
-		bear->attachToFromOtherIslandAlterSelfIsland(attachment,
-													bear->getFirstAttachment());
-		attachment->m_connected = bear->getFirstAttachment();
+		spring->setNode(cylinderIndicator);
+		spring->attachToOtherIslandByAlterSelfIsland(attachment,
+													spring->getFirstAttachment(), 0);
+		attachment->m_connected = spring->getFirstAttachment();
 		if(!attachment->m_connected->m_parent->m_parent) 
 		{
 			tlog("wrong");
 		}
 		island->m_node->addChild(cylinderIndicator);
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
-		return bear;
+		return spring;
 	}
 
 	Island*
@@ -598,8 +599,8 @@ namespace tzw
 
 					auto constraintAttach_target = reinterpret_cast<Attachment*>(
 						GUIDMgr::shared()->get(toAttach->m_connectedGUID));
-					toAttach->m_parent->attachToFromOtherIslandAlterSelfIsland(
-						constraintAttach_target, toAttach);
+					toAttach->m_parent->attachToOtherIslandByAlterSelfIsland(
+						constraintAttach_target, toAttach, 0);
 					constraint->m_a = toAttach;
 				}
 				constraint->load(item);
@@ -610,13 +611,14 @@ namespace tzw
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
 		nodeEditor->load(doc["NodeGraph"]);
 		
-		auto island = m_IslandList[0];
+		
 
 		if(m_liftPart)// for no run test, if we not yet loaded the world & placed the lift, we still can debug the Node Editor problems.
 		{
-			tempPlace(island);
+			auto firstIsland = m_IslandList[0];
+			tempPlace(firstIsland);
 			//readjust
-			auto attach = replaceToLiftIslands(island->m_islandGroup);
+			auto attach = replaceToLiftIslands(firstIsland->m_islandGroup);
 			attach->m_parent->getNode()->setColor(vec4(0, 1, 0, 1));
 			replaceToLift(attach->m_parent->m_parent, attach);
 		}else 
@@ -782,12 +784,11 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 
 	if(!attachment)
 	{
-	island->m_partList[0]->attachToFromOtherIslandAlterSelfIsland(
-		attach, island->m_partList[0]->getBottomAttachment());
+	island->m_partList[0]->attachToOtherIslandByAlterSelfIsland(
+		attach, island->m_partList[0]->getBottomAttachment(), 0);
 	}else 
 	{
-	attachment->m_parent->attachToFromOtherIslandAlterSelfIsland(
-		attach, attachment);
+		attachment->m_parent->attachToOtherIslandByAlterSelfIsland(attach, attachment, 0);
 	}
 	m_liftPart->setEffectedIsland(island->m_islandGroup);
 	std::set<Island *> closeSet;
@@ -802,7 +803,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 			if (connectedAttach && connectedAttach->m_parent->isConstraint())
 			{
 				Attachment* other = nullptr;
-				connectedAttach->m_parent->adjustFromOtherIslandAlterSelfIsland(attach, connectedAttach);
+				connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
 				replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet);
 			}
 		}
@@ -893,10 +894,10 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 				{
 					if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 					{
-						attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach);
+						//attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach, 0);
 					} else
 					{
-						connectedAttach->m_parent->adjustFromOtherIslandAlterSelfIsland(attach, connectedAttach);
+						connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, 0);
 						replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
 					}
 					
@@ -917,10 +918,10 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 					{
 						if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 						{
-							attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach);
+							//attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach, attach->m_degree);
 						} else
 						{
-							connectedAttach->m_parent->adjustFromOtherIslandAlterSelfIsland(attach, connectedAttach);
+							connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
 							replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
 						}
 					}

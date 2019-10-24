@@ -45,7 +45,7 @@ namespace tzw
 		return nullptr;
 	}
 
-	void GamePart::attachTo(Attachment * attach)
+	void GamePart::attachTo(Attachment * attach, float degree)
 	{
 		vec3 attachPosition,  Normal,  up;
 		attach->getAttachmentInfo(attachPosition, Normal, up);
@@ -76,8 +76,8 @@ namespace tzw
 		data[15] = 1.0;
 
 
-		Matrix44 attachmentTrans;
-		data = attachmentTrans.data();
+		Matrix44 selfAttachmentTrans;
+		data = selfAttachmentTrans.data();
 		auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
 		data[0] = rightForAttach.x;
 		data[1] = rightForAttach.y;
@@ -100,14 +100,19 @@ namespace tzw
 		data[14] = selfAttah->m_pos.z;
 		data[15] = 1.0;
 
-		auto result = transformForAttachPoint * attachmentTrans.inverted();
+		Matrix44 rotateMatrix;
+		Quaternion qRotate;
+		qRotate.fromEulerAngle(vec3(0, 0, degree));
+		rotateMatrix.rotate(qRotate);
+		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
+		auto result = transformForAttachPoint * selfAttachmentTrans.inverted();
 		Quaternion q;
 		q.fromRotationMatrix(&result);
 		m_node->setPos(result.getTranslation());
 		m_node->setRotateQ(q);
 	}
 
-	Matrix44 GamePart::attachToFromOtherIsland(Attachment * attach)
+	Matrix44 GamePart::attachToOtherIslandByAlterSelfPart(Attachment * attach)
 	{
 		auto selfAttah = getFirstAttachment();
         if (attach->m_parent->isConstraint()) 
@@ -124,10 +129,10 @@ namespace tzw
 		{
 			tlog("wrong");
 		}
-		return adjustFromOtherIsland(attach, selfAttah);
+		return adjustToOtherIslandByAlterSelfPart(attach, selfAttah);
 	}
 
-	Matrix44 GamePart::attachToFromOtherIslandAlterSelfIsland(Attachment* attach, Attachment * ownAttachment)
+	Matrix44 GamePart::attachToOtherIslandByAlterSelfIsland(Attachment* attach, Attachment * ownAttachment, float degree)
 	{
 		Attachment * selfAttah = nullptr;
 		//we use m_attachment[0]
@@ -140,15 +145,17 @@ namespace tzw
             selfAttah = ownAttachment;
 		}
         selfAttah->m_connected = attach;
+		selfAttah->m_degree = degree;
 		attach->m_connected = selfAttah;
+		attach->m_degree = -1.0f * degree;
 		if(attach->m_parent->isConstraint())
 		{
 			static_cast<GameConstraint *>(attach->m_parent)->m_a = selfAttah;
 		}
-		return adjustFromOtherIslandAlterSelfIsland(attach, selfAttah);
+		return adjustToOtherIslandByAlterSelfIsland(attach, selfAttah, degree);
 	}
 
-	Matrix44 GamePart::adjustFromOtherIslandAlterSelfIsland(Attachment* attach, Attachment* selfAttah)
+	Matrix44 GamePart::adjustToOtherIslandByAlterSelfIsland(Attachment* attach, Attachment* selfAttah, float degree)
 	{
 		vec3 attachPosition,  Normal,  up;
 		attach->getAttachmentInfoWorld(attachPosition, Normal, up);
@@ -179,8 +186,8 @@ namespace tzw
 		data[15] = 1.0;
 
 
-		Matrix44 attachmentTrans;
-		data = attachmentTrans.data();
+		Matrix44 selfAttachmentTrans;
+		data = selfAttachmentTrans.data();
 		auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
 		vec3 normalForAttach = selfAttah->m_normal;
 		data[0] = rightForAttach.x;
@@ -204,17 +211,25 @@ namespace tzw
 		data[14] = selfAttah->m_pos.z;
 		data[15] = 1.0;
 
-		auto result = attachOuterWorldMat * attachmentTrans.inverted() * getNode()->getLocalTransform().inverted();
+
+		Matrix44 rotateMatrix;
+		Quaternion qRotate;
+		qRotate.fromEulerAngle(vec3(0, 0, degree));
+		rotateMatrix.rotate(qRotate);
+		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
+
+		auto result = attachOuterWorldMat * selfAttachmentTrans.inverted() * getNode()->getLocalTransform().inverted();
 
 		Quaternion q;
 		q.fromRotationMatrix(&result);
 		m_parent->m_node->setPos(result.getTranslation());
 		m_parent->m_node->setRotateQ(q);
 		m_parent->m_node->reCache();
+
 		return result;
 	}
 
-	Matrix44 GamePart::adjustFromOtherIsland(Attachment* attach, Attachment* selfAttach)
+	Matrix44 GamePart::adjustToOtherIslandByAlterSelfPart(Attachment* attach, Attachment* selfAttach)
 	{
 		auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
 		vec3 attachPosition,  Normal,  up;
@@ -250,7 +265,7 @@ namespace tzw
 		data[14] = attachPosition.z;
 		data[15] = 1.0;
 
-
+		
 		Matrix44 attachmentTrans;
 		data = attachmentTrans.data();
 		auto rightForAttach = vec3::CrossProduct(selfAttach->m_normal, selfAttach->m_up);
@@ -360,6 +375,14 @@ namespace tzw
 				std::string guid_str = attachData["UID"].GetString();
 				getAttachment(i)->setGUID(guid_str.c_str());
 				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
+				if(attachData.HasMember("degree"))
+				{
+					getAttachment(i)->m_degree = attachData["degree"].GetDouble();
+				} else
+				{
+					getAttachment(i)->m_degree = 0.0f;
+				}
+				
 			}
         }
 		if(partData.HasMember("Name"))
@@ -404,6 +427,7 @@ namespace tzw
             	UID = attach->m_connected->getGUID();
             }
 			attachObj.AddMember("to", std::string(UID), allocator);
+			attachObj.AddMember("degree", attach->m_degree, allocator);
 			attachList.PushBack(attachObj, allocator);
 		}
 		partDocObj.AddMember("attachList", attachList, allocator);

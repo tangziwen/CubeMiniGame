@@ -8,6 +8,7 @@
 #include "BuildingSystem.h"
 #include "CylinderPart.h"
 #include "LiftPart.h"
+#include "UIHelper.h"
 
 
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
@@ -62,7 +63,7 @@ namespace tzw
 		BIND_BEGIN_CLASS(BuildingSystem)
 		.addStaticFunction ("shared", &BuildingSystem::shared)
 		BIND_FUNC(BuildingSystem, placeGamePart)
-		BIND_FUNC(BuildingSystem, attachGamePartNormal)
+		BIND_FUNC(BuildingSystem, attachGamePart)
 		BIND_FUNC(BuildingSystem, attachGamePartToConstraint)
 		BIND_FUNC(BuildingSystem, placeBearingToAttach)
 		BIND_FUNC(BuildingSystem, placeSpringToAttach)
@@ -76,6 +77,12 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, setCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getGamePartTypeInt)
+		BIND_END_CLASS
+
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(UIHelper)
+		.addStaticFunction ("shared", &UIHelper::shared)
+		BIND_FUNC(UIHelper, showFloatTips)
 		BIND_END_CLASS
 
 		BIND_START(luaState)

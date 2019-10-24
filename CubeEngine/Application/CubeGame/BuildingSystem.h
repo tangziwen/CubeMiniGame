@@ -34,8 +34,8 @@ public:
 	void tmpMoveWheel(bool isOpen);
 	void removePartByAttach(Attachment * attach);
 	void placeGamePart(GamePart * part, vec3 pos);
-	void attachGamePartToConstraint(GamePart * part, Attachment * attach);
-	void attachGamePartNormal(GamePart * part, Attachment * attach);
+	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
+	void attachGamePart(GamePart * part, Attachment * attach, float degree);
 	void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
 	vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 	void placeLiftPart(vec3 wherePos);

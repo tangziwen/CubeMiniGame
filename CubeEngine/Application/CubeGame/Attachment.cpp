@@ -12,11 +12,13 @@ namespace tzw
 		m_up = up;
 		m_parent = parent;
 		m_connected = nullptr;
+		m_degree = 0.0f;
 	}
 
 	Attachment::Attachment()
 	{
 		m_connected = nullptr;
+		m_degree = 0.0f;
 	}
 
 	void Attachment::getAttachmentInfo(vec3 & pos, vec3 & N, vec3 & up)

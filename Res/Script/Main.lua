@@ -1,6 +1,6 @@
 include("KeyConfig")
 include("UiUtil")
-include("math")
+require("math")
 Main = {}
 
 
@@ -63,6 +63,8 @@ local m_currIndex = 1
 local lift_state = 0
 local isOpenTestWindow = true
 local testIcon = nil
+
+local rRotate = 0
 
 local m_isDragingInventory = false
 --init
@@ -191,14 +193,14 @@ function drawHud()
 		ImGui.BeginGroup();
 		local needPop = false
 		if v["target"] == nil then
-			ImGui.ImageButton(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+			ImGui.Image(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
 			end
 			ImGui.Text("Empty");
 		else
-			ImGui.ImageButton(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+			ImGui.Image(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
@@ -266,18 +268,19 @@ function onKeyRelease(input_event)
 		m_currIndex = 4
 	elseif input_event.keycode == TZW_KEY_5 then
 		m_currIndex = 5
-	elseif input_event.keycode == TZW_KEY_6 then
-		m_currIndex = 6
-	elseif input_event.keycode == TZW_KEY_7 then
-		m_currIndex = 7
 	elseif input_event.keycode == TZW_KEY_UP then
 		lift_state = lift_state - 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = lift_state + 1
+	elseif input_event.keycode == TZW_KEY_P then
+		rRotate = rRotate + 30
+		if rRotate >= 360 then
+			rRotate = 0
+		end
 	elseif input_event.keycode == TZW_KEY_E then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
 			local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-			if result and result.m_parent:getType() == 3 then
+			if result and BuildingSystem.shared():getGamePartTypeInt(result.m_parent) == GAME_PART_CONTROL then
 				oldPlayerPos = player:getPos()
 				BuildingSystem.shared():setCurrentControlPart(result.m_parent)
 			end
@@ -288,15 +291,29 @@ function onKeyRelease(input_event)
 	end
 end
 
+function checkIsNormalPart(itemType)
+	constrainType = {GAME_PART_BEARING, GAME_PART_SPRING}
+	local isNormal = true
+	for _, v in ipairs(constrainType) do
+	  if v == itemType then
+		isNormal = false
+		break
+	  end
+	end
+	return isNormal
+end
+
 function placeItem(item)
 	local player = GameWorld.shared():getPlayer()
 	local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-	if item.ItemType >= 0 then
+	if checkIsNormalPart(item.ItemType) then
 		local aBlock = BuildingSystem.shared():createPart(item.ItemType)
 		if result == nil then
 			BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
-			BuildingSystem.shared():attachGamePartNormal(aBlock, result)
+			print("degree ".. rRotate)
+			BuildingSystem.shared():attachGamePart(aBlock, result, rRotate)
+			rRotate = 0 --reset
 		end
 	else
 		if item.ItemType == GAME_PART_BEARING then
@@ -337,10 +354,13 @@ function getItemFromSlotIndex()
 end
 
 function onMouseRelease(input_event)
-	if input_event.arg == 0 then --left mouse
-		handleItemPrimaryUse(getItemFromSlotIndex())
-	elseif input_event.arg == 1 then --right mouse
-		handleItemSecondaryUse(getItemFromSlotIndex())
+	local item = getItemFromSlotIndex()
+	if item ~= nil then
+		if input_event.arg == 0 then --left mouse
+			handleItemPrimaryUse(item)
+		elseif input_event.arg == 1 then --right mouse
+			handleItemSecondaryUse(item)
+		end
 	end
 end
 

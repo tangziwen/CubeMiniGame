@@ -36,7 +36,7 @@ void GameConstraint::updateTransform(float dt)
 {
 	if(m_isEnablePhysics)
 	{
-		attachToFromOtherIslandAlterSelfIsland(m_b);
+		adjustToOtherIslandByAlterSelfIsland(m_b, this->getFirstAttachment(),this->getFirstAttachment()->m_degree);
 	}
 }
 

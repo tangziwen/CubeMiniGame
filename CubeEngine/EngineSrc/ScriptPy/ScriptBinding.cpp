@@ -92,6 +92,10 @@ namespace tzw
 		ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size);
 	}
 
+	void imgui_Image(unsigned int val, ImVec2 size)
+	{
+		ImGui::Image(reinterpret_cast<ImTextureID> (val), size);
+	}
 	void imgui_PushStyleColor(int styleEnum, ImVec4 color)
 	{
 		ImGui::PushStyleColor(styleEnum, color);
@@ -191,6 +195,7 @@ namespace tzw
 		//BIND_FUNC(ImGui, SliderFloat)
 		BIND_FUNC(ImGui, Button)
 		.addFunction("ImageButton", imgui_ImageButton)
+		.addFunction("Image", imgui_Image)
 		BIND_FUNC(ImGui, BeginMenu)
 		BIND_FUNC(ImGui, EndMenu)
 		.addFunction("BeginDragDropSource", &imgui_BeginDragDropSource)

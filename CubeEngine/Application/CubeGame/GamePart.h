@@ -23,14 +23,14 @@ public:
                                             vec3& attachPosition,
                                             vec3& Normal,
                                             vec3& up);
-  virtual void attachTo(Attachment* attach);
-  virtual Matrix44 attachToFromOtherIsland(Attachment* attach);
-  virtual Matrix44 attachToFromOtherIslandAlterSelfIsland(
+  virtual void attachTo(Attachment* attach, float degree);
+  virtual Matrix44 attachToOtherIslandByAlterSelfPart(Attachment* attach);
+  virtual Matrix44 attachToOtherIslandByAlterSelfIsland(
     Attachment* attach,
-    Attachment* ownAttachment = nullptr);
-  virtual Matrix44 adjustFromOtherIslandAlterSelfIsland(Attachment* attach,
-                                                        Attachment* selfAttach);
-  virtual Matrix44 adjustFromOtherIsland(Attachment* attach,
+    Attachment* ownAttachment, float degree);
+  virtual Matrix44 adjustToOtherIslandByAlterSelfIsland(Attachment* attach,
+                                                        Attachment* selfAttach, float degree);
+  virtual Matrix44 adjustToOtherIslandByAlterSelfPart(Attachment* attach,
                                          Attachment* selfAttach);
   virtual Attachment* getFirstAttachment();
   virtual Attachment* getBottomAttachment();
