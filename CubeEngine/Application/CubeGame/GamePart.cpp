@@ -366,25 +366,9 @@ namespace tzw
 		getNode()->setPos(vec3(partData["pos"][0].GetDouble(),partData["pos"][1].GetDouble(), partData["pos"][2].GetDouble()));
 		auto q = Quaternion(partData["rotate"][0].GetDouble(),partData["rotate"][1].GetDouble(), partData["rotate"][2].GetDouble(), partData["rotate"][3].GetDouble());
 		getNode()->setRotateQ(q);
-		if (partData.HasMember("attachList"))
-		{
-			auto& attachList = partData["attachList"];
-			for(unsigned int i =0; i < attachList.Size(); i ++)
-			{
-				auto &attachData = attachList[i];
-				std::string guid_str = attachData["UID"].GetString();
-				getAttachment(i)->setGUID(guid_str.c_str());
-				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
-				if(attachData.HasMember("degree"))
-				{
-					getAttachment(i)->m_degree = attachData["degree"].GetDouble();
-				} else
-				{
-					getAttachment(i)->m_degree = 0.0f;
-				}
-				
-			}
-        }
+
+		loadAttach(partData);
+
 		if(partData.HasMember("Name"))
 		{
 			m_name = partData["Name"].GetString();
@@ -414,23 +398,7 @@ namespace tzw
 		partDocObj.AddMember("Name", m_name, allocator);
 
 
-		rapidjson::Value attachList(rapidjson::kArrayType);
-		int count = getAttachmentCount();
-		for(int k = 0; k < count; k++)
-		{
-			auto attach = getAttachment(k);
-			rapidjson::Value attachObj(rapidjson::kObjectType);
-			attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
-			std::string UID = "empty";
-            if (attach->m_connected) 
-			{
-            	UID = attach->m_connected->getGUID();
-            }
-			attachObj.AddMember("to", std::string(UID), allocator);
-			attachObj.AddMember("degree", attach->m_degree, allocator);
-			attachList.PushBack(attachObj, allocator);
-		}
-		partDocObj.AddMember("attachList", attachList, allocator);
+		dumpAttach(partDocObj, allocator);
 	}
 
 	bool GamePart::isConstraint()
@@ -489,5 +457,49 @@ namespace tzw
 
 	void GamePart::use()
 	{
+	}
+
+	void GamePart::dumpAttach(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		rapidjson::Value attachList(rapidjson::kArrayType);
+		int count = getAttachmentCount();
+		for(int k = 0; k < count; k++)
+		{
+			auto attach = getAttachment(k);
+			rapidjson::Value attachObj(rapidjson::kObjectType);
+			attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
+			std::string UID = "empty";
+            if (attach->m_connected) 
+			{
+            	UID = attach->m_connected->getGUID();
+            }
+			attachObj.AddMember("to", std::string(UID), allocator);
+			attachObj.AddMember("degree", attach->m_degree, allocator);
+			attachList.PushBack(attachObj, allocator);
+		}
+		partDocObj.AddMember("attachList", attachList, allocator);
+	}
+
+	void GamePart::loadAttach(rapidjson::Value& partData)
+	{
+		if (partData.HasMember("attachList"))
+		{
+			auto& attachList = partData["attachList"];
+			for(unsigned int i =0; i < attachList.Size(); i ++)
+			{
+				auto &attachData = attachList[i];
+				std::string guid_str = attachData["UID"].GetString();
+				getAttachment(i)->setGUID(guid_str.c_str());
+				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
+				if(attachData.HasMember("degree"))
+				{
+					getAttachment(i)->m_degree = attachData["degree"].GetDouble();
+				} else
+				{
+					getAttachment(i)->m_degree = 0.0f;
+				}
+				
+			}
+        }
 	}
 }

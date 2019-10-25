@@ -223,17 +223,7 @@ void BearPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorTy
 	{
 		partData.AddMember("to", std::string(m_a->getGUID()), allocator);
 	}
-	rapidjson::Value attachList(rapidjson::kArrayType);
-	int count = getAttachmentCount();
-	for(int k = 0; k < count; k++)
-	{
-		auto attach = getAttachment(k);
-		rapidjson::Value attachObj(rapidjson::kObjectType);
-		attachObj.AddMember("UID", std::string(attach->getGUID()), allocator);
-		attachList.PushBack(attachObj, allocator);
-		
-	}
-	partData.AddMember("attachList", attachList, allocator);
+	dumpAttach(partData, allocator);
 	partData.AddMember("UID", std::string(getGUID()), allocator);
 	partData.AddMember("isFlipped", m_isFlipped, allocator);
 }

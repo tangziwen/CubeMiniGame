@@ -584,13 +584,14 @@ namespace tzw
 				constraint->setGUID(item["UID"].GetString());
 				constraint->setName(item["Name"].GetString());
 				// update constraint's attachment GUID
-				auto& attachList = item["attachList"];
-				for (unsigned int j = 0; j < attachList.Size(); j++)
-				{
-					auto& constraintAttach = attachList[j];
-					constraint->getAttachment(j)->setGUID(
-						constraintAttach["UID"].GetString());
-				}
+				//auto& attachList = item["attachList"];
+				//for (unsigned int j = 0; j < attachList.Size(); j++)
+				//{
+				//	auto& constraintAttach = attachList[j];
+				//	constraint->getAttachment(j)->setGUID(
+				//		constraintAttach["UID"].GetString());
+				//}
+				constraint->loadAttach(item);
 				if (item.HasMember("to"))
 				{
 					auto GUID = item["to"].GetString();
@@ -600,7 +601,7 @@ namespace tzw
 					auto constraintAttach_target = reinterpret_cast<Attachment*>(
 						GUIDMgr::shared()->get(toAttach->m_connectedGUID));
 					toAttach->m_parent->attachToOtherIslandByAlterSelfIsland(
-						constraintAttach_target, toAttach, 0);
+						constraintAttach_target, toAttach, toAttach->m_degree);
 					constraint->m_a = toAttach;
 				}
 				constraint->load(item);
@@ -613,7 +614,7 @@ namespace tzw
 		
 		
 
-		if(m_liftPart)// for no run test, if we not yet loaded the world & placed the lift, we still can debug the Node Editor problems.
+		if(m_liftPart)
 		{
 			auto firstIsland = m_IslandList[0];
 			tempPlace(firstIsland);
@@ -623,6 +624,7 @@ namespace tzw
 			replaceToLift(attach->m_parent->m_parent, attach);
 		}else 
 		{
+			// for no run test, if we not yet loaded the world & placed the lift, we still can debug the Node Editor problems.
 			//for debugging purpose
 			MainMenu::shared()->setIsShowNodeEditor(true);
 		}
@@ -840,6 +842,8 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 		AABB aabb;
 		for(auto island : islandGroup)
 		{
+			if(island->m_isSpecial) continue;
+
 			for(auto part: island->m_partList)
 			{
 				attachmentList.push_back(part);
@@ -894,10 +898,10 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 				{
 					if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 					{
-						//attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach, 0);
+						//attach->m_parent->adjustToOtherIslandByAlterSelfIsland(connectedAttach,attach, 0);
 					} else
 					{
-						connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, 0);
+						connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
 						replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
 					}
 					
@@ -918,7 +922,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 					{
 						if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 						{
-							//attach->m_parent->adjustFromOtherIslandAlterSelfIsland(connectedAttach,attach, attach->m_degree);
+							//attach->m_parent->adjustToOtherIslandByAlterSelfIsland(connectedAttach,attach, attach->m_degree);
 						} else
 						{
 							connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
