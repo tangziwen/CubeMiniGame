@@ -59,8 +59,8 @@ public:
   virtual void highLight();
   virtual void unhighLight();
   virtual void use();
-	void dumpAttach(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator);
-	void loadAttach(rapidjson::Value& partDocObj);
+	virtual void dumpAttach(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator);
+	virtual void loadAttach(rapidjson::Value& partDocObj);
 
 protected:
   std::string m_name;

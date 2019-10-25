@@ -501,7 +501,7 @@ namespace tzw
 				{
 					getAttachment(i)->m_degree = 0.0f;
 				}
-				
+				getAttachment(i)->m_parent = this;
 			}
         }
 	}

@@ -34,7 +34,9 @@ namespace tzw
 
 	void Attachment::getAttachmentInfoWorld(vec3 & pos, vec3 & N, vec3 & up)
 	{
-		auto mat = m_parent->getNode()->getTransform();
+		auto node = m_parent->getNode();
+		
+		auto mat = node->getTransform();
 		vec4 a_pos = vec4(m_pos, 1.0);
 		vec4 a_n = vec4(m_normal, 0.0);
 		vec4 a_up = vec4(m_up, 0.0);
