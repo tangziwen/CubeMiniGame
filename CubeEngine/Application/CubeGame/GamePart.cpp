@@ -490,7 +490,10 @@ namespace tzw
 				auto &attachData = attachList[i];
 				std::string guid_str = attachData["UID"].GetString();
 				getAttachment(i)->setGUID(guid_str.c_str());
-				getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
+				if(attachData.HasMember("to"))
+				{
+					getAttachment(i)->m_connectedGUID = attachData["to"].GetString();
+				}
 				if(attachData.HasMember("degree"))
 				{
 					getAttachment(i)->m_degree = attachData["degree"].GetDouble();

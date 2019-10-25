@@ -4,7 +4,6 @@ require("math")
 Main = {}
 
 
-
 function tzw_on_game_ready()
 	UiUtil.popText("基本版本 弹出框测试")
 end
@@ -79,9 +78,7 @@ function tzw_engine_ui_update(dt)
 		drawHelpPage()
 	end
 	drawHud()
-	if MainMenu.shared():isVisible() then
-		drawInventory()
-	else
+	if not MainMenu.shared():isVisible() then
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 			updateLifting(dt)
 		elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
@@ -101,15 +98,18 @@ end
 
 -- inventory
 local m_inventory = {}
-table.insert(m_inventory, {name = "Lift", ItemClass = "Lift", ItemType = GAME_PART_LIFT, desc = "升降台"})
-table.insert(m_inventory, {name = "Block", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BLOCK, desc = "普通方块"})
-table.insert(m_inventory, {name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CYLINDER, desc = "轮子"})
-table.insert(m_inventory, {name = "Cannon", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CANNON, desc = "炮筒"})
-table.insert(m_inventory, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_THRUSTER, desc = "喷射器"})
-table.insert(m_inventory, {name = "Bearing", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BEARING, desc = "轴承"})
-table.insert(m_inventory, {name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_SPRING, desc = "弹簧"})
-table.insert(m_inventory, {name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"})
-table.insert(m_inventory, {name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"})
+m_inventory = 
+{
+	{name = "Lift", ItemClass = "Lift", ItemType = GAME_PART_LIFT, desc = "升降台"},
+	{name = "Block", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BLOCK, desc = "普通方块"},
+	{name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CYLINDER, desc = "轮子"},
+	{name = "Cannon", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CANNON, desc = "炮筒"},
+	{name = "Thruster", ItemClass = "PlaceableBlock", ItemType = GAME_PART_THRUSTER, desc = "喷射器"},
+	{name = "Bearing", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BEARING, desc = "轴承"},
+	{name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_SPRING, desc = "弹簧"},
+	{name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"},
+	{name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"},
+}
 
 function updateLifting(dt)
 	if lift_state ~= 0 then
@@ -147,8 +147,8 @@ function showHelpPage()
 	isShowHelpPage = true
 end
 
-function drawInventory()
-	ImGui.Begin("资产浏览器", 0)
+function draw_inventory()
+	local isOpen = ImGui.Begin("资产浏览器", 0)
 	local i = 0
 	local itemSize = 80
 	m_isDragingInventory = false
@@ -178,6 +178,7 @@ function drawInventory()
 		i = i + 1
 	end
 	ImGui.End();
+	return isOpen
 end
 
 function drawHud()
@@ -186,7 +187,7 @@ function drawHud()
 	local window_pos = ImGui.ImVec2(screenSize.x / 2.0, screenSize.y - yOffset);
 	local window_pos_pivot = ImGui.ImVec2(0.5, 1.0);
 	ImGui.SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	local itemSize = 80
+	local itemSize = 60.0
 	ImGui.Begin("Profiler", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 	for k, v in pairs(m_itemSlots) do
 		-- ImGui.RadioButton(v.desc, m_currIndex == k)
@@ -223,6 +224,20 @@ function drawHud()
 		ImGui.SameLine(0, -1.0)
 	end
 	ImGui.End()
+end
+
+function findItemNameByIdx(id)
+	print("payload index", id, m_inventory)
+	return m_inventory[id].name;
+end
+
+function findItemByName(name)
+	for i,k in pairs(m_inventory) do
+		if k.name == name then
+			return k;
+		end
+	end
+	return nil;
 end
 
 function drawEntryInterface()
@@ -277,6 +292,10 @@ function onKeyRelease(input_event)
 		if rRotate >= 360 then
 			rRotate = 0
 		end
+	elseif input_event.keycode == TZW_KEY_I then
+		print "hahahahahahah"
+		MainMenu.shared():show()
+		MainMenu.shared():setIsShowAssetEditor(true)
 	elseif input_event.keycode == TZW_KEY_E then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
 			local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)

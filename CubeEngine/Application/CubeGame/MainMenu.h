@@ -26,7 +26,9 @@ public:
 	void initInGame();
 	GameNodeEditor * getNodeEditor();
 	void setIsShowNodeEditor(bool isShow);
+	void setIsShowAssetEditor(bool isShow);
 	void popFloatTips(std::string floatString);
+	void closeAllOpenedWindow();
 private:
 	bool m_isVisible = true;
     void startGame();

@@ -89,6 +89,9 @@ namespace tzw
 		BIND_BEGIN_CLASS(MainMenu)
 		.addStaticFunction ("shared", &MainMenu::shared)
 		BIND_FUNC(MainMenu, isVisible)
+		BIND_FUNC(MainMenu, show)
+		BIND_FUNC(MainMenu, hide)
+		BIND_FUNC(MainMenu, setIsShowAssetEditor)
 		BIND_END_CLASS
 
 		//GamePart and it's derived classes

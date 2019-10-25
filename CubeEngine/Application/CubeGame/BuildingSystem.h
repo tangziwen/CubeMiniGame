@@ -58,6 +58,7 @@ public:
 	void load(std::string filePath);
 	void updateBearing(float dt);
 	void removeLiftConnected();
+	void removeAll();
 	void removeIsland(Island * island);
 	std::set<GameConstraint *> &getConstraintList();
 	void update(float dt);

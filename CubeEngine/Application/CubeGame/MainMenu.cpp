@@ -69,6 +69,7 @@ void MainMenu::hide()
 	{
 		Engine::shared()->setUnlimitedCursor(true);
 	}
+	closeAllOpenedWindow();
 	setVisible(false);
 	if(m_crossHair)
 	{
@@ -99,7 +100,6 @@ void MainMenu::drawIMGUI()
 		{
 			if (ImGui::BeginMenu(u8"游戏"))
 			{
-				if (ImGui::MenuItem(u8"开始", "CTRL+Z")) { startGame(); }
 				if (ImGui::MenuItem(u8"保存载具", "CTRL+Z"))
 				{
 					m_fileBrowser->open(u8"保存为", u8"保存");
@@ -120,18 +120,23 @@ void MainMenu::drawIMGUI()
 					};
 					//BuildingSystem::shared()->load();
 				}
+
+				if (ImGui::MenuItem(u8"清空所有", nullptr))
+				{
+					BuildingSystem::shared()->removeAll();
+				}
 				if (ImGui::MenuItem(u8"选项", "CTRL+Z")) {}
-				if (ImGui::MenuItem(u8"重载脚本", "CTRL+Z")) {ScriptPyMgr::shared()->reload();}
 				if (ImGui::MenuItem(u8"退出", "CTRL+Z")) { exit(0); }
 				ImGui::EndMenu();
 			}
 			drawToolsMenu();
 			static bool isOpenTerrain = false;
-			if (ImGui::BeginMenu(u8"调试工具"))
+			if (ImGui::BeginMenu(u8"Debug"))
 			{
 				ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
 				ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
-
+				ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
+				if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
 
 				if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
 				{
@@ -187,42 +192,7 @@ void MainMenu::drawIMGUI()
 		}
 		if(m_isOpenAssetEditor)
 		{
-			ImGui::Begin(u8"资产浏览器");
-			for(int i =0; i < 25; i++)
-			{
-				//
-				auto s = ImGui::GetStyle();
-				auto spaceX = s.ItemSpacing.x;
-				auto padding = s.FramePadding.x;
-				auto size = ImGui::GetWindowWidth() - s.IndentSpacing;
-				int coloum = int(size / (50 + spaceX * 2 + padding * 2)) + 1;
-				if ((i % coloum) != 0)
-					ImGui::SameLine();
-				ImGui::PushID(i);
-				ImGui::BeginGroup();
-				ImGui::ImageButton(reinterpret_cast<ImTextureID> (testIcon->handle()), ImVec2(50, 50));
-				//ImGui::Button("ABCDEFG", ImVec2(50, 50));
-                // Our buttons are both drag sources and drag targets here!
-                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID))
-                {
-                    ImGui::SetDragDropPayload("DND_DEMO_CELL", &i, sizeof(int));    // Set payload to carry the index of our item (could be anything)
-					ImGui::Text("Copy %d", i);   // Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
-                    ImGui::EndDragDropSource();
-                }
-				ImGui::Text("fuck %d", i);
-				ImGui::EndGroup();
-				ImGui::PopID();
-                if (ImGui::BeginDragDropTarget())
-                {
-                	tlog("aaaaaaaaaaa");
-                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("DND_DEMO_CELL")) 
-					{
-                    	tlog("drop!!!!!");
-					}
-					ImGui::EndDragDropTarget();
-                }
-			}
-			ImGui::End();
+			m_isOpenAssetEditor = ScriptPyMgr::shared()->callFunB("draw_inventory");
 		}
 		m_fileBrowser->drawIMGUI();
 	}
@@ -256,9 +226,21 @@ void MainMenu::setIsShowNodeEditor(bool isShow)
 	m_isShowNodeEditor = isShow;
 }
 
+void MainMenu::setIsShowAssetEditor(bool isShow)
+{
+	m_isOpenAssetEditor = true;
+}
+
 void MainMenu::popFloatTips(std::string floatString)
 {
 	UIHelper::shared()->showFloatTips(floatString);
+}
+
+void MainMenu::closeAllOpenedWindow()
+{
+	m_isShowNodeEditor = false;
+	m_isOpenAssetEditor = false;
+	m_isOpenTerrain = false;
 }
 
 void MainMenu::startGame()
@@ -273,7 +255,6 @@ void MainMenu::drawToolsMenu()
 	{
 		ImGui::MenuItem(u8"节点编辑器", nullptr, &m_isShowNodeEditor);
 		ImGui::MenuItem(u8"资产浏览器", nullptr, &m_isOpenAssetEditor);
-		ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
 		ImGui::EndMenu();
 	}
 	if (m_isOpenTerrain)

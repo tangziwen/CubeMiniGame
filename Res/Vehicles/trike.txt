@@ -23,27 +23,33 @@
 					"attachList": [
 						{
 							"UID": "099b71a3-7710-4476-afb3-0af57bfbf01d",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "dd5dcb3b-4a30-4ee6-a803-97e3e88fd839",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "869b8f27-5d99-4a1d-9e5e-8a5b2cf38973",
-							"to": "f3bae4d0-2524-42ef-9af6-ef86a28e785a"
+							"to": "f3bae4d0-2524-42ef-9af6-ef86a28e785a",
+							"degree": -0.0
 						},
 						{
 							"UID": "b5cf6998-4825-4191-bfbc-5899f8049953",
-							"to": "d9fb6d8f-1304-4b78-afb2-30d294d9cba1"
+							"to": "d9fb6d8f-1304-4b78-afb2-30d294d9cba1",
+							"degree": -0.0
 						},
 						{
 							"UID": "a9a05907-6f75-48a0-8c0d-29bc72e30c05",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "e691dad3-4792-4b25-8e0f-5b04c6526dba",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -65,36 +71,42 @@
 					"attachList": [
 						{
 							"UID": "0eff355d-a724-43ee-9a6b-910a44ff60b8",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "11ffb970-e809-46ab-b873-acaa0552995d",
-							"to": "13e53e39-80a8-49d3-8d05-0071d1c32409"
+							"to": "13e53e39-80a8-49d3-8d05-0071d1c32409",
+							"degree": -0.0
 						},
 						{
 							"UID": "a45e6976-dd1e-4329-8389-5f226e11497f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "20925592-7dea-45c6-a5df-efc7c3db6063",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "b4173d93-4076-4f2b-b0dd-8d7856f440c2",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "ea0feaf6-0d4b-47fc-995d-c91f3ee44935",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
 			],
 			"rotate": [
-				-4.21468548950088e-8,
-				0.7071068286895752,
-				6.322027701344268e-8,
-				0.7071067094802856
+				-8.94069742685133e-8,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
@@ -120,20 +132,22 @@
 					"attachList": [
 						{
 							"UID": "c3410f44-8e70-4666-807b-d2c6d1ab691f",
-							"to": "eb16c8ca-3519-431f-a323-6f83108c174b"
+							"to": "eb16c8ca-3519-431f-a323-6f83108c174b",
+							"degree": 0.0
 						},
 						{
 							"UID": "0fa39943-054f-437e-ac29-17ad8cd2c3e0",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
 			],
 			"rotate": [
-				-1.4751397259260558e-7,
-				0.7071068286895752,
-				-1.4751397259260558e-7,
-				0.7071067094802856
+				-5.960464477539063e-8,
+				7.993609165432916e-15,
+				-1.1920930376163597e-7,
+				1.0
 			]
 		},
 		{
@@ -159,20 +173,22 @@
 					"attachList": [
 						{
 							"UID": "973948df-cc27-44d0-95d7-f29e3852e893",
-							"to": "489cab85-522f-456c-a4a6-c8b564c21082"
+							"to": "489cab85-522f-456c-a4a6-c8b564c21082",
+							"degree": 0.0
 						},
 						{
 							"UID": "fdb11abc-e291-4e4b-9e53-673057f91be4",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
 			],
 			"rotate": [
-				1.6858744800174464e-7,
-				0.7071068286895752,
-				1.685874053691805e-7,
-				0.7071068286895752
+				-5.960464477539063e-8,
+				-7.993609165432916e-15,
+				1.1920930376163597e-7,
+				1.0
 			]
 		},
 		{
@@ -198,27 +214,33 @@
 					"attachList": [
 						{
 							"UID": "74b02511-b520-4abc-bf5f-974bb0e5a5f2",
-							"to": "65904a4b-dc7d-4853-8ef9-478956a2e6aa"
+							"to": "65904a4b-dc7d-4853-8ef9-478956a2e6aa",
+							"degree": 0.0
 						},
 						{
 							"UID": "97cb2f18-29b2-4bca-a8c8-47863044c15b",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "94abb13a-4f15-4767-82cb-f2dd40068ef2",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "2bc78e2f-43b3-480d-b4d1-f98a8da56d09",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "3d867e1e-6973-4e48-90da-f5944544ad88",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "b3f84d81-5381-4ed4-ab62-c7cecb2f4e5f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -240,27 +262,33 @@
 					"attachList": [
 						{
 							"UID": "eae6fee7-f0b0-4e9b-a870-fcdcf49c75ed",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "cd3eae20-6add-4fc4-a8d7-bdc44e7c0a5b",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "42766074-977b-4a48-b104-e758a1dfb9ed",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "d80156e1-6c20-4683-b5fd-33866c7caaaf",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "998667ae-ef43-4b8f-a27e-fdc1d552decf",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "7d57754d-2898-49d1-8271-f5b327d36c9b",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -282,27 +310,33 @@
 					"attachList": [
 						{
 							"UID": "a1bb597d-4f9d-4b78-95e0-be9f47d73e44",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "fb59bcd4-734f-4b31-88a8-5ef95f2d6c6b",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "ff01349c-3f97-4189-b03d-fbf79cb67c90",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "bbe6efbc-f48e-4f2b-b8e9-13308ef33bb7",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "ecce0d65-ce53-4993-83a2-304c4e54da66",
-							"to": "empty"
+							"to": "4389b681-6b2c-4d10-82c5-5cfed477ed0f",
+							"degree": 0.0
 						},
 						{
 							"UID": "aa5c88e2-36c3-4fe5-acbc-0435f72cf12f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -324,27 +358,33 @@
 					"attachList": [
 						{
 							"UID": "a832c0c3-910a-407c-ba56-e75bca403319",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "fa5c67b6-d852-4b73-924d-ac7c56f8a5af",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "5ba1b114-ac14-4143-bac1-c80a8af31955",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "d663e275-b82a-4248-9c62-c9a48d32d6c3",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "1653936f-5e97-4c7e-88a7-d63bb855ba8f",
-							"to": "a8a76208-8bd0-43ca-ab4f-9df44b878ea7"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "cb92cfe6-f422-4267-ba07-12140dc0d5a5",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -366,27 +406,33 @@
 					"attachList": [
 						{
 							"UID": "fc6b3578-bed2-4231-b7d3-5e575253e98e",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "c7268c6a-c47d-47d6-abc4-bf26c10998e6",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "f092766f-bec3-43c9-acf3-efc0f1a54395",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "1902c40b-d014-4f12-a257-e09557abc9db",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "9d3d8b60-65b0-4f57-8a9d-0fcf5dcfb195",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "43ba92ac-1af7-4fe6-bcc0-a27174637f3f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -408,27 +454,33 @@
 					"attachList": [
 						{
 							"UID": "1cc8e5cb-4534-4ed4-9216-6835239da58f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "abc23b79-7274-4141-b23c-7081c2dfd79d",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "4dc312d6-4036-4fbb-ae4b-94c65913ee90",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "a41fac8d-c03b-4aa6-b3b3-45bc2a98c2f0",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "433026cd-2b81-491e-952e-4978c574342c",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "fb608492-dffb-4428-b936-4743c3eb0514",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -450,27 +502,33 @@
 					"attachList": [
 						{
 							"UID": "f2b01d89-86ff-4033-9d24-f9bdf43b6858",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "0976e9d0-3955-4d03-ad7d-97b72afc58ec",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "ded3e488-e447-41a0-b720-5b0f4c03cfde",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "9ac406e9-4754-45e2-962f-46f5039b91a5",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "8248d254-5a9a-451d-bf8f-bdc604e45d4c",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "3c0ab909-076c-4b4e-8297-973ff54da2e2",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -492,27 +550,33 @@
 					"attachList": [
 						{
 							"UID": "dc007ec4-a0c0-4366-af11-2b36e76b8ac5",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "f337782e-adde-41f6-93ce-7073b7a4472c",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "4ef62a0a-04d9-48d5-ba73-23b27d98c7c5",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "dd5d9eef-b0f5-4d02-b3b5-4cb890439076",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "e6ead0e2-7523-4239-bedb-6a117744c761",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "f11a522e-063a-4388-ad16-d08f85251322",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -534,27 +598,33 @@
 					"attachList": [
 						{
 							"UID": "f1ae57cd-e0dd-47c6-a86a-37ca7a5b5973",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "c4d20227-fcda-4ec4-8ae3-482dc963dc40",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "a7a61a07-e9c6-4618-ba76-10a68834eacd",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "c29dccd0-aad3-4df0-882e-07b025f0dfb8",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "e9a08b3f-9e56-4757-9bb7-bc39bc9337ce",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "960727e3-4d3b-4874-a40f-1d39d830dc7c",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -576,27 +646,33 @@
 					"attachList": [
 						{
 							"UID": "3b4f05fb-5f0c-466c-98e6-7f10d1a80468",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "0ea99261-e407-4406-b7e9-2b02ac0039aa",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "0ca1317f-09ad-43f5-9f18-b7adf7457337",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "eccb22ed-9903-4ee5-947c-f6acf11d3548",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "9d52e578-b46b-40d4-9a1d-2fb534eb5c51",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "ad5c82f8-6ac9-4a6e-9ba4-7f096d6b920f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -618,27 +694,33 @@
 					"attachList": [
 						{
 							"UID": "aecf31a5-5753-4bb4-851a-77ffd94281a2",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "074180d6-ba7b-46a3-b491-3896da1157e2",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "0193793c-fd71-4000-a0da-985f9dc4467e",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "6cb09c8d-2c96-4589-b8bb-7b8bce254582",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "c5306bd1-96fe-4293-80af-daf710d54986",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "0f7e6264-813b-43b6-af06-d2fde9004661",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -660,27 +742,33 @@
 					"attachList": [
 						{
 							"UID": "c0345018-4d6e-4fbe-ac09-09ed93e527be",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "fcd750ea-f1ea-4fe0-82d9-a4363469afb1",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "dcad8019-a94d-47ff-ba09-ade024880a0a",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "382b17ba-f822-4b3a-a284-a179bb469ead",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "93a792f9-f99f-456b-bd28-29e8befc6934",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "4b4ef825-1777-4593-b595-e5cc66fc0acb",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -702,27 +790,33 @@
 					"attachList": [
 						{
 							"UID": "b829835a-0135-412c-ac8c-d3da319d8b4d",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "5569e0d3-86f5-426b-817d-2c1c1176e677",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "43dfcd5f-0028-44d1-962f-1b28cdaacf74",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "5d110f41-048a-4c7d-b161-e42cfda6b6b5",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "3fbe49f4-d1a5-482b-bf46-f87b4f6c7388",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "8217466a-0353-423d-86f0-61054c812f0d",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -744,27 +838,33 @@
 					"attachList": [
 						{
 							"UID": "e732b776-e5b0-4614-85c3-d52ab5a49abc",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "84985531-c0a6-455d-82a0-39e0d677cb8f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "e512cb43-ed71-4d7c-8927-4d78424c04b6",
-							"to": "987763f7-cded-4f33-adb7-4df1484e4483"
+							"to": "987763f7-cded-4f33-adb7-4df1484e4483",
+							"degree": -0.0
 						},
 						{
 							"UID": "bf8518d1-dc84-477c-9c53-00e4388d53a1",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "0458d951-db3e-469a-9bb0-de06d2aa82c4",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "ea10e536-7a54-4045-b1e2-c962ff02753a",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -786,27 +886,33 @@
 					"attachList": [
 						{
 							"UID": "fab74653-d2ba-4148-8305-2b2444bdb9d4",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "d6f2dba1-89e4-453b-a373-401bbeed36f4",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "401c1bf2-c244-47f9-87e2-e838cf89a181",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "4cedb0fb-0bde-4c80-a1e3-c5c9a6057c38",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "3f9183f7-004e-4fa4-b6ab-4a60bbd4f89f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "e68f228d-de6e-4dfd-9993-1e625a132a6b",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				},
@@ -828,36 +934,42 @@
 					"attachList": [
 						{
 							"UID": "a2afaa8f-a8f5-40ea-ac0f-94e4d754f97c",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "36f49ac6-f4be-4956-bb12-c19f77cb8ff3",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "5e3352b9-f795-4b86-8caf-7838bee7bdb1",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "66b18aed-3bb9-44a6-8d19-76636d15144e",
-							"to": "98006b62-5407-4148-ab1d-99d55b55d2ee"
+							"to": "98006b62-5407-4148-ab1d-99d55b55d2ee",
+							"degree": -0.0
 						},
 						{
 							"UID": "32d22a31-9cff-4b01-b4f6-1ff7aaae308f",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						},
 						{
 							"UID": "df20559e-fd16-4f43-9b37-95dc3c85b620",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
 			],
 			"rotate": [
-				-4.214685134229512e-8,
-				0.7071068286895752,
-				4.214684778958144e-8,
-				0.7071067094802856
+				-5.960464477539063e-8,
+				0.0,
+				0.0,
+				1.0
 			]
 		},
 		{
@@ -883,20 +995,22 @@
 					"attachList": [
 						{
 							"UID": "a6cae06c-a0ea-4eb6-9b9d-4fce91cc557e",
-							"to": "d45c1e78-2337-42b4-9e3e-e73f14308947"
+							"to": "d45c1e78-2337-42b4-9e3e-e73f14308947",
+							"degree": 0.0
 						},
 						{
 							"UID": "89c76621-03f8-4b8c-bc25-6fa5601b8989",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
 			],
 			"rotate": [
-				-6.322030543515211e-8,
-				0.7071068286895752,
-				-6.32202912242974e-8,
-				0.7071067690849304
+				8.940696005765858e-8,
+				2.9802306400483759e-8,
+				-2.980233659855003e-8,
+				1.0
 			]
 		},
 		{
@@ -922,20 +1036,22 @@
 					"attachList": [
 						{
 							"UID": "1f6fdcdc-fa28-44a8-bfc0-4cab199c92cf",
-							"to": "508906fb-172c-437b-98d1-599c9903f1ae"
+							"to": "508906fb-172c-437b-98d1-599c9903f1ae",
+							"degree": 0.0
 						},
 						{
 							"UID": "8029e86d-8f5c-454d-9b43-8075f96719b1",
-							"to": "empty"
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
 			],
 			"rotate": [
-				-6.322026990801533e-8,
-				0.7071067690849304,
-				2.1073415013006526e-8,
-				0.7071068286895752
+				8.940696005765858e-8,
+				-2.9802306400483759e-8,
+				2.980233659855003e-8,
+				1.0
 			]
 		}
 	],
@@ -952,13 +1068,42 @@
 			"to": "973948df-cc27-44d0-95d7-f29e3852e893",
 			"attachList": [
 				{
-					"UID": "f3bae4d0-2524-42ef-9af6-ef86a28e785a"
+					"UID": "f3bae4d0-2524-42ef-9af6-ef86a28e785a",
+					"to": "869b8f27-5d99-4a1d-9e5e-8a5b2cf38973",
+					"degree": 0.0
 				},
 				{
-					"UID": "489cab85-522f-456c-a4a6-c8b564c21082"
+					"UID": "489cab85-522f-456c-a4a6-c8b564c21082",
+					"to": "973948df-cc27-44d0-95d7-f29e3852e893",
+					"degree": -0.0
 				}
 			],
 			"UID": "d7875a05-fae4-42f4-a900-6d86c5f28b35",
+			"isFlipped": true
+		},
+		{
+			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
+			"Name": "轴承 转向",
+			"Type": "Bearing",
+			"from": "11ffb970-e809-46ab-b873-acaa0552995d",
+			"isSteering": true,
+			"isAngleLimit": true,
+			"AngleLimitLow": -30.0,
+			"AngleLimitHigh": 30.0,
+			"to": "74b02511-b520-4abc-bf5f-974bb0e5a5f2",
+			"attachList": [
+				{
+					"UID": "13e53e39-80a8-49d3-8d05-0071d1c32409",
+					"to": "11ffb970-e809-46ab-b873-acaa0552995d",
+					"degree": 0.0
+				},
+				{
+					"UID": "65904a4b-dc7d-4853-8ef9-478956a2e6aa",
+					"to": "74b02511-b520-4abc-bf5f-974bb0e5a5f2",
+					"degree": -0.0
+				}
+			],
+			"UID": "74959fa3-9f3f-426e-92b2-60da734d0308",
 			"isFlipped": true
 		},
 		{
@@ -973,35 +1118,18 @@
 			"to": "1f6fdcdc-fa28-44a8-bfc0-4cab199c92cf",
 			"attachList": [
 				{
-					"UID": "987763f7-cded-4f33-adb7-4df1484e4483"
+					"UID": "987763f7-cded-4f33-adb7-4df1484e4483",
+					"to": "e512cb43-ed71-4d7c-8927-4d78424c04b6",
+					"degree": 0.0
 				},
 				{
-					"UID": "508906fb-172c-437b-98d1-599c9903f1ae"
+					"UID": "508906fb-172c-437b-98d1-599c9903f1ae",
+					"to": "1f6fdcdc-fa28-44a8-bfc0-4cab199c92cf",
+					"degree": -0.0
 				}
 			],
 			"UID": "9c305ab2-e990-4a11-97c3-b314b4d9ba8f",
 			"isFlipped": false
-		},
-		{
-			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
-			"Name": "轴承 转向",
-			"Type": "Bearing",
-			"from": "11ffb970-e809-46ab-b873-acaa0552995d",
-			"isSteering": true,
-			"isAngleLimit": true,
-			"AngleLimitLow": -30.0,
-			"AngleLimitHigh": 30.0,
-			"to": "74b02511-b520-4abc-bf5f-974bb0e5a5f2",
-			"attachList": [
-				{
-					"UID": "13e53e39-80a8-49d3-8d05-0071d1c32409"
-				},
-				{
-					"UID": "65904a4b-dc7d-4853-8ef9-478956a2e6aa"
-				}
-			],
-			"UID": "74959fa3-9f3f-426e-92b2-60da734d0308",
-			"isFlipped": true
 		},
 		{
 			"IslandGroup": "6fb25e66-913b-491b-b9ff-107f3080fde8",
@@ -1015,10 +1143,14 @@
 			"to": "a6cae06c-a0ea-4eb6-9b9d-4fce91cc557e",
 			"attachList": [
 				{
-					"UID": "98006b62-5407-4148-ab1d-99d55b55d2ee"
+					"UID": "98006b62-5407-4148-ab1d-99d55b55d2ee",
+					"to": "66b18aed-3bb9-44a6-8d19-76636d15144e",
+					"degree": 0.0
 				},
 				{
-					"UID": "d45c1e78-2337-42b4-9e3e-e73f14308947"
+					"UID": "d45c1e78-2337-42b4-9e3e-e73f14308947",
+					"to": "a6cae06c-a0ea-4eb6-9b9d-4fce91cc557e",
+					"degree": -0.0
 				}
 			],
 			"UID": "010bdcd7-4ded-4add-a95c-791bf9216c16",
@@ -1036,10 +1168,14 @@
 			"to": "c3410f44-8e70-4666-807b-d2c6d1ab691f",
 			"attachList": [
 				{
-					"UID": "d9fb6d8f-1304-4b78-afb2-30d294d9cba1"
+					"UID": "d9fb6d8f-1304-4b78-afb2-30d294d9cba1",
+					"to": "b5cf6998-4825-4191-bfbc-5899f8049953",
+					"degree": 0.0
 				},
 				{
-					"UID": "eb16c8ca-3519-431f-a323-6f83108c174b"
+					"UID": "eb16c8ca-3519-431f-a323-6f83108c174b",
+					"to": "c3410f44-8e70-4666-807b-d2c6d1ab691f",
+					"degree": -0.0
 				}
 			],
 			"UID": "de48773c-a485-4460-8d83-c1d6d780db28",
@@ -1049,8 +1185,8 @@
 	"NodeGraph": {
 		"NodeList": [
 			{
-				"orgin_x": -446.0,
-				"orgin_y": 204.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "7d3365c6-730e-41c8-92f2-f1f87b62bc87",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1060,30 +1196,8 @@
 				"UID": "7d3365c6-730e-41c8-92f2-f1f87b62bc87"
 			},
 			{
-				"orgin_x": -804.0,
-				"orgin_y": -500.0,
-				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912",
-				"NodeType": 1,
-				"NodeClass": 0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "74959fa3-9f3f-426e-92b2-60da734d0308",
-				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912"
-			},
-			{
-				"orgin_x": -884.0,
-				"orgin_y": 268.0,
-				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702",
-				"NodeType": 1,
-				"NodeClass": 0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "010bdcd7-4ded-4add-a95c-791bf9216c16",
-				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702"
-			},
-			{
-				"orgin_x": -1316.0,
-				"orgin_y": 12.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "ed93ae25-fc43-4f07-a96f-7060ae2b3640",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1093,19 +1207,8 @@
 				"UID": "ed93ae25-fc43-4f07-a96f-7060ae2b3640"
 			},
 			{
-				"orgin_x": -1316.0,
-				"orgin_y": -244.0,
-				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0",
-				"NodeType": 1,
-				"NodeClass": 0,
-				"Type": "Resource",
-				"ResType": "BearPart",
-				"ResUID": "de48773c-a485-4460-8d83-c1d6d780db28",
-				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0"
-			},
-			{
-				"orgin_x": -1092.0,
-				"orgin_y": 220.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "4273916b-dfab-4b27-9d34-eb9a594938dc",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1115,29 +1218,62 @@
 				"UID": "4273916b-dfab-4b27-9d34-eb9a594938dc"
 			},
 			{
-				"orgin_x": -1040.0,
-				"orgin_y": -268.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
+				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "74959fa3-9f3f-426e-92b2-60da734d0308",
+				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912"
+			},
+			{
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
+				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "010bdcd7-4ded-4add-a95c-791bf9216c16",
+				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702"
+			},
+			{
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
+				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0",
+				"NodeType": 1,
+				"NodeClass": 0,
+				"Type": "Resource",
+				"ResType": "BearPart",
+				"ResUID": "de48773c-a485-4460-8d83-c1d6d780db28",
+				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0"
+			},
+			{
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
 				"NodeType": 0,
 				"NodeClass": 1
 			},
 			{
-				"orgin_x": -548.0,
-				"orgin_y": -256.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "5f17e464-fe2e-416d-a2d0-f19376b4c89e",
 				"NodeType": 2,
 				"NodeClass": 2
 			},
 			{
-				"orgin_x": -886.0,
-				"orgin_y": -32.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "e6017b69-304f-4798-badc-baae6d25c2db",
 				"NodeType": 2,
 				"NodeClass": 3
 			},
 			{
-				"orgin_x": -639.0,
-				"orgin_y": 16.0,
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
 				"UID": "3fef4a01-c7c2-4472-b2f9-5fe1da751704",
 				"NodeType": 2,
 				"NodeClass": 2

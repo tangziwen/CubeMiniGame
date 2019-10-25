@@ -602,6 +602,7 @@ namespace tzw
 						GUIDMgr::shared()->get(toAttach->m_connectedGUID));
 					toAttach->m_parent->attachToOtherIslandByAlterSelfIsland(
 						constraintAttach_target, toAttach, toAttach->m_degree);
+					printf("aaaaa %p\n",constraint->m_a);
 					constraint->m_a = toAttach;
 				}
 				constraint->load(item);
@@ -647,6 +648,27 @@ namespace tzw
 		{
 			removeIsland(island);
 		}
+	}
+
+	void BuildingSystem::removeAll()
+	{
+		for(auto island : m_IslandList)
+		{
+			for (auto& iter : island->m_partList)
+			{
+				if (iter->isConstraint())
+				{
+					auto bearing = static_cast<GameConstraint*>(iter);
+					m_bearList.erase(m_bearList.find(bearing));
+				}
+				iter->getNode()->removeFromParent();
+				delete iter;
+			}
+			island->removeAll();
+			delete island;
+		}
+		m_bearList.clear();
+		m_IslandList.clear();
 	}
 
 	void BuildingSystem::removeIsland(Island* island)
