@@ -1,4 +1,5 @@
 #include "GuidMgr.h"
+#include <assert.h>
 extern "C"
 {
 #include "uuid4.h"
@@ -31,6 +32,7 @@ namespace tzw
 
 	void GUIDMgr::add(std::string guid, void* ptr)
 	{
+		assert(m_map.find(guid) == m_map.end());
 		m_map.insert(std::make_pair(guid, ptr));
 	}
 

@@ -34,7 +34,7 @@ namespace tzw
 
     GuidObj::~GuidObj()
 	{
-		
+		GUIDMgr::shared()->remove(m_uuid);
 	}
 } // namespace tzw
 
