@@ -17,7 +17,6 @@ namespace tzw
 		int getAttachmentCount() override;
 	public:
 		GamePartType getType() override;
-		Attachment * m_attachment[6];
 		float m_topRadius, m_bottomRadius, m_height;
 	};
 }

@@ -1185,8 +1185,8 @@
 	"NodeGraph": {
 		"NodeList": [
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -446.0,
+				"orgin_y": 204.0,
 				"UID": "7d3365c6-730e-41c8-92f2-f1f87b62bc87",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1196,8 +1196,8 @@
 				"UID": "7d3365c6-730e-41c8-92f2-f1f87b62bc87"
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -804.0,
+				"orgin_y": -500.0,
 				"UID": "ed93ae25-fc43-4f07-a96f-7060ae2b3640",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1207,8 +1207,8 @@
 				"UID": "ed93ae25-fc43-4f07-a96f-7060ae2b3640"
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -884.0,
+				"orgin_y": 268.0,
 				"UID": "4273916b-dfab-4b27-9d34-eb9a594938dc",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1218,8 +1218,8 @@
 				"UID": "4273916b-dfab-4b27-9d34-eb9a594938dc"
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -1316.0,
+				"orgin_y": 12.0,
 				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1229,8 +1229,8 @@
 				"UID": "f5f920f3-96ef-47a6-8c80-879084c80912"
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -1316.0,
+				"orgin_y": -244.0,
 				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1240,8 +1240,8 @@
 				"UID": "53cd1e33-7a3b-42d9-b97f-2ff0d9899702"
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -1092.0,
+				"orgin_y": 220.0,
 				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0",
 				"NodeType": 1,
 				"NodeClass": 0,
@@ -1251,29 +1251,29 @@
 				"UID": "14c2a853-dd47-4aa4-920f-ea6d7afeaaa0"
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -1040.0,
+				"orgin_y": -268.0,
 				"UID": "c180f129-100d-447d-aefc-0f5f35b2bb8a",
 				"NodeType": 0,
 				"NodeClass": 1
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -548.0,
+				"orgin_y": -256.0,
 				"UID": "5f17e464-fe2e-416d-a2d0-f19376b4c89e",
 				"NodeType": 2,
 				"NodeClass": 2
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -886.0,
+				"orgin_y": -32.0,
 				"UID": "e6017b69-304f-4798-badc-baae6d25c2db",
 				"NodeType": 2,
 				"NodeClass": 3
 			},
 			{
-				"orgin_x": 3.4028234663852887e38,
-				"orgin_y": 3.4028234663852887e38,
+				"orgin_x": -639.0,
+				"orgin_y": 16.0,
 				"UID": "3fef4a01-c7c2-4472-b2f9-5fe1da751704",
 				"NodeType": 2,
 				"NodeClass": 2

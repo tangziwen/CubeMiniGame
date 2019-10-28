@@ -348,6 +348,11 @@ namespace tzw
 		
 		m_node->removeFromParent();
 		delete m_node;
+		for(auto attach : m_attachment)
+		{
+			delete attach;
+		}
+		m_attachment.clear();
 	}
 
 	GamePartType GamePart::getType()
@@ -504,5 +509,10 @@ namespace tzw
 				getAttachment(i)->m_parent = this;
 			}
         }
+	}
+
+	void GamePart::addAttachment(Attachment* newAttach)
+	{
+		m_attachment.push_back(newAttach);
 	}
 }

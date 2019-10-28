@@ -32,7 +32,6 @@ public:
 	void enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse);
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
-	Attachment * m_attachment[6];
 	GameNodeEditorNode * m_graphNode;
 	bool m_isSteering;
 	bool m_isAngleLimit;

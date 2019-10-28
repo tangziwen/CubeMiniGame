@@ -41,7 +41,7 @@ ThrusterPart::ThrusterPart()
 void ThrusterPart::initAttachments()
 {
 	//forward backward
-	m_attachment[0] = new Attachment(vec3(0.0, 0.0, m_height / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this);
+	addAttachment(new Attachment(vec3(0.0, 0.0, m_height / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this));
 }
 
 Attachment * ThrusterPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)
@@ -137,5 +137,6 @@ GameNodeEditorNode* ThrusterPart::getGraphNode() const
 ThrusterPart::~ThrusterPart()
 {
 	BuildingSystem::shared()->removeThruster(this);
+	delete m_graphNode;
 }
 }

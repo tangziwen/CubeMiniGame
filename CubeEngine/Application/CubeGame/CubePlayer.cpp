@@ -291,4 +291,10 @@ namespace tzw
 		BuildingSystem::shared()->removePartByAttach(attach);
 		m_currPointPart = nullptr;
 	}
+
+	void CubePlayer::removeAllBlocks()
+	{
+		BuildingSystem::shared()->removeAll();
+		m_currPointPart = nullptr;
+	}
 } // namespace tzw

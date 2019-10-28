@@ -18,7 +18,6 @@ namespace tzw
 		int getAttachmentCount() override;
 		void generateName() override;
 		GamePartType getType() override;
-		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 		void toggle(int openSignal);
 		void updateForce(float dt);

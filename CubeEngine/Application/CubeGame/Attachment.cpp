@@ -102,4 +102,8 @@ namespace tzw
 			m_connected = nullptr;
 		}
 	}
+
+	Attachment::~Attachment()
+	{
+	}
 }

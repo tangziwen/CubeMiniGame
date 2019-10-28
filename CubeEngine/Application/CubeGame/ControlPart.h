@@ -37,7 +37,6 @@ namespace tzw
 		int m_forward;
 		int m_side;
 		GamePartType getType() override;
-		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 		std::vector<BearPart * > m_forwardBearing;
 		std::vector<BearPart *> m_sidewardBearing;

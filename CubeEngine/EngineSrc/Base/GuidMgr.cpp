@@ -32,8 +32,13 @@ namespace tzw
 
 	void GUIDMgr::add(std::string guid, void* ptr)
 	{
-		assert(m_map.find(guid) == m_map.end());
-		m_map.insert(std::make_pair(guid, ptr));
+		//assert(m_map.find(guid) == m_map.end());
+		if(m_map.find(guid) != m_map.end())
+		{
+			printf("duplicated\n");
+		}
+		//m_map.insert(std::make_pair(guid, ptr));
+		m_map[guid] = ptr;
 	}
 
 	void GUIDMgr::remove(std::string guid)

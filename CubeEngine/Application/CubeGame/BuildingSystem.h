@@ -70,6 +70,7 @@ private:
 	std::set<GameConstraint* > m_bearList;
 	std::set<GamePart* > m_thrusterList;
 	std::map<GamePart *, LabelNew *> m_partToLabel;
+	GamePart * m_currPointPart;
 };
 
 

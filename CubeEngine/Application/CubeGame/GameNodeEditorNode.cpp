@@ -222,7 +222,7 @@ namespace tzw
 
 	GameNodeEditorNode::~GameNodeEditorNode()
 	{
-
+		tlog("remove node\n");
 	}
 
 	int GameNodeEditorNode::getInputAttrLocalIndexByGid(int GID)

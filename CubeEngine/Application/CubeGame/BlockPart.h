@@ -17,7 +17,6 @@ namespace tzw
 	public:
 		void cook();
 		GamePartType getType() override;
-		Attachment * m_attachment[6];
 		BearPart * m_bearPart[6];
 	};
 }

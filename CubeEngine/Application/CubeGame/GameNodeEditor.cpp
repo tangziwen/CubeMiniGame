@@ -578,6 +578,18 @@ void GameNodeEditor::pushToStack(GameNodeEditorNode* node)
 	m_rt_exe_chain.push(node);
 }
 
+void GameNodeEditor::clearAll()
+{
+	
+	for(auto node : m_gameNodes)
+	{
+		delete node;
+	}
+	m_gameNodes.clear();
+	m_links.clear();
+	m_triggerList.clear();
+}
+
 void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 	{
 		static bool g_FirstFrame = true;

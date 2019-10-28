@@ -28,5 +28,6 @@ namespace tzw
 		std::string m_connectedGUID;
 		void breakConnection();
 		float m_degree;
+		~Attachment();
 	};
 }

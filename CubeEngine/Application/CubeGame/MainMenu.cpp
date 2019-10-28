@@ -123,7 +123,8 @@ void MainMenu::drawIMGUI()
 
 				if (ImGui::MenuItem(u8"清空所有", nullptr))
 				{
-					BuildingSystem::shared()->removeAll();
+					GameWorld::shared()->getPlayer()->removeAllBlocks();
+					m_nodeEditor->clearAll();
 				}
 				if (ImGui::MenuItem(u8"选项", "CTRL+Z")) {}
 				if (ImGui::MenuItem(u8"退出", "CTRL+Z")) { exit(0); }
