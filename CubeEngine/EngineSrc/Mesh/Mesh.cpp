@@ -152,6 +152,42 @@ void Mesh::calcTangents()
     }
 }
 
+void Mesh::submitInstanced(int preserveNumber)
+{
+	if (m_instanceOffset.size() > 0)
+	{
+		m_instanceBuf->use();
+		int size = (preserveNumber > 0) ?preserveNumber:m_instanceOffset.size();
+		void * data = (preserveNumber > 0)?NULL:&m_instanceOffset[0];
+		m_instanceBuf->allocate(data, size * sizeof(InstanceData));
+	}
+}
+
+void Mesh::reSubmitInstanced()
+{
+	if (m_instanceOffset.size() > 0)
+	{
+		m_instanceBuf->use();
+		m_instanceBuf->resubmit(&m_instanceOffset[0], 0, m_instanceOffset.size() * sizeof(InstanceData));
+	}
+}
+
+void Mesh::submitOnlyVO_IO()
+{
+	if (m_vertices.empty()) return;
+    if(m_ibo == -1)
+    {
+        createBufferObject();
+    }
+    //pass data to the VBO
+    m_arrayBuf->use();
+    m_arrayBuf->allocate(&m_vertices[0], m_vertices.size() * sizeof(VertexData));
+
+    //pass data to the IBO
+    m_indexBuf->use();
+    m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u));
+}
+
 void Mesh::setMatIndex(unsigned int matIndex)
 {
     m_matIndex = matIndex;

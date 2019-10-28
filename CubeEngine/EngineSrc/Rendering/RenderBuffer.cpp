@@ -27,6 +27,20 @@ void RenderBuffer::allocate(void *data, unsigned int amount)
     }
 }
 
+void RenderBuffer::resubmit(void* data, unsigned offset, unsigned amount)
+{
+    use();
+    switch(m_type)
+    {
+    case Type::INDEX:
+        RenderBackEnd::shared()->resubmit(RenderFlag::BufferTarget::IndexBuffer, offset ,amount,data);
+        break;
+    case Type::VERTEX:
+        RenderBackEnd::shared()->resubmit(RenderFlag::BufferTarget::VertexBuffer, offset ,amount,data);
+        break;
+    }
+}
+
 void RenderBuffer::use()
 {
     switch(m_type)

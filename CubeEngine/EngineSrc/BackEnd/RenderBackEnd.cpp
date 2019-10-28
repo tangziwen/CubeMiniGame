@@ -134,6 +134,23 @@ void RenderBackEnd::submit(RenderFlag::BufferTarget target, unsigned int size, c
 	}
 }
 
+void RenderBackEnd::resubmit(RenderFlag::BufferTarget target, unsigned offset, unsigned size, const void* data)
+{
+	switch(target)
+	{
+		case RenderFlag::BufferTarget::VertexBuffer:
+			glBufferSubData(GL_ARRAY_BUFFER,offset, size,data);
+			selfCheck();
+		break;
+		case RenderFlag::BufferTarget::IndexBuffer:
+			glBufferSubData(GL_ELEMENT_ARRAY_BUFFER, offset, size,data);
+			selfCheck();
+		break;
+		default:
+		break;
+	}
+}
+
 void RenderBackEnd::activeTextureUnit(unsigned int id)
 {
 	glActiveTexture(GL_TEXTURE0 + id);

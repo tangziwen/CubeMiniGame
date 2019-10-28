@@ -16,6 +16,7 @@ public:
     RenderBuffer(Type bufferType);
     void create();
     void allocate(void * data, unsigned int amount);
+	void resubmit(void * data, unsigned int offset, unsigned int amount);
     void use();
     unsigned int bufferId() const;
 

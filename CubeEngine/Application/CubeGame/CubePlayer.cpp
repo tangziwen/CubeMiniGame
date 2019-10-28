@@ -14,6 +14,7 @@
 #include "BuildingSystem.h"
 #include "ItemMgr.h"
 #include "AssistDrawSystem.h"
+#include "3D/Particle/ParticleEmitter.h"
 
 namespace tzw
 {
@@ -163,6 +164,13 @@ namespace tzw
 		case TZW_KEY_J:
 			{
 				BuildingSystem::shared()->replaceToLiftByRay(getPos(), m_camera->getForward(), 15);
+			}
+			break;
+		case TZW_KEY_Z:
+			{
+				ParticleEmitter * emitter = new ParticleEmitter();
+				g_GetCurrScene()->addNode(emitter);
+				emitter->setPos(getPos() + m_camera->getForward() * 2.0f);
 			}
 			break;
 		default:

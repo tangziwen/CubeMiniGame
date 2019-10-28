@@ -89,6 +89,9 @@ public:
 	void pushInstances(std::vector<InstanceData> instancePos);
 	void clearInstances();
 	void calcTangents();
+	void submitInstanced(int preserveNumber = 0);
+	void reSubmitInstanced();
+	void submitOnlyVO_IO();
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );
     void computeNewVerts ();
