@@ -157,10 +157,6 @@ void Node::visit(RenderCommand::RenderType passType)
 		this->reCache();
 		setNeedToUpdate(false); 
 	}
-	//if (this->getTypeID() == 2333)
-	//{
-	//	printf("aaaa");
-	//}
 	if(m_isVisible && m_isValid)
 	{
 		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )
@@ -170,6 +166,8 @@ void Node::visit(RenderCommand::RenderType passType)
 		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
 			scene->updateObj(static_cast<Drawable3D *>(this));
+			//and update threre child
+
 		}
 		////traversal the children
 		for(auto child : m_children)
@@ -431,6 +429,7 @@ void Node::removeFromParent()
 {
 	auto scene = g_GetCurrScene()->getOctreeScene();
     setIsValid(false);
+	m_parent->detachChild(this);
 	m_parent = nullptr;
 	if(m_isAccpectOCTtree)
 	{

@@ -17,6 +17,7 @@ enum {
 };
 
 int  uuid4_init(void);
+
 void uuid4_generate(char *dst);
 
 #endif

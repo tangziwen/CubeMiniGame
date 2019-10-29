@@ -176,6 +176,8 @@ Chunk::submitDrawCmd(RenderCommand::RenderType passType)
     return;
   if (m_isNeedSubmitMesh)
     return;
+	if(m_mesh->getIndexBuf()->bufferId() == 0)
+	return;
   if (passType != RenderCommand::RenderType::Common) 
   {
 	  return;

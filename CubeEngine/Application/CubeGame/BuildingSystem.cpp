@@ -44,7 +44,6 @@ namespace tzw
 			{
 
 				dropFromLift();
-				m_liftPart->getNode()->removeFromParent();
 				m_liftPart->getFirstAttachment()->breakConnection();
 				delete m_liftPart;
 				m_liftPart = nullptr;
@@ -187,6 +186,7 @@ namespace tzw
         }
 		auto part = new LiftPart();
 		part->getNode()->setPos(wherePos);
+		part->getNode()->setName("LiftPart Node");
 		g_GetCurrScene()->addNode(part->getNode());
 		m_liftPart = part;
 	}

@@ -6,6 +6,7 @@
 namespace tzw
 {
 	class Island;
+	class ParticleEmitter;
 	class ThrusterPart : public GamePart
 	{
 	public:
@@ -30,6 +31,7 @@ namespace tzw
 		vec3 m_phaseV3;
 		float m_dir_t;
 		GameNodeEditorNode * m_graphNode;
+		ParticleEmitter * emitter;
 		noise::module::Perlin flatNoise;
 	};
 }

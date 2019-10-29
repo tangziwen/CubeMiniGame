@@ -67,7 +67,14 @@ void Renderer::addRenderCommand(RenderCommand& command)
 		break;
 		case RenderCommand::RenderType::Instanced:
 		{
-			m_CommonCommand.push_back(command);
+			if (command.getIsNeedTransparent())
+			{
+				m_transparentCommandList.push_back(command);
+			}
+			else
+			{
+				m_CommonCommand.push_back(command);
+			}
 		}
 			break;
 		default:
@@ -143,6 +150,15 @@ void Renderer::renderAll()
 		
 	}
 	bindScreenForWriting();
+	if (!m_transparentCommandList.empty())
+	{
+		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+		RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
+		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
+			RenderFlag::BlendingFactor::One);
+		renderAllTransparent();	
+		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	}
 	if(m_enableGUIRender)
 	{
 		RenderBackEnd::shared()->setDepthTestEnable(false);
@@ -429,9 +445,13 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 	glVertexAttribDivisor(grassOffsetLocation, 1);
 	
 	int extraInstanceOffsetLocation = program->attributeLocation("a_instance_offset2");
-	program->enableAttributeArray(extraInstanceOffsetLocation);
-	program->setAttributeBuffer(extraInstanceOffsetLocation, GL_FLOAT, offsetof(InstanceData, extraInfo.x), 4, sizeof(InstanceData));
-	glVertexAttribDivisor(extraInstanceOffsetLocation, 1);
+	if(extraInstanceOffsetLocation > 0)
+	{
+		program->enableAttributeArray(extraInstanceOffsetLocation);
+		program->setAttributeBuffer(extraInstanceOffsetLocation, GL_FLOAT, offsetof(InstanceData, extraInfo.x), 4, sizeof(InstanceData));
+		glVertexAttribDivisor(extraInstanceOffsetLocation, 1);
+	}
+
 	switch (primitiveType)
 	{
 	case RenderCommand::PrimitiveType::TRIANGLES:
@@ -443,7 +463,10 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 	default: ;
 	}
 	glVertexAttribDivisor(grassOffsetLocation, 0);
-	glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
+	if(extraInstanceOffsetLocation > 0)
+	{
+		glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
+	}
 }
 
 ///
@@ -653,12 +676,6 @@ void Renderer::geometryPass()
 	if(m_enable3DRender)
 	{
 		renderAllCommon();
-		if (!m_transparentCommandList.empty())
-		{
-			RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-			renderAllTransparent();	
-			RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
-		}
 	}
 	if(Engine::shared()->getIsEnableOutLine())
 	{

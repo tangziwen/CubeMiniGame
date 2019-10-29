@@ -8,6 +8,14 @@
 #include "Utility/math/TbaseMath.h"
 #include <ctime>
 #include "BuildingSystem.h"
+#include "3D/Particle/ParticleEmitter.h"
+#include "3D/Particle/ParticleInitPosModule.h"
+#include "3D/Particle/ParticleInitSizeModule.h"
+#include "3D/Particle/ParticleInitVelocityModule.h"
+#include "3D/Particle/ParticleInitLifeSpanModule.h"
+#include "3D/Particle/ParticleInitAlphaModule.h"
+#include "3D/Particle/ParticleUpdateAlphaModule.h"
+#include "3D/Particle/ParticleUpdateSizeModule.h"
 
 
 namespace tzw
@@ -36,6 +44,25 @@ ThrusterPart::ThrusterPart()
 	m_phaseV3 = vec3(TbaseMath::randFN()*1000.0f, TbaseMath::randF()*1000.0f, TbaseMath::randF()*1000.0f);
 	flatNoise.SetSeed(time(nullptr));
 	BuildingSystem::shared()->addThruster(this);
+
+	emitter = new ParticleEmitter();
+	emitter->addInitModule(new ParticleInitPosModule(vec3(-0.05, 0.0, -0.05), vec3(0.05, 0.0, 0.05)));
+	emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.6));
+	emitter->addInitModule(new ParticleInitVelocityModule(vec3(-0.25, 0.0, -3.0), vec3(0.25, 0.0, -3.0)));
+	emitter->addInitModule(new ParticleInitLifeSpanModule(3.0, 3.0));
+	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.7));
+
+	emitter->addUpdateModule(new ParticleUpdateAlphaModule(-0.8f));
+	emitter->addUpdateModule(new ParticleUpdateSizeModule(-0.6));
+	
+	m_node->addChild(emitter);
+
+	auto a = Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
+	Matrix44 mat = a.getAttachmentInfoMat44();
+	Quaternion q;
+	q.fromRotationMatrix(&mat);
+	emitter->setPos(mat.getTranslation());
+	emitter->setRotateQ(q);
 }
 
 void ThrusterPart::initAttachments()
@@ -115,6 +142,7 @@ void ThrusterPart::updateForce(float dt)
 	{
 		if(m_parent->m_rigid)
 		{
+			emitter->setIsState(ParticleEmitter::State::Playing);
 			m_t += dt * 6;
 			m_dir_t += dt * 3.0f;
 			m_parent->m_rigid->activate();
@@ -124,7 +152,13 @@ void ThrusterPart::updateForce(float dt)
 			auto forceDir = m_node->getForward() *-1 + randomDir;
 			auto forceVariation = sinf(m_phase + m_scale * m_t) * 0.3;
 			m_parent->m_rigid->applyForce(forceDir * (25.0f  + forceVariation), m_node->getPos());
-		}		
+		}else
+		{
+			emitter->setIsState(ParticleEmitter::State::Stop);
+		}
+	}else
+	{
+		emitter->setIsState(ParticleEmitter::State::Stop);
 	}
 	//apply recoil
 }

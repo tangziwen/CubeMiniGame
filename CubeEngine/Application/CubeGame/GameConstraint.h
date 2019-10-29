@@ -24,6 +24,5 @@ public:
 	virtual ~GameConstraint();
 protected:
 	bool m_isEnablePhysics;
-	LabelNew * m_label;
 };
 }

@@ -75,10 +75,20 @@ void Material::loadFromFile(std::string filePath)
 
 			auto theName = attribute["name"].GetString();
 			auto aliasName = theName;
-			auto& val = attribute["default"];
 			bool hasDefaultVal = true;
-			if (val.IsArray() && val.Size() <= 0)
+			rapidjson::GenericValue<rapidjson::UTF8<>> val;
+			if(attribute.HasMember("default"))
+			{
+				val = attribute["default"];
+				if (val.IsArray() && val.Size() <= 0)
+					hasDefaultVal = false;
+			}else
+			{
 				hasDefaultVal = false;
+			}
+			
+			
+
 			std::string typeStr = attribute["type"].GetString();
 			m_aliasMap[theName] = aliasName;
 			auto var = new TechniqueVar();

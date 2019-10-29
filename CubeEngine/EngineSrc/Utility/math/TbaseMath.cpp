@@ -58,6 +58,11 @@ float TbaseMath::rand2PI()
     return randF() * PI *2;
 }
 
+float TbaseMath::randRange(float lo, float hi)
+{
+	return lo + static_cast <float> (rand()) /( static_cast <float> (RAND_MAX/(hi-lo)));
+}
+
 int TbaseMath::randRangeInt(int theMinValue, int theMaxValue)
 {
     return rand()%(theMaxValue - theMinValue + 1) + theMinValue;

@@ -208,8 +208,6 @@ namespace tzw
 		aabb.update(theMax);
 		aabb.update(theMin);
 
-		//then we turn to world coordinate
-		aabb.transForm(lightView.inverted());
 		return aabb;
 	}
 }

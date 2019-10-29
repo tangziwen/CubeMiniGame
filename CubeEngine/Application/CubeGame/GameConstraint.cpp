@@ -43,19 +43,10 @@ void GameConstraint::updateTransform(float dt)
 void GameConstraint::setName(std::string newName)
 {
 	GamePart::setName(newName);
-	if(m_label)
-	{
-		m_label->setString(newName);
-	}
 }
 
 GameConstraint::~GameConstraint()
 {
-	if(m_label)
-	{
-		m_label->removeFromParent();
-		delete m_label;
-	}
 }
 }
 

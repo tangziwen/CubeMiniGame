@@ -15,6 +15,13 @@
 #include "ItemMgr.h"
 #include "AssistDrawSystem.h"
 #include "3D/Particle/ParticleEmitter.h"
+#include "3D/Particle/ParticleInitPosModule.h"
+#include "3D/Particle/ParticleInitSizeModule.h"
+#include "3D/Particle/ParticleInitVelocityModule.h"
+#include "3D/Particle/ParticleInitAlphaModule.h"
+#include "3D/Particle/ParticleUpdateAlphaModule.h"
+#include "3D/Particle/ParticleInitLifeSpanModule.h"
+#include "3D/Particle/ParticleUpdateSizeModule.h"
 
 namespace tzw
 {
@@ -142,7 +149,7 @@ namespace tzw
 
 	bool CubePlayer::onKeyRelease(int keyCode)
 	{
-		if (MainMenu::shared()->isVisible()) return false;
+		//if (MainMenu::shared()->isVisible()) return false;
 		switch (keyCode)
 		{
 		case TZW_KEY_R:
@@ -169,6 +176,15 @@ namespace tzw
 		case TZW_KEY_Z:
 			{
 				ParticleEmitter * emitter = new ParticleEmitter();
+				emitter->addInitModule(new ParticleInitPosModule(vec3(-0.05, 0.0, -0.05), vec3(0.05, 0.0, 0.05)));
+				emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.6));
+				emitter->addInitModule(new ParticleInitVelocityModule(vec3(-0.25, 5.0, 0), vec3(0.25, 5.0, 0)));
+				emitter->addInitModule(new ParticleInitLifeSpanModule(3.0, 3.0));
+				emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.7));
+
+				emitter->addUpdateModule(new ParticleUpdateAlphaModule(-0.8f));
+				emitter->addUpdateModule(new ParticleUpdateSizeModule(-0.6));
+				
 				g_GetCurrScene()->addNode(emitter);
 				emitter->setPos(getPos() + m_camera->getForward() * 2.0f);
 			}

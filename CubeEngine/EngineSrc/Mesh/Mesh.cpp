@@ -6,7 +6,7 @@
 namespace tzw {
 
 Mesh::Mesh()
-	: m_matIndex(0), m_vbo(-1), m_ibo(-1)
+	: m_matIndex(0), m_vbo(0), m_ibo(0)
 {
 	m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 	m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
@@ -52,7 +52,7 @@ void Mesh::finish(bool isPassToGPU)
 void Mesh::submit()
 {
 	if (m_vertices.empty()) return;
-    if(m_ibo == -1)
+    if(m_ibo == 0)
     {
         createBufferObject();
     }
@@ -154,7 +154,7 @@ void Mesh::calcTangents()
 
 void Mesh::submitInstanced(int preserveNumber)
 {
-	if (m_instanceOffset.size() > 0)
+	if (m_instanceOffset.size() > 0 || preserveNumber > 0)
 	{
 		m_instanceBuf->use();
 		int size = (preserveNumber > 0) ?preserveNumber:m_instanceOffset.size();
@@ -175,7 +175,7 @@ void Mesh::reSubmitInstanced()
 void Mesh::submitOnlyVO_IO()
 {
 	if (m_vertices.empty()) return;
-    if(m_ibo == -1)
+    if(m_ibo == 0)
     {
         createBufferObject();
     }

@@ -256,7 +256,7 @@ vec4 getWorldPosFromDepth()
 
 float getBias(vec3 normal, vec3 dirLight)
 {
-	return max(0.02 * (1.0 - dot(normal, dirLight)), 0.005);
+	return max(0.0002 * (1.0 - dot(normal, dirLight)), 0.0001);
 }
 
 /*
@@ -367,7 +367,7 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
 		return 1.0;
     //
 	
-	return clamp(1.0 - pcf_3x3(UVCoords.xy, z - getBias(surfaceNormal, lightDir), vec2(1.0 / 512.0, 1.0 / 512.0), index), 0.1, 1.0);
+	return clamp(1.0 - pcf_3x3(UVCoords.xy, z - getBias(surfaceNormal, lightDir), vec2(1.0 / 1024.0, 1.0 / 1024.0), index), 0.1, 1.0);
 	/*
 	float visibility=0.0;
 	for (int i=0;i<16;i++){

@@ -12,6 +12,7 @@ public:
     static float randFN();
     static float randPI();
     static float rand2PI();
+	static float randRange(float lo, float hi);
     static int randRangeInt(int theMinValue,int theMaxValue);
     static Tvector uniformHemisphericalVector(Tvector normal);
     static float Ang2Radius(float angle);

@@ -20,10 +20,8 @@
 #include "Utility/file/Tfile.h"
 #include "rapidjson/document.h"
 
-extern "C"
-{
-	#include "Base/uuid4.h"
-}
+
+#include "Base/uuid4.h"
 
 
 namespace tzw {

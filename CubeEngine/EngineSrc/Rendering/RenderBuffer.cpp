@@ -3,7 +3,7 @@
 namespace tzw {
 
 RenderBuffer::RenderBuffer(Type bufferType)
-    :m_type(bufferType),m_bufferId(-1)
+    :m_type(bufferType),m_bufferId(0)
 {
 
 }

@@ -4,19 +4,19 @@
 #include "../../Scene/SceneMgr.h"
 #include "Particle.h"
 #include <algorithm>
+#include "Utility/math/TbaseMath.h"
 
 namespace tzw {
-ParticleEmitter::ParticleEmitter(): m_spawnRate(0.2), m_maxSpawn(20), m_spawnAmount(2), m_currSpawn(0), m_t(0)
+ParticleEmitter::ParticleEmitter(): m_spawnRate(0.1), m_maxSpawn(60), m_spawnAmount(1), m_currSpawn(0), m_t(0), m_state(State::Stop)
 {
 
-	auto mat = MaterialPool::shared()->getMaterialByName("grassMaterial");
+	auto mat = MaterialPool::shared()->getMaterialByName("Particle");
 	 
 	if (!mat)
 	{
-
-		mat = Material::createFromTemplate("Grass");
+		mat = Material::createFromTemplate("Particle");
 		 
-		auto tex = TextureMgr::shared()->getByPath("Texture/grass.tga");
+		auto tex = TextureMgr::shared()->getByPath("Texture/glow.png");
 		 
 		tex->genMipMap();
 		 
@@ -46,12 +46,12 @@ unsigned int ParticleEmitter::getTypeId()
 	return 2333;
 }
 
-void ParticleEmitter::addInitModule(ParticleEmitterModule module)
+void ParticleEmitter::addInitModule(ParticleEmitterModule* module)
 {
 	m_initModule.push_back(module);
 }
 
-void ParticleEmitter::addUpdateModule(ParticleEmitterModule module)
+void ParticleEmitter::addUpdateModule(ParticleEmitterModule* module)
 {
 	m_updateModule.push_back(module);
 }
@@ -59,37 +59,49 @@ void ParticleEmitter::addUpdateModule(ParticleEmitterModule module)
 void ParticleEmitter::logicUpdate(float dt)
 {
 	m_t += dt;
-	//spawn
-	if(m_t > m_spawnRate && m_currSpawn < m_maxSpawn)
+	if(m_state == State::Playing)
 	{
-		int count = std::min(m_maxSpawn - m_currSpawn, m_spawnAmount);
-		for(int i = 0; i < m_spawnAmount; i++)
+		//spawn
+		if(m_t > m_spawnRate && m_currSpawn < m_maxSpawn)
 		{
-			auto * p = new Particle();
-			for(auto & m : m_initModule)
+			int count = std::min(m_maxSpawn - m_currSpawn, m_spawnAmount);
+			for(int i = 0; i < m_spawnAmount; i++)
 			{
-				m.process(p);
+				auto * p = new Particle();
+				p->m_pos = vec3(TbaseMath::randFN() * 0.3, TbaseMath::randFN() * 0.3, TbaseMath::randFN() * 0.3);
+				for(auto m : m_initModule)
+				{
+					m->process(p);
+				}
+				particleList.push_back(p);
+				m_currSpawn += 1;
 			}
-			particleList.push_back(p);
+			m_t = 0;
 		}
-		m_t = 0;
 	}
 
-	//logic update
-	for(auto i = particleList.begin(); i != particleList.end(); )
+
+	if(m_state == State::Playing || m_state == State::Stop) 
 	{
-		for(auto & m : m_updateModule)
+		//logic update
+		for(auto i = particleList.begin(); i != particleList.end(); )
 		{
-			m.process(*i);
-		}
-		(*i)->step(dt);
-		//if((*i)->isDead())
-		//{
-		//	delete (*i);
-		//	i = particleList.erase(i);
-		//}else
-		{
-			++i;
+			for(auto m : m_updateModule)
+			{
+				m->process(*i);
+			}
+			(*i)->step(dt);
+			if((*i)->isDead())
+			{
+				//delete (*i);
+				auto p = (*i);
+				i = particleList.erase(i);
+				delete p;
+				m_currSpawn -= 1;
+			}else
+			{
+				++i;
+			}
 		}
 	}
 }
@@ -101,15 +113,20 @@ void ParticleEmitter::pushCommand()
 
 void ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
 {
+	if(passType == RenderCommand::RenderType::Shadow)
+	{
+		return;
+	}
 	m_mesh->clearInstances();
 	for(auto p: particleList) 
 	{
       	InstanceData instance;
       	instance.posAndScale = vec4(p->m_pos, 1.0);
-      	instance.extraInfo = vec4(1, 0, 1, 0);
+      	instance.extraInfo = vec4(1, 0, 1, p->m_alpha);
         m_mesh->pushInstance(instance);
 	}
-	if(m_mesh->getIndexBuf()->bufferId() <= 0)
+	auto indexBuf = m_mesh->getIndexBuf();
+	if(indexBuf->bufferId() <= 0)
 	{
 		m_mesh->submitOnlyVO_IO();
 		m_mesh->submitInstanced(m_maxSpawn);
@@ -117,12 +134,15 @@ void ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 		m_mesh->reSubmitInstanced();
 	}
-	
-	RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
-	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-	setUpTransFormation(command.m_transInfo);
-	Renderer::shared()->addRenderCommand(command);
-	setUpTransFormation(command.m_transInfo);
+	if(m_mesh->getInstanceSize() > 0)
+	{
+		RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
+		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+		setUpTransFormation(command.m_transInfo);
+		command.setIsNeedTransparent(true);
+		Renderer::shared()->addRenderCommand(command);
+		setUpTransFormation(command.m_transInfo);
+	}
 }
 void ParticleEmitter::initMesh()
 {
@@ -135,23 +155,10 @@ void ParticleEmitter::initMesh()
 		VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  -0.5f), vec2(1.0f, 0.0f)),
 		VertexData(vec3(1.0f *halfWidth,  1.0f * halfHeight,  -0.5f), vec2(1.0f, 1.0f)), 
 		VertexData(vec3( -1.0f *halfWidth,  1.0f * halfHeight,  -0.5f), vec2(0.0f, 1.0f)),
-
-		//#2
-		VertexData(vec3(-0.707f *halfWidth - 0.353, -1.0f * halfHeight, -0.707f *halfWidth + 0.353), vec2(0.0f, 0.0f)),
-		VertexData(vec3(0.707f *halfWidth - 0.353, 1.0f * halfHeight,  0.707f * halfWidth + 0.353), vec2(1.0f, 1.0f)),
-		VertexData(vec3(-0.707f *halfWidth - 0.353,  1.0f * halfHeight,  -0.707f * halfWidth + 0.353), vec2(0.0f, 1.0f)),
-		VertexData(vec3(0.707f *halfWidth - 0.353,  -1.0f * halfHeight,  0.707f * halfWidth + 0.353), vec2(1.0f, 0.0f)),
-
-		//#3
-		VertexData(vec3(-0.707f *halfWidth + 0.353, -1.0f * halfHeight, 0.707f *halfWidth + 0.353), vec2(0.0f, 0.0f)),
-		VertexData(vec3(0.707f *halfWidth + 0.353, 1.0f * halfHeight,  -0.707f * halfWidth + 0.353), vec2(1.0f, 1.0f)),
-		VertexData(vec3(-0.707f *halfWidth + 0.353,  1.0f * halfHeight,  0.707f * halfWidth + 0.353), vec2(0.0f, 1.0f)),
-		VertexData(vec3(0.707f *halfWidth + 0.353,  -1.0f * halfHeight,  -0.707f * halfWidth + 0.353), vec2(1.0f, 0.0f)),
-
 	};
 
 	unsigned short indices[] = {
-		0, 1, 2, 0, 2, 3,     4, 5, 6, 4, 7, 5,   8, 9, 10, 8, 11, 9,
+		0, 1, 2, 0, 2, 3,
 	};
 	m_mesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
 	m_mesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
@@ -161,5 +168,10 @@ void ParticleEmitter::initMesh()
 	m_localAABB.merge(m_mesh->getAabb());
 	reCache();
 	reCacheAABB();
+}
+
+void ParticleEmitter::setIsState(State state)
+{
+	m_state = state;
 }
 } // namespace tzw

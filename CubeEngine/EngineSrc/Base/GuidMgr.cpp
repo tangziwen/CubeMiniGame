@@ -1,9 +1,6 @@
 #include "GuidMgr.h"
 #include <assert.h>
-extern "C"
-{
 #include "uuid4.h"
-}
 
 namespace tzw
 {

@@ -1,9 +1,6 @@
 #include "GuidObj.h"
 #include <string.h>
-extern "C"
-{
 #include "uuid4.h"
-}
 
 #include "GuidMgr.h"
 namespace tzw
