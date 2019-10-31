@@ -4,6 +4,11 @@
         "fs": "./Res/Shaders/GlobalFog_f.glsl"
     },
   "name": "PostEffect",
+	"DepthTestEnable" : true,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : true,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
   "property": {
     "attributes": [
 		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},

@@ -4,6 +4,11 @@
 		"fs" : "./Res/Shaders/BloomBlurV_f.glsl"
 	},
 	"name" : "BlurV",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 		],

@@ -448,6 +448,12 @@ vec3 Node::getForward()
     return vec3(-m[8],-m[9],-m[10]);
 }
 
+vec3 Node::getUp()
+{
+    auto m = getTransform().data();
+    return vec3( m[4], m[5], m[6]);
+}
+
 int Node::getLocalPiority() const
 {
     return m_localPiority;

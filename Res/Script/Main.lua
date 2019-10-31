@@ -63,7 +63,7 @@ local lift_state = 0
 local isOpenTestWindow = true
 local testIcon = nil
 
-local rRotate = 0
+local g_blockRotate = 0
 
 local m_isDragingInventory = false
 --init
@@ -88,12 +88,6 @@ function tzw_engine_ui_update(dt)
 	UiUtil.handlePopText()
 end
 
-local m_itemSlots = {}
-
-for i = 1, 5 do
-	table.insert(m_itemSlots, {target = nil})
-end
-
 
 
 -- inventory
@@ -110,6 +104,17 @@ m_inventory =
 	{name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"},
 	{name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"},
 }
+
+local m_itemSlots = {}
+
+for i = 1, 5 do
+	table.insert(m_itemSlots, {target = nil})
+end
+m_itemSlots[1].target = "Lift"
+m_itemSlots[2].target = "Block"
+m_itemSlots[3].target = "Cylinder"
+m_itemSlots[4].target = "Bearing"
+m_itemSlots[5].target = "ControlPart"
 
 function updateLifting(dt)
 	if lift_state ~= 0 then
@@ -186,9 +191,17 @@ function drawHud()
 	local yOffset = 15.0;
 	local window_pos = ImGui.ImVec2(screenSize.x / 2.0, screenSize.y - yOffset);
 	local window_pos_pivot = ImGui.ImVec2(0.5, 1.0);
+
+	local window_pos_pivot_bottom_right = ImGui.ImVec2(1.0, 1.0);
+	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x - 50.0, screenSize.y - yOffset), ImGuiCond_Always, window_pos_pivot_bottom_right);
+	ImGui.Begin("Rotate Tips", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+	ImGui.Text("当前旋转角度"..g_blockRotate);
+	ImGui.End()
+
+
 	ImGui.SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 	local itemSize = 60.0
-	ImGui.Begin("Profiler", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+	ImGui.Begin("Hud", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 	for k, v in pairs(m_itemSlots) do
 		-- ImGui.RadioButton(v.desc, m_currIndex == k)
 		ImGui.BeginGroup();
@@ -206,7 +219,7 @@ function drawHud()
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
 			end
-			ImGui.Text(m_inventory[v["target"]].desc);
+			ImGui.Text(findItemByName(v["target"]).desc);
 		end
 		if needPop then
 			ImGui.PopStyleColor()
@@ -217,7 +230,7 @@ function drawHud()
 			-- print("payLoad", payLoad)
 			if payLoad ~= nil then
 				local payLoadIdx = ImGui.GetPayLoadData2Int(payLoad)
-				m_itemSlots[k]["target"] = payLoadIdx
+				m_itemSlots[k]["target"] = m_inventory[payLoadIdx]["name"]
 			end
 			ImGui.EndDragDropTarget()
 		end
@@ -288,9 +301,9 @@ function onKeyRelease(input_event)
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = lift_state + 1
 	elseif input_event.keycode == TZW_KEY_P then
-		rRotate = rRotate + 30
-		if rRotate >= 360 then
-			rRotate = 0
+		g_blockRotate = g_blockRotate + 30
+		if g_blockRotate >= 360 then
+			g_blockRotate = 0
 		end
 	elseif input_event.keycode == TZW_KEY_I then
 		print "hahahahahahah"
@@ -330,9 +343,9 @@ function placeItem(item)
 		if result == nil then
 			BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
-			print("degree ".. rRotate)
-			BuildingSystem.shared():attachGamePart(aBlock, result, rRotate)
-			rRotate = 0 --reset
+			print("degree ".. g_blockRotate)
+			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate)
+			g_blockRotate = 0 --reset
 		end
 	else
 		if item.ItemType == GAME_PART_BEARING then
@@ -369,7 +382,7 @@ function handleItemSecondaryUse(item)
 end
 
 function getItemFromSlotIndex()
-	return m_inventory[m_itemSlots[m_currIndex]["target"]]
+	return findItemByName(m_itemSlots[m_currIndex]["target"])
 end
 
 function onMouseRelease(input_event)

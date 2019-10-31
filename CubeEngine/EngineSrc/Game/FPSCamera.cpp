@@ -10,11 +10,19 @@
 #include <cmath>
 #include "CubeGame/MainMenu.h"
 #include <algorithm>
+#include "BulletDynamics/Character/btKinematicCharacterController.h"
+#include "Collision/PhysicsMgr.h"
+#include "BulletCollision/CollisionShapes/btBoxShape.h"
+#include "BulletCollision/CollisionShapes/btConvexShape.h"
+#include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
+#include "btBulletCollisionCommon.h"
+
 namespace tzw {
+
 
 const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera()
-    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(6,5,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
+    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(0.2f,0.2f,0.2f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true)
     ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false)
 {
@@ -25,6 +33,32 @@ FPSCamera::FPSCamera()
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
 	setLocalPiority(-1);
+
+
+	m_capsuleHigh = 2.f;
+	btCapsuleShape *shape = new btCapsuleShape(0.2f, m_capsuleHigh);
+
+	this->m_ghost2 = new btPairCachingGhostObject();
+	//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+	this->m_ghost2->setCollisionShape(shape);
+	this->m_ghost2->setRestitution(0.0f);
+	this->m_ghost2->setUserPointer(this);
+	this->m_ghost2->setFriction(1.2f);
+	this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
+
+	this->m_character = new btKinematicCharacterController(this->m_ghost2, static_cast<btConvexShape*>(shape), 0.2f, btVector3(0.0,1.0,0.0));
+
+    m_character->setGravity(btVector3(0, -14.0f, 0));
+    m_character->setLinearDamping(0.2f);
+    m_character->setAngularDamping(0.2f);
+    m_character->setStepHeight(0.4f);
+    m_character->setMaxJumpHeight(2.0);
+    m_character->setMaxSlope(45.0 * 3.14 / 180.0);
+    m_character->setJumpSpeed(5.0f);
+    m_character->setFallSpeed(55.0f);
+
+	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+	PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
 }
 
 FPSCamera *FPSCamera::create(Camera *cloneObj)
@@ -58,7 +92,7 @@ bool FPSCamera::onKeyPress(int keyCode)
     case TZW_KEY_SPACE:
         if(m_isEnableGravity)//now falling
         {
-             m_verticalSpeed = 0.2;
+             m_character->jump(btVector3(0, 0.0f, 0));
         }
 		else
 		{
@@ -79,6 +113,7 @@ bool FPSCamera::onKeyPress(int keyCode)
 		break;
     default: ;
     }
+
     return false;
 }
 
@@ -166,10 +201,8 @@ bool FPSCamera::onMouseMove(vec2 pos)
     m_oldPosition = newPosition;
     return false;
 }
-
-void FPSCamera::logicUpdate(float dt)
+vec3 FPSCamera::getTotalSpeed()
 {
-    if(!m_enableFPSFeature) return;
     auto m = getTransform().data();
     vec3 forwardDirection,rightDirection, upDirction;
 	forwardDirection = vec3( m[8], 0, m[10]);
@@ -177,13 +210,22 @@ void FPSCamera::logicUpdate(float dt)
 	upDirction = vec3(0, 1, 0);
     forwardDirection.normalize();
     rightDirection.normalize();
+	vec3 totalSpeed = forwardDirection* m_speed.z *m_forward * -1;
+    totalSpeed += rightDirection *m_speed.x*m_slide;
+	totalSpeed += upDirction * m_speed.y * m_up;
+	return totalSpeed;
+}
+void FPSCamera::logicUpdate(float dt)
+{
+    if(!m_enableFPSFeature) return;
+
     auto pos = this->getPos();
 
     std::vector<Drawable3D *> list;
     AABB aabb;
     aabb.update(vec3(pos.x -3,pos.y- 10,pos.z - 3));
     aabb.update(vec3(pos.x +3,pos.y + 10 ,pos.z + 3));
-	
+
     g_GetCurrScene()->getRange(&list,aabb);
 	Drawable3DGroup group;
 	if (!list.empty())
@@ -192,41 +234,42 @@ void FPSCamera::logicUpdate(float dt)
 	}
     AABB playerAABB;
     vec3 overLap;
-    vec3 totalSpeed = forwardDirection*dt*m_speed.z *m_forward * -1;
-    totalSpeed += rightDirection*dt*m_speed.x*m_slide;
-	totalSpeed += upDirction * dt * m_speed.y * m_up;
 
-    if(false)//if no collid just go through TZW just for speed.
-    {
-        vec3 test = pos + totalSpeed;
-        pos = test;
-        setPos(pos);
-    }else
-    {
-        vec3 userSpeed = vec3(totalSpeed.x, totalSpeed.y, totalSpeed.z);
-        vec3 gravityVelocity;
-        if(m_isEnableGravity)
-        {
-            Ray ray(m_pos,vec3(0, -1, 0));
-            vec3 hitPoint;
-            if(group.hitByRay(ray,hitPoint) && hitPoint.distance(m_pos) <= (distToGround + offsetToCentre + 0.05) && m_verticalSpeed < 0.0f)
-            {
-                m_verticalSpeed = 0.0;
-            }else
-            {
-                if(m_verticalSpeed <= -0.5)
-                {
-                    m_verticalSpeed = -0.5;
-                }
-                else
-                {
-                    m_verticalSpeed -= 0.005;
-                }
-            }
-            gravityVelocity = vec3(0,m_verticalSpeed,0);
-        }
-        collideAndSlide(userSpeed,gravityVelocity);
-    }
+
+	if(1)
+	{
+		auto originPos = m_ghost2->getWorldTransform().getOrigin();
+		auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
+		setPos(centerPoint + getUp() * (distToGround));
+		auto totalSpeed = getTotalSpeed();
+		m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
+	}
+	//else
+ //   {
+ //       vec3 userSpeed = vec3(totalSpeed.x, totalSpeed.y, totalSpeed.z);
+ //       vec3 gravityVelocity;
+ //       if(m_isEnableGravity)
+ //       {
+ //           Ray ray(m_pos,vec3(0, -1, 0));
+ //           vec3 hitPoint;
+ //           if(group.hitByRay(ray,hitPoint) && hitPoint.distance(m_pos) <= (distToGround + offsetToCentre + 0.05) && m_verticalSpeed < 0.0f)
+ //           {
+ //               m_verticalSpeed = 0.0;
+ //           }else
+ //           {
+ //               if(m_verticalSpeed <= -0.5)
+ //               {
+ //                   m_verticalSpeed = -0.5;
+ //               }
+ //               else
+ //               {
+ //                   m_verticalSpeed -= 0.005;
+ //               }
+ //           }
+ //           gravityVelocity = vec3(0,m_verticalSpeed,0);
+ //       }
+ //       //collideAndSlide(userSpeed,gravityVelocity);
+ //   }
 }
 
 
@@ -267,6 +310,17 @@ void FPSCamera::setGravity(float gravity)
 {
     m_gravity = gravity;
 }
+
+void FPSCamera::setCamPos(const vec3& pos)
+{
+	Node::setPos(pos);
+	auto m = m_ghost2->getWorldTransform();
+	m.setOrigin(btVector3(pos.x, pos.y, pos.z));
+	m_ghost2->setWorldTransform(m);
+	//m_character->
+	
+}
+
 bool FPSCamera::getIsEnableGravity() const
 {
     return m_isEnableGravity;

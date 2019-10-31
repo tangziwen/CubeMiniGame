@@ -7,11 +7,11 @@ class ParticleUpdateSizeModule: public ParticleEmitterModule
 {
 public:
 	virtual ~ParticleUpdateSizeModule() = default;
-	ParticleUpdateSizeModule(float alphaSpeed);
+	ParticleUpdateSizeModule(float fromSize, float toSize);
 	virtual void process(Particle * particle);
 private:
-	float m_alphaSpeed;
-	vec3 m_higherBound;
+	float m_fromSize;
+	float m_toSize;
 };
 
 } // namespace tzw

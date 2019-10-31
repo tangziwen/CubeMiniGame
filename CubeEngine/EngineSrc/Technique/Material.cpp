@@ -18,7 +18,9 @@
 
 namespace tzw {
 
-Material::Material(): m_isCullFace(false), m_program(nullptr)
+Material::Material(): m_isCullFace(false), m_program(nullptr),
+	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
+	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(true)
 {
 }
 
@@ -51,6 +53,91 @@ void Material::loadFromFile(std::string filePath)
 	else
 	{
 		m_isCullFace = true;
+	}
+
+
+	if (doc.HasMember("DepthTestEnable"))
+	{
+		m_isDepthTestEnable = doc["DepthTestEnable"].GetBool();
+	}
+	else
+	{
+		m_isDepthTestEnable = true;
+	}
+
+	if (doc.HasMember("DepthWriteEnable"))
+	{
+		m_isDepthWriteEnable = doc["DepthWriteEnable"].GetBool();
+	}
+	else
+	{
+		m_isDepthWriteEnable = true;
+	}
+	if (doc.HasMember("BlendEnable"))
+	{
+		m_isEnableBlend = doc["BlendEnable"].GetBool();
+	}
+	else
+	{
+		m_isEnableBlend = true;
+	}
+
+	if (doc.HasMember("SrcBlendFactor"))
+	{
+		std::string theStr = doc["SrcBlendFactor"].GetString();
+		if(theStr == "One")
+		{
+			m_factorSrc = RenderFlag::BlendingFactor::One;
+		}
+		else if(theStr == "Zero")
+		{
+			m_factorSrc = RenderFlag::BlendingFactor::Zero;
+		}
+		else if(theStr == "SrcAlpha")
+		{
+			m_factorSrc = RenderFlag::BlendingFactor::SrcAlpha;
+		}
+		else if(theStr == "OneMinusSrcAlpha")
+		{
+			m_factorSrc = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
+		}
+		else if(theStr == "ConstantAlpha")
+		{
+			m_factorSrc = RenderFlag::BlendingFactor::ConstantAlpha;
+		}
+	}
+	else
+	{
+		m_factorSrc = RenderFlag::BlendingFactor::SrcAlpha;
+	}
+
+	if (doc.HasMember("DstBlendFactor"))
+	{
+		std::string theStr = doc["DstBlendFactor"].GetString();
+		if(theStr == "One")
+		{
+			m_factorDst = RenderFlag::BlendingFactor::One;
+		}
+		else if(theStr == "Zero")
+		{
+			m_factorDst = RenderFlag::BlendingFactor::Zero;
+		}
+		else if(theStr == "SrcAlpha")
+		{
+			m_factorDst = RenderFlag::BlendingFactor::SrcAlpha;
+		}
+		else if(theStr == "OneMinusSrcAlpha")
+		{
+			m_factorDst = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
+		}
+		else if(theStr == "ConstantAlpha")
+		{
+			m_factorDst = RenderFlag::BlendingFactor::ConstantAlpha;
+		}
+	}
+	else
+	{
+		m_factorDst = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
 	}
 
 	if (doc.HasMember("shaders"))
@@ -553,6 +640,56 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 		break;
 		default: ;
 	}
+}
+
+RenderFlag::BlendingFactor Material::getFactorSrc() const
+{
+	return m_factorSrc;
+}
+
+void Material::setFactorSrc(const RenderFlag::BlendingFactor factorSrc)
+{
+	m_factorSrc = factorSrc;
+}
+
+RenderFlag::BlendingFactor Material::getFactorDst() const
+{
+	return m_factorDst;
+}
+
+void Material::setFactorDst(const RenderFlag::BlendingFactor factorDst)
+{
+	m_factorDst = factorDst;
+}
+
+bool Material::isIsEnableBlend() const
+{
+	return m_isEnableBlend;
+}
+
+void Material::setIsEnableBlend(const bool isEnableBlend)
+{
+	m_isEnableBlend = isEnableBlend;
+}
+
+bool Material::isIsDepthTestEnable() const
+{
+	return m_isDepthTestEnable;
+}
+
+void Material::setIsDepthTestEnable(const bool isDepthTestEnable)
+{
+	m_isDepthTestEnable = isDepthTestEnable;
+}
+
+bool Material::isIsDepthWriteEnable() const
+{
+	return m_isDepthWriteEnable;
+}
+
+void Material::setIsDepthWriteEnable(const bool isDepthWriteEnable)
+{
+	m_isDepthWriteEnable = isDepthWriteEnable;
 }
 
 /**

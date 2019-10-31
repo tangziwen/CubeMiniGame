@@ -12,7 +12,7 @@ public:
 		Pause,
 		Stop,
 	};
-	ParticleEmitter();
+	ParticleEmitter(int maxSpawn);
 	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	void setUpTransFormation(TransformationInfo & info) override;
 	unsigned int getTypeId() override;
@@ -23,6 +23,10 @@ public:
 	void pushCommand();
 	void initMesh();
 	void setIsState(State state);
+	void setSpawnRate(float newSpawnRate);
+	float getSpawnRate() const;
+	int getSpawnAmount() const;
+	void setSpawnAmount(const int spawnAmount);
 private:
 	std::vector<ParticleEmitterModule *> m_initModule;
 	std::vector<ParticleEmitterModule *> m_updateModule;

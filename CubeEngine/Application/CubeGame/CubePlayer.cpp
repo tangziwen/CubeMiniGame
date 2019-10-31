@@ -22,6 +22,7 @@
 #include "3D/Particle/ParticleUpdateAlphaModule.h"
 #include "3D/Particle/ParticleInitLifeSpanModule.h"
 #include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleUpdateColorModule.h"
 
 namespace tzw
 {
@@ -33,7 +34,7 @@ namespace tzw
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		GUISystem::shared()->addObject(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
-		camera->setPos(vec3(5, 50, -5));
+		camera->setCamPos(vec3(5, 30.0, -5));
 		mainRoot->addChild(camera);
 		g_GetCurrScene()->setDefaultCamera(camera);
 		m_camera = camera;
@@ -175,18 +176,8 @@ namespace tzw
 			break;
 		case TZW_KEY_Z:
 			{
-				ParticleEmitter * emitter = new ParticleEmitter();
-				emitter->addInitModule(new ParticleInitPosModule(vec3(-0.05, 0.0, -0.05), vec3(0.05, 0.0, 0.05)));
-				emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.6));
-				emitter->addInitModule(new ParticleInitVelocityModule(vec3(-0.25, 5.0, 0), vec3(0.25, 5.0, 0)));
-				emitter->addInitModule(new ParticleInitLifeSpanModule(3.0, 3.0));
-				emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.7));
 
-				emitter->addUpdateModule(new ParticleUpdateAlphaModule(-0.8f));
-				emitter->addUpdateModule(new ParticleUpdateSizeModule(-0.6));
-				
-				g_GetCurrScene()->addNode(emitter);
-				emitter->setPos(getPos() + m_camera->getForward() * 2.0f);
+
 			}
 			break;
 		default:
@@ -303,7 +294,6 @@ namespace tzw
 
 	void CubePlayer::attachCamToWorld()
 	{
-		m_camera->removeFromParent();
 		m_camera->setIsEnableGravity(true);
 		m_camera->setEnableFPSFeature(true);
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);

@@ -25,6 +25,7 @@ public:
     void setDepthTestMethod(const RenderFlag::DepthTestMethod & method);
     void setTextureWarp(unsigned int textureID, RenderFlag::WarpAddress warpAddress, RenderFlag::TextureType type);
     void bindFrameBuffer(unsigned int frameBufferID);
+	void setBlendEnable(bool isEnable);
     void blitFramebuffer(int srcX0,
                            int srcY0,
                            int srcX1,
@@ -60,6 +61,8 @@ private:
     RenderFlag::DepthTestMethod m_depthTestMethodCache;
 	bool m_isCullFace;
     unsigned int m_textureSlot[8];
+	RenderFlag::BlendingFactor m_curBlendSrc;
+	RenderFlag::BlendingFactor m_curBlendDst;
 };
 
 } // namespace tzw

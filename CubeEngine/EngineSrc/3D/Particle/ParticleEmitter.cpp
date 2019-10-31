@@ -7,7 +7,7 @@
 #include "Utility/math/TbaseMath.h"
 
 namespace tzw {
-ParticleEmitter::ParticleEmitter(): m_spawnRate(0.1), m_maxSpawn(60), m_spawnAmount(1), m_currSpawn(0), m_t(0), m_state(State::Stop)
+ParticleEmitter::ParticleEmitter(int maxSpawn): m_spawnRate(0.1), m_maxSpawn(maxSpawn), m_spawnAmount(1), m_currSpawn(0), m_t(0), m_state(State::Stop)
 {
 
 	auto mat = MaterialPool::shared()->getMaterialByName("Particle");
@@ -68,7 +68,6 @@ void ParticleEmitter::logicUpdate(float dt)
 			for(int i = 0; i < m_spawnAmount; i++)
 			{
 				auto * p = new Particle();
-				p->m_pos = vec3(TbaseMath::randFN() * 0.3, TbaseMath::randFN() * 0.3, TbaseMath::randFN() * 0.3);
 				for(auto m : m_initModule)
 				{
 					m->process(p);
@@ -121,10 +120,11 @@ void ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
 	for(auto p: particleList) 
 	{
       	InstanceData instance;
-      	instance.posAndScale = vec4(p->m_pos, 1.0);
-      	instance.extraInfo = vec4(1, 0, 1, p->m_alpha);
+      	instance.posAndScale = vec4(p->m_pos, p->size * p->m_initSize);
+      	instance.extraInfo = p->m_color;
         m_mesh->pushInstance(instance);
 	}
+	
 	auto indexBuf = m_mesh->getIndexBuf();
 	if(indexBuf->bufferId() <= 0)
 	{
@@ -136,6 +136,7 @@ void ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
 	}
 	if(m_mesh->getInstanceSize() > 0)
 	{
+		reCache();
 		RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		setUpTransFormation(command.m_transInfo);
@@ -151,10 +152,10 @@ void ParticleEmitter::initMesh()
 	float halfHeight = 0.8;
 	VertexData vertices[] = {
 		//#1
-		VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -0.5f), vec2(0.0f, 0.0f)), 
-		VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  -0.5f), vec2(1.0f, 0.0f)),
-		VertexData(vec3(1.0f *halfWidth,  1.0f * halfHeight,  -0.5f), vec2(1.0f, 1.0f)), 
-		VertexData(vec3( -1.0f *halfWidth,  1.0f * halfHeight,  -0.5f), vec2(0.0f, 1.0f)),
+		VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, 0.0f), vec2(0.0f, 0.0f)), 
+		VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  0.0f), vec2(1.0f, 0.0f)),
+		VertexData(vec3(1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(1.0f, 1.0f)), 
+		VertexData(vec3( -1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(0.0f, 1.0f)),
 	};
 
 	unsigned short indices[] = {
@@ -173,5 +174,25 @@ void ParticleEmitter::initMesh()
 void ParticleEmitter::setIsState(State state)
 {
 	m_state = state;
+}
+
+void ParticleEmitter::setSpawnRate(float newSpawnRate)
+{
+	m_spawnRate = newSpawnRate;
+}
+
+float ParticleEmitter::getSpawnRate() const
+{
+	return m_spawnRate;
+}
+
+int ParticleEmitter::getSpawnAmount() const
+{
+	return m_spawnAmount;
+}
+
+void ParticleEmitter::setSpawnAmount(const int spawnAmount)
+{
+	m_spawnAmount = spawnAmount;
 }
 } // namespace tzw

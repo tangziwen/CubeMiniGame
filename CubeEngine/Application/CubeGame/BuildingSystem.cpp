@@ -661,7 +661,6 @@ namespace tzw
 					auto bearing = static_cast<GameConstraint*>(iter);
 					m_bearList.erase(m_bearList.find(bearing));
 				}
-				iter->getNode()->removeFromParent();
 				delete iter;
 			}
 			island->removeAll();
@@ -680,7 +679,6 @@ namespace tzw
 				auto bearing = static_cast<GameConstraint*>(iter);
 				m_bearList.erase(m_bearList.find(bearing));
 			}
-			iter->getNode()->removeFromParent();
 			delete iter;
 		}
 		island->removeAll();

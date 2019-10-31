@@ -4,6 +4,11 @@
 		"fs" : "./Res/Shaders/BlurH_f.glsl"
 	},
 	"name" : "BlurH",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 			{"name" : "AO_distant", "type":"float", "default":1.0},

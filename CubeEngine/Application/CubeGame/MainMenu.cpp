@@ -22,6 +22,16 @@
 #include "Shader/ShaderMgr.h"
 #include "2D/imgui_internal.h"
 #include "algorithm"
+#include "ThrusterPart.h"
+#include "3D/Particle/ParticleEmitter.h"
+#include "3D/Particle/ParticleUpdateColorModule.h"
+#include "3D/Particle/ParticleInitAlphaModule.h"
+#include "3D/Particle/ParticleInitLifeSpanModule.h"
+#include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleInitVelocityModule.h"
+#include "3D/Particle/ParticleInitSizeModule.h"
+#include "3D/Particle/ParticleInitPosModule.h"
+
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -115,10 +125,10 @@ void MainMenu::drawIMGUI()
 					m_fileBrowser->open(u8"选择载具文件", u8"打开");
 					m_fileBrowser->m_callBack = [&](std::string fileName)
 					{
+						m_nodeEditor->clearAll();
 						BuildingSystem::shared()->load(fileName);
 						m_fileBrowser->close();
 					};
-					//BuildingSystem::shared()->load();
 				}
 
 				if (ImGui::MenuItem(u8"清空所有", nullptr))
@@ -134,10 +144,37 @@ void MainMenu::drawIMGUI()
 			static bool isOpenTerrain = false;
 			if (ImGui::BeginMenu(u8"Debug"))
 			{
+				auto camera = g_GetCurrScene()->defaultCamera();
 				ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
 				ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
 				ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
 				if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
+				if(ImGui::MenuItem("Particle test"))
+				{
+				auto node = Node::create();
+				ParticleEmitter * emitter = new ParticleEmitter(1);
+				emitter->setSpawnRate(0.01);
+				emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));	
+				emitter->addInitModule(new ParticleInitLifeSpanModule(1.0, 1.0));
+				//emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+				//emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.4));
+				//emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 0.8, 0.5, 1), vec4(0.3, 0.3, 1.0, 0.3)));
+				emitter->setIsState(ParticleEmitter::State::Stop);
+
+				node->addChild(emitter);
+				ParticleEmitter * emitter2 = new ParticleEmitter(40);
+				emitter2->setSpawnRate(0.05);
+				emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
+				emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 3.0, 0), vec3(0, 3.0, 0)));
+				emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
+				emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+				emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
+				emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
+				emitter2->setIsState(ParticleEmitter::State::Playing);
+				node->addChild(emitter2);
+				g_GetCurrScene()->addNode(node);
+				node->setPos(camera->getPos() + camera->getForward() * 15.0f);
+				}
 
 				if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
 				{

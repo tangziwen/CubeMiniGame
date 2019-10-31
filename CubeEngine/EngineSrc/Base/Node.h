@@ -29,7 +29,7 @@ public:
 	virtual Matrix44 getTransform();
 	virtual Matrix44 getLocalTransform();
 	vec3 getPos() const;
-	void setPos(const vec3 &pos);
+	virtual void setPos(const vec3 &pos);
 	void setPos(float x, float y, float z);
 	virtual void submitDrawCmd(RenderCommand::RenderType passType);
 	virtual void logicUpdate(float dt);
@@ -71,6 +71,7 @@ public:
 	void removeFromParent();
 	void setParent(Node *parent);
 	vec3 getForward();
+	vec3 getUp();
 	int getLocalPiority() const;
 	void setLocalPiority(int zOrder);
 	void sortChildren();

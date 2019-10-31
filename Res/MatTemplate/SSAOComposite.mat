@@ -4,6 +4,11 @@
 		"fs" : "./Res/Shaders/SSAOComposite_f.glsl"
 	},
 	"name" : "PostEffect",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 		],

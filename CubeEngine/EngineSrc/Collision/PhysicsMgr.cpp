@@ -8,6 +8,7 @@
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
 #include <assert.h>
+#include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #define dSINGLE
 
 #define ARRAY_SIZE_Y 5
@@ -106,6 +107,9 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 
 		m_dynamicsWorld = new btDiscreteDynamicsWorld(m_dispatcher, m_broadphase, m_solver, m_collisionConfiguration);
 
+		m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
+
+		
 		m_dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		m_dynamicsWorld->setForceUpdateAllAabbs(true);
 	}
@@ -127,7 +131,7 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 	{
 		if (m_dynamicsWorld)
 		{
-			m_dynamicsWorld->stepSimulation(deltaTime);
+			m_dynamicsWorld->stepSimulation(deltaTime, 2, 1.0f / 30.0f);
 			syncPhysicsToGraphics();
 		}
 	}
@@ -165,6 +169,11 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 		body->setUserIndex(-1);
 		m_dynamicsWorld->addRigidBody(body);
 		return body;
+	}
+
+	btDiscreteDynamicsWorld* PhysicsMgr::getDynamicsWorld() const
+	{
+		return m_dynamicsWorld;
 	}
 
 	void PhysicsMgr::syncPhysicsToGraphics()

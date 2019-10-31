@@ -4,6 +4,11 @@
 		"fs" : "./Res/Shaders/BlurV_f.glsl"
 	},
 	"name" : "BlurV",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 			{"name" : "AO_distant", "type":"float", "default":1.0},

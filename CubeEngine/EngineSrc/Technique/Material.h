@@ -8,6 +8,7 @@
 #include "../Math/Matrix44.h"
 #include "EngineSrc/3D/Effect/Effect.h"
 #include "2D/InspectableUI.h"
+#include "Rendering/RenderFlag.h"
 namespace tzw {
 class StdMaterial;
 class Node;
@@ -46,13 +47,32 @@ public:
 	void inspectIMGUI(std::string name, float min, float max, const char * fmt = "%.2f");
 	void inspectIMGUI_Color(std::string name);
 	void handleSemanticValuePassing(TechniqueVar * val, std::string name, ShaderProgram * program);
+	bool isIsDepthTestEnable() const;
+	void setIsDepthTestEnable(const bool isDepthTestEnable);
+	bool isIsDepthWriteEnable() const;
+	void setIsDepthWriteEnable(const bool isDepthWriteEnable);
 
 private:
     std::string m_vsPath;
     std::string m_fsPath;
     std::map<std::string,TechniqueVar *> m_varList;
+	RenderFlag::BlendingFactor m_factorSrc;
+	RenderFlag::BlendingFactor m_factorDst;
+public:
+	RenderFlag::BlendingFactor getFactorSrc() const;
+	void setFactorSrc(const RenderFlag::BlendingFactor factorSrc);
+	RenderFlag::BlendingFactor getFactorDst() const;
+	void setFactorDst(const RenderFlag::BlendingFactor factorDst);
 
+private:
 	bool m_isCullFace;
+	bool m_isDepthTestEnable;
+	bool m_isDepthWriteEnable;
+	bool m_isEnableBlend;
+public:
+	bool isIsEnableBlend() const;
+	void setIsEnableBlend(const bool isEnableBlend);
+private:
 	std::string m_name;
 	std::map<std::string, unsigned int> m_texSlotMap;
 	std::map<std::string, std::string> m_aliasMap;

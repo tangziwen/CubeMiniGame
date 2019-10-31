@@ -48,14 +48,18 @@ class PhysicsMgr{
 
 		void addConstraint(PhysicsConstraint * constraint);
 		void removeConstraint(PhysicsConstraint * constraint);
-	private:
 		btBoxShape* createBoxShape(const btVector3& halfExtents);
+		btDiscreteDynamicsWorld* getDynamicsWorld() const;
+	private:
+		
 		btRigidBody* createRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color);
 		btDefaultCollisionConfiguration * m_collisionConfiguration;
 		btCollisionDispatcher* m_dispatcher;
 		btDbvtBroadphase* m_broadphase;
 		btSequentialImpulseConstraintSolver* m_solver;
 		btDiscreteDynamicsWorld* m_dynamicsWorld;
+
+	private:
 		btAlignedObjectArray<btCollisionShape*>	m_collisionShapes;
 	};
 

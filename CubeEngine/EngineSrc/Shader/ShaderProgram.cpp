@@ -242,7 +242,7 @@ void ShaderProgram::createShader(bool isStrict)
     glGetProgramiv(shader, GL_LINK_STATUS, &Success);
     if (Success == 0) {
         glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+        fprintf(stdout, "Error linking shader program: '%s'\n", ErrorLog);
     	if(isStrict)
     	{
     		exit(1);
@@ -254,7 +254,7 @@ void ShaderProgram::createShader(bool isStrict)
     glGetProgramiv(shader, GL_VALIDATE_STATUS, &Success);
     if (!Success) {
         glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
+        fprintf(stdout, "Invalid shader program: '%s'\n", ErrorLog);
        	if(isStrict)
     	{
         exit(1);
@@ -269,7 +269,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
 	RenderBackEnd::shared()->selfCheck();
 
     if (ShaderObj == 0) {
-        fprintf(stderr, "Error Compile shader type %d\n", ShaderType);
+        fprintf(stdout, "Error Compile shader type %d\n", ShaderType);
     	if(isStrict)
     	{
     		exit(0);
@@ -290,7 +290,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
     if (!success) {
         GLchar InfoLog[1024];
         glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
-        fprintf(stderr, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
+        fprintf(stdout, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         if (isStrict) 
 		{
           exit(1);

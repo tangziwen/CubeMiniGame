@@ -5,6 +5,11 @@
 	},
 	"name" : "Particle",
 	"cullFace" : false,
+	"DepthTestEnable" : true,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : true,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "One",
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_camPos", "type":"semantic_CameraPos"},

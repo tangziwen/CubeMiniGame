@@ -2,6 +2,7 @@
 #include "imgui.h"
 #include "dirent.h"
 #include "Utility/log/Log.h"
+#include "Engine/Engine.h"
 
 static void list_directory (const char* dirname, std::vector<tzw::fileInfo_broswer *> &fileNameList)
 {
@@ -94,6 +95,8 @@ namespace tzw
 	void GUIFileBrowser::drawIMGUI()
 	{
 		if(!m_isOpen) return;
+		auto ss = Engine::shared()->winSize();
+		ImGui::SetNextWindowPos(ImVec2(ss.x / 2.0, ss.y / 2.0));
 		ImGui::Begin(m_titleStr.c_str(), nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 		ImGui::BeginChild('ch', ImVec2(0, 200));
 		int i = 0;

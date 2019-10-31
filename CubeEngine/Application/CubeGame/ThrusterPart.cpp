@@ -16,6 +16,7 @@
 #include "3D/Particle/ParticleInitAlphaModule.h"
 #include "3D/Particle/ParticleUpdateAlphaModule.h"
 #include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleUpdateColorModule.h"
 
 
 namespace tzw
@@ -45,22 +46,22 @@ ThrusterPart::ThrusterPart()
 	flatNoise.SetSeed(time(nullptr));
 	BuildingSystem::shared()->addThruster(this);
 
-	emitter = new ParticleEmitter();
-	emitter->addInitModule(new ParticleInitPosModule(vec3(-0.05, 0.0, -0.05), vec3(0.05, 0.0, 0.05)));
-	emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.6));
-	emitter->addInitModule(new ParticleInitVelocityModule(vec3(-0.25, 0.0, -3.0), vec3(0.25, 0.0, -3.0)));
-	emitter->addInitModule(new ParticleInitLifeSpanModule(3.0, 3.0));
-	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.7));
 
-	emitter->addUpdateModule(new ParticleUpdateAlphaModule(-0.8f));
-	emitter->addUpdateModule(new ParticleUpdateSizeModule(-0.6));
-	
-	m_node->addChild(emitter);
+	emitter = new ParticleEmitter(40);
+	emitter->setSpawnRate(0.05);
+	emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
+	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, -3.0, 0.0), vec3(0, -3.0, 0.0 )));
+	emitter->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
+	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+	emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
+	emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
+	emitter->setIsState(ParticleEmitter::State::Stop);
 
 	auto a = Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
 	Matrix44 mat = a.getAttachmentInfoMat44();
 	Quaternion q;
 	q.fromRotationMatrix(&mat);
+	m_node->addChild(emitter);
 	emitter->setPos(mat.getTranslation());
 	emitter->setRotateQ(q);
 }
@@ -151,7 +152,7 @@ void ThrusterPart::updateForce(float dt)
 				flatNoise.GetValue(m_scale * m_dir_t + m_phaseV3.z,0, 0)) * 0.08;
 			auto forceDir = m_node->getForward() *-1 + randomDir;
 			auto forceVariation = sinf(m_phase + m_scale * m_t) * 0.3;
-			m_parent->m_rigid->applyForce(forceDir * (25.0f  + forceVariation), m_node->getPos());
+			m_parent->m_rigid->applyForce(forceDir * (50.0f  + forceVariation), m_node->getPos());
 		}else
 		{
 			emitter->setIsState(ParticleEmitter::State::Stop);

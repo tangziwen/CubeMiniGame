@@ -94,18 +94,9 @@ void Renderer::renderAll()
 	{
 		shadowPass();
 		geometryPass();
-		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-		RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
-		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::One,
-			RenderFlag::BlendingFactor::One);
-		RenderBackEnd::shared()->setDepthMaskWriteEnable(false);
-		RenderBackEnd::shared()->setDepthTestEnable(false);
 		LightingPass();
 		skyBoxPass();// same with lighting pass
 		FogPass();// same with lighting pass
-
-
-
 		SSAOPass();
 		for(int i = 0; i < 5; i++) 
 		{
@@ -149,13 +140,19 @@ void Renderer::renderAll()
 		AAPass();
 		
 	}
+	m_gbuffer->bindForReading();
 	bindScreenForWriting();
+	//copy depth buffer to default buffer for transparent object depth testing
+	auto screenSize = Engine::shared()->winSize();
+	auto gbufferSize = m_gbuffer->getFrameSize();
+	glBlitFramebuffer(0, 0, gbufferSize.x, gbufferSize.y, 0, 0, screenSize.x, screenSize.y,
+	                  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
 	if (!m_transparentCommandList.empty())
 	{
+		RenderBackEnd::shared()->setDepthTestEnable(true);
 		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 		RenderBackEnd::shared()->setBlendEquation(RenderFlag::BlendingEquation::Add);
-		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
-			RenderFlag::BlendingFactor::One);
+
 		renderAllTransparent();	
 		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	}
@@ -813,6 +810,7 @@ void Renderer::SSAOPass()
 	m_ssaoBuffer1->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_postEffect->use();
+	applyRenderSetting(m_postEffect);
 	auto program = m_postEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
@@ -885,9 +883,7 @@ void Renderer::FogPass()
 	m_fogEffect->use();
 	shader->setUniformInteger("TU_Depth",0);
 	shader->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
-	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
-											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
+	applyRenderSetting(m_fogEffect);
 	renderPrimitive(m_quad, m_fogEffect, RenderCommand::PrimitiveType::TRIANGLES);
 	//watch out the blend!!!!
 	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
@@ -955,7 +951,8 @@ void Renderer::BloomCompossitPass()
 void Renderer::directionalLightPass()
 {
 	auto currScene = g_GetCurrScene();
-	  
+
+	applyRenderSetting(m_dirLightProgram);
 	m_dirLightProgram->use();
 	  
 	auto program = m_dirLightProgram->getProgram();
@@ -1079,6 +1076,18 @@ void Renderer::applyRenderSetting(Material * mat)
 	//glDisable(GL_CULL_FACE);
 	RenderBackEnd::shared()->selfCheck();
 	RenderBackEnd::shared()->setIsCullFace(true);
+	RenderBackEnd::shared()->setBlendFactor(mat->getFactorSrc(),
+	mat->getFactorDst());
+	if(mat->isIsEnableBlend())
+	{
+		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	}else
+	{
+		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	}
+	
+	RenderBackEnd::shared()->setDepthMaskWriteEnable(mat->isIsDepthWriteEnable());
+	RenderBackEnd::shared()->setDepthTestEnable(mat->isIsDepthTestEnable());
 	//glCullFace(GL_NONE);
 }
 
@@ -1094,8 +1103,10 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 	program->setUniformMat4v("TU_vpMatrix", vp.data());
 	program->setUniformMat4v("TU_mvMatrix", (v * m).data());
 	program->setUniformMat4v("TU_vMatrix", v.data());
+	program->setUniformMat4v("TU_pMatrix", p.data());
 
 	program->setUniformMat4v("TU_mMatrix", m.data());
+	program->setUniformMat4v("TU_mMatrixInverted", m.inverted().data());
 	program->setUniformMat4v("TU_normalMatrix", (m).inverted().transpose().data());
 }
 

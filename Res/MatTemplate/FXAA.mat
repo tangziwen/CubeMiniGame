@@ -4,6 +4,11 @@
 		"fs" : "./Res/Shaders/FXAA_f.glsl"
 	},
 	"name" : "FXAA",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 		{"name" : "TU_winSize", "type":"semantic_WinSize"}

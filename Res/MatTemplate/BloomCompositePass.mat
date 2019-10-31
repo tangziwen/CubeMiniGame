@@ -4,6 +4,11 @@
 		"fs" : "./Res/Shaders/BloomComposite_f.glsl"
 	},
 	"name" : "BloomCompositPass",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 		{"name" : "BloomStrength", "type":"float", "default":0.5, "ui_info":{"range":[0.0, 2.0]}}

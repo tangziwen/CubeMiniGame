@@ -1,4 +1,4 @@
-#include "ParticleUpdateSizeModule.h"
+#include "ParticleUpdateColorModule.h"
 #include "EngineSrc/Technique/MaterialPool.h"
 #include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
@@ -8,14 +8,14 @@
 #include <algorithm>
 
 namespace tzw {
-	ParticleUpdateSizeModule::ParticleUpdateSizeModule(float fromSize, float toSize):
-	m_fromSize(fromSize), m_toSize(toSize)
+	ParticleUpdateColorModule::ParticleUpdateColorModule(vec4 fromColor, vec4 toColor):
+	m_fromColor(fromColor),m_toColor(toColor)
 	{
 	}
 
-	void ParticleUpdateSizeModule::process(Particle* particle)
+	void ParticleUpdateColorModule::process(Particle* particle)
 	{
 		float factor = particle->m_curAge / particle->m_span;
-		particle->size = m_fromSize * (1.0f - factor) + m_toSize * factor;
+		particle->m_color = m_fromColor * (1.0f - factor) + m_toColor * factor;
 	}
 } // namespace tzw

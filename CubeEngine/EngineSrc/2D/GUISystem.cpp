@@ -9,6 +9,7 @@
 #include "Event/EventMgr.h"
 #include "imnodes.h"
 #include "ScriptPy/ScriptPyMgr.h"
+#include "BackEnd/RenderBackEnd.h"
 
 namespace tzw
 {
@@ -40,7 +41,9 @@ namespace tzw
 		 
 		glEnable(GL_BLEND);
 		glEnable(GL_SCISSOR_TEST);
-		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		RenderBackEnd::shared()->setDepthTestEnable(false);
+		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha, RenderFlag::BlendingFactor::OneMinusSrcAlpha);
+		//glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		glDisable(GL_CULL_FACE);
 		//glDisable(GL_DEPTH_TEST);
 

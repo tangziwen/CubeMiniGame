@@ -89,6 +89,8 @@ void RenderBackEnd::initDevice()
 	selfCheck();
 	glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 	selfCheck();
+	m_curBlendSrc = RenderFlag::BlendingFactor::SrcAlpha;
+	m_curBlendDst = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
 }
 
 unsigned int RenderBackEnd::genBuffer()
@@ -326,6 +328,18 @@ void RenderBackEnd::bindFrameBuffer(unsigned int frameBufferID)
 	selfCheck();
 }
 
+void RenderBackEnd::setBlendEnable(bool isEnable)
+{
+	if(isEnable)
+	{
+		glEnable(GL_BLEND);
+	} else
+	{
+		glDisable(GL_BLEND);
+	}
+	selfCheck();
+}
+
 void RenderBackEnd::blitFramebuffer(int srcX0, int srcY0, int srcX1, int srcY1, int dstX0, int dstY0, int dstX1, int dstY1)
 {
 	glBlitFramebuffer(srcX0, srcY0, srcX1, srcY1, dstX0, dstY0, dstX1, dstY1, GL_COLOR_BUFFER_BIT, GL_LINEAR);
@@ -336,12 +350,11 @@ void RenderBackEnd::setDepthTestEnable(bool isEnable)
 {
 	if(isEnable){
 		glEnable(GL_DEPTH_TEST);
-		selfCheck();
 	}
 	else{
 		glDisable(GL_DEPTH_TEST);
-		selfCheck();
 	}
+	selfCheck();
 }
 
 void RenderBackEnd::setBlendEquation(RenderFlag::BlendingEquation equation)
@@ -373,6 +386,10 @@ static unsigned int getGLFactor(RenderFlag::BlendingFactor factor)
 
 void RenderBackEnd::setBlendFactor(RenderFlag::BlendingFactor factorSrc, RenderFlag::BlendingFactor factorDst)
 {
+	//if(m_curBlendSrc == factorSrc && m_curBlendDst == factorDst)
+	//{
+	//	return;
+	//}
 	glBlendFunc(getGLFactor(factorSrc),getGLFactor(factorDst));
 	selfCheck();
 }

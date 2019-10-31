@@ -3,7 +3,12 @@
 		"vs" : "./Res/Shaders/ScreenQuad_v.glsl",
 		"fs" : "./Res/Shaders/AutoExposurePass_f.glsl"
 	},
-	"name" : "BloomCompositPass",
+	"name" : "AutoExposurePass",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_winSize", "type":"semantic_WinSize"}

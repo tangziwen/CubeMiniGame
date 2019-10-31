@@ -6,6 +6,9 @@
 #include <functional>
 #include "EngineSrc/Interface/Drawable3D.h"
 #include "EngineSrc/Collision/ColliderEllipsoid.h"
+#include "BulletCollision/CollisionDispatch/btGhostObject.h"
+#include "BulletDynamics/Character/btKinematicCharacterController.h"
+
 namespace tzw {
 
 class FPSCamera : public Camera,public EventListener
@@ -30,7 +33,7 @@ public:
 
     float getGravity() const;
     void setGravity(float gravity);
-
+	void setCamPos(const vec3 &pos);
     bool getIsEnableGravity() const;
     void setIsEnableGravity(bool isEnableGravity);
 
@@ -47,6 +50,8 @@ public:
 
     bool getIsMoving() const;
     void setIsMoving(bool isMoving);
+
+	vec3 getTotalSpeed();
 
 private:
     void init(Camera * cloneObj);
@@ -73,7 +78,11 @@ private:
     ColliderEllipsoid * collisionPackage;
     float offsetToCentre;
     bool m_isMoving;
+	btKinematicCharacterController * m_character;
+	btPairCachingGhostObject * m_ghost2;
+	float m_capsuleHigh;
 };
+
 
 } // namespace tzw
 

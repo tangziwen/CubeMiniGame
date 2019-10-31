@@ -583,6 +583,9 @@ void GameNodeEditor::clearAll()
 	
 	for(auto node : m_gameNodes)
 	{
+		//res Node will be deleted by its own parent
+		if(node->getType() == Node_TYPE_RES)
+			continue;
 		delete node;
 	}
 	m_gameNodes.clear();
