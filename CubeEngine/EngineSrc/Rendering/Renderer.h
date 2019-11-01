@@ -33,6 +33,18 @@ public:
 	void notifySortGui();
 	void renderShadow(RenderCommand& command, int index);
 	void init();
+	bool isSkyEnable() const;
+	void setSkyEnable(const bool skyEnable);
+	bool isFogEnable() const;
+	void setFogEnable(const bool fogEnable);
+	bool isSsaoEnable() const;
+	void setSsaoEnable(const bool ssaoEnable);
+	bool isBloomEnable() const;
+	void setBloomEnable(const bool bloomEnable);
+	bool isHdrEnable() const;
+	void setHdrEnable(const bool hdrEnable);
+	bool isAaEnable() const;
+	void setAaEnable(const bool aaEnable);
 private:
     void initQuad();
 	void initMaterials();
@@ -60,6 +72,7 @@ private:
 	void toneMappingPass();
 	void bindScreenForWriting();
 	void copyToFrame(FrameBuffer * bufferSrc, FrameBuffer *bufferDst, Material * mat);
+	void copyToScreen(FrameBuffer * bufferSrc, Material * mat);
     Mesh * m_quad;
     Material * m_dirLightProgram;
 	Material * m_postEffect;
@@ -91,6 +104,20 @@ private:
 	FrameBuffer * m_ssaoBuffer2;
 	FrameBuffer * m_bloomBuffer1;
 	FrameBuffer * m_bloomBuffer2;
+
+	//used to help implement the switch
+	FrameBuffer * tempFromBuffer;
+
+	bool m_skyEnable;
+	bool m_fogEnable;
+	bool m_ssaoEnable;
+	bool m_bloomEnable;
+	bool m_hdrEnable;
+	bool m_aaEnable;
+	bool m_shadowEnable;
+public:
+	bool isShadowEnable() const;
+	void setShadowEnable(const bool shadowEnable);
 };
 
 } // namespace tzw

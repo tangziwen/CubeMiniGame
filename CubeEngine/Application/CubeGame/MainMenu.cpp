@@ -45,10 +45,12 @@ static void onOption(Button * btn)
 }
 
 MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isShowNodeEditor(false),
-					m_isOpenTerrain(false), m_isOpenAssetEditor(false), m_nodeEditor(nullptr), m_fileBrowser(nullptr),
+					m_isOpenTerrain(false), m_isOpenAssetEditor(false), m_isOpenRenderEditor(false),
+					m_nodeEditor(nullptr), m_fileBrowser(nullptr),
 					m_crossHair(nullptr)
 {
 }
+
 Texture * testIcon = nullptr;
 void MainMenu::init()
 {
@@ -171,11 +173,45 @@ void MainMenu::drawIMGUI()
 				{
 					ShaderMgr::shared()->reloadAllShaders();
 				}
+				ImGui::MenuItem(u8"äÖÈ¾ÉèÖÃ", nullptr, &m_isOpenRenderEditor);
 				ImGui::EndMenu();
 			}
 			if (m_isShowProfiler)
 			{
 				m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
+			}
+			if(m_isOpenRenderEditor)
+			{
+				ImGui::Begin("RenderEditor", &m_isOpenRenderEditor);
+				if(ImGui::RadioButton("skyEnable", Renderer::shared()->isSkyEnable()))
+				{
+					Renderer::shared()->setSkyEnable(!Renderer::shared()->isSkyEnable());
+				}
+				if(ImGui::RadioButton("FogEnable", Renderer::shared()->isFogEnable()))
+				{
+					Renderer::shared()->setFogEnable(!Renderer::shared()->isFogEnable());
+				}
+				if(ImGui::RadioButton("SSAOEnable", Renderer::shared()->isSsaoEnable()))
+				{
+					Renderer::shared()->setSsaoEnable(!Renderer::shared()->isSsaoEnable());
+				}
+				if(ImGui::RadioButton("BloomEnable", Renderer::shared()->isBloomEnable()))
+				{
+					Renderer::shared()->setBloomEnable(!Renderer::shared()->isBloomEnable());
+				}
+				if(ImGui::RadioButton("HDREnable", Renderer::shared()->isHdrEnable()))
+				{
+					Renderer::shared()->setHdrEnable(!Renderer::shared()->isHdrEnable());
+				}
+				if(ImGui::RadioButton("AAEnable", Renderer::shared()->isAaEnable()))
+				{
+					Renderer::shared()->setAaEnable(!Renderer::shared()->isAaEnable());
+				}
+				if(ImGui::RadioButton("ShadowEnable", Renderer::shared()->isShadowEnable()))
+				{
+					Renderer::shared()->setShadowEnable(!Renderer::shared()->isShadowEnable());
+				}
+				ImGui::End();
 			}
 			if (m_isShowConsole)
 			{

@@ -2,5 +2,13 @@
 	"width":800,
 	"height":600,
 	"3DEnable":true,
-	"2DEnable":true
+	"2DEnable":true,
+	"SkyEnable":true,
+	"FogEnable":true,
+	"SSAOEnable":true,
+	"BloomEnable":true,
+	"HDREnable":true,
+	"AAEnable":true,
+	"ShadowEnable":true,
+	"IsGraphicsDebugCheck":false
 }

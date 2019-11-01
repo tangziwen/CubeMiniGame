@@ -14,9 +14,8 @@ void RenderBackEnd::selfCheck()
 {
 	if (!m_isCheckGL)
 		return;
-
 	bool isBad = false;
-	while(1)
+	while(true)
 	{
 		auto errorCode = glGetError();
 		if(errorCode == GL_NO_ERROR)
@@ -24,12 +23,8 @@ void RenderBackEnd::selfCheck()
 			break;
 		}
 		//ignore GL_OUT_OF_MEMORY
-		if (errorCode != 1285)
-		{
-			tlogError("error %d",errorCode);
-			isBad = true;
-		}
-
+		tlogError("error %d",errorCode);
+		isBad = true;
 	}
 	if(isBad)
 	{

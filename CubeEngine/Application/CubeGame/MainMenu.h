@@ -41,6 +41,7 @@ private:
 	bool m_isShowNodeEditor;
 	bool m_isOpenTerrain;
 	bool m_isOpenAssetEditor;
+	bool m_isOpenRenderEditor;
 	DebugInfoPanel m_debugInfoPanel;
 	GameNodeEditor * m_nodeEditor;
 	GUIFileBrowser * m_fileBrowser;

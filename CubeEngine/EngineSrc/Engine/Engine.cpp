@@ -94,6 +94,14 @@ void Engine::loadConfig()
 	auto enable2D = doc["2DEnable"].GetBool();
 	Renderer::shared()->setEnable3DRender(enable3D);
 	Renderer::shared()->setEnableGUIRender(enable2D);
+	Renderer::shared()->setSkyEnable(doc["SkyEnable"].GetBool());
+	Renderer::shared()->setFogEnable(doc["FogEnable"].GetBool());
+	Renderer::shared()->setSsaoEnable(doc["SSAOEnable"].GetBool());
+	Renderer::shared()->setBloomEnable(doc["BloomEnable"].GetBool());
+	Renderer::shared()->setHdrEnable(doc["HDREnable"].GetBool());
+	Renderer::shared()->setAaEnable(doc["AAEnable"].GetBool());
+	Renderer::shared()->setShadowEnable(doc["ShadowEnable"].GetBool());
+	RenderBackEnd::shared()->setIsCheckGL(doc["IsGraphicsDebugCheck"].GetBool());
 }
 
 int Engine::getDrawCallCount()

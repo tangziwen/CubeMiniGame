@@ -15,13 +15,16 @@
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
 Renderer::Renderer(): m_quad(nullptr), m_dirLightProgram(nullptr), m_postEffect(nullptr), m_blurVEffect(nullptr),
-                      m_blurHEffect(nullptr), m_ssaoCompositeEffect(nullptr), m_gbuffer(nullptr),
-                      m_offScreenBuffer(nullptr), m_ssaoBuffer1(nullptr), m_ssaoBuffer2(nullptr)
+					m_blurHEffect(nullptr), m_ssaoCompositeEffect(nullptr), m_gbuffer(nullptr),
+					m_offScreenBuffer(nullptr), m_ssaoBuffer1(nullptr), m_ssaoBuffer2(nullptr),
+					m_skyEnable(true), m_fogEnable(true), m_ssaoEnable(true), m_bloomEnable(true),
+					m_hdrEnable(true), m_aaEnable(true)
 {
 	m_enable3DRender = true;
 	m_enableGUIRender = true;
 	m_isNeedSortGUI = true;
 }
+
 static FrameBuffer * m_autoExposure0;
 static FrameBuffer * m_autoExposure1;
 static FrameBuffer * m_autoExposure2;
@@ -35,6 +38,10 @@ static FrameBuffer * m_bloomBuffer_quad1;
 static FrameBuffer * m_bloomBuffer_quad2;
 static FrameBuffer * m_bloomBuffer_octave1;
 static FrameBuffer * m_bloomBuffer_octave2;
+
+static FrameBuffer * m_bloomResultBuffer;
+
+static FrameBuffer * m_ssaoResultBuffer;
 Renderer *Renderer::shared()
 {
 	if(!Renderer::m_instance)
@@ -95,51 +102,63 @@ void Renderer::renderAll()
 		shadowPass();
 		geometryPass();
 		LightingPass();
+
 		skyBoxPass();// same with lighting pass
 		FogPass();// same with lighting pass
-		SSAOPass();
-		for(int i = 0; i < 5; i++) 
+		if(m_ssaoEnable)
 		{
-			SSAOBlurVPass();
-			SSAOBlurHPass();
+			SSAOPass();
+			for(int i = 0; i < 5; i++) 
+			{
+				SSAOBlurVPass();
+				SSAOBlurHPass();
+			}
+			SSAOBlurCompossitPass();
+		}else
+		{
+			copyToFrame(m_offScreenBuffer, m_ssaoResultBuffer, m_copyEffect);
+			
 		}
-		SSAOBlurCompossitPass();
 		//get the average luminance
 		autoExposurePass();
-		BloomBrightPass();
-
-		//copy to multiple bloom
-		copyToFrame(m_bloomBuffer1, m_bloomBuffer_half1, m_copyEffect);
-		copyToFrame(m_bloomBuffer1, m_bloomBuffer_quad1, m_copyEffect);
-		copyToFrame(m_bloomBuffer1, m_bloomBuffer_octave1, m_copyEffect);
-
-		//ping pong
-		for(int i = 0; i<3; i++) 
+		if(m_bloomEnable)
 		{
-		copyToFrame(m_bloomBuffer1, m_bloomBuffer2, m_BloomBlurVEffect);
-		copyToFrame(m_bloomBuffer2, m_bloomBuffer1, m_BloomBlurHEffect);
+			BloomBrightPass();
+			//copy to multiple bloom
+			copyToFrame(m_bloomBuffer1, m_bloomBuffer_half1, m_copyEffect);
+			copyToFrame(m_bloomBuffer1, m_bloomBuffer_quad1, m_copyEffect);
+			copyToFrame(m_bloomBuffer1, m_bloomBuffer_octave1, m_copyEffect);
+
+			//ping pong
+			for(int i = 0; i<3; i++) 
+			{
+			copyToFrame(m_bloomBuffer1, m_bloomBuffer2, m_BloomBlurVEffect);
+			copyToFrame(m_bloomBuffer2, m_bloomBuffer1, m_BloomBlurHEffect);
+			}
+			for(int i = 0; i<3; i++) 
+			{
+			copyToFrame(m_bloomBuffer_half1, m_bloomBuffer_half2, m_BloomBlurVEffect);
+			copyToFrame(m_bloomBuffer_half2, m_bloomBuffer_half1, m_BloomBlurHEffect);
+	        }
+			for(int i = 0; i<3; i++) 
+			{
+			copyToFrame(m_bloomBuffer_quad1, m_bloomBuffer_quad2, m_BloomBlurVEffect);
+			copyToFrame(m_bloomBuffer_quad2, m_bloomBuffer_quad1, m_BloomBlurHEffect);
+	        }
+			for(int i = 0; i<3; i++) 
+			{
+			copyToFrame(m_bloomBuffer_octave1, m_bloomBuffer_octave2, m_BloomBlurVEffect);
+			copyToFrame(m_bloomBuffer_octave2, m_bloomBuffer_octave1, m_BloomBlurHEffect);
+	        }
+			BloomCompossitPass();
+		}else
+		{
+			copyToFrame(m_ssaoResultBuffer, m_bloomResultBuffer, m_copyEffect);
 		}
-
-		for(int i = 0; i<3; i++) 
-		{
-		copyToFrame(m_bloomBuffer_half1, m_bloomBuffer_half2, m_BloomBlurVEffect);
-		copyToFrame(m_bloomBuffer_half2, m_bloomBuffer_half1, m_BloomBlurHEffect);
-                }
-		for(int i = 0; i<3; i++) 
-		{
-		copyToFrame(m_bloomBuffer_quad1, m_bloomBuffer_quad2, m_BloomBlurVEffect);
-		copyToFrame(m_bloomBuffer_quad2, m_bloomBuffer_quad1, m_BloomBlurHEffect);
-                }
-		for(int i = 0; i<3; i++) 
-		{
-		copyToFrame(m_bloomBuffer_octave1, m_bloomBuffer_octave2, m_BloomBlurVEffect);
-		copyToFrame(m_bloomBuffer_octave2, m_bloomBuffer_octave1, m_BloomBlurHEffect);
-        }
-		BloomCompossitPass();
 		toneMappingPass();
 		AAPass();
-		
 	}
+	
 	m_gbuffer->bindForReading();
 	bindScreenForWriting();
 	//copy depth buffer to default buffer for transparent object depth testing
@@ -603,6 +622,16 @@ void Renderer::initBuffer()
 	m_offScreenBuffer2->init(w, h,1,false, true);
 	m_offScreenBuffer2->gen();
 
+	m_bloomResultBuffer = new FrameBuffer();
+	m_bloomResultBuffer->init(w, h,1,false, true);
+	m_bloomResultBuffer->gen();
+
+
+	m_ssaoResultBuffer = new FrameBuffer();
+	m_ssaoResultBuffer->init(w, h,1,false, true);
+	m_ssaoResultBuffer->gen();
+
+	
 	m_ssaoBuffer1 = new FrameBuffer();
 	m_ssaoBuffer1->init(w * 0.5, h * 0.5, 1, false, true);
 	m_ssaoBuffer1->gen();
@@ -684,7 +713,6 @@ void Renderer::geometryPass()
 void Renderer::LightingPass()
 {
 	m_offScreenBuffer->bindForWriting();
-	//bindScreenForWriting();
 	m_gbuffer->bindForReadingGBuffer();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	directionalLightPass();
@@ -692,7 +720,18 @@ void Renderer::LightingPass()
 
 void Renderer::shadowPass()
 {
-	
+	if(!m_shadowEnable)
+	{
+		for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
+		{
+			m_shadowCommandList.clear();
+			auto shadowBuffer = ShadowMap::shared()->getFBO(i);
+			shadowBuffer->BindForWriting();
+			glClear(GL_DEPTH_BUFFER_BIT);
+		}
+		return;
+	}
+
 	ShadowMap::shared()->calculateProjectionMatrix();
 
 	ShadowMap::shared()->getProgram()->use();
@@ -724,39 +763,42 @@ void Renderer::skyBoxPass()
 {
 	m_gbuffer->bindForReading();
 	m_offScreenBuffer->bindForWriting();
-	if(Sky::shared()->isEnable())
+	if(m_skyEnable)
 	{
-		RenderBackEnd::shared()->setIsCullFace(true);
-		auto mat = Sky::shared()->getMaterial();
-		mat->setVar("TU_Depth", 0);
-		auto dirLight = g_GetCurrScene()->getDirectionLight();
-		mat->setVar("sun_pos",  dirLight->dir());
-		mat->setVar("TU_winSize", Engine::shared()->winSize());
-		mat->use();
-		
-		m_gbuffer->bindDepth(0);
+		if(Sky::shared()->isEnable())
+		{
+			RenderBackEnd::shared()->setIsCullFace(true);
+			auto mat = Sky::shared()->getMaterial();
+			mat->setVar("TU_Depth", 0);
+			auto dirLight = g_GetCurrScene()->getDirectionLight();
+			mat->setVar("sun_pos",  dirLight->dir());
+			mat->setVar("TU_winSize", Engine::shared()->winSize());
+			mat->use();
+			
+			m_gbuffer->bindDepth(0);
 
-		TransformationInfo info;
-		Sky::shared()->setUpTransFormation(info);
-		applyTransform(mat->getProgram(), info);
-		Sky::shared()->prepare();
-		renderPrimitive(Sky::shared()->getMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
-		RenderBackEnd::shared()->setIsCullFace(true);
-	}else
-	{
-		auto skyBox = g_GetCurrScene()->getSkyBox();
-		if(!skyBox) return;
-		skyBox->prepare();
-		auto mat = skyBox->getMaterial();
-		mat->use();
-		m_gbuffer->bindForReading();
-		m_gbuffer->bindDepth(1);
-		mat->setVar("TU_Depth",1);
-		mat->setVar("TU_winSize", Engine::shared()->winSize());
-		TransformationInfo info;
-		skyBox->setUpTransFormation(info);
-		applyTransform(mat->getProgram(), info);
-		renderPrimitive(skyBox->skyBoxMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
+			TransformationInfo info;
+			Sky::shared()->setUpTransFormation(info);
+			applyTransform(mat->getProgram(), info);
+			Sky::shared()->prepare();
+			renderPrimitive(Sky::shared()->getMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
+			RenderBackEnd::shared()->setIsCullFace(true);
+		}else
+		{
+			auto skyBox = g_GetCurrScene()->getSkyBox();
+			if(!skyBox) return;
+			skyBox->prepare();
+			auto mat = skyBox->getMaterial();
+			mat->use();
+			m_gbuffer->bindForReading();
+			m_gbuffer->bindDepth(1);
+			mat->setVar("TU_Depth",1);
+			mat->setVar("TU_winSize", Engine::shared()->winSize());
+			TransformationInfo info;
+			skyBox->setUpTransFormation(info);
+			applyTransform(mat->getProgram(), info);
+			renderPrimitive(skyBox->skyBoxMesh(), mat, RenderCommand::PrimitiveType::TRIANGLES);
+		}
 	}
 }
 const int KERNEL_SIZE = 64;
@@ -803,6 +845,8 @@ void Renderer::ssaoSetup()
 
 void Renderer::SSAOPass()
 {
+	//watch out the blend!!!!
+	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	auto currScene = g_GetCurrScene();
 	m_gbuffer->bindForReading();
 	m_gbuffer->bindDepth(1);
@@ -864,7 +908,7 @@ void Renderer::SSAOBlurCompossitPass()
 {
 	m_offScreenBuffer->bindRtToTexture(0, 0);
 	m_ssaoBuffer1->bindRtToTexture(0,1);
-	m_offScreenBuffer2->bindForWriting();
+	m_ssaoResultBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	auto program = m_ssaoCompositeEffect->getProgram();
 	program->use();
@@ -875,23 +919,24 @@ void Renderer::SSAOBlurCompossitPass()
 
 void Renderer::FogPass()
 {
-	m_gbuffer->bindForReading();
-	m_offScreenBuffer->bindForWriting();
-	m_gbuffer->bindDepth(0);
-	auto shader = m_fogEffect->getProgram();
-	shader->use();
-	m_fogEffect->use();
-	shader->setUniformInteger("TU_Depth",0);
-	shader->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-	applyRenderSetting(m_fogEffect);
-	renderPrimitive(m_quad, m_fogEffect, RenderCommand::PrimitiveType::TRIANGLES);
-	//watch out the blend!!!!
-	RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
+	if(m_fogEnable)
+	{
+		m_gbuffer->bindForReading();
+		m_offScreenBuffer->bindForWriting();
+		m_gbuffer->bindDepth(0);
+		auto shader = m_fogEffect->getProgram();
+		shader->use();
+		m_fogEffect->use();
+		shader->setUniformInteger("TU_Depth",0);
+		shader->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+		applyRenderSetting(m_fogEffect);
+		renderPrimitive(m_quad, m_fogEffect, RenderCommand::PrimitiveType::TRIANGLES);
+	}
 }
 
 void Renderer::BloomBrightPass()
 {
-	m_offScreenBuffer2->bindRtToTexture(0, 0);
+	m_ssaoResultBuffer->bindRtToTexture(0, 0);
 	m_bloomBuffer1->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	auto program = m_bloomBrightPassEffect->getProgram();
@@ -929,13 +974,13 @@ void Renderer::BloomBlurHPass()
 
 void Renderer::BloomCompossitPass()
 {
-	m_offScreenBuffer2->bindRtToTexture(0, 0);
+	m_ssaoResultBuffer->bindRtToTexture(0, 0);
 	m_bloomBuffer1->bindRtToTexture(0, 1);
 	m_bloomBuffer_half1->bindRtToTexture(0, 2);
 	m_bloomBuffer_quad1->bindRtToTexture(0, 3);
 	m_bloomBuffer_octave1->bindRtToTexture(0, 4);
 
-	m_offScreenBuffer->bindForWriting();
+	m_bloomResultBuffer->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_BloomCompositePassEffect->use();
 	auto program = m_BloomCompositePassEffect->getProgram();
@@ -1033,7 +1078,7 @@ void Renderer::autoExposurePass()
 {
 
 	//pass 1
-	m_offScreenBuffer->bindRtToTexture(0, 0);
+	m_ssaoResultBuffer->bindRtToTexture(0, 0);
 	autoExposureList[0]->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_autoExposurePassEffect->use();
@@ -1113,7 +1158,7 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 void Renderer::toneMappingPass()
 {
 	m_offScreenBuffer2->bindForWriting();
-	m_offScreenBuffer->bindRtToTexture(0, 0);
+	m_bloomResultBuffer->bindRtToTexture(0, 0);
 	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_ToneMappingPassEffect->use();
@@ -1123,7 +1168,6 @@ void Renderer::toneMappingPass()
 	program->setUniformInteger("TU_AverageLuminance",1);
 	program->setUniform2Float("TU_winSize", m_offScreenBuffer2->getFrameSize());
 	renderPrimitive(m_quad, m_ToneMappingPassEffect, RenderCommand::PrimitiveType::TRIANGLES);
-	
 }
 
 void Renderer::bindScreenForWriting()
@@ -1145,6 +1189,91 @@ void Renderer::copyToFrame(FrameBuffer* bufferSrc, FrameBuffer* bufferDst, Mater
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniform2Float("TU_winSize", bufferDst->getFrameSize());
 	renderPrimitive(m_quad, mat, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::copyToScreen(FrameBuffer* bufferSrc, Material* mat)
+{
+	auto winSize = Engine::shared()->winSize();
+	glViewport(0, 0, winSize.x, winSize.y);
+	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+	bufferSrc->bindRtToTexture(0, 0);
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+	mat->use();
+	auto program = mat->getProgram();
+	program->use();
+	program->setUniformInteger("TU_colorBuffer",0);
+	program->setUniform2Float("TU_winSize", winSize);
+	renderPrimitive(m_quad, mat, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+bool Renderer::isShadowEnable() const
+{
+	return m_shadowEnable;
+}
+
+void Renderer::setShadowEnable(const bool shadowEnable)
+{
+	m_shadowEnable = shadowEnable;
+}
+
+bool Renderer::isSkyEnable() const
+{
+	return m_skyEnable;
+}
+
+void Renderer::setSkyEnable(const bool skyEnable)
+{
+	m_skyEnable = skyEnable;
+}
+
+bool Renderer::isFogEnable() const
+{
+	return m_fogEnable;
+}
+
+void Renderer::setFogEnable(const bool fogEnable)
+{
+	m_fogEnable = fogEnable;
+}
+
+bool Renderer::isSsaoEnable() const
+{
+	return m_ssaoEnable;
+}
+
+void Renderer::setSsaoEnable(const bool ssaoEnable)
+{
+	m_ssaoEnable = ssaoEnable;
+}
+
+bool Renderer::isBloomEnable() const
+{
+	return m_bloomEnable;
+}
+
+void Renderer::setBloomEnable(const bool bloomEnable)
+{
+	m_bloomEnable = bloomEnable;
+}
+
+bool Renderer::isHdrEnable() const
+{
+	return m_hdrEnable;
+}
+
+void Renderer::setHdrEnable(const bool hdrEnable)
+{
+	m_hdrEnable = hdrEnable;
+}
+
+bool Renderer::isAaEnable() const
+{
+	return m_aaEnable;
+}
+
+void Renderer::setAaEnable(const bool aaEnable)
+{
+	m_aaEnable = aaEnable;
 }
 } // namespace tzw
 

@@ -51,4 +51,5 @@ void main()
 	}else{
 		OUTColor.rgb = rgbB;
 	}
+	OUTColor.a = 1.0;
 }
