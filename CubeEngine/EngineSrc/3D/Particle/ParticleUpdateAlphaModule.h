@@ -8,7 +8,7 @@ class ParticleUpdateAlphaModule: public ParticleEmitterModule
 public:
 	virtual ~ParticleUpdateAlphaModule() = default;
 	ParticleUpdateAlphaModule(float alphaSpeed);
-	virtual void process(Particle * particle);
+	virtual void process(Particle * particle, ParticleEmitter * emitter);
 private:
 	float m_alphaSpeed;
 	vec3 m_higherBound;

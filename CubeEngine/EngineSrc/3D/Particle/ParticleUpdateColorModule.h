@@ -9,7 +9,7 @@ class ParticleUpdateColorModule: public ParticleEmitterModule
 public:
 	virtual ~ParticleUpdateColorModule() = default;
 	ParticleUpdateColorModule(vec4 fromColor, vec4 toColor);
-	virtual void process(Particle * particle);
+	virtual void process(Particle * particle, ParticleEmitter * emitter);
 private:
 	vec4 m_fromColor;
 	vec4 m_toColor;

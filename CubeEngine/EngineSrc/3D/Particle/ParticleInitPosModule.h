@@ -8,7 +8,7 @@ class ParticleInitPosModule: public ParticleEmitterModule
 public:
 	virtual ~ParticleInitPosModule() = default;
 	ParticleInitPosModule(vec3 lowerBound, vec3 higherBound);
-	virtual void process(Particle * particle);
+	void process(Particle * particle, ParticleEmitter * emitter) override;
 private:
 	vec3 m_lowerBound;
 	vec3 m_higherBound;

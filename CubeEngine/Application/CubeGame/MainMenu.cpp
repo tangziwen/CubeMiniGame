@@ -152,20 +152,10 @@ void MainMenu::drawIMGUI()
 				if(ImGui::MenuItem("Particle test"))
 				{
 				auto node = Node::create();
-				ParticleEmitter * emitter = new ParticleEmitter(1);
-				emitter->setSpawnRate(0.01);
-				emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));	
-				emitter->addInitModule(new ParticleInitLifeSpanModule(1.0, 1.0));
-				//emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-				//emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.4));
-				//emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 0.8, 0.5, 1), vec4(0.3, 0.3, 1.0, 0.3)));
-				emitter->setIsState(ParticleEmitter::State::Stop);
-
-				node->addChild(emitter);
 				ParticleEmitter * emitter2 = new ParticleEmitter(40);
 				emitter2->setSpawnRate(0.05);
 				emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-				emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 3.0, 0), vec3(0, 3.0, 0)));
+				emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 1, 0), vec3(0, 1, 0)));
 				emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
 				emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
 				emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
@@ -174,6 +164,7 @@ void MainMenu::drawIMGUI()
 				node->addChild(emitter2);
 				g_GetCurrScene()->addNode(node);
 				node->setPos(camera->getPos() + camera->getForward() * 15.0f);
+				node->setRotateE(vec3(0, 0, 45));
 				}
 
 				if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))

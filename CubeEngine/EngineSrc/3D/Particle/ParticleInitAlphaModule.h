@@ -8,7 +8,7 @@ class ParticleInitAlphaModule: public ParticleEmitterModule
 public:
 	virtual ~ParticleInitAlphaModule() = default;
 	ParticleInitAlphaModule(float lowerBound, float higherBound);
-	virtual void process(Particle * particle);
+	virtual void process(Particle * particle, ParticleEmitter * emitter);
 private:
 	float m_lowerBound;
 	float m_higherBound;

@@ -50,7 +50,7 @@ ThrusterPart::ThrusterPart()
 	emitter = new ParticleEmitter(40);
 	emitter->setSpawnRate(0.05);
 	emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, -3.0, 0.0), vec3(0, -3.0, 0.0 )));
+	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, -3.0), vec3(0, 0.0, -3.0 )));
 	emitter->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
 	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
 	emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));

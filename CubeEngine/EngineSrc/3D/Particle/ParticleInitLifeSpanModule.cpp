@@ -10,7 +10,7 @@ namespace tzw {
 	{
 	}
 
-	void ParticleInitLifeSpanModule::process(Particle* particle)
+	void ParticleInitLifeSpanModule::process(Particle* particle, ParticleEmitter * emitter)
 	{
 		particle->m_span = TbaseMath::randRange(m_lowerBound, m_higherBound);
 	}

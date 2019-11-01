@@ -10,7 +10,7 @@ namespace tzw {
 	{
 	}
 
-	void ParticleInitSizeModule::process(Particle* particle)
+	void ParticleInitSizeModule::process(Particle* particle, ParticleEmitter * emitter)
 	{
 		particle->m_initSize = TbaseMath::randRange(m_lowerBound, m_higherBound);
 	}

@@ -38,7 +38,9 @@ void ParticleEmitter::setUpTransFormation(TransformationInfo &info)
 	auto currCam = g_GetCurrScene()->defaultCamera();
 	info.m_projectMatrix = currCam->projection();
 	info.m_viewMatrix = currCam->getViewMatrix();
-	info.m_worldMatrix = getTransform();
+	Matrix44 mat;
+	mat.setToIdentity();
+	info.m_worldMatrix = mat;
 }
 
 unsigned int ParticleEmitter::getTypeId()
@@ -68,9 +70,10 @@ void ParticleEmitter::logicUpdate(float dt)
 			for(int i = 0; i < m_spawnAmount; i++)
 			{
 				auto * p = new Particle();
+				p->m_pos = getTransform().transformVec3(vec3(0, 0, 0));
 				for(auto m : m_initModule)
 				{
-					m->process(p);
+					m->process(p, this);
 				}
 				particleList.push_back(p);
 				m_currSpawn += 1;
@@ -87,7 +90,7 @@ void ParticleEmitter::logicUpdate(float dt)
 		{
 			for(auto m : m_updateModule)
 			{
-				m->process(*i);
+				m->process(*i, this);
 			}
 			(*i)->step(dt);
 			if((*i)->isDead())
@@ -152,10 +155,10 @@ void ParticleEmitter::initMesh()
 	float halfHeight = 0.8;
 	VertexData vertices[] = {
 		//#1
-		VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, 0.0f), vec2(0.0f, 0.0f)), 
-		VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  0.0f), vec2(1.0f, 0.0f)),
-		VertexData(vec3(1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(1.0f, 1.0f)), 
-		VertexData(vec3( -1.0f *halfWidth,  1.0f * halfHeight,  0.0f), vec2(0.0f, 1.0f)),
+		VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, 0.0f),vec3(0, 0, 1), vec2(0.0f, 0.0f)), 
+		VertexData(vec3( 1.0f *halfWidth, -1.0f * halfHeight,  0.0f),vec3(0, 0, 1), vec2(1.0f, 0.0f)),
+		VertexData(vec3(1.0f *halfWidth,  1.0f * halfHeight,  0.0f),vec3(0, 0, 1), vec2(1.0f, 1.0f)), 
+		VertexData(vec3( -1.0f *halfWidth,  1.0f * halfHeight,  0.0f),vec3(0, 0, 1), vec2(0.0f, 1.0f)),
 	};
 
 	unsigned short indices[] = {

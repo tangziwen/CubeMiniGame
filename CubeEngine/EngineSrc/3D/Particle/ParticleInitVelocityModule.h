@@ -8,7 +8,7 @@ class ParticleInitVelocityModule: public ParticleEmitterModule
 public:
 	virtual ~ParticleInitVelocityModule() = default;
 	ParticleInitVelocityModule(vec3 lowerBound, vec3 higherBound);
-	virtual void process(Particle * particle);
+	virtual void process(Particle * particle, ParticleEmitter * emitter);
 private:
 	vec3 m_lowerBound;
 	vec3 m_higherBound;

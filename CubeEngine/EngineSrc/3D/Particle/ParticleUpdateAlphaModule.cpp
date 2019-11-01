@@ -12,7 +12,7 @@ namespace tzw {
 	{
 	}
 
-	void ParticleUpdateAlphaModule::process(Particle* particle)
+	void ParticleUpdateAlphaModule::process(Particle* particle, ParticleEmitter * emitter)
 	{
 		particle->m_alpha += m_alphaSpeed * Engine::shared()->deltaTime();
 		particle->m_alpha = std::min(std::max(particle->m_alpha, 0.0f), 1.0f);

@@ -8,7 +8,7 @@ namespace tzw {
 	{
 	}
 
-	void ParticleEmitterModule::process(Particle* particle)
+	void ParticleEmitterModule::process(Particle* particle, ParticleEmitter * emitter)
 	{
 	}
 } // namespace tzw

@@ -13,7 +13,7 @@ namespace tzw {
 	{
 	}
 
-	void ParticleUpdateSizeModule::process(Particle* particle)
+	void ParticleUpdateSizeModule::process(Particle* particle, ParticleEmitter * emitter)
 	{
 		float factor = particle->m_curAge / particle->m_span;
 		particle->size = m_fromSize * (1.0f - factor) + m_toSize * factor;

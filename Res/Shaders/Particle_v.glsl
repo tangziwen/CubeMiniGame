@@ -31,9 +31,15 @@ void main()
 {
 
     // Calculate vertex position in screen space
-    mat4 modelView = TU_mvMatrix;
+    
+	mat4 modelMatrix = TU_mMatrix;
 
-    // First colunm.
+    modelMatrix[3][0] = a_instance_offset.x;
+    modelMatrix[3][1] = a_instance_offset.y;
+    modelMatrix[3][2] = a_instance_offset.z;
+
+    mat4 modelView = TU_vMatrix * modelMatrix;
+    // // First colunm.
     modelView[0][0] = a_instance_offset.w;
     modelView[0][1] = 0.0;
     modelView[0][2] = 0.0;
@@ -51,25 +57,7 @@ void main()
     modelView[2][1] = 0.0;
     modelView[2][2] = a_instance_offset.w;
 
-    // vec3  viewerLocal = TU_mMatrixInverted* float4(TU_camPos, 1);
-    // vec3  localDir = viewerLocal - float3(0,0,0);
-
-    // localDir.y = localDir.y;//lerp(0, , _VerticalBillboarding);
-
-    // localDir = normalize(localDir);
-    // vec3  upLocal = abs(localDir.y) > 0.999f ? float3(0, 0, 1) : float3(0, 1, 0);
-    // vec3  rightLocal = normalize(cross(localDir, upLocal));
-    // upLocal = cross(rightLocal, localDir);
-
-    vec3 aPos = a_position  + a_instance_offset.xyz;
-    // vec3  BBLocalPos = rightLocal * aPos.x + upLocal * aPos.y;
-    // gl_Position = TU_pMatrix * modelView * vec4(BBLocalPos,1.0);
-
-
-    vec3 vpos = (TU_mMatrix *  vec4(aPos, 1.0)).xyz;
-    vec4 worldCoord = vec4(TU_mMatrix[3][0], TU_mMatrix[3][1], TU_mMatrix[3][2], 1);
-    vec4 viewPos = TU_vMatrix * worldCoord + vec4(vpos.x ,vpos.y, 0, 0);
-    gl_Position = TU_pMatrix * modelView *  vec4(aPos, 1.0);
+    gl_Position = TU_pMatrix * modelView * vec4(a_position,1.0);
     
 	v_color = a_instance_offset2;
     v_texcoord = a_texcoord;

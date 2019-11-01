@@ -13,7 +13,7 @@ namespace tzw {
 	{
 	}
 
-	void ParticleUpdateColorModule::process(Particle* particle)
+	void ParticleUpdateColorModule::process(Particle* particle, ParticleEmitter * emitter)
 	{
 		float factor = particle->m_curAge / particle->m_span;
 		particle->m_color = m_fromColor * (1.0f - factor) + m_toColor * factor;
