@@ -307,14 +307,26 @@ function onKeyRelease(input_event)
 		end
 	elseif input_event.keycode == TZW_KEY_I then
 		print "hahahahahahah"
-		MainMenu.shared():show()
 		MainMenu.shared():setIsShowAssetEditor(true)
+	elseif input_event.keycode == TZW_KEY_F then
+		if BuildingSystem.shared():getCurrentControlPart() == nil then
+			local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
+			--轴承旋转
+			if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_BEARING then
+				BuildingSystem.shared():flipBearingByHit(player:getPos(), player:getForward(), 10);
+			--打开节点编辑器
+			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_CONTROL then
+				MainMenu.shared():setIsShowNodeEditor(true);
+			end
+		end
 	elseif input_event.keycode == TZW_KEY_E then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
-			local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-			if result and BuildingSystem.shared():getGamePartTypeInt(result.m_parent) == GAME_PART_CONTROL then
+			local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
+			if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_CONTROL then
 				oldPlayerPos = player:getPos()
-				BuildingSystem.shared():setCurrentControlPart(result.m_parent)
+				BuildingSystem.shared():setCurrentControlPart(result)
+			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_LIFT then
+				MainMenu.shared():setIsFileBroswerOpen(true)
 			end
 		else
 			player:setPos(oldPlayerPos)
@@ -341,7 +353,8 @@ function placeItem(item)
 	if checkIsNormalPart(item.ItemType) then
 		local aBlock = BuildingSystem.shared():createPart(item.ItemType)
 		if result == nil then
-			BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
+			print("do nothing")
+			--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
 			print("degree ".. g_blockRotate)
 			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate)
@@ -364,8 +377,10 @@ function handleItemPrimaryUse(item)
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	elseif (item.ItemClass == "Lift") then
 		local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
-		BuildingSystem.shared():placeLiftPart(resultPos)
-		print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
+		if resultPos.y > -99999 then 
+			BuildingSystem.shared():placeLiftPart(resultPos)
+			print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
+		end
 	end
 end
 
@@ -398,7 +413,7 @@ end
 
 --input event
 function tzw_engine_input_event(input_event)
-	if MainMenu.shared():isVisible() then
+	if MainMenu.shared():isAnyShow() then
 		return
 	else
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
