@@ -173,7 +173,7 @@ namespace tzw
 				return hitPoint;
 			}
 		}
-		return vec3(999, 999, 999);
+		return vec3(-999999, -999999, -999999);
 	}
 
 	void

@@ -85,15 +85,21 @@ void LabelNew::genMesh()
             VertexData(vec3( 0, h,  -1.0f), gNode->UV(0.0f, 1.0f)), // v3
         };
         int diff = - int(gNode->m_data.rows) + int(gNode->m_data.top);
-        charMesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
-        charMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
-        charMesh->finish(false);//we don't pass it to the GPU
-        Matrix44 mat;
-        mat.setToIdentity();
-        mat.translate(vec3(penX,penY + diff,0));
-        m_mesh->merge(charMesh,mat);
-        penX+= gNode->m_data.advance;
-        delete charMesh;
+    	if(!m_font->isUnvisibleChar(c))
+    	{
+	        charMesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
+	        charMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
+	        charMesh->finish(false);//we don't pass it to the GPU
+		    Matrix44 mat;
+		    mat.setToIdentity();
+		    mat.translate(vec3(penX,penY + diff,0));
+		    m_mesh->merge(charMesh,mat);
+    		delete charMesh;
+    	} else
+    	{
+    		printf("hahaha");
+    	}
+    	penX+= gNode->m_data.advance;
         if(c =='\n')
         {
             preMaxWidth = std::max(penX,preMaxWidth);

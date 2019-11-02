@@ -38,7 +38,7 @@ OrbitCamera *OrbitCamera::create(Camera *cloneObj)
 
 bool OrbitCamera::onKeyPress(int keyCode)
 {
-	if (MainMenu::shared()->isVisible())
+	if (MainMenu::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -86,7 +86,7 @@ bool OrbitCamera::onKeyPress(int keyCode)
 
 bool OrbitCamera::onKeyRelease(int keyCode)
 {
-	if (MainMenu::shared()->isVisible())
+	if (MainMenu::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -151,7 +151,7 @@ bool OrbitCamera::onMouseMove(vec2 pos)
 
     auto newPosition = vec3(pos.x,pos.y,0.0);
 
-    if (!MainMenu::shared()->isVisible())
+    if (!MainMenu::shared()->isAnyShow())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)

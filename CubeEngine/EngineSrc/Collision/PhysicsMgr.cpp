@@ -7,6 +7,7 @@
 #include "External/Bullet/LinearMath/btAlignedObjectArray.h"
 #include "BulletCollision/CollisionDispatch/btDefaultCollisionConfiguration.h"
 #include "BulletDynamics/Dynamics/btDiscreteDynamicsWorld.h"
+#include "btBulletDynamicsCommon.h"
 #include <assert.h>
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #define dSINGLE
@@ -141,7 +142,7 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 
 	btRigidBody* PhysicsMgr::createRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color = btVector4(1, 0, 0, 1))
 	{
-		btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
+		// btAssert((!shape || shape->getShapeType() != INVALID_SHAPE_PROXYTYPE));
 
 		//rigidbody is dynamic if and only if mass is non zero, otherwise static
 		bool isDynamic = (mass != 0.f);
@@ -187,12 +188,13 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 				btVector3 pos = colObj->getWorldTransform().getOrigin();
 				btQuaternion orn = colObj->getWorldTransform().getRotation();
 				int index = colObj->getUserIndex();
+				void * ptr = colObj->getUserPointer();
 				if (index >= 0 && !colObj->isStaticObject())
 				{
-					auto rig = (PhysicsRigidBody *)colObj->getUserPointer();
+					auto rig = static_cast<PhysicsListener *>(colObj->getUserPointer());
 					vec3 posA = vec3(pos.x(), pos.y(), pos.z());
 					Quaternion rot(orn.x(), orn.y(), orn.z(), orn.w());
-					rig->sync(posA, rot);
+					rig->recievePhysicsInfo(posA, rot);
 				}
 			}
 		}
@@ -293,7 +295,7 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyMesh(Mesh* mesh, Matrix44* transfor
 		btRig->setContactProcessingThreshold(BT_LARGE_FLOAT);
 		btRig->setFriction (btScalar(0.9));
 		btRig->setCcdMotionThreshold(.1);
-		btRig->setCcdSweptSphereRadius(0);
+		btRig->setCcdSweptSphereRadius(0.3);
 		rig->setRigidBody(btRig);
 		rig->genUserIndex();
 		btRig->setUserIndex(rig->userIndex());

@@ -18,7 +18,7 @@ void PhysicsRigidBody::attach(Drawable3D* obj)
 	m_parent = obj;
 }
 
-void PhysicsRigidBody::sync(vec3 pos, Quaternion rot)
+void PhysicsRigidBody::recievePhysicsInfo(vec3 pos, Quaternion rot)
 {
 	if(m_parent)
 	{

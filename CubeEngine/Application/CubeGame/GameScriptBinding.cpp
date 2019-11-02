@@ -70,6 +70,8 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, createPart)
 		BIND_FUNC(BuildingSystem, hitTerrain)
 		BIND_FUNC(BuildingSystem, rayTest)
+		BIND_FUNC(BuildingSystem, rayTestPart)
+		BIND_FUNC(BuildingSystem, flipBearingByHit)
 		BIND_FUNC(BuildingSystem, placeLiftPart)
 		BIND_FUNC(BuildingSystem, getLift)
 		BIND_FUNC(BuildingSystem, removePartByAttach)
@@ -89,9 +91,12 @@ namespace tzw
 		BIND_BEGIN_CLASS(MainMenu)
 		.addStaticFunction ("shared", &MainMenu::shared)
 		BIND_FUNC(MainMenu, isVisible)
+		BIND_FUNC(MainMenu, isAnyShow)
 		BIND_FUNC(MainMenu, show)
 		BIND_FUNC(MainMenu, hide)
 		BIND_FUNC(MainMenu, setIsShowAssetEditor)
+		BIND_FUNC(MainMenu, setIsShowNodeEditor)
+		BIND_FUNC(MainMenu, setIsFileBroswerOpen)
 		BIND_END_CLASS
 
 		//GamePart and it's derived classes

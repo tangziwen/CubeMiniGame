@@ -3,9 +3,11 @@
 #include <algorithm>
 #include "../base/Camera.h"
 #include <cassert>
+#include <mutex>
 #define MAX_DEEP 3
 namespace tzw {
 static int g_nodeIndex = 0;
+static std::mutex g_mutex;
 void OctreeNode::genId()
 {
 	m_index = g_nodeIndex;
@@ -177,8 +179,10 @@ void OctreeScene::updateObj(Drawable3D *obj)
 	//		return;
 	//	}
 	//}
+	g_mutex.lock();
     removeObj(obj);
     addObj(obj);
+	g_mutex.unlock();
 }
 
 bool OctreeScene::hitByRay(const Ray &ray, vec3 &hitPoint)

@@ -8,10 +8,11 @@
 #include "EngineSrc/Collision/ColliderEllipsoid.h"
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #include "BulletDynamics/Character/btKinematicCharacterController.h"
+#include "Collision/PhysicsListener.h"
 
 namespace tzw {
 
-class FPSCamera : public Camera,public EventListener
+class FPSCamera : public Camera,public EventListener, public PhysicsListener
 {
 public:
     FPSCamera();
@@ -25,6 +26,7 @@ public:
     vec3 speed() const;
     void setSpeed(const vec3 &speed);
 
+	void recievePhysicsInfo(vec3 pos, Quaternion rot) override;
     vec3 rotateSpeed() const;
     void setRotateSpeed(const vec3 &rotateSpeed);
 
@@ -74,10 +76,10 @@ private:
     float distToGround;
     float m_distToFront;
     bool m_isStopUpdate;
-    int collisionRecursionDepth;
+    int collisionRecursionDepth{};
     ColliderEllipsoid * collisionPackage;
     float offsetToCentre;
-    bool m_isMoving;
+    bool m_isMoving{};
 	btKinematicCharacterController * m_character;
 	btPairCachingGhostObject * m_ghost2;
 	float m_capsuleHigh;

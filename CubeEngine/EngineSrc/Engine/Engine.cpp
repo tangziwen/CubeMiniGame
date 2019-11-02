@@ -168,11 +168,13 @@ void Engine::update(float delta)
     m_deltaTime = delta;
     int logicBefore = clock();
 	EventMgr::shared()->apply(delta);
-	PhysicsMgr::shared()->stepSimulation(delta);
+	
     Engine::shared()->delegate()->onUpdate(delta);
 	
 	
     SceneMgr::shared()->doVisit();
+
+	PhysicsMgr::shared()->stepSimulation(delta);
 	resetDrawCallCount();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
     int applyRenderBefore = clock();

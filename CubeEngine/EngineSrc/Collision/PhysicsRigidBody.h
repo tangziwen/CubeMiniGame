@@ -1,17 +1,18 @@
 #pragma once
 #include "Base/Node.h"
+#include "PhysicsListener.h"
 class btRigidBody;
 
 namespace tzw
 {
 	class PhysicsShape;
 	class Drawable3D;
-	class PhysicsRigidBody
+	class PhysicsRigidBody : public PhysicsListener
 	{
 	public:
 		PhysicsRigidBody();
 		void attach(Drawable3D * obj);
-		void sync(vec3 pos, Quaternion rot);
+		void recievePhysicsInfo(vec3 pos, Quaternion rot) override;
 		btRigidBody* rigidBody() const;
 		void setRigidBody(btRigidBody* rigid_body);
 		Drawable3D* parent() const;

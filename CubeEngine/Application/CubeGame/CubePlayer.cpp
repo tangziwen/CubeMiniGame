@@ -104,6 +104,7 @@ namespace tzw
 					m_currPointPart->unhighLight();
 				}
 				m_currPointPart = part;
+				updateCrossHairTipsInfo();
 			}
 		}else
 		{
@@ -111,6 +112,7 @@ namespace tzw
 			{
 				m_currPointPart->unhighLight();
 				m_currPointPart = nullptr;
+				updateCrossHairTipsInfo();
 			}
 		}
 	}
@@ -153,16 +155,16 @@ namespace tzw
 		//if (MainMenu::shared()->isVisible()) return false;
 		switch (keyCode)
 		{
-		case TZW_KEY_R:
-			{
-				BuildingSystem::shared()->flipBearingByHit(getPos(), m_camera->getForward(), 15);
-			}
-			break;
 		case TZW_KEY_Q:
 			{
 				m_enableGravity = !m_enableGravity;
 				m_camera->setIsEnableGravity(m_enableGravity);
 			}
+			break;
+            case TZW_KEY_I:
+			{
+				MainMenu::shared()->setIsShowAssetEditor(true);
+            }
 			break;
 		case TZW_KEY_T:
 			{
@@ -172,12 +174,6 @@ namespace tzw
 		case TZW_KEY_J:
 			{
 				BuildingSystem::shared()->replaceToLiftByRay(getPos(), m_camera->getForward(), 15);
-			}
-			break;
-		case TZW_KEY_Z:
-			{
-
-
 			}
 			break;
 		default:
@@ -310,5 +306,29 @@ namespace tzw
 	{
 		BuildingSystem::shared()->removeAll();
 		m_currPointPart = nullptr;
+	}
+
+	void CubePlayer::updateCrossHairTipsInfo()
+	{
+		auto label = MainMenu::shared()->getCrossHairTipsInfo();
+		if(!label) return;
+		if(!m_currPointPart) 
+		{
+			label->setIsVisible(false);
+			return;
+        }
+		label->setIsVisible(true);
+		switch(m_currPointPart->getType())
+		{
+		case GamePartType::GAME_PART_LIFT: label->setString(u8"(E) 载具浏览器"); break;
+		case GamePartType::GAME_PART_CONTROL: label->setString(u8"(E) 驾驶\n(F) 节点编辑器");break;
+		case GamePartType::GAME_PART_THRUSTER: label->setString(u8"(E) 属性面板");break;
+		case GamePartType::GAME_PART_CANNON: label->setString(u8"(E) 属性面板");break;
+		case GamePartType::GAME_PART_BEARING: label->setString(u8"(E) 属性面板\n(F) 调整方向");break;
+		case GamePartType::GAME_PART_SPRING: label->setString(u8"(E) 属性面板");break;
+		default:
+			label->setIsVisible(false);
+			break;
+		}
 	}
 } // namespace tzw

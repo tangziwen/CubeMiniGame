@@ -36,13 +36,13 @@ FPSCamera::FPSCamera()
 
 
 	m_capsuleHigh = 2.f;
-	btCapsuleShape *shape = new btCapsuleShape(0.2f, m_capsuleHigh);
+	btCapsuleShape *shape = new btCapsuleShape(0.5f, m_capsuleHigh);
 
 	this->m_ghost2 = new btPairCachingGhostObject();
 	//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
 	this->m_ghost2->setCollisionShape(shape);
 	this->m_ghost2->setRestitution(0.0f);
-	this->m_ghost2->setUserPointer(this);
+
 	this->m_ghost2->setFriction(1.2f);
 	this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
 
@@ -56,8 +56,11 @@ FPSCamera::FPSCamera()
     m_character->setMaxSlope(45.0 * 3.14 / 180.0);
     m_character->setJumpSpeed(5.0f);
     m_character->setFallSpeed(55.0f);
-
-	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::CharacterFilter, btBroadphaseProxy::StaticFilter | btBroadphaseProxy::DefaultFilter);
+	this->m_ghost2->setUserPointer(this);
+	// this->m_ghost2->setUserIndex(1);
+	this->m_ghost2->setCcdSweptSphereRadius(3.0);
+	this->m_ghost2->setCcdMotionThreshold(3.0);
+	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
 	PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
 }
 
@@ -70,7 +73,7 @@ FPSCamera *FPSCamera::create(Camera *cloneObj)
 
 bool FPSCamera::onKeyPress(int keyCode)
 {
-	if (MainMenu::shared()->isVisible())
+	if (MainMenu::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -119,7 +122,7 @@ bool FPSCamera::onKeyPress(int keyCode)
 
 bool FPSCamera::onKeyRelease(int keyCode)
 {
-	if (MainMenu::shared()->isVisible())
+	if (MainMenu::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -184,7 +187,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
 
     auto newPosition = vec3(pos.x,pos.y,0.0);
 
-    if (!MainMenu::shared()->isVisible())
+    if (!MainMenu::shared()->isAnyShow())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)
@@ -234,42 +237,12 @@ void FPSCamera::logicUpdate(float dt)
 	}
     AABB playerAABB;
     vec3 overLap;
-
-
-	if(1)
-	{
-		auto originPos = m_ghost2->getWorldTransform().getOrigin();
-		auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
-		setPos(centerPoint + getUp() * (distToGround));
-		auto totalSpeed = getTotalSpeed();
-		m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
-	}
-	//else
- //   {
- //       vec3 userSpeed = vec3(totalSpeed.x, totalSpeed.y, totalSpeed.z);
- //       vec3 gravityVelocity;
- //       if(m_isEnableGravity)
- //       {
- //           Ray ray(m_pos,vec3(0, -1, 0));
- //           vec3 hitPoint;
- //           if(group.hitByRay(ray,hitPoint) && hitPoint.distance(m_pos) <= (distToGround + offsetToCentre + 0.05) && m_verticalSpeed < 0.0f)
- //           {
- //               m_verticalSpeed = 0.0;
- //           }else
- //           {
- //               if(m_verticalSpeed <= -0.5)
- //               {
- //                   m_verticalSpeed = -0.5;
- //               }
- //               else
- //               {
- //                   m_verticalSpeed -= 0.005;
- //               }
- //           }
- //           gravityVelocity = vec3(0,m_verticalSpeed,0);
- //       }
- //       //collideAndSlide(userSpeed,gravityVelocity);
- //   }
+	auto totalSpeed = getTotalSpeed();
+	m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
+	auto originPos = m_ghost2->getWorldTransform().getOrigin();
+	auto up = vec3(0, 1, 0);//m_ghost2->getWorldTransform().getBasis().getRow(1);
+	auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
+	setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround));
 }
 
 
@@ -282,6 +255,12 @@ void FPSCamera::setSpeed(const vec3 &speed)
 {
     m_speed = speed;
 }
+
+void FPSCamera::recievePhysicsInfo(vec3 pos, Quaternion rot)
+{
+
+}
+
 vec3 FPSCamera::rotateSpeed() const
 {
     return m_rotateSpeed;

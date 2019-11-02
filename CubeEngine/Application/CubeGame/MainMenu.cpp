@@ -31,7 +31,7 @@
 #include "3D/Particle/ParticleInitVelocityModule.h"
 #include "3D/Particle/ParticleInitSizeModule.h"
 #include "3D/Particle/ParticleInitPosModule.h"
-
+#include "VehicleBroswer.h"
 namespace tzw {
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
@@ -45,9 +45,10 @@ static void onOption(Button * btn)
 }
 
 MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isShowNodeEditor(false),
-					m_isOpenTerrain(false), m_isOpenAssetEditor(false), m_isOpenRenderEditor(false),
-					m_nodeEditor(nullptr), m_fileBrowser(nullptr),
-					m_crossHair(nullptr)
+	m_isOpenTerrain(false), m_isOpenAssetEditor(false), m_isOpenRenderEditor(false),
+	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
+	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr)
+	
 {
 }
 
@@ -59,20 +60,25 @@ void MainMenu::init()
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
 	m_nodeEditor = new GameNodeEditor();
-	m_fileBrowser = new GUIFileBrowser();
+	m_fileBrowser = new VehicleBroswer();
+	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
+	{
+		BuildingSystem::shared()->dump(fileName);
+		m_fileBrowser->close();
+	};
+	m_fileBrowser->m_loadCallBack = [&](std::string fileName)
+	{
+		m_nodeEditor->clearAll();
+		BuildingSystem::shared()->load(fileName);
+		m_fileBrowser->close();
+	};
 	testIcon = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
 	//hide();
 }
 
 void MainMenu::show()
 {
-	Engine::shared()->setUnlimitedCursor(false);
 	setVisible(true);
-	if(m_crossHair)
-	{
-		m_crossHair->setIsVisible(false);
-	}
-	
 }
 
 void MainMenu::hide()
@@ -82,11 +88,6 @@ void MainMenu::hide()
 		Engine::shared()->setUnlimitedCursor(true);
 	}
 	closeAllOpenedWindow();
-	setVisible(false);
-	if(m_crossHair)
-	{
-		m_crossHair->setIsVisible(true);	
-	}
 }
 
 void MainMenu::toggle()
@@ -104,35 +105,37 @@ void MainMenu::toggle()
 
 void MainMenu::drawIMGUI()
 {
-	if (isVisible())
+	auto currIsNeedShow = isVisible() || isNeedShowWindow();
+	if(m_preIsNeedShow != currIsNeedShow)
+	{
+		if(currIsNeedShow)
+		{
+			Engine::shared()->setUnlimitedCursor(false);
+			if(m_crossHair)
+			{
+				m_crossHair->setIsVisible(false);
+			}
+		}
+		else
+		{
+			Engine::shared()->setUnlimitedCursor(true);
+			if(m_crossHair)
+			{
+				m_crossHair->setIsVisible(true);
+			}
+		}
+		m_preIsNeedShow = currIsNeedShow;
+	}
+	if (isVisible() || isNeedShowWindow())
 	{
 		bool isOpenAbout = false;
 		bool isOpenHelp = false;
+		if(isVisible())
+		{
 		if (ImGui::BeginMainMenuBar())
 		{
 			if (ImGui::BeginMenu(u8"游戏"))
 			{
-				if (ImGui::MenuItem(u8"保存载具", "CTRL+Z"))
-				{
-					m_fileBrowser->open(u8"保存为", u8"保存");
-					m_fileBrowser->m_callBack = [&](std::string fileName)
-					{
-						BuildingSystem::shared()->dump(fileName);
-						m_fileBrowser->close();
-					};
-					
-				}
-				if (ImGui::MenuItem(u8"读取载具", "CTRL+Z"))
-				{
-					m_fileBrowser->open(u8"选择载具文件", u8"打开");
-					m_fileBrowser->m_callBack = [&](std::string fileName)
-					{
-						m_nodeEditor->clearAll();
-						BuildingSystem::shared()->load(fileName);
-						m_fileBrowser->close();
-					};
-				}
-
 				if (ImGui::MenuItem(u8"清空所有", nullptr))
 				{
 					GameWorld::shared()->getPlayer()->removeAllBlocks();
@@ -250,7 +253,7 @@ void MainMenu::drawIMGUI()
 				ScriptPyMgr::shared()->callFunV("showHelpPage");
 			}
 		}
-
+		}
 		if(m_isShowNodeEditor) 
 		{
 	        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
@@ -266,7 +269,7 @@ void MainMenu::drawIMGUI()
 
 bool MainMenu::onKeyPress(int keyCode)
 {
-	if (keyCode == TZW_KEY_GRAVE_ACCENT)
+	if (keyCode == TZW_KEY_TAB)
 		toggle();
 	return true;
 }
@@ -306,6 +309,28 @@ void MainMenu::closeAllOpenedWindow()
 	m_isShowNodeEditor = false;
 	m_isOpenAssetEditor = false;
 	m_isOpenTerrain = false;
+}
+
+bool MainMenu::isNeedShowWindow()
+{
+	return m_isOpenAssetEditor | m_isShowNodeEditor|m_fileBrowser->isOpen();
+}
+
+bool MainMenu::isAnyShow()
+{
+	return isVisible() || isNeedShowWindow();
+}
+
+void MainMenu::setIsFileBroswerOpen(bool isOpen)
+{
+	if(isOpen)
+	{
+		m_fileBrowser->open();
+	}
+	else
+	{
+		m_fileBrowser->close();
+	}	
 }
 
 void MainMenu::startGame()
@@ -429,6 +454,11 @@ void MainMenu::ShowExampleAppConsole(bool* p_open)
 	ConsolePanel::shared()->Draw("Console", p_open);
 }
 
+LabelNew* MainMenu::getCrossHairTipsInfo() const
+{
+	return m_crossHairTipsInfo;
+}
+
 void MainMenu::initInGame()
 {
     m_crossHair = Sprite::create("Texture/cross_hair.png");
@@ -438,5 +468,10 @@ void MainMenu::initInGame()
     m_crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
 	 
     GameWorld::shared()->getMainRoot()->addChild(m_crossHair);
+	m_crossHairTipsInfo = LabelNew::create(u8"暂无提示");
+	GameWorld::shared()->getMainRoot()->addChild(m_crossHairTipsInfo);
+	m_crossHairTipsInfo->setIsVisible(false);
+	m_crossHairTipsInfo->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2 -35);
+	// m_crossHair->addChild(m_crossHairTipsInfo);
 }
 } // namespace tzw

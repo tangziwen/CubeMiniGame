@@ -40,6 +40,7 @@ namespace tzw
 		void removePartByAttach(Attachment* attach);
 		void setCurrPointPart(GamePart * part);
 		void removeAllBlocks();
+		void updateCrossHairTipsInfo();
 	private:
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;

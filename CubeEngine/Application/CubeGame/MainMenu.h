@@ -7,8 +7,10 @@
 #include "GameNodeEditor.h"
 #include "2D/Sprite.h"
 #include "2D/GUIFileBrowser.h"
+#include "2D/LabelNew.h"
 
 namespace tzw {
+class VehicleBroswer;
 class MainMenu : public IMGUIObject, public EventListener
 {
 public:
@@ -29,6 +31,9 @@ public:
 	void setIsShowAssetEditor(bool isShow);
 	void popFloatTips(std::string floatString);
 	void closeAllOpenedWindow();
+	bool isNeedShowWindow();
+	bool isAnyShow();
+	void setIsFileBroswerOpen(bool isOpen);
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -42,10 +47,14 @@ private:
 	bool m_isOpenTerrain;
 	bool m_isOpenAssetEditor;
 	bool m_isOpenRenderEditor;
+	bool m_preIsNeedShow;
 	DebugInfoPanel m_debugInfoPanel;
 	GameNodeEditor * m_nodeEditor;
-	GUIFileBrowser * m_fileBrowser;
+	VehicleBroswer * m_fileBrowser;
 	Sprite * m_crossHair;
+	LabelNew * m_crossHairTipsInfo;
+public:
+	LabelNew* getCrossHairTipsInfo() const;
 };
 
 } // namespace tzw

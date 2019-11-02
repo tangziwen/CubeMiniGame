@@ -10,8 +10,8 @@ ActionRemoveMySelf::ActionRemoveMySelf()
 
 void ActionRemoveMySelf::update(Node* node, float dt)
 {
-	node->removeFromParent();
-	delete node;
+	// node->stopAllAction();
+	node->setIsValid(false);
 	m_isOk = true;
 }
 

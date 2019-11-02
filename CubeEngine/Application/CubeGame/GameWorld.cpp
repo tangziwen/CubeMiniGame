@@ -120,7 +120,7 @@ void GameWorld::startGame()
 	unloadGame();
 
 	MainMenu::shared()->initInGame();
-	GameMap::shared()->setMapType(GameMap::MapType::Noise);
+	GameMap::shared()->setMapType(GameMap::MapType::Plain);
 	GameMap::shared()->setMaxHeight(10);
 	 
 	GameMap::shared()->setMinHeight(3);
