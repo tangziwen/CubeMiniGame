@@ -119,6 +119,38 @@ namespace tzw
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
         	auto flag = ImGuiTabItemFlags_None;
+
+            if (m_loadOpen = ImGui::BeginTabItem(u8"读取载具", 0, flag))
+            {
+				ImGui::BeginChild('ch', ImVec2(0, 200));
+				int i = 0;
+				for(auto a:m_fileNameList)
+				{
+					if(ImGui::Selectable(a->fileName.c_str(), m_currSelected == a->fileName.c_str())) 
+					{
+						m_currSelected = a->fileName.c_str();
+						strcpy(inputBuff, a->fileName.c_str());
+					}
+					i++;
+				}
+				ImGui::EndChild();
+				if(ImGui::InputText(":FileName", inputBuff, sizeof(inputBuff))) 
+				{
+					m_currSelected = inputBuff;
+				}
+				if(ImGui::Button(u8"读取")) 
+				{
+					if(m_loadCallBack)
+					{
+						m_loadCallBack(m_currDir + m_currSelected);
+					}
+				}
+				ImGui::SameLine();
+				if(ImGui::Button(u8"取消")) m_isOpen = false;
+
+            	ImGui::EndTabItem();
+            }
+        	flag = ImGuiTabItemFlags_None;
             if (m_saveOpen = ImGui::BeginTabItem(u8"保存载具", 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
@@ -150,37 +182,8 @@ namespace tzw
 
             	ImGui::EndTabItem();
             }
-			flag = ImGuiTabItemFlags_None;
-            if (m_loadOpen = ImGui::BeginTabItem(u8"读取载具", 0, flag))
-            {
-				ImGui::BeginChild('ch', ImVec2(0, 200));
-				int i = 0;
-				for(auto a:m_fileNameList)
-				{
-					if(ImGui::Selectable(a->fileName.c_str(), m_currSelected == a->fileName.c_str())) 
-					{
-						m_currSelected = a->fileName.c_str();
-						strcpy(inputBuff, a->fileName.c_str());
-					}
-					i++;
-				}
-				ImGui::EndChild();
-				if(ImGui::InputText(":FileName", inputBuff, sizeof(inputBuff))) 
-				{
-					m_currSelected = inputBuff;
-				}
-				if(ImGui::Button(u8"读取")) 
-				{
-					if(m_loadCallBack)
-					{
-						m_loadCallBack(m_currDir + m_currSelected);
-					}
-				}
-				ImGui::SameLine();
-				if(ImGui::Button(u8"取消")) m_isOpen = false;
+			
 
-            	ImGui::EndTabItem();
-            }
         	ImGui::EndTabBar();
         }
 		auto size = ImGui::GetWindowSize();

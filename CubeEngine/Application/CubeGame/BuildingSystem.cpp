@@ -56,7 +56,6 @@ namespace tzw
 					auto bearing = static_cast<GameConstraint*>(attach->m_parent);
 					m_bearList.erase(m_bearList.find(bearing));
 				}
-				part->getNode()->removeFromParent();
 				island->remove(part);
 				delete part;
 				//is the last island, remove it
@@ -225,27 +224,32 @@ namespace tzw
 	BuildingSystem::createPart(int type)
 	{
 		GamePart* resultPart = nullptr;
-		switch (type)
+		switch ((GamePartType)type)
 		{
-		case 0:
+        case GamePartType::GAME_PART_BLOCK:
 			resultPart = new BlockPart();
 			break;
-		case 1:
-			resultPart = new ThrusterPart();//new CylinderPart();
+		case GamePartType::GAME_PART_CYLINDER:
+			resultPart = new CylinderPart();
 			break;
-		case 2:
+		case GamePartType::GAME_PART_LIFT:
 			resultPart = new LiftPart();
 			break;
-		case 3:
+        case GamePartType::GAME_PART_CONTROL:
 			{
 				auto control_part = new ControlPart();
 				resultPart = control_part;
 			}
 			break;
-		case 4:
+		case GamePartType::GAME_PART_CANNON:
 			resultPart = new CannonPart();
 			break;
-		default: ;
+        case GamePartType::GAME_PART_THRUSTER:
+			resultPart = new ThrusterPart();
+			break;
+		default:
+			assert(0);
+			;
 		}
 		return resultPart;
 	}
