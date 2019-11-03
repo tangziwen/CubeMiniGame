@@ -23,6 +23,8 @@ namespace tzw
 		std::function<void(std::string)> m_saveCallBack;
 		std::function<void(std::string)> m_loadCallBack;
     private:
+		bool m_loadOpen;
+		bool m_saveOpen;
 		std::vector<VehicleFileInfo_broswer *> m_fileNameList;
 		std::string m_currSelected;
 		bool m_isOpen;

@@ -454,6 +454,11 @@ void MainMenu::ShowExampleAppConsole(bool* p_open)
 	ConsolePanel::shared()->Draw("Console", p_open);
 }
 
+bool MainMenu::isOpenAssetEditor() const
+{
+	return m_isOpenAssetEditor;
+}
+
 LabelNew* MainMenu::getCrossHairTipsInfo() const
 {
 	return m_crossHairTipsInfo;

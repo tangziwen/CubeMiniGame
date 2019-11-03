@@ -45,6 +45,7 @@ public:
 	std::vector<NodeAttr *> findAllAttrLinksFromAttr(NodeAttr * attr);
 	void pushToStack(GameNodeEditorNode * node);
 	void clearAll();
+	void navigateToContent();
 protected:
 	std::queue<GameNodeEditorNode *> m_rt_exe_chain;
 	std::vector<GameNodeEditorNode * > m_gameNodes;

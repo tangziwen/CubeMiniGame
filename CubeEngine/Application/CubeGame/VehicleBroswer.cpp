@@ -1,10 +1,11 @@
 #include "VehicleBroswer.h"
 // #include "imgui.h"
-#include "dirent.h"
+
 #include "Utility/log/Log.h"
 #include "Engine/Engine.h"
-// #include "BuildingSystem.h"
-
+#include "BuildingSystem.h"
+#define NOMINMAX
+#include "dirent.h"
 static void list_directory (const char* dirname, std::vector<tzw::VehicleFileInfo_broswer *> &fileNameList)
 {
 	struct dirent** files;
@@ -67,7 +68,8 @@ static void list_directory (const char* dirname, std::vector<tzw::VehicleFileInf
 
 namespace tzw
 {
-	VehicleBroswer::VehicleBroswer(): m_isOpen(false),m_saveCallBack(nullptr),m_loadCallBack(nullptr)
+	VehicleBroswer::VehicleBroswer(): m_isOpen(false),m_saveCallBack(nullptr),m_loadCallBack(nullptr),m_loadOpen(true),
+		m_saveOpen(false)
 	{
 		m_currSelected = "";
 		refreshDir("./Res/Vehicles/");
@@ -82,6 +84,17 @@ namespace tzw
 
 	void VehicleBroswer::open()
 	{
+		std::vector<Island *> group;
+		BuildingSystem::shared()->getIslandsByGroup(BuildingSystem::shared()->getLift()->m_effectedIslandGroup, group);
+		if(group.size() > 0) //open save first, other wise, open load first
+        {
+			m_loadOpen = false;
+			m_saveOpen = true;
+        }else
+        {
+			m_loadOpen = true;
+			m_saveOpen = false;
+        }
 		m_isOpen = true;
 	}
 
@@ -105,7 +118,8 @@ namespace tzw
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
-            if (ImGui::BeginTabItem(u8"保存载具"))
+        	auto flag = ImGuiTabItemFlags_None;
+            if (m_saveOpen = ImGui::BeginTabItem(u8"保存载具", 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
 				int i = 0;
@@ -123,7 +137,7 @@ namespace tzw
 				{
 					m_currSelected = inputBuff;
 				}
-				if(ImGui::Button("YES")) 
+				if(ImGui::Button(u8"保存")) 
 				{
 					if(m_saveCallBack)
 					{
@@ -136,8 +150,8 @@ namespace tzw
 
             	ImGui::EndTabItem();
             }
-
-            if (ImGui::BeginTabItem(u8"读取载具"))
+			flag = ImGuiTabItemFlags_None;
+            if (m_loadOpen = ImGui::BeginTabItem(u8"读取载具", 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
 				int i = 0;
@@ -155,7 +169,7 @@ namespace tzw
 				{
 					m_currSelected = inputBuff;
 				}
-				if(ImGui::Button("YES")) 
+				if(ImGui::Button(u8"读取")) 
 				{
 					if(m_loadCallBack)
 					{

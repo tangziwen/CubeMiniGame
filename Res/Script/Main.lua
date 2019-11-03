@@ -77,9 +77,13 @@ function tzw_engine_ui_update(dt)
 	if isShowHelpPage then
 		drawHelpPage()
 	end
-	drawHud()
+	
 	if not MainMenu.shared():isVisible() then
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+			--除了物品栏之外，没有其他界面打开的时候，才画底部的Hud
+			if not MainMenu.shared():isAnyShow() or MainMenu.shared():isOpenAssetEditor() then
+				drawHud()
+			end
 			updateLifting(dt)
 		elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
 			drawEntryInterface()

@@ -1,6 +1,5 @@
 #pragma once
 #include "Engine/EngineDef.h"
-#include "Base/Node.h"
 #include "GameConstraint.h"
 #include "BlockPart.h"
 #include <set>

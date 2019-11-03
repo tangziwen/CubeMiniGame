@@ -286,6 +286,8 @@ enum class PinType
 			int toInputID = linkObj["toInputID"].GetInt();
 			makeLinkByNode(nodeA, nodeB, fromOutputID, toInputID);
 		}
+		ed::SetCurrentEditor(g_Context);
+		ed::NavigateToContent();
 	}
 
 
@@ -606,9 +608,9 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 		//ImGui::Begin(u8"½Úµã±à¼­Æ÷", isOpen,             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGui::Begin("Content", nullptr,
+        ImGui::Begin("Content", isOpen,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
+            ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_NoBringToFrontOnFocus);
 		ed::SetCurrentEditor(g_Context);
 		static float leftPaneWidth  = 300.0f;

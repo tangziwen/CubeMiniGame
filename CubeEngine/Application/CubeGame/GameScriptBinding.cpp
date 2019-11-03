@@ -97,6 +97,7 @@ namespace tzw
 		BIND_FUNC(MainMenu, setIsShowAssetEditor)
 		BIND_FUNC(MainMenu, setIsShowNodeEditor)
 		BIND_FUNC(MainMenu, setIsFileBroswerOpen)
+		BIND_FUNC(MainMenu, isOpenAssetEditor)
 		BIND_END_CLASS
 
 		//GamePart and it's derived classes

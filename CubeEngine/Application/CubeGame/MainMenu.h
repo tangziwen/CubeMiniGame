@@ -34,6 +34,7 @@ public:
 	bool isNeedShowWindow();
 	bool isAnyShow();
 	void setIsFileBroswerOpen(bool isOpen);
+	bool isOpenAssetEditor() const;
 private:
 	bool m_isVisible = true;
     void startGame();

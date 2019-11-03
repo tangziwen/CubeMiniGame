@@ -1,5 +1,4 @@
-#ifndef TZW_DRAWABLE3D_H
-#define TZW_DRAWABLE3D_H
+#pragma once
 
 #include "../Math/AABB.h"
 #include "Drawable.h"
@@ -59,4 +58,3 @@ private:
 
 } // namespace tzw
 
-#endif // TZW_DRAWABLE3D_H
