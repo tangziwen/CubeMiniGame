@@ -188,6 +188,23 @@ void Mesh::submitOnlyVO_IO()
     m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u));
 }
 
+bool Mesh::intersectWithRay(const Ray& rayInMeshSpace, vec3 * hitPoint)
+{
+	float hitDist;
+	for(int i = 0; i < m_indices.size(); i+=3)
+	{
+		if(rayInMeshSpace.intersectTriangle(m_vertices[i].m_pos, m_vertices[i + 1].m_pos, m_vertices[i + 2].m_pos, &hitDist))
+		{
+			if(hitPoint)
+			{
+				(*hitPoint) = rayInMeshSpace.origin() + rayInMeshSpace.direction() * hitDist;
+			}
+			return true;
+		}
+	}
+	return false;
+}
+
 void Mesh::setMatIndex(unsigned int matIndex)
 {
     m_matIndex = matIndex;

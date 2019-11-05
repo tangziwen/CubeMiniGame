@@ -5,6 +5,7 @@
 #include "Island.h"
 #include <algorithm>
 #include "BuildingSystem.h"
+#include "3D/Primitive/CylinderPrimitive.h"
 
 namespace tzw
 {
@@ -12,71 +13,60 @@ const float blockSize = 0.5;
 LiftPart::LiftPart()
 {
 	m_liftHeight = 0.0;
-	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
+	m_node = new Drawable3D();
+	m_plaftormPart = new CubePrimitive(blockSize, blockSize, blockSize);
 	auto texture =  TextureMgr::shared()->getByPath("Texture/mud.jpg");
-	m_node->getMaterial()->setTex("diffuseMap", texture);
+	m_plaftormPart->getMaterial()->setTex("diffuseMap", texture);
+	float pipeLength = 25.0;
+	m_pipePart = new CylinderPrimitive(0.10f, 0.10f, pipeLength);
+
+	m_basePart = new CubePrimitive(1.5, 1.5, 0.3);
+	m_plaftormPart->addChild(m_pipePart);
+	m_pipePart->setRotateE(vec3(90, 0, 0));
+	m_pipePart->setPos(0, -pipeLength / 2.0f, 0.0);
+	m_node->addChild(m_plaftormPart);
+	m_node->addChild(m_basePart);
 	m_shape = new PhysicsShape();
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
 	m_effectedIslandGroup = "";
-	for(int i = 0; i < 6; i++)
-	{
-		m_bearPart[i] = nullptr;
-	}
 	initAttachments();
+	g_GetCurrScene()->addNode(m_node);
 }
 
+LiftPart::~LiftPart()
+{
+	//m_node->removeFromParent();
+}
+
+void LiftPart::highLight()
+{
+	if(m_node)
+	{
+		m_plaftormPart->setColor(vec4(1.0, 0.5, 0.5, 1.0));
+		m_basePart->setColor(vec4(1.0, 0.5, 0.5, 1.0));
+		m_pipePart->setColor(vec4(1.0, 0.5, 0.5, 1.0));
+	}
+}
+
+void LiftPart::unhighLight()
+{
+	if(m_node)
+	{
+		m_plaftormPart->setColor(vec4(1.0, 1.0, 1.0, 1.0));
+		m_basePart->setColor(vec4(1.0, 1.0, 1.0, 1.0));
+		m_pipePart->setColor(vec4(1.0, 1.0, 1.0, 1.0));
+	}
+}
 Attachment * LiftPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
 {
-	RayAABBSide side;
 	vec3 hitPoint;
-	auto isHit = ray.intersectAABB(m_node->localAABB(), &side, hitPoint);
-
-	if (!isHit) return nullptr;
-
-
-	auto m = m_node->getLocalTransform().data();
-	vec3 up(m[4], m[5], m[6]);
-	vec3 forward(-m[8], -m[9], -m[10]);
-	vec3 right(m[0], m[1], m[2]);
-	up.normalize();
-	forward.normalize();
-	right.normalize();
 	Attachment * attachPtr = nullptr;
-	switch (side)
-	{
-	case RayAABBSide::up:
+
+	//only top area can used to place
+	if(m_attachment[4]->isHit(ray, hitPoint))
 	{
 		attachPtr = getAttachmentInfo(4, attachPosition, Normal, attachUp);
-	}
-	break;
-	case RayAABBSide::down:
-	{
-		attachPtr = getAttachmentInfo(5, attachPosition, Normal, attachUp);
-	}
-	break;
-	case RayAABBSide::left:
-	{
-		attachPtr = getAttachmentInfo(3, attachPosition, Normal, attachUp);
-	}
-	break;
-	case RayAABBSide::right:
-	{
-		attachPtr = getAttachmentInfo(2, attachPosition, Normal, attachUp);
-	}
-	break;
-	case RayAABBSide::front:
-	{
-		attachPtr = getAttachmentInfo(0, attachPosition, Normal, attachUp);
-	}
-	break;
-	case RayAABBSide::back:
-	{
-		attachPtr = getAttachmentInfo(1, attachPosition, Normal, attachUp);
-	}
-	break;
-	default:
-		break;
 	}
 	return attachPtr;
 }
@@ -98,7 +88,7 @@ void LiftPart::initAttachments()
 
 Attachment * LiftPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)
 {
-	auto mat = m_node->getLocalTransform();
+	auto mat = m_plaftormPart->getLocalTransform();
 	auto atta = m_attachment[index];
 	vec4 a_pos = vec4(atta->m_pos, 1.0);
 	vec4 a_n = vec4(atta->m_normal, 0.0);
@@ -116,7 +106,7 @@ Attachment* LiftPart::getFirstAttachment()
 
 void LiftPart::liftUp(float val)
 {
-	if (m_effectedIslandGroup.size()> 0) 
+	if (m_effectedIslandGroup.size()> 0 || true) 
 	{
 		m_liftHeight += val;
 		m_liftHeight = std::min(m_liftHeight, 10.0f);
@@ -129,9 +119,9 @@ void LiftPart::liftUp(float val)
 			oldPos.y += val;
 			island->m_node->setPos(oldPos);
         }
-		vec3 oldPos = m_node->getPos();
+		vec3 oldPos = m_plaftormPart->getPos();
 		oldPos.y += val;
-		m_node->setPos(oldPos);
+		m_plaftormPart->setPos(oldPos);
 	}
 }
 
@@ -140,12 +130,22 @@ void LiftPart::setEffectedIsland(std::string islandGroup)
 	m_effectedIslandGroup = islandGroup;
 }
 
-void LiftPart::cook()
+void LiftPart::setPos(vec3 v)
 {
-	auto mat2 = m_node->getTranslationMatrix();
-	auto aabb = m_node->getAABB();
-	auto rigChasis = PhysicsMgr::shared()->createRigidBody(1.0, mat2, aabb);
-	rigChasis->attach(m_node);
+	m_node->setPos(v);
+}
+
+bool LiftPart::isHit(Ray ray)
+{
+	bool isHitPlatform = m_plaftormPart->isHit(ray);
+	bool isHitBase = m_basePart->isHit(ray);
+	bool isHitCylinder = m_pipePart->isHit(ray);
+	return isHitBase || isHitPlatform || isHitCylinder;
+}
+
+Drawable3D* LiftPart::getNode() const
+{
+	return m_plaftormPart;
 }
 
 GamePartType LiftPart::getType()

@@ -11,6 +11,15 @@
 
 namespace tzw {
 class VehicleBroswer;
+enum class WindowType
+{
+	INVENTORY,
+	NODE_EDITOR,
+	VEHICLE_FILE_BROWSER,
+	RESUME_MENU,
+	HELP_PAGE,
+	ATTRIBUTE_WINDOW,
+};
 class MainMenu : public IMGUIObject, public EventListener
 {
 public:
@@ -35,6 +44,9 @@ public:
 	bool isAnyShow();
 	void setIsFileBroswerOpen(bool isOpen);
 	bool isOpenAssetEditor() const;
+	void closeCurrentWindow();
+	void setWindowShow(WindowType type, bool isShow);
+	bool getWindowIsShow(WindowType type) const;
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -44,9 +56,7 @@ private:
 	
 	bool m_isShowProfiler;
 	bool m_isShowConsole;
-	bool m_isShowNodeEditor;
 	bool m_isOpenTerrain;
-	bool m_isOpenAssetEditor;
 	bool m_isOpenRenderEditor;
 	bool m_preIsNeedShow;
 	DebugInfoPanel m_debugInfoPanel;

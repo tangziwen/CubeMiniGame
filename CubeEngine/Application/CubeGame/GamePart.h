@@ -62,6 +62,10 @@ public:
 	virtual void dumpAttach(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator);
 	virtual void loadAttach(rapidjson::Value& partDocObj);
 	void addAttachment(Attachment * newAttach);
+	virtual bool isHit(Ray ray);
+	virtual void drawInspect();
+	virtual bool isNeedDrawInspect();
+	virtual void drawInspectNameEdit();
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

@@ -155,6 +155,9 @@ namespace tzw
 		//if (MainMenu::shared()->isVisible()) return false;
 		switch (keyCode)
 		{
+	    case TZW_KEY_ESCAPE:
+	        MainMenu::shared()->closeCurrentWindow();
+	        break;
 		case TZW_KEY_Q:
 			{
 				m_enableGravity = !m_enableGravity;
@@ -300,6 +303,14 @@ namespace tzw
 	{
 		BuildingSystem::shared()->removePartByAttach(attach);
 		m_currPointPart = nullptr;
+		updateCrossHairTipsInfo();
+	}
+
+	void CubePlayer::removePart(GamePart* part)
+	{
+		BuildingSystem::shared()->removePart(part);
+		m_currPointPart = nullptr;
+		updateCrossHairTipsInfo();
 	}
 
 	void CubePlayer::removeAllBlocks()
@@ -330,5 +341,18 @@ namespace tzw
 			label->setIsVisible(false);
 			break;
 		}
+	}
+
+	void CubePlayer::openCurrentPartInspectMenu()
+	{
+		if(m_currPointPart && m_currPointPart->isNeedDrawInspect())
+		{
+			MainMenu::shared()->setWindowShow(WindowType::ATTRIBUTE_WINDOW, true);
+		}
+	}
+
+	GamePart* CubePlayer::getCurrPointPart()
+	{
+		return m_currPointPart;
 	}
 } // namespace tzw

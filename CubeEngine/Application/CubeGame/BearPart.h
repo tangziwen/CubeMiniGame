@@ -30,6 +30,8 @@ public:
 	void generateName() override;
 	GamePartType getType() override;
 	void enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse);
+	void drawInspect() override;
+	bool isNeedDrawInspect() override;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	GameNodeEditorNode * m_graphNode;

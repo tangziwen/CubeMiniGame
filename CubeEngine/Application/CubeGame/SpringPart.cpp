@@ -193,5 +193,29 @@ SpringPart::~SpringPart()
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
+
+void SpringPart::drawInspect()
+{
+	drawInspectNameEdit();
+	float stiffness, damping;
+	stiffness = getStiffness();
+	damping = getDamping();
+	bool isInputStiffness = false, isInputDamping = false;
+	isInputStiffness = ImGui::InputFloat(u8"¾¢¶ÈÏµÊý", &stiffness);
+	if(isInputStiffness)
+	{
+		setStiffness(stiffness);
+	}
+	isInputDamping = ImGui::InputFloat(u8"×èÄá", &damping);
+	if(isInputDamping)
+	{
+		setStiffness(damping);
+	}
+}
+
+bool SpringPart::isNeedDrawInspect()
+{
+	return true;
+}
 }
 

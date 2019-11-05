@@ -139,10 +139,8 @@ void GameWorld::startGame()
 
 bool GameWorld::onKeyPress(int keyCode)
 {
-    switch (keyCode) {
-    case TZW_KEY_ESCAPE:
-        this->toggleMainMenu();
-        break;
+    switch (keyCode)
+	{
     default:
         break;
     }
@@ -258,11 +256,6 @@ GameWorld::~GameWorld()
 MainMenu *GameWorld::getMainMenu() const
 {
     return m_mainMenu;
-}
-
-void GameWorld::toggleMainMenu()
-{
-    m_mainMenu->toggle();
 }
 
 void GameWorld::unloadGame()

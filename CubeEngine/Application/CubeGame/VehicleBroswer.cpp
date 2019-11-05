@@ -68,7 +68,7 @@ static void list_directory (const char* dirname, std::vector<tzw::VehicleFileInf
 
 namespace tzw
 {
-	VehicleBroswer::VehicleBroswer(): m_isOpen(false),m_saveCallBack(nullptr),m_loadCallBack(nullptr),m_loadOpen(true),
+	VehicleBroswer::VehicleBroswer():m_saveCallBack(nullptr),m_loadCallBack(nullptr),m_loadOpen(true),
 		m_saveOpen(false)
 	{
 		m_currSelected = "";
@@ -95,26 +95,15 @@ namespace tzw
 			m_loadOpen = true;
 			m_saveOpen = false;
         }
-		m_isOpen = true;
 	}
-
-	void VehicleBroswer::close()
-	{
-		m_isOpen = false;
-	}
-
-	bool VehicleBroswer::isOpen()
-	{
-		return m_isOpen;
-	}
-
+	
 	static char inputBuff[128];
-	void VehicleBroswer::drawIMGUI()
+	void VehicleBroswer::drawIMGUI(bool * isOpen)
 	{
-		if(!m_isOpen) return;
+		if(!(*isOpen)) return;
 		auto ss = Engine::shared()->winSize();
-		// ImGui::SetNextWindowPos(ImVec2(ss.x / 2.0, ss.y / 2.0));
-		ImGui::Begin(u8"载具浏览器", &m_isOpen, ImGuiWindowFlags_AlwaysAutoResize);
+		ImGui::SetNextWindowPos(ImVec2(ss.x / 2.0, ss.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+		ImGui::Begin(u8"载具浏览器", isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
@@ -144,9 +133,10 @@ namespace tzw
 					{
 						m_loadCallBack(m_currDir + m_currSelected);
 					}
+					(*isOpen) = false;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(u8"取消")) m_isOpen = false;
+				if(ImGui::Button(u8"取消")) (*isOpen) = false;
 
             	ImGui::EndTabItem();
             }
@@ -175,20 +165,15 @@ namespace tzw
 					{
 						m_saveCallBack(m_currDir + m_currSelected);
 					}
-					m_isOpen = false;
+					(*isOpen) = false;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(u8"取消")) m_isOpen = false;
+				if(ImGui::Button(u8"取消")) (*isOpen) = false;
 
             	ImGui::EndTabItem();
             }
-			
-
         	ImGui::EndTabBar();
         }
-		auto size = ImGui::GetWindowSize();
-		ImGui::SetWindowPos(ImVec2(ss.x / 2.0 - size.x / 2.0, ss.y / 2.0 - size.y / 2.0));
-		
 		ImGui::End();
 	}
 }

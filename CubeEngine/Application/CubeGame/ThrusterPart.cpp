@@ -23,7 +23,6 @@ namespace tzw
 {
 ThrusterPart::ThrusterPart()
 {
-
 	m_topRadius = 0.1;
 	m_bottomRadius = 0.25;
 	m_height = 0.5;
@@ -173,5 +172,29 @@ ThrusterPart::~ThrusterPart()
 {
 	BuildingSystem::shared()->removeThruster(this);
 	delete m_graphNode;
+}
+void ThrusterPart::drawInspect()
+{
+	drawInspectNameEdit();
+	float force = getThrusterForce();
+	if(ImGui::InputFloat(u8"ÍÆ½øÁ¦", &force))
+	{
+		setThrusterForce(force);
+	}
+}
+
+bool ThrusterPart::isNeedDrawInspect()
+{
+	return true;
+}
+
+float ThrusterPart::getThrusterForce()
+{
+	return m_thrusterForce;
+}
+
+void ThrusterPart::setThrusterForce(float thruster)
+{
+	m_thrusterForce = thruster;
 }
 }

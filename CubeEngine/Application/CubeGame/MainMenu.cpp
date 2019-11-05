@@ -32,7 +32,12 @@
 #include "3D/Particle/ParticleInitSizeModule.h"
 #include "3D/Particle/ParticleInitPosModule.h"
 #include "VehicleBroswer.h"
+
+
 namespace tzw {
+
+
+static std::set<WindowType> m_currOpenWindowSet;
 TZW_SINGLETON_IMPL(MainMenu);
 static void exitNow(Button * btn)
 {
@@ -44,8 +49,8 @@ static void onOption(Button * btn)
 
 }
 
-MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false), m_isShowNodeEditor(false),
-	m_isOpenTerrain(false), m_isOpenAssetEditor(false), m_isOpenRenderEditor(false),
+MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false),
+	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
 	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
 	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr)
 	
@@ -64,13 +69,11 @@ void MainMenu::init()
 	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
 	{
 		BuildingSystem::shared()->dump(fileName);
-		m_fileBrowser->close();
 	};
 	m_fileBrowser->m_loadCallBack = [&](std::string fileName)
 	{
 		m_nodeEditor->clearAll();
 		BuildingSystem::shared()->load(fileName);
-		m_fileBrowser->close();
 	};
 	testIcon = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
 	//hide();
@@ -245,24 +248,65 @@ void MainMenu::drawIMGUI()
 				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
 				ImGui::EndPopup();
 			}
-
-
-			if (isOpenHelp)
+			if (getWindowIsShow(WindowType::HELP_PAGE))
 			{
-
-				ScriptPyMgr::shared()->callFunV("showHelpPage");
+				bool isOpen = ScriptPyMgr::shared()->callFunB("cpp_drawHelpPage");
+				setWindowShow(WindowType::HELP_PAGE, isOpen);
 			}
 		}
 		}
-		if(m_isShowNodeEditor) 
+
+		if(getWindowIsShow(WindowType::NODE_EDITOR)) 
 		{
-	        m_nodeEditor->drawIMGUI(&m_isShowNodeEditor);
+			bool isOpen = true;
+	        m_nodeEditor->drawIMGUI(&isOpen);
+			setWindowShow(WindowType::NODE_EDITOR, isOpen);
 		}
-		if(m_isOpenAssetEditor)
+
+		if(getWindowIsShow(WindowType::INVENTORY))
 		{
-			m_isOpenAssetEditor = ScriptPyMgr::shared()->callFunB("draw_inventory");
+			bool isShow = ScriptPyMgr::shared()->callFunB("cpp_drawInventory");
+			setWindowShow(WindowType::INVENTORY, isShow);
 		}
-		m_fileBrowser->drawIMGUI();
+		
+		if(getWindowIsShow(WindowType::VEHICLE_FILE_BROWSER))
+		{
+			bool isOpen = true;
+			m_fileBrowser->drawIMGUI(&isOpen);
+			setWindowShow(WindowType::VEHICLE_FILE_BROWSER, isOpen);
+        }
+
+		if(getWindowIsShow(WindowType::RESUME_MENU))
+		{
+			auto screenSize = Engine::shared()->winSize();
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			ImGui::Begin(u8"是否继续?",nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			if(ImGui::Button(u8"继续", ImVec2(160, 35)))
+			{
+				setWindowShow(WindowType::RESUME_MENU, false);
+			}
+			if(ImGui::Button(u8"选项", ImVec2(160, 35)))
+			{
+				tlog("nothing to do");
+			}
+			if(ImGui::Button(u8"退出", ImVec2(160, 35)))
+			{
+				exit(0);
+			}
+			ImGui::End();
+		}
+
+		//部件的属性面板
+		if(getWindowIsShow(WindowType::ATTRIBUTE_WINDOW))
+		{
+			auto screenSize = Engine::shared()->winSize();
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			bool isOpen = true;
+			ImGui::Begin(u8"属性面板",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			GameWorld::shared()->getPlayer()->getCurrPointPart()->drawInspect();
+			ImGui::End();
+			setWindowShow(WindowType::ATTRIBUTE_WINDOW, isOpen);
+		}
 	}
 
 }
@@ -291,12 +335,15 @@ GameNodeEditor* MainMenu::getNodeEditor()
 
 void MainMenu::setIsShowNodeEditor(bool isShow)
 {
-	m_isShowNodeEditor = isShow;
+	setWindowShow(WindowType::NODE_EDITOR, isShow);
+
 }
 
 void MainMenu::setIsShowAssetEditor(bool isShow)
 {
-	m_isOpenAssetEditor = true;
+	//m_isOpenAssetEditor = true;
+	//m_currOpenWindowSet.insert(WindowType::INVENTORY);
+	setWindowShow(WindowType::INVENTORY, isShow);
 }
 
 void MainMenu::popFloatTips(std::string floatString)
@@ -306,14 +353,13 @@ void MainMenu::popFloatTips(std::string floatString)
 
 void MainMenu::closeAllOpenedWindow()
 {
-	m_isShowNodeEditor = false;
-	m_isOpenAssetEditor = false;
 	m_isOpenTerrain = false;
+	m_currOpenWindowSet.clear();
 }
 
 bool MainMenu::isNeedShowWindow()
 {
-	return m_isOpenAssetEditor | m_isShowNodeEditor|m_fileBrowser->isOpen();
+	return m_currOpenWindowSet.size() > 0;
 }
 
 bool MainMenu::isAnyShow()
@@ -323,14 +369,7 @@ bool MainMenu::isAnyShow()
 
 void MainMenu::setIsFileBroswerOpen(bool isOpen)
 {
-	if(isOpen)
-	{
-		m_fileBrowser->open();
-	}
-	else
-	{
-		m_fileBrowser->close();
-	}	
+	setWindowShow(WindowType::VEHICLE_FILE_BROWSER, isOpen);
 }
 
 void MainMenu::startGame()
@@ -343,8 +382,6 @@ void MainMenu::drawToolsMenu()
 {
 	if (ImGui::BeginMenu(u8"工具"))
 	{
-		ImGui::MenuItem(u8"节点编辑器", nullptr, &m_isShowNodeEditor);
-		ImGui::MenuItem(u8"资产浏览器", nullptr, &m_isOpenAssetEditor);
 		ImGui::EndMenu();
 	}
 	if (m_isOpenTerrain)
@@ -456,7 +493,39 @@ void MainMenu::ShowExampleAppConsole(bool* p_open)
 
 bool MainMenu::isOpenAssetEditor() const
 {
-	return m_isOpenAssetEditor;
+	return getWindowIsShow(WindowType::INVENTORY);
+}
+
+void MainMenu::closeCurrentWindow()
+{
+	if(m_currOpenWindowSet.size() > 0)
+	{
+		m_currOpenWindowSet.erase(m_currOpenWindowSet.begin());
+	}
+	else
+	{
+		//
+		setWindowShow(WindowType::RESUME_MENU, true);	
+	}
+}
+
+void MainMenu::setWindowShow(WindowType type, bool isShow)
+{
+	if(isShow)
+	{
+		m_currOpenWindowSet.insert(type);
+	}else
+	{
+		if(m_currOpenWindowSet.find(type) != m_currOpenWindowSet.end())
+		{
+			m_currOpenWindowSet.erase(m_currOpenWindowSet.find(type));
+		}
+	}
+}
+
+bool MainMenu::getWindowIsShow(WindowType type) const
+{
+	return m_currOpenWindowSet.find(type) != m_currOpenWindowSet.end();
 }
 
 LabelNew* MainMenu::getCrossHairTipsInfo() const

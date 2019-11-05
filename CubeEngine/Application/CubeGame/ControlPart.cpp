@@ -29,7 +29,6 @@ ControlPart::ControlPart()
 		m_bearPart[i] = nullptr;
 	}
 	initAttachments();
-
 	EventMgr::shared()->addFixedPiorityListener(this);
 	ControlPart::generateName();
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();

@@ -32,6 +32,7 @@ public:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	void tmpMoveWheel(bool isOpen);
 	void removePartByAttach(Attachment * attach);
+	void removePart(GamePart * attach);
 	void placeGamePart(GamePart * part, vec3 pos);
 	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
 	void attachGamePart(GamePart * part, Attachment * attach, float degree);

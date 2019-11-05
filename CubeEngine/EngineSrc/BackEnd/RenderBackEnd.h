@@ -53,6 +53,7 @@ public:
 	void setIsCheckGL(bool newVal);
 	std::string getCurrVersion();
 	std::string getShaderSupportVersion();
+	void printFullDeviceInfo();
 private:
 	bool m_isCheckGL;
     static RenderBackEnd * m_instance;

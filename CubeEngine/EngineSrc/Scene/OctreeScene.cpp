@@ -3,11 +3,10 @@
 #include <algorithm>
 #include "../base/Camera.h"
 #include <cassert>
-#include <mutex>
+#include "3D/Primitive/CubePrimitive.h"
 #define MAX_DEEP 3
 namespace tzw {
 static int g_nodeIndex = 0;
-static std::mutex g_mutex;
 void OctreeNode::genId()
 {
 	m_index = g_nodeIndex;
@@ -56,6 +55,11 @@ std::vector<Drawable3D *> &OctreeScene::getVisibleList()
 bool OctreeScene::isInOctree(Drawable3D * obj)
 {
 	return m_objSet.find(obj) != m_objSet.end();
+}
+
+OctreeNode* OctreeScene::getNodeByIndex(int index)
+{
+	return m_nodeList[index];
 }
 
 void OctreeScene::addObj(Drawable3D *obj)
@@ -115,6 +119,7 @@ void OctreeScene::removeObj(Drawable3D *obj)
 			m_objSet.erase(iter);
 		}
 	}
+
 }
 
 bool OctreeScene::removeObj_R(OctreeNode *node, Drawable3D *obj)
@@ -171,18 +176,17 @@ bool OctreeScene::hitByRay_R(OctreeNode *node, const Ray &ray, vec3 &hitPoint)
 
 void OctreeScene::updateObj(Drawable3D *obj)
 {
-	//if(m_objMap.find(obj) != m_objMap.end())
-	//{
-	//	int oldIndex = m_objMap[obj];
-	//	if (oldIndex == obj->getOctNodeIndex())
-	//	{
-	//		return;
-	//	}
-	//}
-	g_mutex.lock();
+	if(obj->getOctNodeIndex() >= 0)
+	{
+		auto node = getNodeByIndex(obj->getOctNodeIndex());
+		if(node->aabb.isCanCotain(obj->getAABB()))// no need to update;
+		{
+			return;
+		}
+	}
+	
     removeObj(obj);
     addObj(obj);
-	g_mutex.unlock();
 }
 
 bool OctreeScene::hitByRay(const Ray &ray, vec3 &hitPoint)
@@ -256,8 +260,6 @@ void OctreeScene::cullingByCamera_R(OctreeNode *node, Camera *camera)
             if(!camera->isOutOfFrustum(obj->getAABB()))
             {
                 m_visibleList.push_back (obj);
-            }else
-            {
             }
         }
 

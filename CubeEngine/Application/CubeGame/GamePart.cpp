@@ -1,6 +1,7 @@
 #include "GamePart.h"
 #include "Island.h"
 #include "BearPart.h"
+#include "2D/GUISystem.h"
 
 namespace tzw
 {
@@ -23,17 +24,17 @@ namespace tzw
 	Attachment * GamePart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & up)
 	{
 		float minDist = 99999999.0;
-		int resultIndx = -1.0;
+		int resultIndx = -1;
 		for (auto i = 0; i < getAttachmentCount(); i++) 
 		{
 			auto attach = getAttachment(i);
-			vec3 hitPointLocal;
-			if(attach->isHit(ray, hitPointLocal)) 
+			vec3 hitInWorld;
+			if(attach->isHit(ray, hitInWorld)) 
 			{
-				if (hitPointLocal.distance(ray.origin()) < minDist) 
+				if (hitInWorld.distance(ray.origin()) < minDist) 
 				{
 					resultIndx = i;
-					minDist = hitPointLocal.distance(ray.origin());
+					minDist = hitInWorld.distance(ray.origin());
 				}
 	        }
 		}
@@ -344,8 +345,7 @@ namespace tzw
 	}
 
 	GamePart::~GamePart()
-	{
-		
+	{	
 		m_node->removeFromParent();
 		delete m_node;
 		for(auto attach : m_attachment)
@@ -514,5 +514,48 @@ namespace tzw
 	void GamePart::addAttachment(Attachment* newAttach)
 	{
 		m_attachment.push_back(newAttach);
+	}
+
+	bool GamePart::isHit(Ray ray)
+	{
+		auto island = m_parent;
+		auto node = getNode();
+		auto invertedMat = node->getTransform().inverted();
+		vec4 dirInLocal = invertedMat * vec4(ray.direction(), 0.0);
+		vec4 originInLocal = invertedMat * vec4(ray.origin(), 1.0);
+
+		auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
+		RayAABBSide side;
+		vec3 hitPoint;
+		auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
+		GamePart* newPart = nullptr;
+		if (isHit)
+		{
+			return true;
+		}
+		return false;
+	}
+
+	void GamePart::drawInspect()
+	{
+		
+	}
+
+	bool GamePart::isNeedDrawInspect()
+	{
+		return false;
+	}
+
+	void GamePart::drawInspectNameEdit()
+	{
+		char a[128] = "";
+		strcpy(a, getName().c_str());
+		ImGui::PushItemWidth(80);
+		bool isInputName = ImGui::InputText(u8"Ãû³Æ",a,128);
+		ImGui::PopItemWidth();
+		if(isInputName)
+		{
+			setName(a);
+		}
 	}
 }

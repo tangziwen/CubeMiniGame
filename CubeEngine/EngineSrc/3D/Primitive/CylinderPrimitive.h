@@ -14,6 +14,7 @@ public:
 	vec3 XYZ2RhoPhiZ(vec3 xyz);
 	void setTex(Texture * texture);
 	void setTopBottomTex(Texture * texture);
+	virtual bool isHit(Ray ray);
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();

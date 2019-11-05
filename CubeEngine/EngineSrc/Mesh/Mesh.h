@@ -7,9 +7,9 @@
 #include "../Math/AABB.h"
 #include "../Math/Matrix44.h"
 #include "../Engine/EngineDef.h"
+#include "../Math/Ray.h"
 namespace tzw {
-
-class Triangle
+	class Triangle
 {
 public:
     enum TriangleMode { VERTICES =0, NORMALS =1, TEXTURE = 2};
@@ -92,6 +92,7 @@ public:
 	void submitInstanced(int preserveNumber = 0);
 	void reSubmitInstanced();
 	void submitOnlyVO_IO();
+	bool intersectWithRay(const Ray & rayInMeshSpace, vec3 * hitPoint);
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );
     void computeNewVerts ();

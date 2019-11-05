@@ -32,7 +32,7 @@ public:
     int getAmount();
     std::vector<Drawable3D *>& getVisibleList();
 	bool isInOctree(Drawable3D * obj);
-
+	OctreeNode * getNodeByIndex(int index);
 private:
     int getAmount_R(OctreeNode * node);
     void cullingByCamera_R(OctreeNode * node,Camera * camera);

@@ -57,8 +57,8 @@ static void key_callback(GLFWwindow* window, int key, int scancode, int action, 
     default:
         break;
     }
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+    //if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
+    //    glfwSetWindowShouldClose(window, GL_TRUE);
 }
 
 static void char_callback(GLFWwindow *, unsigned int theChar)

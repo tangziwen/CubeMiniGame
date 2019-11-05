@@ -36,6 +36,8 @@ namespace tzw
 		BIND_FUNC(CubePlayer, setPos)
 		BIND_FUNC(CubePlayer, getForward)
 		BIND_FUNC(CubePlayer, removePartByAttach)
+		BIND_FUNC(CubePlayer, removePart)
+		BIND_FUNC(CubePlayer, openCurrentPartInspectMenu)
 		BIND_END_CLASS
 
 		//GameWorld
@@ -75,6 +77,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, placeLiftPart)
 		BIND_FUNC(BuildingSystem, getLift)
 		BIND_FUNC(BuildingSystem, removePartByAttach)
+		BIND_FUNC(BuildingSystem, removePart)
 		BIND_FUNC(BuildingSystem, terrainForm)
 		BIND_FUNC(BuildingSystem, setCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getCurrentControlPart)

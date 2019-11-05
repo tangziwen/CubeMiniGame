@@ -87,17 +87,19 @@ Island::recalculateCompound()
 	//After adjustPrincipalAxis
 	//All parts' LocalMat = inverse(principleMat) * localMat
 	//The island's islandMat = islandMat * principleMat
-
+	AABB localAABB;
 	auto principleMat = m_compound_shape->adjustPrincipalAxis([this](int index) { return m_partList[index]->getMass(); });
-	for (auto part : m_partList) {
-	if (part->getType() != GamePartType::GAME_PART_LIFT) {
-	  auto mat = part->getNode()->getLocalTransform();
-	  mat = principleMat.inverted() * mat;
-	  part->getNode()->setPos(mat.getTranslation());
-	  Quaternion q;
-	  q.fromRotationMatrix(&mat);
-	  part->getNode()->setRotateQ(q);
-	}
+	for (auto part : m_partList) 
+	{
+		if (part->getType() != GamePartType::GAME_PART_LIFT) 
+		{
+		  auto mat = part->getNode()->getLocalTransform();
+		  mat = principleMat.inverted() * mat;
+		  part->getNode()->setPos(mat.getTranslation());
+		  Quaternion q;
+		  q.fromRotationMatrix(&mat);
+		  part->getNode()->setRotateQ(q);
+		}
 	}
 	m_compound_shape->calculateLocalInertia(getMass());
 	auto mat = m_node->getLocalTransform();
@@ -107,7 +109,7 @@ Island::recalculateCompound()
 	q.fromRotationMatrix(&mat);
 	m_node->setRotateQ(q);
 	m_node->reCache();
-
+	m_node->setLocalAABB(localAABB);
 }
 
 void

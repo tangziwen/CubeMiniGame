@@ -38,9 +38,12 @@ namespace tzw
 		void attachCamToGamePart(GamePart * part);
 		void attachCamToWorld();
 		void removePartByAttach(Attachment* attach);
+		void removePart(GamePart* part);
 		void setCurrPointPart(GamePart * part);
 		void removeAllBlocks();
 		void updateCrossHairTipsInfo();
+		void openCurrentPartInspectMenu();
+		GamePart * getCurrPointPart();
 	private:
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;

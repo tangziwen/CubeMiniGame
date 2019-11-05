@@ -195,7 +195,7 @@ void Camera::logicUpdate(float dt)
 
 void Camera::updateFrustum()
 {
-    if(getNeedToUpdate())
+    if(getNeedToUpdate() || true)
     {
         m_frustum.initFrustumFromCamera(this);
     }

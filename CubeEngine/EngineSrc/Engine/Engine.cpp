@@ -167,14 +167,11 @@ void Engine::update(float delta)
 {
     m_deltaTime = delta;
     int logicBefore = clock();
-	EventMgr::shared()->apply(delta);
-	
-    Engine::shared()->delegate()->onUpdate(delta);
-	
-	
-    SceneMgr::shared()->doVisit();
-
 	PhysicsMgr::shared()->stepSimulation(delta);
+	EventMgr::shared()->apply(delta);
+    shared()->delegate()->onUpdate(delta);
+    SceneMgr::shared()->doVisit();
+	
 	resetDrawCallCount();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
     int applyRenderBefore = clock();
@@ -191,12 +188,14 @@ void Engine::onStart()
 {
 	initLogSystem();
 	tlog("Cube-Engine By tzw%s", EngineDef::versionStr);
+	RenderBackEnd::shared()->printFullDeviceInfo();
     Engine::shared()->initSingletons();
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();
 	Renderer::shared()->init();
 	uuid4_init();
+	
 	//WorkerThreadSystem::shared()->init();
 }
 

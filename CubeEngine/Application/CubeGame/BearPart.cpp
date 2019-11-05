@@ -141,7 +141,67 @@ void BearPart::generateName()
 		}
 	}
 
-void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
+	void BearPart::drawInspect()
+	{
+		drawInspectNameEdit();
+		//control the bearing turn direction
+		ImGui::Text(u8"旋转方向");
+		auto click_left = false, click_right = false;
+		click_left = ImGui::RadioButton(u8"左", !m_isFlipped);ImGui::SameLine(); click_right = ImGui::RadioButton(u8"右", m_isFlipped);
+		
+		if(click_left) 
+		{
+			m_isFlipped = false;
+		}
+		if(click_right) 
+		{
+			m_isFlipped = true;
+		}
+		if(click_left || click_right) 
+		{
+			updateFlipped();        
+		}
+		
+		auto click_steer = false, click_bear = false;
+		ImGui::Text(u8"是否为舵机");
+		click_steer = ImGui::RadioButton(u8"舵机", getIsSteering());ImGui::SameLine(); click_bear = ImGui::RadioButton(u8"普通轴承", !getIsSteering());
+		
+		if(click_steer || click_bear)
+		{
+			setIsSteering(click_steer);
+		}
+		ImGui::Text(u8"是否开启角度限制");
+		bool isCurrAngleLimit;
+		float angle_low;
+		float angle_high;
+		getAngleLimit(isCurrAngleLimit, angle_low, angle_high);
+		auto click_angle_yes = false, click_angle_no = false;
+		click_angle_yes = ImGui::RadioButton(u8"开启", isCurrAngleLimit);ImGui::SameLine(); click_angle_no = ImGui::RadioButton(u8"关闭", !isCurrAngleLimit);
+		if(isCurrAngleLimit)
+		{
+			bool isInput = false;
+			ImGui::PushItemWidth(80);
+			isInput |= ImGui::InputFloat(u8"最小角度", &angle_low);
+			isInput |= ImGui::InputFloat(u8"最大角度", &angle_high);
+			ImGui::PopItemWidth();
+			if(isInput)
+			{
+				setAngleLimit(true, angle_low, angle_high);
+			}
+		}
+		if(click_angle_yes || click_angle_no)
+		{
+			setAngleLimit(click_angle_yes, angle_low, angle_high);
+		}
+
+	}
+
+	bool BearPart::isNeedDrawInspect()
+	{
+		return true;
+	}
+
+	void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
 	auto island = part->m_parent;

@@ -111,6 +111,14 @@ void CylinderPrimitive::setTopBottomTex(Texture * texture)
 	m_topBottomMaterial->setTex("diffuseMap", texture);
 }
 
+bool CylinderPrimitive::isHit(Ray ray)
+{
+	auto mat = getTransform().inverted();
+	auto localPos = mat.transformVec3(ray.origin());
+	auto localDir = mat.transofrmVec4(vec4(ray.direction(), 0.0));
+	return m_mesh->intersectWithRay(Ray(localPos, localDir.toVec3()),nullptr);
+}
+
 vec2 circleUV(vec3 point, vec3 centre, float radius, bool flipped = false)
 {
 	return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, (point.y - centre.y) / (2.0 * radius) + 0.5);

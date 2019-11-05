@@ -76,6 +76,23 @@ void CubePrimitive::setColor(vec4 color)
 	initMesh();
 }
 
+bool CubePrimitive::isHit(Ray ray)
+{
+	auto invertedMat = getTransform().inverted();
+	vec4 dirInLocal = invertedMat * vec4(ray.direction(), 0.0);
+	vec4 originInLocal = invertedMat * vec4(ray.origin(), 1.0);
+
+	auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
+	RayAABBSide side;
+	vec3 hitPoint;
+	auto isHit = r.intersectAABB(localAABB(), &side, hitPoint);
+	if (isHit)
+	{
+		return true;
+	}
+	return false;
+}
+
 vec3 CubePrimitive::getWorldPos(vec3 localPos)
 {
 	auto theMat = getTransform();

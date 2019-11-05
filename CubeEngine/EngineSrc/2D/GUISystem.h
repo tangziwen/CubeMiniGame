@@ -14,6 +14,9 @@ namespace tzw
 		virtual void drawIMGUI()
 		{
 		}
+		virtual void drawIMGUI(bool * isOpen)
+		{
+		}
 	};
 
 	class GUISystem: public EventListener

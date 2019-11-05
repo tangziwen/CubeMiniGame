@@ -30,7 +30,10 @@ Node::Node()
 
 Node::~Node()
 {
-
+	for(auto child : m_children)
+	{
+		delete child;
+	}
 }
 
 Node *Node::create()
@@ -62,7 +65,7 @@ vec3 Node::getPos() const
 void Node::setPos(const vec3 &pos)
 {
     m_pos = pos;
-	m_needToUpdate = true;
+	setNeedToUpdate(true);
 }
 
 void Node::setPos(float x, float y, float z)
@@ -155,7 +158,7 @@ void Node::visit(RenderCommand::RenderType passType)
 	if(getNeedToUpdate())
 	{
 		this->reCache();
-		setNeedToUpdate(false); 
+		//setNeedToUpdate(false); //这里原来直接设了False，但是后面其实还用到了判断，太他妈蠢了，留个注释
 	}
 	if(m_isVisible && m_isValid)
 	{
@@ -179,7 +182,11 @@ void Node::visit(RenderCommand::RenderType passType)
 			}
 		}
 	}
-
+	if(getNeedToUpdate())
+	{
+		//this->reCache();
+		setNeedToUpdate(false);
+	}
 	for( auto child : removeList)
 	{
 		detachChild(child);
@@ -298,6 +305,10 @@ bool Node::getNeedToUpdate() const
 void Node::setNeedToUpdate(bool needToUpdate)
 {
     m_needToUpdate = needToUpdate;
+	for(auto child :m_children)
+	{
+		child->setNeedToUpdate(needToUpdate);
+	}
 }
 
 Node::NodeType Node::getNodeType()
@@ -431,9 +442,17 @@ void Node::removeFromParent()
     setIsValid(false);
 	m_parent->detachChild(this);
 	m_parent = nullptr;
-	if(m_isAccpectOCTtree)
+	if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree())
 	{
 		scene->removeObj(static_cast<Drawable3D *>(this));
+	}
+	//recursive remove children from octree
+	for(auto child : m_children)
+	{	
+		if(child->getNodeType()==NodeType::Drawable3D  && child->getIsAccpectOcTtree())
+		{
+			scene->removeObj(static_cast<Drawable3D *>(child));
+		}
 	}
 }
 
@@ -488,6 +507,10 @@ Scene *Node::getScene() const
 void Node::setScene(Scene *scene)
 {
     m_scene = scene;
+	for(auto child: m_children)
+	{
+		child->setScene(scene);
+	}
 }
 
 Quaternion Node::getRotateQ() const

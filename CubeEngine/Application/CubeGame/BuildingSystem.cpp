@@ -69,6 +69,39 @@ namespace tzw
 		}
 	}
 
+	void BuildingSystem::removePart(GamePart* part)
+	{
+		if (part)
+		{
+			if(part == m_liftPart)
+			{
+
+				dropFromLift();
+				m_liftPart->getFirstAttachment()->breakConnection();
+				delete m_liftPart;
+				m_liftPart = nullptr;
+			}
+			else
+			{
+				auto island = part->m_parent;
+				if (part->isConstraint())
+				{
+					auto bearing = static_cast<GameConstraint*>(part);
+					m_bearList.erase(m_bearList.find(bearing));
+				}
+				island->remove(part);
+				delete part;
+				//is the last island, remove it
+				if(island->m_partList.empty())
+				{
+					m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
+					delete island;
+				}
+			}
+			
+		}
+    }
+
 	void
 	BuildingSystem::placeGamePart(GamePart* part, vec3 pos)
 	{
@@ -184,9 +217,7 @@ namespace tzw
             return;
         }
 		auto part = new LiftPart();
-		part->getNode()->setPos(wherePos);
-		part->getNode()->setName("LiftPart Node");
-		g_GetCurrScene()->addNode(part->getNode());
+		part->setPos(wherePos);
 		m_liftPart = part;
 	}
 
@@ -367,17 +398,8 @@ namespace tzw
 		});
 		for (auto iter : tmp)
 		{
-			auto island = iter->m_parent;
-			auto node = iter->getNode();
-			auto invertedMat = node->getTransform().inverted();
-			vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
-			vec4 originInLocal = invertedMat * vec4(pos, 1.0);
-
-			auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
-			RayAABBSide side;
-			vec3 hitPoint;
-			auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
-			GamePart* newPart = nullptr;
+			auto r = Ray(pos, dir);
+			auto isHit = iter->isHit(r);
 			if (isHit)
 			{
 				vec3 attachPos, attachNormal, attachUp;
@@ -422,18 +444,7 @@ namespace tzw
 		});
 		for (auto iter : tmp)
 		{
-			auto island = iter->m_parent;
-			auto node = iter->getNode();
-			auto invertedMat = node->getTransform().inverted();
-			vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
-			vec4 originInLocal = invertedMat * vec4(pos, 1.0);
-
-			auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
-			RayAABBSide side;
-			vec3 hitPoint;
-			auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
-			GamePart* newPart = nullptr;
-			if (isHit)
+			if (iter->isHit(Ray(pos, dir)))
 			{
 				return iter;
 			}

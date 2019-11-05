@@ -11,6 +11,7 @@ public:
     virtual void submitDrawCmd(RenderCommand::RenderType passType);
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);
+	virtual bool isHit(Ray ray);
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();
@@ -18,7 +19,6 @@ protected:
     Mesh * m_mesh;
     float m_width, m_depth, m_height;
 	vec4 m_color;
-
 };
 
 } // namespace tzw

@@ -74,9 +74,6 @@ end
 
 --ui update
 function tzw_engine_ui_update(dt)
-	if isShowHelpPage then
-		drawHelpPage()
-	end
 	
 	if not MainMenu.shared():isVisible() then
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
@@ -129,7 +126,7 @@ function updateLifting(dt)
 	end
 end
 
-function drawHelpPage()
+function cpp_drawHelpPage()
 	isShowHelpPage = ImGui.Begin("帮助页面", ImGuiWindowFlags_NoResize)
 
 	if ImGui.CollapsingHeader("基础操作", 0) then
@@ -150,13 +147,10 @@ function drawHelpPage()
 		ImGui.TextWrapped("任何疑问皆可发送至 tzwtangziwen@163.com")
 	end
 	ImGui.End()
+	return isShowHelpPage;
 end
 
-function showHelpPage()
-	isShowHelpPage = true
-end
-
-function draw_inventory()
+function cpp_drawInventory()
 	local isOpen = ImGui.Begin("资产浏览器", 0)
 	local i = 0
 	local itemSize = 80
@@ -310,7 +304,6 @@ function onKeyRelease(input_event)
 			g_blockRotate = 0
 		end
 	elseif input_event.keycode == TZW_KEY_I then
-		print "hahahahahahah"
 		MainMenu.shared():setIsShowAssetEditor(true)
 	elseif input_event.keycode == TZW_KEY_F then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
@@ -331,6 +324,8 @@ function onKeyRelease(input_event)
 				BuildingSystem.shared():setCurrentControlPart(result)
 			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_LIFT then
 				MainMenu.shared():setIsFileBroswerOpen(true)
+			else
+				player:openCurrentPartInspectMenu();
 			end
 		else
 			player:setPos(oldPlayerPos)
@@ -391,9 +386,9 @@ end
 function handleItemSecondaryUse(item)
 	local player = GameWorld.shared():getPlayer()
 	if (item.ItemClass == "PlaceableBlock" or item.ItemClass == "Lift") then
-		local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
+		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
 		if result then
-			player:removePartByAttach(result)
+			player:removePart(result)
 		end
 	elseif (item.ItemClass == "TerrainTool") then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)

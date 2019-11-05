@@ -18,6 +18,17 @@ extern "C" FILE * __cdecl __iob_func()
 }
 #endif
 
+//Nvidia
+extern "C" 
+{
+  __declspec(dllexport) unsigned long NvOptimusEnablement = 0x00000001;
+}
+//AMD
+extern "C"
+{
+  __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
+}
+
 #pragma comment(linker, "/subsystem:console")
 
 int main(int argc, char *argv[])

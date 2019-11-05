@@ -14,20 +14,6 @@ namespace tzw
 	void SpringPartNode::privateDraw()
 	{
 		handleNameEdit();
-		float stiffness, damping;
-		stiffness = m_part->getStiffness();
-		damping = m_part->getDamping();
-		bool isInputStiffness = false, isInputDamping = false;
-		isInputStiffness = ImGui::InputFloat(u8"¾¢¶ÈÏµÊý", &stiffness);
-		if(isInputStiffness)
-		{
-			m_part->setStiffness(stiffness);
-		}
-		isInputDamping = ImGui::InputFloat(u8"×èÄá", &damping);
-		if(isInputDamping)
-		{
-			m_part->setStiffness(damping);
-		}
 	}
 
 	GamePart* SpringPartNode::getProxy()

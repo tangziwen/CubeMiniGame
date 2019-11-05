@@ -29,7 +29,6 @@ public:
     void startGame();
 	bool onKeyPress(int keyCode) override;
     MainMenu *getMainMenu() const;
-    void toggleMainMenu();
     void unloadGame();
     int getCurrentState() const;
     void setCurrentState(const int &currentState);

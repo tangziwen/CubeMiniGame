@@ -1,4 +1,4 @@
-#include "RenderBackEnd.h"
+﻿#include "RenderBackEnd.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <stdio.h>
@@ -48,6 +48,16 @@ std::string RenderBackEnd::getShaderSupportVersion()
 	return reinterpret_cast<const char *>(glGetString(GL_SHADING_LANGUAGE_VERSION ));
 }
 
+void RenderBackEnd::printFullDeviceInfo()
+{
+
+	const GLubyte* vendor = glGetString(GL_VENDOR);
+	const GLubyte* renderer = glGetString(GL_RENDERER);
+	const GLubyte* version = glGetString(GL_VERSION);
+	auto shader_version = glGetString(GL_SHADING_LANGUAGE_VERSION );
+	tlog("Vendor %s\n Renderer %s\n Support GL Version %s\n shader version %s\n", vendor, renderer, version, shader_version);
+}
+
 RenderBackEnd *RenderBackEnd::shared()
 {
 	if(!m_instance)
@@ -86,6 +96,7 @@ void RenderBackEnd::initDevice()
 	selfCheck();
 	m_curBlendSrc = RenderFlag::BlendingFactor::SrcAlpha;
 	m_curBlendDst = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
+
 }
 
 unsigned int RenderBackEnd::genBuffer()

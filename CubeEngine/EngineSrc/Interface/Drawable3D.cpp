@@ -7,6 +7,7 @@ Drawable3D::Drawable3D()
 {
 	setLocalPiority(-999);
 	m_isNeedTransparent = false;
+	m_octNodeIndex = -1;
 }
 
 Drawable3D::~Drawable3D()

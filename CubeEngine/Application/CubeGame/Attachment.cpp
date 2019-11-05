@@ -1,7 +1,8 @@
 #include "Attachment.h"
 #include "Island.h"
 #include "BearPart.h"
-
+#include "3D/Primitive/CubePrimitive.h"
+#include "Scene/SceneMgr.h"
 namespace tzw
 {
 
@@ -72,23 +73,23 @@ namespace tzw
 		return transformForAttachPoint;
 	}
 
-	bool Attachment::isHit(Ray rayIn, vec3& hitpointInLocal)
+	bool Attachment::isHit(Ray rayInWorld, vec3& hitPointWorld)
 	{
-		auto mat = getAttachmentInfoMat44().inverted();
-		//adjust space
-
-		rayIn.setOrigin((mat * vec4(rayIn.origin(), 1.0)).toVec3());
-		rayIn.setDirection((mat * vec4(rayIn.direction(), 0.0)).toVec3());
+		auto WorldMat = m_parent->getNode()->getTransform() * getAttachmentInfoMat44();
+		auto mat = (WorldMat).inverted();
+		//let the ray from world space to local space
+		rayInWorld.setOrigin((mat * vec4(rayInWorld.origin(), 1.0)).toVec3());
+		rayInWorld.setDirection((mat * vec4(rayInWorld.direction(), 0.0)).toVec3());
 		AABB collisionBox;
 		const float blockSize = 0.5f;
 		collisionBox.setMax(vec3(blockSize / 2.0, blockSize / 2.0, 0.2));
 		collisionBox.setMin(vec3(blockSize / -2.0, blockSize / -2.0, -0.2));
 		RayAABBSide side;
 		vec3 hitPoint;
-		auto isHit = rayIn.intersectAABB(collisionBox, &side, hitPoint);
+		auto isHit = rayInWorld.intersectAABB(collisionBox, &side, hitPoint);
         if (isHit) 
 		{
-			hitpointInLocal = (getAttachmentInfoMat44() * vec4(hitPoint, 1.0f)).toVec3();
+			hitPointWorld = (WorldMat * vec4(hitPoint, 1.0f)).toVec3();
 			return true;
         }
 		return false;
