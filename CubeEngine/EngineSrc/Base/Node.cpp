@@ -23,7 +23,8 @@ Node::Node()
 	  m_globalPiority(0),
 	  m_isAccpectOCTtree(true),
 	  m_name("default"),
-	  m_parent(nullptr), m_tag(0)
+	  m_parent(nullptr), m_tag(0),
+		onSubmitDrawCommand(nullptr)
 {
 	m_name = "default";
 }
@@ -165,6 +166,10 @@ void Node::visit(RenderCommand::RenderType passType)
 		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )
 		{
 			submitDrawCmd(passType);
+			if(onSubmitDrawCommand)
+			{
+				onSubmitDrawCommand(RenderCommand::RenderType::Common);
+			}
 		}
 		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{

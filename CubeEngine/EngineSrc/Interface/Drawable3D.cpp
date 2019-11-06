@@ -112,7 +112,7 @@ void Drawable3D::setIsNeedTransparent(bool val)
 void Drawable3D::setUpCommand(RenderCommand & command)
 {
 	Drawable::setUpCommand(command);
-	command.setIsNeedTransparent(m_isNeedTransparent);
+	
 }
 
 int Drawable3D::setOctNodeIndex(int index)

@@ -18,6 +18,7 @@ public:
 	void renderAllShadow(int index);
 	void renderAllTransparent();
     void renderAllGUI();
+	void renderAllClearDepthTransparent();
     void renderGUI(RenderCommand &command);
     void renderCommon(RenderCommand &command);
 	void renderTransparent(RenderCommand & command);
@@ -96,6 +97,7 @@ private:
     std::vector<RenderCommand> m_CommonCommand;
 	std::vector<RenderCommand> m_transparentCommandList;
 	std::vector<RenderCommand> m_shadowCommandList;
+	std::vector<RenderCommand> m_clearDepthCommandList;
     static Renderer * m_instance;
     FrameBuffer * m_gbuffer;
 	FrameBuffer * m_offScreenBuffer;

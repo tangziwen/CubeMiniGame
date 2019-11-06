@@ -47,6 +47,7 @@ public:
 	void closeCurrentWindow();
 	void setWindowShow(WindowType type, bool isShow);
 	bool getWindowIsShow(WindowType type) const;
+	void openInspectWindow(GamePart * part);
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -64,6 +65,7 @@ private:
 	VehicleBroswer * m_fileBrowser;
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;
+	GamePart * m_curInspectPart;
 public:
 	LabelNew* getCrossHairTipsInfo() const;
 };

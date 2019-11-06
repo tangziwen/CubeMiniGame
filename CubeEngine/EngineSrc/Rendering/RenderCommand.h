@@ -48,16 +48,16 @@ public:
     DepthPolicy depthTestPolicy() const;
     void setDepthTestPolicy(const DepthPolicy &depthTestPolicy);
     TransformationInfo m_transInfo;
-	bool getIsNeedTransparent() const;
-	void setIsNeedTransparent(bool val);
+	RenderFlag::RenderStage getRenderState() const;
+	void setRenderState(const RenderFlag::RenderStage renderState);
 private:
+	RenderFlag::RenderStage m_renderState;
     Mesh * m_mesh;
     Material *m_material;
     RenderType m_type;
     PrimitiveType m_primitiveType;
     unsigned int m_Zorder;
     DepthPolicy m_depthTestPolicy;
-	bool m_isNeedTransparent;
 };
 
 } // namespace tzw

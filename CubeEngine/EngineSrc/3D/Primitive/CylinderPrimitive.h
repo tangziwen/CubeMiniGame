@@ -15,6 +15,9 @@ public:
 	void setTex(Texture * texture);
 	void setTopBottomTex(Texture * texture);
 	virtual bool isHit(Ray ray);
+	Mesh * getMesh();
+	Mesh * getTopBottomMesh();
+	Material * getTopBottomMaterial();
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();

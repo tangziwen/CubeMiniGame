@@ -93,7 +93,16 @@ namespace tzw
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
 		}
-		auto part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
+
+		GamePart * part = nullptr;
+		if(BuildingSystem::shared()->isIsInXRayMode())
+		{
+			part = BuildingSystem::shared()->rayTestPartXRay(getPos(), m_camera->getTransform().forward(), 10.0);
+		}else
+		{
+			part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
+		}
+		
 		if(part)
 		{
 			if(m_currPointPart != part)
@@ -142,6 +151,7 @@ namespace tzw
 			case TZW_KEY_T:
 			{
 				AssistDrawSystem::shared()->setIsShowAssistInfo(true);
+				BuildingSystem::shared()->setIsInXRayMode(true);
 			}
 			break;
 		default:
@@ -172,6 +182,7 @@ namespace tzw
 		case TZW_KEY_T:
 			{
 				AssistDrawSystem::shared()->setIsShowAssistInfo(false);
+				BuildingSystem::shared()->setIsInXRayMode(false);
 			}
 			break;
 		case TZW_KEY_J:
@@ -347,7 +358,7 @@ namespace tzw
 	{
 		if(m_currPointPart && m_currPointPart->isNeedDrawInspect())
 		{
-			MainMenu::shared()->setWindowShow(WindowType::ATTRIBUTE_WINDOW, true);
+			MainMenu::shared()->openInspectWindow(m_currPointPart);
 		}
 	}
 

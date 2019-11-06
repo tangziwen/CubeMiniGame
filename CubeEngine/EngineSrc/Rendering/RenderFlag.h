@@ -54,6 +54,13 @@ enum class BlendingFactor
     OneMinusSrcAlpha,
     ConstantAlpha
 };
+
+enum class RenderStage
+{
+	COMMON,
+	TRANSPARENT,
+	AFTER_DEPTH_CLEAR,
+};
 }
 } // namespace tzw
 

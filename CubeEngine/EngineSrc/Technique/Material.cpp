@@ -441,6 +441,17 @@ void Material::setTex(std::string name, Texture *texture, int id)
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
+
+Texture* Material::getTex(std::string name)
+{
+	auto result = m_varList.find(name);
+	if(result == m_varList.end())
+	{
+		return nullptr;
+	}
+	return result->second->data.tex;
+}
+
 /**
  * @brief Technique::use 使用当前technique所维护的shader进行渲染，并将technique维护的所有值提交到
  * shader端

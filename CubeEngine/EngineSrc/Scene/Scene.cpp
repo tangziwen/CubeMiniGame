@@ -37,6 +37,10 @@ void Scene::visit()
 	for(auto obj : visibleList)
 	{
 		obj->submitDrawCmd(RenderCommand::RenderType::Common);
+		if(obj->onSubmitDrawCommand)
+		{
+			obj->onSubmitDrawCommand(RenderCommand::RenderType::Common);
+		}
 	}
 }
 

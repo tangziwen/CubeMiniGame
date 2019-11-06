@@ -48,6 +48,7 @@ public:
 	Island * createIsland(vec3 pos);
 	Attachment * rayTest(vec3 pos, vec3 dir, float dist);
 	GamePart * rayTestPart(vec3 pos, vec3 dir, float dist);
+	GamePart * rayTestPartXRay(vec3 pos, vec3 dir, float dist);
 	Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
 	LiftPart * getLift() const;
 	void addThruster(GamePart * thruster);
@@ -62,6 +63,11 @@ public:
 	void removeIsland(Island * island);
 	std::set<GameConstraint *> &getConstraintList();
 	void update(float dt);
+private:
+	bool m_isInXRayMode;
+public:
+	bool isIsInXRayMode() const;
+	void setIsInXRayMode(const bool isInXRayMode);
 private:
 	ControlPart * m_controlPart;
 	LiftPart * m_liftPart;

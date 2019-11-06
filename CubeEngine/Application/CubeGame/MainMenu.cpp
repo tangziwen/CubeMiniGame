@@ -303,7 +303,7 @@ void MainMenu::drawIMGUI()
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 			bool isOpen = true;
 			ImGui::Begin(u8"ÊôÐÔÃæ°å",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-			GameWorld::shared()->getPlayer()->getCurrPointPart()->drawInspect();
+			m_curInspectPart->drawInspect();
 			ImGui::End();
 			setWindowShow(WindowType::ATTRIBUTE_WINDOW, isOpen);
 		}
@@ -526,6 +526,12 @@ void MainMenu::setWindowShow(WindowType type, bool isShow)
 bool MainMenu::getWindowIsShow(WindowType type) const
 {
 	return m_currOpenWindowSet.find(type) != m_currOpenWindowSet.end();
+}
+
+void MainMenu::openInspectWindow(GamePart* part)
+{
+	setWindowShow(WindowType::ATTRIBUTE_WINDOW, true);
+	m_curInspectPart = part;
 }
 
 LabelNew* MainMenu::getCrossHairTipsInfo() const

@@ -3,9 +3,11 @@
 namespace tzw {
 
 RenderCommand::RenderCommand(Mesh *mesh, Material *material, RenderType type, PrimitiveType primitiveType)
-    :m_mesh(mesh),m_material(material),m_type(type),m_primitiveType(primitiveType),m_Zorder(0)
+    :m_mesh(mesh),m_material(material),m_type(type),
+	m_primitiveType(primitiveType),m_Zorder(0),
+	m_renderState(RenderFlag::RenderStage::COMMON)
 {
-	m_isNeedTransparent = false;
+
 }
 
 void RenderCommand::render()
@@ -52,15 +54,14 @@ void RenderCommand::setDepthTestPolicy(const DepthPolicy &depthTestPolicy)
     m_depthTestPolicy = depthTestPolicy;
 }
 
-bool RenderCommand::getIsNeedTransparent() const
+RenderFlag::RenderStage RenderCommand::getRenderState() const
 {
-	return m_isNeedTransparent;
+	return m_renderState;
 }
 
-void RenderCommand::setIsNeedTransparent(bool val)
+void RenderCommand::setRenderState(const RenderFlag::RenderStage renderState)
 {
-	m_isNeedTransparent = val;
+	m_renderState = renderState;
 }
-
 } // namespace tzw
 

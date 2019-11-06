@@ -23,9 +23,10 @@ namespace tzw
 	const float bearingGap = 0.00;
 	TZW_SINGLETON_IMPL(BuildingSystem);
 
-	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0)
+	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false)
 	{
 	}
+	
 	void BuildingSystem::createNewToeHold(vec3 pos)
 	{
 		auto newIsland = new Island(pos);
@@ -299,16 +300,7 @@ namespace tzw
 		bear->m_parent = island;
 		m_bearList.insert(bear);
 		island->insert(bear);
-		// create a indicate model
-		auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
-		cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
-		auto mat = attachment->getAttachmentInfoMat44();
-		Quaternion q;
-		q.fromRotationMatrix(&mat);
-		cylinderIndicator->setPos(mat.getTranslation());
-		cylinderIndicator->setRotateQ(q);
-		cylinderIndicator->reCache();
-		bear->setNode(cylinderIndicator);
+
 		bear->updateFlipped();
 		bear->attachToOtherIslandByAlterSelfIsland(attachment,
 													bear->getFirstAttachment(), 0);
@@ -317,7 +309,7 @@ namespace tzw
 		{
 			tlog("wrong");
 		}
-		island->m_node->addChild(cylinderIndicator);
+		island->m_node->addChild(bear->getNode());
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		
 		return bear;
@@ -436,6 +428,34 @@ namespace tzw
 			tmp.push_back(m_liftPart);
 		}
 		
+		std::sort(tmp.begin(), tmp.end(), [&](GamePart* left, GamePart* right)
+		{
+			float distl = left->getWorldPos().distance(pos);
+			float distr = right->getWorldPos().distance(pos);
+			return distl < distr;
+		});
+		for (auto iter : tmp)
+		{
+			if (iter->isHit(Ray(pos, dir)))
+			{
+				return iter;
+			}
+		}
+		// any island intersect can't find, return null
+		return nullptr;
+	}
+
+	GamePart* BuildingSystem::rayTestPartXRay(vec3 pos, vec3 dir, float dist)
+	{
+		std::vector<GamePart*> tmp;
+		for (auto constraint : m_bearList)
+		{
+			tmp.push_back(constraint);
+		}
+		if(m_liftPart)// add extra lift part
+		{
+			tmp.push_back(m_liftPart);
+		}
 		std::sort(tmp.begin(), tmp.end(), [&](GamePart* left, GamePart* right)
 		{
 			float distl = left->getWorldPos().distance(pos);
@@ -715,6 +735,16 @@ namespace tzw
 		{
 			static_cast<ThrusterPart * >(thruster)->updateForce(dt);
 		}
+	}
+
+	bool BuildingSystem::isIsInXRayMode() const
+	{
+		return m_isInXRayMode;
+	}
+
+	void BuildingSystem::setIsInXRayMode(const bool isInXRayMode)
+	{
+		m_isInXRayMode = isInXRayMode;
 	}
 
 	void

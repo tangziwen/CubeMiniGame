@@ -9,6 +9,8 @@
 #include <deque>
 #include "Rendering/RenderCommand.h"
 #include "../Action/ActionMgr.h"
+#include <functional>
+
 namespace tzw {
 class Scene;
 class Node : public ActionMgr
@@ -32,6 +34,7 @@ public:
 	virtual void setPos(const vec3 &pos);
 	void setPos(float x, float y, float z);
 	virtual void submitDrawCmd(RenderCommand::RenderType passType);
+	std::function<void (RenderCommand::RenderType)> onSubmitDrawCommand;
 	virtual void logicUpdate(float dt);
 	vec3 getRotateE();
 	void setRotateE(const vec3 &rotate);

@@ -29,6 +29,7 @@ public:
     void setVar(std::string name, const vec4 &value);
     void setVar(std::string name, const TechniqueVar & value);
     void setTex(std::string name,Texture * texture,int id = 0);
+	Texture * getTex(std::string name);
     void use(ShaderProgram * extraProgram = nullptr);
 	unsigned int getMapSlot(std::string mapName);
 	unsigned int getMapSlotWithAlias(std::string mapName);

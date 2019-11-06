@@ -93,6 +93,11 @@ bool CubePrimitive::isHit(Ray ray)
 	return false;
 }
 
+Mesh* CubePrimitive::getMesh()
+{
+	return m_mesh;
+}
+
 vec3 CubePrimitive::getWorldPos(vec3 localPos)
 {
 	auto theMat = getTransform();

@@ -59,28 +59,25 @@ void Renderer::addRenderCommand(RenderCommand& command)
 			m_GUICommandList.push_back(command);
 		break;
 		case RenderCommand::RenderType::Common:
-			if (command.getIsNeedTransparent())
+			switch (command.getRenderState())
 			{
-				m_transparentCommandList.push_back(command);
+			case RenderFlag::RenderStage::COMMON: m_CommonCommand.push_back(command);break;
+			case RenderFlag::RenderStage::TRANSPARENT: m_transparentCommandList.push_back(command);break;
+			case RenderFlag::RenderStage::AFTER_DEPTH_CLEAR: m_clearDepthCommandList.push_back(command);break;
+			default: ;
 			}
-			else
-			{
-				m_CommonCommand.push_back(command);
-			}
-			
 		break;
 		case RenderCommand::RenderType::Shadow:
 			m_shadowCommandList.push_back(command);
 		break;
 		case RenderCommand::RenderType::Instanced:
 		{
-			if (command.getIsNeedTransparent())
+			switch (command.getRenderState())
 			{
-				m_transparentCommandList.push_back(command);
-			}
-			else
-			{
-				m_CommonCommand.push_back(command);
+			case RenderFlag::RenderStage::COMMON: m_CommonCommand.push_back(command);break;
+			case RenderFlag::RenderStage::TRANSPARENT: m_transparentCommandList.push_back(command);break;
+			//case RenderFlag::RenderStage::AFTER_DEPTH_CLEAR: m_clearDepthCommandList.push_back(command);break;
+			default: ;
 			}
 		}
 			break;
@@ -175,6 +172,13 @@ void Renderer::renderAll()
 		renderAllTransparent();	
 		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	}
+	if(!m_clearDepthCommandList.empty())
+	{
+		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
+		glClear(GL_DEPTH_BUFFER_BIT);
+		RenderBackEnd::shared()->selfCheck();
+		renderAllClearDepthTransparent();	
+	}
 	if(m_enableGUIRender)
 	{
 		RenderBackEnd::shared()->setDepthTestEnable(false);
@@ -205,6 +209,16 @@ void Renderer::renderAllShadow(int index)
 void Renderer::renderAllTransparent()
 {
 	for(auto i = m_transparentCommandList.begin();i!=m_transparentCommandList.end();++i)
+	{
+		RenderCommand &command = (*i);
+		renderCommon(command);
+	}
+}
+
+
+void Renderer::renderAllClearDepthTransparent()
+{
+	for(auto i = m_clearDepthCommandList.begin();i!=m_clearDepthCommandList.end();++i)
 	{
 		RenderCommand &command = (*i);
 		renderCommon(command);
@@ -288,6 +302,7 @@ void Renderer::clearCommands()
 	m_GUICommandList.clear();
 	m_transparentCommandList.clear();
 	m_shadowCommandList.clear();
+	m_clearDepthCommandList.clear();
 }
 
 void Renderer::render(const RenderCommand &command)

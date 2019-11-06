@@ -119,6 +119,21 @@ bool CylinderPrimitive::isHit(Ray ray)
 	return m_mesh->intersectWithRay(Ray(localPos, localDir.toVec3()),nullptr);
 }
 
+Mesh* CylinderPrimitive::getMesh()
+{
+	return m_mesh;
+}
+
+Mesh* CylinderPrimitive::getTopBottomMesh()
+{
+	return m_topBottomMesh;
+}
+
+Material* CylinderPrimitive::getTopBottomMaterial()
+{
+	return m_topBottomMaterial;
+}
+
 vec2 circleUV(vec3 point, vec3 centre, float radius, bool flipped = false)
 {
 	return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, (point.y - centre.y) / (2.0 * radius) + 0.5);

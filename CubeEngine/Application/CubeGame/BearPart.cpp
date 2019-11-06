@@ -8,6 +8,8 @@
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
+#include "Rendering/Renderer.h"
+#include "BuildingSystem.h"
 
 namespace tzw
 {
@@ -33,20 +35,45 @@ BearPart::BearPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	m_graphNode = new BearingPartNode(this);
 	nodeEditor->addNode(m_graphNode);
+	m_xrayMat = Material::createFromTemplate("PartXRay");
+	
+	// create a indicate model
+	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
+	cylinderIndicator->setColor(vec4(1.0, 1.0, 1.0, 1.0));
+	m_node = cylinderIndicator;
+	m_xrayMat->setTex("diffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
+	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
+	{
+		if(BuildingSystem::shared()->isIsInXRayMode())
+		{
+			RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
+			cylinderIndicator->setUpCommand(command);
+			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+			Renderer::shared()->addRenderCommand(command);
+
+			RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
+			cylinderIndicator->setUpCommand(command2);
+			command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+			Renderer::shared()->addRenderCommand(command2);
+		}
+	};
 }
  
 void BearPart::updateFlipped()
 {
 	if(!m_node) return;
 	auto cylinder = static_cast<CylinderPrimitive *>(m_node);
+	Texture * tex;
 	if(m_isFlipped)
 	{
-		cylinder->setTopBottomTex(TextureMgr::shared()->getByPath("Texture/bear_flipped.png"));
+		tex = TextureMgr::shared()->getByPath("Texture/bear_flipped.png");
 	}
 	else
 	{
-		cylinder->setTopBottomTex(TextureMgr::shared()->getByPath("Texture/bear.png"));
+		tex = TextureMgr::shared()->getByPath("Texture/bear.png");
 	}
+	cylinder->setTopBottomTex(tex);
+	m_xrayMat->setTex("diffuseMap", cylinder->getTopBottomMaterial()->getTex("diffuseMap"));
 }
 
 int BearPart::getAttachmentCount()
