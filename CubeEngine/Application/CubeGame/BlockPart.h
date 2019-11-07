@@ -8,6 +8,7 @@ namespace tzw
 	{
 	public:
 		BlockPart();
+		explicit BlockPart(std::string itemName);
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
@@ -15,7 +16,6 @@ namespace tzw
 		Attachment * getAttachment(int index) override;
 		int getAttachmentCount() override;
 	public:
-		void cook();
 		GamePartType getType() override;
 		BearPart * m_bearPart[6];
 	};

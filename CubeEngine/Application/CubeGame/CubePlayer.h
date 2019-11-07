@@ -32,8 +32,6 @@ namespace tzw
 		bool onMousePress(int button, vec2 pos) override;
 		void modeSwitch(Mode newMode);
 		void initSlots();
-		void handleItemPrimaryUse(GameItem * item);
-		void handleItemSecondaryUse(GameItem * item);
 		vec3 getForward() const;
 		void attachCamToGamePart(GamePart * part);
 		void attachCamToWorld();

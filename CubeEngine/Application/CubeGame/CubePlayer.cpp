@@ -149,9 +149,7 @@ namespace tzw
 		switch (keyCode)
 		{		
 			case TZW_KEY_T:
-			{
-				AssistDrawSystem::shared()->setIsShowAssistInfo(true);
-				BuildingSystem::shared()->setIsInXRayMode(true);
+			{	
 			}
 			break;
 		default:
@@ -181,8 +179,9 @@ namespace tzw
 			break;
 		case TZW_KEY_T:
 			{
-				AssistDrawSystem::shared()->setIsShowAssistInfo(false);
-				BuildingSystem::shared()->setIsInXRayMode(false);
+				auto toggleXray = !BuildingSystem::shared()->isIsInXRayMode();
+				BuildingSystem::shared()->setIsInXRayMode(toggleXray);
+				AssistDrawSystem::shared()->setIsShowAssistInfo(toggleXray);
 			}
 			break;
 		case TZW_KEY_J:
@@ -224,62 +223,6 @@ namespace tzw
 		m_itemSlots.push_back(ItemMgr::shared()->getItem("Wheel"));
 		m_itemSlots.push_back(ItemMgr::shared()->getItem("Bearing"));
 		m_itemSlots.push_back(ItemMgr::shared()->getItem("TerrainFormer"));
-	}
-
-	void CubePlayer::handleItemPrimaryUse(GameItem * item)
-	{
-		if (item->m_class == "PlaceableBlock")
-		{
-			BuildingSystem::shared()->placeItem(item, getPos(), m_camera->getForward(), 15);
-		}
-		else if (item->m_class == "TerrainForm")
-		{
-			std::vector<Drawable3D *> list;
-			auto pos = this->getPos();
-			AABB aabb;
-			aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-			aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-			g_GetCurrScene()->getRange(&list, aabb);
-			if (!list.empty())
-			{
-				Drawable3DGroup group(&list[0], list.size());
-				Ray ray(pos, m_camera->getForward());
-				vec3 hitPoint;
-				auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
-				if (chunk)
-				{
-					chunk->deformSphere(hitPoint, -0.5, 3.0f);
-				}
-			}
-		}
-	}
-
-	void CubePlayer::handleItemSecondaryUse(GameItem * item)
-	{
-		if (item->m_class == "PlaceableBlock")
-		{
-			//BuildingSystem::shared()->removePartByHit(getPos(), m_camera->getForward(), 15);
-		}
-		else if (item->m_class == "TerrainForm")
-		{
-			std::vector<Drawable3D *> list;
-			auto pos = this->getPos();
-			AABB aabb;
-			aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-			aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-			g_GetCurrScene()->getRange(&list, aabb);
-			if (!list.empty())
-			{
-				Drawable3DGroup group(&list[0], list.size());
-				Ray ray(pos, m_camera->getForward());
-				vec3 hitPoint;
-				auto chunk = static_cast<Chunk *>(group.hitByRay(ray, hitPoint));
-				if (chunk)
-				{
-					chunk->deformSphere(hitPoint, 0.5, 3.0f);
-				}
-			}
-		}
 	}
 
 	vec3 CubePlayer::getForward() const

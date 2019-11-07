@@ -11,6 +11,7 @@ namespace tzw
 	{
 	public:
 		ThrusterPart();
+		explicit ThrusterPart(std::string itemName);
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;

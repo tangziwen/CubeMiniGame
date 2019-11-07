@@ -15,25 +15,23 @@ const float blockSize = 0.5;
 ControlPart::ControlPart()
 {
 	
+
+}
+
+ControlPart::ControlPart(std::string itemName)
+{
 	m_forward = 0;
 	m_side = 0;
 	m_isActivate = false;
-	m_node = new CubePrimitive(blockSize, blockSize, blockSize);
-	m_shape = new PhysicsShape();
-	auto texture =  TextureMgr::shared()->getByPath("Texture/trestraou2_Base_Color.jpg");
-	m_node->getMaterial()->setTex("diffuseMap", texture);
-	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
+
+	GamePart::initFromItemName(itemName);
 	m_parent = nullptr;
-	for(int i = 0; i < 6; i++)
-	{
-		m_bearPart[i] = nullptr;
-	}
-	initAttachments();
 	EventMgr::shared()->addFixedPiorityListener(this);
 	ControlPart::generateName();
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	m_graphNode = new ControlPartNode(this);
 	nodeEditor->addNode(m_graphNode);
+
 }
 
 

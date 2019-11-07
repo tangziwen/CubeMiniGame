@@ -65,6 +65,47 @@ ThrusterPart::ThrusterPart()
 	emitter->setRotateQ(q);
 }
 
+ThrusterPart::ThrusterPart(std::string itemName)
+{
+	m_topRadius = 0.1;
+	m_bottomRadius = 0.25;
+	m_height = 0.5;
+	m_isOpen = 0;
+
+	initFromItemName(itemName);
+	m_parent = nullptr;
+	ThrusterPart::generateName();
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	m_graphNode = new ThrusterPartNode(this);
+	nodeEditor->addNode(m_graphNode);
+	m_phase = TbaseMath::randF()*3.14;
+	m_scale =0.8f + TbaseMath::randF() * 0.3f;
+	m_dir_t = 0.0f;
+	m_t = 0.0f;
+	m_phaseV3 = vec3(TbaseMath::randFN()*1000.0f, TbaseMath::randF()*1000.0f, TbaseMath::randF()*1000.0f);
+	flatNoise.SetSeed(time(nullptr));
+	BuildingSystem::shared()->addThruster(this);
+
+
+	emitter = new ParticleEmitter(40);
+	emitter->setSpawnRate(0.05);
+	emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
+	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, -3.0), vec3(0, 0.0, -3.0 )));
+	emitter->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
+	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+	emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
+	emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
+	emitter->setIsState(ParticleEmitter::State::Stop);
+
+	auto a = Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
+	Matrix44 mat = a.getAttachmentInfoMat44();
+	Quaternion q;
+	q.fromRotationMatrix(&mat);
+	m_node->addChild(emitter);
+	emitter->setPos(mat.getTranslation());
+	emitter->setRotateQ(q);
+}
+
 void ThrusterPart::initAttachments()
 {
 	//forward backward

@@ -10,6 +10,7 @@
 
 namespace tzw
 {
+static auto blockSize = 0.25;
 CannonPart::CannonPart()
 {
 
@@ -17,6 +18,10 @@ CannonPart::CannonPart()
 	m_bottomRadius = 0.1;
 	m_height = 0.8;
 	m_node = new CylinderPrimitive(m_topRadius, m_bottomRadius, m_height);
+	
+	auto block = new CubePrimitive(blockSize, blockSize, blockSize);
+	block->setPos(0, 0, m_height/ 2 - blockSize/ 2.0);
+	m_node->addChild(block);
 
 	m_shape = new PhysicsShape();
 	m_shape->initCylinderShapeZ(m_topRadius, m_bottomRadius, m_height);
@@ -29,6 +34,20 @@ CannonPart::CannonPart()
 	initAttachments();
 }
 
+CannonPart::CannonPart(std::string itemName)
+{
+	m_topRadius = 0.1;
+	m_bottomRadius = 0.1;
+	m_height = 0.8;
+	GamePart::initFromItemName(itemName);
+	m_parent = nullptr;
+	CannonPart::generateName();
+
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	m_graphNode = new CannonPartNode(this);
+	nodeEditor->addNode(m_graphNode);
+}
+
 CannonPart::~CannonPart()
 {
 	delete m_graphNode;
@@ -38,6 +57,14 @@ void CannonPart::initAttachments()
 {
 	//forward backward
 	addAttachment(new Attachment(vec3(0.0, 0.0, m_height / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this));
+
+	//right left
+	addAttachment(new Attachment(vec3(blockSize / 2.0, 0.0, m_height / 2.0 - blockSize / 2.0), vec3(1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0) ,this));
+	addAttachment(new Attachment(vec3(-blockSize / 2.0, 0.0, m_height / 2.0 - blockSize / 2.0), vec3(-1.0, 0.0, 0.0), vec3(0.0, 1.0, 0.0) ,this));
+
+	//up down
+	addAttachment(new Attachment(vec3(0.0, blockSize / 2.0, m_height / 2.0 - blockSize / 2.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this));
+	addAttachment(new Attachment(vec3(0.0, -blockSize / 2.0, m_height / 2.0 - blockSize / 2.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this));
 }
 
 Attachment * CannonPart::getAttachmentInfo(int index, vec3 & pos, vec3 & N, vec3 & up)

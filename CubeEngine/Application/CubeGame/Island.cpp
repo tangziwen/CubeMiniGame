@@ -73,6 +73,8 @@ Island::recalculateCompound()
 {
 	if (!getCompoundShape())
 	return;
+	if(m_partList.empty())
+	return;
 	for (auto part : m_partList) {
 	if (part->getType() != GamePartType::GAME_PART_LIFT) {
 	  auto mat = part->getNode()->getLocalTransform();
@@ -244,7 +246,7 @@ void Island::load(rapidjson::Value& island)
 			{
 				case GamePartType::GAME_PART_BLOCK:
 				{
-					auto part = new BlockPart();
+					auto part = new BlockPart(item["ItemName"].GetString());
 					part->load(item);
 					m_node->addChild(part->getNode());
 					insert(part);
@@ -261,7 +263,7 @@ void Island::load(rapidjson::Value& island)
 				break;
 				case GamePartType::GAME_PART_CONTROL:
 					{
-						auto part = new ControlPart();
+						auto part = new ControlPart(item["ItemName"].GetString());
 						part->load(item);
 						m_node->addChild(part->getNode());
 						insert(part);
@@ -269,7 +271,7 @@ void Island::load(rapidjson::Value& island)
 				break;
 				case GamePartType::GAME_PART_CANNON:
 					{
-						auto part = new CannonPart();
+						auto part = new CannonPart(item["ItemName"].GetString());
 						part->load(item);
 						m_node->addChild(part->getNode());
 						insert(part);
@@ -277,7 +279,7 @@ void Island::load(rapidjson::Value& island)
 				break;
 				case GamePartType::GAME_PART_THRUSTER:
 					{
-						auto part = new ThrusterPart();
+						auto part = new ThrusterPart(item["ItemName"].GetString());
 						part->load(item);
 						m_node->addChild(part->getNode());
 						insert(part);

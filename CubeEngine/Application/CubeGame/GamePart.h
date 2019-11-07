@@ -13,6 +13,7 @@ namespace tzw {
 class GamePart;
 class BearPart;
 class Island;
+class GameItem;
 class GamePart : public GuidObj
 {
 public:
@@ -23,8 +24,8 @@ public:
 	                                        vec3& attachPosition,
 	                                        vec3& Normal,
 	                                        vec3& up);
-	virtual void attachTo(Attachment* attach, float degree);
-	virtual Matrix44 attachToOtherIslandByAlterSelfPart(Attachment* attach);
+	virtual void attachTo(Attachment* attach, float degree, int attachMentIndex);
+	virtual Matrix44 attachToOtherIslandByAlterSelfPart(Attachment* attach, int attachmentIndex);
 	virtual Matrix44 attachToOtherIslandByAlterSelfIsland(
 	Attachment* attach,
 	Attachment* ownAttachment, float degree);
@@ -66,10 +67,15 @@ public:
 	virtual void drawInspect();
 	virtual bool isNeedDrawInspect();
 	virtual void drawInspectNameEdit();
+	void initFromItemName(std::string itemName);
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;
 	PhysicsShape* m_shape;
 	Drawable3D* m_node;
+	GameItem * m_item;
+public:
+	GameItem* getItem() const;
+	void setItem(GameItem* const item);
 };
 }

@@ -64,6 +64,7 @@ local isOpenTestWindow = true
 local testIcon = nil
 
 local g_blockRotate = 0
+local g_blockAttachIndex = 0
 
 local m_isDragingInventory = false
 --init
@@ -93,29 +94,32 @@ end
 
 -- inventory
 local m_inventory = {}
-m_inventory = 
-{
-	{name = "Lift", ItemClass = "Lift", ItemType = GAME_PART_LIFT, desc = "升降台"},
-	{name = "Block", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BLOCK, desc = "普通方块"},
-	{name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CYLINDER, desc = "轮子"},
-	{name = "Cannon", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CANNON, desc = "炮筒"},
-	{name = "Thruster", ItemClass = "PlaceableBlock", ItemType = GAME_PART_THRUSTER, desc = "喷射器"},
-	{name = "Bearing", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BEARING, desc = "轴承"},
-	{name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_SPRING, desc = "弹簧"},
-	{name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"},
-	{name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"},
-}
+
+
+
+-- m_inventory = 
+-- {
+-- 	{name = "Lift", ItemClass = "Lift", ItemType = GAME_PART_LIFT, desc = "升降台"},
+-- 	{name = "Block", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BLOCK, desc = "普通方块"},
+-- 	{name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CYLINDER, desc = "轮子"},
+-- 	{name = "Cannon", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CANNON, desc = "炮筒"},
+-- 	{name = "Thruster", ItemClass = "PlaceableBlock", ItemType = GAME_PART_THRUSTER, desc = "喷射器"},
+-- 	{name = "Bearing", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BEARING, desc = "轴承"},
+-- 	{name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_SPRING, desc = "弹簧"},
+-- 	{name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"},
+-- 	{name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"},
+-- }
 
 local m_itemSlots = {}
 
 for i = 1, 5 do
 	table.insert(m_itemSlots, {target = nil})
 end
-m_itemSlots[1].target = "Lift"
-m_itemSlots[2].target = "Block"
-m_itemSlots[3].target = "Cylinder"
-m_itemSlots[4].target = "Bearing"
-m_itemSlots[5].target = "ControlPart"
+-- m_itemSlots[1].target = "Lift"
+-- m_itemSlots[2].target = "Block"
+-- m_itemSlots[3].target = "Cylinder"
+-- m_itemSlots[4].target = "Bearing"
+-- m_itemSlots[5].target = "ControlPart"
 
 function updateLifting(dt)
 	if lift_state ~= 0 then
@@ -124,6 +128,21 @@ function updateLifting(dt)
 			lift:liftUp(lift_state * dt * 2.0);
 		end
 	end
+end
+
+function InitInventory()
+	inventoryAmount = ItemMgr.shared():getItemAmount();
+	print("inventoryAmount"..inventoryAmount)
+	for i = 1, inventoryAmount do
+		item = ItemMgr.shared():getItemByIndex(i - 1);
+		print("the Item Name"..item.m_name.."the item type"..item:getTypeInInt())
+		itemTable = {name = item.m_name, ItemClass = "PlaceableBlock", ItemType = item:getTypeInInt(), desc = item.m_desc}
+		table.insert(m_inventory, itemTable)
+	end
+end
+
+function on_game_start()
+	InitInventory()
 end
 
 function cpp_drawHelpPage()
@@ -227,7 +246,9 @@ function drawHud()
 			local payLoad = ImGui.AcceptDragDropPayload("DND_DEMO_CELL", 0)
 			-- print("payLoad", payLoad)
 			if payLoad ~= nil then
+				
 				local payLoadIdx = ImGui.GetPayLoadData2Int(payLoad)
+				print ("Play load Here   "..(m_inventory[payLoadIdx]["name"]))
 				m_itemSlots[k]["target"] = m_inventory[payLoadIdx]["name"]
 			end
 			ImGui.EndDragDropTarget()
@@ -349,21 +370,30 @@ end
 function placeItem(item)
 	local player = GameWorld.shared():getPlayer()
 	local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-	if checkIsNormalPart(item.ItemType) then
-		local aBlock = BuildingSystem.shared():createPart(item.ItemType)
-		if result == nil then
-			print("do nothing")
-			--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
-		else
-			print("degree ".. g_blockRotate)
-			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate)
-			g_blockRotate = 0 --reset
+
+	if item.ItemType == GAME_PART_LIFT then -- for lift
+		local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
+		if resultPos.y > -99999 then 
+			BuildingSystem.shared():placeLiftPart(resultPos)
+			print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
 		end
 	else
-		if item.ItemType == GAME_PART_BEARING then
-			BuildingSystem.shared():placeBearingToAttach(result)
-		elseif item.ItemType == GAME_PART_SPRING then
-			BuildingSystem.shared():placeSpringToAttach(result)
+		if checkIsNormalPart(item.ItemType) then
+			local aBlock = BuildingSystem.shared():createPart(item.ItemType, item.name)
+			if result == nil then
+				print("do nothing")
+				--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
+			else
+				print("degree ".. g_blockRotate)
+				BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, 0)
+				g_blockRotate = 0 --reset
+			end
+		else
+			if item.ItemType == GAME_PART_BEARING then
+				BuildingSystem.shared():placeBearingToAttach(result)
+			elseif item.ItemType == GAME_PART_SPRING then
+				BuildingSystem.shared():placeSpringToAttach(result)
+			end
 		end
 	end
 end
@@ -374,18 +404,12 @@ function handleItemPrimaryUse(item)
 		placeItem(item)
 	elseif (item.ItemClass == "TerrainTool") then --fill the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
-	elseif (item.ItemClass == "Lift") then
-		local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
-		if resultPos.y > -99999 then 
-			BuildingSystem.shared():placeLiftPart(resultPos)
-			print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
-		end
 	end
 end
 
 function handleItemSecondaryUse(item)
 	local player = GameWorld.shared():getPlayer()
-	if (item.ItemClass == "PlaceableBlock" or item.ItemClass == "Lift") then
+	if (item.ItemClass == "PlaceableBlock" or item.ItemType == GAME_PART_LIFT) then
 		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
 		if result then
 			player:removePart(result)

@@ -12,6 +12,7 @@
 #include "BuildingSystem.h"
 #include "ScriptPy/ScriptPyMgr.h"
 #include "AssistDrawSystem.h"
+#include "ItemMgr.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -113,6 +114,8 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::startGame()
 {
+	//load the config
+	ItemMgr::shared();
 	m_currentState = GAME_STATE_RUNNING;
 	PhysicsMgr::shared()->start();
 	Tmisc::DurationBegin();
@@ -132,7 +135,7 @@ void GameWorld::startGame()
 	 
 	m_mainRoot->addChild(player);
 
-
+	ScriptPyMgr::shared()->callFunV("on_game_start");
 	//PhysicsMgr::shared()->start();
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }

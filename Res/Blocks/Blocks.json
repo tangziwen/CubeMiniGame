@@ -1,0 +1,170 @@
+{
+	"Parts" :
+	[
+		{
+		"name" : "Lift",
+		"desc":"升降机",
+		"Type":"GAME_PART_LIFT",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.25, 0.0],"normal":[0.0, 1.0, 1.0],"up":[0.0, 0.0, 1.0]},
+				{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 1.0],"up":[0.0, 0.0, 1.0]}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[0.5, 0.5,0.5]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.5, 0.5, 0.5]
+		}
+		},
+
+		{
+		"name" : "wooden_block",
+		"desc":"座椅",
+		"Type":"GAME_PART_CONTROL",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.25, 0.0],"normal":[0.0, 1.0, 1.0],"up":[0.0, 0.0, 1.0]},
+				{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 1.0],"up":[0.0, 0.0, 1.0]}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[0.5, 0.5,0.5]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.5, 0.5, 0.5]
+		}
+		},
+
+		{
+		"name" : "wooden_block",
+		"desc":"普通方块",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.25, 0.0],"normal":[0.0, 1.0, 1.0],"up":[0.0, 0.0, 1.0]},
+				{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 1.0],"up":[0.0, 0.0, 1.0]}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[0.5, 0.5,0.5]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.5, 0.5, 0.5]
+		}
+		},
+
+		{
+		"name" : "Wheel",
+		"desc":"轮子",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.075],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.075],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.4, 0.4,0.15]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.4, 0.4, 0.15]
+		}
+		},
+		{
+		"name" : "Thruster",
+		"desc":"推进器",
+		"Type":"GAME_PART_THRUSTER",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.1, 0.25,0.5]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.1, 0.25,0.5]
+		}
+		},
+		{
+		"name" : "Cannon",
+		"desc":"炮筒",
+		"Type":"GAME_PART_CANNON",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.4],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.1, 0.1,0.8]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.1, 0.1, 0.8]
+		}
+		},
+		{
+		"name" : "Bearing",
+		"desc":"轴承",
+		"Type":"GAME_PART_BEARING",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.075],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.075],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.4, 0.4,0.15]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.4, 0.4, 0.15]
+		}
+		},
+		{
+		"name" : "Spring",
+		"desc":"弹簧",
+		"Type":"GAME_PART_SPRING",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.075],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.075],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.4, 0.4,0.15]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.4, 0.4, 0.15]
+		}
+		}
+	]
+}

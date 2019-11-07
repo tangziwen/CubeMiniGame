@@ -17,6 +17,7 @@
 #include "UIHelper.h"
 #include "CannonPart.h"
 #include "ThrusterPart.h"
+#include "ItemMgr.h"
 
 namespace tzw
 {
@@ -26,15 +27,7 @@ namespace tzw
 	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false)
 	{
 	}
-	
-	void BuildingSystem::createNewToeHold(vec3 pos)
-	{
-		auto newIsland = new Island(pos);
-		m_IslandList.push_back(newIsland);
-		auto part = new BlockPart();
-		newIsland->m_node->addChild(part->getNode());
-		newIsland->insert(part);
-	}
+
 
 	void BuildingSystem::removePartByAttach(Attachment* attach)
 	{
@@ -131,7 +124,7 @@ namespace tzw
 	}
 
 	void
-	BuildingSystem::attachGamePart(GamePart* part, Attachment* attach, float degree)
+	BuildingSystem::attachGamePart(GamePart* part, Attachment* attach, float degree, int index)
 	{
 		if (attach->m_parent->getType() == GamePartType::GAME_PART_LIFT)
 		{
@@ -142,7 +135,7 @@ namespace tzw
 			m_IslandList.push_back(newIsland);
 			newIsland->m_node->addChild(part->getNode());
 			newIsland->insert(part);
-			part->attachToOtherIslandByAlterSelfPart(attach);
+			part->attachToOtherIslandByAlterSelfPart(attach, index);
 			newIsland->genIslandGroup();
 			liftPart->setEffectedIsland(newIsland->m_islandGroup);
 		}
@@ -150,7 +143,7 @@ namespace tzw
 		{
 			if (!attach->m_parent->isConstraint())
 			{
-				part->attachTo(attach, degree);
+				part->attachTo(attach, degree, index);
 				auto island = attach->m_parent->m_parent;
 				island->m_node->addChild(part->getNode());
 				island->insert(part);
@@ -253,13 +246,14 @@ namespace tzw
 	}
 
 	GamePart*
-	BuildingSystem::createPart(int type)
+	BuildingSystem::createPart(int type, std::string itemName)
 	{
+		ItemMgr::shared()->getItem(itemName);
 		GamePart* resultPart = nullptr;
 		switch ((GamePartType)type)
 		{
         case GamePartType::GAME_PART_BLOCK:
-			resultPart = new BlockPart();
+			resultPart = new BlockPart(itemName);
 			break;
 		case GamePartType::GAME_PART_CYLINDER:
 			resultPart = new CylinderPart();
@@ -269,15 +263,15 @@ namespace tzw
 			break;
         case GamePartType::GAME_PART_CONTROL:
 			{
-				auto control_part = new ControlPart();
+				auto control_part = new ControlPart(itemName);
 				resultPart = control_part;
 			}
 			break;
 		case GamePartType::GAME_PART_CANNON:
-			resultPart = new CannonPart();
+			resultPart = new CannonPart(itemName);
 			break;
         case GamePartType::GAME_PART_THRUSTER:
-			resultPart = new ThrusterPart();
+			resultPart = new ThrusterPart(itemName);
 			break;
 		default:
 			assert(0);

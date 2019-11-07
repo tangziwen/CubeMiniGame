@@ -3,6 +3,9 @@
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
+#include "ItemMgr.h"
+#include "3D/Primitive/CylinderPrimitive.h"
+
 namespace tzw
 {
 const float blockSize = 0.5;
@@ -33,6 +36,11 @@ BlockPart::BlockPart()
 		m_bearPart[i] = nullptr;
 	}
 	initAttachments();
+}
+
+BlockPart::BlockPart(std::string itemName)
+{
+	initFromItemName(itemName);
 }
 
 void BlockPart::initAttachments()
@@ -81,7 +89,6 @@ Attachment* BlockPart::getBottomAttachment()
 			smallDist = pos.y;
 			theSmallIndex = i;
 		}
-		
 	}
 	return m_attachment[theSmallIndex];
 }
@@ -93,15 +100,7 @@ Attachment* BlockPart::getAttachment(int index)
 
 int BlockPart::getAttachmentCount()
 {
-	return 6;
-}
-
-void BlockPart::cook()
-{
-	auto mat2 = m_node->getTranslationMatrix();
-	auto aabb = m_node->getAABB();
-	auto rigChasis = PhysicsMgr::shared()->createRigidBody(1.0, mat2, aabb);
-	rigChasis->attach(m_node);
+	return m_attachment.size();
 }
 
 GamePartType BlockPart::getType()

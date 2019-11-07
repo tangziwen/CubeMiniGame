@@ -9,7 +9,7 @@
 #include "CylinderPart.h"
 #include "LiftPart.h"
 #include "UIHelper.h"
-
+#include "ItemMgr.h"
 
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
@@ -54,9 +54,8 @@ namespace tzw
 		BIND_BEGIN_CLASS(GameItem)
 		.addConstructor <void (*) ()> ()
 		BIND_PROP(GameItem, m_name)
-		BIND_PROP(GameItem, m_type)
 		BIND_PROP(GameItem, m_desc)
-		BIND_PROP(GameItem, m_class)
+		BIND_FUNC(GameItem, getTypeInInt)
 		BIND_END_CLASS
 
 
@@ -83,7 +82,15 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, getCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getGamePartTypeInt)
 		BIND_END_CLASS
-
+		//ItemMgr
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(ItemMgr)
+		.addStaticFunction ("shared", &ItemMgr::shared)
+		BIND_FUNC(ItemMgr, getItemByIndex)
+		BIND_FUNC(ItemMgr, getItemAmount)
+		BIND_FUNC(ItemMgr, getItem)
+		BIND_END_CLASS
+		
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(UIHelper)
 		.addStaticFunction ("shared", &UIHelper::shared)

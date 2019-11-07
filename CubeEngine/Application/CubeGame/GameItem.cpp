@@ -13,11 +13,18 @@
 
 namespace tzw
 {
-
+	AttachmentInfo::AttachmentInfo(vec3 p, vec3 n, vec3 u):
+	pos(p),normal(n),up(u)
+	{
+	}
 
 GameItem::GameItem()
 {
 
 }
 
+	int GameItem::getTypeInInt()
+	{
+		return (int) m_type;
+	}
 }

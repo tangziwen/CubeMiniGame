@@ -12,16 +12,18 @@ namespace tzw
 class ItemMgr;
 
 class ItemMgr
-	{
-		TZW_SINGLETON_DECL(ItemMgr)
-	public:
-		ItemMgr();
-		void loadFromFile(std::string filePath);
-		GameItem * getItem(std::string name);
-		
-	private:
-		std::map<std::string, GameItem * > m_itemMap;
-	};
+{
+	TZW_SINGLETON_DECL(ItemMgr)
+public:
+	ItemMgr();
+	void loadFromFile(std::string filePath);
+	GameItem * getItem(std::string name);
+	int getItemAmount();
+	GameItem * getItemByIndex(int index);
+private:
+	std::map<std::string, GameItem * > m_itemMap;
+	std::vector<GameItem * > m_itemList;
+};
 
 
 }

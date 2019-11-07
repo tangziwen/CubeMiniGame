@@ -20,7 +20,6 @@ class BuildingSystem
 	TZW_SINGLETON_DECL(BuildingSystem)
 public:
 	BuildingSystem();
-	void createNewToeHold(vec3 pos);
 	void flipBearingByHit(vec3 pos, vec3 dir, float dist);
 	void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 	void dropFromLift();
@@ -35,14 +34,14 @@ public:
 	void removePart(GamePart * attach);
 	void placeGamePart(GamePart * part, vec3 pos);
 	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
-	void attachGamePart(GamePart * part, Attachment * attach, float degree);
+	void attachGamePart(GamePart * part, Attachment * attach, float degree, int index);
 	void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
 	vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 	void placeLiftPart(vec3 wherePos);
 	void setCurrentControlPart(GamePart * controlPart);
 	int getGamePartTypeInt(GamePart *);
 	ControlPart * getCurrentControlPart() const;
-	GamePart * createPart(int type);
+	GamePart * createPart(int type, std::string itemName);
 	BearPart * placeBearingToAttach(Attachment * attach);
 	SpringPart * placeSpringToAttach(Attachment * attach);
 	Island * createIsland(vec3 pos);

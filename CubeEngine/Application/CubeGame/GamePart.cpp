@@ -2,6 +2,10 @@
 #include "Island.h"
 #include "BearPart.h"
 #include "2D/GUISystem.h"
+#include "ItemMgr.h"
+#include "Texture/TextureMgr.h"
+#include "3D/Primitive/CubePrimitive.h"
+#include "3D/Primitive/CylinderPrimitive.h"
 
 namespace tzw
 {
@@ -46,13 +50,13 @@ namespace tzw
 		return nullptr;
 	}
 
-	void GamePart::attachTo(Attachment * attach, float degree)
+	void GamePart::attachTo(Attachment * attach, float degree, int attachMentIndex)
 	{
 		vec3 attachPosition,  Normal,  up;
 		attach->getAttachmentInfo(attachPosition, Normal, up);
 		//we use m_attachment[0]
 		Normal = Normal * -1;
-		auto selfAttah = getFirstAttachment();
+		auto selfAttah = getAttachment(attachMentIndex);
 		vec3 right = vec3::CrossProduct(Normal, up);
 		Matrix44 transformForAttachPoint;
 		auto data = transformForAttachPoint.data();
@@ -113,9 +117,9 @@ namespace tzw
 		m_node->setRotateQ(q);
 	}
 
-	Matrix44 GamePart::attachToOtherIslandByAlterSelfPart(Attachment * attach)
+	Matrix44 GamePart::attachToOtherIslandByAlterSelfPart(Attachment * attach, int attachmentIndex)
 	{
-		auto selfAttah = getFirstAttachment();
+		auto selfAttah = getAttachment(attachmentIndex);
         if (attach->m_parent->isConstraint()) 
 		{
 			static_cast<GameConstraint *>(attach->m_parent)->m_a = selfAttah;
@@ -402,7 +406,7 @@ namespace tzw
 
 		partDocObj.AddMember("Name", m_name, allocator);
 
-
+		partDocObj.AddMember("ItemName", m_item->m_name, allocator);
 		dumpAttach(partDocObj, allocator);
 	}
 
@@ -557,5 +561,84 @@ namespace tzw
 		{
 			setName(a);
 		}
+	}
+
+	void GamePart::initFromItemName(std::string itemName)
+	{
+		auto item = ItemMgr::shared()->getItem(itemName);
+		m_item = item;
+		//material
+	    auto m_material = Material::createFromTemplate("ModelPBR");
+		auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
+		m_material->setTex("DiffuseMap", texture);
+
+		auto metallicTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_metallic.png");
+		m_material->setTex("MetallicMap", metallicTexture);
+
+		auto roughnessTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_roughness.png");
+		m_material->setTex("RoughnessMap", roughnessTexture);
+
+
+		auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
+		m_material->setTex("NormalMap", normalMapTexture);
+		
+		//visual part
+		switch(item->m_visualInfo.type)
+		{
+		case VisualInfo::VisualInfoType::CubePrimitive:
+		{
+			auto size = item->m_visualInfo.size;
+			m_node = new CubePrimitive(size.x, size.y, size.z, false);
+		}
+		break;
+		case VisualInfo::VisualInfoType::CylinderPrimitive:
+		{
+			auto size = item->m_visualInfo.size;
+			m_node = new CylinderPrimitive(size.x, size.y, size.z);
+		}
+		break;
+		case VisualInfo::VisualInfoType::Mesh:
+		{
+			//sorry not supported yet
+		}
+		break;
+		default: ;
+		}
+		m_node->setMaterial(m_material);
+
+		//Physics Part
+		m_shape = new PhysicsShape();
+		switch(item->m_physicsInfo.type)
+		{
+		case PhysicsInfo::PhysicsInfoType::BoxShape:
+		{
+			auto size = item->m_physicsInfo.size;
+			m_shape->initBoxShape(vec3(size.x, size.y, size.z));
+		}
+		break;
+	    case PhysicsInfo::PhysicsInfoType::CylinderShape:
+		{
+			auto size = item->m_visualInfo.size;
+			m_shape->initCylinderShapeZ(size.x, size.y, size.z);
+		}
+		break;
+		default: ;
+		}
+
+		for(int i = 0; i < item->m_attachList.size(); i++)
+		{
+			auto attach = item->m_attachList[i];
+			addAttachment(new Attachment(attach.pos, attach.normal, attach.up ,this));
+		}
+	}
+
+	GameItem* GamePart::getItem() const
+	{
+		return m_item;
+	}
+
+	void GamePart::setItem(GameItem* const item)
+	{
+		m_item = item;
 	}
 }
