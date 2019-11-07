@@ -58,8 +58,51 @@ BearPart::BearPart()
 		}
 	};
 }
- 
-void BearPart::updateFlipped()
+
+BearPart::BearPart(std::string itemName)
+{
+	m_a = nullptr;
+	m_b = nullptr;
+	m_isFlipped = false;
+	m_node = nullptr;
+	m_constrain = nullptr;
+	
+
+	m_isSteering = false;
+	m_isAngleLimit = false;
+	m_angleLimitLow = -30.0f;
+	m_angleLimitHigh = 30.0f;
+
+
+	GamePart::initFromItemName(itemName);
+	
+	BearPart::generateName();
+	
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	m_graphNode = new BearingPartNode(this);
+	nodeEditor->addNode(m_graphNode);
+	m_xrayMat = Material::createFromTemplate("PartXRay");
+	
+	auto cylinderIndicator = static_cast<CylinderPrimitive *> (m_node);
+	m_xrayMat->setTex("diffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
+	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
+	{
+		if(BuildingSystem::shared()->isIsInXRayMode())
+		{
+			RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
+			cylinderIndicator->setUpCommand(command);
+			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+			Renderer::shared()->addRenderCommand(command);
+
+			RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
+			cylinderIndicator->setUpCommand(command2);
+			command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+			Renderer::shared()->addRenderCommand(command2);
+		}
+	};
+}
+
+	void BearPart::updateFlipped()
 {
 	if(!m_node) return;
 	auto cylinder = static_cast<CylinderPrimitive *>(m_node);

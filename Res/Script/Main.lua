@@ -390,7 +390,7 @@ function placeItem(item)
 			end
 		else
 			if item.ItemType == GAME_PART_BEARING then
-				BuildingSystem.shared():placeBearingToAttach(result)
+				BuildingSystem.shared():placeBearingToAttach(result, item.name)
 			elseif item.ItemType == GAME_PART_SPRING then
 				BuildingSystem.shared():placeSpringToAttach(result)
 			end

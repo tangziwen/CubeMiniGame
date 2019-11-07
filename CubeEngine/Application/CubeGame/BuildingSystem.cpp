@@ -280,7 +280,7 @@ namespace tzw
 		return resultPart;
 	}
 
-	BearPart* BuildingSystem::placeBearingToAttach(Attachment* attachment)
+	BearPart* BuildingSystem::placeBearingToAttach(Attachment* attachment, std::string itemName)
 	{
 		vec3 pos, n, up;
 		attachment->getAttachmentInfoWorld(pos, n, up);
@@ -289,7 +289,7 @@ namespace tzw
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
 		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
-		auto bear = new BearPart();
+		auto bear = new BearPart(itemName);
 		bear->m_b = attachment;
 		bear->m_parent = island;
 		m_bearList.insert(bear);
@@ -595,7 +595,7 @@ namespace tzw
 				else if (constraintType == "Bearing")
 				{
 					
-					constraint = placeBearingToAttach(fromAttach);
+					constraint = placeBearingToAttach(fromAttach, item["ItemName"].GetString());
 					auto bear = reinterpret_cast<BearPart*>(constraint);
 					if(item.HasMember("isSteering")) 
 					{

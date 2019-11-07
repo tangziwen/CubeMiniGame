@@ -2,6 +2,7 @@
 #include "GamePart.h"
 #include "2D/LabelNew.h"
 #include "Scene/SceneMgr.h"
+#include "GameItem.h"
 
 namespace tzw
 {
@@ -20,6 +21,7 @@ void GameConstraint::enablePhysics(bool isEnable)
 void GameConstraint::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
 {
 	partData.AddMember("Name", m_name, allocator);
+	partData.AddMember("ItemName", m_item->m_name, allocator);
 }
 
 void GameConstraint::load(rapidjson::Value& partData)

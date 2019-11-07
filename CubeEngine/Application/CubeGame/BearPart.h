@@ -12,6 +12,7 @@ class BearPart : public GameConstraint
 {
 public:
 	BearPart();
+	explicit BearPart(std::string itemName);
 	bool m_isFlipped;
 	void updateFlipped();
 	PhysicsHingeConstraint * m_constrain;
