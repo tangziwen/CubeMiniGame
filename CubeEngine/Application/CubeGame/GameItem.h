@@ -21,6 +21,8 @@ struct VisualInfo
 	};
 	VisualInfoType type;
 	vec3 size;
+	std::string filePath;
+	std::string diffusePath;
 };
 
 struct PhysicsInfo

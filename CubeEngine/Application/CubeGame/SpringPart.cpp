@@ -24,7 +24,11 @@ SpringPart::SpringPart()
 	float blockSize = 0.50f;
 	addAttachment(new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this));
 	addAttachment(new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this));
-
+	// create a indicate model
+	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.5);
+	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
+	cylinderIndicator->reCache();
+	setNode(cylinderIndicator);
 	generateName();
 }
 

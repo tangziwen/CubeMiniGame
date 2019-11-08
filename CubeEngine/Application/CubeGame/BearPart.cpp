@@ -84,27 +84,28 @@ BearPart::BearPart(std::string itemName)
 	m_xrayMat = Material::createFromTemplate("PartXRay");
 	
 	auto cylinderIndicator = static_cast<CylinderPrimitive *> (m_node);
-	m_xrayMat->setTex("diffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
-	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
-	{
-		if(BuildingSystem::shared()->isIsInXRayMode())
-		{
-			RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
-			cylinderIndicator->setUpCommand(command);
-			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-			Renderer::shared()->addRenderCommand(command);
+	//m_xrayMat->setTex("diffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
+	//cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
+	//{
+	//	if(BuildingSystem::shared()->isIsInXRayMode())
+	//	{
+	//		RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
+	//		cylinderIndicator->setUpCommand(command);
+	//		command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+	//		Renderer::shared()->addRenderCommand(command);
 
-			RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
-			cylinderIndicator->setUpCommand(command2);
-			command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-			Renderer::shared()->addRenderCommand(command2);
-		}
-	};
+	//		RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
+	//		cylinderIndicator->setUpCommand(command2);
+	//		command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+	//		Renderer::shared()->addRenderCommand(command2);
+	//	}
+	//};
 }
 
 	void BearPart::updateFlipped()
 {
 	if(!m_node) return;
+	return;
 	auto cylinder = static_cast<CylinderPrimitive *>(m_node);
 	Texture * tex;
 	if(m_isFlipped)

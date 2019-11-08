@@ -294,16 +294,18 @@ namespace tzw
 		bear->m_parent = island;
 		m_bearList.insert(bear);
 		island->insert(bear);
-
+		island->m_node->addChild(bear->getNode());
 		bear->updateFlipped();
 		bear->attachToOtherIslandByAlterSelfIsland(attachment,
 													bear->getFirstAttachment(), 0);
 		attachment->m_connected = bear->getFirstAttachment();
+		auto euler = island->m_node->getRotateE();
+		tlog("%f, %f, %f",euler.x, euler.y, euler.z);
 		if(!attachment->m_connected->m_parent->m_parent) 
 		{
 			tlog("wrong");
 		}
-		island->m_node->addChild(bear->getNode());
+		
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		
 		return bear;
@@ -324,24 +326,15 @@ namespace tzw
 		spring->m_parent = island;
 		m_bearList.insert(spring);
 		island->insert(spring);
-		// create a indicate model
-		auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.5);
-		cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
-		auto mat = attachment->getAttachmentInfoMat44();
-		Quaternion q;
-		q.fromRotationMatrix(&mat);
-		cylinderIndicator->setPos(mat.getTranslation());
-		cylinderIndicator->setRotateQ(q);
-		cylinderIndicator->reCache();
-		spring->setNode(cylinderIndicator);
 		spring->attachToOtherIslandByAlterSelfIsland(attachment,
-													spring->getFirstAttachment(), 0);
+												spring->getFirstAttachment(), 0);
+		island->m_node->addChild(spring->getNode());
 		attachment->m_connected = spring->getFirstAttachment();
 		if(!attachment->m_connected->m_parent->m_parent) 
 		{
 			tlog("wrong");
 		}
-		island->m_node->addChild(cylinderIndicator);
+		
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		return spring;
 	}

@@ -6,6 +6,7 @@
 #include "Texture/TextureMgr.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Primitive/CylinderPrimitive.h"
+#include "3D/Model/Model.h"
 
 namespace tzw
 {
@@ -599,7 +600,13 @@ namespace tzw
 		break;
 		case VisualInfo::VisualInfoType::Mesh:
 		{
+			auto size = item->m_visualInfo.size;
 			//sorry not supported yet
+			auto model = Model::create(item->m_visualInfo.filePath);
+			model->getMat(0)->setTex("diffuseMap", TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath));
+			model->setScale(size.x, size.y, size.z);
+			m_node = model;
+			
 		}
 		break;
 		default: ;

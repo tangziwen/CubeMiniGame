@@ -14,6 +14,7 @@ public:
     static Model * create(std::string modelFilePath);
 	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	Mesh * getMesh(int id);
+	Material * getMat(int index);
 private:
     std::vector<Mesh *> m_meshList;
     std::vector<Material * >m_effectList;

@@ -136,6 +136,7 @@ void GameWorld::startGame()
 	m_mainRoot->addChild(player);
 
 	ScriptPyMgr::shared()->callFunV("on_game_start");
+	
 	//PhysicsMgr::shared()->start();
 	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
 }

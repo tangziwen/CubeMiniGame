@@ -47,4 +47,8 @@ Mesh * Model::getMesh(int id)
 	return m_meshList[id];
 }
 
+Material* Model::getMat(int index)
+{
+	return m_effectList[index];
+}
 } // namespace tzw

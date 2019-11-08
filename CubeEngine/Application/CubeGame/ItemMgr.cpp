@@ -100,6 +100,8 @@ void ItemMgr::loadFromFile(std::string filePath)
 				else if(visualInfoType == "Mesh")
 				{
 					gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::Mesh;
+					gameItem->m_visualInfo.filePath = visualData["FilePath"].GetString();
+					gameItem->m_visualInfo.diffusePath = visualData["DiffusePath"].GetString();
 				}
 				gameItem->m_visualInfo.size = visualSize;
 			}
