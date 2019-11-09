@@ -625,7 +625,7 @@ namespace tzw
 		break;
 	    case PhysicsInfo::PhysicsInfoType::CylinderShape:
 		{
-			auto size = item->m_visualInfo.size;
+			auto size = item->m_physicsInfo.size;
 			m_shape->initCylinderShapeZ(size.x, size.y, size.z);
 		}
 		break;

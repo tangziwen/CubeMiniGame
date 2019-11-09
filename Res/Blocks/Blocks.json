@@ -83,13 +83,15 @@
 				],
 		"Visual":
 		{
-			"Type":"CylinderPrimitive",
-			"size":[0.4, 0.4,0.15]
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Wheel/Wheel.tzw",
+			"DiffusePath":"Blocks/Wheel/wheel_dif.png"
 		},
 		"Physics":
 		{
 			"Type": "CylinderShape",
-			"size":[0.4, 0.4, 0.15]
+			"size":[0.45, 0.45, 0.2]
 		}
 		},
 		{

@@ -31,8 +31,8 @@ void main()
     gl_Position = TU_mvpMatrix * vec4(a_position,1.0);
 	
 	v_position = (TU_mMatrix * vec4(a_position,1.0)).xyz;
-	v_normal = (TU_normalMatrix * vec4(a_normal,0.0)).xyz;
-    v_tangent = (TU_normalMatrix * vec4(a_tangent,0.0)).xyz;
+	v_normal = (TU_mMatrix * vec4(a_normal,0.0)).xyz;
+    v_tangent = (TU_mMatrix * vec4(a_tangent,0.0)).xyz;
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces
     v_texcoord = a_texcoord;

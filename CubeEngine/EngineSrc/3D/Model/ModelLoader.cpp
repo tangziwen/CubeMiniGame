@@ -48,7 +48,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 			mat->loadFromTemplate(materialData["effectType"].GetString());
 		}else
 		{
-			mat->loadFromTemplate("ModelStd");
+			mat->loadFromTemplate("ModelPBR");
 		}
 		auto thestr = materialData["diffuseMap"].GetString();
 		if (strcmp(thestr, "") != 0)
@@ -56,6 +56,11 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 			mat->setTex("diffuseMap",
 				tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["diffuseMap"].GetString(), folder)));
 		}
+		//default Normal Map
+		mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
+		//default Roughness Map
+		mat->setTex("RoughnessMap", tmgr->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png"));
+		
 		model->m_effectList.push_back(mat);
 	}
 
