@@ -102,6 +102,23 @@ void ItemMgr::loadFromFile(std::string filePath)
 					gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::Mesh;
 					gameItem->m_visualInfo.filePath = visualData["FilePath"].GetString();
 					gameItem->m_visualInfo.diffusePath = visualData["DiffusePath"].GetString();
+
+					if(visualData.HasMember("RoughnessPath"))
+					{
+						gameItem->m_visualInfo.roughnessPath = visualData["RoughnessPath"].GetString();
+					} else
+					{
+						gameItem->m_visualInfo.roughnessPath = "Texture/BuiltInTexture/defaultRoughnessMap.png";
+					}
+
+					if(visualData.HasMember("MetallicPath"))
+					{
+						gameItem->m_visualInfo.metallicPath = visualData["MetallicPath"].GetString();
+					} else
+					{
+						gameItem->m_visualInfo.metallicPath = "Texture/BuiltInTexture/defaultMetallic.png";
+					}
+
 				}
 				gameItem->m_visualInfo.size = visualSize;
 			}

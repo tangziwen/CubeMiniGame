@@ -21,7 +21,7 @@ void main()
 	vec4 color = texture2D(TU_colorBuffer, v_texcoord);
 	float averageLuminace = texture2D(TU_AverageLuminance, vec2(0.5, 0.5)).r;
 	float exposure = 0.18 / averageLuminace;
-	vec3 hdrColor = color.xyz * exposure;
+	vec3 hdrColor = color.xyz;// * exposure;
 	// tone mapping
 	vec3 result = ACES_Knarkowicz(hdrColor);
 	// also gamma correct while we're at it

@@ -23,6 +23,7 @@
 #include "3D/Particle/ParticleInitLifeSpanModule.h"
 #include "3D/Particle/ParticleUpdateSizeModule.h"
 #include "3D/Particle/ParticleUpdateColorModule.h"
+#include "Shader/ShaderMgr.h"
 
 namespace tzw
 {
@@ -174,7 +175,7 @@ namespace tzw
 			break;
             case TZW_KEY_I:
 			{
-				MainMenu::shared()->setIsShowAssetEditor(true);
+				ShaderMgr::shared()->reloadAllShaders();
             }
 			break;
 		case TZW_KEY_T:

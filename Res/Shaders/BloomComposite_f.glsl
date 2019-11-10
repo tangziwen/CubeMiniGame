@@ -27,6 +27,6 @@ void main()
 	vec4 bloomHalf = texture2D(TU_BloomBufferHalf, v_texcoord);
 	vec4 bloomQuad = texture2D(TU_BloomBufferQuad, v_texcoord);
 	vec4 bloomOctave = texture2D(TU_BloomBufferOctave, v_texcoord);
-	vec3 hdrColor = color.xyz + bloom.xyz * BloomStrength + bloomHalf.xyz * BloomStrength + bloomQuad.xyz * BloomStrength + bloomOctave.xyz * BloomStrength;
+	vec3 hdrColor = color.xyz + bloom.xyz * BloomStrength * 0.5 + bloomHalf.xyz * BloomStrength * 0.2 + bloomQuad.xyz * BloomStrength * 0.1 + bloomOctave.xyz * BloomStrength * 0.1;
 	gl_FragColor = vec4(hdrColor, 1.0);
 }

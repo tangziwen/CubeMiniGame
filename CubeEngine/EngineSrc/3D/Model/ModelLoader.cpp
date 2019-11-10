@@ -60,7 +60,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 		mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
 		//default Roughness Map
 		mat->setTex("RoughnessMap", tmgr->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png"));
-		
+		mat->setTex("MetallicMap", TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png"));
 		model->m_effectList.push_back(mat);
 	}
 

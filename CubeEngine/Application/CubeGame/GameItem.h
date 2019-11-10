@@ -23,6 +23,8 @@ struct VisualInfo
 	vec3 size;
 	std::string filePath;
 	std::string diffusePath;
+	std::string roughnessPath;
+	std::string metallicPath;
 };
 
 struct PhysicsInfo

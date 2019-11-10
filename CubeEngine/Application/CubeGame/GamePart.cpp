@@ -604,6 +604,8 @@ namespace tzw
 			//sorry not supported yet
 			auto model = Model::create(item->m_visualInfo.filePath);
 			model->getMat(0)->setTex("diffuseMap", TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath));
+			model->getMat(0)->setTex("RoughnessMap", TextureMgr::shared()->getByPath(item->m_visualInfo.roughnessPath));
+			model->getMat(0)->setTex("MetallicMap", TextureMgr::shared()->getByPath(item->m_visualInfo.metallicPath));
 			model->setScale(size.x, size.y, size.z);
 			m_node = model;
 			
