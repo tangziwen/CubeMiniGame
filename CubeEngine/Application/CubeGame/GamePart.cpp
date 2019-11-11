@@ -135,7 +135,7 @@ namespace tzw
 		{
 			tlog("wrong");
 		}
-		return adjustToOtherIslandByAlterSelfPart(attach, selfAttah);
+		return adjustToOtherIslandByAlterSelfPart(attach, selfAttah, 0);
 	}
 
 	Matrix44 GamePart::attachToOtherIslandByAlterSelfIsland(Attachment* attach, Attachment * ownAttachment, float degree)
@@ -235,22 +235,16 @@ namespace tzw
 		return result;
 	}
 
-	Matrix44 GamePart::adjustToOtherIslandByAlterSelfPart(Attachment* attach, Attachment* selfAttach)
+	Matrix44 GamePart::adjustToOtherIslandByAlterSelfPart(Attachment* attach, Attachment* selfAttah, float degree)
 	{
-		auto islandMatrixInverted = m_parent->m_node->getLocalTransform().inverted();
 		vec3 attachPosition,  Normal,  up;
 		attach->getAttachmentInfoWorld(attachPosition, Normal, up);
-		//transform other island attachment to our island
-		attachPosition = islandMatrixInverted.transformVec3(attachPosition);
-		Normal = islandMatrixInverted.transofrmVec4(vec4(Normal, 0.0)).toVec3();
 		vec3 InvertedNormal = Normal * -1;
 		attachPosition = attachPosition + Normal * 0.01f;
-		up = islandMatrixInverted.transofrmVec4(vec4(up, 0.0)).toVec3();
-		//we use m_attachment[0]
 
 		vec3 right = vec3::CrossProduct(InvertedNormal, up);
-		Matrix44 transformForAttachPoint;
-		auto data = transformForAttachPoint.data();
+		Matrix44 attachOuterWorldMat;
+		auto data = attachOuterWorldMat.data();
 		data[0] = right.x;
 		data[1] = right.y;
 		data[2] = right.z;
@@ -272,18 +266,18 @@ namespace tzw
 		data[15] = 1.0;
 
 		
-		Matrix44 attachmentTrans;
-		data = attachmentTrans.data();
-		auto rightForAttach = vec3::CrossProduct(selfAttach->m_normal, selfAttach->m_up);
-		vec3 normalForAttach = selfAttach->m_normal;
+		Matrix44 selfAttachmentTrans;
+		data = selfAttachmentTrans.data();
+		auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
+		vec3 normalForAttach = selfAttah->m_normal;
 		data[0] = rightForAttach.x;
 		data[1] = rightForAttach.y;
 		data[2] = rightForAttach.z;
 		data[3] = 0.0;
 
-		data[4] = selfAttach->m_up.x;
-		data[5] = selfAttach->m_up.y;
-		data[6] = selfAttach->m_up.z;
+		data[4] = selfAttah->m_up.x;
+		data[5] = selfAttah->m_up.y;
+		data[6] = selfAttah->m_up.z;
 		data[7] = 0.0;
 
 		//use invert
@@ -292,12 +286,19 @@ namespace tzw
 		data[10] = -normalForAttach.z;
 		data[11] = 0.0;
 
-		data[12] = selfAttach->m_pos.x;
-		data[13] = selfAttach->m_pos.y;
-		data[14] = selfAttach->m_pos.z;
+		data[12] = selfAttah->m_pos.x;
+		data[13] = selfAttah->m_pos.y;
+		data[14] = selfAttah->m_pos.z;
 		data[15] = 1.0;
 
-		auto result = transformForAttachPoint * attachmentTrans.inverted();
+
+		Matrix44 rotateMatrix;
+		Quaternion qRotate;
+		qRotate.fromEulerAngle(vec3(0, 0, degree));
+		rotateMatrix.rotate(qRotate);
+		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
+
+		auto result = m_parent->m_node->getLocalTransform().inverted() * attachOuterWorldMat * selfAttachmentTrans.inverted();
 		Quaternion q;
 		q.fromRotationMatrix(&result);
 		m_node->setPos(result.getTranslation());
@@ -308,7 +309,7 @@ namespace tzw
 
 	Attachment* GamePart::getFirstAttachment()
 	{
-		return nullptr;
+		return m_attachment[0];
 	}
 
 	Attachment* GamePart::getBottomAttachment()
@@ -323,12 +324,12 @@ namespace tzw
 
 	Attachment* GamePart::getAttachment(int index)
 	{
-		return nullptr;
+		return m_attachment[index];
 	}
 
 	int GamePart::getAttachmentCount()
 	{
-		return 0;
+		return m_attachment.size();
 	}
 
 	Attachment* GamePart::getAttachmentInfo(int index, vec3& pos, vec3& N, vec3& up)
@@ -582,7 +583,7 @@ namespace tzw
 
 		auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
 		m_material->setTex("NormalMap", normalMapTexture);
-		
+		bool isNeedSetDefaultMat = false;
 		//visual part
 		switch(item->m_visualInfo.type)
 		{
@@ -590,12 +591,14 @@ namespace tzw
 		{
 			auto size = item->m_visualInfo.size;
 			m_node = new CubePrimitive(size.x, size.y, size.z, false);
+			isNeedSetDefaultMat = true;
 		}
 		break;
 		case VisualInfo::VisualInfoType::CylinderPrimitive:
 		{
 			auto size = item->m_visualInfo.size;
 			m_node = new CylinderPrimitive(size.x, size.y, size.z);
+			isNeedSetDefaultMat = true;
 		}
 		break;
 		case VisualInfo::VisualInfoType::Mesh:
@@ -603,17 +606,23 @@ namespace tzw
 			auto size = item->m_visualInfo.size;
 			//sorry not supported yet
 			auto model = Model::create(item->m_visualInfo.filePath);
-			model->getMat(0)->setTex("diffuseMap", TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath));
+			auto tex = TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath);
+			model->getMat(0)->setTex("DiffuseMap", tex);
 			model->getMat(0)->setTex("RoughnessMap", TextureMgr::shared()->getByPath(item->m_visualInfo.roughnessPath));
 			model->getMat(0)->setTex("MetallicMap", TextureMgr::shared()->getByPath(item->m_visualInfo.metallicPath));
 			model->setScale(size.x, size.y, size.z);
 			m_node = model;
+			isNeedSetDefaultMat = false;
 			
 		}
 		break;
 		default: ;
 		}
-		m_node->setMaterial(m_material);
+		if(isNeedSetDefaultMat)
+		{
+			m_node->setMaterial(m_material);
+		}
+		
 
 		//Physics Part
 		m_shape = new PhysicsShape();

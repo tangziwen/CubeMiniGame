@@ -19,6 +19,7 @@ enum class WindowType
 	RESUME_MENU,
 	HELP_PAGE,
 	ATTRIBUTE_WINDOW,
+	PAINTER,
 };
 class MainMenu : public IMGUIObject, public EventListener
 {

@@ -10,6 +10,7 @@
 #include "Utility/math/TbaseMath.h"
 #include "Rendering/Renderer.h"
 #include "BuildingSystem.h"
+#include "3D/Model/Model.h"
 
 namespace tzw
 {
@@ -83,23 +84,18 @@ BearPart::BearPart(std::string itemName)
 	nodeEditor->addNode(m_graphNode);
 	m_xrayMat = Material::createFromTemplate("PartXRay");
 	
-	auto cylinderIndicator = static_cast<CylinderPrimitive *> (m_node);
-	//m_xrayMat->setTex("diffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
-	//cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
-	//{
-	//	if(BuildingSystem::shared()->isIsInXRayMode())
-	//	{
-	//		RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
-	//		cylinderIndicator->setUpCommand(command);
-	//		command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-	//		Renderer::shared()->addRenderCommand(command);
-
-	//		RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
-	//		cylinderIndicator->setUpCommand(command2);
-	//		command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-	//		Renderer::shared()->addRenderCommand(command2);
-	//	}
-	//};
+	auto cylinderIndicator = static_cast<Model *> (m_node);
+	m_xrayMat->setTex("diffuseMap", cylinderIndicator->getMat(0)->getTex("diffuseMap"));
+	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
+	{
+		if(BuildingSystem::shared()->isIsInXRayMode())
+		{
+			RenderCommand command(cylinderIndicator->getMesh(0), this->m_xrayMat, passType);
+			cylinderIndicator->setUpCommand(command);
+			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+			Renderer::shared()->addRenderCommand(command);
+		}
+	};
 }
 
 	void BearPart::updateFlipped()

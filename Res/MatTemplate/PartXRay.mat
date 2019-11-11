@@ -4,6 +4,7 @@
 		"fs" : "./Res/Shaders/GeometryPass_f.glsl"
 	},
 	"name" : "ModelStd",
+	"RenderStage": "AFTER_DEPTH_CLEAR",
 	"DepthTestEnable" : true,
 	"DepthWriteEnable" : true,
 	"BlendEnable" : false,

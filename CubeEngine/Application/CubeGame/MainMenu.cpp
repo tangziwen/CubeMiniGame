@@ -307,6 +307,22 @@ void MainMenu::drawIMGUI()
 			ImGui::End();
 			setWindowShow(WindowType::ATTRIBUTE_WINDOW, isOpen);
 		}
+
+		//painter
+		//部件的属性面板
+		if(getWindowIsShow(WindowType::PAINTER))
+		{
+			auto screenSize = Engine::shared()->winSize();
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			bool isOpen = true;
+			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
+			auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
+			ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
+			GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
+			ImGui::End();
+			setWindowShow(WindowType::PAINTER, isOpen);
+		}
 	}
 
 }

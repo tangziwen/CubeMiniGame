@@ -5,7 +5,7 @@ namespace tzw {
 RenderCommand::RenderCommand(Mesh *mesh, Material *material, RenderType type, PrimitiveType primitiveType)
     :m_mesh(mesh),m_material(material),m_type(type),
 	m_primitiveType(primitiveType),m_Zorder(0),
-	m_renderState(RenderFlag::RenderStage::COMMON)
+	m_renderState(material->getRenderStage())
 {
 
 }

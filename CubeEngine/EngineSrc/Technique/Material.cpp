@@ -20,7 +20,8 @@ namespace tzw {
 
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
-	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(true)
+	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(true),
+	m_renderStage(RenderFlag::RenderStage::COMMON)
 {
 }
 
@@ -111,6 +112,22 @@ void Material::loadFromFile(std::string filePath)
 		m_factorSrc = RenderFlag::BlendingFactor::SrcAlpha;
 	}
 
+	if (doc.HasMember("RenderStage"))
+	{
+		std::string theStr = doc["RenderStage"].GetString();
+		if(theStr == "COMMON")
+		{
+			m_renderStage = RenderFlag::RenderStage::COMMON;
+		}
+		else if(theStr == "TRANSPARENT")
+		{
+			m_renderStage = RenderFlag::RenderStage::TRANSPARENT;
+		}
+		else if(theStr == "AFTER_DEPTH_CLEAR")
+		{
+			m_renderStage = RenderFlag::RenderStage::AFTER_DEPTH_CLEAR;
+		}
+    }
 	if (doc.HasMember("DstBlendFactor"))
 	{
 		std::string theStr = doc["DstBlendFactor"].GetString();
@@ -427,6 +444,9 @@ void Material::setVar(std::string name, const TechniqueVar &value)
  */
 void Material::setTex(std::string name, Texture *texture, int id)
 {
+	if(name == "DiffuseMap") {
+		tlog("hehehe");
+	}
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
@@ -681,6 +701,16 @@ bool Material::isIsEnableBlend() const
 void Material::setIsEnableBlend(const bool isEnableBlend)
 {
 	m_isEnableBlend = isEnableBlend;
+}
+
+RenderFlag::RenderStage Material::getRenderStage() const
+{
+	return m_renderStage;
+}
+
+void Material::setRenderStage(const RenderFlag::RenderStage renderStage)
+{
+	m_renderStage = renderStage;
 }
 
 bool Material::isIsDepthTestEnable() const

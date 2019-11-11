@@ -32,7 +32,7 @@ public:
 	virtual Matrix44 adjustToOtherIslandByAlterSelfIsland(Attachment* attach,
 	                                                    Attachment* selfAttach, float degree);
 	virtual Matrix44 adjustToOtherIslandByAlterSelfPart(Attachment* attach,
-	                                     Attachment* selfAttach);
+	                                     Attachment* selfAttach, float degree);
 	virtual Attachment* getFirstAttachment();
 	virtual Attachment* getBottomAttachment();
 	virtual Attachment* getTopAttachment();

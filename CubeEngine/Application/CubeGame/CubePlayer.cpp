@@ -28,10 +28,13 @@
 namespace tzw
 {
 
-	CubePlayer::CubePlayer(Node* mainRoot)
+	CubePlayer::CubePlayer(Node* mainRoot):m_previewAngle(0)
 	{
 		ItemMgr::shared();
 		initSlots();
+		m_previewGamePart = nullptr;
+		m_paintGun = new PaintGun();
+		m_paintGun->color = vec3(1, 1, 1);
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		GUISystem::shared()->addObject(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
@@ -55,6 +58,7 @@ namespace tzw
 
 		m_enableGravity = true;
 		m_currPointPart = nullptr;
+		m_previewIsland = new Island(vec3(0, 0, 0));
 	}
 
 	FPSCamera* CubePlayer::camera() const
@@ -106,21 +110,40 @@ namespace tzw
 		
 		if(part)
 		{
+
+			if(m_previewGamePart)
+			{
+				vec3 p,n,u;
+				auto attach = part->findProperAttachPoint(Ray(getPos(), m_camera->getTransform().forward()),p,n,u);
+				if(attach)
+				{
+					m_previewGamePart->getNode()->setIsVisible(true);
+					m_previewGamePart->adjustToOtherIslandByAlterSelfPart(attach, m_previewGamePart->getFirstAttachment(), m_previewAngle);
+				}else
+				{
+					m_previewGamePart->getNode()->setIsVisible(false);
+				}
+				
+			}
 			if(m_currPointPart != part)
 			{
-				part->highLight();
-				if(m_currPointPart)
-				{
-					m_currPointPart->unhighLight();
-				}
+				//part->highLight();
+				//if(m_currPointPart)
+				//{
+				//	m_currPointPart->unhighLight();
+				//}
 				m_currPointPart = part;
 				updateCrossHairTipsInfo();
 			}
 		}else
 		{
+			if(m_previewGamePart)
+			{
+				m_previewGamePart->getNode()->setIsVisible(false);
+            }
 			if(m_currPointPart)
 			{
-				m_currPointPart->unhighLight();
+				//m_currPointPart->unhighLight();
 				m_currPointPart = nullptr;
 				updateCrossHairTipsInfo();
 			}
@@ -173,9 +196,9 @@ namespace tzw
 				m_camera->setIsEnableGravity(m_enableGravity);
 			}
 			break;
-            case TZW_KEY_I:
+            case TZW_KEY_U:
 			{
-				ShaderMgr::shared()->reloadAllShaders();
+				MainMenu::shared()->setWindowShow(WindowType::PAINTER, true);
             }
 			break;
 		case TZW_KEY_T:
@@ -309,5 +332,57 @@ namespace tzw
 	GamePart* CubePlayer::getCurrPointPart()
 	{
 		return m_currPointPart;
+	}
+
+	PaintGun* CubePlayer::getPaintGun()
+	{
+		return m_paintGun;
+	}
+
+	void CubePlayer::paint()
+	{
+		auto part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
+		part->getNode()->setColor(vec4(m_paintGun->color, 1.0));
+	}
+
+	void CubePlayer::setCurrSelected(std::string itemName)
+	{
+		if(itemName.empty()) return;
+		if(itemName == "Lift") return;
+		if(m_previewGamePart)
+		{
+			m_previewIsland->remove(m_previewGamePart);
+			delete m_previewGamePart;
+		}
+		auto gamePart = new GamePart();
+		gamePart->initFromItemName(itemName);
+		m_previewIsland->insert(gamePart);
+		m_previewGamePart = gamePart;
+	    auto m_material = Material::createFromTemplate("ModelRimLight");
+		//auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
+		//m_material->setTex("DiffuseMap", texture);
+
+		//auto metallicTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_metallic.png");
+		//m_material->setTex("MetallicMap", metallicTexture);
+
+		//auto roughnessTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_roughness.png");
+		//m_material->setTex("RoughnessMap", roughnessTexture);
+
+		//auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
+		//m_material->setTex("NormalMap", normalMapTexture);
+		m_previewGamePart->getNode()->setMaterial(m_material);
+		m_previewIsland->m_node->addChild(m_previewGamePart->getNode());
+		tlog("create preview part");
+	}
+
+	void CubePlayer::setPreviewAngle(float angle)
+	{
+		m_previewAngle = angle;
+		tlog("%f", angle);
+	}
+
+	float CubePlayer::getPreviewAngle() const
+	{
+		return m_previewAngle;
 	}
 } // namespace tzw

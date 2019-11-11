@@ -15,6 +15,7 @@ public:
 	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	Mesh * getMesh(int id);
 	Material * getMat(int index);
+	void setMaterial(Material * mat) override;
 private:
     std::vector<Mesh *> m_meshList;
     std::vector<Material * >m_effectList;

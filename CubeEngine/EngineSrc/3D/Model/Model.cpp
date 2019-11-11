@@ -32,13 +32,17 @@ Model *Model::create(std::string modelFilePath)
 
 void Model::submitDrawCmd(RenderCommand::RenderType passType)
 {
-	auto type = passType;
-    for(auto mesh : m_meshList)
-    {
-        auto tech = m_effectList[0];
-        RenderCommand command(mesh,tech,type);
-        setUpTransFormation(command.m_transInfo);
-        Renderer::shared()->addRenderCommand(command);
+	if(getIsVisible())
+	{
+		auto type = passType;
+	    for(auto mesh : m_meshList)
+	    {
+	        auto tech = m_effectList[0];
+	        RenderCommand command(mesh,tech,type);
+    		setUpCommand(command);
+	        setUpTransFormation(command.m_transInfo);
+	        Renderer::shared()->addRenderCommand(command);
+	    }
     }
 }
 
@@ -50,5 +54,10 @@ Mesh * Model::getMesh(int id)
 Material* Model::getMat(int index)
 {
 	return m_effectList[index];
+}
+
+void Model::setMaterial(Material* mat)
+{
+	m_effectList[0] = mat;
 }
 } // namespace tzw

@@ -45,6 +45,7 @@ void ItemMgr::loadFromFile(std::string filePath)
 			auto desc = item["desc"].GetString();
 			auto gameItem = new GameItem();
 			gameItem->m_name = name;
+			bool isSpecial = false;
 			if(type == "GAME_PART_BLOCK")
 			{
 				gameItem->m_type = GamePartType::GAME_PART_BLOCK;
@@ -73,71 +74,80 @@ void ItemMgr::loadFromFile(std::string filePath)
 			{
 				gameItem->m_type = GamePartType::GAME_PART_SPRING;
 			}
+			if(type == "SPECIAL_PART_PAINTER")
+			{
+				gameItem->m_type = GamePartType::SPECIAL_PART_PAINTER;
+				isSpecial = true;
+			}
 			gameItem->m_desc = desc;
 
-			auto& attachs = item["attach"];
-			for(int i = 0; i < attachs.Size(); i++)
+			if(!isSpecial)
 			{
-				auto& attachData = attachs[i];
-				vec3 pos = vec3(attachData["pos"][0].GetDouble(), attachData["pos"][1].GetDouble(), attachData["pos"][2].GetDouble());
-				vec3 normal = vec3(attachData["normal"][0].GetDouble(), attachData["normal"][1].GetDouble(), attachData["normal"][2].GetDouble());
-				vec3 up = vec3(attachData["up"][0].GetDouble(), attachData["up"][1].GetDouble(), attachData["up"][2].GetDouble());
-				gameItem->m_attachList.push_back(AttachmentInfo(pos, normal, up));
-			}
-
-			auto& visualData = item["Visual"];
-			{
-				std::string visualInfoType = visualData["Type"].GetString();
-				vec3 visualSize = vec3(visualData["size"][0].GetDouble(), visualData["size"][1].GetDouble(), visualData["size"][2].GetDouble());
-				if(visualInfoType == "CubePrimitive")
+				auto& attachs = item["attach"];
+				for(int i = 0; i < attachs.Size(); i++)
 				{
-					gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::CubePrimitive;
+					auto& attachData = attachs[i];
+					vec3 pos = vec3(attachData["pos"][0].GetDouble(), attachData["pos"][1].GetDouble(), attachData["pos"][2].GetDouble());
+					vec3 normal = vec3(attachData["normal"][0].GetDouble(), attachData["normal"][1].GetDouble(), attachData["normal"][2].GetDouble());
+					vec3 up = vec3(attachData["up"][0].GetDouble(), attachData["up"][1].GetDouble(), attachData["up"][2].GetDouble());
+					gameItem->m_attachList.push_back(AttachmentInfo(pos, normal, up));
 				}
-				else if(visualInfoType == "CylinderPrimitive")
-				{
-					gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::CylinderPrimitive;
-				}
-				else if(visualInfoType == "Mesh")
-				{
-					gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::Mesh;
-					gameItem->m_visualInfo.filePath = visualData["FilePath"].GetString();
-					gameItem->m_visualInfo.diffusePath = visualData["DiffusePath"].GetString();
 
-					if(visualData.HasMember("RoughnessPath"))
+				auto& visualData = item["Visual"];
+				{
+					std::string visualInfoType = visualData["Type"].GetString();
+					vec3 visualSize = vec3(visualData["size"][0].GetDouble(), visualData["size"][1].GetDouble(), visualData["size"][2].GetDouble());
+					if(visualInfoType == "CubePrimitive")
 					{
-						gameItem->m_visualInfo.roughnessPath = visualData["RoughnessPath"].GetString();
-					} else
-					{
-						gameItem->m_visualInfo.roughnessPath = "Texture/BuiltInTexture/defaultRoughnessMap.png";
+						gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::CubePrimitive;
 					}
-
-					if(visualData.HasMember("MetallicPath"))
+					else if(visualInfoType == "CylinderPrimitive")
 					{
-						gameItem->m_visualInfo.metallicPath = visualData["MetallicPath"].GetString();
-					} else
-					{
-						gameItem->m_visualInfo.metallicPath = "Texture/BuiltInTexture/defaultMetallic.png";
+						gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::CylinderPrimitive;
 					}
+					else if(visualInfoType == "Mesh")
+					{
+						gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::Mesh;
+						gameItem->m_visualInfo.filePath = visualData["FilePath"].GetString();
+						gameItem->m_visualInfo.diffusePath = visualData["DiffusePath"].GetString();
 
+						if(visualData.HasMember("RoughnessPath"))
+						{
+							gameItem->m_visualInfo.roughnessPath = visualData["RoughnessPath"].GetString();
+						} else
+						{
+							gameItem->m_visualInfo.roughnessPath = "Texture/BuiltInTexture/defaultRoughnessMap.png";
+						}
+
+						if(visualData.HasMember("MetallicPath"))
+						{
+							gameItem->m_visualInfo.metallicPath = visualData["MetallicPath"].GetString();
+						} else
+						{
+							gameItem->m_visualInfo.metallicPath = "Texture/BuiltInTexture/defaultMetallic.png";
+						}
+
+					}
+					gameItem->m_visualInfo.size = visualSize;
 				}
-				gameItem->m_visualInfo.size = visualSize;
-			}
 
 
-			auto& physicsData = item["Physics"];
-			{
-				std::string physicsInfoType = physicsData["Type"].GetString();
-				vec3 physicsSize = vec3(physicsData["size"][0].GetDouble(), physicsData["size"][1].GetDouble(), physicsData["size"][2].GetDouble());
-				if(physicsInfoType == "BoxShape")
+				auto& physicsData = item["Physics"];
 				{
-					gameItem->m_physicsInfo.type = PhysicsInfo::PhysicsInfoType::BoxShape;
+					std::string physicsInfoType = physicsData["Type"].GetString();
+					vec3 physicsSize = vec3(physicsData["size"][0].GetDouble(), physicsData["size"][1].GetDouble(), physicsData["size"][2].GetDouble());
+					if(physicsInfoType == "BoxShape")
+					{
+						gameItem->m_physicsInfo.type = PhysicsInfo::PhysicsInfoType::BoxShape;
+					}
+					else if(physicsInfoType == "CylinderShape")
+					{
+						gameItem->m_physicsInfo.type = PhysicsInfo::PhysicsInfoType::CylinderShape;
+					}
+					gameItem->m_physicsInfo.size = physicsSize;
 				}
-				else if(physicsInfoType == "CylinderShape")
-				{
-					gameItem->m_physicsInfo.type = PhysicsInfo::PhysicsInfoType::CylinderShape;
-				}
-				gameItem->m_physicsInfo.size = physicsSize;
 			}
+			
 			
 			m_itemMap[name] = gameItem;
 			m_itemList.push_back(gameItem);

@@ -37,7 +37,10 @@ namespace tzw
 		BIND_FUNC(CubePlayer, getForward)
 		BIND_FUNC(CubePlayer, removePartByAttach)
 		BIND_FUNC(CubePlayer, removePart)
+		BIND_FUNC(CubePlayer, paint)
+		BIND_FUNC(CubePlayer, setCurrSelected)
 		BIND_FUNC(CubePlayer, openCurrentPartInspectMenu)
+		BIND_FUNC(CubePlayer, setPreviewAngle)
 		BIND_END_CLASS
 
 		//GameWorld

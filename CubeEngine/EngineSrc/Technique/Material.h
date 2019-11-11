@@ -52,32 +52,30 @@ public:
 	void setIsDepthTestEnable(const bool isDepthTestEnable);
 	bool isIsDepthWriteEnable() const;
 	void setIsDepthWriteEnable(const bool isDepthWriteEnable);
-
+	RenderFlag::BlendingFactor getFactorSrc() const;
+	void setFactorSrc(const RenderFlag::BlendingFactor factorSrc);
+	RenderFlag::BlendingFactor getFactorDst() const;
+	void setFactorDst(const RenderFlag::BlendingFactor factorDst);
+	bool isIsEnableBlend() const;
+	void setIsEnableBlend(const bool isEnableBlend);
 private:
     std::string m_vsPath;
     std::string m_fsPath;
     std::map<std::string,TechniqueVar *> m_varList;
 	RenderFlag::BlendingFactor m_factorSrc;
 	RenderFlag::BlendingFactor m_factorDst;
-public:
-	RenderFlag::BlendingFactor getFactorSrc() const;
-	void setFactorSrc(const RenderFlag::BlendingFactor factorSrc);
-	RenderFlag::BlendingFactor getFactorDst() const;
-	void setFactorDst(const RenderFlag::BlendingFactor factorDst);
-
-private:
 	bool m_isCullFace;
 	bool m_isDepthTestEnable;
 	bool m_isDepthWriteEnable;
 	bool m_isEnableBlend;
-public:
-	bool isIsEnableBlend() const;
-	void setIsEnableBlend(const bool isEnableBlend);
-private:
 	std::string m_name;
 	std::map<std::string, unsigned int> m_texSlotMap;
 	std::map<std::string, std::string> m_aliasMap;
 	ShaderProgram * m_program;
+	RenderFlag::RenderStage m_renderStage;
+public:
+	RenderFlag::RenderStage getRenderStage() const;
+	void setRenderStage(const RenderFlag::RenderStage renderStage);
 };
 
 } // namespace tzw

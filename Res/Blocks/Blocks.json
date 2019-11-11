@@ -2,6 +2,11 @@
 	"Parts" :
 	[
 		{
+			"name" : "Painter",
+			"desc":"喷涂器",
+			"Type":"SPECIAL_PART_PAINTER"
+		},
+		{
 		"name" : "Lift",
 		"desc":"升降机",
 		"Type":"GAME_PART_LIFT",

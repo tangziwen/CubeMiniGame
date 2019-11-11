@@ -56,6 +56,7 @@ GAME_PART_THRUSTER = 4
 GAME_PART_CANNON = 5
 GAME_PART_BEARING = 6
 GAME_PART_SPRING = 7
+SPECIAL_PART_PAINTER = 8
 GAME_PART_NOT_VALID = 9999
 
 local m_currIndex = 1
@@ -136,7 +137,11 @@ function InitInventory()
 	for i = 1, inventoryAmount do
 		item = ItemMgr.shared():getItemByIndex(i - 1);
 		print("the Item Name"..item.m_name.."the item type"..item:getTypeInInt())
-		itemTable = {name = item.m_name, ItemClass = "PlaceableBlock", ItemType = item:getTypeInInt(), desc = item.m_desc}
+		local ItemClassData = "PlaceableBlock"
+		if item:getTypeInInt() == SPECIAL_PART_PAINTER then
+			ItemClassData = "Painter"
+		end
+		itemTable = {name = item.m_name, ItemClass = ItemClassData, ItemType = item:getTypeInInt(), desc = item.m_desc}
 		table.insert(m_inventory, itemTable)
 	end
 end
@@ -305,16 +310,22 @@ end
 oldPlayerPos = nil
 function onKeyRelease(input_event)
 	local player = GameWorld.shared():getPlayer()
+	local isKeyPress = false;
 	if input_event.keycode == TZW_KEY_1 then
 		m_currIndex = 1
+		isKeyPress = true
 	elseif input_event.keycode == TZW_KEY_2 then
 		m_currIndex = 2
+		isKeyPress = true
 	elseif input_event.keycode == TZW_KEY_3 then
 		m_currIndex = 3
+		isKeyPress = true
 	elseif input_event.keycode == TZW_KEY_4 then
 		m_currIndex = 4
+		isKeyPress = true
 	elseif input_event.keycode == TZW_KEY_5 then
 		m_currIndex = 5
+		isKeyPress = true
 	elseif input_event.keycode == TZW_KEY_UP then
 		lift_state = lift_state - 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
@@ -323,7 +334,9 @@ function onKeyRelease(input_event)
 		g_blockRotate = g_blockRotate + 30
 		if g_blockRotate >= 360 then
 			g_blockRotate = 0
+		
 		end
+		player:setPreviewAngle(g_blockRotate)
 	elseif input_event.keycode == TZW_KEY_I then
 		MainMenu.shared():setIsShowAssetEditor(true)
 	elseif input_event.keycode == TZW_KEY_F then
@@ -352,6 +365,9 @@ function onKeyRelease(input_event)
 			player:setPos(oldPlayerPos)
 			BuildingSystem.shared():setCurrentControlPart(nil)
 		end
+	end
+	if isKeyPress then
+		player:setCurrSelected(m_itemSlots[m_currIndex]["target"])
 	end
 end
 
@@ -387,6 +403,7 @@ function placeItem(item)
 				print("degree ".. g_blockRotate)
 				BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, 0)
 				g_blockRotate = 0 --reset
+				player:setPreviewAngle(g_blockRotate)
 			end
 		else
 			if item.ItemType == GAME_PART_BEARING then
@@ -402,6 +419,8 @@ function handleItemPrimaryUse(item)
 	local player = GameWorld.shared():getPlayer()
 	if (item.ItemClass == "PlaceableBlock") then
 		placeItem(item)
+	elseif (item.ItemClass == "Painter") then --paint the object
+		player:paint();
 	elseif (item.ItemClass == "TerrainTool") then --fill the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	end
