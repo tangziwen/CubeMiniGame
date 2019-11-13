@@ -22,6 +22,7 @@ public:
 	void updateTransform(float dt);
 	void setName(std::string newName) override;
 	virtual ~GameConstraint();
+	virtual void updateConstraintState();
 protected:
 	bool m_isEnablePhysics;
 };

@@ -7,6 +7,8 @@
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "3D/Model/Model.h"
+#include "PartSurface.h"
+#include "PartSurfaceMgr.h"
 
 namespace tzw
 {
@@ -49,6 +51,28 @@ namespace tzw
 			return attachPtr;
 		}
 		return nullptr;
+	}
+
+	void GamePart::setSurface(vec3 color, PartSurface* surface)
+	{
+		m_partSurface = surface;
+		getNode()->setColor(vec4(color, 1.0));
+		
+		if(getItem()->m_visualInfo.type != VisualInfo::VisualInfoType::Mesh)
+		{
+			auto mat = getNode()->getMaterial();
+			auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
+			mat->setTex("DiffuseMap", texture);
+
+			auto metallicTexture =  TextureMgr::shared()->getByPath(surface->getMetallicPath());
+			mat->setTex("MetallicMap", metallicTexture);
+
+			auto roughnessTexture =  TextureMgr::shared()->getByPath(surface->getRoughnessPath());
+			mat->setTex("RoughnessMap", roughnessTexture);
+
+			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
+			mat->setTex("NormalMap", normalMapTexture);
+		}
 	}
 
 	void GamePart::attachTo(Attachment * attach, float degree, int attachMentIndex)
@@ -314,7 +338,20 @@ namespace tzw
 
 	Attachment* GamePart::getBottomAttachment()
 	{
-		return getFirstAttachment();
+		int theSmallIndex = -1;
+		float smallDist = 99999.0f;
+		for(int i =0; i < getAttachmentCount(); i++) 
+		{
+			vec3 pos, n, up;
+			auto attach = getAttachment(i);
+			attach->getAttachmentInfoWorld(pos, n, up);
+			if(pos.y < smallDist) 
+			{
+				smallDist = pos.y;
+				theSmallIndex = i;
+			}
+		}
+		return m_attachment[theSmallIndex];
 	}
 
 	Attachment* GamePart::getTopAttachment()
@@ -348,6 +385,7 @@ namespace tzw
 	GamePart::GamePart()
 	{
 		m_name = "empty";
+		m_partSurface = PartSurfaceMgr::shared()->getItem("Metal Grid3");
 	}
 
 	GamePart::~GamePart()
@@ -384,6 +422,12 @@ namespace tzw
 		{
 			m_name = partData["Name"].GetString();
 		}
+
+		auto surface = PartSurfaceMgr::shared()->getItem(partData["PartSurface"].GetString());
+		vec3 color(partData["Color"][0].GetDouble(),partData["Color"][1].GetDouble(),partData["Color"][2].GetDouble());
+
+		//apply surface color
+		setSurface(color, surface);
 	}
 
 	void GamePart::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
@@ -409,6 +453,14 @@ namespace tzw
 		partDocObj.AddMember("Name", m_name, allocator);
 
 		partDocObj.AddMember("ItemName", m_item->m_name, allocator);
+
+		partDocObj.AddMember("PartSurface", m_partSurface->getName(), allocator);
+
+		auto color = getNode()->getColor();
+		rapidjson::Value colorList(rapidjson::kArrayType);
+		colorList.PushBack(color.x, allocator).PushBack(color.y, allocator).PushBack(color.z, allocator);
+
+		partDocObj.AddMember("Color", colorList, allocator);
 		dumpAttach(partDocObj, allocator);
 	}
 

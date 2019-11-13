@@ -164,4 +164,9 @@ void PhysicsRigidBody::applyImpulse(vec3 force, vec3 localposition)
 {
 	m_rigidBody->applyImpulse(btVector3(force.x, force.y, force.z), btVector3(localposition.x, localposition.y, localposition.z));
 }
+
+bool PhysicsRigidBody::isInWorld()
+{
+	return m_rigidBody->isInWorld();
+}
 }

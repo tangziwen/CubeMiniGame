@@ -14,16 +14,9 @@
 #include "BuildingSystem.h"
 #include "ItemMgr.h"
 #include "AssistDrawSystem.h"
-#include "3D/Particle/ParticleEmitter.h"
-#include "3D/Particle/ParticleInitPosModule.h"
-#include "3D/Particle/ParticleInitSizeModule.h"
-#include "3D/Particle/ParticleInitVelocityModule.h"
-#include "3D/Particle/ParticleInitAlphaModule.h"
-#include "3D/Particle/ParticleUpdateAlphaModule.h"
-#include "3D/Particle/ParticleInitLifeSpanModule.h"
-#include "3D/Particle/ParticleUpdateSizeModule.h"
-#include "3D/Particle/ParticleUpdateColorModule.h"
 #include "Shader/ShaderMgr.h"
+#include "PartSurfaceMgr.h"
+#include "PaintGun.h"
 
 namespace tzw
 {
@@ -35,6 +28,7 @@ namespace tzw
 		m_previewGamePart = nullptr;
 		m_paintGun = new PaintGun();
 		m_paintGun->color = vec3(1, 1, 1);
+		m_paintGun->m_surface = PartSurfaceMgr::shared()->getItem("foam grip");
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		GUISystem::shared()->addObject(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
@@ -115,7 +109,7 @@ namespace tzw
 			{
 				vec3 p,n,u;
 				auto attach = part->findProperAttachPoint(Ray(getPos(), m_camera->getTransform().forward()),p,n,u);
-				if(attach)
+				if(attach && !attach->m_connected && m_currSelectedItem != "Painter" && m_currSelectedItem != "Lift")
 				{
 					m_previewGamePart->getNode()->setIsVisible(true);
 					m_previewGamePart->adjustToOtherIslandByAlterSelfPart(attach, m_previewGamePart->getFirstAttachment(), m_previewAngle);
@@ -342,13 +336,18 @@ namespace tzw
 	void CubePlayer::paint()
 	{
 		auto part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
-		part->getNode()->setColor(vec4(m_paintGun->color, 1.0));
+		if(part)
+		{
+			m_paintGun->paint(part);
+		}
 	}
 
 	void CubePlayer::setCurrSelected(std::string itemName)
 	{
 		if(itemName.empty()) return;
+		m_currSelectedItem = itemName;
 		if(itemName == "Lift") return;
+		if(itemName == "Painter") return;
 		if(m_previewGamePart)
 		{
 			m_previewIsland->remove(m_previewGamePart);
@@ -371,7 +370,6 @@ namespace tzw
 		//auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
 		//m_material->setTex("NormalMap", normalMapTexture);
 		m_previewGamePart->getNode()->setMaterial(m_material);
-		m_previewIsland->m_node->addChild(m_previewGamePart->getNode());
 		tlog("create preview part");
 	}
 

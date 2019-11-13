@@ -36,19 +36,19 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 	for (unsigned int i = 0;i<materialList.Size();i++)
 	{
 		auto & materialData = materialList[i];
-		// reuse material
-		auto mat = matPool->getMaterialByName(mangleedName);
-		if (!mat)
-		{
-			mat = new Material();
-			matPool->addMaterial(mangleedName,mat);
-		}
+		// reuse material // there is a problem
+		Material* mat = nullptr;//matPool->getMaterialByName(mangleedName);
+		//if (!mat)
+		//{
+		//	mat = new Material();
+		//	matPool->addMaterial(mangleedName,mat);
+		//}
 		if(materialData.HasMember("effectType"))
 		{
-			mat->loadFromTemplate(materialData["effectType"].GetString());
+			mat = Material::createFromTemplate(materialData["effectType"].GetString());
 		}else
 		{
-			mat->loadFromTemplate("ModelPBR");
+			mat = Material::createFromTemplate("ModelPBR");
 		}
 		auto thestr = materialData["diffuseMap"].GetString();
 		if (strcmp(thestr, "") != 0)
@@ -68,26 +68,33 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 	auto& meshList = doc["MeshList"];
 	for (unsigned int i = 0;i<meshList.Size();i++)
 	{
-		Mesh * theMesh = new Mesh();
-		auto & meshData = meshList[i];
-		//get vertices
-		auto &verticesData = meshData["vertices"];
-		for(unsigned int k = 0; k < verticesData.Size();k++)
+		char meshName[512];
+		sprintf(meshName,"%s_%d",mangleedName.c_str(), i);
+		Mesh * theMesh = MaterialPool::shared()->getMeshByName(meshName);
+		if(!theMesh)//mesh use cache
 		{
-			auto& v = verticesData[k];
-			theMesh->addVertex(VertexData(vec3(v[0].GetDouble(),v[1].GetDouble(),v[2].GetDouble()),
-					vec3(v[3].GetDouble(),v[4].GetDouble(),v[5].GetDouble()),
-					vec2(v[6].GetDouble(),v[7].GetDouble())));
+			theMesh = new Mesh();
+			auto & meshData = meshList[i];
+			//get vertices
+			auto &verticesData = meshData["vertices"];
+			for(unsigned int k = 0; k < verticesData.Size();k++)
+			{
+				auto& v = verticesData[k];
+				theMesh->addVertex(VertexData(vec3(v[0].GetDouble(),v[1].GetDouble(),v[2].GetDouble()),
+						vec3(v[3].GetDouble(),v[4].GetDouble(),v[5].GetDouble()),
+						vec2(v[6].GetDouble(),v[7].GetDouble())));
+			}
+			//get indices
+			auto &indicesData = meshData["indices"];
+			for(unsigned int k = 0; k < indicesData.Size();k++)
+			{
+				theMesh->addIndex(indicesData[k].GetInt());
+			}
+			//material
+			theMesh->setMatIndex(meshData["materialIndex"].GetInt());
+			theMesh->finish(true);
+			MaterialPool::shared()->addMesh(meshName, theMesh);
 		}
-		//get indices
-		auto &indicesData = meshData["indices"];
-		for(unsigned int k = 0; k < indicesData.Size();k++)
-		{
-			theMesh->addIndex(indicesData[k].GetInt());
-		}
-		//material
-		theMesh->setMatIndex(meshData["materialIndex"].GetInt());
-		theMesh->finish(true);
 		model->m_meshList.push_back(theMesh);
 	}
 }

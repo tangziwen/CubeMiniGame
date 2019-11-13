@@ -13,6 +13,7 @@
 #include "ScriptPy/ScriptPyMgr.h"
 #include "AssistDrawSystem.h"
 #include "ItemMgr.h"
+#include "PartSurfaceMgr.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -121,7 +122,7 @@ void GameWorld::startGame()
 	Tmisc::DurationBegin();
 	 
 	unloadGame();
-
+	PartSurfaceMgr::shared()->loadFromFile("aaaaaa");
 	MainMenu::shared()->initInGame();
 	GameMap::shared()->setMapType(GameMap::MapType::Plain);
 	GameMap::shared()->setMaxHeight(10);

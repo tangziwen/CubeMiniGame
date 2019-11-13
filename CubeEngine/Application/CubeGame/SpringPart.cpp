@@ -110,6 +110,7 @@ void SpringPart::enablePhysics(bool isEnable)
 			constraint->setDamping(2, 0.8f);
 			constraint->setEquilibriumPoint();
 			m_constrain = constraint;
+			PhysicsMgr::shared()->addConstraint(m_constrain);
 		}
 		} else 
 		{
@@ -220,6 +221,55 @@ void SpringPart::drawInspect()
 bool SpringPart::isNeedDrawInspect()
 {
 	return true;
+}
+
+void SpringPart::updateConstraintState()
+{
+	if(m_constrain)
+	{
+		if(m_isEnablePhysics)
+		{
+			PhysicsMgr::shared()->removeConstraint(m_constrain);
+		}
+		delete m_constrain;
+	}
+
+	auto attachA = m_a;
+	auto attachB = m_b;
+	if (attachA && attachB) 
+	{
+		auto partA = attachA->m_parent;
+		auto partB = attachB->m_parent;
+
+		vec3 worldPosA, worldNormalA, worldUpA;
+		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+		vec3 worldPosB, worldNormalB, worldUpB;
+		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+		vec3 hingeDir = (worldPosB - worldPosA).normalized();
+		vec3 pivotA, pivotB, axisA, axisB;
+		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+		Matrix44 frameInA;
+		vec3 pos, n, up;
+		attachA->getAttachmentInfoWorld(pos, n, up);
+		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
+		Matrix44 frameInB;
+		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
+		auto constraint = PhysicsMgr::shared()->create6DOFSprintConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
+		constraint->enableSpring(2, true);
+		constraint->setLinearLowerLimit(vec3(0, 0, 100));
+		constraint->setAngularUpperLimit(vec3(0, 0, -100));
+		constraint->setAngularLowerLimit(vec3(0, 0, 0));
+		constraint->setAngularUpperLimit(vec3(0, 0, 0));
+		constraint->setStiffness(2, 600.0f);
+		constraint->setDamping(2, 0.8f);
+		constraint->setEquilibriumPoint();
+		m_constrain = constraint;
+	}
+	if(m_isEnablePhysics)
+	{
+		PhysicsMgr::shared()->addConstraint(m_constrain);
+	}
 }
 }
 

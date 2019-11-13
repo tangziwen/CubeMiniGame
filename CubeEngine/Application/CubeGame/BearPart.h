@@ -7,7 +7,7 @@ class Drawable3D;
 class BlockPart;
 struct Attachment;
 class PhysicsHingeConstraint;
-	class GameNodeEditorNode;
+struct GameNodeEditorNode;
 class BearPart : public GameConstraint
 {
 public:
@@ -33,6 +33,7 @@ public:
 	void enableAngularMotor(bool enableMotor, float targetVelocity, float maxMotorImpulse);
 	void drawInspect() override;
 	bool isNeedDrawInspect() override;
+	void updateConstraintState() override;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	GameNodeEditorNode * m_graphNode;

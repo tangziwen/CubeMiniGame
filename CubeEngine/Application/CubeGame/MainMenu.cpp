@@ -32,6 +32,7 @@
 #include "3D/Particle/ParticleInitSizeModule.h"
 #include "3D/Particle/ParticleInitPosModule.h"
 #include "VehicleBroswer.h"
+#include "PartSurfaceMgr.h"
 
 
 namespace tzw {
@@ -309,7 +310,7 @@ void MainMenu::drawIMGUI()
 		}
 
 		//painter
-		//部件的属性面板
+		//喷漆部分
 		if(getWindowIsShow(WindowType::PAINTER))
 		{
 			auto screenSize = Engine::shared()->winSize();
@@ -318,8 +319,21 @@ void MainMenu::drawIMGUI()
 			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 			auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
 			auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
+			ImGui::TextUnformatted(u8"颜色");
 			ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
 			GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
+			//表面材质
+			ImGui::TextUnformatted(u8"表面材质");
+			auto size = PartSurfaceMgr::shared()->getItemAmount();
+			for(int i = 0; i < size; i++)
+			{
+				auto surface = PartSurfaceMgr::shared()->getItemByIndex(i);
+				auto p = GameWorld::shared()->getPlayer()->getPaintGun();
+				if(ImGui::RadioButton(surface->getName().c_str(), surface ==p->m_surface))
+				{
+					p->m_surface = surface;
+				}
+			}
 			ImGui::End();
 			setWindowShow(WindowType::PAINTER, isOpen);
 		}

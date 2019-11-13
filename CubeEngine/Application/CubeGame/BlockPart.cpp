@@ -80,10 +80,11 @@ Attachment* BlockPart::getBottomAttachment()
 {
 	int theSmallIndex = -1;
 	float smallDist = 99999.0f;
-	for(int i =0; i < 6; i++) 
+	for(int i =0; i < getAttachmentCount(); i++) 
 	{
 		vec3 pos, n, up;
-		getAttachmentInfo(i, pos, n, up);
+		auto attach = getAttachment(i);
+		attach->getAttachmentInfoWorld(pos, n, up);
 		if(pos.y < smallDist) 
 		{
 			smallDist = pos.y;

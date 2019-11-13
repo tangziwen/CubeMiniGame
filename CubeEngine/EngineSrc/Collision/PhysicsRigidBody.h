@@ -38,6 +38,7 @@ namespace tzw
 		void applyForce(vec3 force, vec3 localposition);
 		void applyCentralImpulse(vec3 force);
 		void applyImpulse(vec3 force, vec3 localposition);
+		bool isInWorld();
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

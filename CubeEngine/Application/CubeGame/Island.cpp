@@ -23,20 +23,36 @@ Island::Island(vec3 pos)
 	m_rigid = nullptr;
 	m_compound_shape = nullptr;
 	m_isSpecial = false;
+	m_buildingRotate = Quaternion();
 	m_enablePhysics = false;
+}
+
+Island::~Island()
+{
+	//SAYONARA, fellas
+	for(auto neighbor : m_neighborIslands)
+	{
+		neighbor->removeNeighbor(this);
+	}
+	if(m_rigid && m_rigid->isInWorld())
+	{
+		PhysicsMgr::shared()->removeRigidBody(m_rigid);
+	}
+	delete m_rigid;
 }
 
 void
 Island::insert(GamePart* part)
 {
-  if (!part->getNode()) {
-    tlog("insert \n");
-  }
-  m_partList.push_back(part);
-  part->m_parent = this;
-
+	if (!part->getNode()) {
+	tlog("insert \n");
+	}
+	m_partList.push_back(part);
+	part->m_parent = this;
+	m_node->addChild(part->getNode());
 	//we need update physics related
 	updatePhysics();
+	updateNeighborConstraintPhysics();
 }
 
 void Island::remove(GamePart* part)
@@ -46,9 +62,50 @@ void Island::remove(GamePart* part)
 	m_partList.erase(result);
 	}
 	part->m_parent = this;
-
-	//we need update physics related
-	updatePhysics();
+	//break the connect
+	for(int i =0; i< part->getAttachmentCount(); i++)
+	{
+		auto attach = part->getAttachment(i);
+		//we need break the constraint
+		if(attach->m_connected)
+		{
+			if(attach->m_connected->m_parent->isConstraint())
+			{
+				auto constraint = static_cast<GameConstraint *> (attach->m_connected->m_parent);
+				if(constraint->m_a == attach)
+				{
+					constraint->m_a = nullptr;
+				}
+				if(constraint->m_b == attach)
+				{
+					constraint->m_b = nullptr;
+				}
+				for(int i = 0; i < constraint->getAttachmentCount(); i++)
+				{
+					auto constraintAttach = constraint->getAttachment(i);
+					if(constraintAttach->m_connected == attach)
+					{
+						constraintAttach->m_connected = nullptr;
+					}
+				}
+				if(constraint->m_a == nullptr && constraint->m_b == nullptr)
+				{
+					//the bearing is not connected any thing. let it die.
+					BuildingSystem::shared()->removePart(constraint);
+				} else
+				{
+					constraint->updateConstraintState();
+				}
+			}
+		attach->breakConnection();
+		}
+	}
+	//we need update self rigid body physics related
+	if(!m_partList.empty())
+	{
+		updatePhysics();
+	}
+	updateNeighborConstraintPhysics();
 }
 
 void Island::removeAll()
@@ -128,16 +185,11 @@ Island::enablePhysics(bool isEnable)
 	{
 		if(isEnable) 
 		{
-			if (!m_rigid) // has been created yet
-			{
-			  cook();
-			}
-			else 
-			{
-				auto mat = m_node->getTransform();
-				m_rigid->setWorldTransform(mat);
-				PhysicsMgr::shared()->addRigidBody(m_rigid);
-			}
+			auto mat = m_node->getTransform();
+			m_rigid->setWorldTransform(mat);
+			PhysicsMgr::shared()->addRigidBody(m_rigid);
+			//没有activate是不会生效的，因为可能物体已经sleep了，所以会悬着
+			m_rigid->activate();
 		} else 
 		{
 	        if(m_rigid) 
@@ -166,18 +218,18 @@ Island::getMass()
 void
 Island::cook()
 {
-  PhysicsCompoundShape* compoundShape = getCompoundShape();
-  if (!compoundShape) {
-    compoundShape = new PhysicsCompoundShape();
-    setCompoundShape(compoundShape);
-  }
-  recalculateCompound();
-  auto partMat = m_node->getTransform();
+	PhysicsCompoundShape* compoundShape = getCompoundShape();
+	if (!compoundShape) {
+	compoundShape = new PhysicsCompoundShape();
+	setCompoundShape(compoundShape);
+	}
+	recalculateCompound();
+	auto partMat = m_node->getTransform();
 	float theMass = getMass();
-  auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(
-    theMass, &partMat, compoundShape);
-  rig->attach(m_node);
-  m_rigid = rig;
+	auto rig = PhysicsMgr::shared()->createRigidBodyFromCompund(
+	theMass, &partMat, compoundShape);
+	rig->attach(m_node);
+	m_rigid = rig;
 }
 
 void
@@ -218,7 +270,7 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 	
 	//rotation, island need to record the rotation(where the vehicle is in the lift part) too!!!! because if we don't do that, the next we load ,
 	//we can not determine which attachment is the correct center-bottom one to dock at the lift.
-	auto rotate = m_node->getRotateQ();
+	auto rotate = m_buildingRotate;
 	rapidjson::Value rotateList(rapidjson::kArrayType);
 	rotateList.PushBack(rotate.x, allocator).PushBack(rotate.y, allocator).PushBack(rotate.z, allocator).PushBack(rotate.w, allocator);
 
@@ -234,6 +286,7 @@ void Island::load(rapidjson::Value& island)
 	{
 		auto q = Quaternion(island["rotate"][0].GetDouble(),island["rotate"][1].GetDouble(), island["rotate"][2].GetDouble(), island["rotate"][3].GetDouble());
 		m_node->setRotateQ(q);
+		m_buildingRotate = q;
 	}
 
 	if (island.HasMember("partList"))
@@ -248,7 +301,6 @@ void Island::load(rapidjson::Value& island)
 				{
 					auto part = new BlockPart(item["ItemName"].GetString());
 					part->load(item);
-					m_node->addChild(part->getNode());
 					insert(part);
                 }
 				break;
@@ -257,7 +309,6 @@ void Island::load(rapidjson::Value& island)
 					{
 						auto part = new CylinderPart();
 						part->load(item);
-						m_node->addChild(part->getNode());
 						insert(part);
 					}
 				break;
@@ -265,7 +316,6 @@ void Island::load(rapidjson::Value& island)
 					{
 						auto part = new ControlPart(item["ItemName"].GetString());
 						part->load(item);
-						m_node->addChild(part->getNode());
 						insert(part);
 					}
 				break;
@@ -273,7 +323,6 @@ void Island::load(rapidjson::Value& island)
 					{
 						auto part = new CannonPart(item["ItemName"].GetString());
 						part->load(item);
-						m_node->addChild(part->getNode());
 						insert(part);
 					}
 				break;
@@ -281,7 +330,6 @@ void Island::load(rapidjson::Value& island)
 					{
 						auto part = new ThrusterPart(item["ItemName"].GetString());
 						part->load(item);
-						m_node->addChild(part->getNode());
 						insert(part);
 					}
 				break;
@@ -303,30 +351,58 @@ void Island::killAllParts()
 
 void Island::updatePhysics()
 {
-	if (m_rigid) 
+	if(!m_rigid)
+	{
+		cook();
+	}
+	if(m_enablePhysics)
 	{
 		PhysicsMgr::shared()->removeRigidBody(m_rigid);
-		if (getCompoundShape()) 
-		{
-			//delete old compound shape, there may be a better performance method.
-			delete m_compound_shape;
-		    setCompoundShape(new PhysicsCompoundShape());
-			recalculateCompound();
-			m_rigid->setMass(getMass(), getCompoundShape()->calculateLocalInertia(getMass()));
-			m_rigid->updateInertiaTensor();
-			// recalculate will modify the transform position, though the final
-			// islandMatrix * childMatrix will remain the same, we need to recalculate
-			// the rigid-body position
-			auto startTransform = m_node->getTransform();
-			m_rigid->setWorldTransform(startTransform);
-		}
-		m_rigid->setCollisionShape(getCompoundShape());
+	}
+	if (getCompoundShape()) 
+	{
+		//delete old compound shape, there may be a better performance method.
+		delete m_compound_shape;
+	    setCompoundShape(new PhysicsCompoundShape());
+		recalculateCompound();
+		m_rigid->setMass(getMass(), getCompoundShape()->calculateLocalInertia(getMass()));
 		m_rigid->updateInertiaTensor();
+		// recalculate will modify the transform position, though the final
+		// islandMatrix * childMatrix will remain the same, we need to recalculate
+		// the rigid-body position
+		auto startTransform = m_node->getTransform();
+		m_rigid->setWorldTransform(startTransform);
+	}
+	m_rigid->setCollisionShape(getCompoundShape());
+	m_rigid->updateInertiaTensor();
+	if(m_enablePhysics)
+	{
 		PhysicsMgr::shared()->addRigidBody(m_rigid);
-		m_rigid->updateInertiaTensor();
-
 		//没有activate是不会生效的，因为可能物体已经sleep了，所以会悬着
 		m_rigid->activate();
+	}
+}
+
+void Island::recordBuildingRotate()
+{
+	m_buildingRotate = m_node->getRotateQ();
+}
+
+void Island::recoverFromBuildingRotate()
+{
+	m_node->setRotateQ(m_buildingRotate);
+}
+
+void Island::updateNeighborConstraintPhysics()
+{
+	for(auto island :m_neighborIslands)
+	{
+		if(island->m_isSpecial)
+		{
+			auto constraint = static_cast<GameConstraint *>(island->m_partList[0]);
+			constraint->updateConstraintState();
+		}
+
 	}
 }
 }

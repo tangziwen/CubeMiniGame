@@ -10,10 +10,11 @@
 
 
 namespace tzw {
-class GamePart;
+	class PartSurface;
+	class GamePart;
 class BearPart;
 class Island;
-class GameItem;
+struct GameItem;
 class GamePart : public GuidObj
 {
 public:
@@ -24,6 +25,7 @@ public:
 	                                        vec3& attachPosition,
 	                                        vec3& Normal,
 	                                        vec3& up);
+	virtual void setSurface(vec3 color, PartSurface * surface);
 	virtual void attachTo(Attachment* attach, float degree, int attachMentIndex);
 	virtual Matrix44 attachToOtherIslandByAlterSelfPart(Attachment* attach, int attachmentIndex);
 	virtual Matrix44 attachToOtherIslandByAlterSelfIsland(
@@ -74,6 +76,7 @@ protected:
 	PhysicsShape* m_shape;
 	Drawable3D* m_node;
 	GameItem * m_item;
+	PartSurface * m_partSurface;
 public:
 	GameItem* getItem() const;
 	void setItem(GameItem* const item);

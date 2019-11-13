@@ -89,7 +89,10 @@ enum class PinType
 			m_gameNodes.erase(result);
 			removeAllLink(node);
 		}
-		
+		if(node->getType() == Node_TYPE_TRIGGER)
+		{
+			m_triggerList.erase(std::find(m_triggerList.begin(), m_triggerList.end(), node));
+		}
 	}
 
 	void GameNodeEditor::removeAllLink(GameNodeEditorNode* node)
@@ -780,6 +783,23 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
             // You may reject link deletion by calling:
             // ed::RejectDeletedItem();
         }
+    	//delete node
+		ax::NodeEditor::NodeId id;
+    	while(ed::QueryDeletedNode(&id)) 
+		{
+			auto node = findNode(id.Get());
+    		if(node->getType() == Node_TYPE_RES) 
+			{
+				ed::RejectDeletedItem();
+    		}
+    		else 
+			{
+	            if (ed::AcceptDeletedItem())
+	            {
+	            	removeNode(node);
+	            }
+            }
+    	}
     }
     ed::EndDelete(); // Wrap up deletion action
 

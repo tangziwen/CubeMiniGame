@@ -6,17 +6,15 @@
 #include "2D/GUISystem.h"
 #include "Game/OrbitCamera.h"
 #include "Island.h"
+#include "PaintGun.h"
 
 namespace tzw
 {
 	struct Attachment;
-	class GameItem;
+	struct GameItem;
 	class GamePart;
+	class PartSurface;
 
-	struct PaintGun
-	{
-		vec3 color;
-	};
 	class CubePlayer : public Node, public EventListener, public IMGUIObject
 	{
 	public:
@@ -68,8 +66,7 @@ namespace tzw
 		bool m_enableGravity;
 		float m_seatAngle = 0.0;
 		float m_previewAngle;
-	public:
-		
+		std::string m_currSelectedItem;
 	private:
 		PaintGun * m_paintGun;
 		GamePart * m_currPointPart;

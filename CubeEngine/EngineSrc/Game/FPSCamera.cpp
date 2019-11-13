@@ -56,8 +56,8 @@ FPSCamera::FPSCamera()
     m_character->setMaxSlope(45.0 * 3.14 / 180.0);
     m_character->setJumpSpeed(5.0f);
     m_character->setFallSpeed(55.0f);
-	this->m_ghost2->setUserPointer(this);
-	// this->m_ghost2->setUserIndex(1);
+	this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
+	this->m_ghost2->setUserIndex(1);
 	this->m_ghost2->setCcdSweptSphereRadius(3.0);
 	this->m_ghost2->setCcdMotionThreshold(3.0);
 	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
@@ -221,28 +221,8 @@ vec3 FPSCamera::getTotalSpeed()
 void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
-
-    auto pos = this->getPos();
-
-    std::vector<Drawable3D *> list;
-    AABB aabb;
-    aabb.update(vec3(pos.x -3,pos.y- 10,pos.z - 3));
-    aabb.update(vec3(pos.x +3,pos.y + 10 ,pos.z + 3));
-
-    g_GetCurrScene()->getRange(&list,aabb);
-	Drawable3DGroup group;
-	if (!list.empty())
-	{
-		group.init(&list[0], list.size());
-	}
-    AABB playerAABB;
-    vec3 overLap;
 	auto totalSpeed = getTotalSpeed();
 	m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
-	auto originPos = m_ghost2->getWorldTransform().getOrigin();
-	auto up = vec3(0, 1, 0);//m_ghost2->getWorldTransform().getBasis().getRow(1);
-	auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
-	setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround));
 }
 
 
@@ -258,7 +238,10 @@ void FPSCamera::setSpeed(const vec3 &speed)
 
 void FPSCamera::recievePhysicsInfo(vec3 pos, Quaternion rot)
 {
-
+	auto originPos = m_ghost2->getWorldTransform().getOrigin();
+	auto up = vec3(0, 1, 0);//m_ghost2->getWorldTransform().getBasis().getRow(1);
+	auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
+	setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround));
 }
 
 vec3 FPSCamera::rotateSpeed() const

@@ -309,11 +309,6 @@ Attachment* ControlPart::getAttachment(int index)
 	return m_attachment[index];
 }
 
-int ControlPart::getAttachmentCount()
-{
-	return 6;
-}
-
 ControlPart::~ControlPart()
 {
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();

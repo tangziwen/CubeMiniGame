@@ -19,7 +19,6 @@ protected:
 	virtual void checkCollide(ColliderEllipsoid * package);
     Mesh * m_mesh;
     float m_width, m_depth, m_height;
-	vec4 m_color;
 };
 
 } // namespace tzw

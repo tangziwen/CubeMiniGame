@@ -28,38 +28,12 @@ namespace tzw
 	{
 	}
 
-
 	void BuildingSystem::removePartByAttach(Attachment* attach)
 	{
 		if (attach)
 		{
 			auto part = attach->m_parent;
-			if(part == m_liftPart)
-			{
-
-				dropFromLift();
-				m_liftPart->getFirstAttachment()->breakConnection();
-				delete m_liftPart;
-				m_liftPart = nullptr;
-			}
-			else
-			{
-				auto island = part->m_parent;
-				if (attach->m_parent->isConstraint())
-				{
-					auto bearing = static_cast<GameConstraint*>(attach->m_parent);
-					m_bearList.erase(m_bearList.find(bearing));
-				}
-				island->remove(part);
-				delete part;
-				//is the last island, remove it
-				if(island->m_partList.empty())
-				{
-					m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
-					delete island;
-				}
-			}
-			
+			removePart(part);
 		}
 	}
 
@@ -101,7 +75,6 @@ namespace tzw
 	{
 		auto newIsland = new Island(pos);
 		m_IslandList.push_back(newIsland);
-		newIsland->m_node->addChild(part->getNode());
 		newIsland->insert(part);
 	}
 
@@ -116,7 +89,6 @@ namespace tzw
 		constraint->m_b->m_parent->m_parent->addNeighbor(island);
 		island->addNeighbor(constraint->m_b->m_parent->m_parent);
 		m_IslandList.push_back(island);
-		island->m_node->addChild(part->getNode());
 		island->insert(part);
 		island->m_islandGroup = attach->m_parent->m_parent->m_islandGroup;
 		//part->attachToOtherIslandByAlterSelfPart(attach);
@@ -133,9 +105,11 @@ namespace tzw
 			attach->getAttachmentInfoWorld(pos, n, up);
 			auto newIsland = new Island(pos);
 			m_IslandList.push_back(newIsland);
-			newIsland->m_node->addChild(part->getNode());
 			newIsland->insert(part);
 			part->attachToOtherIslandByAlterSelfPart(attach, index);
+			//we change the part transformation after instert. we need to tell the parent knows it,let the parent adjust rigid body.
+			newIsland->updatePhysics();
+			newIsland->updateNeighborConstraintPhysics();
 			newIsland->genIslandGroup();
 			liftPart->setEffectedIsland(newIsland->m_islandGroup);
 		}
@@ -145,7 +119,6 @@ namespace tzw
 			{
 				part->attachTo(attach, degree, index);
 				auto island = attach->m_parent->m_parent;
-				island->m_node->addChild(part->getNode());
 				island->insert(part);
 			}
 			else
@@ -294,7 +267,6 @@ namespace tzw
 		bear->m_parent = island;
 		m_bearList.insert(bear);
 		island->insert(bear);
-		island->m_node->addChild(bear->getNode());
 		bear->updateFlipped();
 		bear->attachToOtherIslandByAlterSelfIsland(attachment,
 													bear->getFirstAttachment(), 0);
@@ -305,7 +277,9 @@ namespace tzw
 		{
 			tlog("wrong");
 		}
-		
+
+		attachment->m_parent->m_parent->addNeighbor(island);
+		island->addNeighbor(attachment->m_parent->m_parent);
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		
 		return bear;
@@ -325,11 +299,14 @@ namespace tzw
 		spring->m_b = attachment;
 		spring->m_parent = island;
 		m_bearList.insert(spring);
-		island->insert(spring);
+		
 		spring->attachToOtherIslandByAlterSelfIsland(attachment,
 												spring->getFirstAttachment(), 0);
-		island->m_node->addChild(spring->getNode());
+		island->insert(spring);
 		attachment->m_connected = spring->getFirstAttachment();
+		
+		attachment->m_parent->m_parent->addNeighbor(island);
+		island->addNeighbor(attachment->m_parent->m_parent);
 		if(!attachment->m_connected->m_parent->m_parent) 
 		{
 			tlog("wrong");
@@ -463,9 +440,9 @@ namespace tzw
 	Island*
 	BuildingSystem::rayTestIsland(vec3 pos, vec3 dir, float dist)
 	{
-		auto attach = rayTest(pos, dir, dist);
-		if (attach)
-			return attach->m_parent->m_parent;
+		auto part = rayTestPart(pos, dir, dist);
+		if (part)
+			return part->m_parent;
 		else
 			return nullptr;
 	}
@@ -643,7 +620,6 @@ namespace tzw
 			tempPlace(firstIsland);
 			//readjust
 			auto attach = replaceToLiftIslands(firstIsland->m_islandGroup);
-			attach->m_parent->getNode()->setColor(vec4(0, 1, 0, 1));
 			replaceToLift(attach->m_parent->m_parent, attach);
 		}else 
 		{
@@ -794,6 +770,8 @@ void BuildingSystem::dropFromLift()
 		// each island, for normal island we create a rigid, for constraint island, we create a constraint
 		for (auto island : m_IslandList)
 		{
+			//we need record the building rotation!!!!!
+			island->recordBuildingRotate();
 			island->enablePhysics(true);
 		}
 		for(auto constraint :m_bearList)
@@ -817,13 +795,16 @@ void BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
 			for (auto island : m_IslandList)
 			{
 				island->enablePhysics(false);
+				//recover from building rotate
+				island->recoverFromBuildingRotate();
 			}
 			for(auto constraint :m_bearList)
 			{
 				constraint->enablePhysics(false);
 			}
+		
 			tempPlace(island);
-			//readjust
+			////readjust
 			auto attach = replaceToLiftIslands(island->m_islandGroup);
 			replaceToLift(attach->m_parent->m_parent, attach);
 		}

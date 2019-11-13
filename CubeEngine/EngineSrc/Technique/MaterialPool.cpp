@@ -23,6 +23,21 @@ void MaterialPool::addMaterial(std::string materialName, Material *mat)
     m_materialMap[materialName] = mat;
 }
 
+Mesh * MaterialPool::getMeshByName(std::string name)
+{
+    auto result = m_modelMap.find(name);
+    if(result != m_modelMap.end())
+    {
+        return result->second;
+    }
+    return nullptr;
+}
+
+void MaterialPool::addMesh(std::string name, Mesh* mesh)
+{
+	m_modelMap[name] = mesh;
+}
+
 std::string MaterialPool::getModelMangleedName(std::string modelName)
 {
     return std::string("model_") + modelName;

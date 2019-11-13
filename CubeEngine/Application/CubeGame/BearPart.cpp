@@ -268,7 +268,48 @@ void BearPart::generateName()
 		return true;
 	}
 
-	void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
+	void BearPart::updateConstraintState()
+	{
+
+		if(m_constrain)
+		{
+			if(m_isEnablePhysics)
+			{
+				PhysicsMgr::shared()->removeConstraint(m_constrain);
+			}
+			delete m_constrain;
+		}
+		m_constrain = nullptr;
+		auto attachA = m_a;
+		auto attachB = m_b;
+		if (attachA && attachB) 
+		{
+			auto partA = attachA->m_parent;
+			auto partB = attachB->m_parent;
+
+			vec3 worldPosA, worldNormalA, worldUpA;
+			attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+			vec3 worldPosB, worldNormalB, worldUpB;
+			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+			vec3 hingeDir = (worldPosB - worldPosA).normalized();
+			vec3 pivotA, pivotB, axisA, axisB;
+			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+
+			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+			m_constrain = constrain;
+			//constrain->setLimit()
+		}
+		if(m_isEnablePhysics)
+		{
+			if(m_constrain)
+			{
+				PhysicsMgr::shared()->addConstraint(m_constrain);
+			}
+		}
+	}
+
+void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
 	auto island = part->m_parent;
@@ -306,7 +347,7 @@ void BearPart::enablePhysics(bool isEnable)
 
 				auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 				m_constrain = constrain;
-
+				PhysicsMgr::shared()->addConstraint(m_constrain);
 			}
 		}
 		else 
@@ -322,7 +363,8 @@ void BearPart::enablePhysics(bool isEnable)
 		{
 			m_constrain->setLimit(m_angleLimitLow* (TbaseMath::PI_OVER_180), m_angleLimitHigh * (TbaseMath::PI_OVER_180));
 		}
-	} else 
+	}
+	else 
 	{
 		if(m_constrain) 
 		{

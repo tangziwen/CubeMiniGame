@@ -38,7 +38,15 @@ void GameConstraint::updateTransform(float dt)
 {
 	if(m_isEnablePhysics)
 	{
-		adjustToOtherIslandByAlterSelfIsland(m_b, this->getFirstAttachment(),this->getFirstAttachment()->m_degree);
+		for(int i = 0; i < getAttachmentCount(); i++)
+		{
+			auto attach = getAttachment(i);
+			if(attach->m_connected)
+			{
+				adjustToOtherIslandByAlterSelfIsland(attach->m_connected, attach, attach->m_degree);
+				break;
+			}
+		}
 	}
 }
 
@@ -49,6 +57,11 @@ void GameConstraint::setName(std::string newName)
 
 GameConstraint::~GameConstraint()
 {
+}
+
+void GameConstraint::updateConstraintState()
+{
+	
 }
 }
 

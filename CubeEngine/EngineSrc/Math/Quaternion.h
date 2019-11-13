@@ -18,6 +18,7 @@ public:
     void toEulserAngel(float * resultX, float * resultY, float * resultZ) const;
     void fromAxises(vec3 X_Axis, vec3 Y_Axis, vec3 zaxis);
     void normalize();
+	void identity();
     static Quaternion slerp(Quaternion start,Quaternion end,float dt);
     static Quaternion  lerp(Quaternion start,Quaternion end,float dt);
     float& operator [](int index);

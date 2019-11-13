@@ -8,7 +8,7 @@ namespace tzw {
 
 Quaternion::Quaternion()
 {
-
+	identity();
 }
 
 Quaternion::Quaternion(float theX, float theY, float theZ, float theW)
@@ -182,6 +182,14 @@ void Quaternion::normalize()
     y = y * len;
     z = z * len;
     w = w * len;
+}
+
+void Quaternion::identity()
+{
+	x = 0.0f;
+	y = 0.0f;
+	z = 0.0f;
+	w = 1.0f;
 }
 
 Quaternion Quaternion::slerp(Quaternion start, Quaternion end, float dt)

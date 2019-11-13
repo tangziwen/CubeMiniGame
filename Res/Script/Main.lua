@@ -331,7 +331,7 @@ function onKeyRelease(input_event)
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = lift_state + 1
 	elseif input_event.keycode == TZW_KEY_P then
-		g_blockRotate = g_blockRotate + 30
+		g_blockRotate = g_blockRotate + 15
 		if g_blockRotate >= 360 then
 			g_blockRotate = 0
 		
@@ -406,10 +406,14 @@ function placeItem(item)
 				player:setPreviewAngle(g_blockRotate)
 			end
 		else
-			if item.ItemType == GAME_PART_BEARING then
-				BuildingSystem.shared():placeBearingToAttach(result, item.name)
-			elseif item.ItemType == GAME_PART_SPRING then
-				BuildingSystem.shared():placeSpringToAttach(result)
+			if result == nil then
+				print("do nothing")
+			else
+				if item.ItemType == GAME_PART_BEARING then
+					BuildingSystem.shared():placeBearingToAttach(result, item.name)
+				elseif item.ItemType == GAME_PART_SPRING then
+					BuildingSystem.shared():placeSpringToAttach(result)
+				end
 			end
 		end
 	end

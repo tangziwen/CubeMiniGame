@@ -60,9 +60,14 @@ void Drawable::setUpCommand(RenderCommand & command)
 
 void Drawable::setColor(vec4 newColor)
 {
-	if (!m_material) return;
-	m_material->setVar("color", newColor);
+	m_color = newColor;
+	if (!getMaterial()) return;
+	getMaterial()->setVar("TU_color", newColor);
 }
 
+vec4 Drawable::getColor()
+{
+	return m_color;
+}
 } // namespace tzw
 

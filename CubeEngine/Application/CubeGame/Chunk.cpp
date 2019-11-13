@@ -154,6 +154,7 @@ Chunk::logicUpdate(float delta)
     m_rigidBody->setFriction(10.0);
     m_grass->finish();
     m_grass2->finish();
+  	PhysicsMgr::shared()->addRigidBody(m_rigidBody);
   }
 }
 

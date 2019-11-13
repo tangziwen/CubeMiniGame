@@ -10,6 +10,7 @@
 #include "btBulletDynamicsCommon.h"
 #include <assert.h>
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
+#include "Utility/log/Log.h"
 #define dSINGLE
 
 #define ARRAY_SIZE_Y 5
@@ -168,7 +169,6 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 		body->setWorldTransform(startTransform);
 #endif//
 		body->setUserIndex(-1);
-		m_dynamicsWorld->addRigidBody(body);
 		return body;
 	}
 
@@ -194,7 +194,7 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 					auto rig = static_cast<PhysicsListener *>(colObj->getUserPointer());
 					vec3 posA = vec3(pos.x(), pos.y(), pos.z());
 					Quaternion rot(orn.x(), orn.y(), orn.z(), orn.w());
-					rig->recievePhysicsInfo(posA, rot);
+					rig->recievePhysicsInfo(posA, rot);     
 				}
 			}
 		}
@@ -219,7 +219,7 @@ PhysicsRigidBody* PhysicsMgr::createRigidBody(float massValue, Matrix44& transfo
 	rig->setRigidBody(btRig);
 	rig->genUserIndex();
 	btRig->setUserIndex(rig->userIndex());
-	btRig->setUserPointer(rig);
+	btRig->setUserPointer(static_cast<PhysicsListener * >(rig));
 
 	return rig;
 }
@@ -242,7 +242,7 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodySphere(float massValue, Matrix44 tr
 	rig->setRigidBody(btRig);
 	rig->genUserIndex();
 	btRig->setUserIndex(rig->userIndex());
-	btRig->setUserPointer(rig);
+	btRig->setUserPointer(static_cast<PhysicsListener * >(rig));
 
 	return rig;
 }
@@ -328,8 +328,9 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 		auto & rigB = *(rbB->rigidBody());
 		auto bthinge = new btHingeConstraint(rigA, rigB, btVector3(pivotInA.x, pivotInA.y, pivotInA.z), btVector3(pivotInB.x, pivotInB.y, pivotInB.z), btVector3(axisInA.x, axisInA.y, axisInA.z), btVector3(axisInB.x, axisInB.y, axisInB.z), useReferenceFrameA);
 		auto hinge = new PhysicsHingeConstraint(bthinge);
+		auto breakingThreshold = bthinge->getBreakingImpulseThreshold();
+		tlog("the threshold %f",breakingThreshold);
 		bthinge->setUserConstraintPtr(hinge);
-		m_dynamicsWorld->addConstraint(bthinge);
 		return hinge;
 	}
 
@@ -344,7 +345,6 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 		btFrameInB.setFromOpenGLMatrix(frameInB.data());
 		auto bt6DOFSpring = new btGeneric6DofSpring2Constraint(rigA, rigB, btFrameInA, btFrameInB);
 		auto spring6DOF = new Physics6DofConstraint(bt6DOFSpring);
-		m_dynamicsWorld->addConstraint(bt6DOFSpring);
 		return spring6DOF;
 	}
 

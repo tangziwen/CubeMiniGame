@@ -30,7 +30,6 @@ namespace tzw
 		virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
 		void load(rapidjson::Value& partData) override;
 		Attachment* getAttachment(int index) override;
-		int getAttachmentCount() override;
 		virtual ~ControlPart();
 		GameNodeEditorNode * getGraphNode() const;
 		void generateName();

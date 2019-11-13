@@ -20,9 +20,11 @@ public:
     virtual void setUpTransFormation(TransformationInfo & info);
 	virtual void setUpCommand(RenderCommand & command);
 	virtual void setColor(vec4 newColor);
+	virtual vec4 getColor();
 protected:
     Material * m_material;
     Camera * m_camera;
+	vec4 m_color;
 };
 
 } // namespace tzw
