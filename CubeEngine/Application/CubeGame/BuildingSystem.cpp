@@ -362,6 +362,8 @@ namespace tzw
 		// search island
 		for (auto island : m_IslandList)
 		{
+			//被收纳的island不会响应
+			if(island->m_islandGroup == m_storeIslandGroup) continue;
 			for (auto iter : island->m_partList)
 			{
 				tmp.push_back(iter);
@@ -408,6 +410,8 @@ namespace tzw
 		// search island
 		for (auto island : m_IslandList)
 		{
+			//被收纳的island不响应
+			if(island->m_islandGroup == m_storeIslandGroup) continue;
 			for (auto iter : island->m_partList)
 			{
 				tmp.push_back(iter);
