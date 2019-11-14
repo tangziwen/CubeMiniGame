@@ -58,6 +58,12 @@ void LiftPart::unhighLight()
 		m_pipePart->setColor(vec4(1.0, 1.0, 1.0, 1.0));
 	}
 }
+
+void LiftPart::setIsVisible(bool isVisible)
+{
+	m_node->setIsVisible(isVisible);
+}
+
 Attachment * LiftPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
 {
 	vec3 hitPoint;

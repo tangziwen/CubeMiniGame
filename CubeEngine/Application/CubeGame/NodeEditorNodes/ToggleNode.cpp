@@ -6,9 +6,9 @@ namespace tzw
 {
 	ToggleNode::ToggleNode()
 	{
-		name =u8"开关";
-		m_bearingAttr = addIn(u8"部件");
-		m_signalAttr = addIn(u8"开关信号");
+		name =TR(u8"切换开关节点");
+		m_bearingAttr = addIn(TR(u8"部件"));
+		m_signalAttr = addIn(TR(u8"开关信号"));
 	}
 
 	NodeAttrValue ToggleNode::execute()

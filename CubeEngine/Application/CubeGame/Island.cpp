@@ -42,7 +42,7 @@ Island::~Island()
 }
 
 void
-Island::insert(GamePart* part)
+Island::insertNoUpdatePhysics(GamePart* part)
 {
 	if (!part->getNode()) {
 	tlog("insert \n");
@@ -50,7 +50,20 @@ Island::insert(GamePart* part)
 	m_partList.push_back(part);
 	part->m_parent = this;
 	m_node->addChild(part->getNode());
-	//we need update physics related
+}
+
+void Island::insert(GamePart* part)
+{
+	insertNoUpdatePhysics(part);
+	updatePhysics();
+	updateNeighborConstraintPhysics();
+}
+
+void Island::insertAndAdjustAttach(GamePart * part, Attachment * attach, int attachIndex)
+{
+	insertNoUpdatePhysics(part);
+	part->attachToOtherIslandByAlterSelfPart(attach, attachIndex);
+	//we need update self physics rigidbody and connected constraint
 	updatePhysics();
 	updateNeighborConstraintPhysics();
 }
@@ -295,13 +308,15 @@ void Island::load(rapidjson::Value& island)
 		for (unsigned int i = 0; i < partList.Size(); i++)
 		{
 			auto& item = partList[i];
+
+			//读取的时候，因为Island内的部件已经存储了位置信息，如果在insert仍然update物理信息的话，会导致Node的矩阵变化，放置会不正确
 			switch((GamePartType)item["type"].GetInt())
 			{
 				case GamePartType::GAME_PART_BLOCK:
 				{
 					auto part = new BlockPart(item["ItemName"].GetString());
 					part->load(item);
-					insert(part);
+					insertNoUpdatePhysics(part);
                 }
 				break;
 
@@ -309,32 +324,36 @@ void Island::load(rapidjson::Value& island)
 					{
 						auto part = new CylinderPart();
 						part->load(item);
-						insert(part);
+						insertNoUpdatePhysics(part);
 					}
 				break;
 				case GamePartType::GAME_PART_CONTROL:
 					{
 						auto part = new ControlPart(item["ItemName"].GetString());
 						part->load(item);
-						insert(part);
+						insertNoUpdatePhysics(part);
 					}
 				break;
 				case GamePartType::GAME_PART_CANNON:
 					{
 						auto part = new CannonPart(item["ItemName"].GetString());
 						part->load(item);
-						insert(part);
+						insertNoUpdatePhysics(part);
 					}
 				break;
 				case GamePartType::GAME_PART_THRUSTER:
 					{
 						auto part = new ThrusterPart(item["ItemName"].GetString());
 						part->load(item);
-						insert(part);
+						insertNoUpdatePhysics(part);
 					}
 				break;
 			}
 		}
+
+		//统一Update一次物理
+		updatePhysics();
+		updateNeighborConstraintPhysics();
 	}
 }
 

@@ -8,6 +8,7 @@
 #include "2D/Sprite.h"
 #include "2D/GUIFileBrowser.h"
 #include "2D/LabelNew.h"
+#include "Utility/file/Data.h"
 
 namespace tzw {
 class VehicleBroswer;
@@ -20,6 +21,7 @@ enum class WindowType
 	HELP_PAGE,
 	ATTRIBUTE_WINDOW,
 	PAINTER,
+	MainMenu,
 };
 class MainMenu : public IMGUIObject, public EventListener
 {
@@ -49,6 +51,7 @@ public:
 	void setWindowShow(WindowType type, bool isShow);
 	bool getWindowIsShow(WindowType type) const;
 	void openInspectWindow(GamePart * part);
+	void setPainterShow(bool isShow);
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -67,6 +70,7 @@ private:
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;
 	GamePart * m_curInspectPart;
+	Data m_helperData;
 public:
 	LabelNew* getCrossHairTipsInfo() const;
 };

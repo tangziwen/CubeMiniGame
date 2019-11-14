@@ -1,12 +1,13 @@
 #include "ConstantIntNode.h"
 #include "CubeGame/CannonPart.h"
 
+
 namespace tzw
 {
 	ConstantIntNode::ConstantIntNode()
 	{
-		name =u8"常量";
-		m_attr = addOut(u8"Self");
+		name =TR(u8"常量");
+		m_attr = addOut(TR(u8"Self"));
 		m_attr->m_localAttrValue.setInt(0);
 	}
 
@@ -17,7 +18,7 @@ namespace tzw
 		bool isInput = ImGui::InputInt("",&intValue);
 		ImGui::PopItemWidth();
 		if(isInput)
-		{
+		{ 
 			m_attr->m_localAttrValue.setInt(intValue);
 		}
 	}

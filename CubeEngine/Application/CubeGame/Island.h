@@ -19,7 +19,9 @@ public:
 	Island(vec3 pos);
 	~Island();
 	PhysicsRigidBody * m_rigid;
-	void insert(GamePart * part);
+	void insertNoUpdatePhysics(GamePart * part);
+	void insert(GamePart*part);
+	void insertAndAdjustAttach(GamePart * part, Attachment * attach, int attachIndex);
 	void remove(GamePart * part);
 	void removeAll();
 	PhysicsCompoundShape * getCompoundShape() const;

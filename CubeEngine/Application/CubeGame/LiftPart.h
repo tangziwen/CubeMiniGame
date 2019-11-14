@@ -22,6 +22,7 @@ namespace tzw
 		Drawable3D* getNode() const override;
 		void highLight() override;
 		void unhighLight() override;
+		void setIsVisible(bool isVisible);
 	public:
 		float m_liftHeight;
 		GamePartType getType() override;

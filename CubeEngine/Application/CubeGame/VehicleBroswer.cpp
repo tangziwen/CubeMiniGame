@@ -6,6 +6,8 @@
 #include "BuildingSystem.h"
 #define NOMINMAX
 #include "dirent.h"
+#include "Base/TranslationMgr.h"
+
 static void list_directory (const char* dirname, std::vector<tzw::VehicleFileInfo_broswer *> &fileNameList)
 {
 	struct dirent** files;
@@ -103,13 +105,13 @@ namespace tzw
 		if(!(*isOpen)) return;
 		auto ss = Engine::shared()->winSize();
 		ImGui::SetNextWindowPos(ImVec2(ss.x / 2.0, ss.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-		ImGui::Begin(u8"载具浏览器", isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin(TRC(u8"载具浏览器"), isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
         	auto flag = ImGuiTabItemFlags_None;
 
-            if (m_loadOpen = ImGui::BeginTabItem(u8"读取载具", 0, flag))
+            if (m_loadOpen = ImGui::BeginTabItem(TRC(u8"读取载具"), 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
 				int i = 0;
@@ -127,7 +129,7 @@ namespace tzw
 				{
 					m_currSelected = inputBuff;
 				}
-				if(ImGui::Button(u8"读取")) 
+				if(ImGui::Button(TRC(u8"读取"))) 
 				{
 					if(m_loadCallBack)
 					{
@@ -136,12 +138,12 @@ namespace tzw
 					(*isOpen) = false;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(u8"取消")) (*isOpen) = false;
+				if(ImGui::Button(TRC(u8"取消"))) (*isOpen) = false;
 
             	ImGui::EndTabItem();
             }
         	flag = ImGuiTabItemFlags_None;
-            if (m_saveOpen = ImGui::BeginTabItem(u8"保存载具", 0, flag))
+            if (m_saveOpen = ImGui::BeginTabItem(TRC(u8"保存载具"), 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
 				int i = 0;
@@ -159,7 +161,7 @@ namespace tzw
 				{
 					m_currSelected = inputBuff;
 				}
-				if(ImGui::Button(u8"保存")) 
+				if(ImGui::Button(TRC(u8"保存"))) 
 				{
 					if(m_saveCallBack)
 					{
@@ -168,7 +170,7 @@ namespace tzw
 					(*isOpen) = false;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(u8"取消")) (*isOpen) = false;
+				if(ImGui::Button(TRC(u8"取消"))) (*isOpen) = false;
 
             	ImGui::EndTabItem();
             }

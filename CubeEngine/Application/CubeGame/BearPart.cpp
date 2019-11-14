@@ -11,6 +11,7 @@
 #include "Rendering/Renderer.h"
 #include "BuildingSystem.h"
 #include "3D/Model/Model.h"
+#include "Base/TranslationMgr.h"
 
 namespace tzw
 {
@@ -190,7 +191,7 @@ void BearPart::getAngleLimit(bool& isAngleLimit, float& low, float& high) const
 void BearPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, u8"轴承 %s",genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"轴承 %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -212,9 +213,9 @@ void BearPart::generateName()
 	{
 		drawInspectNameEdit();
 		//control the bearing turn direction
-		ImGui::Text(u8"旋转方向");
+		ImGui::Text(TRC(u8"旋转方向"));
 		auto click_left = false, click_right = false;
-		click_left = ImGui::RadioButton(u8"左", !m_isFlipped);ImGui::SameLine(); click_right = ImGui::RadioButton(u8"右", m_isFlipped);
+		click_left = ImGui::RadioButton(TRC(u8"左"), !m_isFlipped);ImGui::SameLine(); click_right = ImGui::RadioButton(TRC(u8"右"), m_isFlipped);
 		
 		if(click_left) 
 		{
@@ -230,26 +231,26 @@ void BearPart::generateName()
 		}
 		
 		auto click_steer = false, click_bear = false;
-		ImGui::Text(u8"是否为舵机");
-		click_steer = ImGui::RadioButton(u8"舵机", getIsSteering());ImGui::SameLine(); click_bear = ImGui::RadioButton(u8"普通轴承", !getIsSteering());
+		ImGui::Text(TRC(u8"是否为舵机"));
+		click_steer = ImGui::RadioButton(TRC(u8"舵机"), getIsSteering());ImGui::SameLine(); click_bear = ImGui::RadioButton(TRC(u8"普通轴承"), !getIsSteering());
 		
 		if(click_steer || click_bear)
 		{
 			setIsSteering(click_steer);
 		}
-		ImGui::Text(u8"是否开启角度限制");
+		ImGui::Text(TRC(u8"是否开启角度限制"));
 		bool isCurrAngleLimit;
 		float angle_low;
 		float angle_high;
 		getAngleLimit(isCurrAngleLimit, angle_low, angle_high);
 		auto click_angle_yes = false, click_angle_no = false;
-		click_angle_yes = ImGui::RadioButton(u8"开启", isCurrAngleLimit);ImGui::SameLine(); click_angle_no = ImGui::RadioButton(u8"关闭", !isCurrAngleLimit);
+		click_angle_yes = ImGui::RadioButton(TRC(u8"开启"), isCurrAngleLimit);ImGui::SameLine(); click_angle_no = ImGui::RadioButton(TRC(u8"关闭"), !isCurrAngleLimit);
 		if(isCurrAngleLimit)
 		{
 			bool isInput = false;
 			ImGui::PushItemWidth(80);
-			isInput |= ImGui::InputFloat(u8"最小角度", &angle_low);
-			isInput |= ImGui::InputFloat(u8"最大角度", &angle_high);
+			isInput |= ImGui::InputFloat(TRC(u8"最小角度"), &angle_low);
+			isInput |= ImGui::InputFloat(TRC(u8"最大角度"), &angle_high);
 			ImGui::PopItemWidth();
 			if(isInput)
 			{

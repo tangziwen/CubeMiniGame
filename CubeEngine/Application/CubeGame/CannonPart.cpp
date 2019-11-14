@@ -116,7 +116,7 @@ int CannonPart::getAttachmentCount()
 void CannonPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, u8"加农 %s",genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"加农 %s"),genShortName().c_str());
 	setName(formatName);
 }
 

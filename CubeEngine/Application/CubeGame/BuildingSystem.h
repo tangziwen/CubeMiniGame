@@ -24,10 +24,10 @@ public:
 	void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 	void dropFromLift();
 	void replaceToLiftByRay(vec3 pos, vec3 dir, float dist);
-	void replaceToLift(Island * island, Attachment * attachment = nullptr);
-	void tempPlace(Island * island);
+	void replaceToLift(Island * island, Attachment * attachment, LiftPart * targetLift);
+	void tempPlace(Island * island, LiftPart * targetLift);
 	Attachment* replaceToLiftIslands(std::string islandGroup);
-	void replaceToLift_R(Island * island, std::set<Island *> & closeList);
+	void replaceToLift_R(Island * island, std::set<Island *> & closeList, LiftPart * liftPart);
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	void tmpMoveWheel(bool isOpen);
 	void removePartByAttach(Attachment * attach);
@@ -52,7 +52,7 @@ public:
 	LiftPart * getLift() const;
 	void addThruster(GamePart * thruster);
 	void removeThruster(GamePart * thrsuter);
-
+	void liftStore(GamePart * part);
 	void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
 	void dump(std::string filePath);
 	void load(std::string filePath);
@@ -67,6 +67,11 @@ private:
 public:
 	bool isIsInXRayMode() const;
 	void setIsInXRayMode(const bool isInXRayMode);
+private:
+	std::string m_storeIslandGroup;
+public:
+	std::string getStoreIslandGroup() const;
+	void setStoreIslandGroup(const std::string& storeIslandGroup);
 private:
 	ControlPart * m_controlPart;
 	LiftPart * m_liftPart;

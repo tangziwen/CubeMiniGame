@@ -3,6 +3,7 @@
 #include "../Engine/EngineDef.h"
 #include "Shader/ShaderProgram.h"
 #include "imgui.h"
+#include "Base/TranslationMgr.h"
 class EventListener;
 namespace tzw
 {

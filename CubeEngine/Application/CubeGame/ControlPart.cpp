@@ -38,7 +38,7 @@ ControlPart::ControlPart(std::string itemName)
 void ControlPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, u8"Öá³Ð %s",genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"×ùÎ» %s"),genShortName().c_str());
 	setName(formatName);
 }
 Attachment * ControlPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)

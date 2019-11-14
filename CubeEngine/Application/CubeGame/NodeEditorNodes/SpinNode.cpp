@@ -6,9 +6,9 @@ namespace tzw
 {
 	SpinNode::SpinNode()
 	{
-		name =u8"旋转";
-		m_bearingAttr = addIn(u8"轴承");
-		m_signalAttr = addIn(u8"方向信号");
+		name =TR(u8"旋转");
+		m_bearingAttr = addIn(TR(u8"轴承"));
+		m_signalAttr = addIn(TR(u8"方向信号"));
 	}
 
 	NodeAttrValue SpinNode::execute()

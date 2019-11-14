@@ -8,15 +8,15 @@ namespace tzw
 {
 	KeyTriggerNode::KeyTriggerNode()
 	{
-		name =u8"按键输入";
-		m_forwardAttr =addOutExe(u8"前后");
-		m_sideAttr = addOutExe(u8"左右");
-		m_forwardSignalAttr = addOut(u8"前后信号");
-		m_sideSignalAttr = addOut(u8"左右信号");
+		name = TR(u8"按键输入");
+		m_forwardAttr =addOutExe(TR(u8"前后"));
+		m_sideAttr = addOutExe(TR(u8"左右"));
+		m_forwardSignalAttr = addOut(TR(u8"前后信号"));
+		m_sideSignalAttr = addOut(TR(u8"左右信号"));
 
-		m_zKeyAttr =addOutExe(u8"Z键");
-		m_xKeyAttr =addOutExe(u8"X键");
-		m_cKeyAttr =addOutExe(u8"C键");
+		m_zKeyAttr =addOutExe(TR(u8"Z键"));
+		m_xKeyAttr =addOutExe(TR(u8"X键"));
+		m_cKeyAttr =addOutExe(TR(u8"C键"));
 		m_forward = 0;
 		m_side = 0;
 	}

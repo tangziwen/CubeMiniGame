@@ -33,6 +33,9 @@
 #include "3D/Particle/ParticleInitPosModule.h"
 #include "VehicleBroswer.h"
 #include "PartSurfaceMgr.h"
+#include "Base/TranslationMgr.h"
+#include "2D/imgui_markdown.h"
+#include "Utility/file/Tfile.h"
 
 
 namespace tzw {
@@ -49,13 +52,13 @@ static void onOption(Button * btn)
 {
 
 }
-
 MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false),
 	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
 	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
 	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr)
 	
 {
+	m_helperData = Tfile::shared()->getData("./Res/helpMain.md", true);
 }
 
 Texture * testIcon = nullptr;
@@ -109,6 +112,27 @@ void MainMenu::toggle()
 
 void MainMenu::drawIMGUI()
 {
+
+	const float DISTANCE = 10.0f;
+    static int corner = 0;
+    ImGuiIO& io = ImGui::GetIO();
+    if (corner != -1)
+    {
+        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+    }
+    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+    if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+    {
+        ImGui::Text(TRC(u8"TZW 出品，测试版本"));
+        ImGui::Separator();
+    	ImGui::Text(TRC(u8"WASD和鼠标控制，I键打开物品栏，建造前先放升降机"));
+    	ImGui::Text(TRC(u8"按T键可以显示机械部件名称，并能穿透显示轴承"));
+    	ImGui::Text(TRC(u8"更多帮助请按H键打开"));
+    }
+    ImGui::End();
+	
 	auto currIsNeedShow = isVisible() || isNeedShowWindow();
 	if(m_preIsNeedShow != currIsNeedShow)
 	{
@@ -130,133 +154,136 @@ void MainMenu::drawIMGUI()
 		}
 		m_preIsNeedShow = currIsNeedShow;
 	}
-	if (isVisible() || isNeedShowWindow())
+	if (isNeedShowWindow())
 	{
 		bool isOpenAbout = false;
 		bool isOpenHelp = false;
-		if(isVisible())
+		if(getWindowIsShow(WindowType::MainMenu))
 		{
-		if (ImGui::BeginMainMenuBar())
-		{
-			if (ImGui::BeginMenu(u8"游戏"))
+			if (ImGui::BeginMainMenuBar())
 			{
-				if (ImGui::MenuItem(u8"清空所有", nullptr))
+				if (ImGui::BeginMenu(u8"游戏"))
 				{
-					GameWorld::shared()->getPlayer()->removeAllBlocks();
-					m_nodeEditor->clearAll();
+					if (ImGui::MenuItem(u8"关闭菜单", "CTRL+Z")) {setWindowShow(WindowType::MainMenu, false);}
+					if (ImGui::MenuItem(u8"清空所有", nullptr))
+					{
+						GameWorld::shared()->getPlayer()->removeAllBlocks();
+						m_nodeEditor->clearAll();
+					}
+					if (ImGui::MenuItem(u8"退出游戏", "CTRL+Z")) { exit(0); }
+					ImGui::EndMenu();
 				}
-				if (ImGui::MenuItem(u8"选项", "CTRL+Z")) {}
-				if (ImGui::MenuItem(u8"退出", "CTRL+Z")) { exit(0); }
-				ImGui::EndMenu();
-			}
-			drawToolsMenu();
-			static bool isOpenTerrain = false;
-			if (ImGui::BeginMenu(u8"Debug"))
-			{
-				auto camera = g_GetCurrScene()->defaultCamera();
-				ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
-				ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
-				ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
-				if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
-				if(ImGui::MenuItem("Particle test"))
+				drawToolsMenu();
+				static bool isOpenTerrain = false;
+				if (ImGui::BeginMenu(u8"Debug"))
 				{
-				auto node = Node::create();
-				ParticleEmitter * emitter2 = new ParticleEmitter(40);
-				emitter2->setSpawnRate(0.05);
-				emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-				emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 1, 0), vec3(0, 1, 0)));
-				emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
-				emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-				emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
-				emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
-				emitter2->setIsState(ParticleEmitter::State::Playing);
-				node->addChild(emitter2);
-				g_GetCurrScene()->addNode(node);
-				node->setPos(camera->getPos() + camera->getForward() * 15.0f);
-				node->setRotateE(vec3(0, 0, 45));
+					auto camera = g_GetCurrScene()->defaultCamera();
+					ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
+					ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
+					ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
+					if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
+					if(ImGui::MenuItem("Particle test"))
+					{
+					auto node = Node::create();
+					ParticleEmitter * emitter2 = new ParticleEmitter(40);
+					emitter2->setSpawnRate(0.05);
+					emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
+					emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 1, 0), vec3(0, 1, 0)));
+					emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
+					emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+					emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
+					emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
+					emitter2->setIsState(ParticleEmitter::State::Playing);
+					node->addChild(emitter2);
+					g_GetCurrScene()->addNode(node);
+					node->setPos(camera->getPos() + camera->getForward() * 15.0f);
+					node->setRotateE(vec3(0, 0, 45));
+					}
+
+					if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
+					{
+						ShaderMgr::shared()->reloadAllShaders();
+					}
+					ImGui::MenuItem(u8"渲染设置", nullptr, &m_isOpenRenderEditor);
+					ImGui::EndMenu();
+				}
+				if (m_isShowProfiler)
+				{
+					m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
+				}
+				if(m_isOpenRenderEditor)
+				{
+					ImGui::Begin("RenderEditor", &m_isOpenRenderEditor);
+					if(ImGui::RadioButton("skyEnable", Renderer::shared()->isSkyEnable()))
+					{
+						Renderer::shared()->setSkyEnable(!Renderer::shared()->isSkyEnable());
+					}
+					if(ImGui::RadioButton("FogEnable", Renderer::shared()->isFogEnable()))
+					{
+						Renderer::shared()->setFogEnable(!Renderer::shared()->isFogEnable());
+					}
+					if(ImGui::RadioButton("SSAOEnable", Renderer::shared()->isSsaoEnable()))
+					{
+						Renderer::shared()->setSsaoEnable(!Renderer::shared()->isSsaoEnable());
+					}
+					if(ImGui::RadioButton("BloomEnable", Renderer::shared()->isBloomEnable()))
+					{
+						Renderer::shared()->setBloomEnable(!Renderer::shared()->isBloomEnable());
+					}
+					if(ImGui::RadioButton("HDREnable", Renderer::shared()->isHdrEnable()))
+					{
+						Renderer::shared()->setHdrEnable(!Renderer::shared()->isHdrEnable());
+					}
+					if(ImGui::RadioButton("AAEnable", Renderer::shared()->isAaEnable()))
+					{
+						Renderer::shared()->setAaEnable(!Renderer::shared()->isAaEnable());
+					}
+					if(ImGui::RadioButton("ShadowEnable", Renderer::shared()->isShadowEnable()))
+					{
+						Renderer::shared()->setShadowEnable(!Renderer::shared()->isShadowEnable());
+					}
+					ImGui::End();
+				}
+				if (m_isShowConsole)
+				{
+					ShowExampleAppConsole(&m_isShowConsole);
 				}
 
-				if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
+				if (ImGui::BeginMenu("?"))
 				{
-					ShaderMgr::shared()->reloadAllShaders();
+					if (ImGui::MenuItem(u8"关于", nullptr)) {
+						isOpenAbout = true;
+					}
+					if (ImGui::MenuItem(u8"帮助", nullptr)) {
+						isOpenHelp = true;
+					}
+					ImGui::EndMenu();
 				}
-				ImGui::MenuItem(u8"渲染设置", nullptr, &m_isOpenRenderEditor);
-				ImGui::EndMenu();
-			}
-			if (m_isShowProfiler)
-			{
-				m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
-			}
-			if(m_isOpenRenderEditor)
-			{
-				ImGui::Begin("RenderEditor", &m_isOpenRenderEditor);
-				if(ImGui::RadioButton("skyEnable", Renderer::shared()->isSkyEnable()))
-				{
-					Renderer::shared()->setSkyEnable(!Renderer::shared()->isSkyEnable());
-				}
-				if(ImGui::RadioButton("FogEnable", Renderer::shared()->isFogEnable()))
-				{
-					Renderer::shared()->setFogEnable(!Renderer::shared()->isFogEnable());
-				}
-				if(ImGui::RadioButton("SSAOEnable", Renderer::shared()->isSsaoEnable()))
-				{
-					Renderer::shared()->setSsaoEnable(!Renderer::shared()->isSsaoEnable());
-				}
-				if(ImGui::RadioButton("BloomEnable", Renderer::shared()->isBloomEnable()))
-				{
-					Renderer::shared()->setBloomEnable(!Renderer::shared()->isBloomEnable());
-				}
-				if(ImGui::RadioButton("HDREnable", Renderer::shared()->isHdrEnable()))
-				{
-					Renderer::shared()->setHdrEnable(!Renderer::shared()->isHdrEnable());
-				}
-				if(ImGui::RadioButton("AAEnable", Renderer::shared()->isAaEnable()))
-				{
-					Renderer::shared()->setAaEnable(!Renderer::shared()->isAaEnable());
-				}
-				if(ImGui::RadioButton("ShadowEnable", Renderer::shared()->isShadowEnable()))
-				{
-					Renderer::shared()->setShadowEnable(!Renderer::shared()->isShadowEnable());
-				}
-				ImGui::End();
-			}
-			if (m_isShowConsole)
-			{
-				ShowExampleAppConsole(&m_isShowConsole);
-			}
+				ImGui::EndMainMenuBar();
 
-			if (ImGui::BeginMenu("?"))
-			{
-				if (ImGui::MenuItem(u8"关于", nullptr)) {
-					isOpenAbout = true;
+				if (isOpenAbout) 
+				{
+	                ImGui::OpenPopup(u8"关于");
+					isOpenAbout = false;
+	            }
+				if (ImGui::BeginPopupModal(u8"关于", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+				{
+					ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
+					ImGui::Separator();
+					if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
+					ImGui::EndPopup();
 				}
-				if (ImGui::MenuItem(u8"帮助", nullptr)) {
-					isOpenHelp = true;
-				}
-				ImGui::EndMenu();
-			}
-			ImGui::EndMainMenuBar();
-
-			if (isOpenAbout) 
-			{
-                ImGui::OpenPopup(u8"关于");
-				isOpenAbout = false;
-            }
-			if (ImGui::BeginPopupModal(u8"关于", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-			{
-				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
-				ImGui::Separator();
-				if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-				ImGui::EndPopup();
-			}
-			if (getWindowIsShow(WindowType::HELP_PAGE))
-			{
-				bool isOpen = ScriptPyMgr::shared()->callFunB("cpp_drawHelpPage");
-				setWindowShow(WindowType::HELP_PAGE, isOpen);
 			}
 		}
+		if (getWindowIsShow(WindowType::HELP_PAGE))
+		{
+			ImGui::MarkdownConfig config;
+			bool isOpen = true;
+			ImGui::Begin("Mark Down Test", &isOpen);
+			ImGui::Markdown(m_helperData.getString().c_str(), m_helperData.getString().size(),config);
+			ImGui::End();
+			setWindowShow(WindowType::HELP_PAGE, isOpen);
 		}
-
 		if(getWindowIsShow(WindowType::NODE_EDITOR)) 
 		{
 			bool isOpen = true;
@@ -281,17 +308,18 @@ void MainMenu::drawIMGUI()
 		{
 			auto screenSize = Engine::shared()->winSize();
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-			ImGui::Begin(u8"是否继续?",nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-			if(ImGui::Button(u8"继续", ImVec2(160, 35)))
+			ImGui::Begin(TRC(u8"是否继续?"),nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			if(ImGui::Button(TRC(u8"继续"), ImVec2(160, 35)))
 			{
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
-			if(ImGui::Button(u8"选项", ImVec2(160, 35)))
+			if(ImGui::Button(TRC(u8"选项"), ImVec2(160, 35)))
 			{
 				tlog("nothing to do");
 			}
-			if(ImGui::Button(u8"退出", ImVec2(160, 35)))
+			if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35)))
 			{
+				TranslationMgr::shared()->dump();
 				exit(0);
 			}
 			ImGui::End();
@@ -303,7 +331,7 @@ void MainMenu::drawIMGUI()
 			auto screenSize = Engine::shared()->winSize();
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 			bool isOpen = true;
-			ImGui::Begin(u8"属性面板",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			ImGui::Begin(TRC(u8"属性面板"),&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 			m_curInspectPart->drawInspect();
 			ImGui::End();
 			setWindowShow(WindowType::ATTRIBUTE_WINDOW, isOpen);
@@ -319,11 +347,11 @@ void MainMenu::drawIMGUI()
 			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 			auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
 			auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
-			ImGui::TextUnformatted(u8"颜色");
+			ImGui::TextUnformatted(TRC(u8"颜色"));
 			ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
 			GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
 			//表面材质
-			ImGui::TextUnformatted(u8"表面材质");
+			ImGui::TextUnformatted(TRC(u8"表面材质"));
 			auto size = PartSurfaceMgr::shared()->getItemAmount();
 			for(int i = 0; i < size; i++)
 			{
@@ -410,10 +438,6 @@ void MainMenu::startGame()
 
 void MainMenu::drawToolsMenu()
 {
-	if (ImGui::BeginMenu(u8"工具"))
-	{
-		ImGui::EndMenu();
-	}
 	if (m_isOpenTerrain)
 	{
 		ImGui::Begin("Terrain Inspector", &m_isOpenTerrain);
@@ -564,6 +588,11 @@ void MainMenu::openInspectWindow(GamePart* part)
 	m_curInspectPart = part;
 }
 
+void MainMenu::setPainterShow(bool isShow)
+{
+	setWindowShow(WindowType::PAINTER, isShow);
+}
+
 LabelNew* MainMenu::getCrossHairTipsInfo() const
 {
 	return m_crossHairTipsInfo;
@@ -578,7 +607,7 @@ void MainMenu::initInGame()
     m_crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
 	 
     GameWorld::shared()->getMainRoot()->addChild(m_crossHair);
-	m_crossHairTipsInfo = LabelNew::create(u8"暂无提示");
+	m_crossHairTipsInfo = LabelNew::create(TRC(u8"暂无提示"));
 	GameWorld::shared()->getMainRoot()->addChild(m_crossHairTipsInfo);
 	m_crossHairTipsInfo->setIsVisible(false);
 	m_crossHairTipsInfo->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2 -35);

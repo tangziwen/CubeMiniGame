@@ -5,7 +5,7 @@ Main = {}
 
 
 function tzw_on_game_ready()
-	UiUtil.popText("基本版本 弹出框测试")
+	UiUtil.popText(TR("基本版本 弹出框测试"))
 end
 
 ImGuiCond_Always        = 1 << 0   -- Set the variable
@@ -58,6 +58,19 @@ GAME_PART_BEARING = 6
 GAME_PART_SPRING = 7
 SPECIAL_PART_PAINTER = 8
 GAME_PART_NOT_VALID = 9999
+
+
+
+WindowType = 
+{
+	INVENTORY = 0,
+	NODE_EDITOR = 1,
+	VEHICLE_FILE_BROWSER = 2,
+	RESUME_MENU = 3,
+	HELP_PAGE =4 ,
+	ATTRIBUTE_WINDOW =5 ,
+	PAINTER = 6,
+};
 
 local m_currIndex = 1
 local lift_state = 0
@@ -151,8 +164,7 @@ function on_game_start()
 end
 
 function cpp_drawHelpPage()
-	isShowHelpPage = ImGui.Begin("帮助页面", ImGuiWindowFlags_NoResize)
-
+	isShowHelpPage = ImGui.Begin(TR("帮助页面"), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)
 	if ImGui.CollapsingHeader("基础操作", 0) then
 		ImGui.TextWrapped("WASD 来控制相机四方向移动，鼠标移动控制视线方向，空格键跳跃")
 		ImGui.TextWrapped("'~'键切换显示菜单")
@@ -175,7 +187,7 @@ function cpp_drawHelpPage()
 end
 
 function cpp_drawInventory()
-	local isOpen = ImGui.Begin("资产浏览器", 0)
+	local isOpen = ImGui.Begin(TR("资产浏览器"), 0)
 	local i = 0
 	local itemSize = 80
 	m_isDragingInventory = false
@@ -195,11 +207,11 @@ function cpp_drawInventory()
 		-- Our buttons are both drag sources and drag targets here!
 		if (ImGui.BeginDragDropSource()) then
 			ImGui.SetDragDropPayload("DND_DEMO_CELL", k);    -- Set payload to carry the index of our item (could be anything)
-			ImGui.Text("拖拽" .. v.desc);   -- Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
+			ImGui.Text(TR("拖拽") .. TR(v.desc));   -- Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
 			ImGui.EndDragDropSource();
 			m_isDragingInventory = true
 		end
-		ImGui.Text(v.desc);
+		ImGui.Text(TR(v.desc));
 		ImGui.EndGroup();
 		ImGui.PopID();
 		i = i + 1
@@ -217,7 +229,7 @@ function drawHud()
 	local window_pos_pivot_bottom_right = ImGui.ImVec2(1.0, 1.0);
 	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x - 50.0, screenSize.y - yOffset), ImGuiCond_Always, window_pos_pivot_bottom_right);
 	ImGui.Begin("Rotate Tips", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
-	ImGui.Text("当前旋转角度"..g_blockRotate);
+	ImGui.Text(TR("当前旋转角度")..g_blockRotate);
 	ImGui.End()
 
 
@@ -241,7 +253,7 @@ function drawHud()
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
 			end
-			ImGui.Text(findItemByName(v["target"]).desc);
+			ImGui.Text(TR(findItemByName(v["target"]).desc));
 		end
 		if needPop then
 			ImGui.PopStyleColor()
@@ -282,16 +294,16 @@ function drawEntryInterface()
 	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImGui.ImVec2(0.5, 0.5));
 	if ImGui.BeginNoClose("CubeEngine",ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse) then
 
-		if(ImGui.Button("开始游戏", ImGui.ImVec2(160, 35))) then
+		if(ImGui.Button(TR("开始游戏"), ImGui.ImVec2(160, 35))) then
 			GameWorld.shared():startGame()
 			Engine:shared():setUnlimitedCursor(true)
 		end
 		ImGui.Spacing()
-		if(ImGui.Button("帮助", ImGui.ImVec2(160, 35))) then
+		if(ImGui.Button(TR("帮助"), ImGui.ImVec2(160, 35))) then
 			print "help btn clicked"
 		end
 		ImGui.Spacing()
-		if(ImGui.Button("退出", ImGui.ImVec2(160, 35))) then
+		if(ImGui.Button(TR("退出"), ImGui.ImVec2(160, 35))) then
 			print "on Exit"
 		end
 		ImGui.Spacing()
@@ -384,18 +396,31 @@ function checkIsNormalPart(itemType)
 end
 
 function placeItem(item)
+	print ("placeItem"..item.ItemType)
 	local player = GameWorld.shared():getPlayer()
-	local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
+	
 
 	if item.ItemType == GAME_PART_LIFT then -- for lift
-		local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
-		if resultPos.y > -99999 then 
-			BuildingSystem.shared():placeLiftPart(resultPos)
-			print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
+		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
+		print "place Item 2"
+		if result ~= nil then
+			--先收纳 再搞事
+			print "store"
+			BuildingSystem.shared():liftStore(result)
+		else
+			local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
+			print "place Item 3";
+			print("the Hit Pos: "..resultPos.x..", "..resultPos.y..", "..resultPos.z)
+			if resultPos.y > -99999 then
+				print "bbbbbbbbbbbb"
+				BuildingSystem.shared():placeLiftPart(resultPos)
+				print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
+			end
 		end
 	else
 		if checkIsNormalPart(item.ItemType) then
 			local aBlock = BuildingSystem.shared():createPart(item.ItemType, item.name)
+			local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
 			if result == nil then
 				print("do nothing")
 				--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
@@ -421,13 +446,18 @@ end
 
 function handleItemPrimaryUse(item)
 	local player = GameWorld.shared():getPlayer()
+	print "herer handleItemPrimaryUse"
 	if (item.ItemClass == "PlaceableBlock") then
+		print "herer handleItemPrimaryUse2"
 		placeItem(item)
 	elseif (item.ItemClass == "Painter") then --paint the object
+		print "herer handleItemPrimaryUse3"
 		player:paint();
 	elseif (item.ItemClass == "TerrainTool") then --fill the terrain
+		print "herer handleItemPrimaryUse4"
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	end
+	print "herer handleItemPrimaryUse5"
 end
 
 function handleItemSecondaryUse(item)
@@ -437,6 +467,8 @@ function handleItemSecondaryUse(item)
 		if result then
 			player:removePart(result)
 		end
+	elseif (item.ItemClass == "Painter") then --paint the object
+		MainMenu.shared():setPainterShow(true)
 	elseif (item.ItemClass == "TerrainTool") then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
 	end

@@ -26,6 +26,7 @@
 #include "NodeEditorNodes/KeyAnyTriggerNode.h"
 #include "NodeEditorNodes/ToggleNode.h"
 #include "ThrusterPart.h"
+#include "Base/TranslationMgr.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -318,38 +319,38 @@ enum class PinType
 	    
 		ImGui::BeginHorizontal("Style Editor", ImVec2(paneWidth, 0));
 	    ImGui::Spring(0.0f, 0.0f);
-	    if (ImGui::Button(u8"调整视图"))
+	    if (ImGui::Button(TRC(u8"调整视图")))
 	        ed::NavigateToContent();
-		if(ImGui::Button(u8"退出"))
+		if(ImGui::Button(TRC(u8"退出")))
 			(*g_isOpen) = false;
 	    ImGui::Spring(0.0f);
 	    ImGui::Spring();
 	    ImGui::EndHorizontal();
-		if(ImGui::Button(u8"旋转节点"))
+		if(ImGui::Button(TRC(u8"旋转节点")))
 		{
 			addNode(new SpinNode());
 		}
-		if(ImGui::Button(u8"标准输入"))
+		if(ImGui::Button(TRC(u8"标准输入")))
 		{
 			addNode(new KeyTriggerNode());
 		}
-		if(ImGui::Button(u8"按键输入"))
+		if(ImGui::Button(TRC(u8"按键输入")))
 		{
 			addNode(new KeyAnyTriggerNode());
 		}
-		if(ImGui::Button(u8"使用节点"))
+		if(ImGui::Button(TRC(u8"使用节点")))
 		{
 			addNode(new UseNode());
 		}
-		if(ImGui::Button(u8"Vector"))
+		if(ImGui::Button(TRC(u8"Vector")))
 		{
 			addNode(new VectorNode());
 		}
-		if(ImGui::Button(u8"Constant"))
+		if(ImGui::Button(TRC(u8"Constant")))
 		{
 			addNode(new ConstantIntNode());
 		}
-		if(ImGui::Button(u8"Toggle"))
+		if(ImGui::Button(TRC(u8"Toggle")))
 		{
 			addNode(new ToggleNode());
 		}
@@ -374,7 +375,7 @@ enum class PinType
 	        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
 	        ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]), ImGui::GetTextLineHeight() * 0.25f);
 	    ImGui::Spacing(); ImGui::SameLine();
-	    ImGui::TextUnformatted(u8"节点列表");
+	    ImGui::TextUnformatted(TRC(u8"节点列表"));
 	    ImGui::Indent();
 	    for (auto& node : m_gameNodes)
 	    {
@@ -433,17 +434,17 @@ enum class PinType
 	        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
 	        ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]), ImGui::GetTextLineHeight() * 0.25f);
 	    ImGui::Spacing(); ImGui::SameLine();
-	    ImGui::TextUnformatted(u8"选中");
+	    ImGui::TextUnformatted(TRC(u8"选中"));
 
 	    ImGui::BeginHorizontal("Selection Stats", ImVec2(paneWidth, 0));
 	    ImGui::Text("Changed %d time%s", changeCount, changeCount > 1 ? "s" : "");
 	    ImGui::Spring();
-	    if (ImGui::Button(u8"全部取消选中"))
+	    if (ImGui::Button(TRC(u8"全部取消选中")))
 	        ed::ClearSelection();
 	    ImGui::EndHorizontal();
 	    ImGui::Indent();
-	    for (int i = 0; i < nodeCount; ++i) ImGui::Text(u8"节点 %s", findNode(selectedNodes[i].Get())->name.c_str());
-	    for (int i = 0; i < linkCount; ++i) ImGui::Text(u8"连接 (%p)", selectedLinks[i].AsPointer());
+	    for (int i = 0; i < nodeCount; ++i) ImGui::Text(TRC(u8"节点 %s"), findNode(selectedNodes[i].Get())->name.c_str());
+	    for (int i = 0; i < linkCount; ++i) ImGui::Text(TRC(u8"连接 (%p)"), selectedLinks[i].AsPointer());
 	    ImGui::Unindent();
 
 	    if (ed::HasSelectionChanged())

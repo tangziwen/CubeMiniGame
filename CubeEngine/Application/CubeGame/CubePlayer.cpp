@@ -17,6 +17,7 @@
 #include "Shader/ShaderMgr.h"
 #include "PartSurfaceMgr.h"
 #include "PaintGun.h"
+#include "Base/TranslationMgr.h"
 
 namespace tzw
 {
@@ -93,55 +94,86 @@ namespace tzw
 			GameWorld::shared()->loadChunksAroundPlayer();
 		}
 
-		GamePart * part = nullptr;
-		if(BuildingSystem::shared()->isIsInXRayMode())
+		if(m_currSelectedItem != "Lift") // no lift preview part
 		{
-			part = BuildingSystem::shared()->rayTestPartXRay(getPos(), m_camera->getTransform().forward(), 10.0);
-		}else
-		{
-			part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
-		}
-		
-		if(part)
-		{
-
-			if(m_previewGamePart)
+			GamePart * part = nullptr;
+			if(BuildingSystem::shared()->isIsInXRayMode())
 			{
-				vec3 p,n,u;
-				auto attach = part->findProperAttachPoint(Ray(getPos(), m_camera->getTransform().forward()),p,n,u);
-				if(attach && !attach->m_connected && m_currSelectedItem != "Painter" && m_currSelectedItem != "Lift")
+				part = BuildingSystem::shared()->rayTestPartXRay(getPos(), m_camera->getTransform().forward(), 10.0);
+			}else
+			{
+				part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
+			}
+			
+			if(part)
+			{
+				if(m_previewGamePart)
 				{
-					m_previewGamePart->getNode()->setIsVisible(true);
-					m_previewGamePart->adjustToOtherIslandByAlterSelfPart(attach, m_previewGamePart->getFirstAttachment(), m_previewAngle);
-				}else
+					vec3 p,n,u;
+					auto attach = part->findProperAttachPoint(Ray(getPos(), m_camera->getTransform().forward()),p,n,u);
+					if(attach && !attach->m_connected && m_currSelectedItem != "Painter" && m_currSelectedItem != "Lift")
+					{
+						m_previewGamePart->getNode()->setIsVisible(true);
+						m_previewGamePart->adjustToOtherIslandByAlterSelfPart(attach, m_previewGamePart->getFirstAttachment(), m_previewAngle);
+					}else
+					{
+						m_previewGamePart->getNode()->setIsVisible(false);
+					}
+					
+				}
+				if(m_currPointPart != part)
+				{
+					m_currPointPart = part;
+					updateCrossHairTipsInfo();
+				}
+			}else
+			{
+				if(m_previewGamePart)
 				{
 					m_previewGamePart->getNode()->setIsVisible(false);
+	            }
+				if(m_currPointPart)
+				{
+					m_currPointPart = nullptr;
+					updateCrossHairTipsInfo();
 				}
-				
-			}
-			if(m_currPointPart != part)
-			{
-				//part->highLight();
-				//if(m_currPointPart)
-				//{
-				//	m_currPointPart->unhighLight();
-				//}
-				m_currPointPart = part;
-				updateCrossHairTipsInfo();
-			}
-		}else
-		{
-			if(m_previewGamePart)
-			{
-				m_previewGamePart->getNode()->setIsVisible(false);
-            }
-			if(m_currPointPart)
-			{
-				//m_currPointPart->unhighLight();
-				m_currPointPart = nullptr;
-				updateCrossHairTipsInfo();
 			}
 		}
+		else //lift, lift is so fucking special
+		{
+			//未放置升降机的时候
+			if(!BuildingSystem::shared()->getLift()) 
+			{
+				auto resultPos = BuildingSystem::shared()->hitTerrain(getPos(), getForward(), 10);
+				if (resultPos.y > -99999)
+				{
+					static_cast<LiftPart *>(m_previewGamePart)->setIsVisible(true);
+					static_cast<LiftPart *>(m_previewGamePart)->setPos(resultPos);
+
+					//有收纳对象，这样子搞性能有点差，先敏捷一波
+					if(!BuildingSystem::shared()->getStoreIslandGroup().empty())
+					{
+						std::vector<Island * > storeIslandGroup;
+						BuildingSystem::shared()->getIslandsByGroup(BuildingSystem::shared()->getStoreIslandGroup(), storeIslandGroup);
+						BuildingSystem::shared()->tempPlace(storeIslandGroup[0], static_cast<LiftPart *>(m_previewGamePart));
+						////readjust
+						auto attach = BuildingSystem::shared()->replaceToLiftIslands(storeIslandGroup[0]->m_islandGroup);
+						BuildingSystem::shared()->replaceToLift(attach->m_parent->m_parent, attach, static_cast<LiftPart *>(m_previewGamePart));
+					}
+			
+				}
+				else
+				{
+					static_cast<LiftPart *>(m_previewGamePart)->setIsVisible(false);
+				}
+			}
+			else
+			{
+				static_cast<LiftPart *>(m_previewGamePart)->setIsVisible(false);
+			}
+
+		}
+
 	}
 
 	bool CubePlayer::checkIsNeedUpdateChunk()
@@ -190,9 +222,14 @@ namespace tzw
 				m_camera->setIsEnableGravity(m_enableGravity);
 			}
 			break;
-            case TZW_KEY_U:
+        case TZW_KEY_H:
 			{
-				MainMenu::shared()->setWindowShow(WindowType::PAINTER, true);
+				MainMenu::shared()->setWindowShow(WindowType::HELP_PAGE, true);
+            }
+			break;
+        case TZW_KEY_M:
+			{
+				MainMenu::shared()->setWindowShow(WindowType::MainMenu, !MainMenu::shared()->getWindowIsShow(WindowType::MainMenu));
             }
 			break;
 		case TZW_KEY_T:
@@ -295,23 +332,36 @@ namespace tzw
 	{
 		auto label = MainMenu::shared()->getCrossHairTipsInfo();
 		if(!label) return;
-		if(!m_currPointPart) 
+		auto item = ItemMgr::shared()->getItem(m_currSelectedItem);
+		if(item->isSpecialFunctionItem())
 		{
-			label->setIsVisible(false);
-			return;
-        }
-		label->setIsVisible(true);
-		switch(m_currPointPart->getType())
+			label->setIsVisible(true);
+			switch(item->m_type)
+			{
+			case GamePartType::GAME_PART_LIFT:label->setString(TR(u8"对准空地放置，对准载具收纳放置")); break;
+			case GamePartType::SPECIAL_PART_PAINTER: label->setString(TR(u8"(左键) 喷漆 \n(右键) 喷涂面板")); break;
+			default: ;
+			}
+		}else
 		{
-		case GamePartType::GAME_PART_LIFT: label->setString(u8"(E) 载具浏览器"); break;
-		case GamePartType::GAME_PART_CONTROL: label->setString(u8"(E) 驾驶\n(F) 节点编辑器");break;
-		case GamePartType::GAME_PART_THRUSTER: label->setString(u8"(E) 属性面板");break;
-		case GamePartType::GAME_PART_CANNON: label->setString(u8"(E) 属性面板");break;
-		case GamePartType::GAME_PART_BEARING: label->setString(u8"(E) 属性面板\n(F) 调整方向");break;
-		case GamePartType::GAME_PART_SPRING: label->setString(u8"(E) 属性面板");break;
-		default:
-			label->setIsVisible(false);
-			break;
+			if(!m_currPointPart) 
+			{
+				label->setIsVisible(false);
+				return;
+	        }
+			label->setIsVisible(true);
+			switch(m_currPointPart->getType())
+			{
+			case GamePartType::GAME_PART_LIFT: label->setString(TR(u8"(E) 载具浏览器")); break;
+			case GamePartType::GAME_PART_CONTROL: label->setString(TR(u8"(E) 驾驶\n(F) 节点编辑器"));break;
+			case GamePartType::GAME_PART_THRUSTER: label->setString(TR(u8"(E) 属性面板"));break;
+			case GamePartType::GAME_PART_CANNON: label->setString(TR(u8"(E) 属性面板"));break;
+			case GamePartType::GAME_PART_BEARING: label->setString(TR(u8"(E) 属性面板\n(F) 调整方向"));break;
+			case GamePartType::GAME_PART_SPRING: label->setString(TR(u8"(E) 属性面板"));break;
+			default:
+				label->setIsVisible(false);
+				break;
+			}
 		}
 	}
 
@@ -346,31 +396,28 @@ namespace tzw
 	{
 		if(itemName.empty()) return;
 		m_currSelectedItem = itemName;
-		if(itemName == "Lift") return;
+		updateCrossHairTipsInfo();
 		if(itemName == "Painter") return;
 		if(m_previewGamePart)
 		{
 			m_previewIsland->remove(m_previewGamePart);
 			delete m_previewGamePart;
 		}
-		auto gamePart = new GamePart();
-		gamePart->initFromItemName(itemName);
-		m_previewIsland->insert(gamePart);
-		m_previewGamePart = gamePart;
-	    auto m_material = Material::createFromTemplate("ModelRimLight");
-		//auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
-		//m_material->setTex("DiffuseMap", texture);
+		if(itemName == "Lift")
+		{
+			m_previewGamePart = new LiftPart();
+			//m_previewGamePart->setPos(wherePos);
+		} else 
+		{
 
-		//auto metallicTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_metallic.png");
-		//m_material->setTex("MetallicMap", metallicTexture);
-
-		//auto roughnessTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_roughness.png");
-		//m_material->setTex("RoughnessMap", roughnessTexture);
-
-		//auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
-		//m_material->setTex("NormalMap", normalMapTexture);
-		m_previewGamePart->getNode()->setMaterial(m_material);
-		tlog("create preview part");
+			auto gamePart = new GamePart();
+			gamePart->initFromItemName(itemName);
+			m_previewIsland->insert(gamePart);
+			m_previewGamePart = gamePart;
+			auto m_material = Material::createFromTemplate("ModelRimLight");
+			m_previewGamePart->getNode()->setMaterial(m_material);
+			tlog("create preview part");
+        }
 	}
 
 	void CubePlayer::setPreviewAngle(float angle)

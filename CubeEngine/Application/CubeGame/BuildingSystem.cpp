@@ -24,7 +24,7 @@ namespace tzw
 	const float bearingGap = 0.00;
 	TZW_SINGLETON_IMPL(BuildingSystem);
 
-	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false)
+	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup("")
 	{
 	}
 
@@ -105,11 +105,7 @@ namespace tzw
 			attach->getAttachmentInfoWorld(pos, n, up);
 			auto newIsland = new Island(pos);
 			m_IslandList.push_back(newIsland);
-			newIsland->insert(part);
-			part->attachToOtherIslandByAlterSelfPart(attach, index);
-			//we change the part transformation after instert. we need to tell the parent knows it,let the parent adjust rigid body.
-			newIsland->updatePhysics();
-			newIsland->updateNeighborConstraintPhysics();
+			newIsland->insertAndAdjustAttach(part, attach, index);
 			newIsland->genIslandGroup();
 			liftPart->setEffectedIsland(newIsland->m_islandGroup);
 		}
@@ -153,22 +149,31 @@ namespace tzw
 		}
 	}
 
-	vec3
-	BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
+	vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
 	{
 		std::vector<Drawable3D*> list;
 		AABB aabb;
-		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+		aabb.update(vec3(pos.x - dist, pos.y - dist, pos.z - dist));
+		aabb.update(vec3(pos.x + dist, pos.y + dist, pos.z + dist));
 		g_GetCurrScene()->getRange(&list, aabb);
 		if (!list.empty())
 		{
+			for(auto i = list.begin(); i != list.end();)
+			{
+				if(!dynamic_cast<Chunk*>(*i)) 
+				{
+					i = list.erase(i);
+				}else
+				{
+					i++;
+				}
+			}
 			Drawable3DGroup group(&list[0], list.size());
 			Ray ray(pos, dir);
 			vec3 hitPoint;
-			auto chunk = static_cast<Chunk*>(group.hitByRay(ray, hitPoint));
-			if (chunk)
+			if (group.hitByRay(ray, hitPoint))
 			{
+				
 				return hitPoint;
 			}
 		}
@@ -180,12 +185,34 @@ namespace tzw
 	{
 		if(m_liftPart) 
 		{
-			UIHelper::shared()->showFloatTips(u8"升降台只能放一个");
+			UIHelper::shared()->showFloatTips(TR(u8"升降台只能放一个"));
             return;
         }
 		auto part = new LiftPart();
 		part->setPos(wherePos);
 		m_liftPart = part;
+		//收纳状态
+		if(!m_storeIslandGroup.empty())
+		{
+			// disable physics and put them back to lift position
+			for (auto island : m_IslandList)
+			{
+				island->m_node->setIsVisible(true);
+				island->enablePhysics(false);
+				//recover from building rotate
+				island->recoverFromBuildingRotate();
+			}
+			for(auto constraint :m_bearList)
+			{
+				constraint->enablePhysics(false);
+			}
+		
+			tempPlace(m_IslandList[0], m_liftPart);
+			////readjust
+			auto attach = replaceToLiftIslands(m_storeIslandGroup);
+			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
+			m_storeIslandGroup.clear();
+		}
 	}
 
 	void
@@ -463,6 +490,25 @@ namespace tzw
 		m_thrusterList.erase(m_thrusterList.find(thrsuter));
 	}
 
+	void BuildingSystem::liftStore(GamePart* part)
+	{
+		//收纳起来
+		m_storeIslandGroup = part->m_parent->m_islandGroup;
+		std::vector<Island *> group;
+		getIslandsByGroup(m_storeIslandGroup,group);
+		//禁用物理
+		for (auto island : group)
+		{
+			island->enablePhysics(false);
+			//recover from building rotate
+			island->recoverFromBuildingRotate();
+		}
+		for(auto constraint :m_bearList)
+		{
+			constraint->enablePhysics(false);
+		}
+	}
+
 	void
 	BuildingSystem::getIslandsByGroup(std::string islandGroup,
 									std::vector<Island*>& groupList)
@@ -617,10 +663,10 @@ namespace tzw
 		if(m_liftPart)
 		{
 			auto firstIsland = m_IslandList[0];
-			tempPlace(firstIsland);
+			tempPlace(firstIsland, m_liftPart);
 			//readjust
 			auto attach = replaceToLiftIslands(firstIsland->m_islandGroup);
-			replaceToLift(attach->m_parent->m_parent, attach);
+			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
 		}else 
 		{
 			// for no run test, if we not yet loaded the world & placed the lift, we still can debug the Node Editor problems.
@@ -708,6 +754,16 @@ namespace tzw
 	void BuildingSystem::setIsInXRayMode(const bool isInXRayMode)
 	{
 		m_isInXRayMode = isInXRayMode;
+	}
+
+	std::string BuildingSystem::getStoreIslandGroup() const
+	{
+		return m_storeIslandGroup;
+	}
+
+	void BuildingSystem::setStoreIslandGroup(const std::string& storeIslandGroup)
+	{
+		m_storeIslandGroup = storeIslandGroup;
 	}
 
 	void
@@ -803,18 +859,18 @@ void BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
 				constraint->enablePhysics(false);
 			}
 		
-			tempPlace(island);
+			tempPlace(island, m_liftPart);
 			////readjust
 			auto attach = replaceToLiftIslands(island->m_islandGroup);
-			replaceToLift(attach->m_parent->m_parent, attach);
+			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
 		}
 	}
 
-void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
+void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, LiftPart * targetLift)
 {
 	if (!island) return;
 	vec3 attachPos, n, up;
-	auto attach = m_liftPart->getFirstAttachment();
+	auto attach = targetLift->getFirstAttachment();
 	attach->getAttachmentInfoWorld(attachPos, n, up);
 
 	if(!attachment)
@@ -825,7 +881,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 	{
 		attachment->m_parent->attachToOtherIslandByAlterSelfIsland(attach, attachment, 0);
 	}
-	m_liftPart->setEffectedIsland(island->m_islandGroup);
+	targetLift->setEffectedIsland(island->m_islandGroup);
 	std::set<Island *> closeSet;
 	closeSet.insert(island);
 	for (auto part : island->m_partList)
@@ -839,13 +895,13 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 			{
 				Attachment* other = nullptr;
 				connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
-				replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet);
+				replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet, targetLift);
 			}
 		}
 	}
 }
 
-	void BuildingSystem::tempPlace(Island* island)
+	void BuildingSystem::tempPlace(Island* island,LiftPart * targetLift)
 	{
 		if (!island) return;
 		std::set<Island *> closeSet;
@@ -860,7 +916,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 				if (connectedAttach && connectedAttach->m_parent->isConstraint())
 				{
 					Attachment* other = nullptr;
-					replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet);
+					replaceToLift_R(connectedAttach->m_parent->m_parent, closeSet, targetLift);
 				}
 			}
 		}
@@ -915,7 +971,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 		return attachmentList[0]->getBottomAttachment();
 	}
 
-	void BuildingSystem::replaceToLift_R(Island* island, std::set<Island*>& closeList)
+	void BuildingSystem::replaceToLift_R(Island* island, std::set<Island*>& closeList, LiftPart * targetLift)
 	{
 		closeList.insert(island);
 		//constraint island
@@ -927,7 +983,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 			{
 				auto attach = constraint->getAttachment(i);
 				auto connectedAttach = attach->m_connected;
-				if (connectedAttach && connectedAttach->m_parent != m_liftPart)
+				if (connectedAttach && connectedAttach->m_parent != targetLift)
 				{
 					if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 					{
@@ -935,7 +991,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 					} else
 					{
 						connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
-						replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
+						replaceToLift_R(connectedAttach->m_parent->m_parent, closeList, targetLift);
 					}
 					
 				}
@@ -959,7 +1015,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment)
 						} else
 						{
 							connectedAttach->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, connectedAttach, connectedAttach->m_degree);
-							replaceToLift_R(connectedAttach->m_parent->m_parent, closeList);
+							replaceToLift_R(connectedAttach->m_parent->m_parent, closeList, targetLift);
 						}
 					}
 				}

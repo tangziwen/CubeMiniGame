@@ -257,7 +257,7 @@ vec4 getWorldPosFromDepth()
 
 float getBias(vec3 normal, vec3 dirLight)
 {
-	return max(0.0002 * (1.0 - dot(normal, dirLight)), 0.0001);
+	return max(0.0002 * (1.0 - dot(normal, dirLight)), 0.0008);
 }
 
 /*

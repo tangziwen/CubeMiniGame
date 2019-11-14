@@ -8,6 +8,7 @@
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
 #include "NodeEditorNodes/SpringPartNode.h"
+#include "Base/TranslationMgr.h"
 
 namespace tzw
 {
@@ -188,7 +189,7 @@ GameNodeEditorNode* SpringPart::getGraphNode() const
 void SpringPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, u8"弹簧 %s",genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"弹簧 %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -206,12 +207,12 @@ void SpringPart::drawInspect()
 	stiffness = getStiffness();
 	damping = getDamping();
 	bool isInputStiffness = false, isInputDamping = false;
-	isInputStiffness = ImGui::InputFloat(u8"劲度系数", &stiffness);
+	isInputStiffness = ImGui::InputFloat(TRC(u8"劲度系数"), &stiffness);
 	if(isInputStiffness)
 	{
 		setStiffness(stiffness);
 	}
-	isInputDamping = ImGui::InputFloat(u8"阻尼", &damping);
+	isInputDamping = ImGui::InputFloat(TRC(u8"阻尼"), &damping);
 	if(isInputDamping)
 	{
 		setStiffness(damping);

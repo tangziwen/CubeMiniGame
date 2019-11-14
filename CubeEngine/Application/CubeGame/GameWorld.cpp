@@ -14,6 +14,7 @@
 #include "AssistDrawSystem.h"
 #include "ItemMgr.h"
 #include "PartSurfaceMgr.h"
+#include "Base/TranslationMgr.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -248,6 +249,7 @@ Chunk *GameWorld::getChunk(int x, int y, int z)
 
 GameWorld::GameWorld()
 {
+	TranslationMgr::shared()->load("ENG");
     EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GAME_STATE_MAIN_MENU;

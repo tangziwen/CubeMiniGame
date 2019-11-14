@@ -8,9 +8,9 @@ namespace tzw
 {
 	KeyAnyTriggerNode::KeyAnyTriggerNode()
 	{
-		name =u8"按键输入";
-		m_pressedAttr =addOutExe(u8"按下");
-		m_ReleasedAttr = addOutExe(u8"松开");
+		name =TR(u8"按键输入");
+		m_pressedAttr =addOutExe(TR(u8"按下"));
+		m_ReleasedAttr = addOutExe(TR(u8"松开"));
 		m_keyCode = TZW_KEY_N;
 	}
 

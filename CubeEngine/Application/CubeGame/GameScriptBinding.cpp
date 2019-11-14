@@ -23,8 +23,10 @@
 		lua_setfield( luaState, -2, KEY_NAME );}
 
 #define SET_G(luaState, name, intVal) {	lua_pushinteger( luaState, intVal ); lua_setglobal( luaState, -2, name );}
+
 namespace tzw 
 {
+
 	void g_binding_game_objects()
 	{
 		auto luaState = static_cast<lua_State *>(ScriptPyMgr::shared()->getState());
@@ -84,6 +86,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, setCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getGamePartTypeInt)
+		BIND_FUNC(BuildingSystem, liftStore)
 		BIND_END_CLASS
 		//ItemMgr
 		BIND_START(luaState)
@@ -111,6 +114,7 @@ namespace tzw
 		BIND_FUNC(MainMenu, setIsShowNodeEditor)
 		BIND_FUNC(MainMenu, setIsFileBroswerOpen)
 		BIND_FUNC(MainMenu, isOpenAssetEditor)
+		BIND_FUNC(MainMenu, setPainterShow)
 		BIND_END_CLASS
 
 		//GamePart and it's derived classes

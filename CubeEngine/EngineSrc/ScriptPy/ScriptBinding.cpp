@@ -14,6 +14,7 @@
 #include "2D/imgui.h"
 
 #include "2D/imnodes.h"
+#include "Base/TranslationMgr.h"
 
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
@@ -105,14 +106,20 @@ namespace tzw
 	{
 		ImGui::PopStyleColor(1);
 	}
-
+	std::string translation(std::string theString)
+	{
+		return TranslationMgr::shared()->getStr(theString);
+	}
 	void g_init_engine_libs()
 	{
 		auto luaState = static_cast<lua_State *>(ScriptPyMgr::shared()->getState());
 
-		//Vec2
+		
 		BIND_START(luaState)
-		BIND_BEGIN_CLASS(vec2)
+		//static function
+		.addFunction("TR", &translation)
+
+		BIND_BEGIN_CLASS(vec2)//Vec2
 		.addConstructor <void (*) ()> ()
 		BIND_PROP(vec2, x)
 		BIND_PROP(vec2, y)
