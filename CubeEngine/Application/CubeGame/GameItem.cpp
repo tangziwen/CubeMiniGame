@@ -20,7 +20,7 @@ namespace tzw
 
 	bool GameItem::isSpecialFunctionItem()
 	{
-		return (m_type == GamePartType::GAME_PART_LIFT) || (m_type == GamePartType::SPECIAL_PART_PAINTER);
+		return (m_type == GamePartType::GAME_PART_LIFT) || (m_type == GamePartType::SPECIAL_PART_PAINTER) ||(m_type == GamePartType::SPECIAL_PART_DIGGER)  ;
 	}
 
 GameItem::GameItem()

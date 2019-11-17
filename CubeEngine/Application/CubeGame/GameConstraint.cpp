@@ -18,6 +18,11 @@ void GameConstraint::enablePhysics(bool isEnable)
 	m_isEnablePhysics = isEnable;
 }
 
+bool GameConstraint::isEnablePhysics()
+{
+	return m_isEnablePhysics;
+}
+
 void GameConstraint::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
 {
 	partData.AddMember("Name", m_name, allocator);

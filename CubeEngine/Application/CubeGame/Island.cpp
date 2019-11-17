@@ -55,6 +55,47 @@ Island::insertNoUpdatePhysics(GamePart* part)
 void Island::insert(GamePart* part)
 {
 	insertNoUpdatePhysics(part);
+	//计算连接性，把其余的角落也他妈都封住
+	std::vector<Attachment * > attachmentList;
+	for(auto anyPart :m_partList)
+	{
+		if(part != anyPart) 
+		{
+			for(int i = 0; i< anyPart->getAttachmentCount(); i++)
+			{
+				auto attach = anyPart->getAttachment(i);
+				if(!attach->m_connected) 
+				{
+					attachmentList.push_back(attach);
+				}
+			}
+		}
+	}
+	int count = 0;
+	for(int i = 0; i < part->getAttachmentCount(); i++)
+	{
+		auto selfAttach = part->getAttachment(i);
+		if(!selfAttach->m_connected)
+		{
+			for(auto attach : attachmentList)
+			{
+				if(!attach->m_connected)
+				{
+					vec3 p1,n1,u1;
+					selfAttach->getAttachmentInfo(p1, n1, u1);
+					vec3 p2,n2,u2;
+					attach->getAttachmentInfo(p2, n2, u2);
+					if(p1.distance(p2) < 0.001)
+					{
+						selfAttach->m_connected = attach;
+						attach->m_connected = selfAttach;
+						count += 1;
+					}
+				}
+			}
+		}
+	}
+	tlog("extra connected Num %d", count);
 	updatePhysics();
 	updateNeighborConstraintPhysics();
 }
@@ -214,6 +255,11 @@ Island::enablePhysics(bool isEnable)
 	}
 
 
+}
+
+bool Island::isEnablePhysics()
+{
+	return m_enablePhysics;
 }
 
 float

@@ -79,6 +79,11 @@ void ItemMgr::loadFromFile(std::string filePath)
 				gameItem->m_type = GamePartType::SPECIAL_PART_PAINTER;
 				isSpecial = true;
 			}
+			if(type == "SPECIAL_PART_DIGGER")
+			{
+				gameItem->m_type = GamePartType::SPECIAL_PART_DIGGER;
+				isSpecial = true;
+			}
 			gameItem->m_desc = desc;
 
 			if(!isSpecial)

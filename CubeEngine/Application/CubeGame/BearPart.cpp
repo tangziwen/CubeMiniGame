@@ -86,7 +86,7 @@ BearPart::BearPart(std::string itemName)
 	m_xrayMat = Material::createFromTemplate("PartXRay");
 	
 	auto cylinderIndicator = static_cast<Model *> (m_node);
-	m_xrayMat->setTex("diffuseMap", cylinderIndicator->getMat(0)->getTex("diffuseMap"));
+	m_xrayMat->setTex("DiffuseMap", cylinderIndicator->getMat(0)->getTex("DiffuseMap"));
 	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
 	{
 		if(BuildingSystem::shared()->isIsInXRayMode())
@@ -102,19 +102,18 @@ BearPart::BearPart(std::string itemName)
 	void BearPart::updateFlipped()
 {
 	if(!m_node) return;
-	return;
-	auto cylinder = static_cast<CylinderPrimitive *>(m_node);
+	auto model = static_cast<Model *>(m_node);
 	Texture * tex;
 	if(m_isFlipped)
 	{
-		tex = TextureMgr::shared()->getByPath("Texture/bear_flipped.png");
+		tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse_inverted.png");
 	}
 	else
 	{
-		tex = TextureMgr::shared()->getByPath("Texture/bear.png");
+		tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse.png");
 	}
-	cylinder->setTopBottomTex(tex);
-	m_xrayMat->setTex("diffuseMap", cylinder->getTopBottomMaterial()->getTex("diffuseMap"));
+	model->getMat(0)->setTex("DiffuseMap", tex);
+	m_xrayMat->setTex("DiffuseMap", tex);
 }
 
 int BearPart::getAttachmentCount()
@@ -127,6 +126,12 @@ BearPart::~BearPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
+	if(m_constrain) 
+	{
+		PhysicsMgr::shared()->removeConstraint(m_constrain);
+		delete m_constrain;
+	}
+	
 }
 
 GameNodeEditorNode* BearPart::getGraphNode() const
@@ -310,7 +315,27 @@ void BearPart::generateName()
 		}
 	}
 
-void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
+	void BearPart::createConstraintImp()
+	{
+		auto attachA = m_a;
+		auto attachB = m_b;
+		auto partA = attachA->m_parent;
+		auto partB = attachB->m_parent;
+
+		vec3 worldPosA, worldNormalA, worldUpA;
+		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
+		vec3 worldPosB, worldNormalB, worldUpB;
+		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
+		vec3 hingeDir = (worldPosB - worldPosA).normalized();
+		vec3 pivotA, pivotB, axisA, axisB;
+		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
+		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+
+		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+		m_constrain = constrain;
+	}
+
+	void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
 {
 	auto part = attach->m_parent;
 	auto island = part->m_parent;
@@ -334,20 +359,7 @@ void BearPart::enablePhysics(bool isEnable)
 			auto attachB = m_b;
 			if (attachA && attachB) 
 			{
-				auto partA = attachA->m_parent;
-				auto partB = attachB->m_parent;
-
-				vec3 worldPosA, worldNormalA, worldUpA;
-				attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-				vec3 worldPosB, worldNormalB, worldUpB;
-				attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-				vec3 hingeDir = (worldPosB - worldPosA).normalized();
-				vec3 pivotA, pivotB, axisA, axisB;
-				findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-				findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-
-				auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
-				m_constrain = constrain;
+				createConstraintImp();
 				PhysicsMgr::shared()->addConstraint(m_constrain);
 			}
 		}

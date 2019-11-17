@@ -4,21 +4,27 @@
 
 namespace tzw
 {
-PhysicsConstraint::PhysicsConstraint()
-	: m_constraint(nullptr)
-{
 
-}
+	PhysicsConstraint::~PhysicsConstraint()
+	{
+		delete m_constraint;
+	}
 
-btTypedConstraint* PhysicsConstraint::constraint() const
-{
-	return m_constraint;
-}
+	PhysicsConstraint::PhysicsConstraint()
+		: m_constraint(nullptr)
+	{
 
-void PhysicsConstraint::setConstraint(btTypedConstraint* constraint)
-{
-	m_constraint = constraint;
-}
+	}
+
+	btTypedConstraint* PhysicsConstraint::constraint() const
+	{
+		return m_constraint;
+	}
+
+	void PhysicsConstraint::setConstraint(btTypedConstraint* constraint)
+	{
+		m_constraint = constraint;
+	}
 
 
 }

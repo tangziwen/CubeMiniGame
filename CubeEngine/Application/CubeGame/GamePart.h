@@ -70,6 +70,7 @@ public:
 	virtual bool isNeedDrawInspect();
 	virtual void drawInspectNameEdit();
 	void initFromItemName(std::string itemName);
+	void initFromItem(GameItem * item);
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

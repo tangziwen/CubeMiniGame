@@ -198,6 +198,11 @@ SpringPart::~SpringPart()
 	auto nodeEditor = MainMenu::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
+	if(m_constrain) 
+	{
+		PhysicsMgr::shared()->removeConstraint(m_constrain);
+		delete m_constrain;
+	}
 }
 
 void SpringPart::drawInspect()

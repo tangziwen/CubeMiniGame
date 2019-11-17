@@ -21,6 +21,7 @@ class BuildingSystem
 public:
 	BuildingSystem();
 	void flipBearingByHit(vec3 pos, vec3 dir, float dist);
+	void flipBearing(GamePart * gamePart);
 	void placeItem(GameItem * item, vec3 pos, vec3 dir, float dist);
 	void dropFromLift();
 	void replaceToLiftByRay(vec3 pos, vec3 dir, float dist);
@@ -47,6 +48,7 @@ public:
 	Island * createIsland(vec3 pos);
 	Attachment * rayTest(vec3 pos, vec3 dir, float dist);
 	GamePart * rayTestPart(vec3 pos, vec3 dir, float dist);
+	GamePart * rayTestPartAny(vec3 pos, vec3 dir, float dist);
 	GamePart * rayTestPartXRay(vec3 pos, vec3 dir, float dist);
 	Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
 	LiftPart * getLift() const;
@@ -59,6 +61,7 @@ public:
 	void updateBearing(float dt);
 	void removeLiftConnected();
 	void removeAll();
+	void removeByGroup(std::string islandGroup);
 	void removeIsland(Island * island);
 	std::set<GameConstraint *> &getConstraintList();
 	void update(float dt);

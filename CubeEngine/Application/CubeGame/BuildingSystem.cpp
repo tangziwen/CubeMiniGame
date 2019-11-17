@@ -91,8 +91,12 @@ namespace tzw
 		m_IslandList.push_back(island);
 		island->insert(part);
 		island->m_islandGroup = attach->m_parent->m_parent->m_islandGroup;
+		
 		//part->attachToOtherIslandByAlterSelfPart(attach);
 		part->attachToOtherIslandByAlterSelfIsland(attach, part->getFirstAttachment(), degree);
+		//要看看约束是否在物理状态，它在，新Island也得在
+		island->enablePhysics(constraint->isEnablePhysics());
+		constraint->updateConstraintState();
 	}
 
 	void
@@ -111,7 +115,7 @@ namespace tzw
 		}
 		else
 		{
-			if (!attach->m_parent->isConstraint())
+			if (!attach->m_parent->isConstraint())//内部连接
 			{
 				part->attachTo(attach, degree, index);
 				auto island = attach->m_parent->m_parent;
@@ -211,6 +215,7 @@ namespace tzw
 			////readjust
 			auto attach = replaceToLiftIslands(m_storeIslandGroup);
 			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
+			//清空收纳对象
 			m_storeIslandGroup.clear();
 		}
 	}
@@ -299,12 +304,10 @@ namespace tzw
 													bear->getFirstAttachment(), 0);
 		attachment->m_connected = bear->getFirstAttachment();
 		auto euler = island->m_node->getRotateE();
-		tlog("%f, %f, %f",euler.x, euler.y, euler.z);
 		if(!attachment->m_connected->m_parent->m_parent) 
 		{
 			tlog("wrong");
 		}
-
 		attachment->m_parent->m_parent->addNeighbor(island);
 		island->addNeighbor(attachment->m_parent->m_parent);
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
@@ -440,6 +443,18 @@ namespace tzw
 		return nullptr;
 	}
 
+	GamePart* BuildingSystem::rayTestPartAny(vec3 pos, vec3 dir, float dist)
+	{
+		if(!isIsInXRayMode())
+		{
+			return rayTestPart(pos, dir, dist);
+		}
+		else
+		{
+			return rayTestPartXRay(pos, dir, dist);
+		}
+	}
+
 	GamePart* BuildingSystem::rayTestPartXRay(vec3 pos, vec3 dir, float dist)
 	{
 		std::vector<GamePart*> tmp;
@@ -496,6 +511,10 @@ namespace tzw
 
 	void BuildingSystem::liftStore(GamePart* part)
 	{
+		if(m_liftPart)//already place lift part
+		{
+			return;
+		}
 		//收纳起来
 		m_storeIslandGroup = part->m_parent->m_islandGroup;
 		std::vector<Island *> group;
@@ -586,6 +605,9 @@ namespace tzw
 		if (doc.HasMember("islandList"))
 		{
 			auto& items = doc["islandList"];
+			std::string islandGroup = items[0]["IslandGroup"].GetString();
+			//可能当前场景已经有散落的原载具，它们不在升降机上，也要搞死
+			removeByGroup(islandGroup);
 			for (unsigned int i = 0; i < items.Size(); i++)
 			{
 				auto& item = items[i];
@@ -718,6 +740,28 @@ namespace tzw
 		m_IslandList.clear();
 	}
 
+	void BuildingSystem::removeByGroup(std::string islandGroup)
+	{
+		std::vector<Island * > islands;
+		getIslandsByGroup(islandGroup, islands);
+		for(auto island : islands)
+		{
+			for (auto& iter : island->m_partList)
+			{
+				if (iter->isConstraint())
+				{
+					auto bearing = static_cast<GameConstraint*>(iter);
+					m_bearList.erase(m_bearList.find(bearing));
+				}
+				delete iter;
+			}
+			
+			island->removeAll();
+			m_IslandList.erase(std::find(m_IslandList.begin(), m_IslandList.end(),island));
+			delete island;
+		}
+	}
+
 	void BuildingSystem::removeIsland(Island* island)
 	{
 		for (auto& iter : island->m_partList)
@@ -773,50 +817,29 @@ namespace tzw
 	void
 	BuildingSystem::flipBearingByHit(vec3 pos, vec3 dir, float dist)
 	{
-		std::vector<GamePart*> tmp;
-		// search island
-		for (auto island : m_IslandList)
+		GamePart * part = nullptr;
+		if(!isIsInXRayMode())
 		{
-			for (auto iter : island->m_partList)
-			{
-				tmp.push_back(iter);
-			}
+			part = rayTestPart(pos, dir, dist);
+		} else 
+		{
+			rayTestPartXRay(pos, dir, dist);
 		}
-		std::sort(tmp.begin(), tmp.end(), [&](GamePart* left, GamePart* right)
+		if(part && part->getType() == GamePartType::GAME_PART_BEARING)
 		{
-			float distl = left->getNode()->getWorldPos().distance(pos);
-			float distr = right->getNode()->getWorldPos().distance(pos);
-			return distl < distr;
-		});
-		for (auto iter : tmp)
-		{
-			auto island = iter->m_parent;
-			auto node = iter->getNode();
-			auto invertedMat = node->getTransform().inverted();
-			vec4 dirInLocal = invertedMat * vec4(dir, 0.0);
-			vec4 originInLocal = invertedMat * vec4(pos, 1.0);
+			auto bearPart = static_cast<BearPart*>(part);
+			bearPart->m_isFlipped = !bearPart->m_isFlipped;
+			bearPart->updateFlipped();
+		}
+	}
 
-			auto r = Ray(originInLocal.toVec3(), dirInLocal.toVec3());
-			RayAABBSide side;
-			vec3 hitPoint;
-			auto isHit = r.intersectAABB(node->localAABB(), &side, hitPoint);
-			GamePart* newPart = nullptr;
-			if (isHit)
-			{
-				vec3 attachPos, attachNormal, attachUp;
-				auto attach =
-					iter->findProperAttachPoint(r, attachPos, attachNormal, attachUp);
-				if (attach)
-				{
-					if (attach->m_parent->isConstraint())
-					{
-						auto bearPart = static_cast<BearPart*>(attach->m_parent);
-						bearPart->m_isFlipped = !bearPart->m_isFlipped;
-						bearPart->updateFlipped();
-					}
-				}
-				return;
-			}
+	void BuildingSystem::flipBearing(GamePart* gamePart)
+	{
+		if(gamePart && gamePart->getType() == GamePartType::GAME_PART_BEARING)
+		{
+			auto bearPart = static_cast<BearPart*>(gamePart);
+			bearPart->m_isFlipped = !bearPart->m_isFlipped;
+			bearPart->updateFlipped();
 		}
 	}
 
@@ -879,11 +902,11 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 
 	if(!attachment)
 	{
-	island->m_partList[0]->attachToOtherIslandByAlterSelfIsland(
+	island->m_partList[0]->adjustToOtherIslandByAlterSelfIsland(
 		attach, island->m_partList[0]->getBottomAttachment(), 0);
 	}else 
 	{
-		attachment->m_parent->attachToOtherIslandByAlterSelfIsland(attach, attachment, 0);
+		attachment->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, attachment, 0);
 	}
 	targetLift->setEffectedIsland(island->m_islandGroup);
 	std::set<Island *> closeSet;
@@ -931,40 +954,33 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 		std::vector<Island*> islandGroup;
 		getIslandsByGroup(islandGroupStrID, islandGroup);
 
-		std::vector<GamePart *> attachmentList;
+		std::vector<Attachment *> attachmentList;
 		AABB aabb;
 		for(auto island : islandGroup)
 		{
-			if(island->m_isSpecial) continue;
+			if(island->m_isSpecial) continue;// constraint island is not allowed
 
 			for(auto part: island->m_partList)
 			{
-				attachmentList.push_back(part);
+				for(int i = 0; i < part->getAttachmentCount(); i ++)
+				{
+					auto attach = part->getAttachment(i);
+					if(!attach->m_connected) 
+					{
+						attachmentList.push_back(attach);
+					}
+				}
 				aabb.update(part->getWorldPos());
-				//for(int i = 0; i < part->getAttachmentCount(); i++)
-				//{
-				//	auto atta = part->getAttachment(i);
-				//	//remove lift part
-				//	if(atta->m_connected && atta->m_connected->m_parent == m_liftPart)
-				//	{
-				//		atta->m_connected = nullptr;
-				//	}
-				//	if(!atta->m_connected) 
-				//	{
-				//		attachmentList.push_back(atta);
-				//		vec3 p,n,up;
-				//		atta->getAttachmentInfoWorld(p, n, up);
-				//		aabb.update(p);
-				//	}
-				//}
 			}
 		}
 		auto center = aabb.centre();
 		std::sort(attachmentList.begin(), attachmentList.end(), 
-			[center](GamePart * l, GamePart * r) -> bool
+			[center](Attachment * l, Attachment * r) -> bool
 		{
-			vec3 pl = l->getWorldPos();
-			vec3 pr = r->getWorldPos();
+			vec3 pl,nl,ul;
+			l->getAttachmentInfoWorld(pl,nl,ul);
+			vec3 pr,nr,ur;
+			r->getAttachmentInfoWorld(pr, nr, ur);
 			float distFactorL = vec3(pl.x, 0, pl.z).distance(vec3(center.x, 0, center.z));
 			float distFactorR = vec3(pr.x, 0, pr.z).distance(vec3(center.x, 0, center.z));
 
@@ -972,7 +988,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 			float lowFactorR = pr.y - center.y;
 			return (distFactorL * 10.0 + lowFactorL) < (distFactorR * 10.0 + lowFactorR);
 		});
-		return attachmentList[0]->getBottomAttachment();
+		return attachmentList[0];//这里有风险，可能bottom也被连接了
 	}
 
 	void BuildingSystem::replaceToLift_R(Island* island, std::set<Island*>& closeList, LiftPart * targetLift)
@@ -1011,7 +1027,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 				{
 					auto attach = part->getAttachment(i);
 					connectedAttach = attach->m_connected;
-					if (connectedAttach && connectedAttach->m_parent != m_liftPart)
+					if (connectedAttach && connectedAttach->m_parent != targetLift)
 					{
 						if(closeList.find(connectedAttach->m_parent->m_parent) != closeList.end())
 						{

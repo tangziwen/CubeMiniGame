@@ -178,16 +178,16 @@ void CylinderPrimitive::initMesh()
 		m_mesh->addVertex(VertexData(up_1, vec2(theta / (2 * 3.14), 1.0), m_color));
 		m_mesh->addVertex(VertexData(down_2, vec2((theta + step) / (2 * 3.14), 0.0), m_color));
 		m_mesh->addVertex(VertexData(down_1, vec2(theta / (2 * 3.14), 0.0), m_color));
-		m_mesh->addIndex(index);
-		m_mesh->addIndex(index + 1);
 		m_mesh->addIndex(index + 2);
+		m_mesh->addIndex(index + 1);
+		m_mesh->addIndex(index);
 
 		m_mesh->addVertex(VertexData(down_2, vec2((theta + step) / (2 * 3.14), 0.0), m_color));
 		m_mesh->addVertex(VertexData(up_1, vec2(theta / (2 * 3.14), 1.0), m_color));
 		m_mesh->addVertex(VertexData(up_2, vec2((theta + step) / (2 * 3.14), 1.0), m_color));
-		m_mesh->addIndex(index + 3);
-		m_mesh->addIndex(index + 4);
 		m_mesh->addIndex(index + 5);
+		m_mesh->addIndex(index + 4);
+		m_mesh->addIndex(index + 3);
 
 		float halfHeight = m_height / 2.0;
 

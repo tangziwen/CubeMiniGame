@@ -82,6 +82,8 @@ namespace tzw
 		//we use m_attachment[0]
 		Normal = Normal * -1;
 		auto selfAttah = getAttachment(attachMentIndex);
+        selfAttah->m_connected = attach;
+        attach->m_connected = selfAttah;
 		vec3 right = vec3::CrossProduct(Normal, up);
 		Matrix44 transformForAttachPoint;
 		auto data = transformForAttachPoint.data();
@@ -620,6 +622,11 @@ namespace tzw
 	void GamePart::initFromItemName(std::string itemName)
 	{
 		auto item = ItemMgr::shared()->getItem(itemName);
+		initFromItem(item);
+	}
+
+	void GamePart::initFromItem(GameItem* item)
+	{
 		m_item = item;
 		//material
 	    auto m_material = Material::createFromTemplate("ModelPBR");

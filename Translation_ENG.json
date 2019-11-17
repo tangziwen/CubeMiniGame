@@ -1,0 +1,256 @@
+{
+	"stringList": [
+		{
+			"original": "(E) 属性面板\n(F) 调整方向",
+			"translated": "(E) Attribute Panel\n(F) Adjust direction"
+		},
+		{
+			"original": "(E) 载具浏览器",
+			"translated": "(E) Vehicle Broswer"
+		},
+		{
+			"original": "(E) 驾驶\n(F) 节点编辑器",
+			"translated": "(E) Drive\n(F) NodeEditor"
+		},
+		{
+			"original": "(左键) 喷漆 \n(右键) 喷涂面板",
+			"translated": "(左键) 喷漆 \n(右键) 喷涂面板"
+		},
+		{
+			"original": "Constant",
+			"translated": "Constant"
+		},
+		{
+			"original": "TZW 出品，测试版本",
+			"translated": "By tzw, demo version"
+		},
+		{
+			"original": "Toggle",
+			"translated": "Toggle"
+		},
+		{
+			"original": "Vector",
+			"translated": "Vector"
+		},
+		{
+			"original": "WASD和鼠标控制，I键打开物品栏，建造前先放升降机",
+			"translated": "Use the WASD & Mouse to control Camera，Press I to open the Inventory，Build the Lift First!"
+		},
+		{
+			"original": "使用节点",
+			"translated": "Using Node"
+		},
+		{
+			"original": "保存载具",
+			"translated": "Save Vehicle"
+		},
+		{
+			"original": "全部取消选中",
+			"translated": "Deselect All"
+		},
+		{
+			"original": "关闭",
+			"translated": "Close"
+		},
+		{
+			"original": "升降台只能放一个",
+			"translated": "Only one lift can be placed!"
+		},
+		{
+			"original": "升降机",
+			"translated": "Lift"
+		},
+		{
+			"original": "取消",
+			"translated": "Cancel"
+		},
+		{
+			"original": "右",
+			"translated": "Right"
+		},
+		{
+			"original": "喷涂器",
+			"translated": "Painter"
+		},
+		{
+			"original": "基本版本 弹出框测试",
+			"translated": "Basic version, pop test"
+		},
+		{
+			"original": "对准空地放置，对准载具收纳放置",
+			"translated": "aim at empty ground to place"
+		},
+		{
+			"original": "属性面板",
+			"translated": "Attribute Panel"
+		},
+		{
+			"original": "工具",
+			"translated": "Tool"
+		},
+		{
+			"original": "左",
+			"translated": "Left"
+		},
+		{
+			"original": "帮助",
+			"translated": "Help"
+		},
+		{
+			"original": "帮助页面",
+			"translated": "Help Page"
+		},
+		{
+			"original": "座椅",
+			"translated": "Seat"
+		},
+		{
+			"original": "开启",
+			"translated": "Enable"
+		},
+		{
+			"original": "开始游戏",
+			"translated": "Start Game"
+		},
+		{
+			"original": "弹簧",
+			"translated": "Spring"
+		},
+		{
+			"original": "当前旋转角度",
+			"translated": "Current Degree"
+		},
+		{
+			"original": "拖拽",
+			"translated": "Draging"
+		},
+		{
+			"original": "按T键可以显示机械部件名称，并能穿透显示轴承",
+			"translated": "按T键可以显示机械部件名称，并能穿透显示轴承"
+		},
+		{
+			"original": "按键输入",
+			"translated": "Key Input"
+		},
+		{
+			"original": "挖掘机",
+			"translated": "挖掘机"
+		},
+		{
+			"original": "推进器",
+			"translated": "Thruster"
+		},
+		{
+			"original": "收纳",
+			"translated": "store"
+		},
+		{
+			"original": "放置收纳对象",
+			"translated": "place the stored vehicle"
+		},
+		{
+			"original": "旋转方向",
+			"translated": "旋转方向"
+		},
+		{
+			"original": "旋转节点",
+			"translated": "Rotation Node"
+		},
+		{
+			"original": "是否为舵机",
+			"translated": "Is Steering"
+		},
+		{
+			"original": "是否开启角度限制",
+			"translated": "Is Open Angle Limit"
+		},
+		{
+			"original": "是否继续?",
+			"translated": "continue?"
+		},
+		{
+			"original": "普通方块",
+			"translated": "Normal Block"
+		},
+		{
+			"original": "普通轴承",
+			"translated": "Normal Bearing"
+		},
+		{
+			"original": "暂无提示",
+			"translated": "no tips"
+		},
+		{
+			"original": "更多帮助请按H键打开",
+			"translated": "Press H to see more help"
+		},
+		{
+			"original": "标准输入",
+			"translated": "STD Input"
+		},
+		{
+			"original": "炮筒",
+			"translated": "Cannon"
+		},
+		{
+			"original": "管子",
+			"translated": "Pipe"
+		},
+		{
+			"original": "继续",
+			"translated": "continue"
+		},
+		{
+			"original": "舵机",
+			"translated": "Steering"
+		},
+		{
+			"original": "节点列表",
+			"translated": "Node List"
+		},
+		{
+			"original": "读取",
+			"translated": "Load"
+		},
+		{
+			"original": "读取载具",
+			"translated": "Load Vehicle"
+		},
+		{
+			"original": "调整视图",
+			"translated": "Adjust View"
+		},
+		{
+			"original": "资产浏览器",
+			"translated": "Inventory"
+		},
+		{
+			"original": "轮子",
+			"translated": "Wheel"
+		},
+		{
+			"original": "轴承",
+			"translated": "Bearing"
+		},
+		{
+			"original": "轴承 %s",
+			"translated": "Bearing %s"
+		},
+		{
+			"original": "载具浏览器",
+			"translated": "Vehicle Browser"
+		},
+		{
+			"original": "退出",
+			"translated": "exit"
+		},
+		{
+			"original": "选中",
+			"translated": "Selected"
+		},
+		{
+			"original": "选项",
+			"translated": "option"
+		}
+	]
+}

@@ -61,6 +61,7 @@ namespace tzw
 		BIND_PROP(GameItem, m_name)
 		BIND_PROP(GameItem, m_desc)
 		BIND_FUNC(GameItem, getTypeInInt)
+		BIND_FUNC(GameItem, isSpecialFunctionItem)
 		BIND_END_CLASS
 
 
@@ -77,6 +78,8 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, hitTerrain)
 		BIND_FUNC(BuildingSystem, rayTest)
 		BIND_FUNC(BuildingSystem, rayTestPart)
+		BIND_FUNC(BuildingSystem, rayTestPartAny)
+		BIND_FUNC(BuildingSystem, flipBearing)
 		BIND_FUNC(BuildingSystem, flipBearingByHit)
 		BIND_FUNC(BuildingSystem, placeLiftPart)
 		BIND_FUNC(BuildingSystem, getLift)
@@ -87,6 +90,7 @@ namespace tzw
 		BIND_FUNC(BuildingSystem, getCurrentControlPart)
 		BIND_FUNC(BuildingSystem, getGamePartTypeInt)
 		BIND_FUNC(BuildingSystem, liftStore)
+		BIND_FUNC(BuildingSystem, isIsInXRayMode)
 		BIND_END_CLASS
 		//ItemMgr
 		BIND_START(luaState)

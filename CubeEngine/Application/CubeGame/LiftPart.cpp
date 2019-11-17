@@ -61,7 +61,16 @@ void LiftPart::unhighLight()
 
 void LiftPart::setIsVisible(bool isVisible)
 {
-	m_node->setIsVisible(isVisible);
+	m_plaftormPart->setIsVisible(isVisible);
+	m_basePart->setIsVisible(isVisible);
+	m_pipePart->setIsVisible(isVisible);
+}
+
+void LiftPart::setMaterial(Material* mat)
+{
+	m_plaftormPart->setMaterial(mat);
+	m_basePart->setMaterial(mat);
+	m_pipePart->setMaterial(mat);
 }
 
 Attachment * LiftPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)

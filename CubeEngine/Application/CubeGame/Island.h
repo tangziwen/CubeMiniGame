@@ -28,6 +28,7 @@ public:
 	void setCompoundShape(PhysicsCompoundShape * compoundShape);
 	void recalculateCompound();
 	void enablePhysics(bool isEnable);
+	bool isEnablePhysics();
 	float getMass();
 	void cook();
 	void addNeighbor(Island * island);

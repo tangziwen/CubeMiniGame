@@ -1,0 +1,232 @@
+{
+	"stringList": [
+		{
+			"original": "(E) 属性面板",
+			"translated": "(E) 属性面板"
+		},
+		{
+			"original": "(E) 属性面板\n(F) 调整方向",
+			"translated": "(E) 属性面板\n(F) 调整方向"
+		},
+		{
+			"original": "(E) 载具浏览器",
+			"translated": "(E) 载具浏览器"
+		},
+		{
+			"original": "(E) 驾驶\n(F) 节点编辑器",
+			"translated": "(E) 驾驶\n(F) 节点编辑器"
+		},
+		{
+			"original": "(左键) 喷漆 \n(右键) 喷涂面板",
+			"translated": "(左键) 喷漆 \n(右键) 喷涂面板"
+		},
+		{
+			"original": "TZW 出品，测试版本",
+			"translated": "TZW 出品，测试版本"
+		},
+		{
+			"original": "WASD和鼠标控制，I键打开物品栏，建造前先放升降机",
+			"translated": "WASD和鼠标控制，I键打开物品栏，建造前先放升降机"
+		},
+		{
+			"original": "X光模式",
+			"translated": "X光模式"
+		},
+		{
+			"original": "保存载具",
+			"translated": "保存载具"
+		},
+		{
+			"original": "关闭",
+			"translated": "关闭"
+		},
+		{
+			"original": "加农 %s",
+			"translated": "加农 %s"
+		},
+		{
+			"original": "升降机",
+			"translated": "升降机"
+		},
+		{
+			"original": "取消",
+			"translated": "取消"
+		},
+		{
+			"original": "右",
+			"translated": "右"
+		},
+		{
+			"original": "喷涂器",
+			"translated": "喷涂器"
+		},
+		{
+			"original": "基本版本 弹出框测试",
+			"translated": "基本版本 弹出框测试"
+		},
+		{
+			"original": "对准空地放置，对准载具收纳放置",
+			"translated": "对准空地放置，对准载具收纳放置"
+		},
+		{
+			"original": "属性面板",
+			"translated": "属性面板"
+		},
+		{
+			"original": "左",
+			"translated": "左"
+		},
+		{
+			"original": "帮助",
+			"translated": "帮助"
+		},
+		{
+			"original": "座位 %s",
+			"translated": "座位 %s"
+		},
+		{
+			"original": "座椅",
+			"translated": "座椅"
+		},
+		{
+			"original": "开启",
+			"translated": "开启"
+		},
+		{
+			"original": "开始游戏",
+			"translated": "开始游戏"
+		},
+		{
+			"original": "弹簧",
+			"translated": "弹簧"
+		},
+		{
+			"original": "当前旋转角度",
+			"translated": "当前旋转角度"
+		},
+		{
+			"original": "拖拽",
+			"translated": "拖拽"
+		},
+		{
+			"original": "按T键可以显示机械部件名称，并能穿透显示轴承",
+			"translated": "按T键可以显示机械部件名称，并能穿透显示轴承"
+		},
+		{
+			"original": "挖掘机",
+			"translated": "挖掘机"
+		},
+		{
+			"original": "推进器",
+			"translated": "推进器"
+		},
+		{
+			"original": "推进器 %s",
+			"translated": "推进器 %s"
+		},
+		{
+			"original": "收纳",
+			"translated": "收纳"
+		},
+		{
+			"original": "放置收纳对象",
+			"translated": "放置收纳对象"
+		},
+		{
+			"original": "旋转方向",
+			"translated": "旋转方向"
+		},
+		{
+			"original": "是否为舵机",
+			"translated": "是否为舵机"
+		},
+		{
+			"original": "是否开启角度限制",
+			"translated": "是否开启角度限制"
+		},
+		{
+			"original": "是否继续?",
+			"translated": "是否继续?"
+		},
+		{
+			"original": "普通方块",
+			"translated": "普通方块"
+		},
+		{
+			"original": "普通轴承",
+			"translated": "普通轴承"
+		},
+		{
+			"original": "暂无提示",
+			"translated": "暂无提示"
+		},
+		{
+			"original": "更多帮助请按H键打开",
+			"translated": "更多帮助请按H键打开"
+		},
+		{
+			"original": "炮筒",
+			"translated": "炮筒"
+		},
+		{
+			"original": "炮筒 %s",
+			"translated": "炮筒 %s"
+		},
+		{
+			"original": "管子",
+			"translated": "管子"
+		},
+		{
+			"original": "继续",
+			"translated": "继续"
+		},
+		{
+			"original": "舵机",
+			"translated": "舵机"
+		},
+		{
+			"original": "表面材质",
+			"translated": "表面材质"
+		},
+		{
+			"original": "读取",
+			"translated": "读取"
+		},
+		{
+			"original": "读取载具",
+			"translated": "读取载具"
+		},
+		{
+			"original": "资产浏览器",
+			"translated": "资产浏览器"
+		},
+		{
+			"original": "轮子",
+			"translated": "轮子"
+		},
+		{
+			"original": "轴承",
+			"translated": "轴承"
+		},
+		{
+			"original": "轴承 %s",
+			"translated": "轴承 %s"
+		},
+		{
+			"original": "载具浏览器",
+			"translated": "载具浏览器"
+		},
+		{
+			"original": "退出",
+			"translated": "退出"
+		},
+		{
+			"original": "选项",
+			"translated": "选项"
+		},
+		{
+			"original": "颜色",
+			"translated": "颜色"
+		}
+	]
+}

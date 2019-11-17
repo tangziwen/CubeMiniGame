@@ -29,7 +29,7 @@ namespace tzw
 
 	void GUIDMgr::add(std::string guid, void* ptr)
 	{
-		//assert(m_map.find(guid) == m_map.end());
+		assert(m_map.find(guid) == m_map.end());
 		if(m_map.find(guid) != m_map.end())
 		{
 			printf("duplicated\n");

@@ -7,6 +7,7 @@
 #include "Game/OrbitCamera.h"
 #include "Island.h"
 #include "PaintGun.h"
+#include "PreviewItem.h"
 
 namespace tzw
 {
@@ -53,21 +54,18 @@ namespace tzw
 		void setPreviewAngle(float angle);
 		float getPreviewAngle() const;
 	private:
+		PreviewItem * m_previewItem;
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
 		FPSCamera* m_camera;
 		OrbitCamera * m_orbitcamera;
 		Model* m_gunModel;
-		GamePart * m_previewGamePart;
-		Island * m_previewIsland;
 		int oldPosX;
 		int oldPosZ;
 		int m_currSelectItemIndex;
 		bool m_enableGravity;
 		float m_seatAngle = 0.0;
-		float m_previewAngle;
 		std::string m_currSelectedItem;
-	private:
 		PaintGun * m_paintGun;
 		GamePart * m_currPointPart;
 	};

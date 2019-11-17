@@ -35,6 +35,7 @@ public:
 	bool isNeedDrawInspect() override;
 	void updateConstraintState() override;
 private:
+	void createConstraintImp();
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	GameNodeEditorNode * m_graphNode;
 	Material * m_xrayMat;

@@ -92,13 +92,11 @@ void LabelNew::genMesh()
 	        charMesh->finish(false);//we don't pass it to the GPU
 		    Matrix44 mat;
 		    mat.setToIdentity();
-		    mat.translate(vec3(penX,penY + diff,0));
+		    mat.translate(vec3(penX + gNode->m_data.left,penY + diff,0));
 		    m_mesh->merge(charMesh,mat);
     		delete charMesh;
-    	} else
-    	{
-    		printf("hahaha");
     	}
+    	
     	penX+= gNode->m_data.advance;
         if(c =='\n')
         {

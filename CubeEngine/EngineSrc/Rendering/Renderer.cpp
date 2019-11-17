@@ -424,7 +424,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 #define RAISE error = glGetError();tlogError("raise error %d\n",error);
 void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
 {
-	glDisable(GL_CULL_FACE);
+	//glDisable(GL_CULL_FACE);
 	auto program = effect->getProgram();
 	program->use();
 	mesh->getArrayBuf()->use();
@@ -766,7 +766,7 @@ void Renderer::shadowPass()
 		glClear(GL_DEPTH_BUFFER_BIT);
 		if (m_enable3DRender)
 		{
-			glDisable(GL_CULL_FACE);
+			//glDisable(GL_CULL_FACE);
 			renderAllShadow(i);
 		}
 	}
@@ -782,7 +782,7 @@ void Renderer::skyBoxPass()
 	{
 		if(Sky::shared()->isEnable())
 		{
-			RenderBackEnd::shared()->setIsCullFace(true);
+			RenderBackEnd::shared()->setIsCullFace(false);
 			auto mat = Sky::shared()->getMaterial();
 			mat->setVar("TU_Depth", 0);
 			auto dirLight = g_GetCurrScene()->getDirectionLight();
@@ -1133,7 +1133,6 @@ void Renderer::AAPass()
 
 void Renderer::applyRenderSetting(Material * mat)
 {
-	//glDisable(GL_CULL_FACE);
 	RenderBackEnd::shared()->selfCheck();
 	RenderBackEnd::shared()->setIsCullFace(true);
 	RenderBackEnd::shared()->setBlendFactor(mat->getFactorSrc(),
@@ -1148,7 +1147,6 @@ void Renderer::applyRenderSetting(Material * mat)
 	
 	RenderBackEnd::shared()->setDepthMaskWriteEnable(mat->isIsDepthWriteEnable());
 	RenderBackEnd::shared()->setDepthTestEnable(mat->isIsDepthTestEnable());
-	//glCullFace(GL_NONE);
 }
 
 void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info)
