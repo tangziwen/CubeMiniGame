@@ -400,6 +400,9 @@ void Island::load(rapidjson::Value& island)
 		//统一Update一次物理
 		updatePhysics();
 		updateNeighborConstraintPhysics();
+
+		//处理一下内部的connected
+		loadInternalConnected();
 	}
 }
 
@@ -468,6 +471,29 @@ void Island::updateNeighborConstraintPhysics()
 			constraint->updateConstraintState();
 		}
 
+	}
+}
+
+void Island::loadInternalConnected()
+{
+	//handle all internal connection
+	for(auto part : m_partList)
+	{
+		for(int i = 0; i < part->getAttachmentCount(); i++)
+		{
+			auto  attach = part->getAttachment(i);
+			if(!attach->m_connectedGUID.empty())
+			{
+				auto constraintAttach_target = reinterpret_cast<Attachment*>(
+					GUIDMgr::shared()->get(attach->m_connectedGUID));
+				//internal attaches
+				if(constraintAttach_target && constraintAttach_target->m_parent->m_parent == attach->m_parent->m_parent)
+				{
+					attach->m_connected = constraintAttach_target;
+					constraintAttach_target->m_connected = attach;
+				}
+			}
+		}
 	}
 }
 }

@@ -7,6 +7,11 @@
 			"Type":"SPECIAL_PART_PAINTER"
 		},
 		{
+			"name" : "Digger",
+			"desc":"挖掘机",
+			"Type":"SPECIAL_PART_DIGGER"
+		},
+		{
 		"name" : "Lift",
 		"desc":"升降机",
 		"Type":"GAME_PART_LIFT",
@@ -54,7 +59,7 @@
 		},
 
 		{
-		"name" : "wooden_block",
+		"name" : "Block",
 		"desc":"普通方块",
 		"Type":"GAME_PART_BLOCK",
 		"attach":[
@@ -181,18 +186,18 @@
 		"desc":"弹簧",
 		"Type":"GAME_PART_SPRING",
 		"attach":[
-				{"pos" :[0.0, 0.0, 0.075],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
-				{"pos" :[0.0, 0.0, -0.075],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				{"pos" :[0.0, 0.0, 0.2],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.2],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
 				],
 		"Visual":
 		{
 			"Type":"CylinderPrimitive",
-			"size":[0.4, 0.4,0.15]
+			"size":[0.1, 0.1,0.4]
 		},
 		"Physics":
 		{
 			"Type": "CylinderShape",
-			"size":[0.4, 0.4, 0.15]
+			"size":[0.1, 0.1, 0.4]
 		}
 		}
 	]

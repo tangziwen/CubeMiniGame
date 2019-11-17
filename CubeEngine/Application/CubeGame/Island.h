@@ -44,6 +44,7 @@ public:
 	void recordBuildingRotate();
 	void recoverFromBuildingRotate();
 	void updateNeighborConstraintPhysics();
+	void loadInternalConnected();
 private:
 	bool m_enablePhysics;
 	//the building rotation, island need to record the rotation(while the vehicle is in the lift part) too!!!! because if we don't do that, the next we load or replace to the Lift from ground,

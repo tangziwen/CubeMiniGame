@@ -16,7 +16,7 @@
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
-			["diffuseMap", "TU_tex1", 0]
+			["DiffuseMap", "TU_tex1", 0]
 		]
 	}
 }

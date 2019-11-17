@@ -106,6 +106,10 @@ namespace tzw
 		auto ss = Engine::shared()->winSize();
 		ImGui::SetNextWindowPos(ImVec2(ss.x / 2.0, ss.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 		ImGui::Begin(TRC(u8"载具浏览器"), isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		if(ImGui::Button(TRC(u8"清空所有载具"))) 
+		{
+			BuildingSystem::shared()->removeAll();
+		}
 		ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
         if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags))
         {
@@ -167,6 +171,7 @@ namespace tzw
 					{
 						m_saveCallBack(m_currDir + m_currSelected);
 					}
+					refreshDir("./Res/Vehicles/");
 					(*isOpen) = false;
 				}
 				ImGui::SameLine();

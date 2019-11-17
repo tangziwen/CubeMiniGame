@@ -1,347 +1,158 @@
 {
 	"islandList": [
 		{
-			"UID": "160bd506-6b49-4f40-940e-c904cf602b70",
-			"IslandGroup": "28e0802f-5a4e-4ffb-842f-08305c75aaf4",
+			"UID": "5531dade-799e-4849-bb6d-b1cba929c9e4",
+			"IslandGroup": "c6a1e6fc-7736-4fa3-9a43-aea010b19acf",
 			"name": 100.0,
 			"partList": [
 				{
-					"UID": "5852d27d-813b-4117-a072-0fa2d5768a8e",
+					"UID": "8ae7bd2f-86c2-4f97-9479-fcdf6b11fb82",
 					"pos": [
 						0.0,
-						0.25999999046325686,
+						0.0,
 						0.0
 					],
 					"rotate": [
-						0.7071068286895752,
+						0.70710688829422,
 						0.0,
 						0.0,
-						0.7071068286895752
+						0.7071066498756409
 					],
 					"type": 0,
 					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "bdfdd4c2-1203-4c03-83a9-00d9607f1038",
-							"to": "b8ce48a9-269a-44e3-9d6d-118581351fb3"
-						},
-						{
-							"UID": "53cf5b64-be78-4051-80c1-d5b49ecd9164",
-							"to": "empty"
-						},
-						{
-							"UID": "6fe62af6-45ad-42b6-97fd-39f7ed622988",
-							"to": "empty"
-						},
-						{
-							"UID": "daab1a52-8cc8-4218-a173-1ee33ebca194",
-							"to": "empty"
-						},
-						{
-							"UID": "4ebcf399-f940-4c86-aae8-a322f877cace",
-							"to": "empty"
-						},
-						{
-							"UID": "922a326b-81ca-4e13-a1f4-c3282bac3566",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "b26f5ea5-e571-4645-bff5-f70e6e043ea0",
-					"pos": [
-						0.0,
-						0.25999993085861208,
-						0.5000000596046448
-					],
-					"rotate": [
+					"ItemName": "wooden_block",
+					"PartSurface": "Metal Grid3",
+					"Color": [
 						1.0,
-						0.0,
-						0.0,
-						-5.960464477539063e-8
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "f5fd85dc-f5ee-4c8a-b7cd-993c1bae71d7",
-							"to": "empty"
-						},
-						{
-							"UID": "6cbf5816-de85-457e-8771-27cb44966f8b",
-							"to": "empty"
-						},
-						{
-							"UID": "72d3924f-2bce-42f5-bb9f-e7336d902ba8",
-							"to": "empty"
-						},
-						{
-							"UID": "bf3db86f-a5be-470e-bec8-e2761e4a9ff5",
-							"to": "empty"
-						},
-						{
-							"UID": "46677d05-1a6a-442b-ad0e-c0f164b12e1e",
-							"to": "empty"
-						},
-						{
-							"UID": "b3581a8a-65d5-4278-a0cc-31234d621a05",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "0efa3195-a1e0-438e-8295-86bd14c485a4",
-					"pos": [
-						0.5,
-						0.25999999046325686,
-						0.0
-					],
-					"rotate": [
-						0.5,
-						-0.5000000596046448,
-						-0.5000000596046448,
-						0.5000000596046448
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "b30c2770-1f42-4ca9-b7c1-5a1ba19a8491",
-							"to": "empty"
-						},
-						{
-							"UID": "6c12f2c4-2a6f-4f90-b543-6c04257ec9f7",
-							"to": "empty"
-						},
-						{
-							"UID": "03b2292f-2756-4d0a-a095-6df717f8ab5c",
-							"to": "empty"
-						},
-						{
-							"UID": "47af7f5b-32e6-4ccb-af75-8d322ec7df63",
-							"to": "empty"
-						},
-						{
-							"UID": "70dbbcda-fb72-4a75-96d5-ebd913a50dec",
-							"to": "empty"
-						},
-						{
-							"UID": "310b15d3-1c93-4558-893c-0eb06f3185aa",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "50207479-2905-4218-ac6d-c07e8db411bc",
-					"pos": [
-						0.0,
-						0.7599999904632568,
-						5.960464477539063e-8
-					],
-					"rotate": [
-						0.7071068286895752,
-						0.0,
-						0.0,
-						0.7071067690849304
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "8782c474-fcb2-4391-943e-8f850abf02f1",
-							"to": "empty"
-						},
-						{
-							"UID": "3e2e6909-3526-4099-b218-de8a1acaef29",
-							"to": "empty"
-						},
-						{
-							"UID": "40d33d23-7f9a-41f4-91db-31fcc3ad0b6f",
-							"to": "empty"
-						},
-						{
-							"UID": "90efcc1d-f9b2-4bc3-a63b-94a169be7b90",
-							"to": "empty"
-						},
-						{
-							"UID": "eee2cc89-bfa2-432c-8a96-afa26e2d6d0c",
-							"to": "empty"
-						},
-						{
-							"UID": "255f73dc-ee18-4080-a9ba-740f25ec939b",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "11529bab-8499-4e64-928d-687ca2cc0f06",
-					"pos": [
-						-0.5,
-						0.25999999046325686,
-						0.0
-					],
-					"rotate": [
-						0.5,
-						0.5000000596046448,
-						0.5000000596046448,
-						0.5000000596046448
-					],
-					"type": 0,
-					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "47a1d41e-d572-4d63-bd2a-f8cd6403ee9e",
-							"to": "empty"
-						},
-						{
-							"UID": "19ed106c-3074-43e9-a098-8689eba28df9",
-							"to": "empty"
-						},
-						{
-							"UID": "f800853c-5ee6-4e8e-8f83-aa69e7e4e34c",
-							"to": "empty"
-						},
-						{
-							"UID": "4b45abdd-f25c-4b52-9d9a-6278c489319b",
-							"to": "empty"
-						},
-						{
-							"UID": "4a82497e-9cea-4bee-b42a-d6566460b470",
-							"to": "empty"
-						},
-						{
-							"UID": "0c2a3edf-b258-4f8a-a4d4-adffa9238da4",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "6994361f-8f97-4975-b01c-826c0720f7ae",
-					"pos": [
-						0.0,
-						0.2600000500679016,
-						-0.5000000596046448
-					],
-					"rotate": [
-						0.0,
-						-5.960464477539063e-8,
 						1.0,
+						1.0
+					],
+					"attachList": [
+						{
+							"UID": "7bb69330-1b92-43db-a904-642e4b8d072e",
+							"to": "44fe4a9c-ecba-41a5-9c8c-2297d531bae6",
+							"degree": 0.0
+						},
+						{
+							"UID": "f4f52e66-d8f0-44bc-93aa-bb131fd03ed5",
+							"to": "empty",
+							"degree": 0.0
+						},
+						{
+							"UID": "9cc79f59-bc20-454e-9f4b-bc7b5dd839db",
+							"to": "empty",
+							"degree": 0.0
+						},
+						{
+							"UID": "7957a746-cdec-4fc6-8561-e95a38479b3d",
+							"to": "empty",
+							"degree": 0.0
+						},
+						{
+							"UID": "f4858612-3fcc-4216-a942-95a4eabdced7",
+							"to": "6d2fb04a-867d-4386-9f1e-f0b6be0cee91",
+							"degree": -0.0
+						},
+						{
+							"UID": "ac6ab3c9-eaf3-41ca-83a2-cec19d719275",
+							"to": "edba54eb-c265-4155-a9fd-3eb0e3f6093f",
+							"degree": -0.0
+						}
+					]
+				}
+			],
+			"rotate": [
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"UID": "3cfe7fa8-725f-4238-a228-d120f510c4fb",
+			"IslandGroup": "c6a1e6fc-7736-4fa3-9a43-aea010b19acf",
+			"name": 100.0,
+			"partList": [
+				{
+					"UID": "3e6f5413-1f70-49de-9333-2118ab62c25e",
+					"pos": [
+						0.0,
+						0.0,
 						0.0
+					],
+					"rotate": [
+						0.0,
+						0.0,
+						0.0,
+						1.0
 					],
 					"type": 0,
 					"Name": "empty",
-					"attachList": [
-						{
-							"UID": "d4d5570f-9cf9-443d-bafa-ee33e69d631f",
-							"to": "empty"
-						},
-						{
-							"UID": "86bc0377-f62f-4e12-81cc-db35bf595c50",
-							"to": "empty"
-						},
-						{
-							"UID": "c3477f5a-76e4-4c84-9035-6e20b9097a93",
-							"to": "empty"
-						},
-						{
-							"UID": "bdd7dc17-2227-4390-bdfe-80bf1661444a",
-							"to": "empty"
-						},
-						{
-							"UID": "d2dc56fe-1d9e-474a-9887-2768cfae4742",
-							"to": "empty"
-						},
-						{
-							"UID": "5cfb76bc-e5e3-4cec-8b35-79f01fbe1aa2",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "c6e993fc-b48b-4fee-a1fe-f6dd7ffa6fe9",
-					"pos": [
-						-0.49999988079071047,
-						-0.24000012874603272,
-						2.9802322387695315e-8
-					],
-					"rotate": [
-						-1.0536710703945573e-7,
-						0.7071067690849304,
-						0.7071068286895752,
-						-6.322027701344268e-8
-					],
-					"type": 4,
-					"Name": "推进器 DE95",
-					"attachList": [
-						{
-							"UID": "bec8bb31-07df-431a-8c0d-1f5dbff01266",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "49170dce-5c33-4010-9e04-4a30cce63c1a",
-					"pos": [
-						0.0,
-						-0.24000006914138795,
-						0.4999999701976776
-					],
-					"rotate": [
-						-0.7071067094802856,
+					"ItemName": "Wheel",
+					"PartSurface": "Metal Grid3",
+					"Color": [
 						0.0,
 						0.0,
-						0.7071068286895752
-					],
-					"type": 4,
-					"Name": "推进器 6B7B",
-					"attachList": [
-						{
-							"UID": "2865b3ea-afc5-4564-a2f5-f8c0987b17c6",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "33555678-7b18-4d7a-b53f-8ba52267892b",
-					"pos": [
-						0.49999988079071047,
-						-0.24000012874603272,
-						2.9802322387695315e-8
-					],
-					"rotate": [
-						1.0536710703945573e-7,
-						0.7071067690849304,
-						0.7071068286895752,
-						6.322027701344268e-8
-					],
-					"type": 4,
-					"Name": "推进器 2DC4",
-					"attachList": [
-						{
-							"UID": "496a6c3e-d3d1-43f4-aaeb-070af65eb442",
-							"to": "empty"
-						}
-					]
-				},
-				{
-					"UID": "9756ccc9-57ff-486a-af16-3b21c4c89b60",
-					"pos": [
-						0.0,
-						-0.2399999499320984,
-						-0.5000001192092896
-					],
-					"rotate": [
-						0.0,
-						0.7071067094802856,
-						0.7071068286895752,
 						0.0
 					],
-					"type": 4,
-					"Name": "推进器 D61C",
 					"attachList": [
 						{
-							"UID": "59307cb3-f901-45b1-8d8e-c61859dfbe2f",
-							"to": "empty"
+							"UID": "205925e9-6832-42a7-b90e-e679de0f0f90",
+							"to": "5431716f-779e-4ffd-8290-33991f475ee4",
+							"degree": 0.0
+						},
+						{
+							"UID": "39af3de0-b966-4763-a7d5-df69d25b261e",
+							"to": "empty",
+							"degree": 0.0
+						}
+					]
+				}
+			],
+			"rotate": [
+				0.0,
+				0.0,
+				0.0,
+				1.0
+			]
+		},
+		{
+			"UID": "5742d131-c374-4764-b618-7c9527febb04",
+			"IslandGroup": "c6a1e6fc-7736-4fa3-9a43-aea010b19acf",
+			"name": 100.0,
+			"partList": [
+				{
+					"UID": "d5f663b7-51b4-420c-9360-317acb791580",
+					"pos": [
+						0.0,
+						0.0,
+						0.0
+					],
+					"rotate": [
+						0.0,
+						0.0,
+						0.0,
+						1.0
+					],
+					"type": 0,
+					"Name": "empty",
+					"ItemName": "Wheel",
+					"PartSurface": "Metal Grid3",
+					"Color": [
+						0.0,
+						0.0,
+						0.0
+					],
+					"attachList": [
+						{
+							"UID": "57ebbd8b-0347-43c7-bbbd-0e6349649331",
+							"to": "d7ea46fa-dbdb-49ce-94d4-26aca5571ad6",
+							"degree": 0.0
+						},
+						{
+							"UID": "3dd5f5e5-e61d-41cf-b9ef-a863a23445fc",
+							"to": "empty",
+							"degree": 0.0
 						}
 					]
 				}
@@ -354,202 +165,85 @@
 			]
 		}
 	],
-	"constraintList": [],
+	"constraintList": [
+		{
+			"IslandGroup": "c6a1e6fc-7736-4fa3-9a43-aea010b19acf",
+			"Name": "轴承 F92D",
+			"ItemName": "Bearing",
+			"Type": "Bearing",
+			"from": "ac6ab3c9-eaf3-41ca-83a2-cec19d719275",
+			"isSteering": false,
+			"isAngleLimit": false,
+			"AngleLimitLow": -30.0,
+			"AngleLimitHigh": 30.0,
+			"to": "57ebbd8b-0347-43c7-bbbd-0e6349649331",
+			"attachList": [
+				{
+					"UID": "edba54eb-c265-4155-a9fd-3eb0e3f6093f",
+					"to": "ac6ab3c9-eaf3-41ca-83a2-cec19d719275",
+					"degree": 0.0
+				},
+				{
+					"UID": "d7ea46fa-dbdb-49ce-94d4-26aca5571ad6",
+					"to": "57ebbd8b-0347-43c7-bbbd-0e6349649331",
+					"degree": -0.0
+				}
+			],
+			"UID": "1ba31ef9-8772-459e-8db5-cbf9a9843f7d",
+			"isFlipped": false
+		},
+		{
+			"IslandGroup": "c6a1e6fc-7736-4fa3-9a43-aea010b19acf",
+			"Name": "轴承 DE95",
+			"ItemName": "Bearing",
+			"Type": "Bearing",
+			"from": "f4858612-3fcc-4216-a942-95a4eabdced7",
+			"isSteering": false,
+			"isAngleLimit": false,
+			"AngleLimitLow": -30.0,
+			"AngleLimitHigh": 30.0,
+			"to": "205925e9-6832-42a7-b90e-e679de0f0f90",
+			"attachList": [
+				{
+					"UID": "6d2fb04a-867d-4386-9f1e-f0b6be0cee91",
+					"to": "f4858612-3fcc-4216-a942-95a4eabdced7",
+					"degree": 0.0
+				},
+				{
+					"UID": "5431716f-779e-4ffd-8290-33991f475ee4",
+					"to": "205925e9-6832-42a7-b90e-e679de0f0f90",
+					"degree": -0.0
+				}
+			],
+			"UID": "790f6af9-370f-4968-b789-61e6186d307b",
+			"isFlipped": false
+		}
+	],
 	"NodeGraph": {
 		"NodeList": [
 			{
-				"orgin_x": -78.0,
-				"orgin_y": 460.0,
-				"UID": "7f63f89d-f056-41b8-a3ff-e34b72298a9a",
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
+				"UID": "26dd175e-9485-4132-9a89-97eb0fed6b7f",
 				"NodeType": 1,
 				"NodeClass": 0,
 				"Type": "Resource",
-				"ResType": "Thruster",
-				"ResUID": "c6e993fc-b48b-4fee-a1fe-f6dd7ffa6fe9",
-				"UID": "7f63f89d-f056-41b8-a3ff-e34b72298a9a"
+				"ResType": "BearPart",
+				"ResUID": "790f6af9-370f-4968-b789-61e6186d307b",
+				"UID": "26dd175e-9485-4132-9a89-97eb0fed6b7f"
 			},
 			{
-				"orgin_x": -78.0,
-				"orgin_y": 572.0,
-				"UID": "4765081d-f460-45dd-a5f7-f0d6cfbab2fd",
+				"orgin_x": 3.4028234663852887e38,
+				"orgin_y": 3.4028234663852887e38,
+				"UID": "dc4af2ff-affb-4d58-8d0d-0428ecca5697",
 				"NodeType": 1,
 				"NodeClass": 0,
 				"Type": "Resource",
-				"ResType": "Thruster",
-				"ResUID": "49170dce-5c33-4010-9e04-4a30cce63c1a",
-				"UID": "4765081d-f460-45dd-a5f7-f0d6cfbab2fd"
-			},
-			{
-				"orgin_x": -78.0,
-				"orgin_y": 332.0,
-				"UID": "394d2c8c-9715-4cd6-aace-1647b7b6c4fd",
-				"NodeType": 1,
-				"NodeClass": 0,
-				"Type": "Resource",
-				"ResType": "Thruster",
-				"ResUID": "33555678-7b18-4d7a-b53f-8ba52267892b",
-				"UID": "394d2c8c-9715-4cd6-aace-1647b7b6c4fd"
-			},
-			{
-				"orgin_x": -78.0,
-				"orgin_y": 684.0,
-				"UID": "aed37f07-cecb-47ca-880a-5f8cd75368a5",
-				"NodeType": 1,
-				"NodeClass": 0,
-				"Type": "Resource",
-				"ResType": "Thruster",
-				"ResUID": "9756ccc9-57ff-486a-af16-3b21c4c89b60",
-				"UID": "aed37f07-cecb-47ca-880a-5f8cd75368a5"
-			},
-			{
-				"orgin_x": 328.0,
-				"orgin_y": 348.0,
-				"UID": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"NodeType": 2,
-				"NodeClass": 3
-			},
-			{
-				"orgin_x": -104.0,
-				"orgin_y": 92.0,
-				"UID": "cd29f8b9-00fc-45a1-9f34-9932c0295049",
-				"NodeType": 0,
-				"NodeClass": 6
-			},
-			{
-				"orgin_x": 600.0,
-				"orgin_y": 364.0,
-				"UID": "d199a620-04f8-4d0d-b38e-c7a027325921",
-				"NodeType": 2,
-				"NodeClass": 7
-			},
-			{
-				"orgin_x": 440.0,
-				"orgin_y": 588.0,
-				"UID": "2a4d43cb-f91e-40c5-8718-9742813011ad",
-				"NodeType": 3,
-				"NodeClass": 5,
-				"INT_VALUE": 0
-			},
-			{
-				"orgin_x": 296.0,
-				"orgin_y": -68.0,
-				"UID": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"NodeType": 2,
-				"NodeClass": 3
-			},
-			{
-				"orgin_x": 600.0,
-				"orgin_y": -52.0,
-				"UID": "cca256d5-5469-4d4c-a58b-8f6c80c4c6f6",
-				"NodeType": 2,
-				"NodeClass": 7
-			},
-			{
-				"orgin_x": 376.0,
-				"orgin_y": 124.0,
-				"UID": "fc081ea0-9724-4869-a8d8-5f98e40ea672",
-				"NodeType": 3,
-				"NodeClass": 5,
-				"INT_VALUE": 1
+				"ResType": "BearPart",
+				"ResUID": "1ba31ef9-8772-459e-8db5-cbf9a9843f7d",
+				"UID": "dc4af2ff-affb-4d58-8d0d-0428ecca5697"
 			}
 		],
-		"NodeLinkList": [
-			{
-				"from": "394d2c8c-9715-4cd6-aace-1647b7b6c4fd",
-				"to": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "7f63f89d-f056-41b8-a3ff-e34b72298a9a",
-				"to": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "4765081d-f460-45dd-a5f7-f0d6cfbab2fd",
-				"to": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "aed37f07-cecb-47ca-880a-5f8cd75368a5",
-				"to": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "cd29f8b9-00fc-45a1-9f34-9932c0295049",
-				"to": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"fromOutputID": 1,
-				"toInputID": 0
-			},
-			{
-				"from": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"to": "d199a620-04f8-4d0d-b38e-c7a027325921",
-				"fromOutputID": 0,
-				"toInputID": 0
-			},
-			{
-				"from": "e02c6f16-73f0-427c-8d25-5cedcad2133c",
-				"to": "d199a620-04f8-4d0d-b38e-c7a027325921",
-				"fromOutputID": 1,
-				"toInputID": 1
-			},
-			{
-				"from": "2a4d43cb-f91e-40c5-8718-9742813011ad",
-				"to": "d199a620-04f8-4d0d-b38e-c7a027325921",
-				"fromOutputID": 0,
-				"toInputID": 2
-			},
-			{
-				"from": "cd29f8b9-00fc-45a1-9f34-9932c0295049",
-				"to": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"fromOutputID": 0,
-				"toInputID": 0
-			},
-			{
-				"from": "394d2c8c-9715-4cd6-aace-1647b7b6c4fd",
-				"to": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "7f63f89d-f056-41b8-a3ff-e34b72298a9a",
-				"to": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "4765081d-f460-45dd-a5f7-f0d6cfbab2fd",
-				"to": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "aed37f07-cecb-47ca-880a-5f8cd75368a5",
-				"to": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"fromOutputID": 0,
-				"toInputID": 1
-			},
-			{
-				"from": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"to": "cca256d5-5469-4d4c-a58b-8f6c80c4c6f6",
-				"fromOutputID": 0,
-				"toInputID": 0
-			},
-			{
-				"from": "b6cf9410-ceaa-4578-a8c3-90678be44004",
-				"to": "cca256d5-5469-4d4c-a58b-8f6c80c4c6f6",
-				"fromOutputID": 1,
-				"toInputID": 1
-			},
-			{
-				"from": "fc081ea0-9724-4869-a8d8-5f98e40ea672",
-				"to": "cca256d5-5469-4d4c-a58b-8f6c80c4c6f6",
-				"fromOutputID": 0,
-				"toInputID": 2
-			}
-		]
+		"NodeLinkList": []
 	}
 }

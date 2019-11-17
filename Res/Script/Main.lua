@@ -57,6 +57,7 @@ GAME_PART_CANNON = 5
 GAME_PART_BEARING = 6
 GAME_PART_SPRING = 7
 SPECIAL_PART_PAINTER = 8
+SPECIAL_PART_DIGGER = 9
 GAME_PART_NOT_VALID = 9999
 
 
@@ -111,29 +112,18 @@ local m_inventory = {}
 
 
 
--- m_inventory = 
--- {
--- 	{name = "Lift", ItemClass = "Lift", ItemType = GAME_PART_LIFT, desc = "升降台"},
--- 	{name = "Block", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BLOCK, desc = "普通方块"},
--- 	{name = "Cylinder", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CYLINDER, desc = "轮子"},
--- 	{name = "Cannon", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CANNON, desc = "炮筒"},
--- 	{name = "Thruster", ItemClass = "PlaceableBlock", ItemType = GAME_PART_THRUSTER, desc = "喷射器"},
--- 	{name = "Bearing", ItemClass = "PlaceableBlock", ItemType = GAME_PART_BEARING, desc = "轴承"},
--- 	{name = "Spring", ItemClass = "PlaceableBlock", ItemType = GAME_PART_SPRING, desc = "弹簧"},
--- 	{name = "ControlPart", ItemClass = "PlaceableBlock", ItemType = GAME_PART_CONTROL, desc = "控制方块"},
--- 	{name = "TerrainTool", ItemClass = "TerrainTool", ItemType = 0, desc = "地形工具"},
--- }
-
 local m_itemSlots = {}
 
-for i = 1, 5 do
+for i = 1, 8 do
 	table.insert(m_itemSlots, {target = nil})
 end
--- m_itemSlots[1].target = "Lift"
--- m_itemSlots[2].target = "Block"
--- m_itemSlots[3].target = "Cylinder"
--- m_itemSlots[4].target = "Bearing"
--- m_itemSlots[5].target = "ControlPart"
+
+
+m_itemSlots[1].target = "Lift"
+m_itemSlots[2].target = "Block"
+m_itemSlots[3].target = "Seat"
+m_itemSlots[4].target = "Bearing"
+m_itemSlots[5].target = "Wheel"
 
 function updateLifting(dt)
 	if lift_state ~= 0 then
@@ -151,8 +141,8 @@ function InitInventory()
 		item = ItemMgr.shared():getItemByIndex(i - 1);
 		print("the Item Name"..item.m_name.."the item type"..item:getTypeInInt())
 		local ItemClassData = "PlaceableBlock"
-		if item:getTypeInInt() == SPECIAL_PART_PAINTER then
-			ItemClassData = "Painter"
+		if item:isSpecialFunctionItem()then
+			ItemClassData = "SpeicalBlock"
 		end
 		itemTable = {name = item.m_name, ItemClass = ItemClassData, ItemType = item:getTypeInInt(), desc = item.m_desc}
 		table.insert(m_inventory, itemTable)
@@ -229,7 +219,11 @@ function drawHud()
 	local window_pos_pivot_bottom_right = ImGui.ImVec2(1.0, 1.0);
 	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x - 50.0, screenSize.y - yOffset), ImGuiCond_Always, window_pos_pivot_bottom_right);
 	ImGui.Begin("Rotate Tips", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
-	ImGui.Text(TR("当前旋转角度")..g_blockRotate);
+	if BuildingSystem.shared():isIsInXRayMode() then
+		ImGui.Text(TR("X光模式"));
+	else
+		ImGui.Text(TR("当前旋转角度")..g_blockRotate);
+	end
 	ImGui.End()
 
 
@@ -267,6 +261,10 @@ function drawHud()
 				local payLoadIdx = ImGui.GetPayLoadData2Int(payLoad)
 				print ("Play load Here   "..(m_inventory[payLoadIdx]["name"]))
 				m_itemSlots[k]["target"] = m_inventory[payLoadIdx]["name"]
+				local player = GameWorld.shared():getPlayer()
+				if k == m_currIndex then
+					player:setCurrSelected(m_itemSlots[m_currIndex]["target"])
+				end
 			end
 			ImGui.EndDragDropTarget()
 		end
@@ -338,6 +336,15 @@ function onKeyRelease(input_event)
 	elseif input_event.keycode == TZW_KEY_5 then
 		m_currIndex = 5
 		isKeyPress = true
+	elseif input_event.keycode == TZW_KEY_6 then
+		m_currIndex = 6
+		isKeyPress = true
+	elseif input_event.keycode == TZW_KEY_7 then
+		m_currIndex = 7
+		isKeyPress = true
+	elseif input_event.keycode == TZW_KEY_8 then
+		m_currIndex = 8
+		isKeyPress = true
 	elseif input_event.keycode == TZW_KEY_UP then
 		lift_state = lift_state - 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
@@ -346,17 +353,16 @@ function onKeyRelease(input_event)
 		g_blockRotate = g_blockRotate + 15
 		if g_blockRotate >= 360 then
 			g_blockRotate = 0
-		
 		end
 		player:setPreviewAngle(g_blockRotate)
 	elseif input_event.keycode == TZW_KEY_I then
 		MainMenu.shared():setIsShowAssetEditor(true)
 	elseif input_event.keycode == TZW_KEY_F then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
-			local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
-			--轴承旋转
+			local result = BuildingSystem.shared():rayTestPartAny(player:getPos(), player:getForward(), 10)
+			--轴承翻转
 			if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_BEARING then
-				BuildingSystem.shared():flipBearingByHit(player:getPos(), player:getForward(), 10);
+				BuildingSystem.shared():flipBearing(result);
 			--打开节点编辑器
 			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_CONTROL then
 				MainMenu.shared():setIsShowNodeEditor(true);
@@ -398,47 +404,27 @@ end
 function placeItem(item)
 	print ("placeItem"..item.ItemType)
 	local player = GameWorld.shared():getPlayer()
-	
-
-	if item.ItemType == GAME_PART_LIFT then -- for lift
-		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
-		print "place Item 2"
-		if result ~= nil then
-			--先收纳 再搞事
-			print "store"
-			BuildingSystem.shared():liftStore(result)
+	local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
+	if checkIsNormalPart(item.ItemType) then
+		local aBlock = BuildingSystem.shared():createPart(item.ItemType, item.name)
+		
+		if result == nil then
+			print("do nothing")
+			--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
-			local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
-			print "place Item 3";
-			print("the Hit Pos: "..resultPos.x..", "..resultPos.y..", "..resultPos.z)
-			if resultPos.y > -99999 then
-				print "bbbbbbbbbbbb"
-				BuildingSystem.shared():placeLiftPart(resultPos)
-				print ("the Hit terrain Pos is", resultPos.x, resultPos.y, resultPos.z)
-			end
+			print("degree ".. g_blockRotate)
+			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, 0)
+			g_blockRotate = 0 --reset
+			player:setPreviewAngle(g_blockRotate)
 		end
 	else
-		if checkIsNormalPart(item.ItemType) then
-			local aBlock = BuildingSystem.shared():createPart(item.ItemType, item.name)
-			local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-			if result == nil then
-				print("do nothing")
-				--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
-			else
-				print("degree ".. g_blockRotate)
-				BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, 0)
-				g_blockRotate = 0 --reset
-				player:setPreviewAngle(g_blockRotate)
-			end
+		if result == nil then
+			print("do nothing")
 		else
-			if result == nil then
-				print("do nothing")
-			else
-				if item.ItemType == GAME_PART_BEARING then
-					BuildingSystem.shared():placeBearingToAttach(result, item.name)
-				elseif item.ItemType == GAME_PART_SPRING then
-					BuildingSystem.shared():placeSpringToAttach(result)
-				end
+			if item.ItemType == GAME_PART_BEARING then
+				BuildingSystem.shared():placeBearingToAttach(result, item.name)
+			elseif item.ItemType == GAME_PART_SPRING then
+				BuildingSystem.shared():placeSpringToAttach(result)
 			end
 		end
 	end
@@ -446,18 +432,24 @@ end
 
 function handleItemPrimaryUse(item)
 	local player = GameWorld.shared():getPlayer()
-	print "herer handleItemPrimaryUse"
 	if (item.ItemClass == "PlaceableBlock") then
-		print "herer handleItemPrimaryUse2"
 		placeItem(item)
-	elseif (item.ItemClass == "Painter") then --paint the object
-		print "herer handleItemPrimaryUse3"
+	elseif item.ItemType == GAME_PART_LIFT then
+		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
+		if result ~= nil then
+			--先收纳 再搞事
+			BuildingSystem.shared():liftStore(result)
+		else
+			local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
+			if resultPos.y > -99999 then
+				BuildingSystem.shared():placeLiftPart(resultPos)
+			end
+		end
+	elseif (item.ItemType == SPECIAL_PART_PAINTER) then --paint the object
 		player:paint();
-	elseif (item.ItemClass == "TerrainTool") then --fill the terrain
-		print "herer handleItemPrimaryUse4"
+	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --fill the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	end
-	print "herer handleItemPrimaryUse5"
 end
 
 function handleItemSecondaryUse(item)
@@ -467,9 +459,9 @@ function handleItemSecondaryUse(item)
 		if result then
 			player:removePart(result)
 		end
-	elseif (item.ItemClass == "Painter") then --paint the object
+	elseif (item.ItemType == SPECIAL_PART_PAINTER) then --paint the object
 		MainMenu.shared():setPainterShow(true)
-	elseif (item.ItemClass == "TerrainTool") then --dig the terrain
+	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
 	end
 end
@@ -479,13 +471,17 @@ function getItemFromSlotIndex()
 end
 
 function onMouseRelease(input_event)
-	local item = getItemFromSlotIndex()
-	if item ~= nil then
-		if input_event.arg == 0 then --left mouse
-			handleItemPrimaryUse(item)
-		elseif input_event.arg == 1 then --right mouse
-			handleItemSecondaryUse(item)
+	if not BuildingSystem.shared():isIsInXRayMode() then
+		local item = getItemFromSlotIndex()
+		if item ~= nil then
+			if input_event.arg == 0 then --left mouse
+				handleItemPrimaryUse(item)
+			elseif input_event.arg == 1 then --right mouse
+				handleItemSecondaryUse(item)
+			end
 		end
+	else
+		print("xray mode can not place")
 	end
 end
 

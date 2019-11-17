@@ -86,8 +86,8 @@ namespace tzw
 
 		auto island = new Island(pos + n * 0.5);
 		auto constraint = static_cast<GameConstraint*>(attach->m_parent);
-		constraint->m_b->m_parent->m_parent->addNeighbor(island);
-		island->addNeighbor(constraint->m_b->m_parent->m_parent);
+		constraint->m_parent->addNeighbor(island);
+		island->addNeighbor(constraint->m_parent);
 		m_IslandList.push_back(island);
 		island->insert(part);
 		island->m_islandGroup = attach->m_parent->m_parent->m_islandGroup;
