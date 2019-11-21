@@ -8,7 +8,8 @@ namespace tzw
 	{
 		name =TR(u8"旋转");
 		m_bearingAttr = addIn(TR(u8"轴承"));
-		m_signalAttr = addIn(TR(u8"方向信号"));
+		m_signalAttr = addInSignal(TR(u8"方向信号"), 1);
+		m_rotateSpeedAttr = addInFloat(TR(u8"转速"), 10.0f);
 	}
 
 	NodeAttrValue SpinNode::execute()
@@ -26,7 +27,7 @@ namespace tzw
 				{
 					if(signal!= 0)
 					{
-						constraint->enableAngularMotor(true, 1.0f * signal, 50);
+						constraint->enableAngularMotor(true, m_rotateSpeedAttr->eval().getInt() * signal, 50);
 					}else
 					{
 						constraint->enableAngularMotor(true, 0, 10000000.0f);
@@ -35,10 +36,11 @@ namespace tzw
 				{
 					if(signal!= 0)
 					{
-						constraint->enableAngularMotor(true, 10.0f * signal, 50);
+						auto speed = m_rotateSpeedAttr->eval().getInt();
+						constraint->enableAngularMotor(true, speed * signal, 50);
 					}else
 					{
-						constraint->enableAngularMotor(false, 10.0f, 50);
+						constraint->enableAngularMotor(false, m_rotateSpeedAttr->eval().getInt(), 50);
 					}
 				}
 			}

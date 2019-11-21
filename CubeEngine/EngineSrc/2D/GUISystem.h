@@ -37,6 +37,9 @@ namespace tzw
 		bool onCharInput(unsigned int theChar) override;
 		bool onScroll(vec2 offset) override;
 		void renderIMGUI();
+
+		bool isUiCapturingInput();
+
 	protected:
 		std::vector<IMGUIObject *> m_objList;
 		bool m_isInit = false;

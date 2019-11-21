@@ -119,6 +119,7 @@ namespace tzw
 		}
 		m_forwardSignalAttr->m_localAttrValue.setInt(m_forward);
 		m_sideSignalAttr->m_localAttrValue.setInt(m_side);
+		tlog("theSide %d", m_side);
 		if(isForwardEffect)
 		{
 			triggerForward();

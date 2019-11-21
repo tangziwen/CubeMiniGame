@@ -114,7 +114,7 @@ void MainMenu::drawIMGUI()
 {
 
 	const float DISTANCE = 10.0f;
-    static int corner = 0;
+    static int corner = 2;
     ImGuiIO& io = ImGui::GetIO();
     if (corner != -1)
     {
@@ -126,9 +126,6 @@ void MainMenu::drawIMGUI()
     if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
     {
         ImGui::Text(TRC(u8"TZW 出品，测试版本"));
-        ImGui::Separator();
-    	ImGui::Text(TRC(u8"WASD和鼠标控制，I键打开物品栏，建造前先放升降机"));
-    	ImGui::Text(TRC(u8"按T键可以显示机械部件名称，并能穿透显示轴承"));
     	ImGui::Text(TRC(u8"更多帮助请按H键打开"));
     }
     ImGui::End();
@@ -371,8 +368,6 @@ void MainMenu::drawIMGUI()
 
 bool MainMenu::onKeyPress(int keyCode)
 {
-	if (keyCode == TZW_KEY_TAB)
-		toggle();
 	return true;
 }
 

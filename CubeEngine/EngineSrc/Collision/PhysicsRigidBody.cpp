@@ -29,6 +29,8 @@ void PhysicsRigidBody::recievePhysicsInfo(vec3 pos, Quaternion rot)
 
 btRigidBody* PhysicsRigidBody::rigidBody() const
 {
+	m_rigidBody->setCcdMotionThreshold(0.1);
+	
 	return m_rigidBody;
 }
 
@@ -168,5 +170,15 @@ void PhysicsRigidBody::applyImpulse(vec3 force, vec3 localposition)
 bool PhysicsRigidBody::isInWorld()
 {
 	return m_rigidBody->isInWorld();
+}
+
+void PhysicsRigidBody::setCcdSweptSphereRadius(float radius)
+{
+	m_rigidBody->setCcdSweptSphereRadius(radius);
+}
+
+void PhysicsRigidBody::setCcdMotionThreshold(float threshold)
+{
+	m_rigidBody->setCcdMotionThreshold(threshold);
 }
 }

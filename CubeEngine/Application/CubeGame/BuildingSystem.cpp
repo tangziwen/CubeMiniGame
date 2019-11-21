@@ -550,8 +550,11 @@ namespace tzw
 		rapidjson::Value islandList(rapidjson::kArrayType);
 		for (auto island : m_IslandList)
 		{
+
 			if (island->m_isSpecial)
 				continue;
+			//we need record the building rotation!!!!!
+			island->recordBuildingRotate();
 			rapidjson::Value islandObject(rapidjson::kObjectType);
 			island->dump(islandObject, doc.GetAllocator());
 			islandList.PushBack(islandObject, doc.GetAllocator());
@@ -986,7 +989,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 
 			float lowFactorL = pl.y - center.y;
 			float lowFactorR = pr.y - center.y;
-			return (distFactorL * 10.0 + lowFactorL) < (distFactorR * 10.0 + lowFactorR);
+			return (distFactorL + lowFactorL) < (distFactorR + lowFactorR);
 		});
 		return attachmentList[0];//这里有风险，可能bottom也被连接了
 	}

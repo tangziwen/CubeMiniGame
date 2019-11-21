@@ -12,6 +12,7 @@
 #include "Base/GuidMgr.h"
 #include "ThrusterPart.h"
 #include "CannonPart.h"
+#include <algorithm>
 
 namespace tzw {
 Island::Island(vec3 pos)
@@ -443,6 +444,13 @@ void Island::updatePhysics()
 	}
 	m_rigid->setCollisionShape(getCompoundShape());
 	m_rigid->updateInertiaTensor();
+	btTransform ident;
+	ident.setIdentity();
+	btVector3 aabbMin,aabbMax;
+	getCompoundShape()->getRawShape()->getAabb(ident,aabbMin,aabbMax);
+	float radius = std::max(std::max(aabbMax.getX() - aabbMin.getX(), aabbMax.getY() - aabbMin.getY()),aabbMax.getZ() - aabbMin.getZ());
+	m_rigid->setCcdSweptSphereRadius(0.00001);
+	m_rigid->setCcdMotionThreshold(0.5);
 	if(m_enablePhysics)
 	{
 		PhysicsMgr::shared()->addRigidBody(m_rigid);

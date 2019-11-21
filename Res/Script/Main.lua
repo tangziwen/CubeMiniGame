@@ -123,7 +123,7 @@ m_itemSlots[1].target = "Lift"
 m_itemSlots[2].target = "Block"
 m_itemSlots[3].target = "Seat"
 m_itemSlots[4].target = "Bearing"
-m_itemSlots[5].target = "Wheel"
+m_itemSlots[5].target = "WheelOffRoad-Medium"
 
 function updateLifting(dt)
 	if lift_state ~= 0 then
@@ -151,29 +151,8 @@ end
 
 function on_game_start()
 	InitInventory()
-end
-
-function cpp_drawHelpPage()
-	isShowHelpPage = ImGui.Begin(TR("帮助页面"), ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize)
-	if ImGui.CollapsingHeader("基础操作", 0) then
-		ImGui.TextWrapped("WASD 来控制相机四方向移动，鼠标移动控制视线方向，空格键跳跃")
-		ImGui.TextWrapped("'~'键切换显示菜单")
-	end
-	if ImGui.CollapsingHeader("升降工作台", 0) then
-		ImGui.TextWrapped("玩家可以在地面上放置升降控制台，并可以将物块放在上面，在升降控制台上的物体不开启物理效果，")
-		ImGui.TextWrapped("可以更方面的建造，同时小键盘的上下方向键可以竖直平移工作台")
-		ImGui.TextWrapped("删除升降台后将开启载具的物理，相反的，建造好升降台后，准心对准活动的方块按J键可以将其放回工作台")
-	end
-	if ImGui.CollapsingHeader("约束", 0) then
-		ImGui.TextWrapped("目前玩家可放置的有两种约束，弹簧和轴承，放置普通方块时，物体会自动连接成一个刚体，如果放置一个约束")
-		ImGui.TextWrapped("则刚体之前可以活动，可以使用这个来建造小车")
-	end
-	if ImGui.CollapsingHeader("关于", 0) then
-		ImGui.TextWrapped("Cube Engine By tzw")
-		ImGui.TextWrapped("任何疑问皆可发送至 tzwtangziwen@163.com")
-	end
-	ImGui.End()
-	return isShowHelpPage;
+	local player = GameWorld.shared():getPlayer()
+	player:setCurrSelected(m_itemSlots[m_currIndex]["target"])
 end
 
 function cpp_drawInventory()
@@ -247,7 +226,7 @@ function drawHud()
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
 			end
-			ImGui.Text(TR(findItemByName(v["target"]).desc));
+			ImGui.Text(tostring(k).." "..TR(findItemByName(v["target"]).desc));
 		end
 		if needPop then
 			ImGui.PopStyleColor()
@@ -295,6 +274,7 @@ function drawEntryInterface()
 		if(ImGui.Button(TR("开始游戏"), ImGui.ImVec2(160, 35))) then
 			GameWorld.shared():startGame()
 			Engine:shared():setUnlimitedCursor(true)
+			
 		end
 		ImGui.Spacing()
 		if(ImGui.Button(TR("帮助"), ImGui.ImVec2(160, 35))) then
@@ -308,12 +288,14 @@ function drawEntryInterface()
 		ImGui.End()
 	end
 end
-
+local m_isControlKeyPress = false
 function onKeyPress(input_event)
 	if input_event.keycode == TZW_KEY_UP then
 		lift_state = 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = -1
+	elseif input_event.keycode == TZW_KEY_LEFT_CONTROL then
+		m_isControlKeyPress = true
 	end
 end
 
@@ -321,6 +303,9 @@ oldPlayerPos = nil
 function onKeyRelease(input_event)
 	local player = GameWorld.shared():getPlayer()
 	local isKeyPress = false;
+	if GUISystem.shared():isUiCapturingInput() then
+		return
+	end
 	if input_event.keycode == TZW_KEY_1 then
 		m_currIndex = 1
 		isKeyPress = true
@@ -345,14 +330,24 @@ function onKeyRelease(input_event)
 	elseif input_event.keycode == TZW_KEY_8 then
 		m_currIndex = 8
 		isKeyPress = true
+	elseif input_event.keycode == TZW_KEY_LEFT_CONTROL then
+		m_isControlKeyPress = false
 	elseif input_event.keycode == TZW_KEY_UP then
 		lift_state = lift_state - 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = lift_state + 1
-	elseif input_event.keycode == TZW_KEY_P then
-		g_blockRotate = g_blockRotate + 15
+	elseif input_event.keycode == TZW_KEY_Q then
+		player:getPreviewItem():switchAttachment()
+	elseif input_event.keycode == TZW_KEY_R then
+		if m_isControlKeyPress then
+			g_blockRotate = g_blockRotate + 15
+		else
+			g_blockRotate = g_blockRotate - 15
+		end
 		if g_blockRotate >= 360 then
 			g_blockRotate = 0
+		elseif g_blockRotate < 0 then
+			g_blockRotate = g_blockRotate + 360
 		end
 		player:setPreviewAngle(g_blockRotate)
 	elseif input_event.keycode == TZW_KEY_I then
@@ -413,7 +408,7 @@ function placeItem(item)
 			--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
 			print("degree ".. g_blockRotate)
-			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, 0)
+			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, player:getPreviewItem():getCurrAttachment())
 			g_blockRotate = 0 --reset
 			player:setPreviewAngle(g_blockRotate)
 		end
@@ -450,6 +445,7 @@ function handleItemPrimaryUse(item)
 	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --fill the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	end
+	player:updateCrossHairTipsInfo()
 end
 
 function handleItemSecondaryUse(item)
@@ -464,6 +460,7 @@ function handleItemSecondaryUse(item)
 	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
 	end
+	player:updateCrossHairTipsInfo()
 end
 
 function getItemFromSlotIndex()

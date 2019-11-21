@@ -81,8 +81,9 @@ namespace tzw
 	{
 		dataType = DataType::DATA;
 		m_localAttrValue = NodeAttrValue();
+		acceptValueType = AcceptValueType::ANY;
 	}
-
+	//ÇóÓÒÖµ
 	NodeAttrValue NodeAttr::eval()
 	{
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
@@ -107,6 +108,29 @@ namespace tzw
 
 	}
 
+	NodeAttr* NodeAttr::evalRef()
+	{
+		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		
+		if(this->dataType ==DataType::RETURN_VALUE)//is a return value, must execute
+		{
+			//all pass
+			return this;
+		}
+		else
+		{
+			auto attr = nodeEditor->findAttrLinksFromAttr(this);
+			if(attr)
+			{
+				return attr->evalRef();
+			}
+			else 
+			{
+				return this;
+			}
+		}
+	}
+
 	NodeAttr* GameNodeEditorNode::addIn(std::string attrName)
 	{
 		increaseAttrGID();
@@ -114,6 +138,7 @@ namespace tzw
 		attr->m_name = attrName;
 		attr->gID = g_attr_uid;
 		attr->type = NodeAttr::Type::INPUT_ATTR;
+		attr->m_parent = this;
 		m_inAttr.push_back(attr);
 		return attr;
 	}
@@ -133,6 +158,7 @@ namespace tzw
 		attr->gID = g_attr_uid;
 		attr->type = NodeAttr::Type::OUTPUT_ATTR;
 		m_outAttr.push_back(attr);
+		attr->m_parent = this;
 		return attr;
 	}
 
@@ -147,6 +173,30 @@ namespace tzw
 	{
 		auto node = addOut("Return");
 		node->dataType = NodeAttr::DataType::RETURN_VALUE;
+		return node;
+	}
+
+	NodeAttr* GameNodeEditorNode::addInInt(std::string attrName, int defaultValue)
+	{
+		auto node = addIn(attrName);
+		node->acceptValueType = NodeAttr::AcceptValueType::INT;
+		node->m_localAttrValue.setInt(defaultValue);
+		return node;
+	}
+
+	NodeAttr* GameNodeEditorNode::addInSignal(std::string attrName, int defaultValue)
+	{
+		auto node = addIn(attrName);
+		node->acceptValueType = NodeAttr::AcceptValueType::SIGNAL;
+		node->m_localAttrValue.setInt(defaultValue);
+		return node;
+	}
+
+	NodeAttr* GameNodeEditorNode::addInFloat(std::string attrName, float defaultValue)
+	{
+		auto node = addIn(attrName);
+		node->acceptValueType = NodeAttr::AcceptValueType::FLOAT;
+		node->m_localAttrValue.setFloat(defaultValue);
 		return node;
 	}
 
@@ -283,6 +333,35 @@ namespace tzw
 		//load Node Origin from file
 		m_origin = vec2(partData["orgin_x"].GetDouble(), partData["orgin_y"].GetDouble());
 		this->setGUID(partData["UID"].GetString());
+		//load inAttr local Value
+		for(int i = 0; i < m_inAttr.size(); i++)
+		{
+			auto inAttr = m_inAttr[i];
+			switch(inAttr->acceptValueType )
+			{
+              case NodeAttr::AcceptValueType::ANY:
+				{
+					//no local value at all
+				}
+				break;
+              case NodeAttr::AcceptValueType::INT:
+				{
+              		inAttr->m_localAttrValue.setInt(partData["InAttrList"][i]["LocalValue"].GetInt());
+				}
+				break;
+              case NodeAttr::AcceptValueType::FLOAT:
+				{
+              		inAttr->m_localAttrValue.setFloat(partData["InAttrList"][i]["LocalValue"].GetDouble());
+				}
+				break;
+              case NodeAttr::AcceptValueType::SIGNAL:
+				{
+              		inAttr->m_localAttrValue.setInt(partData["InAttrList"][i]["LocalValue"].GetInt());
+				}
+				break;
+			}
+			
+		}
 	}
 
 	void GameNodeEditorNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
@@ -290,6 +369,38 @@ namespace tzw
 		partDocObj.AddMember("UID", std::string(getGUID()), allocator);
 		partDocObj.AddMember("NodeType", getType(), allocator);
 		partDocObj.AddMember("NodeClass", getNodeClass(), allocator);
+		rapidjson::Value inAttrListObj(rapidjson::kArrayType);
+
+		//Dump Node attr IN
+		for(auto inAttr :m_inAttr)
+		{
+			rapidjson::Value attrObj(rapidjson::kObjectType);
+			switch(inAttr->acceptValueType )
+			{
+              case NodeAttr::AcceptValueType::ANY:
+				{
+					attrObj.AddMember("LocalValue", "ANY",allocator);
+				}
+				break;
+              case NodeAttr::AcceptValueType::INT:
+				{
+					attrObj.AddMember("LocalValue", inAttr->m_localAttrValue.getInt(),allocator);
+				}
+				break;
+              case NodeAttr::AcceptValueType::FLOAT:
+				{
+					attrObj.AddMember("LocalValue", inAttr->m_localAttrValue.getFloat(),allocator);
+				}
+				break;
+              case NodeAttr::AcceptValueType::SIGNAL:
+				{
+					attrObj.AddMember("LocalValue", inAttr->m_localAttrValue.getInt(),allocator);
+				}
+				break;
+			}
+			inAttrListObj.PushBack(attrObj, allocator);
+		}
+		partDocObj.AddMember("InAttrList",inAttrListObj, allocator);
 	}
 
 	NodeAttrValue GameNodeEditorNode::execute()

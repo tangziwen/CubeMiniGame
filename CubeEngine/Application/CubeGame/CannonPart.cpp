@@ -11,7 +11,7 @@
 namespace tzw
 {
 static auto blockSize = 0.25;
-CannonPart::CannonPart()
+CannonPart::CannonPart():m_firingVelocity(20.0f),m_recoil(25.f)
 {
 
 	m_topRadius = 0.1;
@@ -125,6 +125,21 @@ GamePartType CannonPart::getType()
 	return GamePartType::GAME_PART_CANNON;
 }
 
+void CannonPart::drawInspect()
+{
+	drawInspectNameEdit();
+	float force = getFiringVelocity();
+	if(ImGui::InputFloat(TRC(u8"投射物初速度"), &force))
+	{
+		setFiringVelocity(force);
+	}
+	float recoil = getRecoil();
+	if(ImGui::InputFloat(TRC(u8"后坐力"), &recoil))
+	{
+		setRecoil(recoil);
+	}
+}
+
 void CannonPart::use()
 {
 	//shoot bullet
@@ -135,10 +150,37 @@ void CannonPart::use()
 	auto aabb = boxA->localAABB();
 	auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
 	rigA->attach(boxA);
-	rigA->setVelocity(m_node->getForward() * 20.0);
+	rigA->setVelocity(m_node->getForward() * getFiringVelocity());
+	rigA->setCcdMotionThreshold(1e-7);
+	rigA->setCcdSweptSphereRadius(0.50);
 	g_GetCurrScene()->addNode(boxA);
 
 	//apply recoil
-	m_parent->m_rigid->applyImpulse(m_node->getForward() *-1* 50, m_node->getPos());
+	m_parent->m_rigid->applyImpulse(m_node->getForward() *-1* getRecoil(), m_node->getPos());
+}
+
+bool CannonPart::isNeedDrawInspect()
+{
+	return true;
+}
+
+float CannonPart::getFiringVelocity() const
+{
+	return m_firingVelocity;
+}
+
+void CannonPart::setFiringVelocity(const float firingVelocity)
+{
+	m_firingVelocity = firingVelocity;
+}
+
+float CannonPart::getRecoil() const
+{
+	return m_recoil;
+}
+
+void CannonPart::setRecoil(const float recoil)
+{
+	m_recoil = recoil;
 }
 }

@@ -3,16 +3,15 @@
 
 namespace tzw {
 
-struct SpinNode: public BehaviorNode 
+struct AssignNode: public BehaviorNode 
 {
 public:
-	SpinNode();
+	AssignNode();
 	NodeAttrValue execute() override;
 	int getNodeClass() override;
 protected:
-	NodeAttr * m_bearingAttr;
-	NodeAttr * m_signalAttr;
-	NodeAttr * m_rotateSpeedAttr;
+	NodeAttr * m_leftValAttr;
+	NodeAttr * m_rightValAttr;
 };
 
 }

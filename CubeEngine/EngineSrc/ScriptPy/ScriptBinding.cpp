@@ -15,6 +15,7 @@
 
 #include "2D/imnodes.h"
 #include "Base/TranslationMgr.h"
+#include "2D/GUISystem.h"
 
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
@@ -273,7 +274,13 @@ namespace tzw
 		BIND_PROP(imnodes_link_info, isCreated)
 		BIND_END_CLASS
 		//Scene
-		
+
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(GUISystem)
+		.addStaticFunction ("shared", &GUISystem::shared)
+		BIND_FUNC(GUISystem, isUiCapturingInput)
+		BIND_END_CLASS
+
 		BIND_START(luaState)
 		.addFunction("g_GetCurrScene", &g_GetCurrScene);
 		

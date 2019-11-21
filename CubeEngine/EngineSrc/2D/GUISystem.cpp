@@ -210,6 +210,12 @@ namespace tzw
 		
 	}
 
+	bool GUISystem::isUiCapturingInput()
+	{
+		auto& io = ImGui::GetIO();
+		return io.WantTextInput;
+	}
+
 	void GUISystem::initGUI()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
@@ -243,7 +249,7 @@ namespace tzw
 		io.KeyMap[ImGuiKey_Z] = TZW_KEY_Z;
 		//ImGui::StyleColorsClassic();
 		io.RenderDrawListsFn = ImGui_ImplGlfwGL2_RenderDrawLists;
-		ImGui::StyleColorsDark();
+		ImGui::StyleColorsClassic();
 		ImGuiStyle& style = ImGui::GetStyle();
 		style.WindowBorderSize = 2.0f;
 		style.FrameBorderSize = 2.0f;

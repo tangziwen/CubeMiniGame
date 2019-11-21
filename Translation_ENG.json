@@ -14,11 +14,15 @@
 		},
 		{
 			"original": "(左键) 喷漆 \n(右键) 喷涂面板",
-			"translated": "(左键) 喷漆 \n(右键) 喷涂面板"
+			"translated": "(LMB) paint \n(RMB) Color Pallete"
 		},
 		{
 			"original": "Constant",
 			"translated": "Constant"
+		},
+		{
+			"original": "C键",
+			"translated": "C Key"
 		},
 		{
 			"original": "TZW 出品，测试版本",
@@ -37,6 +41,14 @@
 			"translated": "Use the WASD & Mouse to control Camera，Press I to open the Inventory，Build the Lift First!"
 		},
 		{
+			"original": "X键",
+			"translated": "X Key"
+		},
+		{
+			"original": "Z键",
+			"translated": "ZKey"
+		},
+		{
 			"original": "使用节点",
 			"translated": "Using Node"
 		},
@@ -51,6 +63,14 @@
 		{
 			"original": "关闭",
 			"translated": "Close"
+		},
+		{
+			"original": "前后",
+			"translated": "Forward/Backward"
+		},
+		{
+			"original": "前后信号",
+			"translated": "Forward/Backward signal"
 		},
 		{
 			"original": "升降台只能放一个",
@@ -93,12 +113,24 @@
 			"translated": "Left"
 		},
 		{
+			"original": "左右",
+			"translated": "Left/Right"
+		},
+		{
+			"original": "左右信号",
+			"translated": "Left/Right signal"
+		},
+		{
 			"original": "帮助",
 			"translated": "Help"
 		},
 		{
 			"original": "帮助页面",
 			"translated": "Help Page"
+		},
+		{
+			"original": "座位 %s",
+			"translated": "Seat %s"
 		},
 		{
 			"original": "座椅",
@@ -134,11 +166,15 @@
 		},
 		{
 			"original": "挖掘机",
-			"translated": "挖掘机"
+			"translated": "Digger"
 		},
 		{
 			"original": "推进器",
 			"translated": "Thruster"
+		},
+		{
+			"original": "推进器 %s",
+			"translated": "Thruster %s"
 		},
 		{
 			"original": "收纳",
@@ -189,12 +225,28 @@
 			"translated": "STD Input"
 		},
 		{
+			"original": "清空所有载具",
+			"translated": "Clear All Vehicle"
+		},
+		{
 			"original": "炮筒",
 			"translated": "Cannon"
 		},
 		{
+			"original": "直棱柱",
+			"translated": "Right Prism"
+		},
+		{
+			"original": "直棱柱-长",
+			"translated": "直棱柱-长"
+		},
+		{
 			"original": "管子",
 			"translated": "Pipe"
+		},
+		{
+			"original": "粗管",
+			"translated": "粗管"
 		},
 		{
 			"original": "继续",
@@ -227,6 +279,10 @@
 		{
 			"original": "轮子",
 			"translated": "Wheel"
+		},
+		{
+			"original": "轮子-中型",
+			"translated": "轮子-中型"
 		},
 		{
 			"original": "轴承",

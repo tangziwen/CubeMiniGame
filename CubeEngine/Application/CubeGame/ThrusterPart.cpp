@@ -172,9 +172,7 @@ GamePartType ThrusterPart::getType()
 
 void ThrusterPart::toggle(int openSignal)
 {
-	 
-	m_isOpen = openSignal;
-
+	m_isOpen = openSignal>0?true:false;
 }
 
 void ThrusterPart::updateForce(float dt)
@@ -218,7 +216,7 @@ void ThrusterPart::drawInspect()
 {
 	drawInspectNameEdit();
 	float force = getThrusterForce();
-	if(ImGui::InputFloat(u8"推进力", &force))
+	if(ImGui::InputFloat(TRC(u8"推力"), &force))
 	{
 		setThrusterForce(force);
 	}

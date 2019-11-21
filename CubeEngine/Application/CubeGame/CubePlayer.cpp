@@ -18,6 +18,7 @@
 #include "PartSurfaceMgr.h"
 #include "PaintGun.h"
 #include "Base/TranslationMgr.h"
+#include "3D/Primitive/RightPrismPrimitive.h"
 
 namespace tzw
 {
@@ -32,7 +33,7 @@ namespace tzw
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		GUISystem::shared()->addObject(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
-		camera->setCamPos(vec3(5, 30.0, -5));
+		camera->setCamPos(vec3(5, 20.0, -5));
 		mainRoot->addChild(camera);
 		g_GetCurrScene()->setDefaultCamera(camera);
 		m_camera = camera;
@@ -154,45 +155,41 @@ namespace tzw
 
 	bool CubePlayer::onKeyRelease(int keyCode)
 	{
+		tlog("is UI whant capture input %d",GUISystem::shared()->isUiCapturingInput());
 		//if (MainMenu::shared()->isVisible()) return false;
 		switch (keyCode)
 		{
 	    case TZW_KEY_ESCAPE:
 	        MainMenu::shared()->closeCurrentWindow();
 	        break;
-		case TZW_KEY_Q:
-			{
-				m_enableGravity = !m_enableGravity;
-				m_camera->setIsEnableGravity(m_enableGravity);
-			}
-			break;
         case TZW_KEY_H:
 			{
+        		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::HELP_PAGE, true);
             }
 			break;
         case TZW_KEY_M:
 			{
+        		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::MainMenu, !MainMenu::shared()->getWindowIsShow(WindowType::MainMenu));
             }
 			break;
 		case TZW_KEY_T:
 			{
-				auto toggleXray = !BuildingSystem::shared()->isIsInXRayMode();
-				BuildingSystem::shared()->setIsInXRayMode(toggleXray);
-				AssistDrawSystem::shared()->setIsShowAssistInfo(toggleXray);
-			}
-			break;
-		case TZW_KEY_R:
-			{
-				auto toggleXray = !BuildingSystem::shared()->isIsInXRayMode();
-				BuildingSystem::shared()->setIsInXRayMode(toggleXray);
-				AssistDrawSystem::shared()->setIsShowAssistInfo(toggleXray);
+				if(!GUISystem::shared()->isUiCapturingInput())
+				{
+					auto toggleXray = !BuildingSystem::shared()->isIsInXRayMode();
+					BuildingSystem::shared()->setIsInXRayMode(toggleXray);
+					AssistDrawSystem::shared()->setIsShowAssistInfo(toggleXray);
+				}
 			}
 			break;
 		case TZW_KEY_J:
 			{
+				if(!GUISystem::shared()->isUiCapturingInput())
+				{
 				BuildingSystem::shared()->replaceToLiftByRay(getPos(), m_camera->getForward(), 15);
+                }
 			}
 			break;
 		default:
@@ -205,16 +202,6 @@ namespace tzw
 	{
 		if (MainMenu::shared()->isVisible())
 				return false;
-		//switch(button) 
-		//{
-		//case 0://left mouse
-		//	handleItemPrimaryUse(m_itemSlots[m_currSelectItemIndex]);
-		//	break;
-		//case 1://right mouse
-		//	handleItemSecondaryUse(m_itemSlots[m_currSelectItemIndex]);
-		//	break;
-		//default: break;
-		//}
 		return true;
 	}
 
@@ -256,6 +243,7 @@ namespace tzw
 		m_camera->setIsEnableGravity(true);
 		m_camera->setEnableFPSFeature(true);
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
+		m_orbitcamera->setFocusNode(nullptr);
 		g_GetCurrScene()->setDefaultCamera(m_camera);
 	}
 
@@ -284,7 +272,32 @@ namespace tzw
 		auto label = MainMenu::shared()->getCrossHairTipsInfo();
 		if(!label) return;
 		auto item = ItemMgr::shared()->getItem(m_currSelectedItem);
+		bool isNeedSpecialShowBySelected = false;
+
 		if(item && item->isSpecialFunctionItem())
+		{
+			isNeedSpecialShowBySelected = true;
+			switch(item->m_type)
+			{
+			case GamePartType::GAME_PART_LIFT:
+				if(!BuildingSystem::shared()->getLift())
+				{
+					isNeedSpecialShowBySelected = true;
+				}
+				else //已经放置了不需要再显示
+				{
+					isNeedSpecialShowBySelected = false;
+				}
+			break;
+			case GamePartType::SPECIAL_PART_PAINTER: isNeedSpecialShowBySelected = true; break;
+			default: ;
+			}
+		}else
+		{
+			isNeedSpecialShowBySelected = false;
+		}
+
+		if(isNeedSpecialShowBySelected)
 		{
 			label->setIsVisible(true);
 			switch(item->m_type)
@@ -307,10 +320,6 @@ namespace tzw
 							label->setString(TR(u8"对准空地放置，对准载具收纳放置"));
 						}
 					}
-				}
-				else //已经放置了不需要再显示
-				{
-					label->setIsVisible(false);
 				}
 			break;
 			case GamePartType::SPECIAL_PART_PAINTER: label->setString(TR(u8"(左键) 喷漆 \n(右键) 喷涂面板")); break;
@@ -385,5 +394,10 @@ namespace tzw
 	float CubePlayer::getPreviewAngle() const
 	{
 		return m_previewItem->getPreviewAngle();
+	}
+
+	PreviewItem* CubePlayer::getPreviewItem()
+	{
+		return m_previewItem;
 	}
 } // namespace tzw

@@ -27,6 +27,12 @@
 #include "NodeEditorNodes/ToggleNode.h"
 #include "ThrusterPart.h"
 #include "Base/TranslationMgr.h"
+#include "NodeEditorNodes/SwitchNode.h"
+#include "NodeEditorNodes/ButtonNode.h"
+#include "NodeEditorNodes/VarNode.h"
+#include "NodeEditorNodes/AssignNode.h"
+#include "NodeEditorNodes/EqualNode.h"
+#include "NodeEditorNodes/IfNode.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -273,8 +279,25 @@ enum class PinType
                 case Node_CLASS_TOGGLE:
 					newNode = new ToggleNode();
 					break;
+                case Node_CLASS_SWITCH:
+					newNode = new SwitchNode();
+					break;
+                case Node_CLASS_Button:
+					newNode = new ButtonNode();
+					break;
+                case Node_CLASS_VAR:
+					newNode = new VarNode();
+					break;
+                case Node_CLASS_ASSIGN:
+					newNode = new AssignNode();
+					break;
+                case Node_CLASS_EQUAL:
+					newNode = new EqualNode();
+					break;
+                case Node_CLASS_IF:
+					newNode = new IfNode();
+					break;
 				}
-				
 				addNode(newNode);
 			}
 			newNode->load(node);
@@ -326,34 +349,87 @@ enum class PinType
 	    ImGui::Spring(0.0f);
 	    ImGui::Spring();
 	    ImGui::EndHorizontal();
+		GameNodeEditorNode * newNode = nullptr;
 		if(ImGui::Button(TRC(u8"旋转节点")))
 		{
-			addNode(new SpinNode());
+			newNode = new SpinNode();
 		}
+		ImGui::SameLine();
 		if(ImGui::Button(TRC(u8"标准输入")))
 		{
-			addNode(new KeyTriggerNode());
+			newNode = new KeyTriggerNode();
 		}
+		ImGui::SameLine();
 		if(ImGui::Button(TRC(u8"按键输入")))
 		{
-			addNode(new KeyAnyTriggerNode());
+			newNode = new KeyAnyTriggerNode();
 		}
+
+
+
 		if(ImGui::Button(TRC(u8"使用节点")))
 		{
-			addNode(new UseNode());
+			newNode = new UseNode();
 		}
+		ImGui::SameLine();
 		if(ImGui::Button(TRC(u8"Vector")))
 		{
-			addNode(new VectorNode());
+			newNode = new VectorNode();
 		}
+		ImGui::SameLine();
 		if(ImGui::Button(TRC(u8"Constant")))
 		{
-			addNode(new ConstantIntNode());
+			newNode = new ConstantIntNode();
 		}
+
+
+		
 		if(ImGui::Button(TRC(u8"Toggle")))
 		{
-			addNode(new ToggleNode());
+			newNode  = new ToggleNode();
 		}
+		ImGui::SameLine();
+		if(ImGui::Button(TRC(u8"变量")))
+		{
+			newNode = new VarNode();
+		}
+		ImGui::SameLine();
+		if(ImGui::Button(TRC(u8"赋值")))
+		{
+			newNode = new AssignNode();
+		}
+
+		if(ImGui::Button(TRC(u8"If")))
+		{
+			newNode = new IfNode();
+		}
+		ImGui::SameLine();
+		if(ImGui::Button(TRC(u8"==")))
+		{
+			newNode = new EqualNode();
+		}
+
+		/*
+		ImGui::SameLine();
+		if(ImGui::Button(TRC(u8"开关事件")))
+		{
+			addNode(new SwitchNode());
+		}
+
+		if(ImGui::Button(TRC(u8"按钮事件")))
+		{
+			addNode(new ButtonNode());
+		}
+		*/
+		if(newNode)
+		{
+			addNode(newNode);
+			auto screenSize = Engine::shared()->winSize();
+			auto pos = ed::ScreenToCanvas(ImVec2(screenSize.x /2.0f, screenSize.y / 2.0f));
+			newNode->m_origin = vec2(pos.x, pos.y);
+			ed::SetNodePosition(newNode->m_nodeID, pos);
+		}
+
 	    std::vector<ed::NodeId> selectedNodes;
 	    std::vector<ed::LinkId> selectedLinks;
 	    selectedNodes.resize(ed::GetSelectedObjectCount());
@@ -437,7 +513,6 @@ enum class PinType
 	    ImGui::TextUnformatted(TRC(u8"选中"));
 
 	    ImGui::BeginHorizontal("Selection Stats", ImVec2(paneWidth, 0));
-	    ImGui::Text("Changed %d time%s", changeCount, changeCount > 1 ? "s" : "");
 	    ImGui::Spring();
 	    if (ImGui::Button(TRC(u8"全部取消选中")))
 	        ed::ClearSelection();
@@ -612,12 +687,12 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 		//ImGui::Begin(u8"节点编辑器", isOpen,             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGui::Begin("Content", isOpen,
+        ImGui::Begin(TRC(u8"节点编辑器"), isOpen,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
             ImGuiWindowFlags_NoBringToFrontOnFocus);
 		ed::SetCurrentEditor(g_Context);
-		static float leftPaneWidth  = 300.0f;
+		static float leftPaneWidth  = 250.0f;
 	    ShowLeftPane(leftPaneWidth - 4.0f);
 
 	    ImGui::SameLine(0.0f, 12.0f);
@@ -657,6 +732,71 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				builder.Input(attr->gID);
 				drawPinIcon(attr, true, int(1.0 * 255));
 				ImGui::TextUnformatted(attr->m_name.c_str());
+				//可能允许包含默认值，给与默认值输入框
+				if(attr->acceptValueType != NodeAttr::AcceptValueType::ANY)
+				{
+					auto input = findAttrLinksFromAttr(attr);
+					bool isDisable = (input != nullptr);//判断是否有人连过来了，有人连了就灰化显示并禁用
+				    if (isDisable)
+				    {
+				        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+				        ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.2f);
+				    }
+					switch(attr->acceptValueType)
+					{
+                        case NodeAttr::AcceptValueType::INT:
+						{
+							int value = attr->m_localAttrValue.getInt();
+                        	ImGui::PushItemWidth(80);
+							if(ImGui::InputInt(u8"默认值", &value))
+							{
+								attr->m_localAttrValue.setInt(value);
+							}
+                        	ImGui::PopItemWidth();
+                        }
+						break;
+                        case NodeAttr::AcceptValueType::FLOAT:
+						{
+							float value = attr->m_localAttrValue.getFloat();
+                        	ImGui::PushItemWidth(80);
+							if(ImGui::InputFloat(u8"默认值", &value))
+							{
+								attr->m_localAttrValue.setFloat(value);
+							}
+                        	ImGui::PopItemWidth();
+                        }
+						break;
+                        case NodeAttr::AcceptValueType::SIGNAL:
+						{
+							int value = attr->m_localAttrValue.getInt();
+                        	bool isClicked = false;
+                        	if(ImGui::RadioButton("-1", value == -1)) {
+								isClicked = true;
+                        		value = -1;
+                        	}
+                        	if(ImGui::RadioButton("0", value == 0))
+                        	{
+								isClicked = true;
+                        		value = 0;
+                        	}
+                        	if(ImGui::RadioButton("1", value == 1))
+                        	{
+								isClicked = true;
+                        		value = 1;
+                        	}
+                        	if(isClicked)
+                        	{
+                        		attr->m_localAttrValue.setInt(value);
+                        	}
+                        }
+						break;
+					}
+				    if (isDisable)
+				    {
+				        ImGui::PopItemFlag();
+				        ImGui::PopStyleVar();
+				    }
+				}
 				builder.EndInput();
 			}
 

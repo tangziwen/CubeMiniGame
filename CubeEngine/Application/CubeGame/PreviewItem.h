@@ -19,9 +19,12 @@ namespace tzw
 		void setPreviewAngle(const float previewAngle);
 		void setPreviewItem(GameItem * item);
 		void handlePreview(GameItem * currSelected, vec3 camPos, vec3 playerForwardDir);
+		void switchAttachment();
+		int getCurrAttachment();
 	private:
 		void hidePreviewPart();
 		void showPreviewPart();
+		int m_currAttachment;
 		float m_previewAngle;
 		GamePart * m_previewPart;
 		Island * m_previewIsland;

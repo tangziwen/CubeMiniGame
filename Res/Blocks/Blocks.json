@@ -81,10 +81,52 @@
 			"size":[0.5, 0.5, 0.5]
 		}
 		},
-
 		{
-		"name" : "Wheel",
-		"desc":"轮子",
+			"name" : "RightPrism",
+			"desc":"直棱柱",
+			"Type":"GAME_PART_BLOCK",
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, 1.0]}
+					],
+			"Visual":
+			{
+				"Type":"RightPrismPrimitive",
+				"size":[0.5, 0.5, 0.5]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[0.5, 0.5, 0.5]
+			}
+		},
+		{
+			"name" : "RightPrism_L",
+			"desc":"直棱柱-长",
+			"Type":"GAME_PART_BLOCK",
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[0.0, -0.25, 0.25],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, 1.0]},
+					{"pos" :[0.0, -0.25, -0.25],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, 1.0]}
+					],
+			"Visual":
+			{
+				"Type":"RightPrismPrimitive",
+				"size":[0.5, 0.5, 1.0]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[0.5, 0.5, 1.0]
+			}
+		},
+		{
+		"name" : "Wheel-Bike",
+		"desc":"单车轮",
 		"Type":"GAME_PART_BLOCK",
 		"attach":[
 				{"pos" :[0.0, 0.0, 0.075],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
@@ -103,6 +145,66 @@
 		{
 			"Type": "CylinderShape",
 			"size":[0.6, 0.6, 0.2]
+		}
+		},
+		{
+		"name" : "WheelOffRoad-Medium",
+		"desc":"越野轮-中型",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/WheelMedium/wheel_medium.tzw",
+			"DiffusePath":"Blocks/WheelMedium/wheel_medium_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.6, 0.6, 0.2]
+		}
+		},
+		{
+		"name" : "WheelOffRoad-Small",
+		"desc":"越野轮-小",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/WheelSmall/wheel_small.tzw",
+			"DiffusePath":"Blocks/WheelSmall/wheel_small_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.48, 0.48, 0.2]
+		}
+		},
+		{
+		"name" : "WheelOffRoad-Normal",
+		"desc":"越野轮-普通",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/WheelNormal/wheel_normal.tzw",
+			"DiffusePath":"Blocks/WheelNormal/wheel_normal_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.48, 0.48, 0.2]
 		}
 		},
 		{
@@ -173,13 +275,32 @@
 		"Visual":
 		{
 			"Type":"CylinderPrimitive",
-			"size":[0.05, 0.05, 0.5]
+			"size":[0.06, 0.06, 0.5]
 		},
 		"Physics":
 		{
 			"Type": "CylinderShape",
-			"size":[0.05, 0.05, 0.5]
+			"size":[0.06, 0.06, 0.5]
 		}
+		},
+		{
+			"name" : "LargePipe",
+			"desc":"粗管",
+			"Type":"GAME_PART_BLOCK",
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+					],
+			"Visual":
+			{
+				"Type":"CylinderPrimitive",
+				"size":[0.1, 0.1, 0.5]
+			},
+			"Physics":
+			{
+				"Type": "CylinderShape",
+				"size":[0.1, 0.1, 0.5]
+			}
 		},
 		{
 		"name" : "Spring",

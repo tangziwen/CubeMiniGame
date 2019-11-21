@@ -8,7 +8,9 @@
 #include "Scene/SceneMgr.h"
 namespace tzw
 {
-	PreviewItem::PreviewItem():m_sphere(nullptr), m_previewPart(nullptr),m_previewAngle(0), m_previewIsland(new Island(vec3(0, 0, 0)))
+	PreviewItem::PreviewItem():
+	m_sphere(nullptr), m_previewPart(nullptr),m_previewAngle(0),
+	m_previewIsland(new Island(vec3(0, 0, 0))),m_currAttachment(0)
 	{
 	}
 
@@ -82,6 +84,7 @@ namespace tzw
 			m_previewPart->getNode()->setMaterial(m_material);
 			tlog("create preview part");
         }
+		m_currAttachment = 0;
 	}
 
 	void PreviewItem::handlePreview(GameItem* currSelected, vec3 camPos, vec3 playerForwardDir)
@@ -155,7 +158,7 @@ namespace tzw
 						if(attach && !attach->m_connected && !currSelected->isSpecialFunctionItem())
 						{
 							showPreviewPart();
-							m_previewPart->adjustToOtherIslandByAlterSelfPart(attach, m_previewPart->getFirstAttachment(), m_previewAngle);
+							m_previewPart->adjustToOtherIslandByAlterSelfPart(attach, m_previewPart->getAttachment(m_currAttachment), m_previewAngle);
 						}else
 						{
 							hidePreviewPart();
@@ -210,6 +213,26 @@ namespace tzw
 				}
 			}
 		}
+	}
+
+	//½»»»¹Ò½Óµã
+	void PreviewItem::switchAttachment()
+	{
+		if(m_previewPart && !m_previewPart->getItem()->isSpecialFunctionItem()) 
+		{
+			if(m_currAttachment < m_previewPart->getAttachmentCount() - 1)
+			{
+				m_currAttachment++;
+			}else
+			{
+				m_currAttachment = 0;
+			}
+		}
+	}
+
+	int PreviewItem::getCurrAttachment()
+	{
+		return m_currAttachment;
 	}
 
 	void PreviewItem::hidePreviewPart()

@@ -33,7 +33,6 @@ void util::BlueprintNodeBuilder::Begin(ed::NodeId id)
     ed::PushStyleVar(StyleVar_NodePadding, ImVec4(8, 4, 8, 8));
 
     ed::BeginNode(id);
-
     ImGui::PushID(id.AsPointer());
     CurrentNodeId = id;
 

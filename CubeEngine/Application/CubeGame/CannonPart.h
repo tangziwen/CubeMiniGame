@@ -19,9 +19,18 @@ namespace tzw
 		void generateName() override;
 		GamePartType getType() override;
 		BearPart * m_bearPart[6];
+		void drawInspect() override;
 		void use() override;
+		bool isNeedDrawInspect() override;
     private:
 		float m_topRadius, m_bottomRadius, m_height;
 		GameNodeEditorNode * m_graphNode;
+		float m_firingVelocity;
+		float m_recoil;
+	public:
+		float getFiringVelocity() const;
+		void setFiringVelocity(const float firingVelocity);
+		float getRecoil() const;
+		void setRecoil(const float recoil);
 	};
 }

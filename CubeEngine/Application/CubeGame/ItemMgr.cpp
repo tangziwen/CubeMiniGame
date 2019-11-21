@@ -110,6 +110,10 @@ void ItemMgr::loadFromFile(std::string filePath)
 					{
 						gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::CylinderPrimitive;
 					}
+					else if(visualInfoType == "RightPrismPrimitive")
+					{
+						gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::RightPrismPrimitive;
+					}
 					else if(visualInfoType == "Mesh")
 					{
 						gameItem->m_visualInfo.type = VisualInfo::VisualInfoType::Mesh;

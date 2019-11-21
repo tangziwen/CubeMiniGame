@@ -31,6 +31,13 @@ namespace tzw
 	{
 		auto luaState = static_cast<lua_State *>(ScriptPyMgr::shared()->getState());
 
+
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(PreviewItem)
+		BIND_FUNC(PreviewItem, switchAttachment)
+		BIND_FUNC(PreviewItem, getCurrAttachment)
+		BIND_END_CLASS
+		
 		//CubePlayer
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(CubePlayer)
@@ -43,7 +50,12 @@ namespace tzw
 		BIND_FUNC(CubePlayer, setCurrSelected)
 		BIND_FUNC(CubePlayer, openCurrentPartInspectMenu)
 		BIND_FUNC(CubePlayer, setPreviewAngle)
+		BIND_FUNC(CubePlayer, updateCrossHairTipsInfo)
+		BIND_FUNC(CubePlayer, getPreviewItem)
 		BIND_END_CLASS
+
+
+
 
 		//GameWorld
 		BIND_START(luaState)

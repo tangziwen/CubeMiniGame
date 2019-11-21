@@ -18,6 +18,7 @@ struct VisualInfo
 		CubePrimitive,
 		CylinderPrimitive,
 		Mesh,
+		RightPrismPrimitive,
 	};
 	VisualInfoType type;
 	vec3 size;

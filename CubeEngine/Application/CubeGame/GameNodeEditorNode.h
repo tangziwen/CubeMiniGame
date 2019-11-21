@@ -17,7 +17,12 @@
 #define Node_CLASS_CONSTANT_INT 5
 #define Node_CLASS_KEY_ANY_TRIGGER 6
 #define Node_CLASS_TOGGLE 7
-
+#define Node_CLASS_SWITCH 8
+#define Node_CLASS_Button 9
+#define Node_CLASS_VAR 10
+#define Node_CLASS_ASSIGN 11
+#define Node_CLASS_IF 12
+#define Node_CLASS_EQUAL 13
 namespace tzw {
 struct GameNodeEditorNode;
 
@@ -64,15 +69,26 @@ struct NodeAttr
 	{
 		EXECUTE,
 		DATA,
-		RETURN_VALUE
+		RETURN_VALUE,
+		DATA_WITH_DEFAULT_VALUE,
+	};
+	enum class AcceptValueType //可接受的valueType, int和float类型允许使用默认值
+	{
+		ANY,
+		INT,
+		FLOAT,
+		Res,
+		SIGNAL, //signal is the same like int ,but only allow for -1, 0, 1 as value
 	};
 	std::string m_name;
 	int gID;
 	int tag;
 	Type type;
 	DataType dataType;
+	AcceptValueType acceptValueType;
 	NodeAttr();
 	NodeAttrValue eval();
+	NodeAttr* evalRef();
 	NodeAttrValue m_localAttrValue{};
 	GameNodeEditorNode * m_parent;
 };
@@ -85,6 +101,9 @@ public:
 	NodeAttr* addOut(std::string attrName);
 	NodeAttr* addOutExe(std::string attrName);
 	NodeAttr * addOutReturn();
+	NodeAttr* addInInt(std::string attrName, int defaultValue);
+	NodeAttr* addInSignal(std::string attrName, int defaultValue);
+	NodeAttr* addInFloat(std::string attrName, float defaultValue);
 	std::string name;
 	GameNodeEditorNode();
 	std::vector<NodeAttr*>& getInAttrs();

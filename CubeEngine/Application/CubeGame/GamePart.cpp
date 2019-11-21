@@ -9,6 +9,7 @@
 #include "3D/Model/Model.h"
 #include "PartSurface.h"
 #include "PartSurfaceMgr.h"
+#include "3D/Primitive/RightPrismPrimitive.h"
 
 namespace tzw
 {
@@ -674,6 +675,13 @@ namespace tzw
 			isNeedSetDefaultMat = false;
 			
 		}
+		break;
+        case VisualInfo::VisualInfoType::RightPrismPrimitive:
+		{
+			auto size = item->m_visualInfo.size;
+			m_node = new RightPrismPrimitive(size.x, size.y, size.z);
+			isNeedSetDefaultMat = true;
+        }
 		break;
 		default: ;
 		}

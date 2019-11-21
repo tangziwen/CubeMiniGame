@@ -39,6 +39,8 @@ namespace tzw
 		void applyCentralImpulse(vec3 force);
 		void applyImpulse(vec3 force, vec3 localposition);
 		bool isInWorld();
+		void setCcdSweptSphereRadius(float radius);
+		void setCcdMotionThreshold(float threshold);
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

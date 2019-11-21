@@ -4,7 +4,7 @@
 namespace tzw {
 
 Drawable::Drawable()
-    :m_camera(nullptr)
+    :m_camera(nullptr),m_color(vec4(1, 1, 1, 1))
 {
     m_material = nullptr;
 }
