@@ -53,6 +53,10 @@
 			"translated": "I键打开物品栏，建造前先放升降机"
 		},
 		{
+			"original": "PrintNode",
+			"translated": "PrintNode"
+		},
+		{
 			"original": "Self",
 			"translated": "Self"
 		},
@@ -173,6 +177,10 @@
 			"translated": "基本版本 弹出框测试"
 		},
 		{
+			"original": "字符串",
+			"translated": "字符串"
+		},
+		{
 			"original": "对准空地放置，对准载具收纳放置",
 			"translated": "对准空地放置，对准载具收纳放置"
 		},
@@ -213,6 +221,10 @@
 			"translated": "座椅"
 		},
 		{
+			"original": "座椅2",
+			"translated": "座椅2"
+		},
+		{
 			"original": "开关信号",
 			"translated": "开关信号"
 		},
@@ -233,6 +245,10 @@
 			"translated": "当前旋转角度"
 		},
 		{
+			"original": "打印",
+			"translated": "打印"
+		},
+		{
 			"original": "拖拽",
 			"translated": "拖拽"
 		},
@@ -243,6 +259,18 @@
 		{
 			"original": "按T键穿透显示机械部件",
 			"translated": "按T键穿透显示机械部件"
+		},
+		{
+			"original": "按下",
+			"translated": "按下"
+		},
+		{
+			"original": "按钮",
+			"translated": "按钮"
+		},
+		{
+			"original": "按钮 %s",
+			"translated": "按钮 %s"
 		},
 		{
 			"original": "按键输入",
@@ -313,6 +341,10 @@
 			"translated": "更多帮助请按H键打开"
 		},
 		{
+			"original": "松开",
+			"translated": "松开"
+		},
+		{
 			"original": "标准输入",
 			"translated": "标准输入"
 		},
@@ -327,6 +359,10 @@
 		{
 			"original": "炮筒 %s",
 			"translated": "炮筒 %s"
+		},
+		{
+			"original": "状态信号",
+			"translated": "状态信号"
 		},
 		{
 			"original": "直棱柱",
@@ -399,6 +435,10 @@
 		{
 			"original": "越野轮-中型",
 			"translated": "越野轮-中型"
+		},
+		{
+			"original": "越野轮-小",
+			"translated": "越野轮-小"
 		},
 		{
 			"original": "越野轮-普通",

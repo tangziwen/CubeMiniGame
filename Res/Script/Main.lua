@@ -58,6 +58,8 @@ GAME_PART_BEARING = 6
 GAME_PART_SPRING = 7
 SPECIAL_PART_PAINTER = 8
 SPECIAL_PART_DIGGER = 9
+GAME_PART_BUTTON = 10
+GAME_PART_SWITCH = 11
 GAME_PART_NOT_VALID = 9999
 
 
@@ -289,11 +291,21 @@ function drawEntryInterface()
 	end
 end
 local m_isControlKeyPress = false
+local m_isHoldButton = nil
 function onKeyPress(input_event)
+	local player = GameWorld.shared():getPlayer()
 	if input_event.keycode == TZW_KEY_UP then
 		lift_state = 1
 	elseif input_event.keycode == TZW_KEY_DOWN then
 		lift_state = -1
+	elseif input_event.keycode == TZW_KEY_E then
+		if BuildingSystem.shared():getCurrentControlPart() == nil then
+			local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
+			if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_BUTTON then
+				player:pressButton(result)
+				m_isHoldButton = result
+			end
+		end
 	elseif input_event.keycode == TZW_KEY_LEFT_CONTROL then
 		m_isControlKeyPress = true
 	end
@@ -365,14 +377,19 @@ function onKeyRelease(input_event)
 		end
 	elseif input_event.keycode == TZW_KEY_E then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
-			local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
-			if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_CONTROL then
-				oldPlayerPos = player:getPos()
-				BuildingSystem.shared():setCurrentControlPart(result)
-			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_LIFT then
-				MainMenu.shared():setIsFileBroswerOpen(true)
+			if m_isHoldButton ~= nil then
+				player:releaseButton(m_isHoldButton)
+				m_isHoldButton = nil
 			else
-				player:openCurrentPartInspectMenu();
+				local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
+				if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_CONTROL then
+					oldPlayerPos = player:getPos()
+					BuildingSystem.shared():setCurrentControlPart(result)
+				elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_LIFT then
+					MainMenu.shared():setIsFileBroswerOpen(true)
+				else
+					player:openCurrentPartInspectMenu();
+				end
 			end
 		else
 			player:setPos(oldPlayerPos)
