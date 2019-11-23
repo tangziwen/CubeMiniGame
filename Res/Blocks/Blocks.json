@@ -34,7 +34,6 @@
 			"size":[0.5, 0.5, 0.5]
 		}
 		},
-
 		{
 		"name" : "Seat",
 		"desc":"座椅",
@@ -46,10 +45,8 @@
 		{
 			"Type":"Mesh",
 			"size":[1.0, 1.0, 1.0],
-			"FilePath":"Blocks/ControlSeat/ControlSeat.tzw",
-			"DiffusePath":"Blocks/ControlSeat/ControlSeat_diffuse.png",
-			"RoughnessPath":"Blocks/Wheel/Wheel_Roughness.png",
-			"MetallicPath":"Blocks/Wheel/Wheel_Metallic.png"
+			"FilePath":"Blocks/ControlSeat2/ControlSeat2.tzw",
+			"DiffusePath":"Blocks/ControlSeat2/controlseat2_diffuse.png"
 		},
 		"Physics":
 		{
@@ -57,7 +54,27 @@
 			"size":[0.5, 0.5, 0.5]
 		}
 		},
-
+		{
+		"name" : "Button",
+		"desc":"按钮",
+		"Type":"GAME_PART_BUTTON",
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.028],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Button/Button.tzw",
+			"DiffusePath":"Blocks/Button/button_diffuse.png",
+			"ExtraMeshList":["Blocks/Button/ButtonPressed.tzw"]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.3, 0.05, 0.18]
+		}
+		},
 		{
 		"name" : "Block",
 		"desc":"普通方块",
