@@ -54,6 +54,9 @@ namespace tzw
 		void setPreviewAngle(float angle);
 		float getPreviewAngle() const;
 		PreviewItem * getPreviewItem();
+		void pressButton(GamePart *  buttonPart);
+		void releaseButton(GamePart * buttonPart);
+		void releaseSwitch(GamePart * switchPart);
 	private:
 		PreviewItem * m_previewItem;
 		std::vector<GameItem * > m_itemSlots;

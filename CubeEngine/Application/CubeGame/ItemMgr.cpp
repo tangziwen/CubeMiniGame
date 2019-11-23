@@ -84,6 +84,14 @@ void ItemMgr::loadFromFile(std::string filePath)
 				gameItem->m_type = GamePartType::SPECIAL_PART_DIGGER;
 				isSpecial = true;
 			}
+			if(type == "GAME_PART_BUTTON")
+			{
+				gameItem->m_type = GamePartType::GAME_PART_BUTTON;
+			}
+			if(type == "GAME_PART_SWITCH")
+			{
+				gameItem->m_type = GamePartType::GAME_PART_SWITCH;
+			}
 			gameItem->m_desc = desc;
 
 			if(!isSpecial)
@@ -136,6 +144,13 @@ void ItemMgr::loadFromFile(std::string filePath)
 							gameItem->m_visualInfo.metallicPath = "Texture/BuiltInTexture/defaultMetallic.png";
 						}
 
+						if(visualData.HasMember("ExtraMeshList"))
+						{
+							for(int k = 0; k < visualData["ExtraMeshList"].Size(); k++)
+							{
+								gameItem->m_visualInfo.extraFileList.push_back(visualData["ExtraMeshList"][0].GetString());
+							}
+						}
 					}
 					gameItem->m_visualInfo.size = visualSize;
 				}

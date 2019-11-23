@@ -26,6 +26,7 @@ struct VisualInfo
 	std::string diffusePath;
 	std::string roughnessPath;
 	std::string metallicPath;
+	std::vector<std::string> extraFileList;
 };
 
 struct PhysicsInfo

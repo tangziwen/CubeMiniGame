@@ -52,6 +52,9 @@ namespace tzw
 		BIND_FUNC(CubePlayer, setPreviewAngle)
 		BIND_FUNC(CubePlayer, updateCrossHairTipsInfo)
 		BIND_FUNC(CubePlayer, getPreviewItem)
+		BIND_FUNC(CubePlayer, pressButton)
+		BIND_FUNC(CubePlayer, releaseButton)
+		BIND_FUNC(CubePlayer, releaseSwitch)
 		BIND_END_CLASS
 
 

@@ -21,13 +21,14 @@ namespace tzw
 			auto constraint = dynamic_cast<BearPart *>(node->getProxy());
 
 			int signal = m_signalAttr->eval().getInt();
+			float speedResult = m_rotateSpeedAttr->eval().getNumber();
 			if(constraint)
 			{
 				if(constraint->getIsSteering())
 				{
 					if(signal!= 0)
 					{
-						constraint->enableAngularMotor(true, m_rotateSpeedAttr->eval().getInt() * signal, 50);
+						constraint->enableAngularMotor(true, speedResult * signal, 50);
 					}else
 					{
 						constraint->enableAngularMotor(true, 0, 10000000.0f);
@@ -36,11 +37,10 @@ namespace tzw
 				{
 					if(signal!= 0)
 					{
-						auto speed = m_rotateSpeedAttr->eval().getInt();
-						constraint->enableAngularMotor(true, speed * signal, 50);
+						constraint->enableAngularMotor(true, speedResult * signal, 50);
 					}else
 					{
-						constraint->enableAngularMotor(false, m_rotateSpeedAttr->eval().getInt(), 50);
+						constraint->enableAngularMotor(false, speedResult, 50);
 					}
 				}
 			}

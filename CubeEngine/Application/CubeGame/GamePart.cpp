@@ -673,7 +673,11 @@ namespace tzw
 			model->setScale(size.x, size.y, size.z);
 			m_node = model;
 			isNeedSetDefaultMat = false;
-			
+			for(int i = 0; i < item->m_visualInfo.extraFileList.size(); i++)
+			{
+				auto modelExtra = Model::create(item->m_visualInfo.extraFileList[i]);
+				model->addExtraMeshList(modelExtra->getMeshList());
+			}
 		}
 		break;
         case VisualInfo::VisualInfoType::RightPrismPrimitive:
@@ -715,6 +719,11 @@ namespace tzw
 			auto attach = item->m_attachList[i];
 			addAttachment(new Attachment(attach.pos, attach.normal, attach.up ,this));
 		}
+	}
+
+	GameNodeEditorNode* GamePart::getEditorNode()
+	{
+		return nullptr;
 	}
 
 	GameItem* GamePart::getItem() const

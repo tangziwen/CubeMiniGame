@@ -5,8 +5,7 @@
 #include "Interface/Drawable3D.h"
 #include "Math/Ray.h"
 #include "rapidjson/document.h"
-
-
+#include "GameNodeEditorNode.h"
 
 
 namespace tzw {
@@ -71,6 +70,7 @@ public:
 	virtual void drawInspectNameEdit();
 	void initFromItemName(std::string itemName);
 	void initFromItem(GameItem * item);
+	virtual GameNodeEditorNode * getEditorNode();
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

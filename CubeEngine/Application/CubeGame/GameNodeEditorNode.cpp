@@ -29,6 +29,12 @@ namespace tzw
 		m_type = Type::USER_PTR;
 	}
 
+	NodeAttrValuePrimitive::NodeAttrValuePrimitive(std::string val)
+	{
+		m_strVal = val;
+		m_type = Type::STRING;
+	}
+
 	NodeAttrValuePrimitive::NodeAttrValuePrimitive()
 	{
 		m_type = Type::VOID;
@@ -49,9 +55,28 @@ namespace tzw
 		return m_list[0].float_val;
 	}
 
+	std::string& NodeAttrValue::getStr()
+	{
+		return m_list[0].m_strVal;
+	}
+
 	void* NodeAttrValue::getUsrPtr()
 	{
 		return m_list[0].usrPtr;
+	}
+
+	float NodeAttrValue::getNumber()
+	{
+		switch(m_list[0].m_type)
+		{
+            case NodeAttrValuePrimitive::Type::FLOAT:
+			return m_list[0].float_val;
+            case NodeAttrValuePrimitive::Type::INT:
+			return m_list[0].int_val;
+            default:
+			assert(0);
+			break;
+		}
 	}
 
 	void NodeAttrValue::setInt(int value)
@@ -70,6 +95,12 @@ namespace tzw
 	{
 		m_list.clear();
 		m_list.push_back(NodeAttrValuePrimitive(value));
+	}
+
+	void NodeAttrValue::setString(std::string newStr)
+	{
+		m_list.clear();
+		m_list.push_back(NodeAttrValuePrimitive(newStr));
 	}
 
 	NodeAttrValuePrimitive NodeAttrValue::getFirst()
@@ -197,6 +228,14 @@ namespace tzw
 		auto node = addIn(attrName);
 		node->acceptValueType = NodeAttr::AcceptValueType::FLOAT;
 		node->m_localAttrValue.setFloat(defaultValue);
+		return node;
+	}
+
+	NodeAttr* GameNodeEditorNode::addInStr(std::string attrName, std::string defaultValue)
+	{
+		auto node = addIn(attrName);
+		node->acceptValueType = NodeAttr::AcceptValueType::STRING;
+		node->m_localAttrValue.setString(defaultValue);
 		return node;
 	}
 
@@ -359,6 +398,11 @@ namespace tzw
               		inAttr->m_localAttrValue.setInt(partData["InAttrList"][i]["LocalValue"].GetInt());
 				}
 				break;
+              case NodeAttr::AcceptValueType::STRING:
+				{
+					inAttr->m_localAttrValue.setString(partData["InAttrList"][i]["LocalValue"].GetString());
+				}
+				break;
 			}
 			
 		}
@@ -395,6 +439,11 @@ namespace tzw
               case NodeAttr::AcceptValueType::SIGNAL:
 				{
 					attrObj.AddMember("LocalValue", inAttr->m_localAttrValue.getInt(),allocator);
+				}
+				break;
+              case NodeAttr::AcceptValueType::STRING:
+				{
+					attrObj.AddMember("LocalValue", inAttr->m_localAttrValue.getStr(),allocator);
 				}
 				break;
 			}

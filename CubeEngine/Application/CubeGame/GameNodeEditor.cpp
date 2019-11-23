@@ -28,11 +28,12 @@
 #include "ThrusterPart.h"
 #include "Base/TranslationMgr.h"
 #include "NodeEditorNodes/SwitchNode.h"
-#include "NodeEditorNodes/ButtonNode.h"
+#include "NodeEditorNodes/ButtonPartNode.h"
 #include "NodeEditorNodes/VarNode.h"
 #include "NodeEditorNodes/AssignNode.h"
 #include "NodeEditorNodes/EqualNode.h"
 #include "NodeEditorNodes/IfNode.h"
+#include "NodeEditorNodes/PrintNode.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -282,9 +283,6 @@ enum class PinType
                 case Node_CLASS_SWITCH:
 					newNode = new SwitchNode();
 					break;
-                case Node_CLASS_Button:
-					newNode = new ButtonNode();
-					break;
                 case Node_CLASS_VAR:
 					newNode = new VarNode();
 					break;
@@ -296,6 +294,9 @@ enum class PinType
 					break;
                 case Node_CLASS_IF:
 					newNode = new IfNode();
+					break;
+                case Node_CLASS_PRINT:
+					newNode = new PrintNode();
 					break;
 				}
 				addNode(newNode);
@@ -408,19 +409,11 @@ enum class PinType
 		{
 			newNode = new EqualNode();
 		}
-
-		/*
 		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"开关事件")))
+		if(ImGui::Button(TRC(u8"PrintNode")))
 		{
-			addNode(new SwitchNode());
+			newNode = new PrintNode();
 		}
-
-		if(ImGui::Button(TRC(u8"按钮事件")))
-		{
-			addNode(new ButtonNode());
-		}
-		*/
 		if(newNode)
 		{
 			addNode(newNode);
@@ -674,6 +667,47 @@ void GameNodeEditor::clearAll()
 	m_triggerList.clear();
 }
 
+void GameNodeEditor::onPressButtonNode(GameNodeEditorNode* buttonNode)
+{
+	if(buttonNode->getNodeClass() == Node_CLASS_Button)
+	{
+		static_cast<ButtonPartNode *>(buttonNode)->triggerPress();
+	}
+	while(!m_rt_exe_chain.empty())
+	{
+		auto node = m_rt_exe_chain.front();
+		m_rt_exe_chain.pop();
+		node->execute();
+		node->handleExeOut();
+	}
+}
+
+void GameNodeEditor::onReleaseButtonNode(GameNodeEditorNode* buttonNode)
+{
+	if(buttonNode->getNodeClass() == Node_CLASS_Button)
+	{
+		static_cast<ButtonPartNode *>(buttonNode)->triggerRelease();
+	}
+	while(!m_rt_exe_chain.empty())
+	{
+		auto node = m_rt_exe_chain.front();
+		m_rt_exe_chain.pop();
+		node->execute();
+		node->handleExeOut();
+	}
+}
+
+void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
+{
+	while(!m_rt_exe_chain.empty())
+	{
+		auto node = m_rt_exe_chain.front();
+		m_rt_exe_chain.pop();
+		node->execute();
+		node->handleExeOut();
+	}
+}
+
 void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 	{
 		static bool g_FirstFrame = true;
@@ -764,6 +798,19 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 								attr->m_localAttrValue.setFloat(value);
 							}
                         	ImGui::PopItemWidth();
+                        }
+						break;
+                        case NodeAttr::AcceptValueType::STRING:
+						{
+							char a[128] = "";
+							strcpy(a, attr->m_localAttrValue.getStr().c_str());
+							ImGui::PushItemWidth(80);
+							bool isInputName = ImGui::InputText(TRC(u8"名称"),a,128);
+							ImGui::PopItemWidth();
+							if(isInputName)
+							{
+								attr->m_localAttrValue.setString(a);
+							}
                         }
 						break;
                         case NodeAttr::AcceptValueType::SIGNAL:

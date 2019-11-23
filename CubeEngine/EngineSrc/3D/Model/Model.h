@@ -18,9 +18,17 @@ public:
 	Material * getMat(int index);
 	void setMaterial(Material * mat) override;
 	void setColor(vec4 color) override;
+	std::vector<Mesh * > getMeshList();
+	void setMeshList(std::vector<Mesh * > newMeshList);
+	int addExtraMeshList(std::vector<Mesh * >newMeshList);
 private:
     std::vector<Mesh *> m_meshList;
     std::vector<Material * >m_effectList;
+	std::vector<std::vector<Mesh *>> m_extraMeshList;
+	int m_currPose;
+public:
+	int getCurrPose() const;
+	void setCurrPose(const int currPose);
 };
 
 } // namespace tzw

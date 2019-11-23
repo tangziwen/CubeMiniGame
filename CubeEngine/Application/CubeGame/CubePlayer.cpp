@@ -19,6 +19,7 @@
 #include "PaintGun.h"
 #include "Base/TranslationMgr.h"
 #include "3D/Primitive/RightPrismPrimitive.h"
+#include "ButtonPart.h"
 
 namespace tzw
 {
@@ -399,5 +400,24 @@ namespace tzw
 	PreviewItem* CubePlayer::getPreviewItem()
 	{
 		return m_previewItem;
+	}
+
+	void CubePlayer::pressButton(GamePart* buttonPart)
+	{
+		tlog("press Button!", buttonPart);
+		static_cast<ButtonPart *>(buttonPart)->onPressed();
+		
+	}
+
+	void CubePlayer::releaseButton(GamePart* buttonPart)
+	{
+		tlog("release Button!", buttonPart);
+		static_cast<ButtonPart *>(buttonPart)->onReleased();
+	}
+
+	void CubePlayer::releaseSwitch(GamePart* switchPart)
+	{
+		tlog("release Button!", switchPart);
+		MainMenu::shared()->getNodeEditor()->onReleaseSwitchNode(switchPart->getEditorNode());
 	}
 } // namespace tzw

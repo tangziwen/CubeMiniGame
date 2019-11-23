@@ -23,6 +23,7 @@
 #define Node_CLASS_ASSIGN 11
 #define Node_CLASS_IF 12
 #define Node_CLASS_EQUAL 13
+#define Node_CLASS_PRINT 14
 namespace tzw {
 struct GameNodeEditorNode;
 
@@ -34,25 +35,31 @@ struct NodeAttrValuePrimitive
 	    INT,
 	    FLOAT,
   		USER_PTR,
+		STRING
 	};
 	NodeAttrValuePrimitive(int val);
 	NodeAttrValuePrimitive(float val);
 	NodeAttrValuePrimitive(void * val);
+	NodeAttrValuePrimitive(std::string val);
 	NodeAttrValuePrimitive();
 	Type m_type;
 	int int_val;
 	float float_val;
 	void * usrPtr;
+	std::string m_strVal;
 };
 struct NodeAttrValue
 {
 	NodeAttrValue();
 	int getInt();
 	float getFloat();
+	std::string& getStr();
 	void * getUsrPtr();
+	float getNumber();
 	void setInt(int value);
 	void setFloat(float value);
 	void setUsrPtr(void * value);
+	void setString(std::string newStr);
 	NodeAttrValuePrimitive getFirst();
 	std::vector<NodeAttrValuePrimitive> m_list;
 };
@@ -79,6 +86,7 @@ struct NodeAttr
 		FLOAT,
 		Res,
 		SIGNAL, //signal is the same like int ,but only allow for -1, 0, 1 as value
+		STRING
 	};
 	std::string m_name;
 	int gID;
@@ -104,6 +112,7 @@ public:
 	NodeAttr* addInInt(std::string attrName, int defaultValue);
 	NodeAttr* addInSignal(std::string attrName, int defaultValue);
 	NodeAttr* addInFloat(std::string attrName, float defaultValue);
+	NodeAttr* addInStr(std::string attrName, std::string defaultValue);
 	std::string name;
 	GameNodeEditorNode();
 	std::vector<NodeAttr*>& getInAttrs();

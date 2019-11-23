@@ -18,6 +18,8 @@
 #include "CannonPart.h"
 #include "ThrusterPart.h"
 #include "ItemMgr.h"
+#include "ButtonPart.h"
+#include "SwitchPart.h"
 
 namespace tzw
 {
@@ -277,6 +279,12 @@ namespace tzw
 			break;
         case GamePartType::GAME_PART_THRUSTER:
 			resultPart = new ThrusterPart(itemName);
+			break;
+        case GamePartType::GAME_PART_BUTTON:
+			resultPart = new ButtonPart(itemName);
+			break;
+        case GamePartType::GAME_PART_SWITCH:
+			resultPart = new SwitchPart(itemName);
 			break;
 		default:
 			assert(0);
