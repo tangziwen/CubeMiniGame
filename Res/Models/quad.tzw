@@ -1,3 +1,97 @@
-version https://git-lfs.github.com/spec/v1
-oid sha256:d20030783a01d2123e5c658d5bbf39652086d6af9c10dc50c9dfa4a45f2c3399
-size 2204
+{
+    "info": {
+        "author": "tzw",
+        "meshAmount": 1,
+        "materialAmount": 1
+    },
+    "materialList": [
+        {
+            "diffuseMap": "T_Ground_Grass_D.png",
+            "specularMap": "",
+            "ambientMap": "",
+            "emissiveMap": "",
+            "heightMap": "",
+            "normalMap": "",
+            "shininessMap": "",
+            "opacityMap": "",
+            "displacementMap": "",
+            "lightMap": "",
+            "reflectionMap": ""
+        }
+    ],
+    "MeshList": [
+        {
+            "vertices": [
+                [
+                    1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    1.0,
+                    0.0
+                ],
+                [
+                    -1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    0.0
+                ],
+                [
+                    -1.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0
+                ],
+                [
+                    1.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    1.0,
+                    1.0
+                ],
+                [
+                    1.0,
+                    -1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    1.0,
+                    0.0
+                ],
+                [
+                    -1.0,
+                    1.0,
+                    0.0,
+                    0.0,
+                    0.0,
+                    -1.0,
+                    0.0,
+                    1.0
+                ]
+            ],
+            "indices": [
+                0,
+                1,
+                2,
+                3,
+                4,
+                5
+            ],
+            "materialIndex": 0
+        }
+    ]
+}

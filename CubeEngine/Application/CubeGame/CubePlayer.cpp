@@ -56,6 +56,12 @@ namespace tzw
 		m_currPointPart = nullptr;
 
 		m_previewItem = new PreviewItem();
+		m_gunModel = Model::create("Models/Hammer.tzw");
+		auto tex = TextureMgr::shared()->getByPath("Models/hammer_diffuse.png");
+		m_gunModel->getMat(0)->setTex("DiffuseMap", tex);
+		m_gunModel->setPos(0.09,-0.15, -0.22);
+		m_gunModel->setRotateE(vec3(0, 10, 0));
+		m_camera->addChild(m_gunModel);
 	}
 
 	FPSCamera* CubePlayer::camera() const
@@ -81,7 +87,7 @@ namespace tzw
 	void CubePlayer::logicUpdate(float dt)
 	{
 		static float theTime = 0.0f;
-		//vec3 oldPos = m_gunModel->getPos();
+		vec3 oldPos = m_gunModel->getPos();
 		float offset = 0.002;
 		float freq = 1;
 		if (m_camera->getIsMoving())
@@ -90,7 +96,7 @@ namespace tzw
 			freq = 6;
 		}
 		theTime += freq * dt;
-		// m_gunModel->setPos(vec3(oldPos.x, -0.2 + sinf(theTime) * offset, oldPos.z));
+		m_gunModel->setPos(vec3(oldPos.x, -0.12 + sinf(theTime) * offset, oldPos.z));
 		if (checkIsNeedUpdateChunk())
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
