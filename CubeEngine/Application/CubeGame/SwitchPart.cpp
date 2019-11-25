@@ -2,8 +2,9 @@
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
-#include "NodeEditorNodes/CannonPartNode.h"
+#include "NodeEditorNodes/SwitchNode.h"
 #include "MainMenu.h"
+#include "3D/Model/Model.h"
 
 
 namespace tzw
@@ -18,10 +19,17 @@ SwitchPart::SwitchPart(std::string itemName)
 	GamePart::initFromItemName(itemName);
 	m_parent = nullptr;
 	SwitchPart::generateName();
+	m_currState = false;
+
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	m_graphNode = new SwitchNode(this);
+	nodeEditor->addNode(m_graphNode);
 }
 
 SwitchPart::~SwitchPart()
 {
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
 
@@ -50,4 +58,36 @@ bool SwitchPart::isNeedDrawInspect()
 	return true;
 }
 
+GameNodeEditorNode* SwitchPart::getEditorNode()
+{
+	return m_graphNode;
+}
+
+void SwitchPart::onToggle()
+{
+	m_currState = !m_currState;
+	MainMenu::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
+	static_cast<Model *>(m_node)->setCurrPose(m_currState?0:-1);
+	Texture * tex;
+	if(m_currState)
+	{
+		tex = TextureMgr::shared()->getByPath("Blocks/Switch/SwitchOn_diffuse.png");
+	}
+	else
+	{
+		tex = TextureMgr::shared()->getByPath("Blocks/Switch/SwitchOff_diffuse.png");
+	}
+	static_cast<Model *>(m_node)->getMat(0)->setTex("DiffuseMap", tex);
+	
+}
+
+bool SwitchPart::isCurrState() const
+{
+	return m_currState;
+}
+
+void SwitchPart::setCurrState(const bool currState)
+{
+	m_currState = currState;
+}
 }

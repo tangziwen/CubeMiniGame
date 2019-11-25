@@ -13,6 +13,8 @@
 #include "ThrusterPart.h"
 #include "CannonPart.h"
 #include <algorithm>
+#include "ButtonPart.h"
+#include "SwitchPart.h"
 
 namespace tzw {
 Island::Island(vec3 pos)
@@ -391,6 +393,20 @@ void Island::load(rapidjson::Value& island)
 				case GamePartType::GAME_PART_THRUSTER:
 					{
 						auto part = new ThrusterPart(item["ItemName"].GetString());
+						part->load(item);
+						insertNoUpdatePhysics(part);
+					}
+				break;
+				case GamePartType::GAME_PART_BUTTON:
+					{
+						auto part = new ButtonPart(item["ItemName"].GetString());
+						part->load(item);
+						insertNoUpdatePhysics(part);
+					}
+				break;
+				case GamePartType::GAME_PART_SWITCH:
+					{
+						auto part = new SwitchPart(item["ItemName"].GetString());
 						part->load(item);
 						insertNoUpdatePhysics(part);
 					}

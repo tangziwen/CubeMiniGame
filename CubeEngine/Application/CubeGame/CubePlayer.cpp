@@ -20,6 +20,7 @@
 #include "Base/TranslationMgr.h"
 #include "3D/Primitive/RightPrismPrimitive.h"
 #include "ButtonPart.h"
+#include "SwitchPart.h"
 
 namespace tzw
 {
@@ -424,6 +425,6 @@ namespace tzw
 	void CubePlayer::releaseSwitch(GamePart* switchPart)
 	{
 		tlog("release Button!", switchPart);
-		MainMenu::shared()->getNodeEditor()->onReleaseSwitchNode(switchPart->getEditorNode());
+		static_cast<SwitchPart *>(switchPart)->onToggle();
 	}
 } // namespace tzw

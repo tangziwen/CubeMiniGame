@@ -1,24 +1,29 @@
 #pragma once
-#include "../TriggerNode.h"
+
+#include "CubeGame/ResNode.h"
 
 namespace tzw {
-
-struct SwitchNode: public TriggerNode 
+class SwitchPart;
+struct SwitchNode: public ResNode 
 {
 public:
-	SwitchNode();
+	SwitchNode(SwitchPart * part);
 	virtual void trigger();
 	void privateDraw() override;
 	void handleKeyPress(int keyCode);
 	void handleKeyRelease(int keyCode);
 	int getNodeClass() override;
-protected:
 	void triggerPress();
+	void syncName() override;
 	void triggerRelease();
+	GamePart* getProxy() override;
+protected:
+
 	bool isPlayerOnSeat();
-	NodeAttr * m_pressedAttr;
-	NodeAttr * m_ReleasedAttr;
-	int m_keyCode;
+	NodeAttr * m_onOn;
+	NodeAttr * m_onOff;
+	NodeAttr * m_stateAttr;
+	SwitchPart * m_part;
 };
 
 }

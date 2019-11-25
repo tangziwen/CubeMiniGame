@@ -8,7 +8,7 @@ struct ButtonPartNode : public ResNode
 public:
 	ButtonPartNode(ButtonPart * canon);
 	void privateDraw() override;
-	virtual GamePart * getProxy();
+	GamePart * getProxy() override;
 	virtual void load(rapidjson::Value& partData);
 	void syncName() override;
 	void triggerPress();

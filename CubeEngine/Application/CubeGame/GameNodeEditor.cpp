@@ -280,9 +280,6 @@ enum class PinType
                 case Node_CLASS_TOGGLE:
 					newNode = new ToggleNode();
 					break;
-                case Node_CLASS_SWITCH:
-					newNode = new SwitchNode();
-					break;
                 case Node_CLASS_VAR:
 					newNode = new VarNode();
 					break;
@@ -699,6 +696,10 @@ void GameNodeEditor::onReleaseButtonNode(GameNodeEditorNode* buttonNode)
 
 void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
 {
+	if(buttonNode->getNodeClass() == Node_CLASS_SWITCH)
+	{
+		static_cast<SwitchNode *>(buttonNode)->triggerRelease();
+	}
 	while(!m_rt_exe_chain.empty())
 	{
 		auto node = m_rt_exe_chain.front();

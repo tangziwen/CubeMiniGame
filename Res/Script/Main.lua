@@ -304,6 +304,9 @@ function onKeyPress(input_event)
 			if result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_BUTTON then
 				player:pressButton(result)
 				m_isHoldButton = result
+			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_SWITCH then
+				-- player:pressButton(result)
+				m_isHoldButton = result
 			end
 		end
 	elseif input_event.keycode == TZW_KEY_LEFT_CONTROL then
@@ -378,7 +381,11 @@ function onKeyRelease(input_event)
 	elseif input_event.keycode == TZW_KEY_E then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
 			if m_isHoldButton ~= nil then
-				player:releaseButton(m_isHoldButton)
+				if BuildingSystem.shared():getGamePartTypeInt(m_isHoldButton) == GAME_PART_BUTTON then
+					player:releaseButton(m_isHoldButton)
+				elseif BuildingSystem.shared():getGamePartTypeInt(m_isHoldButton) == GAME_PART_SWITCH then
+					player:releaseSwitch(m_isHoldButton)
+				end
 				m_isHoldButton = nil
 			else
 				local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)

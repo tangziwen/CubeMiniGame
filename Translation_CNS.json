@@ -225,6 +225,14 @@
 			"translated": "座椅2"
 		},
 		{
+			"original": "开关",
+			"translated": "开关"
+		},
+		{
+			"original": "开关 %s",
+			"translated": "开关 %s"
+		},
+		{
 			"original": "开关信号",
 			"translated": "开关信号"
 		},
@@ -247,6 +255,10 @@
 		{
 			"original": "打印",
 			"translated": "打印"
+		},
+		{
+			"original": "打开",
+			"translated": "打开"
 		},
 		{
 			"original": "拖拽",

@@ -15,7 +15,7 @@ Texture::Texture(std::string filePath)
     if (!m_textureId)
     {
         tlog("texture create failed, no such file %s\n",filePath.c_str());
-        exit(1);
+        abort();
     }
     initData();
 }

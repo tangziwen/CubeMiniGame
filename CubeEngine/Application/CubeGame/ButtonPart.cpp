@@ -28,6 +28,8 @@ ButtonPart::ButtonPart(std::string itemName)
 
 ButtonPart::~ButtonPart()
 {
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
 

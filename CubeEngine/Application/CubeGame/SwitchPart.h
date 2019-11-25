@@ -15,8 +15,14 @@ namespace tzw
 		void drawInspect() override;
 		void use() override;
 		bool isNeedDrawInspect() override;
+		GameNodeEditorNode * getEditorNode() override;
+		void onToggle();
     private:
 		float m_topRadius, m_bottomRadius, m_height;
 		GameNodeEditorNode * m_graphNode;
+		bool m_currState;
+	public:
+		bool isCurrState() const;
+		void setCurrState(const bool currState);
 	};
 }

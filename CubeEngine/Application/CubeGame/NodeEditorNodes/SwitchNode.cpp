@@ -1,4 +1,5 @@
 #include "SwitchNode.h"
+#include "CubeGame/SwitchPart.h"
 #include "CubeGame/MainMenu.h"
 #include "CubeGame/BehaviorNode.h"
 #include "CubeGame/BuildingSystem.h"
@@ -6,12 +7,13 @@
 
 namespace tzw
 {
-	SwitchNode::SwitchNode()
+	SwitchNode::SwitchNode(SwitchPart * part)
 	{
-		name =TR(u8"开关输入");
-		m_pressedAttr =addOutExe(TR(u8"打开"));
-		m_ReleasedAttr = addOutExe(TR(u8"关闭"));
-		m_keyCode = TZW_KEY_N;
+		m_part = part;
+		SwitchNode::syncName();
+		m_onOn =addOutExe(TR(u8"打开"));
+		m_onOff = addOutExe(TR(u8"关闭"));
+		m_stateAttr = addOut(TR(u8"状态信号"));
 	}
 
 	void SwitchNode::trigger()
@@ -21,68 +23,43 @@ namespace tzw
 
 	void SwitchNode::privateDraw()
 	{
-		int intValue = m_keyCode;
-		ImGui::PushItemWidth(80);
-		bool isInput = ImGui::InputInt("",&intValue);
-		ImGui::PopItemWidth();
-		if(isInput)
-		{
-			m_keyCode = intValue;
-			//m_attr->m_localAttrValue.setInt(intValue);
-		}
-	}
-
-	void SwitchNode::handleKeyPress(int keyCode)
-	{
-		if(!m_keyCode) return;
-		if(m_keyCode == keyCode)
-		{
-			triggerPress();
-		}
-	}
-
-	void SwitchNode::handleKeyRelease(int keyCode)
-	{
-		if(!m_keyCode) return;
-		if(m_keyCode == keyCode)
-		{
-			triggerRelease();
-		}
 	}
 
 	int SwitchNode::getNodeClass()
 	{
 		return Node_CLASS_SWITCH;
 	}
-
-	void SwitchNode::triggerPress()
+	GamePart* SwitchNode::getProxy()
 	{
-		//if(!isPlayerOnSeat()) return;
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
-		nodeEditor->findNodeLinksToAttr(m_pressedAttr, node_list);
-		for(auto node : node_list)
-		{
-			if(node->getType() == Node_TYPE_BEHAVIOR)
-			{
-				nodeEditor->pushToStack(node);
-				//static_cast<BehaviorNode *>(node)->execute();
-			}
-		}
+		return m_part;
+	}
+
+	void SwitchNode::syncName()
+	{
+		char formatName[512];
+		sprintf_s(formatName, 512, TRC(u8"开关 %s"),m_part->getName().c_str());
+		name = formatName;
 	}
 
 	void SwitchNode::triggerRelease()
 	{
-		//if(!isPlayerOnSeat()) return;
+		NodeAttr * effectedAttr = nullptr;
+		if(m_part->isCurrState())
+		{
+			effectedAttr = m_onOn;
+		}else
+		{
+			effectedAttr = m_onOff;
+		}
+
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
-		nodeEditor->findNodeLinksToAttr(m_ReleasedAttr, node_list);
+		nodeEditor->findNodeLinksToAttr(effectedAttr, node_list);
 		for(auto node : node_list)
 		{
 			if(node->getType() == Node_TYPE_BEHAVIOR)
 			{
 				nodeEditor->pushToStack(node);
-				//static_cast<BehaviorNode *>(node)->execute();
 			}
 		}
 	}

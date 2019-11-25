@@ -76,6 +76,27 @@
 		}
 		},
 		{
+			"name" : "Switch",
+			"desc":"开关",
+			"Type":"GAME_PART_SWITCH",
+			"attach":[
+					{"pos" :[0.0, 0.0, -0.028],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+					],
+			"Visual":
+			{
+				"Type":"Mesh",
+				"size":[1.0, 1.0, 1.0],
+				"FilePath":"Blocks/Switch/SwitchOFF.tzw",
+				"DiffusePath":"Blocks/Switch/SwitchOff_diffuse.png",
+				"ExtraMeshList":["Blocks/Switch/SwitchOn.tzw"]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[0.3, 0.05, 0.18]
+			}
+		},
+		{
 		"name" : "Block",
 		"desc":"普通方块",
 		"Type":"GAME_PART_BLOCK",
