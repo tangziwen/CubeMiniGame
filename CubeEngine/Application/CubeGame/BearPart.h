@@ -7,6 +7,7 @@ class Drawable3D;
 class BlockPart;
 struct Attachment;
 class PhysicsHingeConstraint;
+class Physics6DOFConstraint;
 struct GameNodeEditorNode;
 class BearPart : public GameConstraint
 {
@@ -16,6 +17,7 @@ public:
 	bool m_isFlipped;
 	void updateFlipped();
 	PhysicsHingeConstraint * m_constrain;
+	//Physics6DOFConstraint * m_constrain;
 	void enablePhysics(bool isEnable) override;
 	void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator) override;
 	Attachment* getFirstAttachment() override;

@@ -55,7 +55,7 @@ namespace tzw
 		 
 		g_imguiShader->setUniformMat4v("TU_projMat", projection.data());
 		 
-		g_imguiShader->setUniformInteger("TU_tex1", 0);
+		g_imguiShader->setUniformInteger("DiffuseMap", 0);
 		 
 		glBindBuffer(GL_ARRAY_BUFFER, 0);
 		 

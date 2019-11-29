@@ -16,7 +16,7 @@ LiftPart::LiftPart()
 	m_node = new Drawable3D();
 	m_plaftormPart = new CubePrimitive(blockSize, blockSize, blockSize);
 	auto texture =  TextureMgr::shared()->getByPath("Texture/mud.jpg");
-	m_plaftormPart->getMaterial()->setTex("diffuseMap", texture);
+	m_plaftormPart->getMaterial()->setTex("DiffuseMap", texture);
 	float pipeLength = 25.0;
 	m_pipePart = new CylinderPrimitive(0.10f, 0.10f, pipeLength);
 
@@ -98,6 +98,7 @@ void LiftPart::initAttachments()
 
 	//up down
 	m_attachment[4] = new Attachment(vec3(0.0, blockSize / 2.0, 0.0), vec3(0.0, 1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
+	m_attachment[4]->m_locale = "up";
 	m_attachment[5] = new Attachment(vec3(0.0, -blockSize / 2.0, 0.0), vec3(0.0, -1.0, 0.0), vec3(0.0, 0.0, 1.0) ,this);
 }
 

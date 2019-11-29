@@ -178,7 +178,6 @@ void Material::loadFromFile(std::string filePath)
 			auto& attribute = attributes[i];
 
 			auto theName = attribute["name"].GetString();
-			auto aliasName = theName;
 			bool hasDefaultVal = true;
 			rapidjson::GenericValue<rapidjson::UTF8<>> val;
 			if(attribute.HasMember("default"))
@@ -191,10 +190,7 @@ void Material::loadFromFile(std::string filePath)
 				hasDefaultVal = false;
 			}
 			
-			
-
 			std::string typeStr = attribute["type"].GetString();
-			m_aliasMap[theName] = aliasName;
 			auto var = new TechniqueVar();
 			if (typeStr == "int")
 			{
@@ -281,13 +277,11 @@ void Material::loadFromFile(std::string filePath)
 		{
 			auto& tex = texMap[i];
 			auto name = tex[0].GetString();
-			auto aliasName = tex[1].GetString();
-			m_aliasMap[name] = aliasName;
-			m_texSlotMap[m_aliasMap[name]] = tex[2].GetInt();
+			m_texSlotMap[name] = tex[1].GetInt();
 
-			if(tex.Size() > 3)
+			if(tex.Size() > 2)
 			{
-				setTex(name, TextureMgr::shared()->getByPath(tex[3].GetString(), true));
+				setTex(name, TextureMgr::shared()->getByPath(tex[2].GetString(), true));
 			}
 		}
 	}
@@ -487,7 +481,7 @@ void Material::use(ShaderProgram * extraProgram)
 	for(auto i = m_varList.begin();i!= m_varList.end();++i)
 	{
 		//need to convert to alias
-		std::string name = getAlias(i->first);
+		std::string name = i->first;//getAlias(i->first);
 		TechniqueVar* var = i->second;
 
 		//extra semantic pass
@@ -552,23 +546,6 @@ unsigned int Material::getMapSlot(std::string mapName)
 	return m_texSlotMap[mapName];
 }
 
-unsigned int Material::getMapSlotWithAlias(std::string mapName)
-{
-	return getMapSlot(getAlias(mapName));
-}
-
-std::string Material::getAlias(std::string theName)
-{
-	auto result = m_aliasMap.find(theName);
-	if (result == m_aliasMap.end())
-	{
-		return theName;
-	}
-	else
-	{
-		return m_aliasMap[theName];
-	}
-}
 
 ShaderProgram *Material::getProgram() const
 {

@@ -409,7 +409,11 @@ namespace tzw
 
 	float GamePart::getMass()
 	{
-		return 1.0f;
+		if(m_item)
+		{
+			return m_item->m_physicsInfo.mass;
+		}
+		return 0.25f;
 	}
 
 	void GamePart::load(rapidjson::Value& partData)
@@ -713,17 +717,64 @@ namespace tzw
 		break;
 		default: ;
 		}
-
 		for(int i = 0; i < item->m_attachList.size(); i++)
 		{
 			auto attach = item->m_attachList[i];
-			addAttachment(new Attachment(attach.pos, attach.normal, attach.up ,this));
+			auto newAttach = new Attachment(attach.pos, attach.normal, attach.up ,this);
+			newAttach->m_locale = attach.locale;
+			addAttachment(newAttach);
 		}
 	}
 
 	GameNodeEditorNode* GamePart::getEditorNode()
 	{
 		return nullptr;
+	}
+
+	int GamePart::getPrettyAttach(Attachment* otherAttach, int attachOffset)
+	{
+		auto aLocale = otherAttach->m_locale;
+		std::string targetLocale = "down";
+		if(aLocale == "up")
+		{
+			targetLocale = "down";
+		}
+		else if(aLocale == "down")
+		{
+			targetLocale = "up";
+		}
+		else if(aLocale == "left")
+		{
+			targetLocale = "right";
+		}
+		else if(aLocale == "right")
+		{
+			targetLocale = "left";
+		}
+		else if(aLocale == "front")
+		{
+			targetLocale = "back";
+		}
+		else if(aLocale == "back")
+		{
+			targetLocale = "front";
+		}
+		int targetIndex = findAttachByLocale(targetLocale);
+
+		return (targetIndex + attachOffset) % (m_attachment.size());
+	}
+
+	int GamePart::findAttachByLocale(std::string locale)
+	{
+		for(int i = 0; i< m_attachment.size(); i++)
+		{
+			auto attach = m_attachment[i];
+			if(attach->m_locale == locale)
+			{
+				return i;
+			}
+		}
+		return 0;
 	}
 
 	GameItem* GamePart::getItem() const

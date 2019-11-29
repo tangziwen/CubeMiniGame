@@ -20,7 +20,7 @@ ParticleEmitter::ParticleEmitter(int maxSpawn): m_spawnRate(0.1), m_maxSpawn(max
 		 
 		tex->genMipMap();
 		 
-		mat->setTex("diffuseMap", tex);
+		mat->setTex("DiffuseMap", tex);
 		 
 	}
 	setMaterial(mat);

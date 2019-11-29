@@ -12,10 +12,10 @@
 #include "BuildingSystem.h"
 #include "3D/Model/Model.h"
 #include "Base/TranslationMgr.h"
-
+#include "EngineSrc/Collision/Physics6DOFConstraint.h"
 namespace tzw
 {
-	float blockSize = 0.10;
+	float blockSize = 0.05;
 BearPart::BearPart()
 {
 	m_a = nullptr;
@@ -43,7 +43,7 @@ BearPart::BearPart()
 	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
 	cylinderIndicator->setColor(vec4(1.0, 1.0, 1.0, 1.0));
 	m_node = cylinderIndicator;
-	m_xrayMat->setTex("diffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
+	m_xrayMat->setTex("DiffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
 	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
 	{
 		if(BuildingSystem::shared()->isIsInXRayMode())
@@ -268,7 +268,33 @@ void BearPart::generateName()
 		}
 
 	}
+	static Matrix44 groupMatNode(vec3 pos, vec3 normal, vec3 up, Matrix44 reservedMat)
+	{
+	Matrix44 mat;
+	auto data = mat.data();
+	vec3 right = vec3::CrossProduct(normal * -1, up);
+	data[0] = right.x;
+	data[1] = right.y;
+	data[2] = right.z;
+	data[3] = 0.0;
 
+	data[4] = up.x;
+	data[5] = up.y;
+	data[6] = up.z;
+	data[7] = 0.0;
+
+	data[8] = normal.x;
+	data[9] = normal.y;
+	data[10] = normal.z;
+	data[11] = 0.0;
+
+	data[12] = pos.x;
+	data[13] = pos.y;
+	data[14] = pos.z;
+	data[15] = 1.0;
+
+	return reservedMat * mat;
+	}
 	bool BearPart::isNeedDrawInspect()
 	{
 		return true;
@@ -301,10 +327,17 @@ void BearPart::generateName()
 			vec3 pivotA, pivotB, axisA, axisB;
 			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
 			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-
+				Matrix44 frameInA;
+		vec3 pos, n, up;
+		attachA->getAttachmentInfoWorld(pos, n, up);
+		attachA->getAttachmentInfoWorld(pos, n, up);
+		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
+		Matrix44 frameInB;
+		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
+		//auto constrain = PhysicsMgr::shared()->create6DOFConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
 			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 			m_constrain = constrain;
-			//constrain->setLimit()
+			//constrain->makeUpBearing();
 		}
 		if(m_isEnablePhysics)
 		{
@@ -330,9 +363,16 @@ void BearPart::generateName()
 		vec3 pivotA, pivotB, axisA, axisB;
 		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
 		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-
+		Matrix44 frameInA;
+		vec3 pos, n, up;
+		attachA->getAttachmentInfoWorld(pos, n, up);
+		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
+		Matrix44 frameInB;
+		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
+		//auto constrain = PhysicsMgr::shared()->create6DOFConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
 		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 		m_constrain = constrain;
+		//constrain->makeUpBearing();
 	}
 
 	void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -344,7 +384,7 @@ void BearPart::generateName()
 	auto transform = part->getNode()->getLocalTransform();
 	auto normalInIsland = transform.transofrmVec4(vec4(attach->m_normal, 0.0)).toVec3();
 
-	pivot = transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * (blockSize / 2.0), 1.0)).toVec3();
+	pivot = transform.transofrmVec4(vec4(attach->m_pos /*+ attach->m_normal * (blockSize / 2.0)*/, 1.0)).toVec3();
 	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
 }
 

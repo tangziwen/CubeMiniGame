@@ -8,12 +8,12 @@ class vec3;
 class Drawable3D;
 class BlockPart;
 struct Attachment;
-class Physics6DofConstraint;
+class Physics6DofSpringConstraint;
 class SpringPart : public GameConstraint
 {
 public:
 	SpringPart();
-	Physics6DofConstraint * m_constrain;
+	Physics6DofSpringConstraint * m_constrain;
 	void enablePhysics(bool isEnable) override;
 	void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator) override;
 	Attachment* getFirstAttachment() override;

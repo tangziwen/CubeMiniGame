@@ -71,6 +71,8 @@ public:
 	void initFromItemName(std::string itemName);
 	void initFromItem(GameItem * item);
 	virtual GameNodeEditorNode * getEditorNode();
+	int getPrettyAttach(Attachment * otherAttach, int attachOffset);
+	int findAttachByLocale(std::string locale);
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

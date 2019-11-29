@@ -6,11 +6,11 @@ namespace tzw
 {
 	class vec3;
 
-	class Physics6DofConstraint : public PhysicsConstraint
+	class Physics6DofSpringConstraint : public PhysicsConstraint
 	{
 	public:
 
-		explicit Physics6DofConstraint(btGeneric6DofSpring2Constraint* constraint);
+		explicit Physics6DofSpringConstraint(btGeneric6DofSpring2Constraint* constraint);
 		btTypedConstraint* constraint() const;
 		void setConstraint(btTypedConstraint* constraint);
 		void setLinearUpperLimit(vec3 linearHigh);

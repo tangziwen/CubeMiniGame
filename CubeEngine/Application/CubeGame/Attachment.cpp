@@ -19,6 +19,7 @@ namespace tzw
 	Attachment::Attachment()
 	{
 		m_connected = nullptr;
+		m_locale = "down";
 		m_degree = 0.0f;
 	}
 
@@ -81,7 +82,7 @@ namespace tzw
 		rayInWorld.setOrigin((mat * vec4(rayInWorld.origin(), 1.0)).toVec3());
 		rayInWorld.setDirection((mat * vec4(rayInWorld.direction(), 0.0)).toVec3());
 		AABB collisionBox;
-		const float blockSize = 0.5f;
+		const float blockSize = 0.25f;
 		collisionBox.setMax(vec3(blockSize / 2.0, blockSize / 2.0, 0.2));
 		collisionBox.setMin(vec3(blockSize / -2.0, blockSize / -2.0, -0.2));
 		RayAABBSide side;

@@ -20,11 +20,11 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
 
     m_material = Material::createFromTemplate("ModelStd");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
-	m_material->setTex("diffuseMap", texture);
+	m_material->setTex("DiffuseMap", texture);
 
 	m_topBottomMaterial = Material::createFromTemplate("ModelStd");
 	auto arrowTexture = TextureMgr::shared()->getByPath("Texture/rock.jpg");
-	m_topBottomMaterial->setTex("diffuseMap", arrowTexture);
+	m_topBottomMaterial->setTex("DiffuseMap", arrowTexture);
 
     initMesh();
     setCamera(g_GetCurrScene()->defaultCamera());
@@ -102,13 +102,13 @@ vec3 CylinderPrimitive::XYZ2RhoPhiZ(vec3 xyz)
 
 void CylinderPrimitive::setTex(Texture * texture)
 {
-	m_material->setTex("diffuseMap", texture);
+	m_material->setTex("DiffuseMap", texture);
 }
 
 
 void CylinderPrimitive::setTopBottomTex(Texture * texture)
 {
-	m_topBottomMaterial->setTex("diffuseMap", texture);
+	m_topBottomMaterial->setTex("DiffuseMap", texture);
 }
 
 bool CylinderPrimitive::isHit(Ray ray)

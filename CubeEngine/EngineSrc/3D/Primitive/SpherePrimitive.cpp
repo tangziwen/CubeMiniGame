@@ -14,7 +14,7 @@ namespace tzw
 		m_resolution = resolution;
 		m_material = Material::createFromTemplate("ModelStd");
 		auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
-		m_material->setTex("diffuseMap", texture);
+		m_material->setTex("DiffuseMap", texture);
 		initMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());
 		setIsAccpectOcTtree(false);

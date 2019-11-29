@@ -32,8 +32,6 @@ public:
 	Texture * getTex(std::string name);
     void use(ShaderProgram * extraProgram = nullptr);
 	unsigned int getMapSlot(std::string mapName);
-	unsigned int getMapSlotWithAlias(std::string mapName);
-	std::string getAlias(std::string theName);
 	ShaderProgram *getProgram() const;
 	bool isExist(std::string name);
     Material * clone();
@@ -70,7 +68,6 @@ private:
 	bool m_isEnableBlend;
 	std::string m_name;
 	std::map<std::string, unsigned int> m_texSlotMap;
-	std::map<std::string, std::string> m_aliasMap;
 	ShaderProgram * m_program;
 	RenderFlag::RenderStage m_renderStage;
 public:

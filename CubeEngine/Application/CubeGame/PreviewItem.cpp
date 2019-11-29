@@ -158,7 +158,7 @@ namespace tzw
 						if(attach && !attach->m_connected && !currSelected->isSpecialFunctionItem())
 						{
 							showPreviewPart();
-							m_previewPart->adjustToOtherIslandByAlterSelfPart(attach, m_previewPart->getAttachment(m_currAttachment), m_previewAngle);
+							m_previewPart->adjustToOtherIslandByAlterSelfPart(attach, m_previewPart->getAttachment(m_previewPart->getPrettyAttach(attach, m_currAttachment)), m_previewAngle);
 						}else
 						{
 							hidePreviewPart();

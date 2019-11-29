@@ -26,6 +26,7 @@ namespace tzw
 		int attachmentType;
 		Attachment * m_connected;
 		std::string m_connectedGUID;
+		std::string m_locale;
 		void breakConnection();
 		float m_degree;
 		~Attachment();

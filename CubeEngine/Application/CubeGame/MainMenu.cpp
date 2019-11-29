@@ -125,7 +125,7 @@ void MainMenu::drawIMGUI()
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
     {
-        ImGui::Text(TRC(u8"TZW 出品，测试版本"));
+        ImGui::Text(TRC(u8"By TZW，测试版本"));
     	ImGui::Text(TRC(u8"更多帮助请按H键打开"));
     }
     ImGui::End();

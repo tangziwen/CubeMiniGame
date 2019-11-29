@@ -6,6 +6,7 @@ namespace tzw
 	PhysicsHingeConstraint::PhysicsHingeConstraint(btHingeConstraint * constraint)
 		: m_constraint(constraint)
 	{
+		m_constraint->setOverrideNumSolverIterations(40);
 	}
 
 btTypedConstraint* PhysicsHingeConstraint::constraint() const

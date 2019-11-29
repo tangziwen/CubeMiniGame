@@ -4853,8 +4853,11 @@ void ed::NodeBuilder::EndPin()
 
     ImGui::EndGroup();
 
-    if (m_ResolvePinRect)
+    if (m_ResolvePinRect) {
         m_CurrentPin->m_Bounds = ImGui_GetItemRect();
+		IM_ASSERT(m_CurrentPin->m_Bounds.GetSize().x != 0.0f && m_CurrentPin->m_Bounds.GetSize().y != 0.0f);
+    }
+
 
     if (m_ResolvePivot)
     {
@@ -4883,6 +4886,8 @@ void ed::NodeBuilder::PinRect(const ImVec2& a, const ImVec2& b)
     IM_ASSERT(nullptr != m_CurrentPin);
 
     m_CurrentPin->m_Bounds = ImRect(a, b);
+	auto size = m_CurrentPin->m_Bounds.GetSize();
+	IM_ASSERT( size.x != 0.0f && size.y != 0.0f);
     m_CurrentPin->m_Bounds.Floor();
     m_ResolvePinRect     = false;
 }

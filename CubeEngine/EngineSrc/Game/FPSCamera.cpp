@@ -22,9 +22,9 @@ namespace tzw {
 
 const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera()
-    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(0.2f,0.2f,0.2f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
+    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(1.0f,0.2f,1.0f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true)
-    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false)
+    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.0),m_isStopUpdate(false)
 {
     offsetToCentre = 0.6;
     m_distToFront = 0.2;
@@ -45,7 +45,7 @@ FPSCamera::FPSCamera()
 
 	this->m_ghost2->setFriction(1.2f);
 	this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
-
+	
 	this->m_character = new btKinematicCharacterController(this->m_ghost2, static_cast<btConvexShape*>(shape), 0.2f, btVector3(0.0,1.0,0.0));
 
     m_character->setGravity(btVector3(0, -14.0f, 0));
@@ -59,7 +59,7 @@ FPSCamera::FPSCamera()
 	this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
 	this->m_ghost2->setUserIndex(1);
 	this->m_ghost2->setCcdSweptSphereRadius(3.0);
-	this->m_ghost2->setCcdMotionThreshold(3.0);
+	this->m_ghost2->setCcdMotionThreshold(0.00001);
 	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
 	PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
 }
@@ -213,15 +213,15 @@ vec3 FPSCamera::getTotalSpeed()
 	upDirction = vec3(0, 1, 0);
     forwardDirection.normalize();
     rightDirection.normalize();
-	vec3 totalSpeed = forwardDirection* m_speed.z *m_forward * -1;
-    totalSpeed += rightDirection *m_speed.x*m_slide;
+	vec3 totalSpeed = forwardDirection.normalized()* m_speed.z *m_forward * -1;
+    totalSpeed += rightDirection.normalized() *m_speed.x*m_slide;
 	totalSpeed += upDirction * m_speed.y * m_up;
 	return totalSpeed;
 }
 void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
-	auto totalSpeed = getTotalSpeed();
+	auto totalSpeed = getTotalSpeed() * dt;
 	m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
 }
 

@@ -768,7 +768,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				drawPinIcon(attr, true, int(1.0 * 255));
 				ImGui::TextUnformatted(attr->m_name.c_str());
 				//可能允许包含默认值，给与默认值输入框
-				if(attr->acceptValueType != NodeAttr::AcceptValueType::ANY)
+				if(attr->acceptValueType != NodeAttr::AcceptValueType::ANY && false)
 				{
 					auto input = findAttrLinksFromAttr(attr);
 					bool isDisable = (input != nullptr);//判断是否有人连过来了，有人连了就灰化显示并禁用
@@ -855,10 +855,11 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				builder.Output(attr->gID);
 				// in between Begin|EndAttribute calls, you can call ImGui
 				// UI functions
-				ImGui::TextUnformatted(attr->m_name.c_str());
+				ImGui::TextUnformatted("abcdfeghijklmnop");
 				drawPinIcon(attr, true, (int)(1.0 * 255));
 				//ed::EndPin();
 				builder.EndOutput();
+				tlog("hahahah %d",attr->gID);
 			}
 			ImGui::Spring(0);
 			node->privateDraw();
@@ -1042,6 +1043,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
             iconType = IconType::Grid;
             break;
         default:
+	    	assert(0);
             return;
 	    }
 

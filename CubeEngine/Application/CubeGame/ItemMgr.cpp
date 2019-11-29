@@ -103,7 +103,13 @@ void ItemMgr::loadFromFile(std::string filePath)
 					vec3 pos = vec3(attachData["pos"][0].GetDouble(), attachData["pos"][1].GetDouble(), attachData["pos"][2].GetDouble());
 					vec3 normal = vec3(attachData["normal"][0].GetDouble(), attachData["normal"][1].GetDouble(), attachData["normal"][2].GetDouble());
 					vec3 up = vec3(attachData["up"][0].GetDouble(), attachData["up"][1].GetDouble(), attachData["up"][2].GetDouble());
-					gameItem->m_attachList.push_back(AttachmentInfo(pos, normal, up));
+					std::string locale = "down";
+					if(attachData.HasMember("locale")) 
+					{
+						locale = attachData["locale"].GetString();
+						
+					}
+					gameItem->m_attachList.push_back(AttachmentInfo(pos, normal, up, locale));
 				}
 
 				auto& visualData = item["Visual"];
@@ -169,6 +175,13 @@ void ItemMgr::loadFromFile(std::string filePath)
 						gameItem->m_physicsInfo.type = PhysicsInfo::PhysicsInfoType::CylinderShape;
 					}
 					gameItem->m_physicsInfo.size = physicsSize;
+					if(physicsData.HasMember("Mass"))
+					{
+						gameItem->m_physicsInfo.mass = physicsData["Mass"].GetDouble();
+					}else
+					{
+						gameItem->m_physicsInfo.mass = 0.5f;
+					}
 				}
 			}
 			

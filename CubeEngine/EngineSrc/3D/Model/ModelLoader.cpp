@@ -53,7 +53,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 		auto thestr = materialData["diffuseMap"].GetString();
 		if (strcmp(thestr, "") != 0)
 		{
-			mat->setTex("diffuseMap",
+			mat->setTex("DiffuseMap",
 				tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["diffuseMap"].GetString(), folder)));
 		}
 		//default Normal Map

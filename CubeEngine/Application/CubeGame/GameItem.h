@@ -6,10 +6,11 @@ namespace tzw
 {
 struct AttachmentInfo
 {
-	AttachmentInfo(vec3 p, vec3 n, vec3 u);
+	AttachmentInfo(vec3 p, vec3 n, vec3 u, std::string locale);
 	vec3 pos;
 	vec3 normal;
 	vec3 up;
+	std::string locale;
 };
 struct VisualInfo
 {
@@ -38,6 +39,7 @@ struct PhysicsInfo
 	};
 	PhysicsInfoType type;
 	vec3 size;
+	float mass;
 };
 
 struct GameItem
