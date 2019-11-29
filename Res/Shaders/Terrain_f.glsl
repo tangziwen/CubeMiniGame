@@ -5,7 +5,7 @@ precision mediump float;
 #endif
 
 
-uniform sampler2D TU_tex1;
+uniform sampler2D DiffuseMap;
 uniform sampler2D TU_rockNormal;
 uniform sampler2D TU_grass;
 
@@ -27,7 +27,7 @@ void main()
 	mat3 orthobasis = mat3(tangent, base_normal, bitangent);
 	
 	
-	vec3 rock_color = texture2D(TU_tex1, v_texcoord*rock_factor).rgb * 0.8;
+	vec3 rock_color = texture2D(DiffuseMap, v_texcoord*rock_factor).rgb * 0.8;
 	vec3 rockNormal = orthobasis * normalize((texture2D(TU_rockNormal, v_texcoord*rock_factor).xyz-0.5));
 	
 	float grass_factor = 2.0;

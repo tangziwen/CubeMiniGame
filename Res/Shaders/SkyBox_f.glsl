@@ -6,7 +6,7 @@ precision mediump float;
 #endif
 
 
-layout(binding = 0)uniform samplerCube TU_tex1;
+layout(binding = 0)uniform samplerCube DiffuseMap;
 layout(binding = 1)uniform sampler2D TU_Depth;
 uniform vec2 TU_winSize;
 varying vec3 v_texcoord;
@@ -21,7 +21,7 @@ vec2 getScreenCoord()
 void main()
 {
 	
-	vec4 color = texture(TU_tex1, v_texcoord.stp);
+	vec4 color = texture(DiffuseMap, v_texcoord.stp);
 	float depth = texture(TU_Depth, getScreenCoord()).r;
 	if(depth >= (1.0 - E))
 	{

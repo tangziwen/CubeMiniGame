@@ -5,7 +5,7 @@ precision mediump float;
 #endif
 
 
-uniform sampler2D TU_tex1;
+uniform sampler2D DiffuseMap;
 varying vec2 v_texcoord;
 varying vec4 v_color;
 
@@ -13,7 +13,7 @@ varying vec4 v_color;
 void main()
 {
     // Set fragment color from texture
-    vec4 col = texture2D(TU_tex1,v_texcoord)* v_color;
+    vec4 col = texture2D(DiffuseMap,v_texcoord)* v_color;
     gl_FragColor = col;
 }
 //! [0]

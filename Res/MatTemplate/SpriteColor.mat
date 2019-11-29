@@ -9,7 +9,7 @@
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
-			["SpriteTexture", "TU_tex1", 0]
+			["SpriteTexture", 0]
 		]
 	}
 }

@@ -5,7 +5,7 @@ precision mediump float;
 #endif
 
 
-uniform sampler2D TU_tex1;
+uniform sampler2D DiffuseMap;
 uniform vec4 TU_color;
 varying vec3 v_position;
 varying vec3 v_normal;

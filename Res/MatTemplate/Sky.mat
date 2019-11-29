@@ -10,12 +10,12 @@
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
-			["MainTexture", "tint", 1],
-			["MainTexture", "tint2", 2],
-			["MainTexture", "sun", 3],
-			["MainTexture", "moon", 4],
-			["MainTexture", "clouds1", 5],
-			["MainTexture", "clouds2", 6]
+			[ "tint", 1],
+			["tint2", 2],
+			[ "sun", 3],
+			["moon", 4],
+			["clouds1", 5],
+			["clouds2", 6]
 		]
 	}
 }

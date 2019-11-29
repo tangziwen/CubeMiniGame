@@ -1,9 +1,10 @@
 {
 	"shaders":{
 		"vs" : "./Res/Shaders/GeometryPass_v.glsl",
-		"fs" : "./Res/Shaders/GeometryPassPBR_f.glsl"
+		"fs" : "./Res/Shaders/GeometryPassRimLight_f.glsl"
 	},
-	"name" : "ModelPBR",
+	"name" : "ModelRimLight",
+	"RenderStage": "TRANSPARENT",
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_roughness", "type":"float", "default":5.0},

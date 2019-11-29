@@ -30,18 +30,18 @@ vec3 CalcBumpedNormal()
 	mat3 TBN = mat3(Tangent, Bitangent, Normal);
 	NewNormal = TBN * BumpMapNormal; 
 	NewNormal = normalize(NewNormal);
-	return NewNormal;	
+	return NewNormal;
 }
 
 //! [0]
 void main()
 {
     // Set fragment color from texture
-	gl_FragData[0] = texture2D(DiffuseMap,v_texcoord)*TU_color * v_color;
+	gl_FragData[0] = vec4(1.0, 1.0, 1.0, 0.5);
 	float metallic = texture2D(MetallicMap,v_texcoord).r;
 	float roughness = texture2D(RoughnessMap,v_texcoord).r;
 	gl_FragData[1] = vec4(v_position,1.0);
-	gl_FragData[2] = vec4(CalcBumpedNormal(),1.0);
+	gl_FragData[2] = vec4(v_normal,1.0);
 	gl_FragData[3] = vec4(roughness,metallic,0.0,1.0);
 }
 //! [0]

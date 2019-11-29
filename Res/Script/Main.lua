@@ -432,7 +432,7 @@ function placeItem(item)
 			--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
 		else
 			print("degree ".. g_blockRotate)
-			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, player:getPreviewItem():getCurrAttachment())
+			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, aBlock:getPrettyAttach(result, player:getPreviewItem():getCurrAttachment()))
 			g_blockRotate = 0 --reset
 			player:setPreviewAngle(g_blockRotate)
 		end

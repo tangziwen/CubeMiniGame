@@ -5,7 +5,7 @@ precision mediump float;
 #endif
 
 
-uniform sampler2D TU_tex1;
+uniform sampler2D DiffuseMap;
 uniform vec4 TU_color;
 uniform float TU_roughness;
 varying vec3 v_position;
@@ -16,7 +16,7 @@ uniform vec3 TU_camPos;
 //! [0]
 void main()
 {
-	vec4 col = texture2D(TU_tex1,v_texcoord);
+	vec4 col = texture2D(DiffuseMap,v_texcoord);
 	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a)*TU_color;
 	if(albedo.a <0.4)
 	{
