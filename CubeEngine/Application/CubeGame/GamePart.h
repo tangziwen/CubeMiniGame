@@ -67,7 +67,7 @@ public:
 	virtual bool isHit(Ray ray);
 	virtual void drawInspect();
 	virtual bool isNeedDrawInspect();
-	virtual void drawInspectNameEdit();
+	virtual bool drawInspectNameEdit();
 	void initFromItemName(std::string itemName);
 	void initFromItem(GameItem * item);
 	virtual GameNodeEditorNode * getEditorNode();

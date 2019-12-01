@@ -24,7 +24,10 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
-		tlogError("get json data err!");
+		tlog("[error] get json data err! %s %d offset %d",
+			filePath.c_str(),
+			doc.GetParseError(),
+			doc.GetErrorOffset());
 		return;
 	}
 

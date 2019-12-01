@@ -258,7 +258,7 @@ namespace tzw
 		m_parent->m_node->setPos(result.getTranslation());
 		m_parent->m_node->setRotateQ(q);
 		m_parent->m_node->reCache();
-
+		tlog("the rotation %s", m_parent->m_node->getRotateE().getStr().c_str());
 		return result;
 	}
 
@@ -611,7 +611,7 @@ namespace tzw
 		return false;
 	}
 
-	void GamePart::drawInspectNameEdit()
+	bool GamePart::drawInspectNameEdit()
 	{
 		char a[128] = "";
 		strcpy(a, getName().c_str());
@@ -621,7 +621,9 @@ namespace tzw
 		if(isInputName)
 		{
 			setName(a);
+			return true;
 		}
+		return false;
 	}
 
 	void GamePart::initFromItemName(std::string itemName)

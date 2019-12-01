@@ -349,19 +349,19 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 		return spring6DOF;
 	}
 
-	Physics6DOFConstraint* PhysicsMgr::create6DOFConstraint(PhysicsRigidBody* rbA, PhysicsRigidBody* rbB,
-		Matrix44 frameInA, Matrix44 frameInB)
-	{
-		auto & rigA = *(rbA->rigidBody());
-		auto & rigB = *(rbB->rigidBody());
-		btTransform btFrameInA;
-		btFrameInA.setFromOpenGLMatrix(frameInA.data());
-		btTransform btFrameInB;
-		btFrameInB.setFromOpenGLMatrix(frameInB.data());
-		auto bt6DOFSpring = new btGeneric6DofConstraint(rigA, rigB, btFrameInA, btFrameInB, false);
-		auto spring6DOF = new Physics6DOFConstraint(bt6DOFSpring);
-		return spring6DOF;
-	}
+	// Physics6DOFConstraint* PhysicsMgr::create6DOFConstraint(PhysicsRigidBody* rbA, PhysicsRigidBody* rbB,
+	// 	Matrix44 frameInA, Matrix44 frameInB)
+	// {
+	// 	auto & rigA = *(rbA->rigidBody());
+	// 	auto & rigB = *(rbB->rigidBody());
+	// 	btTransform btFrameInA;
+	// 	btFrameInA.setFromOpenGLMatrix(frameInA.data());
+	// 	btTransform btFrameInB;
+	// 	btFrameInB.setFromOpenGLMatrix(frameInB.data());
+	// 	auto bt6DOFSpring = new btGeneric6DofConstraint(rigA, rigB, btFrameInA, btFrameInB, false);
+	// 	auto spring6DOF = new Physics6DOFConstraint(bt6DOFSpring);
+	// 	return spring6DOF;
+	// }
 
 	void PhysicsMgr::addRigidBody(PhysicsRigidBody* body) const
 	{

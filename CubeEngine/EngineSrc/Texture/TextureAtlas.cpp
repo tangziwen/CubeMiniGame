@@ -17,7 +17,7 @@ TextureAtlas::TextureAtlas(std::string sheetFile)
 	//判断读取成功与否 和 是否为数组类型
 	if (doc.HasParseError())
 	{
-		tlogError("get json data err!");
+		tlog("[error] get json data err! %s %d offset %d", sheetFile.c_str(), doc.GetParseError(), doc.GetErrorOffset());
 		return;
 	}
 	auto imagePath = doc["meta"]["image"].GetString();

@@ -855,11 +855,10 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				builder.Output(attr->gID);
 				// in between Begin|EndAttribute calls, you can call ImGui
 				// UI functions
-				ImGui::TextUnformatted("abcdfeghijklmnop");
+				ImGui::TextUnformatted(attr->m_name.c_str());
 				drawPinIcon(attr, true, (int)(1.0 * 255));
 				//ed::EndPin();
 				builder.EndOutput();
-				tlog("hahahah %d",attr->gID);
 			}
 			ImGui::Spring(0);
 			node->privateDraw();

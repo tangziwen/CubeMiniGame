@@ -207,7 +207,10 @@ SpringPart::~SpringPart()
 
 void SpringPart::drawInspect()
 {
-	drawInspectNameEdit();
+	if(drawInspectNameEdit())
+	{
+		static_cast<ResNode *>(m_graphNode)->syncName();
+	}
 	float stiffness, damping;
 	stiffness = getStiffness();
 	damping = getDamping();

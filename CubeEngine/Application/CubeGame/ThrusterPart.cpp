@@ -214,7 +214,10 @@ ThrusterPart::~ThrusterPart()
 }
 void ThrusterPart::drawInspect()
 {
-	drawInspectNameEdit();
+	if(drawInspectNameEdit())
+	{
+		static_cast<ResNode *>(m_graphNode)->syncName();
+	}
 	float force = getThrusterForce();
 	if(ImGui::InputFloat(TRC(u8"ÍÆÁ¦"), &force))
 	{

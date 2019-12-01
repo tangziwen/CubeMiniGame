@@ -1,12 +1,13 @@
 #include "PhysicsHingeConstraint.h"
 #include "BulletDynamics/ConstraintSolver/btHingeConstraint.h"
+#include "Utility/log/Log.h"
 
 namespace tzw
 {
 	PhysicsHingeConstraint::PhysicsHingeConstraint(btHingeConstraint * constraint)
 		: m_constraint(constraint)
 	{
-		m_constraint->setOverrideNumSolverIterations(40);
+		m_constraint->setOverrideNumSolverIterations(80);
 	}
 
 btTypedConstraint* PhysicsHingeConstraint::constraint() const
@@ -38,7 +39,8 @@ void PhysicsHingeConstraint::setLimit(float low, float high, float _softness, fl
 	//let the rigidBody wake up
 	m_constraint->getRigidBodyA().activate();
 	m_constraint->getRigidBodyB().activate();
-	m_constraint->setLimit(low, high,  _softness,  _biasFactor,  _relaxationFactor);
+	m_constraint->setLimit(low, high);
+  	tlog("the hinge angle %f", m_constraint->getHingeAngle());
   }
 }
 }

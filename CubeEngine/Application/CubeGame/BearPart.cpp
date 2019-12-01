@@ -12,7 +12,8 @@
 #include "BuildingSystem.h"
 #include "3D/Model/Model.h"
 #include "Base/TranslationMgr.h"
-#include "EngineSrc/Collision/Physics6DOFConstraint.h"
+
+// #include "EngineSrc/Collision/Physics6DOFConstraint.h"
 namespace tzw
 {
 	float blockSize = 0.05;
@@ -216,7 +217,10 @@ void BearPart::generateName()
 
 	void BearPart::drawInspect()
 	{
-		drawInspectNameEdit();
+		if(drawInspectNameEdit())
+		{
+			static_cast<ResNode *>(m_graphNode)->syncName();
+		}
 		//control the bearing turn direction
 		ImGui::Text(TRC(u8"Ðý×ª·½Ïò"));
 		auto click_left = false, click_right = false;
@@ -334,8 +338,9 @@ void BearPart::generateName()
 		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
 		Matrix44 frameInB;
 		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
+		
 		//auto constrain = PhysicsMgr::shared()->create6DOFConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
-			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
 			m_constrain = constrain;
 			//constrain->makeUpBearing();
 		}

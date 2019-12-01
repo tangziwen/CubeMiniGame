@@ -83,7 +83,10 @@ void Engine::loadConfig()
 	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
-		tlogError("get json data err!");
+			tlog("[error] get json data err! %s %d offset %d",
+				"config.json",
+				doc.GetParseError(),
+				doc.GetErrorOffset());
 		return;
 	}
 	auto width = doc["width"].GetInt();

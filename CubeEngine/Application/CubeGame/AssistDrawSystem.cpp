@@ -52,6 +52,12 @@ LabelNew* AssistDrawSystem::getOrCreate(GamePart* part)
 		return m_label;
 	}else
 	{
+		auto label = m_partLabelMap[part];
+		//name has been changed
+		if(label->getString() != part->getName())
+		{
+			label->setString(part->getName());
+		}
 		return m_partLabelMap[part];
 	}
 }
