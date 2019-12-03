@@ -26,6 +26,11 @@ namespace tzw
 			MODE_PLACE_SPHERE,
 		};
 
+		enum class InSeatViewMode
+		{
+			FPV,
+			ORBIT,
+		};
 		explicit CubePlayer(Node* mainRoot);
 		FPSCamera* camera() const;
 		void setCamera(FPSCamera* camera);
@@ -39,8 +44,8 @@ namespace tzw
 		void modeSwitch(Mode newMode);
 		void initSlots();
 		vec3 getForward() const;
-		void attachCamToGamePart(GamePart * part);
-		void attachCamToWorld();
+		void sitDownToGamePart(GamePart * part);
+		void standUpFromGamePart();
 		void removePartByAttach(Attachment* attach);
 		void removePart(GamePart* part);
 		void setCurrPointPart(GamePart * part);
@@ -57,12 +62,16 @@ namespace tzw
 		void pressButton(GamePart *  buttonPart);
 		void releaseButton(GamePart * buttonPart);
 		void releaseSwitch(GamePart * switchPart);
+		InSeatViewMode getSeatViewMode() const;
+		void setSeatViewMode(const InSeatViewMode seatViewMode);
 	private:
+		void handleSitDown();
 		PreviewItem * m_previewItem;
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
 		FPSCamera* m_camera;
 		OrbitCamera * m_orbitcamera;
+		FPSCamera * m_fpvCamera;
 		Model* m_gunModel;
 		int oldPosX;
 		int oldPosZ;
@@ -72,6 +81,7 @@ namespace tzw
 		std::string m_currSelectedItem;
 		PaintGun * m_paintGun;
 		GamePart * m_currPointPart;
+		InSeatViewMode m_seatViewMode;
 	};
 } // namespace tzw
 

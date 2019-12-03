@@ -214,7 +214,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * albedo / PI) * radiance * NdotL * shadowFactor  + specular * radiance+ gAmbientLight.color * gAmbientLight.intensity * albedo;
+	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + gAmbientLight.color * gAmbientLight.intensity * albedo;
 }
 
 

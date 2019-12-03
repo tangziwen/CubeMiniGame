@@ -25,6 +25,10 @@
 			"translated": "=="
 		},
 		{
+			"original": "By TZW，测试版本",
+			"translated": "By TZW，测试版本"
+		},
+		{
 			"original": "Condition",
 			"translated": "Condition"
 		},
@@ -351,6 +355,14 @@
 		{
 			"original": "更多帮助请按H键打开",
 			"translated": "更多帮助请按H键打开"
+		},
+		{
+			"original": "最大角度",
+			"translated": "最大角度"
+		},
+		{
+			"original": "最小角度",
+			"translated": "最小角度"
 		},
 		{
 			"original": "松开",

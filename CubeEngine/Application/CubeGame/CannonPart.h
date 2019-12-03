@@ -22,6 +22,7 @@ namespace tzw
 		void drawInspect() override;
 		void use() override;
 		bool isNeedDrawInspect() override;
+		GameNodeEditorNode * getGraphNode() const;
     private:
 		float m_topRadius, m_bottomRadius, m_height;
 		GameNodeEditorNode * m_graphNode;

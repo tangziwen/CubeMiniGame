@@ -1,6 +1,10 @@
 {
 	"stringList": [
 		{
+			"original": "(E) 属性面板",
+			"translated": "(E) 属性面板"
+		},
+		{
 			"original": "(E) 属性面板\n(F) 调整方向",
 			"translated": "(E) Attribute Panel\n(F) Adjust direction"
 		},
@@ -17,12 +21,32 @@
 			"translated": "(LMB) paint \n(RMB) Color Pallete"
 		},
 		{
+			"original": "==",
+			"translated": "=="
+		},
+		{
+			"original": "By TZW，测试版本",
+			"translated": "By TZW，测试版本"
+		},
+		{
 			"original": "Constant",
 			"translated": "Constant"
 		},
 		{
 			"original": "C键",
 			"translated": "C Key"
+		},
+		{
+			"original": "If",
+			"translated": "If"
+		},
+		{
+			"original": "PrintNode",
+			"translated": "PrintNode"
+		},
+		{
+			"original": "Self",
+			"translated": "Self"
 		},
 		{
 			"original": "TZW 出品，测试版本",
@@ -41,6 +65,10 @@
 			"translated": "Use the WASD & Mouse to control Camera，Press I to open the Inventory，Build the Lift First!"
 		},
 		{
+			"original": "X光模式",
+			"translated": "X光模式"
+		},
+		{
 			"original": "X键",
 			"translated": "X Key"
 		},
@@ -51,6 +79,10 @@
 		{
 			"original": "使用节点",
 			"translated": "Using Node"
+		},
+		{
+			"original": "保存",
+			"translated": "保存"
 		},
 		{
 			"original": "保存载具",
@@ -73,6 +105,10 @@
 			"translated": "Forward/Backward signal"
 		},
 		{
+			"original": "加农 %s",
+			"translated": "加农 %s"
+		},
+		{
 			"original": "升降台只能放一个",
 			"translated": "Only one lift can be placed!"
 		},
@@ -81,12 +117,32 @@
 			"translated": "Lift"
 		},
 		{
+			"original": "单车轮",
+			"translated": "单车轮"
+		},
+		{
 			"original": "取消",
 			"translated": "Cancel"
 		},
 		{
+			"original": "变量",
+			"translated": "变量"
+		},
+		{
 			"original": "右",
 			"translated": "Right"
+		},
+		{
+			"original": "名称",
+			"translated": "名称"
+		},
+		{
+			"original": "后坐力",
+			"translated": "后坐力"
+		},
+		{
+			"original": "向量",
+			"translated": "向量"
 		},
 		{
 			"original": "喷涂器",
@@ -129,12 +185,20 @@
 			"translated": "Help Page"
 		},
 		{
+			"original": "常量",
+			"translated": "常量"
+		},
+		{
 			"original": "座位 %s",
 			"translated": "Seat %s"
 		},
 		{
 			"original": "座椅",
 			"translated": "Seat"
+		},
+		{
+			"original": "开关",
+			"translated": "开关"
 		},
 		{
 			"original": "开启",
@@ -153,12 +217,24 @@
 			"translated": "Current Degree"
 		},
 		{
+			"original": "投射物初速度",
+			"translated": "投射物初速度"
+		},
+		{
 			"original": "拖拽",
 			"translated": "Draging"
 		},
 		{
 			"original": "按T键可以显示机械部件名称，并能穿透显示轴承",
 			"translated": "按T键可以显示机械部件名称，并能穿透显示轴承"
+		},
+		{
+			"original": "按下",
+			"translated": "按下"
+		},
+		{
+			"original": "按钮",
+			"translated": "按钮"
 		},
 		{
 			"original": "按键输入",
@@ -183,6 +259,14 @@
 		{
 			"original": "放置收纳对象",
 			"translated": "place the stored vehicle"
+		},
+		{
+			"original": "方向信号",
+			"translated": "方向信号"
+		},
+		{
+			"original": "旋转",
+			"translated": "旋转"
 		},
 		{
 			"original": "旋转方向",
@@ -221,6 +305,18 @@
 			"translated": "Press H to see more help"
 		},
 		{
+			"original": "最大角度",
+			"translated": "最大角度"
+		},
+		{
+			"original": "最小角度",
+			"translated": "最小角度"
+		},
+		{
+			"original": "松开",
+			"translated": "松开"
+		},
+		{
 			"original": "标准输入",
 			"translated": "STD Input"
 		},
@@ -231,6 +327,10 @@
 		{
 			"original": "炮筒",
 			"translated": "Cannon"
+		},
+		{
+			"original": "炮筒 %s",
+			"translated": "炮筒 %s"
 		},
 		{
 			"original": "直棱柱",
@@ -253,12 +353,24 @@
 			"translated": "continue"
 		},
 		{
+			"original": "聚合",
+			"translated": "聚合"
+		},
+		{
 			"original": "舵机",
 			"translated": "Steering"
 		},
 		{
+			"original": "节点 %s",
+			"translated": "节点 %s"
+		},
+		{
 			"original": "节点列表",
 			"translated": "Node List"
+		},
+		{
+			"original": "节点编辑器",
+			"translated": "节点编辑器"
 		},
 		{
 			"original": "读取",
@@ -275,6 +387,26 @@
 		{
 			"original": "资产浏览器",
 			"translated": "Inventory"
+		},
+		{
+			"original": "赋值",
+			"translated": "赋值"
+		},
+		{
+			"original": "越野轮-中型",
+			"translated": "越野轮-中型"
+		},
+		{
+			"original": "越野轮-小",
+			"translated": "越野轮-小"
+		},
+		{
+			"original": "越野轮-普通",
+			"translated": "越野轮-普通"
+		},
+		{
+			"original": "转速",
+			"translated": "转速"
 		},
 		{
 			"original": "轮子",
@@ -295,6 +427,10 @@
 		{
 			"original": "载具浏览器",
 			"translated": "Vehicle Browser"
+		},
+		{
+			"original": "连接 (%p)",
+			"translated": "连接 (%p)"
 		},
 		{
 			"original": "退出",

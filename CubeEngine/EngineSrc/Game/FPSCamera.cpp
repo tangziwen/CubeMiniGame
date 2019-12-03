@@ -222,6 +222,13 @@ void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
 	auto totalSpeed = getTotalSpeed() * dt;
+	if(abs(totalSpeed.x) > 0.0001 || abs(totalSpeed.z) > 0.0001)
+	{
+		m_isMoving = true;
+	}else
+	{
+		m_isMoving = false;
+	}
 	m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
 }
 

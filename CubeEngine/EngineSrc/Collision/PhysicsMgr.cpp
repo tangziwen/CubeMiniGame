@@ -374,9 +374,9 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 		m_dynamicsWorld->removeRigidBody(body->rigidBody());
 	}
 
-	void PhysicsMgr::addConstraint(PhysicsConstraint* constraint)
+	void PhysicsMgr::addConstraint(PhysicsConstraint* constraint, bool disableCollistion)
 	{
-		m_dynamicsWorld->addConstraint(constraint->constraint(), false);
+		m_dynamicsWorld->addConstraint(constraint->constraint(), disableCollistion);
 	}
 
 	void PhysicsMgr::removeConstraint(PhysicsConstraint* constraint)

@@ -55,6 +55,18 @@ namespace tzw
 		return Node_CLASS_KEY_ANY_TRIGGER;
 	}
 
+	void KeyAnyTriggerNode::load(rapidjson::Value& partData)
+	{
+		GameNodeEditorNode::load(partData);
+		m_keyCode = partData["KeyCode"].GetInt();
+	}
+
+	void KeyAnyTriggerNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
+	{
+		GameNodeEditorNode::dump(partDocObj, allocator);
+		partDocObj.AddMember("KeyCode", m_keyCode, allocator);
+	}
+
 	void KeyAnyTriggerNode::triggerPress()
 	{
 		//if(!isPlayerOnSeat()) return;

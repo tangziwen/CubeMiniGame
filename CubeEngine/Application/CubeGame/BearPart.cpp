@@ -348,7 +348,7 @@ void BearPart::generateName()
 		{
 			if(m_constrain)
 			{
-				PhysicsMgr::shared()->addConstraint(m_constrain);
+				PhysicsMgr::shared()->addConstraint(m_constrain, true);
 			}
 		}
 	}
@@ -389,7 +389,7 @@ void BearPart::generateName()
 	auto transform = part->getNode()->getLocalTransform();
 	auto normalInIsland = transform.transofrmVec4(vec4(attach->m_normal, 0.0)).toVec3();
 
-	pivot = transform.transofrmVec4(vec4(attach->m_pos /*+ attach->m_normal * (blockSize / 2.0)*/, 1.0)).toVec3();
+	pivot = transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * 0.01, 1.0)).toVec3();
 	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
 }
 
@@ -405,12 +405,12 @@ void BearPart::enablePhysics(bool isEnable)
 			if (attachA && attachB) 
 			{
 				createConstraintImp();
-				PhysicsMgr::shared()->addConstraint(m_constrain);
+				PhysicsMgr::shared()->addConstraint(m_constrain, true);
 			}
 		}
 		else 
 		{
-			PhysicsMgr::shared()->addConstraint(m_constrain);
+			PhysicsMgr::shared()->addConstraint(m_constrain, true);
 		}
 		if(m_isSteering)
 		{

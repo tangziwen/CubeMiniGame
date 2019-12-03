@@ -34,6 +34,6 @@ namespace tzw
 
 	std::string CannonPartNode::getResType()
 	{
-		return "BearPart";
+		return "CannonPart";
 	}
 }

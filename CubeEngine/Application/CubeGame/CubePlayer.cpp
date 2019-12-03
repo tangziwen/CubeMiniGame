@@ -25,7 +25,7 @@
 namespace tzw
 {
 
-	CubePlayer::CubePlayer(Node* mainRoot)
+	CubePlayer::CubePlayer(Node* mainRoot):m_seatViewMode(InSeatViewMode::ORBIT)
 	{
 		ItemMgr::shared();
 		initSlots();
@@ -45,6 +45,7 @@ namespace tzw
 
 
 		m_orbitcamera = OrbitCamera::create(g_GetCurrScene()->defaultCamera());
+		m_fpvCamera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
 		mainRoot->addChild(m_orbitcamera);
 
 		auto pos = getPos();
@@ -62,6 +63,7 @@ namespace tzw
 		m_gunModel->getMat(0)->setTex("DiffuseMap", tex);
 		m_gunModel->setPos(0.09,-0.15, -0.22);
 		m_gunModel->setRotateE(vec3(0, 10, 0));
+		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
 	}
 
@@ -101,6 +103,14 @@ namespace tzw
 		if (checkIsNeedUpdateChunk())
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
+		}
+		auto seat = BuildingSystem::shared()->getCurrentControlPart();
+		if(seat && seat->getIsActivate()) 
+		{
+			auto label = MainMenu::shared()->getCrossHairTipsInfo();
+			if(!label) return;
+			label->setIsVisible(false);
+			return;
 		}
 		m_previewItem->handlePreview(ItemMgr::shared()->getItem(m_currSelectedItem), getPos(),m_camera->getTransform().forward());
 		GamePart * part = nullptr;
@@ -192,11 +202,20 @@ namespace tzw
 				}
 			}
 			break;
-		case TZW_KEY_J:
+		case TZW_KEY_V:
 			{
-				if(!GUISystem::shared()->isUiCapturingInput())
+				if(getSeatViewMode() == InSeatViewMode::ORBIT) 
 				{
-				BuildingSystem::shared()->replaceToLiftByRay(getPos(), m_camera->getForward(), 15);
+					setSeatViewMode(InSeatViewMode::FPV);
+				}
+				else
+				{
+					setSeatViewMode(InSeatViewMode::ORBIT);
+				}
+				auto seat = BuildingSystem::shared()->getCurrentControlPart();
+				if(seat && seat->getIsActivate()) 
+				{
+					handleSitDown();
                 }
 			}
 			break;
@@ -231,7 +250,21 @@ namespace tzw
 		return m_camera->getForward();
 	}
 
-	void CubePlayer::attachCamToGamePart(GamePart * part)
+	void CubePlayer::handleSitDown()
+	{
+
+		switch(m_seatViewMode)
+		{
+		case InSeatViewMode::FPV:
+			g_GetCurrScene()->setDefaultCamera(m_fpvCamera);
+		break;
+		case InSeatViewMode::ORBIT:
+			g_GetCurrScene()->setDefaultCamera(m_orbitcamera);
+		break;
+		default: ;
+		}
+	}
+	void CubePlayer::sitDownToGamePart(GamePart * part)
 	{
 		m_camera->removeFromParent();
 		m_camera->setEnableFPSFeature(false);
@@ -241,17 +274,30 @@ namespace tzw
 		//m_camera->setRotateE(0, 0, 0);
 		//m_camera->reCache();
 
+		//fpv setup
+		m_fpvCamera->setIsEnableGravity(false);
+		part->getNode()->addChild(m_fpvCamera);
+		m_fpvCamera->setPos(0, 0, 0);
+		m_fpvCamera->setRotateE(0, 0, 0);
+		m_fpvCamera->reCache();
+		
+		//orbit setup
 		m_orbitcamera->resetDirection();
 		m_orbitcamera->setFocusNode(part->getNode());
-		g_GetCurrScene()->setDefaultCamera(m_orbitcamera);
+
+		handleSitDown();
 	}
 
-	void CubePlayer::attachCamToWorld()
+	void CubePlayer::standUpFromGamePart()
 	{
 		m_camera->setIsEnableGravity(true);
 		m_camera->setEnableFPSFeature(true);
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 		m_orbitcamera->setFocusNode(nullptr);
+
+		//leave
+		m_fpvCamera->removeFromParent();
+		
 		g_GetCurrScene()->setDefaultCamera(m_camera);
 	}
 
@@ -281,7 +327,6 @@ namespace tzw
 		if(!label) return;
 		auto item = ItemMgr::shared()->getItem(m_currSelectedItem);
 		bool isNeedSpecialShowBySelected = false;
-
 		if(item && item->isSpecialFunctionItem())
 		{
 			isNeedSpecialShowBySelected = true;
@@ -426,5 +471,15 @@ namespace tzw
 	{
 		tlog("release Button!", switchPart);
 		static_cast<SwitchPart *>(switchPart)->onToggle();
+	}
+
+	CubePlayer::InSeatViewMode CubePlayer::getSeatViewMode() const
+	{
+		return m_seatViewMode;
+	}
+
+	void CubePlayer::setSeatViewMode(const InSeatViewMode seatViewMode)
+	{
+		m_seatViewMode = seatViewMode;
 	}
 } // namespace tzw

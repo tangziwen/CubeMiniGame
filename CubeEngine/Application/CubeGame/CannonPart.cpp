@@ -11,7 +11,7 @@
 namespace tzw
 {
 static auto blockSize = 0.25;
-CannonPart::CannonPart():m_firingVelocity(20.0f),m_recoil(25.f)
+CannonPart::CannonPart():m_firingVelocity(50.0f),m_recoil(50.0f)
 {
 
 	m_topRadius = 0.1;
@@ -154,7 +154,8 @@ void CannonPart::use()
 	rigA->setCcdMotionThreshold(1e-7);
 	rigA->setCcdSweptSphereRadius(0.50);
 	g_GetCurrScene()->addNode(boxA);
-
+	PhysicsMgr::shared()->addRigidBody(rigA);
+	
 	//apply recoil
 	m_parent->m_rigid->applyImpulse(m_node->getForward() *-1* getRecoil(), m_node->getPos());
 }
@@ -162,6 +163,11 @@ void CannonPart::use()
 bool CannonPart::isNeedDrawInspect()
 {
 	return true;
+}
+
+GameNodeEditorNode* CannonPart::getGraphNode() const
+{
+	return m_graphNode;
 }
 
 float CannonPart::getFiringVelocity() const

@@ -26,7 +26,6 @@ namespace tzw
 	void ConstantIntNode::load(rapidjson::Value& partData)
 	{
 		GameNodeEditorNode::load(partData);
-		name = name + getGUID();
 		m_attr->m_localAttrValue.setInt(partData["INT_VALUE"].GetInt());
 	}
 

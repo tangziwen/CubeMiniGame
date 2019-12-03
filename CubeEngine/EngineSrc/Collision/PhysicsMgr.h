@@ -48,7 +48,7 @@ class PhysicsMgr{
 		void addRigidBody(PhysicsRigidBody * body) const;
 		void removeRigidBody(PhysicsRigidBody * body) const;
 
-		void addConstraint(PhysicsConstraint * constraint);
+		void addConstraint(PhysicsConstraint * constraint, bool disableCollistion = false);
 		void removeConstraint(PhysicsConstraint * constraint);
 		btBoxShape* createBoxShape(const btVector3& halfExtents);
 		btDiscreteDynamicsWorld* getDynamicsWorld() const;

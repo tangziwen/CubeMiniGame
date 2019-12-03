@@ -12,6 +12,9 @@ public:
 	void handleKeyPress(int keyCode);
 	void handleKeyRelease(int keyCode);
 	int getNodeClass() override;
+	void load(rapidjson::Value& partData) override;
+	void dump(rapidjson::Value& partDocObj,
+	                rapidjson::Document::AllocatorType& allocator) override;
 protected:
 	void triggerPress();
 	void triggerRelease();

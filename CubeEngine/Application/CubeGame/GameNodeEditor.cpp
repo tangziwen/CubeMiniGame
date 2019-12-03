@@ -34,6 +34,7 @@
 #include "NodeEditorNodes/EqualNode.h"
 #include "NodeEditorNodes/IfNode.h"
 #include "NodeEditorNodes/PrintNode.h"
+#include "CannonPart.h"
 
 namespace ed = ax::NodeEditor;
 namespace util = ax::NodeEditor::Utilities;
@@ -249,6 +250,11 @@ enum class PinType
 					auto bearPart = reinterpret_cast<ThrusterPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = bearPart->getGraphNode();
 				}
+				else if(strcmp(resType, "CannonPart") == 0)//Cannon
+				{
+					auto bearPart = reinterpret_cast<CannonPart*>(GUIDMgr::shared()->get(resUID));
+					newNode = bearPart->getGraphNode();
+				}
 				if(newNode)
 				{
 					newNode->setGUID(node["UID"].GetString());
@@ -297,7 +303,12 @@ enum class PinType
 					break;
 				}
 				addNode(newNode);
+				if(!newNode)
+				{
+					tlog("fuck %d", nodeClass);
+				}
 			}
+
 			newNode->load(node);
 		}
 		//read link
@@ -768,7 +779,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				drawPinIcon(attr, true, int(1.0 * 255));
 				ImGui::TextUnformatted(attr->m_name.c_str());
 				//可能允许包含默认值，给与默认值输入框
-				if(attr->acceptValueType != NodeAttr::AcceptValueType::ANY && false)
+				if(attr->acceptValueType != NodeAttr::AcceptValueType::ANY)
 				{
 					auto input = findAttrLinksFromAttr(attr);
 					bool isDisable = (input != nullptr);//判断是否有人连过来了，有人连了就灰化显示并禁用

@@ -218,19 +218,15 @@ bool ControlPart::getIsActivate() const
 
 void ControlPart::setActivate(bool value)
 {
-	
+	m_isActivate = value;
 	if (value) 
 	{
-		GameWorld::shared()->getPlayer()->attachCamToGamePart(this);
+		GameWorld::shared()->getPlayer()->sitDownToGamePart(this);
 	}
 	else
 	{	
-		if(m_isActivate) 
-		{
-			GameWorld::shared()->getPlayer()->attachCamToWorld();
-		}
+		GameWorld::shared()->getPlayer()->standUpFromGamePart();
 	}
-	m_isActivate = value;
 }
 
 void ControlPart::onFrameUpdate(float delta)
