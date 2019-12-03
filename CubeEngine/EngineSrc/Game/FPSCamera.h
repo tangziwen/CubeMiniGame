@@ -15,8 +15,8 @@ namespace tzw {
 class FPSCamera : public Camera,public EventListener, public PhysicsListener
 {
 public:
-    FPSCamera();
-    static FPSCamera * create(Camera * cloneObj);
+    FPSCamera(bool isOpenPhysics);
+    static FPSCamera * create(Camera * cloneObj, bool isOpenPhysics);
 	bool onKeyPress(int keyCode) override;
 	bool onKeyRelease(int keyCode) override;
 	bool onMouseRelease(int button,vec2 pos) override;
@@ -54,6 +54,8 @@ public:
     void setIsMoving(bool isMoving);
 
 	vec3 getTotalSpeed();
+	void pausePhysics();
+	void resumePhysics();
 
 private:
     void init(Camera * cloneObj);
@@ -83,6 +85,10 @@ private:
 	btKinematicCharacterController * m_character;
 	btPairCachingGhostObject * m_ghost2;
 	float m_capsuleHigh;
+	bool m_isOpenPhysics;
+public:
+	bool isIsOpenPhysics() const;
+	void setIsOpenPhysics(const bool isOpenPhysics);
 };
 
 

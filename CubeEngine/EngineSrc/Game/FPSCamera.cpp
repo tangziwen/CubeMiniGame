@@ -21,9 +21,9 @@ namespace tzw {
 
 
 const float HeightThreadHold = 0.01;
-FPSCamera::FPSCamera()
+FPSCamera::FPSCamera(bool isOpenPhysics)
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(1.0f,0.2f,1.0f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
-    ,m_slide(0),m_up(0),m_isFirstLoop(true)
+    ,m_slide(0),m_up(0),m_isFirstLoop(true),m_isOpenPhysics(isOpenPhysics)
     ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.0),m_isStopUpdate(false)
 {
     offsetToCentre = 0.6;
@@ -35,38 +35,44 @@ FPSCamera::FPSCamera()
 	setLocalPiority(-1);
 
 
-	m_capsuleHigh = 2.f;
-	btCapsuleShape *shape = new btCapsuleShape(0.5f, m_capsuleHigh);
 
-	this->m_ghost2 = new btPairCachingGhostObject();
-	//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
-	this->m_ghost2->setCollisionShape(shape);
-	this->m_ghost2->setRestitution(0.0f);
 
-	this->m_ghost2->setFriction(1.2f);
-	this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
-	
-	this->m_character = new btKinematicCharacterController(this->m_ghost2, static_cast<btConvexShape*>(shape), 0.2f, btVector3(0.0,1.0,0.0));
+	if(m_isOpenPhysics) {
+		m_capsuleHigh = 2.f;
+		btCapsuleShape *shape = new btCapsuleShape(0.5f, m_capsuleHigh);
 
-    m_character->setGravity(btVector3(0, -14.0f, 0));
-    m_character->setLinearDamping(0.2f);
-    m_character->setAngularDamping(0.2f);
-    m_character->setStepHeight(0.4f);
-    m_character->setMaxJumpHeight(2.0);
-    m_character->setMaxSlope(45.0 * 3.14 / 180.0);
-    m_character->setJumpSpeed(5.0f);
-    m_character->setFallSpeed(55.0f);
-	this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
-	this->m_ghost2->setUserIndex(1);
-	this->m_ghost2->setCcdSweptSphereRadius(3.0);
-	this->m_ghost2->setCcdMotionThreshold(0.00001);
-	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
-	PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
+		this->m_ghost2 = new btPairCachingGhostObject();
+		//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
+		this->m_ghost2->setCollisionShape(shape);
+		this->m_ghost2->setRestitution(0.0f);
+
+		this->m_ghost2->setFriction(1.2f);
+		this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
+
+		
+		this->m_character = new btKinematicCharacterController(this->m_ghost2, static_cast<btConvexShape*>(shape), 0.2f, btVector3(0.0,1.0,0.0));
+
+	    m_character->setGravity(btVector3(0, -14.0f, 0));
+	    m_character->setLinearDamping(0.2f);
+	    m_character->setAngularDamping(0.2f);
+	    m_character->setStepHeight(0.4f);
+	    m_character->setMaxJumpHeight(2.0);
+	    m_character->setMaxSlope(45.0 * 3.14 / 180.0);
+	    m_character->setJumpSpeed(5.0f);
+	    m_character->setFallSpeed(55.0f);
+		this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
+		this->m_ghost2->setUserIndex(1);
+		this->m_ghost2->setCcdSweptSphereRadius(3.0);
+		this->m_ghost2->setCcdMotionThreshold(0.00001);
+		PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
+		PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
+	}
+
 }
 
-FPSCamera *FPSCamera::create(Camera *cloneObj)
+FPSCamera *FPSCamera::create(Camera *cloneObj, bool isOpenPhysics)
 {
-    auto camera =new  FPSCamera();
+    auto camera =new  FPSCamera(isOpenPhysics);
     camera->init(cloneObj);
     return camera;
 }
@@ -95,7 +101,11 @@ bool FPSCamera::onKeyPress(int keyCode)
     case TZW_KEY_SPACE:
         if(m_isEnableGravity)//now falling
         {
-             m_character->jump(btVector3(0, 0.0f, 0));
+        	if(m_isOpenPhysics)
+        	{
+        		m_character->jump(btVector3(0, 0.0f, 0));
+        	}
+            
         }
 		else
 		{
@@ -218,6 +228,19 @@ vec3 FPSCamera::getTotalSpeed()
 	totalSpeed += upDirction * m_speed.y * m_up;
 	return totalSpeed;
 }
+
+void FPSCamera::pausePhysics()
+{
+	PhysicsMgr::shared()->getDynamicsWorld()->removeCollisionObject(this->m_ghost2);
+	PhysicsMgr::shared()->getDynamicsWorld()->removeAction(this->m_character);
+}
+
+void FPSCamera::resumePhysics()
+{
+	PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
+	PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
+}
+
 void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
@@ -229,7 +252,10 @@ void FPSCamera::logicUpdate(float dt)
 	{
 		m_isMoving = false;
 	}
-	m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
+	if(m_isOpenPhysics)
+	{
+		m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
+	}
 }
 
 
@@ -245,10 +271,14 @@ void FPSCamera::setSpeed(const vec3 &speed)
 
 void FPSCamera::recievePhysicsInfo(vec3 pos, Quaternion rot)
 {
-	auto originPos = m_ghost2->getWorldTransform().getOrigin();
-	auto up = vec3(0, 1, 0);//m_ghost2->getWorldTransform().getBasis().getRow(1);
-	auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
-	setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround));
+	if(m_isOpenPhysics) 
+	{
+		auto originPos = m_ghost2->getWorldTransform().getOrigin();
+		auto up = vec3(0, 1, 0);//m_ghost2->getWorldTransform().getBasis().getRow(1);
+		auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
+		setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround));
+	}
+
 }
 
 vec3 FPSCamera::rotateSpeed() const
@@ -283,11 +313,12 @@ void FPSCamera::setGravity(float gravity)
 void FPSCamera::setCamPos(const vec3& pos)
 {
 	Node::setPos(pos);
-	auto m = m_ghost2->getWorldTransform();
-	m.setOrigin(btVector3(pos.x, pos.y, pos.z));
-	m_ghost2->setWorldTransform(m);
-	//m_character->
-	
+	if(m_isOpenPhysics)
+	{
+		auto m = m_ghost2->getWorldTransform();
+		m.setOrigin(btVector3(pos.x, pos.y, pos.z));
+		m_ghost2->setWorldTransform(m);
+	}
 }
 
 bool FPSCamera::getIsEnableGravity() const
@@ -452,6 +483,16 @@ void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
 	if (list.empty()) return;
     Drawable3DGroup group(&list[0],list.size());
     group.checkCollide(thePackage);
+}
+
+bool FPSCamera::isIsOpenPhysics() const
+{
+	return m_isOpenPhysics;
+}
+
+void FPSCamera::setIsOpenPhysics(const bool isOpenPhysics)
+{
+	m_isOpenPhysics = isOpenPhysics;
 }
 
 bool FPSCamera::getIsMoving() const

@@ -2,7 +2,7 @@
 	"stringList": [
 		{
 			"original": "(E) 属性面板",
-			"translated": "(E) 属性面板"
+			"translated": "(E) Attribute Panel"
 		},
 		{
 			"original": "(E) 属性面板\n(F) 调整方向",
@@ -26,7 +26,7 @@
 		},
 		{
 			"original": "By TZW，测试版本",
-			"translated": "By TZW，测试版本"
+			"translated": "By TZW，test version"
 		},
 		{
 			"original": "Constant",
@@ -66,7 +66,7 @@
 		},
 		{
 			"original": "X光模式",
-			"translated": "X光模式"
+			"translated": "X Ray Mode"
 		},
 		{
 			"original": "X键",
@@ -82,7 +82,7 @@
 		},
 		{
 			"original": "保存",
-			"translated": "保存"
+			"translated": "Save"
 		},
 		{
 			"original": "保存载具",
@@ -126,7 +126,7 @@
 		},
 		{
 			"original": "变量",
-			"translated": "变量"
+			"translated": "Varaible"
 		},
 		{
 			"original": "右",
@@ -134,15 +134,15 @@
 		},
 		{
 			"original": "名称",
-			"translated": "名称"
+			"translated": "Name"
 		},
 		{
 			"original": "后坐力",
-			"translated": "后坐力"
+			"translated": "Recoil"
 		},
 		{
 			"original": "向量",
-			"translated": "向量"
+			"translated": "Vector"
 		},
 		{
 			"original": "喷涂器",
@@ -186,7 +186,7 @@
 		},
 		{
 			"original": "常量",
-			"translated": "常量"
+			"translated": "Constant"
 		},
 		{
 			"original": "座位 %s",
@@ -198,7 +198,7 @@
 		},
 		{
 			"original": "开关",
-			"translated": "开关"
+			"translated": "Switch"
 		},
 		{
 			"original": "开启",
@@ -218,7 +218,7 @@
 		},
 		{
 			"original": "投射物初速度",
-			"translated": "投射物初速度"
+			"translated": "projectile Speed"
 		},
 		{
 			"original": "拖拽",
@@ -262,15 +262,15 @@
 		},
 		{
 			"original": "方向信号",
-			"translated": "方向信号"
+			"translated": "Direction signal"
 		},
 		{
 			"original": "旋转",
-			"translated": "旋转"
+			"translated": "Rotation"
 		},
 		{
 			"original": "旋转方向",
-			"translated": "旋转方向"
+			"translated": "Rotate Direction"
 		},
 		{
 			"original": "旋转节点",
@@ -306,15 +306,15 @@
 		},
 		{
 			"original": "最大角度",
-			"translated": "最大角度"
+			"translated": "Max Angle"
 		},
 		{
 			"original": "最小角度",
-			"translated": "最小角度"
+			"translated": "Min Angle"
 		},
 		{
 			"original": "松开",
-			"translated": "松开"
+			"translated": "Release"
 		},
 		{
 			"original": "标准输入",
@@ -330,7 +330,7 @@
 		},
 		{
 			"original": "炮筒 %s",
-			"translated": "炮筒 %s"
+			"translated": "Cannon %s"
 		},
 		{
 			"original": "直棱柱",
@@ -338,7 +338,7 @@
 		},
 		{
 			"original": "直棱柱-长",
-			"translated": "直棱柱-长"
+			"translated": "Right Prism-L"
 		},
 		{
 			"original": "管子",
@@ -346,7 +346,7 @@
 		},
 		{
 			"original": "粗管",
-			"translated": "粗管"
+			"translated": "Pipe-L"
 		},
 		{
 			"original": "继续",
@@ -370,7 +370,7 @@
 		},
 		{
 			"original": "节点编辑器",
-			"translated": "节点编辑器"
+			"translated": "Node Editor"
 		},
 		{
 			"original": "读取",
@@ -390,7 +390,7 @@
 		},
 		{
 			"original": "赋值",
-			"translated": "赋值"
+			"translated": "Assign"
 		},
 		{
 			"original": "越野轮-中型",
@@ -406,7 +406,7 @@
 		},
 		{
 			"original": "转速",
-			"translated": "转速"
+			"translated": "Rotate Speed"
 		},
 		{
 			"original": "轮子",
@@ -430,7 +430,7 @@
 		},
 		{
 			"original": "连接 (%p)",
-			"translated": "连接 (%p)"
+			"translated": "connect (%p)"
 		},
 		{
 			"original": "退出",

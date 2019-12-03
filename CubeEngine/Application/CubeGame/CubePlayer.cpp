@@ -34,7 +34,7 @@ namespace tzw
 		m_paintGun->m_surface = PartSurfaceMgr::shared()->getItem("foam grip");
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		GUISystem::shared()->addObject(this);
-		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
+		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), true);
 		camera->setCamPos(vec3(5, 20.0, -5));
 		mainRoot->addChild(camera);
 		g_GetCurrScene()->setDefaultCamera(camera);
@@ -45,7 +45,7 @@ namespace tzw
 
 
 		m_orbitcamera = OrbitCamera::create(g_GetCurrScene()->defaultCamera());
-		m_fpvCamera = FPSCamera::create(g_GetCurrScene()->defaultCamera());
+		m_fpvCamera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), false);
 		mainRoot->addChild(m_orbitcamera);
 
 		auto pos = getPos();
@@ -268,6 +268,7 @@ namespace tzw
 	{
 		m_camera->removeFromParent();
 		m_camera->setEnableFPSFeature(false);
+		m_camera->pausePhysics();
 		//m_camera->setIsEnableGravity(false);
 		//part->getNode()->addChild(m_camera);
 		//m_camera->setPos(0, 0, 0);
@@ -292,6 +293,7 @@ namespace tzw
 	{
 		m_camera->setIsEnableGravity(true);
 		m_camera->setEnableFPSFeature(true);
+		m_camera->resumePhysics();
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 		m_orbitcamera->setFocusNode(nullptr);
 
