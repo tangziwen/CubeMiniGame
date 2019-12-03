@@ -218,6 +218,7 @@ enum class PinType
 
 	void GameNodeEditor::load(rapidjson::Value& NodeGraphObj)
 	{
+		ed::SetCurrentEditor(g_Context);
 		//read node
 		auto& NodeList = NodeGraphObj["NodeList"];
 		for(unsigned int i = 0; i < NodeList.Size(); i++)
@@ -310,6 +311,10 @@ enum class PinType
 			}
 
 			newNode->load(node);
+			//确保在编辑器里创建过,否则getNodePosition会得到Float_Max很坑爹
+			reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(g_Context)->GetNode(newNode->m_nodeID);
+			//设置好位置
+			ed::SetNodePosition(newNode->m_nodeID, ImVec2(newNode->m_origin.x, newNode->m_origin.y));
 		}
 		//read link
 		auto& linkList = NodeGraphObj["NodeLinkList"];
@@ -322,7 +327,7 @@ enum class PinType
 			int toInputID = linkObj["toInputID"].GetInt();
 			makeLinkByNode(nodeA, nodeB, fromOutputID, toInputID);
 		}
-		ed::SetCurrentEditor(g_Context);
+		
 		ed::NavigateToContent();
 	}
 
@@ -759,7 +764,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 			builder.Begin(node->m_nodeID);
 			if (!node->isShowed) 
 			{
-				ed::SetNodePosition(node->m_nodeID, ImVec2(node->m_origin.x, node->m_origin.y));
+				//
 				node->isShowed = true;
 			}
 			auto nodeCol = node->getNodeColor();
