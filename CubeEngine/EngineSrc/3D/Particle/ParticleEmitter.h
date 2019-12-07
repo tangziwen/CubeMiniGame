@@ -26,7 +26,10 @@ public:
 	void setSpawnRate(float newSpawnRate);
 	float getSpawnRate() const;
 	int getSpawnAmount() const;
+	void setTex(std::string filePath);
 	void setSpawnAmount(const int spawnAmount);
+	float getDepthBias() const;
+	void setDepthBias(const float depthBias);
 private:
 	std::vector<ParticleEmitterModule *> m_initModule;
 	std::vector<ParticleEmitterModule *> m_updateModule;
@@ -36,6 +39,15 @@ private:
 	int m_currSpawn;
 	float m_t;
 	State m_state;
+	bool isLocalPos;
+	float m_depthBias;
+	bool m_isInfinite;
+public:
+	bool isIsInfinite() const;
+	void setIsInfinite(const bool isInfinite);
+	bool isIsLocalPos() const;
+	void setIsLocalPos(const bool isLocalPos);
+private:
 	std::list<Particle * > particleList;
 };
 

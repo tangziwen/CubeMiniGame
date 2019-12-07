@@ -15,6 +15,13 @@
 #include "ItemMgr.h"
 #include "PartSurfaceMgr.h"
 #include "Base/TranslationMgr.h"
+#include "3D/Particle/ParticleEmitter.h"
+#include "3D/Particle/ParticleUpdateColorModule.h"
+#include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleInitAlphaModule.h"
+#include "3D/Particle/ParticleInitLifeSpanModule.h"
+#include "3D/Particle/ParticleInitVelocityModule.h"
+#include "3D/Particle/ParticleInitSizeModule.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -116,9 +123,13 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::startGame()
 {
+	m_currentState = GAME_STATE_RUNNING;
+
+	
+
 	//load the config
 	ItemMgr::shared();
-	m_currentState = GAME_STATE_RUNNING;
+	
 	PhysicsMgr::shared()->start();
 	Tmisc::DurationBegin();
 	 
@@ -227,6 +238,7 @@ void GameWorld::setMapOffset(tzw::vec3 val)
 
 void GameWorld::init()
 {
+
 	m_mainMenu = MainMenu::shared();
 	m_mainMenu->init();
 	m_mainMenu->hide();

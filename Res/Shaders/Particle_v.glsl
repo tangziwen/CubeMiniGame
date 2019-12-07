@@ -13,6 +13,7 @@ uniform mat4 TU_pMatrix;
 uniform mat4 TU_mMatrixInverted;
 
 uniform float TU_roughness;
+uniform float TU_depthBias;
 uniform vec3 TU_camPos;
 attribute vec3 a_position;
 attribute vec3 a_normal;
@@ -58,7 +59,7 @@ void main()
     modelView[2][2] = a_instance_offset.w;
 
     gl_Position = TU_pMatrix * modelView * vec4(a_position,1.0);
-    
+    gl_Position.z -= TU_depthBias / (TU_depthBias + gl_Position.w);
 	v_color = a_instance_offset2;
     v_texcoord = a_texcoord;
 }

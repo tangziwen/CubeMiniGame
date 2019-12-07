@@ -169,6 +169,10 @@
 			"translated": "名称"
 		},
 		{
+			"original": "后坐力",
+			"translated": "后坐力"
+		},
+		{
 			"original": "向量",
 			"translated": "向量"
 		},
@@ -263,6 +267,10 @@
 		{
 			"original": "打开",
 			"translated": "打开"
+		},
+		{
+			"original": "投射物初速度",
+			"translated": "投射物初速度"
 		},
 		{
 			"original": "拖拽",

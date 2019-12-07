@@ -438,9 +438,6 @@ void Material::setVar(std::string name, const TechniqueVar &value)
  */
 void Material::setTex(std::string name, Texture *texture, int id)
 {
-	if(name == "DiffuseMap") {
-		tlog("hehehe");
-	}
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{

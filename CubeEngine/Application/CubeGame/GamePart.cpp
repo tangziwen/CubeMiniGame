@@ -258,7 +258,6 @@ namespace tzw
 		m_parent->m_node->setPos(result.getTranslation());
 		m_parent->m_node->setRotateQ(q);
 		m_parent->m_node->reCache();
-		tlog("the rotation %s", m_parent->m_node->getRotateE().getStr().c_str());
 		return result;
 	}
 

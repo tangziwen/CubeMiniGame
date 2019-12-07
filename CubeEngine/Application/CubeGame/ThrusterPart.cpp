@@ -239,4 +239,17 @@ void ThrusterPart::setThrusterForce(float thruster)
 {
 	m_thrusterForce = thruster;
 }
+
+void ThrusterPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
+{
+	GamePart::dump(partData, allocator);
+	partData.AddMember("ThrusterForce", m_thrusterForce, allocator);
+}
+
+void ThrusterPart::load(rapidjson::Value& partData)
+{
+	GamePart::load(partData);
+	if(partData.HasMember("ThrusterForce"))
+		m_thrusterForce = partData["ThrusterForce"].GetDouble();
+}
 }

@@ -16,6 +16,7 @@ namespace tzw
 		auto nodeEditor = MainMenu::shared()->getNodeEditor();
 		auto theList = nodeEditor->findAllAttrLinksFromAttr(m_composite);
 		auto& value = m_out->m_localAttrValue;
+		value.m_list.clear();
 		for(auto attr : theList)
 		{
 			value.m_list.push_back(attr->eval().getFirst());

@@ -6,6 +6,13 @@
 #include "NodeEditorNodes/CannonPartNode.h"
 #include "MainMenu.h"
 #include "3D/Primitive/CubePrimitive.h"
+#include "3D/Particle/ParticleEmitter.h"
+#include "3D/Particle/ParticleUpdateColorModule.h"
+#include "3D/Particle/ParticleInitAlphaModule.h"
+#include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleInitVelocityModule.h"
+#include "3D/Particle/ParticleInitSizeModule.h"
+#include "3D/Particle/ParticleInitLifeSpanModule.h"
 
 
 namespace tzw
@@ -34,7 +41,7 @@ CannonPart::CannonPart():m_firingVelocity(50.0f),m_recoil(50.0f)
 	initAttachments();
 }
 
-CannonPart::CannonPart(std::string itemName)
+CannonPart::CannonPart(std::string itemName):m_firingVelocity(50.0f),m_recoil(50.0f)
 {
 	m_topRadius = 0.1;
 	m_bottomRadius = 0.1;
@@ -145,7 +152,8 @@ void CannonPart::use()
 	//shoot bullet
 	float blockSize = 0.2;
 	auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
-	boxA->setPos(getWorldPos() + m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0));
+	auto firePos = getWorldPos() + m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0);
+	boxA->setPos(firePos);
 	auto transform = boxA->getTransform();
 	auto aabb = boxA->localAABB();
 	auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
@@ -155,7 +163,37 @@ void CannonPart::use()
 	rigA->setCcdSweptSphereRadius(0.50);
 	g_GetCurrScene()->addNode(boxA);
 	PhysicsMgr::shared()->addRigidBody(rigA);
-	
+	tlog("fire");
+	auto emitter = new ParticleEmitter(1);
+	emitter->setIsLocalPos(true);
+	emitter->setTex("Texture/flare.bmp");
+	emitter->setSpawnRate(0.3);
+	emitter->addInitModule(new ParticleInitSizeModule(1.5, 1.7));
+	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
+	emitter->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
+	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+	emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 0.0, 1.0), vec4(0.6, 0.6, 0.0, 0.1)));
+	emitter->setIsState(ParticleEmitter::State::Playing);
+	emitter->setDepthBias(0.05);
+	emitter->setPos(m_node->getForward() * (m_height / 2.0 + 0.01));
+	emitter->setIsInfinite(false);
+
+
+	auto emitter2 = new ParticleEmitter(1);
+	emitter2->setIsLocalPos(true);
+	emitter2->setTex("Texture/flare.bmp");
+	emitter2->setSpawnRate(0.3);
+	emitter2->addInitModule(new ParticleInitSizeModule(2.5, 2.7));
+	emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
+	emitter2->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
+	emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 0.26, 0.0, 0.1)));
+	emitter2->setIsState(ParticleEmitter::State::Playing);
+	emitter2->setPos(m_node->getForward() * (m_height / 2.0 + 0.01));
+	emitter2->setDepthBias(0.05);
+	emitter2->setIsInfinite(false);
+	m_node->addChild(emitter);
+	m_node->addChild(emitter2);
 	//apply recoil
 	m_parent->m_rigid->applyImpulse(m_node->getForward() *-1* getRecoil(), m_node->getPos());
 }
@@ -168,6 +206,22 @@ bool CannonPart::isNeedDrawInspect()
 GameNodeEditorNode* CannonPart::getGraphNode() const
 {
 	return m_graphNode;
+}
+
+void CannonPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
+{
+	GamePart::dump(partData, allocator);
+	partData.AddMember("FiringVelocity", m_firingVelocity, allocator);
+	partData.AddMember("Recoil", m_recoil, allocator);
+}
+
+void CannonPart::load(rapidjson::Value& partData)
+{
+	GamePart::load(partData);
+	if(partData.HasMember("FiringVelocity"))
+		m_firingVelocity = partData["FiringVelocity"].GetDouble();
+	if(partData.HasMember("Recoil"))
+		m_recoil = partData["Recoil"].GetDouble();
 }
 
 float CannonPart::getFiringVelocity() const

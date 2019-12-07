@@ -7,7 +7,9 @@
 #include "Utility/math/TbaseMath.h"
 
 namespace tzw {
-ParticleEmitter::ParticleEmitter(int maxSpawn): m_spawnRate(0.1), m_maxSpawn(maxSpawn), m_spawnAmount(1), m_currSpawn(0), m_t(0), m_state(State::Stop)
+ParticleEmitter::ParticleEmitter(int maxSpawn):
+	m_spawnRate(0.1), m_maxSpawn(maxSpawn), m_spawnAmount(1), m_currSpawn(0), m_t(0), m_state(State::Stop),
+	isLocalPos(false),m_depthBias(0.0f),m_isInfinite(true)
 {
 
 	auto mat = MaterialPool::shared()->getMaterialByName("Particle");
@@ -30,6 +32,7 @@ ParticleEmitter::ParticleEmitter(int maxSpawn): m_spawnRate(0.1), m_maxSpawn(max
 	setCamera(g_GetCurrScene()->defaultCamera());
 
 	initMesh();
+	
 }
 
 
@@ -64,19 +67,36 @@ void ParticleEmitter::logicUpdate(float dt)
 	if(m_state == State::Playing)
 	{
 		//spawn
-		if(m_t > m_spawnRate && m_currSpawn < m_maxSpawn)
+		if(m_t > m_spawnRate)
 		{
-			int count = std::min(m_maxSpawn - m_currSpawn, m_spawnAmount);
-			for(int i = 0; i < m_spawnAmount; i++)
+			if(m_currSpawn < m_maxSpawn)
 			{
-				auto * p = new Particle();
-				p->m_pos = getTransform().transformVec3(vec3(0, 0, 0));
-				for(auto m : m_initModule)
+				int count = std::min(m_maxSpawn - m_currSpawn, m_spawnAmount);
+				for(int i = 0; i < m_spawnAmount; i++)
 				{
-					m->process(p, this);
+					auto * p = new Particle();
+					if(!isLocalPos)
+					{
+						p->m_pos = getTransform().transformVec3(vec3(0, 0, 0));
+					} else
+					{
+						p->m_pos = vec3(0, 0, 0);
+					}
+					
+					for(auto m : m_initModule)
+					{
+						m->process(p, this);
+					}
+					particleList.push_back(p);
+					m_currSpawn += 1;
 				}
-				particleList.push_back(p);
-				m_currSpawn += 1;
+			}
+			else
+			{
+				if(!m_isInfinite)
+				{
+					m_state = State::Stop;
+				}	
 			}
 			m_t = 0;
 		}
@@ -123,7 +143,15 @@ void ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
 	for(auto p: particleList) 
 	{
       	InstanceData instance;
-      	instance.posAndScale = vec4(p->m_pos, p->size * p->m_initSize);
+		vec3 targetPos;
+		if(isLocalPos)
+		{
+			targetPos = p->m_pos + getTransform().transformVec3(vec3(0, 0, 0));
+		} else
+		{
+			targetPos = p->m_pos;
+		}
+      	instance.posAndScale = vec4(targetPos, p->size * p->m_initSize);
       	instance.extraInfo = p->m_color;
         m_mesh->pushInstance(instance);
 	}
@@ -182,6 +210,7 @@ void ParticleEmitter::setIsState(State state)
 void ParticleEmitter::setSpawnRate(float newSpawnRate)
 {
 	m_spawnRate = newSpawnRate;
+	m_t = m_spawnRate;
 }
 
 float ParticleEmitter::getSpawnRate() const
@@ -194,8 +223,54 @@ int ParticleEmitter::getSpawnAmount() const
 	return m_spawnAmount;
 }
 
+void ParticleEmitter::setTex(std::string filePath)
+{
+	auto mat = getMaterial();
+	if (!mat)
+	{
+		mat = Material::createFromTemplate("Particle");
+	}
+	auto tex = TextureMgr::shared()->getByPath(filePath);
+	 
+	tex->genMipMap();
+	 
+	mat->setTex("DiffuseMap", tex);
+}
+
 void ParticleEmitter::setSpawnAmount(const int spawnAmount)
 {
 	m_spawnAmount = spawnAmount;
+}
+
+float ParticleEmitter::getDepthBias() const
+{
+	return m_depthBias;
+}
+
+void ParticleEmitter::setDepthBias(const float depthBias)
+{
+	m_depthBias = depthBias;
+	auto mat = getMaterial();
+	mat->setVar("TU_depthBias", depthBias);
+}
+
+bool ParticleEmitter::isIsInfinite() const
+{
+	return m_isInfinite;
+}
+
+void ParticleEmitter::setIsInfinite(const bool isInfinite)
+{
+	m_isInfinite = isInfinite;
+}
+
+bool ParticleEmitter::isIsLocalPos() const
+{
+	return isLocalPos;
+}
+
+void ParticleEmitter::setIsLocalPos(const bool isLocalPos)
+{
+	this->isLocalPos = isLocalPos;
 }
 } // namespace tzw

@@ -278,8 +278,9 @@ namespace tzw
 		//fpv setup
 		m_fpvCamera->setIsEnableGravity(false);
 		part->getNode()->addChild(m_fpvCamera);
-		m_fpvCamera->setPos(0, 0, 0);
-		m_fpvCamera->setRotateE(0, 0, 0);
+		auto Rotate = part->getNode()->getRotateE();
+		m_fpvCamera->setPos(0, 0.5, 0.1);
+		m_fpvCamera->setRotateE(0, 180, 0);
 		m_fpvCamera->reCache();
 		
 		//orbit setup
