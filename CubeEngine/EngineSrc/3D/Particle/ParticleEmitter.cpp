@@ -93,13 +93,15 @@ void ParticleEmitter::logicUpdate(float dt)
 			}
 			else
 			{
-				if(!m_isInfinite)
-				{
-					m_state = State::Stop;
-				}	
+
 			}
 			m_t = 0;
 		}
+
+		if(m_currSpawn >= m_maxSpawn && !m_isInfinite)
+		{
+			m_state = State::Stop;
+		}	
 	}
 
 

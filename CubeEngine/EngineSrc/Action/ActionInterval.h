@@ -16,7 +16,7 @@ public:
 	bool isDone() override;
     float currentTime() const;
     void setCurrentTime(float currentTime);
-    virtual void final(Node * node);
+	void final(Node * node) override;
 protected:
     float m_duration;
     float m_currentTime;

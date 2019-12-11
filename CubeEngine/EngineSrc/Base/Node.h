@@ -74,7 +74,9 @@ public:
 	void removeFromParent();
 	void setParent(Node *parent);
 	vec3 getForward();
+	vec3 getLocalForward();
 	vec3 getUp();
+	vec3 getLocalUp();
 	int getLocalPiority() const;
 	void setLocalPiority(int zOrder);
 	void sortChildren();

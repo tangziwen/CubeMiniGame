@@ -11,6 +11,7 @@ namespace tzw {
 
 #define GAME_STATE_MAIN_MENU 0
 #define GAME_STATE_RUNNING 1
+#define GAME_STATE_SPLASH 2
 class GameWorld : public EventListener
 {
 public:

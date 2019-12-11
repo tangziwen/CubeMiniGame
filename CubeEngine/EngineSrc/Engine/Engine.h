@@ -11,10 +11,9 @@ class Engine
 public:
     static Engine *shared();
     float windowWidth() const;
-    void setWindowWidth(float windowWidth);
+    void setWindowSize(float w, float h);
     static int run(int argc, char *argv[],AppEntry * delegate);
     float windowHeight() const;
-    void setWindowHeight(float windowHeight);
     AppEntry *delegate() const;
     void setDelegate(AppEntry *delegate);
     void initSingletons();
@@ -41,6 +40,8 @@ public:
 	std::string getWorkingDirectory();
 	int getMouseButton(int mouseButton);
 	void loadConfig();
+	void saveConfig();
+	void changeScreenSetting(int w, int h, bool isFullScreen);
 private:
 	WindowBackEnd * m_winBackEnd{};
     static Engine * m_instance;
@@ -53,6 +54,11 @@ private:
     float m_deltaTime{};
     float m_windowWidth{};
     float m_windowHeight{};
+	bool m_isFullScreen;
+public:
+	bool isIsFullScreen() const;
+	void setIsFullScreen(const bool isFullScreen);
+private:
     bool m_isEnableOutLine;
     AppEntry * m_delegate{};
 };

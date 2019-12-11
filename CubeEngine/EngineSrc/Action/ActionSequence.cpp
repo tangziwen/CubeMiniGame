@@ -1,4 +1,5 @@
 #include "ActionSequence.h"
+#include "Utility/log/Log.h"
 
 namespace tzw {
 
@@ -19,6 +20,7 @@ void ActionSequence::update(Node *node, float dt)
 		head->update(node, dt);
 		if(head->isDone()) 
 		{
+			head->final(node);
 			m_actionList.pop_front();
 		}
 	}

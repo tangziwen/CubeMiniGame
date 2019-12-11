@@ -20,10 +20,6 @@ void ActionInterval::update(Node *node, float dt)
     {
         step(node,dt);
     }
-    else
-    {
-        final(node);
-    }
     m_currentTime += dt;
 }
 

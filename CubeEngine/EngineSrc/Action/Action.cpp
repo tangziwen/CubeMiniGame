@@ -40,4 +40,7 @@ Action::~Action()
 
 }
 
+void Action::final(Node* node)
+{
+}
 } // namespace tzw

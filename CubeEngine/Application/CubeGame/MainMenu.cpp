@@ -125,28 +125,35 @@ void MainMenu::drawIMGUI()
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
     {
-        ImGui::Text(TRC(u8"By TZW，测试版本"));
-    	ImGui::Text(TRC(u8"更多帮助请按H键打开"));
+        ImGui::Text(TRC(u8"Demo Version --tzw"));
     }
     ImGui::End();
-	
+
+	if(GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
+	{
+		drawEntryInterFace();
+	}
+
 	auto currIsNeedShow = isVisible() || isNeedShowWindow();
 	if(m_preIsNeedShow != currIsNeedShow)
 	{
-		if(currIsNeedShow)
+		if(GameWorld::shared()->getCurrentState() != GAME_STATE_MAIN_MENU)
 		{
-			Engine::shared()->setUnlimitedCursor(false);
-			if(m_crossHair)
+			if(currIsNeedShow)
 			{
-				m_crossHair->setIsVisible(false);
+				Engine::shared()->setUnlimitedCursor(false);
+				if(m_crossHair)
+				{
+					m_crossHair->setIsVisible(false);
+				}
 			}
-		}
-		else
-		{
-			Engine::shared()->setUnlimitedCursor(true);
-			if(m_crossHair)
+			else
 			{
-				m_crossHair->setIsVisible(true);
+				Engine::shared()->setUnlimitedCursor(true);
+				if(m_crossHair)
+				{
+					m_crossHair->setIsVisible(true);
+				}
 			}
 		}
 		m_preIsNeedShow = currIsNeedShow;
@@ -362,6 +369,36 @@ void MainMenu::drawIMGUI()
 			ImGui::End();
 			setWindowShow(WindowType::PAINTER, isOpen);
 		}
+
+
+		//选项面板
+		if(getWindowIsShow(WindowType::OPTION_MENU)) 
+		{
+			auto screenSize = Engine::shared()->winSize();
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			bool isOpen = true;
+			m_option.drawIMGUI(&isOpen);
+			setWindowShow(WindowType::OPTION_MENU, isOpen);
+		}
+
+		//quick Debug
+		if(getWindowIsShow(WindowType::QUICK_DEBUG)) 
+		{
+			auto screenSize = Engine::shared()->winSize();
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			bool isOpen = true;
+			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+
+			auto ambient = g_GetCurrScene()->getAmbient();
+			float intensity = ambient->intensity();
+			if(ImGui::DragFloat("IBL", &intensity, 0.01, 0.0f, 5.0f)) 
+			{
+				ambient->setIntensity(intensity);
+			}
+			ImGui::End();
+			setWindowShow(WindowType::QUICK_DEBUG, isOpen);
+		}
+		
 	}
 
 }
@@ -586,6 +623,39 @@ void MainMenu::openInspectWindow(GamePart* part)
 void MainMenu::setPainterShow(bool isShow)
 {
 	setWindowShow(WindowType::PAINTER, isShow);
+}
+
+void MainMenu::drawEntryInterFace()
+{
+	auto screenSize = Engine::shared()->winSize();
+	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
+	{
+
+		if(ImGui::Button(TRC(u8"开始游戏"), ImVec2(160, 35)))
+		{
+			GameWorld::shared()->startGame();
+			Engine::shared()->setUnlimitedCursor(true);
+		}
+		ImGui::Spacing();
+		if(ImGui::Button(TRC(u8"选项"), ImVec2(160, 35)))
+		{
+			m_option.open();
+			setWindowShow(WindowType::OPTION_MENU, true);
+		}
+		ImGui::Spacing();
+		if(ImGui::Button(TRC(u8"帮助"), ImVec2(160, 35)))
+		{
+			
+		}
+		ImGui::Spacing();
+		if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35))) 
+		{
+			exit(0);
+		}
+		ImGui::Spacing();
+		ImGui::End();
+	}
 }
 
 LabelNew* MainMenu::getCrossHairTipsInfo() const

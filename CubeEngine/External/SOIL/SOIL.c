@@ -660,7 +660,8 @@ unsigned int
 		const char face_order[6],
 		int force_channels,
 		unsigned int reuse_texture_ID,
-		unsigned int flags
+		unsigned int flags,
+		int *widthOutter, int *heightOutter
 	)
 {
 	/*	variables	*/
@@ -733,6 +734,8 @@ unsigned int
 			img, width, height, channels,
 			face_order, reuse_texture_ID, flags
 			);
+	(*widthOutter) = width;
+	(*heightOutter) = height;
 	/*	nuke the temporary image data and return the texture handle	*/
 	SOIL_free_image_data( img );
 	return tex_id;

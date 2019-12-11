@@ -63,6 +63,7 @@ void ActionMgr::updateAction(Node *node, float dt)
         action->update(node, dt);
         if(action->isDone())
         {
+        	action->final(node);
             iter = m_actionList.erase(iter);
             delete action;
         }else

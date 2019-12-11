@@ -8,7 +8,7 @@ WindowBackEnd::WindowBackEnd()
 
 }
 
-void WindowBackEnd::prepare(int width, int height)
+void WindowBackEnd::prepare(int width, int height, bool isFullScreen)
 {
 
 }
@@ -32,4 +32,16 @@ int WindowBackEnd::getMouseButton(int button)
 	return 0;
 }
 
+void WindowBackEnd::setWinSize(int width, int height)
+{
+	
+}
+
+void WindowBackEnd::setIsFullScreen(bool isFullScreen)
+{
+}
+
+void WindowBackEnd::changeScreenSetting(int w, int h, bool isFullScreen)
+{
+}
 } // namespace tzw

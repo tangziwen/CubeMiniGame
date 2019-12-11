@@ -38,6 +38,11 @@ void RenderBackEnd::setIsCheckGL(bool newVal)
 	m_isCheckGL = newVal;
 }
 
+bool RenderBackEnd::isCheckGL()
+{
+	return m_isCheckGL;
+}
+
 std::string RenderBackEnd::getCurrVersion()
 {
 	return reinterpret_cast<const char *>(glGetString(GL_VERSION));

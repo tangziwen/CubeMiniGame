@@ -165,6 +165,7 @@ unsigned int
 		int force_channels,
 		unsigned int reuse_texture_ID,
 		unsigned int flags
+		,int *widthOutter, int *heightOutter
 	);
 
 /**

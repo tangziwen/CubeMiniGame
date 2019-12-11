@@ -9,7 +9,7 @@
 #include "2D/GUIFileBrowser.h"
 #include "2D/LabelNew.h"
 #include "Utility/file/Data.h"
-
+#include "OptionPanel.h"
 namespace tzw {
 class VehicleBroswer;
 enum class WindowType
@@ -22,6 +22,8 @@ enum class WindowType
 	ATTRIBUTE_WINDOW,
 	PAINTER,
 	MainMenu,
+	OPTION_MENU,
+	QUICK_DEBUG,
 };
 class MainMenu : public IMGUIObject, public EventListener
 {
@@ -52,6 +54,7 @@ public:
 	bool getWindowIsShow(WindowType type) const;
 	void openInspectWindow(GamePart * part);
 	void setPainterShow(bool isShow);
+	void drawEntryInterFace();
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -71,6 +74,7 @@ private:
 	LabelNew * m_crossHairTipsInfo;
 	GamePart * m_curInspectPart;
 	Data m_helperData;
+	OptionPanel m_option;
 public:
 	LabelNew* getCrossHairTipsInfo() const;
 };

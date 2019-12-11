@@ -18,6 +18,7 @@ public:
 		NearestMipMapLinear,
     };
     Texture(std::string filePath);
+	Texture(std::string filePath, char faceMode[6]);
     Texture(unsigned char * rawData,int w,int h,bool needFlipY = true);
     Texture(std::string  PosXFilename,
             std::string  NegXFilename,

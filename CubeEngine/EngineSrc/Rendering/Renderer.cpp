@@ -284,6 +284,12 @@ void Renderer::renderShadow(RenderCommand &command,int index)
 void Renderer::init()
 {
 	initBuffer();
+	m_envMap = TextureMgr::shared()->getByPath("Texture/IBL/desert.jpg", true);
+	//m_envMap->setFilter(Texture::FilterType::LinearMipMapLinear);
+	//m_envMap = TextureMgr::shared()->loadSingleCubeMap("Texture/IBL/irradiancemapSpecularHDR.dds");
+	m_envMap->setFilter(Texture::FilterType::LinearMipMapLinear, 1);
+	m_envMap->setFilter(Texture::FilterType::Linear, 2);
+	//
 	initMaterials();
 	RenderBackEnd::shared()->setIsCheckGL(false);
 	initQuad();
@@ -701,6 +707,12 @@ void Renderer::initBuffer()
 	}
 }
 
+void Renderer::onChangeScreenSize(int newW, int newH)
+{
+	initBuffer();
+	glScissor(0, 0, newW, newH);
+}
+
 void Renderer::geometryPass()
 {
 	m_gbuffer->bindForWriting();
@@ -1029,7 +1041,7 @@ void Renderer::directionalLightPass()
 	  
 	program->setUniformInteger("TU_Depth", 4);
 
-
+	//For Shadow
 	program->setUniformInteger("TU_ShadowMap[0]", 5);
 	ShadowMap::shared()->getFBO(0)->BindForReading(5);
 
@@ -1038,8 +1050,15 @@ void Renderer::directionalLightPass()
 
 	program->setUniformInteger("TU_ShadowMap[2]", 7);
 	ShadowMap::shared()->getFBO(2)->BindForReading(7);
-	  
 
+	
+	//For IBL
+	program->setUniformInteger("environmentMap", 8);
+	RenderBackEnd::shared()->bindTexture2DAndUnit(8,m_envMap->handle(),m_envMap->getType());
+	program->setUniformInteger("prefilterMap", 9);
+	RenderBackEnd::shared()->bindTexture2DAndUnit(9,m_envMap->handle(),m_envMap->getType());
+
+	//
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
 
 	

@@ -22,6 +22,9 @@
 
 
 #include "Base/uuid4.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
 
 
 namespace tzw {
@@ -42,7 +45,18 @@ Engine::Engine(): m_winBackEnd(nullptr)
 		m_isEnableOutLine = false;
 	}
 
-	bool Engine::getIsEnableOutLine() const
+bool Engine::isIsFullScreen() const
+{
+	return m_isFullScreen;
+}
+
+void Engine::setIsFullScreen(const bool isFullScreen)
+{
+	m_isFullScreen = isFullScreen;
+	m_winBackEnd->setIsFullScreen(m_isFullScreen);
+}
+
+bool Engine::getIsEnableOutLine() const
 {
     return m_isEnableOutLine;
 }
@@ -91,8 +105,8 @@ void Engine::loadConfig()
 	}
 	auto width = doc["width"].GetInt();
 	auto height = doc["height"].GetInt();
-	setWindowWidth(width);
-	setWindowHeight(height);
+	m_windowWidth = width;
+	m_windowHeight = height;
 	auto enable3D = doc["3DEnable"].GetBool();
 	auto enable2D = doc["2DEnable"].GetBool();
 	Renderer::shared()->setEnable3DRender(enable3D);
@@ -105,6 +119,59 @@ void Engine::loadConfig()
 	Renderer::shared()->setAaEnable(doc["AAEnable"].GetBool());
 	Renderer::shared()->setShadowEnable(doc["ShadowEnable"].GetBool());
 	RenderBackEnd::shared()->setIsCheckGL(doc["IsGraphicsDebugCheck"].GetBool());
+
+	m_isFullScreen = doc["IsFullScreen"].GetBool();
+}
+
+void Engine::saveConfig()
+{
+	rapidjson::Document doc;
+
+	auto data = Tfile::shared()->getData("config.json",true);
+	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+	if (doc.HasParseError())
+	{
+			tlog("[error] get json data err! %s %d offset %d",
+				"config.json",
+				doc.GetParseError(),
+				doc.GetErrorOffset());
+		return;
+	}
+	doc["width"].SetInt(m_windowWidth);
+	doc["height"].SetInt(m_windowHeight);
+
+
+	doc["3DEnable"].SetBool(Renderer::shared()->enable3DRender());
+	doc["2DEnable"].SetBool(Renderer::shared()->enableGUIRender());
+
+	doc["SkyEnable"].SetBool(Renderer::shared()->isSkyEnable());
+	doc["FogEnable"].SetBool(Renderer::shared()->isFogEnable());
+	doc["SSAOEnable"].SetBool(Renderer::shared()->isSsaoEnable());
+	doc["BloomEnable"].SetBool(Renderer::shared()->isBloomEnable());
+	doc["HDREnable"].SetBool(Renderer::shared()->isHdrEnable());
+	doc["AAEnable"].SetBool(Renderer::shared()->isAaEnable());
+	doc["ShadowEnable"].SetBool(Renderer::shared()->isShadowEnable());
+	doc["IsGraphicsDebugCheck"].SetBool(RenderBackEnd::shared()->isCheckGL());
+	
+	doc["IsFullScreen"].SetBool(m_isFullScreen);
+	
+	rapidjson::StringBuffer buffer;
+	auto file = fopen("config.json", "w");
+	char writeBuffer[65536];
+	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+	writer.SetIndent('\t', 1);
+	doc.Accept(writer);
+	fclose(file);
+}
+
+void Engine::changeScreenSetting(int w, int h, bool isFullScreen)
+{
+	m_winBackEnd->changeScreenSetting(w, h, isFullScreen);
+	m_windowHeight = h;
+	m_windowWidth = w;
+	m_isFullScreen = isFullScreen;
+	Renderer::shared()->onChangeScreenSize(w, h);
 }
 
 int Engine::getDrawCallCount()
@@ -243,9 +310,11 @@ float Engine::windowHeight() const
     return m_windowHeight;
 }
 
-void Engine::setWindowHeight(float windowHeight)
+void Engine::setWindowSize(float w, float h)
 {
-    m_windowHeight = windowHeight;
+    m_windowHeight = h;
+	m_windowWidth = w;
+	m_winBackEnd->setWinSize(w, h);
 }
 
 float Engine::windowWidth() const
@@ -253,17 +322,12 @@ float Engine::windowWidth() const
     return m_windowWidth;
 }
 
-void Engine::setWindowWidth(float windowWidth)
-{
-    m_windowWidth = windowWidth;
-}
-
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
     shared()->setDelegate(delegate);
 	shared()->loadConfig();
 	shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
-	shared()->m_winBackEnd->prepare(shared()->windowWidth(), shared()->windowHeight());
+	shared()->m_winBackEnd->prepare(shared()->windowWidth(), shared()->windowHeight(), shared()->m_isFullScreen);
 	shared()->m_winBackEnd->run();
     return 0;
 }

@@ -16,6 +16,7 @@ public:
     virtual void update(Node * node, float dt);
     virtual void step(Node * node,float dt);
     virtual ~Action();
+	virtual void final(Node * node);
 };
 
 } // namespace tzw

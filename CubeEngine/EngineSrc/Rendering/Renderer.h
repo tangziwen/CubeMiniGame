@@ -46,10 +46,11 @@ public:
 	void setHdrEnable(const bool hdrEnable);
 	bool isAaEnable() const;
 	void setAaEnable(const bool aaEnable);
+	void initBuffer();
+	void onChangeScreenSize(int newW, int newH);
 private:
     void initQuad();
 	void initMaterials();
-	void initBuffer();
     void geometryPass();
     void LightingPass();
 	void shadowPass();
@@ -109,6 +110,8 @@ private:
 
 	//used to help implement the switch
 	FrameBuffer * tempFromBuffer;
+
+	Texture * m_envMap;
 
 	bool m_skyEnable;
 	bool m_fogEnable;

@@ -17,6 +17,7 @@ public:
                                  std::string  NegY,
                                  std::string  PosZ,
                                  std::string  NegZ);
+	Texture * loadSingleCubeMap(std::string filePath);
 private:
     TextureMgr();
     std::map<std::string,Texture *> m_texturePool;

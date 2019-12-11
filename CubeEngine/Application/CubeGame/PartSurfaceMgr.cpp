@@ -62,7 +62,13 @@ void PartSurfaceMgr::loadFromFile(std::string filePath)
 		"Texture/RustedIron/rustediron2_roughness.png",
 		"Texture/RustedIron/rustediron2_metallic.png", 
 		"Texture/RustedIron/rustediron2_normal.png"));
-	
+
+	//Flat
+	addItem("Flat", new PartSurface(
+		"Texture/BuiltInTexture/defaultBaseColor.png", 
+		"Texture/BuiltInTexture/defaultRoughnessMap.png",
+		"Texture/BuiltInTexture/defaultMetallic.png", 
+		"Texture/BuiltInTexture/defaultNormalMap.png"));
 }
 
 PartSurface * PartSurfaceMgr::getItem(std::string name)

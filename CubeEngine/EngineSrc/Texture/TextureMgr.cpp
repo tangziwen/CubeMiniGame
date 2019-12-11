@@ -43,6 +43,20 @@ Texture *TextureMgr::getByPath(std::string PosX, std::string NegX, std::string P
     }
 }
 
+Texture* TextureMgr::loadSingleCubeMap(std::string filePath)
+{
+    auto result = m_texturePool.find(filePath);
+    if(result!=m_texturePool.end())
+    {
+        return result->second;
+    }else
+    {
+        Texture * tex = new Texture(filePath, "NSWEUD");
+        m_texturePool.insert(std::make_pair(filePath,tex));
+        return tex;
+    }
+}
+
 TextureMgr::TextureMgr()
 {
 

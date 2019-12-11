@@ -264,7 +264,7 @@ GameWorld::GameWorld()
 	TranslationMgr::shared()->load("CNS");
     EventMgr::shared()->addFixedPiorityListener(this);
     memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
-    m_currentState = GAME_STATE_MAIN_MENU;
+    m_currentState = GAME_STATE_SPLASH;
 }
 
 GameWorld::~GameWorld()

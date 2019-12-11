@@ -183,7 +183,7 @@ namespace tzw
         case TZW_KEY_H:
 			{
         		if(!GUISystem::shared()->isUiCapturingInput())
-				MainMenu::shared()->setWindowShow(WindowType::HELP_PAGE, true);
+				MainMenu::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
             }
 			break;
         case TZW_KEY_M:
@@ -264,6 +264,7 @@ namespace tzw
 		default: ;
 		}
 	}
+	
 	void CubePlayer::sitDownToGamePart(GamePart * part)
 	{
 		m_camera->removeFromParent();

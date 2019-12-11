@@ -175,7 +175,7 @@ void CannonPart::use()
 	emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 0.0, 1.0), vec4(0.6, 0.6, 0.0, 0.1)));
 	emitter->setIsState(ParticleEmitter::State::Playing);
 	emitter->setDepthBias(0.05);
-	emitter->setPos(m_node->getForward() * (m_height / 2.0 + 0.01));
+	emitter->setPos(vec3(0.0, 0.0, -0.4));
 	emitter->setIsInfinite(false);
 
 
@@ -189,11 +189,12 @@ void CannonPart::use()
 	emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
 	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 0.26, 0.0, 0.1)));
 	emitter2->setIsState(ParticleEmitter::State::Playing);
-	emitter2->setPos(m_node->getForward() * (m_height / 2.0 + 0.01));
+	emitter2->setPos(vec3(0.0, 0.0, -0.4));
 	emitter2->setDepthBias(0.05);
 	emitter2->setIsInfinite(false);
 	m_node->addChild(emitter);
 	m_node->addChild(emitter2);
+	
 	//apply recoil
 	m_parent->m_rigid->applyImpulse(m_node->getForward() *-1* getRecoil(), m_node->getPos());
 }

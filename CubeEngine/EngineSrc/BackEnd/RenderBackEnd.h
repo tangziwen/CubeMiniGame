@@ -51,6 +51,7 @@ public:
 	void checkGL(int except_val = -1);
 	void selfCheck();
 	void setIsCheckGL(bool newVal);
+	bool isCheckGL();
 	std::string getCurrVersion();
 	std::string getShaderSupportVersion();
 	void printFullDeviceInfo();
