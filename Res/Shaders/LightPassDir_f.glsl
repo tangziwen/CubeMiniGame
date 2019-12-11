@@ -41,6 +41,10 @@ uniform vec3 TU_camPos;
 uniform DirectionalLight gDirectionalLight;
 uniform AmbientLight gAmbientLight;
 
+
+uniform sampler2D     environmentMap;
+uniform sampler2D     prefilterMap;
+
 varying vec2 v_texcoord;
 
 #define Square(x) (x*x)
@@ -81,70 +85,6 @@ float getFogFactorEXP(float density, float dist)
 	return 1.0 - 1.0/pow(2.71828,pow(dist * density, 2.0));
 }
 
-// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
-// [Lagarde 2012, "Spherical Gaussian approximation for Blinn-Phong, Phong and Fresnel"]
-vec3 F_Schlick( vec3 SpecularColor, float VoH )
-{
-	// Anything less than 2% is physically impossible and is instead considered to be shadowing 
-	return SpecularColor + ( clamp( 50.0 * SpecularColor.g , 0.0, 1.0) - SpecularColor ) * exp2( (-5.55473 * VoH - 6.98316) * VoH );
-
-	//float Fc = exp2( (-5.55473 * VoH - 6.98316) * VoH );	// 1 mad, 1 mul, 1 exp 	//float Fc = pow( 1 - VoH, 5 );
-	//return Fc + (1 - Fc) * SpecularColor;					// 1 add, 3 mad
-}
-
-// Tuned to match behavior of Vis_Smith
-// [Schlick 1994, "An Inexpensive BRDF Model for Physically-Based Rendering"]
-float G_Schlick( float Roughness, float NoV, float NoL )
-{
-	float k = Square( Roughness ) * 0.5;
-	float Vis_SchlickV = NoV * (1 - k) + k;
-	float Vis_SchlickL = NoL * (1 - k) + k;
-	return 0.25 / mix(0.05, 1, Vis_SchlickV * Vis_SchlickL);
-}
-
-
-// GGX / Trowbridge-Reitz
-// [Walter et al. 2007, "Microfacet models for refraction through rough surfaces"]
-float D_GGX( float Roughness, float NoH )
-{
-	float m = Roughness * Roughness;
-	float m2 = m * m;
-	float d = ( NoH * m2 - NoH ) * NoH + 1;	// 2 mad
-	return m2 / ( PI*d*d );					// 2 mul, 1 rcp
-}
-
-
-// Vis = G / (4*NoL*NoV)
-float GeometricVisibility( float Roughness, float NoV, float NoL, float VoH )
-{
-	return G_Schlick( Roughness, NoV, NoL );
-}
-
-vec3 PbrBRDF_SPEC(in vec3 L, in vec3 N, in vec3 V, in float NoV, in float NoL,
-	in vec3 SpecularColor, in float Roughness)
-{
-	vec3 H = normalize(V + L);
-	float NoH = clamp( dot(N, H), 0.0, 1.0);
-	float VoH = clamp( dot(V, H), 0.0, 1.0);
-
-	float VoL = clamp( dot(V, L), 0.0, 1.0);
-	float LoH = clamp( dot(L, H), 0.0, 1.0);
-
-	Roughness = max(MIN_ROUGHNESS, Roughness);
-
-	// return EvaluateSphericalAreaGGX(NoL, NoV, VoL, LoH, 3, 10, Roughness * Roughness, Roughness, SpecularColor);
-	
-	float D = D_GGX(Roughness, NoH );
-	// half D = BRDFSpecOverPI(NoH, VoH, max(MIN_ROUGHNESS, Roughness));
-	float G = GeometricVisibility( Roughness, NoV, NoL, VoH);
-	// G = G_Implicit();
-	vec3 F = F_Schlick( SpecularColor, VoH );
-	// F = F_None(SpecularColor);
-
-	return D*G*F;
-}
-
-
 float DistributionGGX(vec3 N, vec3 H, float roughness)
 {
     float a      = roughness*roughness;
@@ -184,6 +124,40 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
     return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
+
+
+vec3 EnvBRDFApprox( vec3 SpecularColor, float Roughness, float NoV )
+{
+	// [ Lazarov 2013, "Getting More Physical in Call of Duty: Black Ops II" ]
+	// Adaptation to fit our G term.
+	const vec4 c0 = vec4(-1, -0.0275, -0.572, 0.022 );
+	const vec4 c1 = vec4( 1, 0.0425, 1.04, -0.04 );
+	vec4 r = Roughness * c0 + c1;
+	float exp_nov = exp2( (-8.28 + Roughness * 3) * NoV );
+	float a004 = min( r.x * r.x, exp_nov ) * r.x + r.y;
+	float a004_new = min( 1, exp_nov ) + 0.0425;
+	vec2 AB = vec2( -1.04 * a004, 1.04 * a004_new ) + r.zw;
+
+	float a = 0.95; //old: 0.8
+	float b = 1; //old: 0.8
+	float c = 0.0; //old: 0.7
+	return (SpecularColor * AB.x + AB.y * (1 - sqrt(Roughness) * a) * b) * (1 - c * Roughness);
+}
+
+vec4 dualParobolidSampleLOD(sampler2D tex, vec3 r, float LODLevel)
+{
+	float u = ((r.x) / (2.0 * (1.0 + r.z))) + 0.5;
+	float v = ((r.y) / (2.0 * (1.0 + r.z))) + 0.5;
+	return textureLod(tex, vec2(u, v), LODLevel);
+}
+
+vec4 dualParobolidSample(sampler2D tex, vec3 r)
+{
+	float u = ((r.x) / (2.0 * (1.0 + r.z))) + 0.5;
+	float v = ((r.y) / (2.0 * (1.0 + r.z))) + 0.5;
+	return texture(tex, vec2(u, v));
+}
+
 vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness, float shadowFactor)
 {
 	L = -L;
@@ -214,7 +188,24 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + gAmbientLight.color * gAmbientLight.intensity * albedo;
+
+	//IBL
+	vec3 irradiance = dualParobolidSample(environmentMap, N).rgb;
+	// vec3 irradiance = texture(environmentMap, N).rgb;
+	vec3 ambientDiffuse = kD * irradiance * albedo;
+
+	const float MAX_REFLECTION_LOD = 4.0;
+	vec3 reflectionVector = reflect(-V, N);
+	vec3 prefilteredColor = dualParobolidSampleLOD(prefilterMap, reflectionVector,  Roughness * Roughness *MAX_REFLECTION_LOD).rgb;
+	// vec3 prefilteredColor = texture(prefilterMap, reflectionVector,  Roughness * Roughness *MAX_REFLECTION_LOD).rgb;
+	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
+
+	vec3 ambient = (ambientDiffuse + ambientSpecular) * gAmbientLight.intensity;
+	//
+	
+	return irradiance;//(kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + ambient;
+	
+	//gAmbientLight.color * gAmbientLight.intensity * albedo;
 }
 
 
@@ -226,22 +217,6 @@ vec3 calculateLightLambert(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 view
 
 	float irradiance = min(shadowFactor, lambert);
 	return lightColor * irradiance * gDirectionalLight.intensity;
-}
-
-
-vec3 calculateLightBlinnPhong(vec3 normal, vec3 lightDir, vec3 lightColor,vec3 viewPos,float Roughness)
-{
-	vec3 diffuseColor,ambientColor;
-	float specularIntensity =0.0;
-	float irradiance = max(0.0,dot(normal, lightDir));
-	if(irradiance > 0.0)
-	{
-		vec3 viewDir = normalize(-viewPos);
-		vec3 halfDir = normalize(lightDir + viewDir);
-		specularIntensity = pow( max( 0, dot(halfDir, normal)), 2.0);
-	}
-	return lightColor * specularIntensity;
-	return lightColor * irradiance + gAmbientLight.color * gAmbientLight.intensity;
 }
 
 vec4 getWorldPosFromDepth()
@@ -369,29 +344,6 @@ float CalcShadowFactor(int index, vec4 LightSpacePos, vec3 surfaceNormal, vec3 l
     //
 	
 	return clamp(1.0 - pcf_3x3(UVCoords.xy, z - getBias(surfaceNormal, lightDir), vec2(1.0 / 1024.0, 1.0 / 1024.0), index), 0.1, 1.0);
-	/*
-	float visibility=0.0;
-	for (int i=0;i<16;i++){
-		int DiskIdx = int(16.0*random(gl_FragCoord.xyy, i))%16;
-		if ( texture( TU_ShadowMap[index], UVCoords.xy + poissonDisk[DiskIdx] / 1024.0 * 1.5 ).z  <  z- getBias(surfaceNormal, lightDir))
-		{
-			visibility += 0.3;
-		}
-		else
-		{
-			visibility += 1.0;
-		}
-	}
-	visibility /= 16.0;
-	return visibility;
-	*/
-	/*
-	float depthInTex = texture(TU_ShadowMap[index], UVCoords).x;
-    if (depthInTex + getBias(surfaceNormal, lightDir) < z)
-        return 0.5;
-    else  
-        return 1.0;
-	*/
 }
 
 // knarkowicz

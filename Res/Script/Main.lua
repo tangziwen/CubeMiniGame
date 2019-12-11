@@ -92,16 +92,15 @@ end
 
 --ui update
 function tzw_engine_ui_update(dt)
-	
-	if not MainMenu.shared():isVisible() then
-		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
+		if not MainMenu.shared():isVisible() then
 			--除了物品栏之外，没有其他界面打开的时候，才画底部的Hud
 			if not MainMenu.shared():isAnyShow() or MainMenu.shared():isOpenAssetEditor() then
 				drawHud()
 			end
 			updateLifting(dt)
-		elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
-			drawEntryInterface()
+		-- elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
+		-- 	drawEntryInterface()
 		end
 	end
 	UiUtil.handlePopText()
@@ -268,28 +267,7 @@ function findItemByName(name)
 	return nil;
 end
 
-function drawEntryInterface()
-	local screenSize = Engine:shared():winSize()
-	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImGui.ImVec2(0.5, 0.5));
-	if ImGui.BeginNoClose("CubeEngine",ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse) then
 
-		if(ImGui.Button(TR("开始游戏"), ImGui.ImVec2(160, 35))) then
-			GameWorld.shared():startGame()
-			Engine:shared():setUnlimitedCursor(true)
-			
-		end
-		ImGui.Spacing()
-		if(ImGui.Button(TR("帮助"), ImGui.ImVec2(160, 35))) then
-			print "help btn clicked"
-		end
-		ImGui.Spacing()
-		if(ImGui.Button(TR("退出"), ImGui.ImVec2(160, 35))) then
-			print "on Exit"
-		end
-		ImGui.Spacing()
-		ImGui.End()
-	end
-end
 local m_isControlKeyPress = false
 local m_isHoldButton = nil
 function onKeyPress(input_event)
