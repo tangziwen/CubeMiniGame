@@ -45,7 +45,7 @@ namespace tzw
 		void initSlots();
 		vec3 getForward() const;
 		void sitDownToGamePart(GamePart * part);
-		void standUpFromGamePart();
+		void standUpFromGamePart(GamePart * part);
 		void removePartByAttach(Attachment* attach);
 		void removePart(GamePart* part);
 		void setCurrPointPart(GamePart * part);

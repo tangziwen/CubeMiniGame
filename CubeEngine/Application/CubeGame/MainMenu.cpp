@@ -319,7 +319,10 @@ void MainMenu::drawIMGUI()
 			}
 			if(ImGui::Button(TRC(u8"选项"), ImVec2(160, 35)))
 			{
-				tlog("nothing to do");
+				m_option.open();
+				setWindowShow(WindowType::OPTION_MENU, true);
+				
+				setWindowShow(WindowType::RESUME_MENU, false);
 			}
 			if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35)))
 			{
@@ -651,6 +654,7 @@ void MainMenu::drawEntryInterFace()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35))) 
 		{
+			TranslationMgr::shared()->dump();
 			exit(0);
 		}
 		ImGui::Spacing();

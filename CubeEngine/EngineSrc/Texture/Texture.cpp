@@ -11,7 +11,7 @@ Texture::Texture(std::string filePath)
 {
   std::string resultFilePath = Engine::shared()->getFilePath(filePath);
   this->m_textureId = SOIL_load_OGL_texture(
-    resultFilePath.c_str(), 0, 0, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
+    resultFilePath.c_str(), SOIL_LOAD_AUTO, 0, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
   m_type = RenderFlag::TextureType::Texture2D;
   if (!m_textureId) {
     tlog("texture create failed, no such file %s\n", filePath.c_str());
@@ -24,7 +24,7 @@ Texture::Texture(std::string filePath, char faceMode[6])
 {
 	std::string resultFilePath = Engine::shared()->getFilePath(filePath);
 	this->m_textureId = SOIL_load_OGL_single_cubemap(
-	resultFilePath.c_str(), faceMode, 0, 0, SOIL_FLAG_MIPMAPS, &m_width, &m_height);
+	resultFilePath.c_str(), faceMode, SOIL_LOAD_AUTO, 0, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y , &m_width, &m_height);
 	m_type = RenderFlag::TextureType::TextureCubeMap;
 	if (!m_textureId) 
 	{

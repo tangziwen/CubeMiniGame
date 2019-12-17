@@ -11,10 +11,10 @@ namespace tzw
 		m_normalMapPath(normalMapPath)
 	{
 		//cache
-		TextureMgr::shared()->getByPath(diffusePath);
-		TextureMgr::shared()->getByPath(roughnessPath);
-		TextureMgr::shared()->getByPath(metallicPath);
-		TextureMgr::shared()->getByPath(normalMapPath);
+		TextureMgr::shared()->getByPath(diffusePath, true);
+		TextureMgr::shared()->getByPath(roughnessPath, true);
+		TextureMgr::shared()->getByPath(metallicPath, true);
+		TextureMgr::shared()->getByPath(normalMapPath, true);
 	}
 
 	std::string PartSurface::getDiffusePath() const

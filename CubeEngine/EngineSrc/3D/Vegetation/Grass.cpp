@@ -20,7 +20,7 @@ Grass::Grass(std::string filePath)
 		 
 		tex->genMipMap();
 		 
-		mat->setTex("DiffuseMap", tex);
+		mat->setTex("diffuseMap", tex);
 		 
 	}
 	setMaterial(mat);

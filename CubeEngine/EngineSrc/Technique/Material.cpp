@@ -282,6 +282,9 @@ void Material::loadFromFile(std::string filePath)
 			if(tex.Size() > 2)
 			{
 				setTex(name, TextureMgr::shared()->getByPath(tex[2].GetString(), true));
+			}else
+			{
+				setTex(name, nullptr);
 			}
 		}
 	}
@@ -516,7 +519,10 @@ void Material::use(ShaderProgram * extraProgram)
 					//first bind the texture obj to specified texture unit
 					//then pass the texture unit index to the shader's specified sampler.
 					auto tex = var->data.tex;
-					if(!tex) break;
+					if(!tex)//use default texture to avoid problem
+					{
+						tex = TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
+					}
 					auto id = getMapSlot(name);
 					RenderBackEnd::shared()->bindTexture2DAndUnit(id,tex->handle(),tex->getType());
 					program->setUniformInteger(name.c_str(),id);

@@ -11,6 +11,7 @@
 #include <assert.h>
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #include "Utility/log/Log.h"
+#include <iostream>
 #define dSINGLE
 
 #define ARRAY_SIZE_Y 5
@@ -92,6 +93,14 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 		}
 	}
 
+bool callbackFunc(btManifoldPoint& cp,const btCollisionObjectWrapper* obj1,int id1,int index1,const btCollisionObjectWrapper* obj2,int id2,int index2)
+{
+	//void* ID1 = obj1->m_collisionObject->getUserPointer();
+	//void* ID2 = obj2->m_collisionObject->getUserPointer();
+	//tlog("aaaa");
+	return false;
+}
+
 	void PhysicsMgr::createEmptyDynamicsWorld()
 	{
 		///collision configuration contains default setup for memory, collision setup
@@ -114,6 +123,7 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 		
 		m_dynamicsWorld->setGravity(btVector3(0, -10, 0));
 		m_dynamicsWorld->setForceUpdateAllAabbs(true);
+		//gContactAddedCallback = callbackFunc;
 	}
 
 	void PhysicsMgr::stop()
@@ -128,13 +138,81 @@ btBoxShape* PhysicsMgr::createBoxShape(const btVector3& halfExtents)
 	void PhysicsMgr::createBox(float density, float width, float height, float depth)
 	{
 	}
-
+	// persistentCollisions map.
+	static std::map<void *, std::vector<void *>> persistentCollisions;
 	void PhysicsMgr::stepSimulation(float deltaTime)
 	{
 		if (m_dynamicsWorld)
 		{
 			m_dynamicsWorld->stepSimulation(deltaTime, 10, 1.0f / 120.0f);
 			syncPhysicsToGraphics();
+		    btDispatcher* dp = m_dynamicsWorld->getDispatcher();
+		    const int numManifolds = dp->getNumManifolds();
+			// New collision map
+			std::map<void *, std::vector<void *>> newCollisions;
+		    for ( int m=0; m<numManifolds; ++m )
+		    {
+	            btPersistentManifold* man = dp->getManifoldByIndexInternal( m );
+	            const btRigidBody* obA = static_cast<const btRigidBody*>(man->getBody0());
+	            const btRigidBody* obB = static_cast<const btRigidBody*>(man->getBody1());
+	            const void* ptrA = obA->getUserPointer();
+	            const void* ptrB = obB->getUserPointer();
+		    	if(!ptrA) continue;
+	            // use user pointers to determine if objects are eligible for destruction.
+	            const int numc = man->getNumContacts();
+	            float totalImpact = 0.0f;
+	            for ( int c=0; c<numc; ++c )
+	            {
+					btManifoldPoint& pt = man->getContactPoint(c);
+				    if (pt.getDistance() < 0.f)
+		            {
+		                // If it is a new collision, add to the newCollision list
+		               if (std::find(newCollisions[obA->getUserPointer()].begin(), newCollisions[obA->getUserPointer()].end(), obB->getUserPointer()) == newCollisions[obA->getUserPointer()].end()) 
+		               {
+							newCollisions[obA->getUserPointer()].emplace_back(obB->getUserPointer());
+		               }
+		            }
+	            }
+		    }
+		    // Iterate over new collisions and add new collision to persistent collisions if it does not exist
+		    std::map<void *, std::vector<void *>>::iterator newCollisionIterator = newCollisions.begin();
+		    while (newCollisionIterator != newCollisions.end())
+		    {
+		        for (auto item : newCollisionIterator->second)
+		        {
+		            if (std::find(persistentCollisions[newCollisionIterator->first].begin(), persistentCollisions[newCollisionIterator->first].end(), item) == persistentCollisions[newCollisionIterator->first].end()) 
+		            {
+		                // We can play our collision audio here
+		                persistentCollisions[newCollisionIterator->first].emplace_back(item);
+		            	auto rig = static_cast<PhysicsListener *>(newCollisionIterator->first);
+		            	if(rig->m_onHitCallBack)
+		            	{
+		            		rig->m_onHitCallBack(vec3());
+		            	}
+		            }
+		        }
+		        newCollisionIterator++;
+		    }
+
+		    // Iterate over persistent collisions and remove all collisions that did not exist in new collision
+		    std::map<void *, std::vector<void *>>::iterator persistentCollisionIterator = persistentCollisions.begin();
+		    while (persistentCollisionIterator != persistentCollisions.end())
+		    {
+		        std::vector<void *>::iterator iter;
+		        for (iter = persistentCollisionIterator->second.begin(); iter != persistentCollisionIterator->second.end(); ) 
+		        {
+		            if (std::find(newCollisions[persistentCollisionIterator->first].begin(), newCollisions[persistentCollisionIterator->first].end(), *iter) != newCollisions[persistentCollisionIterator->first].end())
+		            {
+		                ++iter;
+		            }
+		            else
+		            {
+		                iter = persistentCollisionIterator->second.erase(iter);
+		            }
+		        }
+
+		        persistentCollisionIterator++;
+		    }
 		}
 	}
 
@@ -221,7 +299,6 @@ PhysicsRigidBody* PhysicsMgr::createRigidBody(float massValue, Matrix44& transfo
 	rig->genUserIndex();
 	btRig->setUserIndex(rig->userIndex());
 	btRig->setUserPointer(static_cast<PhysicsListener * >(rig));
-
 	return rig;
 }
 

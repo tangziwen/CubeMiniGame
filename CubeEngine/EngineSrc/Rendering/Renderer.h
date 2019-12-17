@@ -75,6 +75,7 @@ private:
 	void bindScreenForWriting();
 	void copyToFrame(FrameBuffer * bufferSrc, FrameBuffer *bufferDst, Material * mat);
 	void copyToScreen(FrameBuffer * bufferSrc, Material * mat);
+	void setIBL(std::string diffuseMap, std::string specularMap, bool isCubeMap);
     Mesh * m_quad;
     Material * m_dirLightProgram;
 	Material * m_postEffect;
@@ -112,6 +113,7 @@ private:
 	FrameBuffer * tempFromBuffer;
 
 	Texture * m_envMap;
+	Texture * m_specularMap;
 
 	bool m_skyEnable;
 	bool m_fogEnable;
@@ -120,6 +122,7 @@ private:
 	bool m_hdrEnable;
 	bool m_aaEnable;
 	bool m_shadowEnable;
+	
 public:
 	bool isShadowEnable() const;
 	void setShadowEnable(const bool shadowEnable);

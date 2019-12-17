@@ -41,6 +41,7 @@ namespace tzw
 		bool isInWorld();
 		void setCcdSweptSphereRadius(float radius);
 		void setCcdMotionThreshold(float threshold);
+		AABB getAABBInWorld();
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;

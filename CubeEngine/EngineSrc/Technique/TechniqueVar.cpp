@@ -57,6 +57,7 @@ TechniqueVar::TechniqueVar(): data()
 	data.f_min = -999;
 	data.i_max = 999;
 	data.i_min = 0;
+	data.tex = nullptr;
 	semantic = SemanticType::NO_SEMANTIC;
 }
 

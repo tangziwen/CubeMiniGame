@@ -22,9 +22,9 @@ void RenderBackEnd::selfCheck()
 		{
 			break;
 		}
-		//ignore GL_OUT_OF_MEMORY
 		tlogError("error %d",errorCode);
 		isBad = true;
+		exit(0);
 	}
 	if(isBad)
 	{
@@ -222,16 +222,24 @@ void RenderBackEnd::setTexMAG(unsigned int textureID, int param, RenderFlag::Tex
 	bindTexture2DAndUnit(0,textureID,type);
 	switch (type) {
 		case RenderFlag::TextureType::Texture2D:
+			glBindTexture(GL_TEXTURE_2D,textureID);
 			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, param);
+		  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 			selfCheck();
 		break;
 		case RenderFlag::TextureType::TextureCubeMap:
+			glBindTexture(GL_TEXTURE_CUBE_MAP,textureID);
 			glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, param);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, GL_REPEAT);
 			selfCheck();
 		break;
 		default:
 		break;
 	}
+	
 }
 
 void RenderBackEnd::bindTexture2DAndUnit(unsigned int texUnitID, unsigned int textureID, RenderFlag::TextureType type)

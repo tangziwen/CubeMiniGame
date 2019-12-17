@@ -5,7 +5,6 @@
 #include "GL/glew.h"
 #include "GLFW/glfw3.h"
 #include <algorithm>
-#include <iostream>
 #include <strstream>
 
 namespace tzw {

@@ -520,4 +520,9 @@ void Island::loadInternalConnected()
 		}
 	}
 }
+
+AABB Island::getAABBInWorld()
+{
+	return m_rigid->getAABBInWorld();
+}
 }

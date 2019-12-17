@@ -13,6 +13,8 @@
 #include "3D/Particle/ParticleInitVelocityModule.h"
 #include "3D/Particle/ParticleInitSizeModule.h"
 #include "3D/Particle/ParticleInitLifeSpanModule.h"
+#include "BulletCollision/CollisionDispatch/btCollisionObject.h"
+#include "BulletDynamics/Dynamics/btRigidBody.h"
 
 
 namespace tzw
@@ -161,14 +163,17 @@ void CannonPart::use()
 	rigA->setVelocity(m_node->getForward() * getFiringVelocity());
 	rigA->setCcdMotionThreshold(1e-7);
 	rigA->setCcdSweptSphereRadius(0.50);
+	rigA->rigidBody()->setCollisionFlags(rigA->rigidBody()->getCollisionFlags()|btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
 	g_GetCurrScene()->addNode(boxA);
 	PhysicsMgr::shared()->addRigidBody(rigA);
+
+
 	tlog("fire");
 	auto emitter = new ParticleEmitter(1);
 	emitter->setIsLocalPos(true);
 	emitter->setTex("Texture/flare.bmp");
 	emitter->setSpawnRate(0.3);
-	emitter->addInitModule(new ParticleInitSizeModule(1.5, 1.7));
+	emitter->addInitModule(new ParticleInitSizeModule(1.1, 1.3));
 	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
 	emitter->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
 	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
@@ -181,13 +186,13 @@ void CannonPart::use()
 
 	auto emitter2 = new ParticleEmitter(1);
 	emitter2->setIsLocalPos(true);
-	emitter2->setTex("Texture/flare.bmp");
+	emitter2->setTex("ParticleTex/smoke_04.png");
 	emitter2->setSpawnRate(0.3);
-	emitter2->addInitModule(new ParticleInitSizeModule(2.5, 2.7));
+	emitter2->addInitModule(new ParticleInitSizeModule(2.0, 2.1));
 	emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
 	emitter2->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
 	emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 0.0, 0.0, 1.0), vec4(1.0, 0.26, 0.0, 0.1)));
+	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 0.3, 1.0), vec4(0.26, 0.26, 0.0, 0.1)));
 	emitter2->setIsState(ParticleEmitter::State::Playing);
 	emitter2->setPos(vec3(0.0, 0.0, -0.4));
 	emitter2->setDepthBias(0.05);

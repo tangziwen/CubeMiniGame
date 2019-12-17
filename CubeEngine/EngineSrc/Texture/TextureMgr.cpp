@@ -51,7 +51,8 @@ Texture* TextureMgr::loadSingleCubeMap(std::string filePath)
         return result->second;
     }else
     {
-        Texture * tex = new Texture(filePath, "NSWEUD");
+    	//there is a bug, should be EWUDNS
+        Texture * tex = new Texture(filePath, "EWDUNS");
         m_texturePool.insert(std::make_pair(filePath,tex));
         return tex;
     }

@@ -25,8 +25,16 @@
 			"translated": "=="
 		},
 		{
+			"original": "Bloom",
+			"translated": "Bloom"
+		},
+		{
 			"original": "By TZW，测试版本",
 			"translated": "By TZW，测试版本"
+		},
+		{
+			"original": "CE by tzw",
+			"translated": "CE by tzw"
 		},
 		{
 			"original": "Condition",
@@ -39,6 +47,10 @@
 		{
 			"original": "C键",
 			"translated": "C键"
+		},
+		{
+			"original": "Demo Version --tzw",
+			"translated": "Demo Version --tzw"
 		},
 		{
 			"original": "Else",
@@ -59,6 +71,10 @@
 		{
 			"original": "PrintNode",
 			"translated": "PrintNode"
+		},
+		{
+			"original": "SSAO:",
+			"translated": "SSAO:"
 		},
 		{
 			"original": "Self",
@@ -105,16 +121,52 @@
 			"translated": "保存"
 		},
 		{
+			"original": "保存设置",
+			"translated": "保存设置"
+		},
+		{
 			"original": "保存载具",
 			"translated": "保存载具"
+		},
+		{
+			"original": "全屏",
+			"translated": "全屏"
+		},
+		{
+			"original": "全屏化",
+			"translated": "全屏化"
 		},
 		{
 			"original": "全部取消选中",
 			"translated": "全部取消选中"
 		},
 		{
+			"original": "关##AA",
+			"translated": "关##AA"
+		},
+		{
+			"original": "关##BLOOM",
+			"translated": "关##BLOOM"
+		},
+		{
+			"original": "关##FOG",
+			"translated": "关##FOG"
+		},
+		{
+			"original": "关##SHADOW",
+			"translated": "关##SHADOW"
+		},
+		{
+			"original": "关##SSAO",
+			"translated": "关##SSAO"
+		},
+		{
 			"original": "关闭",
 			"translated": "关闭"
+		},
+		{
+			"original": "分辨率",
+			"translated": "分辨率"
 		},
 		{
 			"original": "切换开关节点",
@@ -233,6 +285,26 @@
 			"translated": "座椅2"
 		},
 		{
+			"original": "开##AA",
+			"translated": "开##AA"
+		},
+		{
+			"original": "开##BLOOM",
+			"translated": "开##BLOOM"
+		},
+		{
+			"original": "开##FOG",
+			"translated": "开##FOG"
+		},
+		{
+			"original": "开##SHADOW",
+			"translated": "开##SHADOW"
+		},
+		{
+			"original": "开##SSAO",
+			"translated": "开##SSAO"
+		},
+		{
 			"original": "开关",
 			"translated": "开关"
 		},
@@ -271,6 +343,10 @@
 		{
 			"original": "投射物初速度",
 			"translated": "投射物初速度"
+		},
+		{
+			"original": "抗锯齿:",
+			"translated": "抗锯齿:"
 		},
 		{
 			"original": "拖拽",
@@ -341,6 +417,10 @@
 			"translated": "是否为舵机"
 		},
 		{
+			"original": "是否全屏",
+			"translated": "是否全屏"
+		},
+		{
 			"original": "是否开启角度限制",
 			"translated": "是否开启角度限制"
 		},
@@ -405,6 +485,14 @@
 			"translated": "直棱柱-长"
 		},
 		{
+			"original": "窗口",
+			"translated": "窗口"
+		},
+		{
+			"original": "窗口化",
+			"translated": "窗口化"
+		},
+		{
 			"original": "等于",
 			"translated": "等于"
 		},
@@ -443,6 +531,10 @@
 		{
 			"original": "表面材质",
 			"translated": "表面材质"
+		},
+		{
+			"original": "设置面板",
+			"translated": "设置面板"
 		},
 		{
 			"original": "读取",
@@ -505,6 +597,10 @@
 			"translated": "载具浏览器"
 		},
 		{
+			"original": "返回",
+			"translated": "返回"
+		},
+		{
 			"original": "连接 (%p)",
 			"translated": "连接 (%p)"
 		},
@@ -523,6 +619,14 @@
 		{
 			"original": "部件",
 			"translated": "部件"
+		},
+		{
+			"original": "阴影:",
+			"translated": "阴影:"
+		},
+		{
+			"original": "雾效:",
+			"translated": "雾效:"
 		},
 		{
 			"original": "颜色",

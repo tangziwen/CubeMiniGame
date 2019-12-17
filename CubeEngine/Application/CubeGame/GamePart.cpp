@@ -636,17 +636,17 @@ namespace tzw
 		m_item = item;
 		//material
 	    auto m_material = Material::createFromTemplate("ModelPBR");
-		auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
+		auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png", true);
 		m_material->setTex("DiffuseMap", texture);
 
-		auto metallicTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_metallic.png");
+		auto metallicTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_metallic.png", true);
 		m_material->setTex("MetallicMap", metallicTexture);
 
-		auto roughnessTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_roughness.png");
+		auto roughnessTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_roughness.png", true);
 		m_material->setTex("RoughnessMap", roughnessTexture);
 
 
-		auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png");
+		auto normalMapTexture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_normal-dx.png", true);
 		m_material->setTex("NormalMap", normalMapTexture);
 		bool isNeedSetDefaultMat = false;
 		//visual part
@@ -671,10 +671,10 @@ namespace tzw
 			auto size = item->m_visualInfo.size;
 			//sorry not supported yet
 			auto model = Model::create(item->m_visualInfo.filePath);
-			auto tex = TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath);
+			auto tex = TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath, true);
 			model->getMat(0)->setTex("DiffuseMap", tex);
-			model->getMat(0)->setTex("RoughnessMap", TextureMgr::shared()->getByPath(item->m_visualInfo.roughnessPath));
-			model->getMat(0)->setTex("MetallicMap", TextureMgr::shared()->getByPath(item->m_visualInfo.metallicPath));
+			model->getMat(0)->setTex("RoughnessMap", TextureMgr::shared()->getByPath(item->m_visualInfo.roughnessPath, true));
+			model->getMat(0)->setTex("MetallicMap", TextureMgr::shared()->getByPath(item->m_visualInfo.metallicPath, true));
 			model->setScale(size.x, size.y, size.z);
 			m_node = model;
 			isNeedSetDefaultMat = false;

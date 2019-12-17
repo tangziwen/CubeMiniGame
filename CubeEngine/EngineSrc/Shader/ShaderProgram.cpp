@@ -7,6 +7,7 @@
 #include "BackEnd/RenderBackEnd.h"
 #include "Utility/file/Data.h"
 #include "Utility/file/Tfile.h"
+#include "ShaderMgr.h"
 using namespace std;
 namespace tzw {
 
@@ -275,12 +276,25 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
     		exit(0);
     	}
     }
-
-    const GLchar* p[1];
-    p[0] = pShaderText;
-    GLint Lengths[1];
-    Lengths[0]= strlen(pShaderText);
-    glShaderSource(ShaderObj, 1, p, Lengths);
+	auto size = ShaderMgr::shared()->m_macros.size();
+    GLchar** p = new GLchar*[size + 2];
+	GLint* Lengths = new GLint[size + 2];
+	auto glsl_ver = "#version 420\n";
+	p[0] = (char *)glsl_ver;
+	Lengths[0] = strlen(glsl_ver);
+	int index = 1;
+	for(auto i : ShaderMgr::shared()->m_macros)
+	{
+		char * tmpStr = (char *)malloc(128);
+		sprintf(tmpStr, "#define %s %s\n", i.first.c_str(), i.second.c_str());
+		p[index] = tmpStr;
+		Lengths[index] = strlen(tmpStr);
+		index ++;
+	}
+    p[size + 1] = (char *)pShaderText;
+    
+    Lengths[size + 1]= strlen(pShaderText);
+    glShaderSource(ShaderObj, size + 2, p, Lengths);
 	RenderBackEnd::shared()->selfCheck();
     glCompileShader(ShaderObj);
 	RenderBackEnd::shared()->selfCheck();

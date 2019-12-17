@@ -21,6 +21,14 @@
 #include "3D/Primitive/RightPrismPrimitive.h"
 #include "ButtonPart.h"
 #include "SwitchPart.h"
+#include "3D/Particle/ParticleEmitter.h"
+#include "3D/Particle/ParticleInitSizeModule.h"
+#include "3D/Particle/ParticleInitVelocityModule.h"
+#include "3D/Particle/ParticleInitLifeSpanModule.h"
+#include "3D/Particle/ParticleInitAlphaModule.h"
+#include "3D/Particle/ParticleUpdateColorModule.h"
+#include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleInitPosModule.h"
 
 namespace tzw
 {
@@ -182,8 +190,67 @@ namespace tzw
 	        break;
         case TZW_KEY_H:
 			{
+
+
+				float blockSize = 0.2;
+				auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
+				auto firePos = m_camera->getWorldPos() + m_camera->getForward() * 1.0 + vec3(0, 0.6, 0);
+				boxA->setPos(firePos);
+				auto transform = boxA->getTransform();
+				auto aabb = boxA->localAABB();
+				auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
+				rigA->attach(boxA);
+				rigA->setVelocity(m_camera->getForward() * 10);
+				rigA->setCcdMotionThreshold(1e-7);
+				rigA->setCcdSweptSphereRadius(0.50);
+				rigA->rigidBody()->setCollisionFlags(rigA->rigidBody()->getCollisionFlags()|btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
+				g_GetCurrScene()->addNode(boxA);
+				PhysicsMgr::shared()->addRigidBody(rigA);
+        		
+        		rigA->m_onHitCallBack = [boxA](vec3 p)
+        		{
+					auto emitter = new ParticleEmitter(1);
+					emitter->setIsLocalPos(true);
+					emitter->setTex("ParticleTex/smoke_04.png");
+					emitter->setSpawnRate(0.3);
+					emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.7));
+					//emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
+					emitter->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
+					emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+					emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 1.0, 1.0), vec4(0.8, 0.8, 1.0, 0.0)));
+        			emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 1.5));
+					emitter->setIsState(ParticleEmitter::State::Playing);
+					emitter->setDepthBias(0.05);
+					emitter->setPos(boxA->getPos());
+					emitter->setIsInfinite(false);
+        			emitter->setBlendState(1);
+        			g_GetCurrScene()->addNode(emitter);
+        		};
+
+
+        		break;
         		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
+        		
+				auto anchorPos = getPos() + getForward() * 3.0;
+        		for(int i = 0; i < 11; i++) {
+					for(int j = 0; j < 11; j++)
+					{
+       					auto s = new SpherePrimitive(0.3, 25);
+        				
+						auto m = Material::createFromTemplate("ModelSimple");
+						m->setVar("TU_roughness", float(i * 0.1));
+						m->setVar("TU_metallic", float(j * 0.1));
+
+						//m->setVar("TU_roughness", 0.0f);
+						//m->setVar("TU_metallic", 1.0f);
+						s->setPos(anchorPos + vec3( i * 1.0, 0, j * 1.0));
+						s->setMaterial(m);
+						g_GetCurrScene()->addNode(s);
+						
+					}
+        		}
+ 
             }
 			break;
         case TZW_KEY_M:
@@ -217,6 +284,11 @@ namespace tzw
 				{
 					handleSitDown();
                 }
+			}
+			break;
+		case TZW_KEY_F2:
+			{
+				ShaderMgr::shared()->reloadAllShaders();
 			}
 			break;
 		default:
@@ -291,11 +363,15 @@ namespace tzw
 		handleSitDown();
 	}
 
-	void CubePlayer::standUpFromGamePart()
+	void CubePlayer::standUpFromGamePart(GamePart * part)
 	{
 		m_camera->setIsEnableGravity(true);
 		m_camera->setEnableFPSFeature(true);
 		m_camera->resumePhysics();
+		auto aabb = part->m_parent->getAABBInWorld();
+		auto dist = aabb.half().z;
+		m_camera->setCamPos(aabb.centre() + vec3(0,0,-1) * dist);
+		//m_camera->lookAt(part->getWorldPos());
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 		m_orbitcamera->setFocusNode(nullptr);
 

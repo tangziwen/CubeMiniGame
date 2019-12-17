@@ -181,4 +181,14 @@ void PhysicsRigidBody::setCcdMotionThreshold(float threshold)
 {
 	m_rigidBody->setCcdMotionThreshold(threshold);
 }
+
+AABB PhysicsRigidBody::getAABBInWorld()
+{
+	btVector3 ab_max,ab_min;
+	m_rigidBody->getAabb(ab_min, ab_max);
+	AABB aabb;
+	aabb.update(vec3(ab_max.x(), ab_max.y(), ab_max.z()));
+	aabb.update(vec3(ab_min.x(), ab_min.y(), ab_min.z()));
+	return aabb;
+}
 }

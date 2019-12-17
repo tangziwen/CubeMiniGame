@@ -29,6 +29,7 @@ public:
 	void setTex(std::string filePath);
 	void setSpawnAmount(const int spawnAmount);
 	float getDepthBias() const;
+	void setBlendState(int state);
 	void setDepthBias(const float depthBias);
 private:
 	std::vector<ParticleEmitterModule *> m_initModule;
@@ -41,6 +42,7 @@ private:
 	State m_state;
 	bool isLocalPos;
 	float m_depthBias;
+	int m_historyCount;
 	bool m_isInfinite;
 public:
 	bool isIsInfinite() const;

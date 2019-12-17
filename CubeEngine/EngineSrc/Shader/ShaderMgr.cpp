@@ -30,6 +30,11 @@ void ShaderMgr::reloadAllShaders()
 	}
 }
 
+void ShaderMgr::addMacro(std::string macroName, std::string value)
+{
+	m_macros[macroName] = value;
+}
+
 ShaderMgr::ShaderMgr()
 {
 

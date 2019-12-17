@@ -225,7 +225,7 @@ void ControlPart::setActivate(bool value)
 	}
 	else
 	{	
-		GameWorld::shared()->getPlayer()->standUpFromGamePart();
+		GameWorld::shared()->getPlayer()->standUpFromGamePart(this);
 	}
 }
 

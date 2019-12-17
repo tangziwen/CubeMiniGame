@@ -4,7 +4,7 @@ namespace tzw {
 
 AmbientLight::AmbientLight()
 {
-    m_intensity = 0.2;
+    m_intensity = 1.0;
 }
 
 } // namespace tzw

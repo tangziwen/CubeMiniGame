@@ -10,7 +10,7 @@
 #include "Technique/MaterialPool.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 #include <random>
-#include "Utility/math/TbaseMath.h"
+#include "Shader/ShaderMgr.h"
 
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
@@ -284,12 +284,11 @@ void Renderer::renderShadow(RenderCommand &command,int index)
 void Renderer::init()
 {
 	initBuffer();
-	m_envMap = TextureMgr::shared()->getByPath("Texture/IBL/desert.jpg", true);
-	//m_envMap->setFilter(Texture::FilterType::LinearMipMapLinear);
-	//m_envMap = TextureMgr::shared()->loadSingleCubeMap("Texture/IBL/irradiancemapSpecularHDR.dds");
-	m_envMap->setFilter(Texture::FilterType::LinearMipMapLinear, 1);
-	m_envMap->setFilter(Texture::FilterType::Linear, 2);
-	//
+
+	//setIBL("Texture/IBL/desert_irradiance.dds", "Texture/IBL/desert_radiance.dds", false);
+	setIBL("Texture/IBL/autumn_irradiance_latlong.dds", "Texture/IBL/autumn_radiance_latlong.dds", false);
+
+	//setIBL("Texture/IBL/autumn_irradiance.dds", "Texture/IBL/autumn_radiance.dds", true);
 	initMaterials();
 	RenderBackEnd::shared()->setIsCheckGL(false);
 	initQuad();
@@ -1056,7 +1055,7 @@ void Renderer::directionalLightPass()
 	program->setUniformInteger("environmentMap", 8);
 	RenderBackEnd::shared()->bindTexture2DAndUnit(8,m_envMap->handle(),m_envMap->getType());
 	program->setUniformInteger("prefilterMap", 9);
-	RenderBackEnd::shared()->bindTexture2DAndUnit(9,m_envMap->handle(),m_envMap->getType());
+	RenderBackEnd::shared()->bindTexture2DAndUnit(9,m_specularMap->handle(),m_specularMap->getType());
 
 	//
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
@@ -1236,6 +1235,26 @@ void Renderer::copyToScreen(FrameBuffer* bufferSrc, Material* mat)
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniform2Float("TU_winSize", winSize);
 	renderPrimitive(m_quad, mat, RenderCommand::PrimitiveType::TRIANGLES);
+}
+
+void Renderer::setIBL(std::string diffuseMap, std::string specularMap, bool isCubeMap)
+{
+	//IBL
+	if(isCubeMap)
+	{
+		m_envMap = TextureMgr::shared()->loadSingleCubeMap(diffuseMap);
+		m_specularMap = TextureMgr::shared()->loadSingleCubeMap(specularMap);
+		ShaderMgr::shared()->addMacro("CUBE_MAP_IBL", "1");
+	} else 
+	{
+		m_envMap = TextureMgr::shared()->getByPath(diffuseMap, true);
+		m_specularMap = TextureMgr::shared()->getByPath(specularMap, true);
+	}
+	m_envMap->setFilter(Texture::FilterType::LinearMipMapLinear, 1);
+	m_envMap->setFilter(Texture::FilterType::Linear, 2);
+
+	m_specularMap->setFilter(Texture::FilterType::LinearMipMapLinear, 1);
+	m_specularMap->setFilter(Texture::FilterType::Linear, 2);
 }
 
 bool Renderer::isShadowEnable() const
