@@ -1,4 +1,4 @@
-#version 130
+
 
 uniform sampler2D TU_colorBuffer;
 varying vec2 v_texcoord;

@@ -21,7 +21,7 @@ varying vec4  v_tangent;
 vec3 CalcBumpedNormal()
 {
 	vec3 Normal = normalize(v_normal);
-	vec3 Tangent = normalize(v_tangent);
+	vec3 Tangent = normalize(v_tangent.xyz);
 	Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
 	vec3 Bitangent = cross(Tangent, Normal);
 	vec3 BumpMapNormal = texture(NormalMap, v_texcoord).xyz;

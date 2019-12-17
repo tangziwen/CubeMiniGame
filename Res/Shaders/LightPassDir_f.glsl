@@ -1,4 +1,3 @@
-#version 130
 struct DirectionalLight
 {
     vec3 color;
@@ -41,15 +40,19 @@ uniform vec3 TU_camPos;
 uniform DirectionalLight gDirectionalLight;
 uniform AmbientLight gAmbientLight;
 
-
+#if CUBE_MAP_IBL
+uniform samplerCube     environmentMap;
+uniform samplerCube     prefilterMap;
+#else
 uniform sampler2D     environmentMap;
 uniform sampler2D     prefilterMap;
+#endif
 
 varying vec2 v_texcoord;
 
 #define Square(x) (x*x)
 #define PI (3.14159264)
-#define MIN_ROUGHNESS (0.08)
+#define MIN_ROUGHNESS (0.04)
 
 vec2 getScreenCoord()
 {
@@ -94,8 +97,9 @@ float DistributionGGX(vec3 N, vec3 H, float roughness)
 
     float nom   = a2;
     float denom = (NdotH2 * (a2 - 1.0) + 1.0);
+	denom = max(denom, 0.0001);
     denom = PI * denom * denom;
-
+	
     return nom / denom;
 }
 
@@ -125,37 +129,33 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0)
 }
 
 
-
 vec3 EnvBRDFApprox( vec3 SpecularColor, float Roughness, float NoV )
 {
-	// [ Lazarov 2013, "Getting More Physical in Call of Duty: Black Ops II" ]
-	// Adaptation to fit our G term.
-	const vec4 c0 = vec4(-1, -0.0275, -0.572, 0.022 );
+	const vec4 c0 = vec4( -1, -0.0275, -0.572, 0.022 );
 	const vec4 c1 = vec4( 1, 0.0425, 1.04, -0.04 );
 	vec4 r = Roughness * c0 + c1;
-	float exp_nov = exp2( (-8.28 + Roughness * 3) * NoV );
-	float a004 = min( r.x * r.x, exp_nov ) * r.x + r.y;
-	float a004_new = min( 1, exp_nov ) + 0.0425;
-	vec2 AB = vec2( -1.04 * a004, 1.04 * a004_new ) + r.zw;
-
-	float a = 0.95; //old: 0.8
-	float b = 1; //old: 0.8
-	float c = 0.0; //old: 0.7
-	return (SpecularColor * AB.x + AB.y * (1 - sqrt(Roughness) * a) * b) * (1 - c * Roughness);
+	float a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
+	vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
+	return SpecularColor * AB.x + AB.y;
 }
 
 vec4 dualParobolidSampleLOD(sampler2D tex, vec3 r, float LODLevel)
 {
-	float u = ((r.x) / (2.0 * (1.0 + r.z))) + 0.5;
-	float v = ((r.y) / (2.0 * (1.0 + r.z))) + 0.5;
-	return textureLod(tex, vec2(u, v), LODLevel);
+	vec2 uv;
+	uv.x = atan(r.x,r.z) / PI;
+	uv.y = r.y;
+	uv= uv* 0.5 + 0.5;
+	return textureLod(tex, uv, LODLevel);
 }
 
 vec4 dualParobolidSample(sampler2D tex, vec3 r)
 {
-	float u = ((r.x) / (2.0 * (1.0 + r.z))) + 0.5;
-	float v = ((r.y) / (2.0 * (1.0 + r.z))) + 0.5;
-	return texture(tex, vec2(u, v));
+
+	vec2 uv;
+	uv.x = atan(r.x,r.z) / PI;
+	uv.y = r.y;
+	uv= uv* 0.5 + 0.5;
+	return texture(tex, uv);
 }
 
 vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness, float shadowFactor)
@@ -173,7 +173,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	vec3 radiance     = lightColor;
 
 	// cook-torrance brdf
-	float NDF = DistributionGGX(N, H, Roughness);
+	float NDF = DistributionGGX(N, H, clamp(Roughness, MIN_ROUGHNESS, 1.0));
 	
 	float G   = GeometrySmith(N, V, L, Roughness);      
 	vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
@@ -189,23 +189,25 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
 
-	//IBL
-	vec3 irradiance = dualParobolidSample(environmentMap, N).rgb;
-	// vec3 irradiance = texture(environmentMap, N).rgb;
-	vec3 ambientDiffuse = kD * irradiance * albedo;
-
+	//IBL 
 	const float MAX_REFLECTION_LOD = 4.0;
 	vec3 reflectionVector = reflect(-V, N);
-	vec3 prefilteredColor = dualParobolidSampleLOD(prefilterMap, reflectionVector,  Roughness * Roughness *MAX_REFLECTION_LOD).rgb;
-	// vec3 prefilteredColor = texture(prefilterMap, reflectionVector,  Roughness * Roughness *MAX_REFLECTION_LOD).rgb;
-	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 
+	#if CUBE_MAP_IBL
+		vec3 irradiance = textureLod(environmentMap, N, 0).rgb;
+		
+		vec3 prefilteredColor = textureLod(prefilterMap, reflectionVector, Roughness *MAX_REFLECTION_LOD).rgb;
+	#else
+		vec3 irradiance = dualParobolidSampleLOD(environmentMap, N, 0).rgb;
+		vec3 prefilteredColor = dualParobolidSampleLOD(prefilterMap, reflectionVector,Roughness *MAX_REFLECTION_LOD).rgb;
+	#endif
+	irradiance = pow(irradiance, vec3(2.2));
+	prefilteredColor = pow(prefilteredColor, vec3(2.2));
+	vec3 ambientDiffuse = kD * irradiance * albedo;
+	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 	vec3 ambient = (ambientDiffuse + ambientSpecular) * gAmbientLight.intensity;
-	//
 	
-	return irradiance;//(kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + ambient;
-	
-	//gAmbientLight.color * gAmbientLight.intensity * albedo;
+	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + ambient;
 }
 
 
@@ -377,7 +379,7 @@ void main()
 	}
 
 	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
-	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normal, gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, worldView, surfaceData[0], shadowFactor);
+	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, normalize(worldView), surfaceData[0], shadowFactor);
 
 	gl_FragColor = vec4(resultColor, 1.0);
 }

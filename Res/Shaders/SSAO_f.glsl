@@ -1,5 +1,3 @@
-#version 130
-
 uniform float F0 = 0.8;
 uniform float K = 0.7;
 uniform float Gamma = 1.4;
@@ -122,11 +120,11 @@ void main()
     for(int i = 0; i < MAX_KERNEL_SIZE; ++i)
     {
         // get sample position
-        vec3 sample = TBN * gKernel[i]; // from tangent to view-space
-        sample = fragPos + sample * AO_distant; 
+        vec3 sampleValue = TBN * gKernel[i]; // from tangent to view-space
+        sampleValue = fragPos + sampleValue * AO_distant; 
         
         // project sample position (to sample texture) (to get position on screen/texture)
-        vec4 offset = vec4(sample, 1.0);
+        vec4 offset = vec4(sampleValue, 1.0);
         offset = TU_Project * offset; // from view to clip-space
         offset.xyz /= offset.w; // perspective divide
         offset.xyz = offset.xyz * 0.5 + 0.5; // transform to range 0.0 - 1.0
@@ -138,7 +136,7 @@ void main()
         
         // range check & accumulate
         float rangeCheck = smoothstep(0.0, 1.0, AO_distant / abs(fragPos.z - sampleDepth));
-        occlusion += (sampleDepth >= sample.z + AO_bias ? 1.0 : 0.0) * rangeCheck * AO_strength;
+        occlusion += (sampleDepth >= sampleValue.z + AO_bias ? 1.0 : 0.0) * rangeCheck * AO_strength;
     }
 	occlusion = 1.0 - (occlusion / MAX_KERNEL_SIZE);
 	gl_FragColor = vec4(occlusion);

@@ -1,4 +1,4 @@
-#version 330
+ 330
 
 #ifdef GL_ES
 // Set default precision to medium

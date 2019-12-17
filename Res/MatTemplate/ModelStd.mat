@@ -6,7 +6,7 @@
 	"name" : "ModelStd",
 	"property" : {
 		"attributes" : [
-			{"name" : "TU_roughness", "type":"float", "default":5.0},
+			{"name" : "TU_roughness", "type":"float", "default":1.0},
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [

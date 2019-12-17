@@ -1,4 +1,4 @@
-#version 130
+
 
 uniform float F0 = 0.8;
 uniform float K = 0.7;

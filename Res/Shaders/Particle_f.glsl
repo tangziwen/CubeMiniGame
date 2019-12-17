@@ -18,7 +18,7 @@ uniform vec3 TU_camPos;
 void main()
 {
 	vec4 col = texture2D(DiffuseMap,v_texcoord);
-	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a)*TU_color;
+	vec4 albedo = col * TU_color;
 	albedo *= v_color;
     // Set fragment color from texture
 	gl_FragData[0] = albedo;
