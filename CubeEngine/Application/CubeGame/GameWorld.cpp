@@ -22,6 +22,7 @@
 #include "3D/Particle/ParticleInitLifeSpanModule.h"
 #include "3D/Particle/ParticleInitVelocityModule.h"
 #include "3D/Particle/ParticleInitSizeModule.h"
+#include "BulletMgr.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -111,6 +112,7 @@ void GameWorld::onFrameUpdate(float delta)
 		return;
 	BuildingSystem::shared()->update(delta);
 	AssistDrawSystem::shared()->handleDraw(delta);
+	BulletMgr::shared()->handleDraw(delta);
 }
 
 Chunk *GameWorld::createChunk(int x, int y, int z)

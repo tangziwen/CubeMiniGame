@@ -55,6 +55,7 @@ Matrix44 Node::getTransform()
 
 Matrix44 Node::getLocalTransform()
 {
+	
     return getTranslationMatrix() * getRotationMatrix() * getScalingMatrix();
 }
 

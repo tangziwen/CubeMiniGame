@@ -46,10 +46,9 @@ ThrusterPart::ThrusterPart()
 	BuildingSystem::shared()->addThruster(this);
 
 
-	emitter = new ParticleEmitter(40);
+	emitter = new ParticleEmitter(1);
 	emitter->setSpawnRate(0.05);
 	emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, -3.0), vec3(0, 0.0, -3.0 )));
 	emitter->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
 	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
 	emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
@@ -87,23 +86,27 @@ ThrusterPart::ThrusterPart(std::string itemName)
 	BuildingSystem::shared()->addThruster(this);
 
 
-	emitter = new ParticleEmitter(40);
+	emitter = new ParticleEmitter(1);
 	emitter->setSpawnRate(0.05);
 	emitter->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-	emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, -3.0), vec3(0, 0.0, -3.0 )));
-	emitter->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
-	emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-	emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
-	emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
+	emitter->addInitModule(new ParticleInitLifeSpanModule(500, 500));
 	emitter->setIsState(ParticleEmitter::State::Stop);
+	emitter->setBillBoardPolicy(ParticleEmitter::BillboardPolicy::Y_FIXED);
+	emitter->setTex("ParticleTex/muzzle_01.png");
+
 
 	auto a = Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
 	Matrix44 mat = a.getAttachmentInfoMat44();
 	Quaternion q;
 	q.fromRotationMatrix(&mat);
-	m_node->addChild(emitter);
-	emitter->setPos(mat.getTranslation());
-	emitter->setRotateQ(q);
+	auto emmiterNode = Node::create();
+	m_node->addChild(emmiterNode);
+	emmiterNode->setPos(mat.getTranslation());
+	emmiterNode->setRotateQ(q);
+	emmiterNode->addChild(emitter);
+	emitter->setPos(vec3(0, 0, -0.6));
+	emitter->setRotateE(-90, 0, 0);
+	emitter->setIsLocalPos(true);
 }
 
 void ThrusterPart::initAttachments()

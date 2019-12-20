@@ -32,6 +32,7 @@ struct InstanceData
 {
 	vec4 posAndScale;
 	vec4 extraInfo;
+	vec4 rotateInfo;
 };
 #pragma pack(pop)
 

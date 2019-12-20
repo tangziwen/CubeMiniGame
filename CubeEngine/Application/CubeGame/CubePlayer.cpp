@@ -29,6 +29,7 @@
 #include "3D/Particle/ParticleUpdateColorModule.h"
 #include "3D/Particle/ParticleUpdateSizeModule.h"
 #include "3D/Particle/ParticleInitPosModule.h"
+#include "BulletMgr.h"
 
 namespace tzw
 {
@@ -190,44 +191,8 @@ namespace tzw
 	        break;
         case TZW_KEY_H:
 			{
-
-
-				float blockSize = 0.2;
-				auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
-				auto firePos = m_camera->getWorldPos() + m_camera->getForward() * 1.0 + vec3(0, 0.6, 0);
-				boxA->setPos(firePos);
-				auto transform = boxA->getTransform();
-				auto aabb = boxA->localAABB();
-				auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
-				rigA->attach(boxA);
-				rigA->setVelocity(m_camera->getForward() * 10);
-				rigA->setCcdMotionThreshold(1e-7);
-				rigA->setCcdSweptSphereRadius(0.50);
-				rigA->rigidBody()->setCollisionFlags(rigA->rigidBody()->getCollisionFlags()|btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
-				g_GetCurrScene()->addNode(boxA);
-				PhysicsMgr::shared()->addRigidBody(rigA);
-        		
-        		rigA->m_onHitCallBack = [boxA](vec3 p)
-        		{
-					auto emitter = new ParticleEmitter(1);
-					emitter->setIsLocalPos(true);
-					emitter->setTex("ParticleTex/smoke_04.png");
-					emitter->setSpawnRate(0.3);
-					emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.7));
-					//emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
-					emitter->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
-					emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-					emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 1.0, 1.0), vec4(0.8, 0.8, 1.0, 0.0)));
-        			emitter->addUpdateModule(new ParticleUpdateSizeModule(1.0, 1.5));
-					emitter->setIsState(ParticleEmitter::State::Playing);
-					emitter->setDepthBias(0.05);
-					emitter->setPos(boxA->getPos());
-					emitter->setIsInfinite(false);
-        			emitter->setBlendState(1);
-        			g_GetCurrScene()->addNode(emitter);
-        		};
-
-
+				auto m = getTransform().data();
+				BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::HitScan);
         		break;
         		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);

@@ -12,6 +12,11 @@ public:
 		Pause,
 		Stop,
 	};
+	enum class BillboardPolicy
+	{
+		ALL,
+		Y_FIXED,
+	};
 	ParticleEmitter(int maxSpawn);
 	void submitDrawCmd(RenderCommand::RenderType passType) override;
 	void setUpTransFormation(TransformationInfo & info) override;
@@ -31,6 +36,7 @@ public:
 	float getDepthBias() const;
 	void setBlendState(int state);
 	void setDepthBias(const float depthBias);
+	void setBillBoardPolicy(BillboardPolicy policy);
 private:
 	std::vector<ParticleEmitterModule *> m_initModule;
 	std::vector<ParticleEmitterModule *> m_updateModule;

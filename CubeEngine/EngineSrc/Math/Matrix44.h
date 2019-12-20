@@ -24,12 +24,15 @@ public:
 	vec4 transofrmVec4(vec4 v);
     void frustum(float left, float right, float bottom, float top, float near, float far);
     float * data();
+	void getRowData(float * data);
 	void copyFromArray(float * data);
     vec3 up();
     vec3 forward();
     vec3 right();
 	void stripScale();
 	vec3 getTranslation();
+	float determinant() const;
+	bool decompose(vec3* scale, Quaternion* rotation, vec3* translation) const;
 private:
     float m_data[16];
 };

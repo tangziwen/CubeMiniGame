@@ -488,6 +488,13 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 		glVertexAttribDivisor(extraInstanceOffsetLocation, 1);
 	}
 
+	int rotateInstanceOffset = program->attributeLocation("a_instance_offset3");
+	if(rotateInstanceOffset > 0)
+	{
+		program->enableAttributeArray(rotateInstanceOffset);
+		program->setAttributeBuffer(rotateInstanceOffset, GL_FLOAT, offsetof(InstanceData, rotateInfo.x), 4, sizeof(InstanceData));
+		glVertexAttribDivisor(rotateInstanceOffset, 1);
+	}
 	switch (primitiveType)
 	{
 	case RenderCommand::PrimitiveType::TRIANGLES:
@@ -499,6 +506,10 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 	default: ;
 	}
 	glVertexAttribDivisor(grassOffsetLocation, 0);
+	if(extraInstanceOffsetLocation > 0)
+	{
+		glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
+	}
 	if(extraInstanceOffsetLocation > 0)
 	{
 		glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
@@ -1152,7 +1163,7 @@ void Renderer::AAPass()
 void Renderer::applyRenderSetting(Material * mat)
 {
 	RenderBackEnd::shared()->selfCheck();
-	RenderBackEnd::shared()->setIsCullFace(true);
+	RenderBackEnd::shared()->setIsCullFace(mat->getIsCullFace());
 	RenderBackEnd::shared()->setBlendFactor(mat->getFactorSrc(),
 	mat->getFactorDst());
 	if(mat->isIsEnableBlend())

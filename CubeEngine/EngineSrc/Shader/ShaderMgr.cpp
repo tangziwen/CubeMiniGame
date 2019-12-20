@@ -18,6 +18,7 @@ ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char *
         return shader;
     }else
     {
+    	tlog("pass shader %s %s", vs.c_str(), fs.c_str());
         return result->second;
     }
 }
@@ -51,5 +52,5 @@ bool shaderInfo::operator ==(const shaderInfo &info) const
 
 bool shaderInfo::operator <(const shaderInfo &info) const
 {
-    return fs < info.fs;
+    return (fs + vs) < (info.fs + info.vs);
 }

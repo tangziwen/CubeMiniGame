@@ -12,6 +12,7 @@
 #include "BulletCollision/CollisionDispatch/btGhostObject.h"
 #include "Utility/log/Log.h"
 #include <iostream>
+#include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
 #define dSINGLE
 
 #define ARRAY_SIZE_Y 5
@@ -164,14 +165,11 @@ bool callbackFunc(btManifoldPoint& cp,const btCollisionObjectWrapper* obj1,int i
 	            for ( int c=0; c<numc; ++c )
 	            {
 					btManifoldPoint& pt = man->getContactPoint(c);
-				    if (pt.getDistance() < 0.f)
-		            {
-		                // If it is a new collision, add to the newCollision list
-		               if (std::find(newCollisions[obA->getUserPointer()].begin(), newCollisions[obA->getUserPointer()].end(), obB->getUserPointer()) == newCollisions[obA->getUserPointer()].end()) 
-		               {
-							newCollisions[obA->getUserPointer()].emplace_back(obB->getUserPointer());
-		               }
-		            }
+	                // If it is a new collision, add to the newCollision list
+	               if (std::find(newCollisions[obA->getUserPointer()].begin(), newCollisions[obA->getUserPointer()].end(), obB->getUserPointer()) == newCollisions[obA->getUserPointer()].end()) 
+	               {
+						newCollisions[obA->getUserPointer()].emplace_back(obB->getUserPointer());
+	               }
 	            }
 		    }
 		    // Iterate over new collisions and add new collision to persistent collisions if it does not exist
@@ -216,8 +214,21 @@ bool callbackFunc(btManifoldPoint& cp,const btCollisionObjectWrapper* obj1,int i
 		}
 	}
 
+	vec3 PhysicsMgr::toV3(btVector3 v)
+	{
+		return vec3(v.getX(), v.getY(), v.getZ());
+	}
+	
+
+	btVector3 PhysicsMgr::tobV3(vec3 v)
+	{
+		return btVector3(v.x, v.y, v.z);
+	}
 
 
+	PhysicsHitResult::PhysicsHitResult():isHit(false)
+	{
+	}
 
 	btRigidBody* PhysicsMgr::createRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color = btVector4(1, 0, 0, 1))
 	{
@@ -253,6 +264,28 @@ bool callbackFunc(btManifoldPoint& cp,const btCollisionObjectWrapper* obj1,int i
 	btDiscreteDynamicsWorld* PhysicsMgr::getDynamicsWorld() const
 	{
 		return m_dynamicsWorld;
+	}
+
+	bool PhysicsMgr::rayCastCloset(vec3 from, vec3 to, PhysicsHitResult &result)
+	{
+		btVector3 from_v = btVector3(from.x, from.y, from.z);
+		btVector3 to_v = btVector3(to.x, to.y, to.z);
+		btCollisionWorld::ClosestRayResultCallback allResults(from_v, to_v);
+		allResults.m_flags |= btTriangleRaycastCallback::kF_KeepUnflippedNormal;
+		//kF_UseGjkConvexRaytest flag is now enabled by default, use the faster but more approximate algorithm
+		//allResults.m_flags |= btTriangleRaycastCallback::kF_UseSubSimplexConvexCastRaytest;
+		allResults.m_flags |= btTriangleRaycastCallback::kF_UseSubSimplexConvexCastRaytest;
+
+		m_dynamicsWorld->rayTest(from_v, to_v, allResults);
+		result.isHit = allResults.hasHit();
+		result.posInWorld = toV3(allResults.m_hitPointWorld);
+		result.normal = toV3(allResults.m_hitNormalWorld);
+		if(allResults.hasHit())
+		{
+		
+			return true;
+		}
+		return false;
 	}
 
 	void PhysicsMgr::syncPhysicsToGraphics()

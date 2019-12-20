@@ -21,46 +21,49 @@ Quaternion::Quaternion(float theX, float theY, float theZ, float theW)
 
 void Quaternion::fromRotationMatrix(Matrix44 *mat)
 {
-        // Algorithm in Ken Shoemake's article in 1987 SIGGRAPH course notes
-        // article "Quaternion Calculus and Fast Animation".
+  // Now calculate the rotation from the resulting matrix (axes).
+	auto xaxis = mat->right().normalized();
+	auto yaxis = mat->up().normalized();
+	auto zaxis = (mat->forward() * -1).normalized();
+    float trace = xaxis.x + yaxis.y + zaxis.z + 1.0f;
 
-		//要转置才对，我们是列主序
-		auto transposeMat = mat->transpose();
-		auto data = mat->data();
-		float (*kRot)[4] = (float(*)[4])transposeMat.data();
-        float fTrace = kRot[0][0]+kRot[1][1]+kRot[2][2];
-        float fRoot;
-
-        if ( fTrace > 0.0 )
+    if (trace > 0.000001)
+    {
+        float s = 0.5f / std::sqrt(trace);
+        w = 0.25f / s;
+        x = (yaxis.z - zaxis.y) * s;
+        y = (zaxis.x - xaxis.z) * s;
+        z = (xaxis.y - yaxis.x) * s;
+    }
+    else
+    {
+        // Note: since xaxis, yaxis, and zaxis are normalized, 
+        // we will never divide by zero in the code below.
+        if (xaxis.x > yaxis.y && xaxis.x > zaxis.z)
         {
-            // |w| > 1/2, may as well choose w > 1/2
-            fRoot = sqrt(fTrace + 1.0f);  // 2w
-            w = 0.5f*fRoot;
-            fRoot = 0.5f/fRoot;  // 1/(4w)
-            x = (kRot[2][1]-kRot[1][2])*fRoot;
-            y = (kRot[0][2]-kRot[2][0])*fRoot;
-            z = (kRot[1][0]-kRot[0][1])*fRoot;
+            float s = 0.5f / std::sqrt(1.0f + xaxis.x - yaxis.y - zaxis.z);
+            w = (yaxis.z - zaxis.y) * s;
+            x = 0.25f / s;
+            y = (yaxis.x + xaxis.y) * s;
+            z = (zaxis.x + xaxis.z) * s;
+        }
+        else if (yaxis.y > zaxis.z)
+        {
+            float s = 0.5f / std::sqrt(1.0f + yaxis.y - xaxis.x - zaxis.z);
+            w = (zaxis.x - xaxis.z) * s;
+            x = (yaxis.x + xaxis.y) * s;
+            y = 0.25f / s;
+            z = (zaxis.y + yaxis.z) * s;
         }
         else
         {
-            // |w| <= 1/2
-            static size_t s_iNext[3] = { 1, 2, 0 };
-            size_t i = 0;
-            if ( kRot[1][1] > kRot[0][0] )
-                i = 1;
-            if ( kRot[2][2] > kRot[i][i] )
-                i = 2;
-            size_t j = s_iNext[i];
-            size_t k = s_iNext[j];
-
-            fRoot = sqrt(kRot[i][i]-kRot[j][j]-kRot[k][k] + 1.0f);
-            float* apkQuat[3] = { &x, &y, &z };
-            *apkQuat[i] = 0.5f*fRoot;
-            fRoot = 0.5f/fRoot;
-            w = (kRot[k][j]-kRot[j][k])*fRoot;
-            *apkQuat[j] = (kRot[j][i]+kRot[i][j])*fRoot;
-            *apkQuat[k] = (kRot[k][i]+kRot[i][k])*fRoot;
+            float s = 0.5f / std::sqrt(1.0f + zaxis.z - xaxis.x - yaxis.y);
+            w = (xaxis.y - yaxis.x ) * s;
+            x = (zaxis.x + xaxis.z ) * s;
+            y = (zaxis.y + yaxis.z ) * s;
+            z = 0.25f / s;
         }
+    }
 }
 
 

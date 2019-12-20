@@ -2,6 +2,8 @@
 
 #include "string.h"
 #include "math.h"
+#define MATH_TOLERANCE              2e-37f
+#define MATH_EPSILON                0.000001f
 namespace tzw {
 
 Matrix44::Matrix44()
@@ -32,42 +34,41 @@ void Matrix44::scale(vec3 scaleFactor)
     m_data[10] = scaleFactor.z;
 }
 
-void Matrix44::rotate(const Quaternion &quaternion)
+void Matrix44::rotate(const Quaternion &q)
 {
-    float x = quaternion.x, y = quaternion.y, z = quaternion.z,w = quaternion.w,
-            x2 = x + x,
-            y2 = y + y,
-            z2 = z + z,
+    float x2 = q.x + q.x;
+    float y2 = q.y + q.y;
+    float z2 = q.z + q.z;
 
-            xx = x * x2,
-            xy = x * y2,
-            xz = x * z2,
-            yy = y * y2,
-            yz = y * z2,
-            zz = z * z2,
-            wx = w * x2,
-            wy = w * y2,
-            wz = w * z2;
+    float xx2 = q.x * x2;
+    float yy2 = q.y * y2;
+    float zz2 = q.z * z2;
+    float xy2 = q.x * y2;
+    float xz2 = q.x * z2;
+    float yz2 = q.y * z2;
+    float wx2 = q.w * x2;
+    float wy2 = q.w * y2;
+    float wz2 = q.w * z2;
 
-    m_data[0] = 1 - (yy + zz);
-    m_data[1] = xy + wz;
-    m_data[2] = xz - wy;
-    m_data[3] = 0;
+    m_data[0] = 1.0f - yy2 - zz2;
+    m_data[1] = xy2 + wz2;
+    m_data[2] = xz2 - wy2;
+    m_data[3] = 0.0f;
 
-    m_data[4] = xy - wz;
-    m_data[5] = 1 - (xx + zz);
-    m_data[6] = yz + wx;
-    m_data[7] = 0;
+    m_data[4] = xy2 - wz2;
+    m_data[5] = 1.0f - xx2 - zz2;
+    m_data[6] = yz2 + wx2;
+    m_data[7] = 0.0f;
 
-    m_data[8] = xz + wy;
-    m_data[9] = yz - wx;
-    m_data[10] = 1 - (xx + yy);
-    m_data[11] = 0;
+    m_data[8] = xz2 + wy2;
+    m_data[9] = yz2 - wx2;
+    m_data[10] = 1.0f - xx2 - yy2;
+    m_data[11] = 0.0f;
 
-    m_data[12] = 0;
-    m_data[13] = 0;
-    m_data[14] = 0;
-    m_data[15] = 1;
+    m_data[12] = 0.0f;
+    m_data[13] = 0.0f;
+    m_data[14] = 0.0f;
+    m_data[15] = 1.0f;
 }
 
 Matrix44 Matrix44::operator *(const Matrix44 &other) const
@@ -299,6 +300,26 @@ float *Matrix44::data()
     return m_data;
 }
 
+void Matrix44::getRowData(float* data)
+{
+    data[0] = m_data[0];
+    data[1] = m_data[4];
+    data[2] = m_data[8];
+    data[3] = m_data[12];
+    data[4] = m_data[1];
+    data[5] = m_data[5];
+    data[6] = m_data[9];
+    data[7] = m_data[13];
+    data[8] = m_data[2];
+    data[9] = m_data[6];
+    data[10] = m_data[10];
+    data[11] = m_data[14];
+    data[12] = m_data[3];
+    data[13] = m_data[7];
+    data[14] = m_data[11];
+    data[15] = m_data[15];
+}
+
 void Matrix44::copyFromArray(float* data)
 {
 	for (int i = 0; i < 16; i++) 
@@ -349,4 +370,132 @@ vec3 Matrix44::getTranslation()
 	return vec3(m_data[12], m_data[13], m_data[14]);
 }
 
+float Matrix44::determinant() const
+{
+	auto m = m_data;
+    float a0 = m[0] * m[5] - m[1] * m[4];
+    float a1 = m[0] * m[6] - m[2] * m[4];
+    float a2 = m[0] * m[7] - m[3] * m[4];
+    float a3 = m[1] * m[6] - m[2] * m[5];
+    float a4 = m[1] * m[7] - m[3] * m[5];
+    float a5 = m[2] * m[7] - m[3] * m[6];
+    float b0 = m[8] * m[13] - m[9] * m[12];
+    float b1 = m[8] * m[14] - m[10] * m[12];
+    float b2 = m[8] * m[15] - m[11] * m[12];
+    float b3 = m[9] * m[14] - m[10] * m[13];
+    float b4 = m[9] * m[15] - m[11] * m[13];
+    float b5 = m[10] * m[15] - m[11] * m[14];
+
+    // Calculate the determinant.
+    return (a0 * b5 - a1 * b4 + a2 * b3 + a3 * b2 - a4 * b1 + a5 * b0);
+}
+
+bool Matrix44::decompose(vec3* scale, Quaternion* rotation, vec3* translation) const
+{
+	auto m = m_data;
+    if (translation)
+    {
+        // Extract the translation.
+        translation->x = m[12];
+        translation->y = m[13];
+        translation->z = m[14];
+    }
+
+    // Nothing left to do.
+    if (scale == nullptr && rotation == nullptr)
+        return true;
+
+    // Extract the scale.
+    // This is simply the length of each axis (row/column) in the matrix.
+    vec3 xaxis(m[0], m[1], m[2]);
+    float scaleX = xaxis.length();
+
+    vec3 yaxis(m[4], m[5], m[6]);
+    float scaleY = yaxis.length();
+
+    vec3 zaxis(m[8], m[9], m[10]);
+    float scaleZ = zaxis.length();
+
+    // Determine if we have a negative scale (true if determinant is less than zero).
+    // In this case, we simply negate a single axis of the scale.
+    float det = determinant();
+    if (det < 0)
+        scaleZ = -scaleZ;
+
+    if (scale)
+    {
+        scale->x = scaleX;
+        scale->y = scaleY;
+        scale->z = scaleZ;
+    }
+
+    // Nothing left to do.
+    if (rotation == nullptr)
+        return true;
+
+    // Scale too close to zero, can't decompose rotation.
+    if (scaleX < MATH_TOLERANCE || scaleY < MATH_TOLERANCE || std::abs(scaleZ) < MATH_TOLERANCE)
+        return false;
+
+    float rn;
+
+    // Factor the scale out of the matrix axes.
+    rn = 1.0f / scaleX;
+    xaxis.x *= rn;
+    xaxis.y *= rn;
+    xaxis.z *= rn;
+
+    rn = 1.0f / scaleY;
+    yaxis.x *= rn;
+    yaxis.y *= rn;
+    yaxis.z *= rn;
+
+    rn = 1.0f / scaleZ;
+    zaxis.x *= rn;
+    zaxis.y *= rn;
+    zaxis.z *= rn;
+
+    // Now calculate the rotation from the resulting matrix (axes).
+    float trace = xaxis.x + yaxis.y + zaxis.z + 1.0f;
+
+    if (trace > MATH_EPSILON)
+    {
+        float s = 0.5f / std::sqrt(trace);
+        rotation->w = 0.25f / s;
+        rotation->x = (yaxis.z - zaxis.y) * s;
+        rotation->y = (zaxis.x - xaxis.z) * s;
+        rotation->z = (xaxis.y - yaxis.x) * s;
+    }
+    else
+    {
+        // Note: since xaxis, yaxis, and zaxis are normalized, 
+        // we will never divide by zero in the code below.
+        if (xaxis.x > yaxis.y && xaxis.x > zaxis.z)
+        {
+            float s = 0.5f / std::sqrt(1.0f + xaxis.x - yaxis.y - zaxis.z);
+            rotation->w = (yaxis.z - zaxis.y) * s;
+            rotation->x = 0.25f / s;
+            rotation->y = (yaxis.x + xaxis.y) * s;
+            rotation->z = (zaxis.x + xaxis.z) * s;
+        }
+        else if (yaxis.y > zaxis.z)
+        {
+            float s = 0.5f / std::sqrt(1.0f + yaxis.y - xaxis.x - zaxis.z);
+            rotation->w = (zaxis.x - xaxis.z) * s;
+            rotation->x = (yaxis.x + xaxis.y) * s;
+            rotation->y = 0.25f / s;
+            rotation->z = (zaxis.y + yaxis.z) * s;
+        }
+        else
+        {
+            float s = 0.5f / std::sqrt(1.0f + zaxis.z - xaxis.x - yaxis.y);
+            rotation->w = (xaxis.y - yaxis.x ) * s;
+            rotation->x = (zaxis.x + xaxis.z ) * s;
+            rotation->y = (zaxis.y + yaxis.z ) * s;
+            rotation->z = 0.25f / s;
+        }
+    }
+
+    return true;
+}
 } // namespace tzw

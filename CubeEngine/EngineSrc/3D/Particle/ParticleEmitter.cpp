@@ -5,6 +5,7 @@
 #include "Particle.h"
 #include "Utility/math/TbaseMath.h"
 #include <algorithm>
+#include "3D/Primitive/CubePrimitive.h"
 
 namespace tzw {
 ParticleEmitter::ParticleEmitter(int maxSpawn)
@@ -137,13 +138,20 @@ ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
   for (auto p : particleList) {
     InstanceData instance;
     vec3 targetPos;
-    if (isLocalPos) {
-      targetPos = p->m_pos + getTransform().transformVec3(vec3(0, 0, 0));
-    } else {
-      targetPos = p->m_pos;
+    if (isLocalPos) 
+	{
+		targetPos = p->m_pos + getTransform().transformVec3(vec3(0, 0, 0));
+    } else 
+	{
+		targetPos = p->m_pos;
     }
     instance.posAndScale = vec4(targetPos, p->size * p->m_initSize);
     instance.extraInfo = p->m_color;
+  	Quaternion q;
+  	reCache();
+  	auto mat = getTransform();
+  	q.fromRotationMatrix(&mat);
+  	instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
     m_mesh->pushInstance(instance);
   }
 
@@ -273,6 +281,25 @@ ParticleEmitter::setDepthBias(const float depthBias)
   m_depthBias = depthBias;
   auto mat = getMaterial();
   mat->setVar("TU_depthBias", depthBias);
+}
+
+void ParticleEmitter::setBillBoardPolicy(BillboardPolicy policy)
+{
+	switch (policy)
+	{
+	case BillboardPolicy::ALL:
+
+
+	break;
+	case BillboardPolicy::Y_FIXED:
+		{
+			auto mat = Material::createFromTemplate("ParticleFixedY");
+			mat->setTex("DiffuseMap", getMaterial()->getTex("DiffuseMap"));
+			setMaterial(mat);
+		}
+	break;
+	default: ;
+	}
 }
 
 bool

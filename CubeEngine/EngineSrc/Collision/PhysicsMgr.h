@@ -24,7 +24,14 @@ class btVector3;
 
 namespace tzw
 {
+struct PhysicsHitResult
+{
+	PhysicsHitResult();
 
+	bool isHit;
+	vec3 posInWorld;
+	vec3 normal;
+};
 class PhysicsMgr{
 	public:
 		TZW_SINGLETON_DECL(PhysicsMgr);
@@ -35,6 +42,8 @@ class PhysicsMgr{
 		void createPlane(float x, float y, float z, float d);
 		void createBox(float density, float width, float height, float depth);
 		void stepSimulation(float delatime);
+		vec3 toV3(btVector3 v);
+		btVector3 tobV3(vec3 v);
 		//
 		void syncPhysicsToGraphics();
 		PhysicsRigidBody * createRigidBody(float mass, Matrix44& transform, AABB& aabb);
@@ -52,6 +61,7 @@ class PhysicsMgr{
 		void removeConstraint(PhysicsConstraint * constraint);
 		btBoxShape* createBoxShape(const btVector3& halfExtents);
 		btDiscreteDynamicsWorld* getDynamicsWorld() const;
+		bool rayCastCloset(vec3 from, vec3 to, PhysicsHitResult &result);
 	private:
 		
 		btRigidBody* createRigidBodyInternal(float mass, const btTransform& startTransform, btCollisionShape* shape, const btVector4& color);

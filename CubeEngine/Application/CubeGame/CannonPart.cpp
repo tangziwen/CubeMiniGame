@@ -15,6 +15,7 @@
 #include "3D/Particle/ParticleInitLifeSpanModule.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
+#include "BulletMgr.h"
 
 
 namespace tzw
@@ -152,20 +153,8 @@ void CannonPart::drawInspect()
 void CannonPart::use()
 {
 	//shoot bullet
-	float blockSize = 0.2;
-	auto boxA = new CubePrimitive(blockSize, blockSize, blockSize);
 	auto firePos = getWorldPos() + m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0);
-	boxA->setPos(firePos);
-	auto transform = boxA->getTransform();
-	auto aabb = boxA->localAABB();
-	auto rigA = PhysicsMgr::shared()->createRigidBody(1.0, transform, aabb);
-	rigA->attach(boxA);
-	rigA->setVelocity(m_node->getForward() * getFiringVelocity());
-	rigA->setCcdMotionThreshold(1e-7);
-	rigA->setCcdSweptSphereRadius(0.50);
-	rigA->rigidBody()->setCollisionFlags(rigA->rigidBody()->getCollisionFlags()|btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
-	g_GetCurrScene()->addNode(boxA);
-	PhysicsMgr::shared()->addRigidBody(rigA);
+	BulletMgr::shared()->fire(firePos, m_node->getForward(), getFiringVelocity(), BulletType::Projecttile);
 
 
 	tlog("fire");
