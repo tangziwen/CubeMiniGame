@@ -14,7 +14,9 @@ namespace tzw
 enum class BulletType
 {
 	Projecttile,
-	HitScan,
+	HitScanLaser,
+	HitScanTracer,
+	PulseLaser,
 };
 class BulletMgr
 {

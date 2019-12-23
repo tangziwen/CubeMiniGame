@@ -10,6 +10,12 @@ namespace tzw
 	class PhysicsRigidBody : public PhysicsListener
 	{
 	public:
+		enum class SyncPolicy
+		{
+			SyncAll,
+			SyncPosOnly,
+			SyncNothing,
+		};
 		PhysicsRigidBody();
 		void attach(Drawable3D * obj);
 		void recievePhysicsInfo(vec3 pos, Quaternion rot) override;
@@ -42,10 +48,14 @@ namespace tzw
 		void setCcdSweptSphereRadius(float radius);
 		void setCcdMotionThreshold(float threshold);
 		AABB getAABBInWorld();
+		SyncPolicy getSyncPolicy() const;
+		void setSyncPolicy(const SyncPolicy syncPolicy);
 	private:
 		btRigidBody * m_rigidBody;
 		Drawable3D * m_parent;
 		unsigned m_userIndex;
+		SyncPolicy m_syncPolicy;
+
 	};
 
 

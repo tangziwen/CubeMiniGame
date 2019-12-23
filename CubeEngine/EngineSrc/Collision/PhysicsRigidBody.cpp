@@ -6,7 +6,7 @@
 namespace tzw
 {
 static int g_index = 0;
-PhysicsRigidBody::PhysicsRigidBody()
+PhysicsRigidBody::PhysicsRigidBody():m_syncPolicy(SyncPolicy::SyncAll)
 {
 	m_rigidBody = nullptr;
 	m_parent = nullptr;
@@ -20,10 +20,12 @@ void PhysicsRigidBody::attach(Drawable3D* obj)
 
 void PhysicsRigidBody::recievePhysicsInfo(vec3 pos, Quaternion rot)
 {
+	if(m_syncPolicy == SyncPolicy::SyncNothing) return;
 	if(m_parent)
 	{
 		m_parent->setPos(pos);
-		m_parent->setRotateQ(rot);
+		if(m_syncPolicy != SyncPolicy::SyncPosOnly)
+			m_parent->setRotateQ(rot);
 	}
 }
 
@@ -190,5 +192,15 @@ AABB PhysicsRigidBody::getAABBInWorld()
 	aabb.update(vec3(ab_max.x(), ab_max.y(), ab_max.z()));
 	aabb.update(vec3(ab_min.x(), ab_min.y(), ab_min.z()));
 	return aabb;
+}
+
+PhysicsRigidBody::SyncPolicy PhysicsRigidBody::getSyncPolicy() const
+{
+	return m_syncPolicy;
+}
+
+void PhysicsRigidBody::setSyncPolicy(const SyncPolicy syncPolicy)
+{
+	m_syncPolicy = syncPolicy;
 }
 }

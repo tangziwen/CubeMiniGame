@@ -9,27 +9,26 @@
 #include <map>
 namespace tzw
 {
-class ParticleEmitter;
+	class LaserPrimitive;
+	class ParticleEmitter;
 class Bullet
 {
 public:
-	Bullet(PhysicsRigidBody * rigidBody);
-	~Bullet();
-private:
-	void onHitCallBack(vec3 p);
-	bool m_isFirstTimeHit;
-	PhysicsRigidBody * m_rigidBody;
-	float m_duration;
-	ParticleEmitter * m_hitSfx;
-public:
+	Bullet();
+	virtual ~Bullet();
 	float getDuration() const;
 	void setDuration(const float duration);
 	float getCurrDuration() const;
 	void setCurrDuration(const float currDuration);
-private:
-	float m_currDuration;
-public:
+	virtual void update(float dt);
 	void setIsFirstTimeHit(const bool isFirstTimeHit);
 	bool isIsFirstTimeHit() const;
+protected:
+	bool m_isFirstTimeHit;
+	PhysicsRigidBody * m_rigidBody;
+	LaserPrimitive * m_laser;
+	float m_duration;
+	ParticleEmitter * m_hitSfx;
+	float m_currDuration;
 };
 }

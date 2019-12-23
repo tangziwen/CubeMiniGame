@@ -1,4 +1,4 @@
-#include "Bullet.h"
+#include "LaserBullet.h"
 #include "Scene/SceneMgr.h"
 #include "BuildingSystem.h"
 #include "2D/LabelNew.h"
@@ -16,47 +16,16 @@
 
 namespace tzw
 {
-	Bullet::Bullet()
+	LaserBullet::LaserBullet(LaserPrimitive* laser): m_hitSfx(nullptr)
 	{
+		m_laser = laser;
+		m_isFirstTimeHit = false;
 	}
 
-	Bullet::~Bullet()
+	LaserBullet::~LaserBullet()
 	{
-		
-	}
-
-	float Bullet::getDuration() const
-	{
-		return m_duration;
-	}
-
-	void Bullet::setDuration(const float duration)
-	{
-		m_duration = duration;
-	}
-
-	float Bullet::getCurrDuration() const
-	{
-		return m_currDuration;
-	}
-
-	void Bullet::setCurrDuration(const float currDuration)
-	{
-		m_currDuration = currDuration;
-	}
-
-	void Bullet::update(float dt)
-	{
-	}
-
-	void Bullet::setIsFirstTimeHit(const bool isFirstTimeHit)
-	{
-		m_isFirstTimeHit = isFirstTimeHit;
-	}
-
-	bool Bullet::isIsFirstTimeHit() const
-	{
-		return m_isFirstTimeHit;
+		m_laser->removeFromParent();
+		delete m_laser;
 	}
 
 }

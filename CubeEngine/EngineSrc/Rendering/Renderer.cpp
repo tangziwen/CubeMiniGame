@@ -514,6 +514,10 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 	{
 		glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
 	}
+	if(rotateInstanceOffset > 0)
+	{
+		glVertexAttribDivisor(rotateInstanceOffset, 0);
+	}
 }
 
 ///

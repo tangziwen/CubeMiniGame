@@ -192,7 +192,7 @@ namespace tzw
         case TZW_KEY_H:
 			{
 				auto m = getTransform().data();
-				BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::HitScan);
+				BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::HitScanLaser);
         		break;
         		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
