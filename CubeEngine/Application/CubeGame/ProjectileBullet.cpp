@@ -41,10 +41,7 @@ namespace tzw
 
 	void ProjectileBullet::update(float dt)
 	{
-		if(m_rigidBody)
-		{
-			tlog("bullet pos %s",m_rigidBody->parent()->getWorldPos().getStr().c_str());
-		}
+		
 	}
 
 	void ProjectileBullet::onHitCallBack(vec3 p)

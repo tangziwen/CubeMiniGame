@@ -138,7 +138,7 @@ void GameWorld::startGame()
 	unloadGame();
 	PartSurfaceMgr::shared()->loadFromFile("aaaaaa");
 	MainMenu::shared()->initInGame();
-	GameMap::shared()->setMapType(GameMap::MapType::Plain);
+	GameMap::shared()->setMapType(GameMap::MapType::Noise);
 	GameMap::shared()->setMaxHeight(10);
 	 
 	GameMap::shared()->setMinHeight(3);

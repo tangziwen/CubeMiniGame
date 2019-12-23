@@ -76,13 +76,13 @@ BulletMgr::fire(vec3 fromPos,
         auto line = new LaserPrimitive(fromPos, result.posInWorld, 1.5, true);
         g_GetCurrScene()->addNode(line);
         bulletPtr = new LaserBullet(line);
-        bulletPtr->setDuration(0.15);
+        bulletPtr->setDuration(0.1);
 
       } else {
         auto line = new LaserPrimitive(fromPos, fromPos + direction * 100, 1.5, true);
         g_GetCurrScene()->addNode(line);
         bulletPtr = new LaserBullet(line);
-        bulletPtr->setDuration(0.15);
+        bulletPtr->setDuration(0.1);
       }
     } break;
     case BulletType::HitScanTracer: {

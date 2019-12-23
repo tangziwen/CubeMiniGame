@@ -37,7 +37,7 @@ GameMap::GameMap()
 	baseBumpyFlatTerrain.SetPersistence(0.4);
 
 	BumpyFlatTerrain.SetSourceModule(0, baseBumpyFlatTerrain);
-	BumpyFlatTerrain.SetScale(0.8);
+	BumpyFlatTerrain.SetScale(0.4);
 
 	finalFlatTerrain.SetSourceModule(0, flatTerrain);
 	finalFlatTerrain.SetSourceModule(1, BumpyFlatTerrain);
