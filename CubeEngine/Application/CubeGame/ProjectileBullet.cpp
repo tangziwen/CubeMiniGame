@@ -16,13 +16,16 @@ namespace tzw
 	ProjectileBullet::ProjectileBullet(PhysicsRigidBody * rigidBody)
 	:m_rigidBody(rigidBody),m_hitSfx(nullptr)
 	{
-		rigidBody->m_onHitCallBack = std::bind(&ProjectileBullet::onHitCallBack, this,std::placeholders::_1);
+		m_isFirstTimeHit = true;
+		m_rigidBody->m_onHitCallBack = std::bind(&ProjectileBullet::onHitCallBack, this,std::placeholders::_1);
+		m_duration = 0.0;
 	}
 
 	ProjectileBullet::~ProjectileBullet()
 	{
 		if(m_rigidBody)
 		{
+			tlog("remove");
 			PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
 			auto node = m_rigidBody->parent();
 			node->removeFromParent();
@@ -33,6 +36,14 @@ namespace tzw
 				m_hitSfx->removeFromParent();
 				delete m_hitSfx;
 			}
+		}
+	}
+
+	void ProjectileBullet::update(float dt)
+	{
+		if(m_rigidBody)
+		{
+			tlog("bullet pos %s",m_rigidBody->parent()->getWorldPos().getStr().c_str());
 		}
 	}
 

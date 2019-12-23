@@ -154,7 +154,7 @@ void CannonPart::use()
 {
 	//shoot bullet
 	auto firePos = getWorldPos() + m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0);
-	BulletMgr::shared()->fire(firePos, m_node->getForward(), getFiringVelocity(), BulletType::Projecttile);
+	BulletMgr::shared()->fire(firePos, m_node->getForward(), getFiringVelocity(), BulletType::PulseLaser);
 
 
 	tlog("fire");

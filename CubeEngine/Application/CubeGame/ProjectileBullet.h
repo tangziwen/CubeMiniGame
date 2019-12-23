@@ -17,6 +17,7 @@ class ProjectileBullet : public Bullet
 public:
 	ProjectileBullet(PhysicsRigidBody * rigidBody);
 	virtual ~ProjectileBullet();
+	void update(float dt) override;
 private:
 	void onHitCallBack(vec3 p);
 	PhysicsRigidBody * m_rigidBody;

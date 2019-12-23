@@ -16,7 +16,7 @@
 
 namespace tzw
 {
-	Bullet::Bullet()
+	Bullet::Bullet():m_currDuration(0.0),m_duration(1.0)
 	{
 	}
 

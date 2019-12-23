@@ -139,7 +139,6 @@ BulletMgr::fire(vec3 fromPos,
   	{
       float blockSize = 0.2;
       auto line = new LaserPrimitive(fromPos, fromPos + direction * 3, 1.0,false);
-      g_GetCurrScene()->addNode(line);
       auto transform = line->getTransform();
       auto aabb = line->localAABB();
       auto rigA =
@@ -150,7 +149,7 @@ BulletMgr::fire(vec3 fromPos,
       rigA->setCcdMotionThreshold(1e-7);
       rigA->setCcdSweptSphereRadius(blockSize);
       rigA->rigidBody()->setCollisionFlags(
-        rigA->rigidBody()->getCollisionFlags() |
+		rigA->rigidBody()->getCollisionFlags() |
         btCollisionObject::CF_CUSTOM_MATERIAL_CALLBACK);
       g_GetCurrScene()->addNode(line);
       PhysicsMgr::shared()->addRigidBody(rigA);
