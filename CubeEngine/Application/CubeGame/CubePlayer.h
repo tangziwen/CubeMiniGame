@@ -64,6 +64,7 @@ namespace tzw
 		void releaseSwitch(GamePart * switchPart);
 		InSeatViewMode getSeatViewMode() const;
 		void setSeatViewMode(const InSeatViewMode seatViewMode);
+		void setIsOpenJetPack(bool isOpen);
 	private:
 		void handleSitDown();
 		PreviewItem * m_previewItem;

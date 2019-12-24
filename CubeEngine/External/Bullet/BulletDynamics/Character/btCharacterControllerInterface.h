@@ -34,10 +34,10 @@ public:
 	virtual void	reset ( btCollisionWorld* collisionWorld ) = 0;
 	virtual void	warp (const btVector3& origin) = 0;
 
-	virtual void	preStep ( btCollisionWorld* collisionWorld) = 0;
-	virtual void	playerStep (btCollisionWorld* collisionWorld, btScalar dt) = 0;
-	virtual bool	canJump () const = 0;
-	virtual void	jump(const btVector3& dir = btVector3()) = 0;
+	virtual void preStep(btCollisionWorld* collisionWorld) = 0;
+	virtual void playerStep(btCollisionWorld* collisionWorld, btScalar dt) = 0;
+	virtual bool canJump() const = 0;
+	virtual void jump(const btVector3& dir = btVector3(0, 0, 0)) = 0;
 
 	virtual bool	onGround () const = 0;
 	virtual void	setUpInterpolate (bool value) = 0;

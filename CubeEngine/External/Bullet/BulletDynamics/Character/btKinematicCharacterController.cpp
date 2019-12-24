@@ -161,6 +161,7 @@ btKinematicCharacterController::btKinematicCharacterController(btPairCachingGhos
 	setUp(up);
 	setStepHeight(stepHeight);
 	setMaxSlope(btRadians(45.0));
+	m_enableGravity = true;
 }
 
 btKinematicCharacterController::~btKinematicCharacterController()
@@ -737,7 +738,7 @@ void btKinematicCharacterController::playerStep(btCollisionWorld* collisionWorld
 	// quick check...
 	if (!m_useWalkDirection && (m_velocityTimeInterval <= 0.0 || m_walkDirection.fuzzyZero())) 
 	{
-		//		printf("\n");
+		printf("no motion \n");
 		return;  // no motion
 	}
 
@@ -772,7 +773,7 @@ void btKinematicCharacterController::playerStep(btCollisionWorld* collisionWorld
 	//	printf("walkDirection(%f,%f,%f)\n",walkDirection[0],walkDirection[1],walkDirection[2]);
 	//	printf("walkSpeed=%f\n",walkSpeed);
 
-	stepUp(collisionWorld);
+	if(m_enableGravity) stepUp(collisionWorld);
 	//todo: Experimenting with behavior of controller when it hits a ceiling..
 	//bool hitUp = stepUp (collisionWorld);
 	//if (hitUp)
@@ -811,7 +812,7 @@ void btKinematicCharacterController::playerStep(btCollisionWorld* collisionWorld
 		// okay, step
 		stepForwardAndStrafe(collisionWorld, move);
 	}
-	stepDown(collisionWorld, dt);
+	if(m_enableGravity) stepDown(collisionWorld, dt);
 
 	//todo: Experimenting with max jump height
 	//if (m_wasJumping)
@@ -946,6 +947,16 @@ void btKinematicCharacterController::debugDraw(btIDebugDraw* debugDrawer)
 void btKinematicCharacterController::setUpInterpolate(bool value)
 {
 	m_interpolateUp = value;
+}
+
+void btKinematicCharacterController::setEnableGravity(bool isEnableGravity)
+{
+	m_enableGravity = isEnableGravity;
+}
+
+bool btKinematicCharacterController::getIsEnableGravity() const
+{
+	return m_enableGravity;
 }
 
 void btKinematicCharacterController::setUp(const btVector3& up)

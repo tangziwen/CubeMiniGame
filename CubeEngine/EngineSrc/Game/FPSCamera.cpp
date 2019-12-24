@@ -22,7 +22,7 @@ namespace tzw {
 
 const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera(bool isOpenPhysics)
-    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(1.0f,0.2f,1.0f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
+    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(4.0f,0.0f,4.0f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true),m_isOpenPhysics(isOpenPhysics)
     ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.0),m_isStopUpdate(false)
 {
@@ -244,7 +244,7 @@ void FPSCamera::resumePhysics()
 void FPSCamera::logicUpdate(float dt)
 {
     if(!m_enableFPSFeature) return;
-	auto totalSpeed = getTotalSpeed() * dt;
+	auto totalSpeed = getTotalSpeed();
 	if(abs(totalSpeed.x) > 0.0001 || abs(totalSpeed.z) > 0.0001)
 	{
 		m_isMoving = true;
@@ -254,7 +254,7 @@ void FPSCamera::logicUpdate(float dt)
 	}
 	if(m_isOpenPhysics)
 	{
-		m_character->setWalkDirection(btVector3(totalSpeed.x, 0.0, totalSpeed.z));
+		m_character->setWalkDirection(btVector3(totalSpeed.x, m_up * 5, totalSpeed.z) * dt);
 	}
 }
 
@@ -329,6 +329,10 @@ bool FPSCamera::getIsEnableGravity() const
 void FPSCamera::setIsEnableGravity(bool isEnableGravity)
 {
     m_isEnableGravity = isEnableGravity;
+	if(m_isOpenPhysics)
+	{
+		m_character->setEnableGravity(m_isEnableGravity);
+	}
 }
 float FPSCamera::getDistToside() const
 {

@@ -214,13 +214,15 @@ public:
 	}
 	
 	/// continuous collision detection needs prediction
-	void			predictIntegratedTransform(btScalar step, btTransform& predictedTransform) ;
-	
-	void			saveKinematicState(btScalar step);
-	
-	void			applyGravity();
-	
-	void			setGravity(const btVector3& acceleration);  
+	void predictIntegratedTransform(btScalar step, btTransform& predictedTransform);
+
+	void saveKinematicState(btScalar step);
+
+	void applyGravity();
+    
+    void clearGravity();
+
+	void setGravity(const btVector3& acceleration);
 
 	const btVector3&	getGravity() const
 	{
@@ -271,6 +273,7 @@ public:
 		m_invMass = m_linearFactor*m_inverseMass;
 	}
 	btScalar		getInvMass() const { return m_inverseMass; }
+	btScalar getMass() const { return m_inverseMass == btScalar(0.) ? btScalar(0.) : btScalar(1.0) / m_inverseMass; }
 	const btMatrix3x3& getInvInertiaTensorWorld() const { 
 		return m_invInertiaTensorWorld; 
 	}
@@ -342,6 +345,48 @@ public:
 			}
 		}
 	}
+    
+    void applyPushImpulse(const btVector3& impulse, const btVector3& rel_pos)
+    {
+        if (m_inverseMass != btScalar(0.))
+        {
+            applyCentralPushImpulse(impulse);
+            if (m_angularFactor)
+            {
+                applyTorqueTurnImpulse(rel_pos.cross(impulse * m_linearFactor));
+            }
+        }
+    }
+    
+    btVector3 getPushVelocity()
+    {
+        return m_pushVelocity;
+    }
+    
+    btVector3 getTurnVelocity()
+    {
+        return m_turnVelocity;
+    }
+    
+    void setPushVelocity(const btVector3& v)
+    {
+        m_pushVelocity = v;
+    }
+    
+    void setTurnVelocity(const btVector3& v)
+    {
+        m_turnVelocity = v;
+    }
+    
+    void applyCentralPushImpulse(const btVector3& impulse)
+    {
+        m_pushVelocity += impulse * m_linearFactor * m_inverseMass;
+    }
+    
+    void applyTorqueTurnImpulse(const btVector3& torque)
+    {
+        m_turnVelocity += m_invInertiaTensorWorld * torque * m_angularFactor;
+    }
 
 	void clearForces() 
 	{

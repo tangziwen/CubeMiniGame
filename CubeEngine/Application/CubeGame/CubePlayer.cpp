@@ -74,6 +74,8 @@ namespace tzw
 		m_gunModel->setRotateE(vec3(0, 10, 0));
 		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
+
+		setIsOpenJetPack(true);
 	}
 
 	FPSCamera* CubePlayer::camera() const
@@ -215,7 +217,7 @@ namespace tzw
 						
 					}
         		}
- 
+
             }
 			break;
         case TZW_KEY_M:
@@ -223,6 +225,11 @@ namespace tzw
         		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::MainMenu, !MainMenu::shared()->getWindowIsShow(WindowType::MainMenu));
             }
+			break;
+        case TZW_KEY_X:
+			{
+				m_camera->setIsEnableGravity(!m_camera->getIsEnableGravity());
+			}
 			break;
 		case TZW_KEY_T:
 			{
@@ -526,5 +533,10 @@ namespace tzw
 	void CubePlayer::setSeatViewMode(const InSeatViewMode seatViewMode)
 	{
 		m_seatViewMode = seatViewMode;
+	}
+
+	void CubePlayer::setIsOpenJetPack(bool isOpen)
+	{
+		m_camera->setIsEnableGravity(!isOpen);
 	}
 } // namespace tzw
