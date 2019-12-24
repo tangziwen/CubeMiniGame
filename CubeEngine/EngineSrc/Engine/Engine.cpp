@@ -121,6 +121,8 @@ void Engine::loadConfig()
 	RenderBackEnd::shared()->setIsCheckGL(doc["IsGraphicsDebugCheck"].GetBool());
 
 	m_isFullScreen = doc["IsFullScreen"].GetBool();
+
+	TranslationMgr::shared()->load(doc["Language"].GetString()); 
 }
 
 void Engine::saveConfig()
@@ -154,7 +156,9 @@ void Engine::saveConfig()
 	doc["IsGraphicsDebugCheck"].SetBool(RenderBackEnd::shared()->isCheckGL());
 	
 	doc["IsFullScreen"].SetBool(m_isFullScreen);
-	
+
+	auto thestr = TranslationMgr::shared()->getCurrLanguage();
+	doc["Language"].SetString(rapidjson::StringRef(thestr));
 	rapidjson::StringBuffer buffer;
 	auto file = fopen("config.json", "w");
 	char writeBuffer[65536];

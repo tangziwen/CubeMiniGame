@@ -11,6 +11,7 @@ namespace tzw {
 		std::string getStr(std::string);
 		void dump();
 		void load(std::string languageName);
+		std::string getCurrLanguage();
 	private:
 		std::string m_languageName;
 		std::map<std::string, std::string> m_currDict;

@@ -5,11 +5,12 @@
 	"2DEnable": true,
 	"SkyEnable": true,
 	"FogEnable": true,
-	"SSAOEnable": true,
+	"SSAOEnable": false,
 	"BloomEnable": true,
 	"HDREnable": true,
 	"AAEnable": true,
 	"ShadowEnable": true,
 	"IsFullScreen": false,
-	"IsGraphicsDebugCheck": false
+	"IsGraphicsDebugCheck": false,
+	"Language": "English"
 }

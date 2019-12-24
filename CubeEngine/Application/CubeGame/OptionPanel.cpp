@@ -13,6 +13,7 @@
 namespace tzw
 {
 	static char* items[] = { "640*480", "800*600", "1024*768", "1360*768", "1280*1024", "1600*900", "1920*1080"};
+	static char* items_lang[] = { "Chinese", "English", "Chinese_Traditional"};
 	OptionPanel::OptionPanel():m_loadOpen(true),
 		m_saveOpen(false)
 	{
@@ -36,6 +37,14 @@ namespace tzw
 				m_screenSizeItemCurrent = i;
 				m_screenSizeEngineCurrent = i;
 				break;
+			}
+		}
+		//find language
+		for(int i = 0; i < (sizeof(items_lang) / sizeof(char *)); i++)
+		{
+			if(TranslationMgr::shared()->getCurrLanguage() == items_lang[i])
+			{
+				m_langItemCurrent = i;
 			}
 		}
 		m_isFullScreen = Engine::shared()->isIsFullScreen();
@@ -82,6 +91,20 @@ namespace tzw
                 bool is_selected = (m_screenSizeItemCurrent == n);
                 if (ImGui::Selectable(items[n], is_selected))
                     m_screenSizeItemCurrent = n;
+                if (is_selected)
+                    ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+            }
+            ImGui::EndCombo();
+        }
+
+
+        if (ImGui::BeginCombo(TRC(u8"”Ô—‘…Ë÷√"), items_lang[m_langItemCurrent], 0)) // The second parameter is the label previewed before opening the combo.
+        {
+            for (int n = 0; n < IM_ARRAYSIZE(items_lang); n++)
+            {
+                bool is_selected = (m_langItemCurrent == n);
+                if (ImGui::Selectable(items_lang[n], is_selected))
+                    m_langItemCurrent = n;
                 if (is_selected)
                     ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
             }
@@ -164,6 +187,7 @@ namespace tzw
 			Renderer::shared()->setFogEnable(m_isOpenFog);
 			Renderer::shared()->setShadowEnable(m_isOpenShadow);
 
+			TranslationMgr::shared()->load(items_lang[m_langItemCurrent]);
 			Engine::shared()->saveConfig();
 		}
 		ImGui::SameLine();

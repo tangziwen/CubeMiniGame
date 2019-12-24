@@ -56,7 +56,7 @@ namespace tzw
 	{
 		m_languageName = languageName;
 		rapidjson::Document doc;
-		std::string filePath = "./Translation_" + m_languageName + ".json";
+		std::string filePath = "./Res/Translation/" + m_languageName + ".json";
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 		if (doc.HasParseError())
@@ -67,13 +67,17 @@ namespace tzw
 				doc.GetErrorOffset());
 			exit(1);
 		}
-
 		auto& stringList = doc["stringList"];
 		for(int i = 0; i < stringList.Size(); i++)
 		{
 			auto& stringItem = stringList[i];
 			m_currDict[stringItem["original"].GetString()] = stringItem["translated"].GetString();
 		}
+	}
+
+	std::string TranslationMgr::getCurrLanguage()
+	{
+		return m_languageName;
 	}
 } // namespace tzw
 
