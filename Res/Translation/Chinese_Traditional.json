@@ -1,0 +1,637 @@
+{
+	"Desc":"Chinese",
+	"stringList": [
+		{
+			"original": "(E) 属性面板",
+			"translated": "(E) 属性面板"
+		},
+		{
+			"original": "(E) 属性面板\n(F) 调整方向",
+			"translated": "(E) 属性面板\n(F) 调整方向"
+		},
+		{
+			"original": "(E) 载具浏览器",
+			"translated": "(E) 载具浏览器"
+		},
+		{
+			"original": "(E) 驾驶\n(F) 节点编辑器",
+			"translated": "(E) 驾驶\n(F) 节点编辑器"
+		},
+		{
+			"original": "(左键) 喷漆 \n(右键) 喷涂面板",
+			"translated": "(左键) 喷漆 \n(右键) 喷涂面板"
+		},
+		{
+			"original": "==",
+			"translated": "=="
+		},
+		{
+			"original": "Bloom",
+			"translated": "Bloom"
+		},
+		{
+			"original": "By TZW，测试版本",
+			"translated": "By TZW，测试版本"
+		},
+		{
+			"original": "CE by tzw",
+			"translated": "CE by tzw"
+		},
+		{
+			"original": "Condition",
+			"translated": "Condition"
+		},
+		{
+			"original": "Constant",
+			"translated": "Constant"
+		},
+		{
+			"original": "C键",
+			"translated": "C键"
+		},
+		{
+			"original": "Demo Version --tzw",
+			"translated": "Demo Version --tzw"
+		},
+		{
+			"original": "Else",
+			"translated": "Else"
+		},
+		{
+			"original": "IF",
+			"translated": "IF"
+		},
+		{
+			"original": "If",
+			"translated": "If"
+		},
+		{
+			"original": "I键打开物品栏，建造前先放升降机",
+			"translated": "I键打开物品栏，建造前先放升降机"
+		},
+		{
+			"original": "PrintNode",
+			"translated": "PrintNode"
+		},
+		{
+			"original": "SSAO:",
+			"translated": "SSAO:"
+		},
+		{
+			"original": "Self",
+			"translated": "Self"
+		},
+		{
+			"original": "TZW 出品，测试版本",
+			"translated": "TZW 出品，测试版本"
+		},
+		{
+			"original": "Then",
+			"translated": "Then"
+		},
+		{
+			"original": "Toggle",
+			"translated": "Toggle"
+		},
+		{
+			"original": "Vector",
+			"translated": "Vector"
+		},
+		{
+			"original": "WASD和鼠标控制，I键打开物品栏，建造前先放升降机",
+			"translated": "WASD和鼠标控制，I键打开物品栏，建造前先放升降机"
+		},
+		{
+			"original": "X光模式",
+			"translated": "X光模式"
+		},
+		{
+			"original": "X键",
+			"translated": "X键"
+		},
+		{
+			"original": "Z键",
+			"translated": "Z键"
+		},
+		{
+			"original": "使用节点",
+			"translated": "使用节点"
+		},
+		{
+			"original": "保存",
+			"translated": "保存"
+		},
+		{
+			"original": "保存设置",
+			"translated": "保存设置"
+		},
+		{
+			"original": "保存载具",
+			"translated": "保存载具"
+		},
+		{
+			"original": "全屏",
+			"translated": "全屏"
+		},
+		{
+			"original": "全屏化",
+			"translated": "全屏化"
+		},
+		{
+			"original": "全部取消选中",
+			"translated": "全部取消选中"
+		},
+		{
+			"original": "关##AA",
+			"translated": "关##AA"
+		},
+		{
+			"original": "关##BLOOM",
+			"translated": "关##BLOOM"
+		},
+		{
+			"original": "关##FOG",
+			"translated": "关##FOG"
+		},
+		{
+			"original": "关##SHADOW",
+			"translated": "关##SHADOW"
+		},
+		{
+			"original": "关##SSAO",
+			"translated": "关##SSAO"
+		},
+		{
+			"original": "关闭",
+			"translated": "关闭"
+		},
+		{
+			"original": "分辨率",
+			"translated": "分辨率"
+		},
+		{
+			"original": "切换开关节点",
+			"translated": "切换开关节点"
+		},
+		{
+			"original": "前后",
+			"translated": "前后"
+		},
+		{
+			"original": "前后信号",
+			"translated": "前后信号"
+		},
+		{
+			"original": "加农 %s",
+			"translated": "加农 %s"
+		},
+		{
+			"original": "升降台只能放一个",
+			"translated": "升降台只能放一个"
+		},
+		{
+			"original": "升降机",
+			"translated": "升降机"
+		},
+		{
+			"original": "单车轮",
+			"translated": "单车轮"
+		},
+		{
+			"original": "取消",
+			"translated": "取消"
+		},
+		{
+			"original": "变量",
+			"translated": "变量"
+		},
+		{
+			"original": "变量名",
+			"translated": "变量名"
+		},
+		{
+			"original": "右",
+			"translated": "右"
+		},
+		{
+			"original": "右值",
+			"translated": "右值"
+		},
+		{
+			"original": "名称",
+			"translated": "名称"
+		},
+		{
+			"original": "后坐力",
+			"translated": "后坐力"
+		},
+		{
+			"original": "向量",
+			"translated": "向量"
+		},
+		{
+			"original": "喷涂器",
+			"translated": "喷涂器"
+		},
+		{
+			"original": "基本版本 弹出框测试",
+			"translated": "基本版本 弹出框测试"
+		},
+		{
+			"original": "字符串",
+			"translated": "字符串"
+		},
+		{
+			"original": "对准空地放置，对准载具收纳放置",
+			"translated": "对准空地放置，对准载具收纳放置"
+		},
+		{
+			"original": "属性面板",
+			"translated": "属性面板"
+		},
+		{
+			"original": "左",
+			"translated": "左"
+		},
+		{
+			"original": "左值",
+			"translated": "左值"
+		},
+		{
+			"original": "左右",
+			"translated": "左右"
+		},
+		{
+			"original": "左右信号",
+			"translated": "左右信号"
+		},
+		{
+			"original": "帮助",
+			"translated": "帮助"
+		},
+		{
+			"original": "常量",
+			"translated": "常量"
+		},
+		{
+			"original": "座位 %s",
+			"translated": "座位 %s"
+		},
+		{
+			"original": "座椅",
+			"translated": "座椅"
+		},
+		{
+			"original": "座椅2",
+			"translated": "座椅2"
+		},
+		{
+			"original": "开##AA",
+			"translated": "开##AA"
+		},
+		{
+			"original": "开##BLOOM",
+			"translated": "开##BLOOM"
+		},
+		{
+			"original": "开##FOG",
+			"translated": "开##FOG"
+		},
+		{
+			"original": "开##SHADOW",
+			"translated": "开##SHADOW"
+		},
+		{
+			"original": "开##SSAO",
+			"translated": "开##SSAO"
+		},
+		{
+			"original": "开关",
+			"translated": "开关"
+		},
+		{
+			"original": "开关 %s",
+			"translated": "开关 %s"
+		},
+		{
+			"original": "开关信号",
+			"translated": "开关信号"
+		},
+		{
+			"original": "开启",
+			"translated": "开启"
+		},
+		{
+			"original": "开始游戏",
+			"translated": "开始游戏"
+		},
+		{
+			"original": "弹簧",
+			"translated": "弹簧"
+		},
+		{
+			"original": "当前旋转角度",
+			"translated": "当前旋转角度"
+		},
+		{
+			"original": "打印",
+			"translated": "打印"
+		},
+		{
+			"original": "打开",
+			"translated": "打开"
+		},
+		{
+			"original": "投射物初速度",
+			"translated": "投射物初速度"
+		},
+		{
+			"original": "抗锯齿:",
+			"translated": "抗锯齿:"
+		},
+		{
+			"original": "拖拽",
+			"translated": "拖拽"
+		},
+		{
+			"original": "按T键可以显示机械部件名称，并能穿透显示轴承",
+			"translated": "按T键可以显示机械部件名称，并能穿透显示轴承"
+		},
+		{
+			"original": "按T键穿透显示机械部件",
+			"translated": "按T键穿透显示机械部件"
+		},
+		{
+			"original": "按下",
+			"translated": "按下"
+		},
+		{
+			"original": "按钮",
+			"translated": "按钮"
+		},
+		{
+			"original": "按钮 %s",
+			"translated": "按钮 %s"
+		},
+		{
+			"original": "按键输入",
+			"translated": "按键输入"
+		},
+		{
+			"original": "挖掘机",
+			"translated": "挖掘机"
+		},
+		{
+			"original": "推进器",
+			"translated": "推进器"
+		},
+		{
+			"original": "推进器 %s",
+			"translated": "推进器 %s"
+		},
+		{
+			"original": "收纳",
+			"translated": "收纳"
+		},
+		{
+			"original": "放置收纳对象",
+			"translated": "放置收纳对象"
+		},
+		{
+			"original": "方向信号",
+			"translated": "方向信号"
+		},
+		{
+			"original": "旋转",
+			"translated": "旋转"
+		},
+		{
+			"original": "旋转方向",
+			"translated": "旋转方向"
+		},
+		{
+			"original": "旋转节点",
+			"translated": "旋转节点"
+		},
+		{
+			"original": "是否为舵机",
+			"translated": "是否为舵机"
+		},
+		{
+			"original": "是否全屏",
+			"translated": "是否全屏"
+		},
+		{
+			"original": "是否开启角度限制",
+			"translated": "是否开启角度限制"
+		},
+		{
+			"original": "是否继续?",
+			"translated": "是否继续?"
+		},
+		{
+			"original": "普通方块",
+			"translated": "普通方块"
+		},
+		{
+			"original": "普通轴承",
+			"translated": "普通轴承"
+		},
+		{
+			"original": "暂无提示",
+			"translated": "暂无提示"
+		},
+		{
+			"original": "更多帮助请按H键打开",
+			"translated": "更多帮助请按H键打开"
+		},
+		{
+			"original": "最大角度",
+			"translated": "最大角度"
+		},
+		{
+			"original": "最小角度",
+			"translated": "最小角度"
+		},
+		{
+			"original": "松开",
+			"translated": "松开"
+		},
+		{
+			"original": "标准输入",
+			"translated": "标准输入"
+		},
+		{
+			"original": "清空所有载具",
+			"translated": "清空所有载具"
+		},
+		{
+			"original": "炮筒",
+			"translated": "炮筒"
+		},
+		{
+			"original": "炮筒 %s",
+			"translated": "炮筒 %s"
+		},
+		{
+			"original": "状态信号",
+			"translated": "状态信号"
+		},
+		{
+			"original": "直棱柱",
+			"translated": "直棱柱"
+		},
+		{
+			"original": "直棱柱-长",
+			"translated": "直棱柱-长"
+		},
+		{
+			"original": "窗口",
+			"translated": "窗口"
+		},
+		{
+			"original": "窗口化",
+			"translated": "窗口化"
+		},
+		{
+			"original": "等于",
+			"translated": "等于"
+		},
+		{
+			"original": "管子",
+			"translated": "管子"
+		},
+		{
+			"original": "粗管",
+			"translated": "粗管"
+		},
+		{
+			"original": "继续",
+			"translated": "继续"
+		},
+		{
+			"original": "聚合",
+			"translated": "聚合"
+		},
+		{
+			"original": "舵机",
+			"translated": "舵机"
+		},
+		{
+			"original": "节点 %s",
+			"translated": "节点 %s"
+		},
+		{
+			"original": "节点列表",
+			"translated": "节点列表"
+		},
+		{
+			"original": "节点编辑器",
+			"translated": "节点编辑器"
+		},
+		{
+			"original": "表面材质",
+			"translated": "表面材质"
+		},
+		{
+			"original": "设置面板",
+			"translated": "设置面板"
+		},
+		{
+			"original": "读取",
+			"translated": "读取"
+		},
+		{
+			"original": "读取载具",
+			"translated": "读取载具"
+		},
+		{
+			"original": "调整视图",
+			"translated": "调整视图"
+		},
+		{
+			"original": "资产浏览器",
+			"translated": "资产浏览器"
+		},
+		{
+			"original": "赋值",
+			"translated": "赋值"
+		},
+		{
+			"original": "越野轮-中型",
+			"translated": "越野轮-中型"
+		},
+		{
+			"original": "越野轮-小",
+			"translated": "越野轮-小"
+		},
+		{
+			"original": "越野轮-普通",
+			"translated": "越野轮-普通"
+		},
+		{
+			"original": "转速",
+			"translated": "转速"
+		},
+		{
+			"original": "轮子",
+			"translated": "轮子"
+		},
+		{
+			"original": "轮子-中型",
+			"translated": "轮子-中型"
+		},
+		{
+			"original": "轮子-普通",
+			"translated": "轮子-普通"
+		},
+		{
+			"original": "轴承",
+			"translated": "轴承"
+		},
+		{
+			"original": "轴承 %s",
+			"translated": "轴承 %s"
+		},
+		{
+			"original": "载具浏览器",
+			"translated": "载具浏览器"
+		},
+		{
+			"original": "返回",
+			"translated": "返回"
+		},
+		{
+			"original": "连接 (%p)",
+			"translated": "连接 (%p)"
+		},
+		{
+			"original": "退出",
+			"translated": "退出"
+		},
+		{
+			"original": "选中",
+			"translated": "选中"
+		},
+		{
+			"original": "选项",
+			"translated": "选项"
+		},
+		{
+			"original": "部件",
+			"translated": "部件"
+		},
+		{
+			"original": "阴影:",
+			"translated": "阴影:"
+		},
+		{
+			"original": "雾效:",
+			"translated": "雾效:"
+		},
+		{
+			"original": "颜色",
+			"translated": "颜色"
+		}
+	]
+}
