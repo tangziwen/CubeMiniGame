@@ -20,21 +20,21 @@ void Matrix44::setToIdentity()
     m_data[15] = 1;
 }
 
-void Matrix44::translate(vec3 offset)
+void Matrix44::setTranslate(vec3 offset)
 {
     m_data[12] = offset.x;
     m_data[13] = offset.y;
     m_data[14] = offset.z;
 }
 
-void Matrix44::scale(vec3 scaleFactor)
+void Matrix44::setScale(vec3 scaleFactor)
 {
     m_data[0] = scaleFactor.x;
     m_data[5] = scaleFactor.y;
     m_data[10] = scaleFactor.z;
 }
 
-void Matrix44::rotate(const Quaternion &q)
+void Matrix44::setRotation(const Quaternion &q)
 {
     float x2 = q.x + q.x;
     float y2 = q.y + q.y;
@@ -498,4 +498,15 @@ bool Matrix44::decompose(vec3* scale, Quaternion* rotation, vec3* translation) c
 
     return true;
 }
+
+bool Matrix44::getRotation(Quaternion* q)
+{
+	return decompose(nullptr, q, nullptr);
+}
+
+void Matrix44::getScale(vec3* scale) const
+{
+	decompose(scale, nullptr, nullptr);
+}
+
 } // namespace tzw

@@ -86,9 +86,9 @@ void Quaternion::fromAxisAngle(vec3 axis, float angle)
     float half = TbaseMath::Ang2Radius(angle / 2.f);
     float sinHalf = sinf(half);
     w = cosf(half);
-    x = sinHalf * cosf(axis.x);
-    y = sinHalf * cosf(axis.y);
-    z = sinHalf * cosf(axis.z);
+    x = sinHalf * axis.x;
+    y = sinHalf * axis.y;
+    z = sinHalf * axis.z;
 }
 
 void Quaternion::toEulserAngel(float *resultX, float *resultY, float *resultZ) const

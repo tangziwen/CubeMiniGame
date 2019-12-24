@@ -107,53 +107,39 @@ static Matrix44 targetTo(vec3 eye, vec3 target, vec3 up)
 {
 	Matrix44 mat;
 	auto out = mat.data();
-  float eyex = eye.x,
-      eyey = eye.y,
-      eyez = eye.z,
-      upx = up.x,
-      upy = up.y,
-      upz = up.z;
+    up.normalize();
 
-  float z0 = eyex - target.x,
-      z1 = eyey - target.y,
-      z2 = eyez - target.z;
+    vec3 zaxis;
+    zaxis = eye - target;//vec3::subtract(eye, target, &zaxis);
+    zaxis.normalize();
 
-  float len = z0*z0 + z1*z1 + z2*z2;
-  if (len > 0) {
-    len = 1 / sqrt(len);
-    z0 *= len;
-    z1 *= len;
-    z2 *= len;
-  }
+    vec3 xaxis;
+    xaxis = vec3::CrossProduct(up, zaxis);
+    xaxis.normalize();
 
-  float x0 = upy * z2 - upz * z1,
-      x1 = upz * z0 - upx * z2,
-      x2 = upx * z1 - upy * z0;
+    vec3 yaxis;
+    yaxis = vec3::CrossProduct(zaxis, xaxis);
+    yaxis.normalize();
 
-  len = x0*x0 + x1*x1 + x2*x2;
-  if (len > 0) {
-    len = 1 / sqrt(len);
-    x0 *= len;
-    x1 *= len;
-    x2 *= len;
-  }
+    out[0] = xaxis.x;
+    out[1] = xaxis.y;
+    out[2] = xaxis.z;
+    out[3] = 0.0f;
 
-	out[0] = x0;
-	out[1] = x1;
-	out[2] = x2;
-	out[3] = 0;
-	out[4] = z1 * x2 - z2 * x1;
-	out[5] = z2 * x0 - z0 * x2;
-	out[6] = z0 * x1 - z1 * x0;
-	out[7] = 0;
-	out[8] = z0;
-	out[9] = z1;
-	out[10] = z2;
-	out[11] = 0;
-	out[12] = eyex;
-	out[13] = eyey;
-	out[14] = eyez;
-	out[15] = 1;
+    out[4] = yaxis.x;
+    out[5] = yaxis.y;
+    out[6] = yaxis.z;
+    out[7] = 0.0f;
+
+    out[8] = zaxis.x;
+    out[9] = zaxis.y;
+    out[10] = zaxis.z;
+    out[11] = 0.0f;
+
+    out[12] = eye.x;
+    out[13] = eye.y;
+    out[14] = eye.z;
+    out[15] = 1.0f;
 	return mat;
 }
 
@@ -162,9 +148,10 @@ void Camera::lookAt(vec3 targetPos, vec3 upFrame)
 	auto rotateM = targetTo(m_pos, targetPos, upFrame);
     Quaternion q;
 	auto m = rotateM.data();
-    q.fromAxises(vec3(m[0], m[1], m[2]),vec3(m[4], m[5], m[6]),vec3(m[8], m[9],m[10]));
+    q.fromRotationMatrix(&rotateM);
     //m_rotateQ = q;
     setRotateQ(q);
+
     reCache();
     //    float rotateX,rotateY,rotateZ;
     //    if(aixX.z != 1 || aixX.z != -1)

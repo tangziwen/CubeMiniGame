@@ -10,9 +10,9 @@ class Matrix44
 public:
     Matrix44();
     void setToIdentity();
-    void translate(vec3 offset);
-    void scale(vec3 scaleFactor);
-    void rotate(const Quaternion &quaternion);
+    void setTranslate(vec3 offset);
+    void setScale(vec3 scaleFactor);
+    void setRotation(const Quaternion &quaternion);
     Matrix44 operator *(const Matrix44 &  other) const;
     vec4 operator *(const vec4 &  other) const;
     void ortho(float left, float right, float bottom, float top, float near, float far);
@@ -33,6 +33,8 @@ public:
 	vec3 getTranslation();
 	float determinant() const;
 	bool decompose(vec3* scale, Quaternion* rotation, vec3* translation) const;
+	bool getRotation(Quaternion * q);
+	void getScale(vec3* scale) const;
 private:
     float m_data[16];
 };

@@ -208,8 +208,15 @@ bool FPSCamera::onMouseMove(vec2 pos)
         {
             mouseForce.y = 0;
         }
-        auto deltaRot = vec3(mouseForce.y * 0.1, mouseForce.x * -1 * 0.1, 0);
-        setRotateE(getRotateE()  + deltaRot);
+     //   auto deltaRot = vec3(mouseForce.y * 0.1, mouseForce.x * -1 * 0.1, 0);
+    	//setRotateE(getRotateE()  + deltaRot);
+    	Quaternion q1,q2;
+    	q1.fromAxisAngle(vec3(1, 0, 0), mouseForce.y * 0.1);
+    	q1.normalize();
+    	q2.fromAxisAngle(vec3(0, 1, 0), mouseForce.x * -1 * 0.1);
+    	auto result = q2 * getRotateQ() * q1;
+    	result.normalize();
+       setRotateQ(result);
     }
     m_oldPosition = newPosition;
     return false;

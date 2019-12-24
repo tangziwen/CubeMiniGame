@@ -314,6 +314,7 @@ namespace tzw
 		m_camera->removeFromParent();
 		m_camera->setEnableFPSFeature(false);
 		m_camera->pausePhysics();
+		tlog("setRotate fuck fuck%s",m_camera->getRotateE().getStr().c_str());
 		//m_camera->setIsEnableGravity(false);
 		//part->getNode()->addChild(m_camera);
 		//m_camera->setPos(0, 0, 0);
@@ -337,17 +338,18 @@ namespace tzw
 
 	void CubePlayer::standUpFromGamePart(GamePart * part)
 	{
+		//leave
 		m_camera->setIsEnableGravity(true);
 		m_camera->setEnableFPSFeature(true);
 		m_camera->resumePhysics();
 		auto aabb = part->m_parent->getAABBInWorld();
 		auto dist = aabb.half().z;
-		m_camera->setCamPos(aabb.centre() + vec3(0,0,-1) * dist);
-		//m_camera->lookAt(part->getWorldPos());
+		m_camera->setCamPos(aabb.centre() + vec3(0,0,-1) * (dist + 0.5));
+		m_camera->lookAt(part->getWorldPos());
+		tlog("fuck fuck fuck%s",m_camera->getRotateE().getStr().c_str());
 		GameWorld::shared()->getMainRoot()->addChild(m_camera);
 		m_orbitcamera->setFocusNode(nullptr);
 
-		//leave
 		m_fpvCamera->removeFromParent();
 		
 		g_GetCurrScene()->setDefaultCamera(m_camera);

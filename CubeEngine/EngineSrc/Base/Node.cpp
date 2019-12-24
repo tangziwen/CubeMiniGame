@@ -127,7 +127,7 @@ void Node::setScale(float x, float y, float z)
 Matrix44 Node::getTranslationMatrix()
 {
     Matrix44 mat;
-    mat.translate(m_pos);
+    mat.setTranslate(m_pos);
     return mat;
 }
 
@@ -138,14 +138,14 @@ Matrix44 Node::getRotationMatrix()
     Matrix44 rotateMatrix;
     rotateMatrix.setToIdentity();
     m_rotateQ.normalize();
-    rotateMatrix.rotate(m_rotateQ);
+    rotateMatrix.setRotation(m_rotateQ);
     return rotateMatrix;
 }
 
 Matrix44 Node::getScalingMatrix()
 {
     Matrix44 s;
-    s.scale(m_scale);
+    s.setScale(m_scale);
     return s;
 }
 

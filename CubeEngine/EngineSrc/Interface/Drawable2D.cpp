@@ -49,7 +49,7 @@ Matrix44 Drawable2D::getLocalTransform()
 {
     auto mat = Matrix44();
     mat.setToIdentity();
-    mat.translate(vec3(-m_anchorPointInPoints.x,-m_anchorPointInPoints.y,0));
+    mat.setTranslate(vec3(-m_anchorPointInPoints.x,-m_anchorPointInPoints.y,0));
     return Node::getLocalTransform()*mat;
 }
 

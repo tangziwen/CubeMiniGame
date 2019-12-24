@@ -136,7 +136,7 @@ namespace tzw
 		Matrix44 rotateMatrix;
 		Quaternion qRotate;
 		qRotate.fromEulerAngle(vec3(0, 0, degree));
-		rotateMatrix.rotate(qRotate);
+		rotateMatrix.setRotation(qRotate);
 		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
 		auto result = transformForAttachPoint * selfAttachmentTrans.inverted();
 		Quaternion q;
@@ -248,7 +248,7 @@ namespace tzw
 		Matrix44 rotateMatrix;
 		Quaternion qRotate;
 		qRotate.fromEulerAngle(vec3(0, 0, degree));
-		rotateMatrix.rotate(qRotate);
+		rotateMatrix.setRotation(qRotate);
 		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
 
 		auto result = attachOuterWorldMat * selfAttachmentTrans.inverted() * getNode()->getLocalTransform().inverted();
@@ -321,7 +321,7 @@ namespace tzw
 		Matrix44 rotateMatrix;
 		Quaternion qRotate;
 		qRotate.fromEulerAngle(vec3(0, 0, degree));
-		rotateMatrix.rotate(qRotate);
+		rotateMatrix.setRotation(qRotate);
 		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
 
 		auto result = m_parent->m_node->getLocalTransform().inverted() * attachOuterWorldMat * selfAttachmentTrans.inverted();
