@@ -191,7 +191,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 
 	//IBL 
 	const float MAX_REFLECTION_LOD = 4.0;
-	vec3 reflectionVector = reflect(-V, N);
+	vec3 reflectionVector = normalize(reflect(-V, N));
 
 	#if CUBE_MAP_IBL
 		vec3 irradiance = textureLod(environmentMap, N, 0).rgb;
@@ -378,7 +378,7 @@ void main()
 		}
 	}
 
-	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
+	vec3 worldView = normalize(TU_camPos.xyz - worldPos.xyz);
 	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, normalize(worldView), surfaceData[0], shadowFactor);
 
 	gl_FragColor = vec4(resultColor, 1.0);

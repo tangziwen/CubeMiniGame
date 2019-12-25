@@ -70,12 +70,18 @@ namespace tzw
 		m_gunModel = Model::create("Models/Hammer.tzw");
 		auto tex = TextureMgr::shared()->getByPath("Models/hammer_diffuse.png");
 		m_gunModel->getMat(0)->setTex("DiffuseMap", tex);
+		auto metallicTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Metallic.png");
+		m_gunModel->getMat(0)->setTex("MetallicMap", metallicTexture);
+
+		auto roughnessTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Roughness.png");
+		m_gunModel->getMat(0)->setTex("RoughnessMap", roughnessTexture);
+
+		auto normalMapTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Normal.png");
+		m_gunModel->getMat(0)->setTex("NormalMap", normalMapTexture);
 		m_gunModel->setPos(0.09,-0.15, -0.22);
 		m_gunModel->setRotateE(vec3(0, 10, 0));
 		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
-
-		setIsOpenJetPack(true);
 	}
 
 	FPSCamera* CubePlayer::camera() const
