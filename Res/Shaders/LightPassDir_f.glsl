@@ -136,6 +136,7 @@ vec3 EnvBRDFApprox( vec3 SpecularColor, float Roughness, float NoV )
 	vec4 r = Roughness * c0 + c1;
 	float a004 = min( r.x * r.x, exp2( -9.28 * NoV ) ) * r.x + r.y;
 	vec2 AB = vec2( -1.04, 1.04 ) * a004 + r.zw;
+	AB.y *= clamp( 50.0 * SpecularColor.g, 0, 1);
 	return SpecularColor * AB.x + AB.y;
 }
 
@@ -167,7 +168,6 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 
 	float NoV = max(0.0, dot(N, V));
 
-	// Roughness = 0.0;
 	// calculate per-light radiance
 	vec3 H = normalize(V + L);
 	vec3 radiance     = lightColor;
@@ -190,7 +190,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	float NdotL = max(dot(N, L), 0.0);
 
 	//IBL 
-	const float MAX_REFLECTION_LOD = 4.0;
+	const float MAX_REFLECTION_LOD = 7.0;
 	vec3 reflectionVector = normalize(reflect(-V, N));
 
 	#if CUBE_MAP_IBL
@@ -203,7 +203,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	#endif
 	irradiance = pow(irradiance, vec3(2.2));
 	prefilteredColor = pow(prefilteredColor, vec3(2.2));
-	vec3 ambientDiffuse = kD * irradiance * albedo;
+	vec3 ambientDiffuse = kD * irradiance * albedo * 3.14;
 	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 	vec3 ambient = (ambientDiffuse + ambientSpecular) * gAmbientLight.intensity;
 	

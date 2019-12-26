@@ -37,7 +37,7 @@ vec3 CalcBumpedNormal()
 void main()
 {
     // Set fragment color from texture
-	gl_FragData[0] = texture2D(DiffuseMap,v_texcoord)*TU_color * v_color;
+	gl_FragData[0] = pow(texture2D(DiffuseMap,v_texcoord), vec4(2.2))*TU_color * v_color;
 	float metallic = texture2D(MetallicMap,v_texcoord).r;
 	float roughness = texture2D(RoughnessMap,v_texcoord).r;
 	gl_FragData[1] = vec4(v_position,1.0);
