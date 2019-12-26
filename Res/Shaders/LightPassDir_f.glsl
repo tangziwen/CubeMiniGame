@@ -190,7 +190,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	float NdotL = max(dot(N, L), 0.0);
 
 	//IBL 
-	const float MAX_REFLECTION_LOD = 7.0;
+	const float MAX_REFLECTION_LOD = 8.0;
 	vec3 reflectionVector = normalize(reflect(-V, N));
 
 	#if CUBE_MAP_IBL

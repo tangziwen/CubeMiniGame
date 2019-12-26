@@ -25,6 +25,7 @@ vec3 CalcBumpedNormal()
 	Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
 	vec3 Bitangent = cross(Tangent, Normal);
 	vec3 BumpMapNormal = texture(NormalMap, v_texcoord).xyz;
+	BumpMapNormal.y = 1.0 - BumpMapNormal.y;//we use directx style normal map. 1.0 - Green
 	BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
 	vec3 NewNormal;
 	mat3 TBN = mat3(Tangent, Bitangent, Normal);
