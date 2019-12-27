@@ -68,18 +68,18 @@ namespace tzw
 
 		m_previewItem = new PreviewItem();
 		m_gunModel = Model::create("Models/Hammer.tzw");
-		auto tex = TextureMgr::shared()->getByPath("Models/hammer_diffuse.png");
+		auto tex = TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_BaseColor.png", true);
 		m_gunModel->getMat(0)->setTex("DiffuseMap", tex);
-		auto metallicTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Metallic.png");
+		auto metallicTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Metallic.png", true);
 		m_gunModel->getMat(0)->setTex("MetallicMap", metallicTexture);
 
-		auto roughnessTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Roughness.png");
+		auto roughnessTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Roughness.png", true);
 		m_gunModel->getMat(0)->setTex("RoughnessMap", roughnessTexture);
 
-		auto normalMapTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Normal.png");
+		auto normalMapTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Normal.png", true);
 		m_gunModel->getMat(0)->setTex("NormalMap", normalMapTexture);
 		m_gunModel->setPos(0.09,-0.15, -0.22);
-		m_gunModel->setRotateE(vec3(0, 10, 0));
+		m_gunModel->setRotateE(vec3(0, 3, 0));
 		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
 	}
@@ -109,14 +109,14 @@ namespace tzw
 		static float theTime = 0.0f;
 		vec3 oldPos = m_gunModel->getPos();
 		float offset = 0.002;
-		float freq = 1;
+		float freq = 1.2;
 		if (m_camera->getIsMoving())
 		{
 			offset = 0.006;
 			freq = 6;
 		}
 		theTime += freq * dt;
-		m_gunModel->setPos(vec3(oldPos.x, -0.12 + sinf(theTime) * offset, oldPos.z));
+		m_gunModel->setPos(vec3(oldPos.x, -0.15 + sinf(theTime) * offset, oldPos.z));
 		if (checkIsNeedUpdateChunk())
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
