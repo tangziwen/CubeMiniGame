@@ -27,6 +27,7 @@ struct VisualInfo
 	std::string diffusePath;
 	std::string roughnessPath;
 	std::string metallicPath;
+	std::string normalMapPath;
 	std::vector<std::string> extraFileList;
 };
 

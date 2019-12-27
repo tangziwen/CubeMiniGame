@@ -150,6 +150,14 @@ void ItemMgr::loadFromFile(std::string filePath)
 							gameItem->m_visualInfo.metallicPath = "Texture/BuiltInTexture/defaultMetallic.png";
 						}
 
+						if(visualData.HasMember("NormalMapPath")) 
+						{
+							gameItem->m_visualInfo.normalMapPath = visualData["NormalMapPath"].GetString();
+						}
+						else
+						{
+							gameItem->m_visualInfo.normalMapPath = "Texture/BuiltInTexture/defaultNormalMap.png";
+						}
 						if(visualData.HasMember("ExtraMeshList"))
 						{
 							for(int k = 0; k < visualData["ExtraMeshList"].Size(); k++)

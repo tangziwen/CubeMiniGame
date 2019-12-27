@@ -675,6 +675,7 @@ namespace tzw
 			model->getMat(0)->setTex("DiffuseMap", tex);
 			model->getMat(0)->setTex("RoughnessMap", TextureMgr::shared()->getByPath(item->m_visualInfo.roughnessPath, true));
 			model->getMat(0)->setTex("MetallicMap", TextureMgr::shared()->getByPath(item->m_visualInfo.metallicPath, true));
+			model->getMat(0)->setTex("NormalMap", TextureMgr::shared()->getByPath(item->m_visualInfo.normalMapPath, true));
 			model->setScale(size.x, size.y, size.z);
 			m_node = model;
 			isNeedSetDefaultMat = false;
