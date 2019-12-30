@@ -203,7 +203,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	#endif
 	irradiance = pow(irradiance, vec3(2.2));
 	prefilteredColor = pow(prefilteredColor, vec3(2.2));
-	vec3 ambientDiffuse = kD * irradiance * albedo * 3.14;
+	vec3 ambientDiffuse = kD * irradiance * albedo / PI;
 	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 	vec3 ambient = (ambientDiffuse + ambientSpecular) * gAmbientLight.intensity;
 	

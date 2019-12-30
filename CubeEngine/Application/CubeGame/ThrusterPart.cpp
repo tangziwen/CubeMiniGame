@@ -212,6 +212,8 @@ GameNodeEditorNode* ThrusterPart::getGraphNode() const
 
 ThrusterPart::~ThrusterPart()
 {
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
 	BuildingSystem::shared()->removeThruster(this);
 	delete m_graphNode;
 }

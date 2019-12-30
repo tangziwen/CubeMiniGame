@@ -60,6 +60,8 @@ CannonPart::CannonPart(std::string itemName):m_firingVelocity(50.0f),m_recoil(50
 
 CannonPart::~CannonPart()
 {
+	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
 
@@ -148,13 +150,29 @@ void CannonPart::drawInspect()
 	{
 		setRecoil(recoil);
 	}
+	if(ImGui::RadioButton(TRC(u8"Å×ÉäÎï"),m_fireMode == 0)) m_fireMode = 0;
+	if(ImGui::RadioButton(TRC(u8"¼¤¹â"),m_fireMode == 1)) m_fireMode = 1;
+	if(ImGui::RadioButton(TRC(u8"Âö³å¼¤¹â"),m_fireMode == 2)) m_fireMode = 2;
+	
 }
 
 void CannonPart::use()
 {
 	//shoot bullet
-	auto firePos = getWorldPos() + m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0);
-	BulletMgr::shared()->fire(firePos, m_node->getForward(), getFiringVelocity(), BulletType::PulseLaser);
+	auto firePos = getWorldPos() - m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0);
+	switch (m_fireMode)
+	{
+		case 0:
+			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::Projecttile);
+		break;
+		case 1:
+			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::HitScanLaser);
+		break;
+		case 2:
+			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::PulseLaser);
+		break;
+	}
+	
 
 
 	tlog("fire");
@@ -169,7 +187,7 @@ void CannonPart::use()
 	emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 0.0, 1.0), vec4(0.6, 0.6, 0.0, 0.1)));
 	emitter->setIsState(ParticleEmitter::State::Playing);
 	emitter->setDepthBias(0.05);
-	emitter->setPos(vec3(0.0, 0.0, -0.4));
+	emitter->setPos(vec3(0.0, 0.0, 0.4));
 	emitter->setIsInfinite(false);
 
 
@@ -183,14 +201,14 @@ void CannonPart::use()
 	emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
 	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 0.3, 1.0), vec4(0.26, 0.26, 0.0, 0.1)));
 	emitter2->setIsState(ParticleEmitter::State::Playing);
-	emitter2->setPos(vec3(0.0, 0.0, -0.4));
+	emitter2->setPos(vec3(0.0, 0.0, 0.4));
 	emitter2->setDepthBias(0.05);
 	emitter2->setIsInfinite(false);
 	m_node->addChild(emitter);
 	m_node->addChild(emitter2);
 	
 	//apply recoil
-	m_parent->m_rigid->applyImpulse(m_node->getForward() *-1* getRecoil(), m_node->getPos());
+	m_parent->m_rigid->applyImpulse(m_node->getForward() * getRecoil(), m_node->getPos());
 }
 
 bool CannonPart::isNeedDrawInspect()

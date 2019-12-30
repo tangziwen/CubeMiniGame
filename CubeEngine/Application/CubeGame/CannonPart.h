@@ -30,6 +30,7 @@ namespace tzw
 		GameNodeEditorNode * m_graphNode;
 		float m_firingVelocity;
 		float m_recoil;
+		int m_fireMode;
 	public:
 		float getFiringVelocity() const;
 		void setFiringVelocity(const float firingVelocity);

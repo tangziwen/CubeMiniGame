@@ -279,12 +279,17 @@
 		"desc":"炮筒",
 		"Type":"GAME_PART_CANNON",
 		"attach":[
-				{"pos" :[0.0, 0.0, 0.4],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]}
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
 				],
 		"Visual":
 		{
-			"Type":"CylinderPrimitive",
-			"size":[0.1, 0.1,0.8]
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Cannon/Cannon.tzw",
+			"DiffusePath":"Blocks/Cannon/cannon_DefaultMaterial_BaseColor.png",
+			"RoughnessPath":"Blocks/Cannon/cannon_DefaultMaterial_Roughness.png",
+			"MetallicPath":"Blocks/Cannon/cannon_DefaultMaterial_Metallic.png",
+			"NormalMapPath":"Blocks/Cannon/cannon_DefaultMaterial_Normal.png"
 		},
 		"Physics":
 		{
