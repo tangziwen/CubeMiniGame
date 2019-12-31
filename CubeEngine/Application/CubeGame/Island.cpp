@@ -523,6 +523,20 @@ void Island::loadInternalConnected()
 
 AABB Island::getAABBInWorld()
 {
-	return m_rigid->getAABBInWorld();
+	if(m_rigid->isInWorld())
+	{
+		return m_rigid->getAABBInWorld();
+	}else
+	{
+	btVector3 aabbMin,aabbMax;
+	btTransform worldTrans;
+	worldTrans.setIdentity();
+	worldTrans.setFromOpenGLMatrix(this->m_node->getTransform().data());
+	getCompoundShape()->getRawShape()->getAabb(worldTrans,aabbMin,aabbMax);
+	AABB result;
+	result.update(vec3(aabbMin.x(),aabbMin.y(), aabbMin.z()));
+	result.update(vec3(aabbMax.x(),aabbMax.y(), aabbMax.z()));
+	return result;
+	}
 }
 }

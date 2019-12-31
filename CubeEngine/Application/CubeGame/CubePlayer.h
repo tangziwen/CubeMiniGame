@@ -65,6 +65,7 @@ namespace tzw
 		InSeatViewMode getSeatViewMode() const;
 		void setSeatViewMode(const InSeatViewMode seatViewMode);
 		void setIsOpenJetPack(bool isOpen);
+		bool onScroll(vec2 offset) override;
 	private:
 		void handleSitDown();
 		PreviewItem * m_previewItem;

@@ -150,9 +150,9 @@ void CannonPart::drawInspect()
 	{
 		setRecoil(recoil);
 	}
-	if(ImGui::RadioButton(TRC(u8"Å×ÉäÎï"),m_fireMode == 0)) m_fireMode = 0;
-	if(ImGui::RadioButton(TRC(u8"¼¤¹â"),m_fireMode == 1)) m_fireMode = 1;
-	if(ImGui::RadioButton(TRC(u8"Âö³å¼¤¹â"),m_fireMode == 2)) m_fireMode = 2;
+	if(ImGui::RadioButton(TRC(u8"Å×ÉäÎï"),m_bulletMode == 0)) m_bulletMode = 0;
+	if(ImGui::RadioButton(TRC(u8"¼¤¹â"),m_bulletMode == 1)) m_bulletMode = 1;
+	if(ImGui::RadioButton(TRC(u8"Âö³å¼¤¹â"),m_bulletMode == 2)) m_bulletMode = 2;
 	
 }
 
@@ -160,7 +160,7 @@ void CannonPart::use()
 {
 	//shoot bullet
 	auto firePos = getWorldPos() - m_node->getForward() * (m_height / 2.0 + 0.01) + vec3(0, 0, 0);
-	switch (m_fireMode)
+	switch (m_bulletMode)
 	{
 		case 0:
 			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::Projecttile);
@@ -226,6 +226,7 @@ void CannonPart::dump(rapidjson::Value& partData, rapidjson::Document::Allocator
 	GamePart::dump(partData, allocator);
 	partData.AddMember("FiringVelocity", m_firingVelocity, allocator);
 	partData.AddMember("Recoil", m_recoil, allocator);
+	partData.AddMember("BulletMode", m_bulletMode, allocator);
 }
 
 void CannonPart::load(rapidjson::Value& partData)
@@ -235,6 +236,8 @@ void CannonPart::load(rapidjson::Value& partData)
 		m_firingVelocity = partData["FiringVelocity"].GetDouble();
 	if(partData.HasMember("Recoil"))
 		m_recoil = partData["Recoil"].GetDouble();
+	if(partData.HasMember("BulletMode"))
+		m_bulletMode = partData["BulletMode"].GetDouble();
 }
 
 float CannonPart::getFiringVelocity() const

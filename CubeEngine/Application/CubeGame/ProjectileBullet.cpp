@@ -4,12 +4,9 @@
 #include "2D/LabelNew.h"
 #include "Collision/PhysicsMgr.h"
 #include "BulletCollision/CollisionDispatch/btCollisionObject.h"
-#include "3D/Particle/ParticleEmitter.h"
-#include "3D/Particle/ParticleInitSizeModule.h"
-#include "3D/Particle/ParticleInitLifeSpanModule.h"
-#include "3D/Particle/ParticleInitAlphaModule.h"
-#include "3D/Particle/ParticleUpdateColorModule.h"
-#include "3D/Particle/ParticleUpdateSizeModule.h"
+#include "3D/Particle/ParticleSystem.h"
+
+
 namespace tzw
 {
 
@@ -31,11 +28,11 @@ namespace tzw
 			node->removeFromParent();
 			delete m_rigidBody;
 			delete node;
-			if(m_hitSfx)
-			{
-				m_hitSfx->removeFromParent();
-				delete m_hitSfx;
-			}
+			//if(m_hitSfx)
+			//{
+			//	m_hitSfx->removeFromParent();
+			//	delete m_hitSfx;
+			//}
 		}
 	}
 
@@ -49,11 +46,11 @@ namespace tzw
 		if(m_isFirstTimeHit)
 		{
 			auto emitter = new ParticleEmitter(1);
+
 			emitter->setIsLocalPos(true);
 			emitter->setTex("ParticleTex/smoke_04.png");
 			emitter->setSpawnRate(0.3);
 			emitter->addInitModule(new ParticleInitSizeModule(0.5, 0.7));
-			//emitter->addInitModule(new ParticleInitVelocityModule(vec3(0, 0.0, 0.0), vec3(0, 0.0, 0.0 )));
 			emitter->addInitModule(new ParticleInitLifeSpanModule(0.3, 0.3));
 			emitter->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
 			emitter->addUpdateModule(new ParticleUpdateColorModule(vec4(1.0, 1.0, 1.0, 1.0), vec4(0.8, 0.8, 1.0, 0.0)));
@@ -63,8 +60,10 @@ namespace tzw
 			emitter->setPos(m_rigidBody->parent()->getWorldPos());
 			emitter->setIsInfinite(false);
 	        emitter->setBlendState(1);
-	        g_GetCurrScene()->addNode(emitter);
-			m_hitSfx = emitter;
+			auto particle  = new ParticleSystem();
+			particle->addEmitter(emitter);
+
+	        g_GetCurrScene()->addNode(particle);
 			m_isFirstTimeHit = false;
 		}
 	}

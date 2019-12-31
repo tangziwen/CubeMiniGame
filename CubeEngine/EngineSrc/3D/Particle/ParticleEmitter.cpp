@@ -302,6 +302,11 @@ void ParticleEmitter::setBillBoardPolicy(BillboardPolicy policy)
 	}
 }
 
+ParticleEmitter::State ParticleEmitter::getState()
+{
+	return m_state;
+}
+
 bool
 ParticleEmitter::isIsInfinite() const
 {

@@ -200,7 +200,7 @@ namespace tzw
         case TZW_KEY_H:
 			{
 				auto m = getTransform().data();
-				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::PulseLaser);
+				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
         		break;
         		if(!GUISystem::shared()->isUiCapturingInput())
 				MainMenu::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
@@ -546,5 +546,12 @@ namespace tzw
 	void CubePlayer::setIsOpenJetPack(bool isOpen)
 	{
 		m_camera->setIsEnableGravity(!isOpen);
+	}
+
+	bool CubePlayer::onScroll(vec2 offset)
+	{
+		tlog("offset %f %f", offset.getX(), offset.getY());
+		m_orbitcamera->zoom(-1.f * offset.getY() * 0.25);
+		return true;
 	}
 } // namespace tzw

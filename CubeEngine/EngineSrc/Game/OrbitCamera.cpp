@@ -16,16 +16,18 @@ const float HeightThreadHold = 0.01;
 OrbitCamera::OrbitCamera()
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(6,5,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true)
-    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false)
+    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false),m_defaultDist(5.0f)
 {
     offsetToCentre = 0.6;
     m_distToFront = 0.2;
+	m_dist = m_defaultDist;
     m_enableFPSFeature = true;
     setUseCustomFrustumUpdate(true);
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
 	setLocalPiority(-1);
 	resetDirection();
+	
 	m_focusNode = nullptr;
 }
 
@@ -396,6 +398,16 @@ void OrbitCamera::checkCollision(ColliderEllipsoid * thePackage)
     group.checkCollide(thePackage);
 }
 
+float OrbitCamera::getDefaultDist() const
+{
+	return m_defaultDist;
+}
+
+void OrbitCamera::setDefaultDist(const float defaultDist)
+{
+	m_defaultDist = defaultDist;
+}
+
 bool OrbitCamera::getIsMoving() const
 {
     return m_isMoving;
@@ -489,6 +501,13 @@ void OrbitCamera::resetDirection()
 {
 	m_longitude = 0.0;
 	m_latitude = 60.0 * 3.14 / 180.0f;
+	m_dist = m_defaultDist;
+}
+
+void OrbitCamera::zoom(float dist)
+{
+	m_dist += dist;
+	m_dist = std::max(std::min(m_dist, 20.0f), 1.5f);
 }
 } // namespace tzw
 

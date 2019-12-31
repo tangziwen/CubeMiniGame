@@ -50,6 +50,9 @@ public:
 	void setFocusNode(Node * focusNode);
 	virtual Matrix44 getTransform();
 	void resetDirection();
+	void zoom(float dist);
+	float getDefaultDist() const;
+	void setDefaultDist(const float defaultDist);
 private:
     void init(Camera * cloneObj);
     void collideAndSlide(vec3 vel, vec3 gravity);
@@ -77,7 +80,8 @@ private:
     bool m_isMoving;
 	float m_longitude;
 	float m_latitude;
-	float m_dist = 5.0f;
+	float m_dist;
+	float m_defaultDist;
 	Node * m_focusNode;
 };
 

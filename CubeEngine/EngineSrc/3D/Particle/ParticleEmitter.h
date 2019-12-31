@@ -37,6 +37,7 @@ public:
 	void setBlendState(int state);
 	void setDepthBias(const float depthBias);
 	void setBillBoardPolicy(BillboardPolicy policy);
+	State getState();
 private:
 	std::vector<ParticleEmitterModule *> m_initModule;
 	std::vector<ParticleEmitterModule *> m_updateModule;
