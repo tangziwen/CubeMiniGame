@@ -580,6 +580,11 @@ void MainMenu::ShowExampleAppConsole(bool* p_open)
 	ConsolePanel::shared()->Draw("Console", p_open);
 }
 
+void MainMenu::drawInventory()
+{
+	
+}
+
 bool MainMenu::isOpenAssetEditor() const
 {
 	return getWindowIsShow(WindowType::INVENTORY);
@@ -632,7 +637,7 @@ void MainMenu::drawEntryInterFace()
 {
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
+	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
 
 		if(ImGui::Button(TRC(u8"¿ªÊ¼ÓÎÏ·"), ImVec2(160, 35)))

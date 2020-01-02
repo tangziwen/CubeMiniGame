@@ -23,7 +23,24 @@ namespace tzw
 		return (m_type == GamePartType::GAME_PART_LIFT) || (m_type == GamePartType::SPECIAL_PART_PAINTER) ||(m_type == GamePartType::SPECIAL_PART_DIGGER)  ;
 	}
 
-GameItem::GameItem()
+	bool GameItem::hasAttributePanel()
+	{
+		bool hasAttr = false;
+		switch(m_type)
+		{
+		case GamePartType::GAME_PART_LIFT: hasAttr = true;break;
+		case GamePartType::GAME_PART_CONTROL: break;
+		case GamePartType::GAME_PART_THRUSTER: hasAttr = true;break;
+		case GamePartType::GAME_PART_CANNON: hasAttr = true;break;
+		case GamePartType::GAME_PART_BEARING: hasAttr = true;break;
+		case GamePartType::GAME_PART_SPRING: hasAttr = true;break;
+		default:
+			break;
+		}
+		return hasAttr;
+	}
+
+	GameItem::GameItem()
 {
 
 }

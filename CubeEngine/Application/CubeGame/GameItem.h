@@ -46,6 +46,7 @@ struct PhysicsInfo
 struct GameItem
 {
 	bool isSpecialFunctionItem();
+	bool hasAttributePanel();
 	GameItem();
 	std::string m_name;
 	GamePartType m_type;

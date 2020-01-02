@@ -395,7 +395,14 @@ namespace tzw
 			case GamePartType::GAME_PART_LIFT:
 				if(!BuildingSystem::shared()->getLift())
 				{
-					isNeedSpecialShowBySelected = true;
+					//如果当前指向的方块有属性面板，也不显示
+					if(m_currPointPart && m_currPointPart->getItem()->hasAttributePanel())
+					{
+						isNeedSpecialShowBySelected = false;
+					} else
+					{
+						isNeedSpecialShowBySelected = true;
+					}
 				}
 				else //已经放置了不需要再显示
 				{

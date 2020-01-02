@@ -61,6 +61,7 @@ private:
 	void drawToolsMenu();
 	void ShowExampleAppLog(bool* p_open);
 	void ShowExampleAppConsole(bool* p_open);
+	void drawInventory();
 	
 	bool m_isShowProfiler;
 	bool m_isShowConsole;
