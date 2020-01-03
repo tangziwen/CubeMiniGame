@@ -17,6 +17,7 @@ public:
 		LinearMipMapLinear,
 		NearestMipMapLinear,
     };
+	Texture();
     Texture(std::string filePath);
 	Texture(std::string filePath, char faceMode[6]);
     Texture(unsigned char * rawData,int w,int h,bool needFlipY = true);
@@ -40,6 +41,10 @@ private:
     void setMagFilter(FilterType t);
     int m_width,m_height;
     unsigned short m_textureId;
+public:
+	unsigned short getTextureId() const;
+	void setTextureId(const unsigned short textureId);
+private:
     bool m_isHaveMipMap;
 };
 

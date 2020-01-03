@@ -77,6 +77,11 @@ Material* Model::getMat(int index)
 	return m_effectList[index];
 }
 
+Material* Model::getMaterial() const
+{
+	return m_effectList[0];
+}
+
 void Model::setMaterial(Material* mat)
 {
 	m_effectList[0] = mat;
@@ -102,6 +107,11 @@ int Model::addExtraMeshList(std::vector<Mesh*> newMeshList)
 {
 	m_extraMeshList.push_back(newMeshList);
 	return m_extraMeshList.size() - 1;
+}
+
+int Model::getMeshCount()
+{
+	return m_meshList.size();
 }
 
 int Model::getCurrPose() const

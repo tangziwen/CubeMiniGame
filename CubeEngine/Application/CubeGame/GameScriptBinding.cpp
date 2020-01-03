@@ -77,6 +77,7 @@ namespace tzw
 		BIND_PROP(GameItem, m_desc)
 		BIND_FUNC(GameItem, getTypeInInt)
 		BIND_FUNC(GameItem, isSpecialFunctionItem)
+		BIND_FUNC(GameItem, getThumbNailTextureId)
 		BIND_END_CLASS
 
 

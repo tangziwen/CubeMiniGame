@@ -33,6 +33,9 @@ public:
 	virtual void setUpCommand(RenderCommand & command);
 	int setOctNodeIndex(int index);
 	int getOctNodeIndex();
+	virtual Mesh * getMesh(int index);
+	virtual Mesh * getMesh();
+	virtual int getMeshCount();
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;

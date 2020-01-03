@@ -164,35 +164,34 @@ Chunk::getIsAccpectOcTtree() const
   return m_isLoaded;
 }
 
-/// <summary>
-/// Submits the draw command.
-/// </summary>
-void
-Chunk::submitDrawCmd(RenderCommand::RenderType passType)
-{
-  /// just for test
-  if (!m_isLoaded)
-    return;
-  if (m_mesh->getIndicesSize() == 0)
-    return;
-  if (m_isNeedSubmitMesh)
-    return;
-	if(m_mesh->getIndexBuf()->bufferId() == 0)
-	return;
-  if (passType != RenderCommand::RenderType::Common) 
-  {
-	  return;
-  }
-  RenderCommand command(m_mesh, m_material, passType);
-  setUpTransFormation(command.m_transInfo);
-  command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-  Renderer::shared()->addRenderCommand(command);
-  auto player = GameWorld::shared()->getPlayer();
-  if (player->getPos().distance(m_worldAABBCache.centre()) < 50.0f) {
-    m_grass->pushCommand();
-    m_grass2->pushCommand();
-  }
-}
+	/// <summary>
+	/// Submits the draw command.
+	/// </summary>
+	void Chunk::submitDrawCmd(RenderCommand::RenderType passType)
+	{
+	  /// just for test
+	  if (!m_isLoaded)
+	    return;
+	  if (m_mesh->getIndicesSize() == 0)
+	    return;
+	  if (m_isNeedSubmitMesh)
+	    return;
+		if(m_mesh->getIndexBuf()->bufferId() == 0)
+		return;
+	  if (passType != RenderCommand::RenderType::Common) 
+	  {
+		  return;
+	  }
+	  RenderCommand command(m_mesh, m_material, passType);
+	  setUpTransFormation(command.m_transInfo);
+	  command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+	  Renderer::shared()->addRenderCommand(command);
+	  auto player = GameWorld::shared()->getPlayer();
+	  if (player->getPos().distance(m_worldAABBCache.centre()) < 50.0f) {
+	    m_grass->pushCommand();
+	    m_grass2->pushCommand();
+	  }
+	}
 
 void
 Chunk::load()

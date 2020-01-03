@@ -91,12 +91,12 @@ namespace tzw
 
 	void imgui_ImageButton(unsigned int val, ImVec2 size)
 	{
-		ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size);
+		ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1, 0));
 	}
 
 	void imgui_Image(unsigned int val, ImVec2 size)
 	{
-		ImGui::Image(reinterpret_cast<ImTextureID> (val), size);
+		ImGui::Image(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1, 0));
 	}
 	void imgui_PushStyleColor(int styleEnum, ImVec4 color)
 	{
@@ -114,6 +114,7 @@ namespace tzw
 	void g_init_engine_libs()
 	{
 		auto luaState = static_cast<lua_State *>(ScriptPyMgr::shared()->getState());
+
 
 		
 		BIND_START(luaState)
@@ -186,6 +187,7 @@ namespace tzw
 		BIND_PROP(ImVec2, y)
 		.endClass()
 
+	
 		BIND_BEGIN_CLASS(ImVec4)
 		.addConstructor <void (*) (float, float, float, float)> ()
 		BIND_PROP(ImVec4, x)
@@ -211,8 +213,12 @@ namespace tzw
 		BIND_FUNC(ImGui, EndDragDropSource)
 		//BIND_FUNC(ImGui, MenuItem)
 		BIND_FUNC(ImGui, BeginPopup)
+		BIND_FUNC(ImGui, GetItemRectMax)
+		BIND_FUNC(ImGui, GetItemRectMin)
 		BIND_FUNC(ImGui, OpenPopup)
 		BIND_FUNC(ImGui, GetWindowWidth)
+		BIND_FUNC(ImGui, GetWindowContentRegionMax)
+		BIND_FUNC(ImGui, GetWindowPos)
 		BIND_BEGIN_CLASS(ImGuiStyle)
 		BIND_PROP(ImGuiStyle, ItemSpacing)
 		BIND_PROP(ImGuiStyle, FramePadding)

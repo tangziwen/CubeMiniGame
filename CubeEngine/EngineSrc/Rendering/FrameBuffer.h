@@ -21,6 +21,7 @@ public:
 	void gen();
 	void setIsLinearFilter(bool isUseLinear);
 	bool getIsLinearFilter() const;
+	integer_u getTexture(int index);
 private:
     integer_u m_width;
     integer_u m_height;

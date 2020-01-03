@@ -26,6 +26,7 @@ public:
     void setTextureWarp(unsigned int textureID, RenderFlag::WarpAddress warpAddress, RenderFlag::TextureType type);
     void bindFrameBuffer(unsigned int frameBufferID);
 	void setBlendEnable(bool isEnable);
+	void clear();
     void blitFramebuffer(int srcX0,
                            int srcY0,
                            int srcX1,

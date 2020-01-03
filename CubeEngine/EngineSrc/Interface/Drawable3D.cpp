@@ -125,6 +125,21 @@ int Drawable3D::getOctNodeIndex()
 	return m_octNodeIndex;
 }
 
+Mesh* Drawable3D::getMesh(int index)
+{
+	return nullptr;
+}
+
+Mesh* Drawable3D::getMesh()
+{
+	return nullptr;
+}
+
+int Drawable3D::getMeshCount()
+{
+	return 1;
+}
+
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 {
 	init(obj, count);

@@ -98,6 +98,11 @@ Mesh* RightPrismPrimitive::getMesh()
 	return m_mesh;
 }
 
+Mesh* RightPrismPrimitive::getMesh(int index)
+{
+	return m_mesh;
+}
+
 vec3 RightPrismPrimitive::getWorldPos(vec3 localPos)
 {
 	auto theMat = getTransform();

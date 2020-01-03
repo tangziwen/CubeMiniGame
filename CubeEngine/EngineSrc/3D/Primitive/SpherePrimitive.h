@@ -19,7 +19,8 @@ namespace tzw
 		void setRadius(float radius);
 		int resolution() const;
 		void setResolution(int resolution);
-		Mesh * getMesh();
+		Mesh * getMesh() override;
+		Mesh * getMesh(int index) override;
 	protected:
 		void initMesh();
 		virtual void checkCollide(ColliderEllipsoid * package);

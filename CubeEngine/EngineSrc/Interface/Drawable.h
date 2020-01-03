@@ -15,7 +15,7 @@ public:
     void setCamera(Camera *camera);
     virtual Node::NodeType getNodeType();
     virtual void reCache();
-    Material *getMaterial() const;
+	virtual Material *getMaterial() const;
 	virtual void setMaterial(Material *technique);
     virtual void setUpTransFormation(TransformationInfo & info);
 	virtual void setUpCommand(RenderCommand & command);

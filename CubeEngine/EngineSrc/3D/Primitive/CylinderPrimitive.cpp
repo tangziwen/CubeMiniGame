@@ -124,6 +124,11 @@ Mesh* CylinderPrimitive::getMesh()
 	return m_mesh;
 }
 
+Mesh* CylinderPrimitive::getMesh(int index)
+{
+	return m_mesh;
+}
+
 Mesh* CylinderPrimitive::getTopBottomMesh()
 {
 	return m_topBottomMesh;

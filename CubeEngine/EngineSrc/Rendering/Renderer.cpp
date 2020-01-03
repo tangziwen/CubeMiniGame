@@ -11,7 +11,7 @@
 #include "../3D/ShadowMap/ShadowMap.h"
 #include <random>
 #include "Shader/ShaderMgr.h"
-
+#include "3D/Thumbnail.h"
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
 Renderer::Renderer(): m_quad(nullptr), m_dirLightProgram(nullptr), m_postEffect(nullptr), m_blurVEffect(nullptr),
@@ -93,6 +93,7 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 std::vector<FrameBuffer *> autoExposureList;
 void Renderer::renderAll()
 {
+	handleThumbNail();
 	Engine::shared()->setDrawCallCount(int(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size()));
 	if(m_enable3DRender)
 	{
@@ -727,6 +728,11 @@ void Renderer::onChangeScreenSize(int newW, int newH)
 	glScissor(0, 0, newW, newH);
 }
 
+void Renderer::updateThumbNail(ThumbNail* thumb)
+{
+	m_thumbNailList.push_back(thumb);
+}
+
 void Renderer::geometryPass()
 {
 	m_gbuffer->bindForWriting();
@@ -1270,6 +1276,16 @@ void Renderer::setIBL(std::string diffuseMap, std::string specularMap, bool isCu
 
 	m_specularMap->setFilter(Texture::FilterType::LinearMipMapLinear, 1);
 	m_specularMap->setFilter(Texture::FilterType::Linear, 2);
+}
+
+void Renderer::handleThumbNail()
+{
+	for(auto thumbnail : m_thumbNailList)
+	{
+		thumbnail->doSnapShot();
+		thumbnail->setIsDone(true);
+	}
+	//m_thumbNailList.clear();
 }
 
 bool Renderer::isShadowEnable() const

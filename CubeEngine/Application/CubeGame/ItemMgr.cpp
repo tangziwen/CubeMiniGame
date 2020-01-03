@@ -12,6 +12,7 @@
 #include <rapidjson/document.h>
 #include "Utility/log/Log.h"
 #include "Utility/file/Tfile.h"
+#include "Rendering/Renderer.h"
 
 namespace tzw
 {
@@ -192,8 +193,18 @@ void ItemMgr::loadFromFile(std::string filePath)
 					}
 				}
 			}
-			
-			
+
+			if(!gameItem->isSpecialFunctionItem()) 
+			{
+				auto part = new GamePart();
+				part->initFromItem(gameItem);
+
+				gameItem->m_thumbNail = new ThumbNail(part->getNode());
+				Renderer::shared()->updateThumbNail(gameItem->m_thumbNail);
+			} else
+			{
+				gameItem->m_thumbNail = nullptr;
+			}
 			m_itemMap[name] = gameItem;
 			m_itemList.push_back(gameItem);
 		}

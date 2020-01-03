@@ -2,6 +2,7 @@
 #include "Math/vec3.h"
 #include <vector>
 #include "GamePartType.h"
+#include "3D/Thumbnail.h"
 namespace tzw
 {
 struct AttachmentInfo
@@ -55,5 +56,7 @@ struct GameItem
 	VisualInfo m_visualInfo;
 	PhysicsInfo m_physicsInfo;
 	int getTypeInInt();
+	int getThumbNailTextureId();
+	ThumbNail *m_thumbNail;
 };
 }

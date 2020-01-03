@@ -6,6 +6,9 @@
 #include "Utility/log/Log.h"
 
 namespace tzw {
+	Texture::Texture()
+	{
+	}
 
 Texture::Texture(std::string filePath)
 {
@@ -157,7 +160,17 @@ Texture::setMagFilter(Texture::FilterType t)
   }
 }
 
-bool
+	unsigned short Texture::getTextureId() const
+	{
+		return m_textureId;
+	}
+
+	void Texture::setTextureId(const unsigned short textureId)
+	{
+		m_textureId = textureId;
+	}
+
+	bool
 Texture::getIsHaveMipMap() const
 {
   return m_isHaveMipMap;

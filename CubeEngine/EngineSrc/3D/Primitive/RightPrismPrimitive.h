@@ -12,7 +12,8 @@ public:
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);
 	virtual bool isHit(Ray ray);
-	Mesh * getMesh();
+	Mesh * getMesh() override;
+	Mesh * getMesh(int index) override;
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();

@@ -13,14 +13,16 @@ public:
     void initWithFile(std::string modelFilePath);
     static Model * create(std::string modelFilePath);
 	void submitDrawCmd(RenderCommand::RenderType passType) override;
-	Mesh * getMesh(int id);
-	Mesh * getMesh();
+	Mesh * getMesh(int id) override;
+	Mesh * getMesh() override;
 	Material * getMat(int index);
+	Material * getMaterial() const override;
 	void setMaterial(Material * mat) override;
 	void setColor(vec4 color) override;
 	std::vector<Mesh * > getMeshList();
 	void setMeshList(std::vector<Mesh * > newMeshList);
 	int addExtraMeshList(std::vector<Mesh * >newMeshList);
+	int getMeshCount() override;
 private:
     std::vector<Mesh *> m_meshList;
     std::vector<Material * >m_effectList;

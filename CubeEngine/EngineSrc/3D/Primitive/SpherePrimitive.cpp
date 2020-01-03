@@ -132,4 +132,9 @@ Mesh* SpherePrimitive::getMesh()
 {
 		return m_mesh;
 }
+
+	Mesh* SpherePrimitive::getMesh(int index)
+	{
+		return m_mesh;
+	}
 }

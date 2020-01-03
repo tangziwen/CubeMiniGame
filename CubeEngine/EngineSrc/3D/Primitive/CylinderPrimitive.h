@@ -15,7 +15,8 @@ public:
 	void setTex(Texture * texture);
 	void setTopBottomTex(Texture * texture);
 	virtual bool isHit(Ray ray);
-	Mesh * getMesh();
+	Mesh * getMesh() override;
+	Mesh * getMesh(int index) override;
 	Mesh * getTopBottomMesh();
 	Material * getTopBottomMaterial();
 protected:

@@ -138,6 +138,11 @@ bool FrameBuffer::getIsLinearFilter() const
 	return m_isLinearFilter;
 }
 
+integer_u FrameBuffer::getTexture(int index)
+{
+	return m_colorTexs[index];
+}
+
 void FrameBuffer::bindForReading()
 {
 	glBindFramebuffer(GL_READ_FRAMEBUFFER, m_fbo);

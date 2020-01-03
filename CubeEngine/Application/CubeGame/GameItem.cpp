@@ -49,4 +49,16 @@ namespace tzw
 	{
 		return (int) m_type;
 	}
+
+	int GameItem::getThumbNailTextureId()
+	{
+		if(m_thumbNail)
+		{
+			return m_thumbNail->getTexture()->handle();
+		}
+		else
+		{
+			return 0;	
+		}
+	}
 }

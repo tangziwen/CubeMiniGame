@@ -7,6 +7,7 @@
 #include "EngineSrc/3D/Effect/Effect.h"
 namespace tzw {
 class Mesh;
+class ThumbNail;
 class Renderer
 {
 public:
@@ -48,6 +49,7 @@ public:
 	void setAaEnable(const bool aaEnable);
 	void initBuffer();
 	void onChangeScreenSize(int newW, int newH);
+	void updateThumbNail(ThumbNail * thumb);
 private:
     void initQuad();
 	void initMaterials();
@@ -76,6 +78,7 @@ private:
 	void copyToFrame(FrameBuffer * bufferSrc, FrameBuffer *bufferDst, Material * mat);
 	void copyToScreen(FrameBuffer * bufferSrc, Material * mat);
 	void setIBL(std::string diffuseMap, std::string specularMap, bool isCubeMap);
+	void handleThumbNail();
     Mesh * m_quad;
     Material * m_dirLightProgram;
 	Material * m_postEffect;
@@ -122,6 +125,7 @@ private:
 	bool m_hdrEnable;
 	bool m_aaEnable;
 	bool m_shadowEnable;
+	std::vector<ThumbNail *> m_thumbNailList;
 	
 public:
 	bool isShadowEnable() const;
