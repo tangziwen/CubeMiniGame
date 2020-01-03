@@ -426,7 +426,7 @@
 		},
 		{
 			"original": "是否继续?",
-			"translated": "是否继续?"
+			"translated": "Continue?"
 		},
 		{
 			"original": "普通方块",
@@ -478,11 +478,11 @@
 		},
 		{
 			"original": "直棱柱",
-			"translated": "直棱柱"
+			"translated": "Prism"
 		},
 		{
 			"original": "直棱柱-长",
-			"translated": "直棱柱-长"
+			"translated": "Prism-L"
 		},
 		{
 			"original": "窗口",
@@ -558,15 +558,15 @@
 		},
 		{
 			"original": "越野轮-中型",
-			"translated": "OffroadWheel-Mid"
+			"translated": "ORWheel-M"
 		},
 		{
 			"original": "越野轮-小",
-			"translated": "OffroadWheel-Small"
+			"translated": "ORWheel-S"
 		},
 		{
 			"original": "越野轮-普通",
-			"translated": "OffroadWheel-Normal"
+			"translated": "ORWheel-N"
 		},
 		{
 			"original": "转速",
@@ -578,11 +578,11 @@
 		},
 		{
 			"original": "轮子-中型",
-			"translated": "Wheel-Mid"
+			"translated": "Wheel-M"
 		},
 		{
 			"original": "轮子-普通",
-			"translated": "Wheel-Normal"
+			"translated": "Wheel-N"
 		},
 		{
 			"original": "轴承",

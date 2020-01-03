@@ -1,6 +1,7 @@
 include("KeyConfig")
 include("UiUtil")
 require("math")
+require("os")
 Main = {}
 
 
@@ -145,7 +146,7 @@ function InitInventory()
 		if item:isSpecialFunctionItem()then
 			ItemClassData = "SpeicalBlock"
 		end
-		itemTable = {name = item.m_name, ItemClass = ItemClassData, ItemType = item:getTypeInInt(), desc = item.m_desc}
+		itemTable = {name = item.m_name, ItemClass = ItemClassData, ItemType = item:getTypeInInt(), desc = item.m_desc, ThumbNail = item:getThumbNailTextureId()}
 		table.insert(m_inventory, itemTable)
 	end
 end
@@ -161,19 +162,29 @@ function cpp_drawInventory()
 	local i = 0
 	local itemSize = 80
 	m_isDragingInventory = false
+
+	local window_visible_x2 = ImGui.GetWindowPos().x + ImGui.GetWindowContentRegionMax().x
+	local last_button_x2 = 0
 	for k, v in pairs(m_inventory) do
 		local s = ImGui.GetStyle();
 		local spaceX = s.ItemSpacing.x;
 		local padding = s.FramePadding.x;
 		
 		local size = ImGui.GetWindowWidth() - s.IndentSpacing;
-		local coloum = math.floor(size / (itemSize + spaceX * 2 + padding * 2)) + 1
-		if ((i % coloum) ~= 0) then
-			ImGui.SameLine(0, -1);
-		end
+		-- local coloum = math.floor(size / (itemSize + spaceX * 2 + padding * 2)) + 1
+		-- if ((i % coloum) ~= 0) then
+		-- 	ImGui.SameLine(0, -1);
+		-- end
 		ImGui.PushID_str("inventory" .. i);
 		ImGui.BeginGroup();
-		ImGui.ImageButton(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+		local iconTexture = testIcon:handle()
+		if v.ThumbNail ~= 0 then
+			iconTexture = v.ThumbNail
+		end
+		ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize));
+		local last_button_x2 = ImGui.GetItemRectMax().x;
+		local next_button_x2 = last_button_x2 + s.ItemSpacing.x + itemSize; -- Expected position if next button was on same line
+
 		-- Our buttons are both drag sources and drag targets here!
 		if (ImGui.BeginDragDropSource()) then
 			ImGui.SetDragDropPayload("DND_DEMO_CELL", k);    -- Set payload to carry the index of our item (could be anything)
@@ -184,9 +195,13 @@ function cpp_drawInventory()
 		ImGui.Text(TR(v.desc));
 		ImGui.EndGroup();
 		ImGui.PopID();
+		if (next_button_x2 < window_visible_x2) then
+			ImGui.SameLine(0, -1);
+		end
 		i = i + 1
 	end
 	ImGui.End();
+	-- os.exit()
 	return isOpen
 end
 
@@ -208,7 +223,7 @@ function drawHud()
 
 
 	ImGui.SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	local itemSize = 60.0
+	local itemSize = 80.0
 	ImGui.Begin("Hud", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 	for k, v in pairs(m_itemSlots) do
 		-- ImGui.RadioButton(v.desc, m_currIndex == k)
@@ -222,7 +237,11 @@ function drawHud()
 			end
 			ImGui.Text("Empty");
 		else
-			ImGui.Image(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
+			local iconTexture = testIcon:handle()
+			if getItemFromSpecifiedSlotIndex(k).ThumbNail ~= 0 then
+				iconTexture = getItemFromSpecifiedSlotIndex(k).ThumbNail
+			end
+			ImGui.Image(iconTexture, ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
@@ -467,6 +486,10 @@ end
 
 function getItemFromSlotIndex()
 	return findItemByName(m_itemSlots[m_currIndex]["target"])
+end
+
+function getItemFromSpecifiedSlotIndex(index)
+	return findItemByName(m_itemSlots[index]["target"])
 end
 
 function onMouseRelease(input_event)
