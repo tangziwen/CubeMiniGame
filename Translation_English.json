@@ -401,6 +401,18 @@
 			"translated": "Direction Signal"
 		},
 		{
+			"original": "方块",
+			"translated": "Block"
+		},
+		{
+			"original": "方块大",
+			"translated": "Block-L"
+		},
+		{
+			"original": "方块小",
+			"translated": "Block-S"
+		},
+		{
 			"original": "旋转",
 			"translated": "Rotate"
 		},
@@ -485,6 +497,14 @@
 			"translated": "Prism-L"
 		},
 		{
+			"original": "直棱柱大",
+			"translated": "Prism-L"
+		},
+		{
+			"original": "直棱柱小",
+			"translated": "Prism-S"
+		},
+		{
 			"original": "窗口",
 			"translated": "Window"
 		},
@@ -499,6 +519,14 @@
 		{
 			"original": "管子",
 			"translated": "Pipe"
+		},
+		{
+			"original": "管子大",
+			"translated": "Pipe-L"
+		},
+		{
+			"original": "管子小",
+			"translated": "Pipe-S"
 		},
 		{
 			"original": "粗管",

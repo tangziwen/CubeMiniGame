@@ -98,8 +98,8 @@
 			}
 		},
 		{
-		"name" : "Block",
-		"desc":"普通方块",
+		"name" : "Block-S",
+		"desc":"方块小",
 		"Type":"GAME_PART_BLOCK",
 		"attach":[
 				{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
@@ -122,7 +122,7 @@
 		}
 		},
 		{
-		"name" : "Block-L",
+		"name" : "Block",
 		"desc":"方块",
 		"Type":"GAME_PART_BLOCK",
 		"attach":[
@@ -146,8 +146,32 @@
 		}
 		},
 		{
-			"name" : "RightPrism",
-			"desc":"直棱柱",
+		"name" : "Block-L",
+		"desc":"方块大",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+				{"pos" :[0.0, 0.0, -0.5],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0], "locale":"front"},
+				{"pos" :[0.5, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+				{"pos" :[-0.5, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+				{"pos" :[0.0, 0.5, 0.0],"normal":[0.0, 1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"up"},
+				{"pos" :[0.0, -0.5, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[1.0, 1.0,1.0]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[1.0, 1.0, 1.0],
+			"Mass":1.0
+		}
+		},
+		{
+			"name" : "RightPrism-S",
+			"desc":"直棱柱小",
 			"Type":"GAME_PART_BLOCK",
 			"attach":[
 					{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
@@ -167,25 +191,45 @@
 			}
 		},
 		{
-			"name" : "RightPrism_L",
-			"desc":"直棱柱-长",
+			"name" : "RightPrism",
+			"desc":"直棱柱",
 			"Type":"GAME_PART_BLOCK",
 			"attach":[
-					{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
-					{"pos" :[0.125, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
-					{"pos" :[-0.125, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
-					{"pos" :[0.0, -0.125, 0.125],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, 1.0]},
-					{"pos" :[0.0, -0.125, -0.125],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, 1.0]}
+					{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+					{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+					{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+					{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
 					],
 			"Visual":
 			{
 				"Type":"RightPrismPrimitive",
-				"size":[0.25, 0.25, 0.5]
+				"size":[0.5, 0.5, 0.5]
 			},
 			"Physics":
 			{
 				"Type": "BoxShape",
-				"size":[0.5, 0.5, 1.0]
+				"size":[0.5, 0.5, 0.5]
+			}
+		},
+		{
+			"name" : "RightPrism-L",
+			"desc":"直棱柱大",
+			"Type":"GAME_PART_BLOCK",
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+					{"pos" :[0.5, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+					{"pos" :[-0.5, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+					{"pos" :[0.0, -0.5, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+					],
+			"Visual":
+			{
+				"Type":"RightPrismPrimitive",
+				"size":[1.0, 1.0, 1.0]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[1.0, 1.0, 1.0]
 			}
 		},
 		{
@@ -250,7 +294,7 @@
 		"Physics":
 		{
 			"Type": "CylinderShape",
-			"size":[0.48, 0.48, 0.2],
+			"size":[0.36, 0.36, 0.2],
 			"Mass":30
 		}
 		},
@@ -343,6 +387,25 @@
 		}
 		},
 		{
+		"name" : "Pipe-S",
+		"desc":"管子小",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.125],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.125, 0.125, 0.25]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.125, 0.125, 0.25]
+		}
+		},
+		{
 		"name" : "Pipe",
 		"desc":"管子",
 		"Type":"GAME_PART_BLOCK",
@@ -353,12 +416,31 @@
 		"Visual":
 		{
 			"Type":"CylinderPrimitive",
-			"size":[0.06, 0.06, 0.5]
+			"size":[0.25, 0.25, 0.5]
 		},
 		"Physics":
 		{
 			"Type": "CylinderShape",
-			"size":[0.06, 0.06, 0.5]
+			"size":[0.25, 0.25, 0.5]
+		}
+		},
+		{
+		"name" : "Pipe-L",
+		"desc":"管子大",
+		"Type":"GAME_PART_BLOCK",
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.5],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.5, 0.5, 1.0]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.5, 0.5, 1.0]
 		}
 		},
 		{

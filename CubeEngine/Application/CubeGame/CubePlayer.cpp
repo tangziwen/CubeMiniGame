@@ -78,7 +78,7 @@ namespace tzw
 
 		auto normalMapTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Normal.png", true);
 		m_gunModel->getMat(0)->setTex("NormalMap", normalMapTexture);
-		m_gunModel->setPos(0.09,-0.15, -0.22);
+		m_gunModel->setPos(0.09,0.5, -0.22);
 		m_gunModel->setRotateE(vec3(0, 3, 0));
 		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
@@ -116,7 +116,7 @@ namespace tzw
 			freq = 6;
 		}
 		theTime += freq * dt;
-		m_gunModel->setPos(vec3(oldPos.x, -0.15 + sinf(theTime) * offset, oldPos.z));
+		m_gunModel->setPos(vec3(oldPos.x, -0.14 + sinf(theTime) * offset, oldPos.z));
 		if (checkIsNeedUpdateChunk())
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();

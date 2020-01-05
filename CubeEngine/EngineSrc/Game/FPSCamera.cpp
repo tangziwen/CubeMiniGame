@@ -22,9 +22,9 @@ namespace tzw {
 
 const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera(bool isOpenPhysics)
-    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(4.0f,0.0f,4.0f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
+    :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(3.5f,0.0f,3.5f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true),m_isOpenPhysics(isOpenPhysics)
-    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.0),m_isStopUpdate(false)
+    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false)
 {
     offsetToCentre = 0.6;
     m_distToFront = 0.2;
@@ -35,35 +35,33 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 	setLocalPiority(-1);
 
 
-
-
 	if(m_isOpenPhysics) {
 		m_capsuleHigh = 2.f;
-		btCapsuleShape *shape = new btCapsuleShape(0.5f, m_capsuleHigh);
+		btCylinderShape *shape = new btCylinderShape(btVector3(0.25, 1.0, 0.25));
 
 		this->m_ghost2 = new btPairCachingGhostObject();
 		//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
 		this->m_ghost2->setCollisionShape(shape);
 		this->m_ghost2->setRestitution(0.0f);
 
-		this->m_ghost2->setFriction(1.2f);
+		this->m_ghost2->setFriction(0.0f);
 		this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
 
 		
 		this->m_character = new btKinematicCharacterController(this->m_ghost2, static_cast<btConvexShape*>(shape), 0.2f, btVector3(0.0,1.0,0.0));
 
-	    m_character->setGravity(btVector3(0, -14.0f, 0));
+	    m_character->setGravity(btVector3(0, -9.8f, 0));
 	    m_character->setLinearDamping(0.2f);
 	    m_character->setAngularDamping(0.2f);
 	    m_character->setStepHeight(0.4f);
-	    m_character->setMaxJumpHeight(2.0);
-	    m_character->setMaxSlope(45.0 * 3.14 / 180.0);
-	    m_character->setJumpSpeed(5.0f);
+	    m_character->setMaxJumpHeight(3.5);
+	    m_character->setMaxSlope(45.0f * 3.14 / 180.0f);
+	    m_character->setJumpSpeed(7.0f);
 	    m_character->setFallSpeed(55.0f);
 		this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
 		this->m_ghost2->setUserIndex(1);
-		this->m_ghost2->setCcdSweptSphereRadius(3.0);
-		this->m_ghost2->setCcdMotionThreshold(0.00001);
+		// this->m_ghost2->setCcdSweptSphereRadius(3.0f);
+		// this->m_ghost2->setCcdMotionThreshold(0.00001);
 		PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
 		PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
 	}
