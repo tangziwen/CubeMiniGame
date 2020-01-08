@@ -49,114 +49,163 @@ struct AABBHitInfo
 	vec3 hitPos;
 	RayAABBSide side;
 };
-bool Ray::intersectAABB(AABB aabb, RayAABBSide *side, vec3 &hitPoint)const
+
+bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
 {
-    vec3 ptOnPlane;
-    vec3 min = aabb.min ();
-    vec3 max = aabb.max ();
-
-    const vec3& origin = m_origin;
-    const vec3& dir = m_direction;
-	std::vector <AABBHitInfo>candidateList;
+    float lowt = 0.0f;
     float t;
-
-    if(origin.x>min.x && origin.y>min.y && origin.z>min.z
-            && origin.x<max.x && origin.y<max.y && origin.z < max.z)
+    bool hit = false;
+    vec3 hitpoint;
+    const vec3& min = aabb.min();
+    const vec3& max = aabb.max();
+    const vec3& rayorig = m_origin;
+    const vec3& raydir = m_direction;
+    
+    // Check origin inside first
+    if(m_origin.x>min.x && m_origin.y>min.y && m_origin.z>min.z
+            && m_origin.x<max.x && m_origin.y<max.y && m_origin.z < max.z)
     {
         return false;
     }
-	AABBHitInfo info;
-    if (dir.x != 0.f)
+    // Check each face in turn, only check closest 3
+    // Min x
+    if (rayorig.x <= min.x && raydir.x > 0)
     {
-        if (dir.x > 0)
-            t = (min.x - origin.x) / dir.x;
-        else
-            t = (max.x - origin.x) / dir.x;
-
-        if (t > 0.f)
+        t = (min.x - rayorig.x) / raydir.x;
+        if (t >= 0)
         {
-            ptOnPlane = origin +  dir * t;
-
-            if (min.y < ptOnPlane.y && ptOnPlane.y < max.y && min.z < ptOnPlane.z && ptOnPlane.z < max.z)
+            // Substitute t back into ray and check bounds and dist
+            hitpoint = rayorig + raydir * t;
+            if (hitpoint.y >= min.y && hitpoint.y <= max.y &&
+                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+                (!hit || t < lowt))
             {
-                hitPoint = ptOnPlane;
-				info.hitPos = hitPoint;
-				
-                if(ptOnPlane.x<max.x)
-                    info.side = RayAABBSide::left;
-                else
-                    info.side = RayAABBSide::right;
-				candidateList.push_back(info);
+                hit = true;
+                lowt = t;
+            	if(side)
+            	{
+            		(*side) = RayAABBSide::left;
+            	}
             }
         }
     }
-
-    if (dir.y != 0.f)
+    // Max x
+    if (rayorig.x >= max.x && raydir.x < 0)
     {
-        if (dir.y > 0)
-            t = (min.y - origin.y) / dir.y;
-        else
-            t = (max.y - origin.y) / dir.y;
-
-        if (t > 0.f)
+        t = (max.x - rayorig.x) / raydir.x;
+        if (t >= 0)
         {
-            ptOnPlane = origin +  dir * t;
-
-            if (min.z < ptOnPlane.z && ptOnPlane.z < max.z && min.x < ptOnPlane.x && ptOnPlane.x < max.x)
+            // Substitute t back into ray and check bounds and dist
+            hitpoint = rayorig + raydir * t;
+            if (hitpoint.y >= min.y && hitpoint.y <= max.y &&
+                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+                (!hit || t < lowt))
             {
-                hitPoint = ptOnPlane;
-				info.hitPos = hitPoint;
-				
-                if(ptOnPlane.y<max.y)
-                    info.side = RayAABBSide::down;
-                else
-                    info.side = RayAABBSide::up;
-				candidateList.push_back(info);
+                hit = true;
+                lowt = t;
+            	if(side)
+            	{
+            		(*side) = RayAABBSide::right;
+            	}
             }
         }
     }
-
-    if (dir.z != 0.f)
+    // Min y
+    if (rayorig.y <= min.y && raydir.y > 0)
     {
-        if (dir.z > 0)
-            t = (min.z - origin.z) / dir.z;
-        else
-            t = (max.z - origin.z) / dir.z;
-
-        if (t > 0.f)
+        t = (min.y - rayorig.y) / raydir.y;
+        if (t >= 0)
         {
-            ptOnPlane = origin +  dir * t;
-
-            if (min.x < ptOnPlane.x && ptOnPlane.x < max.x && min.y < ptOnPlane.y && ptOnPlane.y < max.y)
+            // Substitute t back into ray and check bounds and dist
+            hitpoint = rayorig + raydir * t;
+            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
+                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+                (!hit || t < lowt))
             {
-                hitPoint = ptOnPlane;
-				info.hitPos = hitPoint;
-                if(ptOnPlane.z<max.z)
-                    info.side = RayAABBSide::back;
-                else
-                    info.side = RayAABBSide::front;
-				candidateList.push_back(info);
+                hit = true;
+                lowt = t;
+            	if(side)
+            	{
+            		(*side) = RayAABBSide::down;
+            	}
             }
         }
     }
-	if(!candidateList.empty()) 
-	{	
-		std::sort(candidateList.begin(), candidateList.end(), [origin](AABBHitInfo & left, AABBHitInfo & right)
-		{
-			float distl = left.hitPos.distance(origin);
-			float distr = right.hitPos.distance(origin);
-			return distl < distr;
-		}
-		);
-		if(side) 
-		{
-			(*side) = candidateList[0].side;        
-			
-		}
-		return true;
-	}
+    // Max y
+    if (rayorig.y >= max.y && raydir.y < 0)
+    {
+        t = (max.y - rayorig.y) / raydir.y;
+        if
+            
+            
+            (t >= 0)
+        {
+            // Substitute t back into ray and check bounds and dist
+            hitpoint = rayorig + raydir * t;
+            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
+                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+                (!hit || t < lowt))
+            {
+                hit = true;
+                lowt = t;
+             	if(side)
+            	{
+            		(*side) = RayAABBSide::up;
+            	}
+            }
+        }
+    }
+    // Min z
+    if (rayorig.z <= min.z && raydir.z > 0)
+    {
+        t = (min.z - rayorig.z) / raydir.z;
+        if (t >= 0)
+        {
+            // Substitute t back into ray and check bounds and dist
+            hitpoint = rayorig + raydir * t;
+            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
+                hitpoint.y >= min.y && hitpoint.y <= max.y &&
+                (!hit || t < lowt))
+            {
+                hit = true;
+                lowt = t;
+             	if(side)
+            	{
+            		(*side) = RayAABBSide::front;
+            	}
+            }
+        }
+    }
+    // Max z
+    if (rayorig.z >= max.z && raydir.z < 0)
+    {
+        t = (max.z - rayorig.z) / raydir.z;
+        if (t >= 0)
+        {
+            // Substitute t back into ray and check bounds and dist
+            hitpoint = rayorig + raydir * t;
+            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
+                hitpoint.y >= min.y && hitpoint.y <= max.y &&
+                (!hit || t < lowt))
+            {
+                hit = true;
+                lowt = t;
+             	if(side)
+            	{
+            		(*side) = RayAABBSide::back;
+            	}
+            }
+        }
+    }
+    
+	hitpoint = m_origin + m_direction * lowt;
+    
+    return hit;
+}
 
-    return false;
+bool Ray::intersectAABB(AABB aabb, vec3& hitPoint) const
+{
+	return intersectAABB(aabb, nullptr, hitPoint);
 }
 
 bool Ray::intersectTriangle(const vec3 &v1, const vec3 &v2, const vec3 &v3, float *out) const

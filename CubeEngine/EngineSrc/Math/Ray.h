@@ -27,6 +27,7 @@ public:
     void setDirection(const vec3 &direction);
     vec3 intersectPlane(Plane p);
     bool intersectAABB(AABB  aabb, RayAABBSide * side,vec3 &hitPoint) const;
+	bool intersectAABB(AABB aabb, vec3& hitPoint) const;
     bool intersectTriangle(const vec3 & v1, const vec3 & v2, const vec3 & v3, float * out = nullptr) const;
 private:
     vec3 m_origin;
