@@ -12,7 +12,7 @@
 
 #include "ScriptPyMgr.h"
 #include "2D/imgui.h"
-
+#include "2D/imgui_internal.h"
 #include "2D/imnodes.h"
 #include "Base/TranslationMgr.h"
 #include "2D/GUISystem.h"
@@ -107,6 +107,16 @@ namespace tzw
 	{
 		ImGui::PopStyleColor(1);
 	}
+
+	void imgui_drawFrame(ImVec2 min, ImVec2 max, float size, ImVec4 color)
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, size);
+		ImGui::PushStyleColor(ImGuiCol_Border, color);
+		ImGui::RenderFrameBorder(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 1);
+		ImGui::PopStyleVar(1);
+		ImGui::PopStyleColor(1);
+	}
+
 	std::string translation(std::string theString)
 	{
 		return TranslationMgr::shared()->getStr(theString);
@@ -215,6 +225,7 @@ namespace tzw
 		BIND_FUNC(ImGui, BeginPopup)
 		BIND_FUNC(ImGui, GetItemRectMax)
 		BIND_FUNC(ImGui, GetItemRectMin)
+		.addFunction("DrawFrame", &imgui_drawFrame)
 		BIND_FUNC(ImGui, OpenPopup)
 		BIND_FUNC(ImGui, GetWindowWidth)
 		BIND_FUNC(ImGui, GetWindowContentRegionMax)

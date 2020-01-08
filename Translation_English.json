@@ -121,6 +121,10 @@
 			"translated": "Save"
 		},
 		{
+			"original": "保存世界",
+			"translated": "保存世界"
+		},
+		{
 			"original": "保存设置",
 			"translated": "Save Setting"
 		},
@@ -171,6 +175,10 @@
 		{
 			"original": "切换开关节点",
 			"translated": "切换开关节点"
+		},
+		{
+			"original": "创建新世界",
+			"translated": "创建新世界"
 		},
 		{
 			"original": "前后",
@@ -402,15 +410,7 @@
 		},
 		{
 			"original": "方块",
-			"translated": "Block"
-		},
-		{
-			"original": "方块大",
-			"translated": "Block-L"
-		},
-		{
-			"original": "方块小",
-			"translated": "Block-S"
+			"translated": "方块"
 		},
 		{
 			"original": "旋转",
@@ -497,14 +497,6 @@
 			"translated": "Prism-L"
 		},
 		{
-			"original": "直棱柱大",
-			"translated": "Prism-L"
-		},
-		{
-			"original": "直棱柱小",
-			"translated": "Prism-S"
-		},
-		{
 			"original": "窗口",
 			"translated": "Window"
 		},
@@ -519,14 +511,6 @@
 		{
 			"original": "管子",
 			"translated": "Pipe"
-		},
-		{
-			"original": "管子大",
-			"translated": "Pipe-L"
-		},
-		{
-			"original": "管子小",
-			"translated": "Pipe-S"
 		},
 		{
 			"original": "粗管",
@@ -567,6 +551,10 @@
 		{
 			"original": "读取",
 			"translated": "Load"
+		},
+		{
+			"original": "读取世界",
+			"translated": "读取世界"
 		},
 		{
 			"original": "读取载具",
@@ -619,6 +607,10 @@
 		{
 			"original": "轴承 %s",
 			"translated": "Bearing %s"
+		},
+		{
+			"original": "载入世界",
+			"translated": "载入世界"
 		},
 		{
 			"original": "载具浏览器",

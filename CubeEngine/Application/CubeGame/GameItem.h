@@ -7,11 +7,12 @@ namespace tzw
 {
 struct AttachmentInfo
 {
-	AttachmentInfo(vec3 p, vec3 n, vec3 u, std::string locale);
+	AttachmentInfo(vec3 p, vec3 n, vec3 u, std::string locale, float collisionBoxSize);
 	vec3 pos;
 	vec3 normal;
 	vec3 up;
 	std::string locale;
+	float collisionSize;
 };
 struct VisualInfo
 {
@@ -58,5 +59,6 @@ struct GameItem
 	int getTypeInInt();
 	int getThumbNailTextureId();
 	ThumbNail *m_thumbNail;
+	Texture * m_texture;
 };
 }

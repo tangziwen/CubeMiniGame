@@ -29,6 +29,7 @@ namespace tzw
 		std::string m_locale;
 		void breakConnection();
 		float m_degree;
+		float m_collisionSize;
 		~Attachment();
 	};
 }

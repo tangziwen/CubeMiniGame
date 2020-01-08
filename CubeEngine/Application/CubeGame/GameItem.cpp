@@ -13,8 +13,8 @@
 
 namespace tzw
 {
-	AttachmentInfo::AttachmentInfo(vec3 p, vec3 n, vec3 u, std::string l):
-	pos(p),normal(n),up(u),locale(l)
+	AttachmentInfo::AttachmentInfo(vec3 p, vec3 n, vec3 u, std::string l, float collisionBoxSize):
+	pos(p),normal(n),up(u),locale(l),collisionSize(collisionBoxSize)
 	{
 	}
 
@@ -40,10 +40,9 @@ namespace tzw
 		return hasAttr;
 	}
 
-	GameItem::GameItem()
-{
-
-}
+	GameItem::GameItem(): m_type(), m_visualInfo(), m_physicsInfo(), m_thumbNail(nullptr), m_texture(nullptr)
+	{
+	}
 
 	int GameItem::getTypeInInt()
 	{
@@ -56,9 +55,12 @@ namespace tzw
 		{
 			return m_thumbNail->getTexture()->handle();
 		}
-		else
+		else if(m_texture)
 		{
-			return 0;	
+			return m_texture->handle();	
+		}else
+		{
+			return 0;
 		}
 	}
 }

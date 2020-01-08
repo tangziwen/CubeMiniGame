@@ -686,6 +686,7 @@ namespace tzw
 			}
 		}
 		break;
+			
         case VisualInfo::VisualInfoType::RightPrismPrimitive:
 		{
 			auto size = item->m_visualInfo.size;
@@ -724,6 +725,7 @@ namespace tzw
 			auto attach = item->m_attachList[i];
 			auto newAttach = new Attachment(attach.pos, attach.normal, attach.up ,this);
 			newAttach->m_locale = attach.locale;
+			newAttach->m_collisionSize = attach.collisionSize;
 			addAttachment(newAttach);
 		}
 	}

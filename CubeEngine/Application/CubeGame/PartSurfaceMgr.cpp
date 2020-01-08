@@ -30,6 +30,12 @@ void PartSurfaceMgr::loadFromFile(std::string filePath)
 		"Texture/metalgrid3-ue/metalgrid3_roughness.png",
 		"Texture/metalgrid3-ue/metalgrid3_metallic.png", 
 		"Texture/metalgrid3-ue/metalgrid3_normal-dx.png"));
+
+	//Metal
+	addItem("Metal Grid2", new PartSurface("Texture/metalgrid2-dx/metalgrid2_basecolor.png", 
+		"Texture/metalgrid2-dx/metalgrid2_roughness.png",
+		"Texture/metalgrid2-dx/metalgrid2_metallic.png", 
+		"Texture/metalgrid2-dx/metalgrid2_normal-dx.png"));
 	//scifi
 	addItem("SCIFI", new PartSurface("Texture/military-panel1-ue/military-panel1-albedo.png", 
 		"Texture/military-panel1-ue/military-panel1-rough.png",
@@ -69,6 +75,43 @@ void PartSurfaceMgr::loadFromFile(std::string filePath)
 		"Texture/BuiltInTexture/defaultRoughnessMap.png",
 		"Texture/BuiltInTexture/defaultMetallic.png", 
 		"Texture/BuiltInTexture/defaultNormalMap.png"));
+	//stepping stones
+	addItem("SteppingStone", new PartSurface(
+		"Texture/steppingstones1_ogl/steppingstones1_albedo.png", 
+		"Texture/BuiltInTexture/defaultRoughnessMap.png",
+		"Texture/BuiltInTexture/defaultMetallic.png", 
+		"Texture/steppingstones1_ogl/steppingstones1_normal-ogl.png"));
+	//Brick
+	addItem("Brick", new PartSurface(
+		"Texture/redbricks2b-Unreal-Engine/redbricks2b-albedo.png", 
+		"Texture/redbricks2b-Unreal-Engine/redbricks2b-rough.png",
+		"Texture/redbricks2b-Unreal-Engine/redbricks2b-metalness.png", 
+		"Texture/redbricks2b-Unreal-Engine/redbricks2b-normal.png"));
+	//Iron-scuffed
+	addItem("IronScuffed", new PartSurface(
+		"Texture/Iron-Scuffed_Unreal-Engine/Iron-Scuffed_basecolor.png", 
+		"Texture/Iron-Scuffed_Unreal-Engine/Iron-Scuffed_roughness.png",
+		"Texture/Iron-Scuffed_Unreal-Engine/Iron-Scuffed_metallic.png", 
+		"Texture/Iron-Scuffed_Unreal-Engine/Iron-Scuffed_normal.png"));
+	//oakfloor_fb1-Unreal-Engine
+	addItem("OakFloor", new PartSurface(
+		"Texture/oakfloor_fb1-Unreal-Engine/oakfloor_basecolor.png", 
+		"Texture/oakfloor_fb1-Unreal-Engine/oakfloor_roughness.png",
+		"Texture/BuiltInTexture/defaultMetallic.png", 
+		"Texture/oakfloor_fb1-Unreal-Engine/oakfloor_normal.png"));
+
+		//Patchy
+	addItem("Patchy", new PartSurface(
+		"Texture/patchy_cement1_Unreal-Engine/patchy_cement1_Base_Color.png", 
+		"Texture/patchy_cement1_Unreal-Engine/patchy_cement1_Roughness.png",
+		"Texture/patchy_cement1_Unreal-Engine/patchy_cement1_Metallic.png", 
+		"Texture/patchy_cement1_Unreal-Engine/patchy_cement1_Normal.png"));
+	//concrete3-Unity2-1
+	addItem("Concrete", new PartSurface(
+		"Texture/concrete3-Unity2-1/concrete3-albedo.png", 
+		"Texture/BuiltInTexture/defaultRoughnessMap.png",
+		"Texture/BuiltInTexture/defaultMetallic.png", 
+		"Texture/concrete3-Unity2-1/concrete3-Normal-ogl.png"));
 }
 
 PartSurface * PartSurfaceMgr::getItem(std::string name)

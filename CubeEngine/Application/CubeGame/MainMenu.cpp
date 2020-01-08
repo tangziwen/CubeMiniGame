@@ -317,6 +317,16 @@ void MainMenu::drawIMGUI()
 			{
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
+			if(ImGui::Button(TRC(u8"保存世界"), ImVec2(160, 35)))
+			{
+				GameWorld::shared()->saveGame("World/testWord.json");
+				setWindowShow(WindowType::RESUME_MENU, false);
+			}
+			if(ImGui::Button(TRC(u8"读取世界"), ImVec2(160, 35)))
+			{
+				GameWorld::shared()->loadGame("World/testWord.json");
+				setWindowShow(WindowType::RESUME_MENU, false);
+			}
 			if(ImGui::Button(TRC(u8"选项"), ImVec2(160, 35)))
 			{
 				m_option.open();
@@ -640,9 +650,15 @@ void MainMenu::drawEntryInterFace()
 	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
 
-		if(ImGui::Button(TRC(u8"开始游戏"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC(u8"创建新世界"), ImVec2(160, 35)))
 		{
 			GameWorld::shared()->startGame();
+			Engine::shared()->setUnlimitedCursor(true);
+		}
+		ImGui::Spacing();
+		if(ImGui::Button(TRC(u8"载入世界"), ImVec2(160, 35)))
+		{
+			GameWorld::shared()->loadGame("World/testWord.json");
 			Engine::shared()->setUnlimitedCursor(true);
 		}
 		ImGui::Spacing();
@@ -654,7 +670,7 @@ void MainMenu::drawEntryInterFace()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC(u8"帮助"), ImVec2(160, 35)))
 		{
-			
+			;
 		}
 		ImGui::Spacing();
 		if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35))) 

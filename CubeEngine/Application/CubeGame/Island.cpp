@@ -28,6 +28,7 @@ Island::Island(vec3 pos)
 	m_isSpecial = false;
 	m_buildingRotate = Quaternion();
 	m_enablePhysics = false;
+	m_isStatic = false;
 }
 
 Island::~Island()
@@ -260,22 +261,23 @@ Island::enablePhysics(bool isEnable)
 
 }
 
-bool Island::isEnablePhysics()
-{
-	return m_enablePhysics;
-}
+	bool Island::isEnablePhysics()
+	{
+		return m_enablePhysics;
+	}
 
-float
-Island::getMass()
-{
-  float mass = 0.0f;
-  for (auto part : m_partList) {
-    if (part->getType() != GamePartType::GAME_PART_LIFT) {
-      mass += part->getMass();
-    }
-  }
-  return mass;
-}
+	float Island::getMass()
+	{
+		if(m_isStatic)
+			return 0.0f;
+	  float mass = 0.0f;
+	  for (auto part : m_partList) {
+	    if (part->getType() != GamePartType::GAME_PART_LIFT) {
+	      mass += part->getMass();
+	    }
+	  }
+	  return mass;
+	}
 
 void
 Island::cook()
@@ -337,6 +339,11 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 	rotateList.PushBack(rotate.x, allocator).PushBack(rotate.y, allocator).PushBack(rotate.z, allocator).PushBack(rotate.w, allocator);
 
 	island.AddMember("rotate", rotateList, allocator);
+	
+	rapidjson::Value posList(rapidjson::kArrayType);
+	auto pos = m_node->getPos();
+	posList.PushBack(pos.x, allocator).PushBack(pos.y, allocator).PushBack(pos.z, allocator);
+	island.AddMember("pos", posList, allocator);
 }
 
 void Island::load(rapidjson::Value& island)
@@ -351,6 +358,11 @@ void Island::load(rapidjson::Value& island)
 		m_buildingRotate = q;
 	}
 
+	if(island.HasMember("pos"))
+	{
+		auto p = vec3(island["pos"][0].GetDouble(),island["pos"][1].GetDouble(), island["pos"][2].GetDouble());
+		m_node->setPos(p);
+	}
 	if (island.HasMember("partList"))
 	{
 		auto& partList = island["partList"];
@@ -537,6 +549,21 @@ AABB Island::getAABBInWorld()
 	result.update(vec3(aabbMin.x(),aabbMin.y(), aabbMin.z()));
 	result.update(vec3(aabbMax.x(),aabbMax.y(), aabbMax.z()));
 	return result;
+	}
+}
+
+bool Island::isIsStatic() const
+{
+	return m_isStatic;
+}
+
+void Island::setIsStatic(const bool isStatic)
+{
+	m_isStatic = isStatic;
+	if(isStatic && !m_enablePhysics)
+	{
+		updatePhysics();
+		enablePhysics(true);
 	}
 }
 }

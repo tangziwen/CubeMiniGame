@@ -85,7 +85,7 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(BuildingSystem)
 		.addStaticFunction ("shared", &BuildingSystem::shared)
-		BIND_FUNC(BuildingSystem, placeGamePart)
+		BIND_FUNC(BuildingSystem, placeGamePartStatic)
 		BIND_FUNC(BuildingSystem, attachGamePart)
 		BIND_FUNC(BuildingSystem, attachGamePartToConstraint)
 		BIND_FUNC(BuildingSystem, placeBearingToAttach)

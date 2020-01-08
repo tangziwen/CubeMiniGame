@@ -33,7 +33,7 @@ public:
 	void tmpMoveWheel(bool isOpen);
 	void removePartByAttach(Attachment * attach);
 	void removePart(GamePart * attach);
-	void placeGamePart(GamePart * part, vec3 pos);
+	void placeGamePartStatic(GamePart * part, vec3 pos);
 	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
 	void attachGamePart(GamePart * part, Attachment * attach, float degree, int index);
 	void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
@@ -58,6 +58,8 @@ public:
 	void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
 	void dump(std::string filePath);
 	void load(std::string filePath);
+	void loadStatic(rapidjson::Value &island);
+	void dumpStatic(rapidjson::Value &island, rapidjson::Document::AllocatorType& allocator);
 	void updateBearing(float dt);
 	void removeLiftConnected();
 	void removeAll();
@@ -79,6 +81,7 @@ private:
 	ControlPart * m_controlPart;
 	LiftPart * m_liftPart;
 	unsigned int m_baseIndex;
+	std::vector<Island *> m_staticIsland;
 	std::vector<Island *> m_IslandList;
 	std::set<GameConstraint* > m_bearList;
 	std::set<GamePart* > m_thrusterList;

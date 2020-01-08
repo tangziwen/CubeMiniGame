@@ -108,9 +108,9 @@ void ItemMgr::loadFromFile(std::string filePath)
 					if(attachData.HasMember("locale")) 
 					{
 						locale = attachData["locale"].GetString();
-						
 					}
-					gameItem->m_attachList.push_back(AttachmentInfo(pos, normal, up, locale));
+					float collisionSize = item["CollisionSize"].GetDouble();
+					gameItem->m_attachList.push_back(AttachmentInfo(pos, normal, up, locale, collisionSize));
 				}
 
 				auto& visualData = item["Visual"];
@@ -204,6 +204,10 @@ void ItemMgr::loadFromFile(std::string filePath)
 			} else
 			{
 				gameItem->m_thumbNail = nullptr;
+			}
+			if(item.HasMember("Icon"))
+			{
+				gameItem->m_texture = TextureMgr::shared()->getByPath(item["Icon"].GetString());
 			}
 			m_itemMap[name] = gameItem;
 			m_itemList.push_back(gameItem);

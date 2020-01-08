@@ -14,6 +14,7 @@ namespace tzw
 		m_parent = parent;
 		m_connected = nullptr;
 		m_degree = 0.0f;
+		m_collisionSize = 0.25f;
 	}
 
 	Attachment::Attachment()
@@ -21,6 +22,7 @@ namespace tzw
 		m_connected = nullptr;
 		m_locale = "down";
 		m_degree = 0.0f;
+		m_collisionSize = 0.25f;
 	}
 
 	void Attachment::getAttachmentInfo(vec3 & pos, vec3 & N, vec3 & up)
@@ -83,8 +85,8 @@ namespace tzw
 		rayInWorld.setDirection((mat * vec4(rayInWorld.direction(), 0.0)).toVec3());
 		AABB collisionBox;
 		const float blockSize = 0.25f;
-		collisionBox.setMax(vec3(blockSize / 2.0, blockSize / 2.0, 0.2));
-		collisionBox.setMin(vec3(blockSize / -2.0, blockSize / -2.0, -0.2));
+		collisionBox.setMax(vec3(m_collisionSize / 2.0, m_collisionSize / 2.0, 0.2));
+		collisionBox.setMin(vec3(m_collisionSize / -2.0, m_collisionSize / -2.0, -0.2));
 		RayAABBSide side;
 		vec3 hitPoint;
 		auto isHit = rayInWorld.intersectAABB(collisionBox, &side, hitPoint);

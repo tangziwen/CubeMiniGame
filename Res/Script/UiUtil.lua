@@ -1,5 +1,5 @@
 UiUtil = {}
-UiUtil.isPop = true
+UiUtil.isPop = false
 
 UiUtil.infoStr = ""
 function UiUtil.handlePopText()

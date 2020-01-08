@@ -28,6 +28,8 @@ public:
     void setBlockSheet(TextureAtlas *blockSheet);
     bool isTheSurfaceBlock();
     void startGame();
+	void loadGame(std::string filePath);
+	void saveGame(std::string filePath);
 	bool onKeyPress(int keyCode) override;
     MainMenu *getMainMenu() const;
     void unloadGame();
@@ -54,6 +56,7 @@ private:
     std::set<Chunk*> m_activedChunkList;
     MainMenu * m_mainMenu;
 	virtual ~GameWorld();
+	void prepare();
 };
 
 } // namespace tzw

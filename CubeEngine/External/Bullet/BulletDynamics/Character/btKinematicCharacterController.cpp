@@ -578,7 +578,6 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 			m_currentPosition.setInterpolate3(m_currentPosition, m_targetPosition, callback.m_closestHitFraction);
 
 		full_drop = false;
-
 		m_verticalVelocity = 0.0;
 		m_verticalOffset = 0.0;
 		m_wasJumping = false;
@@ -754,9 +753,10 @@ void btKinematicCharacterController::playerStep(btCollisionWorld* collisionWorld
 	}
 
 	m_verticalVelocity *= btPow(btScalar(1) - m_linearDamping, dt);
-
 	// Update fall velocity.
 	m_verticalVelocity -= m_gravity * dt;
+	
+
 	if (m_verticalVelocity > 0.0 && m_verticalVelocity > m_jumpSpeed)
 	{
 		m_verticalVelocity = m_jumpSpeed;

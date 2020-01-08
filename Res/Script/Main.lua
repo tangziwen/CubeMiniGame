@@ -6,7 +6,7 @@ Main = {}
 
 
 function tzw_on_game_ready()
-	UiUtil.popText(TR("基本版本 弹出框测试"))
+	-- UiUtil.popText(TR("基本版本 弹出框测试"))
 end
 
 ImGuiCond_Always        = 1 << 0   -- Set the variable
@@ -233,6 +233,9 @@ function drawHud()
 			ImGui.Image(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
+				local sizeMin = ImGui.GetItemRectMin()
+				local sizeMax = ImGui.GetItemRectMin()
+				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
 				needPop = true
 			end
 			ImGui.Text("Empty");
@@ -245,6 +248,9 @@ function drawHud()
 			if m_currIndex == k then
 				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
 				needPop = true
+				local sizeMin = ImGui.GetItemRectMin()
+				local sizeMax = ImGui.GetItemRectMin()
+				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
 			end
 			ImGui.Text(tostring(k).." "..TR(findItemByName(v["target"]).desc));
 		end
@@ -425,8 +431,12 @@ function placeItem(item)
 		local aBlock = BuildingSystem.shared():createPart(item.ItemType, item.name)
 		
 		if result == nil then
-			print("do nothing")
-			--BuildingSystem.shared():placeGamePart(aBlock, GameWorld.shared():getPlayer():getPos() + player:getForward():scale(10))
+			
+			local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
+			if resultPos.y > -99999 then
+				print("place and create static")
+				BuildingSystem.shared():placeGamePartStatic(aBlock, resultPos)
+			end
 		else
 			print("degree ".. g_blockRotate)
 			BuildingSystem.shared():attachGamePart(aBlock, result, g_blockRotate, aBlock:getPrettyAttach(result, player:getPreviewItem():getCurrAttachment()))

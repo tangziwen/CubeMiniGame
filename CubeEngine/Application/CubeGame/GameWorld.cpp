@@ -23,6 +23,10 @@
 #include "3D/Particle/ParticleInitVelocityModule.h"
 #include "3D/Particle/ParticleInitSizeModule.h"
 #include "BulletMgr.h"
+#include "rapidjson/stringbuffer.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
+#include "Utility/file/Tfile.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -125,35 +129,45 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 
 void GameWorld::startGame()
 {
-	m_currentState = GAME_STATE_RUNNING;
-
-	
-
-	//load the config
-	ItemMgr::shared();
-	
-	PhysicsMgr::shared()->start();
-	Tmisc::DurationBegin();
-	 
-	unloadGame();
-	PartSurfaceMgr::shared()->loadFromFile("aaaaaa");
-	MainMenu::shared()->initInGame();
-	GameMap::shared()->setMapType(GameMap::MapType::Noise);
-	GameMap::shared()->setMaxHeight(10);
-	 
-	GameMap::shared()->setMinHeight(3);
-	auto player = new CubePlayer(m_mainRoot);
-	 
-	GameWorld::shared()->setPlayer(player);
-	 
-	GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
-	 
-	m_mainRoot->addChild(player);
-
+	prepare();
 	ScriptPyMgr::shared()->callFunV("on_game_start");
-	
-	//PhysicsMgr::shared()->start();
-	//PhysicsMgr::shared()->createPlane(0,1,0, 10);
+}
+
+void GameWorld::loadGame(std::string filePath)
+{
+	prepare();
+
+	rapidjson::Document doc;
+	auto data = Tfile::shared()->getData(filePath, true);
+	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+	if (doc.HasParseError())
+	{
+		tlog("[error] get json data err! %s %d offset %d",
+			filePath.c_str(),
+			doc.GetParseError(),
+			doc.GetErrorOffset());
+		exit(1);
+	}
+
+	//load Static IslandList
+	BuildingSystem::shared()->loadStatic(doc);
+	ScriptPyMgr::shared()->callFunV("on_game_start");
+}
+
+void GameWorld::saveGame(std::string filePath)
+{
+	rapidjson::Document doc;
+	doc.SetObject();
+	BuildingSystem::shared()->dumpStatic(doc, doc.GetAllocator());
+
+	rapidjson::StringBuffer buffer;
+	auto file = fopen(filePath.c_str(), "w");
+	char writeBuffer[65536];
+	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+	writer.SetIndent('\t', 1);
+	doc.Accept(writer);
+	fclose(file);
 }
 
 bool GameWorld::onKeyPress(int keyCode)
@@ -271,6 +285,32 @@ GameWorld::GameWorld()
 GameWorld::~GameWorld()
 {
 	tlog("hello world");
+}
+
+void GameWorld::prepare()
+{
+	m_currentState = GAME_STATE_RUNNING;
+
+	//load the config
+	ItemMgr::shared();
+	
+	PhysicsMgr::shared()->start();
+	Tmisc::DurationBegin();
+	 
+	unloadGame();
+	PartSurfaceMgr::shared()->loadFromFile("aaaaaa");
+	MainMenu::shared()->initInGame();
+	GameMap::shared()->setMapType(GameMap::MapType::Noise);
+	GameMap::shared()->setMaxHeight(10);
+	 
+	GameMap::shared()->setMinHeight(3);
+	auto player = new CubePlayer(m_mainRoot);
+	 
+	GameWorld::shared()->setPlayer(player);
+	 
+	GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+	 
+	m_mainRoot->addChild(player);
 }
 
 MainMenu *GameWorld::getMainMenu() const

@@ -68,15 +68,28 @@ namespace tzw
 					delete island;
 				}
 			}
-			
 		}
     }
-
-	void
-	BuildingSystem::placeGamePart(GamePart* part, vec3 pos)
+    void BuildingSystem::placeGamePartStatic(GamePart* part, vec3 pos)
 	{
-		auto newIsland = new Island(pos);
-		m_IslandList.push_back(newIsland);
+		Island * newIsland = nullptr;
+		float blockSize = 0.5f;
+		vec3 resultWorldPos = vec3(int(std::round( pos.x / blockSize)) * blockSize, int(std::round(pos.y / blockSize)) * blockSize, 
+			int(std::round(pos.z / blockSize)) * blockSize);
+		if(m_staticIsland.empty())
+		{
+			newIsland = new Island(resultWorldPos);
+			m_IslandList.push_back(newIsland);
+			m_staticIsland.push_back(newIsland);
+			newIsland->genIslandGroup();
+			newIsland->setIsStatic(true);
+		}else
+		{
+			newIsland = m_staticIsland[0];
+		}
+		auto invMat = newIsland->m_node->getTransform().inverted();
+		tlog("hhehehehe %s %s %s", pos.getStr().c_str(), resultWorldPos.getStr().c_str(), invMat.transformVec3(resultWorldPos).getStr().c_str());
+		part->getNode()->setPos(invMat.transformVec3(resultWorldPos));
 		newIsland->insert(part);
 	}
 
@@ -710,6 +723,37 @@ namespace tzw
 			//for debugging purpose
 			MainMenu::shared()->setIsShowNodeEditor(true);
 		}
+	}
+
+	void BuildingSystem::loadStatic(rapidjson::Value &doc)
+	{
+		auto& items = doc["StaticIslandList"];
+		std::string islandGroup = items[0]["IslandGroup"].GetString();
+		removeByGroup(islandGroup);
+	
+		for (unsigned int i = 0; i < items.Size(); i++)
+		{
+			auto& item = items[i];
+			auto newIsland = new Island(vec3());
+			m_staticIsland.push_back(newIsland);
+			m_IslandList.push_back(newIsland);
+			newIsland->m_islandGroup = item["IslandGroup"].GetString();
+			newIsland->load(item);
+			newIsland->setIsStatic(true);
+			newIsland->enablePhysics(true);
+		}
+	}
+
+	void BuildingSystem::dumpStatic(rapidjson::Value &doc, rapidjson::Document::AllocatorType& allocator)
+	{
+		rapidjson::Value islandList(rapidjson::kArrayType);
+		for(auto island :m_staticIsland)
+		{
+			rapidjson::Value islandObject(rapidjson::kObjectType);
+			island->dump(islandObject, allocator);
+			islandList.PushBack(islandObject, allocator);
+		}
+		doc.AddMember("StaticIslandList", islandList, allocator);
 	}
 
 	void BuildingSystem::updateBearing(float dt)

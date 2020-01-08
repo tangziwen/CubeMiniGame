@@ -167,15 +167,22 @@ namespace tzw
 				}
 				else
 				{
-					hidePreviewPart();
+					auto resultPos = BuildingSystem::shared()->hitTerrain(camPos, playerForwardDir, 10);
+					if (resultPos.y > -99999)
+					{
+						showPreviewPart();
+						float blockSize = 0.5f;
+						vec3 resultWorldPos = vec3(int(std::round( resultPos.x / blockSize)) * blockSize, int(std::round(resultPos.y / blockSize)) * blockSize, 
+							int(std::round(resultPos.z / blockSize)) * blockSize);
+						m_previewPart->getNode()->setPos(resultWorldPos);
+	                } else
+	                {
+		                hidePreviewPart();
+	                }
 				}
 			break;
 		}
-		if(currSelected->m_type != GamePartType::GAME_PART_LIFT) // no lift preview part
-		{
-
-		}
-		else //lift, lift is so fucking special
+		if(currSelected->m_type == GamePartType::GAME_PART_LIFT) // no lift preview part
 		{
 			//已经放置了升降机，没什么好说的，直接几把隐藏
 			if(BuildingSystem::shared()->getLift()) 

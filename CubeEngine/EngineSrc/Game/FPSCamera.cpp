@@ -37,7 +37,7 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 
 	if(m_isOpenPhysics) {
 		m_capsuleHigh = 2.f;
-		btCylinderShape *shape = new btCylinderShape(btVector3(0.25, 1.0, 0.25));
+		btCapsuleShape *shape = new btCapsuleShape(0.25f, m_capsuleHigh);
 
 		this->m_ghost2 = new btPairCachingGhostObject();
 		//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
@@ -60,8 +60,8 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 	    m_character->setFallSpeed(55.0f);
 		this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
 		this->m_ghost2->setUserIndex(1);
-		// this->m_ghost2->setCcdSweptSphereRadius(3.0f);
-		// this->m_ghost2->setCcdMotionThreshold(0.00001);
+		this->m_ghost2->setCcdSweptSphereRadius(3.0f);
+		this->m_ghost2->setCcdMotionThreshold(0.00001);
 		PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
 		PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
 	}
