@@ -13,7 +13,7 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include <algorithm>
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "UIHelper.h"
 #include "CannonPart.h"
 #include "ThrusterPart.h"
@@ -596,7 +596,7 @@ namespace tzw
 
 
 		//Node Editor
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		nodeEditor->dump(doc, doc.GetAllocator());
 		
 		
@@ -705,7 +705,7 @@ namespace tzw
 		}
 
 		//Node Editor
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		nodeEditor->load(doc["NodeGraph"]);
 		
 		
@@ -721,7 +721,7 @@ namespace tzw
 		{
 			// for no run test, if we not yet loaded the world & placed the lift, we still can debug the Node Editor problems.
 			//for debugging purpose
-			MainMenu::shared()->setIsShowNodeEditor(true);
+			GameUISystem::shared()->setIsShowNodeEditor(true);
 		}
 	}
 

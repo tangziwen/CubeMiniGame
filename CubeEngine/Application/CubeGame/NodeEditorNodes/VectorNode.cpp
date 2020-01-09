@@ -1,6 +1,6 @@
 #include "VectorNode.h"
 #include "CubeGame/ResNode.h"
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 
 namespace tzw
 {
@@ -13,7 +13,7 @@ namespace tzw
 
 	NodeAttrValue VectorNode::execute()
 	{
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		auto theList = nodeEditor->findAllAttrLinksFromAttr(m_composite);
 		auto& value = m_out->m_localAttrValue;
 		value.m_list.clear();

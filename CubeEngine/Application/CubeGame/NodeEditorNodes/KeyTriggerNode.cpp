@@ -1,5 +1,5 @@
 #include "KeyTriggerNode.h"
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 #include "CubeGame/BehaviorNode.h"
 #include "CubeGame/BuildingSystem.h"
 
@@ -139,7 +139,7 @@ namespace tzw
 	void KeyTriggerNode::triggerForward()
 	{
 		if(!isPlayerOnSeat()) return;
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_forwardAttr, node_list);
 		for(auto node : node_list)
@@ -155,7 +155,7 @@ namespace tzw
 	void KeyTriggerNode::triggerSide()
 	{
 		if(!isPlayerOnSeat()) return;
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_sideAttr, node_list);
 		for(auto node : node_list)
@@ -170,7 +170,7 @@ namespace tzw
 
 	void KeyTriggerNode::triggerZ()
 	{
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_zKeyAttr, node_list);
 		for(auto node : node_list)

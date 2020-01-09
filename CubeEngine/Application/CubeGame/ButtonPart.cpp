@@ -3,7 +3,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
 
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "NodeEditorNodes/ButtonPartNode.h"
 #include "3D/Model/Model.h"
 
@@ -21,14 +21,14 @@ ButtonPart::ButtonPart(std::string itemName)
 	m_parent = nullptr;
 	ButtonPart::generateName();
 
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new ButtonPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 }
 
 ButtonPart::~ButtonPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
@@ -36,7 +36,7 @@ ButtonPart::~ButtonPart()
 void ButtonPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"°´Å¥ %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"ï¿½ï¿½Å¥ %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -65,13 +65,13 @@ GameNodeEditorNode* ButtonPart::getEditorNode()
 
 void ButtonPart::onPressed()
 {
-	MainMenu::shared()->getNodeEditor()->onPressButtonNode(this->getEditorNode());
+	GameUISystem::shared()->getNodeEditor()->onPressButtonNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(0);
 }
 
 void ButtonPart::onReleased()
 {
-	MainMenu::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
+	GameUISystem::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(-1);
 }
 }

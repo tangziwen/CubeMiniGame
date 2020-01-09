@@ -3,7 +3,7 @@
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Texture/TextureMgr.h"
 #include "NodeEditorNodes/BearingPartNode.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "GamePart.h"
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
@@ -195,7 +195,7 @@ void SpringPart::generateName()
 
 SpringPart::~SpringPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 	if(m_constrain) 

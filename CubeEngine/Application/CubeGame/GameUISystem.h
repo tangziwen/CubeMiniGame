@@ -25,11 +25,11 @@ enum class WindowType
 	OPTION_MENU,
 	QUICK_DEBUG,
 };
-class MainMenu : public IMGUIObject, public EventListener
+class GameUISystem : public IMGUIObject, public EventListener
 {
 public:
-	TZW_SINGLETON_DECL(MainMenu);
-    MainMenu();
+	TZW_SINGLETON_DECL(GameUISystem);
+    GameUISystem();
 	void init();
     void show();
     void hide();

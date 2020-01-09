@@ -1,6 +1,6 @@
 #include "SwitchNode.h"
 #include "CubeGame/SwitchPart.h"
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 #include "CubeGame/BehaviorNode.h"
 #include "CubeGame/BuildingSystem.h"
 
@@ -52,7 +52,7 @@ namespace tzw
 			effectedAttr = m_onOff;
 		}
 
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(effectedAttr, node_list);
 		for(auto node : node_list)

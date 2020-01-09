@@ -4,7 +4,7 @@
 #include "Island.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "NodeEditorNodes/CannonPartNode.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Particle/ParticleEmitter.h"
 #include "3D/Particle/ParticleUpdateColorModule.h"
@@ -38,7 +38,7 @@ CannonPart::CannonPart():m_firingVelocity(50.0f),m_recoil(50.0f)
 	m_parent = nullptr;
 	CannonPart::generateName();
 
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new CannonPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	initAttachments();
@@ -53,14 +53,14 @@ CannonPart::CannonPart(std::string itemName):m_firingVelocity(50.0f),m_recoil(50
 	m_parent = nullptr;
 	CannonPart::generateName();
 
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new CannonPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 }
 
 CannonPart::~CannonPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }

@@ -124,7 +124,7 @@ namespace tzw
 		auto seat = BuildingSystem::shared()->getCurrentControlPart();
 		if(seat && seat->getIsActivate()) 
 		{
-			auto label = MainMenu::shared()->getCrossHairTipsInfo();
+			auto label = GameUISystem::shared()->getCrossHairTipsInfo();
 			if(!label) return;
 			label->setIsVisible(false);
 			return;
@@ -195,7 +195,7 @@ namespace tzw
 		switch (keyCode)
 		{
 	    case TZW_KEY_ESCAPE:
-	        MainMenu::shared()->closeCurrentWindow();
+	        GameUISystem::shared()->closeCurrentWindow();
 	        break;
         case TZW_KEY_H:
 			{
@@ -203,7 +203,7 @@ namespace tzw
 				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
         		break;
         		if(!GUISystem::shared()->isUiCapturingInput())
-				MainMenu::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
+				GameUISystem::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
         		
 				auto anchorPos = getPos() + getForward() * 3.0;
         		for(int i = 0; i < 11; i++) {
@@ -226,10 +226,10 @@ namespace tzw
 
             }
 			break;
-        case TZW_KEY_M:
+        case TZW_KEY_TAB:
 			{
         		if(!GUISystem::shared()->isUiCapturingInput())
-				MainMenu::shared()->setWindowShow(WindowType::MainMenu, !MainMenu::shared()->getWindowIsShow(WindowType::MainMenu));
+				GameUISystem::shared()->setWindowShow(WindowType::MainMenu, !GameUISystem::shared()->getWindowIsShow(WindowType::MainMenu));
             }
 			break;
         case TZW_KEY_X:
@@ -277,7 +277,7 @@ namespace tzw
 
 	bool CubePlayer::onMousePress(int button, vec2 thePos)
 	{
-		if (MainMenu::shared()->isVisible())
+		if (GameUISystem::shared()->isVisible())
 				return false;
 		return true;
 	}
@@ -383,7 +383,7 @@ namespace tzw
 
 	void CubePlayer::updateCrossHairTipsInfo()
 	{
-		auto label = MainMenu::shared()->getCrossHairTipsInfo();
+		auto label = GameUISystem::shared()->getCrossHairTipsInfo();
 		if(!label) return;
 		auto item = ItemMgr::shared()->getItem(m_currSelectedItem);
 		bool isNeedSpecialShowBySelected = false;
@@ -472,7 +472,7 @@ namespace tzw
 	{
 		if(m_currPointPart && m_currPointPart->isNeedDrawInspect())
 		{
-			MainMenu::shared()->openInspectWindow(m_currPointPart);
+			GameUISystem::shared()->openInspectWindow(m_currPointPart);
 		}
 	}
 

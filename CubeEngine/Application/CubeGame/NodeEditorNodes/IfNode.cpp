@@ -2,7 +2,7 @@
 #include "CubeGame/ResNode.h"
 #include "../BearPart.h"
 #include "VarNode.h"
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 
 namespace tzw
 {
@@ -16,7 +16,7 @@ namespace tzw
 
 	NodeAttrValue IfNode::execute()
 	{
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_listtrue, node_listfalse;
 		nodeEditor->findNodeLinksToAttr(m_leftValAttr, node_listtrue);
 		nodeEditor->findNodeLinksToAttr(m_rightValAttr, node_listfalse);

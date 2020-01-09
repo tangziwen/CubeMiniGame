@@ -124,17 +124,17 @@ namespace tzw
 		BIND_END_CLASS
 
 		BIND_START(luaState)
-		BIND_BEGIN_CLASS(MainMenu)
-		.addStaticFunction ("shared", &MainMenu::shared)
-		BIND_FUNC(MainMenu, isVisible)
-		BIND_FUNC(MainMenu, isAnyShow)
-		BIND_FUNC(MainMenu, show)
-		BIND_FUNC(MainMenu, hide)
-		BIND_FUNC(MainMenu, setIsShowAssetEditor)
-		BIND_FUNC(MainMenu, setIsShowNodeEditor)
-		BIND_FUNC(MainMenu, setIsFileBroswerOpen)
-		BIND_FUNC(MainMenu, isOpenAssetEditor)
-		BIND_FUNC(MainMenu, setPainterShow)
+		BIND_BEGIN_CLASS(GameUISystem)
+		.addStaticFunction ("shared", &GameUISystem::shared)
+		BIND_FUNC(GameUISystem, isVisible)
+		BIND_FUNC(GameUISystem, isAnyShow)
+		BIND_FUNC(GameUISystem, show)
+		BIND_FUNC(GameUISystem, hide)
+		BIND_FUNC(GameUISystem, setIsShowAssetEditor)
+		BIND_FUNC(GameUISystem, setIsShowNodeEditor)
+		BIND_FUNC(GameUISystem, setIsFileBroswerOpen)
+		BIND_FUNC(GameUISystem, isOpenAssetEditor)
+		BIND_FUNC(GameUISystem, setPainterShow)
 		BIND_END_CLASS
 
 		//GamePart and it's derived classes

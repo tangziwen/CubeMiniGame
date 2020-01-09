@@ -3,7 +3,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
 #include "3D/Primitive/CylinderPrimitive.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "NodeEditorNodes/ThrusterPartNode.h"
 #include "Utility/math/TbaseMath.h"
 #include <ctime>
@@ -33,7 +33,7 @@ ThrusterPart::ThrusterPart()
 	m_parent = nullptr;
 	ThrusterPart::generateName();
 
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new ThrusterPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	initAttachments();
@@ -74,7 +74,7 @@ ThrusterPart::ThrusterPart(std::string itemName)
 	initFromItemName(itemName);
 	m_parent = nullptr;
 	ThrusterPart::generateName();
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new ThrusterPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	m_phase = TbaseMath::randF()*3.14;
@@ -212,7 +212,7 @@ GameNodeEditorNode* ThrusterPart::getGraphNode() const
 
 ThrusterPart::~ThrusterPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	BuildingSystem::shared()->removeThruster(this);
 	delete m_graphNode;

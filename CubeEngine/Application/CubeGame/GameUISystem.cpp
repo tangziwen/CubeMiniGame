@@ -1,4 +1,4 @@
-#include "MainMenu.h"
+#include "GameUISystem.h"
 
 #include "EngineSrc/CubeEngine.h"
 #include "CubeGame/GameWorld.h"
@@ -42,7 +42,7 @@ namespace tzw {
 
 
 static std::set<WindowType> m_currOpenWindowSet;
-TZW_SINGLETON_IMPL(MainMenu);
+TZW_SINGLETON_IMPL(GameUISystem);
 static void exitNow(Button * btn)
 {
     exit(0);
@@ -52,7 +52,7 @@ static void onOption(Button * btn)
 {
 
 }
-MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false),
+GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
 	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
 	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr)
@@ -62,7 +62,7 @@ MainMenu::MainMenu(): m_isShowProfiler(false), m_isShowConsole(false),
 }
 
 Texture * testIcon = nullptr;
-void MainMenu::init()
+void GameUISystem::init()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
 	GUISystem::shared()->addObject(this);
@@ -83,12 +83,12 @@ void MainMenu::init()
 	//hide();
 }
 
-void MainMenu::show()
+void GameUISystem::show()
 {
 	setVisible(true);
 }
 
-void MainMenu::hide()
+void GameUISystem::hide()
 {
 	if (GameWorld::shared()->getCurrentState() == GAME_STATE_RUNNING)
 	{
@@ -97,7 +97,7 @@ void MainMenu::hide()
 	closeAllOpenedWindow();
 }
 
-void MainMenu::toggle()
+void GameUISystem::toggle()
 {
 
 	if (isVisible())
@@ -110,7 +110,7 @@ void MainMenu::toggle()
 	}
 }
 
-void MainMenu::drawIMGUI()
+void GameUISystem::drawIMGUI()
 {
 
 	const float DISTANCE = 10.0f;
@@ -164,7 +164,7 @@ void MainMenu::drawIMGUI()
 		bool isOpenHelp = false;
 		if(getWindowIsShow(WindowType::MainMenu))
 		{
-			if (ImGui::BeginMainMenuBar())
+			if (ImGui::BeginMainMenuBarBottom())
 			{
 				if (ImGui::BeginMenu(u8"сно╥"))
 				{
@@ -416,72 +416,72 @@ void MainMenu::drawIMGUI()
 
 }
 
-bool MainMenu::onKeyPress(int keyCode)
+bool GameUISystem::onKeyPress(int keyCode)
 {
 	return true;
 }
 
-bool MainMenu::isVisible() const
+bool GameUISystem::isVisible() const
 {
 	return m_isVisible;
 }
 
-void MainMenu::setVisible(bool val)
+void GameUISystem::setVisible(bool val)
 {
 	m_isVisible = val;
 }
 
-GameNodeEditor* MainMenu::getNodeEditor()
+GameNodeEditor* GameUISystem::getNodeEditor()
 {
 	return m_nodeEditor;
 }
 
-void MainMenu::setIsShowNodeEditor(bool isShow)
+void GameUISystem::setIsShowNodeEditor(bool isShow)
 {
 	setWindowShow(WindowType::NODE_EDITOR, isShow);
 
 }
 
-void MainMenu::setIsShowAssetEditor(bool isShow)
+void GameUISystem::setIsShowAssetEditor(bool isShow)
 {
 	//m_isOpenAssetEditor = true;
 	//m_currOpenWindowSet.insert(WindowType::INVENTORY);
 	setWindowShow(WindowType::INVENTORY, isShow);
 }
 
-void MainMenu::popFloatTips(std::string floatString)
+void GameUISystem::popFloatTips(std::string floatString)
 {
 	UIHelper::shared()->showFloatTips(floatString);
 }
 
-void MainMenu::closeAllOpenedWindow()
+void GameUISystem::closeAllOpenedWindow()
 {
 	m_isOpenTerrain = false;
 	m_currOpenWindowSet.clear();
 }
 
-bool MainMenu::isNeedShowWindow()
+bool GameUISystem::isNeedShowWindow()
 {
 	return m_currOpenWindowSet.size() > 0;
 }
 
-bool MainMenu::isAnyShow()
+bool GameUISystem::isAnyShow()
 {
 	return isVisible() || isNeedShowWindow();
 }
 
-void MainMenu::setIsFileBroswerOpen(bool isOpen)
+void GameUISystem::setIsFileBroswerOpen(bool isOpen)
 {
 	setWindowShow(WindowType::VEHICLE_FILE_BROWSER, isOpen);
 }
 
-void MainMenu::startGame()
+void GameUISystem::startGame()
 {
-    GameWorld::shared()->startGame();
 	hide();
+    GameWorld::shared()->startGame();
 }
 
-void MainMenu::drawToolsMenu()
+void GameUISystem::drawToolsMenu()
 {
 	if (m_isOpenTerrain)
 	{
@@ -579,28 +579,28 @@ struct ExampleAppLog
 	}
 };
 
-void MainMenu::ShowExampleAppLog(bool* p_open)
+void GameUISystem::ShowExampleAppLog(bool* p_open)
 {
 	static ExampleAppLog log;
 	log.Draw("LogMenu", p_open);
 }
 
-void MainMenu::ShowExampleAppConsole(bool* p_open)
+void GameUISystem::ShowExampleAppConsole(bool* p_open)
 {
 	ConsolePanel::shared()->Draw("Console", p_open);
 }
 
-void MainMenu::drawInventory()
+void GameUISystem::drawInventory()
 {
 	
 }
 
-bool MainMenu::isOpenAssetEditor() const
+bool GameUISystem::isOpenAssetEditor() const
 {
 	return getWindowIsShow(WindowType::INVENTORY);
 }
 
-void MainMenu::closeCurrentWindow()
+void GameUISystem::closeCurrentWindow()
 {
 	if(m_currOpenWindowSet.size() > 0)
 	{
@@ -613,7 +613,7 @@ void MainMenu::closeCurrentWindow()
 	}
 }
 
-void MainMenu::setWindowShow(WindowType type, bool isShow)
+void GameUISystem::setWindowShow(WindowType type, bool isShow)
 {
 	if(isShow)
 	{
@@ -627,23 +627,23 @@ void MainMenu::setWindowShow(WindowType type, bool isShow)
 	}
 }
 
-bool MainMenu::getWindowIsShow(WindowType type) const
+bool GameUISystem::getWindowIsShow(WindowType type) const
 {
 	return m_currOpenWindowSet.find(type) != m_currOpenWindowSet.end();
 }
 
-void MainMenu::openInspectWindow(GamePart* part)
+void GameUISystem::openInspectWindow(GamePart* part)
 {
 	setWindowShow(WindowType::ATTRIBUTE_WINDOW, true);
 	m_curInspectPart = part;
 }
 
-void MainMenu::setPainterShow(bool isShow)
+void GameUISystem::setPainterShow(bool isShow)
 {
 	setWindowShow(WindowType::PAINTER, isShow);
 }
 
-void MainMenu::drawEntryInterFace()
+void GameUISystem::drawEntryInterFace()
 {
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
@@ -683,12 +683,12 @@ void MainMenu::drawEntryInterFace()
 	}
 }
 
-LabelNew* MainMenu::getCrossHairTipsInfo() const
+LabelNew* GameUISystem::getCrossHairTipsInfo() const
 {
 	return m_crossHairTipsInfo;
 }
 
-void MainMenu::initInGame()
+void GameUISystem::initInGame()
 {
     m_crossHair = Sprite::create("Texture/cross_hair.png");
 	 

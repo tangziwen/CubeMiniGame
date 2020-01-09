@@ -1,5 +1,5 @@
 #include "BehaviorNode.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 
 
 namespace tzw
@@ -27,7 +27,7 @@ namespace tzw
 
 	void BehaviorNode::handleExeOut()
 	{
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_out, node_list);
 		for(auto node : node_list)

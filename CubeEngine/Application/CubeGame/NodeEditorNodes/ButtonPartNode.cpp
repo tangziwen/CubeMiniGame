@@ -1,7 +1,7 @@
 #include "ButtonPartNode.h"
 #include "CubeGame/ButtonPart.h"
 #include "Base/TranslationMgr.h"
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 
 namespace tzw
 {
@@ -39,7 +39,7 @@ namespace tzw
 	void ButtonPartNode::triggerPress()
 	{
 		m_stateAttr->m_localAttrValue.setInt(1);
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_pressedAttr, node_list);
 		for(auto node : node_list)
@@ -54,7 +54,7 @@ namespace tzw
 	void ButtonPartNode::triggerRelease()
 	{
 		m_stateAttr->m_localAttrValue.setInt(0);
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_releasedAttr, node_list);
 		for(auto node : node_list)

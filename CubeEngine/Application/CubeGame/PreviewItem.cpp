@@ -155,7 +155,8 @@ namespace tzw
 					{
 						vec3 p,n,u;
 						auto attach = part->findProperAttachPoint(Ray(camPos, playerForwardDir),p,n,u);
-						if(attach && !attach->m_connected && !currSelected->isSpecialFunctionItem())
+						//if(attach && !attach->m_connected && !currSelected->isSpecialFunctionItem())
+						if(attach && !currSelected->isSpecialFunctionItem())
 						{
 							showPreviewPart();
 							m_previewPart->adjustToOtherIslandByAlterSelfPart(attach, m_previewPart->getAttachment(m_previewPart->getPrettyAttach(attach, m_currAttachment)), m_previewAngle);

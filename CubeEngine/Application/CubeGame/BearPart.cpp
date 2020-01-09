@@ -3,7 +3,7 @@
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Texture/TextureMgr.h"
 #include "NodeEditorNodes/BearingPartNode.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "GamePart.h"
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
@@ -12,6 +12,7 @@
 #include "BuildingSystem.h"
 #include "3D/Model/Model.h"
 #include "Base/TranslationMgr.h"
+#include "3D/Primitive/CubePrimitive.h"
 
 // #include "EngineSrc/Collision/Physics6DOFConstraint.h"
 namespace tzw
@@ -35,7 +36,7 @@ BearPart::BearPart()
 	addAttachment(new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this));
 	BearPart::generateName();
 	
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new BearingPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	m_xrayMat = Material::createFromTemplate("PartXRay");
@@ -81,7 +82,7 @@ BearPart::BearPart(std::string itemName)
 	
 	BearPart::generateName();
 	
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new BearingPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	m_xrayMat = Material::createFromTemplate("PartXRay");
@@ -124,7 +125,7 @@ int BearPart::getAttachmentCount()
 
 BearPart::~BearPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 	if(m_constrain) 

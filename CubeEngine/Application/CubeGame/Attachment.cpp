@@ -87,9 +87,8 @@ namespace tzw
 		const float blockSize = 0.25f;
 		collisionBox.setMax(vec3(m_collisionSize / 2.0, m_collisionSize / 2.0, 0.2));
 		collisionBox.setMin(vec3(m_collisionSize / -2.0, m_collisionSize / -2.0, -0.2));
-		RayAABBSide side;
 		vec3 hitPoint;
-		auto isHit = rayInWorld.intersectAABB(collisionBox, &side, hitPoint);
+		auto isHit = rayInWorld.intersectAABB(collisionBox, hitPoint);
         if (isHit) 
 		{
 			hitPointWorld = (WorldMat * vec4(hitPoint, 1.0f)).toVec3();

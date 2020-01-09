@@ -20,8 +20,6 @@ const float bearingGap = 0.00;
 TZW_SINGLETON_IMPL(ItemMgr);
 ItemMgr::ItemMgr()
 {
-	//load from Json
-	loadFromFile("./Res/Blocks/Blocks.json");
 }
 
 

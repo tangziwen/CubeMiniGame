@@ -3,7 +3,7 @@
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "NodeEditorNodes/ControlPartNode.h"
 #include "Event/EventMgr.h"
 #include "GameWorld.h"
@@ -28,7 +28,7 @@ ControlPart::ControlPart(std::string itemName)
 	m_parent = nullptr;
 	EventMgr::shared()->addFixedPiorityListener(this);
 	ControlPart::generateName();
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new ControlPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 
@@ -307,7 +307,7 @@ Attachment* ControlPart::getAttachment(int index)
 
 ControlPart::~ControlPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }

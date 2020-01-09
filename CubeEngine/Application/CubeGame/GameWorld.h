@@ -4,7 +4,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include "./Chunk.h"
 #include "CubePlayer.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "GameConfig.h"
 #include <set>
 namespace tzw {
@@ -31,7 +31,7 @@ public:
 	void loadGame(std::string filePath);
 	void saveGame(std::string filePath);
 	bool onKeyPress(int keyCode) override;
-    MainMenu *getMainMenu() const;
+    GameUISystem *getMainMenu() const;
     void unloadGame();
     int getCurrentState() const;
     void setCurrentState(const int &currentState);
@@ -54,7 +54,7 @@ private:
     static GameWorld *m_instance;
     GameWorld();
     std::set<Chunk*> m_activedChunkList;
-    MainMenu * m_mainMenu;
+    GameUISystem * m_mainMenu;
 	virtual ~GameWorld();
 	void prepare();
 };

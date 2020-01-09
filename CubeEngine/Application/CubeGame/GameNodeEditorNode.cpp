@@ -1,6 +1,6 @@
 #include "GameNodeEditorNode.h"
 #include "2D/imnodes.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 
 namespace tzw
 {
@@ -117,7 +117,7 @@ namespace tzw
 	//ÇóÓÒÖµ
 	NodeAttrValue NodeAttr::eval()
 	{
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		
 		if(this->dataType ==DataType::RETURN_VALUE)//is a return value, must execute
 		{
@@ -141,7 +141,7 @@ namespace tzw
 
 	NodeAttr* NodeAttr::evalRef()
 	{
-		auto nodeEditor = MainMenu::shared()->getNodeEditor();
+		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		
 		if(this->dataType ==DataType::RETURN_VALUE)//is a return value, must execute
 		{

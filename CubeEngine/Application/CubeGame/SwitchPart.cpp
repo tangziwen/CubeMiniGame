@@ -3,7 +3,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
 #include "NodeEditorNodes/SwitchNode.h"
-#include "MainMenu.h"
+#include "GameUISystem.h"
 #include "3D/Model/Model.h"
 
 
@@ -21,14 +21,14 @@ SwitchPart::SwitchPart(std::string itemName)
 	SwitchPart::generateName();
 	m_currState = false;
 
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new SwitchNode(this);
 	nodeEditor->addNode(m_graphNode);
 }
 
 SwitchPart::~SwitchPart()
 {
-	auto nodeEditor = MainMenu::shared()->getNodeEditor();
+	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
@@ -66,7 +66,7 @@ GameNodeEditorNode* SwitchPart::getEditorNode()
 void SwitchPart::onToggle()
 {
 	m_currState = !m_currState;
-	MainMenu::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
+	GameUISystem::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(m_currState?0:-1);
 	Texture * tex;
 	if(m_currState)

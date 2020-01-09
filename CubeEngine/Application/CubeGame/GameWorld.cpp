@@ -255,7 +255,7 @@ void GameWorld::setMapOffset(tzw::vec3 val)
 void GameWorld::init()
 {
 
-	m_mainMenu = MainMenu::shared();
+	m_mainMenu = GameUISystem::shared();
 	m_mainMenu->init();
 	m_mainMenu->hide();
     m_mainRoot = new Node();
@@ -291,15 +291,15 @@ void GameWorld::prepare()
 {
 	m_currentState = GAME_STATE_RUNNING;
 
-	//load the config
-	ItemMgr::shared();
+	//load the BlockConfig
+	ItemMgr::shared()->loadFromFile("./Res/Blocks/Blocks.json");
 	
 	PhysicsMgr::shared()->start();
 	Tmisc::DurationBegin();
-	 
 	unloadGame();
-	PartSurfaceMgr::shared()->loadFromFile("aaaaaa");
-	MainMenu::shared()->initInGame();
+	//load Surface
+	PartSurfaceMgr::shared()->loadFromFile("Some_surface_not_used_yet");
+	GameUISystem::shared()->initInGame();
 	GameMap::shared()->setMapType(GameMap::MapType::Noise);
 	GameMap::shared()->setMaxHeight(10);
 	 
@@ -313,7 +313,7 @@ void GameWorld::prepare()
 	m_mainRoot->addChild(player);
 }
 
-MainMenu *GameWorld::getMainMenu() const
+GameUISystem *GameWorld::getMainMenu() const
 {
     return m_mainMenu;
 }
