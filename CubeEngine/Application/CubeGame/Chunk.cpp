@@ -207,12 +207,12 @@ Chunk::load()
   setCamera(g_GetCurrScene()->defaultCamera());
   if (!m_isInitData) {
     // initData(); genMesh();
-    WorkerThreadSystem::shared()->pushOrder([&]() {
+    WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() {
       initData();
       genMesh();
-    });
+    }));
   } else {
-    WorkerThreadSystem::shared()->pushOrder([&]() { genMesh(); });
+    WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(); }));
     // genMesh();
   }
   m_isLoaded = true;

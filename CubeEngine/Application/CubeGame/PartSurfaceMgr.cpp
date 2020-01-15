@@ -12,6 +12,7 @@
 #include <rapidjson/document.h>
 #include "Utility/log/Log.h"
 #include "Utility/file/Tfile.h"
+#include "Engine/WorkerThreadSystem.h"
 
 namespace tzw
 {
@@ -112,6 +113,15 @@ void PartSurfaceMgr::loadFromFile(std::string filePath)
 		"Texture/BuiltInTexture/defaultRoughnessMap.png",
 		"Texture/BuiltInTexture/defaultMetallic.png", 
 		"Texture/concrete3-Unity2-1/concrete3-Normal-ogl.png"));
+	for(auto iter :m_itemList)
+	{
+		char titleTips[128];
+		sprintf(titleTips, "Part Surface# %s",iter->getName().c_str());
+		WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading(titleTips, WorkerJob([iter]
+		{
+			iter->cache();
+		}));
+	}
 }
 
 PartSurface * PartSurfaceMgr::getItem(std::string name)

@@ -28,8 +28,35 @@ Texture* TextureMgr::getByPathSimple(std::string filePath)
 	return getByPath(filePath, false);
 }
 
+void TextureMgr::getByPathAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap)
+{
+    if (filePath.empty()) 
+	{
+    	finishedCallBack(nullptr);
+    	return;
+	}
+    auto result = m_texturePool.find(filePath);
+    if(result!=m_texturePool.end())
+    {
+    	finishedCallBack(result->second);
+    }else
+    {
+        Texture * tex = new Texture();
+    	auto onFinished = [this, tex, isNeedMiMap, filePath, finishedCallBack](Texture *)
+    	{
+	        if(isNeedMiMap)
+	        {
+	            tex->genMipMap();
+	        }
+	        m_texturePool.insert(std::make_pair(filePath,tex));
+    		finishedCallBack(tex);
+    	};
+    	tex->loadAsync(filePath, onFinished);
+    }
+}
+
 Texture *TextureMgr::getByPath(std::string PosX, std::string NegX, std::string PosY,
-							   std::string NegY, std::string PosZ, std::string NegZ)
+								std::string NegY, std::string PosZ, std::string NegZ)
 {
     auto result = m_texturePool.find(PosX);
     if(result!=m_texturePool.end())

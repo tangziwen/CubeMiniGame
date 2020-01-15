@@ -3,6 +3,9 @@
 #include "BearPart.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "Scene/SceneMgr.h"
+#include "3D/Primitive/LinePrimitive.h"
+#include "AssistDrawSystem.h"
+
 namespace tzw
 {
 
@@ -85,12 +88,14 @@ namespace tzw
 		rayInWorld.setDirection((mat * vec4(rayInWorld.direction(), 0.0)).toVec3());
 		AABB collisionBox;
 		const float blockSize = 0.25f;
-		collisionBox.setMax(vec3(m_collisionSize / 2.0, m_collisionSize / 2.0, 0.2));
-		collisionBox.setMin(vec3(m_collisionSize / -2.0, m_collisionSize / -2.0, -0.2));
+		collisionBox.setMax(vec3(m_collisionSize / 2.0, m_collisionSize / 2.0, 0.1));
+		collisionBox.setMin(vec3(m_collisionSize / -2.0, m_collisionSize / -2.0, -0.1));
+		
 		vec3 hitPoint;
 		auto isHit = rayInWorld.intersectAABB(collisionBox, hitPoint);
         if (isHit) 
 		{
+			AssistDrawSystem::shared()->drawBoundingBox(collisionBox, WorldMat);
 			hitPointWorld = (WorldMat * vec4(hitPoint, 1.0f)).toVec3();
 			return true;
         }

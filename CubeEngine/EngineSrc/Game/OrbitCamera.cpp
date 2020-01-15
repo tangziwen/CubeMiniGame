@@ -8,7 +8,7 @@
 #include "EngineSrc/Math/t_Sphere.h"
 #include "EngineSrc/Math/Plane.h"
 #include <cmath>
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 #include <algorithm>
 namespace tzw {
 
@@ -40,7 +40,7 @@ OrbitCamera *OrbitCamera::create(Camera *cloneObj)
 
 bool OrbitCamera::onKeyPress(int keyCode)
 {
-	if (MainMenu::shared()->isAnyShow())
+	if (GameUISystem::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -88,7 +88,7 @@ bool OrbitCamera::onKeyPress(int keyCode)
 
 bool OrbitCamera::onKeyRelease(int keyCode)
 {
-	if (MainMenu::shared()->isAnyShow())
+	if (GameUISystem::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -153,7 +153,7 @@ bool OrbitCamera::onMouseMove(vec2 pos)
 
     auto newPosition = vec3(pos.x,pos.y,0.0);
 
-    if (!MainMenu::shared()->isAnyShow())
+    if (!GameUISystem::shared()->isAnyShow())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)

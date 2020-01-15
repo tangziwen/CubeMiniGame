@@ -25,6 +25,7 @@
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
+#include "Base/TimerMgr.h"
 
 
 namespace tzw {
@@ -241,7 +242,10 @@ void Engine::update(float delta)
 {
     m_deltaTime = delta;
     int logicBefore = clock();
+
 	PhysicsMgr::shared()->stepSimulation(delta);
+	TimerMgr::shared()->handle(delta);
+	WorkerThreadSystem::shared()->mainThreadUpdate();
 	EventMgr::shared()->apply(delta);
     shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();

@@ -33,12 +33,14 @@ namespace tzw
 	{
 		float minDist = 99999999.0;
 		int resultIndx = -1;
+		int count = 0;
 		for (auto i = 0; i < getAttachmentCount(); i++) 
 		{
 			auto attach = getAttachment(i);
 			vec3 hitInWorld;
 			if(attach->isHit(ray, hitInWorld)) 
 			{
+				count += 1;
 				if (hitInWorld.distance(ray.origin()) < minDist) 
 				{
 					resultIndx = i;
@@ -727,6 +729,13 @@ namespace tzw
 			newAttach->m_locale = attach.locale;
 			newAttach->m_collisionSize = attach.collisionSize;
 			addAttachment(newAttach);
+			//auto cube = new CubePrimitive(newAttach->m_collisionSize, newAttach->m_collisionSize, 0.5);
+			//Quaternion q;
+			//newAttach->getAttachmentInfoMat44().getRotation(&q);
+			//cube->setPos(attach.pos);
+			//cube->setRotateQ(q);
+			////cube->setRotateE(90, 90, 0);
+			//m_node->addChild(cube);
 		}
 	}
 

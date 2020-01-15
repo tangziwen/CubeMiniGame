@@ -8,7 +8,7 @@
 #include "EngineSrc/Math/t_Sphere.h"
 #include "EngineSrc/Math/Plane.h"
 #include <cmath>
-#include "CubeGame/MainMenu.h"
+#include "CubeGame/GameUISystem.h"
 #include <algorithm>
 #include "BulletDynamics/Character/btKinematicCharacterController.h"
 #include "Collision/PhysicsMgr.h"
@@ -77,7 +77,7 @@ FPSCamera *FPSCamera::create(Camera *cloneObj, bool isOpenPhysics)
 
 bool FPSCamera::onKeyPress(int keyCode)
 {
-	if (MainMenu::shared()->isAnyShow())
+	if (GameUISystem::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -130,7 +130,7 @@ bool FPSCamera::onKeyPress(int keyCode)
 
 bool FPSCamera::onKeyRelease(int keyCode)
 {
-	if (MainMenu::shared()->isAnyShow())
+	if (GameUISystem::shared()->isAnyShow())
 		return false;
     switch(keyCode)
     {
@@ -195,7 +195,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
 
     auto newPosition = vec3(pos.x,pos.y,0.0);
 
-    if (!MainMenu::shared()->isAnyShow())
+    if (!GameUISystem::shared()->isAnyShow())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)

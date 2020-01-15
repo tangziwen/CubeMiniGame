@@ -2,6 +2,7 @@
 #include "Scene/SceneMgr.h"
 #include "BuildingSystem.h"
 #include "2D/LabelNew.h"
+#include "3D/Primitive/LinePrimitive.h"
 
 namespace tzw
 {
@@ -68,5 +69,38 @@ void AssistDrawSystem::setShowAllPartLabel(bool isShow)
 	{
 		i.second->setIsVisible(isShow);
 	}
+}
+
+void AssistDrawSystem::drawBoundingBox(AABB aabb, Matrix44 mat)
+{
+	static bool isFirstTime = true;
+	if(!isFirstTime)
+	{
+		return;;
+	}
+	auto line = new LinePrimitive();
+	vec3 minV = aabb.min();
+	vec3 maxV = aabb.max();
+	
+	//get corners
+	vec3 corners[8];
+	corners[0] = mat.transformVec3(minV);
+	corners[1] = mat.transformVec3(vec3(maxV.x, minV.y, minV.z));
+	corners[2] = mat.transformVec3(vec3(maxV.x, maxV.y, minV.z));
+	corners[3] = mat.transformVec3(vec3(minV.x, maxV.y, minV.z));
+	corners[4] = mat.transformVec3(vec3(minV.x, minV.y, maxV.z));
+	corners[5] = mat.transformVec3(vec3(maxV.x, minV.y, maxV.z));
+	corners[6] = mat.transformVec3(maxV);
+	corners[7] = mat.transformVec3(vec3(minV.x, minV.y, minV.z));
+	for(int i =0; i< 8; i++)
+	{
+		for(int j = i + 1; j < 8; j++)
+		{
+			line->append(corners[i], corners[j]);
+		}
+	}
+	line->initBuffer();
+	g_GetCurrScene()->addNode(line);
+	isFirstTime = false;
 }
 }

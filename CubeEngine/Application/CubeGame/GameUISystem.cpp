@@ -36,6 +36,10 @@
 #include "Base/TranslationMgr.h"
 #include "2D/imgui_markdown.h"
 #include "Utility/file/Tfile.h"
+#include "LoadingUI.h"
+#include "Action/ActionCalFunc.h"
+#include "Base/TimerMgr.h"
+#include "Engine/WorkerThreadSystem.h"
 
 
 namespace tzw {
@@ -652,13 +656,27 @@ void GameUISystem::drawEntryInterFace()
 
 		if(ImGui::Button(TRC(u8"创建新世界"), ImVec2(160, 35)))
 		{
-			GameWorld::shared()->startGame();
+			auto fuck = []
+			{
+				GameWorld::shared()->startGame();
+				WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
+			};
+			TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
+			//runa
+			LoadingUI::shared()->show();
 			Engine::shared()->setUnlimitedCursor(true);
 		}
 		ImGui::Spacing();
 		if(ImGui::Button(TRC(u8"载入世界"), ImVec2(160, 35)))
 		{
-			GameWorld::shared()->loadGame("World/testWord.json");
+			auto fuck = []
+			{
+				GameWorld::shared()->loadGame("World/testWord.json");
+				WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
+			};
+			TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
+			//runa
+			LoadingUI::shared()->show();
 			Engine::shared()->setUnlimitedCursor(true);
 		}
 		ImGui::Spacing();
@@ -670,7 +688,18 @@ void GameUISystem::drawEntryInterFace()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC(u8"帮助"), ImVec2(160, 35)))
 		{
-			;
+			auto a = new Texture();
+                  a->loadAsync(
+                    "Texture/modern-tile1-ue/modern-tile1-albedo.png", 
+					  [a](Texture * tex)
+					{
+						tlog("yes we finished");
+						auto sprite = new Sprite();
+						sprite->initWithTexture(tex);
+						sprite->setContentSize(vec2(200, 200));
+						g_GetCurrScene()->addNode(sprite);
+					}
+				  );
 		}
 		ImGui::Spacing();
 		if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35))) 

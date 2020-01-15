@@ -1012,7 +1012,6 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
     if (g_FirstFrame)
 		ed::NavigateToContent(0.0f);
 	ed::End();
-
 	g_FirstFrame = false;
 	ImGui::End();
 	}

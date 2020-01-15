@@ -16,6 +16,7 @@ namespace tzw
 		void setMetallicPath(const std::string& metallicPath);
 		std::string getNormalMapPath() const;
 		void setNormalMapPath(const std::string& normalMapPath);
+		void cache();
 	private:
 		std::string m_diffusePath;
 		std::string m_RoughnessPath;

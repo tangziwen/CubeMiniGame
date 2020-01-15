@@ -131,14 +131,16 @@ namespace tzw
 	void GUISystem::renderData()
 	{
 		if (!m_isInit) return;
-		 
+		ImGui::PushFont(m_fontNormal);
 
 		for (auto obj : m_objList)
 		{
 			obj->drawIMGUI();
 		}
 		ScriptPyMgr::shared()->doScriptUIUpdate();
+		ImGui::PopFont();
 		ImGui::Render();
+		
 	}
 
 	bool GUISystem::ImGui_ImplGlfwGL2_CreateDeviceObjects()
@@ -216,6 +218,21 @@ namespace tzw
 		return io.WantTextInput;
 	}
 
+	void GUISystem::imguiUseSmallFont()
+	{
+		ImGui::PushFont(m_fontSmall);
+	}
+
+	void GUISystem::imguiUseNormalFont()
+	{
+		ImGui::PushFont(m_fontNormal);
+	}
+
+	void GUISystem::imguiUseLargeFont()
+	{
+		ImGui::PushFont(m_fontLarge);
+	}
+
 	void GUISystem::initGUI()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
@@ -262,7 +279,7 @@ namespace tzw
 	    style.Alpha = 1.f;
 	    style.WindowTitleAlign = ImVec2(0.5f, 0.5f);
 	    //style.WindowMinSize = ImVec2(200, 200);
-	    style.FramePadding = ImVec2(4, 2);
+	    style.FramePadding = ImVec2(0, 2);
 	    style.ItemSpacing = ImVec2(6, 3);
 	    style.ItemInnerSpacing = ImVec2(6, 4);
 	    style.WindowRounding = 0.0f;
@@ -326,8 +343,12 @@ namespace tzw
 		//io.Fonts->AddFontFromFileTTF("./Res/font/DroidSans.ttf", 16.0f);
 		//io.Fonts->AddFontFromFileTTF("./Res/font/ProggyTiny.ttf", 10.0f);
 
-		ImFont* font = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 14.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
-		IM_ASSERT(font != NULL);
+		m_fontSmall = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 14.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+		m_fontNormal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+		m_fontLarge = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 24.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+		IM_ASSERT(m_fontSmall != NULL);
+		IM_ASSERT(m_fontNormal != NULL);
+		IM_ASSERT(m_fontLarge != NULL);
 		m_isInit = true;
 	}
 

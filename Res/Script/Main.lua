@@ -94,9 +94,9 @@ end
 --ui update
 function tzw_engine_ui_update(dt)
 	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
-		if not MainMenu.shared():isVisible() then
+		if not GameUISystem.shared():isVisible() then
 			--除了物品栏之外，没有其他界面打开的时候，才画底部的Hud
-			if not MainMenu.shared():isAnyShow() or MainMenu.shared():isOpenAssetEditor() then
+			if not GameUISystem.shared():isAnyShow() or GameUISystem.shared():isOpenAssetEditor() then
 				drawHud()
 			end
 			updateLifting(dt)
@@ -289,6 +289,7 @@ function findItemByName(name)
 			return k;
 		end
 	end
+	print("this is nil"..name)
 	return nil;
 end
 
@@ -369,7 +370,7 @@ function onKeyRelease(input_event)
 		end
 		player:setPreviewAngle(g_blockRotate)
 	elseif input_event.keycode == TZW_KEY_I then
-		MainMenu.shared():setIsShowAssetEditor(true)
+		GameUISystem.shared():setIsShowAssetEditor(true)
 	elseif input_event.keycode == TZW_KEY_F then
 		if BuildingSystem.shared():getCurrentControlPart() == nil then
 			local result = BuildingSystem.shared():rayTestPartAny(player:getPos(), player:getForward(), 10)
@@ -378,7 +379,7 @@ function onKeyRelease(input_event)
 				BuildingSystem.shared():flipBearing(result);
 			--打开节点编辑器
 			elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_CONTROL then
-				MainMenu.shared():setIsShowNodeEditor(true);
+				GameUISystem.shared():setIsShowNodeEditor(true);
 			end
 		end
 	elseif input_event.keycode == TZW_KEY_E then
@@ -396,7 +397,7 @@ function onKeyRelease(input_event)
 					oldPlayerPos = player:getPos()
 					BuildingSystem.shared():setCurrentControlPart(result)
 				elseif result and BuildingSystem.shared():getGamePartTypeInt(result) == GAME_PART_LIFT then
-					MainMenu.shared():setIsFileBroswerOpen(true)
+					GameUISystem.shared():setIsFileBroswerOpen(true)
 				else
 					player:openCurrentPartInspectMenu();
 				end
@@ -487,7 +488,7 @@ function handleItemSecondaryUse(item)
 			player:removePart(result)
 		end
 	elseif (item.ItemType == SPECIAL_PART_PAINTER) then --paint the object
-		MainMenu.shared():setPainterShow(true)
+		GameUISystem.shared():setPainterShow(true)
 	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
 	end
@@ -519,7 +520,7 @@ end
 
 --input event
 function tzw_engine_input_event(input_event)
-	if MainMenu.shared():isAnyShow() then
+	if GameUISystem.shared():isAnyShow() then
 		return
 	else
 		if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then

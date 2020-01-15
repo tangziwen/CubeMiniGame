@@ -5,6 +5,7 @@
 #include "imgui.h"
 #include "Base/TranslationMgr.h"
 class EventListener;
+class ImFont;
 namespace tzw
 {
 	class IMGUIObject
@@ -39,10 +40,15 @@ namespace tzw
 		void renderIMGUI();
 
 		bool isUiCapturingInput();
-
+		void imguiUseSmallFont();
+		void imguiUseNormalFont();
+		void imguiUseLargeFont();
 	protected:
 		std::vector<IMGUIObject *> m_objList;
 		bool m_isInit = false;
 		unsigned int tick = 0;
+		ImFont * m_fontNormal;
+		ImFont * m_fontLarge;
+		ImFont * m_fontSmall;
 	};
 }

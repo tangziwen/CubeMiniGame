@@ -27,6 +27,8 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include "Utility/file/Tfile.h"
+#include "Engine/WorkerThreadSystem.h"
+#include "LoadingUI.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -130,28 +132,43 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 void GameWorld::startGame()
 {
 	prepare();
-	ScriptPyMgr::shared()->callFunV("on_game_start");
+	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
+	{
+		//call Script
+		ScriptPyMgr::shared()->callFunV("on_game_start");
+		m_currentState = GAME_STATE_RUNNING;
+	}));
+	
 }
 
 void GameWorld::loadGame(std::string filePath)
 {
 	prepare();
 
-	rapidjson::Document doc;
-	auto data = Tfile::shared()->getData(filePath, true);
-	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
-	if (doc.HasParseError())
+	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
-		tlog("[error] get json data err! %s %d offset %d",
-			filePath.c_str(),
-			doc.GetParseError(),
-			doc.GetErrorOffset());
-		exit(1);
-	}
+		
+		rapidjson::Document doc;
+		auto data = Tfile::shared()->getData(filePath, true);
+		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+		if (doc.HasParseError())
+		{
+			tlog("[error] get json data err! %s %d offset %d",
+				filePath.c_str(),
+				doc.GetParseError(),
+				doc.GetErrorOffset());
+			exit(1);
+		}
 
-	//load Static IslandList
-	BuildingSystem::shared()->loadStatic(doc);
-	ScriptPyMgr::shared()->callFunV("on_game_start");
+		//load Static IslandList
+		BuildingSystem::shared()->loadStatic(doc);
+	}));
+	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
+	{
+		//call Script
+		ScriptPyMgr::shared()->callFunV("on_game_start");
+		m_currentState = GAME_STATE_RUNNING;
+	}));
 }
 
 void GameWorld::saveGame(std::string filePath)
@@ -289,28 +306,48 @@ GameWorld::~GameWorld()
 
 void GameWorld::prepare()
 {
-	m_currentState = GAME_STATE_RUNNING;
-
-	//load the BlockConfig
-	ItemMgr::shared()->loadFromFile("./Res/Blocks/Blocks.json");
 	
-	PhysicsMgr::shared()->start();
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Load Blocks",
+		WorkerJob([&]()
+	{
+		ItemMgr::shared()->loadFromFile("./Res/Blocks/Blocks.json");
+	}));
+	//load the BlockConfig
+
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Physics",WorkerJob(
+		[&]()
+	{
+		PhysicsMgr::shared()->start();
+	}));
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Data",
+		WorkerJob([&]()
+	{
+		unloadGame();
+	}));
 	Tmisc::DurationBegin();
-	unloadGame();
-	//load Surface
+		//load Surface
 	PartSurfaceMgr::shared()->loadFromFile("Some_surface_not_used_yet");
-	GameUISystem::shared()->initInGame();
-	GameMap::shared()->setMapType(GameMap::MapType::Noise);
-	GameMap::shared()->setMaxHeight(10);
-	 
-	GameMap::shared()->setMinHeight(3);
-	auto player = new CubePlayer(m_mainRoot);
-	 
-	GameWorld::shared()->setPlayer(player);
-	 
-	GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
-	 
-	m_mainRoot->addChild(player);
+	
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init UI",
+		WorkerJob([&]()
+	{
+		//init UI
+		GameUISystem::shared()->initInGame();
+	}));
+
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Map",
+		WorkerJob([&]()
+	{
+		auto player = new CubePlayer(m_mainRoot);
+		GameWorld::shared()->setPlayer(player);
+		m_mainRoot->addChild(player);
+			//init UI
+		GameMap::shared()->setMapType(GameMap::MapType::Noise);
+		GameMap::shared()->setMaxHeight(10);
+		 
+		GameMap::shared()->setMinHeight(3);
+		GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+	}));
 }
 
 GameUISystem *GameWorld::getMainMenu() const

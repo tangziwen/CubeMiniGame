@@ -4,6 +4,7 @@
 #include "External/SOIL/SOIL.h"
 #include "GL/glew.h"
 #include "Utility/log/Log.h"
+#include "Engine/WorkerThreadSystem.h"
 
 namespace tzw {
 	Texture::Texture()
@@ -87,13 +88,29 @@ Texture::setFilter(Texture::FilterType type, int filter)
   }
 }
 
-void
-Texture::setWarp(RenderFlag::WarpAddress warpAddress)
-{
-  RenderBackEnd::shared()->setTextureWarp(m_textureId, warpAddress, m_type);
-}
+	void Texture::setWarp(RenderFlag::WarpAddress warpAddress)
+	{
+	  RenderBackEnd::shared()->setTextureWarp(m_textureId, warpAddress, m_type);
+	}
 
-unsigned int
+	void Texture::loadAsync(std::string filePath, std::function<void(Texture *)> onFinish)
+	{
+		std::string resultFilePath = Engine::shared()->getFilePath(filePath);
+		
+		auto finishCB =[this,onFinish]
+		{
+			m_textureId = SOIL_create_OGL_texture(m_imgData, m_width, m_height, m_channel, 0, SOIL_FLAG_INVERT_Y);
+			onFinish(this);
+		};
+		auto doCB = [=]
+		{
+			m_channel = 0; m_imgData = SOIL_load_image(resultFilePath.c_str(), &m_width, &m_height, &m_channel, SOIL_LOAD_AUTO);
+		};
+		m_type = RenderFlag::TextureType::Texture2D;
+		WorkerThreadSystem::shared()->pushOrder(WorkerJob(doCB, finishCB));
+	}
+
+	unsigned int
 Texture::handle()
 {
   return m_textureId;

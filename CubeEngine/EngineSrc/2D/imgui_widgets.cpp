@@ -6213,6 +6213,27 @@ bool ImGui::MenuItem(const char* label, const char* shortcut, bool* p_selected, 
     return false;
 }
 
+bool ImGui::BeginMainMenuBarBottom()
+{
+    ImGuiContext& g = *GImGui;
+    g.NextWindowData.MenuBarOffsetMinVal = ImVec2(g.Style.DisplaySafeAreaPadding.x, ImMax(g.Style.DisplaySafeAreaPadding.y - g.Style.FramePadding.y, 0.0f));
+	auto winSize = g.NextWindowData.MenuBarOffsetMinVal.y + g.FontBaseSize + g.Style.FramePadding.y;
+    SetNextWindowPos(ImVec2(0.0f, g.IO.DisplaySize.y - winSize));
+    SetNextWindowSize(ImVec2(g.IO.DisplaySize.x, winSize));
+    PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+    PushStyleVar(ImGuiStyleVar_WindowMinSize, ImVec2(0,0));
+    ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_MenuBar;
+    bool is_open = Begin("##MainMenuBar", NULL, window_flags) && BeginMenuBar();
+    PopStyleVar(2);
+    g.NextWindowData.MenuBarOffsetMinVal = ImVec2(0.0f, 0.0f);
+    if (!is_open)
+    {
+        End();
+        return false;
+    }
+    return true; //-V1020
+}
+
 //-------------------------------------------------------------------------
 // [SECTION] Widgets: BeginTabBar, EndTabBar, etc.
 //-------------------------------------------------------------------------

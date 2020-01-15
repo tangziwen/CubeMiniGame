@@ -21,6 +21,7 @@ public:
 	void setIsShowAssistInfo(bool newVal);
 	LabelNew * getOrCreate(GamePart * part);
 	void setShowAllPartLabel(bool isShow);
+	void drawBoundingBox(AABB aabb, Matrix44 mat);
 private:
 	std::map<GamePart *, LabelNew *> m_partLabelMap;
 	bool m_isShowAssistInfo;

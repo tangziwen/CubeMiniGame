@@ -6,8 +6,9 @@ namespace tzw {
 LinePrimitive::LinePrimitive(vec3 begin, vec3 end)
 {
 	append(begin, end);
-	initBuffer();
+	
 	init();
+	initBuffer();
 }
 
 LinePrimitive::LinePrimitive()

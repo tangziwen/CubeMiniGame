@@ -1,5 +1,6 @@
 #include "PartSurface.h"
 #include "Texture/TextureMgr.h"
+#include "Utility/log/Log.h"
 
 namespace tzw
 {
@@ -10,11 +11,7 @@ namespace tzw
 		m_metallicPath(metallicPath),
 		m_normalMapPath(normalMapPath)
 	{
-		//cache
-		TextureMgr::shared()->getByPath(diffusePath, true);
-		TextureMgr::shared()->getByPath(roughnessPath, true);
-		TextureMgr::shared()->getByPath(metallicPath, true);
-		TextureMgr::shared()->getByPath(normalMapPath, true);
+		
 	}
 
 	std::string PartSurface::getDiffusePath() const
@@ -55,6 +52,15 @@ namespace tzw
 	void PartSurface::setNormalMapPath(const std::string& normalMapPath)
 	{
 		m_normalMapPath = normalMapPath;
+	}
+
+	void PartSurface::cache()
+	{
+		TextureMgr::shared()->getByPath(m_diffusePath, true);
+		TextureMgr::shared()->getByPath(m_diffusePath, true);
+		TextureMgr::shared()->getByPath(m_RoughnessPath, true);
+		TextureMgr::shared()->getByPath(m_metallicPath, true);
+		TextureMgr::shared()->getByPath(m_normalMapPath, true);
 	}
 
 	std::string PartSurface::getName() const
