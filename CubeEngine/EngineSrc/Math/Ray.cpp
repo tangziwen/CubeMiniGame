@@ -55,11 +55,10 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
     float lowt = 0.0f;
     float t;
     bool hit = false;
-    vec3 hitpoint;
-    const vec3& min = aabb.min();
-    const vec3& max = aabb.max();
-    const vec3& rayorig = m_origin;
-    const vec3& raydir = m_direction;
+    const vec3 min = aabb.min();
+    const vec3 max = aabb.max();
+    const vec3 rayorig = m_origin;
+    const vec3 raydir = m_direction;
     
     // Check origin inside first
     if(m_origin.x>min.x && m_origin.y>min.y && m_origin.z>min.z
@@ -75,9 +74,9 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
         if (t >= 0)
         {
             // Substitute t back into ray and check bounds and dist
-            hitpoint = rayorig + raydir * t;
-            if (hitpoint.y >= min.y && hitpoint.y <= max.y &&
-                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+            hitPoint = rayorig + raydir * t;
+            if (hitPoint.y >= min.y && hitPoint.y <= max.y &&
+                hitPoint.z >= min.z && hitPoint.z <= max.z &&
                 (!hit || t < lowt))
             {
                 hit = true;
@@ -96,9 +95,9 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
         if (t >= 0)
         {
             // Substitute t back into ray and check bounds and dist
-            hitpoint = rayorig + raydir * t;
-            if (hitpoint.y >= min.y && hitpoint.y <= max.y &&
-                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+            hitPoint = rayorig + raydir * t;
+            if (hitPoint.y >= min.y && hitPoint.y <= max.y &&
+                hitPoint.z >= min.z && hitPoint.z <= max.z &&
                 (!hit || t < lowt))
             {
                 hit = true;
@@ -117,9 +116,9 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
         if (t >= 0)
         {
             // Substitute t back into ray and check bounds and dist
-            hitpoint = rayorig + raydir * t;
-            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
-                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+            hitPoint = rayorig + raydir * t;
+            if (hitPoint.x >= min.x && hitPoint.x <= max.x &&
+                hitPoint.z >= min.z && hitPoint.z <= max.z &&
                 (!hit || t < lowt))
             {
                 hit = true;
@@ -141,9 +140,9 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
             (t >= 0)
         {
             // Substitute t back into ray and check bounds and dist
-            hitpoint = rayorig + raydir * t;
-            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
-                hitpoint.z >= min.z && hitpoint.z <= max.z &&
+            hitPoint = rayorig + raydir * t;
+            if (hitPoint.x >= min.x && hitPoint.x <= max.x &&
+                hitPoint.z >= min.z && hitPoint.z <= max.z &&
                 (!hit || t < lowt))
             {
                 hit = true;
@@ -162,9 +161,9 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
         if (t >= 0)
         {
             // Substitute t back into ray and check bounds and dist
-            hitpoint = rayorig + raydir * t;
-            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
-                hitpoint.y >= min.y && hitpoint.y <= max.y &&
+            hitPoint = rayorig + raydir * t;
+            if (hitPoint.x >= min.x && hitPoint.x <= max.x &&
+                hitPoint.y >= min.y && hitPoint.y <= max.y &&
                 (!hit || t < lowt))
             {
                 hit = true;
@@ -183,9 +182,9 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
         if (t >= 0)
         {
             // Substitute t back into ray and check bounds and dist
-            hitpoint = rayorig + raydir * t;
-            if (hitpoint.x >= min.x && hitpoint.x <= max.x &&
-                hitpoint.y >= min.y && hitpoint.y <= max.y &&
+            hitPoint = rayorig + raydir * t;
+            if (hitPoint.x >= min.x && hitPoint.x <= max.x &&
+                hitPoint.y >= min.y && hitPoint.y <= max.y &&
                 (!hit || t < lowt))
             {
                 hit = true;
@@ -198,7 +197,7 @@ bool Ray::intersectAABB(AABB aabb,RayAABBSide *side,  vec3& hitPoint) const
         }
     }
     
-	hitpoint = m_origin + m_direction * lowt;
+	hitPoint = m_origin + m_direction * lowt;
     
     return hit;
 }
