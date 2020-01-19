@@ -165,7 +165,10 @@ function cpp_drawInventory()
 
 	local window_visible_x2 = ImGui.GetWindowPos().x + ImGui.GetWindowContentRegionMax().x
 	local last_button_x2 = 0
-	for k, v in pairs(m_inventory) do
+
+	inventoryAmount = ItemMgr.shared():getItemAmount()
+	-- for k, v in pairs(m_inventory) do
+	for i = 1, inventoryAmount do
 		local s = ImGui.GetStyle();
 		local spaceX = s.ItemSpacing.x;
 		local padding = s.FramePadding.x;
@@ -178,8 +181,9 @@ function cpp_drawInventory()
 		ImGui.PushID_str("inventory" .. i);
 		ImGui.BeginGroup();
 		local iconTexture = testIcon:handle()
-		if v.ThumbNail ~= 0 then
-			iconTexture = v.ThumbNail
+		item = ItemMgr.shared():getItemByIndex(i - 1)
+		if item:getThumbNailTextureId() ~= 0 then
+			iconTexture = item:getThumbNailTextureId()
 		end
 		ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize));
 		local last_button_x2 = ImGui.GetItemRectMax().x;
@@ -187,18 +191,17 @@ function cpp_drawInventory()
 
 		-- Our buttons are both drag sources and drag targets here!
 		if (ImGui.BeginDragDropSource()) then
-			ImGui.SetDragDropPayload("DND_DEMO_CELL", k);    -- Set payload to carry the index of our item (could be anything)
-			ImGui.Text(TR("拖拽") .. TR(v.desc));   -- Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
+			ImGui.SetDragDropPayload("DND_DEMO_CELL", i);    -- Set payload to carry the index of our item (could be anything)
+			ImGui.Text(TR("拖拽") .. TR(item.m_desc));   -- Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
 			ImGui.EndDragDropSource();
 			m_isDragingInventory = true
 		end
-		ImGui.Text(TR(v.desc));
+		ImGui.Text(TR(item.m_desc));
 		ImGui.EndGroup();
 		ImGui.PopID();
 		if (next_button_x2 < window_visible_x2) then
 			ImGui.SameLine(0, -1);
 		end
-		i = i + 1
 	end
 	ImGui.End();
 	-- os.exit()
@@ -241,8 +244,9 @@ function drawHud()
 			ImGui.Text("Empty");
 		else
 			local iconTexture = testIcon:handle()
-			if getItemFromSpecifiedSlotIndex(k).ThumbNail ~= 0 then
-				iconTexture = getItemFromSpecifiedSlotIndex(k).ThumbNail
+			local item = getItemFromSpecifiedSlotIndex(k);
+			if item:getThumbNailTextureId() ~= 0 then
+				iconTexture = item:getThumbNailTextureId()
 			end
 			ImGui.Image(iconTexture, ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
@@ -252,7 +256,7 @@ function drawHud()
 				local sizeMax = ImGui.GetItemRectMin()
 				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
 			end
-			ImGui.Text(tostring(k).." "..TR(findItemByName(v["target"]).desc));
+			ImGui.Text(tostring(k).." "..TR(findItemByName(v["target"]).m_desc));
 		end
 		if needPop then
 			ImGui.PopStyleColor()
@@ -262,10 +266,10 @@ function drawHud()
 			local payLoad = ImGui.AcceptDragDropPayload("DND_DEMO_CELL", 0)
 			-- print("payLoad", payLoad)
 			if payLoad ~= nil then
-				
 				local payLoadIdx = ImGui.GetPayLoadData2Int(payLoad)
-				print ("Play load Here   "..(m_inventory[payLoadIdx]["name"]))
-				m_itemSlots[k]["target"] = m_inventory[payLoadIdx]["name"]
+				local payLoadItem = ItemMgr.shared():getItemByIndex(payLoadIdx - 1)
+				print ("Play load Here   "..(payLoadItem.m_name))
+				m_itemSlots[k]["target"] = payLoadItem.m_name
 				local player = GameWorld.shared():getPlayer()
 				if k == m_currIndex then
 					player:setCurrSelected(m_itemSlots[m_currIndex]["target"])
@@ -279,18 +283,11 @@ function drawHud()
 end
 
 function findItemNameByIdx(id)
-	print("payload index", id, m_inventory)
-	return m_inventory[id].name;
+	return ItemMgr.shared():getItemByIndex(id - 1);
 end
 
 function findItemByName(name)
-	for i,k in pairs(m_inventory) do
-		if k.name == name then
-			return k;
-		end
-	end
-	print("this is nil"..name)
-	return nil;
+	return ItemMgr.shared():getItem(name)
 end
 
 
@@ -425,14 +422,13 @@ function checkIsNormalPart(itemType)
 end
 
 function placeItem(item)
-	print ("placeItem"..item.ItemType)
+	print ("placeItem"..item:getTypeInInt())
 	local player = GameWorld.shared():getPlayer()
 	local result = BuildingSystem.shared():rayTest(player:getPos(), player:getForward(), 10)
-	if checkIsNormalPart(item.ItemType) then
-		local aBlock = BuildingSystem.shared():createPart(item.ItemType, item.name)
+	if checkIsNormalPart(item:getTypeInInt()) then
+		local aBlock = BuildingSystem.shared():createPart(item:getTypeInInt(), item.m_name)
 		
 		if result == nil then
-			
 			local resultPos = BuildingSystem.shared():hitTerrain(player:getPos(), player:getForward(), 10)
 			if resultPos.y > -99999 then
 				print("place and create static")
@@ -448,9 +444,9 @@ function placeItem(item)
 		if result == nil then
 			print("do nothing")
 		else
-			if item.ItemType == GAME_PART_BEARING then
-				BuildingSystem.shared():placeBearingToAttach(result, item.name)
-			elseif item.ItemType == GAME_PART_SPRING then
+			if item:getTypeInInt() == GAME_PART_BEARING then
+				BuildingSystem.shared():placeBearingToAttach(result, item.m_name)
+			elseif item:getTypeInInt() == GAME_PART_SPRING then
 				BuildingSystem.shared():placeSpringToAttach(result)
 			end
 		end
@@ -459,9 +455,9 @@ end
 
 function handleItemPrimaryUse(item)
 	local player = GameWorld.shared():getPlayer()
-	if (item.ItemClass == "PlaceableBlock") then
+	if (not item:isSpecialFunctionItem()) then
 		placeItem(item)
-	elseif item.ItemType == GAME_PART_LIFT then
+	elseif item:getTypeInInt() == GAME_PART_LIFT then
 		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
 		if result ~= nil then
 			--先收纳 再搞事
@@ -472,9 +468,9 @@ function handleItemPrimaryUse(item)
 				BuildingSystem.shared():placeLiftPart(resultPos)
 			end
 		end
-	elseif (item.ItemType == SPECIAL_PART_PAINTER) then --paint the object
+	elseif (item:getTypeInInt() == SPECIAL_PART_PAINTER) then --paint the object
 		player:paint();
-	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --fill the terrain
+	elseif (item:getTypeInInt() == SPECIAL_PART_DIGGER) then --fill the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
 	end
 	player:updateCrossHairTipsInfo()
@@ -482,14 +478,14 @@ end
 
 function handleItemSecondaryUse(item)
 	local player = GameWorld.shared():getPlayer()
-	if (item.ItemClass == "PlaceableBlock" or item.ItemType == GAME_PART_LIFT) then
+	if (not item:isSpecialFunctionItem() or item:getTypeInInt() == GAME_PART_LIFT) then
 		local result = BuildingSystem.shared():rayTestPart(player:getPos(), player:getForward(), 10)
 		if result then
 			player:removePart(result)
 		end
-	elseif (item.ItemType == SPECIAL_PART_PAINTER) then --paint the object
+	elseif (item:getTypeInInt() == SPECIAL_PART_PAINTER) then --paint the object
 		GameUISystem.shared():setPainterShow(true)
-	elseif (item.ItemType == SPECIAL_PART_DIGGER) then --dig the terrain
+	elseif (item:getTypeInInt() == SPECIAL_PART_DIGGER) then --dig the terrain
 		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
 	end
 	player:updateCrossHairTipsInfo()

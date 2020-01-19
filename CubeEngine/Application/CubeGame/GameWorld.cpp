@@ -45,14 +45,14 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 {
     m_scene = scene;
 	 
-    GameMap::shared()->init(ratio);
+    
 	 
     m_width = width;
 	 
     m_depth = depth;
 	 
     m_height = height;
-	 
+	GameMap::shared()->init(ratio, m_width, m_depth, m_height);
 	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
 	 
 	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
@@ -66,7 +66,6 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             for(int k = 0; k < m_depth; k++)
             {
                 auto chunk = new Chunk(i,j,k);
-				chunk->initData();
                 m_mainRoot->addChild(chunk);
 				 
                 m_chunkList.push_back(chunk);
@@ -76,7 +75,6 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             }
         }
     }
-	 
     loadChunksAroundPlayer();
 	 
 }
@@ -84,15 +82,12 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int height, float ratio, std::string filePath)
 {
 	m_scene = scene;
-	 
-    GameMap::shared()->init(ratio);
-	 
     m_width = width;
 	 
     m_depth = depth;
 	 
     m_height = height;
-	 
+	GameMap::shared()->init(ratio, m_width, m_depth, m_height);
 	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
 	 
 	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
@@ -125,8 +120,9 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 		fread(&x, sizeof(int), 1, terrainFile);
 		fread(&y, sizeof(int), 1, terrainFile);
 		fread(&z, sizeof(int), 1, terrainFile);
-		auto chunk = m_chunkArray[x][y][z];
-		chunk->loadChunk(terrainFile);
+		GameMap::shared()->getChunkInfo(x,y,z)->loadChunk(terrainFile);
+		//auto chunk = m_chunkArray[x][y][z];
+		//chunk->loadChunk(terrainFile);
 	}
 	fclose(terrainFile);
     loadChunksAroundPlayer();
@@ -191,7 +187,6 @@ void GameWorld::startGame()
 			//init UI
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
-		 
 		GameMap::shared()->setMinHeight(3);
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 	}));
@@ -263,7 +258,7 @@ void GameWorld::saveGame(std::string filePath)
 	fclose(file);
 
 
-	std::vector<Chunk * > tmpChunkList;
+	std::vector<ChunkInfo * > tmpChunkList;
 	tmpChunkList.reserve(2048);
 	
     for(int i = 0;i< m_width;i++)
@@ -272,15 +267,14 @@ void GameWorld::saveGame(std::string filePath)
         {
             for(int k = 0; k < m_depth; k++)
             {	 
-                auto chunk = m_chunkArray[i][j][k];
-            	if(chunk->getIsInitData())
+                auto chunkInfo = GameMap::shared()->getChunkInfo(i, j, k);
+            	if(chunkInfo->isLoaded)
             	{
-            		tmpChunkList.push_back(chunk);
+            		tmpChunkList.push_back(chunkInfo);
             	}
             }
         }
     }
-
     auto terrainFile = fopen("./Terrain.bin", "wb");
 	//first size of int tell the fucking count
 	int theSize = tmpChunkList.size();

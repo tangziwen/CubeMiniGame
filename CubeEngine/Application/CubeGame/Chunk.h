@@ -3,6 +3,7 @@
 #include <vector>
 #include "3D/Vegetation/Grass.h"
 
+
 struct vertexInfo
 {
     unsigned int index;
@@ -11,11 +12,10 @@ struct vertexInfo
 namespace tzw
 {
 	class PhysicsRigidBody;
+	class ChunkInfo;
 	class Chunk : public Drawable3D
 	{
-	public:	
-
-
+	public:
 		Chunk(int the_x, int the_y, int the_z);
 	    int x;
 	    int y;
@@ -48,14 +48,11 @@ namespace tzw
 		unsigned int getTypeId() override;
 		vec3 m_offset;
 		void calculateMatID();
-		void dumpChunk(FILE * f);
-		void loadChunk(FILE * f);
 		bool getIsInitData();
 	private:
 		Grass * m_grass;
 		Grass * m_grass2;
 	    bool m_isLoaded;
-	    bool m_isInitData;
 	    Mesh * m_mesh;
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);
@@ -65,7 +62,7 @@ namespace tzw
 
 	    bool hitAny(Ray & ray, vec3 & result);
 	    bool hitFirst(const Ray &ray, vec3 & result);
-	    vec4 * mcPoints;
+		ChunkInfo * m_chunkInfo;
 	    vec3 m_basePoint;
 	    std::vector<Chunk *> m_tmpNeighborChunk;
 		std::vector<vec4> m_grassPosList;
