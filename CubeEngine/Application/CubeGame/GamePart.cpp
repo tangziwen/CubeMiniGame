@@ -10,6 +10,7 @@
 #include "PartSurface.h"
 #include "PartSurfaceMgr.h"
 #include "3D/Primitive/RightPrismPrimitive.h"
+#include "Engine/DebugSystem.h"
 
 namespace tzw
 {
@@ -34,6 +35,7 @@ namespace tzw
 		float minDist = 99999999.0;
 		int resultIndx = -1;
 		int count = 0;
+		vec3 theMinimalPos;
 		for (auto i = 0; i < getAttachmentCount(); i++) 
 		{
 			auto attach = getAttachment(i);
@@ -45,12 +47,14 @@ namespace tzw
 				{
 					resultIndx = i;
 					minDist = hitInWorld.distance(ray.origin());
+					theMinimalPos = hitInWorld;
 				}
 	        }
 		}
 		if (resultIndx >= 0) 
 		{
 			auto attachPtr = getAttachmentInfo(resultIndx, attachPosition, Normal, up);
+			//DebugSystem::shared()->drawPointCross(theMinimalPos);
 			return attachPtr;
 		}
 		return nullptr;
@@ -737,6 +741,8 @@ namespace tzw
 			////cube->setRotateE(90, 90, 0);
 			//m_node->addChild(cube);
 		}
+		//set Part Surface
+		setSurface(item->m_tintColor, PartSurfaceMgr::shared()->getItem(item->m_surfaceName));
 	}
 
 	GameNodeEditorNode* GamePart::getEditorNode()

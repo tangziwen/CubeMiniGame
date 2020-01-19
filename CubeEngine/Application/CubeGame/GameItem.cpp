@@ -40,8 +40,15 @@ namespace tzw
 		return hasAttr;
 	}
 
-	GameItem::GameItem(): m_type(), m_visualInfo(), m_physicsInfo(), m_thumbNail(nullptr), m_texture(nullptr)
+	GameItem::GameItem(): m_type(), m_visualInfo(), m_physicsInfo(),
+	m_thumbNail(nullptr), m_texture(nullptr),m_tintColor(vec3(1, 1, 1)),
+	m_surfaceName("Flat")
 	{
+	}
+
+	GameItem::GameItem(const GameItem& other)
+	{
+		(*this) = other;
 	}
 
 	int GameItem::getTypeInInt()

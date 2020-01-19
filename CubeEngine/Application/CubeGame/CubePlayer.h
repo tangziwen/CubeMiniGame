@@ -66,6 +66,7 @@ namespace tzw
 		void setSeatViewMode(const InSeatViewMode seatViewMode);
 		void setIsOpenJetPack(bool isOpen);
 		bool onScroll(vec2 offset) override;
+		GameItem * getCurSelectedItem();
 	private:
 		void handleSitDown();
 		PreviewItem * m_previewItem;

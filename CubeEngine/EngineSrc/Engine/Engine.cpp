@@ -26,6 +26,7 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include "Base/TimerMgr.h"
+#include "DebugSystem.h"
 
 
 namespace tzw {
@@ -242,7 +243,7 @@ void Engine::update(float delta)
 {
     m_deltaTime = delta;
     int logicBefore = clock();
-
+	DebugSystem::shared()->handleDraw(delta);
 	PhysicsMgr::shared()->stepSimulation(delta);
 	TimerMgr::shared()->handle(delta);
 	WorkerThreadSystem::shared()->mainThreadUpdate();
@@ -253,6 +254,7 @@ void Engine::update(float delta)
 	resetDrawCallCount();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
     int applyRenderBefore = clock();
+	DebugSystem::shared()->doRender(delta);
     resetVerticesIndicesCount();
     Renderer::shared()->renderAll();
 	AudioSystem::shared()->update();

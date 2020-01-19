@@ -49,7 +49,7 @@ void Mesh::finish(bool isPassToGPU)
     }
 }
 
-void Mesh::submit()
+void Mesh::submit(RenderFlag::BufferStorageType storageType)
 {
 	if (m_vertices.empty()) return;
     if(m_ibo == 0)
@@ -58,16 +58,16 @@ void Mesh::submit()
     }
     //pass data to the VBO
     m_arrayBuf->use();
-    m_arrayBuf->allocate(&m_vertices[0], m_vertices.size() * sizeof(VertexData));
+    m_arrayBuf->allocate(&m_vertices[0], m_vertices.size() * sizeof(VertexData), storageType);
 
     //pass data to the IBO
     m_indexBuf->use();
-    m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u));
+    m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u), storageType);
 
 	if (m_instanceOffset.size() > 0)
 	{
 		m_instanceBuf->use();
-		m_instanceBuf->allocate(&m_instanceOffset[0], m_instanceOffset.size() * sizeof(InstanceData));
+		m_instanceBuf->allocate(&m_instanceOffset[0], m_instanceOffset.size() * sizeof(InstanceData), storageType);
 	}
 }
 
@@ -169,6 +169,19 @@ void Mesh::reSubmitInstanced()
 	{
 		m_instanceBuf->use();
 		m_instanceBuf->resubmit(&m_instanceOffset[0], 0, m_instanceOffset.size() * sizeof(InstanceData));
+	}
+}
+
+void Mesh::reSubmit()
+{
+	if(m_arrayBuf && !m_vertices.empty())
+	{
+		m_arrayBuf->use();
+		m_arrayBuf->resubmit(&m_vertices[0], 0, m_vertices.size() * sizeof(VertexData));
+
+
+	    m_indexBuf->use();
+	    m_indexBuf->resubmit(&m_indices[0], 0, m_indices.size() * sizeof(short_u));
 	}
 }
 

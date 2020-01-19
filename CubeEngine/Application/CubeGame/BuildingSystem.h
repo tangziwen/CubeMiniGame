@@ -58,6 +58,7 @@ public:
 	void getIslandsByGroup(std::string islandGroup, std::vector<Island * > & groupList);
 	void dump(std::string filePath);
 	void load(std::string filePath);
+	void clearStatic();
 	void loadStatic(rapidjson::Value &island);
 	void dumpStatic(rapidjson::Value &island, rapidjson::Document::AllocatorType& allocator);
 	void updateBearing(float dt);

@@ -40,6 +40,7 @@
 #include "Action/ActionCalFunc.h"
 #include "Base/TimerMgr.h"
 #include "Engine/WorkerThreadSystem.h"
+#include "ItemMgr.h"
 
 
 namespace tzw {
@@ -326,11 +327,11 @@ void GameUISystem::drawIMGUI()
 				GameWorld::shared()->saveGame("World/testWord.json");
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
-			if(ImGui::Button(TRC(u8"读取世界"), ImVec2(160, 35)))
-			{
-				GameWorld::shared()->loadGame("World/testWord.json");
-				setWindowShow(WindowType::RESUME_MENU, false);
-			}
+			//if(ImGui::Button(TRC(u8"读取世界"), ImVec2(160, 35)))
+			//{
+			//	GameWorld::shared()->loadGame("World/testWord.json");
+			//	setWindowShow(WindowType::RESUME_MENU, false);
+			//}
 			if(ImGui::Button(TRC(u8"选项"), ImVec2(160, 35)))
 			{
 				m_option.open();
@@ -382,6 +383,14 @@ void GameUISystem::drawIMGUI()
 				{
 					p->m_surface = surface;
 				}
+			}
+			if(ImGui::Button("Make As Template"))
+			{
+				//pass
+				auto item = GameWorld::shared()->getPlayer()->getCurSelectedItem();
+				GameItem * newItem = new GameItem(*item);
+				newItem->m_name = item->m_name + " New";
+				ItemMgr::shared()->pushItem(newItem);
 			}
 			ImGui::End();
 			setWindowShow(WindowType::PAINTER, isOpen);
@@ -664,6 +673,7 @@ void GameUISystem::drawEntryInterFace()
 			TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
 			//runa
 			LoadingUI::shared()->show();
+			
 			Engine::shared()->setUnlimitedCursor(true);
 		}
 		ImGui::Spacing();
@@ -722,7 +732,7 @@ void GameUISystem::initInGame()
     m_crossHair = Sprite::create("Texture/cross_hair.png");
 	 
     auto size = m_crossHair->getContentSize();
-	 
+	
     m_crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
 	 
     GameWorld::shared()->getMainRoot()->addChild(m_crossHair);

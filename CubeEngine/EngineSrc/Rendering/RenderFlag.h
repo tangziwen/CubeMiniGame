@@ -61,6 +61,12 @@ enum class RenderStage
 	TRANSPARENT,
 	AFTER_DEPTH_CLEAR,
 };
+
+enum class BufferStorageType
+{
+	STATIC_DRAW,
+	DYNAMIC_DRAW,
+};
 }
 } // namespace tzw
 

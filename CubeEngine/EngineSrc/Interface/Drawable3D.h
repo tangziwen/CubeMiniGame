@@ -36,6 +36,7 @@ public:
 	virtual Mesh * getMesh(int index);
 	virtual Mesh * getMesh();
 	virtual int getMeshCount();
+	void setColor(vec4 newColor) override;
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;

@@ -5,6 +5,7 @@
 #include "Scene/SceneMgr.h"
 #include "3D/Primitive/LinePrimitive.h"
 #include "AssistDrawSystem.h"
+#include "Engine/DebugSystem.h"
 
 namespace tzw
 {
@@ -95,8 +96,10 @@ namespace tzw
 		auto isHit = rayInWorld.intersectAABB(collisionBox, hitPoint);
         if (isHit) 
 		{
-			AssistDrawSystem::shared()->drawBoundingBox(collisionBox, WorldMat);
+			//DebugSystem::shared()->drawBoundingBox(collisionBox, WorldMat);
 			hitPointWorld = (WorldMat * vec4(hitPoint, 1.0f)).toVec3();
+        	//DebugSystem::shared()->drawPointCross(hitPointWorld);
+        	//DebugSystem::shared()->drawLine((WorldMat * vec4(rayInWorld.origin(), 1.0f)).toVec3(), hitPointWorld);
 			return true;
         }
 		return false;

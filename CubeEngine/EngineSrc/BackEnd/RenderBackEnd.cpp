@@ -130,7 +130,7 @@ void RenderBackEnd::bindBuffer(RenderFlag::BufferTarget target, unsigned int han
 	}
 }
 
-void RenderBackEnd::submit(RenderFlag::BufferTarget target, unsigned int size, const void *data)
+void RenderBackEnd::submit(RenderFlag::BufferTarget target, unsigned int size, const void *data, RenderFlag::BufferStorageType storageType)
 {
 	switch(target)
 	{

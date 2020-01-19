@@ -12,7 +12,7 @@ public:
     void initDevice();
     unsigned int genBuffer();
     void bindBuffer(RenderFlag::BufferTarget target,unsigned int handle);
-    void submit(RenderFlag::BufferTarget target, unsigned int size, const void * data);
+    void submit(RenderFlag::BufferTarget target, unsigned int size, const void * data, RenderFlag::BufferStorageType storageType = RenderFlag::BufferStorageType::STATIC_DRAW);
 	void resubmit(RenderFlag::BufferTarget target,unsigned int offset, unsigned int size, const void * data);
     void activeTextureUnit(unsigned int id);
     void enableFunction(RenderFlag::RenderFunction state);

@@ -140,6 +140,10 @@ int Drawable3D::getMeshCount()
 	return 1;
 }
 
+void Drawable3D::setColor(vec4 newColor)
+{
+}
+
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 {
 	init(obj, count);

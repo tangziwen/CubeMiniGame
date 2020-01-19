@@ -92,8 +92,10 @@ public:
 	void calcTangents();
 	void submitInstanced(int preserveNumber = 0);
 	void reSubmitInstanced();
+	void reSubmit();
 	void submitOnlyVO_IO();
 	bool intersectWithRay(const Ray & rayInMeshSpace, vec3 * hitPoint);
+	void submit(RenderFlag::BufferStorageType storageType = RenderFlag::BufferStorageType::STATIC_DRAW);
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );
     void computeNewVerts ();
@@ -108,7 +110,7 @@ private:
 	std::vector<InstanceData> m_instanceOffset;
 
     void subDivideIter();
-    void submit();
+    
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;
     RenderBuffer* m_indexBuf;

@@ -23,7 +23,6 @@ PartSurfaceMgr::PartSurfaceMgr()
 	//load from Json
 }
 
-
 void PartSurfaceMgr::loadFromFile(std::string filePath)
 {
 	//Metal

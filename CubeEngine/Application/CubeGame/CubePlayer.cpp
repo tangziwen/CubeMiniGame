@@ -561,4 +561,9 @@ namespace tzw
 		m_orbitcamera->zoom(-1.f * offset.getY() * 0.25);
 		return true;
 	}
+
+	GameItem* CubePlayer::getCurSelectedItem()
+	{
+		return ItemMgr::shared()->getItem(m_currSelectedItem);
+	}
 } // namespace tzw

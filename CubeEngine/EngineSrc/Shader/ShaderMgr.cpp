@@ -18,7 +18,6 @@ ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char *
         return shader;
     }else
     {
-    	tlog("pass shader %s %s", vs.c_str(), fs.c_str());
         return result->second;
     }
 }

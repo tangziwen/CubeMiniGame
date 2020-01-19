@@ -30,7 +30,6 @@ extern "C"
 }
 
 #pragma comment(linker, "/subsystem:console")
-
 int main(int argc, char *argv[])
 {
 	return Engine::run(argc,argv,new GameEntry());

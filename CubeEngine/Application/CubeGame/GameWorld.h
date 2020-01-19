@@ -17,6 +17,7 @@ class GameWorld : public EventListener
 public:
     static GameWorld * shared();
     void createWorld(Scene* scene, int blockWitdh, int depth, int height, float ratio);
+	void createWorldFromFile(Scene* scene, int blockWitdh, int depth, int height, float ratio, std::string filePath);
     vec3 worldToGrid(vec3 world);
     vec3 gridToChunk(vec3 grid);
     Chunk * getChunk(int x,int y,int z);

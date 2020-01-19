@@ -207,6 +207,16 @@ void ItemMgr::loadFromFile(std::string filePath)
 			{
 				gameItem->m_texture = TextureMgr::shared()->getByPath(item["Icon"].GetString());
 			}
+
+			if(item.HasMember("TintColor"))
+			{
+				gameItem->m_tintColor = vec3(item["TintColor"][0].GetDouble(), item["TintColor"][1].GetDouble(), item["TintColor"][2].GetDouble());
+			}
+
+			if(item.HasMember("PartSurface"))
+			{
+				gameItem->m_surfaceName = item["PartSurface"].GetString();
+			}
 			m_itemMap[name] = gameItem;
 			m_itemList.push_back(gameItem);
 		}
@@ -226,5 +236,11 @@ int ItemMgr::getItemAmount()
 GameItem* ItemMgr::getItemByIndex(int index)
 {
 	return m_itemList[index];
+}
+
+void ItemMgr::pushItem(GameItem* item)
+{
+	m_itemMap[item->m_name] = item;
+	m_itemList.push_back(item);
 }
 }

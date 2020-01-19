@@ -79,7 +79,6 @@ namespace tzw
 		if(m_staticIsland.empty())
 		{
 			newIsland = new Island(resultWorldPos);
-			m_IslandList.push_back(newIsland);
 			m_staticIsland.push_back(newIsland);
 			newIsland->genIslandGroup();
 			newIsland->setIsStatic(true);
@@ -393,7 +392,18 @@ namespace tzw
 				tmp.push_back(iter);
 			}
 		}
-		
+
+		// search island
+		for (auto island : m_staticIsland)
+		{
+			//被收纳的island不会响应
+			if(island->m_islandGroup == m_storeIslandGroup) continue;
+			for (auto iter : island->m_partList)
+			{
+				tmp.push_back(iter);
+			}
+		}
+
 		if(m_liftPart)// add extra lift part
 		{
 			tmp.push_back(m_liftPart);
@@ -441,7 +451,16 @@ namespace tzw
 				tmp.push_back(iter);
 			}
 		}
-		
+		// search island
+		for (auto island : m_staticIsland)
+		{
+			//被收纳的island不响应
+			if(island->m_islandGroup == m_storeIslandGroup) continue;
+			for (auto iter : island->m_partList)
+			{
+				tmp.push_back(iter);
+			}
+		}
 		if(m_liftPart)// add extra lift part
 		{
 			tmp.push_back(m_liftPart);
@@ -725,23 +744,39 @@ namespace tzw
 		}
 	}
 
+	void BuildingSystem::clearStatic()
+	{
+		if(!m_staticIsland.empty())
+		{
+			for(auto island :m_staticIsland)
+			{
+				delete island;
+			}
+			m_staticIsland.clear();
+		}
+	}
+
 	void BuildingSystem::loadStatic(rapidjson::Value &doc)
 	{
 		auto& items = doc["StaticIslandList"];
-		std::string islandGroup = items[0]["IslandGroup"].GetString();
-		removeByGroup(islandGroup);
-	
-		for (unsigned int i = 0; i < items.Size(); i++)
+		if(items.Size() > 0)
 		{
-			auto& item = items[i];
-			auto newIsland = new Island(vec3());
-			m_staticIsland.push_back(newIsland);
-			m_IslandList.push_back(newIsland);
-			newIsland->m_islandGroup = item["IslandGroup"].GetString();
-			newIsland->load(item);
-			newIsland->setIsStatic(true);
-			newIsland->enablePhysics(true);
+			std::string islandGroup = items[0]["IslandGroup"].GetString();
+			removeByGroup(islandGroup);
+		
+			for (unsigned int i = 0; i < items.Size(); i++)
+			{
+				auto& item = items[i];
+				auto newIsland = new Island(vec3());
+				m_staticIsland.push_back(newIsland);
+				//m_IslandList.push_back(newIsland);
+				newIsland->m_islandGroup = item["IslandGroup"].GetString();
+				newIsland->load(item);
+				newIsland->setIsStatic(true);
+				newIsland->enablePhysics(true);
+			}
 		}
+
 	}
 
 	void BuildingSystem::dumpStatic(rapidjson::Value &doc, rapidjson::Document::AllocatorType& allocator)

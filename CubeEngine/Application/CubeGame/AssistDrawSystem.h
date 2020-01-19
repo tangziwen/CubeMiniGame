@@ -9,8 +9,7 @@
 #include <map>
 namespace tzw
 {
-class AssistDrawSystem;
-
+class LinePrimitive;
 class AssistDrawSystem
 {
 TZW_SINGLETON_DECL(AssistDrawSystem)
@@ -25,6 +24,7 @@ public:
 private:
 	std::map<GamePart *, LabelNew *> m_partLabelMap;
 	bool m_isShowAssistInfo;
+	LinePrimitive * m_line;
 
 };
 

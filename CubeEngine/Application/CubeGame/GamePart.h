@@ -9,8 +9,8 @@
 
 
 namespace tzw {
-	class PartSurface;
-	class GamePart;
+class PartSurface;
+class GamePart;
 class BearPart;
 class Island;
 struct GameItem;

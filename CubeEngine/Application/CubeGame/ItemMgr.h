@@ -20,6 +20,7 @@ public:
 	GameItem * getItem(std::string name);
 	int getItemAmount();
 	GameItem * getItemByIndex(int index);
+	void pushItem(GameItem* item);
 private:
 	std::map<std::string, GameItem * > m_itemMap;
 	std::vector<GameItem * > m_itemList;

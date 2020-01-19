@@ -43,7 +43,6 @@ GameWorld *GameWorld::shared()
 
 void GameWorld::createWorld(Scene *scene, int width, int depth, int height, float ratio)
 {
-	 
     m_scene = scene;
 	 
     GameMap::shared()->init(ratio);
@@ -67,7 +66,7 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             for(int k = 0; k < m_depth; k++)
             {
                 auto chunk = new Chunk(i,j,k);
-				 
+				chunk->initData();
                 m_mainRoot->addChild(chunk);
 				 
                 m_chunkList.push_back(chunk);
@@ -80,6 +79,57 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 	 
     loadChunksAroundPlayer();
 	 
+}
+
+void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int height, float ratio, std::string filePath)
+{
+	m_scene = scene;
+	 
+    GameMap::shared()->init(ratio);
+	 
+    m_width = width;
+	 
+    m_depth = depth;
+	 
+    m_height = height;
+	 
+	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
+	 
+	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
+	 
+	m_mapOffset = vec3(offsetX, 0 ,offsetZ);
+	 
+    for(int i = 0;i< m_width;i++)
+    {
+        for(int j=0;j<m_height;j++)
+        {
+            for(int k = 0; k < m_depth; k++)
+            {
+                auto chunk = new Chunk(i,j,k);
+				chunk->initData();
+                m_mainRoot->addChild(chunk);
+				 
+                m_chunkList.push_back(chunk);
+				 
+                m_chunkArray[i][j][k] = chunk;
+				 
+            }
+        }
+    }
+	auto terrainFile = fopen(filePath.c_str(), "rb");
+	int count;
+	fread(&count,sizeof(int),1, terrainFile);
+	for(int i = 0; i < count; i++)
+	{
+		int x, y, z;
+		fread(&x, sizeof(int), 1, terrainFile);
+		fread(&y, sizeof(int), 1, terrainFile);
+		fread(&z, sizeof(int), 1, terrainFile);
+		auto chunk = m_chunkArray[x][y][z];
+		chunk->loadChunk(terrainFile);
+	}
+	fclose(terrainFile);
+    loadChunksAroundPlayer();
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -132,6 +182,19 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
 void GameWorld::startGame()
 {
 	prepare();
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Map",
+		WorkerJob([&]()
+	{
+		auto player = new CubePlayer(m_mainRoot);
+		GameWorld::shared()->setPlayer(player);
+		m_mainRoot->addChild(player);
+			//init UI
+		GameMap::shared()->setMapType(GameMap::MapType::Noise);
+		GameMap::shared()->setMaxHeight(10);
+		 
+		GameMap::shared()->setMinHeight(3);
+		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+	}));
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
@@ -144,8 +207,21 @@ void GameWorld::startGame()
 void GameWorld::loadGame(std::string filePath)
 {
 	prepare();
+	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Map",
+		WorkerJob([&]()
+	{
+		auto player = new CubePlayer(m_mainRoot);
+		GameWorld::shared()->setPlayer(player);
+		m_mainRoot->addChild(player);
+			//init UI
+		GameMap::shared()->setMapType(GameMap::MapType::Noise);
+		GameMap::shared()->setMaxHeight(10);
+		 
+		GameMap::shared()->setMinHeight(3);
+		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "./Terrain.bin");
+	}));
 
-	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
+	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([=]()
 	{
 		
 		rapidjson::Document doc;
@@ -185,6 +261,36 @@ void GameWorld::saveGame(std::string filePath)
 	writer.SetIndent('\t', 1);
 	doc.Accept(writer);
 	fclose(file);
+
+
+	std::vector<Chunk * > tmpChunkList;
+	tmpChunkList.reserve(2048);
+	
+    for(int i = 0;i< m_width;i++)
+    {
+        for(int j=0;j<m_height;j++)
+        {
+            for(int k = 0; k < m_depth; k++)
+            {	 
+                auto chunk = m_chunkArray[i][j][k];
+            	if(chunk->getIsInitData())
+            	{
+            		tmpChunkList.push_back(chunk);
+            	}
+            }
+        }
+    }
+
+    auto terrainFile = fopen("./Terrain.bin", "wb");
+	//first size of int tell the fucking count
+	int theSize = tmpChunkList.size();
+	fwrite(&theSize, sizeof(int),1 ,terrainFile);
+	for(auto chunk : tmpChunkList)
+	{
+		chunk->dumpChunk(terrainFile);
+	}
+    fclose(terrainFile);
+	
 }
 
 bool GameWorld::onKeyPress(int keyCode)
@@ -333,20 +439,6 @@ void GameWorld::prepare()
 	{
 		//init UI
 		GameUISystem::shared()->initInGame();
-	}));
-
-	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Map",
-		WorkerJob([&]()
-	{
-		auto player = new CubePlayer(m_mainRoot);
-		GameWorld::shared()->setPlayer(player);
-		m_mainRoot->addChild(player);
-			//init UI
-		GameMap::shared()->setMapType(GameMap::MapType::Noise);
-		GameMap::shared()->setMaxHeight(10);
-		 
-		GameMap::shared()->setMinHeight(3);
-		GameWorld::shared()->createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 	}));
 }
 

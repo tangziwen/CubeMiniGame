@@ -50,12 +50,15 @@ struct GameItem
 	bool isSpecialFunctionItem();
 	bool hasAttributePanel();
 	GameItem();
+	GameItem(const GameItem&other);
 	std::string m_name;
 	GamePartType m_type;
 	std::string m_desc;
 	std::vector<AttachmentInfo> m_attachList;
 	VisualInfo m_visualInfo;
 	PhysicsInfo m_physicsInfo;
+	vec3 m_tintColor;
+	std::string m_surfaceName;
 	int getTypeInInt();
 	int getThumbNailTextureId();
 	ThumbNail *m_thumbNail;

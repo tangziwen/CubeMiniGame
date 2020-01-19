@@ -208,7 +208,7 @@ Chunk::load()
   if (!m_isInitData) {
     // initData(); genMesh();
     WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() {
-      initData();
+      
       genMesh();
     }));
   } else {
@@ -866,8 +866,7 @@ Chunk::genMesh()
   // m_mesh->finish();
 }
 
-void
-Chunk::initData()
+void Chunk::initData()
 {
   // if (mcPoints) return;
   mcPoints = new vec4[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
@@ -1004,6 +1003,30 @@ Chunk::calculateMatID()
   for (unsigned int i = 0; i < vertexCount; i++) {
     m_mesh->m_vertices[i].m_matIndex.normalize();
   }
+}
+
+void Chunk::dumpChunk(FILE* f)
+{
+	int indexX = x;
+	int indexY = y;
+	int indexZ = z;
+	fwrite(&indexX,sizeof(int), 1, f);
+	fwrite(&indexY,sizeof(int), 1, f);
+	fwrite(&indexZ,sizeof(int), 1, f);
+	
+	fwrite(mcPoints,sizeof(vec4)* (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1),1,f); 
+}
+
+void Chunk::loadChunk(FILE* f)
+{
+	if(!mcPoints)
+		mcPoints = new vec4[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
+	fread(mcPoints,sizeof(vec4)* (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1),1,f); 
+}
+
+bool Chunk::getIsInitData()
+{
+	return m_isInitData;
 }
 
 bool

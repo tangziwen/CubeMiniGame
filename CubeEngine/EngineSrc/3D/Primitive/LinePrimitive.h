@@ -8,6 +8,7 @@ struct LineInfo
 {
 	vec3 begin;
 	vec3 end;
+	vec3 color;
 };
 
 class LinePrimitive : public Drawable3D
@@ -18,7 +19,9 @@ public:
 	virtual void submitDrawCmd(RenderCommand::RenderType passType);
 	void initBuffer();
 	virtual void setUpTransFormation(TransformationInfo &info);
-	void append(vec3 begin, vec3 end);
+	void append(vec3 begin, vec3 end, vec3 color = vec3(1, 1, 1));
+	void clear();
+	int getLineCount();
 private:
 	void init();
 	std::vector<LineInfo> m_segList;

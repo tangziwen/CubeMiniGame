@@ -10,6 +10,7 @@ TZW_SINGLETON_IMPL(AssistDrawSystem);
 AssistDrawSystem::AssistDrawSystem()
 {
 	m_isShowAssistInfo = false;
+	m_line = new LinePrimitive();
 }
 
 void AssistDrawSystem::handleDraw(float dt)
@@ -78,7 +79,7 @@ void AssistDrawSystem::drawBoundingBox(AABB aabb, Matrix44 mat)
 	{
 		return;;
 	}
-	auto line = new LinePrimitive();
+	
 	vec3 minV = aabb.min();
 	vec3 maxV = aabb.max();
 	
@@ -96,11 +97,11 @@ void AssistDrawSystem::drawBoundingBox(AABB aabb, Matrix44 mat)
 	{
 		for(int j = i + 1; j < 8; j++)
 		{
-			line->append(corners[i], corners[j]);
+			m_line->append(corners[i], corners[j]);
 		}
 	}
-	line->initBuffer();
-	g_GetCurrScene()->addNode(line);
+	m_line->initBuffer();
+	g_GetCurrScene()->addNode(m_line);
 	isFirstTime = false;
 }
 }

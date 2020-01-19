@@ -65,7 +65,6 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 		PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
 		PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
 	}
-
 }
 
 FPSCamera *FPSCamera::create(Camera *cloneObj, bool isOpenPhysics)

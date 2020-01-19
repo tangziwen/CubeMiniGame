@@ -11,7 +11,7 @@ LinePrimitive::LinePrimitive(vec3 begin, vec3 end)
 	initBuffer();
 }
 
-LinePrimitive::LinePrimitive()
+LinePrimitive::LinePrimitive():m_mesh(nullptr)
 {
 	init();
 }
@@ -26,39 +26,70 @@ void LinePrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 
 void LinePrimitive::initBuffer()
 {
-	m_mesh = new Mesh();
+	if(!m_mesh)
+	{
+		m_mesh = new Mesh();
+	}
 	int i = 0;
 	for(auto s : m_segList)
 	{
-		m_mesh->addVertex(VertexData(s.begin));
-		m_mesh->addVertex(VertexData(s.end));
+		m_mesh->addVertex(VertexData(s.begin,s.color));
+		m_mesh->addVertex(VertexData(s.end,s.color));
 		m_mesh->addIndex(i);
 		m_mesh->addIndex(i + 1);
 		i += 2;
 	}
-	m_mesh->finish();
+	//it is Enough room for new Vertex
+	if(m_mesh->getIndexBuf()->getAmount() >= m_mesh->getIndicesSize())
+	{
+		m_mesh->reSubmit();
+	}else
+	{
+		m_mesh->submit(RenderFlag::BufferStorageType::DYNAMIC_DRAW);
+	}
 	reCache();
 }
 
 void LinePrimitive::setUpTransFormation(TransformationInfo & info)
 {
-	info.m_projectMatrix = camera()->projection();
-    info.m_viewMatrix = camera()->getViewMatrix();
+	auto currCam = g_GetCurrScene()->defaultCamera();
+	
+	info.m_projectMatrix = currCam->projection();
+    info.m_viewMatrix = currCam->getViewMatrix();
     info.m_worldMatrix = getTransform();
 	info.m_worldMatrix.stripScale();
 }
 
-void LinePrimitive::append(vec3 begin, vec3 end)
+void LinePrimitive::append(vec3 begin, vec3 end, vec3 color)
 {
 	LineInfo info;
 	info.begin = begin;
+	info.color = color;
 	info.end = end;
 	m_segList.push_back(info);
+}
+
+void LinePrimitive::clear()
+{
+	if(m_mesh)
+	{
+		m_mesh->clearIndices();
+		m_mesh->clearVertices();
+	}
+
+	m_segList.clear();
+}
+
+int LinePrimitive::getLineCount()
+{
+	return m_segList.size();
 }
 
 void LinePrimitive::init()
 {
 	m_material = Material::createFromTemplate("Color");
+	m_material->setIsDepthTestEnable(false);
+	m_material->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 } // namespace tzw
