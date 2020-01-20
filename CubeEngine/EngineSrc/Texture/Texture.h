@@ -49,6 +49,7 @@ private:
     bool m_isHaveMipMap;
 	unsigned char *m_imgData;
 	int m_channel;
+	bool m_isLoaded;
 };
 
 } // namespace tzw

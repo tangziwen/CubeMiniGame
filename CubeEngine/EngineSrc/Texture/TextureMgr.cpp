@@ -28,31 +28,44 @@ Texture* TextureMgr::getByPathSimple(std::string filePath)
 	return getByPath(filePath, false);
 }
 
-void TextureMgr::getByPathAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap)
+Texture* TextureMgr::getByPathAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap)
 {
     if (filePath.empty()) 
 	{
-    	finishedCallBack(nullptr);
-    	return;
+    	if(finishedCallBack)
+    	{
+    		finishedCallBack(nullptr);
+    	}
+    	return nullptr;
 	}
     auto result = m_texturePool.find(filePath);
     if(result!=m_texturePool.end())
     {
-    	finishedCallBack(result->second);
+    	if(finishedCallBack)
+    	{
+    		finishedCallBack(result->second);
+    	}
+    	return result->second;
     }else
     {
-        Texture * tex = new Texture();
-    	auto onFinished = [this, tex, isNeedMiMap, filePath, finishedCallBack](Texture *)
-    	{
-	        if(isNeedMiMap)
-	        {
-	            tex->genMipMap();
-	        }
-	        m_texturePool.insert(std::make_pair(filePath,tex));
-    		finishedCallBack(tex);
-    	};
-    	tex->loadAsync(filePath, onFinished);
+    	return loadAsync(filePath, finishedCallBack, isNeedMiMap);
     }
+}
+
+Texture* TextureMgr::loadAsync(std::string filePath, std::function<void(Texture*)> finishedCallBack, bool isNeedMiMap)
+{
+    Texture * tex = new Texture();
+    auto onFinished = [this, tex, isNeedMiMap, filePath, finishedCallBack](Texture *)
+    {
+        if(isNeedMiMap)
+        {
+            tex->genMipMap();
+        }
+        m_texturePool.insert(std::make_pair(filePath,tex));
+    	finishedCallBack(tex);
+    };
+    tex->loadAsync(filePath, onFinished);
+	return tex;
 }
 
 Texture *TextureMgr::getByPath(std::string PosX, std::string NegX, std::string PosY,

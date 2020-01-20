@@ -11,7 +11,8 @@ public:
     TZW_SINGLETON_DECL(TextureMgr)
     Texture * getByPath(std::string filePath, bool isNeedMipMap = false);
 	Texture * getByPathSimple(std::string filePath);
-	void getByPathAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap = false);
+	Texture* getByPathAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap = false);
+	Texture* loadAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap = false);
     Texture * getByPath(std::string  PosX,
                                  std::string  NegX,
                                  std::string  PosY,

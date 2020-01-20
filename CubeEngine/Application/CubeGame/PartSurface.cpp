@@ -57,7 +57,6 @@ namespace tzw
 	void PartSurface::cache()
 	{
 		TextureMgr::shared()->getByPath(m_diffusePath, true);
-		TextureMgr::shared()->getByPath(m_diffusePath, true);
 		TextureMgr::shared()->getByPath(m_RoughnessPath, true);
 		TextureMgr::shared()->getByPath(m_metallicPath, true);
 		TextureMgr::shared()->getByPath(m_normalMapPath, true);
