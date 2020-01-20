@@ -592,11 +592,13 @@ RenderBuffer * Mesh::getInstanceBuf() const
 void Mesh::clearVertices()
 {
     m_vertices.clear();
+	m_vertices.shrink_to_fit();
 }
 
 void Mesh::clearIndices()
 {
     m_indices.clear();
+	m_indices.shrink_to_fit();
 }
 AABB Mesh::getAabb() const
 {

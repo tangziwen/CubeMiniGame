@@ -149,6 +149,7 @@ namespace tzw
 			m_isNeedSubmitMesh = false;
 
 			m_mesh->finish();
+			
 			if (m_rigidBody)
 			{
 				PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
@@ -156,6 +157,7 @@ namespace tzw
 				m_rigidBody = nullptr;
 			}
 			m_rigidBody = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh, nullptr);
+			
 			m_rigidBody->setFriction(10.0);
 			m_grass->finish();
 			m_grass2->finish();

@@ -312,6 +312,8 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
     }
     glAttachShader(ShaderProgram, ShaderObj);
 	RenderBackEnd::shared()->selfCheck();
+	delete[] Lengths;
+	delete[] p;
 }
 
 } // namespace tzw

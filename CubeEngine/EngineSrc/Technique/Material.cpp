@@ -445,13 +445,11 @@ void Material::setTex(std::string name, Texture *texture, int id)
 	if(result != m_varList.end())
 	{
 		TechniqueVar * var =  result->second;
-		var->setT(texture);
-		var->data.i = id;
+		var->setT(texture, id);
 	}else
 	{
 		TechniqueVar * var = new TechniqueVar();
-		var->setT(texture);
-		var->data.i = id;
+		var->setT(texture, id);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
@@ -463,7 +461,7 @@ Texture* Material::getTex(std::string name)
 	{
 		return nullptr;
 	}
-	return result->second->data.tex;
+	return result->second->data.rawData.texInfo.tex;
 }
 
 /**
@@ -488,29 +486,29 @@ void Material::use(ShaderProgram * extraProgram)
 		switch(var->type)
 		{
 			case TechniqueVar::Type::Float:
-				program->setUniformFloat(name.c_str(),var->data.f);
+				program->setUniformFloat(name.c_str(),var->data.rawData.f);
 			break;
 			case TechniqueVar::Type::Integer:
-				program->setUniformInteger(name.c_str(),var->data.i);
+				program->setUniformInteger(name.c_str(),var->data.rawData.i);
 			break;
 			case TechniqueVar::Type::Matrix:
-				program->setUniformMat4v(name.c_str(),var->data.m.data());
+				program->setUniformMat4v(name.c_str(),var->data.rawData.m.data());
 			break;
 			case TechniqueVar::Type::Vec4:
 				{
-					auto v = var->data.v4;
+					auto v = var->data.rawData.v4;
 					program->setUniform4Float(name.c_str(),v);
 				}
 			break;
 			case TechniqueVar::Type::Vec3:
 				{
-					auto v = var->data.v3;
+					auto v = var->data.rawData.v3;
 					program->setUniform3Float(name.c_str(),v);
 				}
 			break;
 			case TechniqueVar::Type::Vec2:
 				{
-					auto v = var->data.v2;
+					auto v = var->data.rawData.v2;
 					program->setUniform2Float(name.c_str(),v.x,v.y);
 				}
 			break;
@@ -518,7 +516,7 @@ void Material::use(ShaderProgram * extraProgram)
 				{
 					//first bind the texture obj to specified texture unit
 					//then pass the texture unit index to the shader's specified sampler.
-					auto tex = var->data.tex;
+					auto tex = var->data.rawData.texInfo.tex;
 					if(!tex)//use default texture to avoid problem
 					{
 						tex = TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
@@ -589,7 +587,7 @@ void Material::inspect()
 		case TechniqueVar::Type::Float:
 		{
 	
-			bindFloat(iter.first, &var->data.f,var->data.f_min, var->data.f_max, "%.2f");
+			bindFloat(iter.first, &var->data.rawData.f,var->data.f_min, var->data.f_max, "%.2f");
 	
 		}
 			break;
@@ -603,14 +601,14 @@ void Material::inspect()
 
 void Material::inspectIMGUI(std::string name, float min, float max, const char * fmt /*= "%.2f"*/)
 {
-	float uvSize = get(name)->data.f;
+	float uvSize = get(name)->data.rawData.f;
 	ImGui::SliderFloat(name.c_str(), &uvSize, min, max, fmt);
 	setVar(name, uvSize);
 }
 
 void Material::inspectIMGUI_Color(std::string name)
 {
-	auto src = get(name)->data.v3;
+	auto src = get(name)->data.rawData.v3;
 	static ImVec4 color = ImVec4(src.x, src.y, src.z, 1.0);
 	static bool alpha_preview = false;
 	static bool alpha_half_preview = false;

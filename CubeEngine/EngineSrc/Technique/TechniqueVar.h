@@ -35,26 +35,33 @@ struct TechniqueVar
     	CamPos,
     	InvertedViewProj
     };
-
-    struct {
-        Matrix44 m;
-        float f;
-        int i;
-        vec3 v3;
-        vec2 v2;
-        vec4 v4;
-        Texture *tex;
-
+	struct TexInfo
+	{
+		Texture * tex;
+		int slotID;
+	};
+    struct VarData{
+		union RawData
+		{
+	        Matrix44 m;
+	        float f;
+	        int i;
+	        vec3 v3;
+	        vec2 v2;
+	        vec4 v4;
+	        TexInfo texInfo;
+			RawData();
+		};
+    	RawData rawData;
 		//only for inspect UI
 		float f_min;
 		float f_max;
 		int i_min;
 		int i_max;
-
-    
+    	int texID;
     }data;
     Type type;
-    void setT(Texture * tex);
+    void setT(Texture * tex, int slotID);
     void setF(float value);
     void setM(const Matrix44 &value);
     void setI(int value);

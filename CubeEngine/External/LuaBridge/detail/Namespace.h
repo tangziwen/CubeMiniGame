@@ -32,6 +32,7 @@
 
 #include <LuaBridge/detail/Config.h>
 #include <LuaBridge/detail/ClassInfo.h>
+#include <LuaBridge/detail/LuaException.h>
 #include <LuaBridge/detail/Security.h>
 #include <LuaBridge/detail/TypeTraits.h>
 
@@ -281,7 +282,9 @@ class Namespace : public detail::Registrar
     static int ctorPlacementProxy (lua_State* L)
     {
       ArgList <Params, 2> args (L);
-      Constructor <T, Params>::call (UserdataValue <T>::place (L), args);
+      UserdataValue <T>* value = UserdataValue <T>::place (L);
+      Constructor <T, Params>::call (value->getObject (), args);
+      value->commit ();
       return 1;
     }
 
@@ -1020,11 +1023,6 @@ private:
 
   using Registrar::operator=;
 
-  static int throwAtPanic (lua_State* L)
-  {
-    throw std::runtime_error (lua_tostring (L, 1));
-  }
-
 public:
   //----------------------------------------------------------------------------
   /**
@@ -1032,7 +1030,7 @@ public:
   */
   static Namespace getGlobalNamespace (lua_State* L)
   {
-    lua_atpanic (L, throwAtPanic);
+    enableExceptions (L);
     return Namespace (L);
   }
 
@@ -1144,6 +1142,36 @@ public:
   }
 
   //----------------------------------------------------------------------------
+  /**
+      Add or replace a property.
+      If the set function is omitted or null, the property is read-only.
+  */
+  Namespace& addProperty (char const* name, int (*get) (lua_State*), int (*set) (lua_State*) = 0)
+  {
+    if (m_stackSize == 1)
+    {
+      throw std::logic_error ("addProperty () called on global namespace");
+    }
+
+    assert (lua_istable (L, -1)); // Stack: namespace table (ns)
+    lua_pushcfunction (L, get); // Stack: ns, getter
+    CFunc::addGetter (L, name, -2); // Stack: ns
+    if (set != 0)
+    {
+      lua_pushcfunction(L, set); // Stack: ns, setter
+      CFunc::addSetter(L, name, -2); // Stack: ns
+    }
+    else
+    {
+      lua_pushstring(L, name); // Stack: ns, name
+      lua_pushcclosure(L, &CFunc::readOnlyError, 1); // Stack: ns, name, readOnlyError
+      CFunc::addSetter(L, name, -2); // Stack: ns
+    }
+
+    return *this;
+  }
+
+//----------------------------------------------------------------------------
   /**
       Add or replace a free function.
   */
