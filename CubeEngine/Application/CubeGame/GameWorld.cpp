@@ -75,7 +75,7 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             }
         }
     }
-    loadChunksAroundPlayer();
+    
 	 
 }
 
@@ -125,7 +125,6 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 		//chunk->loadChunk(terrainFile);
 	}
 	fclose(terrainFile);
-    loadChunksAroundPlayer();
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -189,11 +188,14 @@ void GameWorld::startGame()
 		GameMap::shared()->setMaxHeight(10);
 		GameMap::shared()->setMinHeight(3);
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+		m_player->setPos(vec3(5, 20.0, -5));
+		loadChunksAroundPlayer();
 	}));
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
 		ScriptPyMgr::shared()->callFunV("on_game_start");
+		
 		m_currentState = GAME_STATE_RUNNING;
 	}));
 	
@@ -208,12 +210,14 @@ void GameWorld::loadGame(std::string filePath)
 		auto player = new CubePlayer(m_mainRoot);
 		GameWorld::shared()->setPlayer(player);
 		m_mainRoot->addChild(player);
-			//init UI
+		//init UI
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
 		 
 		GameMap::shared()->setMinHeight(3);
 		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "./Terrain.bin");
+		m_player->setPos(vec3(5, 20.0, -5));
+		loadChunksAroundPlayer();
 	}));
 
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([=]()

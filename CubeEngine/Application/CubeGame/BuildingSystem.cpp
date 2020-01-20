@@ -186,13 +186,16 @@ namespace tzw
 					i++;
 				}
 			}
-			Drawable3DGroup group(&list[0], list.size());
-			Ray ray(pos, dir);
-			vec3 hitPoint;
-			if (group.hitByRay(ray, hitPoint))
+			if(!list.empty())
 			{
-				
-				return hitPoint;
+				Drawable3DGroup group(&list[0], list.size());
+				Ray ray(pos, dir);
+				vec3 hitPoint;
+				if (group.hitByRay(ray, hitPoint))
+				{
+					
+					return hitPoint;
+				}
 			}
 		}
 		return vec3(-999999, -999999, -999999);
