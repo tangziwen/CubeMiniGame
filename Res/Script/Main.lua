@@ -471,7 +471,7 @@ function handleItemPrimaryUse(item)
 	elseif (item:getTypeInInt() == SPECIAL_PART_PAINTER) then --paint the object
 		player:paint();
 	elseif (item:getTypeInInt() == SPECIAL_PART_DIGGER) then --fill the terrain
-		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.3, 3.0)
+		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, 0.8, 3.0)
 	end
 	player:updateCrossHairTipsInfo()
 end
@@ -486,7 +486,7 @@ function handleItemSecondaryUse(item)
 	elseif (item:getTypeInInt() == SPECIAL_PART_PAINTER) then --paint the object
 		GameUISystem.shared():setPainterShow(true)
 	elseif (item:getTypeInInt() == SPECIAL_PART_DIGGER) then --dig the terrain
-		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.3, 3.0)
+		BuildingSystem.shared():terrainForm(player:getPos(), player:getForward(), 10, -0.8, 3.0)
 	end
 	player:updateCrossHairTipsInfo()
 end
