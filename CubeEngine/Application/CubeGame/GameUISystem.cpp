@@ -118,8 +118,17 @@ void GameUISystem::toggle()
 void GameUISystem::drawIMGUI()
 {
 
-	const float DISTANCE = 10.0f;
-    static int corner = 2;
+
+
+	if(GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
+	{
+		drawEntryInterFace();
+	}else
+	{
+		if(GameWorld::shared()->getCurrentState() == GAME_STATE_RUNNING)
+		{
+				const float DISTANCE = 10.0f;
+    static int corner = 0;
     ImGuiIO& io = ImGui::GetIO();
     if (corner != -1)
     {
@@ -130,13 +139,10 @@ void GameUISystem::drawIMGUI()
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
     {
-        ImGui::Text(TRC(u8"Demo Version --tzw"));
+        ImGui::Text("Demo Version%s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
     }
     ImGui::End();
-
-	if(GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
-	{
-		drawEntryInterFace();
+		}
 	}
 
 	auto currIsNeedShow = isVisible() || isNeedShowWindow();

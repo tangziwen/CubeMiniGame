@@ -188,7 +188,9 @@ void GameWorld::startGame()
 		GameMap::shared()->setMaxHeight(10);
 		GameMap::shared()->setMinHeight(3);
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
-		m_player->setPos(vec3(5, 20.0, -5));
+		
+		float height = GameMap::shared()->getDensity(vec3(0, 0, 0));
+		m_player->setPos(vec3(0, height + 3, 0));
 		loadChunksAroundPlayer();
 	}));
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()

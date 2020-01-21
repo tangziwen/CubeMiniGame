@@ -48,7 +48,7 @@ private:
     int m_currentState;
     vec3 m_mapOffset;
     int m_width, m_depth, m_height;
-    Chunk * m_chunkArray[128][128][16];
+    Chunk * m_chunkArray[128][16][128];
     Scene  * m_scene;
     CubePlayer * m_player;
     std::vector<Chunk*> m_chunkList;
