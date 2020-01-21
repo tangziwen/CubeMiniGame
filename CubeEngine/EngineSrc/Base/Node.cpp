@@ -215,7 +215,7 @@ void Node::addChild(Node *node, bool isNeedSort)
         node->setNeedToUpdate(true);
         node->m_parent = this;
 		//for performance issuse, the Zorder < -99 no need to sort, just insert away.
-		if (node->getLocalPiority() < -99)
+		if (node->getLocalPiority() < -99 || !isNeedSort)
 		{
 			m_children.push_front(node);
 		}

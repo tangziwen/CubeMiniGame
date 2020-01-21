@@ -8,9 +8,9 @@ Grass::Grass(std::string filePath)
 {
 	 
 	m_isFinish = false;
-	 
-	auto mat = MaterialPool::shared()->getMaterialByName("grassMaterial");
-	 
+	std::string materialName = "grass";
+	materialName +=filePath;
+	auto mat = MaterialPool::shared()->getMaterialByName(materialName);
 	if (!mat)
 	{
 
@@ -21,7 +21,7 @@ Grass::Grass(std::string filePath)
 		tex->genMipMap();
 		 
 		mat->setTex("diffuseMap", tex);
-		 
+		MaterialPool::shared()->addMaterial(materialName, mat);
 	}
 	setMaterial(mat);
 	 

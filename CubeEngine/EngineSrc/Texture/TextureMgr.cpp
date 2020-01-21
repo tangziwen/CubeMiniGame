@@ -61,9 +61,12 @@ Texture* TextureMgr::loadAsync(std::string filePath, std::function<void(Texture*
         {
             tex->genMipMap();
         }
-        m_texturePool.insert(std::make_pair(filePath,tex));
-    	finishedCallBack(tex);
+        if(finishedCallBack)
+        {
+	        finishedCallBack(tex);
+        }
     };
+	m_texturePool.insert(std::make_pair(filePath,tex));
     tex->loadAsync(filePath, onFinished);
 	return tex;
 }

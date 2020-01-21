@@ -66,7 +66,7 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             for(int k = 0; k < m_depth; k++)
             {
                 auto chunk = new Chunk(i,j,k);
-                m_mainRoot->addChild(chunk);
+                m_mainRoot->addChild(chunk, false);
 				 
                 m_chunkList.push_back(chunk);
 				 
@@ -187,8 +187,9 @@ void GameWorld::startGame()
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
 		GameMap::shared()->setMinHeight(3);
+		Tmisc::DurationBegin();
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
-		
+		tlog("init chunk cost : %d", Tmisc::DurationEnd());
 		float height = GameMap::shared()->getDensity(vec3(0, 0, 0));
 		m_player->setPos(vec3(0, height + 3, 0));
 		loadChunksAroundPlayer();
