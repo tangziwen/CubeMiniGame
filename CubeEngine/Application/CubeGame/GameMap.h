@@ -15,9 +15,11 @@ struct ChunkInfo
 	vec4 * mcPoints;
 	void loadChunk(FILE * file);
 	void dumpChunk(FILE * f);
+	void initData();
 	int x;
 	int y;
 	int z;
+	bool isEdit;
 };
 class GameMap
 {
@@ -41,7 +43,7 @@ public:
 	void setMinHeight(float minHeight);
 	float minHeight();
 	ChunkInfo * getChunkInfo(int x, int y, int z);
-	ChunkInfo * m_chunkInfoArray[128][128][16];
+	ChunkInfo * m_chunkInfoArray[128][16][128];
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;

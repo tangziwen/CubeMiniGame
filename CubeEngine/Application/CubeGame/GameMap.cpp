@@ -20,15 +20,16 @@ module::Select finalTerrain;
 module::Add finalFlatTerrain;
 
 ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),
-	mcPoints(nullptr),x(theX),y(theY),z(theZ)
+	mcPoints(nullptr),x(theX),y(theY),z(theZ),isEdit(false)
 {
-	mcPoints = new vec4[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
 }
 
 void ChunkInfo::loadChunk(FILE* f)
 {
+	initData();
 	fread(mcPoints,sizeof(vec4)* (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1),1,f);
 	isLoaded = true;
+	isEdit = true;
 }
 
 void ChunkInfo::dumpChunk(FILE* f)
@@ -41,6 +42,11 @@ void ChunkInfo::dumpChunk(FILE* f)
 	fwrite(&indexZ, sizeof(int), 1, f);
 
 	fwrite(mcPoints, sizeof(vec4) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1), 1, f);
+}
+
+void ChunkInfo::initData()
+{
+	mcPoints = new vec4[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
 }
 
 

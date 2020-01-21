@@ -101,7 +101,6 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
             for(int k = 0; k < m_depth; k++)
             {
                 auto chunk = new Chunk(i,j,k);
-				chunk->initData();
                 m_mainRoot->addChild(chunk);
 				 
                 m_chunkList.push_back(chunk);
@@ -114,6 +113,7 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 	auto terrainFile = fopen(filePath.c_str(), "rb");
 	int count;
 	fread(&count,sizeof(int),1, terrainFile);
+	tlog("the Chunk Size is%d", count);
 	for(int i = 0; i < count; i++)
 	{
 		int x, y, z;
@@ -121,8 +121,6 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 		fread(&y, sizeof(int), 1, terrainFile);
 		fread(&z, sizeof(int), 1, terrainFile);
 		GameMap::shared()->getChunkInfo(x,y,z)->loadChunk(terrainFile);
-		//auto chunk = m_chunkArray[x][y][z];
-		//chunk->loadChunk(terrainFile);
 	}
 	fclose(terrainFile);
 }
@@ -218,8 +216,9 @@ void GameWorld::loadGame(std::string filePath)
 		GameMap::shared()->setMaxHeight(10);
 		 
 		GameMap::shared()->setMinHeight(3);
-		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "./Terrain.bin");
-		m_player->setPos(vec3(5, 20.0, -5));
+		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "./Save/Terrain.bin");
+		float height = GameMap::shared()->getDensity(vec3(0, 0, 0));
+		m_player->setPos(vec3(0, height + 3, 0));
 		loadChunksAroundPlayer();
 	}));
 
@@ -275,14 +274,14 @@ void GameWorld::saveGame(std::string filePath)
             for(int k = 0; k < m_depth; k++)
             {	 
                 auto chunkInfo = GameMap::shared()->getChunkInfo(i, j, k);
-            	if(chunkInfo->isLoaded)
+            	if(chunkInfo->isLoaded && chunkInfo->mcPoints && chunkInfo->isEdit)
             	{
             		tmpChunkList.push_back(chunkInfo);
             	}
             }
         }
     }
-    auto terrainFile = fopen("./Terrain.bin", "wb");
+    auto terrainFile = fopen("./Save/Terrain.bin", "wb");
 	//first size of int tell the fucking count
 	int theSize = tmpChunkList.size();
 	fwrite(&theSize, sizeof(int),1 ,terrainFile);
@@ -329,7 +328,7 @@ void GameWorld::loadChunksAroundPlayer()
                     continue;
 				 
                 auto targetChunk = m_chunkArray[i][j][k];
-				 
+				tlog("shit %d %d %d", i, j, k);
 				m_readyToLoadArray.push_back(targetChunk);
 				 
                 auto findResult = m_tempArray.find(targetChunk);
@@ -363,6 +362,7 @@ void GameWorld::loadChunksAroundPlayer()
 		i->load();
 		 
 	}
+	tlog("load size is %d",m_readyToLoadArray.size());
 	tlog("load chunk cost : %d", Tmisc::DurationEnd());
 }
 

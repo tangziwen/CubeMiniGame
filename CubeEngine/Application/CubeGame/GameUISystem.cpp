@@ -330,7 +330,7 @@ void GameUISystem::drawIMGUI()
 			}
 			if(ImGui::Button(TRC(u8"保存世界"), ImVec2(160, 35)))
 			{
-				GameWorld::shared()->saveGame("World/testWord.json");
+				GameWorld::shared()->saveGame("Save/World.json");
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
 			//if(ImGui::Button(TRC(u8"读取世界"), ImVec2(160, 35)))
@@ -687,7 +687,7 @@ void GameUISystem::drawEntryInterFace()
 		{
 			auto fuck = []
 			{
-				GameWorld::shared()->loadGame("World/testWord.json");
+				GameWorld::shared()->loadGame("Save/World.json");
 				WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
 			};
 			TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));

@@ -410,6 +410,7 @@ namespace tzw
 		{
 			m_chunkInfo->mcPoints[ind].w = scalar;
 		}
+		m_chunkInfo->isEdit = true;
 	}
 
 	void
@@ -969,6 +970,7 @@ namespace tzw
 	void Chunk::initData()
 	{
 		if (m_chunkInfo->isLoaded) return;
+		m_chunkInfo->initData();
 		int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 		vec4 verts;
 		vec3 tmpV3;
@@ -991,6 +993,7 @@ namespace tzw
 				}
 			}
 		}
+		m_chunkInfo->isEdit = false;
 		m_chunkInfo->isLoaded = true;
 	}
 
