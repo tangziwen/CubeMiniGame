@@ -328,7 +328,6 @@ void GameWorld::loadChunksAroundPlayer()
                     continue;
 				 
                 auto targetChunk = m_chunkArray[i][j][k];
-				tlog("shit %d %d %d", i, j, k);
 				m_readyToLoadArray.push_back(targetChunk);
 				 
                 auto findResult = m_tempArray.find(targetChunk);

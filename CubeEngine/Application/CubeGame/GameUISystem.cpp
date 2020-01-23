@@ -389,6 +389,10 @@ void GameUISystem::drawIMGUI()
 				{
 					p->m_surface = surface;
 				}
+				if(i%2 == 0)
+				{
+					ImGui::SameLine();
+				}
 			}
 			if(ImGui::Button("Make As Template"))
 			{
