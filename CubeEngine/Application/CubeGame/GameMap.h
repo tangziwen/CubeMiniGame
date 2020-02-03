@@ -8,11 +8,25 @@
 
 namespace tzw {
 class Chunk;
+struct voxelInfo
+{
+	float x;
+	float y;
+	float z;
+	float w;
+	char matIndex1;
+	char matIndex2;
+	float matFactor;
+	void setV4(vec4 v);
+	vec4 getV();
+	voxelInfo(float x, float y, float z, float w);
+	voxelInfo();
+};
 struct ChunkInfo
 {
 	ChunkInfo(int x, int y, int z);
 	bool isLoaded;
-	vec4 * mcPoints;
+	voxelInfo * mcPoints;
 	void loadChunk(FILE * file);
 	void dumpChunk(FILE * f);
 	void initData();

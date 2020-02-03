@@ -5,7 +5,7 @@
 	"2DEnable": true,
 	"SkyEnable": true,
 	"FogEnable": true,
-	"SSAOEnable": false,
+	"SSAOEnable": true,
 	"BloomEnable": true,
 	"HDREnable": true,
 	"AAEnable": true,

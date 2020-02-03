@@ -2,6 +2,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include <vector>
 #include "3D/Vegetation/Grass.h"
+#include "GameMap.h"
 
 
 struct vertexInfo
@@ -35,8 +36,8 @@ namespace tzw
 	    void setVoxelScalar(int x, int y, int z, float scalar, bool isAdd = true);
 	    void addVoexlScalar(int x, int y, int z, float scalar);
 	    void genNormal();
-	    vec4 getPoint(int index);
-	    vec4 getPoint(int x, int y, int z);
+	    voxelInfo getPoint(int index);
+	    voxelInfo getPoint(int x, int y, int z);
 	    int getIndex(int x, int y, int z);
 	    void genMesh();
 	    void initData();

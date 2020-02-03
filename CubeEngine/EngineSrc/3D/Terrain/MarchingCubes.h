@@ -5,13 +5,13 @@
 #include "../../Math/vec4.h"
 #include "../../Mesh/Mesh.h"
 namespace tzw {
-
+	struct voxelInfo;
 class MarchingCubes
 {
 public:
     TZW_SINGLETON_DECL(MarchingCubes)
     void generate(Mesh * mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 * points, float minValue);
-    void generateWithoutNormal(Mesh * mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 * srcData, float minValue = -1, int lodLevel = 0);
+    void generateWithoutNormal(Mesh * mesh, int ncellsX, int ncellsY, int ncellsZ, voxelInfo * srcData, float minValue = -1, int lodLevel = 0);
 private:
     MarchingCubes();
 };

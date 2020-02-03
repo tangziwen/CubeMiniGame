@@ -598,14 +598,14 @@ namespace tzw
 					int lastY = ncellsY;
 					int lastZ = ncellsZ;
 
-					verts[0] = points[ind];
-					verts[1] = points[ind + lodStride * YtimeZ];
-					verts[2] = points[ind + lodStride * (YtimeZ + 1)];
-					verts[3] = points[ind + lodStride * 1];
-					verts[4] = points[ind + lodStride * (ncellsZ + 1)];
-					verts[5] = points[ind + lodStride * (YtimeZ + (ncellsZ + 1))];
-					verts[6] = points[ind + lodStride * (YtimeZ + (ncellsZ + 1) + 1)];
-					verts[7] = points[ind + lodStride * ((ncellsZ + 1) + 1)];
+					verts[0] = points[ind].getV();
+					verts[1] = points[ind + lodStride * YtimeZ].getV();
+					verts[2] = points[ind + lodStride * (YtimeZ + 1)].getV();
+					verts[3] = points[ind + lodStride * 1].getV();
+					verts[4] = points[ind + lodStride * (ncellsZ + 1)].getV();
+					verts[5] = points[ind + lodStride * (YtimeZ + (ncellsZ + 1))].getV();
+					verts[6] = points[ind + lodStride * (YtimeZ + (ncellsZ + 1) + 1)].getV();
+					verts[7] = points[ind + lodStride * ((ncellsZ + 1) + 1)].getV();
 
 					// get the index
 					int cubeIndex = int(0);
@@ -833,8 +833,7 @@ namespace tzw
 	}
 
 
-	vec4
-	Chunk::getPoint(int index)
+	voxelInfo Chunk::getPoint(int index)
 	{
 		if (index >= 0 &&
 			index < (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1))
@@ -844,7 +843,7 @@ namespace tzw
 		return m_chunkInfo->mcPoints[index];
 	}
 
-	vec4
+	voxelInfo
 	Chunk::getPoint(int x, int y, int z)
 	{
 		int size = MAX_BLOCK + 1;
@@ -911,7 +910,7 @@ namespace tzw
 			}
 			else
 			{
-				return vec4(1.0, 1.0, 1.0, 1.0);
+				return voxelInfo(1.0, 1.0, 1.0, 1.0);
 			}
 		}
 	}
@@ -989,7 +988,7 @@ namespace tzw
 					verts.w = GameMap::shared()->getDensity(tmpV3);
 					// x y z
 					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
-					m_chunkInfo->mcPoints[ind] = verts;
+					m_chunkInfo->mcPoints[ind].setV4(verts);
 				}
 			}
 		}
@@ -1084,7 +1083,7 @@ namespace tzw
 			value = value * 0.5 + 0.5;
 			// value = std::max(value - 0.2f, 0.0f);
 			value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
-			matID = vec3((1.0 - value) * (step), (1.0 - step), value * (step));
+			matID = vec3(1, 0, step);
 			m_mesh->m_vertices[index0].m_matIndex = matID;
 			if (step > 0.5 && (1.0 - value > 0.7))
 			{
@@ -1109,13 +1108,6 @@ namespace tzw
 					grass->m_mesh->pushInstance(instance);
 				}
 			}
-		}
-
-		size_t vertexCount = m_mesh->m_vertices.size();
-		//
-		for (unsigned int i = 0; i < vertexCount; i++)
-		{
-			m_mesh->m_vertices[i].m_matIndex.normalize();
 		}
 	}
 

@@ -396,7 +396,6 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	offset += sizeof(vec3);
 
 	int matLocation = program->attributeLocation("a_mat");
-	  
 	if (matLocation > 0)
 	{
 		program->enableAttributeArray(matLocation);

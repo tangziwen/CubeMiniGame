@@ -7,8 +7,6 @@ precision mediump float;
 
 
 uniform sampler2D GrassTex;
-uniform sampler2D DirtTex;
-uniform sampler2D CliffTex;
 
 uniform float uv_grass;
 uniform float uv_cliff;
@@ -115,19 +113,27 @@ vec4 multiUVMixed(sampler2D samp, vec2 UV)
 	col += texture(samp, UV * -0.25) * 0.3;
 	return col;
 }
-
-vec4 triplanarSample(sampler2D sampler, float scaleFactor)
+vec2 getUV(vec2 uv, int index)
 {
+  float scale = (1.0 / 4.0);
+  vec2 theUV = clamp(fract(uv),vec2(0.00390625),vec2(0.9960935)) *scale;
+
+  vec2 offset = vec2(index % 4, index / 4) * scale;
+  return theUV + offset;
+}
+vec4 triplanarSample(sampler2D sampler, float texIndex, float scaleFactor)
+{
+  int index = int(texIndex);
 	float plateauSize = 0.25;
 	float transitionSpeed = 1.0;
 	vec3 blending = abs( normalize(v_normal));
 	blending = clamp(blending - plateauSize, 0.0, 1.0);
 	blending = powVec(blending, transitionSpeed);
 	blending /= dot(blending, vec3(1.0, 1.0, 1.0));
-	vec4 xaxis = texture( sampler, v_worldPos.yz * scaleFactor);
-	vec4 yaxis = texture( sampler, v_worldPos.xz * scaleFactor);
-	vec4 zaxis = texture( sampler, v_worldPos.xy * scaleFactor);
-	return xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+	vec4 xaxis = texture( sampler, getUV(v_worldPos.yz * scaleFactor, index));
+	vec4 yaxis = texture( sampler, getUV(v_worldPos.xz * scaleFactor,index));
+	vec4 zaxis = texture( sampler, getUV(v_worldPos.xy * scaleFactor,index));
+	return yaxis;//xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 }
 
 vec4 outLineFilter(vec4 color)
@@ -259,11 +265,11 @@ vec3 noiseDisturb(vec3 color, float scaleFactor, float minVal, float maxVal)
 
 vec4 getTerrainTex(sampler2D samp)
 {
-	vec3 detailTex = v_mat.x * triplanarSample(samp, 1.0 / uv_grass).xyz + v_mat.y * triplanarSample(CliffTex, 1.0 / uv_cliff).xyz + v_mat.z * triplanarSample(DirtTex, 1.0/ uv_dirt).xyz;
-	detailTex = noiseDisturb(detailTex, disturb_factor_near, 0.95, 1.0); 
-	vec3 largeTex = v_mat.x * triplanarSample(samp, 1.0 / (uv_grass * large_factor)).xyz + v_mat.y * triplanarSample(CliffTex, 1.0 / (uv_cliff * large_factor)).xyz + v_mat.z * triplanarSample(DirtTex, 1.0/ (uv_dirt * large_factor)).xyz;
-	largeTex = noiseDisturb(largeTex, disturb_factor_far, 0.9, 1.0); 
-	return vec4(mix(detailTex, largeTex, getDistFactor(near_dist, far_dist, -1 * v_position.z)), 1.0); 
+  vec3 detailTex = triplanarSample(samp,3, 1.0 / uv_grass).xyz * (1.0 - v_mat.z) + triplanarSample(samp, 13, 1.0 / uv_cliff).xyz * v_mat.z;
+
+	// vec3 detailTex = triplanarSample(samp, int(v_mat.x), 1.0 / uv_grass).xyz * (1.0 - v_mat.z) + triplanarSample(samp, int(v_mat.y), 1.0 / uv_cliff).xyz * v_mat.z;
+	// detailTex = noiseDisturb(detailTex, disturb_factor_near, 0.95, 1.0); 
+	return vec4(detailTex, 1.0); 
 }
 
 vec4 texturePlain(sampler2D samp, in vec2 uv)

@@ -19,15 +19,42 @@ module::Select finalTerrain;
 
 module::Add finalFlatTerrain;
 
+void voxelInfo::setV4(vec4 v)
+{
+	x = v.x;
+	y = v.y;
+	z = v.z;
+	w = v.w;
+}
+
+vec4 voxelInfo::getV()
+{
+	return vec4(x, y, z, w);
+}
+
+voxelInfo::voxelInfo(float _x, float _y, float _z, float _w):
+	matIndex1(0),matIndex2(0),matFactor(0.0)
+{
+	x = _x;
+	y = _y;
+	z = _z;
+	w = _w;
+}
+
+voxelInfo::voxelInfo()
+{
+	
+}
+
 ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),
-	mcPoints(nullptr),x(theX),y(theY),z(theZ),isEdit(false)
+                                                   mcPoints(nullptr),x(theX),y(theY),z(theZ),isEdit(false)
 {
 }
 
 void ChunkInfo::loadChunk(FILE* f)
 {
 	initData();
-	fread(mcPoints,sizeof(vec4)* (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1),1,f);
+	fread(mcPoints,sizeof(voxelInfo)* (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1),1,f);
 	isLoaded = true;
 	isEdit = true;
 }
@@ -41,12 +68,12 @@ void ChunkInfo::dumpChunk(FILE* f)
 	fwrite(&indexY, sizeof(int), 1, f);
 	fwrite(&indexZ, sizeof(int), 1, f);
 
-	fwrite(mcPoints, sizeof(vec4) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1), 1, f);
+	fwrite(mcPoints, sizeof(voxelInfo) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1), 1, f);
 }
 
 void ChunkInfo::initData()
 {
-	mcPoints = new vec4[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
+	mcPoints = new voxelInfo[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
 }
 
 

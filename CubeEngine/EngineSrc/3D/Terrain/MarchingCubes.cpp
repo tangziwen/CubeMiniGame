@@ -1,6 +1,8 @@
 #include "MarchingCubes.h"
 
 #include "MCTable.h"
+#include "CubeGame/GameMap.h"
+
 namespace tzw {
 	TZW_SINGLETON_IMPL(MarchingCubes)
 
@@ -279,7 +281,7 @@ void MarchingCubes::generate(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, 
     //    mesh->finish();
 }
 
-void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 *srcData, float minValue, int lodLevel)
+void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, voxelInfo *srcData, float minValue, int lodLevel)
 {
     mesh->clear();
     int meshIndex = 0;
@@ -294,14 +296,14 @@ void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, 
             {
                 //initialize vertices
                 int ind = i*YtimeZ + j*(ncellsZ+1) + k;
-                verts[0] = srcData[ind];
-                verts[1] = srcData[ind + lodStride* (YtimeZ)];
-                verts[2] = srcData[ind + lodStride* (YtimeZ + 1)];
-                verts[3] = srcData[ind + lodStride * 1];
-                verts[4] = srcData[ind + lodStride * (ncellsZ+1)];
-                verts[5] = srcData[ind + lodStride * (YtimeZ + (ncellsZ+1))];
-                verts[6] = srcData[ind + lodStride * (YtimeZ + (ncellsZ+1) + 1)];
-                verts[7] = srcData[ind + lodStride * ((ncellsZ+1) + 1)];
+                verts[0] = srcData[ind].getV();
+                verts[1] = srcData[ind + lodStride* (YtimeZ)].getV();
+                verts[2] = srcData[ind + lodStride* (YtimeZ + 1)].getV();
+                verts[3] = srcData[ind + lodStride * 1].getV();
+                verts[4] = srcData[ind + lodStride * (ncellsZ+1)].getV();
+                verts[5] = srcData[ind + lodStride * (YtimeZ + (ncellsZ+1))].getV();
+                verts[6] = srcData[ind + lodStride * (YtimeZ + (ncellsZ+1) + 1)].getV();
+                verts[7] = srcData[ind + lodStride * ((ncellsZ+1) + 1)].getV();
 
                 //get the index
                 int cubeIndex = 0;

@@ -18,9 +18,7 @@
 			{"name" : "TU_roughness", "type":"float", "default":1.0, "ui_info":{"range":[0.0, 1.0]}}
 		],
 		"maps" : [
-			["GrassTex", 0, "Texture/T_Ground_Grass_D.png"],
-			["DirtTex", 1, "Texture/mud2.jpg"],
-			["CliffTex", 2, "Texture/Cliff.jpg"]
+			["GrassTex", 0, "Texture/terrain_atlas.png"]
 		]
 	}
 }
