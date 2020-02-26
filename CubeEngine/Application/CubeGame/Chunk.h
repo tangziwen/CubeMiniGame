@@ -35,6 +35,7 @@ namespace tzw
 	    void deformWithNeighbor(int X, int Y, int Z, float value);
 	    void setVoxelScalar(int x, int y, int z, float scalar, bool isAdd = true);
 	    void addVoexlScalar(int x, int y, int z, float scalar);
+		voxelInfo getVoxel(int x, int y, int z);
 	    void genNormal();
 	    voxelInfo getPoint(int index);
 	    voxelInfo getPoint(int x, int y, int z);

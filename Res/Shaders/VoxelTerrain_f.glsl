@@ -24,7 +24,8 @@ in vec2 v_texcoord;
 in vec3 v_worldPos;
 in vec3 v_color;
 in vec3 v_bc;
-in vec3 v_mat;
+flat in vec2 v_mat;
+in float v_matFactor;
 //! [0]
 float edgeFactor(){
 	vec3 d = fwidth(v_bc);
@@ -265,8 +266,7 @@ vec3 noiseDisturb(vec3 color, float scaleFactor, float minVal, float maxVal)
 
 vec4 getTerrainTex(sampler2D samp)
 {
-  vec3 detailTex = triplanarSample(samp,3, 1.0 / uv_grass).xyz * (1.0 - v_mat.z) + triplanarSample(samp, 13, 1.0 / uv_cliff).xyz * v_mat.z;
-
+vec3 detailTex = triplanarSample(samp,int(round(v_mat.x)), 1.0 / uv_grass).xyz * v_matFactor + triplanarSample(samp, int(round(v_mat.y)), 1.0 / uv_cliff).xyz * (1.0 - v_matFactor);
 	// vec3 detailTex = triplanarSample(samp, int(v_mat.x), 1.0 / uv_grass).xyz * (1.0 - v_mat.z) + triplanarSample(samp, int(v_mat.y), 1.0 / uv_cliff).xyz * v_mat.z;
 	// detailTex = noiseDisturb(detailTex, disturb_factor_near, 0.95, 1.0); 
 	return vec4(detailTex, 1.0); 

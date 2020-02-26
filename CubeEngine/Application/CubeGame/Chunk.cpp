@@ -425,6 +425,13 @@ namespace tzw
 			m_chunkInfo->mcPoints[ind].w = 1.0;
 	}
 
+	voxelInfo Chunk::getVoxel(int x, int y, int z)
+	{
+		int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
+		int ind = x * YtimeZ + y * (MAX_BLOCK + 1) + z;
+		return m_chunkInfo->mcPoints[ind];
+	}
+
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	/// <summary>	Linear interp. </summary>
 	///
@@ -989,6 +996,13 @@ namespace tzw
 					// x y z
 					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
 					m_chunkInfo->mcPoints[ind].setV4(verts);
+					if(tmpV3.y < 16) 
+					{
+						m_chunkInfo->mcPoints[ind].matIndex1 = 13;
+					}else
+					{
+						m_chunkInfo->mcPoints[ind].matIndex1 = 1;
+					}
 				}
 			}
 		}
@@ -1078,13 +1092,131 @@ namespace tzw
 			}
 			vec3 matID = vec3(1.0, 0.0, 0.0);
 
+			
+			{
+				//单步MarchingCube内计算是不够的，还得扩大范围，以这个最近点基础上再搜相邻得点，然后再算
+				auto & vertex = m_mesh->m_vertices[index0];
+				vec3 realPos = vertex.m_pos;
+				vec3 relativePost = realPos - m_basePoint;
+				relativePost = relativePost / BLOCK_SIZE;
+				relativePost.z *= -1;
+				int posX = round(relativePost.x);
+				int posY = round(relativePost.y);
+				int posZ = round(relativePost.z);
+				int searchSize = 1;
+				std::vector<voxelInfo> voxelList;
+				for (int i = -searchSize; i <= searchSize; i++)
+				{
+					for (int j = -searchSize; j <= searchSize; j++)
+					{
+						for (int k = -searchSize; k <= searchSize; k++)
+						{
+							int X = posX + i;
+							int Y = posY + j;
+							int Z = posZ + k;
+							if(isInRange(X,Y,Z))
+							{
+								auto voxel = getVoxel(X, Y, Z);
+								// if(voxel.w < 0)
+								// {
+								// 	continue;
+								// }
+								voxelList.push_back(getVoxel(X, Y, Z));
+							}
+						}
+					}
+				}
+				if(!voxelList.empty())
+				{
+					float theMinDist = 9999;
+					// voxelInfo minInfo = info[0];
+					std::unordered_map<int, float> stats_map;
+					float maxDist = -99999;
+					for(int i = 0; i< voxelList.size(); i++)
+					{
+						auto dist = voxelList[i].getV3().distance(vertex.m_pos);
+						if(dist > maxDist)
+						{
+							maxDist = dist;
+						}
+					}
+					for(int i = 0; i < voxelList.size(); i++)
+					{
+						auto dist = voxelList[i].getV3().distance(vertex.m_pos);
+						float distFactor = 1.0;//std::max(maxDist - dist, 0.0f);
+						if(stats_map.find(voxelList[i].matIndex1) == stats_map.end())
+						{
+							stats_map[voxelList[i].matIndex1] = 1 * distFactor;
+						}else
+						{
+							stats_map[voxelList[i].matIndex1] += 1 * distFactor;
+						}
+					}
+					auto iter = std::max_element(stats_map.begin(), stats_map.end(),                             
+						[](const std::pair<int, float> &p1,
+                                const std::pair<int, float> &p2)
+                             {
+                                 return p1.second < p2.second;
+                             });
+					int majorMat = iter->first;
+					int majorCount = iter->second;
+					stats_map.erase(majorMat);
+					int secondMat = majorMat;
+					int secondCount = 0;
+					if(!stats_map.empty())
+					{
+					iter = std::max_element(stats_map.begin(), stats_map.end(),
+						[](const std::pair<int, float> &p1,
+                                const std::pair<int, float> &p2)
+                             {
+                                 return p1.second < p2.second;
+                             });
+					secondMat = iter->first;
+					secondCount = iter->second;
+					}
+
+					int minIndex = -1;
+					for(int i = 0; i < voxelList.size(); i++)
+					{
+						auto dist = voxelList[i].getV3().distance(vertex.m_pos);
+						if( dist < theMinDist)
+						{
+							theMinDist = dist;
+							minIndex = i;
+						}
+					}
+
+					
+					theMinDist = 9999;
+					int secondMinIndex = -1;
+					for(int i = 0; i < voxelList.size(); i++)
+					{
+						auto dist = voxelList[i].getV3().distance(vertex.m_pos);
+						if( dist < theMinDist && i != minIndex)
+						{
+							theMinDist = dist;
+							secondMinIndex = i;
+						}
+					}
+					if(!voxelList.empty())
+					{
+					float factor = vertex.m_pos.distance(voxelList[minIndex].getV3()) / (vertex.m_pos.distance(voxelList[minIndex].getV3()) + vertex.m_pos.distance(voxelList[secondMinIndex].getV3()));
+					vertex.m_matIndex = vec3(voxelList[minIndex].matIndex1, voxelList[secondMinIndex].matIndex1, 1.0 - factor);
+					vertex.m_matIndex = vec3(majorMat, secondMat, (majorCount * 1.0f) / (majorCount + secondCount));	
+					}
+				}
+
+				
+
+			}
+			
 			float value = flatNoise.GetValue(pos.x * 0.03, pos.z * 0.03, 0.0);
 			// the flat is grass or dirt?
 			value = value * 0.5 + 0.5;
 			// value = std::max(value - 0.2f, 0.0f);
 			value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
-			matID = vec3(1, 0, step);
-			m_mesh->m_vertices[index0].m_matIndex = matID;
+			matID = vec3(1, 13, step);
+			// m_mesh->m_vertices[index0].m_matIndex = matID;
 			if (step > 0.5 && (1.0 - value > 0.7))
 			{
 				if (m_grassPosList.size() < 500 &&

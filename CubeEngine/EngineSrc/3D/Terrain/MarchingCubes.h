@@ -6,11 +6,17 @@
 #include "../../Mesh/Mesh.h"
 namespace tzw {
 	struct voxelInfo;
+	struct VoxelVertex
+	{
+		vec3 vertex;
+		int matIndex1;
+		int matIndex2;
+		float matFactor;
+	};
 class MarchingCubes
 {
 public:
     TZW_SINGLETON_DECL(MarchingCubes)
-    void generate(Mesh * mesh, int ncellsX, int ncellsY, int ncellsZ, vec4 * points, float minValue);
     void generateWithoutNormal(Mesh * mesh, int ncellsX, int ncellsY, int ncellsZ, voxelInfo * srcData, float minValue = -1, int lodLevel = 0);
 private:
     MarchingCubes();

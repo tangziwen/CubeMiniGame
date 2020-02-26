@@ -15,9 +15,9 @@ struct voxelInfo
 	float z;
 	float w;
 	char matIndex1;
-	char matIndex2;
-	float matFactor;
 	void setV4(vec4 v);
+	void setV3(vec3 v);
+	vec3 getV3();
 	vec4 getV();
 	voxelInfo(float x, float y, float z, float w);
 	voxelInfo();

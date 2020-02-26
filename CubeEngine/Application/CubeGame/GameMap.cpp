@@ -27,13 +27,25 @@ void voxelInfo::setV4(vec4 v)
 	w = v.w;
 }
 
+void voxelInfo::setV3(vec3 v)
+{
+	x = v.x;
+	y = v.y;
+	z = v.z;
+}
+
+vec3 voxelInfo::getV3()
+{
+	return vec3(x, y, z);
+}
+
 vec4 voxelInfo::getV()
 {
 	return vec4(x, y, z, w);
 }
 
 voxelInfo::voxelInfo(float _x, float _y, float _z, float _w):
-	matIndex1(0),matIndex2(0),matFactor(0.0)
+	matIndex1(0)
 {
 	x = _x;
 	y = _y;
