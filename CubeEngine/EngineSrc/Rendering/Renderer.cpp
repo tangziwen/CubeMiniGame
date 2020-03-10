@@ -399,9 +399,9 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	if (matLocation > 0)
 	{
 		program->enableAttributeArray(matLocation);
-		program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+		program->setAttributeBufferInt(matLocation, GL_INT, offset, 1, sizeof(VertexData));
 	}
-	offset += sizeof(vec3);
+	offset += sizeof(int);
 
 	int tangentLocation = program->attributeLocation("a_tangent");
 	if (tangentLocation > 0)

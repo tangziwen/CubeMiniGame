@@ -27,6 +27,7 @@ public:
     unsigned int attributeLocation(std::string name);
     void enableAttributeArray(unsigned int attributeId);
     void setAttributeBuffer(int ID, int dataType, int offset, int size, int stride = 0);
+	void setAttributeBufferInt(int ID, int dataType, int offset, int size, int stride = 0);
 	int uniformLocation(std::string name);
 	void reload();
 private:

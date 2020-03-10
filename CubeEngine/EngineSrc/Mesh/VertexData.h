@@ -21,7 +21,7 @@ public:
     vec2 m_texCoord;
     vec4 m_color;
     vec3 m_barycentric;
-	vec3 m_matIndex;
+	int m_matIndex;
 	vec3 m_tangent;
 };
 

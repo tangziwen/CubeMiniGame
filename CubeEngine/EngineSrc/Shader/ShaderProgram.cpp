@@ -175,6 +175,12 @@ void ShaderProgram::setAttributeBuffer(int ID, int dataType, int offset, int siz
 	RenderBackEnd::shared()->selfCheck();
 }
 
+void ShaderProgram::setAttributeBufferInt(int ID, int dataType, int offset, int size, int stride)
+{
+    glVertexAttribIPointer(ID,size,dataType,stride,reinterpret_cast<void *>(offset));
+	RenderBackEnd::shared()->selfCheck();
+}
+
 int ShaderProgram::uniformLocation(std::string name)
 {
 	auto iter = m_uniformMap.find(name);

@@ -9,9 +9,7 @@ namespace tzw {
 	struct VoxelVertex
 	{
 		vec3 vertex;
-		int matIndex1;
-		int matIndex2;
-		float matFactor;
+		int matIndex;
 	};
 class MarchingCubes
 {

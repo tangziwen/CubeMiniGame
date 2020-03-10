@@ -24,8 +24,8 @@ in vec2 v_texcoord;
 in vec3 v_worldPos;
 in vec3 v_color;
 in vec3 v_bc;
-flat in vec2 v_mat;
-in float v_matFactor;
+#define MAX_MATERIAL 16
+in float[MAX_MATERIAL] v_mat;
 //! [0]
 float edgeFactor(){
 	vec3 d = fwidth(v_bc);
@@ -114,12 +114,14 @@ vec4 multiUVMixed(sampler2D samp, vec2 UV)
 	col += texture(samp, UV * -0.25) * 0.3;
 	return col;
 }
-vec2 getUV(vec2 uv, int index)
+vec2 getUV(vec2 uv, int index, out vec2 theDx, out vec2 theDy)
 {
   float scale = (1.0 / 4.0);
-  vec2 theUV = clamp(fract(uv),vec2(0.00390625),vec2(0.9960935)) *scale;
+  vec2 theUV = fract(uv) *scale;
 
   vec2 offset = vec2(index % 4, index / 4) * scale;
+  theDx = dFdx(uv ) * 0.05;
+  theDy = dFdy(uv ) * 0.05;
   return theUV + offset;
 }
 vec4 triplanarSample(sampler2D sampler, float texIndex, float scaleFactor)
@@ -131,9 +133,14 @@ vec4 triplanarSample(sampler2D sampler, float texIndex, float scaleFactor)
 	blending = clamp(blending - plateauSize, 0.0, 1.0);
 	blending = powVec(blending, transitionSpeed);
 	blending /= dot(blending, vec3(1.0, 1.0, 1.0));
-	vec4 xaxis = texture( sampler, getUV(v_worldPos.yz * scaleFactor, index));
-	vec4 yaxis = texture( sampler, getUV(v_worldPos.xz * scaleFactor,index));
-	vec4 zaxis = texture( sampler, getUV(v_worldPos.xy * scaleFactor,index));
+  vec2 dx_x,dy_x,dx_y,dy_y,dx_z,dy_z;
+  vec2 xPlane = getUV(v_worldPos.yz * scaleFactor, index,dx_x,dy_x);
+  
+	vec4 xaxis = textureGrad( sampler, xPlane, dx_x, dy_x);
+  vec2 yPlane = getUV(v_worldPos.xz * scaleFactor,index, dx_y, dy_y);
+	vec4 yaxis = textureGrad( sampler, yPlane, dx_y, dy_y);
+  vec2 zPlane = getUV(v_worldPos.xy * scaleFactor,index, dx_z, dy_z);
+	vec4 zaxis = textureGrad( sampler, zPlane, dx_z, dy_z);
 	return yaxis;//xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 }
 
@@ -264,12 +271,57 @@ vec3 noiseDisturb(vec3 color, float scaleFactor, float minVal, float maxVal)
 	return color * mix(vec3(minVal, minVal, minVal), vec3(maxVal, maxVal, maxVal), noise);
 }
 
+void findBestTwo(out vec2 weight, out vec2 index)
+{
+  weight = vec2(1, 0);
+  index = vec2(12, 13);
+
+  float first = -1.0;
+  float second =  -1.0;
+  int firstIndex = -1;
+  int secondIndex = -1;
+  for (int i = 0; i < MAX_MATERIAL ; i ++) 
+  { 
+      /* If current element is greater than first 
+          then update both first and second */
+      if (v_mat[i] > first) 
+      { 
+          second = first; 
+          secondIndex = firstIndex;
+          first = v_mat[i];
+          firstIndex = i;
+      }
+      /* If arr[i] is in between first and  
+          second then update second  */
+      else if (v_mat[i] > second && v_mat[i] < first)
+      {
+        second = v_mat[i];
+        secondIndex = i;
+      }
+  }
+  if(secondIndex != firstIndex)
+  {
+    index = vec2(firstIndex, secondIndex);
+    //re-weight
+    float firstweight = float(first)/ float(first + second);
+    float secondWeight = 1.0 - firstweight;
+    weight = vec2(first, secondWeight);
+  }
+  else
+  {
+    index = vec2(firstIndex, secondIndex);
+    weight = vec2(1, 0);
+  }
+}
 vec4 getTerrainTex(sampler2D samp)
 {
-vec3 detailTex = triplanarSample(samp,int(round(v_mat.x)), 1.0 / uv_grass).xyz * v_matFactor + triplanarSample(samp, int(round(v_mat.y)), 1.0 / uv_cliff).xyz * (1.0 - v_matFactor);
-	// vec3 detailTex = triplanarSample(samp, int(v_mat.x), 1.0 / uv_grass).xyz * (1.0 - v_mat.z) + triplanarSample(samp, int(v_mat.y), 1.0 / uv_cliff).xyz * v_mat.z;
-	// detailTex = noiseDisturb(detailTex, disturb_factor_near, 0.95, 1.0); 
+  //find best two
+  vec2 weight = vec2(1, 0);
+  vec2 texIndex = vec2(13, 13);
+  findBestTwo(weight, texIndex);
+  vec3 detailTex = triplanarSample(samp,texIndex.x ,1.0 / uv_grass).xyz * weight.x + triplanarSample(samp, texIndex.y, 1.0 / uv_cliff).xyz * weight.y;
 	return vec4(detailTex, 1.0); 
+  // return vec4(v_mat[0], v_mat[1], v_mat[2], 1.0);
 }
 
 vec4 texturePlain(sampler2D samp, in vec2 uv)

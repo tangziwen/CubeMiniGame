@@ -16,7 +16,7 @@ in vec3 a_normal;
 in vec2 a_texcoord;
 in vec3 a_color;
 in vec3 a_bc;
-in vec3 a_mat;
+in int a_mat;
 
 out vec3 v_position;
 out vec3 v_normal;
@@ -25,8 +25,7 @@ out vec3 v_worldPos;
 out vec3 v_color;
 out vec3 v_bc;
 out vec3 v_heightColor;
-flat out vec2 v_mat;
-out float v_matFactor;
+out float[16] v_mat;
 //! [0]
 void main()
 {
@@ -39,8 +38,8 @@ void main()
 	v_worldPos = (TU_mMatrix * vec4(a_position, 1.0)).xyz;
 	v_bc = a_bc;
 	v_color = a_color;
-	v_mat = a_mat.xy;
-	v_matFactor = a_mat.z;
+	v_mat = float[16](0.0);
+	v_mat[a_mat] = 1.0;
 
     // Calculate vertex position in screen space
     gl_Position = TU_mvpMatrix * vec4(a_position,1.0);
