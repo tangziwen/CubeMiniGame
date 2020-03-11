@@ -5,22 +5,24 @@
 #include "noise/noiseutils.h"
 #include "EngineSrc/Math/vec3.h"
 #include "Math/vec4.h"
-
+#include "Mesh/VertexData.h"
 namespace tzw {
 class Chunk;
+
 struct voxelInfo
 {
 	float x;
 	float y;
 	float z;
 	float w;
-	char matIndex1;
+	MatBlendInfo matInfo;
 	void setV4(vec4 v);
 	void setV3(vec3 v);
 	vec3 getV3();
 	vec4 getV();
 	voxelInfo(float x, float y, float z, float w);
 	voxelInfo();
+	void setMat(char mat1, char mat2, char mat3, vec3 blendFactor);
 };
 struct ChunkInfo
 {

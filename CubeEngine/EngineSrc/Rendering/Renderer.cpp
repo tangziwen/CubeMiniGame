@@ -342,9 +342,6 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	  
 	mesh->getIndexBuf()->use();
 	  
-	// Offset for position
-	unsigned int offset = 0;
-	  
 	Engine::shared()->increaseVerticesIndicesCount(int(mesh->getVerticesSize()), int(mesh->getIndicesSize()));
 	  
 	// Tell OpenGL programmable pipeline how to locate vertex position data
@@ -352,62 +349,56 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	  
 	program->enableAttributeArray(vertexLocation);
 	  
-	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-	  
-	offset += sizeof(vec3);
-
+	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offsetof(VertexData, m_pos), 3, sizeof(VertexData));
 	int normalLocation = program->attributeLocation("a_normal");
 	  
 	if (normalLocation > 0)
 	{
 		program->enableAttributeArray(normalLocation);
-		program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+		program->setAttributeBuffer(normalLocation, GL_FLOAT, offsetof(VertexData, m_normal), 3, sizeof(VertexData));
 		  
 	}
-	  
-	offset += sizeof(vec3);
-
 	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
 	int texcoordLocation = program->attributeLocation("a_texcoord");
 	  
 	if (texcoordLocation > 0)
 	{
 		program->enableAttributeArray(texcoordLocation);
-		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
+		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offsetof(VertexData, m_texCoord), 2, sizeof(VertexData));
 	}
-	
-	offset += sizeof(vec2);
 	int colorLocation = program->attributeLocation("a_color");
 	  
 	if (colorLocation > 0)
 	{
 		program->enableAttributeArray(colorLocation);
-		program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
+		program->setAttributeBuffer(colorLocation, GL_FLOAT, offsetof(VertexData, m_color), 4, sizeof(VertexData));
 	}
-	//  
-	offset += sizeof(vec4);
 	int bcLoaction = program->attributeLocation("a_bc");
 	  
 	if (bcLoaction > 0)
 	{
 		program->enableAttributeArray(bcLoaction);
-		program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
+		program->setAttributeBuffer(bcLoaction, GL_FLOAT, offsetof(VertexData, m_barycentric), 3, sizeof(VertexData));
 	}
-	offset += sizeof(vec3);
 
 	int matLocation = program->attributeLocation("a_mat");
 	if (matLocation > 0)
 	{
 		program->enableAttributeArray(matLocation);
-		program->setAttributeBufferInt(matLocation, GL_INT, offset, 1, sizeof(VertexData));
+		program->setAttributeBufferInt(matLocation, GL_BYTE, offsetof(VertexData, m_matIndex), 3, sizeof(VertexData));
 	}
-	offset += sizeof(int);
-
+	int matBlendLocation = program->attributeLocation("a_matBlend");
+	if (matBlendLocation > 0)
+	{
+		program->enableAttributeArray(matBlendLocation);
+		program->setAttributeBuffer(matBlendLocation, GL_FLOAT, offsetof(VertexData, m_matBlendFactor), 3, sizeof(VertexData));
+	}
+	
 	int tangentLocation = program->attributeLocation("a_tangent");
 	if (tangentLocation > 0)
 	{
 		program->enableAttributeArray(tangentLocation);
-		program->setAttributeBuffer(tangentLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
+		program->setAttributeBuffer(tangentLocation, GL_FLOAT, offsetof(VertexData, m_tangent), 3, sizeof(VertexData));
 	}
 
 	switch(primitiveType)

@@ -493,6 +493,10 @@ namespace tzw
 		{
 			m_paintGun->paint(part);
 		}
+		else
+		{
+			BuildingSystem::shared()->terrainPaint(getPos(), m_camera->getTransform().forward(), 10, 1, 1.5);
+		}
 	}
 
 	void CubePlayer::setCurrSelected(std::string itemName)

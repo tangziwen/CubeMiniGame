@@ -32,5 +32,7 @@ extern "C"
 #pragma comment(linker, "/subsystem:console")
 int main(int argc, char *argv[])
 {
+	printf("sizeof(char[3]); %zd", sizeof(char[3]));
+	// return 0;
 	return Engine::run(argc,argv,new GameEntry());
 }

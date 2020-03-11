@@ -37,6 +37,7 @@ public:
 	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
 	void attachGamePart(GamePart * part, Attachment * attach, float degree, int index);
 	void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
+	void terrainPaint(vec3 pos, vec3 dir, float dist, int matIndex, float range);
 	vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
 	void placeLiftPart(vec3 wherePos);
 	void setCurrentControlPart(GamePart * controlPart);

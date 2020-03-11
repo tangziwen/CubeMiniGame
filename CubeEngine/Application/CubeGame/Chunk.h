@@ -32,9 +32,12 @@ namespace tzw
 		void unload();
 		void deformSphere(vec3 pos, float value, float range = 1.0f);
 		void deformCube(vec3 pos, float value, float range = 1.0f);
+		void paintSphere(vec3 pos, int matIndex, float range = 1.0f);
 	    void deformWithNeighbor(int X, int Y, int Z, float value);
+		void paintWithNeighbor(int X, int Y, int Z, int matIndex);
 	    void setVoxelScalar(int x, int y, int z, float scalar, bool isAdd = true);
 	    void addVoexlScalar(int x, int y, int z, float scalar);
+		void setVoxelMat(int x, int y, int z, int matIndex, bool isAdd = true);
 		voxelInfo getVoxel(int x, int y, int z);
 	    void genNormal();
 	    voxelInfo getPoint(int index);
@@ -47,6 +50,7 @@ namespace tzw
 		void setLod(unsigned int newLod);
 		unsigned int getLod();
 		void deform(int x, int y, int z, float actualVal);
+		void paint(int x, int y, int z, int matIndex);
 		unsigned int getTypeId() override;
 		vec3 m_offset;
 		void calculateMatID();

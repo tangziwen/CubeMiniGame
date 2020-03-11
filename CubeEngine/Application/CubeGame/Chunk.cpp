@@ -316,6 +316,47 @@ namespace tzw
 		m_tmpNeighborChunk.clear();
 	}
 
+	void Chunk::paintSphere(vec3 pos, int matIndex, float range)
+	{
+		m_tmpNeighborChunk.clear();
+		vec3 relativePost = pos - m_basePoint;
+		relativePost = relativePost / BLOCK_SIZE;
+		relativePost.z *= -1;
+		int posX = relativePost.x;
+		int posY = relativePost.y;
+		int posZ = relativePost.z;
+		int searchSize = int(range / BLOCK_SIZE) + 1;
+		for (int i = -searchSize; i <= searchSize; i++)
+		{
+			for (int j = -searchSize; j <= searchSize; j++)
+			{
+				for (int k = -searchSize; k <= searchSize; k++)
+				{
+					int X = posX + i;
+					int Y = posY + j;
+					int Z = posZ + k;
+					float theDist =
+						(m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, -Z * BLOCK_SIZE))
+						.distance(pos);
+					if (theDist <= range)
+					{
+						paint(X, Y, Z, matIndex);
+					}
+				}
+			}
+		}
+		genMesh();
+
+		if (!m_tmpNeighborChunk.empty())
+		{
+			for (auto chunk : m_tmpNeighborChunk)
+			{
+				chunk->genMesh();
+			}
+		}
+		m_tmpNeighborChunk.clear();
+	}
+
 	void
 	Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
 	{
@@ -395,6 +436,84 @@ namespace tzw
 		}
 	}
 
+	void Chunk::paintWithNeighbor(int X, int Y, int Z, int matIndex)
+	{
+		std::vector<int> xList;
+		std::vector<int> yList;
+		std::vector<int> zList;
+
+		// check is need to calculate neighbors chunk
+		if (X <= 0 || X >= MAX_BLOCK)
+		{
+			if (X <= 0)
+				xList.push_back(-1);
+			else
+				xList.push_back(1);
+		}
+		if (Y <= 0 || Y >= MAX_BLOCK)
+		{
+			if (Y <= 0)
+				yList.push_back(-1);
+			else
+			{
+				yList.push_back(1);
+			}
+		}
+
+		if (Z <= 0 || Z >= MAX_BLOCK)
+		{
+			if (Z <= 0)
+				zList.push_back(-1);
+			else
+				zList.push_back(1);
+		}
+		xList.push_back(0);
+		yList.push_back(0);
+		zList.push_back(0);
+		for (int offsetX : xList)
+		{
+			for (int offsetY : yList)
+			{
+				for (int offsetZ : zList)
+				{
+					auto neighborChunk = GameWorld::shared()->getChunk(
+						this->x + offsetX, this->y + offsetY, this->z + offsetZ);
+					if (neighborChunk)
+					{
+						int nx = X;
+						int ny = Y;
+						int nz = Z;
+						if (offsetX == -1)
+							nx += MAX_BLOCK;
+						else if (offsetX == 1)
+							nx -= MAX_BLOCK;
+						if (offsetY == -1)
+						{
+							ny += MAX_BLOCK;
+						}
+						else if (offsetY == 1)
+						{
+							ny -= MAX_BLOCK;
+						}
+						if (offsetZ == -1)
+							nz += MAX_BLOCK;
+						else if (offsetZ == 1)
+							nz -= MAX_BLOCK;
+						neighborChunk->setVoxelMat(nx, ny, nz, matIndex);
+						auto result = std::find(m_tmpNeighborChunk.begin(),
+												m_tmpNeighborChunk.end(),
+												neighborChunk);
+						if (result == m_tmpNeighborChunk.end() && neighborChunk != this &&
+							neighborChunk != nullptr)
+						{
+							m_tmpNeighborChunk.push_back(neighborChunk);
+						}
+					}
+				}
+			}
+		}
+	}
+
 	void
 	Chunk::setVoxelScalar(int x, int y, int z, float scalar, bool isAdd)
 	{
@@ -423,6 +542,16 @@ namespace tzw
 		m_chunkInfo->mcPoints[ind].w += scalar;
 		if (m_chunkInfo->mcPoints[ind].w > 1.0)
 			m_chunkInfo->mcPoints[ind].w = 1.0;
+	}
+
+	void Chunk::setVoxelMat(int x, int y, int z, int matIndex, bool isAdd)
+	{
+		if (!isInOutterRange(x, y, z))
+			return;
+		int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
+		int ind = x * YtimeZ + y * (MAX_BLOCK + 1) + z;
+		m_chunkInfo->mcPoints[ind].setMat(matIndex, 0, 0, vec3(1, 0, 0));
+		m_chunkInfo->isEdit = true;
 	}
 
 	voxelInfo Chunk::getVoxel(int x, int y, int z)
@@ -998,10 +1127,10 @@ namespace tzw
 					m_chunkInfo->mcPoints[ind].setV4(verts);
 					if(tmpV3.y < 16) 
 					{
-						m_chunkInfo->mcPoints[ind].matIndex1 = 13;
+						m_chunkInfo->mcPoints[ind].setMat(5, 0, 0, vec3(1, 0, 0));
 					}else
 					{
-						m_chunkInfo->mcPoints[ind].matIndex1 = 1;
+						m_chunkInfo->mcPoints[ind].setMat(4, 0, 0, vec3(1, 0, 0));
 					}
 				}
 			}
@@ -1060,6 +1189,16 @@ namespace tzw
 			return;
 		}
 		setVoxelScalar(X, Y, Z, actualVal);
+	}
+
+	void Chunk::paint(int X, int Y, int Z, int matIndex)
+	{
+		if (!isInInnerRange(X, Y, Z))
+		{
+			paintWithNeighbor(X, Y, Z, matIndex);
+			return;
+		}
+		setVoxelMat(X, Y, Z, matIndex);
 	}
 
 	unsigned int

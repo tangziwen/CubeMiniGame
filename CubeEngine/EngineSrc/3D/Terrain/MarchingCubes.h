@@ -4,12 +4,14 @@
 #include "../../Engine/EngineDef.h"
 #include "../../Math/vec4.h"
 #include "../../Mesh/Mesh.h"
+#include "Mesh/VertexData.h"
+
 namespace tzw {
 	struct voxelInfo;
 	struct VoxelVertex
 	{
 		vec3 vertex;
-		int matIndex;
+		MatBlendInfo matInfo;
 	};
 class MarchingCubes
 {

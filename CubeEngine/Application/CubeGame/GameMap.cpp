@@ -44,8 +44,7 @@ vec4 voxelInfo::getV()
 	return vec4(x, y, z, w);
 }
 
-voxelInfo::voxelInfo(float _x, float _y, float _z, float _w):
-	matIndex1(0)
+voxelInfo::voxelInfo(float _x, float _y, float _z, float _w)
 {
 	x = _x;
 	y = _y;
@@ -56,6 +55,14 @@ voxelInfo::voxelInfo(float _x, float _y, float _z, float _w):
 voxelInfo::voxelInfo()
 {
 	
+}
+
+void voxelInfo::setMat(char mat1, char mat2, char mat3, vec3 blendFactor)
+{
+	matInfo.matIndex1 = mat1;
+	matInfo.matIndex2 = mat2;
+	matInfo.matIndex3 = mat3;
+	matInfo.matBlendFactor = blendFactor;
 }
 
 ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),

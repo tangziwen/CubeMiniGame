@@ -402,6 +402,7 @@ void GameUISystem::drawIMGUI()
 				newItem->m_name = item->m_name + " New";
 				ItemMgr::shared()->pushItem(newItem);
 			}
+
 			ImGui::End();
 			setWindowShow(WindowType::PAINTER, isOpen);
 		}

@@ -116,14 +116,20 @@ vec4 multiUVMixed(sampler2D samp, vec2 UV)
 }
 vec2 getUV(vec2 uv, int index, out vec2 theDx, out vec2 theDy)
 {
+  //extrude 16 pixel as boundary,the mipmap may be have some problems.
+  float paddingPixel = 16.0;
+  float totalSize = 2048.0;
+  float subSize = 512.0;
   float scale = (1.0 / 4.0);
-  vec2 theUV = fract(uv) *scale;
+  vec2 theUV = fract(uv) * scale * ((subSize - 2 * paddingPixel) / subSize);
 
-  vec2 offset = vec2(index % 4, index / 4) * scale;
-  theDx = dFdx(uv ) * 0.05;
-  theDy = dFdy(uv ) * 0.05;
+  vec2 offset = vec2(index % 4, index / 4) * scale + vec2(paddingPixel / totalSize, paddingPixel / totalSize);
+  theDx = dFdx(uv ) * scale;// * (480.0 * 512.0);
+  theDy = dFdy(uv ) * scale;// * (480.0 * 512.0);
   return theUV + offset;
 }
+
+
 vec4 triplanarSample(sampler2D sampler, float texIndex, float scaleFactor)
 {
   int index = int(texIndex);
@@ -271,21 +277,23 @@ vec3 noiseDisturb(vec3 color, float scaleFactor, float minVal, float maxVal)
 	return color * mix(vec3(minVal, minVal, minVal), vec3(maxVal, maxVal, maxVal), noise);
 }
 
-void findBestTwo(out vec2 weight, out vec2 index)
+void findBestTwo(out vec3 weight, out vec3 index)
 {
-  weight = vec2(1, 0);
-  index = vec2(12, 13);
-
-  float first = -1.0;
-  float second =  -1.0;
+  float first = 0.0;
+  float second =  0.0;
+  float third = 0.0;
   int firstIndex = -1;
   int secondIndex = -1;
+  int thirdIndex = -1;
   for (int i = 0; i < MAX_MATERIAL ; i ++) 
   { 
       /* If current element is greater than first 
           then update both first and second */
       if (v_mat[i] > first) 
       { 
+
+          third = second; 
+          thirdIndex = secondIndex;
           second = first; 
           secondIndex = firstIndex;
           first = v_mat[i];
@@ -295,33 +303,34 @@ void findBestTwo(out vec2 weight, out vec2 index)
           second then update second  */
       else if (v_mat[i] > second && v_mat[i] < first)
       {
+        third = second;
+        thirdIndex = secondIndex;
         second = v_mat[i];
         secondIndex = i;
       }
+      else if (v_mat[i] > third && v_mat[i] < second)
+      {
+        third = v_mat[i];
+        thirdIndex = i;
+      }
   }
-  if(secondIndex != firstIndex)
-  {
-    index = vec2(firstIndex, secondIndex);
+    index = vec3(firstIndex, secondIndex, 0);
     //re-weight
-    float firstweight = float(first)/ float(first + second);
-    float secondWeight = 1.0 - firstweight;
-    weight = vec2(first, secondWeight);
-  }
-  else
-  {
-    index = vec2(firstIndex, secondIndex);
-    weight = vec2(1, 0);
-  }
+    float firstweight = float(first)/ float(first + second + third);
+    float secondWeight = float(second)/ float(first + second + third);
+    float thirdWeight = 1.0 - firstweight - secondWeight;
+    weight = vec3(firstweight, 1.0 - firstweight, thirdWeight);
 }
+
 vec4 getTerrainTex(sampler2D samp)
 {
   //find best two
-  vec2 weight = vec2(1, 0);
-  vec2 texIndex = vec2(13, 13);
+  vec3 weight = vec3(1, 0, 0);
+  vec3 texIndex = vec3(13, 13, 13);
   findBestTwo(weight, texIndex);
-  vec3 detailTex = triplanarSample(samp,texIndex.x ,1.0 / uv_grass).xyz * weight.x + triplanarSample(samp, texIndex.y, 1.0 / uv_cliff).xyz * weight.y;
+  vec3 detailTex = triplanarSample(samp,texIndex.x ,1.0 / uv_grass).xyz * weight.x + triplanarSample(samp, texIndex.y, 1.0 / uv_cliff).xyz * weight.y + triplanarSample(samp, texIndex.z, 1.0 / uv_cliff).xyz * weight.z;
 	return vec4(detailTex, 1.0); 
-  // return vec4(v_mat[0], v_mat[1], v_mat[2], 1.0);
+  // return vec4(weight.xy, 0.0,1.0);//vec4(v_mat[0], v_mat[1], v_mat[2], 1.0);
 }
 
 vec4 texturePlain(sampler2D samp, in vec2 uv)

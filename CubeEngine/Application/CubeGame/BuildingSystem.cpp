@@ -167,6 +167,26 @@ namespace tzw
 		}
 	}
 
+	void BuildingSystem::terrainPaint(vec3 pos, vec3 dir, float dist, int matIndex, float range)
+	{
+		std::vector<Drawable3D*> list;
+		AABB aabb;
+		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
+		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
+		g_GetCurrScene()->getRange(&list, aabb);
+		if (!list.empty())
+		{
+			Drawable3DGroup group(&list[0], list.size());
+			Ray ray(pos, dir);
+			vec3 hitPoint;
+			auto chunk = static_cast<Chunk*>(group.hitByRay(ray, hitPoint));
+			if (chunk)
+			{
+				chunk->paintSphere(hitPoint, matIndex, range);
+			}
+		}
+	}
+
 	vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
 	{
 		std::vector<Drawable3D*> list;

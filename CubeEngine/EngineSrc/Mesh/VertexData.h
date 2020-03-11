@@ -5,7 +5,13 @@
 #include "../Math/vec2.h"
 #include "../Math/vec4.h"
 namespace tzw {
-
+struct MatBlendInfo
+{
+	char matIndex1;
+	char matIndex2;
+	char matIndex3;
+	vec3 matBlendFactor;
+};
 class VertexData
 {
 public:
@@ -21,7 +27,8 @@ public:
     vec2 m_texCoord;
     vec4 m_color;
     vec3 m_barycentric;
-	int m_matIndex;
+	char m_matIndex[3];
+	vec3 m_matBlendFactor;
 	vec3 m_tangent;
 };
 

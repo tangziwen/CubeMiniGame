@@ -27,12 +27,12 @@ VoxelVertex LinearInterp(voxelInfo & p1, voxelInfo & p2, float value)
     if(p1.w != p2.w)
     {
     	p.vertex = (tp1 + (tp2 - tp1)/(p2.w - p1.w)*(value - p1.w));
-    	p.matIndex = tp1.distance(p.vertex) > tp2.distance(p.vertex)? p2.matIndex1:p1.matIndex1;
+    	p.matInfo = tp1.distance(p.vertex) > tp2.distance(p.vertex)? p2.matInfo:p1.matInfo;
     }
     else
     {
 		p.vertex = (tp1);
-    	p.matIndex = p1.matIndex1;
+    	p.matInfo = p1.matInfo;
     }
 
     return p;
@@ -41,7 +41,10 @@ VoxelVertex LinearInterp(voxelInfo & p1, voxelInfo & p2, float value)
 VertexData genVertexData(VoxelVertex & v)
 {
 	VertexData a(v.vertex);
-	a.m_matIndex = v.matIndex;
+	a.m_matIndex[0] = v.matInfo.matIndex1;
+	a.m_matIndex[1] = v.matInfo.matIndex2;
+	a.m_matIndex[2] = v.matInfo.matIndex3;
+	a.m_matBlendFactor = v.matInfo.matBlendFactor;
 	return a;
 }
 
