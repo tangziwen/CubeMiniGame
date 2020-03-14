@@ -36,13 +36,12 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 
 
 	if(m_isOpenPhysics) {
-		m_capsuleHigh = 2.f;
-		btCapsuleShape *shape = new btCapsuleShape(0.25f, m_capsuleHigh);
+		m_capsuleHigh = 1.8f;
+		btCapsuleShape *shape = new btCapsuleShape(0.10f, m_capsuleHigh);
 
 		this->m_ghost2 = new btPairCachingGhostObject();
 		//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
 		this->m_ghost2->setCollisionShape(shape);
-		this->m_ghost2->setRestitution(0.0f);
 
 		this->m_ghost2->setFriction(0.0f);
 		this->m_ghost2->setCollisionFlags(btCollisionObject::CollisionFlags::CF_CHARACTER_OBJECT);
@@ -53,14 +52,14 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 	    m_character->setGravity(btVector3(0, -9.8f, 0));
 	    m_character->setLinearDamping(0.2f);
 	    m_character->setAngularDamping(0.2f);
-	    m_character->setStepHeight(0.4f);
+	    m_character->setStepHeight(0.5f);
 	    m_character->setMaxJumpHeight(3.5);
 	    m_character->setMaxSlope(45.0f * 3.14 / 180.0f);
 	    m_character->setJumpSpeed(7.0f);
 	    m_character->setFallSpeed(55.0f);
 		this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
 		this->m_ghost2->setUserIndex(1);
-		this->m_ghost2->setCcdSweptSphereRadius(3.0f);
+		this->m_ghost2->setCcdSweptSphereRadius(0.5f);
 		this->m_ghost2->setCcdMotionThreshold(0.00001);
 		PhysicsMgr::shared()->getDynamicsWorld()->addCollisionObject(this->m_ghost2, btBroadphaseProxy::AllFilter, btBroadphaseProxy::AllFilter);
 		PhysicsMgr::shared()->getDynamicsWorld()->addAction(this->m_character);
