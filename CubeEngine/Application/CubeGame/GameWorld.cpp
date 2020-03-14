@@ -18,10 +18,6 @@
 #include "3D/Particle/ParticleEmitter.h"
 #include "3D/Particle/ParticleUpdateColorModule.h"
 #include "3D/Particle/ParticleUpdateSizeModule.h"
-#include "3D/Particle/ParticleInitAlphaModule.h"
-#include "3D/Particle/ParticleInitLifeSpanModule.h"
-#include "3D/Particle/ParticleInitVelocityModule.h"
-#include "3D/Particle/ParticleInitSizeModule.h"
 #include "BulletMgr.h"
 #include "rapidjson/stringbuffer.h"
 #include "rapidjson/filewritestream.h"
@@ -316,8 +312,7 @@ void GameWorld::loadChunksAroundPlayer()
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 	 
     int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-	int range = ceil(100.0f / (MAX_BLOCK * BLOCK_SIZE));
-	 
+	int range = ceil(150.0f / (MAX_BLOCK * BLOCK_SIZE));
     for(int i =posX - range;i<=posX + range;i++)
     {
         for(int j =0;j< m_height; j++)
@@ -357,11 +352,9 @@ void GameWorld::loadChunksAroundPlayer()
 	);
 	for(Chunk * i :m_readyToLoadArray)
 	{
-		 
-		i->load();
-		 
+		i->load();	 
 	}
-	tlog("load size is %d",m_readyToLoadArray.size());
+	tlog("load size is %d %d",m_readyToLoadArray.size(), m_tempArray.size());
 	tlog("load chunk cost : %d", Tmisc::DurationEnd());
 }
 

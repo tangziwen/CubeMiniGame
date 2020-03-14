@@ -63,5 +63,10 @@ unsigned RenderBuffer::getAmount() const
 {
 	return m_amount;
 }
+
+RenderBuffer::~RenderBuffer()
+{
+	RenderBackEnd::shared()->deleteBuffer(m_bufferId);
+}
 } // namespace tzw
 

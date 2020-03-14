@@ -12,19 +12,7 @@
 #include "OptionPanel.h"
 namespace tzw {
 class VehicleBroswer;
-enum class WindowType
-{
-	INVENTORY,
-	NODE_EDITOR,
-	VEHICLE_FILE_BROWSER,
-	RESUME_MENU,
-	HELP_PAGE,
-	ATTRIBUTE_WINDOW,
-	PAINTER,
-	MainMenu,
-	OPTION_MENU,
-	QUICK_DEBUG,
-};
+enum class WindowType;
 class GameUISystem : public IMGUIObject, public EventListener
 {
 public:
@@ -55,6 +43,7 @@ public:
 	void openInspectWindow(GamePart * part);
 	void setPainterShow(bool isShow);
 	void drawEntryInterFace();
+	void openMainMenu();
 private:
 	bool m_isVisible = true;
     void startGame();
@@ -68,6 +57,7 @@ private:
 	bool m_isOpenTerrain;
 	bool m_isOpenRenderEditor;
 	bool m_preIsNeedShow;
+	bool m_isOpenPlayerOverLay;
 	DebugInfoPanel m_debugInfoPanel;
 	GameNodeEditor * m_nodeEditor;
 	VehicleBroswer * m_fileBrowser;

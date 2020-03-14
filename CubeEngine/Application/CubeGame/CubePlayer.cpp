@@ -202,34 +202,12 @@ namespace tzw
 				auto m = getTransform().data();
 				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
         		break;
-        		if(!GUISystem::shared()->isUiCapturingInput())
-				GameUISystem::shared()->setWindowShow(WindowType::QUICK_DEBUG, true);
-        		
-				auto anchorPos = getPos() + getForward() * 3.0;
-        		for(int i = 0; i < 11; i++) {
-					for(int j = 0; j < 11; j++)
-					{
-       					auto s = new SpherePrimitive(0.3, 25);
-        				
-						auto m = Material::createFromTemplate("ModelSimple");
-						m->setVar("TU_roughness", float(i * 0.1));
-						m->setVar("TU_metallic", float(j * 0.1));
-
-						//m->setVar("TU_roughness", 0.0f);
-						//m->setVar("TU_metallic", 1.0f);
-						s->setPos(anchorPos + vec3( i * 1.0, 0, j * 1.0));
-						s->setMaterial(m);
-						g_GetCurrScene()->addNode(s);
-						
-					}
-        		}
-
             }
 			break;
         case TZW_KEY_TAB:
 			{
         		if(!GUISystem::shared()->isUiCapturingInput())
-				GameUISystem::shared()->setWindowShow(WindowType::MainMenu, !GameUISystem::shared()->getWindowIsShow(WindowType::MainMenu));
+				GameUISystem::shared()->openMainMenu();
             }
 			break;
         case TZW_KEY_X:
@@ -495,7 +473,7 @@ namespace tzw
 		}
 		else
 		{
-			BuildingSystem::shared()->terrainPaint(getPos(), m_camera->getTransform().forward(), 10, 1, 1.5);
+			BuildingSystem::shared()->terrainPaint(getPos(), m_camera->getTransform().forward(), 10, m_paintGun->m_matIndex, 1.5);
 		}
 	}
 

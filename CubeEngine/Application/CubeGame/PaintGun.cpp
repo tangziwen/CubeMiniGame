@@ -5,7 +5,7 @@
 #include "GameItem.h"
 namespace tzw
 {
-	PaintGun::PaintGun():color(vec3(1, 1,1)),m_surface(PartSurfaceMgr::shared()->getItem("Metal Grid3"))
+	PaintGun::PaintGun():color(vec3(1, 1,1)),m_surface(PartSurfaceMgr::shared()->getItem("Metal Grid3")),m_matIndex(0)
 	{
 	}
 

@@ -33,7 +33,7 @@ namespace tzw
 	void WorkerThreadSystem::pushOrder(WorkerJob order)
 	{
 		m_rwMutex.lock();
-		m_functionList.push_back(order);
+		m_functionList1.push_back(order);
 		m_rwMutex.unlock();
 		if(!m_thread)
 		{
@@ -61,41 +61,24 @@ namespace tzw
 
 	void WorkerThreadSystem::workderUpdate()
 	{
-		WorkerJob job;
 		for(;;)
 		{
-			bool isFind = false;
-			
 			m_rwMutex.lock();
-			if(!m_functionList.empty())
-			{
-				job = m_functionList.front();
-				isFind = true;
-				m_functionList.pop_front();
-			}
+			std::swap(m_functionList1, m_functionList2);
 			m_rwMutex.unlock();
-			if(isFind)
+			while(!m_functionList2.empty())
 			{
+				auto job = m_functionList2.front();
+				m_functionList2.pop_front();
 				if(job.m_work)
 				{
 					job.m_work();
-				}
-			}
-
-			m_rwMutex.lock();
-			if(isFind && job.m_onFinished)
-			{
-				m_mainThreadCB1.push_back(job);
-			}
-			m_rwMutex.unlock();
-
-			if(m_functionList.empty())
-			{
-				m_readyToDeathCount ++;
-				if(m_readyToDeathCount > 100)
-				{
-					m_thread = nullptr;
-					break;
+					if(job.m_onFinished)
+					{
+						m_rwMutex.lock();
+						m_mainThreadCB1.push_back(job);
+						m_rwMutex.unlock();
+					}
 				}
 			}
 		}

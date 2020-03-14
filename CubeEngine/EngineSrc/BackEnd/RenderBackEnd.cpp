@@ -12,8 +12,8 @@ RenderBackEnd * RenderBackEnd::m_instance = nullptr;
 
 void RenderBackEnd::selfCheck()
 {
-	// if (!m_isCheckGL)
-	// 	return;
+	if (!m_isCheckGL)
+		return;
 	bool isBad = false;
 	while(true)
 	{
@@ -110,6 +110,11 @@ unsigned int RenderBackEnd::genBuffer()
 	glGenBuffers(1,&handle);
 	selfCheck();
 	return handle;
+}
+
+void RenderBackEnd::deleteBuffer(unsigned index)
+{
+	glDeleteBuffers(1, &index);
 }
 
 void RenderBackEnd::bindBuffer(RenderFlag::BufferTarget target, unsigned int handle)

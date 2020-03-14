@@ -26,11 +26,11 @@
       {
         "name": "fog_far",
         "type": "float",
-        "default": 100,
+        "default": 350,
         "ui_info": {
           "range": [
             0,
-            150
+            800
           ]
         }
       },

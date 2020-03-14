@@ -36,7 +36,7 @@ namespace tzw
 		, m_rigidBody(nullptr)
 	{
 		m_lod = 0;
-
+		m_isloading = false;
 		m_localAABB.update(vec3(0, 0, 0));
 
 		m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,
@@ -212,7 +212,7 @@ namespace tzw
 			m_mesh = new Mesh();
 			m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		}
-
+		m_isloading = true;
 		setCamera(g_GetCurrScene()->defaultCamera());
 		if (!m_chunkInfo->isLoaded)
 		{
@@ -227,14 +227,21 @@ namespace tzw
 			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(); }));
 			// genMesh();
 		}
+		m_isloading = false;
 		m_isLoaded = true;
 	}
 
 	void
 	Chunk::unload()
 	{
+		if(m_isloading)
+		{
+			tlog("fuck the hell");
+		}
 		m_isLoaded = false;
-		m_mesh->clear();
+		// m_mesh->clear();
+		delete m_mesh;
+		m_mesh = nullptr;
 	}
 
 	void

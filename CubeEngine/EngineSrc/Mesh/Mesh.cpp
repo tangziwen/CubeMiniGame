@@ -71,6 +71,13 @@ void Mesh::submit(RenderFlag::BufferStorageType storageType)
 	}
 }
 
+Mesh::~Mesh()
+{
+	delete m_arrayBuf;
+	delete m_indexBuf;
+	delete m_instanceBuf;
+}
+
 unsigned int Mesh::getMatIndex() const
 {
     return m_matIndex;

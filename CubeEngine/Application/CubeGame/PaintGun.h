@@ -11,5 +11,6 @@ namespace tzw
 		void paint(GamePart * part);
 		vec3 color;
 		PartSurface * m_surface;
+		int m_matIndex;
 	};
 }

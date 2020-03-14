@@ -64,7 +64,15 @@ namespace tzw
 				//is the last island, remove it
 				if(island->m_partList.empty())
 				{
-					m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
+					//check it is static island or dynamic island
+					if(island->isIsStatic())
+					{
+						m_staticIsland.erase(find(m_staticIsland.begin(), m_staticIsland.end(), island));
+					}else
+					{
+						m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
+					}
+					
 					delete island;
 				}
 			}

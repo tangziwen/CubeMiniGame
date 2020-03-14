@@ -20,6 +20,7 @@ public:
     void use();
     unsigned int bufferId() const;
 	unsigned getAmount() const;
+	~RenderBuffer();
 private:
     Type m_type;
     unsigned int m_bufferId;

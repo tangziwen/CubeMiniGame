@@ -48,6 +48,22 @@ namespace tzw {
 
 static std::set<WindowType> m_currOpenWindowSet;
 TZW_SINGLETON_IMPL(GameUISystem);
+enum class WindowType
+{
+	INVENTORY,
+	NODE_EDITOR,
+	VEHICLE_FILE_BROWSER,
+	RESUME_MENU,
+	HELP_PAGE,
+	ATTRIBUTE_WINDOW,
+	PAINTER,
+	MainMenu,
+	OPTION_MENU,
+	QUICK_DEBUG,
+	WORLD_SETTING,
+	PLAYER_INFO,
+	ABOUT,
+};
 static void exitNow(Button * btn)
 {
     exit(0);
@@ -60,7 +76,7 @@ static void onOption(Button * btn)
 GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
 	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
-	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr)
+	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr),m_isOpenPlayerOverLay(false)
 	
 {
 	m_helperData = Tfile::shared()->getData("./Res/helpMain.md", true);
@@ -139,7 +155,7 @@ void GameUISystem::drawIMGUI()
     ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
     if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
     {
-        ImGui::Text("Demo Version%s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
+        ImGui::Text(" Demo Version\n TAB To Open Menu");
     }
     ImGui::End();
 		}
@@ -169,6 +185,25 @@ void GameUISystem::drawIMGUI()
 		}
 		m_preIsNeedShow = currIsNeedShow;
 	}
+
+	if(m_isOpenPlayerOverLay)
+	{
+		const float DISTANCE = 10.0f;
+	    static int corner = 1;
+	    ImGuiIO& io = ImGui::GetIO();
+	    if (corner != -1)
+	    {
+	        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+	        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+	        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+	    }
+	    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+	    if (ImGui::Begin("PlayerOverLay OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+	    {
+	        ImGui::Text("Pos %s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
+	    }
+	    ImGui::End();
+	}
 	if (isNeedShowWindow())
 	{
 		bool isOpenAbout = false;
@@ -190,12 +225,32 @@ void GameUISystem::drawIMGUI()
 				}
 				drawToolsMenu();
 				static bool isOpenTerrain = false;
+				if(ImGui::BeginMenu(u8"World"))
+				{
+					if(ImGui::MenuItem(u8"天气设置", nullptr))
+					{
+						setWindowShow(WindowType::WORLD_SETTING, true);
+					}
+					ImGui::MenuItem(u8"玩家信息", nullptr, &m_isOpenPlayerOverLay);
+					ImGui::EndMenu();
+				}
+				if(ImGui::BeginMenu(u8"帮助"))
+				{
+					if(ImGui::MenuItem(u8"帮助文档", nullptr))
+					{
+						setWindowShow(WindowType::HELP_PAGE, true);
+					}
+					if(ImGui::MenuItem(u8"版本信息", nullptr))
+					{
+						setWindowShow(WindowType::ABOUT, true);
+					}
+					ImGui::EndMenu();
+				}
 				if (ImGui::BeginMenu(u8"Debug"))
 				{
 					auto camera = g_GetCurrScene()->defaultCamera();
 					ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
 					ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
-					ImGui::MenuItem(u8"世界环境设置", nullptr, &m_isOpenTerrain);
 					if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
 					if(ImGui::MenuItem("Particle test"))
 					{
@@ -263,32 +318,20 @@ void GameUISystem::drawIMGUI()
 				{
 					ShowExampleAppConsole(&m_isShowConsole);
 				}
-
-				if (ImGui::BeginMenu("?"))
-				{
-					if (ImGui::MenuItem(u8"关于", nullptr)) {
-						isOpenAbout = true;
-					}
-					if (ImGui::MenuItem(u8"帮助", nullptr)) {
-						isOpenHelp = true;
-					}
-					ImGui::EndMenu();
-				}
 				ImGui::EndMainMenuBar();
-
-				if (isOpenAbout) 
-				{
-	                ImGui::OpenPopup(u8"关于");
-					isOpenAbout = false;
-	            }
-				if (ImGui::BeginPopupModal(u8"关于", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-				{
-					ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
-					ImGui::Separator();
-					if (ImGui::Button("OK", ImVec2(120, 0))) { ImGui::CloseCurrentPopup(); }
-					ImGui::EndPopup();
-				}
 			}
+		}
+		if(getWindowIsShow(WindowType::ABOUT))
+		{
+			bool isOpen = true;
+			if (ImGui::Begin(u8"关于", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+			{
+				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
+				ImGui::Separator();
+				if (ImGui::Button("OK", ImVec2(120, 0))) {isOpen = false; }
+				ImGui::End();
+			}
+			setWindowShow(WindowType::ABOUT, isOpen);
 		}
 		if (getWindowIsShow(WindowType::HELP_PAGE))
 		{
@@ -373,36 +416,58 @@ void GameUISystem::drawIMGUI()
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 			bool isOpen = true;
 			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-			auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
-			auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
-			ImGui::TextUnformatted(TRC(u8"颜色"));
-			ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
-			GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
-			//表面材质
-			ImGui::TextUnformatted(TRC(u8"表面材质"));
-			auto size = PartSurfaceMgr::shared()->getItemAmount();
-			for(int i = 0; i < size; i++)
+			if (ImGui::CollapsingHeader("Block Color"))
 			{
-				auto surface = PartSurfaceMgr::shared()->getItemByIndex(i);
-				auto p = GameWorld::shared()->getPlayer()->getPaintGun();
-				if(ImGui::RadioButton(surface->getName().c_str(), surface ==p->m_surface))
+				auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
+				auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
+				ImGui::TextUnformatted(TRC(u8"颜色"));
+				ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
+				GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
+				//表面材质
+				ImGui::TextUnformatted(TRC(u8"表面材质"));
+				auto size = PartSurfaceMgr::shared()->getItemAmount();
+				for(int i = 0; i < size; i++)
 				{
-					p->m_surface = surface;
+					auto surface = PartSurfaceMgr::shared()->getItemByIndex(i);
+					auto p = GameWorld::shared()->getPlayer()->getPaintGun();
+					if(ImGui::RadioButton(surface->getName().c_str(), surface ==p->m_surface))
+					{
+						p->m_surface = surface;
+					}
+					if(i%2 == 0)
+					{
+						ImGui::SameLine();
+					}
 				}
-				if(i%2 == 0)
+				if(ImGui::Button("Make As Template"))
 				{
-					ImGui::SameLine();
+					//pass
+					auto item = GameWorld::shared()->getPlayer()->getCurSelectedItem();
+					GameItem * newItem = new GameItem(*item);
+					newItem->m_name = item->m_name + " New";
+					ItemMgr::shared()->pushItem(newItem);
 				}
 			}
-			if(ImGui::Button("Make As Template"))
+			if (ImGui::CollapsingHeader("Terrain"))
 			{
-				//pass
-				auto item = GameWorld::shared()->getPlayer()->getCurSelectedItem();
-				GameItem * newItem = new GameItem(*item);
-				newItem->m_name = item->m_name + " New";
-				ItemMgr::shared()->pushItem(newItem);
+				//表面材质
+				ImGui::TextUnformatted(TRC(u8"地形材质选择"));
+				auto size = PartSurfaceMgr::shared()->getItemAmount();
+				for(int i = 0; i < 16; i++)
+				{
+					auto p = GameWorld::shared()->getPlayer()->getPaintGun();
+					char tmp[128];
+					sprintf_s(tmp,"mat :%d",i);
+					if(ImGui::RadioButton(tmp, i ==p->m_matIndex))
+					{
+						p->m_matIndex = i;
+					}
+					if(i%2 == 0)
+					{
+						ImGui::SameLine();
+					}
+				}
 			}
-
 			ImGui::End();
 			setWindowShow(WindowType::PAINTER, isOpen);
 		}
@@ -417,7 +482,30 @@ void GameUISystem::drawIMGUI()
 			m_option.drawIMGUI(&isOpen);
 			setWindowShow(WindowType::OPTION_MENU, isOpen);
 		}
+		//World Setting
+		if(getWindowIsShow(WindowType::WORLD_SETTING)) 
+		{
+			auto screenSize = Engine::shared()->winSize();
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			bool isOpen = true;
+			ImGui::Begin(u8"世界设置",&isOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
+			fogMat->inspect();
+			auto dirLight = g_GetCurrScene()->getDirectionLight();
+			float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
+			ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
+			dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
 
+			float sunAngle1 = TbaseMath::Radius2Ang(dirLight->theta());
+			ImGui::SliderFloat("Sun longitude", &sunAngle1, -180, 180);
+			dirLight->setTheta(TbaseMath::Ang2Radius(sunAngle1));
+			
+			float sunIntensity = dirLight->intensity();
+			ImGui::SliderFloat("SunIntensity", &sunIntensity, 0.0, 50.0);
+			dirLight->setIntensity(sunIntensity);
+			setWindowShow(WindowType::WORLD_SETTING, isOpen);
+		}
+		
 		//quick Debug
 		if(getWindowIsShow(WindowType::QUICK_DEBUG)) 
 		{
@@ -435,7 +523,7 @@ void GameUISystem::drawIMGUI()
 			ImGui::End();
 			setWindowShow(WindowType::QUICK_DEBUG, isOpen);
 		}
-		
+
 	}
 
 }
@@ -731,6 +819,11 @@ void GameUISystem::drawEntryInterFace()
 		ImGui::Spacing();
 		ImGui::End();
 	}
+}
+
+void GameUISystem::openMainMenu()
+{
+	setWindowShow(WindowType::MainMenu, !GameUISystem::shared()->getWindowIsShow(WindowType::MainMenu));
 }
 
 LabelNew* GameUISystem::getCrossHairTipsInfo() const

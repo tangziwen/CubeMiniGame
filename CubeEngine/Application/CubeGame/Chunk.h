@@ -55,10 +55,10 @@ namespace tzw
 		vec3 m_offset;
 		void calculateMatID();
 		bool getIsInitData();
+		bool m_isLoaded;
 	private:
 		Grass * m_grass;
 		Grass * m_grass2;
-	    bool m_isLoaded;
 	    Mesh * m_mesh;
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);
@@ -75,6 +75,7 @@ namespace tzw
 		unsigned int m_lod;
 		bool m_isNeedSubmitMesh;
 		PhysicsRigidBody * m_rigidBody;
+		bool m_isloading;
 		
 	};
 }
