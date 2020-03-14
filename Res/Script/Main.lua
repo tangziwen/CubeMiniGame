@@ -356,9 +356,9 @@ function onKeyRelease(input_event)
 		player:getPreviewItem():switchAttachment()
 	elseif input_event.keycode == TZW_KEY_R then
 		if m_isControlKeyPress then
-			g_blockRotate = g_blockRotate + 15
+			g_blockRotate = g_blockRotate + 45
 		else
-			g_blockRotate = g_blockRotate - 15
+			g_blockRotate = g_blockRotate - 45
 		end
 		if g_blockRotate >= 360 then
 			g_blockRotate = 0
