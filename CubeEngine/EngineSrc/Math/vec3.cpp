@@ -191,7 +191,7 @@ vec3 vec3::xzy()
 std::string vec3::getStr()
 {
     static char tmpStr[50];
-    sprintf(tmpStr,"(%f, %f, %f)",x,y,z);
+    sprintf(tmpStr,"(%.1f, %.1f, %.1f)",x,y,z);
     return tmpStr;
 }
 

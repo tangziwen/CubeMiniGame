@@ -166,7 +166,6 @@ namespace tzw
 		//BearPart
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(BearPart)
-		BIND_EMPTY_CONSTRUCT
 		BIND_PROP(BearPart, m_a)
 		BIND_PROP(BearPart, m_b)
 		BIND_PROP(BearPart, m_isFlipped)

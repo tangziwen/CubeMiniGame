@@ -45,7 +45,7 @@ public:
 	ControlPart * getCurrentControlPart() const;
 	GamePart * createPart(int type, std::string itemName);
 	BearPart * placeBearingToAttach(Attachment * attach, std::string itemName);
-	SpringPart * placeSpringToAttach(Attachment * attach);
+	SpringPart * placeSpringToAttach(Attachment * attach, std::string itemName);
 	Island * createIsland(vec3 pos);
 	Attachment * rayTest(vec3 pos, vec3 dir, float dist);
 	GamePart * rayTestPart(vec3 pos, vec3 dir, float dist);

@@ -740,8 +740,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
         ImGui::SetNextWindowSize(io.DisplaySize);
         ImGui::Begin(TRC(u8"½Úµã±à¼­Æ÷"), isOpen,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
-            ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings |
-            ImGuiWindowFlags_NoBringToFrontOnFocus);
+            ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings );
 		ed::SetCurrentEditor(g_Context);
 		static float leftPaneWidth  = 250.0f;
 	    ShowLeftPane(leftPaneWidth - 4.0f);

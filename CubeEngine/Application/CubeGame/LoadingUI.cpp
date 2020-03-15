@@ -71,13 +71,14 @@ namespace tzw {
 		auto io = ImGui::GetIO();
 		if(m_isVisible)
 		{
-			
+			GUISystem::shared()->imguiUseLargeFont();
 			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 			ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
 			ImGui::SetNextWindowBgAlpha(1.0f);
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.12, 0.12, 0.125, 1));
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGui::PushStyleColor(ImGuiCol_WindowBg, ImVec4(0.9, 0.9, 0.9, 1));
 			ImGui::Begin("LoadingLayer",nullptr, window_flags);
 			//ImGui::RenderFrame(ImVec2(0, 0), ImVec2(io.DisplaySize.x, io.DisplaySize.y), ImGui::GetColorU32(ImVec4(0.0, 0, 0.0, 1.0)));
 			auto loadCaption = "Loading...";
@@ -90,8 +91,9 @@ namespace tzw {
 			ImGui::SetCursorScreenPos(ImVec2(io.DisplaySize.x / 2.0 - texSize.x / 2.0f, io.DisplaySize.y - texSize.y - 5));
 			ImGui::TextUnformatted(m_tipsInfo.c_str());
 			ImGui::End();
-			ImGui::PopStyleVar(1);
+			ImGui::PopStyleVar(2);
 			ImGui::PopStyleColor(1);
+			ImGui::PopFont();
 		}
 	}
 

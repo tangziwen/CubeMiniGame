@@ -367,7 +367,7 @@ namespace tzw
 	}
 
 	SpringPart*
-	BuildingSystem::placeSpringToAttach(Attachment* attachment)
+	BuildingSystem::placeSpringToAttach(Attachment* attachment, std::string itemName)
 	{
 		vec3 pos, n, up;
 		attachment->getAttachmentInfoWorld(pos, n, up);
@@ -376,7 +376,7 @@ namespace tzw
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
 		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
-		auto spring = new SpringPart();
+		auto spring = new SpringPart(itemName);
 		spring->m_b = attachment;
 		spring->m_parent = island;
 		m_bearList.insert(spring);
@@ -706,7 +706,7 @@ namespace tzw
 				GameConstraint* constraint = nullptr;
 				if (constraintType == "Spring")
 				{
-					constraint = placeSpringToAttach(fromAttach);
+					constraint = placeSpringToAttach(fromAttach, item["ItemName"].GetString());
 				}
 				else if (constraintType == "Bearing")
 				{

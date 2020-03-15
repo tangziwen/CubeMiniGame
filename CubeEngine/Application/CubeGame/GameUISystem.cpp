@@ -76,13 +76,18 @@ static void onOption(Button * btn)
 GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
 	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
-	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr),m_isOpenPlayerOverLay(false)
+	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr),m_isOpenPlayerOverLay(true)
 	
 {
 	m_helperData = Tfile::shared()->getData("./Res/helpMain.md", true);
 }
 
-Texture * testIcon = nullptr;
+	Texture * testIcon = nullptr;
+	Texture * settingIcon = nullptr;
+	Texture * bluePrintIcon = nullptr;
+	Texture * helpIcon = nullptr;
+	Texture * homeIcon = nullptr;
+	Texture * packageIcon = nullptr;
 void GameUISystem::init()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
@@ -101,6 +106,12 @@ void GameUISystem::init()
 		BuildingSystem::shared()->load(fileName);
 	};
 	testIcon = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
+	settingIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-gear-96.png");
+	bluePrintIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-blueprint-96.png");
+	helpIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-help-96.png");
+	homeIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-home-page-96.png");
+	packageIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-furniture-store-96.png");
+	
 	//hide();
 }
 
@@ -141,25 +152,7 @@ void GameUISystem::drawIMGUI()
 		drawEntryInterFace();
 	}else
 	{
-		if(GameWorld::shared()->getCurrentState() == GAME_STATE_RUNNING)
-		{
-				const float DISTANCE = 10.0f;
-    static int corner = 0;
-    ImGuiIO& io = ImGui::GetIO();
-    if (corner != -1)
-    {
-        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
-        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-    }
-    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-    if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
-    {
-        ImGui::Text(" Demo Version\n TAB To Open Menu");
-    }
-    ImGui::End();
-		}
-	}
+
 
 	auto currIsNeedShow = isVisible() || isNeedShowWindow();
 	if(m_preIsNeedShow != currIsNeedShow)
@@ -185,141 +178,128 @@ void GameUISystem::drawIMGUI()
 		}
 		m_preIsNeedShow = currIsNeedShow;
 	}
-
-	if(m_isOpenPlayerOverLay)
+	else
 	{
-		const float DISTANCE = 10.0f;
-	    static int corner = 1;
-	    ImGuiIO& io = ImGui::GetIO();
-	    if (corner != -1)
-	    {
-	        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
-	        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
-	        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	    }
-	    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
-	    if (ImGui::Begin("PlayerOverLay OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
-	    {
-	        ImGui::Text("Pos %s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
-	    }
-	    ImGui::End();
+
 	}
+	}
+
+
 	if (isNeedShowWindow())
 	{
 		bool isOpenAbout = false;
 		bool isOpenHelp = false;
 		if(getWindowIsShow(WindowType::MainMenu))
 		{
-			if (ImGui::BeginMainMenuBarBottom())
+			auto io = ImGui::GetIO();
+			auto style = ImGui::GetStyle();
+			ImGui::SetNextWindowPos(ImVec2(0.0f, 0));
+			ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, 0.0f));
+			ImGui::SetNextWindowBgAlpha(0.75f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
+			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
+			ImGui::Begin("MenuBar",nullptr, window_flags);
+			ImGui::PopStyleVar(2);
+			// ImGui::BeginMenuBar();
+			// if (ImGui::BeginMenu(u8"游戏"))
+			// {
+			// 	if (ImGui::MenuItem(u8"关闭菜单", "CTRL+Z")) {setWindowShow(WindowType::MainMenu, false);}
+			// 	if (ImGui::MenuItem(u8"清空所有", nullptr))
+			// 	{
+			// 		GameWorld::shared()->getPlayer()->removeAllBlocks();
+			// 		m_nodeEditor->clearAll();
+			// 	}
+			// 	if (ImGui::MenuItem(u8"退出游戏", "CTRL+Z")) { exit(0); }
+			// 	ImGui::EndMenu();
+			// }
+			// drawToolsMenu();
+			// static bool isOpenTerrain = false;
+			// if(ImGui::BeginMenu(u8"World"))
+			// {
+			// 	if(ImGui::MenuItem(u8"天气设置", nullptr))
+			// 	{
+			// 		setWindowShow(WindowType::WORLD_SETTING, true);
+			// 	}
+			// 	ImGui::MenuItem(u8"玩家信息", nullptr, &m_isOpenPlayerOverLay);
+			// 	ImGui::EndMenu();
+			// }
+			// if(ImGui::BeginMenu(u8"帮助"))
+			// {
+			// 	if(ImGui::MenuItem(u8"帮助文档", nullptr))
+			// 	{
+			// 		setWindowShow(WindowType::HELP_PAGE, true);
+			// 	}
+			// 	if(ImGui::MenuItem(u8"版本信息", nullptr))
+			// 	{
+			// 		setWindowShow(WindowType::ABOUT, true);
+			// 	}
+			// 	ImGui::EndMenu();
+			// }
+			// if (ImGui::BeginMenu(u8"Debug"))
+			// {
+			// 	auto camera = g_GetCurrScene()->defaultCamera();
+			// 	ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
+			// 	ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
+			// 	if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
+			// 	if(ImGui::MenuItem("Particle test"))
+			// 	{
+			// 	auto node = Node::create();
+			// 	ParticleEmitter * emitter2 = new ParticleEmitter(40);
+			// 	emitter2->setSpawnRate(0.05);
+			// 	emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
+			// 	emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 1, 0), vec3(0, 1, 0)));
+			// 	emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
+			// 	emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
+			// 	emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
+			// 	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
+			// 	emitter2->setIsState(ParticleEmitter::State::Playing);
+			// 	node->addChild(emitter2);
+			// 	g_GetCurrScene()->addNode(node);
+			// 	node->setPos(camera->getPos() + camera->getForward() * 15.0f);
+			// 	node->setRotateE(vec3(0, 0, 45));
+			// 	}
+			//
+			// 	if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
+			// 	{
+			// 		ShaderMgr::shared()->reloadAllShaders();
+			// 	}
+			// 	ImGui::MenuItem(u8"渲染设置", nullptr, &m_isOpenRenderEditor);
+			// 	ImGui::EndMenu();
+			// }
+			// ImGui::EndMenuBar();
+			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+			float IconSize = 32.0f;
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(homeIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
 			{
-				if (ImGui::BeginMenu(u8"游戏"))
-				{
-					if (ImGui::MenuItem(u8"关闭菜单", "CTRL+Z")) {setWindowShow(WindowType::MainMenu, false);}
-					if (ImGui::MenuItem(u8"清空所有", nullptr))
-					{
-						GameWorld::shared()->getPlayer()->removeAllBlocks();
-						m_nodeEditor->clearAll();
-					}
-					if (ImGui::MenuItem(u8"退出游戏", "CTRL+Z")) { exit(0); }
-					ImGui::EndMenu();
-				}
-				drawToolsMenu();
-				static bool isOpenTerrain = false;
-				if(ImGui::BeginMenu(u8"World"))
-				{
-					if(ImGui::MenuItem(u8"天气设置", nullptr))
-					{
-						setWindowShow(WindowType::WORLD_SETTING, true);
-					}
-					ImGui::MenuItem(u8"玩家信息", nullptr, &m_isOpenPlayerOverLay);
-					ImGui::EndMenu();
-				}
-				if(ImGui::BeginMenu(u8"帮助"))
-				{
-					if(ImGui::MenuItem(u8"帮助文档", nullptr))
-					{
-						setWindowShow(WindowType::HELP_PAGE, true);
-					}
-					if(ImGui::MenuItem(u8"版本信息", nullptr))
-					{
-						setWindowShow(WindowType::ABOUT, true);
-					}
-					ImGui::EndMenu();
-				}
-				if (ImGui::BeginMenu(u8"Debug"))
-				{
-					auto camera = g_GetCurrScene()->defaultCamera();
-					ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
-					ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
-					if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
-					if(ImGui::MenuItem("Particle test"))
-					{
-					auto node = Node::create();
-					ParticleEmitter * emitter2 = new ParticleEmitter(40);
-					emitter2->setSpawnRate(0.05);
-					emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-					emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 1, 0), vec3(0, 1, 0)));
-					emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
-					emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-					emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
-					emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
-					emitter2->setIsState(ParticleEmitter::State::Playing);
-					node->addChild(emitter2);
-					g_GetCurrScene()->addNode(node);
-					node->setPos(camera->getPos() + camera->getForward() * 15.0f);
-					node->setRotateE(vec3(0, 0, 45));
-					}
-
-					if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
-					{
-						ShaderMgr::shared()->reloadAllShaders();
-					}
-					ImGui::MenuItem(u8"渲染设置", nullptr, &m_isOpenRenderEditor);
-					ImGui::EndMenu();
-				}
-				if (m_isShowProfiler)
-				{
-					m_debugInfoPanel.drawIMGUI(&m_isShowProfiler);
-				}
-				if(m_isOpenRenderEditor)
-				{
-					ImGui::Begin("RenderEditor", &m_isOpenRenderEditor);
-					if(ImGui::RadioButton("skyEnable", Renderer::shared()->isSkyEnable()))
-					{
-						Renderer::shared()->setSkyEnable(!Renderer::shared()->isSkyEnable());
-					}
-					if(ImGui::RadioButton("FogEnable", Renderer::shared()->isFogEnable()))
-					{
-						Renderer::shared()->setFogEnable(!Renderer::shared()->isFogEnable());
-					}
-					if(ImGui::RadioButton("SSAOEnable", Renderer::shared()->isSsaoEnable()))
-					{
-						Renderer::shared()->setSsaoEnable(!Renderer::shared()->isSsaoEnable());
-					}
-					if(ImGui::RadioButton("BloomEnable", Renderer::shared()->isBloomEnable()))
-					{
-						Renderer::shared()->setBloomEnable(!Renderer::shared()->isBloomEnable());
-					}
-					if(ImGui::RadioButton("HDREnable", Renderer::shared()->isHdrEnable()))
-					{
-						Renderer::shared()->setHdrEnable(!Renderer::shared()->isHdrEnable());
-					}
-					if(ImGui::RadioButton("AAEnable", Renderer::shared()->isAaEnable()))
-					{
-						Renderer::shared()->setAaEnable(!Renderer::shared()->isAaEnable());
-					}
-					if(ImGui::RadioButton("ShadowEnable", Renderer::shared()->isShadowEnable()))
-					{
-						Renderer::shared()->setShadowEnable(!Renderer::shared()->isShadowEnable());
-					}
-					ImGui::End();
-				}
-				if (m_isShowConsole)
-				{
-					ShowExampleAppConsole(&m_isShowConsole);
-				}
-				ImGui::EndMainMenuBar();
+				closeAllOpenedWindow();
+				setWindowShow(WindowType::RESUME_MENU, true);
 			}
+			ImGui::SameLine();
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			{
+				setWindowShow(WindowType::INVENTORY, true);
+			}
+			ImGui::SameLine();
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(bluePrintIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			{
+				setWindowShow(WindowType::NODE_EDITOR, true);
+			}
+			ImGui::SameLine();
+
+			//now with right
+			ImGui::SetCursorPosX(io.DisplaySize.x - 100.0f);
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(settingIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			{
+				setWindowShow(WindowType::OPTION_MENU, true);
+			}
+			ImGui::SameLine();
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(helpIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			{
+				setWindowShow(WindowType::HELP_PAGE, true);
+			}
+			ImGui::PopStyleColor(1);
+			ImGui::End();
 		}
 		if(getWindowIsShow(WindowType::ABOUT))
 		{
@@ -524,6 +504,63 @@ void GameUISystem::drawIMGUI()
 			setWindowShow(WindowType::QUICK_DEBUG, isOpen);
 		}
 
+	}else
+	{
+		if(GameWorld::shared()->getCurrentState() == GAME_STATE_RUNNING)
+		{
+			const float DISTANCE = 10.0f;
+			static int corner = 0;
+			ImGuiIO& io = ImGui::GetIO();
+			if (corner != -1)
+			{
+			ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+			ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+			ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+			}
+			ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+			if (ImGui::Begin("OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+			{
+			ImGui::Text(" Demo Version");
+			}
+			ImGui::End();
+
+			if(m_isOpenPlayerOverLay)
+			{
+				const float DISTANCE = 10.0f;
+			    static int corner = 1;
+			    ImGuiIO& io = ImGui::GetIO();
+			    if (corner != -1)
+			    {
+			        ImVec2 window_pos = ImVec2((corner & 1) ? io.DisplaySize.x - DISTANCE : DISTANCE, (corner & 2) ? io.DisplaySize.y - DISTANCE : DISTANCE);
+			        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
+			        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
+			    }
+			    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+				ImGui::SetNextWindowSizeConstraints(ImVec2(280, -1), ImVec2(600, -1));
+			    if (ImGui::Begin("PlayerOverLay OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
+			    {
+			        ImGui::TextColored(ImVec4(0.3,1.0,0.3,1.0),"Pos: %s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
+		    		if(!GameWorld::shared()->getPlayer()->camera()->getIsEnableGravity())
+		    		{
+		    			ImGui::TextColored(ImVec4(0.8,0.8,0.5,1.0), "Flying Mode On('Space'-Up 'Ctrl'-Down)");
+		    		} else
+		    		{
+		    			ImGui::Text("'X' To Activate Flying Mode");
+		    		}
+
+		    		if(BuildingSystem::shared()->isIsInXRayMode())
+		    		{
+		    			ImGui::TextColored(ImVec4(0.8,0.8,0.5,1.0), "XRay Mode On");
+		    		} else
+		    		{
+		    			ImGui::Text("'T' To Activate XRay Mode");
+		    		}
+
+			    	ImGui::TextColored(ImVec4(1.0,1.0,0.0,1.0), "'TAB' To Open Menu");
+			    }
+			    ImGui::End();
+			}
+		}
 	}
 
 }
@@ -757,6 +794,7 @@ void GameUISystem::setPainterShow(bool isShow)
 
 void GameUISystem::drawEntryInterFace()
 {
+	GUISystem::shared()->imguiUseLargeFont();
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
@@ -818,6 +856,7 @@ void GameUISystem::drawEntryInterFace()
 		}
 		ImGui::Spacing();
 		ImGui::End();
+		ImGui::PopFont();
 	}
 }
 

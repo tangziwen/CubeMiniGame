@@ -36,6 +36,7 @@ void PhysicsHingeConstraint::setLimit(float low, float high, float _softness, fl
 {
   if (m_constraint) 
   {
+  	tlog("before the hinge angle %f", m_constraint->getHingeAngle());
 	//let the rigidBody wake up
 	m_constraint->getRigidBodyA().activate();
 	m_constraint->getRigidBodyB().activate();
@@ -43,4 +44,9 @@ void PhysicsHingeConstraint::setLimit(float low, float high, float _softness, fl
   	tlog("the hinge angle %f", m_constraint->getHingeAngle());
   }
 }
+
+	float PhysicsHingeConstraint::getHingeAngle()
+	{
+		return m_constraint->getHingeAngle();
+	}
 }

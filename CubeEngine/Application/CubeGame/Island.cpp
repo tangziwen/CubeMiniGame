@@ -190,6 +190,11 @@ Island::recalculateCompound()
 	return;
 	if(m_partList.empty())
 	return;
+	if(m_isSpecial)
+	{
+		printf("aaa");
+		return;
+	}
 	for (auto part : m_partList) {
 	if (part->getType() != GamePartType::GAME_PART_LIFT) {
 	  auto mat = part->getNode()->getLocalTransform();
@@ -469,6 +474,7 @@ void Island::updatePhysics()
 		// the rigid-body position
 		auto startTransform = m_node->getTransform();
 		m_rigid->setWorldTransform(startTransform);
+		tlog("update compound!");
 	}
 	m_rigid->setCollisionShape(getCompoundShape());
 	m_rigid->updateInertiaTensor();

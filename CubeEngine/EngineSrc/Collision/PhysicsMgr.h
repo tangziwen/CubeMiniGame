@@ -51,6 +51,7 @@ class PhysicsMgr{
 		PhysicsRigidBody * createRigidBodyCylinder(float mass, float topRadius, float bottomRadius, float height,  Matrix44 transform);
 		PhysicsRigidBody * createRigidBodyMesh(Mesh * obj, Matrix44* transform);
 		PhysicsRigidBody * createRigidBodyFromCompund(float mass, Matrix44 * transform, PhysicsCompoundShape * shape);
+		PhysicsHingeConstraint * createHingeConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, Matrix44 frameInA, Matrix44 frameInB);
 		PhysicsHingeConstraint * createHingeConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, const vec3& pivotInA,const vec3& pivotInB, const vec3& axisInA,const vec3& axisInB, bool useReferenceFrameA = false);
 		Physics6DofSpringConstraint * create6DOFSprintConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, Matrix44 frameInA, Matrix44 frameInB);
 		// Physics6DOFConstraint * create6DOFConstraint(PhysicsRigidBody * rbA,PhysicsRigidBody * rbB, Matrix44 frameInA, Matrix44 frameInB);

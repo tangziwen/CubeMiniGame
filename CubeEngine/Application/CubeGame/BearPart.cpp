@@ -18,50 +18,50 @@
 namespace tzw
 {
 	float blockSize = 0.05;
-BearPart::BearPart()
-{
-	m_a = nullptr;
-	m_b = nullptr;
-	m_isFlipped = false;
-	m_node = nullptr;
-	m_constrain = nullptr;
-	
-
-	m_isSteering = false;
-	m_isAngleLimit = false;
-	m_angleLimitLow = -30.0f;
-	m_angleLimitHigh = 30.0f;
-	//forward backward
-	addAttachment(new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this));
-	addAttachment(new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this));
-	BearPart::generateName();
-	
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new BearingPartNode(this);
-	nodeEditor->addNode(m_graphNode);
-	m_xrayMat = Material::createFromTemplate("PartXRay");
-	
-	// create a indicate model
-	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
-	cylinderIndicator->setColor(vec4(1.0, 1.0, 1.0, 1.0));
-	m_node = cylinderIndicator;
-	m_xrayMat->setTex("DiffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
-	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
-	{
-		if(BuildingSystem::shared()->isIsInXRayMode())
-		{
-			RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
-			cylinderIndicator->setUpCommand(command);
-			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-			Renderer::shared()->addRenderCommand(command);
-
-			RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
-			cylinderIndicator->setUpCommand(command2);
-			command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-			Renderer::shared()->addRenderCommand(command2);
-		}
-	};
-}
+// BearPart::BearPart()
+// {
+// 	m_a = nullptr;
+// 	m_b = nullptr;
+// 	m_isFlipped = false;
+// 	m_node = nullptr;
+// 	m_constrain = nullptr;
+// 	
+//
+// 	m_isSteering = false;
+// 	m_isAngleLimit = false;
+// 	m_angleLimitLow = -30.0f;
+// 	m_angleLimitHigh = 30.0f;
+// 	//forward backward
+// 	addAttachment(new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this));
+// 	addAttachment(new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this));
+// 	BearPart::generateName();
+// 	
+// 	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+// 	m_graphNode = new BearingPartNode(this);
+// 	nodeEditor->addNode(m_graphNode);
+// 	m_xrayMat = Material::createFromTemplate("PartXRay");
+// 	
+// 	// create a indicate model
+// 	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
+// 	cylinderIndicator->setColor(vec4(1.0, 1.0, 1.0, 1.0));
+// 	m_node = cylinderIndicator;
+// 	m_xrayMat->setTex("DiffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
+// 	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
+// 	{
+// 		if(BuildingSystem::shared()->isIsInXRayMode())
+// 		{
+// 			RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
+// 			cylinderIndicator->setUpCommand(command);
+// 			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+// 			Renderer::shared()->addRenderCommand(command);
+//
+// 			RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
+// 			cylinderIndicator->setUpCommand(command2);
+// 			command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+// 			Renderer::shared()->addRenderCommand(command2);
+// 		}
+// 	};
+// }
 
 BearPart::BearPart(std::string itemName)
 {
@@ -183,7 +183,7 @@ void BearPart::setAngleLimit(bool isAngleLimit, float low, float high)
 		}
 		else 
 		{
-			m_constrain->setLimit(0, 0);
+			m_constrain->setLimit(1, -1);
 		}
 	}
 }
@@ -329,21 +329,14 @@ void BearPart::generateName()
 			vec3 worldPosB, worldNormalB, worldUpB;
 			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
 			vec3 hingeDir = (worldPosB - worldPosA).normalized();
-			vec3 pivotA, pivotB, axisA, axisB;
-			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-				Matrix44 frameInA;
-		vec3 pos, n, up;
-		attachA->getAttachmentInfoWorld(pos, n, up);
-		attachA->getAttachmentInfoWorld(pos, n, up);
-		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
-		Matrix44 frameInB;
-		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
-		
-		//auto constrain = PhysicsMgr::shared()->create6DOFConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
-		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
+			vec3 center = (worldPosB + worldPosA) * 0.5f;
+			//same point's transform in A Island local and B Island local, and it alway use Z axis!!!! and it is a same
+			Matrix44 frameInA;
+			frameInA = setUpFrameFromZ(worldPosA, hingeDir, partA->m_parent->m_node->getTransform().inverted());
+			Matrix44 frameInB;
+			frameInB = setUpFrameFromZ(worldPosA, hingeDir, partB->m_parent->m_node->getTransform().inverted());
+			auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
 			m_constrain = constrain;
-			//constrain->makeUpBearing();
 		}
 		if(m_isEnablePhysics)
 		{
@@ -354,63 +347,38 @@ void BearPart::generateName()
 		}
 	}
 
-	void BearPart::createConstraintImp()
+	void BearPart::onUpdate(float dt)
 	{
-		auto attachA = m_a;
-		auto attachB = m_b;
-		auto partA = attachA->m_parent;
-		auto partB = attachB->m_parent;
-
-		vec3 worldPosA, worldNormalA, worldUpA;
-		attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-		vec3 worldPosB, worldNormalB, worldUpB;
-		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-		vec3 hingeDir = (worldPosB - worldPosA).normalized();
-		vec3 pivotA, pivotB, axisA, axisB;
-		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-		Matrix44 frameInA;
-		vec3 pos, n, up;
-		attachA->getAttachmentInfoWorld(pos, n, up);
-		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
-		Matrix44 frameInB;
-		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
-		//auto constrain = PhysicsMgr::shared()->create6DOFConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
-		auto constrain = PhysicsMgr::shared()->createHingeConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, pivotA, pivotB, axisA, axisB, false);
-		m_constrain = constrain;
-		//constrain->makeUpBearing();
+		if(m_constrain)
+		{
+			tlog("the angle, %f", m_constrain->getHingeAngle());
+		}
 	}
-
-	void BearPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
-{
-	auto part = attach->m_parent;
-	auto island = part->m_parent;
-	auto islandInvertedMatrix = island->m_node->getLocalTransform().inverted();
-	
-	auto transform = part->getNode()->getLocalTransform();
-	auto normalInIsland = transform.transofrmVec4(vec4(attach->m_normal, 0.0)).toVec3();
-
-	pivot = transform.transofrmVec4(vec4(attach->m_pos + attach->m_normal * 0.01, 1.0)).toVec3();
-	asix = islandInvertedMatrix.transofrmVec4(vec4(hingeDir, 0.0)).toVec3();
-}
 
 void BearPart::enablePhysics(bool isEnable)
 {
 	GameConstraint::enablePhysics(isEnable);
 	if(isEnable) 
 	{
+		if(m_constrain)
+		{
+			delete m_constrain;
+			m_constrain = nullptr;
+		}
 		if(!m_constrain) 
 		{
 			auto attachA = m_a;
 			auto attachB = m_b;
 			if (attachA && attachB) 
 			{
-				createConstraintImp();
-				PhysicsMgr::shared()->addConstraint(m_constrain, true);
+				// createConstraintImp();
+				updateConstraintState();
+				// PhysicsMgr::shared()->addConstraint(m_constrain, true);
 			}
 		}
 		else 
 		{
+			tlog("before add Constraint 1 the Hinge Angle is %f",m_constrain->getHingeAngle());
 			PhysicsMgr::shared()->addConstraint(m_constrain, true);
 		}
 		if(m_isSteering)
@@ -427,7 +395,9 @@ void BearPart::enablePhysics(bool isEnable)
 	{
 		if(m_constrain) 
 		{
+			tlog("remove 1 the Hinge Angle is %f",m_constrain->getHingeAngle());
 			PhysicsMgr::shared()->removeConstraint(m_constrain);
+			tlog("remove 2 the Hinge Angle is %f",m_constrain->getHingeAngle());
 		}
 	}
 }

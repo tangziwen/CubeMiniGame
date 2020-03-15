@@ -24,7 +24,9 @@ public:
 	void setName(std::string newName) override;
 	virtual ~GameConstraint();
 	virtual void updateConstraintState();
+	virtual void onUpdate(float dt);
 protected:
+	Matrix44 setUpFrameFromZ(vec3 pos, vec3 Zaixs, Matrix44 reservedMat);
 	bool m_isEnablePhysics;
 };
 }

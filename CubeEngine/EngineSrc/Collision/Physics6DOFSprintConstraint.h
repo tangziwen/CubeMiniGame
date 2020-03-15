@@ -21,7 +21,8 @@ namespace tzw
 		void enableSpring(int index, bool isEnable);
 		void setStiffness(int index, float setStiffness);
 		void setDamping(int index, float damping);
-		void setEquilibriumPoint();
+		void setEquilibriumPoint(int index, float val);
+		float getOffset();
 	protected:
 		btGeneric6DofSpring2Constraint * m_constraint;
 	};

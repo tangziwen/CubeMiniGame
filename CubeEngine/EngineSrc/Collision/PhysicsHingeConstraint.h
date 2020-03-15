@@ -13,6 +13,7 @@ namespace tzw
 		void setConstraint(btTypedConstraint* constraint) override;
 		void enableAngularMotor(bool enableMotor,float targetVelocity, float maxMotorImpulse);
 		void setLimit(float low, float high, float _softness = 0.9f, float _biasFactor = 0.3f, float _relaxationFactor = 1.0f);
+		float getHingeAngle();
 	protected:
 		btHingeConstraint * m_constraint;
 	};

@@ -96,9 +96,10 @@ function tzw_engine_ui_update(dt)
 	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 		if not GameUISystem.shared():isVisible() then
 			--除了物品栏之外，没有其他界面打开的时候，才画底部的Hud
-			if not GameUISystem.shared():isAnyShow() or GameUISystem.shared():isOpenAssetEditor() then
-				drawHud()
-			end
+			-- if not GameUISystem.shared():isAnyShow() or GameUISystem.shared():isOpenAssetEditor() then
+				
+			-- end
+			drawHud()
 			updateLifting(dt)
 		-- elseif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU then
 		-- 	drawEntryInterface()
@@ -216,7 +217,7 @@ function drawHud()
 
 	local window_pos_pivot_bottom_right = ImGui.ImVec2(1.0, 1.0);
 	ImGui.SetNextWindowPos(ImGui.ImVec2(screenSize.x - 50.0, screenSize.y - yOffset), ImGuiCond_Always, window_pos_pivot_bottom_right);
-	ImGui.Begin("Rotate Tips", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+	ImGui.Begin("Rotate Tips", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
 	if BuildingSystem.shared():isIsInXRayMode() then
 		ImGui.Text(TR("X光模式"));
 	else
@@ -250,7 +251,7 @@ function drawHud()
 			end
 			ImGui.Image(iconTexture, ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
-				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
+				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 0.5, 0, 1));
 				needPop = true
 				local sizeMin = ImGui.GetItemRectMin()
 				local sizeMax = ImGui.GetItemRectMin()
@@ -447,7 +448,7 @@ function placeItem(item)
 			if item:getTypeInInt() == GAME_PART_BEARING then
 				BuildingSystem.shared():placeBearingToAttach(result, item.m_name)
 			elseif item:getTypeInInt() == GAME_PART_SPRING then
-				BuildingSystem.shared():placeSpringToAttach(result)
+				BuildingSystem.shared():placeSpringToAttach(result, item.m_name)
 			end
 		end
 	end

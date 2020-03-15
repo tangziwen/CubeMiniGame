@@ -12,13 +12,13 @@
 
 namespace tzw
 {
-SpringPart::SpringPart()
+SpringPart::SpringPart(std::string itemName)
 {
 	m_a = nullptr;
 	m_b = nullptr;
 	m_node = nullptr;
 	m_constrain = nullptr;
-
+	GamePart::initFromItemName(itemName);
 	m_stiffness = 600.0f;
 	m_damping = 0.8f;
 	//forward backward
@@ -30,7 +30,7 @@ SpringPart::SpringPart()
 	cylinderIndicator->setColor(vec4(1.0, 1.0, 0.0, 0.0));
 	cylinderIndicator->reCache();
 	setNode(cylinderIndicator);
-	generateName();
+	SpringPart::generateName();
 }
 
 void SpringPart::findPiovtAndAxis(Attachment * attach, vec3 hingeDir,  vec3 & pivot, vec3 & asix)
@@ -80,39 +80,13 @@ void SpringPart::enablePhysics(bool isEnable)
 	{
 		if(!m_constrain) 
 		{
-		auto attachA = m_a;
-		auto attachB = m_b;
-		if (attachA && attachB) 
-		{
-			auto partA = attachA->m_parent;
-			auto partB = attachB->m_parent;
-
-			vec3 worldPosA, worldNormalA, worldUpA;
-			attachA->getAttachmentInfoWorld(worldPosA, worldNormalA, worldUpA);
-			vec3 worldPosB, worldNormalB, worldUpB;
-			attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
-			vec3 hingeDir = (worldPosB - worldPosA).normalized();
-			vec3 pivotA, pivotB, axisA, axisB;
-			findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-			findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
-			Matrix44 frameInA;
-			vec3 pos, n, up;
-			attachA->getAttachmentInfoWorld(pos, n, up);
-			frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
-			Matrix44 frameInB;
-			frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
-			auto constraint = PhysicsMgr::shared()->create6DOFSprintConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
-			constraint->enableSpring(2, true);
-			constraint->setLinearLowerLimit(vec3(0, 0, 100));
-			constraint->setAngularUpperLimit(vec3(0, 0, -100));
-			constraint->setAngularLowerLimit(vec3(0, 0, 0));
-			constraint->setAngularUpperLimit(vec3(0, 0, 0));
-			constraint->setStiffness(2, 600.0f);
-			constraint->setDamping(2, 0.8f);
-			constraint->setEquilibriumPoint();
-			m_constrain = constraint;
-			PhysicsMgr::shared()->addConstraint(m_constrain);
-		}
+			auto attachA = m_a;
+			auto attachB = m_b;
+			if (attachA && attachB) 
+			{
+				updateConstraintState();
+				PhysicsMgr::shared()->addConstraint(m_constrain);
+			}
 		} else 
 		{
 			PhysicsMgr::shared()->addConstraint(m_constrain);
@@ -255,25 +229,23 @@ void SpringPart::updateConstraintState()
 		vec3 worldPosB, worldNormalB, worldUpB;
 		attachB->getAttachmentInfoWorld(worldPosB, worldNormalB, worldUpB);
 		vec3 hingeDir = (worldPosB - worldPosA).normalized();
-		vec3 pivotA, pivotB, axisA, axisB;
-		findPiovtAndAxis(attachA, hingeDir, pivotA, axisA);
-		findPiovtAndAxis(attachB, hingeDir, pivotB, axisB);
+		vec3 center = (worldPosB + worldPosA) * 0.5f;
 		Matrix44 frameInA;
-		vec3 pos, n, up;
-		attachA->getAttachmentInfoWorld(pos, n, up);
-		frameInA = groupMatNode(pos, n, up, partA->m_parent->m_node->getTransform().inverted());
+		tlog("the DIst%f", worldPosA.distance(worldPosB));
+		frameInA = setUpFrameFromZ(center, hingeDir, partA->m_parent->m_node->getTransform().inverted());
 		Matrix44 frameInB;
-		frameInB = groupMatNode(pos, n, up, partB->m_parent->m_node->getTransform().inverted());
+		frameInB = setUpFrameFromZ(center, hingeDir, partB->m_parent->m_node->getTransform().inverted());
 		auto constraint = PhysicsMgr::shared()->create6DOFSprintConstraint(partA->m_parent->m_rigid, partB->m_parent->m_rigid, frameInA, frameInB);
 		constraint->enableSpring(2, true);
-		constraint->setLinearLowerLimit(vec3(0, 0, 100));
-		constraint->setAngularUpperLimit(vec3(0, 0, -100));
+		constraint->setLinearLowerLimit(vec3(0, 0, 1));
+		constraint->setLinearUpperLimit(vec3(0, 0, -1));
 		constraint->setAngularLowerLimit(vec3(0, 0, 0));
 		constraint->setAngularUpperLimit(vec3(0, 0, 0));
 		constraint->setStiffness(2, 600.0f);
 		constraint->setDamping(2, 0.8f);
-		constraint->setEquilibriumPoint();
+		constraint->setEquilibriumPoint(2, 0);
 		m_constrain = constraint;
+		tlog("what the fuck %f", constraint->getOffset());
 	}
 	if(m_isEnablePhysics)
 	{

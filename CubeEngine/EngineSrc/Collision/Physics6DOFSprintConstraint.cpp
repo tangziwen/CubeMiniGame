@@ -54,8 +54,13 @@ namespace tzw
 			m_constraint->setDamping(index, damping);
 	}
 
-	void Physics6DofSpringConstraint::setEquilibriumPoint()
+	void Physics6DofSpringConstraint::setEquilibriumPoint(int index, float val)
 	{
-		m_constraint->setEquilibriumPoint();
+		m_constraint->setEquilibriumPoint(index, val);
+	}
+
+	float Physics6DofSpringConstraint::getOffset()
+	{
+		return m_constraint->getRelativePivotPosition(2);
 	}
 }

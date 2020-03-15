@@ -12,7 +12,7 @@ struct GameNodeEditorNode;
 class BearPart : public GameConstraint
 {
 public:
-	BearPart();
+	// BearPart();
 	explicit BearPart(std::string itemName);
 	bool m_isFlipped;
 	void updateFlipped();
@@ -36,9 +36,8 @@ public:
 	void drawInspect() override;
 	bool isNeedDrawInspect() override;
 	void updateConstraintState() override;
+	virtual void onUpdate(float dt);
 private:
-	void createConstraintImp();
-	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	GameNodeEditorNode * m_graphNode;
 	Material * m_xrayMat;
 	bool m_isSteering;

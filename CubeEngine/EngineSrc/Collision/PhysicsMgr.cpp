@@ -432,15 +432,28 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyFromCompund(float mass, Matrix44* t
 	return rig;
 }
 
+	PhysicsHingeConstraint* PhysicsMgr::createHingeConstraint(PhysicsRigidBody* rbA, PhysicsRigidBody* rbB,
+		Matrix44 frameInA, Matrix44 frameInB)
+	{
+		auto & rigA = *(rbA->rigidBody());
+		auto & rigB = *(rbB->rigidBody());
+		btTransform btFrameInA;
+		btFrameInA.setFromOpenGLMatrix(frameInA.data());
+		btTransform btFrameInB;
+		btFrameInB.setFromOpenGLMatrix(frameInB.data());
+		auto bthinge = new btHingeConstraint(rigA, rigB, btFrameInA, btFrameInB);
+		auto hinge = new PhysicsHingeConstraint(bthinge);
+		bthinge->setUserConstraintPtr(hinge);
+		return hinge;
+	}
+
 	PhysicsHingeConstraint* PhysicsMgr::createHingeConstraint(PhysicsRigidBody * rbA, PhysicsRigidBody * rbB,
-		const vec3& pivotInA, const vec3& pivotInB, const vec3& axisInA, const vec3& axisInB, bool useReferenceFrameA)
+	                                                          const vec3& pivotInA, const vec3& pivotInB, const vec3& axisInA, const vec3& axisInB, bool useReferenceFrameA)
 	{
 		auto & rigA = *(rbA->rigidBody());
 		auto & rigB = *(rbB->rigidBody());
 		auto bthinge = new btHingeConstraint(rigA, rigB, btVector3(pivotInA.x, pivotInA.y, pivotInA.z), btVector3(pivotInB.x, pivotInB.y, pivotInB.z), btVector3(axisInA.x, axisInA.y, axisInA.z), btVector3(axisInB.x, axisInB.y, axisInB.z), useReferenceFrameA);
 		auto hinge = new PhysicsHingeConstraint(bthinge);
-		auto breakingThreshold = bthinge->getBreakingImpulseThreshold();
-		tlog("the threshold %f",breakingThreshold);
 		bthinge->setUserConstraintPtr(hinge);
 		return hinge;
 	}

@@ -12,7 +12,7 @@ class Physics6DofSpringConstraint;
 class SpringPart : public GameConstraint
 {
 public:
-	SpringPart();
+	SpringPart(std::string itemName);
 	Physics6DofSpringConstraint * m_constrain;
 	void enablePhysics(bool isEnable) override;
 	void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator) override;
