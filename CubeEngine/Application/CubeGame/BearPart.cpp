@@ -349,10 +349,10 @@ void BearPart::generateName()
 
 	void BearPart::onUpdate(float dt)
 	{
-		if(m_constrain)
-		{
-			tlog("the angle, %f", m_constrain->getHingeAngle());
-		}
+		//if(m_constrain)
+		//{
+		//	tlog("the angle, %f", m_constrain->getHingeAngle());
+		//}
 	}
 
 void BearPart::enablePhysics(bool isEnable)

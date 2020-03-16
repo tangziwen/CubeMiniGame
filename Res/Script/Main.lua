@@ -88,7 +88,7 @@ local m_isDragingInventory = false
 --init
 function tzw_engine_init()
 	print("lua init")
-	testIcon = TextureMgr.shared():getByPathSimple("./Texture/NodeEditor/ic_restore_white_24dp.png")
+	testIcon = TextureMgr.shared():getByPathSimple("./Texture/Icon/icons8-border-none-96.png")
 end
 
 --ui update
@@ -227,7 +227,7 @@ function drawHud()
 
 
 	ImGui.SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	local itemSize = 80.0
+	local itemSize = 64.0
 	ImGui.Begin("Hud", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
 	for k, v in pairs(m_itemSlots) do
 		-- ImGui.RadioButton(v.desc, m_currIndex == k)
@@ -236,13 +236,12 @@ function drawHud()
 		if v["target"] == nil then
 			ImGui.Image(testIcon:handle(), ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
-				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 1, 0, 1));
+				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
 				local sizeMin = ImGui.GetItemRectMin()
 				local sizeMax = ImGui.GetItemRectMin()
 				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
 				needPop = true
 			end
-			ImGui.Text("Empty");
 		else
 			local iconTexture = testIcon:handle()
 			local item = getItemFromSpecifiedSlotIndex(k);
@@ -251,13 +250,12 @@ function drawHud()
 			end
 			ImGui.Image(iconTexture, ImGui.ImVec2(itemSize, itemSize));
 			if m_currIndex == k then
-				ImGui.PushStyleColor(0, ImGui.ImVec4(1, 0.5, 0, 1));
+				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
 				needPop = true
 				local sizeMin = ImGui.GetItemRectMin()
 				local sizeMax = ImGui.GetItemRectMin()
 				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
 			end
-			ImGui.Text(tostring(k).." "..TR(findItemByName(v["target"]).m_desc));
 		end
 		if needPop then
 			ImGui.PopStyleColor()

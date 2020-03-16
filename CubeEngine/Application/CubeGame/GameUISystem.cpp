@@ -270,11 +270,17 @@ void GameUISystem::drawIMGUI()
 			// ImGui::EndMenuBar();
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			float IconSize = 32.0f;
+			ImVec2 homeDropDownPos;
+			//ImGui::BeginHorizontal("IconGroup");
 			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(homeIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
 			{
-				closeAllOpenedWindow();
-				setWindowShow(WindowType::RESUME_MENU, true);
+				//closeAllOpenedWindow();
+				//setWindowShow(WindowType::RESUME_MENU, true);
+				ImGui::OpenPopup("HomePopup");
 			}
+			ImGui::SameLine();
+			homeDropDownPos = ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y);
+			ImGui::Spacing();
 			ImGui::SameLine();
 			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
 			{
@@ -286,7 +292,6 @@ void GameUISystem::drawIMGUI()
 				setWindowShow(WindowType::NODE_EDITOR, true);
 			}
 			ImGui::SameLine();
-
 			//now with right
 			ImGui::SetCursorPosX(io.DisplaySize.x - 100.0f);
 			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(settingIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
@@ -298,8 +303,29 @@ void GameUISystem::drawIMGUI()
 			{
 				setWindowShow(WindowType::HELP_PAGE, true);
 			}
+			//ImGui::EndHorizontal();
+			ImGui::SetNextWindowPos(homeDropDownPos);
+			if(ImGui::BeginPopup("HomePopup"))
+			{
+				ImGui::PushID("LoadGame");
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::PopID();
+				ImGui::PushID("SaveGame");
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::PopID();
+				ImGui::PushID("Credit");
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::PopID();
+				ImGui::PushID("Quit");
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::PopID();
+				ImGui::EndPopup();
+			}
 			ImGui::PopStyleColor(1);
 			ImGui::End();
+
+
+
 		}
 		if(getWindowIsShow(WindowType::ABOUT))
 		{
@@ -535,7 +561,7 @@ void GameUISystem::drawIMGUI()
 			        ImVec2 window_pos_pivot = ImVec2((corner & 1) ? 1.0f : 0.0f, (corner & 2) ? 1.0f : 0.0f);
 			        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 			    }
-			    ImGui::SetNextWindowBgAlpha(0.35f); // Transparent background
+			    ImGui::SetNextWindowBgAlpha(0.75f); // Transparent background
 				ImGui::SetNextWindowSizeConstraints(ImVec2(280, -1), ImVec2(600, -1));
 			    if (ImGui::Begin("PlayerOverLay OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 			    {

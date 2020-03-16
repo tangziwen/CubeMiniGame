@@ -363,79 +363,78 @@ enum class PinType
 	    ImGui::Spring(0.0f);
 	    ImGui::Spring();
 	    ImGui::EndHorizontal();
-		GameNodeEditorNode * newNode = nullptr;
-		if(ImGui::Button(TRC(u8"旋转节点")))
+		if(ImGui::CollapsingHeader("Create Node"))
 		{
-			newNode = new SpinNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"标准输入")))
-		{
-			newNode = new KeyTriggerNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"按键输入")))
-		{
-			newNode = new KeyAnyTriggerNode();
-		}
+			GameNodeEditorNode * newNode = nullptr;
+			if(ImGui::Button(TRC(u8"旋转节点")))
+			{
+				newNode = new SpinNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"标准输入")))
+			{
+				newNode = new KeyTriggerNode();
+			}
 
+			if(ImGui::Button(TRC(u8"按键输入")))
+			{
+				newNode = new KeyAnyTriggerNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"使用节点")))
+			{
+				newNode = new UseNode();
+			}
 
+			if(ImGui::Button(TRC(u8"Vector")))
+			{
+				newNode = new VectorNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"Constant")))
+			{
+				newNode = new ConstantIntNode();
+			}
+			
+			if(ImGui::Button(TRC(u8"Toggle")))
+			{
+				newNode  = new ToggleNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"变量")))
+			{
+				newNode = new VarNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"赋值")))
+			{
+				newNode = new AssignNode();
+			}
 
-		if(ImGui::Button(TRC(u8"使用节点")))
-		{
-			newNode = new UseNode();
+			if(ImGui::Button(TRC(u8"If")))
+			{
+				newNode = new IfNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"==")))
+			{
+				newNode = new EqualNode();
+			}
+			ImGui::SameLine();
+			if(ImGui::Button(TRC(u8"PrintNode")))
+			{
+				newNode = new PrintNode();
+			}
+			if(newNode)
+			{
+				addNode(newNode);
+				auto screenSize = Engine::shared()->winSize();
+				auto pos = ed::ScreenToCanvas(ImVec2(screenSize.x /2.0f, screenSize.y / 2.0f));
+				newNode->m_origin = vec2(pos.x, pos.y);
+				ed::SetNodePosition(newNode->m_nodeID, pos);
+			}
 		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"Vector")))
-		{
-			newNode = new VectorNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"Constant")))
-		{
-			newNode = new ConstantIntNode();
-		}
-
-
 		
-		if(ImGui::Button(TRC(u8"Toggle")))
-		{
-			newNode  = new ToggleNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"变量")))
-		{
-			newNode = new VarNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"赋值")))
-		{
-			newNode = new AssignNode();
-		}
-
-		if(ImGui::Button(TRC(u8"If")))
-		{
-			newNode = new IfNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"==")))
-		{
-			newNode = new EqualNode();
-		}
-		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"PrintNode")))
-		{
-			newNode = new PrintNode();
-		}
-		if(newNode)
-		{
-			addNode(newNode);
-			auto screenSize = Engine::shared()->winSize();
-			auto pos = ed::ScreenToCanvas(ImVec2(screenSize.x /2.0f, screenSize.y / 2.0f));
-			newNode->m_origin = vec2(pos.x, pos.y);
-			ed::SetNodePosition(newNode->m_nodeID, pos);
-		}
-
 	    std::vector<ed::NodeId> selectedNodes;
 	    std::vector<ed::LinkId> selectedLinks;
 	    selectedNodes.resize(ed::GetSelectedObjectCount());
@@ -451,64 +450,57 @@ enum class PinType
 	    int saveIconHeight    = s_SaveIcon->getSize().y;//Application_GetTextureWidth(s_SaveIcon);
 	    int restoreIconWidth  = s_RestoreIcon->getSize().x;//Application_GetTextureWidth(s_RestoreIcon);
 	    int restoreIconHeight = s_RestoreIcon->getSize().y;//Application_GetTextureWidth(s_RestoreIcon);
+		
+	   if(ImGui::CollapsingHeader(TRC(u8"节点列表")))
+	   {
+			for (auto& node : m_gameNodes)
+		    {
+		        ImGui::PushID(node->m_nodeID);
+		        auto start = ImGui::GetCursorScreenPos();
 
-	    ImGui::GetWindowDrawList()->AddRectFilled(
-	        ImGui::GetCursorScreenPos(),
-	        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
-	        ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]), ImGui::GetTextLineHeight() * 0.25f);
-	    ImGui::Spacing(); ImGui::SameLine();
-	    ImGui::TextUnformatted(TRC(u8"节点列表"));
-	    ImGui::Indent();
-	    for (auto& node : m_gameNodes)
-	    {
-	        ImGui::PushID(node->m_nodeID);
-	        auto start = ImGui::GetCursorScreenPos();
+		        bool isSelected = std::find(selectedNodes.begin(), selectedNodes.end(), ax::NodeEditor::NodeId(node->m_nodeID)) != selectedNodes.end();
+		        if (ImGui::Selectable((node->name + "##" + std::to_string(node->m_nodeID)).c_str(), &isSelected))
+		        {
+		            if (io.KeyCtrl)
+		            {
+		                if (isSelected)
+		                    ed::SelectNode(node->m_nodeID, true);
+		                else
+		                    ed::DeselectNode(node->m_nodeID);
+		            }
+		            else
+		                ed::SelectNode(node->m_nodeID, false);
 
-	        bool isSelected = std::find(selectedNodes.begin(), selectedNodes.end(), ax::NodeEditor::NodeId(node->m_nodeID)) != selectedNodes.end();
-	        if (ImGui::Selectable((node->name + "##" + std::to_string(node->m_nodeID)).c_str(), &isSelected))
-	        {
-	            if (io.KeyCtrl)
-	            {
-	                if (isSelected)
-	                    ed::SelectNode(node->m_nodeID, true);
-	                else
-	                    ed::DeselectNode(node->m_nodeID);
-	            }
-	            else
-	                ed::SelectNode(node->m_nodeID, false);
+		            ed::NavigateToSelection();
+		        }
 
-	            ed::NavigateToSelection();
-	        }
+		        auto id = std::string("(") + std::to_string(node->m_nodeID) + ")";
+		        auto textSize = ImGui::CalcTextSize(id.c_str(), nullptr);
+		        auto iconPanelPos = start + ImVec2(
+		            paneWidth - ImGui::GetStyle().FramePadding.x - ImGui::GetStyle().IndentSpacing - saveIconWidth - restoreIconWidth - ImGui::GetStyle().ItemInnerSpacing.x * 1,
+		            (ImGui::GetTextLineHeight() - saveIconHeight) / 2);
+		        ImGui::GetWindowDrawList()->AddText(
+		            ImVec2(iconPanelPos.x - textSize.x - ImGui::GetStyle().ItemInnerSpacing.x, start.y),
+		            IM_COL32(255, 255, 255, 255), id.c_str(), nullptr);
 
-	        auto id = std::string("(") + std::to_string(node->m_nodeID) + ")";
-	        auto textSize = ImGui::CalcTextSize(id.c_str(), nullptr);
-	        auto iconPanelPos = start + ImVec2(
-	            paneWidth - ImGui::GetStyle().FramePadding.x - ImGui::GetStyle().IndentSpacing - saveIconWidth - restoreIconWidth - ImGui::GetStyle().ItemInnerSpacing.x * 1,
-	            (ImGui::GetTextLineHeight() - saveIconHeight) / 2);
-	        ImGui::GetWindowDrawList()->AddText(
-	            ImVec2(iconPanelPos.x - textSize.x - ImGui::GetStyle().ItemInnerSpacing.x, start.y),
-	            IM_COL32(255, 255, 255, 255), id.c_str(), nullptr);
+		        auto drawList = ImGui::GetWindowDrawList();
+		        ImGui::SetCursorScreenPos(iconPanelPos);
+		        ImGui::SetItemAllowOverlap();
 
-	        auto drawList = ImGui::GetWindowDrawList();
-	        ImGui::SetCursorScreenPos(iconPanelPos);
-	        ImGui::SetItemAllowOverlap();
+		        ImGui::Dummy(ImVec2(float(saveIconWidth), float(saveIconHeight)));
+		        drawList->AddImage(reinterpret_cast<ImTextureID>(s_SaveIcon->handle()), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 32));
 
-	        ImGui::Dummy(ImVec2(float(saveIconWidth), float(saveIconHeight)));
-	        drawList->AddImage(reinterpret_cast<ImTextureID>(s_SaveIcon->handle()), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 32));
+		        ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
+		        ImGui::SetItemAllowOverlap();
+	            ImGui::Dummy(ImVec2(float(restoreIconWidth), float(restoreIconHeight)));
+	            drawList->AddImage(reinterpret_cast<ImTextureID>(s_RestoreIcon->handle()), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 32));
+		        ImGui::SameLine(0, 0);
+		        ImGui::SetItemAllowOverlap();
+		        ImGui::Dummy(ImVec2(0, float(restoreIconHeight)));
 
-
-	        ImGui::SameLine(0, ImGui::GetStyle().ItemInnerSpacing.x);
-	        ImGui::SetItemAllowOverlap();
-            ImGui::Dummy(ImVec2(float(restoreIconWidth), float(restoreIconHeight)));
-            drawList->AddImage(reinterpret_cast<ImTextureID>(s_RestoreIcon->handle()), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), ImVec2(0, 0), ImVec2(1, 1), IM_COL32(255, 255, 255, 32));
-	        ImGui::SameLine(0, 0);
-	        ImGui::SetItemAllowOverlap();
-	        ImGui::Dummy(ImVec2(0, float(restoreIconHeight)));
-
-	        ImGui::PopID();
-	    }
-	    ImGui::Unindent();
-
+		        ImGui::PopID();
+		    } 
+	   }
 	    static int changeCount = 0;
 
 	    ImGui::GetWindowDrawList()->AddRectFilled(
