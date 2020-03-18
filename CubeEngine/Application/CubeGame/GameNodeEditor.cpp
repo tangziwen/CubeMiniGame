@@ -72,6 +72,7 @@ enum class PinType
 	    s_SaveIcon         = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_save_white_24dp.png");
 	    s_RestoreIcon      = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
 		EventMgr::shared()->addFixedPiorityListener(this);
+		genNodeClassDesc();
 	}
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
@@ -264,45 +265,7 @@ enum class PinType
 			else //normal logic & function node, we need create here
 			{
 				auto nodeClass = node["NodeClass"].GetInt();
-				switch(nodeClass)
-				{
-                case Node_CLASS_KEY_TRIGGER:
-					newNode = new KeyTriggerNode();
-					break;
-                case Node_CLASS_KEY_ANY_TRIGGER:
-					newNode = new KeyAnyTriggerNode();
-					break;
-                case Node_CLASS_SPIN:
-					newNode = new SpinNode();
-					break;
-                case Node_CLASS_VECTOR:
-					newNode = new VectorNode();
-					break;
-                case Node_CLASS_USE:
-					newNode = new UseNode();
-					break;
-                case Node_CLASS_CONSTANT_INT:
-					newNode = new ConstantIntNode();
-					break;
-                case Node_CLASS_TOGGLE:
-					newNode = new ToggleNode();
-					break;
-                case Node_CLASS_VAR:
-					newNode = new VarNode();
-					break;
-                case Node_CLASS_ASSIGN:
-					newNode = new AssignNode();
-					break;
-                case Node_CLASS_EQUAL:
-					newNode = new EqualNode();
-					break;
-                case Node_CLASS_IF:
-					newNode = new IfNode();
-					break;
-                case Node_CLASS_PRINT:
-					newNode = new PrintNode();
-					break;
-				}
+				newNode = createNodeByClass(nodeClass);
 				addNode(newNode);
 				if(!newNode)
 				{
@@ -353,7 +316,6 @@ enum class PinType
 
 	    paneWidth = ImGui::GetContentRegionAvailWidth();
 
-	    
 		ImGui::BeginHorizontal("Style Editor", ImVec2(paneWidth, 0));
 	    ImGui::Spring(0.0f, 0.0f);
 	    if (ImGui::Button(TRC(u8"调整视图")))
@@ -366,65 +328,16 @@ enum class PinType
 		if(ImGui::CollapsingHeader("Create Node"))
 		{
 			GameNodeEditorNode * newNode = nullptr;
-			if(ImGui::Button(TRC(u8"旋转节点")))
+			ImGui::Columns(2, "CreatingNodeColumns", false);
+			for(int i = Node_CLASS_WTF + 1; i < NODE_CLASS_VOID; i++)
 			{
-				newNode = new SpinNode();
+				if(ImGui::Button(m_nodeClassDesc[i].c_str()))
+				{
+					newNode = createNodeByClass(i);
+				}
+				ImGui::NextColumn();
 			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"标准输入")))
-			{
-				newNode = new KeyTriggerNode();
-			}
-
-			if(ImGui::Button(TRC(u8"按键输入")))
-			{
-				newNode = new KeyAnyTriggerNode();
-			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"使用节点")))
-			{
-				newNode = new UseNode();
-			}
-
-			if(ImGui::Button(TRC(u8"Vector")))
-			{
-				newNode = new VectorNode();
-			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"Constant")))
-			{
-				newNode = new ConstantIntNode();
-			}
-			
-			if(ImGui::Button(TRC(u8"Toggle")))
-			{
-				newNode  = new ToggleNode();
-			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"变量")))
-			{
-				newNode = new VarNode();
-			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"赋值")))
-			{
-				newNode = new AssignNode();
-			}
-
-			if(ImGui::Button(TRC(u8"If")))
-			{
-				newNode = new IfNode();
-			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"==")))
-			{
-				newNode = new EqualNode();
-			}
-			ImGui::SameLine();
-			if(ImGui::Button(TRC(u8"PrintNode")))
-			{
-				newNode = new PrintNode();
-			}
+			ImGui::Columns(1);
 			if(newNode)
 			{
 				addNode(newNode);
@@ -434,7 +347,6 @@ enum class PinType
 				ed::SetNodePosition(newNode->m_nodeID, pos);
 			}
 		}
-		
 	    std::vector<ed::NodeId> selectedNodes;
 	    std::vector<ed::LinkId> selectedLinks;
 	    selectedNodes.resize(ed::GetSelectedObjectCount());
@@ -716,6 +628,99 @@ void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
 		node->handleExeOut();
 	}
 }
+
+	GameNodeEditorNode* GameNodeEditor::createNodeByClass(int classID)
+	{
+		GameNodeEditorNode * newNode = nullptr;
+		switch(classID)
+		{
+        case Node_CLASS_KEY_TRIGGER:
+			newNode = new KeyTriggerNode();
+			break;
+        case Node_CLASS_KEY_ANY_TRIGGER:
+			newNode = new KeyAnyTriggerNode();
+			break;
+        case Node_CLASS_SPIN:
+			newNode = new SpinNode();
+			break;
+        case Node_CLASS_VECTOR:
+			newNode = new VectorNode();
+			break;
+        case Node_CLASS_USE:
+			newNode = new UseNode();
+			break;
+        case Node_CLASS_CONSTANT_INT:
+			newNode = new ConstantIntNode();
+			break;
+        case Node_CLASS_TOGGLE:
+			newNode = new ToggleNode();
+			break;
+        case Node_CLASS_VAR:
+			newNode = new VarNode();
+			break;
+        case Node_CLASS_ASSIGN:
+			newNode = new AssignNode();
+			break;
+        case Node_CLASS_EQUAL:
+			newNode = new EqualNode();
+			break;
+        case Node_CLASS_IF:
+			newNode = new IfNode();
+			break;
+        case Node_CLASS_PRINT:
+			newNode = new PrintNode();
+			break;
+		}
+		return newNode;
+	}
+
+	void GameNodeEditor::genNodeClassDesc()
+	{
+		for(int i = 0; i < NODE_CLASS_VOID; i ++)
+		{
+			std::string desc = "UnknownNode";
+			switch(i)
+			{
+	        case Node_CLASS_KEY_TRIGGER:
+				desc = TR(u8"按键触发");
+				break;
+	        case Node_CLASS_KEY_ANY_TRIGGER:
+				desc = TR(u8"任意按键触发");
+				break;
+	        case Node_CLASS_SPIN:
+				desc = TR(u8"Spin");
+				break;
+	        case Node_CLASS_VECTOR:
+				desc = TR(u8"向量");
+				break;
+	        case Node_CLASS_USE:
+				desc = TR(u8"使用");
+				break;
+	        case Node_CLASS_CONSTANT_INT:
+				desc = TR(u8"常量");
+				break;
+	        case Node_CLASS_TOGGLE:
+				desc = TR(u8"切换");
+				break;
+	        case Node_CLASS_VAR:
+				desc = TR(u8"变量");
+				break;
+	        case Node_CLASS_ASSIGN:
+				desc = TR(u8"赋值");
+				break;
+	        case Node_CLASS_EQUAL:
+				desc = TR(u8"Equal");
+				break;
+	        case Node_CLASS_IF:
+				desc = TR(u8"If");
+				break;
+	        case Node_CLASS_PRINT:
+				desc = TR(u8"Print");
+				break;
+			}
+			m_nodeClassDesc.push_back(desc);
+		}
+	}
 
 void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 	{

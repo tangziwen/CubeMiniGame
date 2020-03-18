@@ -49,10 +49,13 @@ public:
 	void onPressButtonNode(GameNodeEditorNode * buttonNode);
 	void onReleaseButtonNode(GameNodeEditorNode * buttonNode);
 	void onReleaseSwitchNode(GameNodeEditorNode * buttonNode);
+	GameNodeEditorNode * createNodeByClass(int classID);
+	void genNodeClassDesc();
 protected:
 	std::queue<GameNodeEditorNode *> m_rt_exe_chain;
 	std::vector<GameNodeEditorNode * > m_gameNodes;
 	std::vector<LinkInfo> m_links;
 	std::vector<TriggerNode * > m_triggerList;
+	std::vector<std::string> m_nodeClassDesc;
 };
 }

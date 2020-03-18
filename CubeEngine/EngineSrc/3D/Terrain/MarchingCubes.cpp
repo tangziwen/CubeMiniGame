@@ -45,6 +45,7 @@ VertexData genVertexData(VoxelVertex & v)
 	a.m_matIndex[1] = v.matInfo.matIndex2;
 	a.m_matIndex[2] = v.matInfo.matIndex3;
 	a.m_matBlendFactor = v.matInfo.matBlendFactor;
+	a.m_texCoord = v.vertex.xz();
 	return a;
 }
 

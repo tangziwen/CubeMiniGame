@@ -57,6 +57,10 @@
 			"translated": "Else"
 		},
 		{
+			"original": "Equal",
+			"translated": "Equal"
+		},
+		{
 			"original": "IF",
 			"translated": "IF"
 		},
@@ -69,6 +73,10 @@
 			"translated": "I键打开物品栏，建造前先放升降机"
 		},
 		{
+			"original": "Print",
+			"translated": "Print"
+		},
+		{
 			"original": "PrintNode",
 			"translated": "PrintNode"
 		},
@@ -79,6 +87,10 @@
 		{
 			"original": "Self",
 			"translated": "Self"
+		},
+		{
+			"original": "Spin",
+			"translated": "Spin"
 		},
 		{
 			"original": "TZW 出品，测试版本",
@@ -111,6 +123,14 @@
 		{
 			"original": "Z键",
 			"translated": "Z Key"
+		},
+		{
+			"original": "任意按键触发",
+			"translated": "任意按键触发"
+		},
+		{
+			"original": "使用",
+			"translated": "使用"
 		},
 		{
 			"original": "使用节点",
@@ -171,6 +191,10 @@
 		{
 			"original": "分辨率",
 			"translated": "Resolution"
+		},
+		{
+			"original": "切换",
+			"translated": "切换"
 		},
 		{
 			"original": "切换开关节点",
@@ -379,6 +403,10 @@
 		{
 			"original": "按钮 %s",
 			"translated": "Button %s"
+		},
+		{
+			"original": "按键触发",
+			"translated": "按键触发"
 		},
 		{
 			"original": "按键输入",

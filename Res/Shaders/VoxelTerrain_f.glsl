@@ -7,6 +7,8 @@ precision mediump float;
 
 
 uniform sampler2D GrassTex;
+uniform sampler2D NormalTex;
+uniform sampler2D RoughnessTex;
 
 uniform float uv_grass;
 uniform float uv_cliff;
@@ -24,6 +26,7 @@ in vec2 v_texcoord;
 in vec3 v_worldPos;
 in vec3 v_color;
 in vec3 v_bc;
+in vec3 v_tangent;
 #define MAX_MATERIAL 16
 in float[MAX_MATERIAL] v_mat;
 //! [0]
@@ -338,11 +341,27 @@ vec4 texturePlain(sampler2D samp, in vec2 uv)
 	return texture(samp, uv);
 }
 
+
+vec3 CalcBumpedNormal(vec3 normalMapColor)
+{
+	vec3 Normal = normalize(v_normal);
+	vec3 Tangent = normalize(v_tangent.xyz);
+	Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
+	vec3 Bitangent = cross(Tangent, Normal);
+	vec3 BumpMapNormal = normalMapColor;
+	BumpMapNormal.y = 1.0 - BumpMapNormal.y;//we use directx style normal map. 1.0 - Green
+	BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
+	vec3 NewNormal;
+	mat3 TBN = mat3(Tangent, Bitangent, Normal);
+	NewNormal = TBN * BumpMapNormal; 
+	NewNormal = normalize(NewNormal);
+	return NewNormal;	
+}
 void main()
 {
   gl_FragData[0] = vec4(pow(getTerrainTex(GrassTex).rgb, vec3(2.2)), 1.0);
   gl_FragData[1] = vec4(v_position,1.0);
-  gl_FragData[2] = vec4(normalize(v_normal),1.0);
-  gl_FragData[3] = vec4(TU_roughness,0.0,0.0,1.0);
+  gl_FragData[2] = vec4(CalcBumpedNormal(getTerrainTex(NormalTex).rgb),1.0);
+  gl_FragData[3] = vec4(getTerrainTex(RoughnessTex).r,0.0,0.0,1.0);
 }
 //! [0]
