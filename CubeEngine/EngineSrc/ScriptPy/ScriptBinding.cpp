@@ -32,6 +32,12 @@ namespace tzw
 		return isOpen;
 	}
 
+	bool imgui_begin_child(const char* name, int x, int y, int flags)
+	{
+		bool isOpen = true;
+		isOpen = ImGui::BeginChild(name, ImVec2(x, y), flags);
+		return isOpen;
+	}
 	bool imgui_begin_no_close(const char* name, int flags)
 	{
 		return ImGui::Begin(name, NULL, flags);
@@ -260,6 +266,10 @@ namespace tzw
 		BIND_FUNC(ImGui, EndDragDropTarget)
 		BIND_FUNC(ImGui, EndDragDropTarget)
 		BIND_FUNC(ImGui, AcceptDragDropPayload)
+		BIND_FUNC(ImGui, Columns)
+		BIND_FUNC(ImGui, NextColumn)
+		.addFunction("BeginChild", &imgui_begin_child)
+		BIND_FUNC(ImGui, EndChild)
 		.addFunction("PushStyleColor", &imgui_PushStyleColor)
 		.addFunction("PopStyleColor", &imgui_PopStyleColor)
 		.addFunction("BeginPopupModal", &imgui_begin_popup_modal)
