@@ -162,19 +162,21 @@ function cpp_drawInventory()
 	local isOpen = ImGui.Begin(TR("资产浏览器"), 0)
 	local i = 0
 	local itemSize = 80
+	local realItemSize = itemSize
 	m_isDragingInventory = false
 
 	local window_visible_x2 = ImGui.GetWindowPos().x + ImGui.GetWindowContentRegionMax().x
 	local last_button_x2 = 0
 
 	inventoryAmount = ItemMgr.shared():getItemAmount()
+	local s = ImGui.GetStyle();
+	local spaceX = s.ItemSpacing.x;
+	local padding = s.FramePadding.x;
+	ImGui.BeginChild("InventoryViewer",0, 0, 0);
+	local size = ImGui.GetWindowWidth() - s.IndentSpacing;
+	ImGui.Columns(math.floor(size / (itemSize + (2 * padding))),"InventoryCol",false)
 	-- for k, v in pairs(m_inventory) do
 	for i = 1, inventoryAmount do
-		local s = ImGui.GetStyle();
-		local spaceX = s.ItemSpacing.x;
-		local padding = s.FramePadding.x;
-		
-		local size = ImGui.GetWindowWidth() - s.IndentSpacing;
 		-- local coloum = math.floor(size / (itemSize + spaceX * 2 + padding * 2)) + 1
 		-- if ((i % coloum) ~= 0) then
 		-- 	ImGui.SameLine(0, -1);
@@ -187,7 +189,7 @@ function cpp_drawInventory()
 			iconTexture = item:getThumbNailTextureId()
 		end
 		ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize));
-		local last_button_x2 = ImGui.GetItemRectMax().x;
+		local last_button_x2 = ImGui.GetItemRectMax().x - ImGui.GetItemRectMin().x;
 		local next_button_x2 = last_button_x2 + s.ItemSpacing.x + itemSize; -- Expected position if next button was on same line
 
 		-- Our buttons are both drag sources and drag targets here!
@@ -200,10 +202,10 @@ function cpp_drawInventory()
 		ImGui.Text(TR(item.m_desc));
 		ImGui.EndGroup();
 		ImGui.PopID();
-		if (next_button_x2 < window_visible_x2) then
-			ImGui.SameLine(0, -1);
-		end
+		ImGui.NextColumn()
 	end
+	ImGui.Columns(1,"InventoryCol",false)
+	ImGui.EndChild()
 	ImGui.End();
 	-- os.exit()
 	return isOpen
