@@ -54,12 +54,14 @@ public:
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
     float getDensity(vec3 pos);
+	int getMat(vec3 pos, float slope);
     MapType getMapType() const;
     void setMapType(const MapType &mapType);
 	void setMinHeight(float minHeight);
 	float minHeight();
 	ChunkInfo * getChunkInfo(int x, int y, int z);
 	ChunkInfo * m_chunkInfoArray[128][16][128];
+	float edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal);
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;

@@ -42,6 +42,7 @@ namespace tzw
 	    void genNormal();
 	    voxelInfo getPoint(int index);
 	    voxelInfo getPoint(int x, int y, int z);
+		voxelInfo getPointInner(int x, int y, int z);
 	    int getIndex(int x, int y, int z);
 	    void genMesh();
 	    void initData();

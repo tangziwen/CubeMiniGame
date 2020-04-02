@@ -2,23 +2,24 @@
 #include "Chunk.h"
 #include "GameConfig.h"
 
+#include "FastNoise/FastNoise.h"
+
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
 
-module::Perlin baseMountainTerrain;
+FastNoise baseMountainTerrain;
+FastNoise hightMountainTerrain;
+FastNoise bumpMountainTerrain;
 
-module::Billow baseFlatTerrain;
-module::Perlin baseBumpyFlatTerrain;
+FastNoise baseFlatTerrain;
+FastNoise baseBumpyFlatTerrain;
 
-module::ScaleBias flatTerrain;
-module::ScaleBias BumpyFlatTerrain;
-module::ScaleBias mountainTerrain;
+FastNoise terrainType;
+FastNoise hillSelector;
 
-module::Perlin terrainType;
-module::Select finalTerrain;
-
-module::Add finalFlatTerrain;
-
+FastNoise waterMud;
+FastNoise grassRock;
+FastNoise grassOrDirt;
 void voxelInfo::setV4(vec4 v)
 {
 	x = v.x;
@@ -108,37 +109,45 @@ GameMap::GameMap()
   m_plane = new noise::model::Plane(myModule);
   myModule.SetPersistence(0.001);
 
-  baseFlatTerrain.SetFrequency(0.001);
-  baseFlatTerrain.SetPersistence(0.1);
-  flatTerrain.SetSourceModule(0, baseFlatTerrain);
-  flatTerrain.SetScale(8.0);
-  flatTerrain.SetBias(15.0);
+	baseFlatTerrain.SetFrequency(0.001);
+	baseFlatTerrain.SetFractalOctaves(20);
+	baseFlatTerrain.SetNoiseType(FastNoise::PerlinFractal);
+	baseFlatTerrain.SetFractalType(FastNoise::Billow);
+	//flatTerrain.SetSourceModule(0, baseFlatTerrain);
+	//flatTerrain.SetScale(8.0);
+	//flatTerrain.SetBias(15.0);
 
-  baseBumpyFlatTerrain.SetFrequency(0.1);
-  baseBumpyFlatTerrain.SetPersistence(0.4);
+	baseBumpyFlatTerrain.SetFrequency(0.1);
+	baseBumpyFlatTerrain.SetFractalOctaves(10);
+	baseBumpyFlatTerrain.SetNoiseType(FastNoise::PerlinFractal);
+	//baseBumpyFlatTerrain.SetPersistence(0.25);
 
-  BumpyFlatTerrain.SetSourceModule(0, baseBumpyFlatTerrain);
-  BumpyFlatTerrain.SetScale(0.4);
+	//BumpyFlatTerrain.SetSourceModule(0, baseBumpyFlatTerrain);
+	//BumpyFlatTerrain.SetScale(0.6);
 
-  finalFlatTerrain.SetSourceModule(0, flatTerrain);
-  finalFlatTerrain.SetSourceModule(1, BumpyFlatTerrain);
 
-  baseMountainTerrain.SetSeed(233);
-  baseMountainTerrain.SetFrequency(0.015);
-  baseMountainTerrain.SetPersistence(0.3);
+	baseMountainTerrain.SetSeed(233);
+	baseMountainTerrain.SetFrequency(0.018);
+	baseMountainTerrain.SetFractalOctaves(15);
+	baseMountainTerrain.SetNoiseType(FastNoise::PerlinFractal);
 
-  mountainTerrain.SetSourceModule(0, baseMountainTerrain);
-  mountainTerrain.SetScale(30.0);
-  mountainTerrain.SetBias(30.0);
+	hightMountainTerrain.SetSeed(100);
+	hightMountainTerrain.SetFrequency(0.025);
+	hightMountainTerrain.SetFractalOctaves(15);
+	hightMountainTerrain.SetFractalLacunarity(2.5);
+	hightMountainTerrain.SetNoiseType(FastNoise::PerlinFractal);
 
-  finalTerrain.SetSourceModule(0, finalFlatTerrain);
-  finalTerrain.SetSourceModule(1, mountainTerrain);
 
-  terrainType.SetFrequency(0.005);
+	terrainType.SetFrequency(0.01);
+	terrainType.SetNoiseType(FastNoise::PerlinFractal);
 
-  finalTerrain.SetControlModule(terrainType);
-  finalTerrain.SetBounds(0.2, 100.0);
-  finalTerrain.SetEdgeFalloff(0.4);
+	hillSelector.SetFrequency(0.005);
+	
+	waterMud.SetFrequency(0.5);
+	grassRock.SetFrequency(0.1);
+	grassRock.SetSeed(200);
+	grassOrDirt.SetFrequency(0.07);
+	grassOrDirt.SetNoiseType(FastNoise::SimplexFractal);
 }
 
 void GameMap::init(float ratio, int width, int depth, int height)
@@ -184,9 +193,13 @@ GameMap::setMaxHeight(float maxHeight)
 double
 GameMap::getNoiseValue(float x, float y, float z)
 {
-  double value =
-    finalTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
-  return m_minHeight + value;
+	//double value = finalTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
+	auto finalFlatTerrain = baseFlatTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z)* 8 + 8 + baseBumpyFlatTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 0.6;
+	auto mountainTerrain = baseMountainTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 16 + 16;
+	auto highHillTerrain = hightMountainTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 28 + 28.0;
+	auto finalMountainTerrain = edgeFallOffSelect(0.5, 100, 0.2, mountainTerrain, highHillTerrain, hillSelector.GetNoise(x_offset + x, y_offset + y, z_offset + z));
+	double value = edgeFallOffSelect(0.05, 1.0, 0.27, finalFlatTerrain, finalMountainTerrain, terrainType.GetNoise(x_offset + x, y_offset + y, z_offset + z));//
+	return m_minHeight + value;	
 }
 
 bool
@@ -269,6 +282,40 @@ GameMap::getDensity(vec3 pos)
   }
 }
 
+int GameMap::getMat(vec3 pos, float slope)
+{
+	int mat = 5;//default is dirt material
+
+	if(slope > 0.15)//cliff
+	{
+		mat = 8;
+	}else// or plane
+	{
+		mat = 12;//default is grass
+		float grassOrDirtVal = grassOrDirt.GetNoise(pos.x, pos.y, pos.z);
+		if(grassOrDirtVal> - 0.3)//it is Grass
+		{
+			float grassRockVal = grassRock.GetValue(pos.x, pos.y, pos.z);
+			mat = 12;//default is grass
+			if(grassRockVal > 0.5)
+			{
+				mat = 6;//Grass with Rock
+			}
+		}
+		else // dirt
+		{
+			mat = 5;//dirt
+			float waterMudVal = waterMud.GetValue(pos.x, pos.y, pos.z);
+			if(waterMudVal > 0.7)
+			{
+				mat = 10;//dirt with water
+			}
+		}
+	}
+	//Mud & dirt
+	return mat;
+}
+
 GameMap::MapType
 GameMap::getMapType() const
 {
@@ -296,5 +343,68 @@ GameMap::minHeight()
 ChunkInfo * GameMap::getChunkInfo(int x, int y, int z)
 {
 	return m_chunkInfoArray[x][y][z];
+}
+  static double LinearInterp (double n0, double n1, double a)
+  {
+    return ((1.0 - a) * n0) + (a * n1);
+  }
+
+  /// Maps a value onto a cubic S-curve.
+  ///
+  /// @param a The value to map onto a cubic S-curve.
+  ///
+  /// @returns The mapped value.
+  ///
+  /// @a a should range from 0.0 to 1.0.
+  ///
+  /// The derivitive of a cubic S-curve is zero at @a a = 0.0 and @a a =
+  /// 1.0
+  static double SCurve3 (double a)
+  {
+    return (a * a * (3.0 - 2.0 * a));
+  }
+float GameMap::edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal)
+{
+
+    if (selectVal < (lowBound - edgeVal)) {
+      // The output value from the control module is below the selector
+      // threshold; return the output value from the first source module.
+      return val1;
+
+    } else if (selectVal < (lowBound + edgeVal)) 
+	{
+      // The output value from the control module is near the lower end of the
+      // selector threshold and within the smooth curve. Interpolate between
+      // the output values from the first and second source modules.
+      double lowerCurve = (lowBound - edgeVal);
+      double upperCurve = (lowBound + edgeVal);
+      float alpha = SCurve3 (
+        (selectVal - lowerCurve) / (upperCurve - lowerCurve));
+      return LinearInterp (val1,
+        val2,
+        alpha);
+
+    } else if (selectVal < (upBound - edgeVal)) {
+      // The output value from the control module is within the selector
+      // threshold; return the output value from the second source module.
+      return val2;
+
+    } else if (selectVal < (upBound + edgeVal)) {
+      // The output value from the control module is near the upper end of the
+      // selector threshold and within the smooth curve. Interpolate between
+      // the output values from the first and second source modules.
+      double lowerCurve = (upBound - edgeVal);
+      double upperCurve = (upBound + edgeVal);
+      float alpha = SCurve3 (
+        (selectVal - lowerCurve) / (upperCurve - lowerCurve));
+      return LinearInterp (val2,
+        val1,
+        alpha);
+
+    } else {
+      // Output value from the control module is above the selector threshold;
+      // return the output value from the first source module.
+      return val1;
+    }
 }
 } // namespace tzw

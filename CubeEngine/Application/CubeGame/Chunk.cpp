@@ -1058,6 +1058,18 @@ namespace tzw
 		}
 	}
 
+	voxelInfo Chunk::getPointInner(int x, int y, int z)
+	{
+		int size = MAX_BLOCK + 1;
+		int theIndex = x * size * size + y * size + z;
+		if (x >= 0 && x <= MAX_BLOCK && y >= 0 && y <= MAX_BLOCK && z >= 0 &&
+			z <= MAX_BLOCK)
+		{
+			return m_chunkInfo->mcPoints[theIndex];
+		}
+		return voxelInfo(0, 0, 0, 0);
+	}
+
 	int
 	Chunk::getIndex(int x, int y, int z)
 	{
@@ -1132,12 +1144,40 @@ namespace tzw
 					// x y z
 					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
 					m_chunkInfo->mcPoints[ind].setV4(verts);
-					if(tmpV3.y < 16) 
+				}
+			}
+		}
+		for (int i = 0; i < MAX_BLOCK + 1; i++)
+		{
+			for (int k = 0; k < MAX_BLOCK + 1; k++)
+			{
+				bool isSet = false;
+				for (int j = 0; j < MAX_BLOCK + 1;
+					j++) // Y in the most inner loop, cache friendly
+				{
+					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) +
+						vec4(m_basePoint, 0);
+					tmpV3.x = verts.x;
+					tmpV3.y = verts.y;
+					tmpV3.z = verts.z;
+					auto points = m_chunkInfo->mcPoints;
+					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
+					if((points[ind]).w >= -0.5f || true)//TODO skip the Empty block 
 					{
-						m_chunkInfo->mcPoints[ind].setMat(5, 0, 0, vec3(1, 0, 0));
-					}else
-					{
-						m_chunkInfo->mcPoints[ind].setMat(4, 0, 0, vec3(1, 0, 0));
+						auto x1 = getPointInner(i - 1, j, k).w;
+						auto x2 = getPointInner(i + 1, j, k).w;
+						auto y1 = getPointInner(i, j - 1, k).w;
+						auto y2 = getPointInner(i, j + 1, k).w;
+						auto z1 = getPointInner(i, j, k - 1).w;
+						auto z2 = getPointInner(i, j, k + 1).w;
+						auto gradientVec4 = vec4(x1 - x2,
+						   y1 - y2,
+						   z1 - z2,
+						   (points[ind]).w);
+						float slope = 1.0 -  TbaseMath::clampf( vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0)), 0.0f, 1.0f);
+						auto matID = GameMap::shared()->getMat(tmpV3, slope);
+						// x y z
+						m_chunkInfo->mcPoints[ind].setMat(matID, 0, 0, vec3(1, 0, 0));
 					}
 				}
 			}
@@ -1236,14 +1276,11 @@ namespace tzw
 			{
 				step = Tmisc::clamp(step - 0.2f, 0.0f, 1.0f);
 			}
-			vec3 matID = vec3(1.0, 0.0, 0.0);
-			
 			float value = flatNoise.GetValue(pos.x * 0.03, pos.z * 0.03, 0.0);
 			// the flat is grass or dirt?
 			value = value * 0.5 + 0.5;
 			// value = std::max(value - 0.2f, 0.0f);
 			value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
-			matID = vec3(1, 13, step);
 			// m_mesh->m_vertices[index0].m_matIndex = matID;
 			if (step > 0.5 && (1.0 - value > 0.7))
 			{

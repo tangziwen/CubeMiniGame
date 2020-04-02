@@ -101,7 +101,7 @@ namespace tzw
 
 	void CubePlayer::setPos(vec3 newPos)
 	{
-		m_camera->setPos(newPos);
+		m_camera->setCamPos(newPos);
 	}
 
 	void CubePlayer::logicUpdate(float dt)
