@@ -1,4 +1,5 @@
 package.path = Engine.shared():getFilePath("Script/?.lua;") .. package.path
+hotfix = require("hotfix.hotfix")
 g_include_module = {}
 function include(moduleName)
 	local r = require(moduleName)
@@ -9,9 +10,26 @@ end
 function tzw_engine_reload()
 	print("on tzw_engine_reload")
 	for k, v in pairs(g_include_module) do
-		package.loaded[k] = nil
-		require(k)
+		-- package.loaded[k] = nil
+		-- require(k)
+		hotfix.hotfix_module(k)
+		print("hot fix for"..k)
 	end
 end
 
-include("Main")
+
+Main = include("Main")
+-- init
+function tzw_engine_init()
+	Main.onEngineInit()
+end
+
+-- input event
+function tzw_engine_input_event(input_event)
+	Main.onEngineInputEvent(input_event)
+end
+
+--ui update
+function tzw_engine_ui_update(dt)
+	Main.handleUIUpdate(dt)
+end

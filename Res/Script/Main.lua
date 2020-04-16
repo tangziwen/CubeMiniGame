@@ -2,7 +2,7 @@ include("KeyConfig")
 include("UiUtil")
 require("math")
 require("os")
-Main = {}
+local module = {}
 
 
 function tzw_on_game_ready()
@@ -86,13 +86,17 @@ local g_blockAttachIndex = 0
 
 local m_isDragingInventory = false
 --init
-function tzw_engine_init()
+function module.onEngineInit()
 	print("lua init")
 	testIcon = TextureMgr.shared():getByPathSimple("./Texture/Icon/icons8-border-none-96.png")
 end
 
+module.test_var = 5
+local localTestVar = 6
 --ui update
-function tzw_engine_ui_update(dt)
+function module.handleUIUpdate(dt)
+	-- print(module.test_var)
+	-- print(localTestVar)
 	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 		if not GameUISystem.shared():isVisible() then
 			--除了物品栏之外，没有其他界面打开的时候，才画底部的Hud
@@ -516,7 +520,7 @@ function onMouseRelease(input_event)
 end
 
 --input event
-function tzw_engine_input_event(input_event)
+function module.onEngineInputEvent(input_event)
 	if GameUISystem.shared():isAnyShow() then
 		return
 	else
@@ -533,4 +537,4 @@ function tzw_engine_input_event(input_event)
 end
 
 
-return Main
+return module
