@@ -192,17 +192,14 @@ function module.onDrawWindow(arg)
 		if item:getThumbNailTextureId() ~= 0 then
 			iconTexture = item:getThumbNailTextureId()
 		end
+
+		-- -- print(item)
+
 		if(ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize))) then
 			module.currentSelectedItem  = item
 			print("click"..TR(item.m_desc))
 		end
-		print(item)
-		if module.currentSelectedItem == item then
-			local sizeMin = ImGui.GetItemRectMin()
-			local sizeMax = ImGui.GetItemRectMin()
-			ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 0, 0, 0))
-			print("nice")
-		end
+
 		-- print("aaaaaaaaaaaa"..module.currentSelectedItem.m_desc)
 		local last_button_x2 = ImGui.GetItemRectMax().x - ImGui.GetItemRectMin().x;
 		local next_button_x2 = last_button_x2 + s.ItemSpacing.x + itemSize; -- Expected position if next button was on same line
@@ -214,10 +211,16 @@ function module.onDrawWindow(arg)
 			ImGui.EndDragDropSource();
 			m_isDragingInventory = true
 		end
+		if module.currentSelectedItem and module.currentSelectedItem.m_name == item.m_name then
+			local sizeMin = ImGui.GetItemRectMin()
+			local sizeMax = ImGui.GetItemRectMax()
+			ImGui.DrawFrame(sizeMin, sizeMax, 2, ImGui.ImVec4(1, 0, 0, 1))
+		end
 		ImGui.Text(TR(item.m_desc));
-		
+
 		ImGui.EndGroup();
 		ImGui.PopID();
+
 		ImGui.NextColumn()
 	end
 	ImGui.Columns(1,"InventoryCol",false)
@@ -263,8 +266,8 @@ function drawHud()
 			if m_currIndex == k then
 				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
 				local sizeMin = ImGui.GetItemRectMin()
-				local sizeMax = ImGui.GetItemRectMin()
-				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
+				local sizeMax = ImGui.GetItemRectMax()
+				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 0, 1, 1))
 				needPop = true
 			end
 		else
@@ -278,8 +281,8 @@ function drawHud()
 				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
 				needPop = true
 				local sizeMin = ImGui.GetItemRectMin()
-				local sizeMax = ImGui.GetItemRectMin()
-				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 1, 1, 1))
+				local sizeMax = ImGui.GetItemRectMax()
+				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 0, 1, 1))
 			end
 		end
 		if needPop then

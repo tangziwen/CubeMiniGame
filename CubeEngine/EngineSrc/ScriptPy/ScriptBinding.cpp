@@ -118,7 +118,7 @@ namespace tzw
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, size);
 		ImGui::PushStyleColor(ImGuiCol_Border, color);
-		ImGui::RenderFrameBorder(ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), 1);
+		ImGui::RenderFrameBorder(min, max, 1);
 		ImGui::PopStyleVar(1);
 		ImGui::PopStyleColor(1);
 	}
