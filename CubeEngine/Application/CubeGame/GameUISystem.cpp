@@ -357,7 +357,7 @@ void GameUISystem::drawIMGUI()
 
 		if(getWindowIsShow(WindowType::INVENTORY))
 		{
-			bool isShow = ScriptPyMgr::shared()->callFunB("cpp_drawInventory");
+			bool isShow = ScriptPyMgr::shared()->callFun1IB("tzw_game_draw_window",int(WindowType::INVENTORY));
 			setWindowShow(WindowType::INVENTORY, isShow);
 		}
 		
@@ -826,7 +826,7 @@ void GameUISystem::drawEntryInterFace()
 	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
 
-		if(ImGui::Button(TRC(u8"创建新世界"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC("New Game"), ImVec2(160, 35)))
 		{
 			auto fuck = []
 			{
@@ -840,7 +840,7 @@ void GameUISystem::drawEntryInterFace()
 			Engine::shared()->setUnlimitedCursor(true);
 		}
 		ImGui::Spacing();
-		if(ImGui::Button(TRC(u8"载入世界"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC("Load"), ImVec2(160, 35)))
 		{
 			auto fuck = []
 			{
@@ -853,13 +853,13 @@ void GameUISystem::drawEntryInterFace()
 			Engine::shared()->setUnlimitedCursor(true);
 		}
 		ImGui::Spacing();
-		if(ImGui::Button(TRC(u8"选项"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC("Option"), ImVec2(160, 35)))
 		{
 			m_option.open();
 			setWindowShow(WindowType::OPTION_MENU, true);
 		}
 		ImGui::Spacing();
-		if(ImGui::Button(TRC(u8"帮助"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC("Help"), ImVec2(160, 35)))
 		{
 			auto a = new Texture();
                   a->loadAsync(
@@ -875,7 +875,7 @@ void GameUISystem::drawEntryInterFace()
 				  );
 		}
 		ImGui::Spacing();
-		if(ImGui::Button(TRC(u8"退出"), ImVec2(160, 35))) 
+		if(ImGui::Button(TRC("Exit"), ImVec2(160, 35))) 
 		{
 			TranslationMgr::shared()->dump();
 			exit(0);
@@ -905,7 +905,7 @@ void GameUISystem::initInGame()
     m_crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
 	 
     GameWorld::shared()->getMainRoot()->addChild(m_crossHair);
-	m_crossHairTipsInfo = LabelNew::create(TRC(u8"暂无提示"));
+	m_crossHairTipsInfo = LabelNew::create(TRC("No Tips"));
 	GameWorld::shared()->getMainRoot()->addChild(m_crossHairTipsInfo);
 	m_crossHairTipsInfo->setIsVisible(false);
 	m_crossHairTipsInfo->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2 -35);

@@ -54,6 +54,7 @@ struct GameItem
 	std::string m_name;
 	GamePartType m_type;
 	std::string m_desc;
+	std::string m_description;
 	std::vector<AttachmentInfo> m_attachList;
 	VisualInfo m_visualInfo;
 	PhysicsInfo m_physicsInfo;

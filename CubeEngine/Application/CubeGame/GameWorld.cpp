@@ -25,6 +25,7 @@
 #include "Utility/file/Tfile.h"
 #include "Engine/WorkerThreadSystem.h"
 #include "LoadingUI.h"
+#include "Shader/ShaderMgr.h"
 
 namespace tzw {
 GameWorld *GameWorld::m_instance = nullptr;
@@ -185,8 +186,8 @@ void GameWorld::startGame()
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 		tlog("init chunk cost : %d", Tmisc::DurationEnd());
 		float height = GameMap::shared()->getNoiseValue(0, 0, 0);
-		m_player->setPos(vec3(0, height + 100, 0));
-		m_player->setIsOpenJetPack(true);
+		m_player->setPos(vec3(0, height + 0.5, 0));
+		//m_player->setIsOpenJetPack(true);
 		loadChunksAroundPlayer();
 	}));
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
@@ -299,6 +300,26 @@ bool GameWorld::onKeyPress(int keyCode)
     }
 	return true;
 }
+
+bool GameWorld::onKeyRelease(int keyCode)
+{
+	switch (keyCode)
+	{
+	case TZW_KEY_F2:
+		{
+			ShaderMgr::shared()->reloadAllShaders();
+		}
+		break;
+	case TZW_KEY_F3:
+		{
+			ScriptPyMgr::shared()->reload();
+		}
+		break;
+	default: ;
+	}
+	return false;
+}
+
 void GameWorld::loadChunksAroundPlayer()
 {
 	 

@@ -4,18 +4,21 @@
 		{
 			"name" : "Painter",
 			"desc":"喷涂器",
+			"description":"可以用来给方块和地形喷绘颜色，右键打开颜色面板",
 			"Type":"SPECIAL_PART_PAINTER",
 			"Icon":"Texture/Icon/Painter.png"
 		},
 		{
 			"name" : "Digger",
 			"desc":"挖掘机",
+			"description":"用来挖掘地形",
 			"Type":"SPECIAL_PART_DIGGER",
 			"Icon":"Texture/Icon/Digger.png"
 		},
 		{
 		"name" : "Lift",
 		"desc":"升降机",
+		"description":"用来放置载具，载具放在升降机上时物理不会开启",
 		"Type":"GAME_PART_LIFT",
 		"Icon":"Texture/Icon/Lift.png",
 		"CollisionSize":0.5,
@@ -41,6 +44,7 @@
 		{
 		"name" : "Seat",
 		"desc":"座椅",
+		"description":"用来驾驶载具",
 		"Type":"GAME_PART_CONTROL",
 		"CollisionSize":0.5,
 		"attach":[
@@ -63,6 +67,7 @@
 		{
 		"name" : "Button",
 		"desc":"按钮",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BUTTON",
 		"CollisionSize":0.25,
 		"attach":[
@@ -85,6 +90,7 @@
 		{
 			"name" : "Switch",
 			"desc":"开关",
+			"description":"暂无描述",
 			"Type":"GAME_PART_SWITCH",
 			"CollisionSize":0.25,
 			"attach":[
@@ -107,6 +113,7 @@
 		{
 		"name" : "Block-S",
 		"desc":"方块小",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.25,
 		"attach":[
@@ -132,6 +139,7 @@
 		{
 		"name" : "Block",
 		"desc":"方块",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.5,
 		"attach":[
@@ -157,6 +165,7 @@
 		{
 		"name" : "Block-L",
 		"desc":"方块大",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":1.0,
 		"attach":[
@@ -182,6 +191,7 @@
 		{
 			"name" : "RightPrism-S",
 			"desc":"直棱柱小",
+			"description":"暂无描述",
 			"Type":"GAME_PART_BLOCK",
 			"CollisionSize":0.25,
 			"attach":[
@@ -204,6 +214,7 @@
 		{
 			"name" : "RightPrism",
 			"desc":"直棱柱",
+			"description":"暂无描述",
 			"Type":"GAME_PART_BLOCK",
 			"CollisionSize":0.5,
 			"attach":[
@@ -226,6 +237,7 @@
 		{
 			"name" : "RightPrism-L",
 			"desc":"直棱柱大",
+			"description":"暂无描述",
 			"Type":"GAME_PART_BLOCK",
 			"CollisionSize":1.0,
 			"attach":[
@@ -248,6 +260,7 @@
 		{
 		"name" : "Wheel-Bike",
 		"desc":"单车轮",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.25,
 		"attach":[
@@ -273,6 +286,7 @@
 		{
 		"name" : "WheelOffRoad-Medium",
 		"desc":"越野轮-中型",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.25,
 		"attach":[
@@ -295,6 +309,7 @@
 		{
 		"name" : "WheelOffRoad-Small",
 		"desc":"越野轮-小",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.25,
 		"attach":[
@@ -317,6 +332,7 @@
 		{
 		"name" : "WheelOffRoad-Normal",
 		"desc":"越野轮-普通",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.25,
 		"attach":[
@@ -339,6 +355,7 @@
 		{
 		"name" : "Thruster",
 		"desc":"推进器",
+		"description":"暂无描述",
 		"Type":"GAME_PART_THRUSTER",
 		"CollisionSize":0.25,
 		"attach":[
@@ -363,6 +380,7 @@
 		{
 		"name" : "Cannon",
 		"desc":"炮筒",
+		"description":"暂无描述",
 		"Type":"GAME_PART_CANNON",
 		"CollisionSize":0.25,
 		"attach":[
@@ -387,6 +405,7 @@
 		{
 		"name" : "Bearing",
 		"desc":"轴承",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BEARING",
 		"CollisionSize":0.25,
 		"attach":[
@@ -409,6 +428,7 @@
 		{
 		"name" : "Pipe-S",
 		"desc":"管子小",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.25,
 		"attach":[
@@ -429,6 +449,7 @@
 		{
 		"name" : "Pipe",
 		"desc":"管子",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":0.5,
 		"attach":[
@@ -449,6 +470,7 @@
 		{
 		"name" : "Pipe-L",
 		"desc":"管子大",
+		"description":"暂无描述",
 		"Type":"GAME_PART_BLOCK",
 		"CollisionSize":1.0,
 		"attach":[
@@ -469,6 +491,7 @@
 		{
 			"name" : "LargePipe",
 			"desc":"粗管",
+			"description":"暂无描述",
 			"Type":"GAME_PART_BLOCK",
 			"CollisionSize":1.0,
 			"attach":[
@@ -489,6 +512,7 @@
 		{
 		"name" : "Spring",
 		"desc":"弹簧",
+		"description":"暂无描述",
 		"Type":"GAME_PART_SPRING",
 		"CollisionSize":0.25,
 		"attach":[

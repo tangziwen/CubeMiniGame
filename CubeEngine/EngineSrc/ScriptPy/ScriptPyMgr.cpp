@@ -90,7 +90,21 @@ namespace tzw
 	bool ScriptPyMgr::callFunB(std::string funcName)
 	{
 		lua_getglobal(g_lua_state, funcName.c_str());
+
 		if (lua_pcall(g_lua_state, 0, 1, 0) != 0)
+		{
+			tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
+		}
+		bool returnVal = lua_toboolean(g_lua_state, -1);
+		lua_pop(g_lua_state, 1);
+		return returnVal;
+	}
+
+	bool ScriptPyMgr::callFun1IB(std::string funcName, int arg)
+	{
+		lua_getglobal(g_lua_state, funcName.c_str());
+		luabridge::push(g_lua_state, arg);
+		if (lua_pcall(g_lua_state, 1, 1, 0) != 0)
 		{
 			tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
 		}

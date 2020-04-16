@@ -95,9 +95,9 @@ namespace tzw
 		ImGui::SetDragDropPayload("DND_DEMO_CELL", &val, sizeof(int)); 
 	}
 
-	void imgui_ImageButton(unsigned int val, ImVec2 size)
+	bool imgui_ImageButton(unsigned int val, ImVec2 size)
 	{
-		ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1, 0));
+		return ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1, 0));
 	}
 
 	void imgui_Image(unsigned int val, ImVec2 size)

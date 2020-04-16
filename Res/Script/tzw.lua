@@ -33,3 +33,8 @@ end
 function tzw_engine_ui_update(dt)
 	Main.handleUIUpdate(dt)
 end
+
+--specified window draw
+function tzw_game_draw_window(arg)
+	return Main.onDrawWindow(arg)
+end

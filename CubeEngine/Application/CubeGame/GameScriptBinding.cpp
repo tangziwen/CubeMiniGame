@@ -75,6 +75,7 @@ namespace tzw
 		.addConstructor <void (*) ()> ()
 		BIND_PROP(GameItem, m_name)
 		BIND_PROP(GameItem, m_desc)
+		BIND_PROP(GameItem, m_description)
 		BIND_FUNC(GameItem, getTypeInInt)
 		BIND_FUNC(GameItem, isSpecialFunctionItem)
 		BIND_FUNC(GameItem, getThumbNailTextureId)

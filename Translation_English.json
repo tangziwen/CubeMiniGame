@@ -61,6 +61,14 @@
 			"translated": "Equal"
 		},
 		{
+			"original": "Exit",
+			"translated": "Exit"
+		},
+		{
+			"original": "Help",
+			"translated": "Help"
+		},
+		{
 			"original": "IF",
 			"translated": "IF"
 		},
@@ -71,6 +79,22 @@
 		{
 			"original": "I键打开物品栏，建造前先放升降机",
 			"translated": "I键打开物品栏，建造前先放升降机"
+		},
+		{
+			"original": "Load",
+			"translated": "Load"
+		},
+		{
+			"original": "New Game",
+			"translated": "New Game"
+		},
+		{
+			"original": "No Tips",
+			"translated": "No Tips"
+		},
+		{
+			"original": "Option",
+			"translated": "Option"
 		},
 		{
 			"original": "Print",
@@ -198,11 +222,7 @@
 		},
 		{
 			"original": "切换开关节点",
-			"translated": "切换开关节点"
-		},
-		{
-			"original": "创建新世界",
-			"translated": "创建新世界"
+			"translated": "Switch"
 		},
 		{
 			"original": "前后",
@@ -390,7 +410,7 @@
 		},
 		{
 			"original": "按T键穿透显示机械部件",
-			"translated": "按T键穿透显示机械部件"
+			"translated": "Press T to XRay"
 		},
 		{
 			"original": "按下",
@@ -437,6 +457,18 @@
 			"translated": "Direction Signal"
 		},
 		{
+			"original": "方块",
+			"translated": "方块"
+		},
+		{
+			"original": "方块大",
+			"translated": "方块大"
+		},
+		{
+			"original": "方块小",
+			"translated": "方块小"
+		},
+		{
 			"original": "旋转",
 			"translated": "Rotate"
 		},
@@ -458,7 +490,7 @@
 		},
 		{
 			"original": "是否开启角度限制",
-			"translated": "是否开启角度限制"
+			"translated": "Angle Limit"
 		},
 		{
 			"original": "是否继续?",
@@ -473,8 +505,12 @@
 			"translated": "Bearing"
 		},
 		{
+			"original": "暂无描述",
+			"translated": "暂无描述"
+		},
+		{
 			"original": "暂无提示",
-			"translated": "暂无提示"
+			"translated": "No Tips"
 		},
 		{
 			"original": "更多帮助请按H键打开",
@@ -494,7 +530,7 @@
 		},
 		{
 			"original": "标准输入",
-			"translated": "标准输入"
+			"translated": "STD Input"
 		},
 		{
 			"original": "清空所有载具",
@@ -521,6 +557,14 @@
 			"translated": "Prism-L"
 		},
 		{
+			"original": "直棱柱大",
+			"translated": "直棱柱大"
+		},
+		{
+			"original": "直棱柱小",
+			"translated": "直棱柱小"
+		},
+		{
 			"original": "窗口",
 			"translated": "Window"
 		},
@@ -535,6 +579,14 @@
 		{
 			"original": "管子",
 			"translated": "Pipe"
+		},
+		{
+			"original": "管子大",
+			"translated": "管子大"
+		},
+		{
+			"original": "管子小",
+			"translated": "管子小"
 		},
 		{
 			"original": "粗管",
@@ -627,10 +679,6 @@
 		{
 			"original": "轴承 %s",
 			"translated": "Bearing %s"
-		},
-		{
-			"original": "载入世界",
-			"translated": "载入世界"
 		},
 		{
 			"original": "载具浏览器",

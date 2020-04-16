@@ -18,6 +18,7 @@ namespace tzw
 		void raiseInputEvent(EventInfo eventInfo);
 		void callFunV(std::string funcName);
 		bool callFunB(std::string funcName);
+		bool callFun1IB(std::string funcName, int arg);
 		std::string runString(std::string theStr);
 		void reload();
 		void * getState();

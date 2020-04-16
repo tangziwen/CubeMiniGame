@@ -132,7 +132,7 @@ GameMap::GameMap()
 	baseMountainTerrain.SetNoiseType(FastNoise::PerlinFractal);
 
 	hightMountainTerrain.SetSeed(100);
-	hightMountainTerrain.SetFrequency(0.025);
+	hightMountainTerrain.SetFrequency(0.022);
 	hightMountainTerrain.SetFractalOctaves(15);
 	hightMountainTerrain.SetFractalLacunarity(2.5);
 	hightMountainTerrain.SetNoiseType(FastNoise::PerlinFractal);
@@ -286,29 +286,29 @@ int GameMap::getMat(vec3 pos, float slope)
 {
 	int mat = 5;//default is dirt material
 
-	if(slope > 0.15)//cliff
+	if(slope > 0.16)//cliff
 	{
-		mat = 8;
+		mat = 10;
 	}else// or plane
 	{
 		mat = 12;//default is grass
 		float grassOrDirtVal = grassOrDirt.GetNoise(pos.x, pos.y, pos.z);
-		if(grassOrDirtVal> - 0.3)//it is Grass
+		if(grassOrDirtVal> - 0.2)//it is Grass
 		{
 			float grassRockVal = grassRock.GetValue(pos.x, pos.y, pos.z);
 			mat = 12;//default is grass
 			if(grassRockVal > 0.5)
 			{
-				mat = 6;//Grass with Rock
+				mat = 3;//Grass with Rock
 			}
 		}
 		else // dirt
 		{
-			mat = 5;//dirt
+			mat = 11;//dirt
 			float waterMudVal = waterMud.GetValue(pos.x, pos.y, pos.z);
 			if(waterMudVal > 0.7)
 			{
-				mat = 10;//dirt with water
+				mat = 8;//dirt with water
 			}
 		}
 	}

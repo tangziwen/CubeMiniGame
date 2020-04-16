@@ -42,6 +42,7 @@ void ItemMgr::loadFromFile(std::string filePath)
 			auto name = item["name"].GetString();
 			std::string type = item["Type"].GetString();
 			auto desc = item["desc"].GetString();
+			auto description = item["description"].GetString();
 			auto gameItem = new GameItem();
 			gameItem->m_name = name;
 			bool isSpecial = false;
@@ -92,7 +93,7 @@ void ItemMgr::loadFromFile(std::string filePath)
 				gameItem->m_type = GamePartType::GAME_PART_SWITCH;
 			}
 			gameItem->m_desc = desc;
-
+			gameItem->m_description = description;
 			if(!isSpecial)
 			{
 				auto& attachs = item["attach"];

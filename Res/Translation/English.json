@@ -170,7 +170,7 @@
 		},
 		{
 			"original": "切换开关节点",
-			"translated": "切换开关节点"
+			"translated": "Switch"
 		},
 		{
 			"original": "前后",
@@ -358,7 +358,7 @@
 		},
 		{
 			"original": "按T键穿透显示机械部件",
-			"translated": "按T键穿透显示机械部件"
+			"translated": "Press T to XRay"
 		},
 		{
 			"original": "按下",
@@ -422,7 +422,7 @@
 		},
 		{
 			"original": "是否开启角度限制",
-			"translated": "是否开启角度限制"
+			"translated": "Angle Limit"
 		},
 		{
 			"original": "是否继续?",
@@ -438,7 +438,7 @@
 		},
 		{
 			"original": "暂无提示",
-			"translated": "暂无提示"
+			"translated": "No Tips"
 		},
 		{
 			"original": "更多帮助请按H键打开",
@@ -458,7 +458,7 @@
 		},
 		{
 			"original": "标准输入",
-			"translated": "标准输入"
+			"translated": "STD Input"
 		},
 		{
 			"original": "清空所有载具",

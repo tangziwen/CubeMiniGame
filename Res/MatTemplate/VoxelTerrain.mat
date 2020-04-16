@@ -7,8 +7,8 @@
 	"property" : {
 		"attributes" : [
 			{"name" : "uv_grass", "type":"float", "default":5.0, "ui_info":{"range":[0.1, 15.0]}},
-			{"name" : "uv_dirt", "type":"float", "default":5.0, "ui_info":{"range":[0.0, 15.0]}},
-			{"name" : "uv_cliff", "type":"float", "default":5.0, "ui_info":{"range":[0.0, 15.0]}},
+			{"name" : "uv_dirt", "type":"float", "default":5.0, "ui_info":{"range":[0.1, 15.0]}},
+			{"name" : "uv_cliff", "type":"float", "default":10.0, "ui_info":{"range":[0.1, 15.0]}},
 			{"name" : "disturb_factor_near", "type":"float", "default":0.3},
 			{"name" : "disturb_factor_far", "type":"float", "default":0.05},
 			{"name" : "near_dist", "type":"float", "default":15.0, "ui_info":{"range":[0.1, 100.0]}},

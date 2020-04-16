@@ -91,12 +91,10 @@ function module.onEngineInit()
 	testIcon = TextureMgr.shared():getByPathSimple("./Texture/Icon/icons8-border-none-96.png")
 end
 
-module.test_var = 5
-local localTestVar = 6
+module.test_var = 21
+local localTestVar = 4
 --ui update
 function module.handleUIUpdate(dt)
-	-- print(module.test_var)
-	-- print(localTestVar)
 	if GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_RUNNING then
 		if not GameUISystem.shared():isVisible() then
 			--除了物品栏之外，没有其他界面打开的时候，才画底部的Hud
@@ -161,8 +159,8 @@ function on_game_start()
 	local player = GameWorld.shared():getPlayer()
 	player:setCurrSelected(m_itemSlots[m_currIndex]["target"])
 end
-
-function cpp_drawInventory()
+module.currentSelectedItem = nil
+function module.onDrawWindow(arg)
 	local isOpen = ImGui.Begin(TR("资产浏览器"), 0)
 	local i = 0
 	local itemSize = 80
@@ -176,8 +174,10 @@ function cpp_drawInventory()
 	local s = ImGui.GetStyle();
 	local spaceX = s.ItemSpacing.x;
 	local padding = s.FramePadding.x;
-	ImGui.BeginChild("InventoryViewer",0, 0, 0);
-	local size = ImGui.GetWindowWidth() - s.IndentSpacing;
+	local rightPanelWidth = 150
+	local size = ImGui.GetWindowWidth() - s.IndentSpacing - rightPanelWidth
+	ImGui.BeginChild("InventoryViewer",size, 0, 0);
+	
 	ImGui.Columns(math.floor(size / (itemSize + (2 * padding))),"InventoryCol",false)
 	-- for k, v in pairs(m_inventory) do
 	for i = 1, inventoryAmount do
@@ -188,11 +188,22 @@ function cpp_drawInventory()
 		ImGui.PushID_str("inventory" .. i);
 		ImGui.BeginGroup();
 		local iconTexture = testIcon:handle()
-		item = ItemMgr.shared():getItemByIndex(i - 1)
+		local item = ItemMgr.shared():getItemByIndex(i - 1)
 		if item:getThumbNailTextureId() ~= 0 then
 			iconTexture = item:getThumbNailTextureId()
 		end
-		ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize));
+		if(ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize))) then
+			module.currentSelectedItem  = item
+			print("click"..TR(item.m_desc))
+		end
+		print(item)
+		if module.currentSelectedItem == item then
+			local sizeMin = ImGui.GetItemRectMin()
+			local sizeMax = ImGui.GetItemRectMin()
+			ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 0, 0, 0))
+			print("nice")
+		end
+		-- print("aaaaaaaaaaaa"..module.currentSelectedItem.m_desc)
 		local last_button_x2 = ImGui.GetItemRectMax().x - ImGui.GetItemRectMin().x;
 		local next_button_x2 = last_button_x2 + s.ItemSpacing.x + itemSize; -- Expected position if next button was on same line
 
@@ -204,11 +215,19 @@ function cpp_drawInventory()
 			m_isDragingInventory = true
 		end
 		ImGui.Text(TR(item.m_desc));
+		
 		ImGui.EndGroup();
 		ImGui.PopID();
 		ImGui.NextColumn()
 	end
 	ImGui.Columns(1,"InventoryCol",false)
+	ImGui.EndChild()
+	ImGui.SameLine(0, -1)
+	ImGui.BeginChild("DetailInfo",0, 0, 0);
+	if module.currentSelectedItem  ~= nil then
+		ImGui.Text(TR(module.currentSelectedItem .m_desc));
+		ImGui.TextWrapped(TR(module.currentSelectedItem.m_description));
+	end
 	ImGui.EndChild()
 	ImGui.End();
 	-- os.exit()

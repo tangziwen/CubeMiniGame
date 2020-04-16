@@ -32,6 +32,7 @@ public:
 	void loadGame(std::string filePath);
 	void saveGame(std::string filePath);
 	bool onKeyPress(int keyCode) override;
+	bool onKeyRelease(int keyCode) override;
     GameUISystem *getMainMenu() const;
     void unloadGame();
     int getCurrentState() const;

@@ -242,11 +242,6 @@ namespace tzw
                 }
 			}
 			break;
-		case TZW_KEY_F2:
-			{
-				ShaderMgr::shared()->reloadAllShaders();
-			}
-			break;
 		default:
 			break;
 		}
