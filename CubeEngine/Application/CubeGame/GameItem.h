@@ -35,6 +35,7 @@ struct VisualInfo
 
 struct PhysicsInfo
 {
+	PhysicsInfo();
 	enum class PhysicsInfoType
 	{
 		BoxShape,

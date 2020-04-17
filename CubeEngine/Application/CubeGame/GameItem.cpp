@@ -18,6 +18,10 @@ namespace tzw
 	{
 	}
 
+	PhysicsInfo::PhysicsInfo():type(PhysicsInfoType::BoxShape),size(vec3(0,0,0)),mass(0)
+	{
+	}
+
 	bool GameItem::isSpecialFunctionItem()
 	{
 		return (m_type == GamePartType::GAME_PART_LIFT) || (m_type == GamePartType::SPECIAL_PART_PAINTER) ||(m_type == GamePartType::SPECIAL_PART_DIGGER)  ;

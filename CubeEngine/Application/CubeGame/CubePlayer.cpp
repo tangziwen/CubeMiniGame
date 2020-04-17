@@ -129,7 +129,7 @@ namespace tzw
 			label->setIsVisible(false);
 			return;
 		}
-		m_previewItem->handlePreview(ItemMgr::shared()->getItem(m_currSelectedItem), getPos(),m_camera->getTransform().forward());
+		m_previewItem->handlePreview(m_currSelectedItem, getPos(),m_camera->getTransform().forward());
 		GamePart * part = nullptr;
 		bool isInXray = BuildingSystem::shared()->isIsInXRayMode();
 		if(isInXray)
@@ -358,7 +358,7 @@ namespace tzw
 	{
 		auto label = GameUISystem::shared()->getCrossHairTipsInfo();
 		if(!label) return;
-		auto item = ItemMgr::shared()->getItem(m_currSelectedItem);
+		auto item = m_currSelectedItem;
 		bool isNeedSpecialShowBySelected = false;
 		if(item && item->isSpecialFunctionItem())
 		{
@@ -475,8 +475,12 @@ namespace tzw
 	void CubePlayer::setCurrSelected(std::string itemName)
 	{
 		updateCrossHairTipsInfo();
-		if(itemName.empty()) return;
-		m_currSelectedItem = itemName;
+		if (itemName.empty()) 
+		{
+			m_currSelectedItem = nullptr;
+			return;
+		}
+		m_currSelectedItem = ItemMgr::shared()->getItem(itemName);
 		if(itemName == "Painter") return;
 		m_previewItem->setPreviewItem(ItemMgr::shared()->getItem(itemName));
 
@@ -541,6 +545,6 @@ namespace tzw
 
 	GameItem* CubePlayer::getCurSelectedItem()
 	{
-		return ItemMgr::shared()->getItem(m_currSelectedItem);
+		return m_currSelectedItem;
 	}
 } // namespace tzw

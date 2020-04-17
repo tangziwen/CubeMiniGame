@@ -69,13 +69,21 @@ namespace tzw
 		BIND_FUNC(GameWorld, startGame)
 		BIND_END_CLASS
 
+
+
+		BIND_START(luaState)
+		BIND_BEGIN_CLASS(PhysicsInfo)
+		BIND_PROP(PhysicsInfo, mass)
+		BIND_PROP(PhysicsInfo, size)
+		BIND_END_CLASS
+		
 		//GameItem
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(GameItem)
-		.addConstructor <void (*) ()> ()
 		BIND_PROP(GameItem, m_name)
 		BIND_PROP(GameItem, m_desc)
 		BIND_PROP(GameItem, m_description)
+		BIND_PROP(GameItem, m_physicsInfo)
 		BIND_FUNC(GameItem, getTypeInInt)
 		BIND_FUNC(GameItem, isSpecialFunctionItem)
 		BIND_FUNC(GameItem, getThumbNailTextureId)

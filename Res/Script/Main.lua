@@ -157,9 +157,21 @@ end
 function on_game_start()
 	InitInventory()
 	local player = GameWorld.shared():getPlayer()
+	-- choose a empty slot as init selected
+	for k, v in pairs(m_itemSlots) do
+		if v["target"] == nil then
+			m_currIndex = k
+			break
+		end
+	end
 	player:setCurrSelected(m_itemSlots[m_currIndex]["target"])
 end
 module.currentSelectedItem = nil
+
+local function formatV3(v)
+	return string.format("%.2f*%.2f*%.2f", v.x, v.y, v.z)
+end
+
 function module.onDrawWindow(arg)
 	local isOpen = ImGui.Begin(TR("资产浏览器"), 0)
 	local i = 0
@@ -197,7 +209,6 @@ function module.onDrawWindow(arg)
 
 		if(ImGui.ImageButton(iconTexture, ImGui.ImVec2(itemSize, itemSize))) then
 			module.currentSelectedItem  = item
-			print("click"..TR(item.m_desc))
 		end
 
 		-- print("aaaaaaaaaaaa"..module.currentSelectedItem.m_desc)
@@ -214,7 +225,7 @@ function module.onDrawWindow(arg)
 		if module.currentSelectedItem and module.currentSelectedItem.m_name == item.m_name then
 			local sizeMin = ImGui.GetItemRectMin()
 			local sizeMax = ImGui.GetItemRectMax()
-			ImGui.DrawFrame(sizeMin, sizeMax, 2, ImGui.ImVec4(1, 0, 0, 1))
+			ImGui.DrawFrame(sizeMin, sizeMax, 2, ImGui.ImVec4(0, 0, 0, 1))
 		end
 		ImGui.Text(TR(item.m_desc));
 
@@ -230,6 +241,9 @@ function module.onDrawWindow(arg)
 	if module.currentSelectedItem  ~= nil then
 		ImGui.Text(TR(module.currentSelectedItem .m_desc));
 		ImGui.TextWrapped(TR(module.currentSelectedItem.m_description));
+		ImGui.TextWrapped(TR("Mass: ")..module.currentSelectedItem.m_physicsInfo.mass);
+		local size = module.currentSelectedItem.m_physicsInfo.size;
+		ImGui.TextWrapped(TR("Size: ")..formatV3(size));
 	end
 	ImGui.EndChild()
 	ImGui.End();

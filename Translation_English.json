@@ -457,18 +457,6 @@
 			"translated": "Direction Signal"
 		},
 		{
-			"original": "方块",
-			"translated": "方块"
-		},
-		{
-			"original": "方块大",
-			"translated": "方块大"
-		},
-		{
-			"original": "方块小",
-			"translated": "方块小"
-		},
-		{
 			"original": "旋转",
 			"translated": "Rotate"
 		},
@@ -503,10 +491,6 @@
 		{
 			"original": "普通轴承",
 			"translated": "Bearing"
-		},
-		{
-			"original": "暂无描述",
-			"translated": "暂无描述"
 		},
 		{
 			"original": "暂无提示",
@@ -557,14 +541,6 @@
 			"translated": "Prism-L"
 		},
 		{
-			"original": "直棱柱大",
-			"translated": "直棱柱大"
-		},
-		{
-			"original": "直棱柱小",
-			"translated": "直棱柱小"
-		},
-		{
 			"original": "窗口",
 			"translated": "Window"
 		},
@@ -579,14 +555,6 @@
 		{
 			"original": "管子",
 			"translated": "Pipe"
-		},
-		{
-			"original": "管子大",
-			"translated": "管子大"
-		},
-		{
-			"original": "管子小",
-			"translated": "管子小"
 		},
 		{
 			"original": "粗管",

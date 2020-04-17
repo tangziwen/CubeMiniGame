@@ -81,7 +81,7 @@ namespace tzw
 		int m_currSelectItemIndex;
 		bool m_enableGravity;
 		float m_seatAngle = 0.0;
-		std::string m_currSelectedItem;
+		GameItem* m_currSelectedItem;
 		PaintGun * m_paintGun;
 		GamePart * m_currPointPart;
 		InSeatViewMode m_seatViewMode;
