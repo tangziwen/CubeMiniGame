@@ -11,6 +11,8 @@
 #include "Event/EventMgr.h"
 
 #include "ScriptBinding.h"
+#include "Utility/file/Tfile.h"
+#include "rapidjson/document.h"
 
 namespace tzw
 { 
@@ -52,12 +54,31 @@ namespace tzw
 		luaL_openlibs(g_lua_state);
 		g_init_engine_libs();
 		luabridge::getGlobalNamespace(g_lua_state).beginNamespace ("test").addFunction("test_func", test_func).endNamespace();
-		int res = luaL_dofile(g_lua_state,"Script/tzw.lua");
-	    if (res != 0) {
-			const char* error = lua_tostring(g_lua_state, -1);//打印错误结果
-			printf("%s\n",error);
-			lua_pop(g_lua_state, 1); 
-	    }
+
+		rapidjson::Document doc;
+		std::string filePath = "Data/Module/ModConfig.json";
+		auto data = Tfile::shared()->getData(filePath, true);
+		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+		if (doc.HasParseError())
+		{
+			tlog("[error] get json data err! %s %d offset %d\n", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
+			exit(1);
+		}
+		auto& items = doc["Mods"];
+		for (unsigned int i = 0; i < items.Size(); i++)
+		{
+			auto& item = items[i];
+			char scriptEntryName[1024];
+			sprintf(scriptEntryName,"%s%s%s","Data/Module/", item["Name"].GetString(), "/Script/tzw.lua");
+			int res = luaL_dofile(g_lua_state,scriptEntryName);
+		    if (res != 0) 
+			{
+				const char* error = lua_tostring(g_lua_state, -1);//打印错误结果
+				printf("%s\n",error);
+				lua_pop(g_lua_state, 1); 
+			}
+		}
+
 
 	}
 
@@ -141,10 +162,6 @@ namespace tzw
 	{
 		lua_getglobal(g_lua_state, "tzw_engine_reload");
 		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
-		{
-			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
-		}
-		if(luaL_loadfile(g_lua_state,"Script/tzw.lua")!= 0)
 		{
 			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}

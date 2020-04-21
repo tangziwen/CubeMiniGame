@@ -3,7 +3,8 @@
 #include <string>
 #include <vector>
 #include "Data.h"
-
+#include <map>
+struct zip_t;
 namespace tzw
 {
 class Tfile
@@ -20,11 +21,12 @@ public:
     std::vector<std::string> getAbsolutlyFilePath(std::string filePath);
 	std::string toAbsFilePath(std::string filePath, std::string workingCpy);
 	void addSearchZip(std::string zipPath);
+	~Tfile();
 private:
     Tfile();
-    ~Tfile();
+    
     std::vector<std::string> m_searchPath;
-	std::vector<std::string> m_searchZip;
+	std::map<std::string, zip_t *> m_searchZip;
     static Tfile * m_instance;
 };
 }

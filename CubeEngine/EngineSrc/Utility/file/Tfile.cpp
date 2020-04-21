@@ -32,38 +32,7 @@ Data Tfile::getData(std::string filename, bool forString)
           mode = "rt";
       else
           mode = "rb";
-	//search the zip
-    {
-		struct zip_t *zip = zip_open("Res.zip", 0, 'r');
-    	std::string zipFilename = "Res/" + filename;
-		if(zip_entry_open(zip, zipFilename.c_str()) == 0)
-		{
-			void * buf;
 
-	       auto bufsize = zip_entry_size(zip);
-			if(forString)
-			{
-				buf = calloc(sizeof(unsigned char), bufsize + 1);
-				
-			}else
-			{
-				buf = calloc(sizeof(unsigned char), bufsize);	
-			}
-	        zip_entry_noallocread(zip, buf, bufsize);
-			buffer = static_cast<unsigned char*>(buf);
-			if(forString)
-			{
-				buffer[bufsize] = '\0';
-			}
-			zip_entry_close(zip);
-			ret.fastSet(buffer, readsize);
-		}
-		zip_close(zip);
-    	if(buffer)
-    	{
-    		return ret;
-    	}
-    }
 	//search the file
 	for(auto searchPath :m_searchPath)
 	{
@@ -92,15 +61,53 @@ Data Tfile::getData(std::string filename, bool forString)
 		{
 		  buffer[readsize] = '\0';
 		}
+
+		if(buffer && readsize)
+		{
+		  ret.fastSet(buffer, readsize);
+			return ret;
+		}
 	}
+
+	//search the zip
+	for(auto zipData : m_searchZip)
+    {
+		struct zip_t *zip = zipData.second;
+		if(zip)
+		{
+    		std::string zipFilename = filename;
+			if(zip_entry_open(zip, zipFilename.c_str()) == 0)
+			{
+				void * buf;
+
+		       auto bufsize = zip_entry_size(zip);
+				if(forString)
+				{
+					buf = calloc(sizeof(unsigned char), bufsize + 1);
+				}else
+				{
+					buf = calloc(sizeof(unsigned char), bufsize);	
+				}
+		        zip_entry_noallocread(zip, buf, bufsize);
+				buffer = static_cast<unsigned char*>(buf);
+				if(forString)
+				{
+					buffer[bufsize] = '\0';
+				}
+				zip_entry_close(zip);
+				ret.fastSet(buffer, readsize);
+			}
+    		if(buffer)
+    		{
+    			return ret;
+    		}
+		}
+
+    }
 	if (nullptr == buffer || 0 == readsize)
 	{
 		tlogError("Bad file :Get data from file %s failed", filename.c_str());
-		exit(1);
-	}
-	else
-	{
-	  ret.fastSet(buffer, readsize);
+		abort();
 	}
 	return ret;
 }
@@ -194,7 +201,9 @@ std::string Tfile::toAbsFilePath(std::string filePath, std::string workingCpy)
 
 void Tfile::addSearchZip(std::string zipPath)
 {
-	m_searchZip.push_back(zipPath);
+	struct zip_t *zip = zip_open(zipPath.c_str(), 0, 'r');
+	m_searchZip[zipPath] = zip;
+	
 }
 
 Tfile::Tfile()
@@ -204,7 +213,11 @@ Tfile::Tfile()
 
 Tfile::~Tfile()
 {
-
+	for(auto zip :m_searchZip)
+	{
+		zip_close(zip.second);
+	}
+	m_searchZip.clear();
 }
 
 

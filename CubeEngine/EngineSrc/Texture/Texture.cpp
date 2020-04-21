@@ -16,11 +16,12 @@ namespace tzw
 	Texture::Texture(std::string filePath)
 	{
 		auto data =Tfile::shared()->getData(filePath,false);
-		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, 0, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
+		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
 		m_type = RenderFlag::TextureType::Texture2D;
 		if (!m_textureId)
 		{
-			tlog("texture create failed, no such file %s\n", filePath.c_str());
+			
+			tlog("texture create failed, no such file %s %s\n", filePath.c_str(),SOIL_last_result());
 			abort();
 		}
 		initData();

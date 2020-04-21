@@ -56,7 +56,7 @@ float Tmisc::clamp(float val, float minVal, float maxVal)
 
 std::string Tmisc::getUserPath(std::string filePath)
 {
-	return "./Res/" + filePath;
+	return filePath;
 }
 
 } // namespace tzw

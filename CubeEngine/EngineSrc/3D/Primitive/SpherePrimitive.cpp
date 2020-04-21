@@ -13,7 +13,7 @@ namespace tzw
 		m_radius = radius;
 		m_resolution = resolution;
 		m_material = Material::createFromTemplate("ModelStd");
-		auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
+		auto texture =  TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 		m_material->setTex("DiffuseMap", texture);
 		initMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());

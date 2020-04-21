@@ -334,9 +334,9 @@ float Engine::windowWidth() const
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
     shared()->setDelegate(delegate);
-	Tfile::shared()->addSearchPath("./Res/");
+	Tfile::shared()->addSearchPath("./Asset/");
 	Tfile::shared()->addSearchPath("./");
-	Tfile::shared()->addSearchZip("Res.zip");
+	Tfile::shared()->addSearchZip("Asset.zip");
 	shared()->loadConfig();
 	shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
 	shared()->m_winBackEnd->prepare(shared()->windowWidth(), shared()->windowHeight(), shared()->m_isFullScreen);

@@ -1,4 +1,5 @@
-package.path = "Script/?.lua;" .. package.path
+#add the search result
+package.path = "Data/module/TinyBuilder/Script/?.lua;" .. package.path
 hotfix = require("hotfix.hotfix")
 g_include_module = {}
 function include(moduleName)

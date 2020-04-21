@@ -214,7 +214,7 @@ void GameWorld::loadGame(std::string filePath)
 		GameMap::shared()->setMaxHeight(10);
 		 
 		GameMap::shared()->setMinHeight(3);
-		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "./Save/Terrain.bin");
+		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "Data/PlayerData/Save/Terrain.bin");
 		float height = GameMap::shared()->getDensity(vec3(0, 0, 0));
 		m_player->setPos(vec3(0, height + 3, 0));
 		loadChunksAroundPlayer();
@@ -279,7 +279,7 @@ void GameWorld::saveGame(std::string filePath)
             }
         }
     }
-    auto terrainFile = fopen("./Save/Terrain.bin", "wb");
+    auto terrainFile = fopen("./Data/PlayerData/Save/Terrain.bin", "wb");
 	//first size of int tell the fucking count
 	int theSize = tmpChunkList.size();
 	fwrite(&theSize, sizeof(int),1 ,terrainFile);

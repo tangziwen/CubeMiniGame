@@ -19,11 +19,11 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
 
 
     m_material = Material::createFromTemplate("ModelStd");
-	auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
+	auto texture =  TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 	m_material->setTex("DiffuseMap", texture);
 
 	m_topBottomMaterial = Material::createFromTemplate("ModelStd");
-	auto arrowTexture = TextureMgr::shared()->getByPath("Texture/rock.jpg");
+	auto arrowTexture = TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 	m_topBottomMaterial->setTex("DiffuseMap", arrowTexture);
 
     initMesh();

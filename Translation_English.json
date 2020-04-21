@@ -89,6 +89,10 @@
 			"translated": "New Game"
 		},
 		{
+			"original": "No Tips",
+			"translated": "No Tips"
+		},
+		{
 			"original": "Option",
 			"translated": "Option"
 		},
@@ -159,6 +163,10 @@
 		{
 			"original": "保存",
 			"translated": "Save"
+		},
+		{
+			"original": "保存世界",
+			"translated": "保存世界"
 		},
 		{
 			"original": "保存设置",
