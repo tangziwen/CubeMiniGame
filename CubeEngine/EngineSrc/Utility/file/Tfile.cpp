@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "Utility/log/Log.h"
+#include "zip/zip.h"
 
 namespace tzw
 {
@@ -31,44 +32,77 @@ Data Tfile::getData(std::string filename, bool forString)
           mode = "rt";
       else
           mode = "rb";
-      do
-      {
-          // Read the file from hardware
-          FILE *fp = fopen(filename.c_str (), mode);
-          if(!fp)
-          {
-              tlogError("Bad file : %s\n",filename.c_str());
-              exit(1);
-          }
-          fseek(fp,0,SEEK_END);
-          size = ftell(fp);
-          fseek(fp,0,SEEK_SET);
-          if (forString)
-          {
-              buffer = (unsigned char*)malloc(sizeof(unsigned char) * (size + 1));
-              buffer[size] = '\0';
-          }
-          else
-          {
-              buffer = (unsigned char*)malloc(sizeof(unsigned char) * size);
-          }
-          readsize = fread(buffer, sizeof(unsigned char), size, fp);
-          fclose(fp);
-          if (forString && readsize < size)
-          {
-              buffer[readsize] = '\0';
-          }
-      } while (0);
+	//search the zip
+    {
+		struct zip_t *zip = zip_open("Res.zip", 0, 'r');
+    	std::string zipFilename = "Res/" + filename;
+		if(zip_entry_open(zip, zipFilename.c_str()) == 0)
+		{
+			void * buf;
 
-      if (nullptr == buffer || 0 == readsize)
-      {
-          tlogError("Get data from file %s failed", filename.c_str());
-      }
-      else
-      {
-          ret.fastSet(buffer, readsize);
-      }
-      return ret;
+	       auto bufsize = zip_entry_size(zip);
+			if(forString)
+			{
+				buf = calloc(sizeof(unsigned char), bufsize + 1);
+				
+			}else
+			{
+				buf = calloc(sizeof(unsigned char), bufsize);	
+			}
+	        zip_entry_noallocread(zip, buf, bufsize);
+			buffer = static_cast<unsigned char*>(buf);
+			if(forString)
+			{
+				buffer[bufsize] = '\0';
+			}
+			zip_entry_close(zip);
+			ret.fastSet(buffer, readsize);
+		}
+		zip_close(zip);
+    	if(buffer)
+    	{
+    		return ret;
+    	}
+    }
+	//search the file
+	for(auto searchPath :m_searchPath)
+	{
+		std::string realFileName = searchPath + filename;
+          // Read the file from hardware
+		FILE *fp = fopen(realFileName.c_str (), mode);	
+		if(!fp)
+		{
+			continue;
+		}
+		fseek(fp,0,SEEK_END);
+		size = ftell(fp);
+		fseek(fp,0,SEEK_SET);
+		if (forString)
+		{
+		  buffer = (unsigned char*)malloc(sizeof(unsigned char) * (size + 1));
+		  buffer[size] = '\0';
+		}
+		else
+		{
+		  buffer = (unsigned char*)malloc(sizeof(unsigned char) * size);
+		}
+		readsize = fread(buffer, sizeof(unsigned char), size, fp);
+		fclose(fp);
+		if (forString && readsize < size)
+		{
+		  buffer[readsize] = '\0';
+		}
+	}
+	if (nullptr == buffer || 0 == readsize)
+	{
+		tlogError("Bad file :Get data from file %s failed", filename.c_str());
+		exit(1);
+	}
+	else
+	{
+	  ret.fastSet(buffer, readsize);
+	}
+	return ret;
 }
 
 std::string Tfile::fullPathFromRelativeFile(const std::string &filename, const std::string &relativeFile)
@@ -156,6 +190,11 @@ std::string Tfile::toAbsFilePath(std::string filePath, std::string workingCpy)
 	}
 	workingCpy.append(filePath);
 	return workingCpy;
+}
+
+void Tfile::addSearchZip(std::string zipPath)
+{
+	m_searchZip.push_back(zipPath);
 }
 
 Tfile::Tfile()

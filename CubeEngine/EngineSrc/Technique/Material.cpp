@@ -28,7 +28,7 @@ Material::Material(): m_isCullFace(false), m_program(nullptr),
 void Material::loadFromTemplate(std::string name)
 {
 	//tlog("load Material %s\n", name.c_str());
-	loadFromFile(std::string("./Res/MatTemplate/") + name + ".mat");
+	loadFromFile(std::string("MatTemplate/") + name + ".mat");
 	//tlog("load Material finished %s\n", name.c_str());
 }
 

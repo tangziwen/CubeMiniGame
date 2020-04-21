@@ -431,7 +431,7 @@ void GameWorld::prepare()
 	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Load Blocks",
 		WorkerJob([&]()
 	{
-		ItemMgr::shared()->loadFromFile("./Res/Blocks/Blocks.json");
+		ItemMgr::shared()->loadFromFile("Blocks/Blocks.json");
 	}));
 	//load the BlockConfig
 

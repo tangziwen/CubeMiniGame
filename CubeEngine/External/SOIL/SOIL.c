@@ -214,7 +214,8 @@ unsigned int
 		int buffer_length,
 		int force_channels,
 		unsigned int reuse_texture_ID,
-		unsigned int flags
+		unsigned int flags,
+		int *widthOutter, int *heightOutter
 	)
 {
 	/*	variables	*/
@@ -243,6 +244,8 @@ unsigned int
 					&width, &height, &channels,
 					force_channels );
 	/*	channels holds the original number of channels, which may have been forced	*/
+	(*widthOutter) = width;
+	(*heightOutter) = height;
 	if( (force_channels >= 1) && (force_channels <= 4) )
 	{
 		channels = force_channels;

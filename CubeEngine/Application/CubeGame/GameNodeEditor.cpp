@@ -68,9 +68,9 @@ enum class PinType
 	GameNodeEditor::GameNodeEditor()
 	{
 		g_Context = ed::CreateEditor();
-	    s_HeaderBackground = TextureMgr::shared()->getByPath("./Texture/NodeEditor/BlueprintBackground.png");
-	    s_SaveIcon         = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_save_white_24dp.png");
-	    s_RestoreIcon      = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
+	    s_HeaderBackground = TextureMgr::shared()->getByPath("Texture/NodeEditor/BlueprintBackground.png");
+	    s_SaveIcon         = TextureMgr::shared()->getByPath("Texture/NodeEditor/ic_save_white_24dp.png");
+	    s_RestoreIcon      = TextureMgr::shared()->getByPath("Texture/NodeEditor/ic_restore_white_24dp.png");
 		EventMgr::shared()->addFixedPiorityListener(this);
 		genNodeClassDesc();
 	}

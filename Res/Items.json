@@ -1,8 +1,0 @@
-{
-	"Items" : [
-			{"name" : "Block", "type":0, "desc":"block", "class":"PlaceableBlock"},
-			{"name" : "Wheel", "type":1, "desc":"Wheel", "class":"PlaceableBlock"},
-			{"name" : "Bearing", "type":-1, "desc":"Bearing", "class":"PlaceableBlock"},
-			{"name" : "TerrainFormer", "type":-1, "desc":"TerrainFormer", "class":"TerrainForm"}
-		]
-}

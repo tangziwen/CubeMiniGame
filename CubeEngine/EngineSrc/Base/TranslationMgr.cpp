@@ -7,6 +7,7 @@
 #include "rapidjson/prettywriter.h"
 #include "Utility/file/Tfile.h"
 #include "Utility/log/Log.h"
+#include "Engine/Engine.h"
 
 namespace tzw
 {
@@ -56,7 +57,7 @@ namespace tzw
 	{
 		m_languageName = languageName;
 		rapidjson::Document doc;
-		std::string filePath = "./Res/Translation/" + m_languageName + ".json";
+		std::string filePath = "Translation/" + m_languageName + ".json";
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
 		if (doc.HasParseError())

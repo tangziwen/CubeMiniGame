@@ -11,7 +11,7 @@ namespace tzw
 	TZW_SINGLETON_IMPL(ShadowMap)
 	ShadowMap::ShadowMap()
 	{
-		m_program = ShaderMgr::shared()->getByPath("./Res/Shaders/ShadowNaive_v.glsl", "./Res/Shaders/ShadowNaive_f.glsl");
+		m_program = ShaderMgr::shared()->getByPath("Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
 		int shadowMapSize[] = {512, 1024, 1024};
 		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)

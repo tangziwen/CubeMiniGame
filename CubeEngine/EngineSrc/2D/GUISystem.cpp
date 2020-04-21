@@ -236,7 +236,7 @@ namespace tzw
 	void GUISystem::initGUI()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
-		g_imguiShader = ShaderMgr::shared()->getByPath("./Res/Shaders/IMGUI_v.glsl", "./Res/Shaders/IMGUI_f.glsl");
+		g_imguiShader = ShaderMgr::shared()->getByPath("Shaders/IMGUI_v.glsl", "Shaders/IMGUI_f.glsl");
 		m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 		m_arrayBuf->create();
 		m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);

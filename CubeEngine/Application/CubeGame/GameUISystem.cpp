@@ -79,7 +79,7 @@ GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr),m_isOpenPlayerOverLay(true)
 	
 {
-	m_helperData = Tfile::shared()->getData("./Res/helpMain.md", true);
+	m_helperData = Tfile::shared()->getData("helpMain.md", true);
 }
 
 	Texture * testIcon = nullptr;
@@ -105,12 +105,12 @@ void GameUISystem::init()
 		m_nodeEditor->clearAll();
 		BuildingSystem::shared()->load(fileName);
 	};
-	testIcon = TextureMgr::shared()->getByPath("./Texture/NodeEditor/ic_restore_white_24dp.png");
-	settingIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-gear-96.png");
-	bluePrintIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-blueprint-96.png");
-	helpIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-help-96.png");
-	homeIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-home-page-96.png");
-	packageIcon = TextureMgr::shared()->getByPath("./Texture/Icon/icons8-furniture-store-96.png");
+	testIcon = TextureMgr::shared()->getByPath("Texture/NodeEditor/ic_restore_white_24dp.png");
+	settingIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-gear-96.png");
+	bluePrintIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-blueprint-96.png");
+	helpIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-help-96.png");
+	homeIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-home-page-96.png");
+	packageIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-furniture-store-96.png");
 	
 	//hide();
 }

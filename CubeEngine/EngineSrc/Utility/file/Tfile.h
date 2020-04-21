@@ -19,10 +19,12 @@ public:
     std::string getFolder(std::string filePath);
     std::vector<std::string> getAbsolutlyFilePath(std::string filePath);
 	std::string toAbsFilePath(std::string filePath, std::string workingCpy);
+	void addSearchZip(std::string zipPath);
 private:
     Tfile();
     ~Tfile();
     std::vector<std::string> m_searchPath;
+	std::vector<std::string> m_searchZip;
     static Tfile * m_instance;
 };
 }

@@ -74,7 +74,7 @@ namespace tzw
 		m_saveOpen(false)
 	{
 		m_currSelected = "";
-		refreshDir("./Res/Vehicles/");
+		refreshDir("./Data/PlayerData/Vehicles/");
 	}
 
 	void VehicleBroswer::refreshDir(std::string dir)
@@ -171,7 +171,7 @@ namespace tzw
 					{
 						m_saveCallBack(m_currDir + m_currSelected);
 					}
-					refreshDir("./Res/Vehicles/");
+					refreshDir("./Data/PlayerData/Vehicles/");
 					(*isOpen) = false;
 				}
 				ImGui::SameLine();

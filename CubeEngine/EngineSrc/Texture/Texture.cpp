@@ -5,6 +5,7 @@
 #include "GL/glew.h"
 #include "Utility/log/Log.h"
 #include "Engine/WorkerThreadSystem.h"
+#include "Utility/file/Tfile.h"
 
 namespace tzw
 {
@@ -14,9 +15,8 @@ namespace tzw
 
 	Texture::Texture(std::string filePath)
 	{
-		std::string resultFilePath = Engine::shared()->getFilePath(filePath);
-		this->m_textureId = SOIL_load_OGL_texture(
-			resultFilePath.c_str(), SOIL_LOAD_AUTO, 0, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
+		auto data =Tfile::shared()->getData(filePath,false);
+		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, 0, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
 		m_type = RenderFlag::TextureType::Texture2D;
 		if (!m_textureId)
 		{

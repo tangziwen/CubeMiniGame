@@ -52,7 +52,7 @@ namespace tzw
 		luaL_openlibs(g_lua_state);
 		g_init_engine_libs();
 		luabridge::getGlobalNamespace(g_lua_state).beginNamespace ("test").addFunction("test_func", test_func).endNamespace();
-		int res = luaL_dofile(g_lua_state,"./Res/Script/tzw.lua");
+		int res = luaL_dofile(g_lua_state,"Script/tzw.lua");
 	    if (res != 0) {
 			const char* error = lua_tostring(g_lua_state, -1);//´òÓ¡´íÎó½á¹û
 			printf("%s\n",error);
@@ -144,7 +144,7 @@ namespace tzw
 		{
 			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
-		if(luaL_loadfile(g_lua_state,"./Res/Script/tzw.lua")!= 0)
+		if(luaL_loadfile(g_lua_state,"Script/tzw.lua")!= 0)
 		{
 			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}

@@ -275,7 +275,6 @@ void Engine::onStart()
 	GUISystem::shared()->initGUI();
 	Renderer::shared()->init();
 	uuid4_init();
-	
 	//WorkerThreadSystem::shared()->init();
 }
 
@@ -335,6 +334,9 @@ float Engine::windowWidth() const
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
     shared()->setDelegate(delegate);
+	Tfile::shared()->addSearchPath("./Res/");
+	Tfile::shared()->addSearchPath("./");
+	Tfile::shared()->addSearchZip("Res.zip");
 	shared()->loadConfig();
 	shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
 	shared()->m_winBackEnd->prepare(shared()->windowWidth(), shared()->windowHeight(), shared()->m_isFullScreen);
