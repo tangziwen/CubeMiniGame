@@ -6,7 +6,6 @@
 #include <time.h>
 
 #include "ScriptPy/ScriptPyMgr.h"
-
 using namespace std;
 using namespace tzw;
 #if _MSC_VER >= 1900
@@ -32,6 +31,5 @@ extern "C"
 #pragma comment(linker, "/subsystem:console")
 int main(int argc, char *argv[])
 {
-	// return 0;
-	return Engine::run(argc,argv,new GameEntry());
+return Engine::run(argc,argv,new GameEntry());
 }

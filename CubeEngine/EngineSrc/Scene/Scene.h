@@ -5,12 +5,12 @@
 #include "../Base/Camera.h"
 
 #include "../Math/Ray.h"
-#include "OctreeScene.h"
 #include "../Lighting/DirectionalLight.h"
 #include "../Lighting/AmbientLight.h"
 #include "../3D/SkyBox.h"
 namespace tzw {
 
+class OctreeScene;
 struct ConsolePanel;
 class DebugInfoPanel;
 

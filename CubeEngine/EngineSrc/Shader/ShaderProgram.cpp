@@ -217,7 +217,6 @@ void ShaderProgram::createShader(bool isStrict)
     }
     tzw::Data vs_data = tzw::Tfile::shared()->getData(m_vertexShader,true);
     tzw::Data fs_data = tzw::Tfile::shared()->getData(m_fragmentShader,true);
-	tlog("compiling... %s %s", m_vertexShader.c_str(), m_fragmentShader.c_str());
     if (vs_data.isNull()) {
         exit(1);
     };
@@ -271,7 +270,6 @@ void ShaderProgram::createShader(bool isStrict)
 
 void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType, bool isStrict)
 {
-	tlog("create shader!");
     GLuint ShaderObj = glCreateShader(ShaderType);
 	RenderBackEnd::shared()->selfCheck();
 

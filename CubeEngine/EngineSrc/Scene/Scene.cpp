@@ -1,9 +1,11 @@
 #include "Scene.h"
+#include "OctreeScene.h"
 #include "../Engine/Engine.h"
 #include "../Game/ConsolePanel.h"
 #include "../Game/DebugInfoPanel.h"
 #include "../Interface/Drawable3D.h"
 #include "../Engine/EngineDef.h"
+
 namespace tzw {
 
 Scene::Scene()

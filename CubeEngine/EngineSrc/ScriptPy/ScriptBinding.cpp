@@ -16,7 +16,6 @@
 #include "2D/imnodes.h"
 #include "Base/TranslationMgr.h"
 #include "2D/GUISystem.h"
-
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
 #define BIND_START(state) luabridge::getGlobalNamespace(state)
@@ -127,16 +126,36 @@ namespace tzw
 	{
 		return TranslationMgr::shared()->getStr(theString);
 	}
+	void tlog_lua(std::string myStr)
+	{
+		tlog(myStr.c_str());
+	}
+	int l_my_print(lua_State *L) {
+	    int nargs = lua_gettop(L);
+	    for (int i = 1; i <= nargs; ++i) {
+	        tlog(luaL_tolstring(L, i, nullptr));
+	        lua_pop(L, 1); // remove the string
+	    }
+	    return 0;
+	}
+
+	void checkLeak(std::string filePath)
+	{
+		//auto f = fopen("./tzw.txt", "w");
+		//nvwa::check_leaks(NULL);
+		//fclose(f);
+	}
 	void g_init_engine_libs()
 	{
 		auto luaState = static_cast<lua_State *>(ScriptPyMgr::shared()->getState());
 
-
-		
+	    lua_pushcfunction(luaState, l_my_print);
+	    lua_setglobal(luaState, "print");
 		BIND_START(luaState)
 		//static function
 		.addFunction("TR", &translation)
-
+		.addFunction("tlog", &tlog_lua)
+		.addFunction("checkLeak", &checkLeak)
 		BIND_BEGIN_CLASS(vec2)//Vec2
 		.addConstructor <void (*) ()> ()
 		BIND_PROP(vec2, x)

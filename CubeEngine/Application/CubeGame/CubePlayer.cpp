@@ -51,7 +51,7 @@ namespace tzw
 		camera->reCache();
 		m_camera->setIsEnableGravity(true);
 		m_currSelectItemIndex = 0;
-
+		m_currSelectedItem = nullptr;
 
 		m_orbitcamera = OrbitCamera::create(g_GetCurrScene()->defaultCamera());
 		m_fpvCamera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), false);
@@ -190,7 +190,6 @@ namespace tzw
 
 	bool CubePlayer::onKeyRelease(int keyCode)
 	{
-		tlog("is UI whant capture input %d",GUISystem::shared()->isUiCapturingInput());
 		//if (MainMenu::shared()->isVisible()) return false;
 		switch (keyCode)
 		{

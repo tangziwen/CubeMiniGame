@@ -22,6 +22,7 @@ namespace tzw
 		std::string runString(std::string theStr);
 		void reload();
 		void * getState();
+		void doString(std::string);
 	private:
 
 	};

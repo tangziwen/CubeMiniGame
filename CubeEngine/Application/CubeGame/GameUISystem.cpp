@@ -63,6 +63,7 @@ enum class WindowType
 	WORLD_SETTING,
 	PLAYER_INFO,
 	ABOUT,
+	Console,
 };
 static void exitNow(Button * btn)
 {
@@ -198,112 +199,66 @@ void GameUISystem::drawIMGUI()
 			ImGui::SetNextWindowBgAlpha(0.75f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
 			ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings;
+			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings; //| ImGuiWindowFlags_MenuBar;
 			ImGui::Begin("MenuBar",nullptr, window_flags);
 			ImGui::PopStyleVar(2);
-			// ImGui::BeginMenuBar();
-			// if (ImGui::BeginMenu(u8"游戏"))
-			// {
-			// 	if (ImGui::MenuItem(u8"关闭菜单", "CTRL+Z")) {setWindowShow(WindowType::MainMenu, false);}
-			// 	if (ImGui::MenuItem(u8"清空所有", nullptr))
-			// 	{
-			// 		GameWorld::shared()->getPlayer()->removeAllBlocks();
-			// 		m_nodeEditor->clearAll();
-			// 	}
-			// 	if (ImGui::MenuItem(u8"退出游戏", "CTRL+Z")) { exit(0); }
-			// 	ImGui::EndMenu();
-			// }
-			// drawToolsMenu();
-			// static bool isOpenTerrain = false;
-			// if(ImGui::BeginMenu(u8"World"))
-			// {
-			// 	if(ImGui::MenuItem(u8"天气设置", nullptr))
-			// 	{
-			// 		setWindowShow(WindowType::WORLD_SETTING, true);
-			// 	}
-			// 	ImGui::MenuItem(u8"玩家信息", nullptr, &m_isOpenPlayerOverLay);
-			// 	ImGui::EndMenu();
-			// }
-			// if(ImGui::BeginMenu(u8"帮助"))
-			// {
-			// 	if(ImGui::MenuItem(u8"帮助文档", nullptr))
-			// 	{
-			// 		setWindowShow(WindowType::HELP_PAGE, true);
-			// 	}
-			// 	if(ImGui::MenuItem(u8"版本信息", nullptr))
-			// 	{
-			// 		setWindowShow(WindowType::ABOUT, true);
-			// 	}
-			// 	ImGui::EndMenu();
-			// }
-			// if (ImGui::BeginMenu(u8"Debug"))
-			// {
-			// 	auto camera = g_GetCurrScene()->defaultCamera();
-			// 	ImGui::MenuItem(u8"性能剖析", nullptr, &m_isShowProfiler);
-			// 	ImGui::MenuItem(u8"控制台", nullptr, &m_isShowConsole);
-			// 	if (ImGui::MenuItem(u8"重载脚本", nullptr)) {ScriptPyMgr::shared()->reload();}
-			// 	if(ImGui::MenuItem("Particle test"))
-			// 	{
-			// 	auto node = Node::create();
-			// 	ParticleEmitter * emitter2 = new ParticleEmitter(40);
-			// 	emitter2->setSpawnRate(0.05);
-			// 	emitter2->addInitModule(new ParticleInitSizeModule(1.0, 1.0));
-			// 	emitter2->addInitModule(new ParticleInitVelocityModule(vec3(0, 1, 0), vec3(0, 1, 0)));
-			// 	emitter2->addInitModule(new ParticleInitLifeSpanModule(2.0, 2.0));
-			// 	emitter2->addInitModule(new ParticleInitAlphaModule(0.6, 0.6));
-			// 	emitter2->addUpdateModule(new ParticleUpdateSizeModule(1.0, 0.8));
-			// 	emitter2->addUpdateModule(new ParticleUpdateColorModule(vec4(0.36, 0.36, 0.5, 0.4), vec4(0.0, 0.0, 1.0, 0.01)));
-			// 	emitter2->setIsState(ParticleEmitter::State::Playing);
-			// 	node->addChild(emitter2);
-			// 	g_GetCurrScene()->addNode(node);
-			// 	node->setPos(camera->getPos() + camera->getForward() * 15.0f);
-			// 	node->setRotateE(vec3(0, 0, 45));
-			// 	}
-			//
-			// 	if(ImGui::MenuItem(u8"Reload Shader", nullptr, nullptr))
-			// 	{
-			// 		ShaderMgr::shared()->reloadAllShaders();
-			// 	}
-			// 	ImGui::MenuItem(u8"渲染设置", nullptr, &m_isOpenRenderEditor);
-			// 	ImGui::EndMenu();
-			// }
-			// ImGui::EndMenuBar();
+			GUISystem::shared()->imguiUseSmallFont();
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			float IconSize = 32.0f;
 			ImVec2 homeDropDownPos;
+			ImGui::BeginHorizontal("Menu");
 			//ImGui::BeginHorizontal("IconGroup");
 			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(homeIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			//if(ImGui::SmallButton("Menu"))
 			{
 				//closeAllOpenedWindow();
-				//setWindowShow(WindowType::RESUME_MENU, true);
-				ImGui::OpenPopup("HomePopup");
+				setWindowShow(WindowType::RESUME_MENU, true);
+				//ImGui::OpenPopup("HomePopup");
 			}
-			ImGui::SameLine();
+			//ImGui::SameLine();
 			homeDropDownPos = ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y);
-			ImGui::Spacing();
-			ImGui::SameLine();
-			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			//ImGui::Spacing();
+			//ImGui::SameLine();
+			
+			//if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			
+			if(ImGui::Button("Inventory",ImVec2(0, IconSize)))
 			{
 				setWindowShow(WindowType::INVENTORY, true);
 			}
-			ImGui::SameLine();
-			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(bluePrintIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			//ImGui::SameLine();
+			//if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(bluePrintIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			if(ImGui::Button("NodeEditor",ImVec2(0, IconSize)))
 			{
 				setWindowShow(WindowType::NODE_EDITOR, true);
+				
 			}
-			ImGui::SameLine();
+			homeDropDownPos = ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y);
+			//ImGui::SameLine();
+			if(ImGui::BeginMenu("Misc", true, ImGui::GetItemRectSize().y))
+			{
+				if (ImGui::MenuItem(TRC("WorldSetting"),NULL,getWindowIsShow(WindowType::WORLD_SETTING))) 
+				{
+					setWindowShow(WindowType::WORLD_SETTING, true);
+				}
+                if (ImGui::MenuItem("Console",0,getWindowIsShow(WindowType::Console))) 
+				{
+                	setWindowShow(WindowType::Console, true);
+                }
+				ImGui::EndMenu();
+			}
 			//now with right
 			ImGui::SetCursorPosX(io.DisplaySize.x - 100.0f);
 			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(settingIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
 			{
 				setWindowShow(WindowType::OPTION_MENU, true);
 			}
-			ImGui::SameLine();
+			//ImGui::SameLine();
 			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(helpIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
 			{
 				setWindowShow(WindowType::HELP_PAGE, true);
 			}
-			//ImGui::EndHorizontal();
+			ImGui::EndHorizontal();
 			ImGui::SetNextWindowPos(homeDropDownPos);
 			if(ImGui::BeginPopup("HomePopup"))
 			{
@@ -321,7 +276,11 @@ void GameUISystem::drawIMGUI()
 				ImGui::PopID();
 				ImGui::EndPopup();
 			}
+
+
+
 			ImGui::PopStyleColor(1);
+			ImGui::PopFont();
 			ImGui::End();
 
 
@@ -339,6 +298,12 @@ void GameUISystem::drawIMGUI()
 			}
 			setWindowShow(WindowType::ABOUT, isOpen);
 		}
+		if(getWindowIsShow(WindowType::Console))
+		{
+			bool isOpen = true;
+			ConsolePanel::shared()->Draw("Console", &isOpen);
+			setWindowShow(WindowType::Console, isOpen);
+        }
 		if (getWindowIsShow(WindowType::HELP_PAGE))
 		{
 			ImGui::MarkdownConfig config;
@@ -492,23 +457,51 @@ void GameUISystem::drawIMGUI()
 		if(getWindowIsShow(WindowType::WORLD_SETTING)) 
 		{
 			auto screenSize = Engine::shared()->winSize();
-			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Appearing, ImVec2(0.5, 0.5));
 			bool isOpen = true;
 			ImGui::Begin(u8"世界设置",&isOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-			auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
-			fogMat->inspect();
-			auto dirLight = g_GetCurrScene()->getDirectionLight();
-			float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
-			ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
-			dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
 
-			float sunAngle1 = TbaseMath::Radius2Ang(dirLight->theta());
-			ImGui::SliderFloat("Sun longitude", &sunAngle1, -180, 180);
-			dirLight->setTheta(TbaseMath::Ang2Radius(sunAngle1));
-			
-			float sunIntensity = dirLight->intensity();
-			ImGui::SliderFloat("SunIntensity", &sunIntensity, 0.0, 50.0);
-			dirLight->setIntensity(sunIntensity);
+			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
+            if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) 
+			{
+        	auto flag = ImGuiTabItemFlags_None;
+
+            if (ImGui::BeginTabItem(TRC(u8"Fog"), 0, flag)) 
+			{
+				auto fogMat = MaterialPool::shared()->getMaterialByName("GlobalFog");
+				fogMat->inspect();
+            	ImGui::EndTabItem();
+            }
+            if (ImGui::BeginTabItem(TRC(u8"Sun"), 0, flag)) 
+			{
+				auto dirLight = g_GetCurrScene()->getDirectionLight();
+				float time = dirLight->getTime();
+				ImGui::SliderFloat("Sun Time", &time, 0, 24);
+
+				float longitude = TbaseMath::Radius2Ang(dirLight->longitude());
+				ImGui::SliderFloat("Sun longitude", &longitude, 0, 360);
+				dirLight->setTimeAndLongitude(time, TbaseMath::Ang2Radius(longitude));
+				static char* items[] = { "Constant", "24X", "30X", "48X", "72X", "120X", "180X","240X","340X"};
+		        if (ImGui::BeginCombo(TRC(u8"Time Elapse"), items[dirLight->getElapseLevel()], 0)) // The second parameter is the label previewed before opening the combo.
+		        {
+		            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+		            {
+		                bool is_selected = (dirLight->getElapseLevel() == n);
+		                if (ImGui::Selectable(items[n], is_selected))
+		                    dirLight->setElapseLevel(n);
+		                if (is_selected)
+		                    ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+		            }
+		            ImGui::EndCombo();
+		        }
+				
+				float sunIntensity = dirLight->intensity();
+				ImGui::SliderFloat("SunIntensity", &sunIntensity, 0.0, 50.0);
+				dirLight->setIntensity(sunIntensity);
+            	ImGui::EndTabItem();
+            }
+            	ImGui::EndTabBar();
+            }
 			setWindowShow(WindowType::WORLD_SETTING, isOpen);
 		}
 		
@@ -678,17 +671,6 @@ void GameUISystem::drawToolsMenu()
 
 		auto PostMat = MaterialPool::shared()->getMaterialByName("SSAO");
 		PostMat->inspect();
-
-		//auto sunMat = Sky::shared()->getMaterial();
-		//sunMat->inspectIMGUI("sun_intensity", 0.0f, 100.0f);
-		auto dirLight = g_GetCurrScene()->getDirectionLight();
-		float sunAngle2 = TbaseMath::Radius2Ang(dirLight->phi());
-		ImGui::SliderFloat("Sun Angle", &sunAngle2, -180, 180);
-		dirLight->setPhi(TbaseMath::Ang2Radius(sunAngle2));
-
-		float sunIntensity = dirLight->intensity();
-		ImGui::SliderFloat("SunIntensity", &sunIntensity, 0.0, 50.0);
-		dirLight->setIntensity(sunIntensity);
 		ImGui::End();
 	}
 }
@@ -762,7 +744,7 @@ void GameUISystem::ShowExampleAppLog(bool* p_open)
 
 void GameUISystem::ShowExampleAppConsole(bool* p_open)
 {
-	ConsolePanel::shared()->Draw("Console", p_open);
+	
 }
 
 void GameUISystem::drawInventory()

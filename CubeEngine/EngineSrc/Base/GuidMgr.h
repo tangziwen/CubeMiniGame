@@ -1,6 +1,6 @@
 #pragma once
 #include "Engine/EngineDef.h"
-#include <map>
+#include <unordered_map>
 
 namespace tzw {
 	class GUIDMgr
@@ -14,7 +14,7 @@ namespace tzw {
 		std::string genGUID();
 		GUIDMgr();
 	private:
-		std::map<std::string, void *> m_map;
+		std::unordered_map<std::string, void *> m_map;
 	};
 } // namespace tzw
 

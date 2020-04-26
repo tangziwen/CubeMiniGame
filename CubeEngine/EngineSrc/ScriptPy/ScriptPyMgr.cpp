@@ -163,12 +163,23 @@ namespace tzw
 		lua_getglobal(g_lua_state, "tzw_engine_reload");
 		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
 		{
-			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
+			tlogError("error on Reload:\n %s\n", lua_tostring(g_lua_state, -1)); 
 		}
 	}
 
 	void* ScriptPyMgr::getState()
 	{
 		return g_lua_state;
+	}
+
+	void ScriptPyMgr::doString(std::string s)
+	{
+		int res = luaL_dostring(g_lua_state,s.c_str());
+	    if (res!= 0) 
+		{
+			const char* error = lua_tostring(g_lua_state, -1);//´òÓ¡´íÎó½á¹û
+			tlogError("%s\n",error);
+			lua_pop(g_lua_state, 1); 
+		}
 	}
 }

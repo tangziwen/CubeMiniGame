@@ -1094,7 +1094,7 @@ void Renderer::directionalLightPass()
 	  
 
 	auto dirLight = currScene->getDirectionLight();
-	  
+	dirLight->tick(Engine::shared()->deltaTime());
 	program->setUniform3Float("gDirectionalLight.direction",dirLight->dir());
 	  
 	program->setUniform3Float("gDirectionalLight.color",dirLight->color());

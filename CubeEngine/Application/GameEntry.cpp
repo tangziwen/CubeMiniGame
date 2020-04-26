@@ -16,16 +16,9 @@ GameEntry::GameEntry()
 {
 	m_ticks = 0;
 }
-
-void GameEntry::onStart()
-{ 
-
-	g_binding_game_objects();
-	GameWorld::shared();
-	GameWorld::shared()->init();
+static void showSplash()
+{
 	GameWorld::shared()->setCurrentState(GAME_STATE_SPLASH);
-
-	
 	//splash
 	auto splashSprite = Sprite::create("logo_small.png");
     auto size = splashSprite->getContentSize();
@@ -41,13 +34,22 @@ void GameEntry::onStart()
 		splashSprite->removeFromParent();
 	};
 	std::vector<Action *> actionList;
+	actionList.push_back(new ActionInterval(1.0));
+	actionList.push_back(new TintTo(0.3, vec4(1, 1, 1, 0),vec4(1, 1, 1, 1)));
 	actionList.push_back(new ActionInterval(1.5));
-	actionList.push_back(new TintTo(1.5, vec4(1, 1, 1, 0),vec4(1, 1, 1, 1)));
-	actionList.push_back(new ActionInterval(2.5));
-	actionList.push_back(new TintTo(1.5, vec4(1, 1, 1, 1),vec4(1, 1, 1, 0)));
+	actionList.push_back(new TintTo(0.3, vec4(1, 1, 1, 1),vec4(1, 1, 1, 0)));
 	actionList.push_back(new ActionInterval(0.1));
 	actionList.push_back(new ActionCallFunc(lambda));
 	splashSprite->runAction(new ActionSequence(actionList));
+}
+
+
+void GameEntry::onStart()
+{ 
+	g_binding_game_objects();
+	GameWorld::shared();
+	GameWorld::shared()->init();	
+	showSplash();
 }
 
 void GameEntry::onExit()

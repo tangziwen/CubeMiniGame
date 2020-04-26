@@ -33,7 +33,7 @@ public:
 private:
 	void createShader(bool isStrict);
     void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType, bool isStrict);
-    std::map<std::string,unsigned int> m_locationMap;
+    std::unordered_map<std::string,unsigned int> m_locationMap;
 	std::unordered_map<std::string, int> m_uniformMap;
     unsigned int shader;
 	std::string m_fragmentShader;

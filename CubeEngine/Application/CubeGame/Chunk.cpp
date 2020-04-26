@@ -20,6 +20,8 @@ static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 
 namespace tzw
 {
+
+	std::mutex loading_mutex; 
 	/// <summary>	The flat noise. </summary>
 	module::Perlin flatNoise;
 	/// <summary>	The grass noise. </summary>
@@ -32,11 +34,10 @@ namespace tzw
 		: x(the_x)
 		, y(the_y)
 		, z(the_z)
-		, m_isLoaded(false)
+		, m_currenState(State::INVALID)
 		, m_rigidBody(nullptr)
 	{
 		m_lod = 0;
-		m_isloading = false;
 		m_localAABB.update(vec3(0, 0, 0));
 
 		m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,
@@ -80,7 +81,7 @@ namespace tzw
 	bool
 	Chunk::intersectByAABB(const AABB& other, vec3& overLap)
 	{
-		if (!m_isLoaded)
+		if (m_currenState != State::LOADED)
 			return false;
 		auto size = m_mesh->getIndicesSize();
 		for (size_t i = 0; i < size; i += 3)
@@ -109,7 +110,7 @@ namespace tzw
 	bool
 	Chunk::intersectBySphere(const t_Sphere& sphere, std::vector<vec3>& hitPoint)
 	{
-		if (!m_isLoaded)
+		if (m_currenState != State::LOADED)
 			return false;
 		auto size = m_mesh->getIndicesSize();
 		std::vector<vec3> resultList;
@@ -162,13 +163,16 @@ namespace tzw
 			m_grass->finish();
 			m_grass2->finish();
 			PhysicsMgr::shared()->addRigidBody(m_rigidBody);
+			loading_mutex.lock();
+			m_currenState = State::LOADED;
+			loading_mutex.unlock();
 		}
 	}
 
 	bool
 	Chunk::getIsAccpectOcTtree() const
 	{
-		return m_isLoaded;
+		return m_currenState == State::LOADED;
 	}
 
 	/// <summary>
@@ -177,7 +181,7 @@ namespace tzw
 	void Chunk::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 		/// just for test
-		if (!m_isLoaded)
+		if (m_currenState!= State::LOADED)
 			return;
 		if (m_mesh->getIndicesSize() == 0)
 			return;
@@ -204,7 +208,7 @@ namespace tzw
 	void
 	Chunk::load()
 	{
-		if (m_isLoaded)
+		if (m_currenState!= State::INVALID)
 			return;
 		reCache();
 		if (!m_mesh)
@@ -212,7 +216,9 @@ namespace tzw
 			m_mesh = new Mesh();
 			m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		}
-		m_isloading = true;
+		loading_mutex.lock();
+		m_currenState = State::LOADING;
+		loading_mutex.unlock();
 		setCamera(g_GetCurrScene()->defaultCamera());
 		if (!m_chunkInfo->isLoaded)
 		{
@@ -225,20 +231,18 @@ namespace tzw
 		else
 		{
 			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(); }));
-			// genMesh();
 		}
-		m_isloading = false;
-		m_isLoaded = true;
 	}
 
 	void
 	Chunk::unload()
 	{
-		if(m_isloading)
+		if(m_currenState != State::LOADED)
 		{
-			tlog("fuck the hell");
+			return;
 		}
-		m_isLoaded = false;
+		m_currenState = State::INVALID;
+		m_isNeedSubmitMesh = false;
 		// m_mesh->clear();
 		delete m_mesh;
 		m_mesh = nullptr;
@@ -1108,17 +1112,15 @@ namespace tzw
 	void
 	Chunk::genMesh()
 	{
-		MarchingCubes::shared()->generateWithoutNormal(
+		MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
 			m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints, 0.0f, m_lod);
 		if (m_mesh->isEmpty())
 			return;
 		genNormal();
-		//m_mesh->caclNormals();
 		calculateMatID();
+		loading_mutex.lock();
 		m_isNeedSubmitMesh = true;
-		// m_mesh->caclNormals();
-		// m_mesh->calBaryCentric();
-		// m_mesh->finish();
+		loading_mutex.unlock();
 	}
 
 	void Chunk::initData()
@@ -1144,6 +1146,7 @@ namespace tzw
 					// x y z
 					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
 					m_chunkInfo->mcPoints[ind].setV4(verts);
+					m_chunkInfo->mcPoints[ind].index = ind;
 				}
 			}
 		}
@@ -1189,7 +1192,7 @@ namespace tzw
 	void
 	Chunk::checkCollide(ColliderEllipsoid* package)
 	{
-		if (!m_isLoaded)
+		if (m_currenState != State::LOADED)
 			return;
 		auto size = m_mesh->getIndicesSize();
 		std::vector<vec3> resultList;
@@ -1346,7 +1349,7 @@ namespace tzw
 	bool
 	Chunk::hitFirst(const Ray& ray, vec3& result)
 	{
-		if (!m_isLoaded)
+		if (m_currenState != State::LOADED)
 			return false;
 		auto size = m_mesh->getIndicesSize();
 		float t = 0;

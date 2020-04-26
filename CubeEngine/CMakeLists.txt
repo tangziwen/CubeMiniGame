@@ -24,7 +24,6 @@ project(CubeEngine)
 set(TEMPLATE app)
 #OpenGL
 #OpenGL
-set(LIBS ${LIBS} -L.)
 ###Application folder BEGIN###
 include_directories(./Application)
 ###Application folder END###
@@ -56,6 +55,8 @@ set(LIBS ${LIBS} fmodex_vc)
 #GL
 set(LIBS ${LIBS} opengl32)
 
+#debugHelp
+set(LIBS ${LIBS} Dbghelp)
 
 #bullets
 #set(LIBS ${LIBS} Bullet3Collision_vs2010_x64_debug Bullet3Common_vs2010_x64_debug Bullet3Dynamics_vs2010_x64_debug Bullet3Geometry_vs2010_x64_debug Bullet3OpenCL_clew_vs2010_x64_debug)

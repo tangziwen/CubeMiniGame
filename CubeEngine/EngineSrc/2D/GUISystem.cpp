@@ -281,9 +281,9 @@ namespace tzw
 		//io.Fonts->AddFontFromFileTTF("./Res/font/DroidSans.ttf", 16.0f);
 		//io.Fonts->AddFontFromFileTTF("./Res/font/ProggyTiny.ttf", 10.0f);
 
-		m_fontSmall = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-		m_fontNormal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 18.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-		m_fontLarge = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 24.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		m_fontSmall = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 14.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		m_fontNormal = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 16.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		m_fontLarge = io.Fonts->AddFontFromFileTTF("c:\\Windows\\Fonts\\simhei.ttf", 22.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
 		IM_ASSERT(m_fontSmall != NULL);
 		IM_ASSERT(m_fontNormal != NULL);
 		IM_ASSERT(m_fontLarge != NULL);

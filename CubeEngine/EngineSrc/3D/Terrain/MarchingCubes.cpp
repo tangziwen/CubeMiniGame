@@ -19,11 +19,13 @@ namespace tzw {
 
 		
 static int lodList[] = { 1, 2, 4, 8 };
-VoxelVertex LinearInterp(voxelInfo & p1, voxelInfo & p2, float value)
+VoxelVertex LinearInterp(vec3 basepoint, voxelInfo & p1, voxelInfo & p2, float value)
 {
     VoxelVertex p;
-    vec3 tp1 = vec3(p1.x, p1.y, p1.z);
-    vec3 tp2 = vec3(p2.x, p2.y, p2.z);
+	auto p1v = p1.getV3() + basepoint;
+	auto p2v = p2.getV3() + basepoint;
+    vec3 tp1 = vec3(p1v.x, p1v.y, p1v.z);
+    vec3 tp2 = vec3(p2v.x, p2v.y, p2v.z);
     if(p1.w != p2.w)
     {
     	p.vertex = (tp1 + (tp2 - tp1)/(p2.w - p1.w)*(value - p1.w));
@@ -98,7 +100,7 @@ void calcMaterial(VertexData & data, voxelInfo * info, voxelInfo *srcData)
 	// printf("the factor %f\n",1.0 - factor);
 	*/
 }
-void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, voxelInfo *srcData, float minValue, int lodLevel)
+void MarchingCubes::generateWithoutNormal(vec3 basePoint, Mesh *mesh, int ncellsX, int ncellsY, int ncellsZ, voxelInfo *srcData, float minValue, int lodLevel)
 {
     mesh->clear();
     int meshIndex = 0;
@@ -131,18 +133,18 @@ void MarchingCubes::generateWithoutNormal(Mesh *mesh, int ncellsX, int ncellsY, 
                 /*(step 5)*/ if(!edgeTable[cubeIndex]) continue;
 
                 //get intersection vertices on edges and save into the array
-                /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(verts[0], verts[1], minValue);
-                if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(verts[1], verts[2], minValue);
-                if(edgeTable[cubeIndex] & 4) intVerts[2] = LinearInterp(verts[2], verts[3], minValue);
-                if(edgeTable[cubeIndex] & 8) intVerts[3] = LinearInterp(verts[3], verts[0], minValue);
-                if(edgeTable[cubeIndex] & 16) intVerts[4] = LinearInterp(verts[4], verts[5], minValue);
-                if(edgeTable[cubeIndex] & 32) intVerts[5] = LinearInterp(verts[5], verts[6], minValue);
-                if(edgeTable[cubeIndex] & 64) intVerts[6] = LinearInterp(verts[6], verts[7], minValue);
-                if(edgeTable[cubeIndex] & 128) intVerts[7] = LinearInterp(verts[7], verts[4], minValue);
-                if(edgeTable[cubeIndex] & 256) intVerts[8] = LinearInterp(verts[0], verts[4], minValue);
-                if(edgeTable[cubeIndex] & 512) intVerts[9] = LinearInterp(verts[1], verts[5], minValue);
-                if(edgeTable[cubeIndex] & 1024) intVerts[10] = LinearInterp(verts[2], verts[6], minValue);
-                if(edgeTable[cubeIndex] & 2048) intVerts[11] = LinearInterp(verts[3], verts[7], minValue);
+                /*(step 6)*/ if(edgeTable[cubeIndex] & 1) intVerts[0] = LinearInterp(basePoint,verts[0], verts[1], minValue);
+                if(edgeTable[cubeIndex] & 2) intVerts[1] = LinearInterp(basePoint,verts[1], verts[2], minValue);
+                if(edgeTable[cubeIndex] & 4) intVerts[2] = LinearInterp(basePoint,verts[2], verts[3], minValue);
+                if(edgeTable[cubeIndex] & 8) intVerts[3] = LinearInterp(basePoint,verts[3], verts[0], minValue);
+                if(edgeTable[cubeIndex] & 16) intVerts[4] = LinearInterp(basePoint,verts[4], verts[5], minValue);
+                if(edgeTable[cubeIndex] & 32) intVerts[5] = LinearInterp(basePoint,verts[5], verts[6], minValue);
+                if(edgeTable[cubeIndex] & 64) intVerts[6] = LinearInterp(basePoint,verts[6], verts[7], minValue);
+                if(edgeTable[cubeIndex] & 128) intVerts[7] = LinearInterp(basePoint,verts[7], verts[4], minValue);
+                if(edgeTable[cubeIndex] & 256) intVerts[8] = LinearInterp(basePoint,verts[0], verts[4], minValue);
+                if(edgeTable[cubeIndex] & 512) intVerts[9] = LinearInterp(basePoint,verts[1], verts[5], minValue);
+                if(edgeTable[cubeIndex] & 1024) intVerts[10] = LinearInterp(basePoint,verts[2], verts[6], minValue);
+                if(edgeTable[cubeIndex] & 2048) intVerts[11] = LinearInterp(basePoint,verts[3], verts[7], minValue);
 
                 //now build the triangles using triTable
                 for (int n=0; triTable[cubeIndex][n] != -1; n+=3)

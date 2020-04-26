@@ -47,7 +47,7 @@ namespace tzw
 		time_t t = time(NULL);
 		struct tm *lt = localtime(&t);
 		static char thePattern[512] = {};
-		snprintf(header, MAX_BUFFER_SIZE, "[ERR %02d/%02d/%02d %02d:%02d:%02d] ", lt->tm_mon+1, lt->tm_mday, lt->tm_year%100, lt->tm_hour, lt->tm_min, lt->tm_sec);
+		snprintf(header, MAX_BUFFER_SIZE, "[%02d/%02d/%02d %02d:%02d:%02d][error]", lt->tm_mon+1, lt->tm_mday, lt->tm_year%100, lt->tm_hour, lt->tm_min, lt->tm_sec);
 		memset(thePattern,0,512);
 		
 		memcpy(thePattern,header,strlen(header));
@@ -57,7 +57,7 @@ namespace tzw
 		va_start(vaArg,pattern);
 		vfprintf(stdout,thePattern, vaArg);
 		vfprintf(fileHandle, thePattern, vaArg);
-		ConsolePanel::shared()->AddLog(pattern, vaArg);
+		ConsolePanel::shared()->AddLog(thePattern, vaArg);
 		va_end(vaArg);
 	}
 

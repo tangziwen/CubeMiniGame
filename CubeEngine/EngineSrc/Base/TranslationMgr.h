@@ -1,6 +1,6 @@
 #pragma once
 #include "Engine/EngineDef.h"
-#include <map>
+#include <unordered_map>
 
 namespace tzw {
 	class TranslationMgr
@@ -14,7 +14,7 @@ namespace tzw {
 		std::string getCurrLanguage();
 	private:
 		std::string m_languageName;
-		std::map<std::string, std::string> m_currDict;
+		std::unordered_map<std::string, std::string> m_currDict;
 	};
 } // namespace tzw
 #define TR(theString) TranslationMgr::shared()->getStr(theString)

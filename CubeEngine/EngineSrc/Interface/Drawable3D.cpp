@@ -1,6 +1,7 @@
 #include "Drawable3D.h"
 #include "../Scene/Scene.h"
 #include <algorithm>
+#include "../Scene/OctreeScene.h"
 namespace tzw {
 
 Drawable3D::Drawable3D()

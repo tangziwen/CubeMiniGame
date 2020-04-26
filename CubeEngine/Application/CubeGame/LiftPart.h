@@ -27,7 +27,7 @@ namespace tzw
 	public:
 		float m_liftHeight;
 		GamePartType getType() override;
-		Attachment * m_attachment[6];
+		Attachment * m_attachment[6]{};
 		std::string m_effectedIslandGroup;
 	private:
 		CubePrimitive * m_plaftormPart;

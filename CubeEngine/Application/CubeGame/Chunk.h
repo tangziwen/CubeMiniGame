@@ -14,9 +14,16 @@ namespace tzw
 {
 	class PhysicsRigidBody;
 	class ChunkInfo;
+	
 	class Chunk : public Drawable3D
 	{
 	public:
+		enum class State
+		{
+			INVALID,
+			LOADING,
+			LOADED
+		};
 		Chunk(int the_x, int the_y, int the_z);
 	    int x;
 	    int y;
@@ -56,7 +63,7 @@ namespace tzw
 		vec3 m_offset;
 		void calculateMatID();
 		bool getIsInitData();
-		bool m_isLoaded;
+		State m_currenState;
 	private:
 		Grass * m_grass;
 		Grass * m_grass2;
@@ -76,7 +83,5 @@ namespace tzw
 		unsigned int m_lod;
 		bool m_isNeedSubmitMesh;
 		PhysicsRigidBody * m_rigidBody;
-		bool m_isloading;
-		
 	};
 }

@@ -7,6 +7,8 @@
 #include <strstream>
 #include <iostream>
 #include "../ScriptPy/ScriptPyMgr.h"
+#include "2D/GUISystem.h"
+
 namespace tzw {
 	TZW_SINGLETON_IMPL(ConsolePanel);
 	ConsolePanel::ConsolePanel()
@@ -137,7 +139,9 @@ namespace tzw {
 			if (strstr(item, "[error]")) col = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
 			else if (strncmp(item, "# ", 2) == 0) col = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
 			ImGui::PushStyleColor(ImGuiCol_Text, col);
+			GUISystem::shared()->imguiUseSmallFont();
 			ImGui::TextUnformatted(item);
+			ImGui::PopFont();
 			ImGui::PopStyleColor();
 		}
 		if (copy_to_clipboard)
@@ -168,7 +172,7 @@ namespace tzw {
 
 	void ConsolePanel::ExecCommand(const char* command_line)
 	{
-		AddLog("# %s\n", command_line);
+		//AddLog("# %s\n", command_line);
 
 		// Insert into history. First find match and delete it so it can be pushed to the back. This isn't trying to be smart or optimal.
 		HistoryPos = -1;
@@ -180,7 +184,7 @@ namespace tzw {
 				break;
 			}
 		History.push_back(Strdup(command_line));
-
+		
 		// Process command
 		if (Stricmp(command_line, "CLEAR") == 0)
 		{
@@ -200,7 +204,7 @@ namespace tzw {
 		}
 		else
 		{
-			AddLog("Unknown command: '%s'\n", command_line);
+			ScriptPyMgr::shared()->doString(command_line);
 		}
 	}
 

@@ -11,10 +11,8 @@ class Chunk;
 
 struct voxelInfo
 {
-	float x;
-	float y;
-	float z;
 	float w;
+	unsigned short index;
 	MatBlendInfo matInfo;
 	void setV4(vec4 v);
 	void setV3(vec3 v);

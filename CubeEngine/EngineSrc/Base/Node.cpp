@@ -8,7 +8,7 @@
 #include "../Event/EventMgr.h"
 #include "../Rendering/Renderer.h"
 #include "Utility/log/Log.h"
-
+#include "../Scene/OctreeScene.h"
 namespace tzw {
 
 Node::Node()

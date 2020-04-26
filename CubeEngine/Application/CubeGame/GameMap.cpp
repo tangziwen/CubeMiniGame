@@ -22,34 +22,32 @@ FastNoise grassRock;
 FastNoise grassOrDirt;
 void voxelInfo::setV4(vec4 v)
 {
-	x = v.x;
-	y = v.y;
-	z = v.z;
 	w = v.w;
 }
 
 void voxelInfo::setV3(vec3 v)
 {
-	x = v.x;
-	y = v.y;
-	z = v.z;
+	
 }
 
 vec3 voxelInfo::getV3()
 {
-	return vec3(x, y, z);
+	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
+	int i = index / YtimeZ;
+	int w = index % YtimeZ;
+	int j = w / (MAX_BLOCK + 1);         // y in N(B)
+	int k = w % (MAX_BLOCK + 1);        // z in N(C)
+	return vec3(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE);
 }
 
 vec4 voxelInfo::getV()
 {
-	return vec4(x, y, z, w);
+	auto v = getV3();
+	return vec4(v.x, v.y, v.z, w);
 }
 
 voxelInfo::voxelInfo(float _x, float _y, float _z, float _w)
 {
-	x = _x;
-	y = _y;
-	z = _z;
 	w = _w;
 }
 

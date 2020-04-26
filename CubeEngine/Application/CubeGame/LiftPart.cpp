@@ -15,7 +15,7 @@ LiftPart::LiftPart()
 	m_liftHeight = 0.0;
 	m_node = new Drawable3D();
 	m_plaftormPart = new CubePrimitive(blockSize, blockSize, blockSize);
-	auto texture =  TextureMgr::shared()->getByPath("Texture/rock.jpg");
+	auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
 	m_plaftormPart->getMaterial()->setTex("DiffuseMap", texture);
 	float pipeLength = 25.0;
 	m_pipePart = new CylinderPrimitive(0.10f, 0.10f, pipeLength);
