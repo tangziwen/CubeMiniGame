@@ -1,8 +1,6 @@
 #include "SceneMgr.h"
 namespace tzw {
 
-TZW_SINGLETON_IMPL(SceneMgr)
-
 SceneMgr::SceneMgr()
     :m_candidate(nullptr)
 {

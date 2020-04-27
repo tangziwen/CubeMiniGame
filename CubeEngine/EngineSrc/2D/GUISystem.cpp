@@ -17,7 +17,7 @@ namespace tzw
 	RenderBuffer * m_arrayBuf;
 	RenderBuffer * m_indexBuf;
 	static bool g_MouseJustPressed[3] = { false, false, false };
-	TZW_SINGLETON_IMPL(GUISystem);
+
 	static GLuint       g_FontTexture = 0;
 	// This is the main rendering function that you have to implement and provide to ImGui (via setting up 'RenderDrawListsFn' in the ImGuiIO structure)
 	void ImGui_ImplGlfwGL2_RenderDrawLists(ImDrawData* draw_data)

@@ -17,7 +17,6 @@
 namespace tzw
 {
 const float bearingGap = 0.00;
-TZW_SINGLETON_IMPL(PartSurfaceMgr);
 PartSurfaceMgr::PartSurfaceMgr()
 {
 	//load from Json

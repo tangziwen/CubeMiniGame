@@ -4,7 +4,6 @@
 #include "../Scene/SceneMgr.h"
 #include <algorithm>
 namespace tzw {
-TZW_SINGLETON_IMPL(GUIWindowMgr)
 void GUIWindowMgr::focus(GUIWindow *window)
 {
     auto result = std::find(frameList.begin(),frameList.end(),window);

@@ -193,7 +193,7 @@ void GameWorld::startGame()
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
-		ScriptPyMgr::shared()->callFunV("on_game_start");
+		ScriptPyMgr::shared()->callFunVoid("on_game_start");
 		
 		m_currentState = GAME_STATE_RUNNING;
 	}));
@@ -241,7 +241,7 @@ void GameWorld::loadGame(std::string filePath)
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
-		ScriptPyMgr::shared()->callFunV("on_game_start");
+		ScriptPyMgr::shared()->callFunVoid("on_game_start");
 		m_currentState = GAME_STATE_RUNNING;
 	}));
 }
@@ -398,7 +398,8 @@ void GameWorld::init()
 	m_mainMenu->hide();
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
-	ScriptPyMgr::shared()->callFunV("tzw_on_game_ready");
+	ScriptPyMgr::shared()->callFunVoid("tzw_on_game_ready");
+	
 }
 
 Chunk *GameWorld::getChunk(int x, int y, int z)

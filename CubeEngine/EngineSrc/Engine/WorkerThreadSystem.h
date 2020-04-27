@@ -18,9 +18,8 @@ namespace tzw{
 		VoidJob m_onFinished;
 	};
 	//typedef std::function<void ()> WorkerJob;
-	class WorkerThreadSystem
+	class WorkerThreadSystem: public Singleton<WorkerThreadSystem>
 	{
-		TZW_SINGLETON_DECL(WorkerThreadSystem)
 	public:
 		WorkerThreadSystem();
 		void pushOrder(WorkerJob order);

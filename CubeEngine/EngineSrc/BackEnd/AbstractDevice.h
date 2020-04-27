@@ -7,7 +7,7 @@
 #include "../Engine/EngineDef.h"
 #include "../Math/vec2.h"
 namespace tzw {
-class AbstractDevice
+class AbstractDevice : public Singleton<AbstractDevice>
 {
 public:
     void keyPressEvent(int theCode);
@@ -22,7 +22,6 @@ public:
     void update();
     clock_t m_oldTicks,m_nowTicks;
     bool m_isFirstFrame;
-    TZW_SINGLETON_DECL(AbstractDevice)
 };
 
 } // namespace tzw

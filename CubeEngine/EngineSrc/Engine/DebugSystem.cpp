@@ -5,7 +5,7 @@
 
 namespace tzw
 {
-TZW_SINGLETON_IMPL(DebugSystem);
+
 DebugSystem::DebugSystem()
 {
 	m_line = new LinePrimitive();

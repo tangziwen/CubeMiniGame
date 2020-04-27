@@ -1,7 +1,6 @@
 #include "FontMgr.h"
 
 namespace tzw {
-TZW_SINGLETON_IMPL(FontMgr)
 Font *FontMgr::getFont(std::string fontFile, unsigned int fontSize)
 {
     char tmp[50];

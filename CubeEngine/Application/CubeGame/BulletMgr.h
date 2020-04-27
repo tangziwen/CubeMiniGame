@@ -18,9 +18,8 @@ enum class BulletType
 	HitScanTracer,
 	PulseLaser,
 };
-class BulletMgr
+class BulletMgr : public Singleton<BulletMgr>
 {
-TZW_SINGLETON_DECL(BulletMgr)
 public:
 	BulletMgr();
 	void handleDraw(float dt);

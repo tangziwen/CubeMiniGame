@@ -6,9 +6,9 @@
 #include "2D/imgui.h"
 namespace tzw {
 
-struct ConsolePanel
+class ConsolePanel : public Singleton<ConsolePanel>
 {
-	TZW_SINGLETON_DECL(ConsolePanel);
+public:
 	char                  InputBuf[256];
 	ImVector<char*>       Items;
 	bool                  ScrollToBottom;

@@ -18,7 +18,6 @@
 #include "Scene/SceneMgr.h"
 
 namespace tzw {
-TZW_SINGLETON_IMPL(BulletMgr);
 BulletMgr::BulletMgr()
 {
   m_isShowAssistInfo = false;

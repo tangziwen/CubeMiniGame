@@ -20,7 +20,6 @@ public:
 private:
     GLFWwindow * m_window;
 	bool glfwSetWindowCenter( GLFWwindow * window );
-    TZW_SINGLETON_DECL(GLFW_BackEnd)
 	float m_w,m_h;
 };
 

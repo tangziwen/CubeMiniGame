@@ -21,10 +21,9 @@ namespace tzw
 		}
 	};
 
-	class GUISystem: public EventListener
+	class GUISystem: public EventListener, public Singleton<GUISystem>
 	{
 	public:
-		TZW_SINGLETON_DECL(GUISystem)
 		void NewFrame();
 		GUISystem();
 		void renderData();

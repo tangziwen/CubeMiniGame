@@ -15,16 +15,15 @@ struct shaderInfo
 
 namespace tzw {
 
-class ShaderMgr
+class ShaderMgr : public Singleton<ShaderMgr>
 {
 public:
-    TZW_SINGLETON_DECL(ShaderMgr)
     ShaderProgram * getByPath(std::string vs, std::string fs, const char *tcs = nullptr, const char *tes = nullptr);
 	void reloadAllShaders();
 	void addMacro(std::string macroName, std::string value);
 	std::map<std::string,std::string> m_macros;
+	ShaderMgr();
 private:
-    ShaderMgr();
     std::map<shaderInfo,ShaderProgram*> m_pool;
 	
 };

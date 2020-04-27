@@ -2,7 +2,6 @@
 #include <utility>
 namespace tzw {
 
-TZW_SINGLETON_IMPL(TextureMgr)
 
 Texture *TextureMgr::getByPath(std::string filePath, bool isNeedMipMap)
 {

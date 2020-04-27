@@ -32,9 +32,9 @@ struct PhysicsHitResult
 	vec3 posInWorld;
 	vec3 normal;
 };
-class PhysicsMgr{
+class PhysicsMgr : public Singleton<PhysicsMgr>
+	{
 	public:
-		TZW_SINGLETON_DECL(PhysicsMgr);
 		PhysicsMgr();
 		void start();
 		void createEmptyDynamicsWorld();

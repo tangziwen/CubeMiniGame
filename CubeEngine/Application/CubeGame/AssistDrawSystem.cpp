@@ -6,7 +6,7 @@
 
 namespace tzw
 {
-TZW_SINGLETON_IMPL(AssistDrawSystem);
+
 AssistDrawSystem::AssistDrawSystem()
 {
 	m_isShowAssistInfo = false;

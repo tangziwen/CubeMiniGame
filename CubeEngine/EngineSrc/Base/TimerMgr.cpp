@@ -10,7 +10,6 @@
 
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(TimerMgr)
 	TimerMgr::TimerMgr()
 	{
 

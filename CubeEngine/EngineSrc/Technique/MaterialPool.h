@@ -7,7 +7,7 @@
 
 namespace tzw {
 
-class MaterialPool
+class MaterialPool : public Singleton<MaterialPool>
 {
 public:
     MaterialPool();
@@ -20,7 +20,6 @@ public:
 private:
     std::map<std::string, Material *> m_materialMap;
 	std::map<std::string, Mesh *> m_modelMap;
-    TZW_SINGLETON_DECL(MaterialPool);
 };
 
 } // namespace tzw

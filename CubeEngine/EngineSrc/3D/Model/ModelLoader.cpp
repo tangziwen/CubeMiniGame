@@ -8,7 +8,6 @@
 #include "Utility/misc/Tmisc.h"
 
 namespace tzw {
-TZW_SINGLETON_IMPL(ModelLoader)
 
 ModelLoader::ModelLoader()
 {

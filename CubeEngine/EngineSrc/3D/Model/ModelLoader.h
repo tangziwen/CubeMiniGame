@@ -6,11 +6,10 @@
 
 namespace tzw {
 class Model;
-class ModelLoader
+class ModelLoader : public Singleton<ModelLoader>
 {
 public:
     ModelLoader();
-    TZW_SINGLETON_DECL(ModelLoader);
     void loadModel(Model * model,std::string filePath);
 };
 

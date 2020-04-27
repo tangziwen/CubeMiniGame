@@ -2,8 +2,6 @@
 #include "Utility/log/Log.h"
 namespace tzw {
 
-TZW_SINGLETON_IMPL(ShaderMgr)
-
 ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char * tcs, const char * tes)
 {
     shaderInfo info;

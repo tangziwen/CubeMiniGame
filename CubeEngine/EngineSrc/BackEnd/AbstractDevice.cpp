@@ -4,8 +4,6 @@
 #include "../Event/EventMgr.h"
 #include "RenderBackEnd.h"
 namespace tzw {
-TZW_SINGLETON_IMPL(AbstractDevice)
-
 void AbstractDevice::keyPressEvent(int theCode)
 {
     EventMgr::shared()->handleKeyPress(theCode);

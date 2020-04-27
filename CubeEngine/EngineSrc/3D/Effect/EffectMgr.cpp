@@ -3,7 +3,6 @@
 #include <iostream>
 namespace tzw {
 
-TZW_SINGLETON_IMPL(EffectMgr);
 EffectMgr::EffectMgr()
 {
     initBuiltIn();

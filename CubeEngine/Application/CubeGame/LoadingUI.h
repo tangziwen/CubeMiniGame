@@ -14,10 +14,9 @@
 
 namespace tzw {
 class VehicleBroswer;
-class LoadingUI : public IMGUIObject, public EventListener
+class LoadingUI : public IMGUIObject, public EventListener, public Singleton<LoadingUI>
 {
 public:
-	TZW_SINGLETON_DECL(LoadingUI);
     LoadingUI();
 	void show();
 	void hide();

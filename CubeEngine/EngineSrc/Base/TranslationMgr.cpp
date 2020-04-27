@@ -11,7 +11,6 @@
 
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(TranslationMgr)
 	TranslationMgr::TranslationMgr():m_languageName("CNS")
 	{
 

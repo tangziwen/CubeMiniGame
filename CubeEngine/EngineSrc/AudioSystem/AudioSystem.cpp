@@ -32,6 +32,4 @@ namespace tzw
 
 	}
 
-
-	TZW_SINGLETON_IMPL(AudioSystem)
 }

@@ -13,12 +13,10 @@ namespace tzw {
 		vec3 vertex;
 		MatBlendInfo matInfo;
 	};
-class MarchingCubes
+class MarchingCubes :public Singleton<MarchingCubes>
 {
 public:
-    TZW_SINGLETON_DECL(MarchingCubes)
     void generateWithoutNormal(vec3 basePoint,Mesh * mesh, int ncellsX, int ncellsY, int ncellsZ, voxelInfo * srcData, float minValue = -1, int lodLevel = 0);
-private:
     MarchingCubes();
 };
 

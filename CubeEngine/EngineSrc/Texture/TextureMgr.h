@@ -5,10 +5,9 @@
 #include "../Engine/EngineDef.h"
 namespace tzw {
 
-class TextureMgr
+class TextureMgr:public Singleton<TextureMgr>
 {
 public:
-    TZW_SINGLETON_DECL(TextureMgr)
     Texture * getByPath(std::string filePath, bool isNeedMipMap = false);
 	Texture * getByPathSimple(std::string filePath);
 	Texture* getByPathAsync(std::string filePath, std::function<void (Texture *)> finishedCallBack, bool isNeedMiMap = false);
@@ -20,8 +19,8 @@ public:
                                  std::string  PosZ,
                                  std::string  NegZ);
 	Texture * loadSingleCubeMap(std::string filePath);
+	TextureMgr();
 private:
-    TextureMgr();
     std::map<std::string,Texture *> m_texturePool;
 };
 

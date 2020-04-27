@@ -10,9 +10,8 @@
 namespace tzw
 {
 class LinePrimitive;
-class AssistDrawSystem
+class AssistDrawSystem : public Singleton<AssistDrawSystem>
 {
-TZW_SINGLETON_DECL(AssistDrawSystem)
 public:
 	AssistDrawSystem();
 	void handleDraw(float dt);

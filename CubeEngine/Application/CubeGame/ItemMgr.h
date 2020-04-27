@@ -11,9 +11,8 @@ namespace tzw
 {
 class ItemMgr;
 
-class ItemMgr
+class ItemMgr : public Singleton<ItemMgr>
 {
-	TZW_SINGLETON_DECL(ItemMgr)
 public:
 	ItemMgr();
 	void loadFromFile(std::string filePath);

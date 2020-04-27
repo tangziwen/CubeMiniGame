@@ -6,17 +6,17 @@
 namespace tzw {
 
 Scene * g_GetCurrScene();
-class SceneMgr
+class SceneMgr : public Singleton<SceneMgr>
 {
 public:
-    TZW_SINGLETON_DECL(SceneMgr)
     Scene *getCurrScene() const;
     void setCurrentScene(Scene *getCurrScene);
     void autoSwitch();
     void doVisit();
     void init();
+	SceneMgr();
 private:
-    SceneMgr();
+    
     Scene * m_currentScene;
     Scene * m_candidate;
 };

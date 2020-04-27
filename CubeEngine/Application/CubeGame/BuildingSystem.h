@@ -15,9 +15,8 @@ namespace tzw
 class LabelNew;
 class PhysicsHingeConstraint;
 
-class BuildingSystem
+class BuildingSystem :public Singleton<BuildingSystem>
 {
-	TZW_SINGLETON_DECL(BuildingSystem)
 public:
 	BuildingSystem();
 	void flipBearingByHit(vec3 pos, vec3 dir, float dist);

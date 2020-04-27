@@ -10,7 +10,6 @@
 #include "2D/GUISystem.h"
 
 namespace tzw {
-	TZW_SINGLETON_IMPL(ConsolePanel);
 	ConsolePanel::ConsolePanel()
 	{
 		ClearLog();

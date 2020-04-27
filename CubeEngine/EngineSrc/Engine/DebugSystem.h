@@ -7,9 +7,8 @@
 namespace tzw
 {
 class LinePrimitive;
-class DebugSystem
+class DebugSystem : public Singleton<DebugSystem>
 {
-TZW_SINGLETON_DECL(DebugSystem)
 public:
 	DebugSystem();
 	void handleDraw(float dt);

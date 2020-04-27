@@ -13,8 +13,6 @@
 
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(UIHelper);
-
 	UIHelper::UIHelper()
 	{
 		

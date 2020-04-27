@@ -6,7 +6,7 @@
 #include "../Texture/TextureMgr.h"
 #include "Model/Model.h"
 namespace tzw{
-	class Sky : public Drawable3D
+	class Sky : public Singleton<Sky>, public Drawable3D
 	{
 	public:
 		Sky();
@@ -30,7 +30,6 @@ namespace tzw{
 		Texture  * moonTex;
 		Texture * cloudTex;
 		Texture * cloudTex2; 
-		TZW_SINGLETON_DECL(Sky);
 	};
 }
 #endif // !TZW_SKY_H

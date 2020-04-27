@@ -17,7 +17,6 @@ public:
 	virtual void setIsFullScreen(bool isFullScreen);
 	virtual void changeScreenSetting(int w, int h, bool isFullScreen);
 private:
-    TZW_SINGLETON_DECL(WindowBackEnd)
 };
 
 } // namespace tzw

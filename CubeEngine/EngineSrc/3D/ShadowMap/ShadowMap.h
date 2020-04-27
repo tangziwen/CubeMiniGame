@@ -7,10 +7,9 @@
 #define SHADOWMAP_CASCADE_NUM 3
 namespace tzw
 {
-	class ShadowMap
+	class ShadowMap : public Singleton<ShadowMap>
 	{
 	public:
-		TZW_SINGLETON_DECL(ShadowMap)
 		ShadowMap();
 		ShaderProgram * getProgram();
 		Matrix44 getLightViewMatrix();

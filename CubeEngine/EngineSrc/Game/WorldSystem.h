@@ -8,7 +8,6 @@ namespace TDS {
 class WorldSystem
 {
 public:
-	TZW_SINGLETON_DECL(WorldSystem)
 	WorldSystem();
 	void generate();
 private:

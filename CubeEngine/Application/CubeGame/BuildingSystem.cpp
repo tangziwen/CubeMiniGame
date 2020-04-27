@@ -24,7 +24,6 @@
 namespace tzw
 {
 	const float bearingGap = 0.00;
-	TZW_SINGLETON_IMPL(BuildingSystem);
 
 	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup("")
 	{

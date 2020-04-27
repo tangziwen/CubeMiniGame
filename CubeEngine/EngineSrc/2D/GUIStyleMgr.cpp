@@ -2,7 +2,6 @@
 
 namespace tzw {
 
-TZW_SINGLETON_IMPL(GUIStyleMgr)
 
 GUIStyleMgr::GUIStyleMgr()
 {

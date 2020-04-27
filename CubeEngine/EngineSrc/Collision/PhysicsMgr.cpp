@@ -21,7 +21,6 @@
 
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(PhysicsMgr)
 
 PhysicsMgr::PhysicsMgr(): m_collisionConfiguration(nullptr), m_dispatcher(nullptr), m_broadphase(nullptr),
                           m_solver(nullptr), m_dynamicsWorld(nullptr)

@@ -1,7 +1,6 @@
 #include "MaterialPool.h"
 
 namespace tzw {
-TZW_SINGLETON_IMPL(MaterialPool);
 
 MaterialPool::MaterialPool()
 {

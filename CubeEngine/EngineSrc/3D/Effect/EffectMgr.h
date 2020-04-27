@@ -6,7 +6,7 @@
 #include <map>
 namespace tzw {
 
-class EffectMgr
+class EffectMgr : public Singleton<EffectMgr>
 {
 public:
     EffectMgr();
@@ -16,7 +16,7 @@ public:
     void addEffect(std::string effectName);
 private:
     std::map<std::string, Effect *> m_effectMap;
-    TZW_SINGLETON_DECL(EffectMgr)
+
 };
 } // namespace tzw
 

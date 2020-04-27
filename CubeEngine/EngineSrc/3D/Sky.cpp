@@ -5,9 +5,8 @@
 
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(Sky)
 
-		Sky::Sky()
+	Sky::Sky()
 	{
 		m_isEnable = true;
 		m_skyBoxTechnique = Material::createFromTemplate("Sky");

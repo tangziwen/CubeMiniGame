@@ -6,9 +6,8 @@ namespace tzw
 {
 class LabelNew;
 
-class UIHelper
+class UIHelper : public Singleton<UIHelper>
 {
-TZW_SINGLETON_DECL(UIHelper)
 public:
 	UIHelper();
 	void showFloatTips(std::string str, float duration = 1.0f, float disappearDuration = 0.5f);

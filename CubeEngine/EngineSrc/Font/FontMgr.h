@@ -5,20 +5,19 @@
 #include "../Engine/EngineDef.h"
 namespace tzw {
 
-class FontMgr
+class FontMgr : public Singleton<FontMgr>
 {
 public:
-    TZW_SINGLETON_DECL(FontMgr)
     Font *getFont(std::string fontFile, unsigned int fontSize);
     Font *getDefaultFont() const;
 
     Font *getSmallFont() const;
 
     Font *getTitleFont() const;
+	FontMgr();
 private:
     void addDefaultFonts();
     std::map<std::string,Font *> m_fontMap;
-    FontMgr();
     Font * m_defaultFont;
     Font * m_smallFont;
     Font * m_titleFont;

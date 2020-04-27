@@ -5,10 +5,9 @@
 #include <list>
 
 namespace tzw {
-	class TimerMgr
+	class TimerMgr : public Singleton<TimerMgr>
 	{
 	public:
-		TZW_SINGLETON_DECL(TimerMgr);
 		TimerMgr();
 		void addTimer(Timer * timer);
 		void handle(float dt);

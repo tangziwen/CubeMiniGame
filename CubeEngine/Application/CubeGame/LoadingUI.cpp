@@ -39,7 +39,6 @@
 
 
 namespace tzw {
-	TZW_SINGLETON_IMPL(LoadingUI);
 	static void exitNow(Button * btn)
 	{
 	    exit(0);

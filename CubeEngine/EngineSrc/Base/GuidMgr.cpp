@@ -4,7 +4,6 @@
 
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(GUIDMgr)
 
 	void* GUIDMgr::get(std::string guid)
 	{

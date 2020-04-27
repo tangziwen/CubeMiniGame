@@ -20,7 +20,6 @@ namespace tzw
 	
 	}
 
-	TZW_SINGLETON_IMPL(WorkerThreadSystem);
 
 	WorkerThreadSystem::WorkerThreadSystem()
 	{

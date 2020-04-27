@@ -14,8 +14,6 @@
 #define EVENT_TYPE_M_SCROLL 6
 namespace tzw {
 
-TZW_SINGLETON_IMPL(EventMgr)
-
 void EventMgr::addListener(EventListener *listener)
 {
     addFixedPiorityListener(listener);

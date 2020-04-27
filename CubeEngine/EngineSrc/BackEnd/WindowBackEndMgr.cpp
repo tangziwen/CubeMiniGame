@@ -1,18 +1,19 @@
 #include "WindowBackEndMgr.h"
 #include "GLFW/GLFW_BackEnd.h"
 namespace tzw {
-TZW_SINGLETON_IMPL(WindowBackEndMgr)
 
 WindowBackEnd *WindowBackEndMgr::getWindowBackEnd(int type)
 {
+	WindowBackEnd * backEnd = nullptr;
     switch(type)
     {
     case TZW_WINDOW_GLFW:
     {
-        return GLFW_BackEnd::shared();
+        return backEnd = new GLFW_BackEnd();
     }
     default:
         return nullptr;
     }
+	return backEnd;
 }
 } // namespace tzw

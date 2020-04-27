@@ -6,15 +6,14 @@
 
 namespace tzw {
 
-class GUIStyleMgr
+class GUIStyleMgr : public Singleton<GUIStyleMgr>
 {
 public:
-    TZW_SINGLETON_DECL(GUIStyleMgr)
     GUIStyle *defaultPalette() const;
     void setDefaultPalette(GUIStyle *defaultPalette);
-
+	GUIStyleMgr();
 private:
-    GUIStyleMgr();
+    
     GUIStyle * m_defaultPalette;
 };
 

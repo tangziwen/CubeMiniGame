@@ -3,10 +3,9 @@
 #include <unordered_map>
 
 namespace tzw {
-	class TranslationMgr
+	class TranslationMgr : public Singleton<TranslationMgr>
 	{
 	public:
-		TZW_SINGLETON_DECL(TranslationMgr);
 		TranslationMgr();
 		std::string getStr(std::string);
 		void dump();

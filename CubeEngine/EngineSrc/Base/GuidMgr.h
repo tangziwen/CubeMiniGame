@@ -3,10 +3,9 @@
 #include <unordered_map>
 
 namespace tzw {
-	class GUIDMgr
+	class GUIDMgr : public Singleton<GUIDMgr>
 	{
 	public:
-		TZW_SINGLETON_DECL(GUIDMgr);
 		void * get(std::string guid);
 		void update(std::string newGUID, std::string oldGUID);
 		void add(std::string guid, void * ptr);

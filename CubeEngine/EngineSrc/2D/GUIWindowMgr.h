@@ -5,16 +5,15 @@
 #include <deque>
 namespace tzw {
 class GUIWindow;
-class GUIWindowMgr
+class GUIWindowMgr:public Singleton<GUIWindowMgr>
 {
 public:
     void focus(GUIWindow * window);
     void add(GUIWindow * frame);
+	GUIWindowMgr();
 private:
     std::deque<GUIWindow *> frameList;
-    GUIWindowMgr();
-
-    TZW_SINGLETON_DECL(GUIWindowMgr)
+    
 };
 
 } // namespace tzw

@@ -47,7 +47,6 @@ namespace tzw {
 
 
 static std::set<WindowType> m_currOpenWindowSet;
-TZW_SINGLETON_IMPL(GameUISystem);
 enum class WindowType
 {
 	INVENTORY,
@@ -322,7 +321,7 @@ void GameUISystem::drawIMGUI()
 
 		if(getWindowIsShow(WindowType::INVENTORY))
 		{
-			bool isShow = ScriptPyMgr::shared()->callFun1IB("tzw_game_draw_window",int(WindowType::INVENTORY));
+			bool isShow = ScriptPyMgr::shared()->callFunBool("tzw_game_draw_window",int(WindowType::INVENTORY));
 			setWindowShow(WindowType::INVENTORY, isShow);
 		}
 		

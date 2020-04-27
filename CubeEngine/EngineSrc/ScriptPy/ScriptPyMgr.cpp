@@ -16,8 +16,6 @@
 
 namespace tzw
 { 
-	TZW_SINGLETON_IMPL(ScriptPyMgr);
-	lua_State * g_lua_state = nullptr;
 	ScriptPyMgr::ScriptPyMgr() 
 	{
 
@@ -79,7 +77,7 @@ namespace tzw
 			}
 		}
 
-
+		callFunVoid("test_fuck", 1, 2, 3, 4, 5);
 	}
 
 	void ScriptPyMgr::finalize()
@@ -97,41 +95,6 @@ namespace tzw
 		{
 			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
 		}
-	}
-
-	void ScriptPyMgr::callFunV(std::string funcName)
-	{
-		lua_getglobal(g_lua_state, funcName.c_str());
-		if (lua_pcall(g_lua_state, 0, 0, 0) != 0)
-		{
-			tlogError("error : %s\n", lua_tostring(g_lua_state, -1)); 
-		}
-	}
-
-	bool ScriptPyMgr::callFunB(std::string funcName)
-	{
-		lua_getglobal(g_lua_state, funcName.c_str());
-
-		if (lua_pcall(g_lua_state, 0, 1, 0) != 0)
-		{
-			tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
-		}
-		bool returnVal = lua_toboolean(g_lua_state, -1);
-		lua_pop(g_lua_state, 1);
-		return returnVal;
-	}
-
-	bool ScriptPyMgr::callFun1IB(std::string funcName, int arg)
-	{
-		lua_getglobal(g_lua_state, funcName.c_str());
-		luabridge::push(g_lua_state, arg);
-		if (lua_pcall(g_lua_state, 1, 1, 0) != 0)
-		{
-			tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
-		}
-		bool returnVal = lua_toboolean(g_lua_state, -1);
-		lua_pop(g_lua_state, 1);
-		return returnVal;
 	}
 
 	void ScriptPyMgr::doScriptInit()

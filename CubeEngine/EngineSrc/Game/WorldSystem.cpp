@@ -7,8 +7,6 @@ using namespace tzw;
 namespace TDS {
 
 
-TZW_SINGLETON_IMPL(WorldSystem)
-
 WorldSystem::WorldSystem()
 {
 	m_camera = new GameCamera();

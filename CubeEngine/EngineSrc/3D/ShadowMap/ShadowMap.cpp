@@ -8,7 +8,6 @@
 #include <algorithm>
 namespace tzw
 {
-	TZW_SINGLETON_IMPL(ShadowMap)
 	ShadowMap::ShadowMap()
 	{
 		m_program = ShaderMgr::shared()->getByPath("Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");

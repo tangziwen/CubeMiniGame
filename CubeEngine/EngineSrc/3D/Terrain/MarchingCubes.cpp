@@ -4,7 +4,6 @@
 #include "CubeGame/GameMap.h"
 
 namespace tzw {
-	TZW_SINGLETON_IMPL(MarchingCubes)
 
 		
 #define CALC_GRAD_VERT_0(verts) vec4(points[ind-YtimeZ].w-(verts[1]).w,points[ind-pointsZ].w-(verts[4]).w,points[ind-1].w-(verts[3]).w, (verts[0]).w);

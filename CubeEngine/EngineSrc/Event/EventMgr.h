@@ -18,7 +18,7 @@ struct EventInfo
 	vec2 offset;
 };
 class EventListener;
-class EventMgr
+class EventMgr:public Singleton<EventMgr>
 {
 public:
     void addListener(EventListener * listener);
@@ -54,7 +54,6 @@ private:
     std::unordered_map<Node *, EventListener *> m_nodeListenerMap;
 	bool m_isNeedSortNodeListener;
 	virtual ~EventMgr();
-    TZW_SINGLETON_DECL(EventMgr)
 };
 
 } // namespace tzw

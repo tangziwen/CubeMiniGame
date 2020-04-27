@@ -13,10 +13,9 @@
 namespace tzw {
 class VehicleBroswer;
 enum class WindowType;
-class GameUISystem : public IMGUIObject, public EventListener
+class GameUISystem : public Singleton<GameUISystem>, public IMGUIObject, public EventListener
 {
 public:
-	TZW_SINGLETON_DECL(GameUISystem);
     GameUISystem();
 	void init();
     void show();

@@ -10,9 +10,8 @@
 namespace tzw
 {
 
-class PartSurfaceMgr
+class PartSurfaceMgr : public Singleton<PartSurfaceMgr>
 {
-	TZW_SINGLETON_DECL(PartSurfaceMgr)
 public:
 	PartSurfaceMgr();
 	void loadFromFile(std::string filePath);
