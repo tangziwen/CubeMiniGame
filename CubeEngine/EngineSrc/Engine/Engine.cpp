@@ -336,7 +336,7 @@ int Engine::run(int argc, char *argv[], AppEntry * delegate)
     shared()->setDelegate(delegate);
 	Tfile::shared()->addSearchPath("./Asset/");
 	Tfile::shared()->addSearchPath("./");
-	Tfile::shared()->addSearchZip("Asset.zip");
+	Tfile::shared()->addSearchZip("Asset.pkg");
 	shared()->loadConfig();
 	shared()->m_winBackEnd = WindowBackEndMgr::shared()->getWindowBackEnd(TZW_WINDOW_GLFW);
 	shared()->m_winBackEnd->prepare(shared()->windowWidth(), shared()->windowHeight(), shared()->m_isFullScreen);

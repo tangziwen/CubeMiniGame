@@ -1,4 +1,4 @@
-#add the search result
+--add the search result
 package.path = "Data/module/TinyBuilder/Script/?.lua;" .. package.path
 hotfix = require("hotfix.hotfix")
 g_include_module = {}
@@ -18,6 +18,10 @@ function tzw_engine_reload()
 	end
 end
 
+
+function test_fuck(a,b,c,d,e)
+	print("In Lua Print!!!!!!!",a,b,c,d,e)
+end
 
 Main = include("Main")
 -- init

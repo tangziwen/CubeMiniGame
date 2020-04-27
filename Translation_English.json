@@ -1,76 +1,8 @@
 {
 	"stringList": [
 		{
-			"original": "(E) 属性面板",
-			"translated": "(E) Attribute"
-		},
-		{
-			"original": "(E) 属性面板\n(F) 调整方向",
-			"translated": "(E) Attribute\n(F) Adjust Direction"
-		},
-		{
-			"original": "(E) 载具浏览器",
-			"translated": "(E) VehicleBrowser"
-		},
-		{
-			"original": "(E) 驾驶\n(F) 节点编辑器",
-			"translated": "(E) Drive\n(F) Node Editor"
-		},
-		{
 			"original": "(左键) 喷漆 \n(右键) 喷涂面板",
 			"translated": "(LMB) Paint \n(RMB) Paint Panel"
-		},
-		{
-			"original": "==",
-			"translated": "=="
-		},
-		{
-			"original": "Bloom",
-			"translated": "Bloom"
-		},
-		{
-			"original": "By TZW，测试版本",
-			"translated": "By TZW，Demo Version"
-		},
-		{
-			"original": "CE by tzw",
-			"translated": "CE by tzw"
-		},
-		{
-			"original": "Condition",
-			"translated": "Condition"
-		},
-		{
-			"original": "Constant",
-			"translated": "Constant"
-		},
-		{
-			"original": "C键",
-			"translated": "C Key"
-		},
-		{
-			"original": "Demo Version --tzw",
-			"translated": "Demo Version --tzw"
-		},
-		{
-			"original": "Else",
-			"translated": "Else"
-		},
-		{
-			"original": "Equal",
-			"translated": "Equal"
-		},
-		{
-			"original": "Exit",
-			"translated": "Exit"
-		},
-		{
-			"original": "Help",
-			"translated": "Help"
-		},
-		{
-			"original": "IF",
-			"translated": "IF"
 		},
 		{
 			"original": "If",
@@ -81,44 +13,156 @@
 			"translated": "I键打开物品栏，建造前先放升降机"
 		},
 		{
-			"original": "Load",
-			"translated": "Load"
+			"original": "(E) 属性面板",
+			"translated": "(E) Attribute"
 		},
 		{
-			"original": "New Game",
-			"translated": "New Game"
+			"original": "返回",
+			"translated": "Return"
 		},
 		{
-			"original": "No Tips",
-			"translated": "No Tips"
+			"original": "Z键",
+			"translated": "Z Key"
 		},
 		{
-			"original": "Option",
-			"translated": "Option"
+			"original": "(E) 驾驶\n(F) 节点编辑器",
+			"translated": "(E) Drive\n(F) Node Editor"
 		},
 		{
-			"original": "Print",
-			"translated": "Print"
+			"original": "关##SHADOW",
+			"translated": "Close##SHADOW"
 		},
 		{
-			"original": "PrintNode",
-			"translated": "PrintNode"
+			"original": "(E) 属性面板\n(F) 调整方向",
+			"translated": "(E) Attribute\n(F) Adjust Direction"
 		},
 		{
-			"original": "SSAO:",
-			"translated": "SSAO:"
+			"original": "(E) 载具浏览器",
+			"translated": "(E) VehicleBrowser"
+		},
+		{
+			"original": "名称",
+			"translated": "Name"
+		},
+		{
+			"original": "==",
+			"translated": "=="
+		},
+		{
+			"original": "关##SSAO",
+			"translated": "Close##SSAO"
+		},
+		{
+			"original": "By TZW，测试版本",
+			"translated": "By TZW，Demo Version"
+		},
+		{
+			"original": "Bloom",
+			"translated": "Bloom"
+		},
+		{
+			"original": "后坐力",
+			"translated": "Recoil"
+		},
+		{
+			"original": "X键",
+			"translated": "X Key"
+		},
+		{
+			"original": "保存世界",
+			"translated": "保存世界"
+		},
+		{
+			"original": "CE by tzw",
+			"translated": "CE by tzw"
+		},
+		{
+			"original": "基本版本 弹出框测试",
+			"translated": "基本版本 弹出框测试"
+		},
+		{
+			"original": "Condition",
+			"translated": "Condition"
+		},
+		{
+			"original": "关##BLOOM",
+			"translated": "Close##BLOOM"
+		},
+		{
+			"original": "Constant",
+			"translated": "Constant"
+		},
+		{
+			"original": "C键",
+			"translated": "C Key"
 		},
 		{
 			"original": "Self",
 			"translated": "Self"
 		},
 		{
-			"original": "Spin",
-			"translated": "Spin"
+			"original": "Demo Version --tzw",
+			"translated": "Demo Version --tzw"
+		},
+		{
+			"original": "左值",
+			"translated": "Left-val"
+		},
+		{
+			"original": "Else",
+			"translated": "Else"
+		},
+		{
+			"original": "变量",
+			"translated": "Variable"
+		},
+		{
+			"original": "左右",
+			"translated": "Left&Right"
+		},
+		{
+			"original": "IF",
+			"translated": "IF"
+		},
+		{
+			"original": "全屏",
+			"translated": "FullScreen"
+		},
+		{
+			"original": "PrintNode",
+			"translated": "PrintNode"
+		},
+		{
+			"original": "升降机",
+			"translated": "Lift"
+		},
+		{
+			"original": "字符串",
+			"translated": "String"
+		},
+		{
+			"original": "前后",
+			"translated": "Forward/Backward"
+		},
+		{
+			"original": "越野轮-普通",
+			"translated": "ORWheel-N"
+		},
+		{
+			"original": "SSAO:",
+			"translated": "SSAO:"
 		},
 		{
 			"original": "TZW 出品，测试版本",
 			"translated": "TZW 出品，测试版本"
+		},
+		{
+			"original": "资产浏览器",
+			"translated": "Asset Manager"
+		},
+		{
+			"original": "前后信号",
+			"translated": "Forward/Backward Signal"
 		},
 		{
 			"original": "Then",
@@ -129,6 +173,10 @@
 			"translated": "Toggle"
 		},
 		{
+			"original": "轮子",
+			"translated": "Wheel"
+		},
+		{
 			"original": "Vector",
 			"translated": "Vector"
 		},
@@ -137,52 +185,64 @@
 			"translated": "WASD和鼠标控制，I键打开物品栏，建造前先放升降机"
 		},
 		{
+			"original": "加农 %s",
+			"translated": "Cannon %s"
+		},
+		{
+			"original": "Spin",
+			"translated": "Spin"
+		},
+		{
 			"original": "X光模式",
 			"translated": "X Ray Mode"
 		},
 		{
-			"original": "X键",
-			"translated": "X Key"
+			"original": "向量",
+			"translated": "Vector"
 		},
 		{
-			"original": "Z键",
-			"translated": "Z Key"
-		},
-		{
-			"original": "任意按键触发",
-			"translated": "任意按键触发"
-		},
-		{
-			"original": "使用",
-			"translated": "使用"
+			"original": "炮筒 %s",
+			"translated": "Cannon %s"
 		},
 		{
 			"original": "使用节点",
 			"translated": "Use Node"
 		},
 		{
-			"original": "保存",
-			"translated": "Save"
+			"original": "单车轮",
+			"translated": "Bike Wheel"
 		},
 		{
-			"original": "保存世界",
-			"translated": "保存世界"
+			"original": "关闭",
+			"translated": "Close"
+		},
+		{
+			"original": "聚合",
+			"translated": "Composite"
+		},
+		{
+			"original": "保存",
+			"translated": "Save"
 		},
 		{
 			"original": "保存设置",
 			"translated": "Save Setting"
 		},
 		{
+			"original": "普通轴承",
+			"translated": "Bearing"
+		},
+		{
 			"original": "保存载具",
 			"translated": "Save Vehicle"
 		},
 		{
-			"original": "全屏",
-			"translated": "FullScreen"
-		},
-		{
 			"original": "全屏化",
 			"translated": "FullScreenize"
+		},
+		{
+			"original": "分辨率",
+			"translated": "Resolution"
 		},
 		{
 			"original": "全部取消选中",
@@ -193,104 +253,36 @@
 			"translated": "Close##AA"
 		},
 		{
-			"original": "关##BLOOM",
-			"translated": "Close##BLOOM"
-		},
-		{
-			"original": "关##FOG",
-			"translated": "Close##FOG"
-		},
-		{
-			"original": "关##SHADOW",
-			"translated": "Close##SHADOW"
-		},
-		{
-			"original": "关##SSAO",
-			"translated": "Close##SSAO"
-		},
-		{
-			"original": "关闭",
-			"translated": "Close"
-		},
-		{
-			"original": "分辨率",
-			"translated": "Resolution"
-		},
-		{
-			"original": "切换",
-			"translated": "切换"
-		},
-		{
 			"original": "切换开关节点",
 			"translated": "Switch"
-		},
-		{
-			"original": "前后",
-			"translated": "Forward/Backward"
-		},
-		{
-			"original": "前后信号",
-			"translated": "Forward/Backward Signal"
-		},
-		{
-			"original": "加农 %s",
-			"translated": "Cannon %s"
-		},
-		{
-			"original": "升降台只能放一个",
-			"translated": "only one lift can be placed"
-		},
-		{
-			"original": "升降机",
-			"translated": "Lift"
-		},
-		{
-			"original": "单车轮",
-			"translated": "Bike Wheel"
-		},
-		{
-			"original": "取消",
-			"translated": "Cancel"
-		},
-		{
-			"original": "变量",
-			"translated": "Variable"
-		},
-		{
-			"original": "变量名",
-			"translated": "Variable Name"
 		},
 		{
 			"original": "右",
 			"translated": "Right"
 		},
 		{
+			"original": "关##FOG",
+			"translated": "Close##FOG"
+		},
+		{
+			"original": "升降台只能放一个",
+			"translated": "only one lift can be placed"
+		},
+		{
+			"original": "取消",
+			"translated": "Cancel"
+		},
+		{
+			"original": "变量名",
+			"translated": "Variable Name"
+		},
+		{
 			"original": "右值",
 			"translated": "Right-Val"
 		},
 		{
-			"original": "名称",
-			"translated": "Name"
-		},
-		{
-			"original": "后坐力",
-			"translated": "Recoil"
-		},
-		{
-			"original": "向量",
-			"translated": "Vector"
-		},
-		{
 			"original": "喷涂器",
 			"translated": "Painter"
-		},
-		{
-			"original": "基本版本 弹出框测试",
-			"translated": "基本版本 弹出框测试"
-		},
-		{
-			"original": "字符串",
-			"translated": "String"
 		},
 		{
 			"original": "对准空地放置，对准载具收纳放置",
@@ -303,14 +295,6 @@
 		{
 			"original": "左",
 			"translated": "Left"
-		},
-		{
-			"original": "左值",
-			"translated": "Left-val"
-		},
-		{
-			"original": "左右",
-			"translated": "Left&Right"
 		},
 		{
 			"original": "左右信号",
@@ -349,6 +333,10 @@
 			"translated": "Open##FOG"
 		},
 		{
+			"original": "选中",
+			"translated": "Select"
+		},
+		{
 			"original": "开##SHADOW",
 			"translated": "Open##SHADOW"
 		},
@@ -357,8 +345,20 @@
 			"translated": "Open##SSAO"
 		},
 		{
+			"original": "轮子-普通",
+			"translated": "Wheel-N"
+		},
+		{
 			"original": "开关",
 			"translated": "Switch"
+		},
+		{
+			"original": "颜色",
+			"translated": "Color"
+		},
+		{
+			"original": "越野轮-小",
+			"translated": "ORWheel-S"
 		},
 		{
 			"original": "开关 %s",
@@ -389,12 +389,20 @@
 			"translated": "Print"
 		},
 		{
+			"original": "旋转",
+			"translated": "Rotate"
+		},
+		{
 			"original": "打开",
 			"translated": "Open"
 		},
 		{
 			"original": "投射物初速度",
 			"translated": "Projectile speed"
+		},
+		{
+			"original": "按下",
+			"translated": "Pressed"
 		},
 		{
 			"original": "抗锯齿:",
@@ -413,28 +421,24 @@
 			"translated": "Press T to XRay"
 		},
 		{
-			"original": "按下",
-			"translated": "Pressed"
-		},
-		{
 			"original": "按钮",
 			"translated": "Button"
-		},
-		{
-			"original": "按钮 %s",
-			"translated": "Button %s"
-		},
-		{
-			"original": "按键触发",
-			"translated": "按键触发"
 		},
 		{
 			"original": "按键输入",
 			"translated": "KeyInput"
 		},
 		{
+			"original": "按钮 %s",
+			"translated": "Button %s"
+		},
+		{
 			"original": "挖掘机",
 			"translated": "Digger"
+		},
+		{
+			"original": "管子",
+			"translated": "Pipe"
 		},
 		{
 			"original": "推进器",
@@ -457,16 +461,16 @@
 			"translated": "Direction Signal"
 		},
 		{
-			"original": "旋转",
-			"translated": "Rotate"
-		},
-		{
 			"original": "旋转方向",
 			"translated": "Rotate Direction"
 		},
 		{
 			"original": "旋转节点",
 			"translated": "Rotate Node"
+		},
+		{
+			"original": "越野轮-中型",
+			"translated": "ORWheel-M"
 		},
 		{
 			"original": "是否为舵机",
@@ -489,10 +493,6 @@
 			"translated": "Block"
 		},
 		{
-			"original": "普通轴承",
-			"translated": "Bearing"
-		},
-		{
 			"original": "暂无提示",
 			"translated": "No Tips"
 		},
@@ -503,6 +503,10 @@
 		{
 			"original": "最大角度",
 			"translated": "Maximum Angle"
+		},
+		{
+			"original": "直棱柱",
+			"translated": "Prism"
 		},
 		{
 			"original": "最小角度",
@@ -525,16 +529,8 @@
 			"translated": "Cannon"
 		},
 		{
-			"original": "炮筒 %s",
-			"translated": "Cannon %s"
-		},
-		{
 			"original": "状态信号",
 			"translated": "Status Signal"
-		},
-		{
-			"original": "直棱柱",
-			"translated": "Prism"
 		},
 		{
 			"original": "直棱柱-长",
@@ -553,20 +549,12 @@
 			"translated": "Equal"
 		},
 		{
-			"original": "管子",
-			"translated": "Pipe"
-		},
-		{
 			"original": "粗管",
 			"translated": "Pipe-Large"
 		},
 		{
 			"original": "继续",
 			"translated": "Continue"
-		},
-		{
-			"original": "聚合",
-			"translated": "Composite"
 		},
 		{
 			"original": "舵机",
@@ -593,6 +581,14 @@
 			"translated": "Setting Panel"
 		},
 		{
+			"original": "Exit",
+			"translated": "Exit"
+		},
+		{
+			"original": "载具浏览器",
+			"translated": "Vehicle broswer"
+		},
+		{
 			"original": "读取",
 			"translated": "Load"
 		},
@@ -605,40 +601,16 @@
 			"translated": "Adjust View"
 		},
 		{
-			"original": "资产浏览器",
-			"translated": "Asset Manager"
-		},
-		{
 			"original": "赋值",
 			"translated": "Assign"
-		},
-		{
-			"original": "越野轮-中型",
-			"translated": "ORWheel-M"
-		},
-		{
-			"original": "越野轮-小",
-			"translated": "ORWheel-S"
-		},
-		{
-			"original": "越野轮-普通",
-			"translated": "ORWheel-N"
 		},
 		{
 			"original": "转速",
 			"translated": "Angular Speed"
 		},
 		{
-			"original": "轮子",
-			"translated": "Wheel"
-		},
-		{
 			"original": "轮子-中型",
 			"translated": "Wheel-M"
-		},
-		{
-			"original": "轮子-普通",
-			"translated": "Wheel-N"
 		},
 		{
 			"original": "轴承",
@@ -649,24 +621,12 @@
 			"translated": "Bearing %s"
 		},
 		{
-			"original": "载具浏览器",
-			"translated": "Vehicle broswer"
-		},
-		{
-			"original": "返回",
-			"translated": "Return"
-		},
-		{
 			"original": "连接 (%p)",
 			"translated": "Link (%p)"
 		},
 		{
 			"original": "退出",
 			"translated": "Exit"
-		},
-		{
-			"original": "选中",
-			"translated": "Select"
 		},
 		{
 			"original": "选项",
@@ -685,8 +645,48 @@
 			"translated": "Fog:"
 		},
 		{
-			"original": "颜色",
-			"translated": "Color"
+			"original": "按键触发",
+			"translated": "按键触发"
+		},
+		{
+			"original": "使用",
+			"translated": "使用"
+		},
+		{
+			"original": "任意按键触发",
+			"translated": "任意按键触发"
+		},
+		{
+			"original": "切换",
+			"translated": "切换"
+		},
+		{
+			"original": "Equal",
+			"translated": "Equal"
+		},
+		{
+			"original": "Print",
+			"translated": "Print"
+		},
+		{
+			"original": "New Game",
+			"translated": "New Game"
+		},
+		{
+			"original": "Load",
+			"translated": "Load"
+		},
+		{
+			"original": "Option",
+			"translated": "Option"
+		},
+		{
+			"original": "Help",
+			"translated": "Help"
+		},
+		{
+			"original": "No Tips",
+			"translated": "No Tips"
 		}
 	]
 }
