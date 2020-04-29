@@ -1,7 +1,7 @@
 #include "Matrix44.h"
 
 #include "string.h"
-#include "math.h"
+#include <cmath>
 #define MATH_TOLERANCE              2e-37f
 #define MATH_EPSILON                0.000001f
 namespace tzw {

@@ -104,7 +104,6 @@ file(GLOB_RECURSE project_cpps *.cpp *.c)
 set(all_files ${project_headers} ${project_cpps})
 source_group_by_dir(all_files)
 
-set(CMAKE_AUTOMOC ON)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 include_directories(${CMAKE_BUILD_FILES_DIRECTORY}) # fixes syntax analysis in CLion
 set(EngineSrcDir "./EngineSrc/")
