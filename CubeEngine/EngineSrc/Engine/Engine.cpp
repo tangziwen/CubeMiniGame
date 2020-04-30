@@ -28,7 +28,6 @@
 #include "Base/TimerMgr.h"
 #include "DebugSystem.h"
 
-
 namespace tzw {
 
 Engine * Engine::m_instance = nullptr;

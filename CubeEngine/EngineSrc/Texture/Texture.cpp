@@ -1,10 +1,10 @@
 #include "Texture.h"
 #include "BackEnd/RenderBackEnd.h"
 #include "Engine/Engine.h"
-#include "External/SOIL/SOIL.h"
 #include "GL/glew.h"
 #include "Utility/log/Log.h"
 #include "Engine/WorkerThreadSystem.h"
+#include "External/SOIL2/SOIL2.h"
 #include "Utility/file/Tfile.h"
 
 namespace tzw
@@ -16,7 +16,7 @@ namespace tzw
 	Texture::Texture(std::string filePath)
 	{
 		auto data =Tfile::shared()->getData(filePath,false);
-		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y, &m_width, &m_height);
+		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
 		m_type = RenderFlag::TextureType::Texture2D;
 		if (!m_textureId)
 		{
@@ -32,8 +32,7 @@ namespace tzw
 	{
 		std::string resultFilePath = Engine::shared()->getFilePath(filePath);
 		this->m_textureId = SOIL_load_OGL_single_cubemap(
-			resultFilePath.c_str(), faceMode, SOIL_LOAD_AUTO, 0, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y, &m_width,
-			&m_height);
+			resultFilePath.c_str(), faceMode, SOIL_LOAD_AUTO, 0, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
 		m_type = RenderFlag::TextureType::TextureCubeMap;
 		if (!m_textureId)
 		{
@@ -51,7 +50,7 @@ namespace tzw
 		{
 			flags = SOIL_FLAG_INVERT_Y;
 		}
-		this->m_textureId = SOIL_create_OGL_texture(rawData, w, h, 2, 0, flags);
+		this->m_textureId = SOIL_create_OGL_texture(rawData, &w, &h, 2, 0, flags);
 		m_type = RenderFlag::TextureType::Texture2D;
 		m_width = w;
 		m_height = h;
@@ -109,7 +108,7 @@ namespace tzw
 
 		auto finishCB = [this,onFinish]
 		{
-			m_textureId = SOIL_create_OGL_texture(m_imgData, m_width, m_height, m_channel, 0, SOIL_FLAG_INVERT_Y);
+			m_textureId = SOIL_create_OGL_texture(m_imgData, &m_width, &m_height, m_channel, 0, SOIL_FLAG_INVERT_Y);
 			m_isLoaded = true;
 			onFinish(this);
 		};

@@ -39,6 +39,8 @@ include_directories(./External/GLFW3/include)
 #GLEW #
 set(LIBS ${LIBS} glew32s)
 include_directories(./External/GLEW)
+#freeImage#
+set(LIBS ${LIBS} freeimage)
 
 add_compile_definitions(WITH_OPENCV2)
 
