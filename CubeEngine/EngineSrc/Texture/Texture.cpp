@@ -17,7 +17,7 @@ namespace tzw
 	{
 		auto data =Tfile::shared()->getData(filePath,false);
 		ImageFileInfo info;
-		unsigned short loadingFlag = SOIL_FLAG_INVERT_Y;
+		unsigned short loadingFlag = 0;
 		auto exten = Tfile::shared()->getExtension(filePath);
 		for(auto& c : exten)
 		{

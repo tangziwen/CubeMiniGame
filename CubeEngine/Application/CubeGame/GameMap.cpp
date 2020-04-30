@@ -286,27 +286,30 @@ int GameMap::getMat(vec3 pos, float slope)
 
 	if(slope > 0.16)//cliff
 	{
-		mat = 10;
+		mat = 6;
 	}else// or plane
 	{
-		mat = 12;//default is grass
 		float grassOrDirtVal = grassOrDirt.GetNoise(pos.x, pos.y, pos.z);
 		if(grassOrDirtVal> - 0.2)//it is Grass
 		{
 			float grassRockVal = grassRock.GetValue(pos.x, pos.y, pos.z);
-			mat = 12;//default is grass
+			mat = 0;//default is grass
 			if(grassRockVal > 0.5)
 			{
-				mat = 3;//Grass with Rock
+				mat = 5;//Grass with Rock
 			}
+            else
+            {
+	            mat = 0;
+            }
 		}
 		else // dirt
 		{
-			mat = 11;//dirt
+			mat = 7;//dirt
 			float waterMudVal = waterMud.GetValue(pos.x, pos.y, pos.z);
 			if(waterMudVal > 0.7)
 			{
-				mat = 8;//dirt with water
+				mat = 4;//dirt with water
 			}
 		}
 	}

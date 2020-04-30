@@ -72,17 +72,17 @@ namespace tzw
 					// other parametric surfaces.
 					// Output the first triangle of this grid square
 						
-					m_mesh->addVertex(VertexData(p0, p0.normalized(), vec2(u, v)));
-					m_mesh->addVertex(VertexData(p2, p2.normalized(), vec2(un, v)));
-					m_mesh->addVertex(VertexData(p1, p1.normalized(), vec2(u, vn)));
+					m_mesh->addVertex(VertexData(p0, p0.normalized(), vec2(u, 1.0 - v)));
+					m_mesh->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
+					m_mesh->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 
 
-					m_mesh->addVertex(VertexData(p3, p3.normalized(), vec2(un, vn)));
-					m_mesh->addVertex(VertexData(p1, p1.normalized(), vec2(u, vn)));
-					m_mesh->addVertex(VertexData(p2, p2.normalized(), vec2(un, v)));
+					m_mesh->addVertex(VertexData(p3, p3.normalized(), vec2(un, 1.0 - vn)));
+					m_mesh->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
+					m_mesh->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());
 					m_mesh->addIndex(m_mesh->getIndicesSize());

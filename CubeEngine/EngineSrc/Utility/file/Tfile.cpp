@@ -26,7 +26,7 @@ Data Tfile::getData(std::string filename, bool forString)
       Data ret;
       unsigned char* buffer = nullptr;
       size_t size = 0;
-      size_t readsize;
+      size_t readsize = 0;
       const char* mode = nullptr;
       if (forString)
           mode = "rt";
@@ -69,6 +69,20 @@ Data Tfile::getData(std::string filename, bool forString)
 		}
 	}
 
+
+	char tmp[256];
+	auto theList = {"png", "jpg", "tga"};
+	findPreFix(filename.c_str(), tmp);
+	std::string preFix = tmp;
+	auto found = preFix.find("Texture");
+	if(found == 0 )
+	{	
+		//有cook版本的文件
+		if(std::find(theList.begin(), theList.end(), getExtension(filename))!= theList.end())
+		{
+			filename = getFileNameWithOutExtension(filename) +".dds";
+		}
+	}
 	//search the zip
 	for(auto zipData : m_searchZip)
     {
@@ -78,21 +92,27 @@ Data Tfile::getData(std::string filename, bool forString)
     		std::string zipFilename = filename;
 			if(zip_entry_open(zip, zipFilename.c_str()) == 0)
 			{
-				void * buf;
+				void * buf = nullptr;
 
-		       auto bufsize = zip_entry_size(zip);
+		       readsize = zip_entry_size(zip);
 				if(forString)
 				{
-					buf = calloc(sizeof(unsigned char), bufsize + 1);
+					buf = malloc(sizeof(char) *(readsize + 1));
 				}else
 				{
-					buf = calloc(sizeof(unsigned char), bufsize);	
+					buf = malloc(sizeof(char) * readsize);	
 				}
-		        zip_entry_noallocread(zip, buf, bufsize);
+		        auto size_loaded = zip_entry_noallocread(zip, buf, readsize);
+				
+				if (size_loaded == -1)
+				{
+					abort();
+				}
 				buffer = static_cast<unsigned char*>(buf);
 				if(forString)
 				{
-					buffer[bufsize] = '\0';
+					//use the real size
+					buffer[size_loaded] = '\0';
 				}
 				zip_entry_close(zip);
 				ret.fastSet(buffer, readsize);
@@ -219,6 +239,21 @@ std::string Tfile::getExtension(std::string path)
 	{
 	    // No extension found
 		return "";
+	}
+}
+
+std::string Tfile::getFileNameWithOutExtension(std::string path)
+{
+	auto idx = path.rfind('.');
+
+	if(idx != std::string::npos)
+	{
+	    return path.substr(0,idx);
+	}
+	else
+	{
+	    // No extension found
+		return path;
 	}
 }
 

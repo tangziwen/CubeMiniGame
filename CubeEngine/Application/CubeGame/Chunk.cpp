@@ -1292,7 +1292,7 @@ namespace tzw
 				{
 					auto ox = TbaseMath::randFN() * 0.5;
 					auto oz = TbaseMath::randFN() * 0.5;
-					auto scale = TbaseMath::randFN() * 0.3;
+					auto scale = TbaseMath::randFN() * 0.1;
 					Grass* grass = nullptr;
 					if (rand() % 100 > 85)
 					{

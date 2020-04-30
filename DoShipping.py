@@ -40,6 +40,44 @@ def ZipDir(path, zf, ignoreDir = [], ignoreExt = []):
     rootDir = path if os.path.isdir(path) else os.path.dirname(path)
     zipDirHelper(path, rootDir, zf, ignoreDir, ignoreExt)
     pass
-    
+
+
+to_exclude = ["./Asset/ArtDev", ]
+
+#ignores excluded directories and .exe files
+def get_ignored(path, filenames):
+    ret = []
+    for filename in filenames:
+        theFilePath = os.path.join(path, filename)
+        filePathAbs = os.path.abspath(theFilePath)
+        for excludeDir in to_exclude:
+            excludeDirAbs = os.path.abspath(excludeDir)
+            if excludeDirAbs in filePathAbs:
+                print "exclude"
+                ret.append(filename)
+    return ret
+
+
+from wand.image import Image
+import os
+import shutil
+shutil.copytree("./Asset/", "./Asset_cook/", ignore = get_ignored)
+
+#convert to dds
+g = os.walk("./Asset_cook/Texture/")
+for path,d,filelist in g:
+    for filename in filelist:
+        theFilePath = os.path.join(path, filename)
+        print "cook texture",theFilePath
+        if os.path.splitext(theFilePath)[1] in (".png", ".tga", ".jpg"):
+            with Image(filename= theFilePath) as img:
+               img.save(filename=os.path.splitext(theFilePath)[0]+'.dds')
+               #remove Old one
+               os.remove(theFilePath)
+print "packing.."
 theZipFile = zipfile.ZipFile("./asset.pkg", 'w', compression=zipfile.ZIP_DEFLATED)
-ZipDir("./Asset", theZipFile, ignoreDir=["ArtDev"], ignoreExt=[".zip"])
+ZipDir("./Asset_cook", theZipFile, ignoreDir=["ArtDev"], ignoreExt=[".zip"])
+#remove cooked file
+print "clean up"
+shutil.rmtree("./Asset_cook/", ignore_errors=False, onerror=None)
+print "done."

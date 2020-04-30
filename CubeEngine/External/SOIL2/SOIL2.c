@@ -554,7 +554,7 @@ unsigned int
 			not be flipped, etc.	*/
 		tex_id = SOIL_direct_load_DDS_from_memory(
 				buffer, buffer_length,
-				reuse_texture_ID, flags, 0 £¬info);
+				reuse_texture_ID, flags, 0, info);
 		if( tex_id )
 		{
 			/*	hey, it worked!!	*/
@@ -1139,7 +1139,7 @@ unsigned int
 			not be flipped, etc.	*/
 		tex_id = SOIL_direct_load_DDS_from_memory(
 				buffer, buffer_length,
-				reuse_texture_ID, flags, 1 );
+				reuse_texture_ID, flags, 1 , NULL);
 		if( tex_id )
 		{
 			/*	hey, it worked!!	*/
@@ -2098,8 +2098,6 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 	result_string_pointer = "DDS header loaded and validated";
 	width = header.dwWidth;
 	height = header.dwHeight;
-	info->width = width;
-	info->height = height;
 	uncompressed = 1 - (header.sPixelFormat.dwFlags & DDPF_FOURCC) / DDPF_FOURCC;
 	cubemap = (header.sCaps.dwCaps2 & DDSCAPS2_CUBEMAP) / DDSCAPS2_CUBEMAP;
 	if( uncompressed )
@@ -2386,7 +2384,12 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		}
-		info->dds_mipMapLevel =mipmaps;
+		if(info)
+		{
+			info->width = width;
+			info->height = height;
+			info->dds_mipMapLevel =mipmaps;
+		}
 		/*	does the user want clamping, or wrapping?	*/
 		if( flags & SOIL_FLAG_TEXTURE_REPEATS )
 		{
@@ -2451,7 +2454,7 @@ unsigned int SOIL_direct_load_DDS(
 	/*	now try to do the loading	*/
 	tex_ID = SOIL_direct_load_DDS_from_memory(
 		(const unsigned char *const)buffer, (int)buffer_length,
-		reuse_texture_ID, flags, loading_as_cubemap );
+		reuse_texture_ID, flags, loading_as_cubemap ,NULL);
 	SOIL_free_image_data( buffer );
 	return tex_ID;
 }

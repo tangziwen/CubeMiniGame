@@ -35,7 +35,10 @@ VoxelVertex LinearInterp(vec3 basepoint, voxelInfo & p1, voxelInfo & p2, float v
 		p.vertex = (tp1);
     	p.matInfo = p1.matInfo;
     }
-
+    if(abs(p.matInfo.matBlendFactor.x - 0.0) < 0.00001)
+    {
+    	printf( "hehehe");
+    }
     return p;
 }
 

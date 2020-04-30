@@ -88,7 +88,7 @@ local m_isDragingInventory = false
 --init
 function module.onEngineInit()
 	print("lua init")
-	testIcon = TextureMgr.shared():getByPathSimple("Texture/Icon/icons8-border-none-96.png")
+	testIcon = TextureMgr.shared():getByPathSimple("UITexture/Icon/icons8-border-none-96.png")
 end
 
 module.test_var = 21

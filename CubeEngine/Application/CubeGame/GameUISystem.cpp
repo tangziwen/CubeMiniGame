@@ -105,12 +105,12 @@ void GameUISystem::init()
 		m_nodeEditor->clearAll();
 		BuildingSystem::shared()->load(fileName);
 	};
-	testIcon = TextureMgr::shared()->getByPath("Texture/NodeEditor/ic_restore_white_24dp.png");
-	settingIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-gear-96.png");
-	bluePrintIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-blueprint-96.png");
-	helpIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-help-96.png");
-	homeIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-home-page-96.png");
-	packageIcon = TextureMgr::shared()->getByPath("Texture/Icon/icons8-furniture-store-96.png");
+	testIcon = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_restore_white_24dp.png");
+	settingIcon = TextureMgr::shared()->getByPath("UITexture/Icon/icons8-gear-96.png");
+	bluePrintIcon = TextureMgr::shared()->getByPath("UITexture/Icon/icons8-blueprint-96.png");
+	helpIcon = TextureMgr::shared()->getByPath("UITexture/Icon/icons8-help-96.png");
+	homeIcon = TextureMgr::shared()->getByPath("UITexture/Icon/icons8-home-page-96.png");
+	packageIcon = TextureMgr::shared()->getByPath("UITexture/Icon/icons8-furniture-store-96.png");
 	
 	//hide();
 }
@@ -144,8 +144,6 @@ void GameUISystem::toggle()
 
 void GameUISystem::drawIMGUI()
 {
-
-
 
 	if(GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
 	{
@@ -879,7 +877,7 @@ LabelNew* GameUISystem::getCrossHairTipsInfo() const
 
 void GameUISystem::initInGame()
 {
-    m_crossHair = Sprite::create("Texture/cross_hair.png");
+    m_crossHair = Sprite::create("UITexture/cross_hair.png");
 	 
     auto size = m_crossHair->getContentSize();
 	
