@@ -206,6 +206,22 @@ void Tfile::addSearchZip(std::string zipPath)
 	
 }
 
+std::string Tfile::getExtension(std::string path)
+{
+
+	auto idx = path.rfind('.');
+
+	if(idx != std::string::npos)
+	{
+	    return path.substr(idx+1);
+	}
+	else
+	{
+	    // No extension found
+		return "";
+	}
+}
+
 Tfile::Tfile()
 {
 

@@ -49,6 +49,13 @@
 extern "C" {
 #endif
 
+	struct ImageFileInfo
+	{
+		int channels;
+		int width;
+		int height;
+		int dds_mipMapLevel;
+	};
 /**
 	The format of images that may be loaded (force_channels).
 	SOIL_LOAD_AUTO leaves the image in whatever format it was found.
@@ -251,7 +258,8 @@ unsigned int
 		int buffer_length,
 		int force_channels,
 		unsigned int reuse_texture_ID,
-		unsigned int flags
+		unsigned int flags,
+		struct ImageFileInfo * info
 	);
 
 /**

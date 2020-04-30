@@ -122,6 +122,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#define GL_TEXTURE_MAX_LEVEL 0x813D
 /*	error reporting	*/
 const char *result_string_pointer = "SOIL initialized";
 
@@ -536,7 +537,8 @@ unsigned int
 		int buffer_length,
 		int force_channels,
 		unsigned int reuse_texture_ID,
-		unsigned int flags
+		unsigned int flags,
+		struct ImageFileInfo * info
 	)
 {
 	/*	variables	*/
@@ -552,7 +554,7 @@ unsigned int
 			not be flipped, etc.	*/
 		tex_id = SOIL_direct_load_DDS_from_memory(
 				buffer, buffer_length,
-				reuse_texture_ID, flags, 0 );
+				reuse_texture_ID, flags, 0 £¬info);
 		if( tex_id )
 		{
 			/*	hey, it worked!!	*/
@@ -606,6 +608,12 @@ unsigned int
 			reuse_texture_ID, flags,
 			GL_TEXTURE_2D, GL_TEXTURE_2D,
 			GL_MAX_TEXTURE_SIZE );
+	if(info)
+	{
+		info->channels = channels;
+		info->width = width;
+		info->height = height;
+	}
 	/*	and nuke the image data	*/
 	SOIL_free_image_data( img );
 	/*	and return the handle, such as it is	*/
@@ -2023,7 +2031,8 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 		int buffer_length,
 		unsigned int reuse_texture_ID,
 		int flags,
-		int loading_as_cubemap )
+		int loading_as_cubemap ,
+		struct ImageFileInfo * info)
 {
 	/*	variables	*/
 	DDS_header header;
@@ -2089,6 +2098,8 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 	result_string_pointer = "DDS header loaded and validated";
 	width = header.dwWidth;
 	height = header.dwHeight;
+	info->width = width;
+	info->height = height;
 	uncompressed = 1 - (header.sPixelFormat.dwFlags & DDPF_FOURCC) / DDPF_FOURCC;
 	cubemap = (header.sCaps.dwCaps2 & DDSCAPS2_CUBEMAP) / DDSCAPS2_CUBEMAP;
 	if( uncompressed )
@@ -2368,12 +2379,14 @@ unsigned int SOIL_direct_load_DDS_from_memory(
 			/*	instruct OpenGL to use the MIPmaps	*/
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR );
+			glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, mipmaps);//always setting the max Level of texture.
 		} else
 		{
 			/*	instruct OpenGL _NOT_ to use the MIPmaps	*/
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MAG_FILTER, GL_LINEAR );
 			glTexParameteri( opengl_texture_type, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
 		}
+		info->dds_mipMapLevel =mipmaps;
 		/*	does the user want clamping, or wrapping?	*/
 		if( flags & SOIL_FLAG_TEXTURE_REPEATS )
 		{

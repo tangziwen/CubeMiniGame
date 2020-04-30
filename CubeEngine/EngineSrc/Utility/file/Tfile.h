@@ -21,6 +21,7 @@ public:
     std::vector<std::string> getAbsolutlyFilePath(std::string filePath);
 	std::string toAbsFilePath(std::string filePath, std::string workingCpy);
 	void addSearchZip(std::string zipPath);
+	std::string getExtension(std::string path);
 	~Tfile();
 private:
     Tfile();

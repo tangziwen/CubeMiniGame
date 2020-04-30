@@ -6,7 +6,7 @@
 #include "Engine/WorkerThreadSystem.h"
 #include "External/SOIL2/SOIL2.h"
 #include "Utility/file/Tfile.h"
-
+#include <algorithm>
 namespace tzw
 {
 	Texture::Texture(): m_isLoaded(false)
@@ -16,8 +16,26 @@ namespace tzw
 	Texture::Texture(std::string filePath)
 	{
 		auto data =Tfile::shared()->getData(filePath,false);
-		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, SOIL_FLAG_INVERT_Y);
+		ImageFileInfo info;
+		unsigned short loadingFlag = SOIL_FLAG_INVERT_Y;
+		auto exten = Tfile::shared()->getExtension(filePath);
+		for(auto& c : exten)
+		{
+		   c = tolower(c);
+		}
+		if(!exten.compare("dds"))
+		{
+			loadingFlag = SOIL_FLAG_DDS_LOAD_DIRECT;
+			m_isHaveMipMap = true;//dds we assume always have mipmaps
+		}
+		else
+		{
+			m_isHaveMipMap = false;
+		}
+		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, loadingFlag, &info);
 		m_type = RenderFlag::TextureType::Texture2D;
+		m_width = info.width;
+		m_height = info.height;
 		if (!m_textureId)
 		{
 			
@@ -210,9 +228,11 @@ namespace tzw
 	void
 	Texture::genMipMap()
 	{
-		if (m_isHaveMipMap)
-			return;
-		RenderBackEnd::shared()->genMipMap(m_textureId);
+		glBindTexture(GL_TEXTURE_2D, m_textureId);
+		if (!m_isHaveMipMap)
+		{
+			RenderBackEnd::shared()->genMipMap(m_textureId);
+		}
 		setFilter(FilterType::Linear, 2);
 		setFilter(FilterType::LinearMipMapLinear, 1);
 		m_isHaveMipMap = true;
@@ -222,6 +242,6 @@ namespace tzw
 	Texture::initData()
 	{
 		setWarp(RenderFlag::WarpAddress::Repeat);
-		m_isHaveMipMap = false;
+		
 	}
 } // namespace tzw
