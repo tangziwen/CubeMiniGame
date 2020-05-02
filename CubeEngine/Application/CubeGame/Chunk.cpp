@@ -1117,6 +1117,7 @@ namespace tzw
 		if (m_mesh->isEmpty())
 			return;
 		genNormal();
+		// m_mesh->caclNormals();
 		calculateMatID();
 		loading_mutex.lock();
 		m_isNeedSubmitMesh = true;

@@ -29,9 +29,10 @@ vec3 CalcBumpedNormal()
 	BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
 	vec3 NewNormal;
 	mat3 TBN = mat3(Tangent, Bitangent, Normal);
-	NewNormal = TBN * BumpMapNormal; 
+	NewNormal = TBN * BumpMapNormal;
+
 	NewNormal = normalize(NewNormal);
-	return NewNormal;	
+	return Normal;	
 }
 
 //! [0]

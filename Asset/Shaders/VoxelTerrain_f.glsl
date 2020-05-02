@@ -345,17 +345,19 @@ vec4 texturePlain(sampler2D samp, in vec2 uv)
 vec3 CalcBumpedNormal(vec3 normalMapColor)
 {
 	vec3 Normal = normalize(v_normal);
-	vec3 Tangent = normalize(v_tangent.xyz);
+	vec3 Tangent = vec3(1, 0, 0);//normalize(v_tangent.xyz);
 	Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
 	vec3 Bitangent = cross(Tangent, Normal);
+
 	vec3 BumpMapNormal = normalMapColor;
 	BumpMapNormal.y = 1.0 - BumpMapNormal.y;//we use directx style normal map. 1.0 - Green
 	BumpMapNormal = 2.0 * BumpMapNormal - vec3(1.0, 1.0, 1.0);
+	BumpMapNormal.xy *= 0.5;
 	vec3 NewNormal;
 	mat3 TBN = mat3(Tangent, Bitangent, Normal);
 	NewNormal = TBN * BumpMapNormal; 
 	NewNormal = normalize(NewNormal);
-	return v_normal;	
+	return NewNormal;	
 }
 void main()
 {
