@@ -7,6 +7,7 @@ set(FORMS "")
 set(INCLUDEPATH "")
 set(LIBS "")
 set(QMAKE_LFLAGS "")
+set(CMAKE_CXX_STANDARD 17)
 set(PWD "E:/Cube-Engine/CubeEngine")
 #-------------------------------------------------
 #-------------------------------------------------
@@ -39,8 +40,6 @@ include_directories(./External/GLFW3/include)
 #GLEW #
 set(LIBS ${LIBS} glew32s)
 include_directories(./External/GLEW)
-#freeImage#
-set(LIBS ${LIBS} freeimage)
 
 add_compile_definitions(WITH_OPENCV2)
 
@@ -48,8 +47,8 @@ add_compile_definitions(WITH_OPENCV2)
 include_directories(./External/rapidjson/include)
 
 #python
-include_directories(./External/Python27/include)
-set(LIBS ${LIBS} python27)
+include_directories(./External/Python/include)
+set(LIBS ${LIBS} python37)
 
 #FMOD
 set(LIBS ${LIBS} fmodex_vc)

@@ -205,7 +205,7 @@ void GameUISystem::drawIMGUI()
 			ImVec2 homeDropDownPos;
 			ImGui::BeginHorizontal("Menu");
 			//ImGui::BeginHorizontal("IconGroup");
-			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(homeIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(homeIcon->getTextureId()), ImVec2(IconSize,IconSize)))
 			//if(ImGui::SmallButton("Menu"))
 			{
 				//closeAllOpenedWindow();
@@ -246,12 +246,12 @@ void GameUISystem::drawIMGUI()
 			}
 			//now with right
 			ImGui::SetCursorPosX(io.DisplaySize.x - 100.0f);
-			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(settingIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(settingIcon->getTextureId()), ImVec2(IconSize,IconSize)))
 			{
 				setWindowShow(WindowType::OPTION_MENU, true);
 			}
 			//ImGui::SameLine();
-			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(helpIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
+			if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(helpIcon->getTextureId()), ImVec2(IconSize,IconSize)))
 			{
 				setWindowShow(WindowType::HELP_PAGE, true);
 			}
@@ -260,16 +260,16 @@ void GameUISystem::drawIMGUI()
 			if(ImGui::BeginPopup("HomePopup"))
 			{
 				ImGui::PushID("LoadGame");
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize));
 				ImGui::PopID();
 				ImGui::PushID("SaveGame");
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize));
 				ImGui::PopID();
 				ImGui::PushID("Credit");
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize));
 				ImGui::PopID();
 				ImGui::PushID("Quit");
-				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0));
+				ImGui::ImageButton(reinterpret_cast<ImTextureID>(packageIcon->getTextureId()), ImVec2(IconSize,IconSize));
 				ImGui::PopID();
 				ImGui::EndPopup();
 			}
@@ -319,7 +319,7 @@ void GameUISystem::drawIMGUI()
 
 		if(getWindowIsShow(WindowType::INVENTORY))
 		{
-			bool isShow = ScriptPyMgr::shared()->callFunBool("tzw_game_draw_window",int(WindowType::INVENTORY));
+			bool isShow = ScriptPyMgr::shared()->callFunPyBool("tzw", "tzw_game_draw_window",int(WindowType::INVENTORY));
 			setWindowShow(WindowType::INVENTORY, isShow);
 		}
 		
@@ -499,6 +499,7 @@ void GameUISystem::drawIMGUI()
             }
             	ImGui::EndTabBar();
             }
+			ImGui::End();
 			setWindowShow(WindowType::WORLD_SETTING, isOpen);
 		}
 		

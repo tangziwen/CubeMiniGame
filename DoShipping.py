@@ -53,7 +53,7 @@ def get_ignored(path, filenames):
         for excludeDir in to_exclude:
             excludeDirAbs = os.path.abspath(excludeDir)
             if excludeDirAbs in filePathAbs:
-                print "exclude"
+                print("exclude")
                 ret.append(filename)
     return ret
 
@@ -64,20 +64,23 @@ import shutil
 shutil.copytree("./Asset/", "./Asset_cook/", ignore = get_ignored)
 
 #convert to dds
-g = os.walk("./Asset_cook/Texture/")
-for path,d,filelist in g:
+g = os.walk("./Asset_cook/")
+for path,directories,filelist in g:
+    directories[:] = [d for d in directories if d not in ['UITexture']]#ignore UI Texture
     for filename in filelist:
         theFilePath = os.path.join(path, filename)
-        print "cook texture",theFilePath
-        if os.path.splitext(theFilePath)[1] in (".png", ".tga", ".jpg"):
+        if os.path.splitext(theFilePath)[1] in (".png",".PNG", ".tga", ".TGA", ".jpg", ".JPG", ".bmp", ".BMP"):
+            print("cook texture",theFilePath)
             with Image(filename= theFilePath) as img:
-               img.save(filename=os.path.splitext(theFilePath)[0]+'.dds')
-               #remove Old one
-               os.remove(theFilePath)
-print "packing.."
+                img.flip()
+                img.save(filename=os.path.splitext(theFilePath)[0]+'.dds')
+                #remove Old one
+                os.remove(theFilePath)
+
+print("packing..")
 theZipFile = zipfile.ZipFile("./asset.pkg", 'w', compression=zipfile.ZIP_DEFLATED)
 ZipDir("./Asset_cook", theZipFile, ignoreDir=["ArtDev"], ignoreExt=[".zip"])
 #remove cooked file
-print "clean up"
+print("clean up")
 shutil.rmtree("./Asset_cook/", ignore_errors=False, onerror=None)
-print "done."
+print ("done.")

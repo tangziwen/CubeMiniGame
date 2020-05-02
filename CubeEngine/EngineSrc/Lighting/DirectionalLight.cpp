@@ -14,7 +14,7 @@ DirectionalLight::DirectionalLight()
 	m_intensity = 3.0;
 	getAngleFromDir();
 	setTimeAndLongitude(8, 0);
-	setElapseLevel(7);
+	setElapseLevel(0);
 }
 
 vec3 DirectionalLight::dir() const

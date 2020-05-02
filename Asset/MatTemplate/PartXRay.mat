@@ -1,0 +1,22 @@
+{
+	"shaders":{
+		"vs" : "Shaders/GeometryPass_v.glsl",
+		"fs" : "Shaders/GeometryPass_f.glsl"
+	},
+	"name" : "ModelStd",
+	"RenderStage": "AFTER_DEPTH_CLEAR",
+	"DepthTestEnable" : true,
+	"DepthWriteEnable" : true,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_roughness", "type":"float", "default":5.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["DiffuseMap", 0]
+		]
+	}
+}

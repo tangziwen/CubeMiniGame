@@ -1,0 +1,18 @@
+{
+	"shaders":{
+		"vs" : "Shaders/ScreenQuad_v.glsl",
+		"fs" : "Shaders/BloomBlurH_f.glsl"
+	},
+	"name" : "BlurH",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}

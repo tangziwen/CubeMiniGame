@@ -1,0 +1,17 @@
+{
+	"shaders":{
+		"vs" : "Shaders/GeometryPass_v.glsl",
+		"fs" : "Shaders/GeometryPassSimple_f.glsl"
+	},
+	"name" : "ModelSmooth",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_roughness", "type":"float", "default":0.0},
+			{"name" : "TU_metallic", "type":"float", "default":0.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["diffuseMap", 0]
+		]
+	}
+}

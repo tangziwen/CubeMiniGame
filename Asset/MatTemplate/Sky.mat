@@ -1,0 +1,21 @@
+{
+	"shaders":{
+		"vs" : "Shaders/Sky_v.glsl",
+		"fs" : "Shaders/Sky_f.glsl"
+	},
+	"name" : "Sky",
+	"property" : {
+		"attributes" : [
+			{"name" : "sun_intensity", "type":"float", "default":22.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			[ "tint", 1],
+			["tint2", 2],
+			[ "sun", 3],
+			["moon", 4],
+			["clouds1", 5],
+			["clouds2", 6]
+		]
+	}
+}

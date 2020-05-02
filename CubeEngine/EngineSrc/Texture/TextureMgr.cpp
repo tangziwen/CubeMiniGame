@@ -1,5 +1,8 @@
 #include "TextureMgr.h"
 #include <utility>
+
+#include "Utility/log/Log.h"
+
 namespace tzw {
 
 
@@ -105,5 +108,9 @@ TextureMgr::TextureMgr()
 
 }
 
+TextureMgr::~TextureMgr()
+{
+	tlog("somebody kill me");
+}
 } // namespace tzw
 

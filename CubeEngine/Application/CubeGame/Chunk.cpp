@@ -1303,7 +1303,7 @@ namespace tzw
 						grass = m_grass2;
 					}
 					InstanceData instance;
-					instance.posAndScale = vec4(pos.x, pos.y, pos.z, 1.0 + scale);
+					instance.posAndScale = vec4(pos.x, pos.y + 0.65f, pos.z, 1.0 + scale);
 					instance.extraInfo = vec4(m_mesh->m_vertices[index0].m_normal, 0);
 					grass->m_mesh->pushInstance(instance);
 				}

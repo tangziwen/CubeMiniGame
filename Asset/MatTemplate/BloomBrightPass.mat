@@ -1,0 +1,18 @@
+{
+	"shaders":{
+		"vs" : "Shaders/ScreenQuad_v.glsl",
+		"fs" : "Shaders/BloomBrightPass_f.glsl"
+	},
+	"name" : "PostEffect",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "OneMinusSrcAlpha",
+	"property" : {
+		"attributes" : [
+		],
+		"maps" : [
+		]
+	}
+}

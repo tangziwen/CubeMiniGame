@@ -44,6 +44,7 @@ public:
 	tzw::vec3 getMapOffset() const;
 	void setMapOffset(tzw::vec3 val);
 	void init();
+	virtual ~GameWorld();
 private:
     Node * m_mainRoot;
     int m_currentState;
@@ -57,7 +58,6 @@ private:
     GameWorld();
     std::set<Chunk*> m_activedChunkList;
     GameUISystem * m_mainMenu;
-	virtual ~GameWorld();
 	void prepare();
 };
 

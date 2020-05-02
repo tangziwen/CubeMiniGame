@@ -1,0 +1,15 @@
+{
+	"shaders":{
+		"vs" : "Shaders/Simple_v.glsl",
+		"fs" : "Shaders/Simple_f.glsl"
+	},
+	"name" : "Simple",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["MainTexture", 0]
+		]
+	}
+}

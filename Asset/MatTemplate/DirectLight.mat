@@ -1,0 +1,20 @@
+{
+	"shaders":{
+		"vs" : "Shaders/ScreenQuad_v.glsl",
+		"fs" : "Shaders/LightPassDir_f.glsl"
+	},
+	"name" : "DirectLight",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : false,
+	"SrcBlendFactor" : "One",
+	"DstBlendFactor" : "One",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_roughness", "type":"float", "default":5.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+		]
+	}
+}

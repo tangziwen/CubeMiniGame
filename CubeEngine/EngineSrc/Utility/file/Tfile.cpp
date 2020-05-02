@@ -74,8 +74,8 @@ Data Tfile::getData(std::string filename, bool forString)
 	auto theList = {"png", "jpg", "tga"};
 	findPreFix(filename.c_str(), tmp);
 	std::string preFix = tmp;
-	auto found = preFix.find("Texture");
-	if(found == 0 )
+	auto found = preFix.find("UITexture");
+	if(found == std::string::npos)
 	{	
 		//有cook版本的文件
 		if(std::find(theList.begin(), theList.end(), getExtension(filename))!= theList.end())
