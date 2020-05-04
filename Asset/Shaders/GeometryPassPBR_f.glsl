@@ -32,7 +32,7 @@ vec3 CalcBumpedNormal()
 	NewNormal = TBN * BumpMapNormal;
 
 	NewNormal = normalize(NewNormal);
-	return Normal;	
+	return NewNormal;	
 }
 
 //! [0]

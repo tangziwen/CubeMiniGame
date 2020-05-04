@@ -24,7 +24,8 @@ const float HeightThreadHold = 0.01;
 FPSCamera::FPSCamera(bool isOpenPhysics)
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(3.5f,0.0f,3.5f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true),m_isOpenPhysics(isOpenPhysics)
-    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false)
+    ,m_verticalSpeed(0),m_gravity(0.5),distToGround(1.7),m_isStopUpdate(false),
+	m_onHitGround(nullptr)
 {
     offsetToCentre = 0.6;
     m_distToFront = 0.2;
@@ -57,6 +58,7 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 	    m_character->setMaxSlope(45.0f * 3.14 / 180.0f);
 	    m_character->setJumpSpeed(7.0f);
 	    m_character->setFallSpeed(55.0f);
+		m_character->onHitLand = std::bind(&FPSCamera::onHitGroundImp, this);
 		this->m_ghost2->setUserPointer(static_cast<PhysicsListener * >(this));
 		this->m_ghost2->setUserIndex(1);
 		this->m_ghost2->setCcdSweptSphereRadius(0.5f);
@@ -337,6 +339,7 @@ void FPSCamera::setIsEnableGravity(bool isEnableGravity)
 		m_character->setEnableGravity(m_isEnableGravity);
 	}
 }
+	
 float FPSCamera::getDistToside() const
 {
     return m_distToside;
@@ -385,111 +388,12 @@ void FPSCamera::init(Camera *cloneObj)
 	cloneObj->getPerspectInfo(&m_fov, &m_aspect, &m_near, &m_far);
 }
 
-void FPSCamera::collideAndSlide(vec3 vel, vec3 gravity)
+void FPSCamera::onHitGroundImp()
 {
-    // Do collision detection:
-    collisionPackage->R3Position = m_pos - vec3(0, offsetToCentre, 0);
-    collisionPackage->R3Velocity = vel;
-    // calculate position and velocity in eSpace
-    vec3 eSpacePosition = collisionPackage->R3Position / collisionPackage->eRadius;
-    vec3 eSpaceVelocity = collisionPackage->R3Velocity / collisionPackage->eRadius;
-    // Iterate until we have our final position.
-    collisionRecursionDepth = 0;
-    vec3 finalPosition = collideWithWorld(eSpacePosition,eSpaceVelocity);
-
-
-    //do it again for gravity
-    collisionPackage->R3Position = finalPosition * collisionPackage->eRadius;
-    collisionPackage->R3Velocity = gravity;
-    eSpaceVelocity = collisionPackage->R3Velocity / collisionPackage->eRadius;
-    collisionRecursionDepth = 0;
-    finalPosition = collideWithWorld(finalPosition,eSpaceVelocity, false);
-
-    //now set the position
-    // Convert final result back to R3:
-    finalPosition = finalPosition * collisionPackage->eRadius;
-    if (finalPosition.distance(getPos()) > 0.001)
-    {
-        m_isMoving = true;
-    }else
-    {
-        m_isMoving = false;
-    }
-    setPos(finalPosition + vec3(0, offsetToCentre,0));
-}
-
-vec3 FPSCamera::collideWithWorld(const vec3 &pos, const vec3 &vel, bool needSlide)
-{
-    float veryCloseDistance = 0.005f;
-    // do we need to worry?
-    if (collisionRecursionDepth > 5)
-        return pos;
-    // Ok, we need to worry:
-    collisionPackage->velocity = vel;
-
-    collisionPackage->normalizedVelocity = vel;
-    collisionPackage->normalizedVelocity.normalize();
-    collisionPackage->basePoint = pos;
-    collisionPackage->foundCollision = false;
-    // Check for collision (calls the collision routines)
-    // Application specific!!
-    checkCollision(collisionPackage);
-    // If no collision we just move along the velocity
-    if (!collisionPackage->foundCollision) {
-        return pos + vel;
-    }
-    // *** Collision occured ***
-    // The original destination point
-    vec3 destinationPoint = pos + vel;
-    vec3 newBasePoint = pos;
-    // only update if we are not already very close
-    // and if so we only move very close to intersection..not
-    // to the exact spot.
-    if (collisionPackage->nearestDistance>=veryCloseDistance)
-    {
-        vec3 V = vel;
-        V.setLength(collisionPackage->nearestDistance - veryCloseDistance);
-        newBasePoint = collisionPackage->basePoint + V;
-        // Adjust polygon intersection point (so sliding
-        // plane will be unaffected by the fact that we
-        // move slightly less than collision tells us)
-        V.normalize();
-        collisionPackage->intersectionPoint -= V * std::min(static_cast<float>(collisionPackage->nearestDistance), veryCloseDistance);
-//        collisionPackage->intersectionPoint -= V * veryCloseDistance;
-    }
-    // Determine the sliding plane
-    vec3 slidePlaneOrigin =
-
-            collisionPackage->intersectionPoint;
-    vec3 slidePlaneNormal =
-            newBasePoint-collisionPackage->intersectionPoint;
-    slidePlaneNormal.normalize();
-    Plane slidingPlane(slidePlaneNormal , slidePlaneOrigin);
-    // Again, sorry about formatting.. but look carefully ;)
-    vec3 newDestinationPoint = destinationPoint - slidePlaneNormal * slidingPlane.dist2Plane(destinationPoint);
-    // Generate the slide vector, which will become our new
-    // velocity vector for the next iteration
-    vec3 newVelocityVector = newDestinationPoint - collisionPackage->intersectionPoint;
-    // Recurse:
-    // dont recurse if the new velocity is very small
-    if (newVelocityVector.length() < veryCloseDistance || !needSlide) {
-        return newBasePoint;
-    }
-    collisionRecursionDepth++;
-    return collideWithWorld(newBasePoint,newVelocityVector);
-}
-
-void FPSCamera::checkCollision(ColliderEllipsoid * thePackage)
-{
-    std::vector<Drawable3D *> list;
-    vec3 pos = thePackage->R3Position;
-    AABB aabb;
-    aabb.update(vec3(pos.x - 3,pos.y - 3,pos.z - 3));
-    aabb.update(vec3(pos.x + 3,pos.y + 3 ,pos.z + 3));
-    g_GetCurrScene()->getRange(&list,aabb);
-	if (list.empty()) return;
-    Drawable3DGroup group(&list[0],list.size());
-    group.checkCollide(thePackage);
+	if(m_onHitGround)
+	{
+		m_onHitGround();
+	}
 }
 
 bool FPSCamera::isIsOpenPhysics() const
@@ -510,6 +414,11 @@ bool FPSCamera::getIsMoving() const
 void FPSCamera::setIsMoving(bool isMoving)
 {
     m_isMoving = isMoving;
+}
+
+bool FPSCamera::isOnGround() const
+{
+	return m_character->onGround();
 }
 } // namespace tzw
 

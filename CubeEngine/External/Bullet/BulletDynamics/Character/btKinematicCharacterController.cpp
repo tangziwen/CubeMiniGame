@@ -162,6 +162,7 @@ btKinematicCharacterController::btKinematicCharacterController(btPairCachingGhos
 	setStepHeight(stepHeight);
 	setMaxSlope(btRadians(45.0));
 	m_enableGravity = true;
+	onHitLand = nullptr;
 }
 
 btKinematicCharacterController::~btKinematicCharacterController()
@@ -577,10 +578,20 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 		else
 			m_currentPosition.setInterpolate3(m_currentPosition, m_targetPosition, callback.m_closestHitFraction);
 
+		if(!m_wasOnGround && m_wasJumping)
+		{
+			if(onHitLand)
+			{
+				onHitLand();
+			}
+			// printf("hit\n");
+		}
 		full_drop = false;
 		m_verticalVelocity = 0.0;
 		m_verticalOffset = 0.0;
 		m_wasJumping = false;
+
+		
 	}
 	else
 	{
@@ -600,7 +611,6 @@ void btKinematicCharacterController::stepDown(btCollisionWorld* collisionWorld, 
 			}
 		}
 		//printf("full drop - %g, %g\n", m_currentPosition.getY(), m_targetPosition.getY());
-
 		m_currentPosition = m_targetPosition;
 	}
 }

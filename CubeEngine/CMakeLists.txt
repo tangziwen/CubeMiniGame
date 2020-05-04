@@ -59,6 +59,10 @@ set(LIBS ${LIBS} opengl32)
 #debugHelp
 set(LIBS ${LIBS} Dbghelp)
 
+#SoLoud
+set(LIBS ${LIBS} soloud_static)
+include_directories(./External/Soloud)
+
 #bullets
 #set(LIBS ${LIBS} Bullet3Collision_vs2010_x64_debug Bullet3Common_vs2010_x64_debug Bullet3Dynamics_vs2010_x64_debug Bullet3Geometry_vs2010_x64_debug Bullet3OpenCL_clew_vs2010_x64_debug)
 #set(LIBS ${LIBS} BulletCollision_vs2010_x64_debug BulletDynamics_vs2010_x64_debug BulletInverseDynamics_vs2010_x64_debug BulletInverseDynamicsUtils_vs2010_x64_debug BulletSoftBody_vs2010_x64_debug)

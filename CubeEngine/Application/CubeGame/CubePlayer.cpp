@@ -30,7 +30,7 @@
 #include "3D/Particle/ParticleUpdateSizeModule.h"
 #include "3D/Particle/ParticleInitPosModule.h"
 #include "BulletMgr.h"
-
+#include "AudioSystem/AudioSystem.h"
 namespace tzw
 {
 
@@ -50,6 +50,7 @@ namespace tzw
 		m_camera = camera;
 		camera->reCache();
 		m_camera->setIsEnableGravity(true);
+		m_camera->m_onHitGround = std::bind(&CubePlayer::onHitGround, this);
 		m_currSelectItemIndex = 0;
 		m_currSelectedItem = nullptr;
 
@@ -82,6 +83,9 @@ namespace tzw
 		m_gunModel->setRotateE(vec3(0, 3, 0));
 		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
+
+		m_footstep = AudioSystem::shared()->createSound("./audio/footstep.wav");
+		m_hitGroundSound = AudioSystem::shared()->createSound("./audio/land.ogg");
 	}
 
 	FPSCamera* CubePlayer::camera() const
@@ -107,11 +111,19 @@ namespace tzw
 	void CubePlayer::logicUpdate(float dt)
 	{
 		static float theTime = 0.0f;
+		static float stepLoopTime = 0.0f;
 		vec3 oldPos = m_gunModel->getPos();
 		float offset = 0.002;
 		float freq = 1.2;
-		if (m_camera->getIsMoving())
+		if (m_camera->getIsMoving() && m_camera->isOnGround())
 		{
+			stepLoopTime += dt;
+			if(stepLoopTime > 0.35)
+			{
+				auto event = m_footstep->playWithOutCare();
+				event.setVolume(1.2f);
+				stepLoopTime = 0.0;
+			}
 			offset = 0.006;
 			freq = 6;
 		}
@@ -342,6 +354,7 @@ namespace tzw
 
 	void CubePlayer::removePart(GamePart* part)
 	{
+		AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLINK_REMOVE);
 		BuildingSystem::shared()->removePart(part);
 		m_currPointPart = nullptr;
 		updateCrossHairTipsInfo();
@@ -535,6 +548,8 @@ namespace tzw
 		m_camera->setIsEnableGravity(!isOpen);
 	}
 
+
+
 	bool CubePlayer::onScroll(vec2 offset)
 	{
 		tlog("offset %f %f", offset.getX(), offset.getY());
@@ -545,5 +560,11 @@ namespace tzw
 	GameItem* CubePlayer::getCurSelectedItem()
 	{
 		return m_currSelectedItem;
+	}
+
+	void CubePlayer::onHitGround()
+	{
+		tlog("onHigground");
+		m_hitGroundSound->playWithOutCare();
 	}
 } // namespace tzw

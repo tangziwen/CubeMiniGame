@@ -15,7 +15,8 @@ namespace tzw
 	struct GameItem;
 	class GamePart;
 	class PartSurface;
-
+	class Audio;
+	class AudioEvent;
 	class CubePlayer : public Node, public EventListener, public IMGUIObject
 	{
 	public:
@@ -65,9 +66,11 @@ namespace tzw
 		InSeatViewMode getSeatViewMode() const;
 		void setSeatViewMode(const InSeatViewMode seatViewMode);
 		void setIsOpenJetPack(bool isOpen);
+
 		bool onScroll(vec2 offset) override;
 		GameItem * getCurSelectedItem();
 	private:
+		void onHitGround();
 		void handleSitDown();
 		PreviewItem * m_previewItem;
 		std::vector<GameItem * > m_itemSlots;
@@ -85,6 +88,8 @@ namespace tzw
 		PaintGun * m_paintGun;
 		GamePart * m_currPointPart;
 		InSeatViewMode m_seatViewMode;
+		Audio * m_footstep;
+		Audio * m_hitGroundSound;
 	};
 } // namespace tzw
 

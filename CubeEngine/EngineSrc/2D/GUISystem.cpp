@@ -1,6 +1,7 @@
 #include "GUISystem.h"
 #include "imgui.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
+#include "AudioSystem/AudioSystem.h"
 #include "GL/glew.h"
 #include "Engine/Engine.h"
 #include "Shader/ShaderMgr.h"
@@ -127,7 +128,7 @@ namespace tzw
 	{
 		
 	}
-
+	static Audio * sound;
 	void GUISystem::renderData()
 	{
 		if (!m_isInit) return;
@@ -138,6 +139,10 @@ namespace tzw
 			obj->drawIMGUI();
 		}
 		ScriptPyMgr::shared()->doScriptUIUpdate();
+		if(ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(0))
+		{
+			sound->playWithOutCare();
+		}
 		ImGui::PopFont();
 		ImGui::Render();
 		
@@ -232,9 +237,10 @@ namespace tzw
 	{
 		ImGui::PushFont(m_fontLarge);
 	}
-
+	
 	void GUISystem::initGUI()
 	{
+		sound = AudioSystem::shared()->createSound("./audio/click.wav");
 		EventMgr::shared()->addFixedPiorityListener(this);
 		g_imguiShader = ShaderMgr::shared()->getByPath("Shaders/IMGUI_v.glsl", "Shaders/IMGUI_f.glsl");
 		m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);

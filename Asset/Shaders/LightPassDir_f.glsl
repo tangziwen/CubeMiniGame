@@ -145,7 +145,7 @@ vec4 dualParobolidSampleLOD(sampler2D tex, vec3 r, float LODLevel)
 	uv.x = atan(r.x,r.z) / PI;
 	uv.y = r.y;
 	uv= uv* 0.5 + 0.5;
-	uv.y = 1.0 - uv.y;
+	uv.y = 1.0 -uv.y;
 	return textureLod(tex, uv, LODLevel);
 }
 
@@ -169,6 +169,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	// calculate per-light radiance
 	vec3 H = normalize(V + L);
 	vec3 radiance     = lightColor;
+	Roughness = max(Roughness, MIN_ROUGHNESS);
 	// cook-torrance brdf
 	float NDF = DistributionGGX(N, H, Roughness);
 	
@@ -195,7 +196,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 		
 		vec3 prefilteredColor = textureLod(prefilterMap, reflectionVector, Roughness *MAX_REFLECTION_LOD).rgb;
 	#else
-		vec3 irradiance = dualParobolidSampleLOD(environmentMap, N, 0).rgb;
+		vec3 irradiance = dualParobolidSampleLOD(prefilterMap, N, 0).rgb;
 		vec3 prefilteredColor = dualParobolidSampleLOD(prefilterMap, reflectionVector,Roughness *MAX_REFLECTION_LOD).rgb;
 	#endif
 	irradiance = pow(irradiance, vec3(2.2));

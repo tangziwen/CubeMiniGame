@@ -1304,8 +1304,30 @@ namespace tzw
 						grass = m_grass2;
 					}
 					InstanceData instance;
-					instance.posAndScale = vec4(pos.x, pos.y + 0.65f, pos.z, 1.0 + scale);
+					instance.posAndScale = vec4(pos.x, pos.y+ 0.65, pos.z, 1.0 + scale);
 					instance.extraInfo = vec4(m_mesh->m_vertices[index0].m_normal, 0);
+					auto rotateM = Matrix44();
+					rotateM.setToIdentity();
+					auto m = rotateM.data();
+					auto z = vec3(0, 0, 1);
+					auto right = vec3::CrossProduct(m_mesh->m_vertices[index0].m_normal, z);
+					auto zNew = vec3::CrossProduct(right, m_mesh->m_vertices[index0].m_normal);
+					m[0] = right.x;
+					m[1] = right.y;
+					m[2] = right.z;
+
+
+					m[4] = m_mesh->m_vertices[index0].m_normal.x;
+					m[5] = m_mesh->m_vertices[index0].m_normal.y;
+					m[6] = m_mesh->m_vertices[index0].m_normal.z;
+
+
+					m[8] = zNew.x;
+					m[9] = zNew.y;
+					m[10] = zNew.z;
+					Quaternion q;
+					rotateM.getRotation(&q);
+					instance.rotateInfo = vec4(q.x,q.y,q.z, q.w);
 					grass->m_mesh->pushInstance(instance);
 				}
 			}

@@ -52,16 +52,14 @@ public:
 
     bool getIsMoving() const;
     void setIsMoving(bool isMoving);
+	bool isOnGround() const;
 
 	vec3 getTotalSpeed();
 	void pausePhysics();
 	void resumePhysics();
-
+	std::function<void ()> m_onHitGround;
 private:
     void init(Camera * cloneObj);
-    void collideAndSlide(vec3 vel, vec3 gravity);
-    vec3 collideWithWorld(const vec3& pos, const vec3& vel, bool needSlide = true);
-    void checkCollision(ColliderEllipsoid * thePackage);
     bool m_enableFPSFeature;
     float m_maxFallSpeed;
     float m_distToside;
@@ -86,6 +84,7 @@ private:
 	btPairCachingGhostObject * m_ghost2;
 	float m_capsuleHigh;
 	bool m_isOpenPhysics;
+	void onHitGroundImp();
 public:
 	bool isIsOpenPhysics() const;
 	void setIsOpenPhysics(const bool isOpenPhysics);

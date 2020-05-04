@@ -3,19 +3,19 @@
 
 
 #include <string>
+#include "AudioEvent.h"
 namespace tzw
 {
 	class Audio
 	{
 	public:
-		Audio(std::string filePath);
+		Audio();
 		void * getPtr();
 		void setPtr( void * ptr);
-		void Play();
-		void pause();
-		void resume();
-		void stop();
+		AudioEvent * Play();
+		AudioEvent playWithOutCare();
 		~Audio();
+		void setIsLooping(bool isLoop);
 	private:
 		void * m_channel;
 		void * m_ptr;

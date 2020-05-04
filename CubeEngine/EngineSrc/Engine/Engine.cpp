@@ -332,6 +332,7 @@ float Engine::windowWidth() const
 
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
+	// AudioSystem::shared()->init();
     shared()->setDelegate(delegate);
 	Tfile::shared()->addSearchPath("./Asset/");
 	Tfile::shared()->addSearchPath("./");

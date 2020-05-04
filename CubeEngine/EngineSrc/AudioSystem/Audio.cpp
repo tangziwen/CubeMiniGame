@@ -1,14 +1,13 @@
 #include "Audio.h"
 #include "AudioSystem.h"
-#include "FMod/fmod.hpp"
+#include "Soloud/include/soloud.h"
+#include "Soloud/include/soloud_wav.h"
 namespace tzw
 {
 
-	Audio::Audio(std::string filePath)
+	Audio::Audio()
 	{
 		m_ptr = 0;
-		AudioSystem::shared()->createSound(filePath, this);
-		m_channel = 0;
 	}
 
 	void * Audio::getPtr()
@@ -21,35 +20,33 @@ namespace tzw
 		m_ptr = ptr;
 	}
 
-
-	void Audio::Play()
+	AudioEvent * Audio::Play()
 	{
-		//FMOD::SYSTEM * SYS = (FMOD::SYSTEM *)AUDIOSYSTEM::SHARED()->GETPTR();
-		//SYS->PLAYSOUND(FMOD_CHANNEL_REUSE,(FMOD::SOUND *)M_PTR, FALSE, (FMOD::CHANNEL **)&M_CHANNEL);
+		AudioEvent * event = new AudioEvent();
+		auto soloud = static_cast<SoLoud::Soloud *>(AudioSystem::shared()->getPtr());
+		SoLoud::Wav * wav = static_cast<SoLoud::Wav *>(m_ptr);
+		event->setHandler(soloud->play(*wav));
+		return event;
 	}
 
-	void Audio::pause()
+	AudioEvent Audio::playWithOutCare()
 	{
-		//FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		//((FMOD::Channel *)m_channel)->setPaused(true);
-	}
-
-	void Audio::resume()
-	{
-		//FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		//((FMOD::Channel *)m_channel)->setPaused(false);
-	}
-
-	void Audio::stop()
-	{
-		//FMOD::System * sys = (FMOD::System *)AudioSystem::shared()->getPtr();
-		//((FMOD::Channel *)m_channel)->stop();
+		AudioEvent event;
+		auto soloud = static_cast<SoLoud::Soloud *>(AudioSystem::shared()->getPtr());
+		SoLoud::Wav * wav = static_cast<SoLoud::Wav *>(m_ptr);
+		event.setHandler(soloud->play(*wav));
+		return event;
 	}
 
 	Audio::~Audio()
 	{
-		stop();
+
 	}
 
+	void Audio::setIsLooping(bool isLoop)
+	{
+		SoLoud::Wav * wav = static_cast<SoLoud::Wav *>(m_ptr);
+		wav->setLooping(isLoop);
+	}
 }
 

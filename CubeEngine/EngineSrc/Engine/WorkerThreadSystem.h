@@ -29,8 +29,8 @@ namespace tzw{
 		void workderUpdate();
 		void mainThreadUpdate();
 	private:
-		std::list<WorkerJob> m_functionList1;
-		std::list<WorkerJob> m_functionList2;
+		std::list<WorkerJob> m_JobRecieverList;
+		std::list<WorkerJob> m_jobProcessList;
 		std::list<WorkerJob> m_mainThreadFunctionList;
 		std::list<WorkerJob> m_mainThreadCB1;
 		std::list<WorkerJob> m_mainThreadCB2;

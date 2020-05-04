@@ -13,6 +13,8 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include <algorithm>
+
+#include "AudioSystem/AudioSystem.h"
 #include "GameUISystem.h"
 #include "UIHelper.h"
 #include "CannonPart.h"
@@ -79,6 +81,7 @@ namespace tzw
     }
     void BuildingSystem::placeGamePartStatic(GamePart* part, vec3 pos)
 	{
+		AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLINK);
 		Island * newIsland = nullptr;
 		float blockSize = 0.5f;
 		vec3 resultWorldPos = vec3(int(std::round( pos.x / blockSize)) * blockSize, int(std::round(pos.y / blockSize)) * blockSize, 
@@ -102,6 +105,7 @@ namespace tzw
 	void
 	BuildingSystem::attachGamePartToConstraint(GamePart* part, Attachment* attach, float degree)
 	{
+		
 		vec3 pos, n, up;
 		attach->getAttachmentInfoWorld(pos, n, up);
 
@@ -123,6 +127,7 @@ namespace tzw
 	void
 	BuildingSystem::attachGamePart(GamePart* part, Attachment* attach, float degree, int index)
 	{
+		AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLINK);
 		if (attach->m_parent->getType() == GamePartType::GAME_PART_LIFT)
 		{
 			auto liftPart = dynamic_cast<LiftPart*>(attach->m_parent);
@@ -169,6 +174,7 @@ namespace tzw
 			auto chunk = static_cast<Chunk*>(group.hitByRay(ray, hitPoint));
 			if (chunk)
 			{
+				AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::DIGGING);
 				chunk->deformSphere(hitPoint, value, range);
 			}
 		}

@@ -17,6 +17,8 @@ subject to the following restrictions:
 #ifndef BT_KINEMATIC_CHARACTER_CONTROLLER_H
 #define BT_KINEMATIC_CHARACTER_CONTROLLER_H
 
+#include <functional>
+
 #include "LinearMath/btVector3.h"
 
 #include "btCharacterControllerInterface.h"
@@ -204,6 +206,8 @@ public:
 	void setUpInterpolate (bool value);
 	void setEnableGravity(bool isEnableGraVity);
 	bool getIsEnableGravity() const;
+
+	std::function<void()> onHitLand;
 };
 
 #endif // BT_KINEMATIC_CHARACTER_CONTROLLER_H

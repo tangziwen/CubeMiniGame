@@ -32,7 +32,7 @@ namespace tzw
 	void WorkerThreadSystem::pushOrder(WorkerJob order)
 	{
 		m_rwMutex.lock();
-		m_functionList1.push_back(order);
+		m_JobRecieverList.push_back(order);
 		m_rwMutex.unlock();
 		if(!m_thread)
 		{
@@ -63,12 +63,15 @@ namespace tzw
 		for(;;)
 		{
 			m_rwMutex.lock();
-			std::swap(m_functionList1, m_functionList2);
-			m_rwMutex.unlock();
-			while(!m_functionList2.empty())
+			if(!m_JobRecieverList.empty())
 			{
-				auto job = m_functionList2.front();
-				m_functionList2.pop_front();
+				std::swap(m_JobRecieverList, m_jobProcessList);
+			}
+			m_rwMutex.unlock();
+			while(!m_jobProcessList.empty())
+			{
+				auto job = m_jobProcessList.front();
+				m_jobProcessList.pop_front();
 				if(job.m_work)
 				{
 					job.m_work();
