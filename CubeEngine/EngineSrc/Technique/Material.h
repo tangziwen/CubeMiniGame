@@ -66,6 +66,7 @@ private:
 	bool m_isDepthTestEnable;
 	bool m_isDepthWriteEnable;
 	bool m_isEnableBlend;
+	// bool m_isEnableAlphaTest;
 	std::string m_name;
 	std::map<std::string, unsigned int> m_texSlotMap;
 	ShaderProgram * m_program;

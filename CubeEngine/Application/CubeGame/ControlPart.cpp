@@ -1,5 +1,6 @@
 #include "ControlPart.h"
 #include "3D/Primitive/CubePrimitive.h"
+#include "AudioSystem/AudioSystem.h"
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
@@ -17,7 +18,8 @@ ControlPart::ControlPart()
 	
 
 }
-
+static Audio * audio;
+static AudioEvent * event = NULL;
 ControlPart::ControlPart(std::string itemName)
 {
 	m_forward = 0;
@@ -31,7 +33,8 @@ ControlPart::ControlPart(std::string itemName)
 	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 	m_graphNode = new ControlPartNode(this);
 	nodeEditor->addNode(m_graphNode);
-
+	audio = AudioSystem::shared()->createSound("Audio/engine_loop.wav");
+	audio->setIsLooping(true);
 }
 
 
@@ -222,6 +225,7 @@ void ControlPart::setActivate(bool value)
 	if (value) 
 	{
 		GameWorld::shared()->getPlayer()->sitDownToGamePart(this);
+		audio->playWithOutCare();
 	}
 	else
 	{	
@@ -231,6 +235,13 @@ void ControlPart::setActivate(bool value)
 
 void ControlPart::onFrameUpdate(float delta)
 {
+	if(m_node && m_node->getParent())
+	{
+		if(!event)
+		{
+			event = audio->play3D(getWorldPos());
+		}
+	}
 }
 
 void ControlPart::handleBearings()

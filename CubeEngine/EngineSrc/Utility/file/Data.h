@@ -86,6 +86,8 @@ public:
      */
     bool isNull() const;
 
+	bool mangledForDDS;
+
 private:
     void move(Data& other);
 

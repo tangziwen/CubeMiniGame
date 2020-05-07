@@ -280,36 +280,41 @@ GameMap::getDensity(vec3 pos)
   }
 }
 
+float GameMap::getHeight(vec2 posXZ)
+{
+	return getNoiseValue(posXZ.x, 0.0, posXZ.y);
+}
+
 int GameMap::getMat(vec3 pos, float slope)
 {
-	int mat = 5;//default is dirt material
+	int mat = 15;//default is dirt material
 
 	if(slope > 0.16)//cliff
 	{
-		mat = 6;
+		mat = 5;
 	}else// or plane
 	{
 		float grassOrDirtVal = grassOrDirt.GetNoise(pos.x, pos.y, pos.z);
 		if(grassOrDirtVal> - 0.2)//it is Grass
 		{
 			float grassRockVal = grassRock.GetValue(pos.x, pos.y, pos.z);
-			mat = 0;//default is grass
+			mat = 12;//default is grass
 			if(grassRockVal > 0.5)
 			{
-				mat = 5;//Grass with Rock
+				mat = 3;//Grass with Rock
 			}
             else
             {
-	            mat = 0;
+	            mat = 12;
             }
 		}
 		else // dirt
 		{
-			mat = 7;//dirt
+			mat = 15;//dirt
 			float waterMudVal = waterMud.GetValue(pos.x, pos.y, pos.z);
 			if(waterMudVal > 0.7)
 			{
-				mat = 4;//dirt with water
+				mat = 8;//dirt with water
 			}
 		}
 	}

@@ -46,6 +46,7 @@ public:
 	void updateNeighborConstraintPhysics();
 	void loadInternalConnected();
 	AABB getAABBInWorld();
+	void onHitCallBack(vec3 p);
 private:
 	bool m_isStatic;
 public:

@@ -83,5 +83,6 @@ namespace tzw
 		unsigned int m_lod;
 		bool m_isNeedSubmitMesh;
 		PhysicsRigidBody * m_rigidBody;
+		bool m_isTreeloaded;
 	};
 }

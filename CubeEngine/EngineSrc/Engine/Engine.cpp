@@ -273,6 +273,7 @@ void Engine::onStart()
 	ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();
 	Renderer::shared()->init();
+	AudioSystem::shared()->init();
 	uuid4_init();
 	//WorkerThreadSystem::shared()->init();
 }
@@ -332,7 +333,6 @@ float Engine::windowWidth() const
 
 int Engine::run(int argc, char *argv[], AppEntry * delegate)
 {
-	// AudioSystem::shared()->init();
     shared()->setDelegate(delegate);
 	Tfile::shared()->addSearchPath("./Asset/");
 	Tfile::shared()->addSearchPath("./");

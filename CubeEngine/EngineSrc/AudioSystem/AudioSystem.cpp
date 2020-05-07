@@ -1,6 +1,7 @@
 #include "AudioSystem.h"
 #include "Soloud/include/soloud.h"
 #include "Soloud/include/soloud_wav.h"
+#include "Utility/file/Tfile.h"
 #include "Utility/log/Log.h"
 
 namespace tzw
@@ -14,9 +15,10 @@ namespace tzw
 	Audio * AudioSystem::createSound(std::string filePath)
 	{
 		Audio * audio = new Audio();
+		auto data  = Tfile::shared()->getData(filePath.c_str(), false);
 		// Configure sound source
 		auto wav = new SoLoud::Wav(); 
-		wav->load(filePath.c_str());       // Load a wave file
+		wav->loadMem(data.getBytes(),data.getSize(),true);       // Load a wave file
 		audio->setPtr(wav);
 		return audio;
 	}
@@ -30,6 +32,8 @@ namespace tzw
 	{
 		//FMOD::System * sys = (FMOD::System * )m_system;
 		//sys->update();
+		// gSoloud.set3dListenerAt();
+		gSoloud.update3dAudio();
 	}
 
 	AudioSystem::AudioSystem()
@@ -40,15 +44,11 @@ namespace tzw
 	void AudioSystem::init()
 	{
 		auto result = gSoloud.init();
-		printf("backEnd %s %u\n", gSoloud.getBackendString(), result);
-		// Configure sound source
-		auto wav = new SoLoud::Wav(); 
-		wav->load("./audio/windy_ambience.ogg");       // Load a wave file
-		wav->setLooping(1);                          // Tell SoLoud to loop the sound
-		int handle1 = gSoloud.play(*wav);             // Play it
-		gSoloud.setVolume(handle1, 0.5f);            // Set volume; 1.0f is "normal"
-		gSoloud.setPan(handle1, -0.2f);              // Set pan; -1 is left, 1 is right
-		gSoloud.setRelativePlaySpeed(handle1, 0.9f); // Play a bit slower; 1.0f is normal
+		printf("Audio BackEnd is %s %u\n", gSoloud.getBackendString(), result);
+
+		auto event = createSound("Audio/windy_ambience.ogg");
+		event->setIsLooping(true);
+		event->playWithOutCare().setVolume(0.3);
 	}
 
 	void AudioSystem::playOneShotSound(DefaultOneShotSound soundType)
@@ -60,24 +60,35 @@ namespace tzw
 			{
 			case DefaultOneShotSound::CLICK:
 			{
-					targetSrc = createSound("./audio/click.wav");
+					targetSrc = createSound("Audio/click.wav");
 			}
 				break;
 			case DefaultOneShotSound::CLINK:
 			{
-					targetSrc = createSound("./audio/clink.wav");
+					targetSrc = createSound("Audio/clink.wav");
 			}
 				break;
 			case DefaultOneShotSound::CLINK_REMOVE:
 			{
-					targetSrc = createSound("./audio/clink2.wav");
+					targetSrc = createSound("Audio/clink2.wav");
 			}
 				break;
 			case DefaultOneShotSound::DIGGING:
 			{
-					targetSrc = createSound("./audio/Digging.wav");
+					targetSrc = createSound("Audio/digging.wav");
 			}
 				break;
+			case DefaultOneShotSound::SPRAY:
+			{
+					targetSrc = createSound("Audio/spray.wav");
+			}
+				break;
+			case DefaultOneShotSound::ITEM_DROP:
+			{
+					targetSrc = createSound("Audio/item_drop.wav");
+			}
+				break;
+
 			default: ;
 			}
 			if(targetSrc)
@@ -95,5 +106,11 @@ namespace tzw
 		{
 			targetSrc->playWithOutCare();
 		}
+	}
+
+	void AudioSystem::setListenerParam(vec3 position,vec3 at, vec3 up)
+	{
+		
+		gSoloud.set3dListenerParameters(position.x, position.y, position.z, at.x, at.y, at.z, up.x, up.y, up.z);
 	}
 }

@@ -16,6 +16,8 @@ namespace tzw
 			CLINK,
 			CLINK_REMOVE,
 			DIGGING,
+			SPRAY,
+			ITEM_DROP
 		};
 		Audio * createSound(std::string filePath);
 		void * getPtr();
@@ -23,6 +25,7 @@ namespace tzw
 		AudioSystem();
 		void init();
 		void playOneShotSound(DefaultOneShotSound soundType);
+		void setListenerParam(vec3 position,vec3 at, vec3 up);
 	private:
 		void     *m_system;
 		std::unordered_map<DefaultOneShotSound, Audio *> m_defaultSoundPool;

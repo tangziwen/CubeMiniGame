@@ -23,19 +23,30 @@ namespace tzw
 		{
 		   c = tolower(c);
 		}
-		if(!exten.compare("dds"))
+		m_isHaveMipMap = false;
+		bool isDDS = !exten.compare("dds") ||data.mangledForDDS;
+		if(isDDS)
 		{
 			loadingFlag = SOIL_FLAG_DDS_LOAD_DIRECT;
-			m_isHaveMipMap = true;//dds we assume always have mipmaps
 		}
 		else
 		{
-			m_isHaveMipMap = false;
+			loadingFlag = SOIL_FLAG_INVERT_Y;
 		}
 		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, loadingFlag, &info);
 		m_type = RenderFlag::TextureType::Texture2D;
 		m_width = info.width;
 		m_height = info.height;
+		if(isDDS )
+		{
+			if(info.dds_mipMapLevel > 0)
+			{
+				m_isHaveMipMap = true;
+			}else
+			{
+				m_isHaveMipMap = false;
+			}
+		}
 		if (!m_textureId)
 		{
 			

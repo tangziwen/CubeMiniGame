@@ -79,13 +79,22 @@ namespace tzw
 
 		auto normalMapTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Normal.png", true);
 		m_gunModel->getMat(0)->setTex("NormalMap", normalMapTexture);
-		m_gunModel->setPos(0.09,0.5, -0.22);
+		m_gunModel->setPos(0.12,0.33, -0.22);
 		m_gunModel->setRotateE(vec3(0, 3, 0));
+		float scale = 0.9;
+		m_gunModel->setScale(vec3(scale, scale, scale));
 		m_gunModel->setIsAccpectOcTtree(false);
 		m_camera->addChild(m_gunModel);
 
-		m_footstep = AudioSystem::shared()->createSound("./audio/footstep.wav");
-		m_hitGroundSound = AudioSystem::shared()->createSound("./audio/land.ogg");
+		m_footstep = AudioSystem::shared()->createSound("Audio/footstep.wav");
+		m_hitGroundSound = AudioSystem::shared()->createSound("Audio/land.ogg");
+
+
+		auto treeModel = Model::create("Models/tree/tree.tzw");
+		g_GetCurrScene()->addNode(treeModel);
+		treeModel->getMat(0)->setTex("DiffuseMap", TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
+		treeModel->getMat(1)->setTex("DiffuseMap", TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
+		treeModel->setPos(vec3(5, 5, -5));
 	}
 
 	FPSCamera* CubePlayer::camera() const
@@ -110,6 +119,7 @@ namespace tzw
 
 	void CubePlayer::logicUpdate(float dt)
 	{
+		AudioSystem::shared()->setListenerParam(getPos(),m_camera->getForward(), vec3(0,1, 0));
 		static float theTime = 0.0f;
 		static float stepLoopTime = 0.0f;
 		vec3 oldPos = m_gunModel->getPos();
@@ -474,6 +484,7 @@ namespace tzw
 	void CubePlayer::paint()
 	{
 		auto part = BuildingSystem::shared()->rayTestPart(getPos(), m_camera->getTransform().forward(), 10.0);
+		AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::SPRAY);
 		if(part)
 		{
 			m_paintGun->paint(part);

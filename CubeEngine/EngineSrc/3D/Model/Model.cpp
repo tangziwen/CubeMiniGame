@@ -11,9 +11,9 @@ Model::Model():m_currPose(-1)
 
 }
 
-void Model::initWithFile(std::string modelFilePath)
+void Model::initWithFile(std::string modelFilePath, bool useCache)
 {
-    ModelLoader::shared()->loadModel(this,modelFilePath);
+    ModelLoader::shared()->loadModel(this,modelFilePath, useCache);
     setCamera(g_GetCurrScene()->defaultCamera());
     for(auto mesh : m_meshList)
     {
@@ -25,10 +25,10 @@ void Model::initWithFile(std::string modelFilePath)
     setIsAccpectOcTtree(true);
 }
 
-Model *Model::create(std::string modelFilePath)
+Model *Model::create(std::string modelFilePath, bool useCache)
 {
     auto theModel = new Model();
-    theModel->initWithFile(modelFilePath);
+    theModel->initWithFile(modelFilePath, useCache);
     return theModel;
 }
 
@@ -41,7 +41,7 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
 		{
 		    for(auto mesh : m_meshList)
 		    {
-		        auto tech = m_effectList[0];
+		        auto tech = m_effectList[mesh->getMatIndex()];
 		        RenderCommand command(mesh,tech,type);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
@@ -51,7 +51,7 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
 		{
 		    for(auto mesh : m_extraMeshList[m_currPose])
 		    {
-		        auto tech = m_effectList[0];
+		        auto tech = m_effectList[mesh->getMatIndex()];
 		        RenderCommand command(mesh,tech,type);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
@@ -112,6 +112,11 @@ int Model::addExtraMeshList(std::vector<Mesh*> newMeshList)
 int Model::getMeshCount()
 {
 	return m_meshList.size();
+}
+
+void Model::setMeshToMatMap(Mesh* mesh, Material* mat)
+{
+	m_meshToMat[mesh] = mat;
 }
 
 int Model::getCurrPose() const

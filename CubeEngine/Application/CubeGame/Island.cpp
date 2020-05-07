@@ -13,6 +13,8 @@
 #include "ThrusterPart.h"
 #include "CannonPart.h"
 #include <algorithm>
+
+#include "AudioSystem/AudioSystem.h"
 #include "ButtonPart.h"
 #include "SwitchPart.h"
 
@@ -299,6 +301,7 @@ Island::cook()
 	theMass, &partMat, compoundShape);
 	rig->attach(m_node);
 	m_rigid = rig;
+	m_rigid->m_onHitCallBack = std::bind(&Island::onHitCallBack, this,std::placeholders::_1);
 }
 
 void
@@ -556,6 +559,11 @@ AABB Island::getAABBInWorld()
 	result.update(vec3(aabbMax.x(),aabbMax.y(), aabbMax.z()));
 	return result;
 	}
+}
+
+void Island::onHitCallBack(vec3 p)
+{
+	AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::ITEM_DROP);
 }
 
 bool Island::isIsStatic() const

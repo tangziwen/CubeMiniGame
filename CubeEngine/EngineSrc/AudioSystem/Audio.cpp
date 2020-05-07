@@ -38,6 +38,17 @@ namespace tzw
 		return event;
 	}
 
+	AudioEvent* Audio::play3D(vec3 position)
+	{
+		AudioEvent * event = new AudioEvent();
+		auto soloud = static_cast<SoLoud::Soloud *>(AudioSystem::shared()->getPtr());
+		SoLoud::Wav * wav = static_cast<SoLoud::Wav *>(m_ptr);
+		event->setHandler(soloud->play3d(*wav,position.x, position.y, position.z));
+		soloud->set3dSourceParameters(event->getHandler(), position.x, position.y, position.z);
+		soloud->set3dSourceAttenuation(event->getHandler(), SoLoud::AudioSource::EXPONENTIAL_DISTANCE, 0.2);
+		return event;
+	}
+
 	Audio::~Audio()
 	{
 

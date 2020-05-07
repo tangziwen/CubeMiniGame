@@ -47,6 +47,5 @@ int main(int argc, char *argv[])
 		// gSoloud.setVolume(handle1, 0.5f);            // Set volume; 1.0f is "normal"
 		// gSoloud.setPan(handle1, -0.2f);              // Set pan; -1 is left, 1 is right
 		// gSoloud.setRelativePlaySpeed(handle1, 0.9f); // Play a bit slower; 1.0f is normal
-		AudioSystem::shared()->init();
 return Engine::run(argc,argv,new GameEntry());
 }

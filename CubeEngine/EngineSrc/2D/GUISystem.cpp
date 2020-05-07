@@ -128,7 +128,6 @@ namespace tzw
 	{
 		
 	}
-	static Audio * sound;
 	void GUISystem::renderData()
 	{
 		if (!m_isInit) return;
@@ -141,7 +140,7 @@ namespace tzw
 		ScriptPyMgr::shared()->doScriptUIUpdate();
 		if(ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(0))
 		{
-			sound->playWithOutCare();
+			AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLICK);
 		}
 		ImGui::PopFont();
 		ImGui::Render();
@@ -240,7 +239,6 @@ namespace tzw
 	
 	void GUISystem::initGUI()
 	{
-		sound = AudioSystem::shared()->createSound("./audio/click.wav");
 		EventMgr::shared()->addFixedPiorityListener(this);
 		g_imguiShader = ShaderMgr::shared()->getByPath("Shaders/IMGUI_v.glsl", "Shaders/IMGUI_f.glsl");
 		m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);

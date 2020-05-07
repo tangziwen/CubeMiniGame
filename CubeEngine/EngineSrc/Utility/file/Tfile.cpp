@@ -75,12 +75,14 @@ Data Tfile::getData(std::string filename, bool forString)
 	findPreFix(filename.c_str(), tmp);
 	std::string preFix = tmp;
 	auto found = preFix.find("UITexture");
+	bool hasChangeForDDS = false;
 	if(found == std::string::npos)
 	{	
 		//有cook版本的文件
 		if(std::find(theList.begin(), theList.end(), getExtension(filename))!= theList.end())
 		{
 			filename = getFileNameWithOutExtension(filename) +".dds";
+			hasChangeForDDS = true;
 		}
 	}
 	//search the zip
@@ -119,6 +121,10 @@ Data Tfile::getData(std::string filename, bool forString)
 			}
     		if(buffer)
     		{
+   				if(hasChangeForDDS)
+				{
+					ret.mangledForDDS = true;
+				}
     			return ret;
     		}
 		}

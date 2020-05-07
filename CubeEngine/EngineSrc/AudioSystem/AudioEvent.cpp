@@ -41,5 +41,11 @@ namespace tzw
 		auto soloud = static_cast<SoLoud::Soloud *>(AudioSystem::shared()->getPtr());
 		soloud->stop(m_handler);
 	}
+
+	void AudioEvent::set3DPosition(vec3 pos)
+	{
+		auto soloud = static_cast<SoLoud::Soloud *>(AudioSystem::shared()->getPtr());
+		soloud->set3dSourcePosition(m_handler, pos.x, pos.y, pos.z);
+	}
 }
 

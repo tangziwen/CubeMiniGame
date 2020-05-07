@@ -178,7 +178,8 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
 
   // Lift Part
 
-  BIND_BEGIN_CLASS_PY(LiftPart)
+  // BIND_BEGIN_CLASS_PY(LiftPart)
+  pybind11::class_<LiftPart, GamePart>(m, "LiftPart")
   BIND_FUNC_PY(LiftPart, liftUp)
   BIND_EMPTY_CONSTRUCT_PY;
 

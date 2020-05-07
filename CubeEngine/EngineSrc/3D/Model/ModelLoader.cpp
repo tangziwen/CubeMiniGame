@@ -14,8 +14,18 @@ ModelLoader::ModelLoader()
 
 }
 
-void ModelLoader::loadModel(Model *model, std::string filePath)
+void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 {
+	if(useCache)
+	{
+		auto iter = m_modelCache.find(filePath);
+		if(iter != m_modelCache.end())
+		{
+			model->m_effectList = iter->second->m_effectList;
+			model->m_meshList = iter->second->m_meshList;
+			return;
+		}
+	}
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(Tmisc::getUserPath(filePath),true);
 	auto relativeFilePath = Tfile::shared()->getReleativePath(filePath);
@@ -98,6 +108,10 @@ void ModelLoader::loadModel(Model *model, std::string filePath)
 			MaterialPool::shared()->addMesh(meshName, theMesh);
 		}
 		model->m_meshList.push_back(theMesh);
+	}
+	if(useCache)
+	{
+		m_modelCache[filePath] = model;
 	}
 }
 
