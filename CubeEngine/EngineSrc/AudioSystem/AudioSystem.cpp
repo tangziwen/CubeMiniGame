@@ -46,9 +46,13 @@ namespace tzw
 		auto result = gSoloud.init();
 		printf("Audio BackEnd is %s %u\n", gSoloud.getBackendString(), result);
 
-		auto event = createSound("Audio/windy_ambience.ogg");
+		auto event = createSound("Audio/windy_ambience.wav");
 		event->setIsLooping(true);
-		event->playWithOutCare().setVolume(0.3);
+		event->playWithOutCare().setVolume(0.45);
+
+		auto ambient = createSound("Audio/ambient.wav");
+		ambient->setIsLooping(true);
+		ambient->playWithOutCare().setVolume(0.15);
 	}
 
 	void AudioSystem::playOneShotSound(DefaultOneShotSound soundType)
