@@ -2,6 +2,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include <vector>
 #include "3D/Vegetation/Grass.h"
+#include "3D/Vegetation/Tree.h"
 #include "GameMap.h"
 
 
@@ -67,6 +68,7 @@ namespace tzw
 	private:
 		Grass * m_grass;
 		Grass * m_grass2;
+		Tree * m_tree;
 	    Mesh * m_mesh;
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);

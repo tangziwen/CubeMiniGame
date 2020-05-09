@@ -53,6 +53,7 @@ public:
     bool isSurface(vec3 pos);
     float getDensity(vec3 pos);
 	float getHeight(vec2 posXZ);
+	vec3 getNormal(vec2 posXZ);
 	int getMat(vec3 pos, float slope);
     MapType getMapType() const;
     void setMapType(const MapType &mapType);

@@ -21,8 +21,7 @@ static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 
 namespace tzw
 {
-
-	std::mutex loading_mutex; 
+	std::mutex loading_mutex;
 	/// <summary>	The flat noise. </summary>
 	module::Perlin flatNoise;
 	/// <summary>	The grass noise. </summary>
@@ -66,6 +65,8 @@ namespace tzw
 		m_grass = new Grass("Texture/grass.tga");
 
 		m_grass2 = new Grass("Texture/grass.tga");
+
+		m_tree = new Tree("Test");
 
 		m_isHitable = true;
 
@@ -152,7 +153,7 @@ namespace tzw
 			m_isNeedSubmitMesh = false;
 
 			m_mesh->finish();
-			
+
 			if (m_rigidBody)
 			{
 				PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
@@ -160,47 +161,19 @@ namespace tzw
 				m_rigidBody = nullptr;
 			}
 			m_rigidBody = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh, nullptr);
-			
+
 			m_rigidBody->setFriction(10.0);
 			m_grass->finish();
 			m_grass2->finish();
+			m_tree->finish();
 			PhysicsMgr::shared()->addRigidBody(m_rigidBody);
 			loading_mutex.lock();
 			m_currenState = State::LOADED;
-		//generate tree
+			//generate tree
 
-		if(m_mesh->getVerticesSize() > 0 && !m_isTreeloaded)
-		{
-			treeNoise.SetSeed(233);
-			treeNoise.SetFrequency(0.04);
-			treeNoise.SetNoiseType(FastNoise::Simplex);
-			int treeCount = 0;
-			for( float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += 2.7)
+			if (m_mesh->getVerticesSize() > 0 && !m_isTreeloaded)
 			{
-				for( float z = m_basePoint.z; z <= m_basePoint.z + BLOCK_SIZE * MAX_BLOCK; z += 2.7)
-				{
-					auto ox = TbaseMath::randFN() * 0.5;
-					auto oz = TbaseMath::randFN() * 0.5;
-					float value = treeNoise.GetNoise(x + ox, 0, z + oz);
-					// the flat is grass or dirt?
-					value = value * 0.5 + 0.5;
-					auto h = GameMap::shared()->getHeight(vec2(x + ox,  z + oz));
-					if(value > 0.5 && treeCount < 36 && rand() %10 > 5 && h < 18)
-					{
-						auto treeModel = Model::create("Models/tree/tree.tzw", true);
-						g_GetCurrScene()->addNode(treeModel);
-						treeModel->getMat(0)->setTex("DiffuseMap", TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
-						treeModel->getMat(1)->setTex("DiffuseMap", TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
-
-						treeModel->setPos(vec3(x + ox , h, z + oz));
-						treeModel->setRotateE(vec3(0, TbaseMath::randFN() * 360, 0));
-						treeCount += 1;
-					}
-					
-				}
 			}
-			m_isTreeloaded = true;
-		}
 			loading_mutex.unlock();
 		}
 	}
@@ -217,7 +190,7 @@ namespace tzw
 	void Chunk::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 		/// just for test
-		if (m_currenState!= State::LOADED)
+		if (m_currenState != State::LOADED)
 			return;
 		if (m_mesh->getIndicesSize() == 0)
 			return;
@@ -238,13 +211,14 @@ namespace tzw
 		{
 			m_grass->pushCommand();
 			m_grass2->pushCommand();
+			m_tree->pushCommand();
 		}
 	}
 
 	void
 	Chunk::load()
 	{
-		if (m_currenState!= State::INVALID)
+		if (m_currenState != State::INVALID)
 			return;
 		reCache();
 		if (!m_mesh)
@@ -273,7 +247,7 @@ namespace tzw
 	void
 	Chunk::unload()
 	{
-		if(m_currenState != State::LOADED)
+		if (m_currenState != State::LOADED)
 		{
 			return;
 		}
@@ -1151,8 +1125,9 @@ namespace tzw
 		if (!m_mesh)
 			return;
 		MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
-			m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints, 0.0f, m_lod);
-		if( m_mesh->isEmpty())
+														m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
+														0.0f, m_lod);
+		if (m_mesh->isEmpty())
 			return;
 		genNormal();
 		// m_mesh->caclNormals();
@@ -1204,7 +1179,7 @@ namespace tzw
 					tmpV3.z = verts.z;
 					auto points = m_chunkInfo->mcPoints;
 					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
-					if((points[ind]).w >= -0.5f || true)//TODO skip the Empty block 
+					if ((points[ind]).w >= -0.5f || true) //TODO skip the Empty block 
 					{
 						auto x1 = getPointInner(i - 1, j, k).w;
 						auto x2 = getPointInner(i + 1, j, k).w;
@@ -1213,10 +1188,11 @@ namespace tzw
 						auto z1 = getPointInner(i, j, k - 1).w;
 						auto z2 = getPointInner(i, j, k + 1).w;
 						auto gradientVec4 = vec4(x1 - x2,
-						   y1 - y2,
-						   z1 - z2,
-						   (points[ind]).w);
-						float slope = 1.0 -  TbaseMath::clampf( vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0)), 0.0f, 1.0f);
+												y1 - y2,
+												z1 - z2,
+												(points[ind]).w);
+						float slope = 1.0 - TbaseMath::clampf(
+							vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0)), 0.0f, 1.0f);
 						auto matID = GameMap::shared()->getMat(tmpV3, slope);
 						// x y z
 						m_chunkInfo->mcPoints[ind].setMat(matID, 0, 0, vec3(1, 0, 0));
@@ -1302,75 +1278,131 @@ namespace tzw
 		m_grassPosList.clear();
 		m_grass->m_mesh->clearInstances();
 		m_grass2->m_mesh->clearInstances();
+		m_tree->m_mesh->clearInstances();
 		size_t indexCount = m_mesh->m_indices.size();
-
-		// Accumulate each triangle normal into each of the triangle vertices
-		for (unsigned int i = 0; i < indexCount; i += 1)
+		if (indexCount <= 0) return;
+		float grassDensity = 1.0;
+		float step = 1.0 / grassDensity;
+		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += grassDensity)
 		{
-			short_u index0 = m_mesh->m_indices[i];
-			float step = 0.0f;
-			m_mesh->m_vertices[index0].m_normal.normalize();
-			step = std::max(
-				vec3::DotProduct(m_mesh->m_vertices[index0].m_normal, vec3(0, 1, 0)),
-				0.0f);
-			step = powf(step, 4.0f);
-			auto pos = m_mesh->m_vertices[index0].m_pos;
-			if (step < 0.5)
+			for (float z = m_basePoint.z; z > m_basePoint.z - BLOCK_SIZE * MAX_BLOCK; z -= grassDensity)
 			{
-				step = Tmisc::clamp(step - 0.2f, 0.0f, 1.0f);
-			}
-			float value = flatNoise.GetValue(pos.x * 0.03, pos.z * 0.03, 0.0);
-			// the flat is grass or dirt?
-			value = value * 0.5 + 0.5;
-			// value = std::max(value - 0.2f, 0.0f);
-			value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
-			// m_mesh->m_vertices[index0].m_matIndex = matID;
-			if (step > 0.5 && (1.0 - value > 0.7))
-			{
-				if (m_grassPosList.size() < 500 &&
-					grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > 0.2)
+				auto ox = TbaseMath::randFN() * 0.4;
+				auto oz = TbaseMath::randFN() * 0.4;
+				auto h = GameMap::shared()->getHeight(vec2(x + ox, z + oz));
+				vec3 pos(x + ox, h, z + oz);
+				float value = flatNoise.GetValue(pos.x * 0.03, pos.z * 0.03, 0.0);
+				// the flat is grass or dirt?
+				value = value * 0.5 + 0.5;
+				// value = std::max(value - 0.2f, 0.0f);
+				value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
+				if ((1.0 - value > 0.7))
 				{
-					auto ox = TbaseMath::randFN() * 0.5;
-					auto oz = TbaseMath::randFN() * 0.5;
-					auto scale = TbaseMath::randFN() * 0.1;
-					Grass* grass = nullptr;
-					if (rand() % 100 > 85)
+					if (grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > 0.2)
 					{
-						grass = m_grass;
+						auto ox = TbaseMath::randFN() * 0.5;
+						auto oz = TbaseMath::randFN() * 0.5;
+						auto scale = TbaseMath::randFN() * 0.1;
+						Grass* grass = nullptr;
+						if (rand() % 100 > 85)
+						{
+							grass = m_grass;
+						}
+						else
+						{
+							grass = m_grass2;
+						}
+						InstanceData instance;
+						vec3 normal = GameMap::shared()->getNormal(vec2(x + ox, z + oz));
+						instance.posAndScale = vec4(pos.x, pos.y + 0.35, pos.z, 1.0 + scale);
+						instance.extraInfo = vec4(normal, 0);
+						auto rotateM = Matrix44();
+						rotateM.setToIdentity();
+						auto m = rotateM.data();
+						auto z = vec3(0, 0, 1);
+						auto right = vec3::CrossProduct(normal, z);
+						auto zNew = vec3::CrossProduct(right, normal);
+						m[0] = right.x;
+						m[1] = right.y;
+						m[2] = right.z;
+
+
+						m[4] = normal.x;
+						m[5] = normal.y;
+						m[6] = normal.z;
+
+
+						m[8] = zNew.x;
+						m[9] = zNew.y;
+						m[10] = zNew.z;
+						Quaternion q;
+						rotateM.getRotation(&q);
+						instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
+						grass->m_mesh->pushInstance(instance);
 					}
-					else
-					{
-						grass = m_grass2;
-					}
-					InstanceData instance;
-					instance.posAndScale = vec4(pos.x, pos.y+ 0.35, pos.z, 1.0 + scale);
-					instance.extraInfo = vec4(m_mesh->m_vertices[index0].m_normal, 0);
-					auto rotateM = Matrix44();
-					rotateM.setToIdentity();
-					auto m = rotateM.data();
-					auto z = vec3(0, 0, 1);
-					auto right = vec3::CrossProduct(m_mesh->m_vertices[index0].m_normal, z);
-					auto zNew = vec3::CrossProduct(right, m_mesh->m_vertices[index0].m_normal);
-					m[0] = right.x;
-					m[1] = right.y;
-					m[2] = right.z;
-
-
-					m[4] = m_mesh->m_vertices[index0].m_normal.x;
-					m[5] = m_mesh->m_vertices[index0].m_normal.y;
-					m[6] = m_mesh->m_vertices[index0].m_normal.z;
-
-
-					m[8] = zNew.x;
-					m[9] = zNew.y;
-					m[10] = zNew.z;
-					Quaternion q;
-					rotateM.getRotation(&q);
-					instance.rotateInfo = vec4(q.x,q.y,q.z, q.w);
-					grass->m_mesh->pushInstance(instance);
 				}
 			}
 		}
+
+
+
+		treeNoise.SetSeed(233);
+		treeNoise.SetFrequency(0.04);
+		treeNoise.SetNoiseType(FastNoise::Simplex);
+		int treeCount = 0;
+		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += 1.5)
+		{
+			for (float z = m_basePoint.z; z > m_basePoint.z - BLOCK_SIZE * MAX_BLOCK; z -= 1.5)
+			{
+				auto ox = TbaseMath::randFN() * 0.5;
+				auto oz = TbaseMath::randFN() * 0.5;
+				float value = treeNoise.GetNoise(x + ox, 0, z + oz);
+				// the flat is grass or dirt?
+				value = value * 0.5 + 0.5;
+				auto h = GameMap::shared()->getHeight(vec2(x + ox, z + oz));
+				if (value > 0.5 && treeCount < 36 && rand() % 10 > 5 && h < 18)
+				{
+					// auto treeModel = Model::create("Models/tree/tree.tzw", true);
+					// g_GetCurrScene()->addNode(treeModel);
+					// treeModel->getMat(0)->setTex("DiffuseMap",
+					// 							TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
+					// treeModel->getMat(1)->setTex("DiffuseMap",
+					// 							TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
+					treeCount += 1;
+					InstanceData instance;
+					if(abs(x - 192.0f) < 0.1){
+						printf("fafaf");
+					}
+					vec3 normal = vec3(0, 1,0);
+					instance.posAndScale = vec4(x, 10, z, 1.0);
+					instance.extraInfo = vec4(normal, 0);
+					// auto rotateM = Matrix44();
+					// rotateM.setToIdentity();
+					// auto m = rotateM.data();
+					// auto z = vec3(0, 0, 1);
+					// auto right = vec3::CrossProduct(normal, z);
+					// auto zNew = vec3::CrossProduct(right, normal);
+					// m[0] = right.x;
+					// m[1] = right.y;
+					// m[2] = right.z;
+					//
+					//
+					// m[4] = normal.x;
+					// m[5] = normal.y;
+					// m[6] = normal.z;
+					//
+					//
+					// m[8] = zNew.x;
+					// m[9] = zNew.y;
+					// m[10] = zNew.z;
+					// Quaternion q;
+					// rotateM.getRotation(&q);
+					// instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
+ 					m_tree->m_mesh->pushInstance(instance);
+				}
+			}
+		}
+		m_isTreeloaded = true;
 	}
 
 	bool Chunk::getIsInitData()

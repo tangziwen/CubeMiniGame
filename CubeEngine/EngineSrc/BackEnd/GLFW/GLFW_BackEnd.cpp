@@ -92,7 +92,7 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 	glfwSetWindowCenter(m_window);
 	GLint flags;
 
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	glfwSetKeyCallback(m_window, key_callback);
 	glfwSetCharCallback(m_window, char_callback);
 	glfwSetScrollCallback(m_window, scroll_callback);

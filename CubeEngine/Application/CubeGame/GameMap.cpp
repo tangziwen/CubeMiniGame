@@ -285,6 +285,22 @@ float GameMap::getHeight(vec2 posXZ)
 	return getNoiseValue(posXZ.x, 0.0, posXZ.y);
 }
 
+vec3 GameMap::getNormal(vec2 posXZ)
+{
+	vec2 posZ = vec2(posXZ.x, posXZ.y - BLOCK_SIZE);
+	vec2 posX = vec2(posXZ.x + BLOCK_SIZE, posXZ.y);
+
+	vec3 p0 = vec3(posXZ.x, getHeight(posXZ), posXZ.y);
+	vec3 p1 = vec3(posX.x, getHeight(posX), posX.y);
+	vec3 p2 = vec3(posZ.x, getHeight(posZ), posZ.y);
+
+	vec3 p1p0 = p1 - p0;
+	vec3 p2p0 = p2 - p0;
+
+	vec3 n = vec3::CrossProduct(p1p0, p2p0).normalized();
+	return n;
+}
+
 int GameMap::getMat(vec3 pos, float slope)
 {
 	int mat = 15;//default is dirt material
