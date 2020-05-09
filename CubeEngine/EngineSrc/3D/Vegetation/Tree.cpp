@@ -63,8 +63,8 @@ void Tree::pushCommand()
 void Tree::finish()
 {
 
-	// m_mesh->finish();
-	m_mesh->reSubmitInstanced();
+	m_mesh->finish();
+	// m_mesh->reSubmitInstanced();
 	m_isFinish = true;
 }
 
