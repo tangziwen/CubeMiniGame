@@ -6,12 +6,11 @@
 #include "3D/Model/Model.h"
 
 namespace tzw {
-Tree::Tree(std::string filePath)
+Tree::Tree()
 {
 	 
 	m_isFinish = false;
 	std::string materialName = "Tree";
-	materialName +=filePath;
 	auto mat = MaterialPool::shared()->getMaterialByName(materialName);
 	if (!mat)
 	{
@@ -34,6 +33,18 @@ Tree::Tree(std::string filePath)
 	 
 }
 
+void Tree::addTreeGroup(TreeGroup* treeGroup)
+{
+	m_tree.insert(treeGroup);
+}
+
+void Tree::clearTreeGroup()
+{
+	m_tree.clear();
+	m_mesh->clearInstances();
+	m_leafMesh->clearInstances();
+}
+
 
 void Tree::setUpTransFormation(TransformationInfo &info)
 {
@@ -52,18 +63,62 @@ unsigned int Tree::getTypeId()
 
 void Tree::pushCommand()
 {
-	if (! m_isFinish) return;
-	RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
-	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-	setUpTransFormation(command.m_transInfo);
-	Renderer::shared()->addRenderCommand(command);
-	setUpTransFormation(command.m_transInfo);
+	//regroup
+	for(auto iter : m_tree)
+	{
+		// std::copy(iter->m_instance.begin(), iter->m_instance.end(), m_mesh->m_instanceOffset.begin());
+		auto &tg = iter;
+		for(auto inst : tg->m_instance)
+		{
+			m_mesh->pushInstance(inst);
+			m_leafMesh->pushInstance(inst);
+		}
+	}
+	if (! m_isFinish)
+	{
+		finish();
+	}else
+	{
+		auto targetAmount = m_mesh->m_instanceOffset.size();
+		if (targetAmount > 0)
+		{
+			// if(targetAmount > m_mesh->getInstanceBuf()->getAmount())
+			// {
+			// 	m_mesh->submitInstanced(targetAmount);
+			// }else
+			// {
+			// 	m_mesh->reSubmitInstanced();
+			// }
+			m_mesh->submitInstanced();
+			m_leafMesh->submitInstanced();
+			// m_mesh->getInstanceBuf()->use();
+			// m_mesh->getInstanceBuf()->allocate(&m_mesh->m_instanceOffset[0], m_mesh->m_instanceOffset.size() * sizeof(InstanceData), RenderFlag::BufferStorageType::DYNAMIC_DRAW);
+		}
+		// m_mesh->reSubmitInstanced();
+	}
+	if(m_mesh->m_instanceOffset.size() > 0)
+	{
+		RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
+		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+		setUpTransFormation(command.m_transInfo);
+		Renderer::shared()->addRenderCommand(command);
+		setUpTransFormation(command.m_transInfo);
+
+		RenderCommand commandLeaf(m_leafMesh,  getMaterial(), RenderCommand::RenderType::Instanced);
+		commandLeaf.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+		setUpTransFormation(commandLeaf.m_transInfo);
+		Renderer::shared()->addRenderCommand(commandLeaf);
+		setUpTransFormation(commandLeaf.m_transInfo);
+	}
+
 }
 
 void Tree::finish()
 {
 
 	m_mesh->finish();
+	m_leafMesh->finish();
+	// tlog("instance size %d", m_mesh->getInstanceSize());
 	// m_mesh->reSubmitInstanced();
 	m_isFinish = true;
 }
@@ -77,12 +132,13 @@ void Tree::submitDrawCmd(RenderCommand::RenderType passType)
 
 void Tree::initMesh()
 {
-	auto treeModel = Model::create("Models/tree/tree.tzw", true);
-	treeModel->getMat(0)->setTex("DiffuseMap",
-								TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
-	treeModel->getMat(1)->setTex("DiffuseMap",
-								TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
+	auto treeModel = Model::create("Models/tree/tree.tzw", false);
+	m_barkMat = treeModel->getMat(0);
+	m_leafMat = treeModel->getMat(1);
+	m_barkMat->setTex("DiffuseMap",TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
+	m_leafMat->setTex("DiffuseMap",TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
 	m_mesh = treeModel->getMesh(0);
+	m_leafMesh = treeModel->getMesh(1);
 }
 
 } // namespace tzw

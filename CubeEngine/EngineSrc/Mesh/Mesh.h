@@ -78,6 +78,7 @@ public:
     void setVertex(unsigned int index, VertexData vertex);
     std::vector<short_u> m_indices;
     std::vector<VertexData> m_vertices;
+	std::vector<InstanceData> m_instanceOffset;
     void subDivide(int level = 1);
     void cloneFrom(Mesh * other);
     void setMatIndex(unsigned int matIndex);
@@ -108,7 +109,7 @@ private:
     std::vector<int> midTriangles_;
     std::vector<Triangle> tmpTriangles_;
     std::vector<SplitData> splits_;
-	std::vector<InstanceData> m_instanceOffset;
+	
 
     void subDivideIter();
     

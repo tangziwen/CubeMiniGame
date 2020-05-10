@@ -68,7 +68,7 @@ namespace tzw
 	private:
 		Grass * m_grass;
 		Grass * m_grass2;
-		Tree * m_tree;
+		TreeGroup * m_tree;
 	    Mesh * m_mesh;
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);

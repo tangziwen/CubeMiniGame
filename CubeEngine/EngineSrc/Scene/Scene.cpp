@@ -5,6 +5,7 @@
 #include "../Game/DebugInfoPanel.h"
 #include "../Interface/Drawable3D.h"
 #include "../Engine/EngineDef.h"
+#include "3D/Vegetation/Tree.h"
 
 namespace tzw {
 
@@ -35,6 +36,8 @@ void Scene::visit()
 		defaultCamera()->updateFrustum();
 	}
 	m_octreeScene->cullingByCamera(defaultCamera());
+	//vegetation
+	Tree::shared()->clearTreeGroup();
 	auto &visibleList = m_octreeScene->getVisibleList();
 	for(auto obj : visibleList)
 	{
@@ -44,6 +47,7 @@ void Scene::visit()
 			obj->onSubmitDrawCommand(RenderCommand::RenderType::Common);
 		}
 	}
+	Tree::shared()->pushCommand();
 }
 
 void Scene::visitPost()

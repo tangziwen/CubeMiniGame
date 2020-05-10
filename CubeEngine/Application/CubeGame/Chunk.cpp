@@ -18,6 +18,7 @@ static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 
 #include "EngineSrc/Collision/PhysicsMgr.h"
 #include <random>
+#include "3D/Vegetation/Tree.h"
 
 namespace tzw
 {
@@ -66,7 +67,7 @@ namespace tzw
 
 		m_grass2 = new Grass("Texture/grass.tga");
 
-		m_tree = new Tree("Test");
+		m_tree = new TreeGroup();
 
 		m_isHitable = true;
 
@@ -165,7 +166,6 @@ namespace tzw
 			m_rigidBody->setFriction(10.0);
 			m_grass->finish();
 			m_grass2->finish();
-			m_tree->finish();
 			PhysicsMgr::shared()->addRigidBody(m_rigidBody);
 			loading_mutex.lock();
 			m_currenState = State::LOADED;
@@ -209,9 +209,10 @@ namespace tzw
 		auto player = GameWorld::shared()->getPlayer();
 		if (player->getPos().distance(m_worldAABBCache.centre()) < 50.0f)
 		{
-			m_grass->pushCommand();
-			m_grass2->pushCommand();
-			m_tree->pushCommand();
+			// m_grass->pushCommand();
+			// m_grass2->pushCommand();
+			Tree::shared()->addTreeGroup(m_tree);
+			// m_tree->pushCommand();
 		}
 	}
 
@@ -1278,7 +1279,6 @@ namespace tzw
 		m_grassPosList.clear();
 		m_grass->m_mesh->clearInstances();
 		m_grass2->m_mesh->clearInstances();
-		m_tree->m_mesh->clearInstances();
 		size_t indexCount = m_mesh->m_indices.size();
 		if (indexCount <= 0) return;
 		float grassDensity = 1.0;
@@ -1350,17 +1350,17 @@ namespace tzw
 		treeNoise.SetFrequency(0.04);
 		treeNoise.SetNoiseType(FastNoise::Simplex);
 		int treeCount = 0;
-		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += 1.5)
+		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += 3.0)
 		{
-			for (float z = m_basePoint.z; z > m_basePoint.z - BLOCK_SIZE * MAX_BLOCK; z -= 1.5)
+			for (float z = m_basePoint.z; z > m_basePoint.z - BLOCK_SIZE * MAX_BLOCK; z -= 3.0)
 			{
-				auto ox = TbaseMath::randFN() * 0.5;
-				auto oz = TbaseMath::randFN() * 0.5;
+				auto ox = TbaseMath::randFN() * 0.8;
+				auto oz = TbaseMath::randFN() * 0.8;
 				float value = treeNoise.GetNoise(x + ox, 0, z + oz);
 				// the flat is grass or dirt?
 				value = value * 0.5 + 0.5;
 				auto h = GameMap::shared()->getHeight(vec2(x + ox, z + oz));
-				if (value > 0.5 && treeCount < 36 && rand() % 10 > 5 && h < 18)
+				if (value > 0.5)
 				{
 					// auto treeModel = Model::create("Models/tree/tree.tzw", true);
 					// g_GetCurrScene()->addNode(treeModel);
@@ -1370,11 +1370,8 @@ namespace tzw
 					// 							TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
 					treeCount += 1;
 					InstanceData instance;
-					if(abs(x - 192.0f) < 0.1){
-						printf("fafaf");
-					}
 					vec3 normal = vec3(0, 1,0);
-					instance.posAndScale = vec4(x, 10, z, 1.0);
+					instance.posAndScale = vec4(x + ox, h, z + oz, 1.0);
 					instance.extraInfo = vec4(normal, 0);
 					// auto rotateM = Matrix44();
 					// rotateM.setToIdentity();
@@ -1398,7 +1395,7 @@ namespace tzw
 					// Quaternion q;
 					// rotateM.getRotation(&q);
 					// instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
- 					m_tree->m_mesh->pushInstance(instance);
+ 					m_tree->m_instance.push_back(instance);
 				}
 			}
 		}
