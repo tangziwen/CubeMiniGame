@@ -11,9 +11,9 @@
 using namespace std;
 namespace tzw {
 
-ShaderProgram::ShaderProgram(const char *pVSFileName, const char *pFSFileName, const char *pTCSFileName, const char* pTESFileName)
+ShaderProgram::ShaderProgram(uint32_t mutationFlag, const char *pVSFileName, const char *pFSFileName, const char *pTCSFileName, const char* pTESFileName)
 {
-
+    m_mutationFlag = mutationFlag;
 	m_fragmentShader = pFSFileName;
 	m_vertexShader = pVSFileName;
 	m_tessellationControlShader.clear();
@@ -268,6 +268,19 @@ void ShaderProgram::createShader(bool isStrict)
     }
 }
 
+
+static int BitCount(uint32_t n)
+{
+    unsigned int c =0 ; // 计数器
+    while (n >0)
+    {
+        if((n &1) ==1) // 当前位是1
+            ++c ; // 计数器加1
+        n >>=1 ; // 移位
+    }
+    return c ;
+}
+
 void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType, bool isStrict)
 {
     GLuint ShaderObj = glCreateShader(ShaderType);
@@ -280,7 +293,10 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
     		exit(0);
     	}
     }
-	auto size = ShaderMgr::shared()->m_macros.size();
+	//calculate Global Macro and mutation
+	auto mutationSize = BitCount(m_mutationFlag);
+	auto globalMacroSize = ShaderMgr::shared()->m_macros.size();
+	auto size = globalMacroSize + mutationSize;
     GLchar** p = new GLchar*[size + 2];
 	GLint* Lengths = new GLint[size + 2];
 	auto glsl_ver = "#version 420\n";
@@ -295,6 +311,23 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
 		Lengths[index] = strlen(tmpStr);
 		index ++;
 	}
+	if(m_mutationFlag & static_cast<uint32_t>(ShaderOption::EnableInstanced))
+    {
+		char * tmpStr = (char *)malloc(128);
+		sprintf(tmpStr, "#define FLAG_EnableInstanced 1\n");
+		p[index] = tmpStr;
+		Lengths[index] = strlen(tmpStr);
+		index++;
+	}
+	if(m_mutationFlag & static_cast<uint32_t>(ShaderOption::EnableDoubleSide))
+    {
+		char * tmpStr = (char *)malloc(128);
+		sprintf(tmpStr, "#define FLAG_EnableDoubleSide 1\n");
+		p[index] = tmpStr;
+		Lengths[index] = strlen(tmpStr);
+		index++;
+	}
+	
     p[size + 1] = (char *)pShaderText;
     
     Lengths[size + 1]= strlen(pShaderText);

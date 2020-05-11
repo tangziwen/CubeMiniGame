@@ -18,9 +18,9 @@ varying vec4  v_color;
 varying vec3 v_worldPos;
 varying vec4  v_tangent;
 
-vec3 CalcBumpedNormal()
+vec3 CalcBumpedNormal(vec3 inputNormal)
 {
-	vec3 Normal = normalize(v_normal);
+	vec3 Normal = normalize(inputNormal);
 	vec3 Tangent = normalize(v_tangent.xyz);
 	Tangent = normalize(Tangent - dot(Tangent, Normal) * Normal);
 	vec3 Bitangent = cross(Tangent, Normal);
@@ -38,14 +38,28 @@ vec3 CalcBumpedNormal()
 //! [0]
 void main()
 {
+	vec3 worldNormal = v_normal;
+	#ifdef FLAG_EnableDoubleSide
+		if(gl_FrontFacing)
+		{
+			worldNormal = v_normal;
+		}
+		else{
+			worldNormal = -v_normal;
+		}
+	#endif
     // Set fragment color from texture
-	vec4 color = texture2D(DiffuseMap,v_texcoord);
-	if (color.a < 0.8) discard;
-	gl_FragData[0] = pow(color, vec4(2.2))*TU_color * v_color;
+	vec4 col = texture2D(DiffuseMap,v_texcoord);
+	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a)*TU_color * v_color;
+	if(albedo.a <0.4)
+	{
+		discard;
+	}
+	gl_FragData[0] = albedo;
 	float metallic = texture2D(MetallicMap,v_texcoord).r;
 	float roughness = texture2D(RoughnessMap,v_texcoord).r;
 	gl_FragData[1] = vec4(v_position,1.0);
-	gl_FragData[2] = vec4(CalcBumpedNormal(),1.0);
+	gl_FragData[2] = vec4(CalcBumpedNormal(worldNormal),1.0);
 	gl_FragData[3] = vec4(roughness,metallic,0.0,1.0);
 }
 //! [0]

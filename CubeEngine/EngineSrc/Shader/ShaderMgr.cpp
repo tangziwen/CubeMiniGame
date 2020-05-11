@@ -2,16 +2,17 @@
 #include "Utility/log/Log.h"
 namespace tzw {
 
-ShaderProgram *ShaderMgr::getByPath(std::string vs, std::string fs, const char * tcs, const char * tes)
+ShaderProgram *ShaderMgr::getByPath(uint32_t mutationFlag, std::string vs, std::string fs, const char * tcs, const char * tes)
 {
     shaderInfo info;
     info.fs = fs;
     info.vs = vs;
+	info.mutationFlag = mutationFlag;
     auto result = m_pool.find(info);
     if(result == m_pool.end())
     {
 		tlog("create shader %s %s", vs.c_str(), fs.c_str());
-        ShaderProgram * shader = new ShaderProgram(vs.c_str(),fs.c_str(), tcs, tes);
+        ShaderProgram * shader = new ShaderProgram(mutationFlag, vs.c_str(),fs.c_str(), tcs, tes);
         m_pool.insert(std::make_pair(info,shader));
         return shader;
     }else
@@ -41,10 +42,18 @@ ShaderMgr::ShaderMgr()
 } // namespace tzw
 
 
+shaderInfo::shaderInfo():mutationFlag(0)
+{
+}
+
+shaderInfo::shaderInfo(const shaderInfo& p)
+{
+	*this = p;
+}
 
 bool shaderInfo::operator ==(const shaderInfo &info) const
 {
-    return fs == info.fs && vs == info.vs;
+    return fs == info.fs && vs == info.vs && mutationFlag == info.mutationFlag;
 }
 
 bool shaderInfo::operator <(const shaderInfo &info) const

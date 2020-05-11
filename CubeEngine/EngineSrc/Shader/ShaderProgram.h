@@ -8,10 +8,17 @@
 #include <unordered_map>
 
 namespace tzw {
+enum class ShaderOption
+{
+	EnableInstanced = 1 << 1,
+    EnableDoubleSide = 1 << 2,
+	Shader_option_End = 1 << 31,
+};
+
 class ShaderProgram
 {
 public:
-    ShaderProgram(const char * pVSFileName, const char * pFSFileName, const char * pTCSFileName = nullptr, const char* pTESFileName = nullptr);
+    ShaderProgram(uint32_t mutationFlag, const char * pVSFileName, const char * pFSFileName, const char * pTCSFileName = nullptr, const char* pTESFileName = nullptr);
     void use();
     int getShaderId();
     void setUniformInteger(const char * str,int value);
@@ -30,16 +37,17 @@ public:
 	void setAttributeBufferInt(int ID, int dataType, int offset, int size, int stride = 0);
 	int uniformLocation(std::string name);
 	void reload();
+	std::string m_fragmentShader;
+	std::string m_vertexShader;
+	std::string m_tessellationControlShader;
+	std::string m_tessellationEvaluationShader;
 private:
+	uint32_t m_mutationFlag;
 	void createShader(bool isStrict);
     void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType, bool isStrict);
     std::unordered_map<std::string,unsigned int> m_locationMap;
 	std::unordered_map<std::string, int> m_uniformMap;
     unsigned int shader;
-	std::string m_fragmentShader;
-	std::string m_vertexShader;
-	std::string m_tessellationControlShader;
-	std::string m_tessellationEvaluationShader;
 };
 } // namespace tzw
 

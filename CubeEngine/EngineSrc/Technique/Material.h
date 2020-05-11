@@ -35,6 +35,7 @@ public:
 	ShaderProgram *getProgram() const;
 	bool isExist(std::string name);
     Material * clone();
+	void reload();
 
 	bool getIsCullFace();
 
@@ -50,15 +51,19 @@ public:
 	void setIsDepthTestEnable(const bool isDepthTestEnable);
 	bool isIsDepthWriteEnable() const;
 	void setIsDepthWriteEnable(const bool isDepthWriteEnable);
+	void setIsEnableInstanced(const bool isEnableInstanced);
+	bool isEnableInstanced();
 	RenderFlag::BlendingFactor getFactorSrc() const;
 	void setFactorSrc(const RenderFlag::BlendingFactor factorSrc);
 	RenderFlag::BlendingFactor getFactorDst() const;
 	void setFactorDst(const RenderFlag::BlendingFactor factorDst);
 	bool isIsEnableBlend() const;
 	void setIsEnableBlend(const bool isEnableBlend);
+	uint32_t getMutationFlag();
 private:
     std::string m_vsPath;
     std::string m_fsPath;
+	bool m_isEnableInstanced;
     std::map<std::string,TechniqueVar *> m_varList;
 	RenderFlag::BlendingFactor m_factorSrc;
 	RenderFlag::BlendingFactor m_factorDst;

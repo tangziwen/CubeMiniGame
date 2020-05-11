@@ -11,20 +11,17 @@ Tree::Tree()
 	 
 	m_isFinish = false;
 	std::string materialName = "Tree";
-	auto mat = MaterialPool::shared()->getMaterialByName(materialName);
-	if (!mat)
-	{
+
+	m_barkMat = Material::createFromTemplate("ModelInstance");
+	auto tex = TextureMgr::shared()->getByPath("Models/tree/bark.jpg");
+	tex->genMipMap();
+	m_barkMat->setTex("DiffuseMap", tex);
+
 	
-		mat = Material::createFromTemplate("Tree");
-		auto tex = TextureMgr::shared()->getByPath("Models/tree/bark.jpg");
-		 
-		tex->genMipMap();
-		 
-		mat->setTex("diffuseMap", tex);
-		MaterialPool::shared()->addMaterial(materialName, mat);
-	}
-	setMaterial(mat);
-	 
+	m_leafMat = Material::createFromTemplate("Tree");
+	auto leafTex = TextureMgr::shared()->getByPath("Models/tree/twig.png", true);
+	m_leafMat->setTex("DiffuseMap", leafTex);
+
 	setIsAccpectOcTtree(false);
 	 
 	setCamera(g_GetCurrScene()->defaultCamera());
@@ -98,13 +95,13 @@ void Tree::pushCommand()
 	}
 	if(m_mesh->m_instanceOffset.size() > 0)
 	{
-		RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
+		RenderCommand command(m_mesh, m_barkMat, RenderCommand::RenderType::Instanced);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		setUpTransFormation(command.m_transInfo);
 		Renderer::shared()->addRenderCommand(command);
 		setUpTransFormation(command.m_transInfo);
 
-		RenderCommand commandLeaf(m_leafMesh,  getMaterial(), RenderCommand::RenderType::Instanced);
+		RenderCommand commandLeaf(m_leafMesh,  m_leafMat, RenderCommand::RenderType::Instanced);
 		commandLeaf.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		setUpTransFormation(commandLeaf.m_transInfo);
 		Renderer::shared()->addRenderCommand(commandLeaf);
@@ -133,10 +130,21 @@ void Tree::submitDrawCmd(RenderCommand::RenderType passType)
 void Tree::initMesh()
 {
 	auto treeModel = Model::create("Models/tree/tree.tzw", false);
+
+	
 	m_barkMat = treeModel->getMat(0);
-	m_leafMat = treeModel->getMat(1);
+	m_barkMat->setIsEnableInstanced(true);
+
 	m_barkMat->setTex("DiffuseMap",TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
+	m_barkMat->reload();
+	
+	
+	m_leafMat = treeModel->getMat(1);
+	m_leafMat->setIsEnableInstanced(true);
+	m_barkMat->setIsCullFace(false);
+	m_leafMat->reload();
 	m_leafMat->setTex("DiffuseMap",TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
+
 	m_mesh = treeModel->getMesh(0);
 	m_leafMesh = treeModel->getMesh(1);
 }

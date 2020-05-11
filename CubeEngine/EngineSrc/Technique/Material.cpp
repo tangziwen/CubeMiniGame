@@ -21,7 +21,7 @@ namespace tzw {
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
 	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(true),
-	m_renderStage(RenderFlag::RenderStage::COMMON)
+	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false)
 {
 }
 
@@ -82,7 +82,14 @@ void Material::loadFromFile(std::string filePath)
 	{
 		m_isEnableBlend = true;
 	}
-
+	if (doc.HasMember("EnableInstanced"))
+	{
+		m_isEnableInstanced = doc["EnableInstanced"].GetBool();
+	}
+	else
+	{
+		m_isEnableInstanced = false;
+	}
 	if (doc.HasMember("SrcBlendFactor"))
 	{
 		std::string theStr = doc["SrcBlendFactor"].GetString();
@@ -160,9 +167,9 @@ void Material::loadFromFile(std::string filePath)
 	if (doc.HasMember("shaders"))
 	{
 		auto& shaders = doc["shaders"];
-		auto vsFilePath = shaders["vs"].GetString();
-		auto fsFilePath = shaders["fs"].GetString();
-		m_program = ShaderMgr::shared()->getByPath(vsFilePath, fsFilePath);
+		m_vsPath = shaders["vs"].GetString();
+		m_fsPath = shaders["fs"].GetString();
+		m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
 		if (!m_program)
 		{
 			tlog("[error] bad program!!!");
@@ -561,6 +568,11 @@ Material *Material::clone()
 	return mat;
 }
 
+void Material::reload()
+{
+	m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
+}
+
 bool Material::getIsCullFace()
 {
 	return m_isCullFace;
@@ -681,6 +693,21 @@ void Material::setIsEnableBlend(const bool isEnableBlend)
 	m_isEnableBlend = isEnableBlend;
 }
 
+uint32_t Material::getMutationFlag()
+{
+	uint32_t flag = 0 ;
+	if(m_isEnableInstanced)
+	{
+		flag |= (uint32_t)ShaderOption::EnableInstanced;
+	}
+
+	if(!m_isCullFace)
+	{
+		flag |= (uint32_t)ShaderOption::EnableDoubleSide;
+	}
+	return flag;
+}
+
 RenderFlag::RenderStage Material::getRenderStage() const
 {
 	return m_renderStage;
@@ -709,6 +736,16 @@ bool Material::isIsDepthWriteEnable() const
 void Material::setIsDepthWriteEnable(const bool isDepthWriteEnable)
 {
 	m_isDepthWriteEnable = isDepthWriteEnable;
+}
+
+void Material::setIsEnableInstanced(const bool isEnableInstanced)
+{
+	m_isEnableInstanced = isEnableInstanced;
+}
+
+bool Material::isEnableInstanced()
+{
+	return m_isEnableInstanced;
 }
 
 /**

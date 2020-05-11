@@ -3,7 +3,7 @@
 		"vs" : "Shaders/GeometryPass_v.glsl",
 		"fs" : "Shaders/GeometryPass_f.glsl"
 	},
-	"name" : "Tree",
+	"name" : "Grass",
 	"cullFace" : false,
 	"EnableInstanced" : true,
 	"property" : {
