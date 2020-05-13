@@ -114,6 +114,11 @@ int Model::getMeshCount()
 	return m_meshList.size();
 }
 
+int Model::getMatCount()
+{
+	return m_effectList.size();
+}
+
 void Model::setMeshToMatMap(Mesh* mesh, Material* mat)
 {
 	m_meshToMat[mesh] = mat;

@@ -428,7 +428,8 @@ GameWorld::~GameWorld()
 
 void GameWorld::prepare()
 {
-	
+
+
 	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Load Blocks",
 		WorkerJob([&]()
 	{

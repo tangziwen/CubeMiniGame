@@ -20,7 +20,7 @@ namespace tzw {
 
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
-	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(true),
+	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
 	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false)
 {
 }
@@ -42,6 +42,11 @@ void Material::loadFromFile(std::string filePath)
 		tlog("[error] get json data err! %s %d offset %d", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
 		abort();
 	}
+	loadFromJson(doc);
+}
+
+void Material::loadFromJson(rapidjson::Value& doc)
+{
 	if (doc.HasMember("name"))
 	{
 		m_name = doc["name"].GetString();
@@ -80,7 +85,7 @@ void Material::loadFromFile(std::string filePath)
 	}
 	else
 	{
-		m_isEnableBlend = true;
+		m_isEnableBlend = false;
 	}
 	if (doc.HasMember("EnableInstanced"))
 	{
@@ -173,7 +178,7 @@ void Material::loadFromFile(std::string filePath)
 		if (!m_program)
 		{
 			tlog("[error] bad program!!!");
-			exit(1);
+			abort();
 		}
 	}
 	auto& MaterialInfo = doc["property"];
@@ -296,6 +301,7 @@ void Material::loadFromFile(std::string filePath)
 		}
 	}
 }
+
 Material *Material::createFromTemplate(std::string name)
 {
 	auto mat = new Material();
@@ -307,6 +313,13 @@ Material * Material::createFromFile(std::string matPath)
 {
 	auto mat = new Material();
 	mat->loadFromFile(matPath);
+	return mat;
+}
+
+Material* Material::createFromJson(rapidjson::Value& obj)
+{
+	auto mat = new Material();
+	mat->loadFromJson(obj);
 	return mat;
 }
 

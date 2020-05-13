@@ -206,7 +206,8 @@ void OctreeScene::cullingByCamera(Camera *camera)
 
 void OctreeScene::getRange(std::vector<Drawable3D *> *list, AABB aabb)
 {
-    getRange_R(m_root,list,aabb);
+    auto test = [&aabb](const AABB& targetAABB){vec3 noNeedVar; return aabb.isIntersect(targetAABB, noNeedVar);};
+    cullingImp_R(m_root,list,test);
 }
 
 int OctreeScene::getAmount()
@@ -291,15 +292,17 @@ void OctreeScene::setDrawable_R(OctreeNode *node)
     }
 }
 
-void OctreeScene::getRange_R(OctreeNode *node, std::vector<Drawable3D *> *list, AABB &aabb)
+void OctreeScene::cullingImp_R(OctreeNode *node, std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
 {
     vec3 noNeedVar;
-    if(node->aabb.isIntersect(aabb,noNeedVar))
+    // if(node->aabb.isIntersect(aabb,noNeedVar))
+	if(testFunc(node->aabb))
     {
         //put self
         for(auto drawObj : node->m_drawlist)
         {
-            if(drawObj->getAABB().isIntersect(aabb,noNeedVar))
+            // if(drawObj->getAABB().isIntersect(aabb,noNeedVar))
+        	if(testFunc(drawObj->getAABB()))
             {
                 list->push_back(drawObj);
             }
@@ -308,7 +311,7 @@ void OctreeScene::getRange_R(OctreeNode *node, std::vector<Drawable3D *> *list, 
         if(!node->m_child[0]) return;
         for(int i =0;i<8;i++)
         {
-            getRange_R(node->m_child[i],list,aabb);
+            cullingImp_R(node->m_child[i],list, testFunc);
         }
     }
 }

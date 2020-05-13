@@ -45,36 +45,74 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 	auto tmgr = TextureMgr::shared();
 	auto& materialList = doc["materialList"];
 	auto mangleedName = matPool->getModelMangleedName(relativeFilePath);
-	for (unsigned int i = 0;i<materialList.Size();i++)
+	if(doc.HasMember("MaterialsFileName"))
 	{
-		auto & materialData = materialList[i];
-		// reuse material // there is a problem
-		Material* mat = nullptr;//matPool->getMaterialByName(mangleedName);
-		//if (!mat)
-		//{
-		//	mat = new Material();
-		//	matPool->addMaterial(mangleedName,mat);
-		//}
-		if(materialData.HasMember("effectType"))
+		
+		auto mData = Tfile::shared()->getData(Tfile::shared()->toAbsFilePath(doc["MaterialsFileName"].GetString(), folder),true);
+		rapidjson::Document matDoc;
+		matDoc.Parse<rapidjson::kParseDefaultFlags>(mData.getString().c_str());
+		auto& matList = matDoc["MaterialList"];
+		for(size_t matI = 0; matI != matList.Size(); matI++)
 		{
-			mat = Material::createFromTemplate(materialData["effectType"].GetString());
-		}else
-		{
-			mat = Material::createFromTemplate("ModelPBR");
+			auto & matNode = materialList[matI];
+			auto mat = Material::createFromJson(matNode);
+			model->m_effectList.push_back(mat);
 		}
-		auto thestr = materialData["diffuseMap"].GetString();
-		if (strcmp(thestr, "") != 0)
-		{
-			mat->setTex("DiffuseMap",
-				tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["diffuseMap"].GetString(), folder)));
-		}
-		//default Normal Map
-		mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
-		//default Roughness Map
-		mat->setTex("RoughnessMap", tmgr->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png"));
-		mat->setTex("MetallicMap", TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png"));
-		model->m_effectList.push_back(mat);
 	}
+	else // old version
+	{
+		for (unsigned int i = 0;i<materialList.Size();i++)
+		{
+			auto & materialData = materialList[i];
+			// reuse material // there is a problem
+			Material* mat = nullptr;//matPool->getMaterialByName(mangleedName);
+			//if (!mat)
+			//{
+			//	mat = new Material();
+			//	matPool->addMaterial(mangleedName,mat);
+			//}
+
+			if(materialData.HasMember("effectType"))
+			{
+				mat = Material::createFromTemplate(materialData["effectType"].GetString());
+			}else
+			{
+				mat = Material::createFromTemplate("ModelPBR");
+			}
+			auto thestr = materialData["diffuseMap"].GetString();
+			if (strcmp(thestr, "") != 0)
+			{
+				mat->setTex("DiffuseMap",
+					tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["diffuseMap"].GetString(), folder), true));
+			}
+			if (strcmp(materialData["normalMap"].GetString(), "") != 0)
+			{
+				mat->setTex("NormalMap",
+					tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["normalMap"].GetString(), folder), true));
+			}
+			else
+			{
+				//default Normal Map
+				mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
+			}
+
+			if (materialData.HasMember("roughnessMap") && strcmp(materialData["roughnessMap"].GetString(), "") != 0)
+			{
+				mat->setTex("RoughnessMap",
+					tmgr->getByPath(Tfile::shared()->toAbsFilePath(materialData["roughnessMap"].GetString(), folder), true));
+			}
+			else
+			{
+				//default Normal Map
+				mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
+			}
+			//default Roughness Map
+			mat->setTex("RoughnessMap", tmgr->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png"));
+			mat->setTex("MetallicMap", TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png"));
+			model->m_effectList.push_back(mat);
+		}
+	}
+	
 
 	//get the Mesh
 	auto& meshList = doc["MeshList"];

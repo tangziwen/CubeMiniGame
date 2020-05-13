@@ -67,7 +67,7 @@ namespace tzw
 
 		m_grass2 = new Grass("Texture/grass.tga");
 
-		m_tree = new TreeGroup();
+		m_tree = new TreeGroup(GameMap::shared()->getTreeId());
 
 		m_isHitable = true;
 
@@ -207,7 +207,7 @@ namespace tzw
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		Renderer::shared()->addRenderCommand(command);
 		auto player = GameWorld::shared()->getPlayer();
-		if (player->getPos().distance(m_worldAABBCache.centre()) < 50.0f)
+		if (true)
 		{
 			// m_grass->pushCommand();
 			// m_grass2->pushCommand();

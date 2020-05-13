@@ -161,6 +161,7 @@ vec4 dualParobolidSample(sampler2D tex, vec3 r)
 
 vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness, float shadowFactor)
 {
+	// return vec3(Roughness);
 	L = -L;
 	vec3 F0 = vec3(0.04); 
 	F0 = mix(F0, albedo, metallic);

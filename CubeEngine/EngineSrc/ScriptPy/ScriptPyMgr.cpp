@@ -43,7 +43,7 @@ namespace tzw
 			     filePath.c_str(),
 			     doc.GetParseError(),
 			     doc.GetErrorOffset());
-			exit(1);
+			abort();
 		}
 		auto& items = doc["Mods"];
 		for (unsigned int i = 0; i < items.Size(); i++)

@@ -52,7 +52,7 @@ unsigned int Grass::getTypeId()
 void Grass::pushCommand()
 {
 	if (! m_isFinish) return;
-	RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
+	RenderCommand command(m_mesh, getMaterial(), RenderCommand::RenderType::Common,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	setUpTransFormation(command.m_transInfo);
 	Renderer::shared()->addRenderCommand(command);

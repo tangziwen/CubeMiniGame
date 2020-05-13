@@ -8,6 +8,7 @@
 #include "../Math/Matrix44.h"
 #include "EngineSrc/3D/Effect/Effect.h"
 #include "2D/InspectableUI.h"
+#include "rapidjson/document.h"
 #include "Rendering/RenderFlag.h"
 namespace tzw {
 class StdMaterial;
@@ -19,8 +20,10 @@ public:
     Material ();
 	void loadFromTemplate(std::string name);
 	void loadFromFile(std::string filePath);
+	void loadFromJson(rapidjson::Value & obj);
     static Material * createFromTemplate(std::string name);
 	static Material * createFromFile(std::string matPath);
+	static Material * createFromJson(rapidjson::Value & obj);
     void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);

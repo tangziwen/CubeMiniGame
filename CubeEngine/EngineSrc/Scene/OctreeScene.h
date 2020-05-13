@@ -1,6 +1,8 @@
 #ifndef TZW_OCTREESCENE_H
 #define TZW_OCTREESCENE_H
 
+#include <functional>
+
 #include "../Math/AABB.h"
 #include "../Math/Ray.h"
 #include <unordered_set>
@@ -38,7 +40,7 @@ private:
     void cullingByCamera_R(OctreeNode * node,Camera * camera);
     void setIndrawable_R(OctreeNode * node);
     void setDrawable_R(OctreeNode * node);
-    void getRange_R(OctreeNode * node, std::vector<Drawable3D *> * list, AABB &aabb);
+    void cullingImp_R(OctreeNode * node, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);
     OctreeNode * m_root;
     bool addObj_R(OctreeNode * node,Drawable3D * obj);
     bool removeObj_R(OctreeNode * node,Drawable3D * obj);

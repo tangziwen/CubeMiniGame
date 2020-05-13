@@ -22,7 +22,6 @@ public:
     {
         GUI,
         Common,
-		Instanced,
 		Shadow,
     };
     enum class PrimitiveType
@@ -32,13 +31,18 @@ public:
         TRIANGLE_STRIP,
         PATCHES,
     };
-
-    RenderCommand(Mesh * mesh,Material * material,RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES);
+    enum class RenderBatchType
+    {
+        Single,
+		Instanced,
+    };
+    RenderCommand(Mesh * mesh,Material * material,RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
     void render();
 
     RenderType type() const;
     void setType(const RenderType &type);
-
+    RenderBatchType batchType() const;
+	void setBatchType(const RenderBatchType &type);
     unsigned int Zorder() const;
     void setZorder(unsigned int Zorder);
 
@@ -50,6 +54,7 @@ public:
     TransformationInfo m_transInfo;
 	RenderFlag::RenderStage getRenderState() const;
 	void setRenderState(const RenderFlag::RenderStage renderState);
+	RenderBatchType m_batchType;
 private:
 	RenderFlag::RenderStage m_renderState;
     Mesh * m_mesh;

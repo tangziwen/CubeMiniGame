@@ -201,6 +201,7 @@ void ShaderProgram::reload()
 	auto oldShader = shader;
 	shader = 0;
 	m_uniformMap.clear();
+	m_locationMap.clear();
 	createShader(false);
 	if(shader)
 	{
@@ -213,16 +214,16 @@ void ShaderProgram::createShader(bool isStrict)
     this->shader = glCreateProgram();
     if (shader == 0) {
         fprintf(stderr, "Error creating shader program\n");
-        exit(1);
+        abort();
     }
     tzw::Data vs_data = tzw::Tfile::shared()->getData(m_vertexShader,true);
     tzw::Data fs_data = tzw::Tfile::shared()->getData(m_fragmentShader,true);
     if (vs_data.isNull()) {
-        exit(1);
+        abort();
     };
 
     if (fs_data.isNull()) {
-        exit(1);
+        abort();
     };
 
     string vs = vs_data.getString();
@@ -251,7 +252,7 @@ void ShaderProgram::createShader(bool isStrict)
         fprintf(stdout, "Error linking shader program: '%s'\n", ErrorLog);
     	if(isStrict)
     	{
-    		exit(1);
+    		abort();
     	}
         
     }
@@ -263,7 +264,7 @@ void ShaderProgram::createShader(bool isStrict)
         fprintf(stdout, "Invalid shader program: '%s'\n", ErrorLog);
        	if(isStrict)
     	{
-        exit(1);
+        abort();
         }
     }
 }
@@ -344,7 +345,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
         fprintf(stdout, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         if (isStrict) 
 		{
-          exit(1);
+          abort();
         }
     }
     glAttachShader(ShaderProgram, ShaderObj);

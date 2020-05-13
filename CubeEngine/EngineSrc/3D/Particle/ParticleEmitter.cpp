@@ -165,8 +165,7 @@ ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
   if (m_mesh->getInstanceSize() > 0) {
     reCache();
     RenderCommand command(
-      m_mesh, getMaterial(), RenderCommand::RenderType::Instanced);
-    command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+      m_mesh, getMaterial(), RenderCommand::RenderType::Common,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
     setUpTransFormation(command.m_transInfo);
     command.setRenderState(RenderFlag::RenderStage::TRANSPARENT);
     Renderer::shared()->addRenderCommand(command);

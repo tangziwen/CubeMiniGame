@@ -165,6 +165,15 @@ void GameMap::init(float ratio, int width, int depth, int height)
 			}
 		}
 	}
+
+	
+    VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
+	VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTree_lod1.tzw");
+	VegetationBatInfo lod2(VegetationType::QUAD_TRI, "tzwTree_lod2.png");
+	//reg Tree class
+	m_treeID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
+	
+	// m_treeID = Tree::shared()->regVegetation(VegetationType::QUAD_TRI, "Texture/grass.tga");
 }
 
 GameMap*
@@ -428,5 +437,10 @@ float GameMap::edgeFallOffSelect(float lowBound, float upBound, float edgeVal, f
       // return the output value from the first source module.
       return val1;
     }
+}
+
+int GameMap::getTreeId()
+{
+	return m_treeID;
 }
 } // namespace tzw

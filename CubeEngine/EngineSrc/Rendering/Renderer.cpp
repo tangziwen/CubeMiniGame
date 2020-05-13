@@ -12,6 +12,8 @@
 #include <random>
 #include "Shader/ShaderMgr.h"
 #include "3D/Thumbnail.h"
+#include "3D/Vegetation/Tree.h"
+
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
 Renderer::Renderer(): m_quad(nullptr), m_dirLightProgram(nullptr), m_postEffect(nullptr), m_blurVEffect(nullptr),
@@ -70,17 +72,6 @@ void Renderer::addRenderCommand(RenderCommand& command)
 		case RenderCommand::RenderType::Shadow:
 			m_shadowCommandList.push_back(command);
 		break;
-		case RenderCommand::RenderType::Instanced:
-		{
-			switch (command.getRenderState())
-			{
-			case RenderFlag::RenderStage::COMMON: m_CommonCommand.push_back(command);break;
-			case RenderFlag::RenderStage::TRANSPARENT: m_transparentCommandList.push_back(command);break;
-			//case RenderFlag::RenderStage::AFTER_DEPTH_CLEAR: m_clearDepthCommandList.push_back(command);break;
-			default: ;
-			}
-		}
-			break;
 		default:
 		break;
 	}
@@ -254,30 +245,51 @@ void Renderer::renderCommon(RenderCommand &command)
 
 void Renderer::renderShadow(RenderCommand &command,int index)
 {
-	//replace by the shadow shader, a little bit hack
-	command.m_material->use(ShadowMap::shared()->getProgram());
-	  
-	applyRenderSetting(command.m_material);
-	  
-	auto cpyTransInfo = command.m_transInfo;
-	  
-	// one more little hack for light view & project matrix
-	cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
-	cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(index);
-	  
-	applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
 
-	auto viewMatrix = ShadowMap::shared()->getLightViewMatrix();
-	auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * viewMatrix * cpyTransInfo.m_worldMatrix;
-	ShadowMap::shared()->getProgram()->setUniformMat4v("TU_lightWVP", lightWVP.data());
-	RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
-	RenderBackEnd::shared()->setDepthTestEnable(true);
-	if (command.type() == RenderCommand::RenderType::Instanced)
+	if (command.batchType() == RenderCommand::RenderBatchType::Instanced)
 	{
-		//renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType);
+		auto program = ShadowMap::shared()->getInstancedProgram();
+		//replace by the shadow shader, a little bit hack
+		command.m_material->use(program);
+		  
+		applyRenderSetting(command.m_material);
+		  
+		auto cpyTransInfo = command.m_transInfo;
+		  
+		// one more little hack for light view & project matrix
+		cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+		cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(index);
+		  
+		applyTransform(program, cpyTransInfo);
+
+		auto viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+		auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * viewMatrix * cpyTransInfo.m_worldMatrix;
+		program->setUniformMat4v("TU_lightWVP", lightWVP.data());
+		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
+		RenderBackEnd::shared()->setDepthTestEnable(true);
+		renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType, program);
 	}
 	else
 	{
+
+		//replace by the shadow shader, a little bit hack
+		command.m_material->use(ShadowMap::shared()->getProgram());
+		  
+		applyRenderSetting(command.m_material);
+		  
+		auto cpyTransInfo = command.m_transInfo;
+		  
+		// one more little hack for light view & project matrix
+		cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+		cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(index);
+		  
+		applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
+
+		auto viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+		auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * viewMatrix * cpyTransInfo.m_worldMatrix;
+		ShadowMap::shared()->getProgram()->setUniformMat4v("TU_lightWVP", lightWVP.data());
+		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
+		RenderBackEnd::shared()->setDepthTestEnable(true);
 		renderPrimitive(command.m_mesh, command.m_material, command.m_primitiveType, ShadowMap::shared()->getProgram());
 	}
 }
@@ -316,7 +328,7 @@ void Renderer::render(const RenderCommand &command)
 	command.m_material->use();
 	applyRenderSetting(command.m_material);
 	applyTransform(command.m_material->getProgram(), command.m_transInfo);
-	if (command.type() == RenderCommand::RenderType::Instanced)
+	if (command.batchType() == RenderCommand::RenderBatchType::Instanced)
 	{
 		renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType);
 	}
@@ -345,62 +357,8 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	Engine::shared()->increaseVerticesIndicesCount(int(mesh->getVerticesSize()), int(mesh->getIndicesSize()));
 	  
 	// Tell OpenGL programmable pipeline how to locate vertex position data
-	int vertexLocation = program->attributeLocation("a_position");
-	  
-	program->enableAttributeArray(vertexLocation);
-	  
-	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offsetof(VertexData, m_pos), 3, sizeof(VertexData));
-	int normalLocation = program->attributeLocation("a_normal");
-	  
-	if (normalLocation > 0)
-	{
-		program->enableAttributeArray(normalLocation);
-		program->setAttributeBuffer(normalLocation, GL_FLOAT, offsetof(VertexData, m_normal), 3, sizeof(VertexData));
-		  
-	}
-	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
-	int texcoordLocation = program->attributeLocation("a_texcoord");
-	  
-	if (texcoordLocation > 0)
-	{
-		program->enableAttributeArray(texcoordLocation);
-		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offsetof(VertexData, m_texCoord), 2, sizeof(VertexData));
-	}
-	int colorLocation = program->attributeLocation("a_color");
-	  
-	if (colorLocation > 0)
-	{
-		program->enableAttributeArray(colorLocation);
-		program->setAttributeBuffer(colorLocation, GL_FLOAT, offsetof(VertexData, m_color), 4, sizeof(VertexData));
-	}
-	int bcLoaction = program->attributeLocation("a_bc");
-	  
-	if (bcLoaction > 0)
-	{
-		program->enableAttributeArray(bcLoaction);
-		program->setAttributeBuffer(bcLoaction, GL_FLOAT, offsetof(VertexData, m_barycentric), 3, sizeof(VertexData));
-	}
 
-	int matLocation = program->attributeLocation("a_mat");
-	if (matLocation > 0)
-	{
-		program->enableAttributeArray(matLocation);
-		program->setAttributeBufferInt(matLocation, GL_BYTE, offsetof(VertexData, m_matIndex), 3, sizeof(VertexData));
-	}
-	int matBlendLocation = program->attributeLocation("a_matBlend");
-	if (matBlendLocation > 0)
-	{
-		program->enableAttributeArray(matBlendLocation);
-		program->setAttributeBuffer(matBlendLocation, GL_FLOAT, offsetof(VertexData, m_matBlendFactor), 3, sizeof(VertexData));
-	}
-	
-	int tangentLocation = program->attributeLocation("a_tangent");
-	if (tangentLocation > 0)
-	{
-		program->enableAttributeArray(tangentLocation);
-		program->setAttributeBuffer(tangentLocation, GL_FLOAT, offsetof(VertexData, m_tangent), 3, sizeof(VertexData));
-	}
-
+	setVertexAttribute(program);
 	switch(primitiveType)
 	{
 		case RenderCommand::PrimitiveType::Lines:
@@ -418,52 +376,20 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	}
 }
 #define RAISE error = glGetError();tlogError("raise error %d\n",error);
-void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType)
+void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram)
 {
-	//glDisable(GL_CULL_FACE);
 	auto program = effect->getProgram();
+	if (extraProgram)
+	{
+		program = extraProgram;
+	}
 	program->use();
 	mesh->getArrayBuf()->use();
 	mesh->getIndexBuf()->use();
 	// Offset for position
-	unsigned int offset = 0;
 	Engine::shared()->increaseVerticesIndicesCount(mesh->getVerticesSize(), mesh->getIndicesSize());
 	// Tell OpenGL programmable pipeline how to locate vertex position data
-	int vertexLocation = program->attributeLocation("a_position");
-	program->enableAttributeArray(vertexLocation);
-	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-	offset += sizeof(vec3);
-	int normalLocation = program->attributeLocation("a_normal");
-	if(normalLocation >= 0)
-	{
-		program->enableAttributeArray(normalLocation);
-		program->setAttributeBuffer(normalLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-	}
-	offset += sizeof(vec3);
-	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
-	int texcoordLocation = program->attributeLocation("a_texcoord");
-	if(texcoordLocation >= 0)
-	{
-		program->enableAttributeArray(texcoordLocation);
-		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offset, 2, sizeof(VertexData));
-	}
-	offset += sizeof(vec2);
-	
-	//int colorLocation = program->attributeLocation("a_color");
-	//program->enableAttributeArray(colorLocation);
-	//program->setAttributeBuffer(colorLocation, GL_FLOAT, offset, 4, sizeof(VertexData));
-	//offset += sizeof(vec4);
-
-	//int bcLoaction = program->attributeLocation("a_bc");
-	//program->enableAttributeArray(bcLoaction);
-	//program->setAttributeBuffer(bcLoaction, GL_FLOAT, offset, 3, sizeof(VertexData));
-	//offset += sizeof(vec3);
-
-	//int matLocation = program->attributeLocation("a_mat");
-	//program->enableAttributeArray(matLocation);
-	//program->setAttributeBuffer(matLocation, GL_FLOAT, offset, 3, sizeof(VertexData));
-
-
+	setVertexAttribute(program);
 	//RAISE
 	mesh->getInstanceBuf()->use();
 	int grassOffsetLocation = program->attributeLocation("a_instance_offset");
@@ -723,6 +649,65 @@ void Renderer::updateThumbNail(ThumbNail* thumb)
 	m_thumbNailList.push_back(thumb);
 }
 
+void Renderer::setVertexAttribute(ShaderProgram* program)
+{
+	int vertexLocation = program->attributeLocation("a_position");
+	  
+	program->enableAttributeArray(vertexLocation);
+	  
+	program->setAttributeBuffer(vertexLocation, GL_FLOAT, offsetof(VertexData, m_pos), 3, sizeof(VertexData));
+	int normalLocation = program->attributeLocation("a_normal");
+	  
+	if (normalLocation > 0)
+	{
+		program->enableAttributeArray(normalLocation);
+		program->setAttributeBuffer(normalLocation, GL_FLOAT, offsetof(VertexData, m_normal), 3, sizeof(VertexData));
+		  
+	}
+	// Tell OpenGL programmable pipeline how to locate vertex texture coordinate data
+	int texcoordLocation = program->attributeLocation("a_texcoord");
+	  
+	if (texcoordLocation > 0)
+	{
+		program->enableAttributeArray(texcoordLocation);
+		program->setAttributeBuffer(texcoordLocation, GL_FLOAT, offsetof(VertexData, m_texCoord), 2, sizeof(VertexData));
+	}
+	int colorLocation = program->attributeLocation("a_color");
+	  
+	if (colorLocation > 0)
+	{
+		program->enableAttributeArray(colorLocation);
+		program->setAttributeBuffer(colorLocation, GL_FLOAT, offsetof(VertexData, m_color), 4, sizeof(VertexData));
+	}
+	int bcLoaction = program->attributeLocation("a_bc");
+	  
+	if (bcLoaction > 0)
+	{
+		program->enableAttributeArray(bcLoaction);
+		program->setAttributeBuffer(bcLoaction, GL_FLOAT, offsetof(VertexData, m_barycentric), 3, sizeof(VertexData));
+	}
+
+	int matLocation = program->attributeLocation("a_mat");
+	if (matLocation > 0)
+	{
+		program->enableAttributeArray(matLocation);
+		program->setAttributeBufferInt(matLocation, GL_BYTE, offsetof(VertexData, m_matIndex), 3, sizeof(VertexData));
+	}
+	int matBlendLocation = program->attributeLocation("a_matBlend");
+	if (matBlendLocation > 0)
+	{
+		program->enableAttributeArray(matBlendLocation);
+		program->setAttributeBuffer(matBlendLocation, GL_FLOAT, offsetof(VertexData, m_matBlendFactor), 3, sizeof(VertexData));
+	}
+	
+	int tangentLocation = program->attributeLocation("a_tangent");
+	if (tangentLocation > 0)
+	{
+		program->enableAttributeArray(tangentLocation);
+		program->setAttributeBuffer(tangentLocation, GL_FLOAT, offsetof(VertexData, m_tangent), 3, sizeof(VertexData));
+	}
+}
+
 void Renderer::geometryPass()
 {
 	m_gbuffer->bindForWriting();
@@ -783,6 +768,7 @@ void Renderer::shadowPass()
 		{
 			obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
 		}
+		Tree::shared()->submitShadowDraw();
 		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 		shadowBuffer->BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);

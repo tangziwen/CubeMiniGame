@@ -51,7 +51,7 @@ void main()
     // Set fragment color from texture
 	vec4 col = texture2D(DiffuseMap,v_texcoord);
 	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a)*TU_color * v_color;
-	if(albedo.a <0.4)
+	if(albedo.a <0.5)
 	{
 		discard;
 	}

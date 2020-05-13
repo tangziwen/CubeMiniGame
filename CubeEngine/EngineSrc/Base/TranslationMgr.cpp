@@ -65,7 +65,7 @@ namespace tzw
 				filePath.c_str(),
 				doc.GetParseError(),
 				doc.GetErrorOffset());
-			exit(1);
+			abort();
 		}
 		auto& stringList = doc["stringList"];
 		for(int i = 0; i < stringList.Size(); i++)

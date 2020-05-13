@@ -2,10 +2,11 @@
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
-RenderCommand::RenderCommand(Mesh *mesh, Material *material, RenderType type, PrimitiveType primitiveType)
+RenderCommand::RenderCommand(Mesh *mesh, Material *material, RenderType type, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),m_type(type),
 	m_primitiveType(primitiveType),m_Zorder(0),
-	m_renderState(material->getRenderStage())
+	m_renderState(material->getRenderStage()),
+m_batchType(batchType)
 {
 
 }
@@ -25,6 +26,17 @@ void RenderCommand::setType(const RenderType &type)
 {
     m_type = type;
 }
+
+RenderCommand::RenderBatchType RenderCommand::batchType() const
+{
+	return m_batchType;
+}
+
+void RenderCommand::setBatchType(const RenderBatchType& newBatchType)
+{
+	m_batchType = newBatchType;
+}
+
 unsigned int RenderCommand::Zorder() const
 {
     return m_Zorder;

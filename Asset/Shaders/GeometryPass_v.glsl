@@ -81,20 +81,15 @@ void main()
 	v_position = (TU_mMatrix * modelMatrix * vec4(a_position * a_instance_offset.w ,1.0)).xyz;
 	v_worldPos = (TU_mMatrix * modelMatrix * vec4(a_position * a_instance_offset.w ,1.0)).xyz;
     v_normal = (modelMatrix * vec4(a_normal.xyz, 0.0)).xyz;
-    // Pass texture coordinate to fragment shader
-    // Value will be automatically interpolated to fragments inside polygon faces
-    v_texcoord = a_texcoord;
+	v_tangent = (TU_mMatrix * modelMatrix * vec4(a_tangent,0.0)).xyz;
 #else
     // Calculate vertex position in screen space
     gl_Position = TU_mvpMatrix * vec4(a_position,1.0);
-	
 	v_position = (TU_mMatrix * vec4(a_position,1.0)).xyz;
 	v_normal = (TU_mMatrix * vec4(a_normal,0.0)).xyz;
     v_tangent = (TU_mMatrix * vec4(a_tangent,0.0)).xyz;
-    // Pass texture coordinate to fragment shader
-    // Value will be automatically interpolated to fragments inside polygon faces
-    v_texcoord = a_texcoord;
 	v_worldPos = (TU_mMatrix * vec4(a_position, 1.0)).xyz;
 #endif
+	v_texcoord = a_texcoord;
 	v_color = a_color;
 }

@@ -11,6 +11,7 @@ namespace tzw
 	ShadowMap::ShadowMap()
 	{
 		m_program = ShaderMgr::shared()->getByPath(0, "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
+		m_InstancedProgram = ShaderMgr::shared()->getByPath(static_cast<uint32_t>(ShaderOption::EnableInstanced), "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
 		int shadowMapSize[] = {512, 1024, 1024};
 		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
@@ -24,6 +25,11 @@ namespace tzw
 	ShaderProgram * ShadowMap::getProgram()
 	{
 		return m_program;
+	}
+
+	ShaderProgram* ShadowMap::getInstancedProgram()
+	{
+		return m_InstancedProgram;
 	}
 
 	Matrix44 ShadowMap::getLightViewMatrix()

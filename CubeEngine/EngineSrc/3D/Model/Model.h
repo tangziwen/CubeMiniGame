@@ -23,6 +23,7 @@ public:
 	void setMeshList(std::vector<Mesh * > newMeshList);
 	int addExtraMeshList(std::vector<Mesh * >newMeshList);
 	int getMeshCount() override;
+	int getMatCount();
 	void setMeshToMatMap(Mesh * mesh, Material * mat);
 private:
     std::vector<Mesh *> m_meshList;

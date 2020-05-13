@@ -12,6 +12,7 @@ namespace tzw
 	public:
 		ShadowMap();
 		ShaderProgram * getProgram();
+		ShaderProgram * getInstancedProgram();
 		Matrix44 getLightViewMatrix();
 		Matrix44 getLightProjectionMatrix(int index);
 		void calculateProjectionMatrix();
@@ -23,6 +24,7 @@ namespace tzw
 		float getCascadeEnd(int index);
 	private:
 		ShaderProgram * m_program;
+		ShaderProgram * m_InstancedProgram;
 		Camera * m_camera;
 		Matrix44 m_projectMatList[SHADOWMAP_CASCADE_NUM];
 		std::vector<ShadowMapFBO *> m_shadowMapList;

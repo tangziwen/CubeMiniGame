@@ -205,7 +205,7 @@ void Node::addChild(Node *node, bool isNeedSort)
     if(node->m_parent)
     {
         tlogError("can not multiple adding");
-    	exit(1);
+    	abort();
     }else
     {
     	node->setIsValid(true);
