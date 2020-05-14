@@ -42,10 +42,10 @@ void Material::loadFromFile(std::string filePath)
 		tlog("[error] get json data err! %s %d offset %d", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
 		abort();
 	}
-	loadFromJson(doc);
+	loadFromJson(doc, Tfile::shared()->getFolder(filePath));
 }
 
-void Material::loadFromJson(rapidjson::Value& doc)
+void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 {
 	if (doc.HasMember("name"))
 	{
@@ -293,7 +293,15 @@ void Material::loadFromJson(rapidjson::Value& doc)
 
 			if(tex.Size() > 2)
 			{
-				setTex(name, TextureMgr::shared()->getByPath(tex[2].GetString(), true));
+				auto filePathInfolder = Tfile::shared()->toAbsFilePath(tex[2].GetString(), envFolder);
+				if(Tfile::shared()->isExist(filePathInfolder))
+				{
+					setTex(name, TextureMgr::shared()->getByPath(filePathInfolder, true));
+				}
+				else
+				{
+					setTex(name, TextureMgr::shared()->getByPath(tex[2].GetString(), true));
+				}
 			}else
 			{
 				setTex(name, nullptr);
@@ -316,10 +324,10 @@ Material * Material::createFromFile(std::string matPath)
 	return mat;
 }
 
-Material* Material::createFromJson(rapidjson::Value& obj)
+Material* Material::createFromJson(rapidjson::Value& obj, std::string envFolder)
 {
 	auto mat = new Material();
-	mat->loadFromJson(obj);
+	mat->loadFromJson(obj, envFolder);
 	return mat;
 }
 

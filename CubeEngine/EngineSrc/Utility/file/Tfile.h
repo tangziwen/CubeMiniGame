@@ -23,6 +23,7 @@ public:
 	void addSearchZip(std::string zipPath);
 	std::string getExtension(std::string path);
 	std::string getFileNameWithOutExtension(std::string path);
+	bool isExist(std::string path);
 	~Tfile();
 private:
     Tfile();

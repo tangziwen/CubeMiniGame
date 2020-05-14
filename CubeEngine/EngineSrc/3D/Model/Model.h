@@ -31,6 +31,7 @@ private:
 	std::vector<std::vector<Mesh *>> m_extraMeshList;
 	int m_currPose;
 	std::map<Mesh *, Material *> m_meshToMat;
+	std::string filePath;
 public:
 	int getCurrPose() const;
 	void setCurrPose(const int currPose);

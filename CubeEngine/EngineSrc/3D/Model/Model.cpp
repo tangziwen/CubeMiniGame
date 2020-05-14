@@ -41,8 +41,17 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
 		{
 		    for(auto mesh : m_meshList)
 		    {
-		        auto tech = m_effectList[mesh->getMatIndex()];
-		        RenderCommand command(mesh,tech,type);
+		    	Material* mat = nullptr;
+				if(mesh->getMatIndex() > m_effectList.size() - 1)
+				{
+					mat= m_effectList[0];
+					//try to adjust it
+				}
+				else
+				{
+					mat= m_effectList[mesh->getMatIndex()];
+				}
+		        RenderCommand command(mesh,mat,type);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        Renderer::shared()->addRenderCommand(command);

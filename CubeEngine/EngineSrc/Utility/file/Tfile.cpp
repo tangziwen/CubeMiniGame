@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include "Utility/log/Log.h"
 #include "zip/zip.h"
-
+#include <filesystem>
 namespace tzw
 {
 Tfile * Tfile::m_instance = nullptr;
@@ -261,6 +261,33 @@ std::string Tfile::getFileNameWithOutExtension(std::string path)
 	    // No extension found
 		return path;
 	}
+}
+
+bool Tfile::isExist(std::string path)
+{
+	for(auto searchPath :m_searchPath)
+	{
+		 if(std::filesystem::exists(searchPath + path))
+			 return true;
+	}
+	bool isZipFind = false;
+	//search the zip
+	for(auto zipData : m_searchZip)
+    {
+		struct zip_t *zip = zipData.second;
+		if(zip)
+		{
+    		std::string zipFilename = path;
+			if(zip_entry_open(zip, zipFilename.c_str()) == 0)
+			{
+				isZipFind = true;
+				zip_entry_close(zip);
+				break;
+			}
+		}
+
+    }
+	return isZipFind;
 }
 
 Tfile::Tfile()

@@ -26,6 +26,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 			return;
 		}
 	}
+	model->filePath = filePath;
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(Tmisc::getUserPath(filePath),true);
 	auto relativeFilePath = Tfile::shared()->getReleativePath(filePath);
@@ -51,11 +52,19 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 		auto mData = Tfile::shared()->getData(Tfile::shared()->toAbsFilePath(doc["MaterialsFileName"].GetString(), folder),true);
 		rapidjson::Document matDoc;
 		matDoc.Parse<rapidjson::kParseDefaultFlags>(mData.getString().c_str());
+		if (matDoc.HasParseError())
+		{
+			tlog("[error] get json data err! %s %d offset %d",
+				filePath.c_str(),
+				matDoc.GetParseError(),
+				matDoc.GetErrorOffset());
+			abort();
+		}
 		auto& matList = matDoc["MaterialList"];
 		for(size_t matI = 0; matI != matList.Size(); matI++)
 		{
-			auto & matNode = materialList[matI];
-			auto mat = Material::createFromJson(matNode);
+			auto & matNode = matList[matI];
+			auto mat = Material::createFromJson(matNode, folder);
 			model->m_effectList.push_back(mat);
 		}
 	}
