@@ -389,9 +389,9 @@ PhysicsRigidBody* PhysicsMgr::createRigidBodyMesh(Mesh* mesh, Matrix44* transfor
 		auto idxSize = mesh->getIndicesSize();
 		for(auto i =0; i < idxSize; i+=3)
 		{
-			auto v1 = mesh->getVertex(i);
-			auto v2 = mesh->getVertex(i + 1);
-			auto v3 = mesh->getVertex(i + 2);
+			auto v1 = mesh->getVertex(mesh->getIndex(i));
+			auto v2 = mesh->getVertex(mesh->getIndex(i + 1));
+			auto v3 = mesh->getVertex(mesh->getIndex(i + 2));
 			meshInterface->addTriangle(btVector3(v1.m_pos.x, v1.m_pos.y, v1.m_pos.z), btVector3(v2.m_pos.x, v2.m_pos.y, v2.m_pos.z), btVector3(v3.m_pos.x, v3.m_pos.y, v3.m_pos.z));
 		}
 		auto tetraShape = new btBvhTriangleMeshShape(meshInterface, true, true);

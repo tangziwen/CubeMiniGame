@@ -3,7 +3,7 @@
 #include "GameConfig.h"
 
 #include "FastNoise/FastNoise.h"
-
+#include <algorithm>
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
 
@@ -274,7 +274,7 @@ GameMap::getDensity(vec3 pos)
         return oldHeight - pos.y;
       }
       float height = getNoiseValue(pos.x, 0.0, pos.z);
-      float delta = height - pos.y;
+      float delta = std::clamp (height - pos.y, -1.f, 1.f);
       oldX = pos.x;
       oldZ = pos.z;
       oldHeight = height;

@@ -103,6 +103,11 @@ Mesh* CubePrimitive::getMesh(int index)
 	return m_mesh;
 }
 
+void CubePrimitive::setMesh(Mesh* newMesh)
+{
+	m_mesh = newMesh;
+}
+
 vec3 CubePrimitive::getWorldPos(vec3 localPos)
 {
 	auto theMat = getTransform();

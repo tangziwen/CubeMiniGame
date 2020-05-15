@@ -9,6 +9,10 @@ vec3::vec3()
 
 }
 
+vec3::vec3(float theX):x(theX),y(theX),z(theX)
+{
+}
+
 vec3::vec3(float the_x, float the_y, float the_z)
     :x(the_x),y(the_y),z(the_z)
 {

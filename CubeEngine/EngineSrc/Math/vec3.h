@@ -9,6 +9,7 @@ class vec3
 {
 public:
     vec3();
+	explicit vec3(float theX);
     vec3(float the_x,float the_y,float the_z);
     void set(float the_x,float the_y, float the_z);
     vec3 operator + (const vec3 & other) const;

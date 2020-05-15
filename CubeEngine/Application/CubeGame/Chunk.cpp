@@ -11,6 +11,7 @@
 #include "algorithm"
 #include "FastNoise/FastNoise.h"
 #include "time.h"
+#include "3D/Terrain/TransVoxel.h"
 /// <summary>	Size of the chunk. </summary>
 static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
@@ -1128,10 +1129,13 @@ namespace tzw
 		MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
 														m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
 														0.0f, m_lod);
+		// TransVoxel::shared()->generateWithoutNormal(m_basePoint,
+		// 												m_mesh, MAX_BLOCK + 1, m_chunkInfo->mcPoints,
+		// 												0.0f, 0);
 		if (m_mesh->isEmpty())
 			return;
-		genNormal();
-		// m_mesh->caclNormals();
+		// genNormal();
+		m_mesh->caclNormals();
 		calculateMatID();
 		loading_mutex.lock();
 		m_isNeedSubmitMesh = true;
@@ -1405,6 +1409,11 @@ namespace tzw
 	bool Chunk::getIsInitData()
 	{
 		return m_chunkInfo->isLoaded;
+	}
+
+	ChunkInfo* Chunk::getChunkInfo()
+	{
+		return m_chunkInfo;
 	}
 
 	bool

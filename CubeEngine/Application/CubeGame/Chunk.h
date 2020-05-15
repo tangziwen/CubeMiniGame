@@ -65,6 +65,7 @@ namespace tzw
 		void calculateMatID();
 		bool getIsInitData();
 		State m_currenState;
+		ChunkInfo * getChunkInfo();
 	private:
 		Grass * m_grass;
 		Grass * m_grass2;

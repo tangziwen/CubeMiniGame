@@ -14,6 +14,7 @@ public:
 	virtual bool isHit(Ray ray);
 	Mesh * getMesh() override;
 	Mesh * getMesh(int index) override;
+	void setMesh(Mesh * newMesh);
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();
