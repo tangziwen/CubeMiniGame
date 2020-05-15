@@ -52,14 +52,18 @@ void NewChunk::gen(int lodLevel)
 	{
 		const int lodSize = (theBlockSize >> 1) + (MIN_PADDING + MAX_PADDING);
 		voxelInfo theArray1[lodSize][lodSize][lodSize];
+		float ratio = realSize * 1.f / lodSize;
 		for(int i = 0; i < lodSize; i++)
 			for(int j = 0; j < lodSize; j++)
 				for(int k = 0; k < lodSize; k++)
 				{
-					// theArray1[i][j][k] = theArray[i<<lodLevel][j<<lodLevel][k<<lodLevel];
-					vec3 pos = vec3(i * BLOCK_SIZE, j * BLOCK_SIZE, -k * BLOCK_SIZE) + m_basePoint;
-					float h =GameMap::shared()->getNoiseValue(pos.x, 0, pos.z);
-					theArray1[i][j][k].w =std::clamp(h - pos.y, -1.f, 1.f);
+					int x = round(i * ratio);
+					int y = round(j * ratio);
+					int z = round(k * ratio);
+					theArray1[i][j][k] = theArray[x][y][z];//todo
+					// vec3 pos = vec3(i * BLOCK_SIZE * ratio, j * BLOCK_SIZE * ratio, -k * BLOCK_SIZE * ratio) + m_basePoint;
+					// float h =GameMap::shared()->getNoiseValue(pos.x, 0, pos.z);
+					// theArray1[i][j][k].w =std::clamp(h - pos.y, -1.f, 1.f);
 				}
 		TransVoxel::shared()->generateWithoutNormal(m_basePoint, m_mesh, lodSize, reinterpret_cast<voxelInfo*>(theArray1),0.0f, lodLevel);
 	}
