@@ -5,8 +5,7 @@
 #include "transvoxel_tables.h"
 #include "CubeGame/GameConfig.h"
 #include <algorithm>
-static const int MIN_PADDING = 1;
-static const int MAX_PADDING = 2;
+
 
 struct Vector3i
 {
@@ -125,7 +124,11 @@ enum Corner {
 static const float FIXED_FACTOR = 1.f / 256.f;
 namespace tzw {
 
+	vec3 getRealPosition(vec3 v, vec3 basePoint)
+	{
 
+		return vec3(v.x * BLOCK_SIZE, v.y * BLOCK_SIZE, -1 * v.z * BLOCK_SIZE) + basePoint;
+	}
 
 inline uint8_t get_border_mask(const Vector3i &pos, const Vector3i &block_size) {
 
@@ -259,10 +262,6 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 					// corner_gradients[i] = Vector3(nx - px, ny - py, nz - pz);
 				
 					// Undo padding here. From this point, corner positions are actual positions.
-					// auto a = corner_positions[i];
-					// auto b = min_pos;
-					// corner_positions[i] = Vector3i((a.x - int(b.x))<< lodLevel,(a.y - int(b.y))<< lodLevel,(a.z - int(b.z))<< lodLevel) ;
-
 					corner_positions[i] = (corner_positions[i] - min_pos) << lodLevel;
 				}
 
@@ -302,8 +301,8 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 					// ERR_FAIL_COND(v1 <= v0);
 
 					// Get voxel values at the corners
-					int sample0 = cell_samples[v0]; // called d0 in the paper
-					int sample1 = cell_samples[v1]; // called d1 in the paper
+					int8_t sample0 = cell_samples[v0]; // called d0 in the paper
+					int8_t sample1 = cell_samples[v1]; // called d1 in the paper
 
 					// TODO Zero-division is not mentionned in the paper??
 					// ERR_FAIL_COND(sample1 == sample0);
@@ -363,7 +362,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 						Vector3i primary = p0 * ti0 + p1 * ti1;
 						vec3 primaryf = primary.to_vec3() * FIXED_FACTOR;
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(VertexData(primaryf * realBlockSize + basePoint));
+						mesh->addVertex(VertexData(getRealPosition(primaryf, basePoint)));
 						
 
 
@@ -375,7 +374,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 						Vector3i primary = p1;
 						vec3 primaryf = primary.to_vec3();
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(VertexData(primaryf * realBlockSize + basePoint));
+						mesh->addVertex(VertexData(getRealPosition(primaryf, basePoint)));
 
 					} else {
 						// The vertex is either on p0 or p1
@@ -390,7 +389,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 						Vector3i primary = t == 0 ? p1 : p0;
 						vec3 primaryf = primary.to_vec3();
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(VertexData(primaryf * realBlockSize + basePoint));
+						mesh->addVertex(VertexData(getRealPosition(primaryf, basePoint)));
 					}
 
 				} // for each cell vertex
@@ -728,7 +727,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						}
 
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						auto vd = VertexData(primaryf * BLOCK_SIZE + basePoint);
+						auto vd = VertexData(getRealPosition(primaryf, basePoint));
 						vd.m_color = vec4(1, 0, 0,1);
 						mesh->addVertex(vd);
 						// if (reuse_direction & 0x8) {
@@ -780,7 +779,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						}
 
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						auto vd = VertexData(primaryf * BLOCK_SIZE + basePoint);
+						auto vd = VertexData(getRealPosition(primaryf, basePoint));
 						vd.m_color = vec4(1, 0, 0,1);
 						mesh->addVertex(vd);
 

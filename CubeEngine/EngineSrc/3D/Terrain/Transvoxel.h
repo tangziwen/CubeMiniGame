@@ -7,6 +7,8 @@
 
 namespace tzw {
 	struct voxelInfo;
+static const int MIN_PADDING = 1;
+static const int MAX_PADDING = 2;
 class TransVoxel :public Singleton<TransVoxel>
 {
 public:

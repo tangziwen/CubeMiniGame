@@ -30,6 +30,8 @@
 #include "3D/Particle/ParticleUpdateSizeModule.h"
 #include "3D/Particle/ParticleInitPosModule.h"
 #include "BulletMgr.h"
+#include "NewChunk.h"
+#include "3D/Terrain/MarchingCubes.h"
 #include "3D/Terrain/TransVoxel.h"
 #include "AudioSystem/AudioSystem.h"
 #include "FastNoise/FastNoise.h"
@@ -206,51 +208,70 @@ namespace tzw
 			case TZW_KEY_T:
 			{
 
-					FastNoise baseMountainTerrain;
-					baseMountainTerrain.SetSeed(233);
-					baseMountainTerrain.SetFrequency(0.018);
-					baseMountainTerrain.SetFractalOctaves(15);
-					baseMountainTerrain.SetNoiseType(FastNoise::PerlinFractal);
-					auto c = new CubePrimitive(1, 1, 1);
-					const int realSize = 32;
-					voxelInfo theArray[realSize][realSize][realSize];
-					for(int i = 0; i < realSize; i++)
-						for(int j = 0; j < realSize; j++)
-							for(int k = 0; k < realSize; k++)
-							{
-								vec3 center(4,4,4);
-								vec3 pos(i * BLOCK_SIZE, j * BLOCK_SIZE, k * BLOCK_SIZE);
-								float h =GameMap::shared()->getNoiseValue(pos.x, 0, pos.z);
-								if (pos.y > h)
-								theArray[i][j][k].w = 1;
-								else
-								theArray[i][j][k].w = -1;
-
-								theArray[i][j][k].w =std::clamp(h - pos.y, -1.f, 1.f) ;
-	
-							}
-					const int lodLevel = 1;
-					const int lodSize = realSize >> 1;
-					voxelInfo theArray1[lodSize][lodSize][lodSize];
-					for(int i = 0; i < lodSize; i++)
-						for(int j = 0; j < lodSize; j++)
-							for(int k = 0; k < lodSize; k++)
-							{
-								theArray1[i][j][k] = theArray[i<<lodLevel][j<<lodLevel][k<<lodLevel];
-
-							}
-					auto m = new Mesh();
-
-				    auto v = GameWorld::shared()-> gridToChunk(GameWorld::shared()->worldToGrid(getPos() - GameWorld::shared()->getMapOffset()));
-				    auto chunk = GameWorld::shared()->getChunk(v.x,v.y,v.z);
-					TransVoxel::shared()->generateWithoutNormal(vec3(0,0,0), m, MAX_BLOCK + 1, chunk->getChunkInfo()->mcPoints,0.0f, 0);
-					// TransVoxel::shared()->generateWithoutNormal(vec3(0,5,0), m, realSize, reinterpret_cast<voxelInfo*>(theArray),0.0f, 0);
-					c->getMaterial()->setIsCullFace(false);
-					c->setIsAccpectOcTtree(false);
-					m->finish();
-					c->setMesh(m);
-					c->setPos(getPos());
-					g_GetCurrScene()->addNode(c);
+					// FastNoise baseMountainTerrain;
+					// baseMountainTerrain.SetSeed(233);
+					// baseMountainTerrain.SetFrequency(0.018);
+					// baseMountainTerrain.SetFractalOctaves(15);
+					// baseMountainTerrain.SetNoiseType(FastNoise::PerlinFractal);
+					// auto c = new CubePrimitive(1, 1, 1);
+					// const int realSize = 32;
+					// voxelInfo theArray[realSize][realSize][realSize];
+					// for(int i = 0; i < realSize; i++)
+					// 	for(int j = 0; j < realSize; j++)
+					// 		for(int k = 0; k < realSize; k++)
+					// 		{
+					// 			vec3 center(4,4,4);
+					// 			vec3 pos(i * BLOCK_SIZE, j * BLOCK_SIZE, k * BLOCK_SIZE);
+					// 			float h =GameMap::shared()->getNoiseValue(pos.x, 0, pos.z);
+					// 			if (pos.y > h)
+					// 			theArray[i][j][k].w = 1;
+					// 			else
+					// 			theArray[i][j][k].w = -1;
+				 //
+					// 			theArray[i][j][k].w =std::clamp(h - pos.y, -1.f, 1.f) ;
+				 //
+					// 		}
+					// const int lodLevel = 1;
+					// const int lodSize = realSize >> 1;
+					// voxelInfo theArray1[lodSize][lodSize][lodSize];
+					// for(int i = 0; i < lodSize; i++)
+					// 	for(int j = 0; j < lodSize; j++)
+					// 		for(int k = 0; k < lodSize; k++)
+					// 		{
+					// 			theArray1[i][j][k] = theArray[i<<lodLevel][j<<lodLevel][k<<lodLevel];
+				 //
+					// 		}
+					// auto m = new Mesh();
+				 //
+				 //    auto v = GameWorld::shared()-> gridToChunk(GameWorld::shared()->worldToGrid(getPos() - GameWorld::shared()->getMapOffset()));
+				 //    auto chunk = GameWorld::shared()->getChunk(v.x,v.y,v.z);
+					// MarchingCubes::shared()->generateWithoutNormal(vec3(0,0,0),
+					// 										m, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, chunk->getChunkInfo()->mcPoints,
+					// 										0.0f, 0);
+					// TransVoxel::shared()->generateWithoutNormal(vec3(0,0,0), m, MAX_BLOCK + 1, chunk->getChunkInfo()->mcPoints,0.0f, 0);
+				 //
+					// // TransVoxel::shared()->generateWithoutNormal(vec3(0,5,0), m, realSize, reinterpret_cast<voxelInfo*>(theArray),0.0f, 0);
+					// c->getMaterial()->setIsCullFace(false);
+					// c->setIsAccpectOcTtree(false);
+					// m->finish();
+					// c->setMesh(m);
+					// c->setPos(getPos());
+					auto node = Node::create();
+					for(int i = 0 ; i < 4; i++)
+					{
+						auto c = new NewChunk(i, 0, 0);
+						c->setIsAccpectOcTtree(false);
+						if(i == 2)
+						{
+							c->gen(1);
+						}else
+						{
+							c->gen(0);
+						}
+						node->addChild(c);
+					}
+					node->setPos(getPos());
+					g_GetCurrScene()->addNode(node);
 			}
 			break;
 		default:
