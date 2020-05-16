@@ -53,19 +53,60 @@ void NewChunk::gen(int lodLevel)
 		const int lodSize = (theBlockSize >> 1) + (MIN_PADDING + MAX_PADDING);
 		voxelInfo theArray1[lodSize][lodSize][lodSize];
 		float ratio = realSize * 1.f / lodSize;
-		for(int i = 0; i < lodSize; i++)
-			for(int j = 0; j < lodSize; j++)
-				for(int k = 0; k < lodSize; k++)
+		int stride = 1 << lodLevel;
+		int gx = 0;
+		// //guarantee the padding
+		// for(int j = 0; j< lodSize; j++)
+		// {
+		// 	for(int k = 0; k< lodSize; k++)
+		// 	{
+		// 		theArray1[0][j][k].w = theArray[0][j][k].w;
+		// 		theArray1[lodSize - MAX_PADDING][j][k].w = theArray[lodSize - MAX_PADDING][j][k].w;
+		// 		theArray1[lodSize - MAX_PADDING + 1][j][k].w = theArray[lodSize - MAX_PADDING + 1][j][k].w;
+		// 	}
+		// }
+		// for(int i = 0; i< lodSize; i++)
+		// {
+		// 	for(int k = 0; k< lodSize; k++)
+		// 	{
+		// 		theArray1[i][0][k].w = theArray[i][0][k].w;
+		// 		theArray1[i][lodSize - MAX_PADDING][k].w = theArray[i][lodSize - MAX_PADDING][k].w;
+		// 		theArray1[i][lodSize - MAX_PADDING + 1][k].w = theArray[i][lodSize - MAX_PADDING + 1][k].w;
+		// 	}
+		// }
+		// for(int i = 0; i< lodSize; i++)
+		// {
+		// 	for(int j = 0; j< lodSize; j++)
+		// 	{
+		// 		theArray1[i][j][0].w = theArray[i][j][0].w;
+		// 		theArray1[i][j][lodSize - MAX_PADDING].w = theArray[i][j][lodSize - MAX_PADDING].w;
+		// 		theArray1[i][j][lodSize - MAX_PADDING + 1].w = theArray[i][j][lodSize - MAX_PADDING + 1].w;
+		// 	}
+		// }
+		for(int i = 0; i < lodSize; i++, gx+= stride) 
+		{
+			int gy = 1;
+			for(int j = 0; j < lodSize; j++, gy+= stride)
+			{
+				int gz = 1;
+				for(int k = 0; k < lodSize; k++, gz+= stride)
 				{
-					int x = round(i * ratio);
-					int y = round(j * ratio);
-					int z = round(k * ratio);
-					theArray1[i][j][k] = theArray[x][y][z];//todo
-					// vec3 pos = vec3(i * BLOCK_SIZE * ratio, j * BLOCK_SIZE * ratio, -k * BLOCK_SIZE * ratio) + m_basePoint;
+					// vec3 pos = vec3(gx * BLOCK_SIZE, gy * BLOCK_SIZE, -gz * BLOCK_SIZE) + m_basePoint;
 					// float h =GameMap::shared()->getNoiseValue(pos.x, 0, pos.z);
-					// theArray1[i][j][k].w =std::clamp(h - pos.y, -1.f, 1.f);
+					int x = floor(ratio * i);
+					int y = floor(ratio * j);
+					int z = floor(ratio * k);
+					theArray1[i][j][k].w =theArray[x][y][z].w;//std::clamp(h - pos.y, -1.f, 1.f);
 				}
+				
+			}
+		}
+
+
 		TransVoxel::shared()->generateWithoutNormal(m_basePoint, m_mesh, lodSize, reinterpret_cast<voxelInfo*>(theArray1),0.0f, lodLevel);
+
+
+		// TransVoxel::shared()->generateWithoutNormal(m_basePoint + vec3(0, 15, 0), m_mesh, realSize, reinterpret_cast<voxelInfo*>(theArray),0.0f, 0);
 	}
 	else
 	{
