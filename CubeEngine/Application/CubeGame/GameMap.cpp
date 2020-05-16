@@ -4,6 +4,7 @@
 
 #include "FastNoise/FastNoise.h"
 #include <algorithm>
+#include "3D/Terrain/Transvoxel.h"
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
 
@@ -91,7 +92,9 @@ void ChunkInfo::dumpChunk(FILE* f)
 
 void ChunkInfo::initData()
 {
-	mcPoints = new voxelInfo[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
+	// mcPoints = new voxelInfo[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
+
+	mcPoints = new voxelInfo[(MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING)];
 }
 
 
@@ -169,7 +172,7 @@ void GameMap::init(float ratio, int width, int depth, int height)
 	
     VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
 	VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTree_lod1.tzw");
-	VegetationBatInfo lod2(VegetationType::QUAD_TRI, "tzwTree_lod2.png");
+	VegetationBatInfo lod2(VegetationType::QUAD_TRI, "treeTest/tzwTree.png");
 	//reg Tree class
 	m_treeID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
 	
@@ -271,10 +274,10 @@ GameMap::getDensity(vec3 pos)
       static double oldZ = -99999999.0;
       static float oldHeight = 0.0;
       if (fabs(pos.x - oldX) < 0.00001 && fabs(pos.z - oldZ) < 0.00001) {
-        return oldHeight - pos.y;
+        return std::clamp ((pos.y - oldHeight) * 0.1f, -1.f, 1.f);
       }
       float height = getNoiseValue(pos.x, 0.0, pos.z);
-      float delta = std::clamp (height - pos.y, -1.f, 1.f);
+      float delta = std::clamp ((pos.y - height)* 0.1f, -1.f, 1.f);
       oldX = pos.x;
       oldZ = pos.z;
       oldHeight = height;

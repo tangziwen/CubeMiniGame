@@ -1076,7 +1076,7 @@ namespace tzw
 
 	voxelInfo Chunk::getPointInner(int x, int y, int z)
 	{
-		int size = MAX_BLOCK + 1;
+		int size = MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 		int theIndex = x * size * size + y * size + z;
 		if (x >= 0 && x <= MAX_BLOCK && y >= 0 && y <= MAX_BLOCK && z >= 0 &&
 			z <= MAX_BLOCK)
@@ -1126,12 +1126,12 @@ namespace tzw
 	{
 		if (!m_mesh)
 			return;
-		MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
-														m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
-														0.0f, m_lod);
-		// TransVoxel::shared()->generateWithoutNormal(m_basePoint,
-		// 												m_mesh, MAX_BLOCK + 1, m_chunkInfo->mcPoints,
-		// 												0.0f, 0);
+		// MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
+		// 												m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
+		// 												0.0f, m_lod);
+		TransVoxel::shared()->generateWithoutNormal(m_basePoint,
+														m_mesh, MAX_BLOCK + MIN_PADDING + MAX_PADDING, m_chunkInfo->mcPoints,
+														0.0f, 0);
 		if (m_mesh->isEmpty())
 			return;
 		// genNormal();
@@ -1146,14 +1146,14 @@ namespace tzw
 	{
 		if (m_chunkInfo->isLoaded) return;
 		m_chunkInfo->initData();
-		int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
+		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
 		vec4 verts;
 		vec3 tmpV3;
-		for (int i = 0; i < MAX_BLOCK + 1; i++)
+		for (int i = 0; i < MAX_BLOCK + MIN_PADDING + MAX_PADDING; i++)
 		{
-			for (int k = 0; k < MAX_BLOCK + 1; k++)
+			for (int k = 0; k < MAX_BLOCK + MIN_PADDING + MAX_PADDING; k++)
 			{
-				for (int j = 0; j < MAX_BLOCK + 1;
+				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
 					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) +
@@ -1163,18 +1163,18 @@ namespace tzw
 					tmpV3.z = verts.z;
 					verts.w = GameMap::shared()->getDensity(tmpV3);
 					// x y z
-					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
+					int ind = i * YtimeZ + j * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + k;
 					m_chunkInfo->mcPoints[ind].setV4(verts);
 					m_chunkInfo->mcPoints[ind].index = ind;
 				}
 			}
 		}
-		for (int i = 0; i < MAX_BLOCK + 1; i++)
+		for (int i = 0; i < MAX_BLOCK + MIN_PADDING + MAX_PADDING; i++)
 		{
-			for (int k = 0; k < MAX_BLOCK + 1; k++)
+			for (int k = 0; k < MAX_BLOCK + MIN_PADDING + MAX_PADDING; k++)
 			{
 				bool isSet = false;
-				for (int j = 0; j < MAX_BLOCK + 1;
+				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
 					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) +
@@ -1183,7 +1183,7 @@ namespace tzw
 					tmpV3.y = verts.y;
 					tmpV3.z = verts.z;
 					auto points = m_chunkInfo->mcPoints;
-					int ind = i * YtimeZ + j * (MAX_BLOCK + 1) + k;
+					int ind = i * YtimeZ + j * (MAX_BLOCK  + MIN_PADDING + MAX_PADDING) + k;
 					if ((points[ind]).w >= -0.5f || true) //TODO skip the Empty block 
 					{
 						auto x1 = getPointInner(i - 1, j, k).w;
@@ -1198,7 +1198,7 @@ namespace tzw
 												(points[ind]).w);
 						float slope = 1.0 - TbaseMath::clampf(
 							vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0)), 0.0f, 1.0f);
-						auto matID = GameMap::shared()->getMat(tmpV3, slope);
+						auto matID = GameMap::shared()->getMat(tmpV3, 0.0);
 						// x y z
 						m_chunkInfo->mcPoints[ind].setMat(matID, 0, 0, vec3(1, 0, 0));
 					}
