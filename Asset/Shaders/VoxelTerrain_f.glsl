@@ -27,6 +27,7 @@ in vec3 v_worldPos;
 in vec3 v_color;
 in vec3 v_bc;
 in vec3 v_tangent;
+in vec3 v_matBlend;
 #define MAX_MATERIAL 16
 in float[MAX_MATERIAL] v_mat;
 //! [0]

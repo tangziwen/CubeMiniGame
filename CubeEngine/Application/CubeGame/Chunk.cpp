@@ -1078,8 +1078,8 @@ namespace tzw
 	{
 		int size = MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 		int theIndex = x * size * size + y * size + z;
-		if (x >= 0 && x <= MAX_BLOCK && y >= 0 && y <= MAX_BLOCK && z >= 0 &&
-			z <= MAX_BLOCK)
+		if (x >= 0 && x <= size - 1  && y >= 0 && y <= size - 1 && z >= 0 &&
+			z <= size - 1)
 		{
 			return m_chunkInfo->mcPoints[theIndex];
 		}
@@ -1198,9 +1198,11 @@ namespace tzw
 												(points[ind]).w);
 						float slope = 1.0 - TbaseMath::clampf(
 							vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0)), 0.0f, 1.0f);
-						auto matID = GameMap::shared()->getMat(tmpV3, 0.0);
+						
+						float slope2 = vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0));
+						auto matID = GameMap::shared()->getMat(tmpV3, slope2);
 						// x y z
-						m_chunkInfo->mcPoints[ind].setMat(matID, 0, 0, vec3(1, 0, 0));
+						m_chunkInfo->mcPoints[ind].setMat(matID, 0, 0, vec3(1,0, 0));
 					}
 				}
 			}

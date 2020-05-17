@@ -274,10 +274,10 @@ GameMap::getDensity(vec3 pos)
       static double oldZ = -99999999.0;
       static float oldHeight = 0.0;
       if (fabs(pos.x - oldX) < 0.00001 && fabs(pos.z - oldZ) < 0.00001) {
-        return std::clamp ((pos.y - oldHeight) * 0.1f, -1.f, 1.f);
+        return std::clamp ((pos.y - oldHeight) , -1.f, 1.f);
       }
       float height = getNoiseValue(pos.x, 0.0, pos.z);
-      float delta = std::clamp ((pos.y - height)* 0.1f, -1.f, 1.f);
+      float delta = std::clamp ((pos.y - height), -1.f, 1.f);
       oldX = pos.x;
       oldZ = pos.z;
       oldHeight = height;

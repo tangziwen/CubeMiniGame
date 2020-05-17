@@ -28,6 +28,7 @@ out vec3 v_color;
 out vec3 v_bc;
 out vec3 v_heightColor;
 out vec3 v_tangent;
+out vec3 v_matBlend;
 out float[16] v_mat;
 //! [0]
 void main()
@@ -57,5 +58,6 @@ void main()
     // Calculate vertex position in screen space
     gl_Position = TU_mvpMatrix * vec4(a_position,1.0);
 	
+	v_matBlend = a_matBlend;
 
 }
