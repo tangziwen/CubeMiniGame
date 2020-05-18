@@ -218,6 +218,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 	const Vector3i min_pos = Vector3i(MIN_PADDING);
 	const Vector3i max_pos = block_size_with_padding - Vector3i(MAX_PADDING);
 	voxelPosInfo corner_positions[8];
+	vec3 corner_gradients[8];
 	voxelInfo * info[8];
 	Vector3i pos;
 	for (pos.z = min_pos.z; pos.z < max_pos.z; ++pos.z) {
@@ -277,17 +278,17 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 				// Compute normals
 				for (unsigned int i = 0; i < 8; ++i) {
 				
-					// auto p = corner_positions[i];
-					//
-					// float nx = tof(tos(get_voxel(voxels, p.x - 1, p.y, p.z, channel)));
-					// float ny = tof(tos(get_voxel(voxels, p.x, p.y - 1, p.z, channel)));
-					// float nz = tof(tos(get_voxel(voxels, p.x, p.y, p.z - 1, channel)));
-					// float px = tof(tos(get_voxel(voxels, p.x + 1, p.y, p.z, channel)));
-					// float py = tof(tos(get_voxel(voxels, p.x, p.y + 1, p.z, channel)));
-					// float pz = tof(tos(get_voxel(voxels, p.x, p.y, p.z + 1, channel)));
-					//
-					// //get_gradient_normal(nx, px, ny, py, nz, pz, cell_samples[i]);
-					// corner_gradients[i] = Vector3(nx - px, ny - py, nz - pz);
+					auto p = corner_positions[i];
+					
+					float nx = tof(tos(srcData, VOXEL_SIZE, p.v.x - 1, p.v.y, p.v.z));
+					float ny = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y - 1, p.v.z));
+					float nz = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y, p.v.z - 1));
+					float px = tof(tos(srcData, VOXEL_SIZE, p.v.x + 1, p.v.y, p.v.z));
+					float py = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y + 1, p.v.z));
+					float pz = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y, p.v.z + 1));
+					
+					//get_gradient_normal(nx, px, ny, py, nz, pz, cell_samples[i]);
+					corner_gradients[i] = vec3(nx - px, ny - py, nz - pz);
 				
 					// Undo padding here. From this point, corner positions are actual positions.
 					corner_positions[i].v = (corner_positions[i].v - min_pos) << lodLevel;
@@ -390,7 +391,9 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 						Vector3i primary = p0.v * ti0 + p1.v * ti1;
 						vec3 primaryf = primary.to_vec3() * FIXED_FACTOR;
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info)));
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info));
+						vdata.m_normal = (corner_gradients[v0] * t0 + corner_gradients[v1] * t1).normalized();
+						mesh->addVertex(vdata);
 						
 
 
@@ -402,7 +405,9 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 						Vector3i primary = p1.v;
 						vec3 primaryf = primary.to_vec3();
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(genVertexData(getVoxelVertex(primaryf, basePoint,p1.info, p1.info)));
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p1.info, p1.info));
+						vdata.m_normal = corner_gradients[v1];
+						mesh->addVertex(vdata);
 
 					} else {
 						// The vertex is either on p0 or p1
@@ -417,7 +422,9 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 						voxelPosInfo primaryP = t == 0 ? p1 : p0;
 						vec3 primaryf = primaryP.v.to_vec3();
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(genVertexData(getVoxelVertex(primaryf, basePoint,primaryP.info, primaryP.info)));
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,primaryP.info, primaryP.info));
+						vdata.m_normal = corner_gradients[t == 0 ? v1 : v0].normalized();
+						mesh->addVertex(vdata);
 					}
 
 				} // for each cell vertex
@@ -441,7 +448,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 		build_transition(basePoint, mesh, VOXEL_SIZE, srcData, dir, lodLevel);
 	}
 	
-	printf("done %d, %d\n", mesh->getIndicesSize(), mesh->getVerticesSize());
+	// printf("done %d, %d\n", mesh->getIndicesSize(), mesh->getVerticesSize());
 }
 
 
@@ -761,7 +768,9 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						}
 
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info)));
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info));
+						vdata.m_normal = (n0 * t0 + n1 * t1).normalized();
+						mesh->addVertex(vdata);
 						// if (reuse_direction & 0x8) {
 						// 	// The vertex can be re-used later
 						// 	ReuseTransitionCell &r = get_reuse_cell_2d(fx, fy);
@@ -811,7 +820,9 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						}
 
 						cell_vertex_indices[i] = mesh->getVerticesSize();
-						mesh->addVertex(genVertexData(getVoxelVertex(primaryf, basePoint,primary.info, primary.info)));
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,primary.info, primary.info));
+						vdata.m_normal = cell_gradients[index_vertex];
+						mesh->addVertex(vdata);
 
 						// // We are on a corner so the vertex will be re-usable later
 						// ReuseTransitionCell &r = get_reuse_cell_2d(fx, fy);

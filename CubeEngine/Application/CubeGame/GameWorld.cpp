@@ -374,7 +374,15 @@ void GameWorld::loadChunksAroundPlayer()
 	);
 	for(Chunk * i :m_readyToLoadArray)
 	{
-		i->load();	 
+		if(i->getPos().distance(m_player->getPos()) > 50)
+		{
+			i->load(1);	
+		}
+		else
+		{
+			i->load(0);
+		}
+		 
 	}
 	tlog("load size is %d %d",m_readyToLoadArray.size(), m_tempArray.size());
 	tlog("load chunk cost : %d", Tmisc::DurationEnd());

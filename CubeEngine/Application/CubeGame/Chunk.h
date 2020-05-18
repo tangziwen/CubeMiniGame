@@ -36,7 +36,7 @@ namespace tzw
 		void logicUpdate(float delta) override;
 		bool getIsAccpectOcTtree() const override;
 		void submitDrawCmd(RenderCommand::RenderType passType) override;
-		void load();
+		void load(int lodLevel);
 		void unload();
 		void deformSphere(vec3 pos, float value, float range = 1.0f);
 		void deformCube(vec3 pos, float value, float range = 1.0f);
@@ -52,7 +52,7 @@ namespace tzw
 	    voxelInfo getPoint(int x, int y, int z);
 		voxelInfo getPointInner(int x, int y, int z);
 	    int getIndex(int x, int y, int z);
-	    void genMesh();
+	    void genMesh(int lodLevel);
 	    void initData();
 		void checkCollide(ColliderEllipsoid * package) override;
 		void setUpTransFormation(TransformationInfo & info) override;
@@ -66,11 +66,15 @@ namespace tzw
 		bool getIsInitData();
 		State m_currenState;
 		ChunkInfo * getChunkInfo();
+		int getCurrentLod();
 	private:
+		int m_currentLOD;
 		Grass * m_grass;
 		Grass * m_grass2;
 		TreeGroup * m_tree;
 	    Mesh * m_mesh;
+		Mesh * m_meshLOD1;
+		void sampleForLod(int lodLevel, voxelInfo * out);
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);
 	    bool isInOutterRange(int i, int j, int k);

@@ -27,6 +27,7 @@ struct ChunkInfo
 	ChunkInfo(int x, int y, int z);
 	bool isLoaded;
 	voxelInfo * mcPoints;
+	voxelInfo * mcPoints_lod1;
 	void loadChunk(FILE * file);
 	void dumpChunk(FILE * f);
 	void initData();

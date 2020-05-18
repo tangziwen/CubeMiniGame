@@ -55,7 +55,7 @@ namespace tzw
 		setPos(m_basePoint);
 
 		m_mesh = nullptr;
-
+		m_meshLOD1 = nullptr;
 		m_needToUpdate = true;
 
 		m_isNeedSubmitMesh = false;
@@ -155,7 +155,7 @@ namespace tzw
 			m_isNeedSubmitMesh = false;
 
 			m_mesh->finish();
-
+			m_meshLOD1->finish();
 			if (m_rigidBody)
 			{
 				PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
@@ -203,11 +203,23 @@ namespace tzw
 		{
 			return;
 		}
-		RenderCommand command(m_mesh, m_material, passType);
-		setUpTransFormation(command.m_transInfo);
-		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-		Renderer::shared()->addRenderCommand(command);
 		auto player = GameWorld::shared()->getPlayer();
+		if(player->getPos().distance(getAABB().centre()) < 50)
+		{
+			RenderCommand command(m_mesh, m_material, passType);
+			setUpTransFormation(command.m_transInfo);
+			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+			Renderer::shared()->addRenderCommand(command);
+		}else
+		{
+
+			RenderCommand command(m_meshLOD1, m_material, passType);
+			setUpTransFormation(command.m_transInfo);
+			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+			Renderer::shared()->addRenderCommand(command);
+		}
+
+		
 		if (true)
 		{
 			// m_grass->pushCommand();
@@ -218,14 +230,16 @@ namespace tzw
 	}
 
 	void
-	Chunk::load()
+	Chunk::load(int lodLevel)
 	{
 		if (m_currenState != State::INVALID)
 			return;
+		m_currentLOD = lodLevel;
 		reCache();
 		if (!m_mesh)
 		{
 			m_mesh = new Mesh();
+			m_meshLOD1 = new Mesh();
 			m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		}
 		loading_mutex.lock();
@@ -237,12 +251,12 @@ namespace tzw
 			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]()
 			{
 				initData();
-				genMesh();
+				genMesh(lodLevel);
 			}));
 		}
 		else
 		{
-			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(); }));
+			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(lodLevel); }));
 		}
 	}
 
@@ -286,19 +300,20 @@ namespace tzw
 					if (theDist <= range)
 					{
 						float actualValue = value * ((range - theDist) / range);
-						deform(X, Y, Z, actualValue);
+						//X, Y, Z is in 0~15 range, we need add Padding
+						deform(X + MIN_PADDING, Y + MIN_PADDING, Z + MIN_PADDING, std::clamp(actualValue, -1.f, 1.f));
 					}
 				}
 			}
 		}
-		genMesh();
+		genMesh(m_currentLOD);
 
 
 		if (!m_tmpNeighborChunk.empty())
 		{
 			for (auto chunk : m_tmpNeighborChunk)
 			{
-				chunk->genMesh();
+				chunk->genMesh(chunk->m_currentLOD);
 			}
 		}
 		m_tmpNeighborChunk.clear();
@@ -328,12 +343,12 @@ namespace tzw
 				}
 			}
 		}
-		genMesh();
+		genMesh(m_currentLOD);
 		if (!m_tmpNeighborChunk.empty())
 		{
 			for (auto chunk : m_tmpNeighborChunk)
 			{
-				chunk->genMesh();
+				chunk->genMesh(chunk->m_currentLOD);
 			}
 		}
 		m_tmpNeighborChunk.clear();
@@ -368,13 +383,13 @@ namespace tzw
 				}
 			}
 		}
-		genMesh();
+		genMesh(m_currentLOD);
 
 		if (!m_tmpNeighborChunk.empty())
 		{
 			for (auto chunk : m_tmpNeighborChunk)
 			{
-				chunk->genMesh();
+				chunk->genMesh(m_currentLOD);
 			}
 		}
 		m_tmpNeighborChunk.clear();
@@ -388,16 +403,16 @@ namespace tzw
 		std::vector<int> zList;
 
 		// check is need to calculate neighbors chunk
-		if (X <= 0 || X >= MAX_BLOCK)
+		if (X <= MIN_PADDING || X >= MAX_BLOCK)
 		{
-			if (X <= 0)
+			if (X <= MIN_PADDING)
 				xList.push_back(-1);
 			else
 				xList.push_back(1);
 		}
-		if (Y <= 0 || Y >= MAX_BLOCK)
+		if (Y <= MIN_PADDING || Y >= MAX_BLOCK)
 		{
-			if (Y <= 0)
+			if (Y <= MIN_PADDING)
 				yList.push_back(-1);
 			else
 			{
@@ -405,9 +420,9 @@ namespace tzw
 			}
 		}
 
-		if (Z <= 0 || Z >= MAX_BLOCK)
+		if (Z <= MIN_PADDING || Z >= MAX_BLOCK)
 		{
-			if (Z <= 0)
+			if (Z <= MIN_PADDING)
 				zList.push_back(-1);
 			else
 				zList.push_back(1);
@@ -429,21 +444,21 @@ namespace tzw
 						int ny = Y;
 						int nz = Z;
 						if (offsetX == -1)
-							nx += MAX_BLOCK;
+							nx += (MAX_BLOCK + MIN_PADDING);
 						else if (offsetX == 1)
-							nx -= MAX_BLOCK;
+							nx -= (MAX_BLOCK + MIN_PADDING);
 						if (offsetY == -1)
 						{
-							ny += MAX_BLOCK;
+							ny += (MAX_BLOCK + MIN_PADDING);
 						}
 						else if (offsetY == 1)
 						{
-							ny -= MAX_BLOCK;
+							ny -= (MAX_BLOCK + MAX_PADDING);
 						}
 						if (offsetZ == -1)
-							nz += MAX_BLOCK;
+							nz += (MAX_BLOCK + MIN_PADDING);
 						else if (offsetZ == 1)
-							nz -= MAX_BLOCK;
+							nz -= (MAX_BLOCK + MIN_PADDING);
 						neighborChunk->setVoxelScalar(nx, ny, nz, value);
 						auto result = std::find(m_tmpNeighborChunk.begin(),
 												m_tmpNeighborChunk.end(),
@@ -540,10 +555,10 @@ namespace tzw
 	void
 	Chunk::setVoxelScalar(int x, int y, int z, float scalar, bool isAdd)
 	{
-		if (!isInOutterRange(x, y, z))
-			return;
-		int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
-		int ind = x * YtimeZ + y * (MAX_BLOCK + 1) + z;
+		// if (!isInOutterRange(x, y, z))
+		// 	return;
+		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
+		int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
 		if (isAdd)
 		{
 			m_chunkInfo->mcPoints[ind].w += scalar;
@@ -571,8 +586,8 @@ namespace tzw
 	{
 		if (!isInOutterRange(x, y, z))
 			return;
-		int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
-		int ind = x * YtimeZ + y * (MAX_BLOCK + 1) + z;
+		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
+		int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
 		m_chunkInfo->mcPoints[ind].setMat(matIndex, 0, 0, vec3(1, 0, 0));
 		m_chunkInfo->isEdit = true;
 	}
@@ -1111,7 +1126,7 @@ namespace tzw
 	bool
 	Chunk::isInInnerRange(int i, int j, int k)
 	{
-		return i > 0 && i < MAX_BLOCK && j > 0 && j < MAX_BLOCK && k > 0 &&
+		return i > MIN_PADDING && i < MAX_BLOCK && j > MIN_PADDING && j < MAX_BLOCK && k > MIN_PADDING &&
 			k < MAX_BLOCK;
 	}
 
@@ -1122,20 +1137,28 @@ namespace tzw
 	}
 
 	void
-	Chunk::genMesh()
+	Chunk::genMesh(int lodLevel)
 	{
 		if (!m_mesh)
 			return;
+		m_mesh->clear();
+		m_meshLOD1->clear();
 		// MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
 		// 												m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
 		// 												0.0f, m_lod);
+		int targetSize = MAX_BLOCK + MIN_PADDING + MAX_PADDING;
+		auto VoxelBuffer = m_chunkInfo->mcPoints;
 		TransVoxel::shared()->generateWithoutNormal(m_basePoint,
-														m_mesh, MAX_BLOCK + MIN_PADDING + MAX_PADDING, m_chunkInfo->mcPoints,
+														m_mesh, targetSize, VoxelBuffer,
 														0.0f, 0);
+		//generate LOD
+		TransVoxel::shared()->generateWithoutNormal(m_basePoint,
+														m_meshLOD1, (MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING, m_chunkInfo->mcPoints_lod1,
+														0.0f, 1);
 		if (m_mesh->isEmpty())
 			return;
 		// genNormal();
-		m_mesh->caclNormals();
+		// m_mesh->caclNormals();
 		calculateMatID();
 		loading_mutex.lock();
 		m_isNeedSubmitMesh = true;
@@ -1169,6 +1192,7 @@ namespace tzw
 				}
 			}
 		}
+		//gen material
 		for (int i = 0; i < MAX_BLOCK + MIN_PADDING + MAX_PADDING; i++)
 		{
 			for (int k = 0; k < MAX_BLOCK + MIN_PADDING + MAX_PADDING; k++)
@@ -1197,16 +1221,15 @@ namespace tzw
 												z1 - z2,
 												(points[ind]).w);
 						float slope = 1.0 - TbaseMath::clampf(
-							vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0)), 0.0f, 1.0f);
-						
-						float slope2 = vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, 1, 0));
-						auto matID = GameMap::shared()->getMat(tmpV3, slope2);
+							vec3::DotProduct(gradientVec4.toVec3().normalized(), vec3(0, -1, 0)), 0.0f, 1.0f);
+						auto matID = GameMap::shared()->getMat(tmpV3, slope);
 						// x y z
 						m_chunkInfo->mcPoints[ind].setMat(matID, 0, 0, vec3(1,0, 0));
 					}
 				}
 			}
 		}
+		sampleForLod(1, m_chunkInfo->mcPoints_lod1);
 		m_chunkInfo->isEdit = false;
 		m_chunkInfo->isLoaded = true;
 	}
@@ -1265,11 +1288,11 @@ namespace tzw
 
 	void Chunk::paint(int X, int Y, int Z, int matIndex)
 	{
-		if (!isInInnerRange(X, Y, Z))
-		{
-			paintWithNeighbor(X, Y, Z, matIndex);
-			return;
-		}
+		// if (!isInInnerRange(X, Y, Z))
+		// {
+		// 	paintWithNeighbor(X, Y, Z, matIndex);
+		// 	return;
+		// }
 		setVoxelMat(X, Y, Z, matIndex);
 	}
 
@@ -1401,7 +1424,7 @@ namespace tzw
 					// Quaternion q;
 					// rotateM.getRotation(&q);
 					// instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
- 					m_tree->m_instance.push_back(instance);
+ 					//m_tree->m_instance.push_back(instance);
 				}
 			}
 		}
@@ -1416,6 +1439,70 @@ namespace tzw
 	ChunkInfo* Chunk::getChunkInfo()
 	{
 		return m_chunkInfo;
+	}
+
+	int Chunk::getCurrentLod()
+	{
+		return m_currentLOD;
+	}
+
+	void Chunk::sampleForLod(int lodLevel, voxelInfo* out)
+	{
+		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
+		int lodSize = (MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING;
+		float ratio = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * 1.f / lodSize;
+		//sample for lod
+		for(int i = 0; i < lodSize; i++) 
+		{
+			for(int j = 0; j < lodSize; j++)
+			{
+				for(int k = 0; k < lodSize; k++)
+				{
+					int x = floor(2 * i);
+					int y = floor(2 * j);
+					int z = floor(2 * k);
+					if(i<1)
+					{
+						x = 0;
+					}
+					if(i==1)
+					{
+						x = 1;
+					}
+					if(i > MAX_BLOCK>>1)
+					{
+						x = (lodSize - i - 1) + MAX_BLOCK;
+					}
+					if(j<1)
+					{
+						y = 0;
+					}
+					if(j==1)
+					{
+						y = 1;
+					}
+					if(j > MAX_BLOCK>>1)
+					{
+						y = (lodSize - j -1) + MAX_BLOCK;
+					}
+					if(k<1)
+					{
+						z = 0;
+					}
+					if(k==1)
+					{
+						z = 1;
+					}
+					if(k > MAX_BLOCK>>1)
+					{
+						z = (lodSize - k - 1) + MAX_BLOCK;
+					}
+					int indLOD = i *(lodSize * lodSize) + j * (lodSize) + k;
+					int ind = x *(YtimeZ) + y * (MAX_BLOCK  + MIN_PADDING + MAX_PADDING) + z;
+					out[indLOD] =m_chunkInfo->mcPoints[ind];//std::clamp(h - pos.y, -1.f, 1.f);
+				}
+			}
+		}
 	}
 
 	bool
@@ -1459,9 +1546,9 @@ namespace tzw
 		vec3 minP = vec3(-99999, -99999, -99999);
 		for (size_t i = 0; i < size; i += 3)
 		{
-			if (ray.intersectTriangle(m_mesh->m_vertices[i + 2].m_pos,
-									m_mesh->m_vertices[i + 1].m_pos,
-									m_mesh->m_vertices[i].m_pos,
+			if (ray.intersectTriangle(m_mesh->m_vertices[m_mesh->m_indices[i + 2]].m_pos,
+									m_mesh->m_vertices[m_mesh->m_indices[i + 1]].m_pos,
+									m_mesh->m_vertices[m_mesh->m_indices[i]].m_pos,
 									&t))
 			{
 				auto tmp = ray.origin() + ray.direction() * t;

@@ -95,6 +95,8 @@ void ChunkInfo::initData()
 	// mcPoints = new voxelInfo[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
 
 	mcPoints = new voxelInfo[(MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING)];
+
+	mcPoints_lod1 = new voxelInfo[((MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING)];
 }
 
 
@@ -274,10 +276,10 @@ GameMap::getDensity(vec3 pos)
       static double oldZ = -99999999.0;
       static float oldHeight = 0.0;
       if (fabs(pos.x - oldX) < 0.00001 && fabs(pos.z - oldZ) < 0.00001) {
-        return std::clamp ((pos.y - oldHeight) , -1.f, 1.f);
+        return pos.y - oldHeight;//std::clamp ((pos.y - oldHeight) * 0.01f , -1.f, 1.f);
       }
       float height = getNoiseValue(pos.x, 0.0, pos.z);
-      float delta = std::clamp ((pos.y - height), -1.f, 1.f);
+      float delta = pos.y - height;//std::clamp ((pos.y - height) * 0.01f, -1.f, 1.f);
       oldX = pos.x;
       oldZ = pos.z;
       oldHeight = height;
@@ -317,7 +319,7 @@ int GameMap::getMat(vec3 pos, float slope)
 {
 	int mat = 15;//default is dirt material
 
-	if(slope > 0.16)//cliff
+	if(slope > 0.1)//cliff
 	{
 		mat = 5;
 	}else// or plane
