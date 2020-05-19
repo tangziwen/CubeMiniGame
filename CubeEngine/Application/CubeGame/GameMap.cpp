@@ -266,8 +266,7 @@ GameMap::isSurface(vec3 pos)
   }
 }
 
-float
-GameMap::getDensity(vec3 pos)
+unsigned char GameMap::getDensity(vec3 pos)
 {
 
   switch (m_mapType) {
@@ -276,14 +275,15 @@ GameMap::getDensity(vec3 pos)
       static double oldZ = -99999999.0;
       static float oldHeight = 0.0;
       if (fabs(pos.x - oldX) < 0.00001 && fabs(pos.z - oldZ) < 0.00001) {
-        return pos.y - oldHeight;//std::clamp ((pos.y - oldHeight) * 0.01f , -1.f, 1.f);
+      	auto w = std::clamp ((pos.y - oldHeight) * 0.1f , -1.f, 1.f);
+        return (w * 0.5f + 0.5f) * 255.f;
       }
       float height = getNoiseValue(pos.x, 0.0, pos.z);
-      float delta = pos.y - height;//std::clamp ((pos.y - height) * 0.01f, -1.f, 1.f);
+      float delta = std::clamp ((pos.y - height) * 0.1f, -1.f, 1.f);
       oldX = pos.x;
       oldZ = pos.z;
       oldHeight = height;
-      return delta;
+      return (delta * 0.5f + 0.5f) * 255.f;
     }
     case MapType::Plain: {
       float height = maxHeight();

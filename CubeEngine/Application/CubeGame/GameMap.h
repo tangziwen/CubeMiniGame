@@ -11,7 +11,7 @@ class Chunk;
 
 struct voxelInfo
 {
-	float w;
+	unsigned char w;
 	unsigned short index;
 	MatBlendInfo matInfo;
 	void setV4(vec4 v);
@@ -52,7 +52,7 @@ public:
 	double getNoiseValue(float x, float y, float z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
-    float getDensity(vec3 pos);
+    unsigned char getDensity(vec3 pos);
 	float getHeight(vec2 posXZ);
 	vec3 getNormal(vec2 posXZ);
 	int getMat(vec3 pos, float slope);

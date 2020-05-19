@@ -206,7 +206,7 @@ namespace tzw
 		auto player = GameWorld::shared()->getPlayer();
 		auto pos = player->getPos();
 		auto centre = getAABB().centre();
-		if(vec3(pos.x, 0, pos.z).distance(vec3(centre.x, 0, centre.z)) < 15.0f)
+		if(vec3(pos.x, 0, pos.z).distance(vec3(centre.x, 0, centre.z)) < 50.0f)
 		{
 			RenderCommand command(m_mesh, m_material, passType);
 			setUpTransFormation(command.m_transInfo);
@@ -487,15 +487,20 @@ BAAAABB
 	{
 		// if (!isInOutterRange(x, y, z))
 		// 	return;
+
+		//扩展到Short，为了支持+-255的操作
+		short scalarInShort = scalar * 128;
+
 		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
 		int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
 		if (isAdd)
 		{
-			m_chunkInfo->mcPoints[ind].w += scalar;
+			short w = m_chunkInfo->mcPoints[ind].w;
+			m_chunkInfo->mcPoints[ind].w = std::clamp(w + scalarInShort, 0, 255);
 		}
 		else
 		{
-			m_chunkInfo->mcPoints[ind].w = scalar;
+			m_chunkInfo->mcPoints[ind].w = std::clamp(scalarInShort, short(0), short(255));
 		}
 		m_chunkInfo->isEdit = true;
 	}

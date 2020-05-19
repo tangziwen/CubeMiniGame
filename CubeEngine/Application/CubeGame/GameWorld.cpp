@@ -215,7 +215,7 @@ void GameWorld::loadGame(std::string filePath)
 		 
 		GameMap::shared()->setMinHeight(3);
 		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "Data/PlayerData/Save/Terrain.bin");
-		float height = GameMap::shared()->getDensity(vec3(0, 0, 0));
+		float height = GameMap::shared()->getHeight(vec2(0, 0));
 		m_player->setPos(vec3(0, height + 3, 0));
 		loadChunksAroundPlayer();
 	}));

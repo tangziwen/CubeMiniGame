@@ -178,9 +178,9 @@ inline float tof(int8_t v) {
 int8_t tos(voxelInfo * info, int THE_SIZE, int x, int y, int z)
 {
 	int theIndex = x * THE_SIZE * THE_SIZE + y * THE_SIZE + z;
-	float w = std::clamp(info[theIndex].w, -1.f, 1.f);
+	unsigned char w = info[theIndex].w;//std::clamp(info[theIndex].w, -1.f, 1.f);
 	//to 0, 255
-	uint8_t a = 255 - (w * 0.5f + 0.5f) * 255.f;
+	uint8_t a = 255 - w;//(w * 0.5f + 0.5f) * 255.f;
 	return a - 128;
 }
 int8_t tos(voxelInfo * info, int BLOCKSIZE, Vector3i v)
