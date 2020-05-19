@@ -599,7 +599,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 			cell_positions[0xB] = cell_positions[6];
 			cell_positions[0xC] = cell_positions[8];
 
-			for(int i = 0; i < 12; i++)
+			for(int i = 0; i < 13; i++)
 			{
 				cell_positions[i].info = extractVoxel(srcData, VOXEL_SIZE, cell_positions[i].v);
 			}
