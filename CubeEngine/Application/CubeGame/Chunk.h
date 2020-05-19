@@ -41,8 +41,7 @@ namespace tzw
 		void deformSphere(vec3 pos, float value, float range = 1.0f);
 		void deformCube(vec3 pos, float value, float range = 1.0f);
 		void paintSphere(vec3 pos, int matIndex, float range = 1.0f);
-	    void deformWithNeighbor(int X, int Y, int Z, float value);
-		void paintWithNeighbor(int X, int Y, int Z, int matIndex);
+	    void deformWithNeighbor(int X, int Y, int Z, std::function<void(Chunk *, int , int ,int)>neighborTrigger);
 	    void setVoxelScalar(int x, int y, int z, float scalar, bool isAdd = true);
 	    void addVoexlScalar(int x, int y, int z, float scalar);
 		void setVoxelMat(int x, int y, int z, int matIndex, bool isAdd = true);

@@ -204,7 +204,9 @@ namespace tzw
 			return;
 		}
 		auto player = GameWorld::shared()->getPlayer();
-		if(player->getPos().distance(getAABB().centre()) < 50)
+		auto pos = player->getPos();
+		auto centre = getAABB().centre();
+		if(vec3(pos.x, 0, pos.z).distance(vec3(centre.x, 0, centre.z)) < 15.0f)
 		{
 			RenderCommand command(m_mesh, m_material, passType);
 			setUpTransFormation(command.m_transInfo);
@@ -219,7 +221,6 @@ namespace tzw
 			Renderer::shared()->addRenderCommand(command);
 		}
 
-		
 		if (true)
 		{
 			// m_grass->pushCommand();
@@ -378,7 +379,8 @@ namespace tzw
 						.distance(pos);
 					if (theDist <= range)
 					{
-						paint(X, Y, Z, matIndex);
+						//X, Y, Z is in 0~15 range, we need add Padding
+						paint(X + MIN_PADDING, Y + MIN_PADDING, Z + MIN_PADDING, matIndex);
 					}
 				}
 			}
@@ -394,25 +396,30 @@ namespace tzw
 		}
 		m_tmpNeighborChunk.clear();
 	}
-
+/*
+边界情况如下，B是Padding，左1 右2 A是实际内容,
+相邻区域的A互相不重叠，但相邻区域间的A和B会相互重叠
+BAAAABB
+    BAAAABB
+*/				
 	void
-	Chunk::deformWithNeighbor(int X, int Y, int Z, float value)
+	Chunk::deformWithNeighbor(int X, int Y, int Z, std::function<void(Chunk *, int , int ,int)>neighborTrigger)
 	{
 		std::vector<int> xList;
 		std::vector<int> yList;
 		std::vector<int> zList;
 
 		// check is need to calculate neighbors chunk
-		if (X <= MIN_PADDING || X >= MAX_BLOCK)
+		if (X <= MIN_PADDING + 1 || X >= MAX_BLOCK)
 		{
-			if (X <= MIN_PADDING)
+			if (X <= MIN_PADDING + 1)
 				xList.push_back(-1);
 			else
 				xList.push_back(1);
 		}
-		if (Y <= MIN_PADDING || Y >= MAX_BLOCK)
+		if (Y <= MIN_PADDING + 1 || Y >= MAX_BLOCK)
 		{
-			if (Y <= MIN_PADDING)
+			if (Y <= MIN_PADDING + 1)
 				yList.push_back(-1);
 			else
 			{
@@ -420,9 +427,9 @@ namespace tzw
 			}
 		}
 
-		if (Z <= MIN_PADDING || Z >= MAX_BLOCK)
+		if (Z <= MIN_PADDING + 1 || Z >= MAX_BLOCK)
 		{
-			if (Z <= MIN_PADDING)
+			if (Z <= MIN_PADDING + 1)
 				zList.push_back(-1);
 			else
 				zList.push_back(1);
@@ -444,100 +451,23 @@ namespace tzw
 						int ny = Y;
 						int nz = Z;
 						if (offsetX == -1)
-							nx += (MAX_BLOCK + MIN_PADDING);
+							nx += (MAX_BLOCK);
 						else if (offsetX == 1)
-							nx -= (MAX_BLOCK + MIN_PADDING);
+							nx -= (MAX_BLOCK);
 						if (offsetY == -1)
 						{
-							ny += (MAX_BLOCK + MIN_PADDING);
+							ny += (MAX_BLOCK);
 						}
 						else if (offsetY == 1)
 						{
-							ny -= (MAX_BLOCK + MAX_PADDING);
+							ny -= (MAX_BLOCK);
 						}
 						if (offsetZ == -1)
-							nz += (MAX_BLOCK + MIN_PADDING);
+							nz += (MAX_BLOCK);
 						else if (offsetZ == 1)
-							nz -= (MAX_BLOCK + MIN_PADDING);
-						neighborChunk->setVoxelScalar(nx, ny, nz, value);
-						auto result = std::find(m_tmpNeighborChunk.begin(),
-												m_tmpNeighborChunk.end(),
-												neighborChunk);
-						if (result == m_tmpNeighborChunk.end() && neighborChunk != this &&
-							neighborChunk != nullptr)
-						{
-							m_tmpNeighborChunk.push_back(neighborChunk);
-						}
-					}
-				}
-			}
-		}
-	}
-
-	void Chunk::paintWithNeighbor(int X, int Y, int Z, int matIndex)
-	{
-		std::vector<int> xList;
-		std::vector<int> yList;
-		std::vector<int> zList;
-
-		// check is need to calculate neighbors chunk
-		if (X <= 0 || X >= MAX_BLOCK)
-		{
-			if (X <= 0)
-				xList.push_back(-1);
-			else
-				xList.push_back(1);
-		}
-		if (Y <= 0 || Y >= MAX_BLOCK)
-		{
-			if (Y <= 0)
-				yList.push_back(-1);
-			else
-			{
-				yList.push_back(1);
-			}
-		}
-
-		if (Z <= 0 || Z >= MAX_BLOCK)
-		{
-			if (Z <= 0)
-				zList.push_back(-1);
-			else
-				zList.push_back(1);
-		}
-		xList.push_back(0);
-		yList.push_back(0);
-		zList.push_back(0);
-		for (int offsetX : xList)
-		{
-			for (int offsetY : yList)
-			{
-				for (int offsetZ : zList)
-				{
-					auto neighborChunk = GameWorld::shared()->getChunk(
-						this->x + offsetX, this->y + offsetY, this->z + offsetZ);
-					if (neighborChunk)
-					{
-						int nx = X;
-						int ny = Y;
-						int nz = Z;
-						if (offsetX == -1)
-							nx += MAX_BLOCK;
-						else if (offsetX == 1)
-							nx -= MAX_BLOCK;
-						if (offsetY == -1)
-						{
-							ny += MAX_BLOCK;
-						}
-						else if (offsetY == 1)
-						{
-							ny -= MAX_BLOCK;
-						}
-						if (offsetZ == -1)
-							nz += MAX_BLOCK;
-						else if (offsetZ == 1)
-							nz -= MAX_BLOCK;
-						neighborChunk->setVoxelMat(nx, ny, nz, matIndex);
+							nz -= (MAX_BLOCK);
+						neighborTrigger(neighborChunk,nx, ny, nz);
+						//neighborChunk->setVoxelScalar(nx, ny, nz, value);
 						auto result = std::find(m_tmpNeighborChunk.begin(),
 												m_tmpNeighborChunk.end(),
 												neighborChunk);
@@ -584,8 +514,8 @@ namespace tzw
 
 	void Chunk::setVoxelMat(int x, int y, int z, int matIndex, bool isAdd)
 	{
-		if (!isInOutterRange(x, y, z))
-			return;
+		//if (!isInOutterRange(x, y, z))
+			//return;
 		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
 		int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
 		m_chunkInfo->mcPoints[ind].setMat(matIndex, 0, 0, vec3(1, 0, 0));
@@ -1126,7 +1056,7 @@ namespace tzw
 	bool
 	Chunk::isInInnerRange(int i, int j, int k)
 	{
-		return i > MIN_PADDING && i < MAX_BLOCK && j > MIN_PADDING && j < MAX_BLOCK && k > MIN_PADDING &&
+		return i > MIN_PADDING + 1 && i < MAX_BLOCK && j > MIN_PADDING + 1 && j < MAX_BLOCK && k > MIN_PADDING + 1 &&
 			k < MAX_BLOCK;
 	}
 
@@ -1143,6 +1073,8 @@ namespace tzw
 			return;
 		m_mesh->clear();
 		m_meshLOD1->clear();
+		//lod Data
+		sampleForLod(1, m_chunkInfo->mcPoints_lod1);
 		// MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
 		// 												m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
 		// 												0.0f, m_lod);
@@ -1229,7 +1161,6 @@ namespace tzw
 				}
 			}
 		}
-		sampleForLod(1, m_chunkInfo->mcPoints_lod1);
 		m_chunkInfo->isEdit = false;
 		m_chunkInfo->isLoaded = true;
 	}
@@ -1280,7 +1211,7 @@ namespace tzw
 	{
 		if (!isInInnerRange(X, Y, Z))
 		{
-			deformWithNeighbor(X, Y, Z, actualVal);
+			deformWithNeighbor(X, Y, Z, [actualVal](Chunk * c, int theX, int theY, int theZ){c->setVoxelScalar(theX, theY, theZ,actualVal);});
 			return;
 		}
 		setVoxelScalar(X, Y, Z, actualVal);
@@ -1288,11 +1219,12 @@ namespace tzw
 
 	void Chunk::paint(int X, int Y, int Z, int matIndex)
 	{
-		// if (!isInInnerRange(X, Y, Z))
-		// {
-		// 	paintWithNeighbor(X, Y, Z, matIndex);
-		// 	return;
-		// }
+		if (!isInInnerRange(X, Y, Z))
+		{
+			//paintWithNeighbor(X, Y, Z, matIndex);
+			deformWithNeighbor(X, Y, Z, [matIndex](Chunk * c, int theX, int theY, int theZ){c->setVoxelMat(theX, theY, theZ,matIndex);});
+			return;
+		}
 		setVoxelMat(X, Y, Z, matIndex);
 	}
 
@@ -1448,6 +1380,7 @@ namespace tzw
 
 	void Chunk::sampleForLod(int lodLevel, voxelInfo* out)
 	{
+		int originalSize = MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
 		int lodSize = (MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING;
 		float ratio = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * 1.f / lodSize;
@@ -1461,41 +1394,30 @@ namespace tzw
 					int x = floor(2 * i);
 					int y = floor(2 * j);
 					int z = floor(2 * k);
-					if(i<1)
+					if(i<=1)
 					{
-						x = 0;
-					}
-					if(i==1)
-					{
-						x = 1;
+						x = i;
 					}
 					if(i > MAX_BLOCK>>1)
 					{
-						x = (lodSize - i - 1) + MAX_BLOCK;
+						x = originalSize - (lodSize - i);
 					}
-					if(j<1)
+					if(j<=1)
 					{
-						y = 0;
+						y = j;
 					}
-					if(j==1)
-					{
-						y = 1;
-					}
+
 					if(j > MAX_BLOCK>>1)
 					{
-						y = (lodSize - j -1) + MAX_BLOCK;
+						y = originalSize - (lodSize - j);
 					}
-					if(k<1)
+					if(k<=1)
 					{
-						z = 0;
-					}
-					if(k==1)
-					{
-						z = 1;
+						z = k;
 					}
 					if(k > MAX_BLOCK>>1)
 					{
-						z = (lodSize - k - 1) + MAX_BLOCK;
+						z = originalSize - (lodSize - k);
 					}
 					int indLOD = i *(lodSize * lodSize) + j * (lodSize) + k;
 					int ind = x *(YtimeZ) + y * (MAX_BLOCK  + MIN_PADDING + MAX_PADDING) + z;
@@ -1523,9 +1445,9 @@ namespace tzw
 		float t = 0;
 		for (size_t i = 0; i < size; i += 3)
 		{
-			if (ray.intersectTriangle(m_mesh->m_vertices[i].m_pos,
-									m_mesh->m_vertices[i + 1].m_pos,
-									m_mesh->m_vertices[i + 2].m_pos,
+			if (ray.intersectTriangle(m_mesh->m_vertices[m_mesh->m_indices[i]].m_pos,
+									m_mesh->m_vertices[m_mesh->m_indices[i + 1]].m_pos,
+									m_mesh->m_vertices[m_mesh->m_indices[i + 2]].m_pos,
 									&t))
 			{
 				result = ray.origin() + ray.direction() * t;
