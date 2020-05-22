@@ -170,11 +170,6 @@ namespace tzw
 			PhysicsMgr::shared()->addRigidBody(m_rigidBody);
 			loading_mutex.lock();
 			m_currenState = State::LOADED;
-			//generate tree
-
-			if (m_mesh->getVerticesSize() > 0 && !m_isTreeloaded)
-			{
-			}
 			loading_mutex.unlock();
 		}
 	}
@@ -1109,6 +1104,7 @@ BAAAABB
 		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
 		vec4 verts;
 		vec3 tmpV3;
+		//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理
 		for (int i = 0; i < MAX_BLOCK + MIN_PADDING + MAX_PADDING; i++)
 		{
 			for (int k = 0; k < MAX_BLOCK + MIN_PADDING + MAX_PADDING; k++)
@@ -1116,7 +1112,7 @@ BAAAABB
 				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
-					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) +
+					verts = vec4((i - MIN_PADDING) * BLOCK_SIZE, (j - MIN_PADDING) * BLOCK_SIZE, -1 * (k - MIN_PADDING) * BLOCK_SIZE, -1) +
 						vec4(m_basePoint, 0);
 					tmpV3.x = verts.x;
 					tmpV3.y = verts.y;
@@ -1129,6 +1125,7 @@ BAAAABB
 				}
 			}
 		}
+		//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理
 		//gen material
 		for (int i = 0; i < MAX_BLOCK + MIN_PADDING + MAX_PADDING; i++)
 		{
@@ -1138,7 +1135,7 @@ BAAAABB
 				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
-					verts = vec4(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE, -1) +
+					verts = vec4((i - MIN_PADDING) * BLOCK_SIZE, (j - MIN_PADDING) * BLOCK_SIZE, -1 * (k - MIN_PADDING) * BLOCK_SIZE, -1) +
 						vec4(m_basePoint, 0);
 					tmpV3.x = verts.x;
 					tmpV3.y = verts.y;
@@ -1399,7 +1396,8 @@ BAAAABB
 					int x = floor(2 * i);
 					int y = floor(2 * j);
 					int z = floor(2 * k);
-					if(i<=1)
+
+					if(i<= MIN_PADDING)
 					{
 						x = i;
 					}
@@ -1407,7 +1405,7 @@ BAAAABB
 					{
 						x = originalSize - (lodSize - i);
 					}
-					if(j<=1)
+					if(j<= MIN_PADDING)
 					{
 						y = j;
 					}
@@ -1416,7 +1414,7 @@ BAAAABB
 					{
 						y = originalSize - (lodSize - j);
 					}
-					if(k<=1)
+					if(k<= MIN_PADDING)
 					{
 						z = k;
 					}
@@ -1424,9 +1422,11 @@ BAAAABB
 					{
 						z = originalSize - (lodSize - k);
 					}
+
 					int indLOD = i *(lodSize * lodSize) + j * (lodSize) + k;
 					int ind = x *(YtimeZ) + y * (MAX_BLOCK  + MIN_PADDING + MAX_PADDING) + z;
 					out[indLOD] =m_chunkInfo->mcPoints[ind];//std::clamp(h - pos.y, -1.f, 1.f);
+					out[indLOD].index = indLOD;
 				}
 			}
 		}

@@ -1,5 +1,5 @@
 #include "GameConfig.h"
-float BLOCK_SIZE = 1.5f;
+float BLOCK_SIZE = 1.0f;
 int MAX_BLOCK = 16;
 int GAME_MAP_WIDTH = 64;
 int GAME_MAP_DEPTH = 64;

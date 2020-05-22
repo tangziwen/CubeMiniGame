@@ -441,7 +441,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 			} // x
 		} // y
 	} // z
-	if(!lodLevel) return;
+	//if(!lodLevel) return;
 
 	for (int dir = 0; dir < Cube::SIDE_COUNT; ++dir) 
 	{
@@ -599,10 +599,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 			cell_positions[0xB] = cell_positions[6];
 			cell_positions[0xC] = cell_positions[8];
 
-			for(int i = 0; i < 13; i++)
-			{
-				cell_positions[i].info = extractVoxel(srcData, VOXEL_SIZE, cell_positions[i].v);
-			}
+
 
 			
 			//  6---7---8
@@ -647,6 +644,10 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 			cell_gradients[0xB] = cell_gradients[6];
 			cell_gradients[0xC] = cell_gradients[8];
 
+			for(int i = 0; i < 13; i++)
+			{
+				cell_positions[i].info = extractVoxel(srcData, VOXEL_SIZE, cell_positions[i].v);
+			}
 			// Convert grid positions into actual positions, since we don't need to use them to access the buffer anymore
 			for (unsigned int i = 0; i < 13; ++i) {
 				cell_positions[i].v = (cell_positions[i].v - min_pos) << lodLevel;
@@ -770,6 +771,14 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						cell_vertex_indices[i] = mesh->getVerticesSize();
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info));
 						vdata.m_normal = (n0 * t0 + n1 * t1).normalized();
+						if (lodLevel > 0)
+						{
+							vdata.m_color = vec4(1, 0, 1, 1);
+						}
+						else
+						{
+							vdata.m_color = vec4(0, 1, 0, 1);
+						}
 						mesh->addVertex(vdata);
 						// if (reuse_direction & 0x8) {
 						// 	// The vertex can be re-used later
@@ -822,6 +831,14 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						cell_vertex_indices[i] = mesh->getVerticesSize();
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,primary.info, primary.info));
 						vdata.m_normal = cell_gradients[index_vertex];
+						if (lodLevel > 0)
+						{
+							vdata.m_color = vec4(1, 0, 1, 1);
+						}
+						else
+						{
+							vdata.m_color = vec4(0, 1, 0, 1);
+						}
 						mesh->addVertex(vdata);
 
 						// // We are on a corner so the vertex will be re-usable later
@@ -835,7 +852,11 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 			unsigned int triangle_count = cell_data.GetTriangleCount();
 
 			for (unsigned int ti = 0; ti < triangle_count; ++ti) {
-				if (flip_triangles) {
+					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);
+					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
+					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 2)]);
+				/*
+				if (!flip_triangles) {
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 2)]);
@@ -844,6 +865,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);
 				}
+				*/
 			}
 
 		} // for x
