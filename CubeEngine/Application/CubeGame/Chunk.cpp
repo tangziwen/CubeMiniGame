@@ -1074,7 +1074,7 @@ BAAAABB
 		m_mesh->clear();
 		m_meshLOD1->clear();
 		//lod Data
-		sampleForLod(1, m_chunkInfo->mcPoints_lod1);
+		//sampleForLod(1, m_chunkInfo->mcPoints_lod1);
 		// MarchingCubes::shared()->generateWithoutNormal(m_basePoint,
 		// 												m_mesh, MAX_BLOCK, MAX_BLOCK, MAX_BLOCK, m_chunkInfo->mcPoints,
 		// 												0.0f, m_lod);
@@ -1104,6 +1104,7 @@ BAAAABB
 		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
 		vec4 verts;
 		vec3 tmpV3;
+		int offset = MIN_PADDING;
 		//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理
 		for (int i = 0; i < MAX_BLOCK + MIN_PADDING + MAX_PADDING; i++)
 		{
@@ -1112,7 +1113,7 @@ BAAAABB
 				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
-					verts = vec4((i - MIN_PADDING) * BLOCK_SIZE, (j - MIN_PADDING) * BLOCK_SIZE, -1 * (k - MIN_PADDING) * BLOCK_SIZE, -1) +
+					verts = vec4((i - offset) * BLOCK_SIZE, (j - offset) * BLOCK_SIZE, -1 * (k - offset) * BLOCK_SIZE, -1) +
 						vec4(m_basePoint, 0);
 					tmpV3.x = verts.x;
 					tmpV3.y = verts.y;
@@ -1135,7 +1136,7 @@ BAAAABB
 				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
-					verts = vec4((i - MIN_PADDING) * BLOCK_SIZE, (j - MIN_PADDING) * BLOCK_SIZE, -1 * (k - MIN_PADDING) * BLOCK_SIZE, -1) +
+					verts = vec4((i - offset) * BLOCK_SIZE, (j - offset) * BLOCK_SIZE, -1 * (k - offset) * BLOCK_SIZE, -1) +
 						vec4(m_basePoint, 0);
 					tmpV3.x = verts.x;
 					tmpV3.y = verts.y;
@@ -1163,6 +1164,35 @@ BAAAABB
 				}
 			}
 		}
+
+		//for LOD 1
+		//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理,注意LOD的元素涉及到前一个的也是在LOD的范围内的
+		int lodLevel = 1;
+		int stride = 1 << lodLevel;
+		for (int i = 0; i < (MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING; i++)
+		{
+			for (int k = 0; k < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING; k++)
+			{
+				for (int j = 0; j < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING;
+					j++) // Y in the most inner loop, cache friendly
+				{
+					int BlockROW = ((MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING);
+					verts = vec4((i - offset) * BLOCK_SIZE * stride, (j - offset) * BLOCK_SIZE * stride, -1 * (k - offset) * BLOCK_SIZE * stride, -1) +
+						vec4(m_basePoint, 0);
+					tmpV3.x = verts.x;
+					tmpV3.y = verts.y;
+					tmpV3.z = verts.z;
+					verts.w = GameMap::shared()->getDensity(tmpV3);
+					// x y z
+					int ind = i * BlockROW*BlockROW + j * BlockROW + k;
+					m_chunkInfo->mcPoints_lod1[ind].setV4(verts);
+					m_chunkInfo->mcPoints_lod1[ind].index = ind;
+					m_chunkInfo->mcPoints_lod1[ind].setMat(9, 0, 0, vec3(1,0, 0));
+				}
+			}
+		}
+
+		sampleForLod(1, m_chunkInfo->mcPoints_lod1);
 		m_chunkInfo->isEdit = false;
 		m_chunkInfo->isLoaded = true;
 	}
@@ -1382,47 +1412,22 @@ BAAAABB
 
 	void Chunk::sampleForLod(int lodLevel, voxelInfo* out)
 	{
+		return;
 		int originalSize = MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
-		int lodSize = (MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING;
-		float ratio = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * 1.f / lodSize;
+		int innerLODSize = (MAX_BLOCK>>1);
+		int lodSize = innerLODSize + MIN_PADDING + MAX_PADDING;
 		//sample for lod
-		for(int i = 0; i < lodSize; i++) 
+		for(int i = MIN_PADDING; i <= innerLODSize; i++) 
 		{
-			for(int j = 0; j < lodSize; j++)
+			for(int j = MIN_PADDING; j <= innerLODSize; j++)
 			{
-				for(int k = 0; k < lodSize; k++)
+				for(int k = MIN_PADDING; k <= innerLODSize; k++)
 				{
-					int x = floor(2 * i);
-					int y = floor(2 * j);
-					int z = floor(2 * k);
-
-					if(i<= MIN_PADDING)
-					{
-						x = i;
-					}
-					if(i > MAX_BLOCK>>1)
-					{
-						x = originalSize - (lodSize - i);
-					}
-					if(j<= MIN_PADDING)
-					{
-						y = j;
-					}
-
-					if(j > MAX_BLOCK>>1)
-					{
-						y = originalSize - (lodSize - j);
-					}
-					if(k<= MIN_PADDING)
-					{
-						z = k;
-					}
-					if(k > MAX_BLOCK>>1)
-					{
-						z = originalSize - (lodSize - k);
-					}
-
+					int x = i * 2 - 1;
+					int y = j * 2 - 1;
+					int z = k * 2 -1;
+					int tag = 0;
 					int indLOD = i *(lodSize * lodSize) + j * (lodSize) + k;
 					int ind = x *(YtimeZ) + y * (MAX_BLOCK  + MIN_PADDING + MAX_PADDING) + z;
 					out[indLOD] =m_chunkInfo->mcPoints[ind];//std::clamp(h - pos.y, -1.f, 1.f);

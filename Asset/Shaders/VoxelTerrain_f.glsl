@@ -362,7 +362,7 @@ vec3 CalcBumpedNormal(vec3 normalMapColor)
 }
 void main()
 {
-  gl_FragData[0] = vec4(pow(getTerrainTex(GrassTex).rgb, vec3(2.2)), 1.0);
+  gl_FragData[0] = vec4(pow(getTerrainTex(GrassTex).rgb * v_color.rgb, vec3(2.2)), 1.0);
   gl_FragData[1] = vec4(v_position,1.0);
   gl_FragData[2] = vec4(CalcBumpedNormal(getTerrainTex(NormalTex).rgb),1.0);
   gl_FragData[3] = vec4(getTerrainTex(RoughnessTex).r,0.0,0.0,1.0);
