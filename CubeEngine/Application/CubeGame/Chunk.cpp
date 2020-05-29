@@ -50,7 +50,7 @@ namespace tzw
 		m_offset = GameWorld::shared()->getMapOffset();
 
 		m_basePoint =
-			vec3(x * g_chunkSize, y * g_chunkSize, -1 * z * g_chunkSize) + m_offset;
+			vec3(x * g_chunkSize, y * g_chunkSize, -1 * z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE,LOD_SHIFT * BLOCK_SIZE);
 
 		setPos(m_basePoint);
 
@@ -302,6 +302,8 @@ namespace tzw
 				}
 			}
 		}
+		m_chunkInfo->isLoaded = false;
+		initData();
 		genMesh(m_currentLOD);
 
 
@@ -309,6 +311,8 @@ namespace tzw
 		{
 			for (auto chunk : m_tmpNeighborChunk)
 			{
+				chunk->m_chunkInfo->isLoaded = false;
+				chunk->initData();
 				chunk->genMesh(chunk->m_currentLOD);
 			}
 		}
@@ -478,24 +482,29 @@ BAAAABB
 	}
 
 	void
-	Chunk::setVoxelScalar(int x, int y, int z, float scalar, bool isAdd)
+	Chunk::setVoxelScalar(int i, int j, int k, float scalar, bool isAdd)
 	{
 		// if (!isInOutterRange(x, y, z))
 		// 	return;
 
 		//扩展到Short，为了支持+-255的操作
 		short scalarInShort = scalar * 128;
-
-		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
-		int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
+		int offset = MIN_PADDING;
 		if (isAdd)
 		{
-			short w = m_chunkInfo->mcPoints[ind].w;
-			m_chunkInfo->mcPoints[ind].w = std::clamp(w + scalarInShort, 0, 255);
+
+			
+			auto w = GameMap::shared()->getVoxel(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT);
+			//short w = m_chunkInfo->mcPoints[ind].w;
+			//m_chunkInfo->mcPoints[ind].w = std::clamp(w + scalarInShort, 0, 255);
+
+			GameMap::shared()->setVoxel(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT, std::clamp(w + scalarInShort, 0, 255));
 		}
 		else
 		{
-			m_chunkInfo->mcPoints[ind].w = std::clamp(scalarInShort, short(0), short(255));
+			//m_chunkInfo->mcPoints[ind].w = std::clamp(scalarInShort, short(0), short(255));
+
+			GameMap::shared()->setVoxel(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT, std::clamp(scalarInShort, short(0), short(255)));
 		}
 		m_chunkInfo->isEdit = true;
 	}
@@ -1113,15 +1122,10 @@ BAAAABB
 				for (int j = 0; j < MAX_BLOCK + MIN_PADDING + MAX_PADDING;
 					j++) // Y in the most inner loop, cache friendly
 				{
-					verts = vec4((i - offset) * BLOCK_SIZE, (j - offset) * BLOCK_SIZE, -1 * (k - offset) * BLOCK_SIZE, -1) +
-						vec4(m_basePoint, 0);
-					tmpV3.x = verts.x;
-					tmpV3.y = verts.y;
-					tmpV3.z = verts.z;
-					verts.w = GameMap::shared()->getDensity(tmpV3);
+					auto w = GameMap::shared()->getDensityI(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT);
 					// x y z
 					int ind = i * YtimeZ + j * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + k;
-					m_chunkInfo->mcPoints[ind].setV4(verts);
+					m_chunkInfo->mcPoints[ind].w = w;
 					m_chunkInfo->mcPoints[ind].index = ind;
 				}
 			}
@@ -1177,15 +1181,18 @@ BAAAABB
 					j++) // Y in the most inner loop, cache friendly
 				{
 					int BlockROW = ((MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING);
-					verts = vec4((i - offset) * BLOCK_SIZE * stride, (j - offset) * BLOCK_SIZE * stride, -1 * (k - offset) * BLOCK_SIZE * stride, -1) +
-						vec4(m_basePoint, 0);
-					tmpV3.x = verts.x;
-					tmpV3.y = verts.y;
-					tmpV3.z = verts.z;
-					verts.w = GameMap::shared()->getDensity(tmpV3);
+					//verts = vec4((i - offset) * BLOCK_SIZE * stride, (j - offset) * BLOCK_SIZE * stride, -1 * (k - offset) * BLOCK_SIZE * stride, -1) +
+					//	vec4(m_basePoint, 0);
+
+
+					auto w = GameMap::shared()->getDensityI(x * MAX_BLOCK + (i - offset)*stride + LOD_SHIFT, y * MAX_BLOCK + (j - offset)*stride + LOD_SHIFT, z * MAX_BLOCK + (k - offset)*stride + LOD_SHIFT);
+					//tmpV3.x = verts.x;
+					//tmpV3.y = verts.y;
+					//tmpV3.z = verts.z;
+					//verts.w = GameMap::shared()->getDensity(tmpV3);
 					// x y z
 					int ind = i * BlockROW*BlockROW + j * BlockROW + k;
-					m_chunkInfo->mcPoints_lod1[ind].setV4(verts);
+					m_chunkInfo->mcPoints_lod1[ind].w = w;
 					m_chunkInfo->mcPoints_lod1[ind].index = ind;
 					m_chunkInfo->mcPoints_lod1[ind].setMat(9, 0, 0, vec3(1,0, 0));
 				}
@@ -1343,16 +1350,18 @@ BAAAABB
 		treeNoise.SetFrequency(0.04);
 		treeNoise.SetNoiseType(FastNoise::Simplex);
 		int treeCount = 0;
-		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += 3.0)
+		vec3 theBasePoint = GameMap::shared()->voxelToWorldPos(this->x * MAX_BLOCK + LOD_SHIFT, this->y * MAX_BLOCK + LOD_SHIFT, this->z * MAX_BLOCK + LOD_SHIFT);
+		for (float x = 0; x <= BLOCK_SIZE * MAX_BLOCK; x += 3.0)
 		{
-			for (float z = m_basePoint.z; z > m_basePoint.z - BLOCK_SIZE * MAX_BLOCK; z -= 3.0)
+			for (float z = 0; z <= BLOCK_SIZE * MAX_BLOCK; z += 3.0)
 			{
 				auto ox = TbaseMath::randFN() * 0.8;
 				auto oz = TbaseMath::randFN() * 0.8;
 				float value = treeNoise.GetNoise(x + ox, 0, z + oz);
 				// the flat is grass or dirt?
 				value = value * 0.5 + 0.5;
-				auto h = GameMap::shared()->getHeight(vec2(x + ox, z + oz));
+
+				auto h = GameMap::shared()->getHeight(vec2(theBasePoint.x + x + ox, theBasePoint.z + z + oz));
 				if (value > 0.5)
 				{
 					// auto treeModel = Model::create("Models/tree/tree.tzw", true);
@@ -1364,7 +1373,7 @@ BAAAABB
 					treeCount += 1;
 					InstanceData instance;
 					vec3 normal = vec3(0, 1,0);
-					instance.posAndScale = vec4(x + ox, h, z + oz, 1.0);
+					instance.posAndScale = vec4(m_basePoint.x + x + ox, h, m_basePoint.z + z + oz, 1.0);
 					instance.extraInfo = vec4(normal, 0);
 					// auto rotateM = Matrix44();
 					// rotateM.setToIdentity();
@@ -1388,7 +1397,7 @@ BAAAABB
 					// Quaternion q;
 					// rotateM.getRotation(&q);
 					// instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
- 					//m_tree->m_instance.push_back(instance);
+ 					m_tree->m_instance.push_back(instance);
 				}
 			}
 		}

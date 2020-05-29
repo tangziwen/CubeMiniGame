@@ -1,5 +1,7 @@
 #ifndef TZW_GAMEMAP_H
 #define TZW_GAMEMAP_H
+#define GAME_MAX_BUFFER_SIZE 64
+#define LOD_SHIFT 4
 
 #include "noise/noise.h"
 #include "noise/noiseutils.h"
@@ -36,6 +38,12 @@ struct ChunkInfo
 	int z;
 	bool isEdit;
 };
+
+struct GameMapBuffer 
+{
+	GameMapBuffer();
+	unsigned char* m_buff;
+};
 class GameMap
 {
 public:
@@ -52,7 +60,11 @@ public:
 	double getNoiseValue(float x, float y, float z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
+	unsigned char getDensityI(int x, int y, int z);
     unsigned char getDensity(vec3 pos);
+	unsigned char getVoxel(int x, int y, int z);
+	void setVoxel(int x, int y, int z, unsigned char w);
+	vec3 voxelToWorldPos(int x, int y, int z);
 	float getHeight(vec2 posXZ);
 	vec3 getNormal(vec2 posXZ);
 	int getMat(vec3 pos, float slope);
@@ -64,6 +76,7 @@ public:
 	ChunkInfo * m_chunkInfoArray[128][16][128];
 	float edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal);
 	int getTreeId();
+	GameMapBuffer * m_totalBuffer;
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;
@@ -76,6 +89,10 @@ private:
     static GameMap * m_instance;
 	int m_treeID;
 	int m_grassID;
+	int mapBufferSize_X;
+	int mapBufferSize_Y;
+	int mapBufferSize_Z;
+
 };
 
 } // namespace tzw

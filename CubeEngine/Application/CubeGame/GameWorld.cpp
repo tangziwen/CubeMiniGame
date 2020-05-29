@@ -54,7 +54,7 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 	 
 	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
 	 
-	m_mapOffset = vec3(offsetX, 0 ,offsetZ);
+	//m_mapOffset = vec3(offsetX, 0 ,offsetZ);
 	 
     for(int i = 0;i< m_width;i++)
     {
@@ -89,7 +89,7 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 	 
 	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
 	 
-	m_mapOffset = vec3(offsetX, 0 ,offsetZ);
+	//m_mapOffset = vec3(offsetX, 0 ,offsetZ);
 	 
     for(int i = 0;i< m_width;i++)
     {
@@ -185,8 +185,8 @@ void GameWorld::startGame()
 		Tmisc::DurationBegin();
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 		tlog("init chunk cost : %d", Tmisc::DurationEnd());
-		float height = GameMap::shared()->getNoiseValue(0, 0, 0);
-		m_player->setPos(vec3(0, height + 0.5, 0));
+		float height = GameMap::shared()->getNoiseValue(20, 0, 20);
+		m_player->setPos(vec3(20, height + 0.5, -20));
 		//m_player->setIsOpenJetPack(true);
 		loadChunksAroundPlayer();
 	}));
@@ -329,7 +329,7 @@ void GameWorld::loadChunksAroundPlayer()
 	 
 	std::vector<Chunk *> m_readyToLoadArray;
 	 
-    auto pos = m_player->getPos() - m_mapOffset;
+    auto pos = m_player->getPos();
 	 
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 	 

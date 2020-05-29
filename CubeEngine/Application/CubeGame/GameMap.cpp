@@ -171,7 +171,11 @@ void GameMap::init(float ratio, int width, int depth, int height)
 		}
 	}
 
-	
+    //+1 for neighbor padding used.
+    mapBufferSize_X = ((GAME_MAP_WIDTH * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
+    mapBufferSize_Y = ((GAME_MAP_HEIGHT * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
+    mapBufferSize_Z = ((GAME_MAP_DEPTH * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
+	m_totalBuffer = new GameMapBuffer[(mapBufferSize_X) * (mapBufferSize_Y) * (mapBufferSize_Z)];
     VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
 	VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTree_lod1.tzw");
 	VegetationBatInfo lod2(VegetationType::QUAD_TRI, "treeTest/tzwTree.png");
@@ -266,6 +270,39 @@ GameMap::isSurface(vec3 pos)
   }
 }
 
+unsigned char GameMap::getDensityI(int x, int y, int z)
+{
+    int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
+    int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
+    int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
+    int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
+    if(!m_totalBuffer[buffIndex].m_buff)
+    {
+        m_totalBuffer[buffIndex].m_buff = new unsigned char[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
+        //init data
+        for(int i = 0; i <GAME_MAX_BUFFER_SIZE;i++) //X
+        {
+            for(int k = 0; k <GAME_MAX_BUFFER_SIZE;k++) //Z
+            {
+                auto targetH = getHeight(vec2((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE));
+                for(int j = 0; j <GAME_MAX_BUFFER_SIZE;j++) //Y
+                {
+                    auto currH = (j+ buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE;
+                    float delta = std::clamp ((currH - targetH)  * 0.2f, -1.f, 1.f);
+                    unsigned char w =  (delta * 0.5f + 0.5f) * 255.f;
+                    int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
+                    m_totalBuffer[buffIndex].m_buff[cellIndex] = w;
+                }
+            }
+        }
+    }
+    int currX = (x%GAME_MAX_BUFFER_SIZE);
+    int currY = (y%GAME_MAX_BUFFER_SIZE);
+    int currZ = (z%GAME_MAX_BUFFER_SIZE);
+    int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+    return m_totalBuffer[buffIndex].m_buff[cellIndex];
+}
+
 unsigned char GameMap::getDensity(vec3 pos)
 {
 
@@ -302,6 +339,40 @@ unsigned char GameMap::getDensity(vec3 pos)
     default:
       return 1;
   }
+}
+
+unsigned char GameMap::getVoxel(int x, int y, int z)
+{
+    int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
+    int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
+    int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
+    int buffIndex = buffIDX * (mapBufferSize_X * mapBufferSize_Y) + buffIDY * (mapBufferSize_Y) + buffIDZ;
+    int currX = (x%GAME_MAX_BUFFER_SIZE);
+    int currY = (y%GAME_MAX_BUFFER_SIZE);
+    int currZ = (z%GAME_MAX_BUFFER_SIZE);
+    int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+    return m_totalBuffer[buffIndex].m_buff[cellIndex];
+}
+
+void GameMap::setVoxel(int x, int y, int z, unsigned char w)
+{
+    int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
+    int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
+    int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
+    int buffIndex = buffIDX * (mapBufferSize_X * mapBufferSize_Y) + buffIDY * (mapBufferSize_Y) + buffIDZ;
+    int currX = (x%GAME_MAX_BUFFER_SIZE);
+    int currY = (y%GAME_MAX_BUFFER_SIZE);
+    int currZ = (z%GAME_MAX_BUFFER_SIZE);
+    int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+    m_totalBuffer[buffIndex].m_buff[cellIndex] = w;
+}
+
+vec3 GameMap::voxelToWorldPos(int x, int y, int z)
+{
+    int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
+    int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
+    int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
+    return vec3((buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE);
 }
 
 float GameMap::getHeight(vec2 posXZ)
@@ -457,5 +528,9 @@ float GameMap::edgeFallOffSelect(float lowBound, float upBound, float edgeVal, f
 int GameMap::getTreeId()
 {
 	return m_treeID;
+}
+GameMapBuffer::GameMapBuffer()
+{
+    m_buff = nullptr;
 }
 } // namespace tzw
