@@ -50,7 +50,7 @@ namespace tzw
 		m_offset = GameWorld::shared()->getMapOffset();
 
 		m_basePoint =
-			vec3(x * g_chunkSize, y * g_chunkSize, -1 * z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE,LOD_SHIFT * BLOCK_SIZE);
+			vec3(x * g_chunkSize, y * g_chunkSize, -1 * z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE, -LOD_SHIFT * BLOCK_SIZE);
 
 		setPos(m_basePoint);
 
