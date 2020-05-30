@@ -60,7 +60,6 @@ namespace tzw
 		void deform(int x, int y, int z, float actualVal);
 		void paint(int x, int y, int z, int matIndex);
 		unsigned int getTypeId() override;
-		vec3 m_offset;
 		void calculateMatID();
 		bool getIsInitData();
 		State m_currenState;

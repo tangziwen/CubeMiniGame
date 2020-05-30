@@ -41,14 +41,11 @@ public:
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
 	void loadChunksAroundPlayer();
-	tzw::vec3 getMapOffset() const;
-	void setMapOffset(tzw::vec3 val);
 	void init();
 	virtual ~GameWorld();
 private:
     Node * m_mainRoot;
     int m_currentState;
-    vec3 m_mapOffset;
     int m_width, m_depth, m_height;
     Chunk * m_chunkArray[128][16][128];
     Scene  * m_scene;

@@ -45,12 +45,10 @@ namespace tzw
 
 		m_localAABB.update(vec3(MAX_BLOCK * BLOCK_SIZE,
 								MAX_BLOCK * BLOCK_SIZE,
-								-1 * MAX_BLOCK * BLOCK_SIZE));
-
-		m_offset = GameWorld::shared()->getMapOffset();
+								MAX_BLOCK * BLOCK_SIZE));
 
 		m_basePoint =
-			vec3(x * g_chunkSize, y * g_chunkSize, -1 * z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE, -LOD_SHIFT * BLOCK_SIZE);
+			vec3(x * g_chunkSize, y * g_chunkSize, z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE);
 
 		setPos(m_basePoint);
 
@@ -1360,7 +1358,6 @@ BAAAABB
 				float value = treeNoise.GetNoise(x + ox, 0, z + oz);
 				// the flat is grass or dirt?
 				value = value * 0.5 + 0.5;
-
 				auto h = GameMap::shared()->getHeight(vec2(theBasePoint.x + x + ox, theBasePoint.z + z + oz));
 				if (value > 0.5)
 				{

@@ -367,12 +367,17 @@ void GameMap::setVoxel(int x, int y, int z, unsigned char w)
     m_totalBuffer[buffIndex].m_buff[cellIndex] = w;
 }
 
-vec3 GameMap::voxelToWorldPos(int x, int y, int z)
+vec3 GameMap::voxelToBuffWorldPos(int x, int y, int z)
 {
     int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
     int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
     int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
     return vec3((buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE);
+}
+
+vec3 GameMap::voxelToWorldPos(int x, int y, int z)
+{
+	return vec3((x)  * BLOCK_SIZE, (y )  * BLOCK_SIZE, (z)  * BLOCK_SIZE);
 }
 
 float GameMap::getHeight(vec2 posXZ)

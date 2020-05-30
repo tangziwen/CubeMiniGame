@@ -186,7 +186,7 @@ void GameWorld::startGame()
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 		tlog("init chunk cost : %d", Tmisc::DurationEnd());
 		float height = GameMap::shared()->getNoiseValue(20, 0, 20);
-		m_player->setPos(vec3(20, height + 0.5, -20));
+		m_player->setPos(vec3(20, height + 0.5, 20));
 		//m_player->setIsOpenJetPack(true);
 		loadChunksAroundPlayer();
 	}));
@@ -333,7 +333,7 @@ void GameWorld::loadChunksAroundPlayer()
 	 
     int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 	 
-    int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
+    int posZ = pos.z/ ((MAX_BLOCK + 1) * BLOCK_SIZE);
 	int range = ceil(150.0f / (MAX_BLOCK * BLOCK_SIZE));
     for(int i =posX - range;i<=posX + range;i++)
     {
@@ -363,7 +363,6 @@ void GameWorld::loadChunksAroundPlayer()
     {
 		 
         i->unload();
-		 
     }
 	std::sort(m_readyToLoadArray.begin(), m_readyToLoadArray.end(),[&](Chunk * left, Chunk * right)
 	{
@@ -386,16 +385,6 @@ void GameWorld::loadChunksAroundPlayer()
 	}
 	tlog("load size is %d %d",m_readyToLoadArray.size(), m_tempArray.size());
 	tlog("load chunk cost : %d", Tmisc::DurationEnd());
-}
-
-tzw::vec3 GameWorld::getMapOffset() const
-{
-	return m_mapOffset;
-}
-
-void GameWorld::setMapOffset(tzw::vec3 val)
-{
-	m_mapOffset = val;
 }
 
 void GameWorld::init()
