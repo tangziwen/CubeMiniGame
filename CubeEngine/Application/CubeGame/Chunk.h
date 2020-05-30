@@ -67,8 +67,8 @@ namespace tzw
 		int getCurrentLod();
 	private:
 		int m_currentLOD;
-		Grass * m_grass;
-		Grass * m_grass2;
+		TreeGroup * m_grass;
+		TreeGroup * m_grass2;
 		TreeGroup * m_tree;
 	    Mesh * m_mesh;
 		Mesh * m_meshLOD1;

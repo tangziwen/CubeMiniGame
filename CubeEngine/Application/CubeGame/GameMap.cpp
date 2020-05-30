@@ -176,13 +176,22 @@ void GameMap::init(float ratio, int width, int depth, int height)
     mapBufferSize_Y = ((GAME_MAP_HEIGHT * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
     mapBufferSize_Z = ((GAME_MAP_DEPTH * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
 	m_totalBuffer = new GameMapBuffer[(mapBufferSize_X) * (mapBufferSize_Y) * (mapBufferSize_Z)];
-    VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
-	VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTree_lod1.tzw");
-	VegetationBatInfo lod2(VegetationType::QUAD_TRI, "treeTest/tzwTree.png");
-	//reg Tree class
-	m_treeID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
-	
-	// m_treeID = Tree::shared()->regVegetation(VegetationType::QUAD_TRI, "Texture/grass.tga");
+	{
+	    VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
+		VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTree_lod1.tzw");
+		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "treeTest/tzwTree.png");
+		//reg Tree class
+		m_treeID = Tree::shared()->regVegetation(&lod0, &lod1, NULL);
+	}
+
+
+	{
+	    VegetationBatInfo lod0(VegetationType::QUAD_TRI, "Texture/grass.tga");
+		VegetationBatInfo lod1(VegetationType::QUAD_TRI, "Texture/grass.tga");
+		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "Texture/grass.tga");
+		m_grassID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
+	}
+
 }
 
 GameMap*
@@ -346,7 +355,7 @@ unsigned char GameMap::getVoxel(int x, int y, int z)
     int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
     int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
     int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
-    int buffIndex = buffIDX * (mapBufferSize_X * mapBufferSize_Y) + buffIDY * (mapBufferSize_Y) + buffIDZ;
+    int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
     int currX = (x%GAME_MAX_BUFFER_SIZE);
     int currY = (y%GAME_MAX_BUFFER_SIZE);
     int currZ = (z%GAME_MAX_BUFFER_SIZE);
@@ -359,7 +368,7 @@ void GameMap::setVoxel(int x, int y, int z, unsigned char w)
     int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
     int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
     int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
-    int buffIndex = buffIDX * (mapBufferSize_X * mapBufferSize_Y) + buffIDY * (mapBufferSize_Y) + buffIDZ;
+    int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
     int currX = (x%GAME_MAX_BUFFER_SIZE);
     int currY = (y%GAME_MAX_BUFFER_SIZE);
     int currZ = (z%GAME_MAX_BUFFER_SIZE);
@@ -534,6 +543,12 @@ int GameMap::getTreeId()
 {
 	return m_treeID;
 }
+
+int GameMap::getGrassId()
+{
+	return m_grassID;
+}
+
 GameMapBuffer::GameMapBuffer()
 {
     m_buff = nullptr;

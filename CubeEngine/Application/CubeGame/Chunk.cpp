@@ -62,9 +62,9 @@ namespace tzw
 
 		m_tmpNeighborChunk.clear();
 
-		m_grass = new Grass("Texture/grass.tga");
+		m_grass = new TreeGroup(GameMap::shared()->getGrassId());
 
-		m_grass2 = new Grass("Texture/grass.tga");
+		m_grass2 = new TreeGroup(GameMap::shared()->getGrassId());
 
 		m_tree = new TreeGroup(GameMap::shared()->getTreeId());
 
@@ -163,8 +163,6 @@ namespace tzw
 			m_rigidBody = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh, nullptr);
 
 			m_rigidBody->setFriction(10.0);
-			m_grass->finish();
-			m_grass2->finish();
 			PhysicsMgr::shared()->addRigidBody(m_rigidBody);
 			loading_mutex.lock();
 			m_currenState = State::LOADED;
@@ -219,6 +217,8 @@ namespace tzw
 			// m_grass->pushCommand();
 			// m_grass2->pushCommand();
 			Tree::shared()->addTreeGroup(m_tree);
+			Tree::shared()->addTreeGroup(m_grass);
+			
 			// m_tree->pushCommand();
 		}
 	}
@@ -274,7 +274,6 @@ namespace tzw
 		m_tmpNeighborChunk.clear();
 		vec3 relativePost = pos - m_basePoint;
 		relativePost = relativePost / BLOCK_SIZE;
-		relativePost.z *= -1;
 		int posX = relativePost.x;
 		int posY = relativePost.y;
 		int posZ = relativePost.z;
@@ -289,7 +288,7 @@ namespace tzw
 					int Y = posY + j;
 					int Z = posZ + k;
 					float theDist =
-						(m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, -Z * BLOCK_SIZE))
+						(m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, Z * BLOCK_SIZE))
 						.distance(pos);
 					if (theDist <= range)
 					{
@@ -323,7 +322,6 @@ namespace tzw
 		m_tmpNeighborChunk.clear();
 		vec3 relativePost = pos - m_basePoint;
 		relativePost = relativePost / BLOCK_SIZE;
-		relativePost.z *= -1;
 		int posX = relativePost.x;
 		int posY = relativePost.y;
 		int posZ = relativePost.z;
@@ -357,7 +355,6 @@ namespace tzw
 		m_tmpNeighborChunk.clear();
 		vec3 relativePost = pos - m_basePoint;
 		relativePost = relativePost / BLOCK_SIZE;
-		relativePost.z *= -1;
 		int posX = relativePost.x;
 		int posY = relativePost.y;
 		int posZ = relativePost.z;
@@ -1275,15 +1272,15 @@ BAAAABB
 	Chunk::calculateMatID()
 	{
 		m_grassPosList.clear();
-		m_grass->m_mesh->clearInstances();
-		m_grass2->m_mesh->clearInstances();
+		m_tree->m_instance.clear();
+		m_grass->m_instance.clear();
 		size_t indexCount = m_mesh->m_indices.size();
 		if (indexCount <= 0) return;
 		float grassDensity = 1.0;
 		float step = 1.0 / grassDensity;
 		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += grassDensity)
 		{
-			for (float z = m_basePoint.z; z > m_basePoint.z - BLOCK_SIZE * MAX_BLOCK; z -= grassDensity)
+			for (float z = m_basePoint.z; z <= m_basePoint.z + BLOCK_SIZE * MAX_BLOCK; z += grassDensity)
 			{
 				auto ox = TbaseMath::randFN() * 0.4;
 				auto oz = TbaseMath::randFN() * 0.4;
@@ -1301,15 +1298,6 @@ BAAAABB
 						auto ox = TbaseMath::randFN() * 0.5;
 						auto oz = TbaseMath::randFN() * 0.5;
 						auto scale = TbaseMath::randFN() * 0.1;
-						Grass* grass = nullptr;
-						if (rand() % 100 > 85)
-						{
-							grass = m_grass;
-						}
-						else
-						{
-							grass = m_grass2;
-						}
 						InstanceData instance;
 						vec3 normal = GameMap::shared()->getNormal(vec2(x + ox, z + oz));
 						instance.posAndScale = vec4(pos.x, pos.y + 0.35, pos.z, 1.0 + scale);
@@ -1336,7 +1324,8 @@ BAAAABB
 						Quaternion q;
 						rotateM.getRotation(&q);
 						instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
-						grass->m_mesh->pushInstance(instance);
+						// grass->m_mesh->pushInstance(instance);
+						m_grass->m_instance.push_back(instance);
 					}
 				}
 			}
@@ -1345,21 +1334,21 @@ BAAAABB
 
 
 		treeNoise.SetSeed(233);
-		treeNoise.SetFrequency(0.04);
-		treeNoise.SetNoiseType(FastNoise::Simplex);
+		treeNoise.SetFrequency(0.02);
+		treeNoise.SetNoiseType(FastNoise::Perlin);
 		int treeCount = 0;
 		vec3 theBasePoint = GameMap::shared()->voxelToWorldPos(this->x * MAX_BLOCK + LOD_SHIFT, this->y * MAX_BLOCK + LOD_SHIFT, this->z * MAX_BLOCK + LOD_SHIFT);
-		for (float x = 0; x <= BLOCK_SIZE * MAX_BLOCK; x += 3.0)
+		for (float x = 0; x <= BLOCK_SIZE * MAX_BLOCK; x += 1.5)
 		{
-			for (float z = 0; z <= BLOCK_SIZE * MAX_BLOCK; z += 3.0)
+			for (float z = 0; z <= BLOCK_SIZE * MAX_BLOCK; z += 1.5)
 			{
-				auto ox = TbaseMath::randFN() * 0.8;
-				auto oz = TbaseMath::randFN() * 0.8;
+				auto ox = TbaseMath::randFN() * 0.2;
+				auto oz = TbaseMath::randFN() * 0.2;
 				float value = treeNoise.GetNoise(x + ox, 0, z + oz);
 				// the flat is grass or dirt?
-				value = value * 0.5 + 0.5;
+				// value = value * 0.5 + 0.5;
 				auto h = GameMap::shared()->getHeight(vec2(theBasePoint.x + x + ox, theBasePoint.z + z + oz));
-				if (value > 0.5)
+				if (value > 0)
 				{
 					// auto treeModel = Model::create("Models/tree/tree.tzw", true);
 					// g_GetCurrScene()->addNode(treeModel);

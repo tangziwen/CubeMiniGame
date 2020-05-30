@@ -77,6 +77,7 @@ public:
 	ChunkInfo * m_chunkInfoArray[128][16][128];
 	float edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal);
 	int getTreeId();
+	int getGrassId();
 	GameMapBuffer * m_totalBuffer;
 private:
     float x_offset,y_offset,z_offset;
