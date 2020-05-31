@@ -46,7 +46,6 @@ namespace tzw
 	    void addVoexlScalar(int x, int y, int z, float scalar);
 		void setVoxelMat(int x, int y, int z, int matIndex, bool isAdd = true);
 		voxelInfo getVoxel(int x, int y, int z);
-	    void genNormal();
 	    voxelInfo getPoint(int index);
 	    voxelInfo getPoint(int x, int y, int z);
 		voxelInfo getPointInner(int x, int y, int z);
@@ -65,13 +64,13 @@ namespace tzw
 		State m_currenState;
 		ChunkInfo * getChunkInfo();
 		int getCurrentLod();
+		void fetchFromSource();
 	private:
 		int m_currentLOD;
 		TreeGroup * m_grass;
 		TreeGroup * m_grass2;
 		TreeGroup * m_tree;
-	    Mesh * m_mesh;
-		Mesh * m_meshLOD1;
+	    Mesh * m_mesh[3];
 		void sampleForLod(int lodLevel, voxelInfo * out);
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);

@@ -140,9 +140,8 @@ namespace tzw {
 
 	VoxelVertex getVoxelVertex(vec3 v, vec3 basePoint, voxelInfo * vi0, voxelInfo * vi1)
 	{
-
 		VoxelVertex vertex;
-		vertex.vertex =  vec3(v.x * BLOCK_SIZE, v.y * BLOCK_SIZE, -1 * v.z * BLOCK_SIZE) + basePoint;
+		vertex.vertex =  vec3(v.x * BLOCK_SIZE, v.y * BLOCK_SIZE, v.z * BLOCK_SIZE) + basePoint;
 		vertex.matInfo = vi0->matInfo;
 		return vertex;
 	}
@@ -430,12 +429,9 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 				} // for each cell vertex
 				
 				for (int t = 0; t < triangle_count; ++t) {
-					for (int i = 0; i < 3; ++i) {
-						int index = cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + i)];
-						// CRASH_COND(index == 65535);
-						// _output_indices.push_back(index);
-						mesh->addIndex(index);
-					}
+					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + 2)]);
+					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + 1)]);
+					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + 0)]);
 				}
 
 			} // x
@@ -853,12 +849,9 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 
 			unsigned int triangle_count = cell_data.GetTriangleCount();
 
-			for (unsigned int ti = 0; ti < triangle_count; ++ti) {
-					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);
-					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
-					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 2)]);
-
-				if (flip_triangles) {
+			for (unsigned int ti = 0; ti < triangle_count; ++ti) 
+			{
+				if (!flip_triangles) {
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 2)]);

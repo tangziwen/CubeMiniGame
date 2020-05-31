@@ -66,7 +66,7 @@ void voxelInfo::setMat(char mat1, char mat2, char mat3, vec3 blendFactor)
 }
 
 ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),
-                                                   mcPoints(nullptr),x(theX),y(theY),z(theZ),isEdit(false)
+                                                   mcPoints(),x(theX),y(theY),z(theZ),isEdit(false)
 {
 }
 
@@ -94,9 +94,11 @@ void ChunkInfo::initData()
 {
 	// mcPoints = new voxelInfo[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
 
-	mcPoints = new voxelInfo[(MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING)];
-
-	mcPoints_lod1 = new voxelInfo[((MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>1) + MIN_PADDING + MAX_PADDING)];
+	for(int i = 0; i < 3; i++)
+	{
+		mcPoints[i] = new voxelInfo[((MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING)];
+		
+	}
 }
 
 
@@ -279,7 +281,7 @@ GameMap::isSurface(vec3 pos)
   }
 }
 
-unsigned char GameMap::getDensityI(int x, int y, int z)
+voxelInfo GameMap::getDensityI(int x, int y, int z)
 {
     int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
     int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
@@ -287,7 +289,7 @@ unsigned char GameMap::getDensityI(int x, int y, int z)
     int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
     if(!m_totalBuffer[buffIndex].m_buff)
     {
-        m_totalBuffer[buffIndex].m_buff = new unsigned char[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
+        m_totalBuffer[buffIndex].m_buff = new voxelInfo[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
         //init data
         for(int i = 0; i <GAME_MAX_BUFFER_SIZE;i++) //X
         {
@@ -300,10 +302,41 @@ unsigned char GameMap::getDensityI(int x, int y, int z)
                     float delta = std::clamp ((currH - targetH)  * 0.2f, -1.f, 1.f);
                     unsigned char w =  (delta * 0.5f + 0.5f) * 255.f;
                     int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
-                    m_totalBuffer[buffIndex].m_buff[cellIndex] = w;
+                    m_totalBuffer[buffIndex].m_buff[cellIndex].w = w;
                 }
             }
         }
+    	//
+
+		//gen material
+		for (int i = 0; i < GAME_MAX_BUFFER_SIZE; i++)
+		{
+			for (int k = 0; k < GAME_MAX_BUFFER_SIZE; k++)
+			{
+				bool isSet = false;
+				for (int j = 0; j < GAME_MAX_BUFFER_SIZE;j++) // Y in the most inner loop, cache friendly
+				{
+					int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
+					if (true)
+					{
+						auto x1 = m_totalBuffer[buffIndex].get(i - 1, j, k).w;
+						auto x2 = m_totalBuffer[buffIndex].get(i + 1, j, k).w;
+						auto y1 = m_totalBuffer[buffIndex].get(i, j - 1, k).w;
+						auto y2 = m_totalBuffer[buffIndex].get(i, j + 1, k).w;
+						auto z1 = m_totalBuffer[buffIndex].get(i, j, k - 1).w;
+						auto z2 = m_totalBuffer[buffIndex].get(i, j, k + 1).w;
+						auto gradientVec = vec3(x1 - x2,
+												y1 - y2,
+												z1 - z2);
+						float slope = 1.0 - std::clamp(
+							vec3::DotProduct(gradientVec.normalized(), vec3(0, -1, 0)), 0.0f, 1.0f);
+						vec3 tmpV3((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (j + buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE);
+						auto matID = GameMap::shared()->getMat(tmpV3, slope);
+						m_totalBuffer[buffIndex].m_buff[cellIndex].setMat(matID, 0, 0, vec3(1,0, 0));
+					}
+				}
+			}
+		}
     }
     int currX = (x%GAME_MAX_BUFFER_SIZE);
     int currY = (y%GAME_MAX_BUFFER_SIZE);
@@ -360,7 +393,7 @@ unsigned char GameMap::getVoxel(int x, int y, int z)
     int currY = (y%GAME_MAX_BUFFER_SIZE);
     int currZ = (z%GAME_MAX_BUFFER_SIZE);
     int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
-    return m_totalBuffer[buffIndex].m_buff[cellIndex];
+    return m_totalBuffer[buffIndex].m_buff[cellIndex].w;
 }
 
 void GameMap::setVoxel(int x, int y, int z, unsigned char w)
@@ -373,7 +406,7 @@ void GameMap::setVoxel(int x, int y, int z, unsigned char w)
     int currY = (y%GAME_MAX_BUFFER_SIZE);
     int currZ = (z%GAME_MAX_BUFFER_SIZE);
     int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
-    m_totalBuffer[buffIndex].m_buff[cellIndex] = w;
+    m_totalBuffer[buffIndex].m_buff[cellIndex].w = w;
 }
 
 vec3 GameMap::voxelToBuffWorldPos(int x, int y, int z)
@@ -552,5 +585,14 @@ int GameMap::getGrassId()
 GameMapBuffer::GameMapBuffer()
 {
     m_buff = nullptr;
+}
+
+voxelInfo GameMapBuffer::get(int theX, int theY, int theZ)
+{
+	theX = std::clamp(theX, 0, GAME_MAX_BUFFER_SIZE - 1);
+	theY = std::clamp(theY, 0, GAME_MAX_BUFFER_SIZE - 1);
+	theZ = std::clamp(theZ, 0, GAME_MAX_BUFFER_SIZE - 1);
+	int cellIndex = theX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + theY * GAME_MAX_BUFFER_SIZE + theZ;
+	return m_buff[cellIndex];
 }
 } // namespace tzw

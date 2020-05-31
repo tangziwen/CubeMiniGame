@@ -205,16 +205,32 @@ VegetationInfo::VegetationInfo()
 void VegetationInfo::init(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2)
 {
 	m_lodBatch[0] = new VegetationBatch(lod0);
-	m_lodBatch[1] = new VegetationBatch(lod1);
-	m_lodBatch[2] = new VegetationBatch(lod2);
+	if(lod1)
+	{
+		m_lodBatch[1] = new VegetationBatch(lod1);
+	} else
+	{
+		m_lodBatch[1] = nullptr;
+	}
+	
+	if(lod2)
+	{
+		m_lodBatch[2] = new VegetationBatch(lod2);
+	} else
+	{
+		m_lodBatch[2] = nullptr;
+	}
+	
 }
 
 void VegetationInfo::clear()
 {
 	for(int i = 0; i < 3; i++)
 	{
-
-		m_lodBatch[i]->clear();
+		if(m_lodBatch[i])
+		{
+			m_lodBatch[i]->clear();
+		}
 	}
 }
 
@@ -222,7 +238,7 @@ void VegetationInfo::commitRenderCmd()
 {
 	for(int i = 0; i < 3; i++)
 	{
-		if(m_lodBatch[i]->m_totalCount)
+		if(m_lodBatch[i] && m_lodBatch[i]->m_totalCount)
 		{
 			m_lodBatch[i]->commitRenderCmd();
 		}
@@ -233,17 +249,37 @@ void VegetationInfo::insert(InstanceData inst)
 {
 	auto cam = g_GetCurrScene()->defaultCamera();
 	auto dist = cam->getWorldPos().distance(inst.posAndScale.toVec3());
-	if(dist < 15)
+	if(dist > 150) return;//just ignore
+
+	if(dist < 20)
 	{
 		m_lodBatch[0]->insertInstanceData(inst);
 	}
-	else if(dist < 35)
+	else if(dist < 70)
 	{
-		m_lodBatch[1]->insertInstanceData(inst);
+		if(m_lodBatch[1])
+		{
+			m_lodBatch[1]->insertInstanceData(inst);
+		}else
+		{
+			m_lodBatch[0]->insertInstanceData(inst);
+		}
 	}
 	else
 	{
-		m_lodBatch[2]->insertInstanceData(inst);
+		if(m_lodBatch[2])
+		{
+			m_lodBatch[2]->insertInstanceData(inst);
+		} else
+		{
+			if(m_lodBatch[1])
+			{
+				m_lodBatch[1]->insertInstanceData(inst);
+			}else
+			{
+				m_lodBatch[0]->insertInstanceData(inst);
+			}	
+		}
 	}
 }
 
@@ -251,15 +287,18 @@ bool VegetationInfo::anyHas()
 {
 	for(int i = 0; i < 3; i++)
 	{
-		if(m_lodBatch[i]->m_totalCount) return true;
+		if(m_lodBatch[i])
+		{
+			if(m_lodBatch[i]->m_totalCount) return true;
+		}
 	}
 	return false;
 }
 
 void VegetationInfo::submitShadowDraw()
 {
-	if(m_lodBatch[0]->m_totalCount) m_lodBatch[0]->commitShadowRenderCmd();
-	if(m_lodBatch[1]->m_totalCount) m_lodBatch[1]->commitShadowRenderCmd();
+	if(m_lodBatch[0] && m_lodBatch[0]->m_totalCount) m_lodBatch[0]->commitShadowRenderCmd();
+	if(m_lodBatch[1] && m_lodBatch[1]->m_totalCount) m_lodBatch[1]->commitShadowRenderCmd();
 }
 
 TreeGroup::TreeGroup(int treeClass)

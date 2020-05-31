@@ -28,7 +28,7 @@ struct ChunkInfo
 {
 	ChunkInfo(int x, int y, int z);
 	bool isLoaded;
-	voxelInfo * mcPoints;
+	voxelInfo * mcPoints[3];
 	voxelInfo * mcPoints_lod1;
 	void loadChunk(FILE * file);
 	void dumpChunk(FILE * f);
@@ -42,7 +42,8 @@ struct ChunkInfo
 struct GameMapBuffer 
 {
 	GameMapBuffer();
-	unsigned char* m_buff;
+	voxelInfo get(int theX, int theY, int theZ);
+	voxelInfo * m_buff;
 };
 class GameMap
 {
@@ -60,7 +61,7 @@ public:
 	double getNoiseValue(float x, float y, float z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
-	unsigned char getDensityI(int x, int y, int z);
+	voxelInfo getDensityI(int x, int y, int z);
     unsigned char getDensity(vec3 pos);
 	unsigned char getVoxel(int x, int y, int z);
 	void setVoxel(int x, int y, int z, unsigned char w);
