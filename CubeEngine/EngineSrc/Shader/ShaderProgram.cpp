@@ -345,7 +345,7 @@ void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderTex
         fprintf(stdout, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
         if (isStrict) 
 		{
-          abort();
+          exit(0);
         }
     }
     glAttachShader(ShaderProgram, ShaderObj);

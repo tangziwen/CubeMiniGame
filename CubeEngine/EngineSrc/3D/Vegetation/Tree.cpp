@@ -10,10 +10,11 @@ VegetationBatInfo::VegetationBatInfo()
 {
 }
 
-VegetationBatInfo::VegetationBatInfo(VegetationType theType, std::string filePath)
+VegetationBatInfo::VegetationBatInfo(VegetationType theType, std::string filePath, vec2 size)
 {
 	m_type = theType;
 	file_path = filePath;
+	m_size = size;
 }
 
 VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
@@ -26,8 +27,8 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 	case VegetationType::QUAD_TRI:
 		{
 			auto theMesh = new Mesh();
-			float halfWidth = 0.8;
-			float halfHeight = 0.8;
+			float halfWidth = m_info.m_size.x / 2.f;
+			float halfHeight = m_info.m_size.y / 2.f;
 			VertexData vertices[] = {
 				//#1
 				VertexData(vec3(-1.0f *halfWidth, -1.0f * halfHeight, -0.5f), vec2(0.0f, 0.0f)), 
@@ -60,7 +61,35 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			auto tex = TextureMgr::shared()->getByPath(filePath);
 			 
 			tex->genMipMap();
+			tex->setWarp(RenderFlag::WarpAddress::ClampToEdge);
+			m_quadMat->setTex("DiffuseMap", tex);
+		}
+		break;
+		case VegetationType::QUAD:
+		{
+			auto theMesh = new Mesh();
+			float halfWidth = m_info.m_size.x / 2.f;
+			float halfHeight = m_info.m_size.y / 2.f;
+			VertexData vertices[] = {
+				//#1
+				VertexData(vec3(-1.0f *halfWidth, 0, -0.5f), vec2(0.0f, 0.0f)), 
+				VertexData(vec3( 1.0f *halfWidth, 0,  -0.5f), vec2(1.0f, 0.0f)),
+				VertexData(vec3(1.0f *halfWidth,  2.0f * halfHeight,  -0.5f), vec2(1.0f, 1.0f)), 
+				VertexData(vec3( -1.0f *halfWidth,  2.0f * halfHeight,  -0.5f), vec2(0.0f, 1.0f)),
+			};
+
+			unsigned short indices[] = {
+				0, 1, 2, 0, 2, 3,
+			};
+			theMesh->addVertices(vertices,sizeof(vertices)/sizeof(VertexData));
+			theMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
+			theMesh->finish();
+			m_quadMesh = theMesh;
+			m_quadMat = Material::createFromTemplate("BillBoardInstance");
+			auto tex = TextureMgr::shared()->getByPath(filePath);
 			 
+			tex->genMipMap();
+			tex->setWarp(RenderFlag::WarpAddress::ClampToEdge);
 			m_quadMat->setTex("DiffuseMap", tex);
 		}
 		break;
@@ -89,6 +118,11 @@ void VegetationBatch::insertInstanceData(InstanceData inst)
 			m_quadMesh->pushInstance(inst);
 		}
 		break;
+	case VegetationType::QUAD:
+		{
+			m_quadMesh->pushInstance(inst);
+		}
+		break;
 	case VegetationType::ModelType:
 		{
 			for(auto i = 0; i < m_model->getMeshCount(); i++)
@@ -107,6 +141,11 @@ void VegetationBatch::clear()
 	switch (m_type)
 	{
 	case VegetationType::QUAD_TRI:
+		{
+			m_quadMesh->clearInstances();
+		}
+		break;
+	case VegetationType::QUAD:
 		{
 			m_quadMesh->clearInstances();
 		}
@@ -139,6 +178,18 @@ void VegetationBatch::commitRenderCmd()
 	switch (m_type)
 	{
 	case VegetationType::QUAD_TRI:
+		{
+			auto theMesh = m_quadMesh;
+			auto mat = m_quadMat;
+			theMesh->submitInstanced();
+			RenderCommand command(theMesh, mat, RenderCommand::RenderType::Common, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+			setUpTransFormation(command.m_transInfo);
+			Renderer::shared()->addRenderCommand(command);
+			setUpTransFormation(command.m_transInfo);
+		}
+		break;
+	case VegetationType::QUAD:
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
@@ -251,11 +302,11 @@ void VegetationInfo::insert(InstanceData inst)
 	auto dist = cam->getWorldPos().distance(inst.posAndScale.toVec3());
 	if(dist > 150) return;//just ignore
 
-	if(dist < 20)
+	if(dist < 35.f)
 	{
 		m_lodBatch[0]->insertInstanceData(inst);
 	}
-	else if(dist < 70)
+	else if(dist < 75.f)
 	{
 		if(m_lodBatch[1])
 		{

@@ -102,7 +102,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 			else
 			{
 				//default Normal Map
-				mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
+				mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png", true));
 			}
 
 			if (materialData.HasMember("roughnessMap") && strcmp(materialData["roughnessMap"].GetString(), "") != 0)
@@ -113,11 +113,11 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 			else
 			{
 				//default Normal Map
-				mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png"));
+				mat->setTex("NormalMap", tmgr->getByPath("Texture/BuiltInTexture/defaultNormalMap.png", true));
 			}
 			//default Roughness Map
-			mat->setTex("RoughnessMap", tmgr->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png"));
-			mat->setTex("MetallicMap", TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png"));
+			mat->setTex("RoughnessMap", tmgr->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png", true));
+			mat->setTex("MetallicMap", TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png", true));
 			model->m_effectList.push_back(mat);
 		}
 	}
@@ -151,6 +151,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 			}
 			//material
 			theMesh->setMatIndex(meshData["materialIndex"].GetInt());
+			//theMesh->caclNormals();
 			theMesh->finish(true);
 			MaterialPool::shared()->addMesh(meshName, theMesh);
 		}

@@ -33,7 +33,8 @@ struct TechniqueVar
     	Project,
     	InvertedProj,
     	CamPos,
-    	InvertedViewProj
+    	InvertedViewProj,
+    	CamDir
     };
 	struct TexInfo
 	{

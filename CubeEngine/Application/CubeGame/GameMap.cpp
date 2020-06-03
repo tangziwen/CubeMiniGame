@@ -179,11 +179,13 @@ void GameMap::init(float ratio, int width, int depth, int height)
     mapBufferSize_Z = ((GAME_MAP_DEPTH * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
 	m_totalBuffer = new GameMapBuffer[(mapBufferSize_X) * (mapBufferSize_Y) * (mapBufferSize_Z)];
 	{
+		auto tmpTree = Model::create("treeTest/tzwTree.tzw");
+		auto aabb = tmpTree->localAABB();
 	    VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
-		VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTree_lod1.tzw");
-		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "treeTest/tzwTree.png");
+		VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTreeLod1.tzw");
+		VegetationBatInfo lod2(VegetationType::QUAD, "treeTest/treeLod2.png", vec2(10, 10));
 		//reg Tree class
-		m_treeID = Tree::shared()->regVegetation(&lod0, &lod1, NULL);
+		m_treeID = Tree::shared()->regVegetation(&lod0, &lod2, NULL);
 	}
 
 
@@ -424,7 +426,7 @@ vec3 GameMap::voxelToWorldPos(int x, int y, int z)
 
 float GameMap::getHeight(vec2 posXZ)
 {
-	return getNoiseValue(posXZ.x, 0.0, posXZ.y);
+	return getNoiseValue(posXZ.x, 0.0, posXZ.y) + 32.f;
 }
 
 vec3 GameMap::getNormal(vec2 posXZ)

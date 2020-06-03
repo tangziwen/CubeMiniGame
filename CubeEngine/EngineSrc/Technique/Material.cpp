@@ -277,6 +277,10 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				{
 					var->setAsSemantic(TechniqueVar::SemanticType::CamPos);
 				}
+				else if(typeStr =="semantic_CameraDir") 
+				{
+					var->setAsSemantic(TechniqueVar::SemanticType::CamDir);
+				}
 			}
 			m_varList[theName] = var;
 		}
@@ -293,15 +297,24 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 
 			if(tex.Size() > 2)
 			{
+				if(!strcmp(tex[2].GetString(), "tzwTree.png"))
+				{
+					tlog("shit");
+				}
 				auto filePathInfolder = Tfile::shared()->toAbsFilePath(tex[2].GetString(), envFolder);
+				Texture * t;
+				bool isNeedMipMap = true;
 				if(Tfile::shared()->isExist(filePathInfolder))
 				{
-					setTex(name, TextureMgr::shared()->getByPath(filePathInfolder, true));
+					t = TextureMgr::shared()->getByPath(filePathInfolder, isNeedMipMap);
+					
 				}
 				else
 				{
-					setTex(name, TextureMgr::shared()->getByPath(tex[2].GetString(), true));
+					t = TextureMgr::shared()->getByPath(tex[2].GetString(), isNeedMipMap);
 				}
+				setTex(name, t);
+				//t->setWarp(RenderFlag::WarpAddress::Clamp);
 			}else
 			{
 				setTex(name, nullptr);
@@ -679,6 +692,11 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 			auto cam = currScene->defaultCamera();
         	program->setUniformMat4v(name.c_str(), cam->getViewProjectionMatrix().inverted().data());
         }
+		break;
+		case TechniqueVar::SemanticType::CamDir:
+		{
+			program->setUniform3Float(name.c_str(), g_GetCurrScene()->defaultCamera()->getForward());
+		}
 		break;
 		default: ;
 	}

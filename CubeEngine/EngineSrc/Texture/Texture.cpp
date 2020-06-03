@@ -28,6 +28,7 @@ namespace tzw
 		if(isDDS)
 		{
 			loadingFlag = SOIL_FLAG_DDS_LOAD_DIRECT;
+			tlog("hehe");
 		}
 		else
 		{
@@ -51,7 +52,7 @@ namespace tzw
 		{
 			
 			tlog("texture create failed, no such file %s %s\n", filePath.c_str(),SOIL_last_result());
-			abort();
+			exit(0);
 		}
 		initData();
 		m_isLoaded = true;
@@ -253,6 +254,7 @@ namespace tzw
 	Texture::initData()
 	{
 		setWarp(RenderFlag::WarpAddress::Repeat);
+		//setWarp(RenderFlag::WarpAddress::Clamp);
 		
 	}
 } // namespace tzw

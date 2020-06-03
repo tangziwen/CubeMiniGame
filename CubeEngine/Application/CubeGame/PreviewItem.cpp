@@ -63,12 +63,14 @@ namespace tzw
 			auto lift = new LiftPart();
 			m_previewPart = lift;
 			auto m_material = Material::createFromTemplate("ModelRimLight");
+			m_material->setIsEnableBlend(true);
 			lift->setMaterial(m_material);
 			//m_previewGamePart->setPos(wherePos);
 		}
 		else if(item->m_name == "Digger")
 		{
 			auto m_material = Material::createFromTemplate("ModelRimLight");
+			m_material->setIsEnableBlend(true);
 			m_sphere = new SpherePrimitive(1.0, 25);
 			g_GetCurrScene()->addNode(m_sphere);
 			m_sphere->setMaterial(m_material);

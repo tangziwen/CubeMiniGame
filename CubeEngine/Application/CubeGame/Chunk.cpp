@@ -53,7 +53,7 @@ namespace tzw
 		setPos(m_basePoint);
 
 		memset(m_mesh, 0,sizeof(m_mesh));
-
+		memset(m_meshTransition, 0,sizeof(m_meshTransition));
 
 		m_needToUpdate = true;
 
@@ -155,9 +155,9 @@ namespace tzw
 			for(int i = 0; i < 3;i++)
 			{
 				m_mesh[i]->finish();
+				m_meshTransition[i]->finish();
 			}
 			
-
 			if (m_rigidBody)
 			{
 				PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
@@ -202,27 +202,56 @@ namespace tzw
 		auto pos = player->getPos();
 		auto centre = getAABB().centre();
 		auto dist = vec3(pos.x, 0, pos.z).distance(vec3(centre.x, 0, centre.z));
+
+
 		if(dist < 30.0f)
 		{
-			RenderCommand command(m_mesh[0], m_material, passType);
-			setUpTransFormation(command.m_transInfo);
-			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-			Renderer::shared()->addRenderCommand(command);
+			m_currentLOD = 0;
 		}
 		else if(dist < 75.0f)
 		{
-			RenderCommand command(m_mesh[1], m_material, passType);
-			setUpTransFormation(command.m_transInfo);
-			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-			Renderer::shared()->addRenderCommand(command);
+			m_currentLOD = 1;
 		} else
 		{
-			RenderCommand command(m_mesh[2], m_material, passType);
+			m_currentLOD = 2;
+		}
+		auto xList = {-1, 0, 1};
+		auto yList = {-1, 0, 1};
+		auto zList = {-1, 0, 1};
+		bool isNeedShowTransition = false;
+		for (int offsetX : xList)
+		{
+			for (int offsetY : yList)
+			{
+				for (int offsetZ : zList)
+				{
+					if(offsetX == 0 && offsetY ==0 && offsetZ == 0) continue;// skip self chunk
+					auto neighborChunk = GameWorld::shared()->getChunk(
+						this->x + offsetX, this->y + offsetY, this->z + offsetZ);
+					if (neighborChunk)
+					{
+						if(neighborChunk->m_currentLOD != m_currentLOD)
+						{
+							isNeedShowTransition = true;
+						}
+					}
+				}
+			}
+		}
+
+
+		RenderCommand command(m_mesh[m_currentLOD], m_material, passType);
+		setUpTransFormation(command.m_transInfo);
+		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+		Renderer::shared()->addRenderCommand(command);
+		if(isNeedShowTransition)
+		{
+			RenderCommand command(m_meshTransition[m_currentLOD], m_material, passType);
 			setUpTransFormation(command.m_transInfo);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			Renderer::shared()->addRenderCommand(command);
 		}
-
+		
 		if (true)
 		{
 			Tree::shared()->addTreeGroup(m_tree);
@@ -235,7 +264,6 @@ namespace tzw
 	{
 		if (m_currenState != State::INVALID)
 			return;
-		m_currentLOD = lodLevel;
 		reCache();
 		if (!m_mesh[0])
 		{
@@ -243,6 +271,7 @@ namespace tzw
 			{
 
 				m_mesh[i] = new Mesh();
+				m_meshTransition[i] = new Mesh();
 			}
 			m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		}
@@ -278,6 +307,9 @@ namespace tzw
 		{
 			delete m_mesh[i];
 			m_mesh[i] = nullptr;
+
+			delete m_meshTransition[i];
+			m_meshTransition[i] = nullptr;
 		}
 
 	}
@@ -814,29 +846,21 @@ BAAAABB
 	void
 	Chunk::genMesh(int lodLevel)
 	{
-		if (!m_mesh)
+		if (!m_mesh[0])
 			return;
 
 		fetchFromSource();
 		for(int i = 0; i < 3; i++)
 		{
 			m_mesh[i]->clear();
+			m_meshTransition[i]->clear();
 			auto VoxelBuffer = m_chunkInfo->mcPoints;
 			TransVoxel::shared()->generateWithoutNormal(m_basePoint,
-															m_mesh[i], (MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING, VoxelBuffer[i],
+															m_mesh[i], m_meshTransition[i], (MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING, VoxelBuffer[i],
 															0.0f, i);
 		}
-		
-
-		
-
-
-
-
 		if (m_mesh[0]->isEmpty())
 			return;
-		// genNormal();
-		// m_mesh->caclNormals();
 		calculateMatID();
 		loading_mutex.lock();
 		m_isNeedSubmitMesh = true;
@@ -977,7 +1001,6 @@ BAAAABB
 						Quaternion q;
 						rotateM.getRotation(&q);
 						instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
-						// grass->m_mesh->pushInstance(instance);
 						m_grass->m_instance.push_back(instance);
 					}
 				}

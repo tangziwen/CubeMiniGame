@@ -344,6 +344,7 @@ void RenderBackEnd::setTextureWarp(unsigned int textureID, RenderFlag::WarpAddre
 	selfCheck();
 	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, flag);
 	selfCheck();
+	glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_R, flag );
 }
 
 void RenderBackEnd::bindFrameBuffer(unsigned int frameBufferID)

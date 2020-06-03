@@ -206,7 +206,7 @@ struct voxelPosInfo
 	Vector3i v;
 	voxelInfo * info;
 };
-void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZE,
+void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transitionMesh, int VOXEL_SIZE,
 	voxelInfo* srcData, float minValue, int lodLevel)
 {
 	const Vector3i block_size_with_padding = Vector3i(VOXEL_SIZE, VOXEL_SIZE, VOXEL_SIZE);
@@ -441,9 +441,9 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, int VOXEL_SIZ
 
 	for (int dir = 0; dir < Cube::SIDE_COUNT; ++dir) 
 	{
-		build_transition(basePoint, mesh, VOXEL_SIZE, srcData, dir, lodLevel);
+		build_transition(basePoint, transitionMesh, VOXEL_SIZE, srcData, dir, lodLevel);
 	}
-	
+
 	// printf("done %d, %d\n", mesh->getIndicesSize(), mesh->getVerticesSize());
 }
 
@@ -768,14 +768,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info));
 						//vdata.m_pos = vec3(primaryf.x * BLOCK_SIZE, primaryf.y * BLOCK_SIZE, -1 * primaryf.z * BLOCK_SIZE) + basePoint;
 						vdata.m_normal = (n0 * t0 + n1 * t1).normalized();
-						if (lodLevel > 0)
-						{
-							vdata.m_color = vec4(1, 0, 1, 1);
-						}
-						else
-						{
-							vdata.m_color = vec4(0, 1, 0, 1);
-						}
+
 						mesh->addVertex(vdata);
 						// if (reuse_direction & 0x8) {
 						// 	// The vertex can be re-used later
@@ -829,14 +822,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,primary.info, primary.info));
 						vdata.m_normal = cell_gradients[index_vertex];
 						//vdata.m_pos = vec3(primaryf.x * BLOCK_SIZE, primaryf.y * BLOCK_SIZE , -1 * primaryf.z * BLOCK_SIZE) + basePoint;
-						if (lodLevel > 0)
-						{
-							vdata.m_color = vec4(1, 0, 1, 1);
-						}
-						else
-						{
-							vdata.m_color = vec4(0, 1, 0, 1);
-						}
+
 						mesh->addVertex(vdata);
 
 						// // We are on a corner so the vertex will be re-usable later

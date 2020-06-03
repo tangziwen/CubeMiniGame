@@ -10,13 +10,15 @@ namespace tzw {
     {
 	    QUAD_TRI,
     	ModelType,
+    	QUAD,
     };
 	struct VegetationBatInfo
 	{
 		VegetationBatInfo();
-		VegetationBatInfo(VegetationType theType, std::string filePath);
+		VegetationBatInfo(VegetationType theType, std::string filePath, vec2 size = vec2(0.8, 0.8));
 		VegetationType m_type;
 		std::string file_path;
+		vec2 m_size;
 	};
 	struct VegetationBatch
 	{

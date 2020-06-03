@@ -71,6 +71,7 @@ namespace tzw
 		TreeGroup * m_grass2;
 		TreeGroup * m_tree;
 	    Mesh * m_mesh[3];
+		Mesh * m_meshTransition[3];
 		void sampleForLod(int lodLevel, voxelInfo * out);
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);
