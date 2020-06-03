@@ -232,7 +232,7 @@ vec4 getWorldPosFromDepth()
 
 float getBias(vec3 normal, vec3 dirLight)
 {
-	return max(0.0002 * (1.0 - dot(normal, dirLight)), 0.0008);
+	return 0.005;//max(0.0003 * (1.0 - dot(normal, dirLight)), 0.0008);
 }
 
 /*
@@ -377,7 +377,7 @@ void main()
 	}
 
 	vec3 worldView = normalize(TU_camPos.xyz - worldPos.xyz);
-	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), gDirectionalLight.direction, gDirectionalLight.color * gDirectionalLight.intensity, normalize(worldView), surfaceData[0], shadowFactor);
+	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), normalize(gDirectionalLight.direction), gDirectionalLight.color * gDirectionalLight.intensity, normalize(worldView), surfaceData[0], shadowFactor);
 
 	gl_FragColor = vec4(resultColor, 1.0);
 }

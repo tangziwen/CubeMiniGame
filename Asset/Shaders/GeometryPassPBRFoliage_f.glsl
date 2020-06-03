@@ -34,43 +34,34 @@ vec3 CalcBumpedNormal(vec3 inputNormal)
 	NewNormal = normalize(NewNormal);
 	return NewNormal;	
 }
-float CalcMipLevel(vec2 texture_coord)
-{
-	vec2 dx = dFdx(texture_coord);
-	vec2 dy = dFdy(texture_coord);
-	float delta_max_sqr = max(dot(dx, dx), dot(dy, dy));
-	
-	return max(0.0, 0.5 * log2(delta_max_sqr));
-}
-float fwidth(float value)
-{
-	return abs(dFdx(value)) + abs(dFdy(value));
-}
+
 //! [0]
 void main()
 {
 	vec3 worldNormal = v_normal;
 	#ifdef FLAG_EnableDoubleSide
-		// if(gl_FrontFacing)
-		// {
-		// 	worldNormal = v_normal;
-		// }
-		// else{
-		// 	worldNormal = -v_normal;
-		// }
+		if(gl_FrontFacing)
+		{
+			worldNormal = normalize(v_normal);
+		}
+		else{
+			worldNormal = normalize(-v_normal);
+		}
 	#endif
     // Set fragment color from texture
-	vec4 col = texture(DiffuseMap,v_texcoord, 0);
-	if(col.a  <0.5)
+
+	vec4 col = texture(DiffuseMap,v_texcoord);
+	if(col.a  <0.48)
 	{
 		discard;
 	}
 	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a)*TU_color * v_color;
-	gl_FragData[0] = albedo;
+	
 	float metallic = texture2D(MetallicMap,v_texcoord).r;
 	float roughness = texture2D(RoughnessMap,v_texcoord).r;
+	gl_FragData[0] = albedo;//vec4(metallic, metallic, metallic, 1.0);
 	gl_FragData[1] = vec4(v_position,1.0);
 	gl_FragData[2] = vec4(CalcBumpedNormal(worldNormal),1.0);
-	gl_FragData[3] = vec4(roughness,metallic,0.0,1.0);
+	gl_FragData[3] = vec4(1.0,0.0,0.0,1.0);
 }
 //! [0]
