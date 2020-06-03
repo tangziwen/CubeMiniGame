@@ -5,6 +5,7 @@
 	},
 	"name" : "ModelRimLight",
 	"RenderStage": "TRANSPARENT",
+	"BlendEnable" : true,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_roughness", "type":"float", "default":5.0},
