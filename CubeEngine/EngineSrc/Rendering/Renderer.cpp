@@ -873,7 +873,8 @@ void Renderer::SSAOPass()
 	auto currScene = g_GetCurrScene();
 	m_gbuffer->bindForReading();
 	m_gbuffer->bindDepth(1);
-	m_offScreenBuffer->bindForReadingGBuffer();
+	m_gbuffer->bindForReadingGBuffer();
+	//m_offScreenBuffer->bindForReadingGBuffer();
 	m_ssaoBuffer1->bindForWriting();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_postEffect->use();
@@ -881,12 +882,15 @@ void Renderer::SSAOPass()
 	auto program = m_postEffect->getProgram();
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
-	program->setUniformInteger("TU_Depth",1);
-	m_gbuffer->bindRtToTexture(2, 2);
+	  
+	program->setUniformInteger("TU_posBuffer",1);
+	  
 	program->setUniformInteger("TU_normalBuffer",2);
-	m_gbuffer->bindRtToTexture(1, 3);
-	program->setUniformInteger("TU_positionBuffer",3);
-	program->setUniformInteger("TU_GBUFFER4",4);
+	  
+	program->setUniformInteger("TU_GBUFFER4",3);
+	  
+	program->setUniformInteger("TU_Depth", 4);
+
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
 	auto cam = currScene->defaultCamera();
 	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());

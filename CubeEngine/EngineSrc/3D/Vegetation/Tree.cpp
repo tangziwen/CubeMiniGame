@@ -300,13 +300,13 @@ void VegetationInfo::insert(InstanceData inst)
 {
 	auto cam = g_GetCurrScene()->defaultCamera();
 	auto dist = cam->getWorldPos().distance(inst.posAndScale.toVec3());
-	if(dist > 150) return;//just ignore
+	if(dist > 200.0f) return;//just ignore
 
 	if(dist < 35.f)
 	{
 		m_lodBatch[0]->insertInstanceData(inst);
 	}
-	else if(dist < 75.f)
+	else if(dist < 100.f)
 	{
 		if(m_lodBatch[1])
 		{

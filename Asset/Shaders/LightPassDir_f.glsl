@@ -167,6 +167,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	F0 = mix(F0, albedo, metallic);
 	
 	float NoV = max(0.0, dot(N, V));
+	
 	// calculate per-light radiance
 	vec3 H = normalize(V + L);
 	vec3 radiance     = lightColor;
@@ -184,7 +185,6 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	vec3 nominator    = vec3(NDF)* G * F;
 	float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0); 
 	vec3 specular     = nominator / max(denominator, 0.001);
-
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
 	
@@ -357,6 +357,16 @@ vec3 ACES_Knarkowicz( vec3 x )
     return (x*(a*x+b))/(x*(c*x+d)+s);
 }
 
+vec3 twoSidePBR(vec3 albedo, vec3 N, vec3 L, vec3 LightColor)
+{
+	L = -L;
+	float NoL = dot(N, L);
+	float wrap = 0.5;
+	float wrapNoL = max((NoL + wrap) / ((1 + wrap) * (1 + wrap)), 0.0); // 0<w<1
+	float back_wrap = wrap;
+	float back_wrapNoL = clamp((-dot(N, L) + back_wrap) / ((1 + back_wrap) * (1 + back_wrap)), 0, 1);
+	return NoL * wrapNoL * albedo * 0.6 + albedo * 0.4;
+}
 void main()
 {
 	vec4 Data1 = texture2D(TU_colorBuffer, v_texcoord);
@@ -377,7 +387,16 @@ void main()
 	}
 
 	vec3 worldView = normalize(TU_camPos.xyz - worldPos.xyz);
-	vec3 resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), normalize(gDirectionalLight.direction), gDirectionalLight.color * gDirectionalLight.intensity, normalize(worldView), surfaceData[0], shadowFactor);
+	int shadingModel = int(surfaceData[2]);
+	vec3 resultColor = vec3(0, 0, 0);
+	if(shadingModel == 0)
+	{
+		resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), normalize(gDirectionalLight.direction), gDirectionalLight.color * gDirectionalLight.intensity, normalize(worldView), surfaceData[0], shadowFactor);
+	}
+	else if (shadingModel == 1)
+	{
 
+		resultColor = twoSidePBR(color, normalize(normal),normalize(gDirectionalLight.direction), gDirectionalLight.color * gDirectionalLight.intensity);
+	}
 	gl_FragColor = vec4(resultColor, 1.0);
 }

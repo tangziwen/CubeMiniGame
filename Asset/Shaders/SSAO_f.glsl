@@ -4,6 +4,9 @@ uniform float Gamma = 1.4;
 
 uniform sampler2D TU_colorBuffer;
 uniform sampler2D TU_Depth;
+uniform sampler2D TU_normalBuffer;
+uniform sampler2D TU_posBuffer;
+uniform sampler2D gNoise;
 uniform vec2 TU_winSize;
 uniform float fog_near;
 uniform float fog_far;
@@ -15,12 +18,11 @@ uniform mat4 TU_Project;
 uniform mat4 TU_view;
 uniform float AO_distant;
 uniform float AO_strength;
-uniform sampler2D TU_normalBuffer;
-uniform sampler2D TU_positionBuffer;
+
 const int MAX_KERNEL_SIZE = 64;
 const int MAX_NOISE_SIZE = 16;
 uniform vec3 gKernel[MAX_KERNEL_SIZE];
-uniform sampler2D gNoise;
+
 
 uniform float AO_bias;
 
@@ -106,7 +108,7 @@ void main()
 	color.rgb = mix(color.rgb, color.rgb * vignette, 0.3);
 
 	vec2 noiseScale = vec2(TU_winSize.x/4.0, TU_winSize.y/4.0);
-    vec3 fragPos = (TU_view * vec4(texture(TU_positionBuffer, v_texcoord).xyz, 1.0)).rgb;
+    vec3 fragPos = (TU_view * getWorldPosFromDepth()).rgb;
     vec3 normal = normalize((TU_view * vec4(texture(TU_normalBuffer, v_texcoord).rgb, 0.0)).rgb);
     vec3 randomVec = normalize(texture(gNoise, v_texcoord * noiseScale).xyz);
     // create TBN change-of-basis matrix: from tangent-space to view-space
@@ -132,7 +134,7 @@ void main()
 		offset.x = clamp(offset.x, 0.0, 1.0);
 		offset.y = clamp(offset.y, 0.0, 1.0);
         // get sample depth
-        float sampleDepth = (TU_view * vec4(texture(TU_positionBuffer, offset.xy).xyz, 1.0)).z; // get depth value of kernel sample
+        float sampleDepth = (TU_view * getWorldPosFromDepth()).z; // get depth value of kernel sample
         
         // range check & accumulate
         float rangeCheck = smoothstep(0.0, 1.0, AO_distant / abs(fragPos.z - sampleDepth));

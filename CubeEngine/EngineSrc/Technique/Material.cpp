@@ -292,7 +292,7 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 		for (unsigned int i = 0; i < texMap.Size(); i++)
 		{
 			auto& tex = texMap[i];
-			auto name = tex[0].GetString();
+			std::string name = tex[0].GetString();
 			m_texSlotMap[name] = tex[1].GetInt();
 
 			if(tex.Size() > 2)
@@ -317,7 +317,19 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				//t->setWarp(RenderFlag::WarpAddress::Clamp);
 			}else
 			{
-				setTex(name, nullptr);
+				if(name == "MetallicMap")
+				{
+					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png", true));
+				}
+				else if(name == "RoughnessMap")
+				{
+					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png", true));
+				}
+				else
+				{
+					setTex(name, nullptr);
+				}
+				
 			}
 		}
 	}

@@ -15,6 +15,7 @@ uniform mat4 TU_mMatrixInverted;
 uniform float TU_roughness;
 uniform float TU_depthBias;
 uniform vec3 TU_camPos;
+uniform vec3 TU_camDir;
 attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_texcoord;
@@ -183,4 +184,8 @@ void main()
     gl_Position.z -= TU_depthBias / (TU_depthBias + gl_Position.w);
 	v_color = a_instance_offset2;
     v_texcoord = a_texcoord;
+    vec3 theNormal = -TU_camDir;
+    vec3 theright = cross(vec3(0, 1, 0), theNormal);
+    vec3 theRealNormal = cross(theright, vec3(0, 1, 0));
+    v_normal = vec3(theRealNormal);
 }

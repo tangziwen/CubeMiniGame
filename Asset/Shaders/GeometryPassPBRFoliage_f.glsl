@@ -51,7 +51,7 @@ void main()
     // Set fragment color from texture
 
 	vec4 col = texture(DiffuseMap,v_texcoord);
-	if(col.a  <0.48)
+	if(col.a  <0.5)
 	{
 		discard;
 	}
@@ -61,7 +61,7 @@ void main()
 	float roughness = texture2D(RoughnessMap,v_texcoord).r;
 	gl_FragData[0] = albedo;//vec4(metallic, metallic, metallic, 1.0);
 	gl_FragData[1] = vec4(v_position,1.0);
-	gl_FragData[2] = vec4(CalcBumpedNormal(worldNormal),1.0);
-	gl_FragData[3] = vec4(1.0,0.0,0.0,1.0);
+	gl_FragData[2] = vec4(worldNormal,1.0);
+	gl_FragData[3] = vec4(1.0,0.0,1.0,1.0);
 }
 //! [0]

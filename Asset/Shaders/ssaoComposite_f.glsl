@@ -7,5 +7,5 @@ void main()
 {
 	vec4 color = texture2D(TU_colorBuffer, v_texcoord);
 	vec4 ao = texture2D(TU_SSAOBuffer, v_texcoord);
-	gl_FragColor = vec4(ao.xyz * color.rgb, 1.0);
+	gl_FragColor = vec4(color.xyz * ao.xyz, 1.0);
 }

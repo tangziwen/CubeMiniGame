@@ -32,7 +32,7 @@ extern "C"
 	// static SoLoud::Wav gWave;      // One wave file
 #pragma comment(linker, "/subsystem:console")
 
-int main(int argc, char *argv[])
+int main(int argc, char *argv[]) 
 {
 	return Engine::run(argc,argv,new GameEntry());
 }
