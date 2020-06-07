@@ -35,7 +35,7 @@
 #include "3D/Terrain/TransVoxel.h"
 #include "AudioSystem/AudioSystem.h"
 #include "FastNoise/FastNoise.h"
-
+#include "GameUISystem.h"
 namespace tzw
 {
 
@@ -205,13 +205,7 @@ namespace tzw
 	{
 		switch (keyCode)
 		{		
-			case TZW_KEY_T:
-			{
-				auto cube = new CubePrimitive(20.f, 20.0f, 1.0f);
-					cube->setPos(getPos());
-					g_GetCurrScene()->addNode(cube);
-			}
-			break;
+
 		default:
 		  break;
 		}
@@ -269,6 +263,14 @@ namespace tzw
 				{
 					handleSitDown();
                 }
+			}
+			break;
+			case TZW_KEY_P:
+			{
+				// auto cube = new CubePrimitive(20.f, 20.0f, 1.0f);
+				// 	cube->setPos(getPos());
+				// 	g_GetCurrScene()->addNode(cube);
+				GameUISystem::shared()->setWindowShow(WindowType::PAINTER, true);
 			}
 			break;
 		default:
@@ -389,8 +391,13 @@ namespace tzw
 		auto label = GameUISystem::shared()->getCrossHairTipsInfo();
 		if(!label) return;
 		auto item = m_currSelectedItem;
+		if(!item)
+		{
+			label->setIsVisible(false);
+			return;
+		}
 		bool isNeedSpecialShowBySelected = false;
-		if(item && item->isSpecialFunctionItem())
+		if(item->isSpecialFunctionItem())
 		{
 			isNeedSpecialShowBySelected = true;
 			switch(item->m_type)
@@ -446,6 +453,7 @@ namespace tzw
 				}
 			break;
 			case GamePartType::SPECIAL_PART_PAINTER: label->setString(TR(u8"(×ó¼ü) ÅçÆá \n(ÓÒ¼ü) ÅçÍ¿Ãæ°å")); break;
+			case GamePartType::SPECIAL_PART_DIGGER: label->setString(TR(u8"(×ó¼ü) ÍÚ¾ò \n(ÓÒ¼ü) Ìî³ä")); break;
 			default: ;
 			}
 		}else
@@ -505,13 +513,15 @@ namespace tzw
 
 	void CubePlayer::setCurrSelected(std::string itemName)
 	{
-		updateCrossHairTipsInfo();
+		
+		tlog("the Item Name is %s",itemName.c_str());
 		if (itemName.empty()) 
 		{
 			m_currSelectedItem = nullptr;
-			return;
 		}
 		m_currSelectedItem = ItemMgr::shared()->getItem(itemName);
+		updateCrossHairTipsInfo();
+		if(!m_currSelectedItem) return;
 		if(itemName == "Painter") return;
 		m_previewItem->setPreviewItem(ItemMgr::shared()->getItem(itemName));
 

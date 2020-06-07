@@ -385,7 +385,7 @@ unsigned char GameMap::getDensity(vec3 pos)
   }
 }
 
-unsigned char GameMap::getVoxel(int x, int y, int z)
+unsigned char GameMap::getVoxelW(int x, int y, int z)
 {
     int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
     int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
@@ -396,6 +396,20 @@ unsigned char GameMap::getVoxel(int x, int y, int z)
     int currZ = (z%GAME_MAX_BUFFER_SIZE);
     int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
     return m_totalBuffer[buffIndex].m_buff[cellIndex].w;
+}
+
+voxelInfo*
+GameMap::getVoxel(int x, int y, int z)
+{
+    int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
+    int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
+    int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
+    int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
+    int currX = (x%GAME_MAX_BUFFER_SIZE);
+    int currY = (y%GAME_MAX_BUFFER_SIZE);
+    int currZ = (z%GAME_MAX_BUFFER_SIZE);
+    int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+    return &m_totalBuffer[buffIndex].m_buff[cellIndex];
 }
 
 void GameMap::setVoxel(int x, int y, int z, unsigned char w)

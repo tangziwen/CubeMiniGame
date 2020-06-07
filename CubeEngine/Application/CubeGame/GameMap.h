@@ -63,7 +63,8 @@ public:
     bool isSurface(vec3 pos);
 	voxelInfo getDensityI(int x, int y, int z);
     unsigned char getDensity(vec3 pos);
-	unsigned char getVoxel(int x, int y, int z);
+	unsigned char getVoxelW(int x, int y, int z);
+	voxelInfo*  getVoxel(int x, int y ,int z);
 	void setVoxel(int x, int y, int z, unsigned char w);
 	vec3 voxelToBuffWorldPos(int x, int y, int z);
 	vec3 voxelToWorldPos(int x, int y, int z);

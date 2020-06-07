@@ -12,7 +12,23 @@
 #include "OptionPanel.h"
 namespace tzw {
 class VehicleBroswer;
-enum class WindowType;
+enum class WindowType
+{
+	INVENTORY,
+	NODE_EDITOR,
+	VEHICLE_FILE_BROWSER,
+	RESUME_MENU,
+	HELP_PAGE,
+	ATTRIBUTE_WINDOW,
+	PAINTER,
+	MainMenu,
+	OPTION_MENU,
+	QUICK_DEBUG,
+	WORLD_SETTING,
+	PLAYER_INFO,
+	ABOUT,
+	Console,
+};
 class GameUISystem : public Singleton<GameUISystem>, public IMGUIObject, public EventListener
 {
 public:

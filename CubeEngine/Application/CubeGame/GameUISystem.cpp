@@ -47,23 +47,7 @@ namespace tzw {
 
 
 static std::set<WindowType> m_currOpenWindowSet;
-enum class WindowType
-{
-	INVENTORY,
-	NODE_EDITOR,
-	VEHICLE_FILE_BROWSER,
-	RESUME_MENU,
-	HELP_PAGE,
-	ATTRIBUTE_WINDOW,
-	PAINTER,
-	MainMenu,
-	OPTION_MENU,
-	QUICK_DEBUG,
-	WORLD_SETTING,
-	PLAYER_INFO,
-	ABOUT,
-	Console,
-};
+
 static void exitNow(Button * btn)
 {
     exit(0);
@@ -383,7 +367,7 @@ void GameUISystem::drawIMGUI()
 			auto screenSize = Engine::shared()->winSize();
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 			bool isOpen = true;
-			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
 			if (ImGui::CollapsingHeader("Block Color"))
 			{
 				auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
@@ -407,14 +391,55 @@ void GameUISystem::drawIMGUI()
 						ImGui::SameLine();
 					}
 				}
-				if(ImGui::Button("Make As Template"))
+				if(ImGui::TreeNode("Make Block Template"))
 				{
-					//pass
-					auto item = GameWorld::shared()->getPlayer()->getCurSelectedItem();
-					GameItem * newItem = new GameItem(*item);
-					newItem->m_name = item->m_name + " New";
-					ItemMgr::shared()->pushItem(newItem);
+					static char newItemName[128] = "new Item";
+					static char newItemTitle[128] = "new Item";
+					ImGui::Text(TRC("you can set a template for block for further used"));
+					auto& itemList = ItemMgr::shared()->getItemList();
+					static int currSelectedItemIndex = ItemMgr::shared()->getItemIndex(ItemMgr::shared()->getItem("Block"));
+			        if (ImGui::BeginCombo(TRC(u8"Block List"), itemList[currSelectedItemIndex]->m_desc.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
+			        {
+			            for (int n = 0; n < itemList.size(); n++)
+			            {
+			            	if(!itemList[n]->isSpecialFunctionItem())
+			            	{
+								bool is_selected = (n == currSelectedItemIndex);
+				                if (ImGui::Selectable(itemList[n]->m_desc.c_str(), is_selected))
+				                {
+					                currSelectedItemIndex = n;
+				                	// newItemName = itemList[n]->m_name.c_str();
+				                	sprintf_s(newItemName, 128,"%s_New", itemList[n]->m_name.c_str());
+				                	sprintf_s(newItemTitle, 128,"%s_New", itemList[n]->m_desc.c_str());
+				                }
+			
+				                if (is_selected)
+				                    ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			            	}
+			            }
+			            ImGui::EndCombo();
+			        }
+					
+					ImGui::InputText("New Block Unqiue Name", newItemName, 128);
+					ImGui::InputText("New Block Name Title", newItemTitle, 128);
+					if(ImGui::Button("Make"))
+					{
+						//pass
+						auto item = itemList[currSelectedItemIndex];
+						GameItem * newItem = new GameItem(*item);
+						newItem->m_name = newItemName;
+						newItem->m_desc = newItemTitle;
+						newItem->m_tintColor = GameWorld::shared()->getPlayer()->getPaintGun()->color;
+						newItem->m_surfaceName = GameWorld::shared()->getPlayer()->getPaintGun()->m_surface->getName();
+						auto part = new GamePart();
+						part->initFromItem(newItem);
+
+						newItem->m_thumbNail = new ThumbNail(part->getNode());
+						Renderer::shared()->updateThumbNail(newItem->m_thumbNail);
+						ItemMgr::shared()->pushItem(newItem);
+					}
 				}
+
 			}
 			if (ImGui::CollapsingHeader("Terrain"))
 			{

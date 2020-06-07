@@ -411,7 +411,7 @@ namespace tzw
 					int Y = posY + j;
 					int Z = posZ + k;
 					float theDist =
-						(m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, -Z * BLOCK_SIZE))
+						(m_basePoint + vec3(X * BLOCK_SIZE, Y * BLOCK_SIZE, Z * BLOCK_SIZE))
 						.distance(pos);
 					if (theDist <= range)
 					{
@@ -531,7 +531,7 @@ BAAAABB
 		{
 
 			
-			auto w = GameMap::shared()->getVoxel(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT);
+			auto w = GameMap::shared()->getVoxelW(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT);
 			//short w = m_chunkInfo->mcPoints[ind].w;
 			//m_chunkInfo->mcPoints[ind].w = std::clamp(w + scalarInShort, 0, 255);
 
@@ -558,13 +558,16 @@ BAAAABB
 			m_chunkInfo->mcPoints[0][ind].w = 1.0;
 	}
 
-	void Chunk::setVoxelMat(int x, int y, int z, int matIndex, bool isAdd)
+	void Chunk::setVoxelMat(int i, int j, int k, int matIndex, bool isAdd)
 	{
 		//if (!isInOutterRange(x, y, z))
 			//return;
-		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
-		int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
-		m_chunkInfo->mcPoints[0][ind].setMat(matIndex, 0, 0, vec3(1, 0, 0));
+		// int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
+		// int ind = x * YtimeZ + y * (MAX_BLOCK + MIN_PADDING + MAX_PADDING) + z;
+		// m_chunkInfo->mcPoints[0][ind].setMat(matIndex, 0, 0, vec3(1, 0, 0));
+		int offset = MIN_PADDING;
+		auto v = GameMap::shared()->getVoxel(x * MAX_BLOCK + (i - offset) + LOD_SHIFT, y * MAX_BLOCK + (j - offset) + LOD_SHIFT, z * MAX_BLOCK + (k - offset) + LOD_SHIFT);
+		v->setMat(matIndex, 0, 0, vec3(1, 0, 0));
 		m_chunkInfo->isEdit = true;
 	}
 

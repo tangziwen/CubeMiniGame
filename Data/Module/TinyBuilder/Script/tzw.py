@@ -11,7 +11,7 @@ def tzw_engine_ui_update(dt):
 	Main.handleUIUpdate(dt)
 	
 def tzw_engine_input_event(eventInfo):
-	print(eventInfo)
+	print(eventInfo.type)
 	Main.onEngineInputEvent(eventInfo)
 
 def tzw_on_game_ready():

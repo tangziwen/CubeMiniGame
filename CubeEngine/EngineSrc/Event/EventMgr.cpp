@@ -153,6 +153,7 @@ void EventMgr::apply(float delta)
        case EVENT_TYPE_M_SCROLL:
        {
 			applyScroll(info);
+       		ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_M_PRESS:

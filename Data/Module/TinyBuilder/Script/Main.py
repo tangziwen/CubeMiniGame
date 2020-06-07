@@ -43,6 +43,7 @@ EVENT_TYPE_M_RELEASE = 2
 EVENT_TYPE_M_PRESS = 3
 EVENT_TYPE_M_MOVE = 4
 EVENT_TYPE_K_CHAR_INPUT = 5
+EVENT_TYPE_M_SCROLL = 6
 
 GAME_PART_BLOCK = 0
 GAME_PART_CYLINDER = 1
@@ -84,6 +85,7 @@ class GameState():
 	currentSelectedItem = None
 	m_isControlKeyPress = False
 	m_isHoldButton = None
+	oldPlayerPos = None
 
 #init
 def onEngineInit():
@@ -344,9 +346,6 @@ def onKeyPress(input_event):
 	elif input_event.keycode == KeyConfig.TZW_KEY_LEFT_CONTROL :
 		GameState.m_isControlKeyPress = True
 	
-
-
-oldPlayerPos = None
 def onKeyRelease(input_event):
 	player = Game.GameWorld.shared().getPlayer()
 	isKeyPress = False
@@ -421,7 +420,7 @@ def onKeyRelease(input_event):
 			else:
 				result = Game.BuildingSystem.shared().rayTestPart(player.getPos(), player.getForward(), 10)
 				if result and Game.BuildingSystem.shared().getGamePartTypeInt(result) == GAME_PART_CONTROL :
-					oldPlayerPos = player.getPos()
+					GameState.oldPlayerPos = player.getPos()
 					Game.BuildingSystem.shared().setCurrentControlPart(result)
 				elif result and Game.BuildingSystem.shared().getGamePartTypeInt(result) == GAME_PART_LIFT :
 					Game.GameUISystem.shared().setIsFileBroswerOpen(True)
@@ -430,16 +429,19 @@ def onKeyRelease(input_event):
 				
 			
 		else:
-			player.setPos(oldPlayerPos)
+			player.setPos(GameState.oldPlayerPos)
 			Game.BuildingSystem.shared().setCurrentControlPart(None)
 		
 	
 	if isKeyPress :
-		if GameState.m_itemSlots[GameState.m_currIndex].target:
-			player.setCurrSelected(GameState.m_itemSlots[GameState.m_currIndex].target)
-		else:
-			player.setCurrSelected("")
+		notifySelectItem()
 
+def notifySelectItem():
+	player = Game.GameWorld.shared().getPlayer()
+	if GameState.m_itemSlots[GameState.m_currIndex].target:
+		player.setCurrSelected(GameState.m_itemSlots[GameState.m_currIndex].target)
+	else:
+		player.setCurrSelected("")
 
 def checkIsNormalPart(itemType):
 	constrainType = {GAME_PART_BEARING, GAME_PART_SPRING}
@@ -543,6 +545,17 @@ def onMouseRelease(input_event):
 		print("xray mode can not place")
 	
 
+def onMouseScroll(input_event):
+	print("scroll");
+	slotSize = len(GameState.m_itemSlots)
+	if(int(input_event.offset.y) == 1):
+		GameState.m_currIndex += 1;
+		GameState.m_currIndex %= slotSize
+	elif(int(input_event.offset.y) == -1):
+		GameState.m_currIndex -= 1;
+		GameState.m_currIndex += slotSize
+		GameState.m_currIndex %= slotSize
+	notifySelectItem()
 
 #input event
 def onEngineInputEvent(input_event):
@@ -556,3 +569,5 @@ def onEngineInputEvent(input_event):
 				onKeyPress(input_event)
 			elif input_event.type == EVENT_TYPE_M_RELEASE : 
 				onMouseRelease(input_event)
+			elif input_event.type == EVENT_TYPE_M_SCROLL :
+				onMouseScroll(input_event)

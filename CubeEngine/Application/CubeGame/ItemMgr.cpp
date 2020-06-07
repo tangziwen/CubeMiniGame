@@ -223,6 +223,20 @@ void ItemMgr::loadFromFile(std::string filePath)
 	}
 }
 
+int
+ItemMgr::getItemIndex(GameItem* item)
+{
+	for(int i = 0; i < m_itemList.size(); i++)
+	{
+		if(m_itemList[i] == item)
+		{
+			return i;
+		}
+		
+	}
+  return -1;
+}
+
 GameItem * ItemMgr::getItem(std::string name)
 {
 	return m_itemMap[name];
@@ -242,5 +256,11 @@ void ItemMgr::pushItem(GameItem* item)
 {
 	m_itemMap[item->m_name] = item;
 	m_itemList.push_back(item);
+}
+std::vector<GameItem * > &
+ItemMgr::getItemList()
+{
+	return m_itemList;
+  // TODO: 在此处插入 return 语句
 }
 }

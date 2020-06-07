@@ -16,10 +16,12 @@ class ItemMgr : public Singleton<ItemMgr>
 public:
 	ItemMgr();
 	void loadFromFile(std::string filePath);
+	int getItemIndex(GameItem * item);
 	GameItem * getItem(std::string name);
 	int getItemAmount();
 	GameItem * getItemByIndex(int index);
 	void pushItem(GameItem* item);
+	std::vector<GameItem * >  & getItemList();
 private:
 	std::map<std::string, GameItem * > m_itemMap;
 	std::vector<GameItem * > m_itemList;

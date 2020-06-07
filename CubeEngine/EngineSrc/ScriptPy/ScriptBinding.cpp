@@ -216,7 +216,9 @@ namespace tzw
 			BIND_PROP_PY(EventInfo, theChar)
 			BIND_PROP_PY(EventInfo, type)
 			BIND_PROP_PY(EventInfo, arg)
-			BIND_PROP_PY(EventInfo, pos);
+			BIND_PROP_PY(EventInfo, pos)
+			BIND_PROP_PY(EventInfo, offset);
+		
 
 		BIND_BEGIN_CLASS_PY(GUISystem)
 		BIND_SINGLETON_PY(GUISystem)
