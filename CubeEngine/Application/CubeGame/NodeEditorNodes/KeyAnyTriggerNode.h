@@ -22,6 +22,7 @@ protected:
 	NodeAttr * m_pressedAttr;
 	NodeAttr * m_ReleasedAttr;
 	int m_keyCode;
+	bool m_isNeedOnSeat;
 };
 
 }

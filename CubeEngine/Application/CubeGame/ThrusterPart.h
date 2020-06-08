@@ -21,7 +21,7 @@ namespace tzw
 		void generateName() override;
 		GamePartType getType() override;
 		BearPart * m_bearPart[6];
-		void toggle(int openSignal);
+		void toggle(int openSignal) override;
 		void updateForce(float dt);
 		GameNodeEditorNode * getGraphNode() const;
 		virtual ~ThrusterPart();

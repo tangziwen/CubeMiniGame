@@ -347,6 +347,30 @@ void BearPart::generateName()
 		}
 	}
 
+	void BearPart::toggle(int signal)
+	{
+		float speedResult = 10.f;
+		if(getIsSteering())
+		{
+			if(signal!= 0)
+			{
+				enableAngularMotor(true, speedResult * signal, 50);
+			}else
+			{
+				enableAngularMotor(true, 0, 10000000.0f);
+			}
+		}else
+		{
+			if(signal!= 0)
+			{
+				enableAngularMotor(true, speedResult * signal, 50);
+			}else
+			{
+				enableAngularMotor(false, speedResult, 50);
+			}
+		}
+	}
+
 	void BearPart::onUpdate(float dt)
 	{
 		//if(m_constrain)

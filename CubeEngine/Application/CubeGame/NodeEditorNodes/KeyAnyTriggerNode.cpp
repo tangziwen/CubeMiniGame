@@ -2,11 +2,12 @@
 #include "CubeGame/GameUISystem.h"
 #include "CubeGame/BehaviorNode.h"
 #include "CubeGame/BuildingSystem.h"
+#include "CubeGame/UI/KeyMapper.h"
 
 
 namespace tzw
 {
-	KeyAnyTriggerNode::KeyAnyTriggerNode()
+	KeyAnyTriggerNode::KeyAnyTriggerNode():m_isNeedOnSeat(true)
 	{
 		name =TR(u8"按键输入");
 		m_pressedAttr =addOutExe(TR(u8"按下"));
@@ -23,12 +24,16 @@ namespace tzw
 	{
 		int intValue = m_keyCode;
 		ImGui::PushItemWidth(80);
-		bool isInput = ImGui::InputInt("",&intValue);
+		ImGui::Text("Key %c", char(m_keyCode));
 		ImGui::PopItemWidth();
-		if(isInput)
+		ImGui::SameLine();
+		if(ImGui::Button("Change##KeyCode"))
 		{
-			m_keyCode = intValue;
-			//m_attr->m_localAttrValue.setInt(intValue);
+			KeyMapper::shared()->open([this](int keyCode){this->m_keyCode = keyCode;});
+		}
+		if(ImGui::RadioButton("Is Need On Seat", m_isNeedOnSeat))
+		{
+			m_isNeedOnSeat = !m_isNeedOnSeat;
 		}
 	}
 
@@ -59,17 +64,22 @@ namespace tzw
 	{
 		GameNodeEditorNode::load(partData);
 		m_keyCode = partData["KeyCode"].GetInt();
+		m_isNeedOnSeat = partData["IsNeedOnSeat"].GetBool();
 	}
 
 	void KeyAnyTriggerNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
 		GameNodeEditorNode::dump(partDocObj, allocator);
 		partDocObj.AddMember("KeyCode", m_keyCode, allocator);
+		partDocObj.AddMember("IsNeedOnSeat", m_isNeedOnSeat, allocator);
 	}
 
 	void KeyAnyTriggerNode::triggerPress()
 	{
-		//if(!isPlayerOnSeat()) return;
+		if(m_isNeedOnSeat)
+		{
+			if(!isPlayerOnSeat()) return;
+		}
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_pressedAttr, node_list);
@@ -85,7 +95,10 @@ namespace tzw
 
 	void KeyAnyTriggerNode::triggerRelease()
 	{
-		//if(!isPlayerOnSeat()) return;
+		if(m_isNeedOnSeat)
+		{
+			if(!isPlayerOnSeat()) return;
+		}
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
 		std::vector<GameNodeEditorNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_ReleasedAttr, node_list);
@@ -94,7 +107,6 @@ namespace tzw
 			if(node->getType() == Node_TYPE_BEHAVIOR)
 			{
 				nodeEditor->pushToStack(node);
-				//static_cast<BehaviorNode *>(node)->execute();
 			}
 		}
 	}

@@ -23,7 +23,7 @@ protected:
 	int m_keyCodeA;
 	int m_keyCodeB;
 	int m_signal;
-	bool m_isEffect;
+	bool m_isNeedOnSeat;
 };
 
 }

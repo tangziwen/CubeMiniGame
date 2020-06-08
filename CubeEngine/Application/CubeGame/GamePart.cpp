@@ -796,6 +796,12 @@ namespace tzw
 		return 0;
 	}
 
+	void GamePart::toggle(int openSignal)
+	{
+		
+	}
+
+
 	GameItem* GamePart::getItem() const
 	{
 		return m_item;

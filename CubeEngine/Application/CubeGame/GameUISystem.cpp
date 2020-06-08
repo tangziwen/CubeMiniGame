@@ -41,6 +41,7 @@
 #include "Base/TimerMgr.h"
 #include "Engine/WorkerThreadSystem.h"
 #include "ItemMgr.h"
+#include "UI/KeyMapper.h"
 
 
 namespace tzw {
@@ -134,8 +135,14 @@ void GameUISystem::drawIMGUI()
 		drawEntryInterFace();
 	}else
 	{
-
-
+	//KeyMapper
+		{
+			if(KeyMapper::shared()->isOpen())
+			{
+				KeyMapper::shared()->drawIMGUI(nullptr);
+			}
+		}
+	
 	auto currIsNeedShow = isVisible() || isNeedShowWindow();
 	if(m_preIsNeedShow != currIsNeedShow)
 	{

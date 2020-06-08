@@ -73,6 +73,7 @@ public:
 	virtual GameNodeEditorNode * getEditorNode();
 	int getPrettyAttach(Attachment * otherAttach, int attachOffset);
 	int findAttachByLocale(std::string locale);
+	virtual void toggle(int openSignal);
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

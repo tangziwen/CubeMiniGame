@@ -36,6 +36,7 @@ public:
 	void drawInspect() override;
 	bool isNeedDrawInspect() override;
 	void updateConstraintState() override;
+	void toggle(int openSignal) override;
 	virtual void onUpdate(float dt);
 private:
 	GameNodeEditorNode * m_graphNode;

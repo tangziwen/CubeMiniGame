@@ -17,7 +17,7 @@ namespace tzw
 		for(auto val : attrVal.m_list)
 		{
 			auto node = static_cast<ResNode *>(val.usrPtr);
-			auto constraint = dynamic_cast<ThrusterPart *>(node->getProxy());
+			auto constraint = dynamic_cast<GamePart *>(node->getProxy());
 
 			int signal = m_signalAttr->eval().getInt();
 			constraint->toggle(signal);
