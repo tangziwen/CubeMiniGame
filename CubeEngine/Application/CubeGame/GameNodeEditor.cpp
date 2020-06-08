@@ -34,6 +34,7 @@
 #include "NodeEditorNodes/EqualNode.h"
 #include "NodeEditorNodes/IfNode.h"
 #include "NodeEditorNodes/PrintNode.h"
+#include "NodeEditorNodes/KeyPairTriggerNode.h"
 #include "CannonPart.h"
 
 namespace ed = ax::NodeEditor;
@@ -455,7 +456,7 @@ bool GameNodeEditor::onKeyPress(int keyCode)
 	//if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
-		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_ANY_TRIGGER)
+		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_ANY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_PAIR)
 		{
 
 				static_cast<TriggerNode *>(trigger)->handleKeyPress(keyCode);
@@ -477,7 +478,7 @@ bool GameNodeEditor::onKeyRelease(int keyCode)
 	//if(BuildingSystem::shared()->getCurrentControlPart() && !BuildingSystem::shared()->getCurrentControlPart()->getIsActivate()) return false;
 	for(auto trigger : m_triggerList)
 	{
-		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_ANY_TRIGGER)
+		if(trigger->getNodeClass() == Node_CLASS_KEY_TRIGGER || trigger->getNodeClass() == Node_CLASS_KEY_ANY_TRIGGER|| trigger->getNodeClass() == Node_CLASS_KEY_PAIR)
 		{
 			static_cast<TriggerNode *>(trigger)->handleKeyRelease(keyCode);
 		}
@@ -670,6 +671,9 @@ void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
         case Node_CLASS_PRINT:
 			newNode = new PrintNode();
 			break;
+        case Node_CLASS_KEY_PAIR:
+			newNode = new KeyPairTriggerNode();
+			break;
 		}
 		return newNode;
 	}
@@ -716,6 +720,9 @@ void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
 				break;
 	        case Node_CLASS_PRINT:
 				desc = TR(u8"Print");
+				break;
+	        case Node_CLASS_KEY_PAIR:
+				desc = TR(u8"KeyPair");
 				break;
 			}
 			m_nodeClassDesc.push_back(desc);

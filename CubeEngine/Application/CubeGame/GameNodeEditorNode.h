@@ -24,7 +24,8 @@
 #define Node_CLASS_IF 12
 #define Node_CLASS_EQUAL 13
 #define Node_CLASS_PRINT 14
-#define NODE_CLASS_VOID 15
+#define Node_CLASS_KEY_PAIR 15
+#define NODE_CLASS_VOID 16
 namespace tzw {
 struct GameNodeEditorNode;
 

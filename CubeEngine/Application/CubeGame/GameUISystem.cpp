@@ -365,101 +365,106 @@ void GameUISystem::drawIMGUI()
 		if(getWindowIsShow(WindowType::PAINTER))
 		{
 			auto screenSize = Engine::shared()->winSize();
-			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Appearing, ImVec2(0.5, 0.5));
 			bool isOpen = true;
 			ImGui::Begin(u8"Painter",&isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoCollapse);
-			if (ImGui::CollapsingHeader("Block Color"))
-			{
-				auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
-				auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
-				ImGui::TextUnformatted(TRC(u8"颜色"));
-				ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
-				GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
-				//表面材质
-				ImGui::TextUnformatted(TRC(u8"表面材质"));
-				auto size = PartSurfaceMgr::shared()->getItemAmount();
-				for(int i = 0; i < size; i++)
+	        if (ImGui::BeginTabBar("Block Color", ImGuiTabItemFlags_None))
+	        {
+				if (ImGui::BeginTabItem(TRC(u8"Block Surface"), 0, ImGuiTabItemFlags_None))
 				{
-					auto surface = PartSurfaceMgr::shared()->getItemByIndex(i);
-					auto p = GameWorld::shared()->getPlayer()->getPaintGun();
-					if(ImGui::RadioButton(surface->getName().c_str(), surface ==p->m_surface))
+					auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
+					auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
+					ImGui::TextUnformatted(TRC(u8"颜色"));
+					ImGui::ColorPicker4("MyColor##4", (float*)&imCol4, ImGuiColorEditFlags_NoAlpha,NULL);
+					GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
+					//表面材质
+					ImGui::TextUnformatted(TRC(u8"表面材质"));
+					auto size = PartSurfaceMgr::shared()->getItemAmount();
+					for(int i = 0; i < size; i++)
 					{
-						p->m_surface = surface;
+						auto surface = PartSurfaceMgr::shared()->getItemByIndex(i);
+						auto p = GameWorld::shared()->getPlayer()->getPaintGun();
+						if(ImGui::RadioButton(surface->getName().c_str(), surface ==p->m_surface))
+						{
+							p->m_surface = surface;
+						}
+						if(i%2 == 0)
+						{
+							ImGui::SameLine();
+						}
 					}
-					if(i%2 == 0)
+					if(ImGui::TreeNode("Make Block Template"))
 					{
-						ImGui::SameLine();
-					}
-				}
-				if(ImGui::TreeNode("Make Block Template"))
-				{
-					static char newItemName[128] = "new Item";
-					static char newItemTitle[128] = "new Item";
-					ImGui::Text(TRC("you can set a template for block for further used"));
-					auto& itemList = ItemMgr::shared()->getItemList();
-					static int currSelectedItemIndex = ItemMgr::shared()->getItemIndex(ItemMgr::shared()->getItem("Block"));
-			        if (ImGui::BeginCombo(TRC(u8"Block List"), itemList[currSelectedItemIndex]->m_desc.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
-			        {
-			            for (int n = 0; n < itemList.size(); n++)
-			            {
-			            	if(!itemList[n]->isSpecialFunctionItem())
-			            	{
-								bool is_selected = (n == currSelectedItemIndex);
-				                if (ImGui::Selectable(itemList[n]->m_desc.c_str(), is_selected))
-				                {
-					                currSelectedItemIndex = n;
-				                	// newItemName = itemList[n]->m_name.c_str();
-				                	sprintf_s(newItemName, 128,"%s_New", itemList[n]->m_name.c_str());
-				                	sprintf_s(newItemTitle, 128,"%s_New", itemList[n]->m_desc.c_str());
-				                }
-			
-				                if (is_selected)
-				                    ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
-			            	}
-			            }
-			            ImGui::EndCombo();
-			        }
-					
-					ImGui::InputText("New Block Unqiue Name", newItemName, 128);
-					ImGui::InputText("New Block Name Title", newItemTitle, 128);
-					if(ImGui::Button("Make"))
-					{
-						//pass
-						auto item = itemList[currSelectedItemIndex];
-						GameItem * newItem = new GameItem(*item);
-						newItem->m_name = newItemName;
-						newItem->m_desc = newItemTitle;
-						newItem->m_tintColor = GameWorld::shared()->getPlayer()->getPaintGun()->color;
-						newItem->m_surfaceName = GameWorld::shared()->getPlayer()->getPaintGun()->m_surface->getName();
-						auto part = new GamePart();
-						part->initFromItem(newItem);
+						static char newItemName[128] = "new Item";
+						static char newItemTitle[128] = "new Item";
+						ImGui::Text(TRC("you can set a template for block for further used"));
+						auto& itemList = ItemMgr::shared()->getItemList();
+						static int currSelectedItemIndex = ItemMgr::shared()->getItemIndex(ItemMgr::shared()->getItem("Block"));
+				        if (ImGui::BeginCombo(TRC(u8"Block List"), itemList[currSelectedItemIndex]->m_desc.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
+				        {
+				            for (int n = 0; n < itemList.size(); n++)
+				            {
+			            		if(!itemList[n]->isSpecialFunctionItem())
+			            		{
+									bool is_selected = (n == currSelectedItemIndex);
+					                if (ImGui::Selectable(itemList[n]->m_desc.c_str(), is_selected))
+					                {
+						                currSelectedItemIndex = n;
+				                		// newItemName = itemList[n]->m_name.c_str();
+				                		sprintf_s(newItemName, 128,"%s_New", itemList[n]->m_name.c_str());
+				                		sprintf_s(newItemTitle, 128,"%s_New", itemList[n]->m_desc.c_str());
+					                }
+				
+					                if (is_selected)
+					                    ImGui::SetItemDefaultFocus();   // Set the initial focus when opening the combo (scrolling + for keyboard navigation support in the upcoming navigation branch)
+			            		}
+				            }
+				            ImGui::EndCombo();
+				        }
+						
+						ImGui::InputText("New Block Unqiue Name", newItemName, 128);
+						ImGui::InputText("New Block Name Title", newItemTitle, 128);
+						if(ImGui::Button("Make"))
+						{
+							//pass
+							auto item = itemList[currSelectedItemIndex];
+							GameItem * newItem = new GameItem(*item);
+							newItem->m_name = newItemName;
+							newItem->m_desc = newItemTitle;
+							newItem->m_tintColor = GameWorld::shared()->getPlayer()->getPaintGun()->color;
+							newItem->m_surfaceName = GameWorld::shared()->getPlayer()->getPaintGun()->m_surface->getName();
+							auto part = new GamePart();
+							part->initFromItem(newItem);
 
-						newItem->m_thumbNail = new ThumbNail(part->getNode());
-						Renderer::shared()->updateThumbNail(newItem->m_thumbNail);
-						ItemMgr::shared()->pushItem(newItem);
+							newItem->m_thumbNail = new ThumbNail(part->getNode());
+							Renderer::shared()->updateThumbNail(newItem->m_thumbNail);
+							ItemMgr::shared()->pushItem(newItem);
+						}
 					}
+					ImGui::EndTabItem();
 				}
-
-			}
-			if (ImGui::CollapsingHeader("Terrain"))
-			{
-				//表面材质
-				ImGui::TextUnformatted(TRC(u8"地形材质选择"));
-				auto size = PartSurfaceMgr::shared()->getItemAmount();
-				for(int i = 0; i < 16; i++)
+		        if (ImGui::BeginTabItem(TRC(u8"Terrain Surface"), 0, ImGuiTabItemFlags_None))
 				{
-					auto p = GameWorld::shared()->getPlayer()->getPaintGun();
-					char tmp[128];
-					sprintf_s(tmp,"mat :%d",i);
-					if(ImGui::RadioButton(tmp, i ==p->m_matIndex))
+					//表面材质
+					ImGui::TextUnformatted(TRC(u8"地形材质选择"));
+					auto size = PartSurfaceMgr::shared()->getItemAmount();
+					for(int i = 0; i < 16; i++)
 					{
-						p->m_matIndex = i;
+						auto p = GameWorld::shared()->getPlayer()->getPaintGun();
+						char tmp[128];
+						sprintf_s(tmp,"mat :%d",i);
+						if(ImGui::RadioButton(tmp, i ==p->m_matIndex))
+						{
+							p->m_matIndex = i;
+						}
+						if(i%2 == 0)
+						{
+							ImGui::SameLine();
+						}
 					}
-					if(i%2 == 0)
-					{
-						ImGui::SameLine();
-					}
+					ImGui::EndTabItem();
 				}
+	        	ImGui::EndTabBar();
 			}
 			ImGui::End();
 			setWindowShow(WindowType::PAINTER, isOpen);

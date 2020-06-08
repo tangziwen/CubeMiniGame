@@ -1,5 +1,5 @@
 Tech Demo v1:(Done)
-7.6:
+20.6
 fix a bug that paint terrain is not working.(100%)
 add mouse middle wheel to swap curr select item.(100%)
 add part template(100%)
@@ -7,6 +7,7 @@ fix a python code bug, which lead can not leave the vehicle (100%)
 support block which can trea as a light source(point light, spot light etc)
 support transparent block.
 Foliage shader overhaul & variant grass support in game map level, not in chunk.
+增加新的键对节点，用以取代以前的WASD特化节点
 20.5
 模型导入工具优化(100%)
 材质系统优化(100%)
