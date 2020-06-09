@@ -216,7 +216,7 @@ bool CannonPart::isNeedDrawInspect()
 	return true;
 }
 
-GameNodeEditorNode* CannonPart::getGraphNode() const
+GraphNode* CannonPart::getGraphNode() const
 {
 	return m_graphNode;
 }

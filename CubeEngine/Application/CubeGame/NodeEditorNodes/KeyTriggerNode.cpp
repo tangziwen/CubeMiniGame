@@ -140,7 +140,7 @@ namespace tzw
 	{
 		if(!isPlayerOnSeat()) return;
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
+		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_forwardAttr, node_list);
 		for(auto node : node_list)
 		{
@@ -156,7 +156,7 @@ namespace tzw
 	{
 		if(!isPlayerOnSeat()) return;
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
+		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_sideAttr, node_list);
 		for(auto node : node_list)
 		{
@@ -171,7 +171,7 @@ namespace tzw
 	void KeyTriggerNode::triggerZ()
 	{
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
+		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_zKeyAttr, node_list);
 		for(auto node : node_list)
 		{

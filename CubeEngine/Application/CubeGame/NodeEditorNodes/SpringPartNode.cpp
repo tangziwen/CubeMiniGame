@@ -26,7 +26,7 @@ namespace tzw
 		return "SpringPart";
 	}
 
-	void SpringPartNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	void SpringPartNode::onLinkOut(int startID, int endID, GraphNode* other)
 	{
 		
 	}

@@ -1,11 +1,11 @@
 #pragma once
 
-#include "GameNodeEditorNode.h"
+#include "GraphNode.h"
 #include "GamePart.h"
 
 namespace tzw {
 
-struct BehaviorNode: public GameNodeEditorNode 
+struct BehaviorNode: public GraphNode 
 {
 public:
 	BehaviorNode();

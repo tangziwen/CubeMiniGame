@@ -136,7 +136,7 @@ BearPart::~BearPart()
 	
 }
 
-GameNodeEditorNode* BearPart::getGraphNode() const
+GraphNode* BearPart::getGraphNode() const
 {
 	return m_graphNode;
 }

@@ -16,12 +16,12 @@ namespace tzw
 		handleNameEdit();
 	}
 
-	void ControlPartNode::onLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	void ControlPartNode::onLinkOut(int startID, int endID, GraphNode* other)
 	{
 
 	}
 
-	void ControlPartNode::onRemoveLinkOut(int startID, int endID, GameNodeEditorNode* other)
+	void ControlPartNode::onRemoveLinkOut(int startID, int endID, GraphNode* other)
 	{
 
 	}

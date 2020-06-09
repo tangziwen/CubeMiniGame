@@ -15,11 +15,11 @@ namespace tzw
 		void drawInspect() override;
 		void use() override;
 		bool isNeedDrawInspect() override;
-		GameNodeEditorNode * getEditorNode() override;
+		GraphNode * getEditorNode() override;
 		void onPressed();
 		void onReleased();
     private:
 		float m_topRadius, m_bottomRadius, m_height;
-		GameNodeEditorNode * m_graphNode;
+		GraphNode * m_graphNode;
 	};
 }

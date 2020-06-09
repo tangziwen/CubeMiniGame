@@ -66,14 +66,15 @@ enum class PinType
 	static Texture* s_SaveIcon;
 	static Texture * s_HeaderBackground;
 	static Texture * s_RestoreIcon;
-	GameNodeEditor::GameNodeEditor()
+	GameNodeEditor::GameNodeEditor():m_pasteBinNode(nullptr)
 	{
 		g_Context = ed::CreateEditor();
+		ed::SetCurrentEditor(g_Context);
+		ed::EnableShortcuts(true);
 	    s_HeaderBackground = TextureMgr::shared()->getByPath("UITexture/NodeEditor/BlueprintBackground.png");
 	    s_SaveIcon         = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_save_white_24dp.png");
 	    s_RestoreIcon      = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_restore_white_24dp.png");
 		EventMgr::shared()->addFixedPiorityListener(this);
-		genNodeClassDesc();
 	}
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)
@@ -81,7 +82,7 @@ enum class PinType
 		newNodeEditorDraw(isOpen);
 	}
 
-	void GameNodeEditor::addNode(GameNodeEditorNode* newNode)
+	void GameNodeEditor::addNode(GraphNode* newNode)
 	{
 		m_gameNodes.push_back(newNode);
 		if(newNode->getType() == Node_TYPE_TRIGGER)
@@ -92,7 +93,16 @@ enum class PinType
 		//newNode->m_nodeID = m_nodeGlobalCount;
 	}
 
-	void GameNodeEditor::removeNode(GameNodeEditorNode* node)
+void GameNodeEditor::addNodeInCenter(GraphNode* newNode)
+{
+	addNode(newNode);
+	auto screenSize = Engine::shared()->winSize();
+	auto pos = ed::ScreenToCanvas(ImVec2(screenSize.x /2.0f, screenSize.y / 2.0f));
+	newNode->m_origin = vec2(pos.x, pos.y);
+	ed::SetNodePosition(newNode->m_nodeID, pos);
+}
+
+void GameNodeEditor::removeNode(GraphNode* node)
 	{
 		auto result = std::find(m_gameNodes.begin(), m_gameNodes.end(), node);
 		if(result != m_gameNodes.end())
@@ -106,7 +116,7 @@ enum class PinType
 		}
 	}
 
-	void GameNodeEditor::removeAllLink(GameNodeEditorNode* node)
+	void GameNodeEditor::removeAllLink(GraphNode* node)
 	{
 		for (auto i = m_links.begin(); i != m_links.end();)
 		{
@@ -124,8 +134,8 @@ enum class PinType
 
 	void GameNodeEditor::raiseEventToNode(int startAttr, int endAttr)
 	{
-		GameNodeEditorNode * startNode = nullptr;
-		GameNodeEditorNode * endNode = nullptr;
+		GraphNode * startNode = nullptr;
+		GraphNode * endNode = nullptr;
 		for (auto node : m_gameNodes)
 		{
 			if (!startNode) 
@@ -180,8 +190,8 @@ enum class PinType
 
 			auto startAttr = m_link.InputId;
 			auto endAttr = m_link.OutputId;
-			GameNodeEditorNode * startNode = nullptr;
-			GameNodeEditorNode * endNode = nullptr;
+			GraphNode * startNode = nullptr;
+			GraphNode * endNode = nullptr;
 			for (auto node : m_gameNodes)
 			{
 				if (!startNode) 
@@ -226,7 +236,7 @@ enum class PinType
 		for(unsigned int i = 0; i < NodeList.Size(); i++)
 		{
 			auto& node = NodeList[i];
-			GameNodeEditorNode * newNode = nullptr;
+			GraphNode * newNode = nullptr;
 			//we skip create resource Node, but find exist resource node, and set properly UID
 			if(node["NodeType"].GetInt() == Node_TYPE_RES)
 			{
@@ -285,8 +295,8 @@ enum class PinType
 		for(unsigned int i = 0; i < linkList.Size(); i++) 
 		{
 			auto& linkObj = linkList[i];
-			GameNodeEditorNode * nodeA = reinterpret_cast<GameNodeEditorNode*>(GUIDMgr::shared()->get(linkObj["from"].GetString()));
-			GameNodeEditorNode * nodeB = reinterpret_cast<GameNodeEditorNode*>(GUIDMgr::shared()->get(linkObj["to"].GetString()));
+			GraphNode * nodeA = reinterpret_cast<GraphNode*>(GUIDMgr::shared()->get(linkObj["from"].GetString()));
+			GraphNode * nodeB = reinterpret_cast<GraphNode*>(GUIDMgr::shared()->get(linkObj["to"].GetString()));
 			int fromOutputID = linkObj["fromOutputID"].GetInt();
 			int toInputID = linkObj["toInputID"].GetInt();
 			makeLinkByNode(nodeA, nodeB, fromOutputID, toInputID);
@@ -298,7 +308,7 @@ enum class PinType
 
 
 
-	void GameNodeEditor::makeLinkByNode(GameNodeEditorNode* NodeA, GameNodeEditorNode* NodeB, int indexOfA, int indeOfB)
+	void GameNodeEditor::makeLinkByNode(GraphNode* NodeA, GraphNode* NodeB, int indexOfA, int indeOfB)
 	{
 		int start_attr = NodeA->getOutByIndex(indexOfA)->gID;
 		int end_attr = NodeB->getInByIndex(indeOfB)->gID;
@@ -328,11 +338,13 @@ enum class PinType
 	    ImGui::EndHorizontal();
 		if(ImGui::CollapsingHeader("Create Node"))
 		{
-			GameNodeEditorNode * newNode = nullptr;
+			GraphNode * newNode = nullptr;
 			ImGui::Columns(2, "CreatingNodeColumns", false);
 			for(int i = Node_CLASS_WTF + 1; i < NODE_CLASS_VOID; i++)
 			{
-				if(ImGui::Button(m_nodeClassDesc[i].c_str()))
+				if(GraphNodeInfoMgr::shared()->get(i)->m_type == Node_TYPE_RES)
+					continue;
+				if (ImGui::Button(GraphNodeInfoMgr::shared()->get(i)->m_title.c_str()))
 				{
 					newNode = createNodeByClass(i);
 				}
@@ -341,7 +353,7 @@ enum class PinType
 			ImGui::Columns(1);
 			if(newNode)
 			{
-				addNode(newNode);
+				addNodeInCenter(newNode);
 				auto screenSize = Engine::shared()->winSize();
 				auto pos = ed::ScreenToCanvas(ImVec2(screenSize.x /2.0f, screenSize.y / 2.0f));
 				newNode->m_origin = vec2(pos.x, pos.y);
@@ -439,7 +451,7 @@ enum class PinType
 	    ImGui::EndChild();
 	}
 
-	GameNodeEditorNode* GameNodeEditor::findNode(int nodeID)
+	GraphNode* GameNodeEditor::findNode(int nodeID)
 	{
 		for(auto node:m_gameNodes)
 		{
@@ -493,7 +505,7 @@ bool GameNodeEditor::onKeyRelease(int keyCode)
 	return false;
 }
 
-void GameNodeEditor::findNodeLinksToAttr(NodeAttr* attr, std::vector<GameNodeEditorNode*>&nodeList)
+void GameNodeEditor::findNodeLinksToAttr(NodeAttr* attr, std::vector<GraphNode*>&nodeList)
 {
 	for(auto link : m_links) 
 	{
@@ -504,7 +516,7 @@ void GameNodeEditor::findNodeLinksToAttr(NodeAttr* attr, std::vector<GameNodeEdi
 	}
 }
 
-GameNodeEditorNode* GameNodeEditor::findNodeByAttr(NodeAttr* attr)
+GraphNode* GameNodeEditor::findNodeByAttr(NodeAttr* attr)
 {
 	for(auto node :m_gameNodes)
 	{
@@ -516,7 +528,7 @@ GameNodeEditorNode* GameNodeEditor::findNodeByAttr(NodeAttr* attr)
 	return nullptr;
 }
 
-GameNodeEditorNode* GameNodeEditor::findNodeByAttrGid(unsigned gid)
+GraphNode* GameNodeEditor::findNodeByAttrGid(unsigned gid)
 {
 	for(auto node :m_gameNodes)
 	{
@@ -528,7 +540,7 @@ GameNodeEditorNode* GameNodeEditor::findNodeByAttrGid(unsigned gid)
 	return nullptr;
 }
 
-GameNodeEditorNode* GameNodeEditor::findNodeLinksFromAttr(NodeAttr* attr)
+GraphNode* GameNodeEditor::findNodeLinksFromAttr(NodeAttr* attr)
 {
 	for(auto link : m_links) 
 	{
@@ -565,7 +577,7 @@ std::vector<NodeAttr*> GameNodeEditor::findAllAttrLinksFromAttr(NodeAttr* attr)
 	return attrList;
 }
 
-void GameNodeEditor::pushToStack(GameNodeEditorNode* node)
+void GameNodeEditor::pushToStack(GraphNode* node)
 {
 	m_rt_exe_chain.push(node);
 }
@@ -585,7 +597,7 @@ void GameNodeEditor::clearAll()
 	m_triggerList.clear();
 }
 
-void GameNodeEditor::onPressButtonNode(GameNodeEditorNode* buttonNode)
+void GameNodeEditor::onPressButtonNode(GraphNode* buttonNode)
 {
 	if(buttonNode->getNodeClass() == Node_CLASS_Button)
 	{
@@ -600,7 +612,7 @@ void GameNodeEditor::onPressButtonNode(GameNodeEditorNode* buttonNode)
 	}
 }
 
-void GameNodeEditor::onReleaseButtonNode(GameNodeEditorNode* buttonNode)
+void GameNodeEditor::onReleaseButtonNode(GraphNode* buttonNode)
 {
 	if(buttonNode->getNodeClass() == Node_CLASS_Button)
 	{
@@ -615,7 +627,7 @@ void GameNodeEditor::onReleaseButtonNode(GameNodeEditorNode* buttonNode)
 	}
 }
 
-void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
+void GameNodeEditor::onReleaseSwitchNode(GraphNode* buttonNode)
 {
 	if(buttonNode->getNodeClass() == Node_CLASS_SWITCH)
 	{
@@ -630,9 +642,9 @@ void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
 	}
 }
 
-	GameNodeEditorNode* GameNodeEditor::createNodeByClass(int classID)
+	GraphNode* GameNodeEditor::createNodeByClass(int classID)
 	{
-		GameNodeEditorNode * newNode = nullptr;
+		GraphNode * newNode = nullptr;
 		switch(classID)
 		{
         case Node_CLASS_KEY_TRIGGER:
@@ -675,58 +687,11 @@ void GameNodeEditor::onReleaseSwitchNode(GameNodeEditorNode* buttonNode)
 			newNode = new KeyPairTriggerNode();
 			break;
 		}
-		return newNode;
-	}
-
-	void GameNodeEditor::genNodeClassDesc()
-	{
-		for(int i = 0; i < NODE_CLASS_VOID; i ++)
+		if(newNode)
 		{
-			std::string desc = "UnknownNode";
-			switch(i)
-			{
-	        case Node_CLASS_KEY_TRIGGER:
-				desc = TR(u8"按键触发");
-				break;
-	        case Node_CLASS_KEY_ANY_TRIGGER:
-				desc = TR(u8"任意按键触发");
-				break;
-	        case Node_CLASS_SPIN:
-				desc = TR(u8"Spin");
-				break;
-	        case Node_CLASS_VECTOR:
-				desc = TR(u8"向量");
-				break;
-	        case Node_CLASS_USE:
-				desc = TR(u8"使用");
-				break;
-	        case Node_CLASS_CONSTANT_INT:
-				desc = TR(u8"常量");
-				break;
-	        case Node_CLASS_TOGGLE:
-				desc = TR(u8"切换");
-				break;
-	        case Node_CLASS_VAR:
-				desc = TR(u8"变量");
-				break;
-	        case Node_CLASS_ASSIGN:
-				desc = TR(u8"赋值");
-				break;
-	        case Node_CLASS_EQUAL:
-				desc = TR(u8"Equal");
-				break;
-	        case Node_CLASS_IF:
-				desc = TR(u8"If");
-				break;
-	        case Node_CLASS_PRINT:
-				desc = TR(u8"Print");
-				break;
-	        case Node_CLASS_KEY_PAIR:
-				desc = TR(u8"KeyPair");
-				break;
-			}
-			m_nodeClassDesc.push_back(desc);
+			newNode->loadInfo(classID);
 		}
+		return newNode;
 	}
 
 void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
@@ -1010,7 +975,38 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
     	}
     }
     ed::EndDelete(); // Wrap up deletion action
+    std::vector<ed::NodeId> selectedNodes;
+    std::vector<ed::LinkId> selectedLinks;
+    selectedNodes.resize(ed::GetSelectedObjectCount());
+    selectedLinks.resize(ed::GetSelectedObjectCount());
 
+    int nodeCount = ed::GetSelectedNodes(selectedNodes.data(), static_cast<int>(selectedNodes.size()));
+    int linkCount = ed::GetSelectedLinks(selectedLinks.data(), static_cast<int>(selectedLinks.size()));
+
+    selectedNodes.resize(nodeCount);
+    selectedLinks.resize(linkCount);
+	if(ed::BeginShortcut())
+	{
+
+		if(ed::AcceptCopy())
+		{
+			auto node = findNode(selectedNodes[0].Get());
+			if(node->getType() != Node_TYPE_RES)
+			{
+				auto newNode = createNodeByClass(node->getNodeClass());
+				m_pasteBinNode = newNode;
+			}
+		}
+		if(ed::AcceptPaste())
+		{
+			if(m_pasteBinNode)
+			{
+				auto newNode = createNodeByClass(m_pasteBinNode->getNodeClass());
+				addNodeInCenter(newNode);
+			}
+		}
+		ed::EndShortcut();
+	}
 	ImGui::SetCursorScreenPos(cursorTopLeft);
     if (g_FirstFrame)
 		ed::NavigateToContent(0.0f);

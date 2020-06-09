@@ -109,7 +109,7 @@ namespace tzw
 
 	void KeyPairTriggerNode::load(rapidjson::Value& partData)
 	{
-		GameNodeEditorNode::load(partData);
+		GraphNode::load(partData);
 		m_keyCodeA = partData["KeyCodeA"].GetInt();
 		m_keyCodeB = partData["KeyCodeB"].GetInt();
 		m_isNeedOnSeat = partData["IsNeedOnSeat"].GetBool();
@@ -117,7 +117,7 @@ namespace tzw
 
 	void KeyPairTriggerNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
-		GameNodeEditorNode::dump(partDocObj, allocator);
+		GraphNode::dump(partDocObj, allocator);
 		partDocObj.AddMember("KeyCodeA", m_keyCodeA, allocator);
 		partDocObj.AddMember("KeyCodeB", m_keyCodeB, allocator);
 		partDocObj.AddMember("IsNeedOnSeat", m_isNeedOnSeat, allocator);
@@ -130,7 +130,7 @@ namespace tzw
 			if(!isPlayerOnSeat()) return;
 		}
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
+		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_onSignalChangedAttr, node_list);
 		for(auto node : node_list)
 		{

@@ -205,7 +205,7 @@ void ThrusterPart::updateForce(float dt)
 	//apply recoil
 }
 
-GameNodeEditorNode* ThrusterPart::getGraphNode() const
+GraphNode* ThrusterPart::getGraphNode() const
 {
 	return m_graphNode;
 }

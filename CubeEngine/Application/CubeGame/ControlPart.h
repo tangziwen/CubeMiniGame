@@ -16,31 +16,18 @@ namespace tzw
 		void initAttachments();
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
-		void addForwardBearing(BearPart * bearing);
-		void addSidewardBearing(BearPart * bearing);
-
-
-		bool onKeyPress(int keyCode) override;
-		bool onKeyRelease(int keyCode) override;
-
 		bool getIsActivate() const;
 		void setActivate(bool value);
 		void onFrameUpdate(float delta) override;
-		void handleBearings();
 		virtual void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
 		void load(rapidjson::Value& partData) override;
 		Attachment* getAttachment(int index) override;
 		virtual ~ControlPart();
-		GameNodeEditorNode * getGraphNode() const;
+		GraphNode * getGraphNode() const;
 		void generateName();
 	public:
-		int m_forward;
-		int m_side;
 		GamePartType getType() override;
-		BearPart * m_bearPart[6];
-		std::vector<BearPart * > m_forwardBearing;
-		std::vector<BearPart *> m_sidewardBearing;
 		bool m_isActivate;
-		GameNodeEditorNode * m_graphNode;
+		GraphNode * m_graphNode;
 	};
 }

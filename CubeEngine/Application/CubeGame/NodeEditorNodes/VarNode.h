@@ -1,8 +1,8 @@
 #pragma once
 #include "2D/GUISystem.h"
-#include "CubeGame/GameNodeEditorNode.h"
+#include "CubeGame/GraphNode.h"
 namespace tzw {
-struct VarNode : public GameNodeEditorNode
+struct VarNode : public GraphNode
 {
 public:
 	VarNode();

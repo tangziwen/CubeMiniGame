@@ -58,7 +58,7 @@ bool ButtonPart::isNeedDrawInspect()
 	return true;
 }
 
-GameNodeEditorNode* ButtonPart::getEditorNode()
+GraphNode* ButtonPart::getEditorNode()
 {
 	return m_graphNode;
 }

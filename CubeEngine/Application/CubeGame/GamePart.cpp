@@ -745,7 +745,7 @@ namespace tzw
 		setSurface(item->m_tintColor, PartSurfaceMgr::shared()->getItem(item->m_surfaceName));
 	}
 
-	GameNodeEditorNode* GamePart::getEditorNode()
+	GraphNode* GamePart::getEditorNode()
 	{
 		return nullptr;
 	}

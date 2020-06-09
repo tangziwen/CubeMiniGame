@@ -1,6 +1,6 @@
 #pragma once
 #include "2D/GUISystem.h"
-#include "GameNodeEditorNode.h"
+#include "GraphNode.h"
 #include "rapidjson/document.h"
 #include "Base/GuidObj.h"
 #include "TriggerNode.h"
@@ -22,40 +22,40 @@ public:
 	// Í¨¹ý IMGUIObject ¼Ì³Ð
 	void drawIMGUI(bool * isOpen);
 
-	void addNode(GameNodeEditorNode * newNode);
-	void removeNode(GameNodeEditorNode * node);
-	void removeAllLink(GameNodeEditorNode * node);
+	void addNode(GraphNode * newNode);
+	void addNodeInCenter(GraphNode * newNode);
+	void removeNode(GraphNode * node);
+	void removeAllLink(GraphNode * node);
 	void raiseEventToNode(int startAttr, int endAttr);
 	void dump(rapidjson::Value &partDocObj, rapidjson::Document::AllocatorType& allocator);
 	void load(rapidjson::Value &partDocObj);
-	int getNodeIdByNode(GameNodeEditorNode * node);
-	void makeLinkByNode(GameNodeEditorNode * NodeA, GameNodeEditorNode * NodeB, int indexOfA, int indeOfB);
+	int getNodeIdByNode(GraphNode * node);
+	void makeLinkByNode(GraphNode * NodeA, GraphNode * NodeB, int indexOfA, int indeOfB);
 	void newNodeEditorDraw(bool * isOpen);
 	NodeAttr * findAttr(int attrID);
 	void drawPinIcon(const NodeAttr* pin, bool connected, int alpha);
 	void ShowLeftPane(float paneWidth);
-	GameNodeEditorNode * findNode(int nodeID);
+	GraphNode * findNode(int nodeID);
 	bool onKeyPress(int keyCode) override;
 	bool onKeyRelease(int keyCode) override;
-	void findNodeLinksToAttr(NodeAttr * attr, std::vector<GameNodeEditorNode*>&nodeList);
-	GameNodeEditorNode * findNodeByAttr(NodeAttr * attr);
-	GameNodeEditorNode * findNodeByAttrGid(unsigned int gid);
-	GameNodeEditorNode * findNodeLinksFromAttr(NodeAttr * attr);
+	void findNodeLinksToAttr(NodeAttr * attr, std::vector<GraphNode*>&nodeList);
+	GraphNode * findNodeByAttr(NodeAttr * attr);
+	GraphNode * findNodeByAttrGid(unsigned int gid);
+	GraphNode * findNodeLinksFromAttr(NodeAttr * attr);
 	NodeAttr * findAttrLinksFromAttr(NodeAttr * attr);
 	std::vector<NodeAttr *> findAllAttrLinksFromAttr(NodeAttr * attr);
-	void pushToStack(GameNodeEditorNode * node);
+	void pushToStack(GraphNode * node);
 	void clearAll();
 	void navigateToContent();
-	void onPressButtonNode(GameNodeEditorNode * buttonNode);
-	void onReleaseButtonNode(GameNodeEditorNode * buttonNode);
-	void onReleaseSwitchNode(GameNodeEditorNode * buttonNode);
-	GameNodeEditorNode * createNodeByClass(int classID);
-	void genNodeClassDesc();
+	void onPressButtonNode(GraphNode * buttonNode);
+	void onReleaseButtonNode(GraphNode * buttonNode);
+	void onReleaseSwitchNode(GraphNode * buttonNode);
+	GraphNode * createNodeByClass(int classID);
 protected:
-	std::queue<GameNodeEditorNode *> m_rt_exe_chain;
-	std::vector<GameNodeEditorNode * > m_gameNodes;
+	std::queue<GraphNode *> m_rt_exe_chain;
+	std::vector<GraphNode * > m_gameNodes;
 	std::vector<LinkInfo> m_links;
 	std::vector<TriggerNode * > m_triggerList;
-	std::vector<std::string> m_nodeClassDesc;
+	GraphNode * m_pasteBinNode;
 };
 }

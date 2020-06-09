@@ -58,7 +58,7 @@ bool SwitchPart::isNeedDrawInspect()
 	return true;
 }
 
-GameNodeEditorNode* SwitchPart::getEditorNode()
+GraphNode* SwitchPart::getEditorNode()
 {
 	return m_graphNode;
 }

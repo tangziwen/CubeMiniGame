@@ -1,6 +1,6 @@
 #pragma once
 #include "GameConstraint.h"
-#include "GameNodeEditorNode.h"
+#include "GraphNode.h"
 
 namespace tzw
 {
@@ -23,7 +23,7 @@ public:
 	float getDamping() const;
 	void setStiffness(float stiffness);
 	void setDamping(float damping);
-	GameNodeEditorNode * getGraphNode() const;
+	GraphNode * getGraphNode() const;
 	void generateName() override;
 	virtual ~SpringPart();
 	void drawInspect() override;
@@ -31,7 +31,7 @@ public:
 	void updateConstraintState() override;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
-	GameNodeEditorNode * m_graphNode;
+	GraphNode * m_graphNode;
 	float m_stiffness;
 	float m_damping;
 

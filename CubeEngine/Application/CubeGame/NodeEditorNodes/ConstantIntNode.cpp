@@ -6,7 +6,7 @@ namespace tzw
 {
 	ConstantIntNode::ConstantIntNode()
 	{
-		name =TR(u8"³£Á¿");
+		name =TR(u8"ï¿½ï¿½ï¿½ï¿½");
 		m_attr = addOut(TR(u8"Self"));
 		m_attr->m_localAttrValue.setInt(0);
 	}
@@ -25,13 +25,13 @@ namespace tzw
 
 	void ConstantIntNode::load(rapidjson::Value& partData)
 	{
-		GameNodeEditorNode::load(partData);
+		GraphNode::load(partData);
 		m_attr->m_localAttrValue.setInt(partData["INT_VALUE"].GetInt());
 	}
 
 	void ConstantIntNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
-		GameNodeEditorNode::dump(partDocObj, allocator);
+		GraphNode::dump(partDocObj, allocator);
 		partDocObj.AddMember("INT_VALUE", m_attr->m_localAttrValue.getInt(), allocator);
 	}
 

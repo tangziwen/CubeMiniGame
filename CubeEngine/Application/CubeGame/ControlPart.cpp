@@ -22,8 +22,6 @@ static Audio * audio;
 static AudioEvent * event = NULL;
 ControlPart::ControlPart(std::string itemName)
 {
-	m_forward = 0;
-	m_side = 0;
 	m_isActivate = false;
 
 	GamePart::initFromItemName(itemName);
@@ -132,87 +130,6 @@ Attachment* ControlPart::getFirstAttachment()
 	return m_attachment[5];
 }
 
-void ControlPart::addForwardBearing(BearPart* bearing)
-{
-	m_forwardBearing.push_back(bearing);
-}
-
-void ControlPart::addSidewardBearing(BearPart* bearing)
-{
-	m_sidewardBearing.push_back(bearing);
-	bearing->setIsSteering(true);
-}
-
-bool ControlPart::onKeyPress(int keyCode)
-{
-	if(!m_isActivate) return false;
-	bool isKeyActivate = false;
-	switch(keyCode)
-	{
-	    case TZW_KEY_W: 
-		{
-			m_forward += 1;
-			isKeyActivate = true;
-	    }
-		break;
-	    case TZW_KEY_S: 
-		{
-			m_forward -= 1;
-			isKeyActivate = true;
-	    }
-		break;
-	    case TZW_KEY_A: 
-		{
-			m_side -= 1;
-			isKeyActivate = true;
-	    }
-		break;
-	    case TZW_KEY_D: 
-		{
-			m_side += 1;
-			isKeyActivate = true;
-	    }
-		break;
-	}
-	handleBearings();
-	return false;
-}
-
-bool ControlPart::onKeyRelease(int keyCode)
-{
-	if(!m_isActivate) return false;
-	bool isKeyActivate = false;
-	switch(keyCode)
-	{
-	    case TZW_KEY_W: 
-		{
-			isKeyActivate = true;
-			m_forward -= 1;
-	    }
-		break;
-	    case TZW_KEY_S: 
-		{
-			isKeyActivate = true;
-			m_forward += 1;
-	    }
-		break;
-	    case TZW_KEY_A: 
-		{
-			m_side += 1;
-			isKeyActivate = true;
-	    }
-		break;
-	    case TZW_KEY_D: 
-		{
-			m_side -= 1;
-			isKeyActivate = true;
-	    }
-		break;
-	}
-	if(isKeyActivate)
-		handleBearings();
-	return false;
-}
 
 bool ControlPart::getIsActivate() const
 {
@@ -240,37 +157,6 @@ void ControlPart::onFrameUpdate(float delta)
 		if(!event)
 		{
 			event = audio->play3D(getWorldPos());
-		}
-	}
-}
-
-void ControlPart::handleBearings()
-{
-	if (m_forward != 0) 
-	{
-		for (auto bearing : m_forwardBearing) 
-		{
-			bearing->enableAngularMotor(true, 10.0f *m_forward, 50);
-		}
-	} else 
-	{
-		for (auto bearing : m_forwardBearing) 
-		{
-			bearing->enableAngularMotor(false, 10.0f, 50);
-		}
-	}
-
-	if (m_side != 0) 
-	{
-		for (auto bearing : m_sidewardBearing) 
-		{
-			bearing->enableAngularMotor(true, 1.0f *m_side, 50);
-		}
-	} else 
-	{
-		for (auto bearing : m_sidewardBearing) 
-		{
-			bearing->enableAngularMotor(true, 0, 10000000.0f);
 		}
 	}
 }
@@ -323,7 +209,7 @@ ControlPart::~ControlPart()
 	delete m_graphNode;
 }
 
-GameNodeEditorNode* ControlPart::getGraphNode() const
+GraphNode* ControlPart::getGraphNode() const
 {
 	return m_graphNode;
 }

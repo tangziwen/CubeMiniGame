@@ -55,7 +55,7 @@ namespace tzw
 
 	void ResNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
-		GameNodeEditorNode::dump(partDocObj, allocator);
+		GraphNode::dump(partDocObj, allocator);
 		partDocObj.AddMember("Type", std::string("Resource"), allocator);
 		partDocObj.AddMember("ResType", getResType(), allocator);
 		partDocObj.AddMember("ResUID", std::string(getProxy()->getGUID()), allocator);

@@ -155,7 +155,7 @@ void SpringPart::setDamping(float damping)
 	}
 }
 
-GameNodeEditorNode* SpringPart::getGraphNode() const
+GraphNode* SpringPart::getGraphNode() const
 {
 	return m_graphNode;
 }

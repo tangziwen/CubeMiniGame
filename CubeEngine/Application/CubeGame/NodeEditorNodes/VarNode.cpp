@@ -33,14 +33,14 @@ namespace tzw
 
 	void VarNode::load(rapidjson::Value& partData)
 	{
-		GameNodeEditorNode::load(partData);
+		GraphNode::load(partData);
 		m_attr->m_localAttrValue.setInt(partData["INT_VALUE"].GetInt());
 		m_varName = partData["VarName"].GetString();
 	}
 
 	void VarNode::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
-		GameNodeEditorNode::dump(partDocObj, allocator);
+		GraphNode::dump(partDocObj, allocator);
 		partDocObj.AddMember("INT_VALUE", m_attr->m_localAttrValue.getInt(), allocator);
 		partDocObj.AddMember("VarName", m_varName, allocator);
 	}

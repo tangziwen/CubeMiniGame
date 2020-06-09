@@ -8,7 +8,7 @@ class BlockPart;
 struct Attachment;
 class PhysicsHingeConstraint;
 class Physics6DOFConstraint;
-struct GameNodeEditorNode;
+struct GraphNode;
 class BearPart : public GameConstraint
 {
 public:
@@ -24,7 +24,7 @@ public:
 	Attachment * getAttachment(int index) override;
 	int getAttachmentCount() override;
 	virtual ~BearPart();
-	GameNodeEditorNode * getGraphNode() const;
+	GraphNode * getGraphNode() const;
 	void load(rapidjson::Value& partData) override;
 	void setIsSteering(bool isSteering);
 	bool getIsSteering() const;
@@ -39,7 +39,7 @@ public:
 	void toggle(int openSignal) override;
 	virtual void onUpdate(float dt);
 private:
-	GameNodeEditorNode * m_graphNode;
+	GraphNode * m_graphNode;
 	Material * m_xrayMat;
 	bool m_isSteering;
 	bool m_isAngleLimit;

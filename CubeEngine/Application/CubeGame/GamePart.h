@@ -5,7 +5,7 @@
 #include "Interface/Drawable3D.h"
 #include "Math/Ray.h"
 #include "rapidjson/document.h"
-#include "GameNodeEditorNode.h"
+#include "GraphNode.h"
 
 
 namespace tzw {
@@ -70,7 +70,7 @@ public:
 	virtual bool drawInspectNameEdit();
 	void initFromItemName(std::string itemName);
 	void initFromItem(GameItem * item);
-	virtual GameNodeEditorNode * getEditorNode();
+	virtual GraphNode * getEditorNode();
 	int getPrettyAttach(Attachment * otherAttach, int attachOffset);
 	int findAttachByLocale(std::string locale);
 	virtual void toggle(int openSignal);

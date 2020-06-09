@@ -40,7 +40,7 @@ namespace tzw
 	{
 		m_stateAttr->m_localAttrValue.setInt(1);
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
+		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_pressedAttr, node_list);
 		for(auto node : node_list)
 		{
@@ -55,7 +55,7 @@ namespace tzw
 	{
 		m_stateAttr->m_localAttrValue.setInt(0);
 		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		std::vector<GameNodeEditorNode * > node_list;
+		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_releasedAttr, node_list);
 		for(auto node : node_list)
 		{
