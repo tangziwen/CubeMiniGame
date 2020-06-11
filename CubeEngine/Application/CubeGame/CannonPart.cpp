@@ -38,9 +38,6 @@ CannonPart::CannonPart():m_firingVelocity(50.0f),m_recoil(50.0f)
 	m_parent = nullptr;
 	CannonPart::generateName();
 
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new CannonPartNode(this);
-	nodeEditor->addNode(m_graphNode);
 	initAttachments();
 }
 
@@ -238,6 +235,12 @@ void CannonPart::load(rapidjson::Value& partData)
 		m_recoil = partData["Recoil"].GetDouble();
 	if(partData.HasMember("BulletMode"))
 		m_bulletMode = partData["BulletMode"].GetDouble();
+}
+
+void CannonPart::AddOnVehicle(Vehicle* vehicle)
+{
+	m_graphNode = new CannonPartNode(this);
+	vehicle->getEditor()->addNode(m_graphNode);
 }
 
 float CannonPart::getFiringVelocity() const

@@ -10,7 +10,7 @@ namespace tzw
 {
 	PreviewItem::PreviewItem():
 	m_sphere(nullptr), m_previewPart(nullptr),m_previewAngle(0),
-	m_previewIsland(new Island(vec3(0, 0, 0))),m_currAttachment(0)
+	m_previewIsland(new Island(vec3(0, 0, 0), nullptr)),m_currAttachment(0)
 	{
 	}
 

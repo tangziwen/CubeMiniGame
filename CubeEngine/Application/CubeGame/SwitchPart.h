@@ -17,6 +17,7 @@ namespace tzw
 		bool isNeedDrawInspect() override;
 		GraphNode * getEditorNode() override;
 		void onToggle();
+		void AddOnVehicle(Vehicle * vehicle) override;
     private:
 		float m_topRadius, m_bottomRadius, m_height;
 		GraphNode * m_graphNode;

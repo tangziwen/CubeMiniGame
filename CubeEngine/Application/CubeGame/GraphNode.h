@@ -87,6 +87,8 @@ struct NodeAttr
 	GraphNode * m_parent;
 };
 
+class GameNodeEditor;
+
 struct GraphNode : public GuidObj
 {
 public:
@@ -140,5 +142,9 @@ protected:
 	std::map<int, int> m_inGlobalMap;
 	std::map<int, int> m_OutGlobalMap;
 	GraphNodeInfo * m_nodeInfo;
+	GameNodeEditor * m_nodeEditor;
+public:
+	GameNodeEditor* getNodeEditor() const;
+	void setNodeEditor(GameNodeEditor* const nodeEditor);
 };
 }

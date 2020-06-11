@@ -117,7 +117,7 @@ namespace tzw
 	//ÇóÓÒÖµ
 	NodeAttrValue NodeAttr::eval()
 	{
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = m_parent->getNodeEditor();
 		
 		if(this->dataType ==DataType::RETURN_VALUE)//is a return value, must execute
 		{
@@ -141,7 +141,7 @@ namespace tzw
 
 	NodeAttr* NodeAttr::evalRef()
 	{
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = m_parent->getNodeEditor();
 		
 		if(this->dataType ==DataType::RETURN_VALUE)//is a return value, must execute
 		{
@@ -244,6 +244,7 @@ namespace tzw
 		increaseAttrGID();
 		m_nodeID = g_attr_uid;
 		isShowed = false;
+		m_nodeEditor = nullptr;
 		m_nodeInfo = GraphNodeInfoMgr::shared()->get(0);
 	}
 
@@ -485,5 +486,15 @@ namespace tzw
 	void GraphNode::loadInfo(int classID)
 	{
 		m_nodeInfo = GraphNodeInfoMgr::shared()->get(classID);
+	}
+
+	GameNodeEditor* GraphNode::getNodeEditor() const
+	{
+		return m_nodeEditor;
+	}
+
+	void GraphNode::setNodeEditor(GameNodeEditor* const nodeEditor)
+	{
+		m_nodeEditor = nodeEditor;
 	}
 }

@@ -81,10 +81,7 @@ BearPart::BearPart(std::string itemName)
 	GamePart::initFromItemName(itemName);
 	
 	BearPart::generateName();
-	
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new BearingPartNode(this);
-	nodeEditor->addNode(m_graphNode);
+
 	m_xrayMat = Material::createFromTemplate("PartXRay");
 	
 	auto cylinderIndicator = static_cast<Model *> (m_node);
@@ -379,7 +376,13 @@ void BearPart::generateName()
 		//}
 	}
 
-void BearPart::enablePhysics(bool isEnable)
+	void BearPart::AddOnVehicle(Vehicle* vehicle)
+	{
+		m_graphNode = new BearingPartNode(this);
+		vehicle->getEditor()->addNode(m_graphNode);
+	}
+
+	void BearPart::enablePhysics(bool isEnable)
 {
 	GameConstraint::enablePhysics(isEnable);
 	if(isEnable) 

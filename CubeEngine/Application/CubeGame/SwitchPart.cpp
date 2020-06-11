@@ -21,9 +21,6 @@ SwitchPart::SwitchPart(std::string itemName)
 	SwitchPart::generateName();
 	m_currState = false;
 
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new SwitchNode(this);
-	nodeEditor->addNode(m_graphNode);
 }
 
 SwitchPart::~SwitchPart()
@@ -79,6 +76,12 @@ void SwitchPart::onToggle()
 	}
 	static_cast<Model *>(m_node)->getMat(0)->setTex("DiffuseMap", tex);
 	
+}
+
+void SwitchPart::AddOnVehicle(Vehicle* vehicle)
+{
+	m_graphNode = new SwitchNode(this);
+	vehicle->getEditor()->addNode(m_graphNode);
 }
 
 bool SwitchPart::isCurrState() const

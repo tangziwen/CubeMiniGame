@@ -7,7 +7,7 @@
 #include "ControlPart.h"
 #include "SpringPart.h"
 #include "Engine/Engine.h"
-#include "NodeEditor/Include/imgui_node_editor.h"
+
 #include "NodeEditor/Source/imgui_node_editor_internal.h"
 #include "NodeEditor/BlueprintUtilities/Include/ax/Drawing.h"
 #include "NodeEditor/BlueprintUtilities/Include/ax/Widgets.h"
@@ -61,15 +61,14 @@ enum class PinType
 	static int newLinkPin  = 0;
 	using IconType = ax::Drawing::IconType;
 	int g_uniqueLinkIndex;
-	static ed::EditorContext* g_Context = nullptr;
 	static bool * g_isOpen = nullptr;
 	static Texture* s_SaveIcon;
 	static Texture * s_HeaderBackground;
 	static Texture * s_RestoreIcon;
 	GameNodeEditor::GameNodeEditor():m_pasteBinNode(nullptr)
 	{
-		g_Context = ed::CreateEditor();
-		ed::SetCurrentEditor(g_Context);
+		m_context = ed::CreateEditor();
+		ed::SetCurrentEditor(m_context);
 		ed::EnableShortcuts(true);
 	    s_HeaderBackground = TextureMgr::shared()->getByPath("UITexture/NodeEditor/BlueprintBackground.png");
 	    s_SaveIcon         = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_save_white_24dp.png");
@@ -84,6 +83,7 @@ enum class PinType
 
 	void GameNodeEditor::addNode(GraphNode* newNode)
 	{
+		newNode->setNodeEditor(this);
 		m_gameNodes.push_back(newNode);
 		if(newNode->getType() == Node_TYPE_TRIGGER)
 		{
@@ -168,7 +168,7 @@ void GameNodeEditor::removeNode(GraphNode* node)
 
 	void GameNodeEditor::dump(rapidjson::Value& partDocObj, rapidjson::Document::AllocatorType& allocator)
 	{
-		ed::SetCurrentEditor(g_Context);
+		ed::SetCurrentEditor(m_context);
 		rapidjson::Value NodeGraphObj(rapidjson::kObjectType);
 
 		rapidjson::Value NodeListObj(rapidjson::kArrayType);
@@ -230,7 +230,7 @@ void GameNodeEditor::removeNode(GraphNode* node)
 
 	void GameNodeEditor::load(rapidjson::Value& NodeGraphObj)
 	{
-		ed::SetCurrentEditor(g_Context);
+		ed::SetCurrentEditor(m_context);
 		//read node
 		auto& NodeList = NodeGraphObj["NodeList"];
 		for(unsigned int i = 0; i < NodeList.Size(); i++)
@@ -286,7 +286,7 @@ void GameNodeEditor::removeNode(GraphNode* node)
 
 			newNode->load(node);
 			//确保在编辑器里创建过,否则getNodePosition会得到Float_Max很坑爹
-			reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(g_Context)->GetNode(newNode->m_nodeID);
+			reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(m_context)->GetNode(newNode->m_nodeID);
 			//设置好位置
 			ed::SetNodePosition(newNode->m_nodeID, ImVec2(newNode->m_origin.x, newNode->m_origin.y));
 		}
@@ -710,7 +710,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
         ImGui::Begin(TRC(u8"节点编辑器"), isOpen,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings );
-		ed::SetCurrentEditor(g_Context);
+		ed::SetCurrentEditor(m_context);
 		static float leftPaneWidth  = 250.0f;
 	    ShowLeftPane(leftPaneWidth - 4.0f);
 

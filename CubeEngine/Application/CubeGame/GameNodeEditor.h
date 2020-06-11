@@ -5,7 +5,7 @@
 #include "Base/GuidObj.h"
 #include "TriggerNode.h"
 #include <queue>
-
+#include "NodeEditor/Include/imgui_node_editor.h"
 namespace tzw {
 
 struct LinkInfo
@@ -57,5 +57,6 @@ protected:
 	std::vector<LinkInfo> m_links;
 	std::vector<TriggerNode * > m_triggerList;
 	GraphNode * m_pasteBinNode;
+	ax::NodeEditor::EditorContext* m_context;
 };
 }

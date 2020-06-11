@@ -80,7 +80,7 @@ namespace tzw
 		{
 			if(!isPlayerOnSeat()) return;
 		}
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_pressedAttr, node_list);
 		for(auto node : node_list)
@@ -99,7 +99,7 @@ namespace tzw
 		{
 			if(!isPlayerOnSeat()) return;
 		}
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_ReleasedAttr, node_list);
 		for(auto node : node_list)

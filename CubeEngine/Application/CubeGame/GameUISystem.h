@@ -44,6 +44,7 @@ public:
 	void setVisible(bool val);
 	void initInGame();
 	GameNodeEditor * getNodeEditor();
+	void openNodeEditor(GamePart * part);
 	void setIsShowNodeEditor(bool isShow);
 	void setIsShowAssetEditor(bool isShow);
 	void popFloatTips(std::string floatString);
@@ -81,6 +82,7 @@ private:
 	GamePart * m_curInspectPart;
 	Data m_helperData;
 	OptionPanel m_option;
+	GamePart* m_currControlPart;
 public:
 	LabelNew* getCrossHairTipsInfo() const;
 };

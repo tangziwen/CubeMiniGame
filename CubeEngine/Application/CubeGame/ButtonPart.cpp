@@ -21,9 +21,7 @@ ButtonPart::ButtonPart(std::string itemName)
 	m_parent = nullptr;
 	ButtonPart::generateName();
 
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new ButtonPartNode(this);
-	nodeEditor->addNode(m_graphNode);
+
 }
 
 ButtonPart::~ButtonPart()
@@ -73,5 +71,11 @@ void ButtonPart::onReleased()
 {
 	GameUISystem::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(-1);
+}
+
+void ButtonPart::AddOnVehicle(Vehicle* vehicle)
+{
+	m_graphNode = new ButtonPartNode(this);
+	vehicle->getEditor()->addNode(m_graphNode);
 }
 }

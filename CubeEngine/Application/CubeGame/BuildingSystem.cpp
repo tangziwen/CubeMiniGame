@@ -88,7 +88,7 @@ namespace tzw
 			int(std::round(pos.z / blockSize)) * blockSize);
 		if(m_staticIsland.empty())
 		{
-			newIsland = new Island(resultWorldPos);
+			newIsland = new Island(resultWorldPos, nullptr);
 			m_staticIsland.push_back(newIsland);
 			newIsland->genIslandGroup();
 			newIsland->setIsStatic(true);
@@ -109,7 +109,7 @@ namespace tzw
 		vec3 pos, n, up;
 		attach->getAttachmentInfoWorld(pos, n, up);
 
-		auto island = new Island(pos + n * 0.5);
+		auto island = new Island(pos + n * 0.5, attach->m_parent->m_parent->getVehicle());
 		auto constraint = static_cast<GameConstraint*>(attach->m_parent);
 		constraint->m_parent->addNeighbor(island);
 		island->addNeighbor(constraint->m_parent);
@@ -128,15 +128,19 @@ namespace tzw
 	BuildingSystem::attachGamePart(GamePart* part, Attachment* attach, float degree, int index)
 	{
 		AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLINK);
+		//first part.build a vehicle
 		if (attach->m_parent->getType() == GamePartType::GAME_PART_LIFT)
 		{
+			Vehicle * vehicle = new Vehicle();
 			auto liftPart = dynamic_cast<LiftPart*>(attach->m_parent);
 			vec3 pos, n, up;
 			attach->getAttachmentInfoWorld(pos, n, up);
-			auto newIsland = new Island(pos);
+			auto newIsland = new Island(pos, vehicle);
 			m_IslandList.push_back(newIsland);
 			newIsland->insertAndAdjustAttach(part, attach, index);
 			newIsland->genIslandGroup();
+			
+			//vehicle->
 			liftPart->setEffectedIsland(newIsland->m_islandGroup);
 		}
 		else
@@ -346,7 +350,7 @@ namespace tzw
 		vec3 pos, n, up;
 		attachment->getAttachmentInfoWorld(pos, n, up);
 
-		auto island = new Island(pos + n * 0.5);
+		auto island = new Island(pos + n * 0.5, attachment->m_parent->m_parent->getVehicle());
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
 		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
@@ -377,7 +381,7 @@ namespace tzw
 		vec3 pos, n, up;
 		attachment->getAttachmentInfoWorld(pos, n, up);
 
-		auto island = new Island(pos + n * 0.5);
+		auto island = new Island(pos + n * 0.5, attachment->m_parent->m_parent->getVehicle());
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
 		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
@@ -400,14 +404,6 @@ namespace tzw
 		
 		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
 		return spring;
-	}
-
-	Island*
-	BuildingSystem::createIsland(vec3 pos)
-	{
-		auto island = new Island(pos);
-		m_IslandList.push_back(island);
-		return island;
 	}
 
 	Attachment*
@@ -619,14 +615,20 @@ namespace tzw
 		}
 	}
 
-	void BuildingSystem::dump(std::string filePath)
+	void BuildingSystem::dumpVehicle(std::string filePath)
 	{
+		if(!m_controlPart)
+		{
+			tlog("you must dock the vehilce on Lift to dump");
+		}
+		auto vehicle = m_controlPart->m_parent->getVehicle();
 		rapidjson::Document doc;
 		doc.SetObject();
 		rapidjson::Value islandList(rapidjson::kArrayType);
 		for (auto island : m_IslandList)
 		{
-
+			if(island->getVehicle() != vehicle)
+				continue;
 			if (island->m_isSpecial)
 				continue;
 			//we need record the building rotation!!!!!
@@ -637,11 +639,12 @@ namespace tzw
 		}
 		doc.AddMember("islandList", islandList, doc.GetAllocator());
 
-
 		//constraint
 		rapidjson::Value constraintList(rapidjson::kArrayType);
 		for (auto constraint : m_bearList)
 		{
+			if(constraint->m_parent->getVehicle() != vehicle)
+				continue;
 			rapidjson::Value bearingObj(rapidjson::kObjectType);
 			bearingObj.AddMember("IslandGroup", constraint->m_parent->m_islandGroup, doc.GetAllocator());
 			constraint->dump(bearingObj, doc.GetAllocator());
@@ -651,8 +654,7 @@ namespace tzw
 
 
 		//Node Editor
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		nodeEditor->dump(doc, doc.GetAllocator());
+		vehicle->getEditor()->dump(doc, doc.GetAllocator());
 		
 		
 		rapidjson::StringBuffer buffer;
@@ -666,8 +668,9 @@ namespace tzw
 	}
 
 	void
-	BuildingSystem::load(std::string filePath)
+	BuildingSystem::loadVehicle(std::string filePath)
 	{
+		Vehicle * vehicle = new Vehicle();
 		rapidjson::Document doc;
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
@@ -690,7 +693,7 @@ namespace tzw
 			for (unsigned int i = 0; i < items.Size(); i++)
 			{
 				auto& item = items[i];
-				auto newIsland = new Island(vec3());
+				auto newIsland = new Island(vec3(), vehicle);
 				m_IslandList.push_back(newIsland);
 				newIsland->m_islandGroup = item["IslandGroup"].GetString();
 				newIsland->load(item);
@@ -760,10 +763,7 @@ namespace tzw
 		}
 
 		//Node Editor
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-		nodeEditor->load(doc["NodeGraph"]);
-		
-		
+		vehicle->getEditor()->load(doc["NodeGraph"]);
 
 		if(m_liftPart)
 		{
@@ -803,7 +803,7 @@ namespace tzw
 			for (unsigned int i = 0; i < items.Size(); i++)
 			{
 				auto& item = items[i];
-				auto newIsland = new Island(vec3());
+				auto newIsland = new Island(vec3(), nullptr);
 				m_staticIsland.push_back(newIsland);
 				//m_IslandList.push_back(newIsland);
 				newIsland->m_islandGroup = item["IslandGroup"].GetString();

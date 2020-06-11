@@ -83,12 +83,12 @@ void GameUISystem::init()
 	m_fileBrowser = new VehicleBroswer();
 	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
 	{
-		BuildingSystem::shared()->dump(fileName);
+		BuildingSystem::shared()->dumpVehicle(fileName);
 	};
 	m_fileBrowser->m_loadCallBack = [&](std::string fileName)
 	{
 		m_nodeEditor->clearAll();
-		BuildingSystem::shared()->load(fileName);
+		BuildingSystem::shared()->loadVehicle(fileName);
 	};
 	testIcon = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_restore_white_24dp.png");
 	settingIcon = TextureMgr::shared()->getByPath("UITexture/Icon/icons8-gear-96.png");
@@ -304,7 +304,8 @@ void GameUISystem::drawIMGUI()
 		if(getWindowIsShow(WindowType::NODE_EDITOR)) 
 		{
 			bool isOpen = true;
-	        m_nodeEditor->drawIMGUI(&isOpen);
+			auto editor = m_currControlPart->m_parent->getVehicle()->getEditor();
+	        editor->drawIMGUI(&isOpen);
 			setWindowShow(WindowType::NODE_EDITOR, isOpen);
 		}
 
@@ -641,10 +642,15 @@ GameNodeEditor* GameUISystem::getNodeEditor()
 	return m_nodeEditor;
 }
 
+void GameUISystem::openNodeEditor(GamePart* part)
+{
+	setWindowShow(WindowType::NODE_EDITOR, true);
+	m_currControlPart = part;
+}
+
 void GameUISystem::setIsShowNodeEditor(bool isShow)
 {
 	setWindowShow(WindowType::NODE_EDITOR, isShow);
-
 }
 
 void GameUISystem::setIsShowAssetEditor(bool isShow)

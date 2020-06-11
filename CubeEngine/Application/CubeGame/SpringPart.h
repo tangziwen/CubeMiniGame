@@ -29,6 +29,7 @@ public:
 	void drawInspect() override;
 	bool isNeedDrawInspect() override;
 	void updateConstraintState() override;
+	void AddOnVehicle(Vehicle * vehicle) override;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	GraphNode * m_graphNode;

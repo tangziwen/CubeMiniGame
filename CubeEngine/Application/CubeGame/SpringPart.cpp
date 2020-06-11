@@ -252,5 +252,9 @@ void SpringPart::updateConstraintState()
 		PhysicsMgr::shared()->addConstraint(m_constrain);
 	}
 }
+
+void SpringPart::AddOnVehicle(Vehicle* vehicle)
+{
+}
 }
 

@@ -25,6 +25,7 @@ namespace tzw
 		virtual ~ControlPart();
 		GraphNode * getGraphNode() const;
 		void generateName();
+		void AddOnVehicle(Vehicle * vehicle) override;
 	public:
 		GamePartType getType() override;
 		bool m_isActivate;

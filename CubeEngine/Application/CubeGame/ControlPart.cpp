@@ -28,9 +28,6 @@ ControlPart::ControlPart(std::string itemName)
 	m_parent = nullptr;
 	EventMgr::shared()->addFixedPiorityListener(this);
 	ControlPart::generateName();
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new ControlPartNode(this);
-	nodeEditor->addNode(m_graphNode);
 	audio = AudioSystem::shared()->createSound("Audio/engine_loop.wav");
 	audio->setIsLooping(true);
 }
@@ -42,6 +39,13 @@ void ControlPart::generateName()
 	sprintf_s(formatName, 512, TRC(u8"×ùÎ» %s"),genShortName().c_str());
 	setName(formatName);
 }
+
+void ControlPart::AddOnVehicle(Vehicle* vehicle)
+{
+	m_graphNode = new ControlPartNode(this);
+	vehicle->getEditor()->addNode(m_graphNode);
+}
+
 Attachment * ControlPart::findProperAttachPoint(Ray ray, vec3 &attachPosition, vec3 &Normal, vec3 & attachUp)
 {
 	RayAABBSide side;

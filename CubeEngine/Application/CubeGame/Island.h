@@ -6,6 +6,7 @@
 #include <vector>
 #include "rapidjson/document.h"
 #include "Base/GuidObj.h"
+#include "Vehicle.h"
 namespace tzw
 {
 	class PhysicsCompoundShape;
@@ -14,9 +15,11 @@ namespace tzw
 class Island : public GuidObj
 {
 public:
+	Vehicle* getVehicle() const;
+	void setVehicle(Vehicle* const vehicle);
 	std::vector<GamePart * > m_partList;
 	Drawable3D * m_node;
-	Island(vec3 pos);
+	Island(vec3 pos, Vehicle * vehicle);
 	~Island();
 	PhysicsRigidBody * m_rigid;
 	void insertNoUpdatePhysics(GamePart * part);
@@ -59,6 +62,7 @@ private:
 	Quaternion m_buildingRotate;
 	std::set<Island *> m_neighborIslands;
 	PhysicsCompoundShape * m_compound_shape;
+	Vehicle * m_vehicle;
 };
 
 

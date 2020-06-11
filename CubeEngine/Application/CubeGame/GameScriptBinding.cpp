@@ -147,7 +147,9 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
   BIND_FUNC_PY(GameUISystem, setIsShowNodeEditor)
   BIND_FUNC_PY(GameUISystem, setIsFileBroswerOpen)
   BIND_FUNC_PY(GameUISystem, isOpenAssetEditor)
-  BIND_FUNC_PY(GameUISystem, setPainterShow);
+  BIND_FUNC_PY(GameUISystem, setPainterShow)
+  BIND_FUNC_PY(GameUISystem, openNodeEditor);
+	
 
   // GamePart and it's derived classes
 

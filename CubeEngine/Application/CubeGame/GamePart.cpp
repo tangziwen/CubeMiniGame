@@ -60,6 +60,11 @@ namespace tzw
 		return nullptr;
 	}
 
+	void GamePart::AddOnVehicle(Vehicle* vehicle)
+	{
+		
+	}
+
 	void GamePart::setSurface(vec3 color, PartSurface* surface)
 	{
 		m_partSurface = surface;
@@ -799,6 +804,12 @@ namespace tzw
 	void GamePart::toggle(int openSignal)
 	{
 		
+	}
+
+	void GamePart::setVehicle(Vehicle* vehicle)
+	{
+		m_vehicle = vehicle;
+		AddOnVehicle(vehicle);
 	}
 
 

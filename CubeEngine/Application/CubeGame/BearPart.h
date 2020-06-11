@@ -38,6 +38,7 @@ public:
 	void updateConstraintState() override;
 	void toggle(int openSignal) override;
 	virtual void onUpdate(float dt);
+	void AddOnVehicle(Vehicle * vehicle) override;
 private:
 	GraphNode * m_graphNode;
 	Material * m_xrayMat;

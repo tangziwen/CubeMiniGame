@@ -18,6 +18,7 @@ namespace tzw
 		GraphNode * getEditorNode() override;
 		void onPressed();
 		void onReleased();
+		void AddOnVehicle(Vehicle * vehicle) override;
     private:
 		float m_topRadius, m_bottomRadius, m_height;
 		GraphNode * m_graphNode;

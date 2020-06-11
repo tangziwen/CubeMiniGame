@@ -19,7 +19,17 @@
 #include "SwitchPart.h"
 
 namespace tzw {
-Island::Island(vec3 pos)
+Vehicle* Island::getVehicle() const
+{
+	return m_vehicle;
+}
+
+void Island::setVehicle(Vehicle* const vehicle)
+{
+	m_vehicle = vehicle;
+}
+
+Island::Island(vec3 pos, Vehicle * vehicle)
 {
 	// the toehold here
 	m_node = new Drawable3D();
@@ -31,6 +41,7 @@ Island::Island(vec3 pos)
 	m_buildingRotate = Quaternion();
 	m_enablePhysics = false;
 	m_isStatic = false;
+	setVehicle(vehicle);
 }
 
 Island::~Island()
@@ -56,6 +67,7 @@ Island::insertNoUpdatePhysics(GamePart* part)
 	m_partList.push_back(part);
 	part->m_parent = this;
 	m_node->addChild(part->getNode());
+	part->AddOnVehicle(m_vehicle);
 }
 
 void Island::insert(GamePart* part)

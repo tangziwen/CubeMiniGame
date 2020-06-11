@@ -13,6 +13,7 @@ class PartSurface;
 class GamePart;
 class BearPart;
 class Island;
+class Vehicle;
 struct GameItem;
 class GamePart : public GuidObj
 {
@@ -24,6 +25,7 @@ public:
 	                                        vec3& attachPosition,
 	                                        vec3& Normal,
 	                                        vec3& up);
+	virtual void AddOnVehicle(Vehicle * vehicle);
 	virtual void setSurface(vec3 color, PartSurface * surface);
 	virtual void attachTo(Attachment* attach, float degree, int attachMentIndex);
 	virtual Matrix44 attachToOtherIslandByAlterSelfPart(Attachment* attach, int attachmentIndex);
@@ -74,6 +76,7 @@ public:
 	int getPrettyAttach(Attachment * otherAttach, int attachOffset);
 	int findAttachByLocale(std::string locale);
 	virtual void toggle(int openSignal);
+	void setVehicle(Vehicle * vehicle);
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;
@@ -81,6 +84,7 @@ protected:
 	Drawable3D* m_node;
 	GameItem * m_item;
 	PartSurface * m_partSurface;
+	Vehicle * m_vehicle;
 public:
 	GameItem* getItem() const;
 	void setItem(GameItem* const item);

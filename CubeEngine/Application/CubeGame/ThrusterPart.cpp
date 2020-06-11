@@ -33,9 +33,7 @@ ThrusterPart::ThrusterPart()
 	m_parent = nullptr;
 	ThrusterPart::generateName();
 
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-	m_graphNode = new ThrusterPartNode(this);
-	nodeEditor->addNode(m_graphNode);
+
 	initAttachments();
 	m_phase = TbaseMath::randF()*3.14;
 	m_scale =0.8f + TbaseMath::randF() * 0.3f;
@@ -256,5 +254,11 @@ void ThrusterPart::load(rapidjson::Value& partData)
 	GamePart::load(partData);
 	if(partData.HasMember("ThrusterForce"))
 		m_thrusterForce = partData["ThrusterForce"].GetDouble();
+}
+
+void ThrusterPart::AddOnVehicle(Vehicle* vehicle)
+{
+	m_graphNode = new ThrusterPartNode(this);
+	vehicle->getEditor()->addNode(m_graphNode);
 }
 }

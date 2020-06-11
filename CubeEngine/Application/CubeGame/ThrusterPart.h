@@ -31,6 +31,7 @@ namespace tzw
 		void setThrusterForce(float thruster);
 		void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator) override;
 		void load(rapidjson::Value& partData) override;
+		void AddOnVehicle(Vehicle * vehicle) override;
     private:
 		int m_isOpen;
 		float m_topRadius, m_bottomRadius, m_height;
