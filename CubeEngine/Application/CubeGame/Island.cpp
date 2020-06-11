@@ -27,6 +27,10 @@ Vehicle* Island::getVehicle() const
 void Island::setVehicle(Vehicle* const vehicle)
 {
 	m_vehicle = vehicle;
+	if(vehicle)
+	{
+		vehicle->addIsland(this);
+	}
 }
 
 Island::Island(vec3 pos, Vehicle * vehicle)
@@ -67,7 +71,7 @@ Island::insertNoUpdatePhysics(GamePart* part)
 	m_partList.push_back(part);
 	part->m_parent = this;
 	m_node->addChild(part->getNode());
-	part->AddOnVehicle(m_vehicle);
+	part->setVehicle(m_vehicle);
 }
 
 void Island::insert(GamePart* part)
@@ -389,60 +393,52 @@ void Island::load(rapidjson::Value& island)
 		for (unsigned int i = 0; i < partList.Size(); i++)
 		{
 			auto& item = partList[i];
-
+			GamePart * part = nullptr;
 			//读取的时候，因为Island内的部件已经存储了位置信息，如果在insert仍然update物理信息的话，会导致Node的矩阵变化，放置会不正确
 			switch((GamePartType)item["type"].GetInt())
 			{
 				case GamePartType::GAME_PART_BLOCK:
 				{
-					auto part = new BlockPart(item["ItemName"].GetString());
-					part->load(item);
-					insertNoUpdatePhysics(part);
+					part = new BlockPart(item["ItemName"].GetString());
                 }
 				break;
 
 				case GamePartType::GAME_PART_CYLINDER:
 					{
-						auto part = new CylinderPart();
-						part->load(item);
-						insertNoUpdatePhysics(part);
+						part = new CylinderPart();
 					}
 				break;
 				case GamePartType::GAME_PART_CONTROL:
 					{
-						auto part = new ControlPart(item["ItemName"].GetString());
-						part->load(item);
-						insertNoUpdatePhysics(part);
+						part = new ControlPart(item["ItemName"].GetString());
 					}
 				break;
 				case GamePartType::GAME_PART_CANNON:
 					{
-						auto part = new CannonPart(item["ItemName"].GetString());
-						part->load(item);
-						insertNoUpdatePhysics(part);
+						part = new CannonPart(item["ItemName"].GetString());
 					}
 				break;
 				case GamePartType::GAME_PART_THRUSTER:
 					{
-						auto part = new ThrusterPart(item["ItemName"].GetString());
-						part->load(item);
-						insertNoUpdatePhysics(part);
+						part = new ThrusterPart(item["ItemName"].GetString());
 					}
 				break;
 				case GamePartType::GAME_PART_BUTTON:
 					{
-						auto part = new ButtonPart(item["ItemName"].GetString());
-						part->load(item);
-						insertNoUpdatePhysics(part);
+						part = new ButtonPart(item["ItemName"].GetString());
 					}
 				break;
 				case GamePartType::GAME_PART_SWITCH:
 					{
-						auto part = new SwitchPart(item["ItemName"].GetString());
-						part->load(item);
-						insertNoUpdatePhysics(part);
+						part = new SwitchPart(item["ItemName"].GetString());
 					}
 				break;
+			}
+			if(part)
+			{
+				part->setVehicle(m_vehicle);
+				part->load(item);
+				insertNoUpdatePhysics(part);
 			}
 		}
 
@@ -453,6 +449,16 @@ void Island::load(rapidjson::Value& island)
 		//处理一下内部的connected
 		loadInternalConnected();
 	}
+}
+
+std::string Island::getIslandGroup() const
+{
+	return m_islandGroup;
+}
+
+void Island::setIslandGroup(const std::string& islandGroup)
+{
+	m_islandGroup = islandGroup;
 }
 
 void Island::genIslandGroup()

@@ -169,7 +169,7 @@ void SpringPart::generateName()
 
 SpringPart::~SpringPart()
 {
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_vehicle->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 	if(m_constrain) 
@@ -255,6 +255,8 @@ void SpringPart::updateConstraintState()
 
 void SpringPart::AddOnVehicle(Vehicle* vehicle)
 {
+	m_graphNode = new SpringPartNode(this);
+	vehicle->getEditor()->addNode(m_graphNode);
 }
 }
 

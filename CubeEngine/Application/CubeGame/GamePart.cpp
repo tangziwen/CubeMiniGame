@@ -812,6 +812,11 @@ namespace tzw
 		AddOnVehicle(vehicle);
 	}
 
+	Vehicle* GamePart::getVehicle()
+	{
+		return m_vehicle;
+	}
+
 
 	GameItem* GamePart::getItem() const
 	{

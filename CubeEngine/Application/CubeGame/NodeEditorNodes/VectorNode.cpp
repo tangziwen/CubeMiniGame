@@ -13,7 +13,7 @@ namespace tzw
 
 	NodeAttrValue VectorNode::execute()
 	{
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		auto theList = nodeEditor->findAllAttrLinksFromAttr(m_composite);
 		auto& value = m_out->m_localAttrValue;
 		value.m_list.clear();

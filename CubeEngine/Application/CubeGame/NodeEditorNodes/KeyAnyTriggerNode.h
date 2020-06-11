@@ -18,7 +18,6 @@ public:
 protected:
 	void triggerPress();
 	void triggerRelease();
-	bool isPlayerOnSeat();
 	NodeAttr * m_pressedAttr;
 	NodeAttr * m_ReleasedAttr;
 	int m_keyCode;

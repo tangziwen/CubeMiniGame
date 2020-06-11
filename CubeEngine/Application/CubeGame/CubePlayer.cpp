@@ -435,7 +435,7 @@ namespace tzw
 			case GamePartType::GAME_PART_LIFT:
 				if(!BuildingSystem::shared()->getLift())
 				{
-					if(!BuildingSystem::shared()->getStoreIslandGroup().empty()) 
+					if(BuildingSystem::shared()->getStoreIslandGroup()) 
 					{
 						label->setString(TR(u8"放置收纳对象"));
 					}

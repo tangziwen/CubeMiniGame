@@ -140,8 +140,4 @@ namespace tzw
 			}
 		}
 	}
-	bool KeyPairTriggerNode::isPlayerOnSeat()
-	{
-		return BuildingSystem::shared()->getCurrentControlPart() && BuildingSystem::shared()->getCurrentControlPart()->getIsActivate();
-	}
 }

@@ -39,7 +39,7 @@ namespace tzw
 	void ButtonPartNode::triggerPress()
 	{
 		m_stateAttr->m_localAttrValue.setInt(1);
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_pressedAttr, node_list);
 		for(auto node : node_list)
@@ -54,7 +54,7 @@ namespace tzw
 	void ButtonPartNode::triggerRelease()
 	{
 		m_stateAttr->m_localAttrValue.setInt(0);
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_releasedAttr, node_list);
 		for(auto node : node_list)

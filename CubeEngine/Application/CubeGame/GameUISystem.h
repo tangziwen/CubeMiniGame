@@ -43,7 +43,6 @@ public:
 	bool isVisible() const;
 	void setVisible(bool val);
 	void initInGame();
-	GameNodeEditor * getNodeEditor();
 	void openNodeEditor(GamePart * part);
 	void setIsShowNodeEditor(bool isShow);
 	void setIsShowAssetEditor(bool isShow);
@@ -75,7 +74,6 @@ private:
 	bool m_preIsNeedShow;
 	bool m_isOpenPlayerOverLay;
 	DebugInfoPanel m_debugInfoPanel;
-	GameNodeEditor * m_nodeEditor;
 	VehicleBroswer * m_fileBrowser;
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;

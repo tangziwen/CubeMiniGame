@@ -125,13 +125,12 @@ namespace tzw
 					static_cast<LiftPart *>(m_previewPart)->setPos(resultPos);
 
 					//收纳对象挂在状态，这样子搞性能有点差，先敏捷一波
-					if(!BuildingSystem::shared()->getStoreIslandGroup().empty())
+					if(BuildingSystem::shared()->getStoreIslandGroup())
 					{
-						std::vector<Island * > storeIslandGroup;
-						BuildingSystem::shared()->getIslandsByGroup(BuildingSystem::shared()->getStoreIslandGroup(), storeIslandGroup);
+						auto& storeIslandGroup = BuildingSystem::shared()->getStoreIslandGroup()->getIslandList();
 						BuildingSystem::shared()->tempPlace(storeIslandGroup[0], static_cast<LiftPart *>(m_previewPart));
 						////readjust
-						auto attach = BuildingSystem::shared()->replaceToLiftIslands(storeIslandGroup[0]->m_islandGroup);
+						auto attach = BuildingSystem::shared()->replaceToLiftIslands(BuildingSystem::shared()->getStoreIslandGroup());
 						BuildingSystem::shared()->replaceToLift(attach->m_parent->m_parent, attach, static_cast<LiftPart *>(m_previewPart));
 					}
 				}
@@ -207,13 +206,12 @@ namespace tzw
 					static_cast<LiftPart *>(m_previewPart)->setPos(resultPos);
 
 					//收纳对象挂在状态，这样子搞性能有点差，先敏捷一波
-					if(!BuildingSystem::shared()->getStoreIslandGroup().empty())
+					if(BuildingSystem::shared()->getStoreIslandGroup())
 					{
-						std::vector<Island * > storeIslandGroup;
-						BuildingSystem::shared()->getIslandsByGroup(BuildingSystem::shared()->getStoreIslandGroup(), storeIslandGroup);
+						auto& storeIslandGroup = BuildingSystem::shared()->getStoreIslandGroup()->getIslandList();
 						BuildingSystem::shared()->tempPlace(storeIslandGroup[0], static_cast<LiftPart *>(m_previewPart));
 						////readjust
-						auto attach = BuildingSystem::shared()->replaceToLiftIslands(storeIslandGroup[0]->m_islandGroup);
+						auto attach = BuildingSystem::shared()->replaceToLiftIslands(BuildingSystem::shared()->getStoreIslandGroup());
 						BuildingSystem::shared()->replaceToLift(attach->m_parent->m_parent, attach, static_cast<LiftPart *>(m_previewPart));
 					}
 				}

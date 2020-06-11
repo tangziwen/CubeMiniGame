@@ -26,7 +26,7 @@ public:
 	void replaceToLiftByRay(vec3 pos, vec3 dir, float dist);
 	void replaceToLift(Island * island, Attachment * attachment, LiftPart * targetLift);
 	void tempPlace(Island * island, LiftPart * targetLift);
-	Attachment* replaceToLiftIslands(std::string islandGroup);
+	Attachment* replaceToLiftIslands(Vehicle * vehicle);
 	void replaceToLift_R(Island * island, std::set<Island *> & closeList, LiftPart * liftPart);
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
 	void tmpMoveWheel(bool isOpen);
@@ -73,10 +73,10 @@ public:
 	bool isIsInXRayMode() const;
 	void setIsInXRayMode(const bool isInXRayMode);
 private:
-	std::string m_storeIslandGroup;
+	Vehicle * m_storeIslandGroup;
 public:
-	std::string getStoreIslandGroup() const;
-	void setStoreIslandGroup(const std::string& storeIslandGroup);
+	Vehicle* getStoreIslandGroup() const;
+	void setStoreIslandGroup(Vehicle* storeIslandGroup);
 private:
 	ControlPart * m_controlPart;
 	LiftPart * m_liftPart;
@@ -87,6 +87,7 @@ private:
 	std::set<GamePart* > m_thrusterList;
 	std::map<GamePart *, LabelNew *> m_partToLabel;
 	GamePart * m_currPointPart;
+	std::map<std::string, Vehicle * > m_vehicleList;
 };
 
 

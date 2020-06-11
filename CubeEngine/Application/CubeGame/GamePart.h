@@ -77,6 +77,7 @@ public:
 	int findAttachByLocale(std::string locale);
 	virtual void toggle(int openSignal);
 	void setVehicle(Vehicle * vehicle);
+	Vehicle * getVehicle();
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

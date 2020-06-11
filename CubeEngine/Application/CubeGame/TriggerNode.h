@@ -15,7 +15,7 @@ public:
 	virtual void handleKeyPress(int keyCode);
 	virtual void handleKeyRelease(int keyCode);
 protected:
-
+	bool isPlayerOnSeat();
 };
 
 }

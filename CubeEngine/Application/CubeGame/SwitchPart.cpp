@@ -25,7 +25,7 @@ SwitchPart::SwitchPart(std::string itemName)
 
 SwitchPart::~SwitchPart()
 {
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_vehicle->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
@@ -63,7 +63,7 @@ GraphNode* SwitchPart::getEditorNode()
 void SwitchPart::onToggle()
 {
 	m_currState = !m_currState;
-	GameUISystem::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
+	m_vehicle->getEditor()->onReleaseSwitchNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(m_currState?0:-1);
 	Texture * tex;
 	if(m_currState)

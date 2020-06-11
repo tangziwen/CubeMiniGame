@@ -72,7 +72,7 @@ ThrusterPart::ThrusterPart(std::string itemName)
 	initFromItemName(itemName);
 	m_parent = nullptr;
 	ThrusterPart::generateName();
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_vehicle->getEditor();
 	m_graphNode = new ThrusterPartNode(this);
 	nodeEditor->addNode(m_graphNode);
 	m_phase = TbaseMath::randF()*3.14;
@@ -210,7 +210,7 @@ GraphNode* ThrusterPart::getGraphNode() const
 
 ThrusterPart::~ThrusterPart()
 {
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_vehicle->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	BuildingSystem::shared()->removeThruster(this);
 	delete m_graphNode;

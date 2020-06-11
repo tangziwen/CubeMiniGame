@@ -26,7 +26,7 @@ ButtonPart::ButtonPart(std::string itemName)
 
 ButtonPart::~ButtonPart()
 {
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_vehicle->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }
@@ -63,13 +63,13 @@ GraphNode* ButtonPart::getEditorNode()
 
 void ButtonPart::onPressed()
 {
-	GameUISystem::shared()->getNodeEditor()->onPressButtonNode(this->getEditorNode());
+	m_vehicle->getEditor()->onPressButtonNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(0);
 }
 
 void ButtonPart::onReleased()
 {
-	GameUISystem::shared()->getNodeEditor()->onReleaseSwitchNode(this->getEditorNode());
+	m_vehicle->getEditor()->onReleaseSwitchNode(this->getEditorNode());
 	static_cast<Model *>(m_node)->setCurrPose(-1);
 }
 

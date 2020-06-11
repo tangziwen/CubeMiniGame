@@ -27,7 +27,7 @@ namespace tzw
 
 	void BehaviorNode::handleExeOut()
 	{
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		std::vector<GraphNode * > node_list;
 		nodeEditor->findNodeLinksToAttr(m_out, node_list);
 		for(auto node : node_list)

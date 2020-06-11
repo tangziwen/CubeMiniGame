@@ -1,5 +1,5 @@
 #include "TriggerNode.h"
-
+#include "BuildingSystem.h"
 
 namespace tzw
 {
@@ -28,5 +28,11 @@ namespace tzw
 
 	void TriggerNode::handleKeyRelease(int keyCode)
 	{
+	}
+
+	bool TriggerNode::isPlayerOnSeat()
+	{
+		auto controlPart = BuildingSystem::shared()->getCurrentControlPart();
+		return controlPart && controlPart->getIsActivate() && controlPart->getVehicle()->getEditor() == getNodeEditor();
 	}
 }

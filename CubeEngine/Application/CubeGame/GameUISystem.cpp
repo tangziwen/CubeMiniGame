@@ -60,7 +60,7 @@ static void onOption(Button * btn)
 }
 GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
-	m_nodeEditor(nullptr), m_fileBrowser(nullptr),
+	m_fileBrowser(nullptr),
 	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr),m_isOpenPlayerOverLay(true)
 	
 {
@@ -79,7 +79,6 @@ void GameUISystem::init()
 	GUISystem::shared()->addObject(this);
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
-	m_nodeEditor = new GameNodeEditor();
 	m_fileBrowser = new VehicleBroswer();
 	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
 	{
@@ -87,7 +86,6 @@ void GameUISystem::init()
 	};
 	m_fileBrowser->m_loadCallBack = [&](std::string fileName)
 	{
-		m_nodeEditor->clearAll();
 		BuildingSystem::shared()->loadVehicle(fileName);
 	};
 	testIcon = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_restore_white_24dp.png");
@@ -637,10 +635,6 @@ void GameUISystem::setVisible(bool val)
 	m_isVisible = val;
 }
 
-GameNodeEditor* GameUISystem::getNodeEditor()
-{
-	return m_nodeEditor;
-}
 
 void GameUISystem::openNodeEditor(GamePart* part)
 {

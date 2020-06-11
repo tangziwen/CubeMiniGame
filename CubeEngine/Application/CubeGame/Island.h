@@ -40,7 +40,9 @@ public:
 	void dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& allocator);
 	void load(rapidjson::Value &island);
 	bool m_isSpecial;
-	std::string m_islandGroup;
+	
+	std::string getIslandGroup() const;
+	void setIslandGroup(const std::string& islandGroup);
 	void genIslandGroup();
 	void killAllParts();
 	void updatePhysics();
@@ -50,12 +52,12 @@ public:
 	void loadInternalConnected();
 	AABB getAABBInWorld();
 	void onHitCallBack(vec3 p);
-private:
-	bool m_isStatic;
 public:
 	bool isIsStatic() const;
 	void setIsStatic(const bool isStatic);
 private:
+	bool m_isStatic;
+	std::string m_islandGroup;
 	bool m_enablePhysics;
 	//the building rotation, island need to record the rotation(while the vehicle is in the lift part) too!!!! because if we don't do that, the next we load or replace to the Lift from ground,
 	//we can not determine which attachment is the correct center-bottom one to dock at the lift.

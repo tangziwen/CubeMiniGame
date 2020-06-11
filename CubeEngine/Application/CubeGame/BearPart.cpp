@@ -122,7 +122,7 @@ int BearPart::getAttachmentCount()
 
 BearPart::~BearPart()
 {
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_parent->getVehicle()->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 	if(m_constrain) 

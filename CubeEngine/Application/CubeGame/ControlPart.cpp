@@ -208,7 +208,7 @@ Attachment* ControlPart::getAttachment(int index)
 
 ControlPart::~ControlPart()
 {
-	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+	auto nodeEditor = m_vehicle->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
 }

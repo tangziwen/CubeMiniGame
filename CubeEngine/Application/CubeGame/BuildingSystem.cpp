@@ -27,7 +27,7 @@ namespace tzw
 {
 	const float bearingGap = 0.00;
 
-	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup("")
+	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup(nullptr)
 	{
 	}
 
@@ -115,7 +115,7 @@ namespace tzw
 		island->addNeighbor(constraint->m_parent);
 		m_IslandList.push_back(island);
 		island->insert(part);
-		island->m_islandGroup = attach->m_parent->m_parent->m_islandGroup;
+		island->setIslandGroup(attach->m_parent->getVehicle()->getIslandGroup());
 		
 		//part->attachToOtherIslandByAlterSelfPart(attach);
 		part->attachToOtherIslandByAlterSelfIsland(attach, part->getFirstAttachment(), degree);
@@ -137,11 +137,12 @@ namespace tzw
 			attach->getAttachmentInfoWorld(pos, n, up);
 			auto newIsland = new Island(pos, vehicle);
 			m_IslandList.push_back(newIsland);
+			vehicle->genIslandGroup();
 			newIsland->insertAndAdjustAttach(part, attach, index);
-			newIsland->genIslandGroup();
-			
+			newIsland->setIslandGroup(vehicle->getIslandGroup());
 			//vehicle->
-			liftPart->setEffectedIsland(newIsland->m_islandGroup);
+			liftPart->setEffectedIsland(vehicle->getIslandGroup());
+			m_vehicleList.emplace(std::make_pair(vehicle->getIslandGroup(), vehicle));
 		}
 		else
 		{
@@ -250,10 +251,12 @@ namespace tzw
 		part->setPos(wherePos);
 		m_liftPart = part;
 		//收纳状态
-		if(!m_storeIslandGroup.empty())
+		if(m_storeIslandGroup)
 		{
+			auto& islandList = m_storeIslandGroup->getIslandList();
+			//getIslandsByGroup(m_storeIslandGroup,islandList);
 			// disable physics and put them back to lift position
-			for (auto island : m_IslandList)
+			for (auto island : islandList)
 			{
 				island->m_node->setIsVisible(true);
 				island->enablePhysics(false);
@@ -265,12 +268,12 @@ namespace tzw
 				constraint->enablePhysics(false);
 			}
 		
-			tempPlace(m_IslandList[0], m_liftPart);
+			tempPlace(islandList[0], m_liftPart);
 			////readjust
 			auto attach = replaceToLiftIslands(m_storeIslandGroup);
 			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
 			//清空收纳对象
-			m_storeIslandGroup.clear();
+			m_storeIslandGroup = nullptr;
 		}
 	}
 
@@ -370,7 +373,7 @@ namespace tzw
 		}
 		attachment->m_parent->m_parent->addNeighbor(island);
 		island->addNeighbor(attachment->m_parent->m_parent);
-		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
+		island->setIslandGroup( attachment->m_parent->getVehicle()->getIslandGroup());
 		
 		return bear;
 	}
@@ -402,7 +405,7 @@ namespace tzw
 			tlog("wrong");
 		}
 		
-		island->m_islandGroup = attachment->m_parent->m_parent->m_islandGroup;
+		island->setIslandGroup(attachment->m_parent->getVehicle()->getIslandGroup());
 		return spring;
 	}
 
@@ -418,7 +421,7 @@ namespace tzw
 		for (auto island : m_IslandList)
 		{
 			//被收纳的island不会响应
-			if(island->m_islandGroup == m_storeIslandGroup) continue;
+			if(m_storeIslandGroup && island->getIslandGroup() == m_storeIslandGroup->getIslandGroup()) continue;
 			for (auto iter : island->m_partList)
 			{
 				tmp.push_back(iter);
@@ -428,8 +431,6 @@ namespace tzw
 		// search island
 		for (auto island : m_staticIsland)
 		{
-			//被收纳的island不会响应
-			if(island->m_islandGroup == m_storeIslandGroup) continue;
 			for (auto iter : island->m_partList)
 			{
 				tmp.push_back(iter);
@@ -477,7 +478,7 @@ namespace tzw
 		for (auto island : m_IslandList)
 		{
 			//被收纳的island不响应
-			if(island->m_islandGroup == m_storeIslandGroup) continue;
+			if(m_storeIslandGroup && island->getIslandGroup() == m_storeIslandGroup->getIslandGroup()) continue;
 			for (auto iter : island->m_partList)
 			{
 				tmp.push_back(iter);
@@ -486,8 +487,6 @@ namespace tzw
 		// search island
 		for (auto island : m_staticIsland)
 		{
-			//被收纳的island不响应
-			if(island->m_islandGroup == m_storeIslandGroup) continue;
 			for (auto iter : island->m_partList)
 			{
 				tmp.push_back(iter);
@@ -588,9 +587,8 @@ namespace tzw
 			return;
 		}
 		//收纳起来
-		m_storeIslandGroup = part->m_parent->m_islandGroup;
-		std::vector<Island *> group;
-		getIslandsByGroup(m_storeIslandGroup,group);
+		m_storeIslandGroup = part->getVehicle();
+		auto& group = m_storeIslandGroup->getIslandList();
 		//禁用物理
 		for (auto island : group)
 		{
@@ -610,25 +608,26 @@ namespace tzw
 	{
 		for (auto island : m_IslandList)
 		{
-			if (island->m_islandGroup == islandGroup)
+			if (island->getIslandGroup() == islandGroup)
 				groupList.push_back(island);
 		}
 	}
 
 	void BuildingSystem::dumpVehicle(std::string filePath)
 	{
-		if(!m_controlPart)
+		
+		if(!m_liftPart->getFirstAttachment()->m_connected)
 		{
 			tlog("you must dock the vehilce on Lift to dump");
+			return;
 		}
-		auto vehicle = m_controlPart->m_parent->getVehicle();
+		auto vehicle = m_liftPart->getFirstAttachment()->m_connected->m_parent->getVehicle();
 		rapidjson::Document doc;
 		doc.SetObject();
 		rapidjson::Value islandList(rapidjson::kArrayType);
-		for (auto island : m_IslandList)
+		auto& currIslandList = vehicle->getIslandList();
+		for (auto island : currIslandList)
 		{
-			if(island->getVehicle() != vehicle)
-				continue;
 			if (island->m_isSpecial)
 				continue;
 			//we need record the building rotation!!!!!
@@ -637,16 +636,16 @@ namespace tzw
 			island->dump(islandObject, doc.GetAllocator());
 			islandList.PushBack(islandObject, doc.GetAllocator());
 		}
+		doc.AddMember("IslandGroup", vehicle->getIslandGroup(), doc.GetAllocator());
 		doc.AddMember("islandList", islandList, doc.GetAllocator());
 
 		//constraint
 		rapidjson::Value constraintList(rapidjson::kArrayType);
-		for (auto constraint : m_bearList)
+		auto& vConstraint = vehicle->getConstraintList();
+		for (auto constraint : vConstraint)
 		{
-			if(constraint->m_parent->getVehicle() != vehicle)
-				continue;
 			rapidjson::Value bearingObj(rapidjson::kObjectType);
-			bearingObj.AddMember("IslandGroup", constraint->m_parent->m_islandGroup, doc.GetAllocator());
+			bearingObj.AddMember("IslandGroup", constraint->m_parent->getIslandGroup(), doc.GetAllocator());
 			constraint->dump(bearingObj, doc.GetAllocator());
 			constraintList.PushBack(bearingObj, doc.GetAllocator());
 		}
@@ -683,6 +682,8 @@ namespace tzw
 			exit(1);
 		}
 		removeLiftConnected();
+		std::vector<Island * > tmp_islandList;
+		vehicle->setIslandGroup(doc["IslandGroup"].GetString());
 		// island
 		if (doc.HasMember("islandList"))
 		{
@@ -695,8 +696,9 @@ namespace tzw
 				auto& item = items[i];
 				auto newIsland = new Island(vec3(), vehicle);
 				m_IslandList.push_back(newIsland);
-				newIsland->m_islandGroup = item["IslandGroup"].GetString();
+				newIsland->setIslandGroup(vehicle->getIslandGroup());
 				newIsland->load(item);
+				tmp_islandList.emplace_back(newIsland);
 			}
 		}
 
@@ -733,7 +735,7 @@ namespace tzw
 							item["AngleLimitLow"].GetDouble(), item["AngleLimitHigh"].GetDouble());
 					}
 				}
-				constraint->m_parent->m_islandGroup = item["IslandGroup"].GetString();
+				constraint->m_parent->setIslandGroup(vehicle->getIslandGroup());
 				constraint->setGUID(item["UID"].GetString());
 				constraint->setName(item["Name"].GetString());
 				// update constraint's attachment GUID
@@ -759,6 +761,7 @@ namespace tzw
 					constraint->m_a = toAttach;
 				}
 				constraint->load(item);
+				vehicle->addConstraint(constraint);
 			}
 		}
 
@@ -767,10 +770,10 @@ namespace tzw
 
 		if(m_liftPart)
 		{
-			auto firstIsland = m_IslandList[0];
+			auto firstIsland = tmp_islandList[0];
 			tempPlace(firstIsland, m_liftPart);
 			//readjust
-			auto attach = replaceToLiftIslands(firstIsland->m_islandGroup);
+			auto attach = replaceToLiftIslands(firstIsland->getVehicle());
 			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
 		}else 
 		{
@@ -806,7 +809,7 @@ namespace tzw
 				auto newIsland = new Island(vec3(), nullptr);
 				m_staticIsland.push_back(newIsland);
 				//m_IslandList.push_back(newIsland);
-				newIsland->m_islandGroup = item["IslandGroup"].GetString();
+				newIsland->setIslandGroup(item["IslandGroup"].GetString());
 				newIsland->load(item);
 				newIsland->setIsStatic(true);
 				newIsland->enablePhysics(true);
@@ -930,12 +933,12 @@ namespace tzw
 		m_isInXRayMode = isInXRayMode;
 	}
 
-	std::string BuildingSystem::getStoreIslandGroup() const
+	Vehicle* BuildingSystem::getStoreIslandGroup() const
 	{
 		return m_storeIslandGroup;
 	}
 
-	void BuildingSystem::setStoreIslandGroup(const std::string& storeIslandGroup)
+	void BuildingSystem::setStoreIslandGroup(Vehicle* storeIslandGroup)
 	{
 		m_storeIslandGroup = storeIslandGroup;
 	}
@@ -1000,21 +1003,23 @@ void BuildingSystem::replaceToLiftByRay(vec3 pos, vec3 dir, float dist)
 		auto island = rayTestIsland(pos, dir, dist);
 		if(island) 
 		{
+			auto & islandList = island->getVehicle()->getIslandList();
 			// disable physics and put them back to lift position
-			for (auto island : m_IslandList)
+			for (auto island : islandList)
 			{
 				island->enablePhysics(false);
 				//recover from building rotate
 				island->recoverFromBuildingRotate();
 			}
-			for(auto constraint :m_bearList)
+			auto & constraintList = island->getVehicle()->getConstraintList();
+			for(auto constraint :constraintList)
 			{
 				constraint->enablePhysics(false);
 			}
 		
 			tempPlace(island, m_liftPart);
 			////readjust
-			auto attach = replaceToLiftIslands(island->m_islandGroup);
+			auto attach = replaceToLiftIslands(island->getVehicle());
 			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
 		}
 	}
@@ -1034,7 +1039,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 	{
 		attachment->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, attachment, 0);
 	}
-	targetLift->setEffectedIsland(island->m_islandGroup);
+	targetLift->setEffectedIsland(island->getIslandGroup());
 	std::set<Island *> closeSet;
 	closeSet.insert(island);
 	for (auto part : island->m_partList)
@@ -1075,10 +1080,10 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 		}
 	}
 
-	Attachment * BuildingSystem::replaceToLiftIslands(std::string islandGroupStrID)
+	Attachment * BuildingSystem::replaceToLiftIslands(Vehicle * vehicle)
 	{
-		std::vector<Island*> islandGroup;
-		getIslandsByGroup(islandGroupStrID, islandGroup);
+		if(!vehicle) return nullptr;
+		auto& islandGroup = vehicle->getIslandList();
 
 		std::vector<Attachment *> attachmentList;
 		AABB aabb;

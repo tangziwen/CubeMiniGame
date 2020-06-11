@@ -17,7 +17,6 @@ public:
 	                rapidjson::Document::AllocatorType& allocator) override;
 protected:
 	void triggerSignalChanged();
-	bool isPlayerOnSeat();
 	NodeAttr * m_onSignalChangedAttr;
 	NodeAttr * m_signalAttr;
 	int m_keyCodeA;

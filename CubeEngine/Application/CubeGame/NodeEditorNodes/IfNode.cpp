@@ -16,7 +16,7 @@ namespace tzw
 
 	NodeAttrValue IfNode::execute()
 	{
-		auto nodeEditor = GameUISystem::shared()->getNodeEditor();
+		auto nodeEditor = getNodeEditor();
 		std::vector<GraphNode * > node_listtrue, node_listfalse;
 		nodeEditor->findNodeLinksToAttr(m_leftValAttr, node_listtrue);
 		nodeEditor->findNodeLinksToAttr(m_rightValAttr, node_listfalse);
