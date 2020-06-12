@@ -72,12 +72,12 @@ public:
 	virtual bool drawInspectNameEdit();
 	void initFromItemName(std::string itemName);
 	void initFromItem(GameItem * item);
-	virtual GraphNode * getEditorNode();
 	int getPrettyAttach(Attachment * otherAttach, int attachOffset);
 	int findAttachByLocale(std::string locale);
 	virtual void toggle(int openSignal);
 	void setVehicle(Vehicle * vehicle);
 	Vehicle * getVehicle();
+	virtual GraphNode * getGraphNode() const;
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;
@@ -86,6 +86,7 @@ protected:
 	GameItem * m_item;
 	PartSurface * m_partSurface;
 	Vehicle * m_vehicle;
+	GraphNode * m_graphNode;
 public:
 	GameItem* getItem() const;
 	void setItem(GameItem* const item);

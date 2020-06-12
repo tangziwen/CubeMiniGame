@@ -23,7 +23,6 @@ public:
 	float getDamping() const;
 	void setStiffness(float stiffness);
 	void setDamping(float damping);
-	GraphNode * getGraphNode() const;
 	void generateName() override;
 	virtual ~SpringPart();
 	void drawInspect() override;
@@ -32,7 +31,6 @@ public:
 	void AddOnVehicle(Vehicle * vehicle) override;
 private:
 	void findPiovtAndAxis(Attachment * attach, vec3 hingeDir, vec3 & pivot, vec3 & asix);
-	GraphNode * m_graphNode;
 	float m_stiffness;
 	float m_damping;
 

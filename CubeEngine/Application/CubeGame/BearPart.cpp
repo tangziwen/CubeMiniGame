@@ -133,11 +133,6 @@ BearPart::~BearPart()
 	
 }
 
-GraphNode* BearPart::getGraphNode() const
-{
-	return m_graphNode;
-}
-
 void BearPart::load(rapidjson::Value& constraintData)
 {
 	m_isFlipped = constraintData["isFlipped"].GetBool();

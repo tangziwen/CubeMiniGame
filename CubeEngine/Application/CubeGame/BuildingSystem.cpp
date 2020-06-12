@@ -142,7 +142,7 @@ namespace tzw
 			newIsland->setIslandGroup(vehicle->getIslandGroup());
 			//vehicle->
 			liftPart->setEffectedIsland(vehicle->getIslandGroup());
-			m_vehicleList.emplace(std::make_pair(vehicle->getIslandGroup(), vehicle));
+			m_vehicleList.emplace(vehicle);
 		}
 		else
 		{
@@ -684,13 +684,13 @@ namespace tzw
 		removeLiftConnected();
 		std::vector<Island * > tmp_islandList;
 		vehicle->setIslandGroup(doc["IslandGroup"].GetString());
+		m_vehicleList.insert(vehicle);
 		// island
 		if (doc.HasMember("islandList"))
 		{
 			auto& items = doc["islandList"];
-			std::string islandGroup = items[0]["IslandGroup"].GetString();
 			//可能当前场景已经有散落的原载具，它们不在升降机上，也要搞死
-			removeByGroup(islandGroup);
+			removeByGroup(vehicle->getIslandGroup());
 			for (unsigned int i = 0; i < items.Size(); i++)
 			{
 				auto& item = items[i];

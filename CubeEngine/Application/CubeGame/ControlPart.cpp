@@ -213,11 +213,6 @@ ControlPart::~ControlPart()
 	delete m_graphNode;
 }
 
-GraphNode* ControlPart::getGraphNode() const
-{
-	return m_graphNode;
-}
-
 GamePartType ControlPart::getType()
 {
 	return GamePartType::GAME_PART_CONTROL;

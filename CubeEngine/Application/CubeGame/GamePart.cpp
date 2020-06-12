@@ -397,6 +397,7 @@ namespace tzw
 
 	GamePart::GamePart()
 	{
+		m_graphNode = nullptr;
 		m_name = "empty";
 		m_partSurface = PartSurfaceMgr::shared()->getItem("Metal Grid3");
 	}
@@ -750,11 +751,6 @@ namespace tzw
 		setSurface(item->m_tintColor, PartSurfaceMgr::shared()->getItem(item->m_surfaceName));
 	}
 
-	GraphNode* GamePart::getEditorNode()
-	{
-		return nullptr;
-	}
-
 	int GamePart::getPrettyAttach(Attachment* otherAttach, int attachOffset)
 	{
 		auto aLocale = otherAttach->m_locale;
@@ -815,6 +811,11 @@ namespace tzw
 	Vehicle* GamePart::getVehicle()
 	{
 		return m_vehicle;
+	}
+
+	GraphNode* GamePart::getGraphNode() const
+	{
+		return m_graphNode;
 	}
 
 

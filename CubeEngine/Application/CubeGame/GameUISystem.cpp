@@ -589,15 +589,15 @@ void GameUISystem::drawIMGUI()
 			        ImGui::SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
 			    }
 			    ImGui::SetNextWindowBgAlpha(0.75f); // Transparent background
-				ImGui::SetNextWindowSizeConstraints(ImVec2(280, -1), ImVec2(600, -1));
+				ImGui::SetNextWindowSizeConstraints(ImVec2(210, -1), ImVec2(600, -1));
 			    if (ImGui::Begin("PlayerOverLay OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 			    {
 
 			    	ImGui::Text("FPS :%.1f", Engine::shared()->FPS());
-			        ImGui::TextColored(ImVec4(0.3,1.0,0.3,1.0),"Pos: %s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
+			        ImGui::Text("Pos: %s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
 		    		if(!GameWorld::shared()->getPlayer()->camera()->getIsEnableGravity())
 		    		{
-		    			ImGui::TextColored(ImVec4(0.8,0.8,0.5,1.0), "Flying Mode On('Space'-Up 'Ctrl'-Down)");
+		    			ImGui::TextColored(ImVec4(1.0,0.0,0.0,1.0), "Flying Mode('Space'-Up 'Ctrl'-Down)");
 		    		} else
 		    		{
 		    			ImGui::Text("'X' To Activate Flying Mode");
@@ -605,13 +605,13 @@ void GameUISystem::drawIMGUI()
 
 		    		if(BuildingSystem::shared()->isIsInXRayMode())
 		    		{
-		    			ImGui::TextColored(ImVec4(0.8,0.8,0.5,1.0), "XRay Mode On");
+		    			ImGui::TextColored(ImVec4(1,0,0,1.0), "XRay Mode On");
 		    		} else
 		    		{
 		    			ImGui::Text("'T' To Activate XRay Mode");
 		    		}
 
-			    	ImGui::TextColored(ImVec4(1.0,1.0,0.0,1.0), "'TAB' To Open Menu");
+			    	ImGui::Text("'TAB' To Open Menu");
 			    }
 			    ImGui::End();
 			}

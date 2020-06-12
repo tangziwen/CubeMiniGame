@@ -87,7 +87,7 @@ private:
 	std::set<GamePart* > m_thrusterList;
 	std::map<GamePart *, LabelNew *> m_partToLabel;
 	GamePart * m_currPointPart;
-	std::map<std::string, Vehicle * > m_vehicleList;
+	std::set<Vehicle * > m_vehicleList;
 };
 
 

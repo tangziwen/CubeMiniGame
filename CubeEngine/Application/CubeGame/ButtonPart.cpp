@@ -34,7 +34,7 @@ ButtonPart::~ButtonPart()
 void ButtonPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"��ť %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"Button %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -56,20 +56,16 @@ bool ButtonPart::isNeedDrawInspect()
 	return true;
 }
 
-GraphNode* ButtonPart::getEditorNode()
-{
-	return m_graphNode;
-}
 
 void ButtonPart::onPressed()
 {
-	m_vehicle->getEditor()->onPressButtonNode(this->getEditorNode());
+	m_vehicle->getEditor()->onPressButtonNode(this->getGraphNode());
 	static_cast<Model *>(m_node)->setCurrPose(0);
 }
 
 void ButtonPart::onReleased()
 {
-	m_vehicle->getEditor()->onReleaseSwitchNode(this->getEditorNode());
+	m_vehicle->getEditor()->onReleaseSwitchNode(this->getGraphNode());
 	static_cast<Model *>(m_node)->setCurrPose(-1);
 }
 

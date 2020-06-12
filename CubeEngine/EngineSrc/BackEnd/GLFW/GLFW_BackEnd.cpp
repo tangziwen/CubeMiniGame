@@ -1,4 +1,5 @@
-﻿#include "GLFW_BackEnd.h"
+﻿
+#include "GLFW_BackEnd.h"
 #include "../../Scene/SceneMgr.h"
 #include "../RenderBackEnd.h"
 #include "EngineSrc/BackEnd/AbstractDevice.h"
@@ -6,6 +7,8 @@
 #include "GLFW/glfw3.h"
 #include <algorithm>
 #include <strstream>
+
+
 
 namespace tzw {
 
@@ -74,6 +77,7 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 	{
 		exit(EXIT_FAILURE);
 	}
+
 	int w = width;
 	int h = height;
 	glfwWindowHint(GLFW_RESIZABLE, 0);

@@ -242,6 +242,10 @@ void GameNodeEditor::removeNode(GraphNode* node)
 			{
 				auto resUID = node["ResUID"].GetString();
 				auto resType = node["ResType"].GetString();
+				auto controlPart = reinterpret_cast<GamePart*>(GUIDMgr::shared()->get(resUID));
+				newNode = controlPart->getGraphNode();
+				
+				/*
 				if(strcmp(resType, "ControlPart") == 0)//ControlPart
 				{
 					auto controlPart = reinterpret_cast<ControlPart*>(GUIDMgr::shared()->get(resUID));
@@ -268,6 +272,7 @@ void GameNodeEditor::removeNode(GraphNode* node)
 					auto bearPart = reinterpret_cast<CannonPart*>(GUIDMgr::shared()->get(resUID));
 					newNode = bearPart->getGraphNode();
 				}
+				*/
 				if(newNode)
 				{
 					newNode->setGUID(node["UID"].GetString());

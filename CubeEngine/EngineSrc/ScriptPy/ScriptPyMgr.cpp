@@ -46,6 +46,11 @@ namespace tzw
 			abort();
 		}
 		auto& items = doc["Mods"];
+		PyRun_SimpleString("import sys");
+		char libEntry_py[1024];
+		sprintf(libEntry_py, "Data/Lib/");
+		std::string libStr = "sys.path.append('" + std::string(libEntry_py) + "')";
+		PyRun_SimpleString(libStr.c_str());
 		for (unsigned int i = 0; i < items.Size(); i++)
 		{
 			auto& item = items[i];

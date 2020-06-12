@@ -155,11 +155,6 @@ void SpringPart::setDamping(float damping)
 	}
 }
 
-GraphNode* SpringPart::getGraphNode() const
-{
-	return m_graphNode;
-}
-
 void SpringPart::generateName()
 {
 	char formatName[512];

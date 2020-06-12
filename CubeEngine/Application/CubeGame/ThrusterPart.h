@@ -23,7 +23,6 @@ namespace tzw
 		BearPart * m_bearPart[6];
 		void toggle(int openSignal) override;
 		void updateForce(float dt);
-		GraphNode * getGraphNode() const;
 		virtual ~ThrusterPart();
 		void drawInspect() override;
 		bool isNeedDrawInspect() override;
@@ -39,7 +38,6 @@ namespace tzw
 		vec3 m_phaseV3;
 		float m_dir_t;
 		float m_thrusterForce;
-		GraphNode * m_graphNode;
 		ParticleEmitter * emitter;
 		noise::module::Perlin flatNoise;
 	};

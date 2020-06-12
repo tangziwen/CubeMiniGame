@@ -72,9 +72,7 @@ ThrusterPart::ThrusterPart(std::string itemName)
 	initFromItemName(itemName);
 	m_parent = nullptr;
 	ThrusterPart::generateName();
-	auto nodeEditor = m_vehicle->getEditor();
-	m_graphNode = new ThrusterPartNode(this);
-	nodeEditor->addNode(m_graphNode);
+
 	m_phase = TbaseMath::randF()*3.14;
 	m_scale =0.8f + TbaseMath::randF() * 0.3f;
 	m_dir_t = 0.0f;
@@ -201,11 +199,6 @@ void ThrusterPart::updateForce(float dt)
 		emitter->setIsState(ParticleEmitter::State::Stop);
 	}
 	//apply recoil
-}
-
-GraphNode* ThrusterPart::getGraphNode() const
-{
-	return m_graphNode;
 }
 
 ThrusterPart::~ThrusterPart()

@@ -22,13 +22,11 @@ namespace tzw
 		void drawInspect() override;
 		void use() override;
 		bool isNeedDrawInspect() override;
-		GraphNode * getGraphNode() const;
 		void dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator) override;
 		void load(rapidjson::Value& partData) override;
 		void AddOnVehicle(Vehicle * vehicle) override;
     private:
 		float m_topRadius, m_bottomRadius, m_height;
-		GraphNode * m_graphNode;
 		float m_firingVelocity;
 		float m_recoil;
 		int m_bulletMode;

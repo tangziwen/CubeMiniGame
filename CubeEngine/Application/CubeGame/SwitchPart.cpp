@@ -55,15 +55,10 @@ bool SwitchPart::isNeedDrawInspect()
 	return true;
 }
 
-GraphNode* SwitchPart::getEditorNode()
-{
-	return m_graphNode;
-}
-
 void SwitchPart::onToggle()
 {
 	m_currState = !m_currState;
-	m_vehicle->getEditor()->onReleaseSwitchNode(this->getEditorNode());
+	m_vehicle->getEditor()->onReleaseSwitchNode(this->getGraphNode());
 	static_cast<Model *>(m_node)->setCurrPose(m_currState?0:-1);
 	Texture * tex;
 	if(m_currState)

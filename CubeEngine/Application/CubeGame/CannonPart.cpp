@@ -213,11 +213,6 @@ bool CannonPart::isNeedDrawInspect()
 	return true;
 }
 
-GraphNode* CannonPart::getGraphNode() const
-{
-	return m_graphNode;
-}
-
 void CannonPart::dump(rapidjson::Value& partData, rapidjson::Document::AllocatorType& allocator)
 {
 	GamePart::dump(partData, allocator);

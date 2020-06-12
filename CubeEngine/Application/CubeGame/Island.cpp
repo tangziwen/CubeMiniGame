@@ -345,7 +345,6 @@ void Island::dump(rapidjson::Value &island, rapidjson::Document::AllocatorType& 
 {
 	rapidjson::Value partList(rapidjson::kArrayType);
 	island.AddMember("UID", std::string(getGUID()), allocator);
-	island.AddMember("IslandGroup", std::string(m_islandGroup), allocator);
 	for(auto i : m_partList)
 	{
 		rapidjson::Value partDocObj(rapidjson::kObjectType);
