@@ -405,7 +405,7 @@ def onKeyRelease(input_event):
 				Game.BuildingSystem.shared().flipBearing(result);
 			#打开节点编辑器
 			elif result and Game.BuildingSystem.shared().getGamePartTypeInt(result) == GAME_PART_CONTROL :
-				Game.GameUISystem.shared().setIsShowNodeEditor(True);
+				Game.GameUISystem.shared().openNodeEditor(result);
 			
 		
 	elif input_event.keycode == KeyConfig.TZW_KEY_E :
