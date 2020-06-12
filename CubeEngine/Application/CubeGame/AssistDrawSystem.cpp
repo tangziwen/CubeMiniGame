@@ -16,12 +16,15 @@ AssistDrawSystem::AssistDrawSystem()
 void AssistDrawSystem::handleDraw(float dt)
 {
 	if(!m_isShowAssistInfo) return;
-	auto constraintList = BuildingSystem::shared()->getConstraintList();
-	for(auto constrain : constraintList)
+	auto vehicleList = BuildingSystem::shared()->getVehicleList();
+	for(auto vehicle : vehicleList)
 	{
-		auto label = getOrCreate(constrain);
-		auto posIn2D = g_GetCurrScene()->defaultCamera()->worldToScreen(constrain->getWorldPos());
-		label->setPos2D(posIn2D.xy());
+		for(auto constrain : vehicle->getConstraintList())
+		{
+			auto label = getOrCreate(constrain);
+			auto posIn2D = g_GetCurrScene()->defaultCamera()->worldToScreen(constrain->getWorldPos());
+			label->setPos2D(posIn2D.xy());
+		}
 	}
 }
 

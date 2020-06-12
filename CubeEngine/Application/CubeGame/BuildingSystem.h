@@ -65,8 +65,8 @@ public:
 	void removeAll();
 	void removeByGroup(std::string islandGroup);
 	void removeIsland(Island * island);
-	std::set<GameConstraint *> &getConstraintList();
 	void update(float dt);
+	std::set<Vehicle * >& getVehicleList();
 private:
 	bool m_isInXRayMode;
 public:
@@ -82,12 +82,11 @@ private:
 	LiftPart * m_liftPart;
 	unsigned int m_baseIndex;
 	std::vector<Island *> m_staticIsland;
-	std::vector<Island *> m_IslandList;
-	std::set<GameConstraint* > m_bearList;
 	std::set<GamePart* > m_thrusterList;
 	std::map<GamePart *, LabelNew *> m_partToLabel;
 	GamePart * m_currPointPart;
 	std::set<Vehicle * > m_vehicleList;
+	Vehicle * m_staticVehicle;
 };
 
 

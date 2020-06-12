@@ -16,6 +16,7 @@ class Island;
 		std::string getName() const;
 		void setName(const std::string& name);
 		Vehicle();
+		virtual ~Vehicle();
 		void addIsland(Island * island);
 		void addConstraint(GameConstraint * constraint);
 		std::string getIslandGroup() const;
@@ -23,6 +24,10 @@ class Island;
 		const std::vector<Island *>& getIslandList();
 		const std::vector<GameConstraint *>& getConstraintList();
 		void genIslandGroup();
+		void removeGamePart(GamePart * part);
+		void removeIsland(Island * island);
+		void update(float dt);
+		void enablePhysics();
 	private:
 		std::string m_name;
 		std::vector<Island *> m_islandList;

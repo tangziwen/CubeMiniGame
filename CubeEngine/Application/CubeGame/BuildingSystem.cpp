@@ -27,8 +27,9 @@ namespace tzw
 {
 	const float bearingGap = 0.00;
 
-	BuildingSystem::BuildingSystem(): m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup(nullptr)
+	BuildingSystem::BuildingSystem():m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup(nullptr),m_staticVehicle(nullptr)
 	{
+		
 	}
 
 	void BuildingSystem::removePartByAttach(Attachment* attach)
@@ -46,7 +47,6 @@ namespace tzw
 		{
 			if(part == m_liftPart)
 			{
-
 				dropFromLift();
 				m_liftPart->getFirstAttachment()->breakConnection();
 				delete m_liftPart;
@@ -54,27 +54,20 @@ namespace tzw
 			}
 			else
 			{
+				auto vehicle = part->getVehicle();
 				auto island = part->m_parent;
-				if (part->isConstraint())
+				vehicle->removeGamePart(part);
+				if(vehicle->getIslandList().empty())
 				{
-					auto bearing = static_cast<GameConstraint*>(part);
-					m_bearList.erase(m_bearList.find(bearing));
-				}
-				island->remove(part);
-				delete part;
-				//is the last island, remove it
-				if(island->m_partList.empty())
-				{
-					//check it is static island or dynamic island
-					if(island->isIsStatic())
+					if(vehicle == m_staticVehicle)
 					{
-						m_staticIsland.erase(find(m_staticIsland.begin(), m_staticIsland.end(), island));
-					}else
-					{
-						m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
+						m_staticVehicle = nullptr;
 					}
-					
-					delete island;
+					if(m_vehicleList.find(vehicle)!= m_vehicleList.end())
+					{
+						m_vehicleList.erase(m_vehicleList.find(vehicle));
+					}
+					delete vehicle;
 				}
 			}
 		}
@@ -88,9 +81,11 @@ namespace tzw
 			int(std::round(pos.z / blockSize)) * blockSize);
 		if(m_staticIsland.empty())
 		{
-			newIsland = new Island(resultWorldPos, nullptr);
+			m_staticVehicle = new Vehicle();
+			m_staticVehicle->genIslandGroup();
+			newIsland = new Island(resultWorldPos, m_staticVehicle);
 			m_staticIsland.push_back(newIsland);
-			newIsland->genIslandGroup();
+			newIsland->setIslandGroup(m_staticVehicle->getIslandGroup());
 			newIsland->setIsStatic(true);
 		}else
 		{
@@ -113,7 +108,6 @@ namespace tzw
 		auto constraint = static_cast<GameConstraint*>(attach->m_parent);
 		constraint->m_parent->addNeighbor(island);
 		island->addNeighbor(constraint->m_parent);
-		m_IslandList.push_back(island);
 		island->insert(part);
 		island->setIslandGroup(attach->m_parent->getVehicle()->getIslandGroup());
 		
@@ -136,7 +130,6 @@ namespace tzw
 			vec3 pos, n, up;
 			attach->getAttachmentInfoWorld(pos, n, up);
 			auto newIsland = new Island(pos, vehicle);
-			m_IslandList.push_back(newIsland);
 			vehicle->genIslandGroup();
 			newIsland->insertAndAdjustAttach(part, attach, index);
 			newIsland->setIslandGroup(vehicle->getIslandGroup());
@@ -263,7 +256,7 @@ namespace tzw
 				//recover from building rotate
 				island->recoverFromBuildingRotate();
 			}
-			for(auto constraint :m_bearList)
+			for(auto constraint :m_storeIslandGroup->getConstraintList())
 			{
 				constraint->enablePhysics(false);
 			}
@@ -355,12 +348,10 @@ namespace tzw
 
 		auto island = new Island(pos + n * 0.5, attachment->m_parent->m_parent->getVehicle());
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
-		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
 		auto bear = new BearPart(itemName);
 		bear->m_b = attachment;
 		bear->m_parent = island;
-		m_bearList.insert(bear);
 		island->insert(bear);
 		bear->updateFlipped();
 		bear->attachToOtherIslandByAlterSelfIsland(attachment,
@@ -386,12 +377,10 @@ namespace tzw
 
 		auto island = new Island(pos + n * 0.5, attachment->m_parent->m_parent->getVehicle());
 		auto constraint = static_cast<GameConstraint*>(attachment->m_parent);
-		m_IslandList.push_back(island);
 		island->m_isSpecial = true;
 		auto spring = new SpringPart(itemName);
 		spring->m_b = attachment;
 		spring->m_parent = island;
-		m_bearList.insert(spring);
 		
 		spring->attachToOtherIslandByAlterSelfIsland(attachment,
 												spring->getFirstAttachment(), 0);
@@ -413,20 +402,25 @@ namespace tzw
 	BuildingSystem::rayTest(vec3 pos, vec3 dir, float dist)
 	{
 		std::vector<GamePart*> tmp;
-		for (auto constraint : m_bearList)
+		for(auto vehicle : m_vehicleList)
 		{
-			tmp.push_back(constraint);
-		}
-		// search island
-		for (auto island : m_IslandList)
-		{
-			//被收纳的island不会响应
-			if(m_storeIslandGroup && island->getIslandGroup() == m_storeIslandGroup->getIslandGroup()) continue;
-			for (auto iter : island->m_partList)
+			for (auto constraint : vehicle->getConstraintList())
 			{
-				tmp.push_back(iter);
+				tmp.push_back(constraint);
+			}
+			// search island
+			for (auto island : vehicle->getIslandList())
+			{
+				if(island->m_isSpecial) continue;
+				//被收纳的island不会响应
+				if(m_storeIslandGroup && island->getIslandGroup() == m_storeIslandGroup->getIslandGroup()) continue;
+				for (auto iter : island->m_partList)
+				{
+					tmp.push_back(iter);
+				}
 			}
 		}
+
 
 		// search island
 		for (auto island : m_staticIsland)
@@ -470,20 +464,25 @@ namespace tzw
 	GamePart* BuildingSystem::rayTestPart(vec3 pos, vec3 dir, float dist)
 	{
 		std::vector<GamePart*> tmp;
-		for (auto constraint : m_bearList)
+		for(auto vehicle : m_vehicleList)
 		{
-			tmp.push_back(constraint);
-		}
-		// search island
-		for (auto island : m_IslandList)
-		{
-			//被收纳的island不响应
-			if(m_storeIslandGroup && island->getIslandGroup() == m_storeIslandGroup->getIslandGroup()) continue;
-			for (auto iter : island->m_partList)
+			for (auto constraint : vehicle->getConstraintList())
 			{
-				tmp.push_back(iter);
+				tmp.push_back(constraint);
+			}
+			// search island
+			for (auto island : vehicle->getIslandList())
+			{
+				if(island->m_isSpecial) continue;
+				//被收纳的island不响应
+				if(m_storeIslandGroup && island->getIslandGroup() == m_storeIslandGroup->getIslandGroup()) continue;
+				for (auto iter : island->m_partList)
+				{
+					tmp.push_back(iter);
+				}
 			}
 		}
+
 		// search island
 		for (auto island : m_staticIsland)
 		{
@@ -529,10 +528,14 @@ namespace tzw
 	GamePart* BuildingSystem::rayTestPartXRay(vec3 pos, vec3 dir, float dist)
 	{
 		std::vector<GamePart*> tmp;
-		for (auto constraint : m_bearList)
+		for(auto vehicle : m_vehicleList)
 		{
-			tmp.push_back(constraint);
+			for (auto constraint : vehicle->getConstraintList())
+			{
+				tmp.push_back(constraint);
+			}
 		}
+
 		if(m_liftPart)// add extra lift part
 		{
 			tmp.push_back(m_liftPart);
@@ -596,7 +599,7 @@ namespace tzw
 			//recover from building rotate
 			island->recoverFromBuildingRotate();
 		}
-		for(auto constraint :m_bearList)
+		for(auto constraint :m_storeIslandGroup->getConstraintList())
 		{
 			constraint->enablePhysics(false);
 		}
@@ -606,11 +609,15 @@ namespace tzw
 	BuildingSystem::getIslandsByGroup(std::string islandGroup,
 									std::vector<Island*>& groupList)
 	{
-		for (auto island : m_IslandList)
+		for(auto vehicle : m_vehicleList)
 		{
-			if (island->getIslandGroup() == islandGroup)
-				groupList.push_back(island);
+			for (auto island : vehicle->getIslandList())
+			{
+				if (island->getIslandGroup() == islandGroup)
+					groupList.push_back(island);
+			}
 		}
+
 	}
 
 	void BuildingSystem::dumpVehicle(std::string filePath)
@@ -695,7 +702,6 @@ namespace tzw
 			{
 				auto& item = items[i];
 				auto newIsland = new Island(vec3(), vehicle);
-				m_IslandList.push_back(newIsland);
 				newIsland->setIslandGroup(vehicle->getIslandGroup());
 				newIsland->load(item);
 				tmp_islandList.emplace_back(newIsland);
@@ -802,14 +808,19 @@ namespace tzw
 		{
 			std::string islandGroup = items[0]["IslandGroup"].GetString();
 			removeByGroup(islandGroup);
-		
+			if(m_staticVehicle)
+			{
+				delete m_staticVehicle;
+			}
 			for (unsigned int i = 0; i < items.Size(); i++)
 			{
+				m_staticVehicle = new Vehicle();
+				m_staticVehicle->genIslandGroup();
 				auto& item = items[i];
-				auto newIsland = new Island(vec3(), nullptr);
+				auto newIsland = new Island(vec3(), m_staticVehicle);
 				m_staticIsland.push_back(newIsland);
 				//m_IslandList.push_back(newIsland);
-				newIsland->setIslandGroup(item["IslandGroup"].GetString());
+				newIsland->setIslandGroup(m_staticVehicle->getIslandGroup());
 				newIsland->load(item);
 				newIsland->setIsStatic(true);
 				newIsland->enablePhysics(true);
@@ -832,9 +843,9 @@ namespace tzw
 
 	void BuildingSystem::updateBearing(float dt)
 	{
-		for (auto constrain : m_bearList)
+		for (auto vehicle : m_vehicleList)
 		{
-			constrain->updateTransform(dt);
+			vehicle->update(dt);
 		}
 	}
 
@@ -851,65 +862,34 @@ namespace tzw
 
 	void BuildingSystem::removeAll()
 	{
-		for(auto island : m_IslandList)
+		for(auto vehicle : m_vehicleList)
 		{
-			for (auto& iter : island->m_partList)
-			{
-				if (iter->isConstraint())
-				{
-					auto bearing = static_cast<GameConstraint*>(iter);
-					m_bearList.erase(m_bearList.find(bearing));
-				}
-				delete iter;
-			}
-			island->removeAll();
-			delete island;
+			delete vehicle;
 		}
-		m_bearList.clear();
-		m_IslandList.clear();
+		m_vehicleList.clear();
 	}
 
 	void BuildingSystem::removeByGroup(std::string islandGroup)
 	{
-		std::vector<Island * > islands;
-		getIslandsByGroup(islandGroup, islands);
-		for(auto island : islands)
+		for(auto i = m_vehicleList.begin(); i != m_vehicleList.end();)
 		{
-			for (auto& iter : island->m_partList)
+			auto vehicle = (*i);
+			if(vehicle->getIslandGroup() == islandGroup)
 			{
-				if (iter->isConstraint())
-				{
-					auto bearing = static_cast<GameConstraint*>(iter);
-					m_bearList.erase(m_bearList.find(bearing));
-				}
-				delete iter;
+				i = m_vehicleList.erase(i);
+				delete vehicle;
 			}
-			
-			island->removeAll();
-			m_IslandList.erase(std::find(m_IslandList.begin(), m_IslandList.end(),island));
-			delete island;
+			else
+			{
+				 i++;
+			}
 		}
 	}
 
 	void BuildingSystem::removeIsland(Island* island)
 	{
-		for (auto& iter : island->m_partList)
-		{
-			if (iter->isConstraint())
-			{
-				auto bearing = static_cast<GameConstraint*>(iter);
-				m_bearList.erase(m_bearList.find(bearing));
-			}
-			delete iter;
-		}
-		island->removeAll();
-		m_IslandList.erase(find(m_IslandList.begin(), m_IslandList.end(), island));
-		delete island;
-	}
-
-	std::set<GameConstraint*>& BuildingSystem::getConstraintList()
-	{
-		return m_bearList;
+		auto vehicle = island->getVehicle();
+		vehicle->removeIsland(island);
 	}
 
 	void BuildingSystem::update(float dt)
@@ -921,6 +901,11 @@ namespace tzw
 		{
 			static_cast<ThrusterPart * >(thruster)->updateForce(dt);
 		}
+	}
+
+	std::set<Vehicle*>& BuildingSystem::getVehicleList()
+	{
+		return m_vehicleList;
 	}
 
 	bool BuildingSystem::isIsInXRayMode() const
@@ -979,17 +964,16 @@ namespace tzw
 
 void BuildingSystem::dropFromLift()
 	{
-		// each island, for normal island we create a rigid, for constraint island, we create a constraint
-		for (auto island : m_IslandList)
+		Vehicle * currVehicle = nullptr;
+		for(auto vehicle : m_vehicleList)
 		{
-			//we need record the building rotation!!!!!
-			island->recordBuildingRotate();
-			island->enablePhysics(true);
+			if(vehicle->getIslandGroup() == m_liftPart->m_effectedIslandGroup)
+			{
+				currVehicle = vehicle;
+			}
 		}
-		for(auto constraint :m_bearList)
-		{
-			constraint->enablePhysics(true);
-		}
+		if(!currVehicle) return;
+		currVehicle->enablePhysics();
 		if (m_liftPart)
 		{
 			// m_liftPart->getNode()->removeFromParent();
