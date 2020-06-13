@@ -72,6 +72,11 @@ Island::insertNoUpdatePhysics(GamePart* part)
 	part->m_parent = this;
 	m_node->addChild(part->getNode());
 	part->setVehicle(m_vehicle);
+	if(part->isConstraint())
+	{
+		m_vehicle->addConstraint(static_cast<GameConstraint *>(part));
+	}
+	
 }
 
 void Island::insert(GamePart* part)

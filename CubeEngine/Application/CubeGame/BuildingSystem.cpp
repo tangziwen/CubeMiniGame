@@ -767,7 +767,6 @@ namespace tzw
 					constraint->m_a = toAttach;
 				}
 				constraint->load(item);
-				vehicle->addConstraint(constraint);
 			}
 		}
 
