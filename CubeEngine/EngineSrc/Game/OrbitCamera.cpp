@@ -144,14 +144,19 @@ bool OrbitCamera::onMousePress(int button, vec2 pos)
 }
 
 bool OrbitCamera::onMouseMove(vec2 pos)
-{		
+{
+	auto newPosition = vec3(pos.x,pos.y,0.0);
+	if (g_GetCurrScene()->defaultCamera() != this) 
+	{
+		m_oldPosition = newPosition;
+		return false;
+	}
     if(m_isFirstLoop)
     {
         m_oldPosition = vec3(pos.x,pos.y,0.0);
         m_isFirstLoop = false;
     }
-
-    auto newPosition = vec3(pos.x,pos.y,0.0);
+   
 
     if (!GameUISystem::shared()->isAnyShow())
     {

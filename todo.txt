@@ -10,7 +10,9 @@ Foliage shader overhaul & variant grass support in game map level, not in chunk.
 QOL:增加新的键对节点，用以取代以前的WASD特化节点(100%)
 QOL:增加KeyMapper窗口，可以可视化的绑定按键(100%)
 QOL:切换开关节点(Toggle)支持三向(-1,0,1)信号输入，轴承部件的旋转操作现在也被认为是一种Toggle行为了，考虑再之后彻底废弃掉Spin节点(50%)
-支持同时出现多个Vehicle，每个Vehicle独占一个节点图，分开编辑
+支持同时出现多个Vehicle，每个Vehicle独占一个节点图，分开编辑(100%)
+优化第一人称和第三人镜头切换时方向记录错误的问题(100%)
+优化收纳功能，更加方便建造大型载具(30%)
 ****Tech Demo v1(Done)****:
 20.5
 模型导入工具优化(100%)

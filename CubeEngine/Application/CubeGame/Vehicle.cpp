@@ -135,5 +135,22 @@ void Vehicle::enablePhysics()
 		constraint->enablePhysics(true);
 	}
 }
+
+void Vehicle::disablePhysics(bool resetBuildingRotate)
+{
+	for (auto island : m_islandList)
+	{
+		island->m_node->setIsVisible(true);
+		island->enablePhysics(false);
+		//recover from building rotate
+		if(resetBuildingRotate)
+			island->recoverFromBuildingRotate();
+	}
+
+	for(auto constraint :m_constrainList)
+	{
+		constraint->enablePhysics(false);
+	}
+}
 }
 

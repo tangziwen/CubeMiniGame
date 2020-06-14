@@ -28,6 +28,7 @@ class Island;
 		void removeIsland(Island * island);
 		void update(float dt);
 		void enablePhysics();
+		void disablePhysics(bool resetBuildingRotate = true);
 	private:
 		std::string m_name;
 		std::vector<Island *> m_islandList;

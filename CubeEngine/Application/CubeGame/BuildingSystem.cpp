@@ -587,6 +587,14 @@ namespace tzw
 	{
 		if(m_liftPart)//already place lift part
 		{
+			//teleport it
+			auto v = part->getVehicle();
+			v->disablePhysics();
+			auto firstIsland = v->getIslandList()[0];
+			tempPlace(firstIsland, m_liftPart);
+			//readjust
+			auto attach = replaceToLiftIslands(firstIsland->getVehicle());
+			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
 			return;
 		}
 		//ÊÕÄÉÆğÀ´

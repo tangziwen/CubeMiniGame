@@ -433,24 +433,37 @@ namespace tzw
 			switch(item->m_type)
 			{
 			case GamePartType::GAME_PART_LIFT:
-				if(!BuildingSystem::shared()->getLift())
 				{
-					if(BuildingSystem::shared()->getStoreIslandGroup()) 
+					if(!BuildingSystem::shared()->getLift())
 					{
-						label->setString(TR(u8"放置收纳对象"));
+						if(BuildingSystem::shared()->getStoreIslandGroup()) 
+						{
+							label->setString(TR(u8"放置收纳对象"));
+						}
+						else
+						{
+							if(m_currPointPart)
+							{
+								label->setString(TR(u8"收纳"));
+							}
+							else
+							{
+								label->setString(TR(u8"对准空地放置，对准载具收纳放置"));
+							}
+						}
 					}
 					else
 					{
 						if(m_currPointPart)
 						{
 							label->setString(TR(u8"收纳"));
-						}
-						else
+						}else
 						{
-							label->setString(TR(u8"对准空地放置，对准载具收纳放置"));
+							// tlog("???");
 						}
 					}
 				}
+
 			break;
 			case GamePartType::SPECIAL_PART_PAINTER: label->setString(TR(u8"(左键) 喷漆 \n(右键) 喷涂面板")); break;
 			case GamePartType::SPECIAL_PART_DIGGER: label->setString(TR(u8"(左键) 挖掘 \n(右键) 填充")); break;
