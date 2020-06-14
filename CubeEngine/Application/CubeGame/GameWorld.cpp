@@ -185,7 +185,7 @@ void GameWorld::startGame()
 		Tmisc::DurationBegin();
 		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
 		tlog("init chunk cost : %d", Tmisc::DurationEnd());
-		vec2 startPos(120, 160);
+		vec2 startPos = GameMap::shared()->getCenterOfMap();
 		float height = GameMap::shared()->getHeight(startPos);
 		m_player->setPos(vec3(startPos.x, height + 0.5, startPos.y));
 		//m_player->setIsOpenJetPack(true);
@@ -331,10 +331,11 @@ void GameWorld::loadChunksAroundPlayer()
 	std::vector<Chunk *> m_readyToLoadArray;
 	 
     auto pos = m_player->getPos();
+	auto vPos = GameMap::shared()->worldPosToVoxelPos(pos);
+	auto chunkPos = vPos - vec3(LOD_SHIFT);//chunk Pos ºÍVoxel pos²îÒ»¸öLODÆ«ÒÆ
+    int posX = (chunkPos.x) / (MAX_BLOCK);
 	 
-    int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-	 
-    int posZ = pos.z/ ((MAX_BLOCK + 1) * BLOCK_SIZE);
+    int posZ = (chunkPos.z) / (MAX_BLOCK);
 	int range = ceil(150.0f / (MAX_BLOCK * BLOCK_SIZE));
     for(int i =posX - range;i<=posX + range;i++)
     {

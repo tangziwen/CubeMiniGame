@@ -68,6 +68,7 @@ public:
 	void setVoxel(int x, int y, int z, unsigned char w);
 	vec3 voxelToBuffWorldPos(int x, int y, int z);
 	vec3 voxelToWorldPos(int x, int y, int z);
+	vec3 worldPosToVoxelPos(vec3 pos);
 	float getHeight(vec2 posXZ);
 	vec3 getNormal(vec2 posXZ);
 	int getMat(vec3 pos, float slope);
@@ -81,6 +82,7 @@ public:
 	int getTreeId();
 	int getGrassId();
 	GameMapBuffer * m_totalBuffer;
+	vec2 getCenterOfMap();
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;

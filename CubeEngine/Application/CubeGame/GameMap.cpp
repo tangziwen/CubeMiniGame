@@ -301,7 +301,7 @@ voxelInfo GameMap::getDensityI(int x, int y, int z)
                 for(int j = 0; j <GAME_MAX_BUFFER_SIZE;j++) //Y
                 {
                     auto currH = (j+ buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE;
-                    float delta = std::clamp ((currH - targetH)  * 0.2f, -1.f, 1.f);
+                    float delta = std::clamp ((currH - targetH)  * 0.1f, -1.f, 1.f);
                     unsigned char w =  (delta * 0.5f + 0.5f) * 255.f;
                     int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
                     m_totalBuffer[buffIndex].m_buff[cellIndex].w = w;
@@ -436,6 +436,11 @@ vec3 GameMap::voxelToBuffWorldPos(int x, int y, int z)
 vec3 GameMap::voxelToWorldPos(int x, int y, int z)
 {
 	return vec3((x)  * BLOCK_SIZE, (y )  * BLOCK_SIZE, (z)  * BLOCK_SIZE);
+}
+
+vec3 GameMap::worldPosToVoxelPos(vec3 pos)
+{
+	return vec3(int(pos.x / BLOCK_SIZE), int(pos.y / BLOCK_SIZE),int(pos.z / BLOCK_SIZE));
 }
 
 float GameMap::getHeight(vec2 posXZ)
@@ -596,6 +601,13 @@ int GameMap::getTreeId()
 int GameMap::getGrassId()
 {
 	return m_grassID;
+}
+
+vec2 GameMap::getCenterOfMap()
+{
+	float x = (mapBufferSize_X * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
+	float z = (mapBufferSize_Z * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
+	return vec2(x, z);
 }
 
 GameMapBuffer::GameMapBuffer()

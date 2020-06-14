@@ -26,8 +26,6 @@ public:
     Chunk * getOrCreateChunk(int x,int y, int z);
 	void onFrameUpdate(float delta) override;
     Chunk * createChunk(int x,int y,int z);
-    void setBlockSheet(TextureAtlas *blockSheet);
-    bool isTheSurfaceBlock();
     void startGame();
 	void loadGame(std::string filePath);
 	void saveGame(std::string filePath);
@@ -37,7 +35,6 @@ public:
     void unloadGame();
     int getCurrentState() const;
     void setCurrentState(const int &currentState);
-
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
 	void loadChunksAroundPlayer();
