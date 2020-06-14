@@ -26,9 +26,9 @@ namespace tzw
 			LOADED
 		};
 		Chunk(int the_x, int the_y, int the_z);
-	    int x;
-	    int y;
-	    int z;
+	    int m_x;
+	    int m_y;
+	    int m_z;
 		vec3 getGridPos(int the_x, int the_y, int the_z);
 		bool intersectByAABB(const AABB & other, vec3 &overLap) override;
 		Drawable3D * intersectByRay(const Ray & ray, vec3 &hitPoint) override;
