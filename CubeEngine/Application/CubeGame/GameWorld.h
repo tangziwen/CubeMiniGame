@@ -44,7 +44,7 @@ private:
     Node * m_mainRoot;
     int m_currentState;
     int m_width, m_depth, m_height;
-    Chunk * m_chunkArray[128][16][128];
+    Chunk * m_chunkArray[CUBE_MAP_SIZE][16][CUBE_MAP_SIZE];
     Scene  * m_scene;
     CubePlayer * m_player;
     std::vector<Chunk*> m_chunkList;

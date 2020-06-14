@@ -60,14 +60,20 @@ namespace tzw
 
 	void WorkerThreadSystem::workderUpdate()
 	{
+		bool isReciverEmpty = false;
 		for(;;)
 		{
 			m_rwMutex.lock();
-			if(!m_JobRecieverList.empty())
+			isReciverEmpty = m_JobRecieverList.empty();
+			if(!isReciverEmpty)
 			{
 				std::swap(m_JobRecieverList, m_jobProcessList);
 			}
 			m_rwMutex.unlock();
+			if(isReciverEmpty)
+			{
+				std::this_thread::sleep_for(std::chrono::milliseconds(500));
+			}
 			while(!m_jobProcessList.empty())
 			{
 				auto job = m_jobProcessList.front();

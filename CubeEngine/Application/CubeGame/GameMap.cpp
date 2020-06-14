@@ -162,17 +162,7 @@ void GameMap::init(float ratio, int width, int depth, int height)
 	y_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 	z_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
-	for (int i = 0; i < width; i++)
-	{
-		for (int j = 0; j < height; j++)
-		{
-			for (int k = 0; k < depth; k++)
-			{
-				m_chunkInfoArray[i][j][k] = new ChunkInfo(i, j, k);
-			}
-		}
-	}
-
+	m_chunkInfo = new ChunkInfo(0, 0, 0);
     //+1 for neighbor padding used.
     mapBufferSize_X = ((GAME_MAP_WIDTH * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
     mapBufferSize_Y = ((GAME_MAP_HEIGHT * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
@@ -527,7 +517,7 @@ GameMap::minHeight()
 
 ChunkInfo * GameMap::getChunkInfo(int x, int y, int z)
 {
-	return m_chunkInfoArray[x][y][z];
+	return m_chunkInfo;
 }
   static double LinearInterp (double n0, double n1, double a)
   {
@@ -608,6 +598,37 @@ vec2 GameMap::getCenterOfMap()
 	float x = (mapBufferSize_X * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
 	float z = (mapBufferSize_Z * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
 	return vec2(x, z);
+}
+
+ChunkInfo* GameMap::fetchFromSource(int x, int y, int z, int lod)
+{
+	auto lodList = {0, 1, 2};
+	int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
+	vec4 verts;
+	vec3 tmpV3;
+	int offset = MIN_PADDING;
+
+	//for LOD 1
+	//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理,注意LOD的元素涉及到前一个的也是在LOD的范围内的
+	int lodLevel = lod;
+	int stride = 1 << lod;
+	for (int i = 0; i < (MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING; i++)
+	{
+		for (int k = 0; k < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING; k++)
+		{
+			for (int j = 0; j < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING;
+				j++) // Y in the most inner loop, cache friendly
+			{
+				int BlockROW = ((MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING);
+
+				auto w = GameMap::shared()->getDensityI(x * MAX_BLOCK + (i - offset)*stride + LOD_SHIFT, y * MAX_BLOCK + (j - offset)*stride + LOD_SHIFT, z * MAX_BLOCK + (k - offset)*stride + LOD_SHIFT);
+
+				int ind = i * BlockROW*BlockROW + j * BlockROW + k;
+				m_chunkInfo->mcPoints[lod][ind] = w;
+			}
+		}
+	}
+	return m_chunkInfo;
 }
 
 GameMapBuffer::GameMapBuffer()

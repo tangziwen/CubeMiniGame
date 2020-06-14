@@ -3,6 +3,7 @@
 #define GAME_MAX_BUFFER_SIZE 64
 #define LOD_SHIFT 4
 
+#include "GameConfig.h"
 #include "noise/noise.h"
 #include "noise/noiseutils.h"
 #include "EngineSrc/Math/vec3.h"
@@ -77,12 +78,12 @@ public:
 	void setMinHeight(float minHeight);
 	float minHeight();
 	ChunkInfo * getChunkInfo(int x, int y, int z);
-	ChunkInfo * m_chunkInfoArray[128][16][128];
 	float edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal);
 	int getTreeId();
 	int getGrassId();
 	GameMapBuffer * m_totalBuffer;
 	vec2 getCenterOfMap();
+	ChunkInfo* fetchFromSource(int x, int y, int z, int lod);
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;
@@ -98,6 +99,7 @@ private:
 	int mapBufferSize_X;
 	int mapBufferSize_Y;
 	int mapBufferSize_Z;
+	ChunkInfo * m_chunkInfo;
 
 };
 

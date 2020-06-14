@@ -64,7 +64,6 @@ namespace tzw
 		State m_currenState;
 		ChunkInfo * getChunkInfo();
 		int getCurrentLod();
-		void fetchFromSource();
 	private:
 		int m_currentLOD;
 		TreeGroup * m_grass;

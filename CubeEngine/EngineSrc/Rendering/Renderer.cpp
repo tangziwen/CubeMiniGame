@@ -1262,8 +1262,11 @@ void Renderer::handleThumbNail()
 {
 	for(auto thumbnail : m_thumbNailList)
 	{
-		thumbnail->doSnapShot();
-		thumbnail->setIsDone(true);
+		if(!thumbnail->isIsDone())
+		{
+			thumbnail->doSnapShot();
+			thumbnail->setIsDone(true);
+		}
 	}
 	//m_thumbNailList.clear();
 }

@@ -63,12 +63,11 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
             for(int k = 0; k < m_depth; k++)
             {
                 auto chunk = new Chunk(i,j,k);
-                m_mainRoot->addChild(chunk, false);
+                // m_mainRoot->addChild(chunk, false);
 				 
                 m_chunkList.push_back(chunk);
 				 
-                m_chunkArray[i][j][k] = chunk;
-				 
+                m_chunkArray[i][j][k] = chunk;	 
             }
         }
     }
@@ -363,8 +362,11 @@ void GameWorld::loadChunksAroundPlayer()
     }
     for(Chunk* i:m_tempArray)
     {
-		 
         i->unload();
+    	if(i->getParent())
+    	{
+    		i->removeFromParent();
+    	}
     }
 	std::sort(m_readyToLoadArray.begin(), m_readyToLoadArray.end(),[&](Chunk * left, Chunk * right)
 	{
@@ -383,7 +385,10 @@ void GameWorld::loadChunksAroundPlayer()
 		{
 			i->load(0);
 		}
-		 
+		if(!i->getParent())
+		{
+			m_mainRoot->addChild(i);
+		}
 	}
 	tlog("load size is %d %d",m_readyToLoadArray.size(), m_tempArray.size());
 	tlog("load chunk cost : %d", Tmisc::DurationEnd());

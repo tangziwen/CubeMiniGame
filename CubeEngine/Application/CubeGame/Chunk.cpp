@@ -31,7 +31,6 @@ namespace tzw
 	FastNoise treeNoise;
 	/// <summary>	The LOD list[]. </summary>
 	static int lodList[] = {1, 2, 4, 8};
-
 	Chunk::Chunk(int the_x, int the_y, int the_z)
 		: x(the_x)
 		, y(the_y)
@@ -852,12 +851,13 @@ BAAAABB
 		if (!m_mesh[0])
 			return;
 
-		fetchFromSource();
+		
 		for(int i = 0; i < 3; i++)
 		{
+			auto chunkInfo = GameMap::shared()->fetchFromSource(x, y, z, i);
 			m_mesh[i]->clear();
 			m_meshTransition[i]->clear();
-			auto VoxelBuffer = m_chunkInfo->mcPoints;
+			auto VoxelBuffer = chunkInfo->mcPoints;
 			TransVoxel::shared()->generateWithoutNormal(m_basePoint,
 															m_mesh[i], m_meshTransition[i], (MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING, VoxelBuffer[i],
 															0.0f, i);
@@ -1083,41 +1083,7 @@ BAAAABB
 	{
 		return m_currentLOD;
 	}
-
-	void Chunk::fetchFromSource()
-	{
-		auto lodList = {0, 1, 2};
-		int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
-		vec4 verts;
-		vec3 tmpV3;
-		int offset = MIN_PADDING;
-
-		for(auto iter :lodList)
-		{
-			//for LOD 1
-			//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理,注意LOD的元素涉及到前一个的也是在LOD的范围内的
-			int lodLevel = iter;
-			int stride = 1 << iter;
-			for (int i = 0; i < (MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING; i++)
-			{
-				for (int k = 0; k < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING; k++)
-				{
-					for (int j = 0; j < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING;
-						j++) // Y in the most inner loop, cache friendly
-					{
-						int BlockROW = ((MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING);
-
-						auto w = GameMap::shared()->getDensityI(x * MAX_BLOCK + (i - offset)*stride + LOD_SHIFT, y * MAX_BLOCK + (j - offset)*stride + LOD_SHIFT, z * MAX_BLOCK + (k - offset)*stride + LOD_SHIFT);
-
-						int ind = i * BlockROW*BlockROW + j * BlockROW + k;
-						m_chunkInfo->mcPoints[iter][ind] = w;
-					}
-				}
-			}
-		}
-
-	}
-
+	
 	void Chunk::sampleForLod(int lodLevel, voxelInfo* out)
 	{
 		return;

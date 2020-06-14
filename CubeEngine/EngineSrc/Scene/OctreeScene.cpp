@@ -4,7 +4,7 @@
 #include "../base/Camera.h"
 #include <cassert>
 #include "3D/Primitive/CubePrimitive.h"
-#define MAX_DEEP 3
+#define MAX_DEEP 5
 namespace tzw {
 static int g_nodeIndex = 0;
 void OctreeNode::genId()

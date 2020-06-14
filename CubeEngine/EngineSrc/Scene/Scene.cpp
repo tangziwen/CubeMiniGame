@@ -164,8 +164,8 @@ void Scene::init()
     createDefaultCameras();
     m_root.setName("root");
     AABB sceneBounding;
-    sceneBounding.update(vec3(-2000,-200,-2000));
-    sceneBounding.update(vec3(2000,512,2000));
+    sceneBounding.update(vec3(-2000,-512,-2000));
+    sceneBounding.update(vec3(4096,512,4096));
     m_octreeScene = new OctreeScene();
     m_octreeScene->init(sceneBounding);
     //m_debugInfoPanel = new DebugInfoPanel();
