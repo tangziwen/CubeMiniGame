@@ -1,6 +1,7 @@
 #ifndef TZW_ENGINECONFIG_H
 #define TZW_ENGINECONFIG_H
 #include "Base/Singleton.h"
+#define SAFE_DELETE(PTR) delete PTR; PTR = NULL
 namespace tzw
 {
 

@@ -1,6 +1,7 @@
 #pragma once
 #include "BearPart.h"
 #include "GamePart.h"
+#include "AudioSystem/Audio.h"
 #include "Event/Event.h"
 
 namespace tzw
@@ -28,5 +29,6 @@ namespace tzw
 	public:
 		GamePartType getType() override;
 		bool m_isActivate;
+		AudioEvent* m_audioEvent;
 	};
 }

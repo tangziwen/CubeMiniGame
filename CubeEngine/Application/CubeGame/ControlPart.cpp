@@ -20,7 +20,8 @@ ControlPart::ControlPart()
 }
 static Audio * audio;
 static AudioEvent * event = NULL;
-ControlPart::ControlPart(std::string itemName)
+ControlPart::ControlPart(std::string itemName):
+	m_audioEvent(nullptr)
 {
 	m_isActivate = false;
 
@@ -146,10 +147,9 @@ void ControlPart::setActivate(bool value)
 	if (value) 
 	{
 		GameWorld::shared()->getPlayer()->sitDownToGamePart(this);
-		audio->playWithOutCare();
 	}
 	else
-	{	
+	{
 		GameWorld::shared()->getPlayer()->standUpFromGamePart(this);
 	}
 }
@@ -158,9 +158,9 @@ void ControlPart::onFrameUpdate(float delta)
 {
 	if(m_node && m_node->getParent())
 	{
-		if(!event)
+		if(!m_audioEvent)
 		{
-			event = audio->play3D(getWorldPos());
+			m_audioEvent = audio->play3D(getWorldPos());
 		}
 	}
 }
@@ -208,6 +208,11 @@ Attachment* ControlPart::getAttachment(int index)
 
 ControlPart::~ControlPart()
 {
+	if(m_audioEvent)
+	{
+		m_audioEvent->stop();
+		SAFE_DELETE(m_audioEvent);
+	}
 	auto nodeEditor = m_vehicle->getEditor();
 	nodeEditor->removeNode(m_graphNode);
 	delete m_graphNode;
