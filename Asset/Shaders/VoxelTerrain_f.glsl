@@ -151,7 +151,7 @@ vec4 triplanarSample(sampler2D sampler, float texIndex, float scaleFactor)
 	vec4 yaxis = textureGrad( sampler, yPlane, dx_y, dy_y);
   vec2 zPlane = getUV(v_worldPos.xy * scaleFactor,index, dx_z, dy_z);
 	vec4 zaxis = textureGrad( sampler, zPlane, dx_z, dy_z);
-	return yaxis;//xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
+	return xaxis * blending.x + yaxis * blending.y + zaxis * blending.z;
 }
 
 vec4 outLineFilter(vec4 color)
@@ -332,9 +332,8 @@ vec4 getTerrainTex(sampler2D samp)
   vec3 weight = vec3(1, 0, 0);
   vec3 texIndex = vec3(13, 13, 13);
   findBestTwo(weight, texIndex);
-  vec3 detailTex = triplanarSample(samp,texIndex.x ,1.0 / uv_grass).xyz * weight.x + triplanarSample(samp, texIndex.y, 1.0 / uv_cliff).xyz * weight.y + triplanarSample(samp, texIndex.z, 1.0 / uv_cliff).xyz * weight.z;
-	return vec4(detailTex, 1.0); 
-  // return vec4(weight.xy, 0.0,1.0);//vec4(v_mat[0], v_mat[1], v_mat[2], 1.0);
+  vec3 detailTex = triplanarSample(samp,texIndex.x ,1.0 / uv_grass).xyz * weight.x + triplanarSample(samp, texIndex.y, 1.0 / uv_grass).xyz * weight.y + triplanarSample(samp, texIndex.z, 1.0 / uv_grass).xyz * weight.z;
+  return vec4(detailTex, 1.0); 
 }
 
 vec4 texturePlain(sampler2D samp, in vec2 uv)
