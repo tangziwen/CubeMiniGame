@@ -47,10 +47,7 @@ namespace tzw
 		{
 			if(part == m_liftPart)
 			{
-				dropFromLift();
-				m_liftPart->getFirstAttachment()->breakConnection();
-				delete m_liftPart;
-				m_liftPart = nullptr;
+				removeLiftPart();
 			}
 			else
 			{
@@ -72,6 +69,19 @@ namespace tzw
 			}
 		}
     }
+	void BuildingSystem::removeVehicle(Vehicle* vehicle)
+	{
+		if(vehicle == m_staticVehicle)
+		{
+			m_staticVehicle = nullptr;
+		}
+		if(m_vehicleList.find(vehicle)!= m_vehicleList.end())
+		{
+			m_vehicleList.erase(m_vehicleList.find(vehicle));
+		}
+		delete vehicle;
+	}
+
     void BuildingSystem::placeGamePartStatic(GamePart* part, vec3 pos)
 	{
 		AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLINK);
@@ -134,7 +144,7 @@ namespace tzw
 			newIsland->insertAndAdjustAttach(part, attach, index);
 			newIsland->setIslandGroup(vehicle->getIslandGroup());
 			//vehicle->
-			liftPart->setEffectedIsland(vehicle->getIslandGroup());
+			liftPart->setEffectedIsland(vehicle);
 			m_vehicleList.emplace(vehicle);
 		}
 		else
@@ -573,6 +583,14 @@ namespace tzw
 		return m_liftPart;
 	}
 
+	void BuildingSystem::removeLiftPart()
+	{
+		dropFromLift();
+		m_liftPart->getFirstAttachment()->breakConnection();
+		delete m_liftPart;
+		m_liftPart = nullptr;
+	}
+
 	void BuildingSystem::addThruster(GamePart* thruster)
 	{
 		m_thrusterList.insert(thruster);
@@ -585,16 +603,21 @@ namespace tzw
 
 	void BuildingSystem::liftStore(GamePart* part)
 	{
+		if(part == m_liftPart) return;
+		if(part->getVehicle() == m_staticVehicle) return;
 		if(m_liftPart)//already place lift part
 		{
-			//teleport it
-			auto v = part->getVehicle();
-			v->disablePhysics();
-			auto firstIsland = v->getIslandList()[0];
-			tempPlace(firstIsland, m_liftPart);
-			//readjust
-			auto attach = replaceToLiftIslands(firstIsland->getVehicle());
-			replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
+			if(part != m_liftPart)
+			{
+				//teleport it
+				auto v = part->getVehicle();
+				v->disablePhysics();
+				auto firstIsland = v->getIslandList()[0];
+				tempPlace(firstIsland, m_liftPart);
+				//readjust
+				auto attach = replaceToLiftIslands(firstIsland->getVehicle());
+				replaceToLift(attach->m_parent->m_parent, attach, m_liftPart);
+			}
 			return;
 		}
 		//ÊÕÄÉÆğÀ´
@@ -860,10 +883,10 @@ namespace tzw
 	{
 		if(!m_liftPart) return;
 		std::vector<Island *> groupList;
-		getIslandsByGroup(m_liftPart->m_effectedIslandGroup, groupList);
-		for(auto island : groupList)
+		if(m_liftPart->m_effectedIslandGroup)
 		{
-			removeIsland(island);
+			removeVehicle(m_liftPart->m_effectedIslandGroup);
+			m_liftPart->m_effectedIslandGroup = nullptr;
 		}
 	}
 
@@ -974,7 +997,7 @@ void BuildingSystem::dropFromLift()
 		Vehicle * currVehicle = nullptr;
 		for(auto vehicle : m_vehicleList)
 		{
-			if(vehicle->getIslandGroup() == m_liftPart->m_effectedIslandGroup)
+			if(vehicle == m_liftPart->m_effectedIslandGroup)
 			{
 				currVehicle = vehicle;
 			}
@@ -1030,7 +1053,7 @@ void BuildingSystem::replaceToLift(Island* island, Attachment * attachment, Lift
 	{
 		attachment->m_parent->adjustToOtherIslandByAlterSelfIsland(attach, attachment, 0);
 	}
-	targetLift->setEffectedIsland(island->getIslandGroup());
+	targetLift->setEffectedIsland(island->getVehicle());
 	std::set<Island *> closeSet;
 	closeSet.insert(island);
 	for (auto part : island->m_partList)

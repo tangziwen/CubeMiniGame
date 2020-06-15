@@ -32,6 +32,7 @@ public:
 	void tmpMoveWheel(bool isOpen);
 	void removePartByAttach(Attachment * attach);
 	void removePart(GamePart * attach);
+	void removeVehicle(Vehicle * vehicle);
 	void placeGamePartStatic(GamePart * part, vec3 pos);
 	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
 	void attachGamePart(GamePart * part, Attachment * attach, float degree, int index);
@@ -51,6 +52,7 @@ public:
 	GamePart * rayTestPartXRay(vec3 pos, vec3 dir, float dist);
 	Island * rayTestIsland(vec3 pos, vec3 dir, float dist);
 	LiftPart * getLift() const;
+	void removeLiftPart();
 	void addThruster(GamePart * thruster);
 	void removeThruster(GamePart * thrsuter);
 	void liftStore(GamePart * part);

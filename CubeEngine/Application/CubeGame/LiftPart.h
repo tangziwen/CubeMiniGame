@@ -6,6 +6,7 @@ namespace tzw
 	class Island;
 	class CubePrimitive;
 	class CylinderPrimitive;
+	class Vehicle;
 	class LiftPart : public GamePart
 	{
 	public:
@@ -16,7 +17,7 @@ namespace tzw
 		Attachment * getAttachmentInfo(int index, vec3&pos, vec3&N, vec3&up);
 		Attachment * getFirstAttachment() override;
 		void liftUp(float val);
-		void setEffectedIsland(std::string islandGroup);
+		void setEffectedIsland(Vehicle* islandGroup);
 		void setPos(vec3 v);
 		bool isHit(Ray ray) override;
 		Drawable3D* getNode() const override;
@@ -28,7 +29,7 @@ namespace tzw
 		float m_liftHeight;
 		GamePartType getType() override;
 		Attachment * m_attachment[6]{};
-		std::string m_effectedIslandGroup;
+		Vehicle * m_effectedIslandGroup;
 	private:
 		CubePrimitive * m_plaftormPart;
 		CylinderPrimitive * m_pipePart;

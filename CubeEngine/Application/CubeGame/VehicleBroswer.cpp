@@ -86,8 +86,7 @@ namespace tzw
 
 	void VehicleBroswer::open()
 	{
-		std::vector<Island *> group;
-		BuildingSystem::shared()->getIslandsByGroup(BuildingSystem::shared()->getLift()->m_effectedIslandGroup, group);
+		auto & group = BuildingSystem::shared()->getLift()->m_effectedIslandGroup->getIslandList();
 		if(group.size() > 0) //open save first, other wise, open load first
         {
 			m_loadOpen = false;

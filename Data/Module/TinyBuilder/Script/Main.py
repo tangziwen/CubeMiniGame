@@ -493,17 +493,24 @@ def handleItemPrimaryUse(item):
 		placeItem(item)
 	elif item.getTypeInInt() == GAME_PART_LIFT :
 		result = Game.BuildingSystem.shared().rayTestPart(player.getPos(), player.getForward(), 10)
-		if result != None :
-			#先收纳 再搞事
-			Game.BuildingSystem.shared().liftStore(result)
+		lift = Game.BuildingSystem.shared().getLift()
+		if lift:
+			if result != None and  result != lift and result.getVehicle() != lift.m_effectedIslandGroup:
+				Game.BuildingSystem.shared().liftStore(result)#传送收纳
+			elif result != None and result.getVehicle() == lift.m_effectedIslandGroup:
+				Game.BuildingSystem.shared().removeLiftPart()#载具放下
 		else:
-			resultPos = Game.BuildingSystem.shared().hitTerrain(player.getPos(), player.getForward(), 10)
-			if resultPos.y > -99999 :
-				Game.BuildingSystem.shared().placeLiftPart(resultPos)
-			
+			if result:
+				Game.BuildingSystem.shared().liftStore(result)#预览收纳
+			else:
+				resultPos = Game.BuildingSystem.shared().hitTerrain(player.getPos(), player.getForward(), 10)
+				if resultPos.y > -99999 :
+					Game.BuildingSystem.shared().placeLiftPart(resultPos)#升降机放置
+
+
 		
 	elif (item.getTypeInInt() == SPECIAL_PART_PAINTER) : #paint the object
-		player.paint();
+		player.paint()
 	elif (item.getTypeInInt() == SPECIAL_PART_DIGGER) : #fill the terrain
 		Game.BuildingSystem.shared().terrainForm(player.getPos(), player.getForward(), 10, 0.8, 3.0)
 	
@@ -546,7 +553,6 @@ def onMouseRelease(input_event):
 	
 
 def onMouseScroll(input_event):
-	print("scroll");
 	slotSize = len(GameState.m_itemSlots)
 	if(int(input_event.offset.y) == 1):
 		GameState.m_currIndex += 1;

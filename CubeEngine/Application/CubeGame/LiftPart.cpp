@@ -29,7 +29,7 @@ LiftPart::LiftPart()
 	m_shape = new PhysicsShape();
 	m_shape->initBoxShape(vec3(blockSize, blockSize, blockSize));
 	m_parent = nullptr;
-	m_effectedIslandGroup = "";
+	m_effectedIslandGroup = nullptr;
 	initAttachments();
 	g_GetCurrScene()->addNode(m_node);
 }
@@ -122,14 +122,14 @@ Attachment* LiftPart::getFirstAttachment()
 
 void LiftPart::liftUp(float val)
 {
-	if (m_effectedIslandGroup.size()> 0 || true) 
+	if (m_effectedIslandGroup) 
 	{
 		m_liftHeight += val;
 		m_liftHeight = std::min(m_liftHeight, 10.0f);
 
 		std::vector<Island *> groupList;
-		BuildingSystem::shared()->getIslandsByGroup(m_effectedIslandGroup, groupList);
-        for (auto island : groupList) 
+		auto&islandList = m_effectedIslandGroup->getIslandList();
+        for (auto island : islandList) 
 		{
 			auto oldPos = island->m_node->getPos();
 			oldPos.y += val;
@@ -141,7 +141,7 @@ void LiftPart::liftUp(float val)
 	}
 }
 
-void LiftPart::setEffectedIsland(std::string islandGroup)
+void LiftPart::setEffectedIsland(Vehicle* islandGroup)
 {
 	m_effectedIslandGroup = islandGroup;
 }

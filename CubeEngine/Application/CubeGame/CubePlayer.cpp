@@ -403,23 +403,67 @@ namespace tzw
 			switch(item->m_type)
 			{
 			case GamePartType::GAME_PART_LIFT:
-				if(!BuildingSystem::shared()->getLift())
 				{
+					auto lift = BuildingSystem::shared()->getLift();
 					//如果当前指向的方块有属性面板，也不显示
-					if(m_currPointPart && m_currPointPart->getItem()->hasAttributePanel())
+					if(m_currPointPart && m_currPointPart->getItem() && m_currPointPart->getItem()->hasAttributePanel())
 					{
 						isNeedSpecialShowBySelected = false;
-					} else
-					{
-						isNeedSpecialShowBySelected = true;
 					}
-				}
-				else //已经放置了不需要再显示
-				{
-					isNeedSpecialShowBySelected = false;
+					else
+					{
+						if(!lift)
+						{
+							isNeedSpecialShowBySelected = true;
+							if(BuildingSystem::shared()->getStoreIslandGroup()) 
+							{
+								label->setString(TR(u8"放置收纳对象"));
+							}
+							else
+							{
+								if(m_currPointPart)
+								{
+									label->setString(TR(u8"收纳"));
+								}
+								else
+								{
+									label->setString(TR(u8"对准空地放置，对准载具收纳放置"));
+								}
+							}
+						}
+						else
+						{
+							if(m_currPointPart && m_currPointPart != lift && !lift->m_effectedIslandGroup)//如果升降机上没有放置载具
+							{
+								isNeedSpecialShowBySelected = true;
+								label->setString(TR(u8"放置到升降机"));
+							}
+							else if(m_currPointPart && m_currPointPart != lift && m_currPointPart->getVehicle()  == lift->m_effectedIslandGroup)//如果升降机上载具等于自己
+							{
+								isNeedSpecialShowBySelected = true;
+								label->setString(TR(u8"放下到地面"));
+							}
+							else
+							{
+								isNeedSpecialShowBySelected = false;
+							}
+						}
+					}
+
 				}
 			break;
-			case GamePartType::SPECIAL_PART_PAINTER: isNeedSpecialShowBySelected = true; break;
+			case GamePartType::SPECIAL_PART_PAINTER:
+				{
+					label->setString(TR(u8"(左键) 喷漆 \n(右键) 喷涂面板"));
+					isNeedSpecialShowBySelected = true;
+				}
+			break;
+			case GamePartType::SPECIAL_PART_DIGGER:
+				{
+					label->setString(TR(u8"(左键) 挖掘 \n(右键) 填充"));
+					isNeedSpecialShowBySelected = true;
+				}
+			break;
 			default: ;
 			}
 		}else
@@ -427,49 +471,7 @@ namespace tzw
 			isNeedSpecialShowBySelected = false;
 		}
 
-		if(isNeedSpecialShowBySelected)
-		{
-			label->setIsVisible(true);
-			switch(item->m_type)
-			{
-			case GamePartType::GAME_PART_LIFT:
-				{
-					if(!BuildingSystem::shared()->getLift())
-					{
-						if(BuildingSystem::shared()->getStoreIslandGroup()) 
-						{
-							label->setString(TR(u8"放置收纳对象"));
-						}
-						else
-						{
-							if(m_currPointPart)
-							{
-								label->setString(TR(u8"收纳"));
-							}
-							else
-							{
-								label->setString(TR(u8"对准空地放置，对准载具收纳放置"));
-							}
-						}
-					}
-					else
-					{
-						if(m_currPointPart)
-						{
-							label->setString(TR(u8"收纳"));
-						}else
-						{
-							// tlog("???");
-						}
-					}
-				}
-
-			break;
-			case GamePartType::SPECIAL_PART_PAINTER: label->setString(TR(u8"(左键) 喷漆 \n(右键) 喷涂面板")); break;
-			case GamePartType::SPECIAL_PART_DIGGER: label->setString(TR(u8"(左键) 挖掘 \n(右键) 填充")); break;
-			default: ;
-			}
-		}else
+		if(!isNeedSpecialShowBySelected)
 		{
 			if(!m_currPointPart) 
 			{
@@ -489,6 +491,9 @@ namespace tzw
 				label->setIsVisible(false);
 				break;
 			}
+		}else
+		{
+			label->setIsVisible(true);
 		}
 	}
 

@@ -28,7 +28,6 @@ namespace tzw
 		if(isDDS)
 		{
 			loadingFlag = SOIL_FLAG_DDS_LOAD_DIRECT;
-			tlog("hehe");
 		}
 		else
 		{

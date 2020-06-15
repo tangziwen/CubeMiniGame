@@ -922,7 +922,7 @@ void GameUISystem::initInGame()
     auto size = m_crossHair->getContentSize();
 	
     m_crossHair->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
-	 
+	m_crossHair->setColor(vec4(1, 0.8, 0, 1));
     GameWorld::shared()->getMainRoot()->addChild(m_crossHair);
 	m_crossHairTipsInfo = LabelNew::create(TRC("No Tips"));
 	GameWorld::shared()->getMainRoot()->addChild(m_crossHairTipsInfo);

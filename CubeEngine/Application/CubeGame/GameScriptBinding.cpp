@@ -98,6 +98,8 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
   BIND_FUNC_PY(GameItem, isSpecialFunctionItem)
   BIND_FUNC_PY(GameItem, getThumbNailTextureId);
 
+
+
   // Building System
 
   BIND_BEGIN_CLASS_PY(BuildingSystem)
@@ -118,6 +120,8 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
   BIND_FUNC_PY(BuildingSystem, getLift)
   BIND_FUNC_PY(BuildingSystem, removePartByAttach)
   BIND_FUNC_PY(BuildingSystem, removePart)
+  BIND_FUNC_PY(BuildingSystem, removeLiftPart)
+	
   BIND_FUNC_PY(BuildingSystem, terrainForm)
   BIND_FUNC_PY(BuildingSystem, setCurrentControlPart)
   BIND_FUNC_PY(BuildingSystem, getCurrentControlPart)
@@ -155,6 +159,7 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
 
   BIND_BEGIN_CLASS_PY(GamePart)
   BIND_EMPTY_CONSTRUCT_PY
+  BIND_FUNC_PY(GamePart, getVehicle)
   BIND_FUNC_PY(GamePart, getPrettyAttach);
 
   pybind11::class_<BlockPart, GamePart>(m, "BlockPart") BIND_EMPTY_CONSTRUCT_PY;
@@ -183,7 +188,12 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
   // BIND_BEGIN_CLASS_PY(LiftPart)
   pybind11::class_<LiftPart, GamePart>(m, "LiftPart")
   BIND_FUNC_PY(LiftPart, liftUp)
+	BIND_PROP_PY(LiftPart, m_effectedIslandGroup)
   BIND_EMPTY_CONSTRUCT_PY;
+
+	 //Vehicle
+	BIND_BEGIN_CLASS_PY(Vehicle)
+	BIND_EMPTY_CONSTRUCT_PY;
 
   m.attr("GAME_STATE_MAIN_MENU") = 0;
   m.attr("GAME_STATE_RUNNING") = 1;
