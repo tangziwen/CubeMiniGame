@@ -41,6 +41,7 @@ namespace tzw
 		GLint last_scissor_box[4]; glGetIntegerv(GL_SCISSOR_BOX, last_scissor_box);
 		 
 		glEnable(GL_BLEND);
+		bool oldScissorTestFlag = glIsEnabled(GL_SCISSOR_TEST);
 		glEnable(GL_SCISSOR_TEST);
 		RenderBackEnd::shared()->setDepthTestEnable(false);
 		RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha, RenderFlag::BlendingFactor::OneMinusSrcAlpha);
@@ -121,6 +122,13 @@ namespace tzw
 		glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(last_texture));
 		//glViewport(last_viewport[0], last_viewport[1], (GLsizei)last_viewport[2], (GLsizei)last_viewport[3]);
 		glScissor(last_scissor_box[0], last_scissor_box[1], static_cast<GLsizei>(last_scissor_box[2]), static_cast<GLsizei>(last_scissor_box[3]));
+		if(oldScissorTestFlag)
+		{
+			glEnable(GL_SCISSOR_TEST);
+		}else
+		{
+			glDisable(GL_SCISSOR_TEST);
+		}
 		glEnable(GL_CULL_FACE);
 	}
 
