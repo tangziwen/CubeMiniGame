@@ -145,7 +145,11 @@ void Renderer::renderAll()
 			copyToFrame(m_ssaoResultBuffer, m_bloomResultBuffer, m_copyEffect);
 		}
 		toneMappingPass();
-		AAPass();
+		if(m_aaEnable)
+		{
+			AAPass();
+		}
+
 	}
 	
 	m_gbuffer->bindForReading();
@@ -1141,6 +1145,7 @@ void Renderer::AAPass()
 {
 	m_offScreenBuffer2->bindRtToTexture(0, 0);
 	bindScreenForWriting();
+	RenderBackEnd::shared()->setDepthTestEnable(false);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	m_FXAAEffect->use();
 	auto program = m_FXAAEffect->getProgram();
@@ -1189,7 +1194,15 @@ void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &
 
 void Renderer::toneMappingPass()
 {
-	m_offScreenBuffer2->bindForWriting();
+	if(m_aaEnable)
+	{
+		m_offScreenBuffer2->bindForWriting();
+		
+	}
+	else
+	{
+		bindScreenForWriting();
+	}
 	m_bloomResultBuffer->bindRtToTexture(0, 0);
 	autoExposureList[autoExposureList.size() - 1]->bindRtToTexture(0, 1);
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -1198,7 +1211,15 @@ void Renderer::toneMappingPass()
 	program->use();
 	program->setUniformInteger("TU_colorBuffer",0);
 	program->setUniformInteger("TU_AverageLuminance",1);
-	program->setUniform2Float("TU_winSize", m_offScreenBuffer2->getFrameSize());
+	if(m_aaEnable)
+	{
+		program->setUniform2Float("TU_winSize", m_offScreenBuffer2->getFrameSize());
+	}
+	else
+	{
+		program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+	}
+
 	renderPrimitive(m_quad, m_ToneMappingPassEffect, RenderCommand::PrimitiveType::TRIANGLES);
 }
 
