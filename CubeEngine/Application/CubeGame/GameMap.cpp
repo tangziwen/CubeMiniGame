@@ -33,12 +33,16 @@ void voxelInfo::setV3(vec3 v)
 
 vec3 voxelInfo::getV3()
 {
+	abort();//do not use this function!
+	return vec3(0, 0, 0);
+	/*
 	int YtimeZ = (MAX_BLOCK + 1) * (MAX_BLOCK + 1);
 	int i = index / YtimeZ;
 	int w = index % YtimeZ;
 	int j = w / (MAX_BLOCK + 1);         // y in N(B)
 	int k = w % (MAX_BLOCK + 1);        // z in N(C)
 	return vec3(i * BLOCK_SIZE, j * BLOCK_SIZE, -1 * k * BLOCK_SIZE);
+	*/
 }
 
 vec4 voxelInfo::getV()
@@ -62,7 +66,8 @@ void voxelInfo::setMat(char mat1, char mat2, char mat3, vec3 blendFactor)
 	matInfo.matIndex1 = mat1;
 	matInfo.matIndex2 = mat2;
 	matInfo.matIndex3 = mat3;
-	matInfo.matBlendFactor = blendFactor;
+	matInfo.matBlendFactor1 = std::clamp(int(blendFactor.x * 255.f), 0 , 255);
+	matInfo.matBlendFactor2 = std::clamp(int(blendFactor.y * 255.f), 0 , 255);
 }
 
 ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),
@@ -631,9 +636,34 @@ ChunkInfo* GameMap::fetchFromSource(int x, int y, int z, int lod)
 	return m_chunkInfo;
 }
 
+void GameMap::saveTerrain(std::string filePath)
+{
+    auto terrainFile = fopen(filePath.c_str(), "wb");
+	size_t count = (mapBufferSize_X) * (mapBufferSize_Y) * (mapBufferSize_Z);
+	size_t writeCount = 0;
+	for(size_t i = 0; i < count; i++)
+	{
+		auto buff = m_totalBuffer[i].m_buff;
+		if(buff)
+		{
+			fwrite(&i, sizeof(size_t), 1, terrainFile);
+			fwrite(buff, sizeof(voxelInfo) * GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE, 1, terrainFile);
+			writeCount += 1;
+		}
+	}
+    fclose(terrainFile);
+	tlog("write %ld chunk, size of the voxel info %ld (%d %d %d)",writeCount, sizeof(voxelInfo),mapBufferSize_X ,mapBufferSize_Y, mapBufferSize_Z);
+	
+}
+
+void GameMap::loadTerrain(std::string filePath)
+{
+}
+
 GameMapBuffer::GameMapBuffer()
 {
     m_buff = nullptr;
+	isEdit = false;
 }
 
 voxelInfo GameMapBuffer::get(int theX, int theY, int theZ)

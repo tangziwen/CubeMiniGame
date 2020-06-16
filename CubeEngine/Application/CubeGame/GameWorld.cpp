@@ -279,16 +279,8 @@ void GameWorld::saveGame(std::string filePath)
             }
         }
     }
-    auto terrainFile = fopen("./Data/PlayerData/Save/Terrain.bin", "wb");
-	//first size of int tell the fucking count
-	int theSize = tmpChunkList.size();
-	fwrite(&theSize, sizeof(int),1 ,terrainFile);
-	for(auto chunk : tmpChunkList)
-	{
-		chunk->dumpChunk(terrainFile);
-	}
-    fclose(terrainFile);
-	
+
+	GameMap::shared()->saveTerrain("./Data/PlayerData/Save/Terrain.bin");
 }
 
 bool GameWorld::onKeyPress(int keyCode)

@@ -15,7 +15,6 @@ class Chunk;
 struct voxelInfo
 {
 	unsigned char w;
-	unsigned short index;
 	MatBlendInfo matInfo;
 	void setV4(vec4 v);
 	void setV3(vec3 v);
@@ -45,6 +44,7 @@ struct GameMapBuffer
 	GameMapBuffer();
 	voxelInfo get(int theX, int theY, int theZ);
 	voxelInfo * m_buff;
+	bool isEdit;
 };
 class GameMap
 {
@@ -84,6 +84,8 @@ public:
 	GameMapBuffer * m_totalBuffer;
 	vec2 getCenterOfMap();
 	ChunkInfo* fetchFromSource(int x, int y, int z, int lod);
+	void saveTerrain(std::string filePath);
+	void loadTerrain(std::string filePath);
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;

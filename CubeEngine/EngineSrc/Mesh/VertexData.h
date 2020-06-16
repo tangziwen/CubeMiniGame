@@ -10,7 +10,8 @@ struct MatBlendInfo
 	char matIndex1;
 	char matIndex2;
 	char matIndex3;
-	vec3 matBlendFactor;
+	unsigned char matBlendFactor1;
+	unsigned char matBlendFactor2;
 };
 class VertexData
 {
