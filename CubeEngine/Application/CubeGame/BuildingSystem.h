@@ -83,7 +83,6 @@ private:
 	ControlPart * m_controlPart;
 	LiftPart * m_liftPart;
 	unsigned int m_baseIndex;
-	std::vector<Island *> m_staticIsland;
 	std::set<GamePart* > m_thrusterList;
 	std::map<GamePart *, LabelNew *> m_partToLabel;
 	GamePart * m_currPointPart;

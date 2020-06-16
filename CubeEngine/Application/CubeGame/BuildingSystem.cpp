@@ -89,20 +89,19 @@ namespace tzw
 		float blockSize = 0.5f;
 		vec3 resultWorldPos = vec3(int(std::round( pos.x / blockSize)) * blockSize, int(std::round(pos.y / blockSize)) * blockSize, 
 			int(std::round(pos.z / blockSize)) * blockSize);
-		if(m_staticIsland.empty())
+		if(!m_staticVehicle)
 		{
 			m_staticVehicle = new Vehicle();
 			m_staticVehicle->genIslandGroup();
 			newIsland = new Island(resultWorldPos, m_staticVehicle);
-			m_staticIsland.push_back(newIsland);
 			newIsland->setIslandGroup(m_staticVehicle->getIslandGroup());
 			newIsland->setIsStatic(true);
 		}else
 		{
-			newIsland = m_staticIsland[0];
+			newIsland = m_staticVehicle->getIslandList()[0];
 		}
 		auto invMat = newIsland->m_node->getTransform().inverted();
-		tlog("hhehehehe %s %s %s", pos.getStr().c_str(), resultWorldPos.getStr().c_str(), invMat.transformVec3(resultWorldPos).getStr().c_str());
+		tlog("place static %s %s %s", pos.getStr().c_str(), resultWorldPos.getStr().c_str(), invMat.transformVec3(resultWorldPos).getStr().c_str());
 		part->getNode()->setPos(invMat.transformVec3(resultWorldPos));
 		newIsland->insert(part);
 	}
@@ -432,14 +431,18 @@ namespace tzw
 		}
 
 
-		// search island
-		for (auto island : m_staticIsland)
+		if(m_staticVehicle)
 		{
-			for (auto iter : island->m_partList)
+			// search static
+			for (auto island : m_staticVehicle->getIslandList())
 			{
-				tmp.push_back(iter);
+				for (auto iter : island->m_partList)
+				{
+					tmp.push_back(iter);
+				}
 			}
 		}
+
 
 		if(m_liftPart)// add extra lift part
 		{
@@ -493,12 +496,15 @@ namespace tzw
 			}
 		}
 
-		// search island
-		for (auto island : m_staticIsland)
+		if(m_staticVehicle)
 		{
-			for (auto iter : island->m_partList)
+			// search static
+			for (auto island : m_staticVehicle->getIslandList())
 			{
-				tmp.push_back(iter);
+				for (auto iter : island->m_partList)
+				{
+					tmp.push_back(iter);
+				}
 			}
 		}
 		if(m_liftPart)// add extra lift part
@@ -821,13 +827,9 @@ namespace tzw
 
 	void BuildingSystem::clearStatic()
 	{
-		if(!m_staticIsland.empty())
+		if(m_staticVehicle)
 		{
-			for(auto island :m_staticIsland)
-			{
-				delete island;
-			}
-			m_staticIsland.clear();
+			SAFE_DELETE(m_staticVehicle);
 		}
 	}
 
@@ -848,7 +850,6 @@ namespace tzw
 				m_staticVehicle->genIslandGroup();
 				auto& item = items[i];
 				auto newIsland = new Island(vec3(), m_staticVehicle);
-				m_staticIsland.push_back(newIsland);
 				//m_IslandList.push_back(newIsland);
 				newIsland->setIslandGroup(m_staticVehicle->getIslandGroup());
 				newIsland->load(item);
@@ -861,8 +862,9 @@ namespace tzw
 
 	void BuildingSystem::dumpStatic(rapidjson::Value &doc, rapidjson::Document::AllocatorType& allocator)
 	{
+		if(!m_staticVehicle) return;
 		rapidjson::Value islandList(rapidjson::kArrayType);
-		for(auto island :m_staticIsland)
+		for(auto island :m_staticVehicle->getIslandList())
 		{
 			rapidjson::Value islandObject(rapidjson::kObjectType);
 			island->dump(islandObject, allocator);
