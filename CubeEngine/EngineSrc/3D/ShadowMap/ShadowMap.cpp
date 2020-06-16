@@ -13,7 +13,7 @@ namespace tzw
 		m_program = ShaderMgr::shared()->getByPath(0, "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		m_InstancedProgram = ShaderMgr::shared()->getByPath(static_cast<uint32_t>(ShaderOption::EnableInstanced), "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
-		int shadowMapSize[] = {512, 1024, 1024};
+		int shadowMapSize[] = {1024, 1024, 1024};
 		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
 		{
 			auto shadowMap = new ShadowMapFBO();
@@ -134,13 +134,11 @@ namespace tzw
 			std::vector<vec3> frustumCorners;
 			getFrustumCorners(frustumCorners, camera->projection(), m_zlistView[i], m_zlistView[i+1]);
 			camera->reCache();
-			std::vector<vec3> frustumCornersL;
 			for (unsigned j = 0 ; j < NUM_FRUSTUM_CORNERS ; j++) 
 			{
 				vec4 coord_in_world = camInv * vec4(frustumCorners[j], 1.0);
 				vec4 coord_in_LightView =  lightView * coord_in_world;
 				aabb.update(vec3(coord_in_LightView.x, coord_in_LightView.y, coord_in_LightView.z));
-				frustumCornersL.push_back(coord_in_LightView.toVec3());
 			}
 			Matrix44 mat;
 			auto min_val = aabb.min();
@@ -207,9 +205,19 @@ namespace tzw
         }
 		//in the light space, we modify the max_z & min_z
 		auto theMax = aabb.max();
-		theMax.z += 20;
 		auto theMin = aabb.min();
-		theMin.z -= 20;
+
+		vec3 wDiagonal = frustumCorners[0] - frustumCorners[6];
+		float length = wDiagonal.length() + 20.0f;//some extra distance
+		wDiagonal = vec3(length, length, length);
+		float fCascadeBound = wDiagonal.x;
+		vec3 halfVec = vec3(0.5, 0.5, 0.5);
+        vec3 vBoarderOffset = ( wDiagonal - ( theMax - theMin ) ) * halfVec;
+		vBoarderOffset.z = 0.0;
+        // Add the offsets to the projection.
+        theMax += vBoarderOffset;
+        theMin -= vBoarderOffset;
+
 		aabb.update(theMax);
 		aabb.update(theMin);
 
