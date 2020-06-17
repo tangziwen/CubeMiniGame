@@ -10,8 +10,8 @@ struct MatBlendInfo
 	char matIndex1;
 	char matIndex2;
 	char matIndex3;
-	unsigned char matBlendFactor1;
-	unsigned char matBlendFactor2;
+	//high four bit for matindex 1 factor, low four bit for matindex 2 factor, the factor 3 we use (1 -factor1 -factor2) to get it
+	unsigned char matBlendFactor;
 };
 class VertexData
 {

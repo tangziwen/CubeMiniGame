@@ -133,8 +133,8 @@ namespace tzw {
 		a.m_matIndex[0] = v.matInfo.matIndex1;
 		a.m_matIndex[1] = v.matInfo.matIndex2;
 		a.m_matIndex[2] = v.matInfo.matIndex3;
-		float factor1 = v.matInfo.matBlendFactor1 / 255.f;
-		float factor2 = v.matInfo.matBlendFactor2 / 255.f;
+		float factor1 = HIGH_FOUR_BIT( v.matInfo.matBlendFactor) / 15.f;
+		float factor2 = LOW_FOUR_BIT( v.matInfo.matBlendFactor) / 15.f;
 		float factor3 = 1 - factor1 - factor2;
 		a.m_matBlendFactor = vec3(factor1, factor2, factor3);
 		a.m_texCoord = v.vertex.xz();

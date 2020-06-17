@@ -284,11 +284,12 @@ namespace tzw
 			{
 				initData();
 				genMesh(lodLevel);
+				calculateMatID();
 			}));
 		}
 		else
 		{
-			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(lodLevel); }));
+			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(lodLevel); calculateMatID(); }));
 		}
 	}
 
@@ -864,7 +865,6 @@ BAAAABB
 		}
 		if (m_mesh[0]->isEmpty())
 			return;
-		calculateMatID();
 		loading_mutex.lock();
 		m_isNeedSubmitMesh = true;
 		loading_mutex.unlock();

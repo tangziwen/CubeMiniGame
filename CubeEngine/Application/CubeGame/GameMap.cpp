@@ -66,8 +66,8 @@ void voxelInfo::setMat(char mat1, char mat2, char mat3, vec3 blendFactor)
 	matInfo.matIndex1 = mat1;
 	matInfo.matIndex2 = mat2;
 	matInfo.matIndex3 = mat3;
-	matInfo.matBlendFactor1 = std::clamp(int(blendFactor.x * 255.f), 0 , 255);
-	matInfo.matBlendFactor2 = std::clamp(int(blendFactor.y * 255.f), 0 , 255);
+	SET_HIGH_FOUR_BIT(matInfo.matBlendFactor, std::clamp(static_cast<int>(blendFactor.x * 15.f), 0 , 15));
+	SET_LOW_FOUR_BIT( matInfo.matBlendFactor, std::clamp(static_cast<int>(blendFactor.y * 15.f), 0 , 15));
 }
 
 ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),
