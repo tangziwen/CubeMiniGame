@@ -406,7 +406,7 @@ namespace tzw
 				{
 					auto lift = BuildingSystem::shared()->getLift();
 					//如果当前指向的方块有属性面板，也不显示
-					if(m_currPointPart && m_currPointPart->getItem() && m_currPointPart->getItem()->hasAttributePanel())
+					if(m_currPointPart && m_currPointPart !=lift && m_currPointPart->getItem() && m_currPointPart->getItem()->hasAttributePanel())
 					{
 						isNeedSpecialShowBySelected = false;
 					}

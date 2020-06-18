@@ -395,10 +395,11 @@ namespace tzw
 		return atta;
 	}
 
-	GamePart::GamePart()
+	GamePart::GamePart(): m_parent(nullptr), m_shape(nullptr), m_node(nullptr), m_vehicle(nullptr)
 	{
 		m_graphNode = nullptr;
 		m_name = "empty";
+		m_item = nullptr;
 		m_partSurface = PartSurfaceMgr::shared()->getItem("Metal Grid3");
 	}
 
