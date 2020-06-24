@@ -4,6 +4,7 @@
 #include <vector>
 #include "Data.h"
 #include <map>
+#include "rapidjson/document.h"
 struct zip_t;
 namespace tzw
 {
@@ -24,6 +25,7 @@ public:
 	std::string getExtension(std::string path);
 	std::string getFileNameWithOutExtension(std::string path);
 	bool isExist(std::string path);
+	rapidjson::Document getJsonObject(std::string filePath);
 	~Tfile();
 private:
     Tfile();

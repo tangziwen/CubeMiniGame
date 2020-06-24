@@ -290,6 +290,22 @@ bool Tfile::isExist(std::string path)
 	return isZipFind;
 }
 
+rapidjson::Document Tfile::getJsonObject(std::string filePath)
+{
+	rapidjson::Document doc;
+	auto data = Tfile::shared()->getData(filePath, true);
+	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+	if (doc.HasParseError())
+	{
+		tlog("[error] get json data err! %s %d offset %d",
+			filePath.c_str(),
+			doc.GetParseError(),
+			doc.GetErrorOffset());
+		exit(1);
+	}
+	return doc;
+}
+
 Tfile::Tfile()
 {
 
