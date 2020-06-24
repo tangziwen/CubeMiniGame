@@ -891,6 +891,7 @@ void GameUISystem::drawEntryInterFace()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Load"), ImVec2(160, 35)))
 		{
+			m_loadWorldUI->prepare();
 			setWindowShow(WindowType::LOAD_WORLD, true);
 		}
 		ImGui::Spacing();

@@ -12,8 +12,10 @@ namespace tzw
 		void drawIMGUI(bool * isOpen) override;
 		LoadWorldUI();
 		std::function<void (std::string)> m_onCreate;
+		void prepare();
     private:
 		char m_worldName[64];
+		std::vector<std::filesystem::path> m_entryList;
 	};
 
 
