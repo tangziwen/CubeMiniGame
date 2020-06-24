@@ -545,6 +545,12 @@ void Node::setRotateQ(const Quaternion &rotateQ)
     m_needToUpdate = true;
 }
 
+void Node::setRotateQ(const vec4& rotateQInV4)
+{
+	auto q = Quaternion(rotateQInV4.x, rotateQInV4.y, rotateQInV4.z, rotateQInV4.w);
+	setRotateQ(q);
+}
+
 
 } // namespace tzw
 

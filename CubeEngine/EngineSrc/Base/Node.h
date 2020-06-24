@@ -82,8 +82,9 @@ public:
 	void sortChildren();
 	Scene *getScene() const;
 	void setScene(Scene *scene);
-	Quaternion getRotateQ() const;
+	virtual Quaternion getRotateQ() const;
 	virtual void setRotateQ(const Quaternion &rotateQ);
+	virtual void setRotateQ(const vec4 &rotateQInV4);
 	unsigned int getGlobalPiority() const;
 	void setGlobalPiority(unsigned int globalPiority);
 	size_t getChildrenAmount();

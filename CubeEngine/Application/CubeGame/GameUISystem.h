@@ -12,6 +12,8 @@
 #include "OptionPanel.h"
 namespace tzw {
 class VehicleBroswer;
+class NewWorldSettingUI;
+class LoadWorldUI;
 enum class WindowType
 {
 	INVENTORY,
@@ -28,6 +30,8 @@ enum class WindowType
 	PLAYER_INFO,
 	ABOUT,
 	Console,
+	NEW_WORLD_SETTING,
+	LOAD_WORLD,
 };
 class GameUISystem : public Singleton<GameUISystem>, public IMGUIObject, public EventListener
 {
@@ -61,7 +65,6 @@ public:
 	void openMainMenu();
 private:
 	bool m_isVisible = true;
-    void startGame();
 	void drawToolsMenu();
 	void ShowExampleAppLog(bool* p_open);
 	void ShowExampleAppConsole(bool* p_open);
@@ -75,6 +78,8 @@ private:
 	bool m_isOpenPlayerOverLay;
 	DebugInfoPanel m_debugInfoPanel;
 	VehicleBroswer * m_fileBrowser;
+	NewWorldSettingUI * m_NewWorldSettingUI;
+	LoadWorldUI * m_loadWorldUI;
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;
 	GamePart * m_curInspectPart;

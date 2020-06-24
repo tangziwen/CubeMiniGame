@@ -2,6 +2,7 @@
 #define TZW_QUATERNION_H
 
 #include "vec3.h"
+#include "vec4.h"
 
 
 namespace tzw {
@@ -24,6 +25,7 @@ public:
     float& operator [](int index);
     Quaternion operator * (const Quaternion & other);
     float x,y,z,w;
+	vec4 toVec4();
 };
 
 } // namespace tzw

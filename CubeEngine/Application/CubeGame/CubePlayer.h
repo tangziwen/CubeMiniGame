@@ -17,7 +17,7 @@ namespace tzw
 	class PartSurface;
 	class Audio;
 	class AudioEvent;
-	class CubePlayer : public Node, public EventListener, public IMGUIObject
+	class CubePlayer : public EventListener, public IMGUIObject
 	{
 	public:
 		enum class Mode
@@ -37,7 +37,7 @@ namespace tzw
 		void setCamera(FPSCamera* camera);
 		vec3 getPos();
 		void setPos(vec3 newPos);
-		void logicUpdate(float dt) override;
+		void onFrameUpdate(float dt) override;
 		bool checkIsNeedUpdateChunk();
 		bool onKeyPress(int keyCode) override;
 		bool onKeyRelease(int keyCode) override;
@@ -69,6 +69,10 @@ namespace tzw
 
 		bool onScroll(vec2 offset) override;
 		GameItem * getCurSelectedItem();
+		Quaternion getRotateQ() const;
+
+		void setRotateQ(const Quaternion &rotateQ);
+		void setRotateQ(const vec4 &rotateQInV4);
 	private:
 		void onHitGround();
 		void handleSitDown();

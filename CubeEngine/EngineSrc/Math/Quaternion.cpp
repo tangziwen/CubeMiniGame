@@ -271,4 +271,9 @@ Quaternion Quaternion::operator *(const Quaternion &other)
     return result;
 }
 
+vec4 Quaternion::toVec4()
+{
+    return vec4(x, y, z, w);
+}
+
 } // namespace tzw

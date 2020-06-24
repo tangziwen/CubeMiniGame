@@ -372,11 +372,6 @@ void FPSCamera::setEnableFPSFeature(bool enableFPSFeature)
     m_enableFPSFeature = enableFPSFeature;
 }
 
-void FPSCamera::setRotateQ(const Quaternion &rotateQ)
-{
-    Camera::setRotateQ(rotateQ);
-}
-
 void FPSCamera::lookAt(vec3 pos)
 {
     Camera::lookAt(pos,vec3(0.f, 1.f,0.f));

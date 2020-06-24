@@ -42,6 +42,8 @@
 #include "Engine/WorkerThreadSystem.h"
 #include "ItemMgr.h"
 #include "UI/KeyMapper.h"
+#include "UI/LoadWorldUI.h"
+#include "UI/NewWorldSettingUI.h"
 
 
 namespace tzw {
@@ -80,6 +82,34 @@ void GameUISystem::init()
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
 	m_fileBrowser = new VehicleBroswer();
+	m_NewWorldSettingUI = new NewWorldSettingUI();
+	
+	m_NewWorldSettingUI->m_onCreate = [](WorldInfo info)
+	{
+		auto fuck = [info]
+		{
+			GameWorld::shared()->startGame(info);
+			WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
+		};
+		TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
+		//runa
+		LoadingUI::shared()->show();
+		
+		Engine::shared()->setUnlimitedCursor(true);
+	};
+	m_loadWorldUI = new LoadWorldUI();
+	m_loadWorldUI->m_onCreate = [](std::string worldName)
+	{
+		auto fuck = [worldName]
+		{
+			GameWorld::shared()->loadGame(worldName);
+			WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
+		};
+		TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
+		//runa
+		LoadingUI::shared()->show();
+		Engine::shared()->setUnlimitedCursor(true);
+	};
 	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
 	{
 		BuildingSystem::shared()->dumpVehicle(fileName);
@@ -366,6 +396,21 @@ void GameUISystem::drawIMGUI()
 			setWindowShow(WindowType::ATTRIBUTE_WINDOW, isOpen);
 		}
 
+		if(getWindowIsShow(WindowType::NEW_WORLD_SETTING))
+		{
+
+			bool isOpen = true;
+	        m_NewWorldSettingUI->drawIMGUI(&isOpen);
+			setWindowShow(WindowType::NEW_WORLD_SETTING, isOpen);
+		}
+
+
+		if(getWindowIsShow(WindowType::LOAD_WORLD))
+		{
+			bool isOpen = true;
+	        m_loadWorldUI->drawIMGUI(&isOpen);
+			setWindowShow(WindowType::LOAD_WORLD, isOpen);
+		}
 		//painter
 		//ÅçÆá²¿·Ö
 		if(getWindowIsShow(WindowType::PAINTER))
@@ -680,12 +725,6 @@ void GameUISystem::setIsFileBroswerOpen(bool isOpen)
 	setWindowShow(WindowType::VEHICLE_FILE_BROWSER, isOpen);
 }
 
-void GameUISystem::startGame()
-{
-	hide();
-    GameWorld::shared()->startGame();
-}
-
 void GameUISystem::drawToolsMenu()
 {
 	if (m_isOpenTerrain)
@@ -847,29 +886,12 @@ void GameUISystem::drawEntryInterFace()
 
 		if(ImGui::Button(TRC("New Game"), ImVec2(160, 35)))
 		{
-			auto fuck = []
-			{
-				GameWorld::shared()->startGame();
-				WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
-			};
-			TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
-			//runa
-			LoadingUI::shared()->show();
-			
-			Engine::shared()->setUnlimitedCursor(true);
+			setWindowShow(WindowType::NEW_WORLD_SETTING, true);
 		}
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Load"), ImVec2(160, 35)))
 		{
-			auto fuck = []
-			{
-				GameWorld::shared()->loadGame("Data/PlayerData/Save/World.json");
-				WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
-			};
-			TimerMgr::shared()->addTimer(new Timer(fuck, 0.1f));
-			//runa
-			LoadingUI::shared()->show();
-			Engine::shared()->setUnlimitedCursor(true);
+			setWindowShow(WindowType::LOAD_WORLD, true);
 		}
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Option"), ImVec2(160, 35)))

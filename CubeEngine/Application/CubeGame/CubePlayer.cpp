@@ -122,7 +122,7 @@ namespace tzw
 		m_camera->setCamPos(newPos);
 	}
 
-	void CubePlayer::logicUpdate(float dt)
+	void CubePlayer::onFrameUpdate(float dt)
 	{
 		AudioSystem::shared()->setListenerParam(getPos(),m_camera->getForward(), vec3(0,1, 0));
 		static float theTime = 0.0f;
@@ -222,7 +222,6 @@ namespace tzw
 	        break;
         case TZW_KEY_H:
 			{
-				auto m = getTransform().data();
 				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
         		break;
             }
@@ -607,6 +606,21 @@ namespace tzw
 	GameItem* CubePlayer::getCurSelectedItem()
 	{
 		return m_currSelectedItem;
+	}
+
+	Quaternion CubePlayer::getRotateQ() const
+	{
+		return m_camera->getRotateQ();
+	}
+
+	void CubePlayer::setRotateQ(const Quaternion& rotateQ)
+	{
+		m_camera->setRotateQ(rotateQ);
+	}
+
+	void CubePlayer::setRotateQ(const vec4& rotateQInV4)
+	{
+		m_camera->setRotateQ(rotateQInV4);
 	}
 
 	void CubePlayer::onHitGround()

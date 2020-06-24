@@ -658,6 +658,22 @@ void GameMap::saveTerrain(std::string filePath)
 
 void GameMap::loadTerrain(std::string filePath)
 {
+	auto terrainFile = fopen(filePath.c_str(), "rb");
+	size_t index;
+	size_t loadCount = 0;
+	fseek(terrainFile, 0, SEEK_END);
+	size_t buffSize = ftell(terrainFile);
+	fseek(terrainFile, 0, SEEK_SET);
+
+	while(ftell(terrainFile) < buffSize)
+	{
+		voxelInfo * buff = new voxelInfo[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
+		fread(&index,sizeof(size_t),1,terrainFile);
+		fread(buff, sizeof(voxelInfo) * GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE,1 , terrainFile);
+		m_totalBuffer[index].m_buff = buff;
+		loadCount++;
+	}
+	tlog("loadCount %ld", loadCount);
 }
 
 GameMapBuffer::GameMapBuffer()

@@ -26,8 +26,44 @@
 #include "Engine/WorkerThreadSystem.h"
 #include "LoadingUI.h"
 #include "Shader/ShaderMgr.h"
+#include <filesystem>
+
+#include "Utility/file/JsonUtility.h"
 
 namespace tzw {
+
+void WorldInfo::save(std::string filepath)
+{
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& aloc = doc.GetAllocator();
+	doc.AddMember("WorldName", std::string(m_gameName), aloc);
+	doc.AddMember("GameMode", m_gameMode, aloc);
+	doc.AddMember("TerrainProceduralType", m_terrainProceduralType, aloc);
+	doc.AddMember("ProceduralSeed", m_proceduralSeed, aloc);
+	rapidjson::StringBuffer buffer;
+	auto file = fopen(filepath.c_str(), "w");
+	size_t buffSize = 65536;
+	char * writeBuffer = static_cast<char*>(malloc(buffSize));
+	rapidjson::FileWriteStream stream(file, writeBuffer, buffSize);
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+	writer.SetIndent('\t', 1);
+	doc.Accept(writer);
+	fclose(file);
+	free(writeBuffer);
+}
+
+void WorldInfo::load(std::string filepath)
+{
+	rapidjson::Document doc = Tfile::shared()->getJsonObject(filepath);
+	std::string worldName = doc["WorldName"].GetString();
+	strcpy(m_gameName, worldName.c_str());
+	m_gameMode = doc["GameMode"].GetInt();
+	m_terrainProceduralType = doc["TerrainProceduralType"].GetInt();
+	m_proceduralSeed = doc["ProceduralSeed"].GetInt();
+	tlog("world %s load finished, GameMode %d TerrainProceduralType %d ProceduralSeed %d", m_gameName, m_gameMode, m_terrainProceduralType, m_proceduralSeed);
+}
+
 GameWorld *GameWorld::m_instance = nullptr;
 GameWorld *GameWorld::shared()
 {
@@ -56,21 +92,7 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 	 
 	//m_mapOffset = vec3(offsetX, 0 ,offsetZ);
 	 
-    for(int i = 0;i< m_width;i++)
-    {
-        for(int j=0;j<m_height;j++)
-        {
-            for(int k = 0; k < m_depth; k++)
-            {
-                auto chunk = new Chunk(i,j,k);
-                // m_mainRoot->addChild(chunk, false);
-				 
-                m_chunkList.push_back(chunk);
-				 
-                m_chunkArray[i][j][k] = chunk;	 
-            }
-        }
-    }
+	initChunk();
     
 	 
 }
@@ -84,41 +106,9 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 	 
     m_height = height;
 	GameMap::shared()->init(ratio, m_width, m_depth, m_height);
-	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
-	 
-	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
-	 
-	//m_mapOffset = vec3(offsetX, 0 ,offsetZ);
-	 
-    for(int i = 0;i< m_width;i++)
-    {
-        for(int j=0;j<m_height;j++)
-        {
-            for(int k = 0; k < m_depth; k++)
-            {
-                auto chunk = new Chunk(i,j,k);
-                m_mainRoot->addChild(chunk);
-				 
-                m_chunkList.push_back(chunk);
-				 
-                m_chunkArray[i][j][k] = chunk;
-				 
-            }
-        }
-    }
-	auto terrainFile = fopen(filePath.c_str(), "rb");
-	int count;
-	fread(&count,sizeof(int),1, terrainFile);
-	tlog("the Chunk Size is%d", count);
-	for(int i = 0; i < count; i++)
-	{
-		int x, y, z;
-		fread(&x, sizeof(int), 1, terrainFile);
-		fread(&y, sizeof(int), 1, terrainFile);
-		fread(&z, sizeof(int), 1, terrainFile);
-		GameMap::shared()->getChunkInfo(x,y,z)->loadChunk(terrainFile);
-	}
-	fclose(terrainFile);
+	auto worldLocation = getWorldLocation();
+	GameMap::shared()->loadTerrain((worldLocation / "Terrain.bin").string());
+	initChunk();
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -168,15 +158,16 @@ Chunk *GameWorld::createChunk(int x, int y, int z)
     return chunkA;
 }
 
-void GameWorld::startGame()
+void GameWorld::startGame(WorldInfo worldInfo)
 {
+	m_currWorldInfo = worldInfo;
 	prepare();
 	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Map",
 		WorkerJob([&]()
 	{
 		auto player = new CubePlayer(m_mainRoot);
 		GameWorld::shared()->setPlayer(player);
-		m_mainRoot->addChild(player);
+		//m_mainRoot->addChild(player);
 			//init UI
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
@@ -200,41 +191,33 @@ void GameWorld::startGame()
 	
 }
 
-void GameWorld::loadGame(std::string filePath)
+void GameWorld::loadGame(std::string worldName)
 {
+	std::filesystem::path saveDir = "Data/PlayerData/Save/";
+	;
+	//load world Meta info
+	m_currWorldInfo.load((saveDir/ worldName / "meta.json").string());
 	prepare();
 	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Init Map",
 		WorkerJob([&]()
 	{
 		auto player = new CubePlayer(m_mainRoot);
 		GameWorld::shared()->setPlayer(player);
-		m_mainRoot->addChild(player);
+		//m_mainRoot->addChild(player);
 		//init UI
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
 		 
 		GameMap::shared()->setMinHeight(3);
 		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "Data/PlayerData/Save/Terrain.bin");
-		float height = GameMap::shared()->getHeight(vec2(0, 0));
-		m_player->setPos(vec3(0, height + 3, 0));
+		loadPlayerInfo();
 		loadChunksAroundPlayer();
 	}));
 
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([=]()
 	{
-		
-		rapidjson::Document doc;
-		auto data = Tfile::shared()->getData(filePath, true);
-		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
-		if (doc.HasParseError())
-		{
-			tlog("[error] get json data err! %s %d offset %d",
-				filePath.c_str(),
-				doc.GetParseError(),
-				doc.GetErrorOffset());
-			exit(1);
-		}
-
+		std::filesystem::path staticObjPath =  this->getWorldLocation() / "StaticObj.json";
+		auto doc = Tfile::shared()->getJsonObject(staticObjPath.string());
 		//load Static IslandList
 		BuildingSystem::shared()->loadStatic(doc);
 	}));
@@ -248,39 +231,44 @@ void GameWorld::loadGame(std::string filePath)
 
 void GameWorld::saveGame(std::string filePath)
 {
-	rapidjson::Document doc;
-	doc.SetObject();
-	BuildingSystem::shared()->dumpStatic(doc, doc.GetAllocator());
+	std::filesystem::path worldLocation = getWorldLocation();
 
-	rapidjson::StringBuffer buffer;
-	auto file = fopen(filePath.c_str(), "w");
-	char writeBuffer[65536];
-	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
-	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
-	writer.SetIndent('\t', 1);
-	doc.Accept(writer);
-	fclose(file);
+	tlog("world location is %s", worldLocation.string().c_str());
+	if(! std::filesystem::exists(worldLocation))
+	{
+		std::filesystem::create_directory(worldLocation);//create directory
+	}
 
-
-	std::vector<ChunkInfo * > tmpChunkList;
-	tmpChunkList.reserve(2048);
+	//save world meta info
+	{
+		std::filesystem::path metaPath = worldLocation / "meta.json";
+		m_currWorldInfo.save(metaPath.string());
+	}
 	
-    for(int i = 0;i< m_width;i++)
-    {
-        for(int j=0;j<m_height;j++)
-        {
-            for(int k = 0; k < m_depth; k++)
-            {	 
-                auto chunkInfo = GameMap::shared()->getChunkInfo(i, j, k);
-            	if(chunkInfo->isLoaded && chunkInfo->mcPoints && chunkInfo->isEdit)
-            	{
-            		tmpChunkList.push_back(chunkInfo);
-            	}
-            }
-        }
-    }
+	//save static directory
+	{
+		std::filesystem::path staticObjPath = worldLocation / "StaticObj.json";
+		rapidjson::Document doc;
+		doc.SetObject();
+		BuildingSystem::shared()->dumpStatic(doc, doc.GetAllocator());
+		rapidjson::StringBuffer buffer;
+		auto file = fopen(staticObjPath.string().c_str(), "w");
+		size_t buffSize = 65536;
+		char * writeBuffer = static_cast<char*>(malloc(buffSize));
+		rapidjson::FileWriteStream stream(file, writeBuffer, buffSize);
+		rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+		writer.SetIndent('\t', 1);
+		doc.Accept(writer);
+		fclose(file);
+		free(writeBuffer);
+	}
 
-	GameMap::shared()->saveTerrain("./Data/PlayerData/Save/Terrain.bin");
+
+	//save playerInfo
+	savePlayerInfo();
+
+	//save terrain
+	GameMap::shared()->saveTerrain((worldLocation / "Terrain.bin").string());
 }
 
 bool GameWorld::onKeyPress(int keyCode)
@@ -422,6 +410,43 @@ GameWorld::~GameWorld()
 	tlog("hello world");
 }
 
+void GameWorld::savePlayerInfo()
+{
+	std::filesystem::path worldLocation = getWorldLocation();
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& j_aloc = doc.GetAllocator();
+	JsonUtility::shared()->addV3(doc, doc, "PlayerPos", getPlayer()->getPos());
+	JsonUtility::shared()->addV4(doc, doc, "PlayerRot", getPlayer()->getRotateQ().toVec4());
+	rapidjson::StringBuffer buffer;
+	auto file = fopen((worldLocation/ "player.json").string().c_str(), "w");
+	size_t buffSize = 65536;
+	char * writeBuffer = static_cast<char*>(malloc(buffSize));
+	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(buffSize));
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+	writer.SetIndent('\t', 1);
+	doc.Accept(writer);
+	fclose(file);
+	free(writeBuffer);
+}
+
+void GameWorld::loadPlayerInfo()
+{
+	std::filesystem::path worldLocation = getWorldLocation();
+	auto filePath = worldLocation / "player.json";
+	auto doc = Tfile::shared()->getJsonObject(filePath.string());
+	m_player->setPos(JsonUtility::shared()->getV3(doc["PlayerPos"]));
+	m_player->setRotateQ(JsonUtility::shared()->getV4(doc["PlayerRot"]));
+}
+
+std::filesystem::path GameWorld::getWorldLocation()
+{
+	std::filesystem::path prefix ="./Data/PlayerData/Save/";
+	std::filesystem::path worldLocation = prefix;
+	worldLocation.append(m_currWorldInfo.m_gameName);
+	return worldLocation;
+}
+
 void GameWorld::prepare()
 {
 
@@ -453,6 +478,23 @@ void GameWorld::prepare()
 		//init UI
 		GameUISystem::shared()->initInGame();
 	}));
+}
+
+void GameWorld::initChunk()
+{
+    for(int i = 0;i< m_width;i++)
+    {
+        for(int j=0;j<m_height;j++)
+        {
+            for(int k = 0; k < m_depth; k++)
+            {
+                auto chunk = new Chunk(i,j,k);
+                m_chunkList.push_back(chunk);
+				 
+                m_chunkArray[i][j][k] = chunk;	 
+            }
+        }
+    }
 }
 
 GameUISystem *GameWorld::getMainMenu() const
@@ -487,6 +529,8 @@ void GameWorld::setMainRoot(Node *mainRoot)
 {
     m_mainRoot = mainRoot;
 }
+
+
 
 } // namespace tzw
 
