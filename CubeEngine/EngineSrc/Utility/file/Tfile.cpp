@@ -271,6 +271,21 @@ bool Tfile::isExist(std::string path)
 			 return true;
 	}
 	bool isZipFind = false;
+	char tmp[256];
+	auto theList = {"png", "jpg", "tga"};
+	findPreFix(path.c_str(), tmp);
+	std::string preFix = tmp;
+	auto found = preFix.find("UITexture");
+	bool hasChangeForDDS = false;
+	if(found == std::string::npos)
+	{	
+		//有cook版本的文件
+		if(std::find(theList.begin(), theList.end(), getExtension(path))!= theList.end())
+		{
+			path = getFileNameWithOutExtension(path) +".dds";
+			hasChangeForDDS = true;
+		}
+	}
 	//search the zip
 	for(auto zipData : m_searchZip)
     {

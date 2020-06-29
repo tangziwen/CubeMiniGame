@@ -37,8 +37,8 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 
 
 	if(m_isOpenPhysics) {
-		m_capsuleHigh = 1.6f;
-		btCapsuleShape *shape = new btCapsuleShape(0.10f, m_capsuleHigh);
+		m_capsuleHigh = 1.2f;
+		btCapsuleShape *shape = new btCapsuleShape(0.25f, m_capsuleHigh);
 
 		this->m_ghost2 = new btPairCachingGhostObject();
 		//auto shape = PhysicsMgr::shared()->createBoxShape(btVector3(btScalar(50.), btScalar(50.), btScalar(50.)));
@@ -53,9 +53,9 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 	    m_character->setGravity(btVector3(0, -9.8f, 0));
 	    m_character->setLinearDamping(0.2f);
 	    m_character->setAngularDamping(0.2f);
-	    m_character->setStepHeight(0.5f);
+	    m_character->setStepHeight(0.4f);
 	    m_character->setMaxJumpHeight(3.5);
-	    m_character->setMaxSlope(45.0f * 3.14 / 180.0f);
+	    m_character->setMaxSlope(46.f * 3.141592653 / 180.0f);
 	    m_character->setJumpSpeed(7.0f);
 	    m_character->setFallSpeed(55.0f);
 		m_character->onHitLand = std::bind(&FPSCamera::onHitGroundImp, this);
@@ -285,7 +285,7 @@ void FPSCamera::recievePhysicsInfo(vec3 pos, Quaternion rot)
 		auto originPos = m_ghost2->getWorldTransform().getOrigin();
 		auto up = vec3(0, 1, 0);//m_ghost2->getWorldTransform().getBasis().getRow(1);
 		auto centerPoint = vec3(originPos.getX(), originPos.getY(), originPos.getZ());
-		setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround));
+		setPos(centerPoint + vec3(up.getX(), up.getY(), up.getZ()) * (distToGround - m_capsuleHigh / 2.0 - 0.3f));
 	}
 
 }
@@ -324,7 +324,9 @@ void FPSCamera::setCamPos(const vec3& pos)
 	Node::setPos(pos);
 	if(m_isOpenPhysics)
 	{
-		auto m = m_ghost2->getWorldTransform();
+		btTransform mat;
+		mat.setIdentity();
+		auto m =mat; //m_ghost2->getWorldTransform();
 		m.setOrigin(btVector3(pos.x, pos.y, pos.z));
 		m_ghost2->setWorldTransform(m);
 	}

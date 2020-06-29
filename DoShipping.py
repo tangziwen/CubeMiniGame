@@ -71,11 +71,13 @@ for path,directories,filelist in g:
         theFilePath = os.path.join(path, filename)
         if os.path.splitext(theFilePath)[1] in (".png",".PNG", ".tga", ".TGA", ".jpg", ".JPG", ".bmp", ".BMP"):
             print("cook texture",theFilePath)
-            with Image(filename= theFilePath) as img:
-                img.flip()
-                img.save(filename=os.path.splitext(theFilePath)[0]+'.dds')
-                #remove Old one
-                os.remove(theFilePath)
+            os.system("texconv.exe -f DXT5 -vflip -keepcoverage 0.5 -nologo -o "+os.path.dirname(theFilePath) + " \""+ theFilePath + "\"")
+            os.remove(theFilePath)
+            # with Image(filename= theFilePath) as img:
+            #     img.flip()
+            #     img.save(filename=os.path.splitext(theFilePath)[0]+'.dds')
+            #     #remove Old one
+            #     os.remove(theFilePath)
 
 print("packing..")
 theZipFile = zipfile.ZipFile("./asset.pkg", 'w', compression=zipfile.ZIP_DEFLATED)

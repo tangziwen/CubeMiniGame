@@ -185,9 +185,9 @@ void GameMap::init(float ratio, int width, int depth, int height)
 
 
 	{
-	    VegetationBatInfo lod0(VegetationType::QUAD_TRI, "Texture/grass.tga");
-		VegetationBatInfo lod1(VegetationType::QUAD_TRI, "Texture/grass.tga");
-		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "Texture/grass.tga");
+	    VegetationBatInfo lod0(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
+		VegetationBatInfo lod1(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
+		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
 		m_grassID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
 	}
 

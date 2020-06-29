@@ -132,8 +132,8 @@ btVector3 btKinematicCharacterController::perpindicularComponent(const btVector3
 btKinematicCharacterController::btKinematicCharacterController(btPairCachingGhostObject* ghostObject, btConvexShape* convexShape, btScalar stepHeight, const btVector3& up)
 {
 	m_ghostObject = ghostObject;
-	m_up.setValue(0.0f, 0.0f, 1.0f);
-	m_jumpAxis.setValue(0.0f, 0.0f, 1.0f);
+	m_up.setValue(0.0f, 1.0f, 0.0f);
+	m_jumpAxis.setValue(0.0f, 1.0f, 0.0f);
 	m_addedMargin = 0.02;
 	m_walkDirection.setValue(0.0, 0.0, 0.0);
 	m_AngVel.setValue(0.0, 0.0, 0.0);
@@ -307,7 +307,7 @@ void btKinematicCharacterController::stepUp(btCollisionWorld* world)
 		xform.setOrigin(m_currentPosition);
 		m_ghostObject->setWorldTransform(xform);
 
-		// fix penetration if we hit a ceiling for example
+		// fix penetration if we hit a ceiling for example....
 		int numPenetrationLoops = 0;
 		m_touchingContact = false;
 		while (recoverFromPenetration(world))

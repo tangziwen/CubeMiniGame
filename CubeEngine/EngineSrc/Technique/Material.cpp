@@ -297,10 +297,6 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 
 			if(tex.Size() > 2)
 			{
-				if(!strcmp(tex[2].GetString(), "tzwTree.png"))
-				{
-					tlog("shit");
-				}
 				auto filePathInfolder = Tfile::shared()->toAbsFilePath(tex[2].GetString(), envFolder);
 				Texture * t;
 				bool isNeedMipMap = true;

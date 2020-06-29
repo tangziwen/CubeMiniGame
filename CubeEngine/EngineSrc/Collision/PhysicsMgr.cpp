@@ -121,7 +121,7 @@ bool callbackFunc(btManifoldPoint& cp,const btCollisionObjectWrapper* obj1,int i
 		m_dynamicsWorld->getBroadphase()->getOverlappingPairCache()->setInternalGhostPairCallback(new btGhostPairCallback());
 
 		
-		m_dynamicsWorld->setGravity(btVector3(0, -10, 0));
+		m_dynamicsWorld->setGravity(btVector3(0, -9.8, 0));
 		m_dynamicsWorld->setForceUpdateAllAabbs(true);
 		//gContactAddedCallback = callbackFunc;
 	}
