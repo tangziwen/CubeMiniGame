@@ -382,7 +382,8 @@ def onKeyRelease(input_event):
 	elif input_event.keycode == KeyConfig.TZW_KEY_DOWN :
 		GameState.lift_state = GameState.lift_state + 1
 	elif input_event.keycode == KeyConfig.TZW_KEY_Q :
-		player:getPreviewItem().switchAttachment()
+		print("switch attachment")
+		player.getPreviewItem().switchAttachment()
 	elif input_event.keycode == KeyConfig.TZW_KEY_R :
 		if GameState.m_isControlKeyPress :
 			GameState.g_blockRotate = GameState.g_blockRotate + 45
