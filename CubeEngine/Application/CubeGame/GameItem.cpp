@@ -46,7 +46,7 @@ namespace tzw
 
 	GameItem::GameItem(): m_type(), m_visualInfo(), m_physicsInfo(),
 	m_thumbNail(nullptr), m_texture(nullptr),m_tintColor(vec3(1, 1, 1)),
-	m_surfaceName("Flat")
+	m_surfaceName("scuffed-plastic-1")
 	{
 	}
 

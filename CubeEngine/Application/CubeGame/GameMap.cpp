@@ -218,11 +218,11 @@ double
 GameMap::getNoiseValue(float x, float y, float z)
 {
 	//double value = finalTerrain.GetValue(x_offset + x, y_offset + y, z_offset + z);
-	auto finalFlatTerrain = baseFlatTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z)* 8 + 8 + baseBumpyFlatTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 0.6;
+	auto finalFlatTerrain = baseFlatTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z)* 8 + 8 + baseBumpyFlatTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 0.1;
 	auto mountainTerrain = baseMountainTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 16 + 16;
 	auto highHillTerrain = hightMountainTerrain.GetNoise(x_offset + x, y_offset + y, z_offset + z) * 28 + 28.0;
 	auto finalMountainTerrain = edgeFallOffSelect(0.5, 100, 0.2, mountainTerrain, highHillTerrain, hillSelector.GetNoise(x_offset + x, y_offset + y, z_offset + z));
-	double value = edgeFallOffSelect(0.05, 1.0, 0.27, finalFlatTerrain, finalMountainTerrain, terrainType.GetNoise(x_offset + x, y_offset + y, z_offset + z));//
+	double value = edgeFallOffSelect(0.25, 1.0, 0.27, finalFlatTerrain, finalMountainTerrain, terrainType.GetNoise(x_offset + x, y_offset + y, z_offset + z));//
 	return m_minHeight + value;	
 }
 
@@ -286,54 +286,7 @@ voxelInfo GameMap::getDensityI(int x, int y, int z)
     int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
     if(!m_totalBuffer[buffIndex].m_buff)
     {
-        m_totalBuffer[buffIndex].m_buff = new voxelInfo[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
-        //init data
-        for(int i = 0; i <GAME_MAX_BUFFER_SIZE;i++) //X
-        {
-            for(int k = 0; k <GAME_MAX_BUFFER_SIZE;k++) //Z
-            {
-                auto targetH = getHeight(vec2((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE));
-                for(int j = 0; j <GAME_MAX_BUFFER_SIZE;j++) //Y
-                {
-                    auto currH = (j+ buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE;
-                    float delta = std::clamp ((currH - targetH)  * 0.1f, -1.f, 1.f);
-                    unsigned char w =  (delta * 0.5f + 0.5f) * 255.f;
-                    int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
-                    m_totalBuffer[buffIndex].m_buff[cellIndex].w = w;
-                }
-            }
-        }
-    	//
-
-		//gen material
-		for (int i = 0; i < GAME_MAX_BUFFER_SIZE; i++)
-		{
-			for (int k = 0; k < GAME_MAX_BUFFER_SIZE; k++)
-			{
-				bool isSet = false;
-				for (int j = 0; j < GAME_MAX_BUFFER_SIZE;j++) // Y in the most inner loop, cache friendly
-				{
-					int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
-					if (true)
-					{
-						auto x1 = m_totalBuffer[buffIndex].get(i - 1, j, k).w;
-						auto x2 = m_totalBuffer[buffIndex].get(i + 1, j, k).w;
-						auto y1 = m_totalBuffer[buffIndex].get(i, j - 1, k).w;
-						auto y2 = m_totalBuffer[buffIndex].get(i, j + 1, k).w;
-						auto z1 = m_totalBuffer[buffIndex].get(i, j, k - 1).w;
-						auto z2 = m_totalBuffer[buffIndex].get(i, j, k + 1).w;
-						auto gradientVec = vec3(x1 - x2,
-												y1 - y2,
-												z1 - z2);
-						float slope = 1.0 - std::clamp(
-							vec3::DotProduct(gradientVec.normalized(), vec3(0, -1, 0)), 0.0f, 1.0f);
-						vec3 tmpV3((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (j + buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE);
-						auto matID = GameMap::shared()->getMat(tmpV3, slope);
-						m_totalBuffer[buffIndex].m_buff[cellIndex].setMat(matID, 0, 0, vec3(1,0, 0));
-					}
-				}
-			}
-		}
+        proceduralGenMapBuffer(buffIDX, buffIDY, buffIDZ);
     }
     int currX = (x%GAME_MAX_BUFFER_SIZE);
     int currY = (y%GAME_MAX_BUFFER_SIZE);
@@ -674,6 +627,59 @@ void GameMap::loadTerrain(std::string filePath)
 		loadCount++;
 	}
 	tlog("loadCount %ld", loadCount);
+}
+
+void GameMap::proceduralGenMapBuffer(size_t buffIDX, size_t buffIDY, size_t buffIDZ)
+{
+	int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
+	m_totalBuffer[buffIndex].m_buff = new voxelInfo[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
+    //init data
+    for(int i = 0; i <GAME_MAX_BUFFER_SIZE;i++) //X
+    {
+        for(int k = 0; k <GAME_MAX_BUFFER_SIZE;k++) //Z
+        {
+            auto targetH = getHeight(vec2((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE));
+            for(int j = 0; j <GAME_MAX_BUFFER_SIZE;j++) //Y
+            {
+                auto currH = (j+ buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE;
+                float delta = std::clamp ((currH - targetH)  * 0.1f, -1.f, 1.f);
+                unsigned char w =  (delta * 0.5f + 0.5f) * 255.f;
+                int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
+                m_totalBuffer[buffIndex].m_buff[cellIndex].w = w;
+            }
+        }
+    }
+    //
+
+	//gen material
+	for (int i = 0; i < GAME_MAX_BUFFER_SIZE; i++)
+	{
+		for (int k = 0; k < GAME_MAX_BUFFER_SIZE; k++)
+		{
+			bool isSet = false;
+			for (int j = 0; j < GAME_MAX_BUFFER_SIZE;j++) // Y in the most inner loop, cache friendly
+			{
+				int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
+				if (true)
+				{
+					auto x1 = m_totalBuffer[buffIndex].get(i - 1, j, k).w;
+					auto x2 = m_totalBuffer[buffIndex].get(i + 1, j, k).w;
+					auto y1 = m_totalBuffer[buffIndex].get(i, j - 1, k).w;
+					auto y2 = m_totalBuffer[buffIndex].get(i, j + 1, k).w;
+					auto z1 = m_totalBuffer[buffIndex].get(i, j, k - 1).w;
+					auto z2 = m_totalBuffer[buffIndex].get(i, j, k + 1).w;
+					auto gradientVec = vec3(x1 - x2,
+											y1 - y2,
+											z1 - z2);
+					float slope = 1.0 - std::clamp(
+						vec3::DotProduct(gradientVec.normalized(), vec3(0, -1, 0)), 0.0f, 1.0f);
+					vec3 tmpV3((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (j + buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE);
+					auto matID = GameMap::shared()->getMat(tmpV3, slope);
+					m_totalBuffer[buffIndex].m_buff[cellIndex].setMat(matID, 0, 0, vec3(1,0, 0));
+				}
+			}
+		}
+	}
 }
 
 GameMapBuffer::GameMapBuffer()

@@ -84,10 +84,11 @@ void GameUISystem::init()
 	m_fileBrowser = new VehicleBroswer();
 	m_NewWorldSettingUI = new NewWorldSettingUI();
 	
-	m_NewWorldSettingUI->m_onCreate = [](WorldInfo info)
+	m_NewWorldSettingUI->m_onCreate = [this](WorldInfo info)
 	{
-		auto fuck = [info]
+		auto fuck = [info, this ]
 		{
+			closeAllOpenedWindow();
 			GameWorld::shared()->startGame(info);
 			WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
 		};
@@ -98,10 +99,11 @@ void GameUISystem::init()
 		Engine::shared()->setUnlimitedCursor(true);
 	};
 	m_loadWorldUI = new LoadWorldUI();
-	m_loadWorldUI->m_onCreate = [](std::string worldName)
+	m_loadWorldUI->m_onCreate = [this](std::string worldName)
 	{
-		auto fuck = [worldName]
+		auto fuck = [worldName, this ]
 		{
+			closeAllOpenedWindow();
 			GameWorld::shared()->loadGame(worldName);
 			WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&](){LoadingUI::shared()->hide();}));
 		};

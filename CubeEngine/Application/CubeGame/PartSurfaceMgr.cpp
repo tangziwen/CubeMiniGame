@@ -24,6 +24,11 @@ PartSurfaceMgr::PartSurfaceMgr()
 
 void PartSurfaceMgr::loadFromFile(std::string filePath)
 {
+	
+	addItem("scuffed-plastic-1", new PartSurface("Texture/scuffed-plastic-1/scuffed-plastic2-alb.png", 
+		"Texture/scuffed-plastic-1/scuffed-plastic-rough.png",
+		"Texture/scuffed-plastic-1/scuffed-plastic-metal.png", 
+		"Texture/scuffed-plastic-1/scuffed-plastic-normal.png"));
 	//Metal
 	addItem("Metal Grid3", new PartSurface("Texture/metalgrid3-ue/metalgrid3_basecolor.png", 
 		"Texture/metalgrid3-ue/metalgrid3_roughness.png",

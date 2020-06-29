@@ -87,8 +87,8 @@ namespace tzw
 		float fov, aspect,near,far;
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
 		m_zlistView[0] = near;
-		m_zlistView[1] = 25.0f;
-		m_zlistView[2] = 75.0f;
+		m_zlistView[1] = 15.0f;
+		m_zlistView[2] = 50.0f;
 		m_zlistView[3] = far;
 
 		auto projection = camera->projection();

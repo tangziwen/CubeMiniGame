@@ -33,7 +33,7 @@ public:
     bool enableGUIRender() const;
     void setEnableGUIRender(bool enableGUIRender);
 	void notifySortGui();
-	void renderShadow(RenderCommand& command, int index);
+	void renderShadow(RenderCommand& command, int index, const Matrix44 & lightViewMatrix);
 	void init();
 	bool isSkyEnable() const;
 	void setSkyEnable(const bool skyEnable);
@@ -73,7 +73,7 @@ private:
 	void autoExposurePass();
 	void AAPass();
 	void applyRenderSetting(Material * effect);
-    void applyTransform(ShaderProgram * shader, const TransformationInfo & info);
+    void applyTransform(ShaderProgram * shader, const TransformationInfo & info, bool isHackingWV = false);
 	void toneMappingPass();
 	void bindScreenForWriting();
 	void copyToFrame(FrameBuffer * bufferSrc, FrameBuffer *bufferDst, Material * mat);

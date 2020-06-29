@@ -838,8 +838,6 @@ namespace tzw
 		auto& items = doc["StaticIslandList"];
 		if(items.Size() > 0)
 		{
-			std::string islandGroup = items[0]["IslandGroup"].GetString();
-			removeByGroup(islandGroup);
 			if(m_staticVehicle)
 			{
 				delete m_staticVehicle;

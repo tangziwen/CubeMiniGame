@@ -293,9 +293,9 @@ namespace tzw
 		//io.Fonts->AddFontFromFileTTF("./Res/font/DroidSans.ttf", 16.0f);
 		//io.Fonts->AddFontFromFileTTF("./Res/font/ProggyTiny.ttf", 10.0f);
 
-		m_fontSmall = io.Fonts->AddFontFromFileTTF("./Res/Fonts\\NotoSansCJK-Medium.ttc", 14.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-		m_fontNormal = io.Fonts->AddFontFromFileTTF("./Res/Fonts\\NotoSansCJK-Medium.ttc", 16.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
-		m_fontLarge = io.Fonts->AddFontFromFileTTF("./Res/Fonts\\NotoSansCJK-Medium.ttc", 22.0f, NULL, io.Fonts->GetGlyphRangesChineseSimplifiedCommon());
+		m_fontSmall = io.Fonts->AddFontFromFileTTF("./Res/Fonts\\NotoSansCJK-Medium.ttc", 14.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+		m_fontNormal = io.Fonts->AddFontFromFileTTF("./Res/Fonts\\NotoSansCJK-Medium.ttc", 16.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
+		m_fontLarge = io.Fonts->AddFontFromFileTTF("./Res/Fonts\\NotoSansCJK-Medium.ttc", 22.0f, NULL, io.Fonts->GetGlyphRangesChineseFull());
 		IM_ASSERT(m_fontSmall != NULL);
 		IM_ASSERT(m_fontNormal != NULL);
 		IM_ASSERT(m_fontLarge != NULL);

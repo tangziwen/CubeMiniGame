@@ -86,6 +86,7 @@ public:
 	ChunkInfo* fetchFromSource(int x, int y, int z, int lod);
 	void saveTerrain(std::string filePath);
 	void loadTerrain(std::string filePath);
+	void proceduralGenMapBuffer(size_t buffID_x, size_t buffID_y, size_t buffID_z);
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;

@@ -529,11 +529,11 @@ void Material::use(ShaderProgram * extraProgram)
 		program = extraProgram;
 	}
 	program->use();
-	for(auto i = m_varList.begin();i!= m_varList.end();++i)
+	for(auto &i : m_varList)
 	{
 		//need to convert to alias
-		std::string name = i->first;//getAlias(i->first);
-		TechniqueVar* var = i->second;
+		std::string name = i.first;//getAlias(i->first);
+		TechniqueVar* var = i.second;
 
 		//extra semantic pass
 		switch(var->type)

@@ -67,7 +67,7 @@ private:
     std::string m_vsPath;
     std::string m_fsPath;
 	bool m_isEnableInstanced;
-    std::map<std::string,TechniqueVar *> m_varList;
+    std::unordered_map<std::string,TechniqueVar *> m_varList;
 	RenderFlag::BlendingFactor m_factorSrc;
 	RenderFlag::BlendingFactor m_factorDst;
 	bool m_isCullFace;
@@ -76,7 +76,7 @@ private:
 	bool m_isEnableBlend;
 	// bool m_isEnableAlphaTest;
 	std::string m_name;
-	std::map<std::string, unsigned int> m_texSlotMap;
+	std::unordered_map<std::string, unsigned int> m_texSlotMap;
 	ShaderProgram * m_program;
 	RenderFlag::RenderStage m_renderStage;
 public:

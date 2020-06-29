@@ -195,10 +195,11 @@ void Renderer::renderAllCommon()
 
 void Renderer::renderAllShadow(int index)
 {
+	Matrix44 lightViewMatrix = ShadowMap::shared()->getLightViewMatrix();
 	for (auto i = m_shadowCommandList.begin(); i != m_shadowCommandList.end(); ++i)
 	{
 		RenderCommand &command = (*i);
-		renderShadow(command, index);
+		renderShadow(command, index, lightViewMatrix);
 	}
 }
 
@@ -247,9 +248,8 @@ void Renderer::renderCommon(RenderCommand &command)
 	render(command);
 }
 
-void Renderer::renderShadow(RenderCommand &command,int index)
+void Renderer::renderShadow(RenderCommand &command,int index, const Matrix44 & lightViewMatrix)
 {
-
 	if (command.batchType() == RenderCommand::RenderBatchType::Instanced)
 	{
 		auto program = ShadowMap::shared()->getInstancedProgram();
@@ -261,13 +261,12 @@ void Renderer::renderShadow(RenderCommand &command,int index)
 		auto cpyTransInfo = command.m_transInfo;
 		  
 		// one more little hack for light view & project matrix
-		cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+		cpyTransInfo.m_viewMatrix = lightViewMatrix;
 		cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(index);
 		  
 		applyTransform(program, cpyTransInfo);
-
-		auto viewMatrix = ShadowMap::shared()->getLightViewMatrix();
-		auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * viewMatrix * cpyTransInfo.m_worldMatrix;
+		
+		auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * (lightViewMatrix * cpyTransInfo.m_worldMatrix);
 		program->setUniformMat4v("TU_lightWVP", lightWVP.data());
 		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
 		RenderBackEnd::shared()->setDepthTestEnable(true);
@@ -278,19 +277,19 @@ void Renderer::renderShadow(RenderCommand &command,int index)
 
 		//replace by the shadow shader, a little bit hack
 		command.m_material->use(ShadowMap::shared()->getProgram());
-		  
+		// ShadowMap::shared()->getProgram()->use();
 		applyRenderSetting(command.m_material);
 		  
 		auto cpyTransInfo = command.m_transInfo;
 		  
 		// one more little hack for light view & project matrix
-		cpyTransInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+		cpyTransInfo.m_viewMatrix = lightViewMatrix;
 		cpyTransInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(index);
-		  
-		applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
 
-		auto viewMatrix = ShadowMap::shared()->getLightViewMatrix();
-		auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * viewMatrix * cpyTransInfo.m_worldMatrix;
+		//no need to apply other matrix just use TU_lightWVP
+		// applyTransform(ShadowMap::shared()->getProgram(), cpyTransInfo);
+
+		auto lightWVP = ShadowMap::shared()->getLightProjectionMatrix(index) * (lightViewMatrix * cpyTransInfo.m_worldMatrix);
 		ShadowMap::shared()->getProgram()->setUniformMat4v("TU_lightWVP", lightWVP.data());
 		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
 		RenderBackEnd::shared()->setDepthTestEnable(true);
@@ -331,7 +330,7 @@ void Renderer::render(const RenderCommand &command)
 {
 	command.m_material->use();
 	applyRenderSetting(command.m_material);
-	applyTransform(command.m_material->getProgram(), command.m_transInfo);
+	applyTransform(command.m_material->getProgram(), command.m_transInfo, true);
 	if (command.batchType() == RenderCommand::RenderBatchType::Instanced)
 	{
 		renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType);
@@ -1173,17 +1172,17 @@ void Renderer::applyRenderSetting(Material * mat)
 	RenderBackEnd::shared()->setDepthTestEnable(mat->isIsDepthTestEnable());
 }
 
-void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info)
+void Renderer::applyTransform(ShaderProgram *program, const TransformationInfo &info, bool isHackingWV)
 {
 	program->use();
 	auto p = info.m_projectMatrix;
 	auto v = info.m_viewMatrix;
 	auto m = info.m_worldMatrix;
 	auto vp = p * v;
-
-	program->setUniformMat4v("TU_mvpMatrix", (vp* m).data());
+	auto mv = v *m;
+	program->setUniformMat4v("TU_mvpMatrix", (p * mv).data());
 	program->setUniformMat4v("TU_vpMatrix", vp.data());
-	program->setUniformMat4v("TU_mvMatrix", (v * m).data());
+	program->setUniformMat4v("TU_mvMatrix", (mv).data());
 	program->setUniformMat4v("TU_vMatrix", v.data());
 	program->setUniformMat4v("TU_pMatrix", p.data());
 

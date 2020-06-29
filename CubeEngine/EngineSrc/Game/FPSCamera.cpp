@@ -37,7 +37,7 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
 
 
 	if(m_isOpenPhysics) {
-		m_capsuleHigh = 1.8f;
+		m_capsuleHigh = 1.6f;
 		btCapsuleShape *shape = new btCapsuleShape(0.10f, m_capsuleHigh);
 
 		this->m_ghost2 = new btPairCachingGhostObject();

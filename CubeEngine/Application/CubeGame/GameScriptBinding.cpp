@@ -179,9 +179,10 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
 
   // BearPart
 
-  BIND_BEGIN_CLASS_PY(BearPart)
+  // BIND_BEGIN_CLASS_PY(BearPart)
+  pybind11::class_<BearPart, GamePart>(m, "BearPart")
   BIND_PROP_PY(BearPart, m_a) BIND_PROP_PY(BearPart, m_b)
-    BIND_PROP_PY(BearPart, m_isFlipped) BIND_FUNC_PY(BearPart, updateFlipped);
+  BIND_PROP_PY(BearPart, m_isFlipped) BIND_FUNC_PY(BearPart, updateFlipped);
 
   // Lift Part
 
