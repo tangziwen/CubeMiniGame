@@ -83,10 +83,11 @@ public:
 	int getGrassId();
 	GameMapBuffer * m_totalBuffer;
 	vec2 getCenterOfMap();
-	ChunkInfo* fetchFromSource(int x, int y, int z, int lod);
+	ChunkInfo* fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod);
 	void saveTerrain(std::string filePath);
 	void loadTerrain(std::string filePath);
 	void proceduralGenMapBuffer(size_t buffID_x, size_t buffID_y, size_t buffID_z);
+	vec3 getMapOffset() const;
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;
@@ -103,7 +104,7 @@ private:
 	int mapBufferSize_Y;
 	int mapBufferSize_Z;
 	ChunkInfo * m_chunkInfo;
-
+	vec3 m_mapOffset;
 };
 
 } // namespace tzw

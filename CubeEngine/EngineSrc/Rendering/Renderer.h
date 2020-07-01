@@ -70,6 +70,8 @@ private:
 	void BloomBlurHPass();
 	void BloomCompossitPass();
     void directionalLightPass();
+	void pointLightPass();
+	void spotLightPass();
 	void autoExposurePass();
 	void AAPass();
 	void applyRenderSetting(Material * effect);
@@ -81,7 +83,9 @@ private:
 	void setIBL(std::string diffuseMap, std::string specularMap, bool isCubeMap);
 	void handleThumbNail();
     Mesh * m_quad;
+	Mesh * m_sphere;
     Material * m_dirLightProgram;
+	Material * m_pointLightMat;
 	Material * m_postEffect;
 	Material * m_blurVEffect;
 	Material * m_blurHEffect;

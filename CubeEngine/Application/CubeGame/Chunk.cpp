@@ -47,7 +47,7 @@ namespace tzw
 								MAX_BLOCK * BLOCK_SIZE));
 
 		m_basePoint =
-			vec3(m_x * g_chunkSize, m_y * g_chunkSize, m_z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE);
+			vec3(m_x * g_chunkSize, m_y * g_chunkSize, m_z * g_chunkSize) + vec3(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE) + GameMap::shared()->getMapOffset();
 
 		setPos(m_basePoint);
 
@@ -284,12 +284,12 @@ namespace tzw
 			{
 				initData();
 				genMesh(lodLevel);
-				calculateMatID();
+				generateVegetation();
 			}));
 		}
 		else
 		{
-			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(lodLevel); calculateMatID(); }));
+			WorkerThreadSystem::shared()->pushOrder(WorkerJob([&]() { genMesh(lodLevel); generateVegetation(); }));
 		}
 	}
 
@@ -949,7 +949,7 @@ BAAAABB
 	}
 
 	void
-	Chunk::calculateMatID()
+	Chunk::generateVegetation()
 	{
 		m_grassPosList.clear();
 		m_tree->m_instance.clear();
@@ -958,14 +958,16 @@ BAAAABB
 		if (indexCount <= 0) return;
 		float grassDensity = 1.0;
 		float step = 1.0 / grassDensity;
-		for (float x = m_basePoint.x; x <= m_basePoint.x + BLOCK_SIZE * MAX_BLOCK; x += grassDensity)
+		vec3 theBasePoint = GameMap::shared()->voxelToWorldPos(this->m_x * MAX_BLOCK + LOD_SHIFT, this->m_y * MAX_BLOCK + LOD_SHIFT, this->m_z * MAX_BLOCK + LOD_SHIFT);
+		for (float x = 0; x <= BLOCK_SIZE * MAX_BLOCK; x += grassDensity)
 		{
-			for (float z = m_basePoint.z; z <= m_basePoint.z + BLOCK_SIZE * MAX_BLOCK; z += grassDensity)
+			for (float z = 0; z <= BLOCK_SIZE * MAX_BLOCK; z += grassDensity)
 			{
 				auto ox = TbaseMath::randFN() * 0.4;
 				auto oz = TbaseMath::randFN() * 0.4;
-				auto h = GameMap::shared()->getHeight(vec2(x + ox, z + oz));
-				vec3 pos(x + ox, h, z + oz);
+				vec3 pos(theBasePoint.x + x + ox, 0, theBasePoint.z + z + oz);
+				auto h = GameMap::shared()->getHeight(pos.xz());
+				pos.y = h;
 				float value = flatNoise.GetValue(pos.x * 0.03, pos.z * 0.03, 0.0);
 				// the flat is grass or dirt?
 				value = value * 0.5 + 0.5;
@@ -979,7 +981,7 @@ BAAAABB
 						auto oz = TbaseMath::randFN() * 0.5;
 						auto scale = TbaseMath::randFN() * 0.1;
 						InstanceData instance;
-						vec3 normal = GameMap::shared()->getNormal(vec2(x + ox, z + oz));
+						vec3 normal = GameMap::shared()->getNormal(vec2(pos.x, pos.z));
 						instance.posAndScale = vec4(pos.x, pos.y + 0.35, pos.z, 1.0 + scale);
 						instance.extraInfo = vec4(normal, 0);
 						auto rotateM = Matrix44();
@@ -1016,7 +1018,7 @@ BAAAABB
 		treeNoise.SetFrequency(0.02);
 		treeNoise.SetNoiseType(FastNoise::Perlin);
 		int treeCount = 0;
-		vec3 theBasePoint = GameMap::shared()->voxelToWorldPos(this->m_x * MAX_BLOCK + LOD_SHIFT, this->m_y * MAX_BLOCK + LOD_SHIFT, this->m_z * MAX_BLOCK + LOD_SHIFT);
+		
 		for (float x = 0; x <= BLOCK_SIZE * MAX_BLOCK; x += 1.5)
 		{
 			for (float z = 0; z <= BLOCK_SIZE * MAX_BLOCK; z += 1.5)
@@ -1026,42 +1028,16 @@ BAAAABB
 				float value = treeNoise.GetNoise(x + ox, 0, z + oz);
 				// the flat is grass or dirt?
 				// value = value * 0.5 + 0.5;
-				auto h = GameMap::shared()->getHeight(vec2(theBasePoint.x + x + ox, theBasePoint.z + z + oz));
+				vec3 pos = vec3(theBasePoint.x + x + ox, 0, theBasePoint.z + z + oz);
+				auto h = GameMap::shared()->getHeight(pos.xz());
+				pos.y = h;
 				if (value > 0)
 				{
-					// auto treeModel = Model::create("Models/tree/tree.tzw", true);
-					// g_GetCurrScene()->addNode(treeModel);
-					// treeModel->getMat(0)->setTex("DiffuseMap",
-					// 							TextureMgr::shared()->getByPath("Models/tree/bark.jpg", true));
-					// treeModel->getMat(1)->setTex("DiffuseMap",
-					// 							TextureMgr::shared()->getByPath("Models/tree/twig.png", true));
 					treeCount += 1;
 					InstanceData instance;
 					vec3 normal = vec3(0, 1,0);
-					instance.posAndScale = vec4(m_basePoint.x + x + ox, h, m_basePoint.z + z + oz, 1.0);
+					instance.posAndScale = vec4(pos.x, pos.y, pos.z, 1.0);
 					instance.extraInfo = vec4(normal, 0);
-					// auto rotateM = Matrix44();
-					// rotateM.setToIdentity();
-					// auto m = rotateM.data();
-					// auto z = vec3(0, 0, 1);
-					// auto right = vec3::CrossProduct(normal, z);
-					// auto zNew = vec3::CrossProduct(right, normal);
-					// m[0] = right.x;
-					// m[1] = right.y;
-					// m[2] = right.z;
-					//
-					//
-					// m[4] = normal.x;
-					// m[5] = normal.y;
-					// m[6] = normal.z;
-					//
-					//
-					// m[8] = zNew.x;
-					// m[9] = zNew.y;
-					// m[10] = zNew.z;
-					// Quaternion q;
-					// rotateM.getRotation(&q);
-					// instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
  					m_tree->m_instance.push_back(instance);
 				}
 			}

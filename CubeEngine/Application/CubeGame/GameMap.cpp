@@ -158,6 +158,7 @@ GameMap::GameMap()
 	grassRock.SetSeed(200);
 	grassOrDirt.SetFrequency(0.07);
 	grassOrDirt.SetNoiseType(FastNoise::SimplexFractal);
+	m_mapOffset = vec3(GAME_MAP_WIDTH *MAX_BLOCK *BLOCK_SIZE / -2.0f ,0 ,GAME_MAP_DEPTH *MAX_BLOCK *BLOCK_SIZE / -2.0f );
 }
 
 void GameMap::init(float ratio, int width, int depth, int height)
@@ -383,11 +384,12 @@ vec3 GameMap::voxelToBuffWorldPos(int x, int y, int z)
 
 vec3 GameMap::voxelToWorldPos(int x, int y, int z)
 {
-	return vec3((x)  * BLOCK_SIZE, (y )  * BLOCK_SIZE, (z)  * BLOCK_SIZE);
+	return vec3((x)  * BLOCK_SIZE, (y )  * BLOCK_SIZE, (z)  * BLOCK_SIZE) + m_mapOffset;
 }
 
 vec3 GameMap::worldPosToVoxelPos(vec3 pos)
 {
+	pos -= m_mapOffset;
 	return vec3(int(pos.x / BLOCK_SIZE), int(pos.y / BLOCK_SIZE),int(pos.z / BLOCK_SIZE));
 }
 
@@ -553,12 +555,12 @@ int GameMap::getGrassId()
 
 vec2 GameMap::getCenterOfMap()
 {
-	float x = (mapBufferSize_X * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
-	float z = (mapBufferSize_Z * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
-	return vec2(x, z);
+	//float x = (mapBufferSize_X * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
+	//float z = (mapBufferSize_Z * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
+	return vec2(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE);
 }
 
-ChunkInfo* GameMap::fetchFromSource(int x, int y, int z, int lod)
+ChunkInfo* GameMap::fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod)
 {
 	auto lodList = {0, 1, 2};
 	int YtimeZ = (MAX_BLOCK + MIN_PADDING + MAX_PADDING) * (MAX_BLOCK + MIN_PADDING + MAX_PADDING);
@@ -579,7 +581,7 @@ ChunkInfo* GameMap::fetchFromSource(int x, int y, int z, int lod)
 			{
 				int BlockROW = ((MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING);
 
-				auto w = GameMap::shared()->getDensityI(x * MAX_BLOCK + (i - offset)*stride + LOD_SHIFT, y * MAX_BLOCK + (j - offset)*stride + LOD_SHIFT, z * MAX_BLOCK + (k - offset)*stride + LOD_SHIFT);
+				auto w = GameMap::shared()->getDensityI(chunkX * MAX_BLOCK + (i - offset)*stride + LOD_SHIFT, chunkY * MAX_BLOCK + (j - offset)*stride + LOD_SHIFT, chunkZ * MAX_BLOCK + (k - offset)*stride + LOD_SHIFT);
 
 				int ind = i * BlockROW*BlockROW + j * BlockROW + k;
 				m_chunkInfo->mcPoints[lod][ind] = w;
@@ -638,7 +640,7 @@ void GameMap::proceduralGenMapBuffer(size_t buffIDX, size_t buffIDY, size_t buff
     {
         for(int k = 0; k <GAME_MAX_BUFFER_SIZE;k++) //Z
         {
-            auto targetH = getHeight(vec2((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE));
+            auto targetH = getHeight(vec2((i + buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (k + buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE)+ vec2(m_mapOffset.x, m_mapOffset.z));
             for(int j = 0; j <GAME_MAX_BUFFER_SIZE;j++) //Y
             {
                 auto currH = (j+ buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE;
@@ -680,6 +682,11 @@ void GameMap::proceduralGenMapBuffer(size_t buffIDX, size_t buffIDY, size_t buff
 			}
 		}
 	}
+}
+
+vec3 GameMap::getMapOffset() const
+{
+	return m_mapOffset;
 }
 
 GameMapBuffer::GameMapBuffer()

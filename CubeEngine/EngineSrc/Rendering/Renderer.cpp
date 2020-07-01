@@ -12,7 +12,9 @@
 #include <random>
 #include "Shader/ShaderMgr.h"
 #include "3D/Thumbnail.h"
+#include "3D/Primitive/SpherePrimitive.h"
 #include "3D/Vegetation/Tree.h"
+#include "Lighting/PointLight.h"
 
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
@@ -491,12 +493,16 @@ void Renderer::initQuad()
 	unsigned short indics[] = {0,1,2,0,2,3};
 	m_quad->addIndices(indics,6);
 	m_quad->finish(true);
+
+	auto sphere = SpherePrimitive(1.0f, 24);
+	m_sphere = sphere.getMesh();
 }
 
 void Renderer::initMaterials()
 {
 	m_dirLightProgram = MaterialPool::shared()->getMatFromTemplate("DirectLight");
 
+	m_pointLightMat = MaterialPool::shared()->getMatFromTemplate("PointLight");
 	m_postEffect = new Material();
 	m_postEffect->loadFromTemplate("SSAO");
 	MaterialPool::shared()->addMaterial("SSAO", m_postEffect);
@@ -741,6 +747,7 @@ void Renderer::LightingPass()
 	m_gbuffer->bindForReadingGBuffer();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	directionalLightPass();
+	pointLightPass();
 }
 
 void Renderer::shadowPass()
@@ -1109,6 +1116,69 @@ void Renderer::directionalLightPass()
 	  
 	renderPrimitive(m_quad, m_dirLightProgram, RenderCommand::PrimitiveType::TRIANGLES);
 	  
+}
+
+void Renderer::pointLightPass()
+{
+
+	glCullFace(GL_FRONT); 
+	PointLight p;
+	p.setPos(vec3(4, 36, 4));
+	auto currScene = g_GetCurrScene();
+	applyRenderSetting(m_pointLightMat);
+	m_pointLightMat->use();
+	auto program = m_pointLightMat->getProgram();
+	  
+	program->use();
+
+	auto projection = currScene->defaultCamera()->projection();
+	Matrix44 m;
+	m.setToIdentity();
+	m.setTranslate(p.getPos());
+	m.setScale(vec3(p.getRadius(), p.getRadius(), p.getRadius()));
+	auto v = currScene->defaultCamera()->getViewMatrix();
+	program->setUniformMat4v("TU_mvpMatrix", (projection * v * m).data());
+
+	
+	program->setUniformInteger("TU_colorBuffer",0);
+	  
+	program->setUniformInteger("TU_posBuffer",1);
+	  
+	program->setUniformInteger("TU_normalBuffer",2);
+	  
+	program->setUniformInteger("TU_GBUFFER4",3);
+	  
+	program->setUniformInteger("TU_Depth", 4);
+
+	//
+	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+
+	
+	program->setUniform3Float("TU_camPos", g_GetCurrScene()->defaultCamera()->getWorldPos());
+
+	auto cam = currScene->defaultCamera();
+	  
+
+	p.tick(Engine::shared()->deltaTime());
+	
+	  
+	program->setUniform3Float("gPointLight.color",p.color());
+	program->setUniform3Float("gPointLight.pos",p.getPos());
+	program->setUniformFloat("gPointLight.intensity", p.intensity());
+	program->setUniformFloat("gPointLight.radius", p.getRadius());
+	  
+	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
+	
+	program->setUniformMat4v("TU_viewInverted", cam->getViewMatrix().inverted().data());
+
+	program->use();
+
+	renderPrimitive(m_sphere, m_pointLightMat, RenderCommand::PrimitiveType::TRIANGLES);
+	glCullFace(GL_BACK); 
+}
+
+void Renderer::spotLightPass()
+{
 }
 
 void Renderer::autoExposurePass()
