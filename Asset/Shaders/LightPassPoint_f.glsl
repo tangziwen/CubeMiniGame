@@ -172,7 +172,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	float NDF = DistributionGGX(N, H, Roughness);
 	
 	float G   = GeometrySmith(N, V, L, Roughness);      
-	vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
+	vec3 F    = fresnelSchlick(clamp(dot(H, V), 0.0, 1.0), F0);       
 
 	vec3 kS = F;
 	vec3 kD = vec3(1.0) - kS;
@@ -187,15 +187,15 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	return (kD * albedo / PI + specular) * radiance * NdotL;
 }
 
-vec4 getWorldPosFromDepth()
+vec4 getWorldPosFromDepth(vec2 uv)
 {
 	// return vec4(texture(TU_posBuffer, v_texcoord).xyz, 1.0);
-  vec4 clipSpaceLocation;
-  clipSpaceLocation.xy = v_texcoord * 2.0 - 1.0;
-  clipSpaceLocation.z = texture(TU_Depth, v_texcoord).x*2.0 - 1.0;
-  clipSpaceLocation.w = 1.0;
-  vec4 homogenousLocation = TU_viewProjectInverted * clipSpaceLocation;
-  return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
+	vec4 clipSpaceLocation;
+	clipSpaceLocation.xy = uv * 2.0 - 1.0;
+	clipSpaceLocation.z = texture(TU_Depth, uv).x*2.0 - 1.0;
+	clipSpaceLocation.w = 1.0;
+	vec4 homogenousLocation = TU_viewProjectInverted * clipSpaceLocation;
+	return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
 }
 
 float getBias(vec3 normal, vec3 dirLight)
@@ -342,15 +342,15 @@ void main()
 	vec3 color = Data1.xyz;
 	vec3 surfaceData = texture2D(TU_GBUFFER4, uv).rgb;
 	vec3 pos = texture2D(TU_posBuffer, uv).xyz;
-	vec4 worldPos = getWorldPosFromDepth();
+	vec4 worldPos = getWorldPosFromDepth(uv);
 	float depth = texture(TU_Depth, uv).x;
 	float shadowFactor = 0.0;
 	vec3 normal = normalize(texture2D(TU_normalBuffer, uv).xyz);
-	vec3 worldView = normalize(TU_camPos.xyz - pos.xyz);
+	vec3 worldView = normalize(TU_camPos.xyz - worldPos.xyz);
 	int shadingModel = int(surfaceData[2]);
 	vec3 resultColor = vec3(0, 0, 0);
 	resultColor =  calculateLightPBR(color, surfaceData[1], normalize(normal), normalize(pos.xyz - gPointLight.pos), gPointLight.color * gPointLight.intensity, normalize(worldView), surfaceData[0], 1);
-	float dist = length(pos.xyz - gPointLight.pos);
+	float dist = length(worldPos.xyz - gPointLight.pos);
 	float linearFactor = 1.0 - clamp(dist / gPointLight.radius, 0, 1);
 	gl_FragColor = vec4(resultColor * pow(linearFactor, 2.0), 1.0);
 }
