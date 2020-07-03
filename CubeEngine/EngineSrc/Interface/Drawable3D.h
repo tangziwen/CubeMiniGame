@@ -8,7 +8,11 @@
 #include "Utility/log/Log.h"
 namespace tzw {
 class Ray;
-
+enum class DrawableFlag
+{
+	Drawable = 1 << 1,
+    PointLight = 1 << 2,
+};
 class Drawable3D : public Drawable
 {
 public:
@@ -37,6 +41,8 @@ public:
 	virtual Mesh * getMesh();
 	virtual int getMeshCount();
 	void setColor(vec4 newColor) override;
+	uint32_t getDrawableFlag() const;
+	void setDrawableFlag(const uint32_t drawableFlag);
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;
@@ -44,6 +50,7 @@ protected:
 	bool m_isHitable;
 	bool m_isNeedTransparent;
 	int m_octNodeIndex;
+	uint32_t m_drawableFlag;
 };
 
 class Drawable3DGroup

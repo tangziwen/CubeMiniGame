@@ -4,18 +4,18 @@ namespace tzw {
 
 BaseLight::BaseLight()
 {
-    m_color = vec3(1.0,1.0,1.0);
+    m_lightColor = vec3(1.0,1.0,1.0);
     m_intensity = 1.0f;
 }
 
-vec3 BaseLight::color() const
+vec3 BaseLight::getLightColor() const
 {
-    return m_color;
+    return m_lightColor;
 }
 
-void BaseLight::setColor(const vec3 &color)
+void BaseLight::setLightColor(const vec3 &color)
 {
-    m_color = color;
+    m_lightColor = color;
 }
 
 float BaseLight::intensity() const

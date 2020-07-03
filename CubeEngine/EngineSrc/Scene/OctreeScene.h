@@ -30,6 +30,7 @@ public:
     void updateObj(Drawable3D * obj);
     bool hitByRay(const Ray &ray, vec3 &hitPoint);
     void cullingByCamera(Camera * camera);
+	void cullingByCameraExtraFlag(Camera * camera, uint32_t flags, std::vector<Drawable3D *> & resultList);
     void getRange(std::vector<Drawable3D *> * list,AABB aabb);
     int getAmount();
     std::vector<Drawable3D *>& getVisibleList();
@@ -38,6 +39,7 @@ public:
 private:
     int getAmount_R(OctreeNode * node);
     void cullingByCamera_R(OctreeNode * node,Camera * camera);
+	void cullingByCameraFlag_R(OctreeNode * node,Camera * camera, uint32_t flags, std::vector<Drawable3D *> & resultList);
     void setIndrawable_R(OctreeNode * node);
     void setDrawable_R(OctreeNode * node);
     void cullingImp_R(OctreeNode * node, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);

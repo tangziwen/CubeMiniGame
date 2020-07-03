@@ -12,7 +12,10 @@ PointLight::PointLight()
 	m_intensity = 5.0f;
 	m_radius = 5.0f;
 	m_pos = vec3(0, 0 , 0);
-	m_color = vec3(1, 1, 1);
+	m_lightColor = vec3(1, 1, 1);
+	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::PointLight);
+	m_localAABB.setMin(vec3(-m_radius, -m_radius,- m_radius));
+	m_localAABB.setMax(vec3(m_radius, m_radius, m_radius));
 }
 
 void PointLight::tick(float dt)
@@ -30,13 +33,4 @@ void PointLight::setRadius(const float radius)
 	m_radius = radius;
 }
 
-vec3 PointLight::getPos() const
-{
-	return m_pos;
-}
-
-void PointLight::setPos(const vec3& pos)
-{
-	m_pos = pos;
-}
 } // namespace tzw

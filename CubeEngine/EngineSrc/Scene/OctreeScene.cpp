@@ -204,6 +204,11 @@ void OctreeScene::cullingByCamera(Camera *camera)
     cullingByCamera_R(m_root,camera);
 }
 
+void OctreeScene::cullingByCameraExtraFlag(Camera* camera, uint32_t flags, std::vector<Drawable3D*>& resultList)
+{
+	cullingByCameraFlag_R(m_root,camera, flags, resultList);
+}
+
 void OctreeScene::getRange(std::vector<Drawable3D *> *list, AABB aabb)
 {
     auto test = [&aabb](const AABB& targetAABB){vec3 noNeedVar; return aabb.isIntersect(targetAABB, noNeedVar);};
@@ -260,7 +265,10 @@ void OctreeScene::cullingByCamera_R(OctreeNode *node, Camera *camera)
             Drawable3D * obj = node->m_drawlist[i];
             if(!camera->isOutOfFrustum(obj->getAABB()))
             {
-                m_visibleList.push_back (obj);
+            	if(obj->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Drawable))
+            	{
+            		m_visibleList.push_back (obj);
+            	}
             }
         }
 
@@ -270,6 +278,36 @@ void OctreeScene::cullingByCamera_R(OctreeNode *node, Camera *camera)
         for(int i=0;i<8;i++)
         {
             cullingByCamera_R(node->m_child[i],camera);
+        }
+    }
+}
+
+void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32_t flags, std::vector<Drawable3D*>& resultList)
+{
+    if(camera->isOutOfFrustum(node->aabb))
+    {
+        //set In drawable
+        setIndrawable_R(node);
+    }else
+    {
+        for(int i=0;i<node->m_drawlist.size();i++)
+        {
+            Drawable3D * obj = node->m_drawlist[i];
+            if(!camera->isOutOfFrustum(obj->getAABB()))
+            {
+            	if(obj->getDrawableFlag() & flags)
+            	{
+            		resultList.push_back (obj);
+            	}
+            }
+        }
+
+        if(!node->m_child[0]) return;//terminal node return directly
+        currentCamera = camera;
+        qsort(node->m_child,8,sizeof(OctreeNode *),compare);
+        for(int i=0;i<8;i++)
+        {
+            cullingByCameraFlag_R(node->m_child[i],camera, flags, resultList);
         }
     }
 }

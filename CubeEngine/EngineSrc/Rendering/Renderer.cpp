@@ -15,6 +15,7 @@
 #include "3D/Primitive/SpherePrimitive.h"
 #include "3D/Vegetation/Tree.h"
 #include "Lighting/PointLight.h"
+#include "Scene/OctreeScene.h"
 
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
@@ -1097,7 +1098,7 @@ void Renderer::directionalLightPass()
 	dirLight->tick(Engine::shared()->deltaTime());
 	program->setUniform3Float("gDirectionalLight.direction",dirLight->dir());
 	  
-	program->setUniform3Float("gDirectionalLight.color",dirLight->color());
+	program->setUniform3Float("gDirectionalLight.color",dirLight->getLightColor());
 	  
 	program->setUniformFloat("gDirectionalLight.intensity", dirLight->intensity());
 	  
@@ -1107,7 +1108,7 @@ void Renderer::directionalLightPass()
 
 	auto ambient = currScene->getAmbient();
 	  
-	program->setUniform3Float("gAmbientLight.color",ambient->color());
+	program->setUniform3Float("gAmbientLight.color",ambient->getLightColor());
 	  
 	program->setUniformFloat("gAmbientLight.intensity",ambient->intensity());
 	  
@@ -1120,60 +1121,66 @@ void Renderer::directionalLightPass()
 
 void Renderer::pointLightPass()
 {
-
-	glCullFace(GL_FRONT); 
-	PointLight p;
-	p.setPos(vec3(4, 36, 4));
+	glCullFace(GL_FRONT);
+	std::vector<Drawable3D *> pointlightList;
 	auto currScene = g_GetCurrScene();
-	applyRenderSetting(m_pointLightMat);
-	m_pointLightMat->use();
-	auto program = m_pointLightMat->getProgram();
-	  
-	program->use();
+	g_GetCurrScene()->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight),pointlightList);
+	for(auto obj : pointlightList)
+	{
+		PointLight* p = static_cast<PointLight*>(obj);
+		
+		applyRenderSetting(m_pointLightMat);
+		m_pointLightMat->use();
+		auto program = m_pointLightMat->getProgram();
+		  
+		program->use();
 
-	auto projection = currScene->defaultCamera()->projection();
-	Matrix44 m;
-	m.setToIdentity();
-	m.setTranslate(p.getPos());
-	m.setScale(vec3(p.getRadius(), p.getRadius(), p.getRadius()));
-	auto v = currScene->defaultCamera()->getViewMatrix();
-	program->setUniformMat4v("TU_mvpMatrix", (projection * v * m).data());
+		auto projection = currScene->defaultCamera()->projection();
+		Matrix44 m;
+		m.setToIdentity();
+		m.setTranslate(p->getWorldPos());
+		auto r = p->getRadius();
+		m.setScale(vec3(r, r, r));
+		auto v = currScene->defaultCamera()->getViewMatrix();
+		program->setUniformMat4v("TU_mvpMatrix", (projection * v * m).data());
 
+		
+		program->setUniformInteger("TU_colorBuffer",0);
+		  
+		program->setUniformInteger("TU_posBuffer",1);
+		  
+		program->setUniformInteger("TU_normalBuffer",2);
+		  
+		program->setUniformInteger("TU_GBUFFER4",3);
+		  
+		program->setUniformInteger("TU_Depth", 4);
+
+		//
+		program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
+
+		
+		program->setUniform3Float("TU_camPos", g_GetCurrScene()->defaultCamera()->getWorldPos());
+
+		auto cam = currScene->defaultCamera();
+		  
+
+		p->tick(Engine::shared()->deltaTime());
+		
+		  
+		program->setUniform3Float("gPointLight.color",p->getLightColor());
+		program->setUniform3Float("gPointLight.pos",p->getWorldPos());
+		program->setUniformFloat("gPointLight.intensity", p->intensity());
+		program->setUniformFloat("gPointLight.radius", p->getRadius());
+		  
+		program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
+		
+		program->setUniformMat4v("TU_viewInverted", cam->getViewMatrix().inverted().data());
+
+		program->use();
+
+		renderPrimitive(m_sphere, m_pointLightMat, RenderCommand::PrimitiveType::TRIANGLES);
+	}
 	
-	program->setUniformInteger("TU_colorBuffer",0);
-	  
-	program->setUniformInteger("TU_posBuffer",1);
-	  
-	program->setUniformInteger("TU_normalBuffer",2);
-	  
-	program->setUniformInteger("TU_GBUFFER4",3);
-	  
-	program->setUniformInteger("TU_Depth", 4);
-
-	//
-	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
-
-	
-	program->setUniform3Float("TU_camPos", g_GetCurrScene()->defaultCamera()->getWorldPos());
-
-	auto cam = currScene->defaultCamera();
-	  
-
-	p.tick(Engine::shared()->deltaTime());
-	
-	  
-	program->setUniform3Float("gPointLight.color",p.color());
-	program->setUniform3Float("gPointLight.pos",p.getPos());
-	program->setUniformFloat("gPointLight.intensity", p.intensity());
-	program->setUniformFloat("gPointLight.radius", p.getRadius());
-	  
-	program->setUniformMat4v("TU_viewProjectInverted", cam->getViewProjectionMatrix().inverted().data());
-	
-	program->setUniformMat4v("TU_viewInverted", cam->getViewMatrix().inverted().data());
-
-	program->use();
-
-	renderPrimitive(m_sphere, m_pointLightMat, RenderCommand::PrimitiveType::TRIANGLES);
 	glCullFace(GL_BACK); 
 }
 

@@ -8,14 +8,14 @@ class BaseLight
 {
 public:
     BaseLight();
-    vec3 color() const;
-    void setColor(const vec3 &color);
+    vec3 getLightColor() const;
+    void setLightColor(const vec3 &color);
 
     float intensity() const;
     void setIntensity(const float &intensity);
 
 protected:
-    vec3 m_color;
+    vec3 m_lightColor;
     float m_intensity;
 };
 

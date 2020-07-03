@@ -4,11 +4,13 @@
 #include "../Scene/OctreeScene.h"
 namespace tzw {
 
+
 Drawable3D::Drawable3D()
 {
 	setLocalPiority(-999);
 	m_isNeedTransparent = false;
 	m_octNodeIndex = -1;
+	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
 }
 
 Drawable3D::~Drawable3D()
@@ -143,6 +145,16 @@ int Drawable3D::getMeshCount()
 
 void Drawable3D::setColor(vec4 newColor)
 {
+}
+
+uint32_t Drawable3D::getDrawableFlag() const
+{
+	return m_drawableFlag;
+}
+
+void Drawable3D::setDrawableFlag(const uint32_t drawableFlag)
+{
+	m_drawableFlag = drawableFlag;
 }
 
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
