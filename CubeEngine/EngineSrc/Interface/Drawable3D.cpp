@@ -8,7 +8,6 @@ namespace tzw {
 Drawable3D::Drawable3D()
 {
 	setLocalPiority(-999);
-	m_isNeedTransparent = false;
 	m_octNodeIndex = -1;
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
 }
@@ -77,21 +76,6 @@ void Drawable3D::reCacheAABB()
     }
 }
 
-DepthPolicy &Drawable3D::getDepthPolicy()
-{
-    return m_depthPolicy;
-}
-
-void Drawable3D::setDepthPolicy(const DepthPolicy &depthPolicy)
-{
-    m_depthPolicy = depthPolicy;
-}
-
-void Drawable3D::checkCollide(ColliderEllipsoid *package)
-{
-
-}
-
 bool Drawable3D::getIsHitable() const
 {
 	return m_isHitable;
@@ -100,16 +84,6 @@ bool Drawable3D::getIsHitable() const
 void Drawable3D::setIsHitable(bool val)
 {
 	m_isHitable = val;
-}
-
-bool Drawable3D::getIsNeedTransparent() const
-{
-	return m_isNeedTransparent;
-}
-
-void Drawable3D::setIsNeedTransparent(bool val)
-{
-	m_isNeedTransparent = val;
 }
 
 void Drawable3D::setUpCommand(RenderCommand & command)
@@ -288,11 +262,7 @@ bool Drawable3DGroup::hitBySphere(t_Sphere &sphere, std::vector<vec3>& hitPoint)
 
 void Drawable3DGroup::checkCollide(ColliderEllipsoid *package)
 {
-    for(int i =0;i<m_list.size();i++)
-    {
-        Drawable3D * obj = m_list[i];
-        obj->checkCollide(package);
-    }
+
 }
 
 

@@ -879,23 +879,6 @@ BAAAABB
 		m_chunkInfo->isLoaded = true;
 	}
 
-	void
-	Chunk::checkCollide(ColliderEllipsoid* package)
-	{
-		if (m_currenState != State::LOADED)
-			return;
-		auto size = m_mesh[0]->getIndicesSize();
-		std::vector<vec3> resultList;
-		float t = 0;
-		for (size_t i = 0; i < size; i += 3)
-		{
-			CollisionUtility::checkTriangle(
-				package,
-				package->toE(m_mesh[0]->m_vertices[i + 2].m_pos),
-				package->toE(m_mesh[0]->m_vertices[i + 1].m_pos),
-				package->toE(m_mesh[0]->m_vertices[i].m_pos));
-		}
-	}
 
 	void
 	Chunk::setUpTransFormation(TransformationInfo& info)

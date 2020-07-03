@@ -224,11 +224,14 @@ namespace tzw
 	        break;
         case TZW_KEY_H:
 			{
+        		m_camera->setUseCustomFrustumUpdate(true);
+        		/*
         		auto pointLight = new PointLight();
         		pointLight->setRadius(10);
         		pointLight->setLightColor(vec3(1, 0, 0));
         		pointLight->setPos(getPos());
         		g_GetCurrScene()->addNode(pointLight);
+        		*/
 				//auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
         		break;
             }

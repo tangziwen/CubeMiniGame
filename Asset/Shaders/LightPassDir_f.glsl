@@ -372,7 +372,6 @@ void main()
 	vec4 Data1 = texture2D(TU_colorBuffer, v_texcoord);
 	vec3 color = Data1.xyz;
 	vec3 surfaceData = texture2D(TU_GBUFFER4, v_texcoord).rgb;
-	vec3 pos = texture2D(TU_posBuffer, v_texcoord).xyz;
 	vec4 worldPos = getWorldPosFromDepth();
 	float depth = texture(TU_Depth, v_texcoord).x;
 	float shadowFactor = 0.0;

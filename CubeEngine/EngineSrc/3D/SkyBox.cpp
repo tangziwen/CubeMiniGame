@@ -11,7 +11,7 @@ SkyBox *SkyBox::create(std::string PosXFilename, std::string NegXFilename, std::
 {
     auto cube = new SkyBox();
     cube->init(PosXFilename,NegXFilename,PosYFilename,NegYFilename,PosZFilename,NegZFilename);
-    cube->getDepthPolicy().setDepthTest(RenderFlag::DepthTestMethod::LessOrEqual);
+    //cube->getDepthPolicy().setDepthTest(RenderFlag::DepthTestMethod::LessOrEqual);
     return cube;
 }
 

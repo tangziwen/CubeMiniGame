@@ -22,7 +22,6 @@ OrbitCamera::OrbitCamera()
     m_distToFront = 0.2;
 	m_dist = m_defaultDist;
     m_enableFPSFeature = true;
-    setUseCustomFrustumUpdate(true);
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
 	setLocalPiority(-1);

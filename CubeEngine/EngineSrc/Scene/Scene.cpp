@@ -89,7 +89,7 @@ bool Scene::hitByRay(const Ray &ray, vec3 &hitPoint)
 
 void Scene::getRange(std::vector<Drawable3D *> *list, AABB aabb)
 {
-    m_octreeScene->getRange(list,aabb);
+    m_octreeScene->getRange(list, static_cast<uint32_t>(DrawableFlag::Drawable), aabb);
 }
 
 Node *Scene::root()
@@ -164,8 +164,8 @@ void Scene::init()
     createDefaultCameras();
     m_root.setName("root");
     AABB sceneBounding;
-    sceneBounding.update(vec3(-2000,-512,-2000));
-    sceneBounding.update(vec3(4096,512,4096));
+    sceneBounding.update(vec3(-2048,-512,-2048));
+    sceneBounding.update(vec3(2048,512,2048));
     m_octreeScene = new OctreeScene();
     m_octreeScene->init(sceneBounding);
     //m_debugInfoPanel = new DebugInfoPanel();

@@ -52,7 +52,6 @@ namespace tzw
 	    int getIndex(int x, int y, int z);
 	    void genMesh(int lodLevel);
 	    void initData();
-		void checkCollide(ColliderEllipsoid * package) override;
 		void setUpTransFormation(TransformationInfo & info) override;
 		void setLod(unsigned int newLod);
 		unsigned int getLod();

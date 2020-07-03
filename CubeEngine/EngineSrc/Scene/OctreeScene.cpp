@@ -35,7 +35,7 @@ void OctreeScene::init(AABB range)
 
 void OctreeScene::subDivide(OctreeNode *node, int level)
 {
-    if(level> MAX_DEEP) return;
+    if(level> MAX_DEEP) {return;}
     auto subAABBList = node->aabb.split8();
     for(int i =0;i<8;i++)
     {
@@ -197,22 +197,21 @@ bool OctreeScene::hitByRay(const Ray &ray, vec3 &hitPoint)
 void OctreeScene::cullingByCamera(Camera *camera)
 {
     //clear visible List;
-    m_visibleList.clear ();
-    //reset the state
-    setDrawable_R(m_root);
-    //camera culling
-    cullingByCamera_R(m_root,camera);
+    m_visibleList.clear();
+	cullingByCameraExtraFlag(camera, static_cast<uint32_t>(DrawableFlag::Drawable), m_visibleList);
 }
 
 void OctreeScene::cullingByCameraExtraFlag(Camera* camera, uint32_t flags, std::vector<Drawable3D*>& resultList)
 {
 	cullingByCameraFlag_R(m_root,camera, flags, resultList);
+    //auto test = [camera](const AABB& targetAABB){return !camera->isOutOfFrustum(targetAABB);};
+	//cullingImp_R(m_root,flags, &resultList,test);
 }
 
-void OctreeScene::getRange(std::vector<Drawable3D *> *list, AABB aabb)
+void OctreeScene::getRange(std::vector<Drawable3D *> *list, uint32_t flags, AABB aabb)
 {
     auto test = [&aabb](const AABB& targetAABB){vec3 noNeedVar; return aabb.isIntersect(targetAABB, noNeedVar);};
-    cullingImp_R(m_root,list,test);
+    cullingImp_R(m_root,flags, list,test);
 }
 
 int OctreeScene::getAmount()
@@ -252,43 +251,9 @@ static int compare(const void * a, const void * b)
     }
 }
 
-void OctreeScene::cullingByCamera_R(OctreeNode *node, Camera *camera)
-{
-    if(camera->isOutOfFrustum(node->aabb))
-    {
-        //set In drawable
-        setIndrawable_R(node);
-    }else
-    {
-        for(int i=0;i<node->m_drawlist.size();i++)
-        {
-            Drawable3D * obj = node->m_drawlist[i];
-            if(!camera->isOutOfFrustum(obj->getAABB()))
-            {
-            	if(obj->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Drawable))
-            	{
-            		m_visibleList.push_back (obj);
-            	}
-            }
-        }
-
-        if(!node->m_child[0]) return;//terminal node return directly
-        currentCamera = camera;
-        qsort(node->m_child,8,sizeof(OctreeNode *),compare);
-        for(int i=0;i<8;i++)
-        {
-            cullingByCamera_R(node->m_child[i],camera);
-        }
-    }
-}
-
 void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32_t flags, std::vector<Drawable3D*>& resultList)
 {
-    if(camera->isOutOfFrustum(node->aabb))
-    {
-        //set In drawable
-        setIndrawable_R(node);
-    }else
+	if(!camera->isOutOfFrustum(node->aabb))
     {
         for(int i=0;i<node->m_drawlist.size();i++)
         {
@@ -301,10 +266,7 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
             	}
             }
         }
-
         if(!node->m_child[0]) return;//terminal node return directly
-        currentCamera = camera;
-        qsort(node->m_child,8,sizeof(OctreeNode *),compare);
         for(int i=0;i<8;i++)
         {
             cullingByCameraFlag_R(node->m_child[i],camera, flags, resultList);
@@ -312,44 +274,26 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
     }
 }
 
-void OctreeScene::setIndrawable_R(OctreeNode *node)
+void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t flags,  std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
 {
-    if(!node->m_child[0]) return;//terminal node return directly
-    for(int i=0;i<8;i++)
-    {
-        setIndrawable_R(node->m_child[i]);
-    }
-}
-
-void OctreeScene::setDrawable_R(OctreeNode *node)
-{
-    if(!node->m_child[0]) return;//terminal node return directly
-    for(int i=0;i<8;i++)
-    {
-        setDrawable_R(node->m_child[i]);
-    }
-}
-
-void OctreeScene::cullingImp_R(OctreeNode *node, std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
-{
-    vec3 noNeedVar;
-    // if(node->aabb.isIntersect(aabb,noNeedVar))
 	if(testFunc(node->aabb))
     {
         //put self
         for(auto drawObj : node->m_drawlist)
         {
-            // if(drawObj->getAABB().isIntersect(aabb,noNeedVar))
-        	if(testFunc(drawObj->getAABB()))
+            if(drawObj->getDrawableFlag() & flags)
             {
-                list->push_back(drawObj);
+        		if(testFunc(drawObj->getAABB()))
+	            {
+	                list->push_back(drawObj);
+	            }
             }
         }
         //check sub
         if(!node->m_child[0]) return;
         for(int i =0;i<8;i++)
         {
-            cullingImp_R(node->m_child[i],list, testFunc);
+            cullingImp_R(node->m_child[i], flags, list, testFunc);
         }
     }
 }
