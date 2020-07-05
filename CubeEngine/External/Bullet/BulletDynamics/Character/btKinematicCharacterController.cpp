@@ -745,11 +745,11 @@ void btKinematicCharacterController::playerStep(btCollisionWorld* collisionWorld
 	}
 
 	// quick check...
-	if (!m_useWalkDirection && (m_velocityTimeInterval <= 0.0 || m_walkDirection.fuzzyZero())) 
-	{
-		printf("no motion \n");
-		return;  // no motion
-	}
+	// if (!m_useWalkDirection && (m_velocityTimeInterval <= 0.0 || m_walkDirection.fuzzyZero())) 
+	// {
+	// 	//printf("no motion \n");
+	// 	// return;  // no motion
+	// }
 
 	m_wasOnGround = onGround();
 

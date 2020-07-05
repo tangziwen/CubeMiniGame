@@ -262,7 +262,7 @@ void FPSCamera::logicUpdate(float dt)
 	}
 	if(m_isOpenPhysics)
 	{
-		m_character->setWalkDirection(btVector3(totalSpeed.x, m_up * 5, totalSpeed.z) * dt);
+		m_character->setVelocityForTimeInterval(btVector3(totalSpeed.x, m_up * 5, totalSpeed.z), dt);
 	}
 }
 
