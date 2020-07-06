@@ -1,0 +1,19 @@
+{
+	"shaders":{
+		"vs" : "Shaders/Simple_v.glsl",
+		"fs" : "Shaders/LightPassPoint_f.glsl"
+	},
+	"name" : "PointLight",
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : true,
+	"SrcBlendFactor" : "One",
+	"DstBlendFactor" : "One",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_roughness", "type":"float", "default":5.0}
+		],
+		"maps" : [
+		]
+	}
+}
