@@ -819,6 +819,11 @@ namespace tzw
 		return m_graphNode;
 	}
 
+	PartSurface* GamePart::getPartSurface()
+	{
+		return m_partSurface;
+	}
+
 
 	GameItem* GamePart::getItem() const
 	{

@@ -11,6 +11,7 @@
 #include "Utility/file/Data.h"
 #include "OptionPanel.h"
 namespace tzw {
+class PainterUI;
 class VehicleBroswer;
 class NewWorldSettingUI;
 class LoadWorldUI;
@@ -80,6 +81,7 @@ private:
 	VehicleBroswer * m_fileBrowser;
 	NewWorldSettingUI * m_NewWorldSettingUI;
 	LoadWorldUI * m_loadWorldUI;
+	PainterUI * m_painterUI;
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;
 	GamePart * m_curInspectPart;

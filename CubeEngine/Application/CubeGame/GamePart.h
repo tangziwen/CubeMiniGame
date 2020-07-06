@@ -78,6 +78,7 @@ public:
 	void setVehicle(Vehicle * vehicle);
 	Vehicle * getVehicle();
 	virtual GraphNode * getGraphNode() const;
+	PartSurface * getPartSurface();
 protected:
 	std::vector<Attachment * > m_attachment;
 	std::string m_name;

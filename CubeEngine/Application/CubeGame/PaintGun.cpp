@@ -5,13 +5,22 @@
 #include "GameItem.h"
 namespace tzw
 {
-	PaintGun::PaintGun():color(vec3(1, 1,1)),m_surface(PartSurfaceMgr::shared()->getItem("Metal Grid3")),m_matIndex(0)
+	PaintGun::PaintGun():color(vec3(1, 1,1)),
+m_surface(PartSurfaceMgr::shared()->getItem("Metal Grid3")),
+m_matIndex(0),m_enableSurfaceChanged(false)
 	{
 	}
 
 	void PaintGun::paint(GamePart* part)
 	{
-		part->setSurface(color, m_surface);
+		if(m_enableSurfaceChanged)
+		{
+			part->setSurface(color, m_surface);
+		}else
+		{
+			part->setSurface(color, part->getPartSurface());
+		}
+		
 		//part->getNode()->setColor(vec4(color, 1.0));
 		//
 		//if(part->getItem()->m_visualInfo.type != VisualInfo::VisualInfoType::Mesh)

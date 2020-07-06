@@ -12,5 +12,6 @@ namespace tzw
 		vec3 color;
 		PartSurface * m_surface;
 		int m_matIndex;
+		bool m_enableSurfaceChanged;
 	};
 }
