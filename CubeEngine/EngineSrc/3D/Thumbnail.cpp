@@ -47,11 +47,13 @@ namespace tzw {
 				RenderBackEnd::shared()->setClearColor(0, 0, 0);
 			}
 		}
-		else
+		else if(m_node->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Instancing))
 		{
 			std::vector<InstanceRendereData> theList;
 			m_node->getCommandForInstanced(theList);
 			auto command = InstancingMgr::shared()->generateSingleCommand(theList);
+			command.m_transInfo.m_projectMatrix = p;
+			command.m_transInfo.m_viewMatrix = node.getViewMatrix();
 			Renderer::shared()->renderCommon(command);
 			RenderBackEnd::shared()->setClearColor(0, 0, 0);
 		}
