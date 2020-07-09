@@ -14,7 +14,6 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
     m_radiusBottom = radiusBottom;
     m_height = height;
 	m_mesh = nullptr;
-	m_topBottomMesh = nullptr;
 	m_color = vec4::fromRGB(255,255,255);
 
 
@@ -38,11 +37,6 @@ void CylinderPrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 		RenderCommand command(m_mesh, m_material, passType);
 		setUpCommand(command);
 		Renderer::shared()->addRenderCommand(command);
-
-		RenderCommand commandTopBottom(m_topBottomMesh, m_topBottomMaterial, passType);
-		setUpCommand(commandTopBottom);
-		Renderer::shared()->addRenderCommand(commandTopBottom);
-
 	}
 }
 
@@ -129,16 +123,6 @@ Mesh* CylinderPrimitive::getMesh(int index)
 	return m_mesh;
 }
 
-Mesh* CylinderPrimitive::getTopBottomMesh()
-{
-	return m_topBottomMesh;
-}
-
-Material* CylinderPrimitive::getTopBottomMaterial()
-{
-	return m_topBottomMaterial;
-}
-
 vec2 circleUV(vec3 point, vec3 centre, float radius, bool flipped = false)
 {
 	return vec2((point.x - centre.x) / (2.0 * radius) + 0.5, (point.y - centre.y) / (2.0 * radius) + 0.5);
@@ -159,11 +143,9 @@ void CylinderPrimitive::initMesh()
 	if (!m_mesh)
 	{
 		m_mesh = new Mesh();
-		m_topBottomMesh = new Mesh();
 	}
 	else
 	{
-		m_topBottomMesh->clear();
 		m_mesh->clear();
 	}
 
@@ -198,21 +180,21 @@ void CylinderPrimitive::initMesh()
 
 		//top
 		vec3 centerTop = vec3(0.0, 0.0, halfHeight);
-		m_topBottomMesh->addVertex(VertexData(up_1, circleUV(up_1, centerTop, m_radiusTop), m_color));
-		m_topBottomMesh->addVertex(VertexData(up_2, circleUV(up_2, centerTop, m_radiusTop), m_color));
-		m_topBottomMesh->addVertex(VertexData(centerTop, vec2(0.5, 0.5), m_color));
-		m_topBottomMesh->addIndex(topBottomIndex + 0);
-		m_topBottomMesh->addIndex(topBottomIndex + 1);
-		m_topBottomMesh->addIndex(topBottomIndex + 2);
+		m_mesh->addVertex(VertexData(up_1, circleUV(up_1, centerTop, m_radiusTop), m_color));
+		m_mesh->addVertex(VertexData(up_2, circleUV(up_2, centerTop, m_radiusTop), m_color));
+		m_mesh->addVertex(VertexData(centerTop, vec2(0.5, 0.5), m_color));
+		m_mesh->addIndex(topBottomIndex + 0);
+		m_mesh->addIndex(topBottomIndex + 1);
+		m_mesh->addIndex(topBottomIndex + 2);
 
 		//bottom
 		vec3 centerBottom = vec3(0.0, 0.0, -halfHeight);
-		m_topBottomMesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom, true), m_color));
-		m_topBottomMesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom, true), m_color));
-		m_topBottomMesh->addVertex(VertexData(centerBottom, vec2(0.5, 0.5), m_color));
-		m_topBottomMesh->addIndex(topBottomIndex + 3);
-		m_topBottomMesh->addIndex(topBottomIndex + 4);
-		m_topBottomMesh->addIndex(topBottomIndex + 5);
+		m_mesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom, true), m_color));
+		m_mesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom, true), m_color));
+		m_mesh->addVertex(VertexData(centerBottom, vec2(0.5, 0.5), m_color));
+		m_mesh->addIndex(topBottomIndex + 3);
+		m_mesh->addIndex(topBottomIndex + 4);
+		m_mesh->addIndex(topBottomIndex + 5);
 		theta += step;
 		index += 6;
 		topBottomIndex += 6;
@@ -220,9 +202,6 @@ void CylinderPrimitive::initMesh()
 	}
     m_mesh->caclNormals();
     m_mesh->finish();
-
-	m_topBottomMesh->caclNormals();
-	m_topBottomMesh->finish();
     m_localAABB.merge(m_mesh->getAabb());
     reCache();
     reCacheAABB();

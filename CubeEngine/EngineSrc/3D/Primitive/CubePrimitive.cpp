@@ -116,6 +116,7 @@ vec3 CubePrimitive::getWorldPos(vec3 localPos)
 
 void CubePrimitive::initMesh()
 {
+	tlog("cubePrimitive %f, %f, %f",m_width, m_depth, m_height);
     auto halfWidth = m_width/2.0f;
     auto halfDepth = m_depth/2.0f;
     auto halfHeight = m_height/2.0f;

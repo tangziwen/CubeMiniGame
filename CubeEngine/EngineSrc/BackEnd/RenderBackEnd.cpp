@@ -12,8 +12,8 @@ RenderBackEnd * RenderBackEnd::m_instance = nullptr;
 
 void RenderBackEnd::selfCheck()
 {
-	if (!m_isCheckGL)
-		return;
+	//if (!m_isCheckGL)
+		//return;
 	bool isBad = false;
 	while(true)
 	{

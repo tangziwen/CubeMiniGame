@@ -4,6 +4,9 @@
 #include "BackEnd/RenderBackEnd.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
+
+#include "Rendering/InstancingMgr.h"
+
 namespace tzw {
 	ThumbNail::ThumbNail(Drawable3D* node):m_node(node),m_isDone(false)
 	{
@@ -29,18 +32,30 @@ namespace tzw {
 		node.setPos(0.5, 0.5, 0.5);
 		node.lookAt(vec3(0, 0, 0), vec3(0, 1, 0));
 
-		for (int i = 0; i < m_node->getMeshCount(); i++)
+		if(m_node->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Drawable))
 		{
-	        RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), RenderCommand::RenderType::Common);
+			for (int i = 0; i < m_node->getMeshCount(); i++)
+			{
+		        RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), RenderCommand::RenderType::Common);
 
-    		m_node->setUpCommand(command);
-	        m_node->setUpTransFormation(command.m_transInfo);
+    			m_node->setUpCommand(command);
+		        m_node->setUpTransFormation(command.m_transInfo);
 
-			command.m_transInfo.m_projectMatrix = p;
-			command.m_transInfo.m_viewMatrix = node.getViewMatrix();
+				command.m_transInfo.m_projectMatrix = p;
+				command.m_transInfo.m_viewMatrix = node.getViewMatrix();
+				Renderer::shared()->renderCommon(command);
+				RenderBackEnd::shared()->setClearColor(0, 0, 0);
+			}
+		}
+		else
+		{
+			std::vector<InstanceRendereData> theList;
+			m_node->getCommandForInstanced(theList);
+			auto command = InstancingMgr::shared()->generateSingleCommand(theList);
 			Renderer::shared()->renderCommon(command);
 			RenderBackEnd::shared()->setClearColor(0, 0, 0);
 		}
+
 	}
 
 	Drawable3D* ThumbNail::getNode() const

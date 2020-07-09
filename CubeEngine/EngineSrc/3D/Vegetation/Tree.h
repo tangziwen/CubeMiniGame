@@ -30,6 +30,7 @@ namespace tzw {
 		void commitShadowRenderCmd();
 		Model * m_model;
 		Mesh * m_quadMesh;
+		std::vector<InstancedMesh *> m_instancedMeshList;
 		Material * m_quadMat;
 		size_t m_totalCount;
 		VegetationType m_type;

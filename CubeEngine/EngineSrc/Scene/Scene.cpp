@@ -6,6 +6,7 @@
 #include "../Interface/Drawable3D.h"
 #include "../Engine/EngineDef.h"
 #include "3D/Vegetation/Tree.h"
+#include "Rendering/InstancingMgr.h"
 
 namespace tzw {
 
@@ -48,6 +49,19 @@ void Scene::visit()
 		}
 	}
 	Tree::shared()->pushCommand();
+    std::vector<Drawable3D *> nodeList;
+	m_octreeScene->cullingByCameraExtraFlag(defaultCamera(), static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
+	InstancingMgr::shared()->prepare();
+	std::vector<InstanceRendereData> istanceCommandList;
+    for(auto node:nodeList)
+    {
+    	node->getCommandForInstanced(istanceCommandList);   
+    }
+    for(auto& instanceData : istanceCommandList)
+    {
+	    InstancingMgr::shared()->pushInstanceRenderData(instanceData);
+    }
+	InstancingMgr::shared()->generateDrawCall();
 }
 
 void Scene::visitPost()

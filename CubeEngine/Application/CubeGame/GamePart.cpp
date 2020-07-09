@@ -1,6 +1,7 @@
 #include "GamePart.h"
 #include "Island.h"
 #include "BearPart.h"
+#include "GamePartRenderNode.h"
 #include "2D/GUISystem.h"
 #include "ItemMgr.h"
 #include "Texture/TextureMgr.h"
@@ -72,6 +73,8 @@ namespace tzw
 		
 		if(getItem()->m_visualInfo.type != VisualInfo::VisualInfoType::Mesh)
 		{
+			static_cast<GamePartRenderNode * >(m_node)->setPartSurface(surface);
+			/*
 			auto mat = getNode()->getMaterial();
 			auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 			mat->setTex("DiffuseMap", texture);
@@ -84,6 +87,7 @@ namespace tzw
 
 			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
 			mat->setTex("NormalMap", normalMapTexture);
+			*/
 		}
 	}
 
@@ -667,9 +671,12 @@ namespace tzw
 		{
 		case VisualInfo::VisualInfoType::CubePrimitive:
 		{
-			auto size = item->m_visualInfo.size;
-			m_node = new CubePrimitive(size.x, size.y, size.z, false);
-			isNeedSetDefaultMat = true;
+				
+			//auto size = item->m_visualInfo.size;
+			//m_node = new CubePrimitive(size.x, size.y, size.z, false);
+			//isNeedSetDefaultMat = true;
+			
+			m_node = new GamePartRenderNode(item->m_visualInfo);
 		}
 		break;
 		case VisualInfo::VisualInfoType::CylinderPrimitive:
@@ -681,7 +688,8 @@ namespace tzw
 		break;
 		case VisualInfo::VisualInfoType::Mesh:
 		{
-			auto size = item->m_visualInfo.size;
+
+			/*auto size = item->m_visualInfo.size;
 			//sorry not supported yet
 			auto model = Model::create(item->m_visualInfo.filePath);
 			auto tex = TextureMgr::shared()->getByPath(item->m_visualInfo.diffusePath, true);
@@ -697,6 +705,9 @@ namespace tzw
 				auto modelExtra = Model::create(item->m_visualInfo.extraFileList[i]);
 				model->addExtraMeshList(modelExtra->getMeshList());
 			}
+			*/
+			m_node = new GamePartRenderNode(item->m_visualInfo);
+				
 		}
 		break;
 			

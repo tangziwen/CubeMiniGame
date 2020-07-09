@@ -3,10 +3,17 @@
 
 #include "../Technique/Material.h"
 #include "../Mesh/Mesh.h"
+#include "../Mesh/InstancedMesh.h"
 #include "../Interface/DepthPolicy.h"
 #include "../Math/Matrix44.h"
 namespace tzw {
 
+    struct InstanceRendereData
+    {
+	    InstanceData data;
+    	Material * material;
+    	Mesh * m_mesh;
+    };
 struct TransformationInfo{
     Matrix44 m_worldMatrix;
     Matrix44 m_viewMatrix;
@@ -55,9 +62,12 @@ public:
 	RenderFlag::RenderStage getRenderState() const;
 	void setRenderState(const RenderFlag::RenderStage renderState);
 	RenderBatchType m_batchType;
+	InstancedMesh* getInstancedMesh() const;
+	void setInstancedMesh(InstancedMesh* const instancedMesh);
 private:
 	RenderFlag::RenderStage m_renderState;
     Mesh * m_mesh;
+	InstancedMesh * m_instancedMesh;
     Material *m_material;
     RenderType m_type;
     PrimitiveType m_primitiveType;

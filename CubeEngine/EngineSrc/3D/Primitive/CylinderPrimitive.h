@@ -17,14 +17,11 @@ public:
 	virtual bool isHit(Ray ray);
 	Mesh * getMesh() override;
 	Mesh * getMesh(int index) override;
-	Mesh * getTopBottomMesh();
-	Material * getTopBottomMaterial();
 protected:
 	vec3 getWorldPos(vec3 localPos);
     void initMesh();
 	virtual void checkCollide(ColliderEllipsoid * package);
     Mesh * m_mesh;
-	Mesh * m_topBottomMesh;
 	Material * m_topBottomMaterial;
     float m_radiusTop, m_radiusBottom, m_height;
 	vec3 getSegPos(float theta, int side);

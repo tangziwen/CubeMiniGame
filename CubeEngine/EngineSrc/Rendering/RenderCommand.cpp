@@ -75,5 +75,15 @@ void RenderCommand::setRenderState(const RenderFlag::RenderStage renderState)
 {
 	m_renderState = renderState;
 }
+
+InstancedMesh* RenderCommand::getInstancedMesh() const
+{
+	return m_instancedMesh;
+}
+
+void RenderCommand::setInstancedMesh(InstancedMesh* const instancedMesh)
+{
+	m_instancedMesh = instancedMesh;
+}
 } // namespace tzw
 

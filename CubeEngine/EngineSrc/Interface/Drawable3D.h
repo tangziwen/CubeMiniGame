@@ -12,6 +12,7 @@ enum class DrawableFlag
 {
 	Drawable = 1 << 1,
     PointLight = 1 << 2,
+	Instancing = 1 << 3,
 };
 class Drawable3D : public Drawable
 {
@@ -38,6 +39,7 @@ public:
 	void setColor(vec4 newColor) override;
 	uint32_t getDrawableFlag() const;
 	void setDrawableFlag(const uint32_t drawableFlag);
+	virtual void getCommandForInstanced(std::vector<InstanceRendereData> & commandList);
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;

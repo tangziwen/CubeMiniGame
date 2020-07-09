@@ -22,6 +22,7 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 	m_type = info->m_type;
 	auto filePath = info->file_path;
 	m_info = (*info);
+	
 	switch (m_type)
 	{
 	case VegetationType::QUAD_TRI:
@@ -63,6 +64,9 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			tex->genMipMap();
 			tex->setWarp(RenderFlag::WarpAddress::ClampToEdge);
 			m_quadMat->setTex("DiffuseMap", tex);
+			auto instancedMesh = new InstancedMesh();
+			instancedMesh->setMesh(theMesh);
+			m_instancedMeshList.push_back(instancedMesh);
 		}
 		break;
 		case VegetationType::QUAD:
@@ -91,6 +95,9 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			tex->genMipMap();
 			tex->setWarp(RenderFlag::WarpAddress::ClampToEdge);
 			m_quadMat->setTex("DiffuseMap", tex);
+			auto instancedMesh = new InstancedMesh();
+			instancedMesh->setMesh(theMesh);
+			m_instancedMeshList.push_back(instancedMesh);
 		}
 		break;
 	case VegetationType::ModelType:
@@ -102,6 +109,14 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 				auto mat = treeModel->getMat(i);
 				mat->setIsEnableInstanced(true);
 				mat->reload();
+			}
+			for(auto i = 0; i < m_model->getMeshCount(); i++)
+			{
+				
+				auto theMesh = m_model->getMesh(i);
+				auto instancedMesh = new InstancedMesh();
+				instancedMesh->setMesh(theMesh);
+				m_instancedMeshList.push_back(instancedMesh);
 			}
 		}
 		break;
@@ -115,19 +130,20 @@ void VegetationBatch::insertInstanceData(InstanceData inst)
 	{
 	case VegetationType::QUAD_TRI:
 		{
-			m_quadMesh->pushInstance(inst);
+			m_instancedMeshList[0]->pushInstance(inst);
 		}
 		break;
 	case VegetationType::QUAD:
 		{
-			m_quadMesh->pushInstance(inst);
+			m_instancedMeshList[0]->pushInstance(inst);
 		}
 		break;
 	case VegetationType::ModelType:
 		{
 			for(auto i = 0; i < m_model->getMeshCount(); i++)
 			{
-				m_model->getMesh(i)->pushInstance(inst);
+				m_instancedMeshList[i]->pushInstance(inst);
+				//m_model->getMesh(i)->pushInstance(inst);
 			}
 		}
 		break;
@@ -142,19 +158,19 @@ void VegetationBatch::clear()
 	{
 	case VegetationType::QUAD_TRI:
 		{
-			m_quadMesh->clearInstances();
+			m_instancedMeshList[0]->clearInstances();
 		}
 		break;
 	case VegetationType::QUAD:
 		{
-			m_quadMesh->clearInstances();
+			m_instancedMeshList[0]->clearInstances();
 		}
 		break;
 	case VegetationType::ModelType:
 		{
 			for(auto i = 0; i < m_model->getMeshCount(); i++)
 			{
-				m_model->getMesh(i)->clearInstances();
+				m_instancedMeshList[i]->clearInstances();
 			}
 		}
 		break;
@@ -181,8 +197,9 @@ void VegetationBatch::commitRenderCmd()
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
-			theMesh->submitInstanced();
+			m_instancedMeshList[0]->submitInstanced();
 			RenderCommand command(theMesh, mat, RenderCommand::RenderType::Common, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
 			Renderer::shared()->addRenderCommand(command);
@@ -193,8 +210,9 @@ void VegetationBatch::commitRenderCmd()
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
-			theMesh->submitInstanced();
+			m_instancedMeshList[0]->submitInstanced();
 			RenderCommand command(theMesh, mat, RenderCommand::RenderType::Common, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
 			Renderer::shared()->addRenderCommand(command);
@@ -208,8 +226,9 @@ void VegetationBatch::commitRenderCmd()
 				
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
-				theMesh->submitInstanced();
+				m_instancedMeshList[i]->submitInstanced();
 				RenderCommand command(theMesh, mat, RenderCommand::RenderType::Common,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
 				Renderer::shared()->addRenderCommand(command);
@@ -236,8 +255,9 @@ void VegetationBatch::commitShadowRenderCmd()
 				
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
-				theMesh->submitInstanced();
+				m_instancedMeshList[i]->submitInstanced();
 				RenderCommand command(theMesh, mat, RenderCommand::RenderType::Shadow,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
 				Renderer::shared()->addRenderCommand(command);

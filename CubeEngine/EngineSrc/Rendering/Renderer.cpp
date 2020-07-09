@@ -273,7 +273,7 @@ void Renderer::renderShadow(RenderCommand &command,int index, const Matrix44 & l
 		program->setUniformMat4v("TU_lightWVP", lightWVP.data());
 		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
 		RenderBackEnd::shared()->setDepthTestEnable(true);
-		renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType, program);
+		renderPrimitveInstanced(command.m_instancedMesh, command.m_material, command.m_primitiveType, program);
 	}
 	else
 	{
@@ -336,7 +336,7 @@ void Renderer::render(const RenderCommand &command)
 	applyTransform(command.m_material->getProgram(), command.m_transInfo, true);
 	if (command.batchType() == RenderCommand::RenderBatchType::Instanced)
 	{
-		renderPrimitveInstanced(command.m_mesh, command.m_material, command.m_primitiveType);
+		renderPrimitveInstanced(command.m_instancedMesh, command.m_material, command.m_primitiveType);
 	}
 	else
 	{
@@ -382,7 +382,7 @@ void Renderer::renderPrimitive(Mesh * mesh, Material * effect,RenderCommand::Pri
 	}
 }
 #define RAISE error = glGetError();tlogError("raise error %d\n",error);
-void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram)
+void Renderer::renderPrimitveInstanced(InstancedMesh * instancedMesh, Material * effect, RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram)
 {
 	auto program = effect->getProgram();
 	if (extraProgram)
@@ -390,18 +390,30 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 		program = extraProgram;
 	}
 	program->use();
+	auto mesh = instancedMesh->getMesh();
 	mesh->getArrayBuf()->use();
 	mesh->getIndexBuf()->use();
 	// Offset for position
 	Engine::shared()->increaseVerticesIndicesCount(mesh->getVerticesSize(), mesh->getIndicesSize());
 	// Tell OpenGL programmable pipeline how to locate vertex position data
 	setVertexAttribute(program);
-	//RAISE
-	mesh->getInstanceBuf()->use();
+
+
+	
+	//instanced part
+	instancedMesh->getInstanceBuf()->use();
+	RenderBackEnd::shared()->selfCheck();
 	int grassOffsetLocation = program->attributeLocation("a_instance_offset");
-	program->enableAttributeArray(grassOffsetLocation);
-	program->setAttributeBuffer(grassOffsetLocation, GL_FLOAT, 0, 4, sizeof(InstanceData));
-	glVertexAttribDivisor(grassOffsetLocation, 1);
+	if(grassOffsetLocation >0)
+	{
+		program->enableAttributeArray(grassOffsetLocation);
+		program->setAttributeBuffer(grassOffsetLocation, GL_FLOAT, 0, 4, sizeof(InstanceData));
+		glVertexAttribDivisor(grassOffsetLocation, 1);
+	}
+	else
+	{
+		abort();
+	}
 	
 	int extraInstanceOffsetLocation = program->attributeLocation("a_instance_offset2");
 	if(extraInstanceOffsetLocation > 0)
@@ -418,10 +430,12 @@ void Renderer::renderPrimitveInstanced(Mesh * mesh, Material * effect, RenderCom
 		program->setAttributeBuffer(rotateInstanceOffset, GL_FLOAT, offsetof(InstanceData, rotateInfo.x), 4, sizeof(InstanceData));
 		glVertexAttribDivisor(rotateInstanceOffset, 1);
 	}
+
+	
 	switch (primitiveType)
 	{
 	case RenderCommand::PrimitiveType::TRIANGLES:
-		RenderBackEnd::shared()->drawElementInstanced(RenderFlag::IndicesType::Triangles, mesh->getIndicesSize(), 0, mesh->getInstanceSize());
+		RenderBackEnd::shared()->drawElementInstanced(RenderFlag::IndicesType::Triangles, mesh->getIndicesSize(), 0, instancedMesh->getInstanceSize());
 		break;
 	case RenderCommand::PrimitiveType::Lines: break;
 	case RenderCommand::PrimitiveType::TRIANGLE_STRIP: break;

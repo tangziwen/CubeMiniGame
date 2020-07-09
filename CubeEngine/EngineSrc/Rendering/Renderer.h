@@ -26,7 +26,7 @@ public:
     void clearCommands();
     void render(const RenderCommand &command);
     void renderPrimitive(Mesh * mesh, Material *effect, RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram = nullptr);
-	void renderPrimitveInstanced(Mesh * mesh, Material *effect, RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram = nullptr);
+	void renderPrimitveInstanced(InstancedMesh * instancedMesh, Material *effect, RenderCommand::PrimitiveType primitiveType, ShaderProgram * extraProgram = nullptr);
     bool enable3DRender() const;
     void setEnable3DRender(bool enable3DRender);
 

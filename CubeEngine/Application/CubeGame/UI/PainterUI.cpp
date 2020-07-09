@@ -25,7 +25,9 @@ namespace tzw
 					float whiteFactorList[] = {1.0, 0.8, 0.6, 0.45, 0.2, 0.0};
 					vec3 colorList[] = {vec3(1, 1, 1), vec3(1, 0, 0), vec3(0, 1, 0), vec3(0, 0, 1),
 						vec3(1, 1, 0), vec3(1, 0, 1), vec3(0, 1, 1),
-						vec3(1, 0.7, 0), vec3(0.7, 1.0, 0), vec3(1.0, 0.0, 0.7), vec3(0.7, 0.0, 1.0), vec3(0, 0.7, 1), vec3(0, 1, 0.7),};
+						vec3(1, 0.7, 0), vec3(0.7, 1.0, 0), vec3(1.0, 0.0, 0.7), vec3(0.7, 0.0, 1.0), vec3(0, 0.7, 1), vec3(0, 1, 0.7),
+						vec3(1, 0.752, 0.796),
+					};
 					int id = 0;
 					for(int i = 0; i < sizeof(colorList) / sizeof(vec3); i++)
 					{

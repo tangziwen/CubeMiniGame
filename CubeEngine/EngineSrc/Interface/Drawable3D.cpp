@@ -131,6 +131,11 @@ void Drawable3D::setDrawableFlag(const uint32_t drawableFlag)
 	m_drawableFlag = drawableFlag;
 }
 
+void Drawable3D::getCommandForInstanced(std::vector<InstanceRendereData> & commandList)
+{
+    return;
+}
+
 Drawable3DGroup::Drawable3DGroup(Drawable3D **obj, int count)
 {
 	init(obj, count);
