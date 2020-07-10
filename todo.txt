@@ -1,4 +1,7 @@
 ****Tech Demo v2 QOL bit by bit improvement***:
+20.7
+优化方块的渲染，尽可能的使用GPU instancing技术，drawcall显著减少，在建造大型静态建筑物的时帧率更加稳定(100%)
+优化喷涂器，有预制颜色与自定颜色槽可供选择，更加方便喷涂
 20.6
 fix a bug that paint terrain is not working.(100%)
 add mouse middle wheel to swap curr select item.(100%)
