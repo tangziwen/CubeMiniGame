@@ -681,9 +681,11 @@ namespace tzw
 		break;
 		case VisualInfo::VisualInfoType::CylinderPrimitive:
 		{
-			auto size = item->m_visualInfo.size;
-			m_node = new CylinderPrimitive(size.x, size.y, size.z);
-			isNeedSetDefaultMat = true;
+			//auto size = item->m_visualInfo.size;
+			//m_node = new CylinderPrimitive(size.x, size.y, size.z);
+			//isNeedSetDefaultMat = true;
+
+			m_node = new GamePartRenderNode(item->m_visualInfo);
 		}
 		break;
 		case VisualInfo::VisualInfoType::Mesh:
@@ -713,9 +715,10 @@ namespace tzw
 			
         case VisualInfo::VisualInfoType::RightPrismPrimitive:
 		{
-			auto size = item->m_visualInfo.size;
-			m_node = new RightPrismPrimitive(size.x, size.y, size.z);
-			isNeedSetDefaultMat = true;
+			//auto size = item->m_visualInfo.size;
+			//m_node = new RightPrismPrimitive(size.x, size.y, size.z);
+			//isNeedSetDefaultMat = true;
+        	m_node = new GamePartRenderNode(item->m_visualInfo);
         }
 		break;
 		default: ;

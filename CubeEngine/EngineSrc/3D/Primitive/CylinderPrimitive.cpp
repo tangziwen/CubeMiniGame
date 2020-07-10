@@ -153,7 +153,6 @@ void CylinderPrimitive::initMesh()
 	float step = 2 * 3.141592654 / seg;
 	float theta = 0.0;
 	int index = 0;
-	int topBottomIndex = 0;
 	for(int i = 0; i < seg; i++)
 	{
 
@@ -183,22 +182,20 @@ void CylinderPrimitive::initMesh()
 		m_mesh->addVertex(VertexData(up_1, circleUV(up_1, centerTop, m_radiusTop), m_color));
 		m_mesh->addVertex(VertexData(up_2, circleUV(up_2, centerTop, m_radiusTop), m_color));
 		m_mesh->addVertex(VertexData(centerTop, vec2(0.5, 0.5), m_color));
-		m_mesh->addIndex(topBottomIndex + 0);
-		m_mesh->addIndex(topBottomIndex + 1);
-		m_mesh->addIndex(topBottomIndex + 2);
+		m_mesh->addIndex(index + 0 + 5);
+		m_mesh->addIndex(index + 1 + 5);
+		m_mesh->addIndex(index + 2 + 5);
 
 		//bottom
 		vec3 centerBottom = vec3(0.0, 0.0, -halfHeight);
 		m_mesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom, true), m_color));
 		m_mesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom, true), m_color));
 		m_mesh->addVertex(VertexData(centerBottom, vec2(0.5, 0.5), m_color));
-		m_mesh->addIndex(topBottomIndex + 3);
-		m_mesh->addIndex(topBottomIndex + 4);
-		m_mesh->addIndex(topBottomIndex + 5);
+		m_mesh->addIndex(index + 3 + 5);
+		m_mesh->addIndex(index + 4 + 5);
+		m_mesh->addIndex(index + 5 + 5);
 		theta += step;
-		index += 6;
-		topBottomIndex += 6;
-
+		index += 12;
 	}
     m_mesh->caclNormals();
     m_mesh->finish();

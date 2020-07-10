@@ -13,6 +13,8 @@ enum class DrawableFlag
 	Drawable = 1 << 1,
     PointLight = 1 << 2,
 	Instancing = 1 << 3,
+
+	All = -1,//all bits are 1
 };
 class Drawable3D : public Drawable
 {

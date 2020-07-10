@@ -4,6 +4,8 @@
 #include "PartSurface.h"
 #include "3D/Model/Model.h"
 #include "3D/Primitive/CubePrimitive.h"
+#include "3D/Primitive/CylinderPrimitive.h"
+#include "3D/Primitive/RightPrismPrimitive.h"
 static tzw::Material * g_material;
 namespace tzw
 {
@@ -52,6 +54,9 @@ Mesh * GamePartRenderMgr::findOrCreateMesh(VisualInfo visualInfo)
 			break;
 			case VisualInfo::VisualInfoType::CylinderPrimitive:
 			{
+				auto size = visualInfo.size;
+				auto node = new CylinderPrimitive(size.x, size.y, size.z);
+				mesh = node->getMesh();
 			}
 			break;
 			case VisualInfo::VisualInfoType::Mesh:
@@ -61,6 +66,9 @@ Mesh * GamePartRenderMgr::findOrCreateMesh(VisualInfo visualInfo)
 				
 	        case VisualInfo::VisualInfoType::RightPrismPrimitive:
 			{
+	        	auto size = visualInfo.size;
+				auto node = new RightPrismPrimitive(size.x, size.y, size.z);
+	        	mesh = node->getMesh();
 	        }
 			break;
 			default: ;

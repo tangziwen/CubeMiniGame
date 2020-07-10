@@ -11,6 +11,12 @@ namespace tzw {
 		m_instanceBuf->create();
 	}
 
+	InstancedMesh::InstancedMesh(Mesh* mesh):m_mesh(mesh)
+	{
+		m_instanceBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
+		m_instanceBuf->create();
+	}
+
 	RenderBuffer* InstancedMesh::getInstanceBuf() const
 	{
 		return m_instanceBuf;

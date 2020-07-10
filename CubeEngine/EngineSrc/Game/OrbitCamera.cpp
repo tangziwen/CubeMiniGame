@@ -396,7 +396,7 @@ void OrbitCamera::checkCollision(ColliderEllipsoid * thePackage)
     AABB aabb;
     aabb.update(vec3(pos.x - 3,pos.y - 3,pos.z - 3));
     aabb.update(vec3(pos.x + 3,pos.y + 3 ,pos.z + 3));
-    g_GetCurrScene()->getRange(&list,aabb);
+    g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), aabb);
 	if (list.empty()) return;
     Drawable3DGroup group(&list[0],list.size());
     group.checkCollide(thePackage);

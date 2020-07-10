@@ -10,6 +10,8 @@
 #include "Technique/MaterialPool.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 #include <random>
+
+#include "InstancingMgr.h"
 #include "Shader/ShaderMgr.h"
 #include "3D/Thumbnail.h"
 #include "3D/Primitive/SpherePrimitive.h"
@@ -788,12 +790,27 @@ void Renderer::shadowPass()
 		m_shadowCommandList.clear();
 		auto aabb = ShadowMap::shared()->getPotentialRange(i);
 		std::vector<Drawable3D *> shadowNeedDrawList;
-		g_GetCurrScene()->getRange(&shadowNeedDrawList, aabb);
+		g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), aabb);
+		InstancingMgr::shared()->prepare(RenderCommand::RenderType::Shadow);
+		std::vector<InstanceRendereData> istanceCommandList;
 		for(auto obj:shadowNeedDrawList)
 		{
-			obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
+			if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
+			{
+				obj->submitDrawCmd(RenderCommand::RenderType::Shadow);
+			}
+			else//instancing
+			{
+				obj->getCommandForInstanced(istanceCommandList);   
+			}
 		}
+
 		Tree::shared()->submitShadowDraw();
+		for(auto& instanceData : istanceCommandList)
+	    {
+		    InstancingMgr::shared()->pushInstanceRenderData(RenderCommand::RenderType::Shadow, instanceData);
+	    }
+		InstancingMgr::shared()->generateDrawCall(RenderCommand::RenderType::Shadow);
 		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 		shadowBuffer->BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);

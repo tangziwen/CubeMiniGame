@@ -51,7 +51,7 @@ void Scene::visit()
 	Tree::shared()->pushCommand();
     std::vector<Drawable3D *> nodeList;
 	m_octreeScene->cullingByCameraExtraFlag(defaultCamera(), static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
-	InstancingMgr::shared()->prepare();
+	InstancingMgr::shared()->prepare(RenderCommand::RenderType::Common);
 	std::vector<InstanceRendereData> istanceCommandList;
     for(auto node:nodeList)
     {
@@ -59,9 +59,9 @@ void Scene::visit()
     }
     for(auto& instanceData : istanceCommandList)
     {
-	    InstancingMgr::shared()->pushInstanceRenderData(instanceData);
+	    InstancingMgr::shared()->pushInstanceRenderData(RenderCommand::RenderType::Common, instanceData);
     }
-	InstancingMgr::shared()->generateDrawCall();
+	InstancingMgr::shared()->generateDrawCall(RenderCommand::RenderType::Common);
 }
 
 void Scene::visitPost()
@@ -101,9 +101,9 @@ bool Scene::hitByRay(const Ray &ray, vec3 &hitPoint)
     return m_octreeScene->hitByRay(ray,hitPoint);
 }
 
-void Scene::getRange(std::vector<Drawable3D *> *list, AABB aabb)
+void Scene::getRange(std::vector<Drawable3D *> *list, uint32_t flag, AABB aabb)
 {
-    m_octreeScene->getRange(list, static_cast<uint32_t>(DrawableFlag::Drawable), aabb);
+    m_octreeScene->getRange(list, flag, aabb);
 }
 
 Node *Scene::root()

@@ -13,6 +13,7 @@ class InstancedMesh
 {
 public:
     InstancedMesh();
+	InstancedMesh(Mesh * mesh);
 	RenderBuffer *getInstanceBuf() const;
 	std::vector<InstanceData> m_instanceOffset;
 	void pushInstance(InstanceData instanceData);
