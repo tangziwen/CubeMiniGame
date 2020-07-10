@@ -25,7 +25,9 @@ varying vec2 v_texcoord;
 varying vec4 v_color;
 varying vec3 v_worldPos;
 varying vec3 v_tangent;
-
+#ifdef FLAG_EnableInstanced
+varying vec4 v_instanceColor;
+#endif
 
 mat4 fromQ(vec4 q){
     mat4 m;
@@ -82,6 +84,7 @@ void main()
 	v_worldPos = (TU_mMatrix * modelMatrix * vec4(a_position * a_instance_offset.w ,1.0)).xyz;
     v_normal = (modelMatrix * vec4(a_normal.xyz, 0.0)).xyz;
 	v_tangent = (TU_mMatrix * modelMatrix * vec4(a_tangent,0.0)).xyz;
+    v_instanceColor = a_instance_offset2;
 #else
     // Calculate vertex position in screen space
     gl_Position = TU_mvpMatrix * vec4(a_position,1.0);

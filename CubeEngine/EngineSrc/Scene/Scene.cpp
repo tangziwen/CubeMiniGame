@@ -55,7 +55,10 @@ void Scene::visit()
 	std::vector<InstanceRendereData> istanceCommandList;
     for(auto node:nodeList)
     {
-    	node->getCommandForInstanced(istanceCommandList);   
+        if(node->getIsVisible())
+        {
+            node->getCommandForInstanced(istanceCommandList);   
+        }
     }
     for(auto& instanceData : istanceCommandList)
     {

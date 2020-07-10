@@ -21,6 +21,7 @@ namespace tzw
 
 	void GamePartRenderNode::getCommandForInstanced(std::vector<InstanceRendereData> & commandList)
 	{
+		if(!m_isVisible) return;
 		if(m_visualInfo.type != VisualInfo::VisualInfoType::Mesh)
 		{
 			auto info = GamePartRenderMgr::shared()->getRenderInfo(m_visualInfo, m_partSurface);
@@ -31,6 +32,7 @@ namespace tzw
 			Quaternion q;
 			getTransform().getRotation(&q);
 			instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
+			instance.extraInfo = m_color;
 			//instance.extraInfo = m_color;
 			auto data = InstanceRendereData();
 			data.m_mesh = info.mesh;
@@ -57,6 +59,7 @@ namespace tzw
 				vec3 normal = vec3(0, 1,0);
 				auto mat = getTransform();
 				instance.posAndScale = vec4(mat.getTranslation(), 1.0);
+				instance.extraInfo = m_color;
 				Quaternion q;
 				getTransform().getRotation(&q);
 				instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);

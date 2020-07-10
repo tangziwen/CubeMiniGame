@@ -1020,7 +1020,7 @@ BAAAABB
 					InstanceData instance;
 					vec3 normal = vec3(0, 1,0);
 					instance.posAndScale = vec4(pos.x, pos.y, pos.z, 1.0);
-					instance.extraInfo = vec4(normal, 0);
+					instance.extraInfo = vec4(1, 1, 1, 1);
  					m_tree->m_instance.push_back(instance);
 				}
 			}

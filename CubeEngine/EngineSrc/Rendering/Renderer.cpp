@@ -795,6 +795,7 @@ void Renderer::shadowPass()
 		std::vector<InstanceRendereData> istanceCommandList;
 		for(auto obj:shadowNeedDrawList)
 		{
+			if(!obj->getIsVisible()) continue;
 			if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
 			{
 				obj->submitDrawCmd(RenderCommand::RenderType::Shadow);

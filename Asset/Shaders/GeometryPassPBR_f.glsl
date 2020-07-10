@@ -17,7 +17,9 @@ varying vec2 v_texcoord;
 varying vec4  v_color;
 varying vec3 v_worldPos;
 varying vec4  v_tangent;
-
+#ifdef FLAG_EnableInstanced
+in vec4 v_instanceColor;
+#endif
 vec3 CalcBumpedNormal(vec3 inputNormal)
 {
 	vec3 Normal = normalize(inputNormal);
@@ -65,7 +67,11 @@ void main()
 	{
 		discard;
 	}
+#ifdef FLAG_EnableInstanced
+	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a) * v_instanceColor * v_color;
+#else
 	vec4 albedo = vec4(pow(col.rgb, vec3(2.2)), col.a)*TU_color * v_color;
+#endif
 	gl_FragData[0] = albedo;
 	float metallic = texture2D(MetallicMap,v_texcoord).r;
 	float roughness = texture2D(RoughnessMap,v_texcoord).r;
