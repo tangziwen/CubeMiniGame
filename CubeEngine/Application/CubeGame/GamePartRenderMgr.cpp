@@ -14,28 +14,84 @@ GamePartRenderMgr::GamePartRenderMgr()
 	g_material = Material::createFromTemplate("ModelSTD");
 	g_material->setIsEnableInstanced(true);
 	g_material->reload();
+	m_previewMat = nullptr;
 }
 
-GamePartRenderInfo GamePartRenderMgr::getRenderInfo(VisualInfo visualInfo, PartSurface* surface)
+void GamePartRenderMgr::getRenderInfo(bool isInstancing, VisualInfo visualInfo, PartSurface* surface, std::vector<GamePartRenderInfo> &infoList)
 {
 	GamePartRenderInfo info;
-	info.mesh = findOrCreateMesh(visualInfo);
+	
 	if(visualInfo.type != VisualInfo::VisualInfoType::Mesh)
 	{
-		info.material = findOrCreateMaterial(surface);
-	}else
-	{
-		info.material = m_modelMap[visualInfo.filePath]->getMat(0);
+		info.mesh = findOrCreateSingleMesh(visualInfo);
+		if(visualInfo.isPreview)
+		{
+			if(!m_previewMat){
+		
+				m_previewMat = Material::createFromTemplate("ModelRimLight");
+			}
+			info.material = m_previewMat;
+		}
+		else
+		{
+			if(!visualInfo.isTransparent)//opaque
+			{
+				info.material = findOrCreateMaterial(isInstancing, surface);
+			}
+			else//transparent
+			{
+				info.material = findOrCreateMaterial(isInstancing, surface);
+			}
+		}
+		infoList.emplace_back(info);
 	}
-	return info;
+	else
+	{
+		auto model = GamePartRenderMgr::shared()->getModel(isInstancing, visualInfo);
+		auto meshList = model->getMeshList();
+		for(auto mesh : meshList)
+		{
+			Material * material = nullptr;
+			if(visualInfo.isPreview)
+			{
+				if(!m_previewMat){
+		
+					m_previewMat = Material::createFromTemplate("ModelRimLight");
+				}
+				material = m_previewMat;
+			}
+			else
+			{
+				if(model->getMatCount() > 1)
+				{
+					material = model->getMat(mesh->getMatIndex());
+				}
+				else
+				{
+					material = model->getMat(0);
+				}
+			}
+			GamePartRenderInfo info;
+			info.mesh = mesh;
+			info.material = material;
+			infoList.emplace_back(info);
+		}
+	}
+	return;
 }
 
 AABB GamePartRenderMgr::getPartLocalAABB(VisualInfo visualInfo)
 {
-	auto mesh = findOrCreateMesh(visualInfo);
+	Mesh * mesh = nullptr;
+	if(visualInfo.type != VisualInfo::VisualInfoType::Mesh){
+		mesh = findOrCreateSingleMesh(visualInfo);
+	}else
+	{
+		mesh = getModel(false, visualInfo)->getMesh(0);
+	}
 	return mesh->getAabb();
 }
-Mesh * GamePartRenderMgr::findOrCreateMesh(VisualInfo visualInfo)
+Mesh * GamePartRenderMgr::findOrCreateSingleMesh(VisualInfo visualInfo)
 {
 	if(visualInfo.type != VisualInfo::VisualInfoType::Mesh)
 	{
@@ -82,51 +138,23 @@ Mesh * GamePartRenderMgr::findOrCreateMesh(VisualInfo visualInfo)
 		}
 	}else// model mesh
 	{
-		if(m_modelMap.find(visualInfo.filePath) == m_modelMap.end())
-		{
-			auto size = visualInfo.size;
-			//sorry not supported yet
-			auto model = Model::create(visualInfo.filePath);
-			auto tex = TextureMgr::shared()->getByPath(visualInfo.diffusePath, true);
-			if(model->getMatCount() > 1)
-			{
-				for (auto mesh: model->getMeshList())
-				{
-					auto material = model->getMat(mesh->getMatIndex());
-
-					material->setTex("DiffuseMap", tex);
-					material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
-					material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
-					material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
-					material->setIsEnableInstanced(true);
-					material->reload();
-				}
-			}else
-			{
-				auto material = model->getMat(0);
-				material->setTex("DiffuseMap", tex);
-				material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
-				material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
-				material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
-				material->setIsEnableInstanced(true);
-				material->reload();
-			}
-
-			model->setScale(size.x, size.y, size.z);
-			for(int i = 0; i < visualInfo.extraFileList.size(); i++)
-			{
-				auto modelExtra = Model::create(visualInfo.extraFileList[i]);
-				model->addExtraMeshList(modelExtra->getMeshList());
-			}
-			m_modelMap[visualInfo.filePath] = model;
-		}
-		return m_modelMap[visualInfo.filePath]->getMesh(0);
+		//auto model = getModel(visualInfo);
+		//return model->getMesh(0);
 	}
-
+	return nullptr;
 }
-Material* GamePartRenderMgr::findOrCreateMaterial(PartSurface* surface)
+Material* GamePartRenderMgr::findOrCreateMaterial(bool isInsatnce, PartSurface* surface)
 {
-	if(m_materialMap.find(surface) == m_materialMap.end())
+	std::unordered_map<PartSurface *, Material *> * targetMap = nullptr;
+	if(isInsatnce)
+	{
+		targetMap = &m_materialMap;
+	}
+	else
+	{
+		targetMap = &m_materialMapSingle;
+	}
+	if(targetMap->find(surface) == targetMap->end())
 	{
 		auto mat = Material::createFromTemplate("ModelPBR");
 		mat->setIsEnableInstanced(true);
@@ -143,13 +171,17 @@ Material* GamePartRenderMgr::findOrCreateMaterial(PartSurface* surface)
 		auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
 		mat->setTex("NormalMap", normalMapTexture);
 
-		m_materialMap[surface] = mat;
+		(*targetMap)[surface] = mat;
 		return mat;
 	}
 	else
 	{
-		return m_materialMap[surface];
+		return (*targetMap)[surface];
 	}
+}
+Material* GamePartRenderMgr::findOrCreateMaterialTransparent(VisualInfo visualInfo, PartSurface* surface)
+{
+	return nullptr;
 }
 std::string GamePartRenderMgr::getVisualTypeStr(VisualInfo visualInfo)
 {
@@ -185,9 +217,56 @@ std::string GamePartRenderMgr::getVisualTypeStr(VisualInfo visualInfo)
 	sprintf(resultTmp, "%s:%d %d%d", prefix.c_str(), sizeIntX, sizeIntY, sizeIntZ);
 	return resultTmp;
 }
-Model* GamePartRenderMgr::getModel(VisualInfo visualInfo)
+Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 {
-	return m_modelMap[visualInfo.filePath];
+	std::unordered_map<std::string, Model *> * targetMap;
+	if(isInsatnce)
+	{
+		targetMap = &m_modelMap;
+	}
+	else
+	{
+		targetMap = &m_modelMapSingle;
+	}
+	if(targetMap->find(visualInfo.filePath) == targetMap->end())
+	{
+		auto size = visualInfo.size;
+		//sorry not supported yet
+		auto model = Model::create(visualInfo.filePath);
+		auto tex = TextureMgr::shared()->getByPath(visualInfo.diffusePath, true);
+		if(model->getMatCount() > 1)
+		{
+			for (auto mesh: model->getMeshList())
+			{
+				auto material = model->getMat(mesh->getMatIndex());
+
+				material->setTex("DiffuseMap", tex);
+				material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
+				material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
+				material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
+				material->setIsEnableInstanced(true);
+				material->reload();
+			}
+		}else
+		{
+			auto material = model->getMat(0);
+			material->setTex("DiffuseMap", tex);
+			material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
+			material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
+			material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
+			material->setIsEnableInstanced(true);
+			material->reload();
+		}
+
+		model->setScale(size.x, size.y, size.z);
+		for(int i = 0; i < visualInfo.extraFileList.size(); i++)
+		{
+			auto modelExtra = Model::create(visualInfo.extraFileList[i]);
+			model->addExtraMeshList(modelExtra->getMeshList());
+		}
+		(*targetMap)[visualInfo.filePath] = model;
+	}
+	return (*targetMap)[visualInfo.filePath];
 }
 }
 

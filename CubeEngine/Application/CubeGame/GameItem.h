@@ -30,6 +30,8 @@ struct VisualInfo
 	std::string roughnessPath;
 	std::string metallicPath;
 	std::string normalMapPath;
+	bool isTransparent;
+	bool isPreview;
 	std::vector<std::string> extraFileList;
 };
 

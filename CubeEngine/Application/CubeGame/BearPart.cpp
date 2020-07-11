@@ -13,6 +13,7 @@
 #include "3D/Model/Model.h"
 #include "Base/TranslationMgr.h"
 #include "3D/Primitive/CubePrimitive.h"
+#include <Application\CubeGame\GamePartRenderNode.h>
 
 // #include "EngineSrc/Collision/Physics6DOFConstraint.h"
 namespace tzw
@@ -83,37 +84,26 @@ BearPart::BearPart(std::string itemName)
 	BearPart::generateName();
 
 	m_xrayMat = Material::createFromTemplate("PartXRay");
-	
-	auto cylinderIndicator = static_cast<Model *> (m_node);
-	m_xrayMat->setTex("DiffuseMap", cylinderIndicator->getMat(0)->getTex("DiffuseMap"));
-	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
-	{
-		if(BuildingSystem::shared()->isIsInXRayMode())
-		{
-			RenderCommand command(cylinderIndicator->getMesh(0), this->m_xrayMat, passType);
-			cylinderIndicator->setUpCommand(command);
-			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-			Renderer::shared()->addRenderCommand(command);
-		}
-	};
+
 }
 
 	void BearPart::updateFlipped()
-{
-	if(!m_node) return;
-	auto model = static_cast<Model *>(m_node);
-	Texture * tex;
-	if(m_isFlipped)
 	{
-		tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse_inverted.png");
+		if(!m_node) return;
+		return;
+		auto model = static_cast<Model *>(m_node);
+		Texture * tex;
+		if(m_isFlipped)
+		{
+			tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse_inverted.png");
+		}
+		else
+		{
+			tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse.png");
+		}
+		model->getMat(0)->setTex("DiffuseMap", tex);
+		m_xrayMat->setTex("DiffuseMap", tex);
 	}
-	else
-	{
-		tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse.png");
-	}
-	model->getMat(0)->setTex("DiffuseMap", tex);
-	m_xrayMat->setTex("DiffuseMap", tex);
-}
 
 int BearPart::getAttachmentCount()
 {
@@ -365,10 +355,16 @@ void BearPart::generateName()
 
 	void BearPart::onUpdate(float dt)
 	{
-		//if(m_constrain)
-		//{
-		//	tlog("the angle, %f", m_constrain->getHingeAngle());
-		//}
+		auto cylinderIndicator = static_cast<GamePartRenderNode *> (m_node);
+		if(BuildingSystem::shared()->isIsInXRayMode())
+		{
+			cylinderIndicator->setRenderMode(GamePartRenderNode::RenderMode::HIGHLIGHT);
+		}
+		else
+		{
+			cylinderIndicator->setRenderMode(GamePartRenderNode::RenderMode::COMMON);
+		
+		}
 	}
 
 	void BearPart::AddOnVehicle(Vehicle* vehicle)

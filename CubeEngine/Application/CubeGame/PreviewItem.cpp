@@ -6,6 +6,7 @@
 #include "LiftPart.h"
 #include "BuildingSystem.h"
 #include "Scene/SceneMgr.h"
+#include "GamePartRenderNode.h"
 namespace tzw
 {
 	PreviewItem::PreviewItem():
@@ -80,6 +81,9 @@ namespace tzw
 
 			auto gamePart = new GamePart();
 			gamePart->initFromItem(item);
+			auto renderNode = static_cast<GamePartRenderNode *>(gamePart->getNode());
+			renderNode->getVisualInfo()->isPreview = true;
+			renderNode->setDrawableFlag((uint32_t)DrawableFlag::Drawable);
 			m_previewIsland->insert(gamePart);
 			m_previewPart = gamePart;
 			auto m_material = Material::createFromTemplate("ModelRimLight");

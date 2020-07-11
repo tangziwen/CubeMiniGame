@@ -113,6 +113,8 @@ void ItemMgr::loadFromFile(std::string filePath)
 
 				auto& visualData = item["Visual"];
 				{
+					gameItem->m_visualInfo.isTransparent = false;
+					gameItem->m_visualInfo.isPreview = false;
 					std::string visualInfoType = visualData["Type"].GetString();
 					vec3 visualSize = vec3(visualData["size"][0].GetDouble(), visualData["size"][1].GetDouble(), visualData["size"][2].GetDouble());
 					if(visualInfoType == "CubePrimitive")

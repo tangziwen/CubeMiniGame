@@ -15,17 +15,20 @@ struct GamePartRenderInfo
 	{
 	public:
 		GamePartRenderMgr();
-		GamePartRenderInfo getRenderInfo(VisualInfo visualInfo, PartSurface * surface);
+		void getRenderInfo(bool isInstancing, VisualInfo visualInfo, PartSurface * surface, std::vector<GamePartRenderInfo> &infoList);
 		AABB getPartLocalAABB(VisualInfo visualInfo);
-		Mesh * findOrCreateMesh(VisualInfo visualInfo);
-		Material * findOrCreateMaterial(PartSurface * surface);
+		Mesh * findOrCreateSingleMesh(VisualInfo visualInfo);
+		Material * findOrCreateMaterial(bool isInsatnce, PartSurface * surface);
+		Material * findOrCreateMaterialTransparent(VisualInfo visualInfo, PartSurface * surface);
 		std::string getVisualTypeStr(VisualInfo visualInfo);
-		Model * getModel(VisualInfo visualInfo);
+		Model * getModel(bool isIntance, VisualInfo visualInfo);
 	private:
-		VisualInfo m_visualInfo;
+		Material * m_previewMat;
 		std::unordered_map<std::string, Mesh *> m_meshMap;
 		std::unordered_map<std::string, Model *> m_modelMap;
 		std::unordered_map<PartSurface *, Material *> m_materialMap;
+		std::unordered_map<std::string, Model *> m_modelMapSingle;
+		std::unordered_map<PartSurface *, Material *> m_materialMapSingle;
 	};
 
 }
