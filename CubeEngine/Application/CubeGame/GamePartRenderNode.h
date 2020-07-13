@@ -30,6 +30,7 @@ class GamePartRenderNode : public Drawable3D
 		std::vector<GamePartRenderInfo>m_infoList;
 		PartSurface* m_partSurface;
 		vec4 m_color;
+		bool m_isNeedUpdateRenderInfo;
 		
 	};
 

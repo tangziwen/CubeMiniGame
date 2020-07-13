@@ -10,6 +10,7 @@ namespace tzw
 {
 	GamePartRenderNode::GamePartRenderNode(VisualInfo visualInfo)
 	{
+		m_isNeedUpdateRenderInfo = true;
 		m_visualInfo = visualInfo;
 		setRenderMode(RenderMode::COMMON);
 		auto size = m_visualInfo.size;
@@ -21,8 +22,10 @@ namespace tzw
 	void GamePartRenderNode::getCommandForInstanced(std::vector<InstanceRendereData> & commandList)
 	{
 		if(!m_isVisible) return;
-		if(m_infoList.empty())
+		if(m_infoList.empty() || m_isNeedUpdateRenderInfo)
 		{
+			m_infoList.clear();
+			m_isNeedUpdateRenderInfo = false;
 			GamePartRenderMgr::shared()->getRenderInfo(true, m_visualInfo, m_partSurface, m_infoList);
 		}
 		for(auto info : m_infoList)
@@ -85,6 +88,7 @@ namespace tzw
 	void GamePartRenderNode::setPartSurface(PartSurface* const partSurface)
 	{
 		m_partSurface = partSurface;
+		m_isNeedUpdateRenderInfo = true;
 	}
 	GamePartRenderNode::RenderMode GamePartRenderNode::getRenderMode()
 	{
