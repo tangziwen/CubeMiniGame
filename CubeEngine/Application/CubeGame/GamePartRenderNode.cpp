@@ -8,10 +8,13 @@
 
 namespace tzw
 {
-	GamePartRenderNode::GamePartRenderNode(VisualInfo visualInfo)
+	GamePartRenderNode::GamePartRenderNode(GameItem * item, GamePart * partInstance)
 	{
+		m_state = "default";
 		m_isNeedUpdateRenderInfo = true;
-		m_visualInfo = visualInfo;
+		m_item = item;
+		m_partParent = partInstance;
+		m_visualInfo = m_item->m_visualInfo;
 		setRenderMode(RenderMode::COMMON);
 		auto size = m_visualInfo.size;
 		//auto cube = new CubePrimitive(size.x, size.y, size.z, false);
@@ -26,7 +29,7 @@ namespace tzw
 		{
 			m_infoList.clear();
 			m_isNeedUpdateRenderInfo = false;
-			GamePartRenderMgr::shared()->getRenderInfo(true, m_visualInfo, m_partSurface, m_infoList);
+			GamePartRenderMgr::shared()->getRenderInfo(true, this, m_visualInfo, m_partSurface, m_infoList);
 		}
 		for(auto info : m_infoList)
 		{
@@ -51,16 +54,18 @@ namespace tzw
 	void GamePartRenderNode::setColor(vec4 newColor)
 	{
 		m_color = newColor;
+		m_isNeedUpdateRenderInfo;
 	}
 
 	void GamePartRenderNode::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 		if(getIsVisible())
 		{
-
-			if(m_infoList.empty())
+			if(m_infoList.empty()  || m_isNeedUpdateRenderInfo)
 			{
-				GamePartRenderMgr::shared()->getRenderInfo(false, m_visualInfo, m_partSurface, m_infoList);
+				m_infoList.clear();
+				GamePartRenderMgr::shared()->getRenderInfo(false, this, m_visualInfo, m_partSurface, m_infoList);
+				m_isNeedUpdateRenderInfo = false;
 			}
 			for(auto &info : m_infoList)
 			{
@@ -98,6 +103,31 @@ namespace tzw
 	{
 		m_renderMode = mode;
 		updateRenderMode();
+		m_isNeedUpdateRenderInfo = true;
+	}
+	void GamePartRenderNode::setSpecifiedMat(Material* mat)
+	{
+		m_specifiedMat = mat;
+	}
+	Material* GamePartRenderNode::getSpecifiedMat()
+	{
+		return m_specifiedMat;
+	}
+	GamePart* GamePartRenderNode::getPartParent()
+	{
+		return m_partParent;
+	}
+	void GamePartRenderNode::forceUpdate()
+	{
+		m_isNeedUpdateRenderInfo = true;
+	}
+	std::string GamePartRenderNode::getState()
+	{
+		return m_state;
+	}
+	void GamePartRenderNode::setState(std::string newState)
+	{
+		m_state = newState;
 	}
 	void GamePartRenderNode::updateRenderMode()
 	{

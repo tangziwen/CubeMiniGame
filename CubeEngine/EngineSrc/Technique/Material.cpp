@@ -203,20 +203,20 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 			}
 			
 			std::string typeStr = attribute["type"].GetString();
-			auto var = new TechniqueVar();
+			TechniqueVar var;
 			if (typeStr == "int")
 			{
 				if(hasDefaultVal) 
 				{
-					var->setI(val.GetInt());
+					var.setI(val.GetInt());
 				}
 				if(attribute.HasMember("ui_info"))
 				{
 					auto&uiInfo = attribute["ui_info"];
 					if(uiInfo.HasMember("range"))
 					{
-						var->data.i_min = uiInfo["range"][0].GetInt();
-						var->data.i_max = uiInfo["range"][1].GetInt();
+						var.data.i_min = uiInfo["range"][0].GetInt();
+						var.data.i_max = uiInfo["range"][1].GetInt();
 					}
 				}
 			}
@@ -225,15 +225,15 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 
 				if(hasDefaultVal) 
 				{
-					var->setF(val.GetDouble());
+					var.setF(val.GetDouble());
                 }
 				if(attribute.HasMember("ui_info"))
 				{
 					auto&uiInfo = attribute["ui_info"];
 					if(uiInfo.HasMember("range"))
 					{
-						var->data.f_min = uiInfo["range"][0].GetDouble();
-						var->data.f_max = uiInfo["range"][1].GetDouble();
+						var.data.f_min = uiInfo["range"][0].GetDouble();
+						var.data.f_max = uiInfo["range"][1].GetDouble();
 					}
 				}
 			}
@@ -241,21 +241,21 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 			{
 				if(hasDefaultVal)
 				{
-					var->setV2(vec2(val[0].GetDouble(), val[1].GetDouble()));
+					var.setV2(vec2(val[0].GetDouble(), val[1].GetDouble()));
 				}
 			}
 			else if (typeStr == "vec3")
 			{
 				if(hasDefaultVal) 
 				{
-					var->setV3(vec3(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble()));
+					var.setV3(vec3(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble()));
 				}
 			}
 			else if (typeStr == "vec4")
 			{
 				if(hasDefaultVal) 
 				{
-					var->setV4(vec4(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble(), val[3].GetDouble()));
+					var.setV4(vec4(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble(), val[3].GetDouble()));
 				}
 			}
 			//semantics
@@ -263,23 +263,23 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 			{
 				if(typeStr == "semantic_WinSize")
 				{
-					var->setAsSemantic(TechniqueVar::SemanticType::WIN_SIZE);
+					var.setAsSemantic(TechniqueVar::SemanticType::WIN_SIZE);
 				}
 				else if(typeStr == "semantic_Model")
 				{
-					var->setAsSemantic(TechniqueVar::SemanticType::Model);
+					var.setAsSemantic(TechniqueVar::SemanticType::Model);
 				}
 				else if(typeStr =="semantic_ViewProjectInverted") 
 				{
-					var->setAsSemantic(TechniqueVar::SemanticType::InvertedViewProj);
+					var.setAsSemantic(TechniqueVar::SemanticType::InvertedViewProj);
 				}
 				else if(typeStr =="semantic_CameraPos") 
 				{
-					var->setAsSemantic(TechniqueVar::SemanticType::CamPos);
+					var.setAsSemantic(TechniqueVar::SemanticType::CamPos);
 				}
 				else if(typeStr =="semantic_CameraDir") 
 				{
-					var->setAsSemantic(TechniqueVar::SemanticType::CamDir);
+					var.setAsSemantic(TechniqueVar::SemanticType::CamDir);
 				}
 			}
 			m_varList[theName] = var;
@@ -363,12 +363,12 @@ void Material::setVar(std::string name, const Matrix44 & value)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		TechniqueVar * var =  result->second;
-		var->setM(value);
+		auto & var =  result->second;
+		var.setM(value);
 	}else
 	{
-		TechniqueVar * var = new TechniqueVar();
-		var->setM(value);
+		TechniqueVar var;
+		var.setM(value);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
@@ -384,12 +384,12 @@ void Material::setVar(std::string name, const float &value)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		TechniqueVar * var =  result->second;
-		var->setF(value);
+		auto& var =  result->second;
+		var.setF(value);
 	}else
 	{
-		TechniqueVar * var = new TechniqueVar();
-		var->setF(value);
+		TechniqueVar var;
+		var.setF(value);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
@@ -405,12 +405,12 @@ void Material::setVar(std::string name, const int &value)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		TechniqueVar * var =  result->second;
-		var->setI(value);
+		auto& var =  result->second;
+		var.setI(value);
 	}else
 	{
-		TechniqueVar * var = new TechniqueVar();
-		var->setI(value);
+		TechniqueVar var;
+		var.setI(value);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
@@ -420,13 +420,13 @@ void Material::setVar(std::string name, const int &value)
 	 auto result = m_varList.find(name);
 	 if (result != m_varList.end())
 	 {
-		 TechniqueVar * var = result->second;
-		 var->setV2(value);
+		 auto &var = result->second;
+		 var.setV2(value);
 	 }
 	 else
 	 {
-		 TechniqueVar * var = new TechniqueVar();
-		 var->setV2(value);
+		 TechniqueVar var;
+		 var.setV2(value);
 		 m_varList.insert(std::make_pair(name, var));
 	 }
  }
@@ -442,12 +442,12 @@ void Material::setVar(std::string name, const vec3 &value)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		TechniqueVar * var =  result->second;
-		var->setV3(value);
+		auto var =  result->second;
+		var.setV3(value);
 	}else
 	{
-		TechniqueVar * var = new TechniqueVar();
-		var->setV3(value);
+		TechniqueVar var;
+		var.setV3(value);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
@@ -463,19 +463,19 @@ void Material::setVar(std::string name, const vec4 & value)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		TechniqueVar * var =  result->second;
-		var->setV4(value);
+		auto &var =  result->second;
+		var.setV4(value);
 	}else
 	{
-		TechniqueVar * var = new TechniqueVar();
-		var->setV4(value);
+		TechniqueVar var;
+		var.setV4(value);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
 
 void Material::setVar(std::string name, const TechniqueVar &value)
 {
-	TechniqueVar * var = value.clone();
+	TechniqueVar var = value;
 	m_varList.insert(std::make_pair(name, var));
 }
 
@@ -493,12 +493,12 @@ void Material::setTex(std::string name, Texture *texture, int id)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		TechniqueVar * var =  result->second;
-		var->setT(texture, id);
+		auto& var =  result->second;
+		var.setT(texture, id);
 	}else
 	{
-		TechniqueVar * var = new TechniqueVar();
-		var->setT(texture, id);
+		TechniqueVar var;
+		var.setT(texture, id);
 		m_varList.insert(std::make_pair(name,var));
 	}
 }
@@ -510,7 +510,7 @@ Texture* Material::getTex(std::string name)
 	{
 		return nullptr;
 	}
-	return result->second->data.rawData.texInfo.tex;
+	return result->second.data.rawData.texInfo.tex;
 }
 
 /**
@@ -529,7 +529,7 @@ void Material::use(ShaderProgram * extraProgram)
 	{
 		//need to convert to alias
 		const std::string &name = i.first;//getAlias(i->first);
-		TechniqueVar* var = i.second;
+		TechniqueVar* var = &i.second;
 
 		//extra semantic pass
 		switch(var->type)
@@ -607,6 +607,18 @@ Material *Material::clone()
 {
 	auto mat = new Material();
 	mat->m_varList = m_varList;
+	mat->m_isEnableInstanced = m_isEnableInstanced;
+	mat->m_isCullFace = m_isCullFace;
+	mat->m_isDepthTestEnable = m_isDepthTestEnable;
+	mat->m_isDepthWriteEnable = m_isDepthWriteEnable;
+	mat->m_isEnableBlend = m_isEnableBlend;
+	mat->m_renderStage = m_renderStage;
+	mat->m_program = m_program;
+	mat->m_texSlotMap = m_texSlotMap;
+	mat->m_vsPath = m_vsPath;
+	mat->m_fsPath = m_fsPath;
+	mat->m_factorSrc = m_factorSrc;
+	mat->m_factorDst = m_factorDst;
 	return mat;
 }
 
@@ -627,21 +639,21 @@ void Material::setIsCullFace(bool newVal)
 
 tzw::TechniqueVar * Material::get(std::string name)
 {
-	return m_varList[name];
+	return &m_varList[name];
 }
 
 void Material::inspect()
 {
 	for(auto &iter:m_varList)
 	{
-		auto var = iter.second;
-		switch (var->type)
+		auto& var = iter.second;
+		switch (var.type)
 		{
 
 		case TechniqueVar::Type::Float:
 		{
 	
-			bindFloat(iter.first, &var->data.rawData.f,var->data.f_min, var->data.f_max, "%.2f");
+			bindFloat(iter.first, &var.data.rawData.f,var.data.f_min, var.data.f_max, "%.2f");
 	
 		}
 			break;

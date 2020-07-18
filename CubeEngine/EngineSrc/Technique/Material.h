@@ -67,7 +67,7 @@ private:
     std::string m_vsPath;
     std::string m_fsPath;
 	bool m_isEnableInstanced;
-    std::unordered_map<std::string,TechniqueVar *> m_varList;
+    std::unordered_map<std::string,TechniqueVar> m_varList;
 	RenderFlag::BlendingFactor m_factorSrc;
 	RenderFlag::BlendingFactor m_factorDst;
 	bool m_isCullFace;

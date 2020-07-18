@@ -118,6 +118,7 @@ void Vehicle::update(float dt)
 {
 	for (auto constrain : m_constrainList)
 	{
+		constrain->onUpdate(dt);
 		constrain->updateTransform(dt);
 	}
 }

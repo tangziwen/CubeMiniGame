@@ -5,7 +5,7 @@
 namespace tzw
 {
 class PartSurface;
-
+class GamePart;
 class GamePartRenderNode : public Drawable3D
 	{
 	public:
@@ -13,8 +13,9 @@ class GamePartRenderNode : public Drawable3D
 		{
 			COMMON,
 			HIGHLIGHT,
+			NO_INSTANCING,
 		};
-		GamePartRenderNode(VisualInfo visualInfo);
+		GamePartRenderNode(GameItem * item, GamePart * partInstance);
 		void getCommandForInstanced(std::vector<InstanceRendereData> & commandList) override;
 		void setColor(vec4 newColor) override;
 		void submitDrawCmd(RenderCommand::RenderType passType);
@@ -23,14 +24,24 @@ class GamePartRenderNode : public Drawable3D
 		void setPartSurface(PartSurface* const partSurface);
 		RenderMode getRenderMode();
 		void setRenderMode(RenderMode mode);
+		void setSpecifiedMat(Material * mat);
+		Material * getSpecifiedMat();
+		GamePart * getPartParent();
+		void forceUpdate();
+		std::string getState();
+		void setState(std::string newState);
 	private:
+		std::string m_state;
 		void updateRenderMode();
+		GameItem * m_item;
 		RenderMode m_renderMode;
 		VisualInfo m_visualInfo;
 		std::vector<GamePartRenderInfo>m_infoList;
 		PartSurface* m_partSurface;
 		vec4 m_color;
 		bool m_isNeedUpdateRenderInfo;
+		Material * m_specifiedMat;
+		GamePart * m_partParent;
 		
 	};
 

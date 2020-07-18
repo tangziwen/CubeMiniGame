@@ -19,50 +19,6 @@
 namespace tzw
 {
 	float blockSize = 0.05;
-// BearPart::BearPart()
-// {
-// 	m_a = nullptr;
-// 	m_b = nullptr;
-// 	m_isFlipped = false;
-// 	m_node = nullptr;
-// 	m_constrain = nullptr;
-// 	
-//
-// 	m_isSteering = false;
-// 	m_isAngleLimit = false;
-// 	m_angleLimitLow = -30.0f;
-// 	m_angleLimitHigh = 30.0f;
-// 	//forward backward
-// 	addAttachment(new Attachment(vec3(0.0, 0.0, blockSize / 2.0), vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 0.0) ,this));
-// 	addAttachment(new Attachment(vec3(0.0, 0.0, -blockSize / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this));
-// 	BearPart::generateName();
-// 	
-// 	auto nodeEditor = GameUISystem::shared()->getNodeEditor();
-// 	m_graphNode = new BearingPartNode(this);
-// 	nodeEditor->addNode(m_graphNode);
-// 	m_xrayMat = Material::createFromTemplate("PartXRay");
-// 	
-// 	// create a indicate model
-// 	auto cylinderIndicator = new CylinderPrimitive(0.15, 0.15, 0.1);
-// 	cylinderIndicator->setColor(vec4(1.0, 1.0, 1.0, 1.0));
-// 	m_node = cylinderIndicator;
-// 	m_xrayMat->setTex("DiffuseMap", cylinderIndicator->getTopBottomMaterial()->getTex("diffuseMap"));
-// 	cylinderIndicator->onSubmitDrawCommand = [cylinderIndicator, this](RenderCommand::RenderType passType)
-// 	{
-// 		if(BuildingSystem::shared()->isIsInXRayMode())
-// 		{
-// 			RenderCommand command(cylinderIndicator->getMesh(), this->m_xrayMat, passType);
-// 			cylinderIndicator->setUpCommand(command);
-// 			command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-// 			Renderer::shared()->addRenderCommand(command);
-//
-// 			RenderCommand command2(cylinderIndicator->getTopBottomMesh(), this->m_xrayMat, passType);
-// 			cylinderIndicator->setUpCommand(command2);
-// 			command2.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
-// 			Renderer::shared()->addRenderCommand(command2);
-// 		}
-// 	};
-// }
 
 BearPart::BearPart(std::string itemName)
 {
@@ -90,19 +46,16 @@ BearPart::BearPart(std::string itemName)
 	void BearPart::updateFlipped()
 	{
 		if(!m_node) return;
-		return;
-		auto model = static_cast<Model *>(m_node);
-		Texture * tex;
 		if(m_isFlipped)
 		{
-			tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse_inverted.png");
+			static_cast<GamePartRenderNode *>(m_node)->setState("isFlipped");
 		}
 		else
 		{
-			tex = TextureMgr::shared()->getByPath("Blocks/Bearing/diffuse.png");
+			static_cast<GamePartRenderNode *>(m_node)->setState("default");
 		}
-		model->getMat(0)->setTex("DiffuseMap", tex);
-		m_xrayMat->setTex("DiffuseMap", tex);
+		static_cast<GamePartRenderNode *>(m_node)->forceUpdate();
+		return;
 	}
 
 int BearPart::getAttachmentCount()

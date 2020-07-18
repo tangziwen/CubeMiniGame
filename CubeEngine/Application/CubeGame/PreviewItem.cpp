@@ -82,8 +82,7 @@ namespace tzw
 			auto gamePart = new GamePart();
 			gamePart->initFromItem(item);
 			auto renderNode = static_cast<GamePartRenderNode *>(gamePart->getNode());
-			renderNode->getVisualInfo()->isPreview = true;
-			renderNode->setDrawableFlag((uint32_t)DrawableFlag::Drawable);
+			renderNode->setState("Preview");
 			m_previewIsland->insert(gamePart);
 			m_previewPart = gamePart;
 			auto m_material = Material::createFromTemplate("ModelRimLight");
@@ -208,7 +207,6 @@ namespace tzw
 				{
 					showPreviewPart();
 					static_cast<LiftPart *>(m_previewPart)->setPos(resultPos);
-
 					//收纳对象挂在状态，这样子搞性能有点差，先敏捷一波
 					if(BuildingSystem::shared()->getStoreIslandGroup())
 					{

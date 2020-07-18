@@ -676,7 +676,7 @@ namespace tzw
 			//m_node = new CubePrimitive(size.x, size.y, size.z, false);
 			//isNeedSetDefaultMat = true;
 			
-			m_node = new GamePartRenderNode(item->m_visualInfo);
+			m_node = new GamePartRenderNode(item, this);
 		}
 		break;
 		case VisualInfo::VisualInfoType::CylinderPrimitive:
@@ -685,7 +685,7 @@ namespace tzw
 			//m_node = new CylinderPrimitive(size.x, size.y, size.z);
 			//isNeedSetDefaultMat = true;
 
-			m_node = new GamePartRenderNode(item->m_visualInfo);
+			m_node = new GamePartRenderNode(item, this);
 		}
 		break;
 		case VisualInfo::VisualInfoType::Mesh:
@@ -708,7 +708,7 @@ namespace tzw
 				model->addExtraMeshList(modelExtra->getMeshList());
 			}
 			*/
-			m_node = new GamePartRenderNode(item->m_visualInfo);
+			m_node = new GamePartRenderNode(item, this);
 				
 		}
 		break;
@@ -718,7 +718,7 @@ namespace tzw
 			//auto size = item->m_visualInfo.size;
 			//m_node = new RightPrismPrimitive(size.x, size.y, size.z);
 			//isNeedSetDefaultMat = true;
-        	m_node = new GamePartRenderNode(item->m_visualInfo);
+        	m_node = new GamePartRenderNode(item, this);
         }
 		break;
 		default: ;
