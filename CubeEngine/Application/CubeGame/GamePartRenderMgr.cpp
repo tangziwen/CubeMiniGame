@@ -234,14 +234,7 @@ std::string GamePartRenderMgr::getSurfaceStr(PartSurface* surface)
 Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 {
 	std::unordered_map<std::string, Model *> * targetMap;
-	if(isInsatnce)
-	{
-		targetMap = &m_modelMap;
-	}
-	else
-	{
-		targetMap = &m_modelMapSingle;
-	}
+	targetMap = &m_modelMap;
 	if(targetMap->find(visualInfo.filePath) == targetMap->end())
 	{
 		auto size = visualInfo.size;
@@ -339,7 +332,7 @@ void GamePartRenderMgr::processMatList(GamePartRenderNode* part, GamePartModelMa
 			mat->setIsEnableInstanced(false);
 			mat->reload();
 			break;
-		case GamePartRenderNode::RenderMode::HIGHLIGHT:
+		case GamePartRenderNode::RenderMode::AFTER_DEPTH:
 			mat->setIsEnableInstanced(false);
 			mat->reload();
 			break;

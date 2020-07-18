@@ -30,9 +30,8 @@ public:
 #pragma pack(push,1)
 struct InstanceData
 {
-	vec4 posAndScale;
+	Matrix44 transform;
 	vec4 extraInfo;
-	vec4 rotateInfo;
 };
 #pragma pack(pop)
 

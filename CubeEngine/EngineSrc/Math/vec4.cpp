@@ -32,8 +32,12 @@ vec4 vec4::operator +(const vec4 &other)
 
 tzw::vec4 vec4::operator*(float a) const
 {
-	vec4 v = vec4(x *a, y * a, z * a, w * a);
-	return v;
+	return vec4(x *a, y * a, z * a, w * a);
+}
+
+vec4 vec4::operator*(vec4 a) const
+{
+	return vec4(x *a.x, y * a.y, z * a.z, w * a.w);
 }
 
 vec4 vec4::fromRGB(int R, int G, int B, int A)

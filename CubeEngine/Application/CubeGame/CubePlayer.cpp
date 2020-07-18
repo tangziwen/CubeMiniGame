@@ -37,6 +37,7 @@
 #include "FastNoise/FastNoise.h"
 #include "GameUISystem.h"
 #include "Lighting/PointLight.h"
+#include <Application\CubeGame\GamePartRenderNode.h>
 
 namespace tzw
 {
@@ -172,13 +173,24 @@ namespace tzw
 		{
 			if(m_currPointPart != part)
 			{
+				if(m_currPointPart)
+				{
+					static_cast<GamePartRenderNode *>(m_currPointPart->getNode())->setIsHovering(false);
+				}
+				
+
 				m_currPointPart = part;
+				if(m_currPointPart)
+				{
+					static_cast<GamePartRenderNode *>(m_currPointPart->getNode())->setIsHovering(true);
+				}
 				updateCrossHairTipsInfo();
 			}
 		}else
 		{
 			if(m_currPointPart)
 			{
+				static_cast<GamePartRenderNode *>(m_currPointPart->getNode())->setIsHovering(false);
 				m_currPointPart = nullptr;
 				updateCrossHairTipsInfo();
 			}

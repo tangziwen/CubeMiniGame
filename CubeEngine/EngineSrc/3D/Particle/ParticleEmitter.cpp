@@ -145,13 +145,12 @@ ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 		targetPos = p->m_pos;
     }
-    instance.posAndScale = vec4(targetPos, p->size * p->m_initSize);
     instance.extraInfo = p->m_color;
-  	Quaternion q;
   	reCache();
   	auto mat = getTransform();
-  	q.fromRotationMatrix(&mat);
-  	instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
+    mat.setTranslate(vec3(targetPos));
+    mat.setScale(vec3(p->size * p->m_initSize));
+  	instance.transform = mat;//vec4(q.x, q.y, q.z, q.w);
     m_mesh->pushInstance(instance);
   }
 

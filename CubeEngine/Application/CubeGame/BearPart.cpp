@@ -311,7 +311,7 @@ void BearPart::generateName()
 		auto cylinderIndicator = static_cast<GamePartRenderNode *> (m_node);
 		if(BuildingSystem::shared()->isIsInXRayMode())
 		{
-			cylinderIndicator->setRenderMode(GamePartRenderNode::RenderMode::HIGHLIGHT);
+			cylinderIndicator->setRenderMode(GamePartRenderNode::RenderMode::AFTER_DEPTH);
 		}
 		else
 		{

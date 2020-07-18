@@ -409,8 +409,17 @@ void Renderer::renderPrimitveInstanced(InstancedMesh * instancedMesh, Material *
 	if(grassOffsetLocation >0)
 	{
 		program->enableAttributeArray(grassOffsetLocation);
+		program->enableAttributeArray(grassOffsetLocation + 1);
+		program->enableAttributeArray(grassOffsetLocation + 2);
+		program->enableAttributeArray(grassOffsetLocation + 3);
 		program->setAttributeBuffer(grassOffsetLocation, GL_FLOAT, 0, 4, sizeof(InstanceData));
+		program->setAttributeBuffer(grassOffsetLocation + 1, GL_FLOAT, 4 * sizeof( GLfloat), 4, sizeof(InstanceData));
+		program->setAttributeBuffer(grassOffsetLocation + 2, GL_FLOAT, 8 * sizeof(GLfloat), 4, sizeof(InstanceData));
+		program->setAttributeBuffer(grassOffsetLocation + 3, GL_FLOAT, 12 * sizeof(GLfloat), 4, sizeof(InstanceData));
 		glVertexAttribDivisor(grassOffsetLocation, 1);
+		glVertexAttribDivisor(grassOffsetLocation + 1, 1);
+		glVertexAttribDivisor(grassOffsetLocation + 2, 1);
+		glVertexAttribDivisor(grassOffsetLocation + 3, 1);
 	}
 	else
 	{
@@ -424,15 +433,6 @@ void Renderer::renderPrimitveInstanced(InstancedMesh * instancedMesh, Material *
 		program->setAttributeBuffer(extraInstanceOffsetLocation, GL_FLOAT, offsetof(InstanceData, extraInfo.x), 4, sizeof(InstanceData));
 		glVertexAttribDivisor(extraInstanceOffsetLocation, 1);
 	}
-
-	int rotateInstanceOffset = program->attributeLocation("a_instance_offset3");
-	if(rotateInstanceOffset > 0)
-	{
-		program->enableAttributeArray(rotateInstanceOffset);
-		program->setAttributeBuffer(rotateInstanceOffset, GL_FLOAT, offsetof(InstanceData, rotateInfo.x), 4, sizeof(InstanceData));
-		glVertexAttribDivisor(rotateInstanceOffset, 1);
-	}
-
 	
 	switch (primitiveType)
 	{
@@ -445,17 +445,12 @@ void Renderer::renderPrimitveInstanced(InstancedMesh * instancedMesh, Material *
 	default: ;
 	}
 	glVertexAttribDivisor(grassOffsetLocation, 0);
+	glVertexAttribDivisor(grassOffsetLocation + 1, 0);
+	glVertexAttribDivisor(grassOffsetLocation + 2, 0);
+	glVertexAttribDivisor(grassOffsetLocation + 3, 0);
 	if(extraInstanceOffsetLocation > 0)
 	{
 		glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
-	}
-	if(extraInstanceOffsetLocation > 0)
-	{
-		glVertexAttribDivisor(extraInstanceOffsetLocation, 0);
-	}
-	if(rotateInstanceOffset > 0)
-	{
-		glVertexAttribDivisor(rotateInstanceOffset, 0);
 	}
 }
 

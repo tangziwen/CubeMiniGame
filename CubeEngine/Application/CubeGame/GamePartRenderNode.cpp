@@ -10,6 +10,7 @@ namespace tzw
 {
 	GamePartRenderNode::GamePartRenderNode(GameItem * item, GamePart * partInstance)
 	{
+		m_isHovering = false;
 		m_state = "default";
 		m_isNeedUpdateRenderInfo = true;
 		m_item = item;
@@ -37,12 +38,8 @@ namespace tzw
 			InstanceData instance;
 			vec3 normal = vec3(0, 1,0);
 			auto mat = getTransform();
-			instance.posAndScale = vec4(mat.getTranslation(), 1.0);
-			Quaternion q;
-			getTransform().getRotation(&q);
-			instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
-			instance.extraInfo = m_color;
-			//instance.extraInfo = m_color;
+			instance.transform = mat;
+			instance.extraInfo = (m_isHovering?vec4(0.9, 0.8, 0.1, 1.0): m_color);
 			auto data = InstanceRendereData();
 			data.m_mesh = info.mesh;
 			data.material = info.material;
@@ -71,7 +68,7 @@ namespace tzw
 			{
 				RenderCommand command(info.mesh, info.material,passType);
 				setUpCommand(command);
-				if(m_renderMode == RenderMode::HIGHLIGHT)
+				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{
 					command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
 				}
@@ -129,6 +126,14 @@ namespace tzw
 	{
 		m_state = newState;
 	}
+	bool GamePartRenderNode::getIsHovering()
+	{
+		return m_isHovering;
+	}
+	void GamePartRenderNode::setIsHovering(bool hovering)
+	{
+		m_isHovering = hovering;
+	}
 	void GamePartRenderNode::updateRenderMode()
 	{
 		switch(m_renderMode)
@@ -136,7 +141,10 @@ namespace tzw
 		case RenderMode::COMMON:
 			setDrawableFlag(static_cast<uint32_t>(DrawableFlag::Instancing));
 			break;
-		case RenderMode::HIGHLIGHT:
+		case RenderMode::NO_INSTANCING:
+			setDrawableFlag(static_cast<uint32_t>(DrawableFlag::Drawable));
+			break;
+		case RenderMode::AFTER_DEPTH:
 			setDrawableFlag(static_cast<uint32_t>(DrawableFlag::Drawable));
 			break;
 		}

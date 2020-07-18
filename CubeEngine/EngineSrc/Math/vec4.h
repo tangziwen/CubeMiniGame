@@ -14,6 +14,7 @@ public:
     float x,y,z,w;
     vec4 operator + (const vec4 & other);
 	vec4 operator * (float a) const;
+    vec4 operator * (vec4 a) const;
 	static vec4 fromRGB(int R, int G, int B, int A = 255);
 };
 

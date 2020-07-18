@@ -12,7 +12,7 @@ class GamePartRenderNode : public Drawable3D
 		enum class RenderMode
 		{
 			COMMON,
-			HIGHLIGHT,
+			AFTER_DEPTH,
 			NO_INSTANCING,
 		};
 		GamePartRenderNode(GameItem * item, GamePart * partInstance);
@@ -30,6 +30,8 @@ class GamePartRenderNode : public Drawable3D
 		void forceUpdate();
 		std::string getState();
 		void setState(std::string newState);
+		bool getIsHovering();
+		void setIsHovering(bool hovering);
 	private:
 		std::string m_state;
 		void updateRenderMode();
@@ -42,6 +44,7 @@ class GamePartRenderNode : public Drawable3D
 		bool m_isNeedUpdateRenderInfo;
 		Material * m_specifiedMat;
 		GamePart * m_partParent;
+		bool m_isHovering;
 		
 	};
 

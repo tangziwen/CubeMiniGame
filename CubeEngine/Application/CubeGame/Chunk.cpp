@@ -965,11 +965,12 @@ BAAAABB
 						auto scale = TbaseMath::randFN() * 0.1;
 						InstanceData instance;
 						vec3 normal = GameMap::shared()->getNormal(vec2(pos.x, pos.z));
-						instance.posAndScale = vec4(pos.x, pos.y + 0.35, pos.z, 1.0 + scale);
+						Matrix44 mat;
+						mat.setTranslate(vec3(pos.x, pos.y + 0.35, pos.z));
+						
+						
 						instance.extraInfo = vec4(normal, 0);
-						auto rotateM = Matrix44();
-						rotateM.setToIdentity();
-						auto m = rotateM.data();
+						auto m = mat.data();
 						auto z = vec3(0, 0, 1);
 						auto right = vec3::CrossProduct(normal, z);
 						auto zNew = vec3::CrossProduct(right, normal);
@@ -986,9 +987,8 @@ BAAAABB
 						m[8] = zNew.x;
 						m[9] = zNew.y;
 						m[10] = zNew.z;
-						Quaternion q;
-						rotateM.getRotation(&q);
-						instance.rotateInfo = vec4(q.x, q.y, q.z, q.w);
+						mat.setScale(vec3(1.0 + scale));
+						instance.transform = mat;
 						m_grass->m_instance.push_back(instance);
 					}
 				}
@@ -1019,7 +1019,9 @@ BAAAABB
 					treeCount += 1;
 					InstanceData instance;
 					vec3 normal = vec3(0, 1,0);
-					instance.posAndScale = vec4(pos.x, pos.y, pos.z, 1.0);
+					Matrix44 mat;
+					mat.setTranslate(vec3(pos.x, pos.y, pos.z));
+					instance.transform = mat;
 					instance.extraInfo = vec4(1, 1, 1, 1);
  					m_tree->m_instance.push_back(instance);
 				}

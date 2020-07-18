@@ -33,7 +33,6 @@ struct GamePartModelMatList{
 		Material * m_previewMat;
 		std::unordered_map<std::string, Mesh *> m_meshMap;
 		std::unordered_map<std::string, Model *> m_modelMap;
-		std::unordered_map<std::string, Model *> m_modelMapSingle;
 		std::unordered_map<std::string, Material *> m_materialMap;
 		std::unordered_map<std::string, Material *> m_materialMapSingle;
 		std::unordered_map<Model *, std::unordered_map<std::string, GamePartModelMatList>> m_modelToMatList;
