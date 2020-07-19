@@ -11,12 +11,14 @@ def tzw_engine_ui_update(dt):
 	Main.handleUIUpdate(dt)
 	
 def tzw_engine_input_event(eventInfo):
-	print(eventInfo.type)
 	Main.onEngineInputEvent(eventInfo)
 
 def tzw_on_game_ready():
 	print("on Game Ready")
 	pass
+
+def tzw_on_gm_command(commandStr):
+	print("the command str is", commandStr)
 
 #specified window draw
 def tzw_game_draw_window(arg):

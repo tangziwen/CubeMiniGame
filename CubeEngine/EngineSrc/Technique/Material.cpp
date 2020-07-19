@@ -295,7 +295,7 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 			std::string name = tex[0].GetString();
 			m_texSlotMap[name] = tex[1].GetInt();
 
-			if(tex.Size() > 2)
+			if(tex.Size() > 2 && strlen(tex[2].GetString()))
 			{
 				auto filePathInfolder = Tfile::shared()->toAbsFilePath(tex[2].GetString(), envFolder);
 				Texture * t;

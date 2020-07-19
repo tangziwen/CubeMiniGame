@@ -100,12 +100,6 @@ namespace tzw {
 
 		ImGui::Separator();
 
-		ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0, 0));
-		static ImGuiTextFilter filter;
-		filter.Draw("Filter (\"incl,-excl\") (\"error\")", 180);
-		ImGui::PopStyleVar();
-		ImGui::Separator();
-
 		const float footer_height_to_reserve = ImGui::GetStyle().ItemSpacing.y + ImGui::GetFrameHeightWithSpacing(); // 1 separator, 1 input text
 		ImGui::BeginChild("ScrollingRegion", ImVec2(0, -footer_height_to_reserve), false, ImGuiWindowFlags_HorizontalScrollbar); // Leave room for 1 separator + 1 InputText
 		if (ImGui::BeginPopupContextWindow())
@@ -132,8 +126,6 @@ namespace tzw {
 		for (int i = 0; i < Items.Size; i++)
 		{
 			const char* item = Items[i];
-			if (!filter.PassFilter(item))
-				continue;
 			ImVec4 col = col_default_text;
 			if (strstr(item, "[error]")) col = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
 			else if (strncmp(item, "# ", 2) == 0) col = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
@@ -185,21 +177,9 @@ namespace tzw {
 		History.push_back(Strdup(command_line));
 		
 		// Process command
-		if (Stricmp(command_line, "CLEAR") == 0)
+		if (command_line[0] == '!')
 		{
-			ClearLog();
-		}
-		else if (Stricmp(command_line, "HELP") == 0)
-		{
-			AddLog("Commands:");
-			for (int i = 0; i < Commands.Size; i++)
-				AddLog("- %s", Commands[i]);
-		}
-		else if (Stricmp(command_line, "HISTORY") == 0)
-		{
-			int first = History.Size - 10;
-			for (int i = first > 0 ? first : 0; i < History.Size; i++)
-				AddLog("%3d: %s\n", i, History[i]);
+			ScriptPyMgr::shared()->callFunPyVoid("tzw", "tzw_on_gm_command", command_line + 1);
 		}
 		else
 		{

@@ -620,7 +620,6 @@ namespace tzw
 
 	bool CubePlayer::onScroll(vec2 offset)
 	{
-		tlog("offset %f %f", offset.getX(), offset.getY());
 		m_orbitcamera->zoom(-1.f * offset.getY() * 0.25);
 		return true;
 	}

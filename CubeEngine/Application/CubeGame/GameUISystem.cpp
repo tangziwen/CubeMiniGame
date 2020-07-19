@@ -246,13 +246,6 @@ void GameUISystem::drawIMGUI()
 			{
 				setWindowShow(WindowType::INVENTORY, true);
 			}
-			//ImGui::SameLine();
-			//if(ImGui::ImageButton(reinterpret_cast<ImTextureID>(bluePrintIcon->getTextureId()), ImVec2(IconSize,IconSize), ImVec2(0,1), ImVec2(1,0)))
-			if(ImGui::Button("NodeEditor",ImVec2(0, IconSize)))
-			{
-				setWindowShow(WindowType::NODE_EDITOR, true);
-				
-			}
 			homeDropDownPos = ImVec2(ImGui::GetItemRectMin().x, ImGui::GetItemRectMax().y);
 			//ImGui::SameLine();
 			if(ImGui::BeginMenu("Misc", true, ImGui::GetItemRectSize().y))
