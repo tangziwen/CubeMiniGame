@@ -12,7 +12,7 @@ uniform float TU_roughness;
 attribute vec3 a_position;
 attribute vec3 a_normal;
 attribute vec2 a_texcoord;
-attribute vec4 a_instance_offset;
+attribute mat4 a_instance_offset;
 attribute vec4 a_instance_offset2;
 attribute vec4 a_instance_offset3;
 varying vec3 v_position;
@@ -62,16 +62,11 @@ mat4 fromQ(vec4 q){
 void main()
 {
 
-    mat4 modelMatrix = fromQ(a_instance_offset3);
-
-    modelMatrix[3][0] = a_instance_offset.x;
-    modelMatrix[3][1] = a_instance_offset.y;
-    modelMatrix[3][2] = a_instance_offset.z;
-    modelMatrix[3][3] = 1.0;
+    mat4 modelMatrix = (a_instance_offset);
     // Calculate vertex position in screen space
-    gl_Position = TU_mvpMatrix * modelMatrix * vec4(a_position * a_instance_offset.w ,1.0);
-	v_position = (TU_mMatrix * modelMatrix * vec4(a_position * a_instance_offset.w ,1.0)).xyz;
-	v_worldPos = (TU_mMatrix * modelMatrix * vec4(a_position * a_instance_offset.w ,1.0)).xyz;
+    gl_Position = TU_mvpMatrix * modelMatrix * vec4(a_position ,1.0);
+	v_position = (TU_mMatrix * modelMatrix * vec4(a_position ,1.0)).xyz;
+	v_worldPos = (TU_mMatrix * modelMatrix * vec4(a_position ,1.0)).xyz;
     v_normal = (vec4(a_instance_offset2.xyz, 0.0)).xyz;
     // Pass texture coordinate to fragment shader
     // Value will be automatically interpolated to fragments inside polygon faces

@@ -27,7 +27,7 @@ void GamePartRenderMgr::getRenderInfo(bool isInstancing, GamePartRenderNode * pa
 	if(visualInfo.type != VisualInfo::VisualInfoType::Mesh)
 	{
 		info.mesh = findOrCreateSingleMesh(visualInfo);
-		info.material = findOrCreateMaterial(isInstancing, part, surface);
+		info.material = findOrCreateSingleMaterial(isInstancing, part, surface);
 		infoList.emplace_back(info);
 	}
 	else
@@ -133,7 +133,7 @@ Mesh * GamePartRenderMgr::findOrCreateSingleMesh(VisualInfo visualInfo)
 	}
 	return nullptr;
 }
-Material* GamePartRenderMgr::findOrCreateMaterial(bool isInsatnce, GamePartRenderNode * part, PartSurface* surface)
+Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePartRenderNode * part, PartSurface* surface)
 {
 	std::unordered_map<std::string, Material *> * targetMap = nullptr;
 	if(isInsatnce)
@@ -279,6 +279,8 @@ Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 	}
 	return (*targetMap)[visualInfo.filePath];
 }
+
+//根据Status还有RenderMode拷贝构造出新的材质
 GamePartModelMatList& GamePartRenderMgr::createModelMatList(Model* model, GamePartRenderNode * part)
 {
 	std::string state = part->getState();

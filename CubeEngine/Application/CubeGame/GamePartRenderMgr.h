@@ -22,7 +22,7 @@ struct GamePartModelMatList{
 		void getRenderInfo(bool isInstancing, GamePartRenderNode * part, VisualInfo visualInfo, PartSurface * surface, std::vector<GamePartRenderInfo> &infoList);
 		AABB getPartLocalAABB(VisualInfo visualInfo);
 		Mesh * findOrCreateSingleMesh(VisualInfo visualInfo);
-		Material * findOrCreateMaterial(bool isInsatnce, GamePartRenderNode * part, PartSurface * surface);
+		Material * findOrCreateSingleMaterial(bool isInsatnce, GamePartRenderNode * part, PartSurface * surface);
 		Material * findOrCreateMaterialTransparent(VisualInfo visualInfo, PartSurface * surface);
 		std::string getVisualTypeStr(VisualInfo visualInfo);
 		std::string getSurfaceStr(PartSurface * surface);
