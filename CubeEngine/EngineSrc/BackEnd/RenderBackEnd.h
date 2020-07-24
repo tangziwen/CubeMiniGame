@@ -1,15 +1,16 @@
 #ifndef TZW_RENDERBACKEND_H
 #define TZW_RENDERBACKEND_H
 #include "../Rendering/RenderFlag.h"
+#include "RenderBackEndBase.h"
 #include <string>
 
 namespace tzw {
 
-class RenderBackEnd
+class RenderBackEnd : public RenderBackEndBase
 {
 public:
     static RenderBackEnd *shared();
-    void initDevice();
+    void initDevice(GLFWwindow *window) override;
     unsigned int genBuffer();
 	void deleteBuffer(unsigned int index);
     void bindBuffer(RenderFlag::BufferTarget target,unsigned int handle);

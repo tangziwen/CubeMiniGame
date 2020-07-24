@@ -1,5 +1,4 @@
-#ifndef TZW_RENDERSTATE_H
-#define TZW_RENDERSTATE_H
+#pragma once
 
 
 namespace tzw {
@@ -70,4 +69,3 @@ enum class BufferStorageType
 }
 } // namespace tzw
 
-#endif // TZW_RENDERSTATE_H

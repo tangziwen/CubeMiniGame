@@ -3,6 +3,7 @@
 #include "../Engine/Engine.h"
 #include "../Event/EventMgr.h"
 #include "RenderBackEnd.h"
+#include "VkRenderBackEnd.h"
 namespace tzw {
 void AbstractDevice::keyPressEvent(int theCode)
 {
@@ -44,7 +45,8 @@ void AbstractDevice::scrollEvent(float x, float y)
 
 void AbstractDevice::init(int width,int height)
 {
-    RenderBackEnd::shared()->initDevice();
+
+   
     Engine::shared()->onStart();
     m_nowTicks = m_oldTicks = clock();
 }
@@ -66,6 +68,28 @@ void AbstractDevice::update()
     // Clear color and depth buffer
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     Engine::shared()->update(delta);
+}
+
+void AbstractDevice::setRenderDevice(RenderDeviceType deviceType)
+{
+    m_deviceType = deviceType;
+}
+
+void AbstractDevice::createRenderBackEnd(GLFWwindow * window)
+{
+    if(m_deviceType == RenderDeviceType::OpenGl_Device)
+    {
+        RenderBackEnd::shared()->initDevice(window);
+    }
+    else
+    {
+        VKRenderBackEnd::shared()->initDevice(window);
+    }
+}
+
+RenderDeviceType AbstractDevice::getRenderDeviceType()
+{
+    return m_deviceType;
 }
 
 } // namespace tzw

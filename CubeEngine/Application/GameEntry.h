@@ -18,4 +18,15 @@ private:
 	float m_ticks;
 };
 
+
+class TestVulkanEntry :public tzw::AppEntry
+{
+public:
+	TestVulkanEntry();
+	void onStart() override;
+	void onExit() override;
+	void onUpdate(float delta) override;
+private:
+	float m_ticks;
+};
 #endif // MYAPPDELEGATE_H

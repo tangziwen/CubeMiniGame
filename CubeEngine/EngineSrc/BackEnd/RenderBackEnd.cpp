@@ -1,4 +1,6 @@
 ﻿#include "RenderBackEnd.h"
+#define GLFW_INCLUDE_NONE
+#include "GLFW/glfw3.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
 #include <stdio.h>
@@ -74,8 +76,9 @@ RenderBackEnd *RenderBackEnd::shared()
 	return m_instance;
 }
 
-void RenderBackEnd::initDevice()
+void RenderBackEnd::initDevice(GLFWwindow *window)
 {
+	glfwMakeContextCurrent(window);
 	auto result = glewInit();
 	if(result != GLEW_OK)
 	{

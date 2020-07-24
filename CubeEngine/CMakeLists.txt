@@ -41,6 +41,11 @@ include_directories(./External/GLFW3/include)
 set(LIBS ${LIBS} glew32s)
 include_directories(./External/GLEW)
 
+#Vulkan
+set(LIBS ${LIBS} VkLayer_utils)
+set(LIBS ${LIBS} vulkan-1)
+include_directories(./External/vulkan/)
+
 add_compile_definitions(WITH_OPENCV2)
 
 #rapidJson

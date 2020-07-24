@@ -4,12 +4,17 @@
 #include "../RenderBackEnd.h"
 #include "EngineSrc/BackEnd/AbstractDevice.h"
 #include "GL/glew.h"
+#define NOMINMAX
+#define VK_USE_PLATFORM_WIN32_KHR
+#include "vulkan/vulkan.h"
+#include "vulkan/vk_sdk_platform.h"
+#define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #include <algorithm>
 #include <strstream>
+#include "EngineSrc/BackEnd/VKRenderBackEnd.h"
 
-
-
+const bool g_isuesVulkan = true;
 namespace tzw {
 
 static void
@@ -70,6 +75,9 @@ scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
   AbstractDevice::shared()->scrollEvent(xoffset, yoffset);
 }
+
+
+
 void
 GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 {
@@ -77,6 +85,13 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 	{
 		exit(EXIT_FAILURE);
 	}
+    bool isVulkanAvabile = false;
+    if (glfwVulkanSupported())
+    {
+        // Vulkan is available, at least for compute
+        printf("vulkan is avalable\n");
+        isVulkanAvabile = true;
+    }
 
 	int w = width;
 	int h = height;
@@ -89,10 +104,22 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 	{
 		monitor = nullptr;
 	}
+    if(isVulkanAvabile && g_isuesVulkan)
+    {
+        //disable init opengl
+        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
+    }
 	m_window = glfwCreateWindow(w, h, EngineDef::versionStr, monitor, NULL);
+    if(isVulkanAvabile && g_isuesVulkan)
+    {
+        AbstractDevice::shared()->setRenderDevice(RenderDeviceType::Vulkan_Device);
+    }else{
+        AbstractDevice::shared()->setRenderDevice(RenderDeviceType::OpenGl_Device);
+    }
 	m_w = w;
 	m_h = h;
-	glfwMakeContextCurrent(m_window);
+	
+    AbstractDevice::shared()->createRenderBackEnd(m_window);
 	glfwSetWindowCenter(m_window);
 	GLint flags;
 
@@ -103,16 +130,27 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 
 	glfwSetMouseButtonCallback(m_window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_window, cursor_position_callback);
-	glfwMakeContextCurrent(m_window);
-	AbstractDevice::shared()->init(w, h);
+    if(AbstractDevice::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
+    {
+        AbstractDevice::shared()->init(w, h);
+    
+    }
+	
 }
 
 void
 GLFW_BackEnd::run()
 {
   while (!glfwWindowShouldClose(m_window)) {
-    AbstractDevice::shared()->update();
-    glfwSwapBuffers(m_window);
+      if(AbstractDevice::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
+      {
+          AbstractDevice::shared()->update();
+          glfwSwapBuffers(m_window);
+      }
+      else{
+      
+        VKRenderBackEnd::shared()->RenderScene();
+      }
     glfwPollEvents();
   }
   glfwDestroyWindow(m_window);
@@ -172,16 +210,18 @@ void GLFW_BackEnd::changeScreenSetting(int w, int h, bool isFullScreen)
 {
 
 	GLFWmonitor * monitor = nullptr;
-  if (isFullScreen) {
-  	monitor = glfwGetPrimaryMonitor();
-  }
-	else 
-  {
-	  monitor = nullptr;
-  }
+    if (isFullScreen) {
+    monitor = glfwGetPrimaryMonitor();
+    }
+    else 
+    {
+	    monitor = nullptr;
+    }
     glfwSetWindowMonitor(m_window, monitor, 0, 0, w, h, 0);
 	glfwSetWindowCenter(m_window);
 }
+
+
 
 bool
 GLFW_BackEnd::glfwSetWindowCenter(GLFWwindow* window)

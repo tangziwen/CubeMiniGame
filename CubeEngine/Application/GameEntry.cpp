@@ -61,3 +61,20 @@ void GameEntry::onUpdate(float delta)
 {
 	
 }
+
+TestVulkanEntry::TestVulkanEntry()
+{
+}
+
+void TestVulkanEntry::onStart()
+{
+	showSplash();
+}
+
+void TestVulkanEntry::onExit()
+{
+}
+
+void TestVulkanEntry::onUpdate(float delta)
+{
+}

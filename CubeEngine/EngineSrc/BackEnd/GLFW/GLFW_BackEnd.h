@@ -2,6 +2,8 @@
 #define TZW_GLFW_BACKEND_H
 
 #include "../WindowBackEnd.h"
+#define NOMINMAX
+
 class GLFWwindow;
 namespace tzw {
 

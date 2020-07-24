@@ -6,7 +6,12 @@
 #include <string>
 #include "../Engine/EngineDef.h"
 #include "../Math/vec2.h"
+class GLFWwindow;
 namespace tzw {
+    enum class RenderDeviceType{
+        Vulkan_Device,
+        OpenGl_Device,
+    };
 class AbstractDevice : public Singleton<AbstractDevice>
 {
 public:
@@ -20,8 +25,12 @@ public:
     void init(int width, int height);
     void resizeGL(int w, int h);
     void update();
+    void setRenderDevice(RenderDeviceType deviceType);
+    void createRenderBackEnd(GLFWwindow * window);
+    RenderDeviceType getRenderDeviceType();
     clock_t m_oldTicks,m_nowTicks;
     bool m_isFirstFrame;
+    RenderDeviceType m_deviceType;
 };
 
 } // namespace tzw

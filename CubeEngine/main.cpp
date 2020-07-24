@@ -65,9 +65,16 @@ extern "C"
 	// static SoLoud::Wav gWave;      // One wave file
 #pragma comment(linker, "/subsystem:console")
 
+#define TEST_VULKAN_ENTRY
 int main(int argc, char *argv[]) 
 {
 
     SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)ApplicationCrashHandler);
-	return Engine::run(argc,argv,new GameEntry());
+#ifdef  TEST_VULKAN_ENTRY
+    return Engine::run(argc,argv,new TestVulkanEntry());
+#else
+    return Engine::run(argc,argv,new GameEntry());
+#endif //  TEST_VULKAN_ENTRY
+
+	
 }
