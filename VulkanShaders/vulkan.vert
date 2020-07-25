@@ -1,7 +1,19 @@
-#version 400
- 
-void main() {
-    vec2 pos[3] = vec2[3]( vec2(-0.7, 0.7), vec2(0.7, 0.7), vec2(0.0, -0.7) );
-    gl_Position = vec4( pos[gl_VertexIndex], 0.0, 1.0 );
-}
+#version 450
+#extension GL_ARB_separate_shader_objects : enable
 
+layout(binding = 0) uniform UniformBufferObject {
+    mat4 mvp;
+} ubo;
+
+layout(location = 0) in vec3 inPosition;
+layout(location = 1) in vec4 inColor;
+
+layout(location = 0) out vec4 fragColor;
+
+void main() {
+    gl_Position = ubo.mvp * vec4(inPosition, 1.0);
+	//hack for vulkan
+	gl_Position.y = -gl_Position.y;
+	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
+    fragColor = inColor;
+}
