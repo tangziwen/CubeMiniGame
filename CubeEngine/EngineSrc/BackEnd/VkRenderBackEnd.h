@@ -62,6 +62,12 @@ private:
     void CreateShaders();
     void CreatePipeline();
     void CreateUiniform();
+    void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDecription);
+
+    void CreateVertexBuffer();
+
+    void CreateIndexBuffer();
+
     //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;
@@ -84,6 +90,8 @@ private:
     VkShaderModule m_vsModule;
     VkShaderModule m_fsModule;
     VkPipeline m_pipeline;
+    VkBuffer vertexBuffer;
+    VkBuffer indexBuffer;
     VkPhysicalDeviceMemoryProperties memory_properties;
 };
 

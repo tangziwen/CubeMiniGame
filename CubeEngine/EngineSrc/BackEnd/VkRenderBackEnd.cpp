@@ -7,6 +7,8 @@
 #include "Utility/file/Tfile.h"
 #include "Engine/Engine.h"
 #include <EngineSrc\Math\Matrix44.h>
+#include <EngineSrc\Mesh\VertexData.h>
+#include <array>
 namespace tzw
 {
 
@@ -387,9 +389,13 @@ VkApplicationInfo appInfo = {};
             vkCmdBeginRenderPass(m_cmdBufs[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             vkCmdBindPipeline(m_cmdBufs[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-
+            VkBuffer vertexBuffers[] = {vertexBuffer};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(m_cmdBufs[i], 0, 1, vertexBuffers, offsets);
+            
+            //vkCmdBindIndexBuffer(m_cmdBufs[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
             vkCmdDraw(m_cmdBufs[i], 3, 1, 0, 0);
-        
+            //vkCmdDrawIndexed(m_cmdBufs[i], static_cast<uint32_t>(6), 1, 0, 0, 0);
             vkCmdEndRenderPass(m_cmdBufs[i]);
                
             res = vkEndCommandBuffer(m_cmdBufs[i]);
@@ -496,7 +502,24 @@ VkApplicationInfo appInfo = {};
 	    
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
         vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
-    
+
+        //create vertex input
+        VkVertexInputBindingDescription bindingDescription{};
+        bindingDescription.binding = 0;
+        bindingDescription.stride = sizeof(VertexData);
+        bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+
+        std::vector<VkVertexInputAttributeDescription> attributeDecsriptionList;
+        CreateVertexBufferDescription(attributeDecsriptionList);
+
+        CreateVertexBuffer();
+        CreateIndexBuffer();
+
+        vertexInputInfo.vertexBindingDescriptionCount = 1;
+        vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDecsriptionList.size());
+        vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+        vertexInputInfo.pVertexAttributeDescriptions = attributeDecsriptionList.data();
+
         VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};
         pipelineIACreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -605,6 +628,109 @@ VkApplicationInfo appInfo = {};
 
         //connect the buffer and memory
         res = vkBindBufferMemory(m_device, buf, mem, 0);
+
+    }
+    void VKRenderBackEnd::CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions)
+    {
+
+        attributeDescriptions.resize(2);
+
+
+        attributeDescriptions[0].binding = 0;
+        attributeDescriptions[0].location = 0;
+        attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[0].offset = offsetof(VertexData, m_pos);
+
+
+
+        attributeDescriptions[1].binding = 0;
+        attributeDescriptions[1].location = 1;
+        attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+        attributeDescriptions[1].offset = offsetof(VertexData, m_color);
+
+
+    }
+    void VKRenderBackEnd::CreateVertexBuffer()
+    {
+        VertexData vertices[] = {
+            VertexData(vec3(-0.7, 0.7,  0), vec2(0.0f, 0.0f), vec4(1, 0, 0, 1)),
+            VertexData(vec3(0.7, 0.7,  0), vec2(0.0f, 0.0f), vec4(0, 0, 1, 1)),
+            VertexData(vec3(0.0, -0.7,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+            //VertexData(vec3(-0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+        };
+
+
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = sizeof(vertices[0]) * ARRAY_SIZE_IN_ELEMENTS(vertices);
+        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        
+        vkCreateBuffer(m_device, &bufferInfo, nullptr, &vertexBuffer);
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_device, vertexBuffer, &memRequirements);
+
+        VkMemoryAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.pNext = NULL;
+        alloc_info.memoryTypeIndex = 0;
+
+        alloc_info.allocationSize = memRequirements.size;
+        bool pass = memory_type_from_properties(memRequirements.memoryTypeBits,
+                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                           &alloc_info.memoryTypeIndex);
+        VkDeviceMemory mem;
+        vkAllocateMemory(m_device, &alloc_info, NULL,
+                               &(mem));
+
+        void* data;
+        vkMapMemory(m_device, mem, 0, bufferInfo.size, 0, &data);
+            memcpy(data, vertices, (size_t) bufferInfo.size);
+        vkUnmapMemory(m_device, mem);
+        vkBindBufferMemory(m_device, vertexBuffer, mem, 0);
+    }
+    void VKRenderBackEnd::CreateIndexBuffer()
+    {
+        const std::vector<uint16_t> indices = {
+            0, 1, 2, 2, 3, 0
+        };
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = sizeof(uint16_t) * indices.size();
+        bufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+
+        vkCreateBuffer(m_device, &bufferInfo, nullptr, &indexBuffer);
+
+
+
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_device, indexBuffer, &memRequirements);
+
+        VkMemoryAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.pNext = NULL;
+        alloc_info.memoryTypeIndex = 0;
+
+        alloc_info.allocationSize = memRequirements.size;
+        bool pass = memory_type_from_properties(memRequirements.memoryTypeBits,
+                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
+                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
+                                           &alloc_info.memoryTypeIndex);
+        VkDeviceMemory mem;
+        vkAllocateMemory(m_device, &alloc_info, NULL,
+                               &(mem));
+
+        void* data;
+        vkMapMemory(m_device, mem, 0, bufferInfo.size, 0, &data);
+            memcpy(data, indices.data(), (size_t) bufferInfo.size);
+        vkUnmapMemory(m_device, mem);
+        vkBindBufferMemory(m_device, indexBuffer, mem, 0);
 
     }
     const VkSurfaceFormatKHR& VKRenderBackEnd::GetSurfaceFormat() const
