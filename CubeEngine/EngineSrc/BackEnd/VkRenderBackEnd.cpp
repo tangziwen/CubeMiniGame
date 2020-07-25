@@ -395,6 +395,8 @@ VkApplicationInfo appInfo = {};
             
             vkCmdBindIndexBuffer(m_cmdBufs[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
             //vkCmdDraw(m_cmdBufs[i], 3, 1, 0, 0);
+
+            vkCmdBindDescriptorSets(m_cmdBufs[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
             vkCmdDrawIndexed(m_cmdBufs[i], static_cast<uint32_t>(6), 1, 0, 0, 0);
             vkCmdEndRenderPass(m_cmdBufs[i]);
                
@@ -520,6 +522,12 @@ VkApplicationInfo appInfo = {};
         vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
         vertexInputInfo.pVertexAttributeDescriptions = attributeDecsriptionList.data();
 
+
+
+
+
+
+
         VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};
         pipelineIACreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
         pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -532,10 +540,16 @@ VkApplicationInfo appInfo = {};
         vp.minDepth = 0.0f;
         vp.maxDepth = 1.0f;
         
+        VkRect2D scissor{};
+        scissor.offset = {0, 0};
+        scissor.extent = VkExtent2D{(uint32_t)screenSize.x, (uint32_t)screenSize.y};
+
         VkPipelineViewportStateCreateInfo vpCreateInfo = {};
         vpCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
         vpCreateInfo.viewportCount = 1;
         vpCreateInfo.pViewports = &vp;
+        vpCreateInfo.scissorCount = 1;
+        vpCreateInfo.pScissors = &scissor;
        
         VkPipelineRasterizationStateCreateInfo rastCreateInfo = {};
         rastCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
@@ -556,6 +570,17 @@ VkApplicationInfo appInfo = {};
         blendCreateInfo.attachmentCount = 1;
         blendCreateInfo.pAttachments = &blendAttachState;
  
+
+        //pipeline layout
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+
+        if (vkCreatePipelineLayout(m_device, &pipelineLayoutInfo, nullptr, &pipelineLayout) != VK_SUCCESS) {
+            abort();
+        }
+
         VkGraphicsPipelineCreateInfo pipelineInfo = {};
         pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
         pipelineInfo.stageCount = ARRAY_SIZE_IN_ELEMENTS(shaderStageCreateInfo);
@@ -566,6 +591,7 @@ VkApplicationInfo appInfo = {};
         pipelineInfo.pRasterizationState = &rastCreateInfo;
         pipelineInfo.pMultisampleState = &pipelineMSCreateInfo;
         pipelineInfo.pColorBlendState = &blendCreateInfo;
+        pipelineInfo.layout = pipelineLayout;
         pipelineInfo.renderPass = m_renderPass;
         pipelineInfo.basePipelineIndex = -1;
     
@@ -576,59 +602,15 @@ VkApplicationInfo appInfo = {};
     }
     void VKRenderBackEnd::CreateUiniform()
     {
+        VkDeviceSize bufferSize = sizeof(Matrix44);
 
-        Matrix44 mat;
-        //create Buffer
-        VkBufferCreateInfo buf_info = {};
-        buf_info.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        buf_info.pNext = NULL;
-        buf_info.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
-        buf_info.size = sizeof(Matrix44);
-        buf_info.queueFamilyIndexCount = 0;
-        buf_info.pQueueFamilyIndices = NULL;
-        buf_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        buf_info.flags = 0;
-        VkBuffer buf;
-        auto res = vkCreateBuffer(m_device, &buf_info, NULL, &buf);
-        assert(res == VK_SUCCESS);
+        uniformBuffers.resize(m_images.size());
+        uniformBuffersMemory.resize(m_images.size());
 
-
-        //createMemory
-        VkMemoryRequirements mem_reqs;
-        vkGetBufferMemoryRequirements(m_device, buf,
-                                      &mem_reqs);
-
-        VkMemoryAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        alloc_info.pNext = NULL;
-        alloc_info.memoryTypeIndex = 0;
-
-        alloc_info.allocationSize = mem_reqs.size;
-        bool pass = memory_type_from_properties(mem_reqs.memoryTypeBits,
-                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                           &alloc_info.memoryTypeIndex);
-
-        VkDeviceMemory mem;
-        res = vkAllocateMemory(m_device, &alloc_info, NULL,
-                               &(mem));
-        assert(!res);
-
-
-        //set the content of the memory
-        void *data;
-        res = vkMapMemory(m_device, mem, 0, mem_reqs.size, 0,
-                  (void **)&data);
-        assert(!res);
-
-        memcpy(data, &mat, sizeof(mat));
-
-        vkUnmapMemory(m_device, mem);
-
-
-        //connect the buffer and memory
-        res = vkBindBufferMemory(m_device, buf, mem, 0);
-
+        for (size_t i = 0; i < m_images.size(); i++) 
+        {
+            createVKBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, uniformBuffers[i], uniformBuffersMemory[i]);
+        }
     }
     void VKRenderBackEnd::CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions)
     {
@@ -661,10 +643,10 @@ VkApplicationInfo appInfo = {};
         };
         */
         VertexData vertices[] = {
-            VertexData(vec3(-0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(1, 0, 0, 1)),
-            VertexData(vec3(-0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 0, 1, 1)),
-            VertexData(vec3(0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+            VertexData(vec3(-0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(1, 0, 0, 1)),
+            VertexData(vec3(-0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(0, 0, 1, 1)),
             VertexData(vec3(0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+            VertexData(vec3(0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
         };
 
 
@@ -699,6 +681,25 @@ VkApplicationInfo appInfo = {};
             memcpy(data, vertices, (size_t) bufferInfo.size);
         vkUnmapMemory(m_device, mem);
         vkBindBufferMemory(m_device, vertexBuffer, mem, 0);
+    }
+    void VKRenderBackEnd::updateUniformBuffer(uint32_t currentImage)
+    {
+        static float angle = 0.0;
+        auto screenSize = Engine::shared()->winSize();
+        float aspect = screenSize.x / screenSize.y;
+        Matrix44 proj;
+        proj.perspective(45, aspect, 0.1, 100.f);
+
+        Quaternion q;
+        q.fromAxisAngle(vec3(0, 0, 1), angle);
+        angle += 0.5;
+        Matrix44 model;
+        model.setRotation(q);
+        model.setTranslate(vec3(0, 0, -5));
+        void* data;
+        vkMapMemory(m_device, uniformBuffersMemory[currentImage], 0, sizeof(Matrix44), 0, &data);
+            memcpy(data, &(proj * model), sizeof(Matrix44));
+        vkUnmapMemory(m_device, uniformBuffersMemory[currentImage]);
     }
     void VKRenderBackEnd::CreateIndexBuffer()
     {
@@ -749,8 +750,98 @@ VkApplicationInfo appInfo = {};
         uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
 
 
-        VkDescriptorSetLayout descriptorSetLayout;
+        
         VkPipelineLayout pipelineLayout;
+
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = 1;
+        layoutInfo.pBindings = &uboLayoutBinding;
+
+        auto res = vkCreateDescriptorSetLayout(m_device, &layoutInfo, nullptr, &descriptorSetLayout);
+        assert(!res);
+
+
+        VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+        pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+        pipelineLayoutInfo.setLayoutCount = 1;
+        pipelineLayoutInfo.pSetLayouts = &descriptorSetLayout;
+
+    }
+    void VKRenderBackEnd::createDescriptorPool()
+    {
+        VkDescriptorPoolSize poolSize{};
+        poolSize.type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        poolSize.descriptorCount = static_cast<uint32_t>(m_images.size());
+
+        VkDescriptorPoolCreateInfo poolInfo{};
+        poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+        poolInfo.poolSizeCount = 1;
+        poolInfo.pPoolSizes = &poolSize;
+
+        poolInfo.maxSets = static_cast<uint32_t>(m_images.size());
+
+        vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &descriptorPool);
+    }
+    void VKRenderBackEnd::createDescriptorSets()
+    {
+        std::vector<VkDescriptorSetLayout> layouts(m_images.size(), descriptorSetLayout);
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = descriptorPool;
+        allocInfo.descriptorSetCount = static_cast<uint32_t>(m_images.size());
+        allocInfo.pSetLayouts = layouts.data();
+
+        descriptorSets.resize(m_images.size());
+        if (vkAllocateDescriptorSets(m_device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
+            abort();
+        }
+
+        for (size_t i = 0; i < m_images.size(); i++) {
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = uniformBuffers[i];
+            bufferInfo.offset = 0;
+            bufferInfo.range = sizeof(Matrix44);
+
+            VkWriteDescriptorSet descriptorWrite{};
+            descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            descriptorWrite.dstSet = descriptorSets[i];
+            descriptorWrite.dstBinding = 0;
+            descriptorWrite.dstArrayElement = 0;
+            descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            descriptorWrite.descriptorCount = 1;
+            descriptorWrite.pBufferInfo = &bufferInfo;
+
+            vkUpdateDescriptorSets(m_device, 1, &descriptorWrite, 0, nullptr);
+        }
+    }
+    void VKRenderBackEnd::createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer& buffer, VkDeviceMemory& bufferMemory)
+    {
+
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        bufferInfo.size = size;
+        bufferInfo.usage = usage;
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+        auto res = vkCreateBuffer(m_device, &bufferInfo, nullptr, &buffer);
+        assert(!res);
+        VkMemoryRequirements memRequirements;
+        vkGetBufferMemoryRequirements(m_device, buffer, &memRequirements);
+
+        VkMemoryAllocateInfo alloc_info = {};
+        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+        alloc_info.pNext = NULL;
+        alloc_info.memoryTypeIndex = 0;
+        alloc_info.allocationSize = memRequirements.size;
+        bool pass = memory_type_from_properties(memRequirements.memoryTypeBits,
+                                           properties,
+                                           &alloc_info.memoryTypeIndex);
+        res = vkAllocateMemory(m_device, &alloc_info, NULL,
+                               &(bufferMemory));
+        assert(!res);
+        res = vkBindBufferMemory(m_device, buffer, bufferMemory, 0);
+        assert(!res);
 
     }
     const VkSurfaceFormatKHR& VKRenderBackEnd::GetSurfaceFormat() const
@@ -791,7 +882,10 @@ VkApplicationInfo appInfo = {};
         CreateFramebuffer();
         CreateShaders();
         CreateUiniform();
+        CreateDescriptorSetLayout();
         CreatePipeline();
+        createDescriptorPool();
+        createDescriptorSets();
         RecordCommandBuffers();
     }
 
@@ -801,7 +895,7 @@ VkApplicationInfo appInfo = {};
     
         VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, NULL, NULL, &ImageIndex);
         CHECK_VULKAN_ERROR("vkAcquireNextImageKHR error %d\n" , res);
-   
+        updateUniformBuffer(ImageIndex);
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;

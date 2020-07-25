@@ -65,9 +65,12 @@ private:
     void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDecription);
 
     void CreateVertexBuffer();
-
+    void updateUniformBuffer(uint32_t currentImage);
     void CreateIndexBuffer();
     void CreateDescriptorSetLayout();
+    void createDescriptorPool();
+    void createDescriptorSets();
+    void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
     //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;
@@ -92,7 +95,13 @@ private:
     VkPipeline m_pipeline;
     VkBuffer vertexBuffer;
     VkBuffer indexBuffer;
+    std::vector<VkBuffer> uniformBuffers;
+    VkDescriptorPool descriptorPool;
+    VkDescriptorSetLayout descriptorSetLayout;
+    std::vector<VkDescriptorSet> descriptorSets;
+    std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkPhysicalDeviceMemoryProperties memory_properties;
+    VkPipelineLayout pipelineLayout;
 };
 
 } // namespace tzw
