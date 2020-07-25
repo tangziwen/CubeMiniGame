@@ -393,9 +393,9 @@ VkApplicationInfo appInfo = {};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(m_cmdBufs[i], 0, 1, vertexBuffers, offsets);
             
-            //vkCmdBindIndexBuffer(m_cmdBufs[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-            vkCmdDraw(m_cmdBufs[i], 3, 1, 0, 0);
-            //vkCmdDrawIndexed(m_cmdBufs[i], static_cast<uint32_t>(6), 1, 0, 0, 0);
+            vkCmdBindIndexBuffer(m_cmdBufs[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            //vkCmdDraw(m_cmdBufs[i], 3, 1, 0, 0);
+            vkCmdDrawIndexed(m_cmdBufs[i], static_cast<uint32_t>(6), 1, 0, 0, 0);
             vkCmdEndRenderPass(m_cmdBufs[i]);
                
             res = vkEndCommandBuffer(m_cmdBufs[i]);
@@ -652,13 +652,20 @@ VkApplicationInfo appInfo = {};
     }
     void VKRenderBackEnd::CreateVertexBuffer()
     {
+        /*
         VertexData vertices[] = {
-            VertexData(vec3(-0.7, 0.7,  0), vec2(0.0f, 0.0f), vec4(1, 0, 0, 1)),
-            VertexData(vec3(0.7, 0.7,  0), vec2(0.0f, 0.0f), vec4(0, 0, 1, 1)),
-            VertexData(vec3(0.0, -0.7,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
-            //VertexData(vec3(-0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+            VertexData(vec3(-0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(1, 0, 0, 1)),
+            VertexData(vec3(0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(0, 0, 1, 1)),
+            VertexData(vec3(0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+            VertexData(vec3(-0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
         };
-
+        */
+        VertexData vertices[] = {
+            VertexData(vec3(-0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(1, 0, 0, 1)),
+            VertexData(vec3(-0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 0, 1, 1)),
+            VertexData(vec3(0.5, 0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+            VertexData(vec3(0.5, -0.5,  0), vec2(0.0f, 0.0f), vec4(0, 1, 0, 1)),
+        };
 
 
         VkBufferCreateInfo bufferInfo{};
@@ -731,6 +738,19 @@ VkApplicationInfo appInfo = {};
             memcpy(data, indices.data(), (size_t) bufferInfo.size);
         vkUnmapMemory(m_device, mem);
         vkBindBufferMemory(m_device, indexBuffer, mem, 0);
+
+    }
+    void VKRenderBackEnd::CreateDescriptorSetLayout()
+    {
+        VkDescriptorSetLayoutBinding uboLayoutBinding{};
+        uboLayoutBinding.binding = 0;
+        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        uboLayoutBinding.descriptorCount = 1;
+        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
+
+
+        VkDescriptorSetLayout descriptorSetLayout;
+        VkPipelineLayout pipelineLayout;
 
     }
     const VkSurfaceFormatKHR& VKRenderBackEnd::GetSurfaceFormat() const

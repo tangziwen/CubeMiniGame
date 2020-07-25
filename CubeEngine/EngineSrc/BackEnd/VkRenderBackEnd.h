@@ -67,7 +67,7 @@ private:
     void CreateVertexBuffer();
 
     void CreateIndexBuffer();
-
+    void CreateDescriptorSetLayout();
     //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;
