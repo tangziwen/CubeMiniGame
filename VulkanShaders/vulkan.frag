@@ -1,7 +1,12 @@
 #version 450
 
+layout(binding = 1) uniform sampler2D texSampler;
+
 layout(location = 0) out vec4 out_Color;
 layout(location = 0) in vec4 fragColor;
-void main() {
-  out_Color = vec4( fragColor.rgb, 1.0 );
+layout(location = 1) in vec2 v_texcoord;
+
+void main() 
+{
+  out_Color = texture(texSampler, v_texcoord) * vec4( fragColor.rgb, 1.0);
 }

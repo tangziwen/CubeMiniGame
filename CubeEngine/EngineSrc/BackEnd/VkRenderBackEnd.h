@@ -71,11 +71,33 @@ private:
     void createDescriptorPool();
     void createDescriptorSets();
     void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
+	void createTextureImage();
+	void createTextureImageView();
+	void createTextureSampler();
+	void createDepthResources();
+	
+	VkCommandBuffer beginSingleTimeCommands();
+	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;
     const VkSurfaceCapabilitiesKHR GetSurfaceCaps() const;
     const VkPhysicalDevice& GetPhysDevice();
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	
+
+	//depth resource
+	VkImage depthImage;
+    VkDeviceMemory depthImageMemory;
+    VkImageView depthImageView;
+
+	std::vector<uint16_t> indices;
+	
+	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+	
     VkInstance m_inst;
     VkSurfaceKHR m_surface;
     VkSwapchainKHR m_swapChainKHR;
@@ -102,6 +124,11 @@ private:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPipelineLayout pipelineLayout;
+	VkImage textureImage;
+	VkDeviceMemory textureImageMemory;
+	VkImageView textureImageView;
+	VkSampler textureSampler;
+	
 };
 
 } // namespace tzw

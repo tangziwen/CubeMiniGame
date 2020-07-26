@@ -7,11 +7,16 @@ layout(binding = 0) uniform UniformBufferObject {
 
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
+layout(location = 2) in vec2 texcoord;
 
 layout(location = 0) out vec4 fragColor;
+layout(location = 1) out vec2 v_texcoord;
 
 void main() {
     gl_Position = ubo.mvp * vec4(inPosition, 1.0);
+	
+	v_texcoord = texcoord;
+
 	//hack for vulkan
 	gl_Position.y = -gl_Position.y;
 	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
