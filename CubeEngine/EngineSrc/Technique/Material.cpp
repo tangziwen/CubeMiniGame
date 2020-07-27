@@ -571,7 +571,7 @@ void Material::use(ShaderProgram * extraProgram)
 						tex = TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 					}
 					auto id = getMapSlot(name);
-					RenderBackEnd::shared()->bindTexture2DAndUnit(id,tex->handle(),tex->getType());
+					RenderBackEnd::shared()->bindTexture2DAndUnit(id,tex->handle()->m_uid,tex->getType());
 					program->setUniformInteger(name.c_str(),id);
 				}
 			break;

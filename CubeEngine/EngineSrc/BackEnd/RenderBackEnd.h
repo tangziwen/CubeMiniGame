@@ -3,7 +3,7 @@
 #include "../Rendering/RenderFlag.h"
 #include "RenderBackEndBase.h"
 #include <string>
-
+#include "DeviceTexture.h"
 namespace tzw {
 
 class RenderBackEnd : public RenderBackEndBase
@@ -58,6 +58,7 @@ public:
 	std::string getCurrVersion();
 	std::string getShaderSupportVersion();
 	void printFullDeviceInfo();
+    DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag) override;
 private:
 	bool m_isCheckGL;
     static RenderBackEnd * m_instance;

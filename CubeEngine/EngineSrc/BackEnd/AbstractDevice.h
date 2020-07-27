@@ -8,10 +8,7 @@
 #include "../Math/vec2.h"
 class GLFWwindow;
 namespace tzw {
-    enum class RenderDeviceType{
-        Vulkan_Device,
-        OpenGl_Device,
-    };
+
 class AbstractDevice : public Singleton<AbstractDevice>
 {
 public:

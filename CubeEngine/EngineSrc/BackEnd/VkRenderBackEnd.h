@@ -47,6 +47,19 @@ public:
     VkSurfaceKHR &getVKSurface();
     void initDevices();
     void RenderScene();
+    virtual DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag);
+    VkDevice getDevice();
+//helper
+    bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
+	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+    const VkSurfaceFormatKHR& GetSurfaceFormat() const;
+    const VkSurfaceCapabilitiesKHR GetSurfaceCaps() const;
+    const VkPhysicalDevice& GetPhysDevice();
+	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
+	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+    void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
 private:
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
     void CreateInstance();
@@ -70,7 +83,7 @@ private:
     void CreateDescriptorSetLayout();
     void createDescriptorPool();
     void createDescriptorSets();
-    void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
+    
 	void createTextureImage();
 	void createTextureImageView();
 	void createTextureSampler();
@@ -80,16 +93,7 @@ private:
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void VKRenderBackEnd::createSyncObjects();
 
-    //helper
-    bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
-	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
-    const VkSurfaceFormatKHR& GetSurfaceFormat() const;
-    const VkSurfaceCapabilitiesKHR GetSurfaceCaps() const;
-    const VkPhysicalDevice& GetPhysDevice();
-	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
-	
+    
 
 	//depth resource
 	VkImage depthImage;
@@ -98,7 +102,7 @@ private:
 
 	std::vector<uint16_t> indices;
 	
-	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+	
 	
     VkInstance m_inst;
     VkSurfaceKHR m_surface;

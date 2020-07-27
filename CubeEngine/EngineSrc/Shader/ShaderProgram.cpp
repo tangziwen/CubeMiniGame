@@ -8,6 +8,7 @@
 #include "Utility/file/Data.h"
 #include "Utility/file/Tfile.h"
 #include "ShaderMgr.h"
+#include "Engine/Engine.h"
 using namespace std;
 namespace tzw {
 
@@ -27,7 +28,11 @@ ShaderProgram::ShaderProgram(uint32_t mutationFlag, const char *pVSFileName, con
 	{
 		m_tessellationEvaluationShader = pTESFileName;
 	}
-	createShader(true);
+    if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
+    {
+        createShader(true);
+    }
+	
 }
 
 void ShaderProgram::use()

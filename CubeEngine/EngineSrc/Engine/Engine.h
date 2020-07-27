@@ -5,7 +5,9 @@
 #include <string>
 #include "EngineSrc/Math/vec2.h"
 #include "../BackEnd/WindowBackEndMgr.h"
+
 namespace tzw {
+class RenderBackEndBase;
 class Engine
 {
 public:
@@ -42,7 +44,14 @@ public:
 	void loadConfig();
 	void saveConfig();
 	void changeScreenSetting(int w, int h, bool isFullScreen);
+    RenderBackEndBase * getRenderBackEnd();
+    void setRenderBackEnd(RenderBackEndBase * backend);
+	bool isIsFullScreen() const;
+	void setIsFullScreen(const bool isFullScreen);
+    void setRenderDeviceType(RenderDeviceType newType);
+    RenderDeviceType getRenderDeviceType();
 private:
+    RenderDeviceType m_type;
 	WindowBackEnd * m_winBackEnd{};
     static Engine * m_instance;
     int m_drawCallCount{};
@@ -55,10 +64,7 @@ private:
     float m_windowWidth{};
     float m_windowHeight{};
 	bool m_isFullScreen;
-public:
-	bool isIsFullScreen() const;
-	void setIsFullScreen(const bool isFullScreen);
-private:
+    RenderBackEndBase * m_renderBackEnd;
     bool m_isEnableOutLine;
     AppEntry * m_delegate{};
 };

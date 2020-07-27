@@ -16,7 +16,6 @@ namespace tzw
 	Texture::Texture(std::string filePath)
 	{
 		auto data =Tfile::shared()->getData(filePath,false);
-		ImageFileInfo info;
 		unsigned short loadingFlag = SOIL_FLAG_INVERT_Y;
 		auto exten = Tfile::shared()->getExtension(filePath);
 		for(auto& c : exten)
@@ -33,13 +32,13 @@ namespace tzw
 		{
 			loadingFlag = SOIL_FLAG_INVERT_Y;
 		}
-		this->m_textureId = SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, loadingFlag, &info);
+		this->m_textureId =  Engine::shared()->getRenderBackEnd()->loadTexture_imp(data.getBytes(),data.getSize(),loadingFlag);//SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, loadingFlag, &info);
 		m_type = RenderFlag::TextureType::Texture2D;
-		m_width = info.width;
-		m_height = info.height;
+		m_width = this->m_textureId->m_metaInfo.width;
+		m_height = this->m_textureId->m_metaInfo.height;
 		if(isDDS )
 		{
-			if(info.dds_mipMapLevel > 0)
+			if(m_textureId->m_metaInfo.dds_mipMapLevel > 0)
 			{
 				m_isHaveMipMap = true;
 			}else
@@ -59,6 +58,7 @@ namespace tzw
 
 	Texture::Texture(std::string filePath, char faceMode[6])
 	{
+		/*
 		std::string resultFilePath = Engine::shared()->getFilePath(filePath);
 		this->m_textureId = SOIL_load_OGL_single_cubemap(
 			resultFilePath.c_str(), faceMode, SOIL_LOAD_AUTO, 0, SOIL_FLAG_MIPMAPS | SOIL_FLAG_INVERT_Y);
@@ -70,10 +70,12 @@ namespace tzw
 		}
 		initData();
 		m_isLoaded = true;
+		*/
 	}
 
 	Texture::Texture(unsigned char* rawData, int w, int h, bool needFlipY)
 	{
+		/*
 		auto flags = 0;
 		if (needFlipY)
 		{
@@ -85,6 +87,7 @@ namespace tzw
 		m_height = h;
 		initData();
 		m_isLoaded = true;
+		*/
 	}
 
 	Texture::Texture(std::string PosXFilename,
@@ -94,6 +97,7 @@ namespace tzw
 					std::string PosZFilename,
 					std::string NegZFilename)
 	{
+		/*
 		this->m_textureId = SOIL_load_OGL_cubemap(PosXFilename.c_str(),
 												NegXFilename.c_str(),
 												PosYFilename.c_str(),
@@ -106,6 +110,7 @@ namespace tzw
 		m_type = RenderFlag::TextureType::TextureCubeMap;
 		initData();
 		m_isLoaded = true;
+		*/
 	}
 
 	void
@@ -128,11 +133,16 @@ namespace tzw
 
 	void Texture::setWarp(RenderFlag::WarpAddress warpAddress)
 	{
-		RenderBackEnd::shared()->setTextureWarp(m_textureId, warpAddress, m_type);
+		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
+		{
+			RenderBackEnd::shared()->setTextureWarp(m_textureId->m_uid, warpAddress, m_type);
+		}
+		
 	}
 
 	void Texture::loadAsync(std::string filePath, std::function<void(Texture*)> onFinish)
 	{
+		/*
 		std::string resultFilePath = Engine::shared()->getFilePath(filePath);
 
 		auto finishCB = [this,onFinish]
@@ -148,9 +158,10 @@ namespace tzw
 		};
 		m_type = RenderFlag::TextureType::Texture2D;
 		WorkerThreadSystem::shared()->pushOrder(WorkerJob(doCB, finishCB));
+		*/
 	}
 
-	unsigned int
+	DeviceTexture *
 	Texture::handle()
 	{
 		return m_textureId;
@@ -174,22 +185,22 @@ namespace tzw
 		switch (t)
 		{
 		case FilterType::Linear:
-			RenderBackEnd::shared()->setTexMIN(m_textureId, GL_LINEAR, m_type);
+			RenderBackEnd::shared()->setTexMIN(m_textureId->m_uid, GL_LINEAR, m_type);
 			break;
 		case FilterType::Nearest:
-			RenderBackEnd::shared()->setTexMIN(m_textureId, GL_NEAREST, m_type);
+			RenderBackEnd::shared()->setTexMIN(m_textureId->m_uid, GL_NEAREST, m_type);
 			break;
 		case FilterType::LinearMipMapNearest:
 			RenderBackEnd::shared()->setTexMIN(
-				m_textureId, GL_LINEAR_MIPMAP_NEAREST, m_type);
+				m_textureId->m_uid, GL_LINEAR_MIPMAP_NEAREST, m_type);
 			break;
 		case FilterType::LinearMipMapLinear:
 			RenderBackEnd::shared()->setTexMIN(
-				m_textureId, GL_LINEAR_MIPMAP_LINEAR, m_type);
+				m_textureId->m_uid, GL_LINEAR_MIPMAP_LINEAR, m_type);
 			break;
 		case FilterType::NearestMipMapLinear:
 			RenderBackEnd::shared()->setTexMIN(
-				m_textureId, GL_NEAREST_MIPMAP_LINEAR, m_type);
+				m_textureId->m_uid, GL_NEAREST_MIPMAP_LINEAR, m_type);
 			break;
 		}
 	}
@@ -200,32 +211,32 @@ namespace tzw
 		switch (t)
 		{
 		case FilterType::Linear:
-			RenderBackEnd::shared()->setTexMAG(m_textureId, GL_LINEAR, m_type);
+			RenderBackEnd::shared()->setTexMAG(m_textureId->m_uid, GL_LINEAR, m_type);
 			break;
 		case FilterType::Nearest:
-			RenderBackEnd::shared()->setTexMAG(m_textureId, GL_NEAREST, m_type);
+			RenderBackEnd::shared()->setTexMAG(m_textureId->m_uid, GL_NEAREST, m_type);
 			break;
 		case FilterType::LinearMipMapNearest:
 			RenderBackEnd::shared()->setTexMAG(
-				m_textureId, GL_LINEAR_MIPMAP_NEAREST, m_type);
+				m_textureId->m_uid, GL_LINEAR_MIPMAP_NEAREST, m_type);
 			break;
 		case FilterType::LinearMipMapLinear:
 			RenderBackEnd::shared()->setTexMAG(
-				m_textureId, GL_LINEAR_MIPMAP_LINEAR, m_type);
+				m_textureId->m_uid, GL_LINEAR_MIPMAP_LINEAR, m_type);
 			break;
 		case FilterType::NearestMipMapLinear:
 			RenderBackEnd::shared()->setTexMAG(
-				m_textureId, GL_NEAREST_MIPMAP_LINEAR, m_type);
+				m_textureId->m_uid, GL_NEAREST_MIPMAP_LINEAR, m_type);
 			break;
 		}
 	}
 
-	unsigned short Texture::getTextureId() const
+	DeviceTexture * Texture::getTextureId() const
 	{
 		return m_textureId;
 	}
 
-	void Texture::setTextureId(const unsigned short textureId)
+	void Texture::setTextureId(DeviceTexture * textureId)
 	{
 		m_textureId = textureId;
 	}
@@ -239,10 +250,10 @@ namespace tzw
 	void
 	Texture::genMipMap()
 	{
-		glBindTexture(GL_TEXTURE_2D, m_textureId);
+		glBindTexture(GL_TEXTURE_2D, m_textureId->m_uid);
 		if (!m_isHaveMipMap)
 		{
-			RenderBackEnd::shared()->genMipMap(m_textureId);
+			RenderBackEnd::shared()->genMipMap(m_textureId->m_uid);
 		}
 		setFilter(FilterType::Linear, 2);
 		setFilter(FilterType::LinearMipMapLinear, 1);

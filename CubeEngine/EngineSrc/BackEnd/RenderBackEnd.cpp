@@ -8,7 +8,8 @@
 #include <string.h>
 #include <assert.h>
 #include "Utility/log/Log.h"
-
+#include "External/SOIL2/SOIL2.h"
+#include "gl/DeviceTextureGL.h"
 namespace tzw {
 RenderBackEnd * RenderBackEnd::m_instance = nullptr;
 
@@ -63,6 +64,18 @@ void RenderBackEnd::printFullDeviceInfo()
 	const GLubyte* version = glGetString(GL_VERSION);
 	auto shader_version = glGetString(GL_SHADING_LANGUAGE_VERSION );
 	tlog("Vendor %s\n Renderer %s\n Support GL Version %s\n shader version %s\n", vendor, renderer, version, shader_version);
+}
+
+DeviceTexture * RenderBackEnd::loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag)
+{
+	ImageFileInfo info;
+	DeviceTextureGL * texture = new DeviceTextureGL();
+	texture->m_uid =  SOIL_load_OGL_texture_from_memory((const unsigned char *)buf, buffSize, SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, loadingFlag, &info);
+	texture->m_metaInfo.channels = info.channels;
+	texture->m_metaInfo.width = info.width;
+	texture->m_metaInfo.height = info.height;
+	texture->m_metaInfo.dds_mipMapLevel = info.dds_mipMapLevel;
+	return texture;
 }
 
 RenderBackEnd *RenderBackEnd::shared()

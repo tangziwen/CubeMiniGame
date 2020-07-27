@@ -13,6 +13,7 @@
 
 
 #include "SOIL2/stb_image.h"
+#include <EngineSrc\BackEnd\vk\DeviceTextureVK.h>
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
 {
@@ -1334,6 +1335,17 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         res = vkQueuePresentKHR(m_queue, &presentInfo);    
         CHECK_VULKAN_ERROR("vkQueuePresentKHR error %d\n" , res);
         currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+    }
+
+    DeviceTexture* VKRenderBackEnd::loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag)
+    {
+        DeviceTextureVK * texture = new DeviceTextureVK(buf, buffSize);
+        return texture;
+    }
+
+    VkDevice VKRenderBackEnd::getDevice()
+    {
+        return m_device;
     }
 
 }

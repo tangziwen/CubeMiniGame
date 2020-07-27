@@ -96,7 +96,7 @@ namespace tzw {
 		m_frameBuffer = new FrameBuffer();
 		m_frameBuffer->init(1024, 1024,1,true, true);
 		m_frameBuffer->gen();
-		m_texture->setTextureId(m_frameBuffer->getTexture(0));
+		//m_texture->setTextureId(m_frameBuffer->getTexture(0));
 	
 	}
 } // namespace tzw

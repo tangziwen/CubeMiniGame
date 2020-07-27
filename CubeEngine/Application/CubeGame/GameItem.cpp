@@ -64,11 +64,11 @@ namespace tzw
 	{
 		if(m_thumbNail)
 		{
-			return m_thumbNail->getTexture()->handle();
+			return m_thumbNail->getTexture()->handle()->m_uid;
 		}
 		else if(m_texture)
 		{
-			return m_texture->handle();	
+			return m_texture->handle()->m_uid;	
 		}else
 		{
 			return 0;

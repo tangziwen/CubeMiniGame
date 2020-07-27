@@ -3,7 +3,7 @@
 #include "../Texture/TextureMgr.h"
 #include "../Rendering/Renderer.h"
 #include "../Game/ConsolePanel.h"
-
+#include "../BackEnd/RenderBackEndBase.h"
 #include "../Event/EventMgr.h"
 #include "time.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
@@ -55,6 +55,16 @@ void Engine::setIsFullScreen(const bool isFullScreen)
 {
 	m_isFullScreen = isFullScreen;
 	m_winBackEnd->setIsFullScreen(m_isFullScreen);
+}
+
+void Engine::setRenderDeviceType(RenderDeviceType newType)
+{
+	m_type = newType;
+}
+
+RenderDeviceType Engine::getRenderDeviceType()
+{
+	return m_type;
 }
 
 bool Engine::getIsEnableOutLine() const
@@ -179,6 +189,16 @@ void Engine::changeScreenSetting(int w, int h, bool isFullScreen)
 	Renderer::shared()->onChangeScreenSize(w, h);
 }
 
+RenderBackEndBase* Engine::getRenderBackEnd()
+{
+	return m_renderBackEnd;
+}
+
+void Engine::setRenderBackEnd(RenderBackEndBase* backend)
+{
+	m_renderBackEnd = backend;
+}
+
 int Engine::getDrawCallCount()
 {
     return m_drawCallCount;
@@ -271,8 +291,8 @@ void Engine::onStart()
     Engine::shared()->initSingletons();
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
-	GUISystem::shared()->initGUI();
-	Renderer::shared()->init();
+	//GUISystem::shared()->initGUI();
+	//Renderer::shared()->init();
 	AudioSystem::shared()->init();
 	uuid4_init();
 	//WorkerThreadSystem::shared()->init();

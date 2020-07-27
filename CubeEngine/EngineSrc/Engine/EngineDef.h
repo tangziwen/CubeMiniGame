@@ -14,6 +14,11 @@ namespace tzw
 typedef int integer;
 typedef unsigned int integer_u;
 typedef unsigned short short_u;
+
+enum class RenderDeviceType{
+    Vulkan_Device,
+    OpenGl_Device,
+};
 class EngineDef
 {
 public:

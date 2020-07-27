@@ -5,9 +5,8 @@
 #include "../Math/vec2.h"
 #include "../Rendering/RenderFlag.h"
 #include <functional>
-
+#include "BackEnd/DeviceTexture.h"
 namespace tzw {
-
 class Texture
 {
 public:
@@ -32,20 +31,20 @@ public:
     void setFilter(FilterType type, int filter = 0);
     void setWarp(RenderFlag::WarpAddress warpAddress);
 	void loadAsync(std::string filePath, std::function<void(Texture *)> onFinish);
-    unsigned int handle();
+    DeviceTexture* handle();
     vec2 getSize();
     RenderFlag::TextureType getType() const;
     bool getIsHaveMipMap() const;
     void genMipMap();
     void initData();
-	unsigned short getTextureId() const;
-	void setTextureId(const unsigned short textureId);
+	DeviceTexture * getTextureId() const;
+	void setTextureId(DeviceTexture * textureId);
 private:
     RenderFlag::TextureType m_type;
     void setMinFilter(FilterType t);
     void setMagFilter(FilterType t);
     int m_width,m_height;
-    unsigned short m_textureId;
+    DeviceTexture * m_textureId;
     bool m_isHaveMipMap;
 	unsigned char *m_imgData;
 	int m_channel;

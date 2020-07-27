@@ -1092,9 +1092,9 @@ void Renderer::directionalLightPass()
 	
 	//For IBL
 	program->setUniformInteger("environmentMap", 8);
-	RenderBackEnd::shared()->bindTexture2DAndUnit(8,m_envMap->handle(),m_envMap->getType());
+	RenderBackEnd::shared()->bindTexture2DAndUnit(8,m_envMap->handle()->m_uid,m_envMap->getType());
 	program->setUniformInteger("prefilterMap", 9);
-	RenderBackEnd::shared()->bindTexture2DAndUnit(9,m_specularMap->handle(),m_specularMap->getType());
+	RenderBackEnd::shared()->bindTexture2DAndUnit(9,m_specularMap->handle()->m_uid,m_specularMap->getType());
 
 	//
 	program->setUniform2Float("TU_winSize", Engine::shared()->winSize());
