@@ -19,6 +19,8 @@ namespace tzw
 
 #define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
+
+const int MAX_FRAMES_IN_FLIGHT = 1;
 static void initVk()
 {
     
@@ -797,7 +799,7 @@ VkApplicationInfo appInfo = {};
 
         Quaternion q;
         q.fromAxisAngle(vec3(1, 1, 0).normalized(), angle);
-        angle += 0.01;
+        angle += 0.5;
         Matrix44 model;
         model.setRotation(q);
         model.setTranslate(vec3(0, 0, -5));
@@ -1032,6 +1034,27 @@ VkCommandBuffer VKRenderBackEnd::beginSingleTimeCommands()
     return commandBuffer;
 }
 
+void VKRenderBackEnd::createSyncObjects() {
+        imageAvailableSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        renderFinishedSemaphores.resize(MAX_FRAMES_IN_FLIGHT);
+        inFlightFences.resize(MAX_FRAMES_IN_FLIGHT);
+        imagesInFlight.resize(m_images.size(), VK_NULL_HANDLE);
+
+        VkSemaphoreCreateInfo semaphoreInfo{};
+        semaphoreInfo.sType = VK_STRUCTURE_TYPE_SEMAPHORE_CREATE_INFO;
+
+        VkFenceCreateInfo fenceInfo{};
+        fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
+        fenceInfo.flags = VK_FENCE_CREATE_SIGNALED_BIT;
+
+        for (size_t i = 0; i < MAX_FRAMES_IN_FLIGHT; i++) {
+            if (vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &imageAvailableSemaphores[i]) != VK_SUCCESS ||
+                vkCreateSemaphore(m_device, &semaphoreInfo, nullptr, &renderFinishedSemaphores[i]) != VK_SUCCESS ||
+                vkCreateFence(m_device, &fenceInfo, nullptr, &inFlightFences[i]) != VK_SUCCESS) {
+                throw std::runtime_error("failed to create synchronization objects for a frame!");
+            }
+        }
+ }
 void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
@@ -1262,21 +1285,44 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         createDescriptorPool();
         createDescriptorSets();
         RecordCommandBuffers();
+        createSyncObjects();
     }
 
     void VKRenderBackEnd::RenderScene()
     {
+
+        vkWaitForFences(m_device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         unsigned ImageIndex = 0;
     
-        VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, NULL, NULL, &ImageIndex);
-        CHECK_VULKAN_ERROR("vkAcquireNextImageKHR error %d\n" , res);
+        VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &ImageIndex);
+        if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
+            vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
+        }
+
+
+        //CHECK_VULKAN_ERROR("vkAcquireNextImageKHR error %d\n" , res);
         updateUniformBuffer(ImageIndex);
+ 
+        imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;
         submitInfo.pCommandBuffers      = &m_cmdBufs[ImageIndex];
+
+        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+        submitInfo.waitSemaphoreCount = 1;
+        submitInfo.pWaitSemaphores = waitSemaphores;
+        submitInfo.pWaitDstStageMask = waitStages;
+
+
+        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+        submitInfo.signalSemaphoreCount = 1;
+        submitInfo.pSignalSemaphores = signalSemaphores;
+
+        vkResetFences(m_device, 1, &inFlightFences[currentFrame]);
     
-        res = vkQueueSubmit(m_queue, 1, &submitInfo, NULL);    
+        res = vkQueueSubmit(m_queue, 1, &submitInfo, inFlightFences[currentFrame]);    
         CHECK_VULKAN_ERROR("vkQueueSubmit error %d\n", res);
     
         VkPresentInfoKHR presentInfo = {};
@@ -1287,6 +1333,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     
         res = vkQueuePresentKHR(m_queue, &presentInfo);    
         CHECK_VULKAN_ERROR("vkQueuePresentKHR error %d\n" , res);
+        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
     }
 
 }
