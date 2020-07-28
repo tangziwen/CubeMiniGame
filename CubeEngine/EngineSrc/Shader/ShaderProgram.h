@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 #include <unordered_map>
-
+#include "BackEnd/DeviceShader.h"
 namespace tzw {
 enum class ShaderOption
 {
@@ -14,7 +14,7 @@ enum class ShaderOption
     EnableDoubleSide = 1 << 2,
 	Shader_option_End = 1 << 31,
 };
-
+class DeviceShader;
 class ShaderProgram
 {
 public:
@@ -43,11 +43,12 @@ public:
 	std::string m_tessellationEvaluationShader;
 private:
 	uint32_t m_mutationFlag;
+    void processShaderText(const char* pShaderText, std::string & finalStr);
 	void createShader(bool isStrict);
-    void addShader(unsigned int ShaderProgram, const char* pShaderText, unsigned int ShaderType, bool isStrict);
+    void addShader(DeviceShader * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict);
     std::unordered_map<std::string,unsigned int> m_locationMap;
 	std::unordered_map<std::string, int> m_uniformMap;
-    unsigned int shader;
+    DeviceShader* shader;
 };
 } // namespace tzw
 

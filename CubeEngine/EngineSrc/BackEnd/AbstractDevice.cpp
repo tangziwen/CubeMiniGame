@@ -66,7 +66,7 @@ void AbstractDevice::update()
         m_isFirstFrame = false;
     }
     // Clear color and depth buffer
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    
     Engine::shared()->update(delta);
 }
 

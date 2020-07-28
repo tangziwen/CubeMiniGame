@@ -149,7 +149,7 @@ Matrix44 Node::getScalingMatrix()
     return s;
 }
 
-void Node::visit(RenderCommand::RenderType passType)
+void Node::visit(std::vector<Node*>&directDrawList)
 {
 	auto scene = g_GetCurrScene()->getOctreeScene();
     logicUpdate(Engine::shared()->deltaTime());
@@ -166,11 +166,14 @@ void Node::visit(RenderCommand::RenderType passType)
 	{
 		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )
 		{
+            directDrawList.emplace_back(this);
+            /*
 			submitDrawCmd(passType);
 			if(onSubmitDrawCommand)
 			{
 				onSubmitDrawCommand(RenderCommand::RenderType::Common);
 			}
+            */
 		}
 		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
@@ -181,7 +184,7 @@ void Node::visit(RenderCommand::RenderType passType)
 		////traversal the children
 		for(auto child : m_children)
 		{
-			child->visit(passType);
+			child->visit(directDrawList);
 			if(!child->m_isValid)
 			{
 				removeList.push_back(child);

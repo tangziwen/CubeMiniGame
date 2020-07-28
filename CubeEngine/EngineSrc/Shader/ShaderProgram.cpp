@@ -9,8 +9,21 @@
 #include "Utility/file/Tfile.h"
 #include "ShaderMgr.h"
 #include "Engine/Engine.h"
+
 using namespace std;
 namespace tzw {
+
+static int BitCount(uint32_t n)
+{
+    unsigned int c =0 ; // 计数器
+    while (n >0)
+    {
+        if((n &1) ==1) // 当前位是1
+            ++c ; // 计数器加1
+        n >>=1 ; // 移位
+    }
+    return c ;
+}
 
 ShaderProgram::ShaderProgram(uint32_t mutationFlag, const char *pVSFileName, const char *pFSFileName, const char *pTCSFileName, const char* pTESFileName)
 {
@@ -28,22 +41,19 @@ ShaderProgram::ShaderProgram(uint32_t mutationFlag, const char *pVSFileName, con
 	{
 		m_tessellationEvaluationShader = pTESFileName;
 	}
-    if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
-    {
-        createShader(true);
-    }
+    createShader(true);
 	
 }
 
 void ShaderProgram::use()
 {
-    glUseProgram(shader);
+    glUseProgram(shader->m_uid);
 
 }
 
 int ShaderProgram::getShaderId()
 {
-    return this->shader;
+    return this->shader->m_uid;
 }
 
 void ShaderProgram::setUniformInteger(const char *str, int value)
@@ -161,7 +171,7 @@ unsigned int ShaderProgram::attributeLocation(string name)
         return result->second;
     }else
     {
-        auto location = glGetAttribLocation(shader,name.c_str());
+        auto location = glGetAttribLocation(shader->m_uid,name.c_str());
 		RenderBackEnd::shared()->selfCheck();
         m_locationMap.insert(std::make_pair(name,location));
         return location;
@@ -194,7 +204,7 @@ int ShaderProgram::uniformLocation(std::string name)
 		return iter->second;
 	}else
 	{
-		int ptr =glGetUniformLocation(this->shader,name.c_str());
+		int ptr =glGetUniformLocation(this->shader->m_uid,name.c_str());
 		RenderBackEnd::shared()->selfCheck();
 		m_uniformMap[name] = ptr;
 		return ptr;
@@ -208,155 +218,78 @@ void ShaderProgram::reload()
 	m_uniformMap.clear();
 	m_locationMap.clear();
 	createShader(false);
-	if(shader)
-	{
-		glDeleteProgram(oldShader);
-	}
+    delete oldShader;
 }
 
-void ShaderProgram::createShader(bool isStrict)
+void ShaderProgram::processShaderText(const char* pShaderText, std::string & finalStr)
 {
-    this->shader = glCreateProgram();
-    if (shader == 0) {
-        fprintf(stderr, "Error creating shader program\n");
-        abort();
-    }
-    tzw::Data vs_data = tzw::Tfile::shared()->getData(m_vertexShader,true);
-    tzw::Data fs_data = tzw::Tfile::shared()->getData(m_fragmentShader,true);
-    if (vs_data.isNull()) {
-        abort();
-    };
-
-    if (fs_data.isNull()) {
-        abort();
-    };
-
-    string vs = vs_data.getString();
-    string fs = fs_data.getString();
-    addShader(shader, vs.c_str(), GL_VERTEX_SHADER, isStrict);
-    addShader(shader, fs.c_str(), GL_FRAGMENT_SHADER, isStrict);
-
-    if(!m_tessellationControlShader.empty())
-    {
-        tzw::Data tcs_data = tzw::Tfile::shared()->getData(m_tessellationControlShader,true);
-        addShader(shader, tcs_data.getString().c_str(), GL_TESS_CONTROL_SHADER, isStrict);
-    }
-
-    if(!m_tessellationEvaluationShader.empty())
-    {
-        tzw::Data tes_data = tzw::Tfile::shared()->getData(m_tessellationEvaluationShader,true);
-        addShader(shader, tes_data.getString().c_str(), GL_TESS_EVALUATION_SHADER, isStrict);
-    }
-
-    GLint Success = 0;
-    GLchar ErrorLog[2048] = { 0 };
-    glLinkProgram(shader);
-    glGetProgramiv(shader, GL_LINK_STATUS, &Success);
-    if (Success == 0) {
-        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stdout, "Error linking shader program: '%s'\n", ErrorLog);
-    	if(isStrict)
-    	{
-    		abort();
-    	}
-        
-    }
-
-    glValidateProgram(shader);
-    glGetProgramiv(shader, GL_VALIDATE_STATUS, &Success);
-    if (!Success) {
-        glGetProgramInfoLog(shader, sizeof(ErrorLog), nullptr, ErrorLog);
-        fprintf(stdout, "Invalid shader program: '%s'\n", ErrorLog);
-       	if(isStrict)
-    	{
-        abort();
-        }
-    }
-}
-
-
-static int BitCount(uint32_t n)
-{
-    unsigned int c =0 ; // 计数器
-    while (n >0)
-    {
-        if((n &1) ==1) // 当前位是1
-            ++c ; // 计数器加1
-        n >>=1 ; // 移位
-    }
-    return c ;
-}
-
-void ShaderProgram::addShader(unsigned int ShaderProgram, const char *pShaderText, unsigned int ShaderType, bool isStrict)
-{
-    GLuint ShaderObj = glCreateShader(ShaderType);
-	RenderBackEnd::shared()->selfCheck();
-
-    if (ShaderObj == 0) {
-        fprintf(stdout, "Error Compile shader type %d\n", ShaderType);
-    	if(isStrict)
-    	{
-    		exit(0);
-    	}
-    }
 	//calculate Global Macro and mutation
 	auto mutationSize = BitCount(m_mutationFlag);
 	auto globalMacroSize = ShaderMgr::shared()->m_macros.size();
 	auto size = globalMacroSize + mutationSize;
-    GLchar** p = new GLchar*[size + 2];
-	GLint* Lengths = new GLint[size + 2];
+    std::string prefix = "";
 	auto glsl_ver = "#version 420\n";
-	p[0] = (char *)glsl_ver;
-	Lengths[0] = strlen(glsl_ver);
-	int index = 1;
+    prefix += glsl_ver;
+    char * tmpStr = (char *)malloc(128);
 	for(auto i : ShaderMgr::shared()->m_macros)
-	{
-		char * tmpStr = (char *)malloc(128);
+	{	
 		sprintf(tmpStr, "#define %s %s\n", i.first.c_str(), i.second.c_str());
-		p[index] = tmpStr;
-		Lengths[index] = strlen(tmpStr);
-		index ++;
+        prefix+= tmpStr;
 	}
 	if(m_mutationFlag & static_cast<uint32_t>(ShaderOption::EnableInstanced))
     {
-		char * tmpStr = (char *)malloc(128);
 		sprintf(tmpStr, "#define FLAG_EnableInstanced 1\n");
-		p[index] = tmpStr;
-		Lengths[index] = strlen(tmpStr);
-		index++;
+        prefix+= tmpStr;
 	}
 	if(m_mutationFlag & static_cast<uint32_t>(ShaderOption::EnableDoubleSide))
     {
-		char * tmpStr = (char *)malloc(128);
 		sprintf(tmpStr, "#define FLAG_EnableDoubleSide 1\n");
-		p[index] = tmpStr;
-		Lengths[index] = strlen(tmpStr);
-		index++;
+        prefix+= tmpStr;
+
 	}
-	
-    p[size + 1] = (char *)pShaderText;
-    
-    Lengths[size + 1]= strlen(pShaderText);
-    glShaderSource(ShaderObj, size + 2, p, Lengths);
-	RenderBackEnd::shared()->selfCheck();
-    glCompileShader(ShaderObj);
-	RenderBackEnd::shared()->selfCheck();
-    GLint success;
-    glGetShaderiv(ShaderObj, GL_COMPILE_STATUS, &success);
-	RenderBackEnd::shared()->selfCheck();
-    if (!success) {
-        GLchar InfoLog[1024];
-        glGetShaderInfoLog(ShaderObj, 1024, nullptr, InfoLog);
-        fprintf(stdout, "Error compiling shader type %d: '%s'\n", ShaderType, InfoLog);
-        if (isStrict) 
-		{
-          exit(0);
+    prefix += "\n";
+	finalStr = prefix + pShaderText;
+    free(tmpStr);
+}
+
+void ShaderProgram::createShader(bool isStrict)
+{
+    auto shaderObj = Engine::shared()->getRenderBackEnd()->createShader_imp();
+    ;
+    this->shader = shaderObj;
+    if (!shaderObj->create()) {
+        fprintf(stderr, "Error creating shader program\n");
+        abort();
+    }
+    addShader(shaderObj, m_vertexShader, DeviceShaderType::VertexShader, isStrict);
+    addShader(shaderObj, m_fragmentShader, DeviceShaderType::FragmentShader, isStrict);
+
+    if(!m_tessellationControlShader.empty())
+    {
+        addShader(shader, m_tessellationControlShader, DeviceShaderType::TessControlShader, isStrict);
+    }
+
+    if(!m_tessellationEvaluationShader.empty())
+    {
+        addShader(shader, m_tessellationEvaluationShader, DeviceShaderType::TessEvaulateShader, isStrict);
+    }
+    if(!shaderObj->finish()){
+        fprintf(stdout, "Create Shader Failed: \n");
+        if(isStrict){
+            abort();
         }
     }
-    glAttachShader(ShaderProgram, ShaderObj);
-	RenderBackEnd::shared()->selfCheck();
-	delete[] Lengths;
-	delete[] p;
+}
+
+
+
+
+void ShaderProgram::addShader(DeviceShader * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict)
+{
+    tzw::Data data = tzw::Tfile::shared()->getData(filePath,true);
+    std::string finalText;
+    processShaderText(data.getString().c_str(), finalText);
+    ShaderProgram->addShader((const unsigned char *)finalText.c_str(), finalText.size(),ShaderType, (const unsigned char *)filePath.c_str());
 }
 
 } // namespace tzw

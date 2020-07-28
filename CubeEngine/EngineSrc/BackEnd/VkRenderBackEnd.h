@@ -12,6 +12,7 @@ class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 namespace tzw {
 
+class DeviceTextureVK;
 typedef struct {
     VkImage image;
     VkCommandBuffer cmd;
@@ -48,7 +49,11 @@ public:
     void initDevices();
     void RenderScene();
     virtual DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag);
+    virtual DeviceShader * createShader_imp();
+    DeviceBuffer * createBuffer_imp() override;
     VkDevice getDevice();
+
+
 //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
@@ -130,17 +135,20 @@ private:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPipelineLayout pipelineLayout;
+    /*
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
 	VkImageView textureImageView;
+    */
 	VkSampler textureSampler;
-
+    DeviceTextureVK * m_myTexture;
     //sync
     std::vector<VkSemaphore> imageAvailableSemaphores;
     std::vector<VkSemaphore> renderFinishedSemaphores;
     std::vector<VkFence> inFlightFences;
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
+    VkDebugUtilsMessengerEXT debugMessenger;
 };
 
 } // namespace tzw

@@ -31,40 +31,12 @@ void Scene::addNode(Node *node)
 
 void Scene::visit()
 {
-	m_root.visit(RenderCommand::RenderType::Common);
+    m_directDrawList.clear();
+	m_root.visit(m_directDrawList);
 	if(!defaultCamera()->getUseCustomFrustumUpdate())
 	{
 		defaultCamera()->updateFrustum();
 	}
-	m_octreeScene->cullingByCamera(defaultCamera());
-	//vegetation
-	Tree::shared()->clearTreeGroup();
-	auto &visibleList = m_octreeScene->getVisibleList();
-	for(auto obj : visibleList)
-	{
-		obj->submitDrawCmd(RenderCommand::RenderType::Common);
-		if(obj->onSubmitDrawCommand)
-		{
-			obj->onSubmitDrawCommand(RenderCommand::RenderType::Common);
-		}
-	}
-	Tree::shared()->pushCommand();
-    std::vector<Drawable3D *> nodeList;
-	m_octreeScene->cullingByCameraExtraFlag(defaultCamera(), static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
-	InstancingMgr::shared()->prepare(RenderCommand::RenderType::Common);
-	std::vector<InstanceRendereData> istanceCommandList;
-    for(auto node:nodeList)
-    {
-        if(node->getIsVisible())
-        {
-            node->getCommandForInstanced(istanceCommandList);   
-        }
-    }
-    for(auto& instanceData : istanceCommandList)
-    {
-	    InstancingMgr::shared()->pushInstanceRenderData(RenderCommand::RenderType::Common, instanceData);
-    }
-	InstancingMgr::shared()->generateDrawCall(RenderCommand::RenderType::Common);
 }
 
 void Scene::visitPost()
@@ -154,6 +126,11 @@ void Scene::setSkyBox(SkyBox *skyBox)
 int Scene::getCurrNodesAmount()
 {
 	return 0;
+}
+
+std::vector<Node*>& Scene::getDirectDrawList()
+{
+    return m_directDrawList;
 }
 
 BaseLight *Scene::getAmbient() const

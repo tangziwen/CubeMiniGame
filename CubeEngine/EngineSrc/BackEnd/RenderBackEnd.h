@@ -59,6 +59,8 @@ public:
 	std::string getShaderSupportVersion();
 	void printFullDeviceInfo();
     DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag) override;
+    DeviceShader * createShader_imp() override;
+    DeviceBuffer * createBuffer_imp() override;
 private:
 	bool m_isCheckGL;
     static RenderBackEnd * m_instance;

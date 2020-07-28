@@ -130,10 +130,6 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 
 	glfwSetMouseButtonCallback(m_window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_window, cursor_position_callback);
-    if(AbstractDevice::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
-    {
-        
-    }
 	AbstractDevice::shared()->init(w, h);
 }
 

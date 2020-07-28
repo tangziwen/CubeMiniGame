@@ -49,7 +49,9 @@ public:
     SkyBox *getSkyBox() const;
     void setSkyBox(SkyBox *skyBox);
 	int getCurrNodesAmount();
+    std::vector<Node *> & getDirectDrawList();
 private:
+    std::vector<Node *> m_directDrawList;
     DirectionalLight *m_dirLight;
     ConsolePanel * m_consolePanel;
     DebugInfoPanel * m_debugInfoPanel;

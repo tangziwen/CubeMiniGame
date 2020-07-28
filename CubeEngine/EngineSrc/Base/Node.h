@@ -66,7 +66,7 @@ public:
 	virtual bool getIsAccpectOcTtree() const;
 	void setIsAccpectOcTtree(bool isAccpectOCTtree);
 	void cacheTransform();
-	virtual void visit(RenderCommand::RenderType passType);
+	virtual void visit(std::vector<Node*>&directDrawList);
 	virtual void reCache();
 	bool getIsValid() const;
 	void setIsValid(bool isValid);

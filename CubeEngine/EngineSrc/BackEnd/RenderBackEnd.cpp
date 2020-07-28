@@ -10,6 +10,8 @@
 #include "Utility/log/Log.h"
 #include "External/SOIL2/SOIL2.h"
 #include "gl/DeviceTextureGL.h"
+#include "gl/DeviceShaderGL.h"
+#include "gl/DeviceBufferGL.h"
 namespace tzw {
 RenderBackEnd * RenderBackEnd::m_instance = nullptr;
 
@@ -76,6 +78,16 @@ DeviceTexture * RenderBackEnd::loadTexture_imp(const unsigned char* buf, size_t 
 	texture->m_metaInfo.height = info.height;
 	texture->m_metaInfo.dds_mipMapLevel = info.dds_mipMapLevel;
 	return texture;
+}
+
+DeviceShader* RenderBackEnd::createShader_imp()
+{
+	return new DeviceShaderGL();
+}
+
+DeviceBuffer* RenderBackEnd::createBuffer_imp()
+{
+	return new DeviceBufferGL();
 }
 
 RenderBackEnd *RenderBackEnd::shared()

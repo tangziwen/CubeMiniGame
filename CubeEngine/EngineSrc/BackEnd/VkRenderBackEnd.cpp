@@ -13,7 +13,9 @@
 
 
 #include "SOIL2/stb_image.h"
-#include <EngineSrc\BackEnd\vk\DeviceTextureVK.h>
+#include "vk/DeviceTextureVK.h"
+#include "vk/DeviceShaderVK.h"
+#include "vk/DeviceBufferVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
 {
@@ -124,6 +126,7 @@ VkApplicationInfo appInfo = {};
     const char* pInstExt[] = {
 #ifdef ENABLE_DEBUG_LAYERS
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
+        VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif        
         VK_KHR_SURFACE_EXTENSION_NAME,
 #ifdef _WIN32    
@@ -154,6 +157,8 @@ VkApplicationInfo appInfo = {};
 
     VkResult res = vkCreateInstance(&instInfo, NULL, &m_inst);
     CHECK_VULKAN_ERROR("vkCreateInstance %d\n", res);
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_inst, "vkCreateDebugUtilsMessengerEXT");
+    func(m_inst, &debugCreateInfo, NULL, &debugMessenger);
     }
     void VKRenderBackEnd::VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices)
     {
@@ -289,6 +294,13 @@ VkApplicationInfo appInfo = {};
         devInfo.queueCreateInfoCount = 1;
         devInfo.pQueueCreateInfos = &qInfo;
        
+#if ENABLE_DEBUG_LAYERS
+        devInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
+        devInfo.ppEnabledLayerNames = validationLayers.data();
+#else
+        devInfo.enabledLayerCount = 0;
+#endif
+
         VkResult res = vkCreateDevice(GetPhysDevice(), &devInfo, NULL, &m_device);
 
         CHECK_VULKAN_ERROR("vkCreateDevice error %d\n", res);
@@ -410,7 +422,6 @@ VkApplicationInfo appInfo = {};
             vkCmdBindVertexBuffers(m_cmdBufs[i], 0, 1, vertexBuffers, offsets);
             
             vkCmdBindIndexBuffer(m_cmdBufs[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
-            //vkCmdDraw(m_cmdBufs[i], 3, 1, 0, 0);
 
             vkCmdBindDescriptorSets(m_cmdBufs[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
             vkCmdDrawIndexed(m_cmdBufs[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
@@ -690,20 +701,7 @@ VkApplicationInfo appInfo = {};
 	vec4 m_color3 = vec4(1, 0, 0, 1);
 	vec4 m_color4 = vec4(1, 0, 1, 1);
 	vec4 m_color5 = vec4(1, 1, 0, 1);
-	/*
-        VertexData vertices[] = {
-            VertexData(vec3(-0.5 + 0.2, -0.5,  0), vec2(1.0f, 0.0f), m_color),
-            VertexData(vec3(0.5 + 0.2, -0.5,  0), vec2(0.0f, 0.0f), m_color),
-            VertexData(vec3(0.5 + 0.2, 0.5,  0), vec2(0.0f, 1.0f), m_color),
-            VertexData(vec3(-0.5 + 0.2, 0.5,  0), vec2(1.0f, 1.0f), m_color),
 
-
-            VertexData(vec3(-0.5, -0.5,  -0.1), vec2(1.0f, 0.0f), m_color1),
-            VertexData(vec3(0.5, -0.5,  -0.1), vec2(0.0f, 0.0f), m_color1),
-            VertexData(vec3(0.5, 0.5,  -0.1), vec2(0.0f, 1.0f), m_color1),
-            VertexData(vec3(-0.5, 0.5,  -0.1), vec2(1.0f, 1.0f), m_color1),
-        };
-        */
 	float halfWidth = 0.5;
 	float halfDepth = 0.5;
 	float halfHeight = 0.5;
@@ -929,7 +927,7 @@ VkApplicationInfo appInfo = {};
 
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            imageInfo.imageView = textureImageView;
+            imageInfo.imageView = m_myTexture->getImageView();
             imageInfo.sampler = textureSampler;
 
         	
@@ -986,33 +984,7 @@ VkApplicationInfo appInfo = {};
 
 void VKRenderBackEnd::createTextureImage()
 {
-    int texWidth, texHeight, texChannels;
-    stbi_uc* pixels = stbi_load("./logo.png", &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-    VkDeviceSize imageSize = texWidth * texHeight * 4;
-
-    if (!pixels) {
-        throw std::runtime_error("failed to load texture image!");
-    }
-
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    createVKBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
-
-    void* data;
-    vkMapMemory(m_device, stagingBufferMemory, 0, imageSize, 0, &data);
-        memcpy(data, pixels, static_cast<size_t>(imageSize));
-    vkUnmapMemory(m_device, stagingBufferMemory);
-
-    stbi_image_free(pixels);
-
-    createImage(texWidth, texHeight, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, textureImage, textureImageMemory);
-
-    transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-        copyBufferToImage(stagingBuffer, textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-    transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-    vkDestroyBuffer(m_device, stagingBuffer, nullptr);
-    vkFreeMemory(m_device, stagingBufferMemory, nullptr);
+    m_myTexture = new DeviceTextureVK("logo.png");
 }
 
 VkCommandBuffer VKRenderBackEnd::beginSingleTimeCommands()
@@ -1210,7 +1182,7 @@ void VKRenderBackEnd::createImage(uint32_t width, uint32_t height, VkFormat form
 
 void VKRenderBackEnd::createTextureImageView()
 {
-	textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+	//textureImageView = createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB);
 }
 
 void VKRenderBackEnd::createTextureSampler()
@@ -1341,6 +1313,16 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     {
         DeviceTextureVK * texture = new DeviceTextureVK(buf, buffSize);
         return texture;
+    }
+
+    DeviceShader* VKRenderBackEnd::createShader_imp()
+    {
+        return new DeviceShaderVK();
+    }
+
+    DeviceBuffer* VKRenderBackEnd::createBuffer_imp()
+    {
+        return new DeviceBufferVK();
     }
 
     VkDevice VKRenderBackEnd::getDevice()

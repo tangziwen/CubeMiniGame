@@ -15,6 +15,16 @@ DeviceTextureVK::DeviceTextureVK(std::string filepath)
     initData(data.getBytes(), data.getSize());
 }
 
+const VkImage& DeviceTextureVK::getImage()
+{
+    return m_textureImage;
+}
+
+const VkImageView& DeviceTextureVK::getImageView()
+{
+    return m_textureImageView;
+}
+
 void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
 {
     auto backEnd = VKRenderBackEnd::shared();

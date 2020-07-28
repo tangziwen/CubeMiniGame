@@ -89,6 +89,52 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 std::vector<FrameBuffer *> autoExposureList;
 void Renderer::renderAll()
 {
+	auto currScene = SceneMgr::shared()->getCurrScene();
+	std::vector<Node *> directDrawList = currScene->getDirectDrawList();
+	for(auto node : directDrawList)
+	{
+		node->submitDrawCmd(RenderCommand::RenderType::Common);
+		if(node->onSubmitDrawCommand)
+		{
+			node->onSubmitDrawCommand(RenderCommand::RenderType::Common);
+		}
+	
+	}
+	directDrawList.clear();
+	auto cam = SceneMgr::shared()->getCurrScene()->defaultCamera();
+	OctreeScene * octreeScene =  SceneMgr::shared()->getCurrScene()->getOctreeScene();
+	SceneMgr::shared()->getCurrScene()->getOctreeScene()->cullingByCamera(cam);
+	//vegetation
+	Tree::shared()->clearTreeGroup();
+	auto &visibleList = octreeScene->getVisibleList();
+	for(auto obj : visibleList)
+	{
+		obj->submitDrawCmd(RenderCommand::RenderType::Common);
+		if(obj->onSubmitDrawCommand)
+		{
+			obj->onSubmitDrawCommand(RenderCommand::RenderType::Common);
+		}
+	}
+	Tree::shared()->pushCommand();
+    std::vector<Drawable3D *> nodeList;
+	octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
+	InstancingMgr::shared()->prepare(RenderCommand::RenderType::Common);
+	std::vector<InstanceRendereData> istanceCommandList;
+    for(auto node:nodeList)
+    {
+        if(node->getIsVisible())
+        {
+            node->getCommandForInstanced(istanceCommandList);   
+        }
+    }
+    for(auto& instanceData : istanceCommandList)
+    {
+	    InstancingMgr::shared()->pushInstanceRenderData(RenderCommand::RenderType::Common, instanceData);
+    }
+	InstancingMgr::shared()->generateDrawCall(RenderCommand::RenderType::Common);
+
+
+	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	handleThumbNail();
 	Engine::shared()->setDrawCallCount(int(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size()));
 	if(m_enable3DRender)
