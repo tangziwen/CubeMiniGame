@@ -27,6 +27,7 @@
 #include "rapidjson/prettywriter.h"
 #include "Base/TimerMgr.h"
 #include "DebugSystem.h"
+#include "BackEnd/VkRenderBackEnd.h"
 
 namespace tzw {
 
@@ -269,13 +270,19 @@ void Engine::update(float delta)
 	EventMgr::shared()->apply(delta);
     shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();
-	
 	resetDrawCallCount();
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
     int applyRenderBefore = clock();
-	DebugSystem::shared()->doRender(delta);
-    resetVerticesIndicesCount();
-    Renderer::shared()->renderAll();
+	resetVerticesIndicesCount();
+	if(m_type == RenderDeviceType::OpenGl_Device)
+	{
+		DebugSystem::shared()->doRender(delta);
+		Renderer::shared()->renderAll();
+	
+	}else
+	{
+		VKRenderBackEnd::shared()->RenderScene();
+	}
 	AudioSystem::shared()->update();
 	
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);

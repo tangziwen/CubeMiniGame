@@ -51,6 +51,8 @@ public:
 	void onChangeScreenSize(int newW, int newH);
 	void updateThumbNail(ThumbNail * thumb);
 	void setVertexAttribute(ShaderProgram * program);
+	void collectPrimitives();
+	std::vector<RenderCommand> & getGUICommandList();
 private:
     void initQuad();
 	void initMaterials();

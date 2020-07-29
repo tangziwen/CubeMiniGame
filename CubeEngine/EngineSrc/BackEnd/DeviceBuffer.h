@@ -10,6 +10,7 @@ enum class DeviceBufferType{
 class DeviceBuffer
 {
 public:
+	DeviceBuffer();
 	virtual void allocate(void * data, size_t ammount) = 0;
 	virtual bool init(DeviceBufferType type) = 0;
 	unsigned int m_uid;//temporally for opengl

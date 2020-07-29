@@ -14,6 +14,16 @@ namespace tzw {
 class StdMaterial;
 class Node;
 class Drawable;
+
+enum MaterialFlag
+{
+	MaterialFlag_isCullFace = 1 << 1,
+    MaterialFlag_isInstanced = 1 << 2,
+	MaterialFlag_isBlend = 1 << 3,
+	MaterialFlag_isDepthWrite = 1 << 4,
+	MaterialFlag_isDepthTest = 1 << 5,
+	Shader_option_End = 1 << 31,
+};
 class Material : public InspectableUI
 {
 public:
@@ -63,6 +73,9 @@ public:
 	bool isIsEnableBlend() const;
 	void setIsEnableBlend(const bool isEnableBlend);
 	uint32_t getMutationFlag();
+	uint32_t getMaterialFlag();
+	void updateFullDescriptionStr();
+	std::string getFullDescriptionStr();
 private:
     std::string m_vsPath;
     std::string m_fsPath;
@@ -79,6 +92,7 @@ private:
 	std::unordered_map<std::string, unsigned int> m_texSlotMap;
 	ShaderProgram * m_program;
 	RenderFlag::RenderStage m_renderStage;
+	std::string m_fullDescString;
 public:
 	RenderFlag::RenderStage getRenderStage() const;
 	void setRenderStage(const RenderFlag::RenderStage renderStage);

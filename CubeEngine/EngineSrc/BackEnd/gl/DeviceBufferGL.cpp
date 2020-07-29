@@ -5,6 +5,7 @@ namespace tzw
 
 	void DeviceBufferGL::allocate(void* data, size_t ammount)
 	{
+		bind();
 		RenderFlag::BufferTarget glBufferType = RenderFlag::BufferTarget::VertexBuffer;
 		switch(m_type)
 		{
@@ -33,10 +34,10 @@ namespace tzw
 		switch(m_type)
 		{
 		case DeviceBufferType::Vertex:
-			RenderBackEnd::shared()->bindBuffer(RenderFlag::BufferTarget::IndexBuffer,m_uid);
+			RenderBackEnd::shared()->bindBuffer(RenderFlag::BufferTarget::VertexBuffer,m_uid);
 			break;
 		case DeviceBufferType::Index:
-			RenderBackEnd::shared()->bindBuffer(RenderFlag::BufferTarget::VertexBuffer,m_uid);
+			RenderBackEnd::shared()->bindBuffer(RenderFlag::BufferTarget::IndexBuffer,m_uid);
 			break;
 		}
 	}

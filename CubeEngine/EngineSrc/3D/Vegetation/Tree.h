@@ -6,6 +6,7 @@
 #include "EngineSrc/Texture/TextureMgr.h"
 namespace tzw {
 	class Model;
+	class InstancedMesh;
     enum class VegetationType
     {
 	    QUAD_TRI,

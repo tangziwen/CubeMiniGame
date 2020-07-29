@@ -1,4 +1,7 @@
 #include "RenderCommand.h"
+#include "../Technique/Material.h"
+
+#include "../Mesh/InstancedMesh.h"
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
@@ -84,6 +87,14 @@ InstancedMesh* RenderCommand::getInstancedMesh() const
 void RenderCommand::setInstancedMesh(InstancedMesh* const instancedMesh)
 {
 	m_instancedMesh = instancedMesh;
+}
+Material* RenderCommand::getMat()
+{
+    return m_material;
+}
+Mesh* RenderCommand::getMesh()
+{
+    return m_mesh;
 }
 } // namespace tzw
 

@@ -13,6 +13,8 @@
 #include "Utility/log/Log.h"
 #include <iostream>
 #include "BulletCollision/NarrowPhaseCollision/btRaycastCallback.h"
+#include "Mesh/Mesh.h"
+#include <map>
 #define dSINGLE
 
 #define ARRAY_SIZE_Y 5

@@ -4,6 +4,7 @@
 #include "EngineSrc/3D/Vegetation/Tree.h"
 
 #include "3D/Model/Model.h"
+#include "Mesh/InstancedMesh.h"
 
 namespace tzw {
 VegetationBatInfo::VegetationBatInfo()

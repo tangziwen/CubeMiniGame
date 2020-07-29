@@ -250,6 +250,7 @@ namespace tzw
 	void
 	Texture::genMipMap()
 	{
+		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::Vulkan_Device) return;
 		glBindTexture(GL_TEXTURE_2D, m_textureId->m_uid);
 		if (!m_isHaveMipMap)
 		{

@@ -676,8 +676,8 @@ void Mesh::createBufferObject()
 	m_instanceBuf->create();
 
     //record the handle
-    m_ibo = m_indexBuf->bufferId();
-    m_vbo = m_arrayBuf->bufferId();
+    m_ibo = m_indexBuf->bufferId()->m_uid;
+    m_vbo = m_arrayBuf->bufferId()->m_uid;
 }
 
 void Mesh::clear()

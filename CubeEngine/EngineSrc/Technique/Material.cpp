@@ -15,6 +15,7 @@
 #include "Utility/file/Tfile.h"
 #include "Engine/Engine.h"
 #include "Scene/SceneMgr.h"
+#include <sstream> 
 
 namespace tzw {
 
@@ -635,6 +636,7 @@ bool Material::getIsCullFace()
 void Material::setIsCullFace(bool newVal)
 {
 	m_isCullFace = newVal;
+	updateFullDescriptionStr();
 }
 
 tzw::TechniqueVar * Material::get(std::string name)
@@ -750,6 +752,7 @@ bool Material::isIsEnableBlend() const
 void Material::setIsEnableBlend(const bool isEnableBlend)
 {
 	m_isEnableBlend = isEnableBlend;
+	updateFullDescriptionStr();
 }
 
 uint32_t Material::getMutationFlag()
@@ -767,6 +770,44 @@ uint32_t Material::getMutationFlag()
 	return flag;
 }
 
+uint32_t Material::getMaterialFlag()
+{
+	uint32_t flag = 0 ;
+	if(m_isCullFace)
+	{
+		flag |= MaterialFlag_isCullFace;
+	}
+	if(m_isEnableInstanced)
+	{
+		flag |= MaterialFlag_isInstanced;
+	}
+	if(m_isEnableBlend)
+	{
+		flag |= MaterialFlag_isBlend;
+	}
+	if(m_isDepthWriteEnable)
+	{
+		flag |= MaterialFlag_isDepthWrite;
+	}
+	if(m_isDepthTestEnable)
+	{
+		flag |= MaterialFlag_isDepthTest;
+	}
+	return flag;
+}
+
+void Material::updateFullDescriptionStr()
+{
+	std::ostringstream ostr;
+	ostr<< getMutationFlag() << m_program->m_vertexShader << m_program->m_fragmentShader << (int)m_renderStage;
+	m_fullDescString = ostr.str();
+}
+
+std::string Material::getFullDescriptionStr()
+{
+	return m_fullDescString;
+}
+
 RenderFlag::RenderStage Material::getRenderStage() const
 {
 	return m_renderStage;
@@ -775,6 +816,7 @@ RenderFlag::RenderStage Material::getRenderStage() const
 void Material::setRenderStage(const RenderFlag::RenderStage renderStage)
 {
 	m_renderStage = renderStage;
+	updateFullDescriptionStr();
 }
 
 bool Material::isIsDepthTestEnable() const
@@ -785,6 +827,7 @@ bool Material::isIsDepthTestEnable() const
 void Material::setIsDepthTestEnable(const bool isDepthTestEnable)
 {
 	m_isDepthTestEnable = isDepthTestEnable;
+	updateFullDescriptionStr();
 }
 
 bool Material::isIsDepthWriteEnable() const
@@ -795,11 +838,13 @@ bool Material::isIsDepthWriteEnable() const
 void Material::setIsDepthWriteEnable(const bool isDepthWriteEnable)
 {
 	m_isDepthWriteEnable = isDepthWriteEnable;
+	updateFullDescriptionStr();
 }
 
 void Material::setIsEnableInstanced(const bool isEnableInstanced)
 {
 	m_isEnableInstanced = isEnableInstanced;
+	updateFullDescriptionStr();
 }
 
 bool Material::isEnableInstanced()

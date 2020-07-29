@@ -13,6 +13,7 @@ class GLFW_BackEnd;
 namespace tzw {
 
 class DeviceTextureVK;
+class DeviceBufferVK;
 typedef struct {
     VkImage image;
     VkCommandBuffer cmd;
@@ -126,8 +127,10 @@ private:
     VkShaderModule m_vsModule;
     VkShaderModule m_fsModule;
     VkPipeline m_pipeline;
-    VkBuffer vertexBuffer;
-    VkBuffer indexBuffer;
+    DeviceBufferVK * m_vertexBuffer;
+    DeviceBufferVK * m_indexBuffer;
+    //VkBuffer vertexBuffer;
+    //VkBuffer indexBuffer;
     std::vector<VkBuffer> uniformBuffers;
     VkDescriptorPool descriptorPool;
     VkDescriptorSetLayout descriptorSetLayout;

@@ -1,5 +1,7 @@
 #include "RenderBuffer.h"
-#include "../BackEnd/RenderBackEnd.h"
+//#include "../BackEnd/RenderBackEnd.h"
+#include "BackEnd/RenderBackEndBase.h"
+#include "Engine/Engine.h"
 namespace tzw {
 
 RenderBuffer::RenderBuffer(Type bufferType)
@@ -10,27 +12,31 @@ RenderBuffer::RenderBuffer(Type bufferType)
 
 void RenderBuffer::create()
 {
-    m_bufferId = RenderBackEnd::shared()->genBuffer();
+    m_bufferId = Engine::shared()->getRenderBackEnd()->createBuffer_imp();
+    DeviceBufferType targetType;
+    switch(m_type)
+    {
+    case Type::INDEX:
+        targetType = DeviceBufferType::Index;
+        break;
+    case Type::VERTEX:
+        targetType = DeviceBufferType::Vertex;
+        break;
+    }
+    m_bufferId->init(targetType);
 }
 
 void RenderBuffer::allocate(void *data, unsigned int amount, RenderFlag::BufferStorageType storageType)
 {
-    use();
+    m_bufferId->allocate(data, amount);
 	m_amount = amount;
-    switch(m_type)
-    {
-    case Type::INDEX:
-        RenderBackEnd::shared()->submit(RenderFlag::BufferTarget::IndexBuffer,amount,data, storageType);
-        break;
-    case Type::VERTEX:
-        RenderBackEnd::shared()->submit(RenderFlag::BufferTarget::VertexBuffer,amount,data, storageType);
-        break;
-    }
 }
 
 void RenderBuffer::resubmit(void* data, unsigned offset, unsigned amount)
 {
-    use();
+    printf("resubmit");
+    return;
+    /*
     switch(m_type)
     {
     case Type::INDEX:
@@ -40,21 +46,14 @@ void RenderBuffer::resubmit(void* data, unsigned offset, unsigned amount)
         RenderBackEnd::shared()->resubmit(RenderFlag::BufferTarget::VertexBuffer, offset ,amount,data);
         break;
     }
+    */
 }
 
 void RenderBuffer::use()
 {
-    switch(m_type)
-    {
-    case Type::INDEX:
-        RenderBackEnd::shared()->bindBuffer(RenderFlag::BufferTarget::IndexBuffer,m_bufferId);
-        break;
-    case Type::VERTEX:
-        RenderBackEnd::shared()->bindBuffer(RenderFlag::BufferTarget::VertexBuffer,m_bufferId);
-        break;
-    }
+    m_bufferId->bind();
 }
-unsigned int RenderBuffer::bufferId() const
+DeviceBuffer * RenderBuffer::bufferId() const
 {
     return m_bufferId;
 }
@@ -66,7 +65,7 @@ unsigned RenderBuffer::getAmount() const
 
 RenderBuffer::~RenderBuffer()
 {
-	RenderBackEnd::shared()->deleteBuffer(m_bufferId);
+	delete m_bufferId;
 }
 } // namespace tzw
 

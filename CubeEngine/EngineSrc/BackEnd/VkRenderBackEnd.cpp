@@ -16,6 +16,8 @@
 #include "vk/DeviceTextureVK.h"
 #include "vk/DeviceShaderVK.h"
 #include "vk/DeviceBufferVK.h"
+#include "Rendering/Renderer.h"
+#include "Technique/Material.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
 {
@@ -417,11 +419,11 @@ VkApplicationInfo appInfo = {};
             vkCmdBeginRenderPass(m_cmdBufs[i], &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 
             vkCmdBindPipeline(m_cmdBufs[i], VK_PIPELINE_BIND_POINT_GRAPHICS, m_pipeline);
-            VkBuffer vertexBuffers[] = {vertexBuffer};
+            VkBuffer vertexBuffers[] = {m_vertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(m_cmdBufs[i], 0, 1, vertexBuffers, offsets);
             
-            vkCmdBindIndexBuffer(m_cmdBufs[i], indexBuffer, 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(m_cmdBufs[i], m_indexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
             vkCmdBindDescriptorSets(m_cmdBufs[i], VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[i], 0, nullptr);
             vkCmdDrawIndexed(m_cmdBufs[i], static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
@@ -560,19 +562,12 @@ VkApplicationInfo appInfo = {};
         std::vector<VkVertexInputAttributeDescription> attributeDecsriptionList;
         CreateVertexBufferDescription(attributeDecsriptionList);
 		
-        CreateVertexBuffer();
-        CreateIndexBuffer();
+
 
         vertexInputInfo.vertexBindingDescriptionCount = 1;
         vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDecsriptionList.size());
         vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
         vertexInputInfo.pVertexAttributeDescriptions = attributeDecsriptionList.data();
-
-
-
-
-
-
 
         VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};
         pipelineIACreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
@@ -745,38 +740,11 @@ VkApplicationInfo appInfo = {};
         VertexData(vec3( 1.0f *halfWidth,  1.0f * halfHeight, -1.0f * halfDepth), vec2(1.0f, 1.0f), m_color5)  // v23
     };
 	
+        auto buffer = createBuffer_imp();
+        buffer->init(DeviceBufferType::Vertex);
 
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = sizeof(vertices[0]) * ARRAY_SIZE_IN_ELEMENTS(vertices);
-        bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
-
-        
-        vkCreateBuffer(m_device, &bufferInfo, nullptr, &vertexBuffer);
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(m_device, vertexBuffer, &memRequirements);
-
-        VkMemoryAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        alloc_info.pNext = NULL;
-        alloc_info.memoryTypeIndex = 0;
-
-        alloc_info.allocationSize = memRequirements.size;
-        bool pass = memory_type_from_properties(memRequirements.memoryTypeBits,
-                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                           &alloc_info.memoryTypeIndex);
-        VkDeviceMemory mem;
-        vkAllocateMemory(m_device, &alloc_info, NULL,
-                               &(mem));
-
-        void* data;
-        vkMapMemory(m_device, mem, 0, bufferInfo.size, 0, &data);
-            memcpy(data, vertices, (size_t) bufferInfo.size);
-        vkUnmapMemory(m_device, mem);
-        vkBindBufferMemory(m_device, vertexBuffer, mem, 0);
+        buffer->allocate(vertices, sizeof(vertices[0]) * ARRAY_SIZE_IN_ELEMENTS(vertices));
+        m_vertexBuffer = static_cast<DeviceBufferVK *>(buffer);
     }
 
     void VKRenderBackEnd::createDepthResources()
@@ -825,41 +793,14 @@ VkApplicationInfo appInfo = {};
 		    4, 5, 6, 6, 7, 4
 		};
 	*/
-        VkBufferCreateInfo bufferInfo{};
-        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
-        bufferInfo.size = sizeof(uint16_t) * indices.size();
-        bufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
-        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+        auto buffer = createBuffer_imp();
+        buffer->init(DeviceBufferType::Index);
 
-        vkCreateBuffer(m_device, &bufferInfo, nullptr, &indexBuffer);
-
-
-
-        VkMemoryRequirements memRequirements;
-        vkGetBufferMemoryRequirements(m_device, indexBuffer, &memRequirements);
-
-        VkMemoryAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
-        alloc_info.pNext = NULL;
-        alloc_info.memoryTypeIndex = 0;
-
-        alloc_info.allocationSize = memRequirements.size;
-        bool pass = memory_type_from_properties(memRequirements.memoryTypeBits,
-                                           VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
-                                               VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,
-                                           &alloc_info.memoryTypeIndex);
-        VkDeviceMemory mem;
-        vkAllocateMemory(m_device, &alloc_info, NULL,
-                               &(mem));
-
-        void* data;
-        vkMapMemory(m_device, mem, 0, bufferInfo.size, 0, &data);
-            memcpy(data, indices.data(), (size_t) bufferInfo.size);
-        vkUnmapMemory(m_device, mem);
-        vkBindBufferMemory(m_device, indexBuffer, mem, 0);
-
+        buffer->allocate(indices.data(), sizeof(indices[0]) * indices.size());
+        m_indexBuffer = static_cast<DeviceBufferVK *>(buffer);
     }
+
     void VKRenderBackEnd::CreateDescriptorSetLayout()
     {
         VkDescriptorSetLayoutBinding uboLayoutBinding{};
@@ -1254,6 +1195,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 		createTextureImage();
 		createTextureImageView();
 		createTextureSampler();
+        CreateVertexBuffer();
+        CreateIndexBuffer();
         CreatePipeline();
         createDescriptorPool();
         createDescriptorSets();
@@ -1272,7 +1215,14 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
 
-
+        //CPU here
+        Renderer::shared()->collectPrimitives();
+        for(RenderCommand & a : Renderer::shared()->getGUICommandList())
+        {
+            Material * mat = a.getMat();
+            mat->getFullDescriptionStr();
+        }
+        Renderer::shared()->clearCommands();
         //CHECK_VULKAN_ERROR("vkAcquireNextImageKHR error %d\n" , res);
         updateUniformBuffer(ImageIndex);
  

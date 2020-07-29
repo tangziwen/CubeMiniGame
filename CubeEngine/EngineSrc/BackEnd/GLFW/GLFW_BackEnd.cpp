@@ -143,8 +143,7 @@ GLFW_BackEnd::run()
           glfwSwapBuffers(m_window);
       }
       else{
-      
-        VKRenderBackEnd::shared()->RenderScene();
+        AbstractDevice::shared()->update();
       }
     glfwPollEvents();
   }

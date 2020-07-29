@@ -1,19 +1,19 @@
 #ifndef TZW_RENDERCOMMAND_H
 #define TZW_RENDERCOMMAND_H
-
-#include "../Technique/Material.h"
-#include "../Mesh/Mesh.h"
-#include "../Mesh/InstancedMesh.h"
 #include "../Interface/DepthPolicy.h"
 #include "../Math/Matrix44.h"
+#include "Mesh/InstanceData.h"
+#include <vector>
 namespace tzw {
-
-    struct InstanceRendereData
-    {
-	    InstanceData data;
-    	Material * material;
-    	Mesh * m_mesh;
-    };
+class Mesh;
+class Material;
+class InstancedMesh;
+struct InstanceRendereData
+{
+	InstanceData data;
+    Material * material;
+    Mesh * m_mesh;
+};
 struct TransformationInfo{
     Matrix44 m_worldMatrix;
     Matrix44 m_viewMatrix;
@@ -64,6 +64,8 @@ public:
 	RenderBatchType m_batchType;
 	InstancedMesh* getInstancedMesh() const;
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
+    Material * getMat();
+    Mesh * getMesh();
 private:
 	RenderFlag::RenderStage m_renderState;
     Mesh * m_mesh;

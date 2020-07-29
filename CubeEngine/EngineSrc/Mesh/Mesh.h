@@ -5,9 +5,10 @@
 #include <vector>
 #include "../Rendering/RenderBuffer.h"
 #include "../Math/AABB.h"
-#include "../Math/Matrix44.h"
+
 #include "../Engine/EngineDef.h"
 #include "../Math/Ray.h"
+#include "InstanceData.h"
 namespace tzw {
 	class Triangle
 {
@@ -26,14 +27,6 @@ public:
 
     int mode;
 };
-
-#pragma pack(push,1)
-struct InstanceData
-{
-	Matrix44 transform;
-	vec4 extraInfo;
-};
-#pragma pack(pop)
 
 class SplitData
 {

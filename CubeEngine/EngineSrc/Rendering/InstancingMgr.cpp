@@ -2,7 +2,7 @@
 
 #include "Renderer.h"
 #include "Scene/SceneMgr.h"
-
+#include "Mesh/InstancedMesh.h"
 namespace tzw
 {
 	void InstancingMgr::prepare(RenderCommand::RenderType renderType)
