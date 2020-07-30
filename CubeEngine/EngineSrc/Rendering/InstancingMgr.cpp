@@ -84,7 +84,7 @@ namespace tzw
 			for(auto & t: innerMap.second)
 			{
 				t.second[clearID]->submitInstanced();
-				RenderCommand command(t.first, innerMap.first, renderType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(t.first, innerMap.first, nullptr, renderType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(t.second[clearID]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
@@ -111,7 +111,7 @@ namespace tzw
 			instacing->pushInstance(data.data);
 		}
 		instacing->submitInstanced();
-		RenderCommand command(instacing->getMesh(), dataList[0].material, RenderCommand::RenderType::Common, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+		RenderCommand command(instacing->getMesh(), dataList[0].material, nullptr, RenderCommand::RenderType::Common, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 		command.setInstancedMesh(instacing);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		setUpTransFormation(command.m_transInfo);

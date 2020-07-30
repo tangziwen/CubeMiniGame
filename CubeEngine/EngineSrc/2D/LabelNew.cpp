@@ -116,7 +116,7 @@ void LabelNew::submitDrawCmd(RenderCommand::RenderType passType)
 	{
 	    //m_material->setVar("color", getUniformColor());
 	    m_material->setTex("SpriteTexture",m_atlas->texture());
-	    RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::GUI);
+	    RenderCommand command(m_mesh,m_material,this, RenderCommand::RenderType::GUI);
 	    setUpTransFormation(command.m_transInfo);
 	    command.setZorder(m_globalPiority);
 	    Renderer::shared()->addRenderCommand(command);

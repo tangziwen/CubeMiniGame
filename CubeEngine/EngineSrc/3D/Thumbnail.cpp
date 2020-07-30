@@ -36,7 +36,7 @@ namespace tzw {
 		{
 			for (int i = 0; i < m_node->getMeshCount(); i++)
 			{
-		        RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), RenderCommand::RenderType::Common);
+		        RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, RenderCommand::RenderType::Common);
 
     			m_node->setUpCommand(command);
 		        m_node->setUpTransFormation(command.m_transInfo);

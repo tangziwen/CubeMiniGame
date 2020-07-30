@@ -37,6 +37,7 @@ public:
 	void setAttributeBufferInt(int ID, int dataType, int offset, int size, int stride = 0);
 	int uniformLocation(std::string name);
 	void reload();
+    DeviceShader * getDeviceShader();
 	std::string m_fragmentShader;
 	std::string m_vertexShader;
 	std::string m_tessellationControlShader;

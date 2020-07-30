@@ -5,13 +5,13 @@
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
-RenderCommand::RenderCommand(Mesh *mesh, Material *material, RenderType type, PrimitiveType primitiveType, RenderBatchType batchType)
+RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj, RenderType type, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),m_type(type),
 	m_primitiveType(primitiveType),m_Zorder(0),
 	m_renderState(material->getRenderStage()),
 m_batchType(batchType)
 {
-
+    m_obj = obj;
 }
 
 void RenderCommand::render()
@@ -95,6 +95,10 @@ Material* RenderCommand::getMat()
 Mesh* RenderCommand::getMesh()
 {
     return m_mesh;
+}
+void* RenderCommand::getDrawableObj()
+{
+    return m_obj;
 }
 } // namespace tzw
 

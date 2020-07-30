@@ -23,7 +23,7 @@ namespace tzw
 
 	void SpherePrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 	{
-		RenderCommand command(m_mesh, m_material,RenderCommand::RenderType::Common);
+		RenderCommand command(m_mesh, m_material,this,RenderCommand::RenderType::Common);
 		setUpTransFormation(command.m_transInfo);
 		Renderer::shared()->addRenderCommand(command);
 	}

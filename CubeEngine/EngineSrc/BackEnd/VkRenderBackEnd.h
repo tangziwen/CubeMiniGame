@@ -1,19 +1,28 @@
 #pragma once
-
+#define NOMINMAX 1
 #include "../Rendering/RenderFlag.h"
 #include "../Engine/EngineDef.h"
 #include <string>
+
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"
 #include "vulkan/vk_sdk_platform.h"
+
+
+
 #include <vector>
 #include "RenderBackEndBase.h"
+#include "vk/DevicePipelineVK.h"
+
+#include <unordered_map>
+#include "Rendering/RenderCommand.h"
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 namespace tzw {
 
 class DeviceTextureVK;
 class DeviceBufferVK;
+class DeviceShaderVK;
 typedef struct {
     VkImage image;
     VkCommandBuffer cmd;
@@ -37,7 +46,22 @@ struct VulkanPhysicalDevices {
     std::vector< std::vector<VkSurfaceFormatKHR> > m_surfaceFormats;
     std::vector<VkSurfaceCapabilitiesKHR> m_surfaceCaps;
 };
-
+struct RenderItem{
+    VkDescriptorSet m_descriptorSet;
+    VkBuffer m_uniformBuffer;
+    VkDeviceMemory m_uniformBuffereMemory;
+    Material * m_mat;
+    TransformationInfo matrixInfo;
+    Mesh * m_mesh;
+    void updateDescriptor();
+};
+struct DescriptorSetObjPool
+{
+    DescriptorSetObjPool(VkDescriptorSetLayout &layout);
+    RenderItem* findOrCreateDescrptorSet(Material * mat, void *obj);
+    std::unordered_map<void *, RenderItem*> m_pool;
+    VkDescriptorSetLayout m_layout;
+};
 
 class VKRenderBackEnd:public Singleton<VKRenderBackEnd>, public RenderBackEndBase
 {
@@ -53,6 +77,7 @@ public:
     virtual DeviceShader * createShader_imp();
     DeviceBuffer * createBuffer_imp() override;
     VkDevice getDevice();
+    VkDescriptorPool & getDescriptorPool();
 
 
 //helper
@@ -75,6 +100,7 @@ private:
     void createSwapChain();
     void CreateCommandBuffer();
     void RecordCommandBuffers();
+    void updateRecordCmdBuff(int swapImageIndex, int index, RenderItem * item, DevicePipelineVK * pipeline);
 
     void CreateRenderPass();
     void CreateFramebuffer();
@@ -94,6 +120,9 @@ private:
 	void createTextureImageView();
 	void createTextureSampler();
 	void createDepthResources();
+
+    void createCommandBufferForGeneral(int size);
+    void createCommandBufferPoolForGeneral();
 	
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
@@ -116,7 +145,9 @@ private:
     VkQueue m_queue;
     VulkanPhysicalDevices m_physicsDevices;
     std::vector<VkCommandBuffer> m_cmdBufs;
+    std::vector<std::vector<VkCommandBuffer>> m_generalCmdBuff;
     VkCommandPool m_cmdBufPool;
+    VkCommandPool m_generalCmdBufPool;
     std::vector<VkImage> m_images;
     VkDevice m_device;
     unsigned m_gfxDevIndex;
@@ -126,6 +157,7 @@ private:
     std::vector<VkFramebuffer> m_fbs;
     VkShaderModule m_vsModule;
     VkShaderModule m_fsModule;
+    DeviceShaderVK *m_shader;
     VkPipeline m_pipeline;
     DeviceBufferVK * m_vertexBuffer;
     DeviceBufferVK * m_indexBuffer;
@@ -152,6 +184,11 @@ private:
     std::vector<VkFence> imagesInFlight;
     size_t currentFrame = 0;
     VkDebugUtilsMessengerEXT debugMessenger;
+
+    //renderer
+    std::unordered_map<std::string, DevicePipelineVK *>m_matPipelinePool;
+
+    std::unordered_map<std::string, DescriptorSetObjPool*> m_matDescriptorSetPool;
 };
 
 } // namespace tzw

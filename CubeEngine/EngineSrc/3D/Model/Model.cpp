@@ -51,7 +51,7 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
 				{
 					mat= m_effectList[mesh->getMatIndex()];
 				}
-		        RenderCommand command(mesh,mat,type);
+		        RenderCommand command(mesh,mat, this, type);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        Renderer::shared()->addRenderCommand(command);
@@ -61,7 +61,7 @@ void Model::submitDrawCmd(RenderCommand::RenderType passType)
 		    for(auto mesh : m_extraMeshList[m_currPose])
 		    {
 		        auto tech = m_effectList[mesh->getMatIndex()];
-		        RenderCommand command(mesh,tech,type);
+		        RenderCommand command(mesh,tech, this, type);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        Renderer::shared()->addRenderCommand(command);

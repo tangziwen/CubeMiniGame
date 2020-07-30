@@ -34,7 +34,7 @@ void CylinderPrimitive::submitDrawCmd(RenderCommand::RenderType passType)
 {
 	if(getIsVisible())
 	{
-		RenderCommand command(m_mesh, m_material, passType);
+		RenderCommand command(m_mesh, m_material, this, passType);
 		setUpCommand(command);
 		Renderer::shared()->addRenderCommand(command);
 	}

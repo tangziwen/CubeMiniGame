@@ -239,13 +239,13 @@ namespace tzw
 		}
 
 
-		RenderCommand command(m_mesh[m_currentLOD], m_material, passType);
+		RenderCommand command(m_mesh[m_currentLOD], m_material, this, passType);
 		setUpTransFormation(command.m_transInfo);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		Renderer::shared()->addRenderCommand(command);
 		if(isNeedShowTransition)
 		{
-			RenderCommand command(m_meshTransition[m_currentLOD], m_material, passType);
+			RenderCommand command(m_meshTransition[m_currentLOD], m_material, this, passType);
 			setUpTransFormation(command.m_transInfo);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			Renderer::shared()->addRenderCommand(command);

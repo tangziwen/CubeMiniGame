@@ -25,6 +25,11 @@ const VkImageView& DeviceTextureVK::getImageView()
     return m_textureImageView;
 }
 
+const VkSampler& DeviceTextureVK::getSampler()
+{
+    return m_sampler;
+}
+
 void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
 {
     auto backEnd = VKRenderBackEnd::shared();
@@ -32,6 +37,8 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
     stbi_uc* pixels = stbi_load_from_memory(buff, size, &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
     VkDeviceSize imageSize = texWidth * texHeight * 4;
 
+	m_metaInfo.width = texWidth;
+	m_metaInfo.height = texHeight;
     if (!pixels) 
     {
         abort();
@@ -59,6 +66,27 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
     vkFreeMemory(backEnd->getDevice(), stagingBufferMemory, nullptr);
 
     m_textureImageView = backEnd->createImageView(m_textureImage, VK_FORMAT_R8G8B8A8_SRGB);
+
+
+
+     VkSamplerCreateInfo samplerInfo{};
+    samplerInfo.sType = VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;
+    samplerInfo.magFilter = VK_FILTER_LINEAR;
+    samplerInfo.minFilter = VK_FILTER_LINEAR;
+    samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
+    samplerInfo.anisotropyEnable = VK_TRUE;
+    samplerInfo.maxAnisotropy = 16.0f;
+    samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
+    samplerInfo.unnormalizedCoordinates = VK_FALSE;
+    samplerInfo.compareEnable = VK_FALSE;
+    samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
+    samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
+
+    if (vkCreateSampler(backEnd->getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
+        abort();
+    }
 }
 
 

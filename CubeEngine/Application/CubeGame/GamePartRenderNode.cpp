@@ -66,7 +66,7 @@ namespace tzw
 			}
 			for(auto &info : m_infoList)
 			{
-				RenderCommand command(info.mesh, info.material,passType);
+				RenderCommand command(info.mesh, info.material,this, passType);
 				setUpCommand(command);
 				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{

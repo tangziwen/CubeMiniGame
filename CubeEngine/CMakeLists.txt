@@ -45,6 +45,20 @@ include_directories(./External/GLEW)
 set(LIBS ${LIBS} VkLayer_utils)
 set(LIBS ${LIBS} vulkan-1)
 include_directories(./External/vulkan/)
+#spirv cross
+set(LIBS ${LIBS} spirv-cross-c)
+set(LIBS ${LIBS} spirv-cross-core)
+set(LIBS ${LIBS} spirv-cross-cpp)
+set(LIBS ${LIBS} spirv-cross-glsl)
+set(LIBS ${LIBS} spirv-cross-reflect)
+set(LIBS ${LIBS} spirv-cross-util)
+set(LIBS ${LIBS} spirv-cross-c-shared)
+set(LIBS ${LIBS} spirv-cross-hlsl)
+set(LIBS ${LIBS} spirv-cross-msl)
+include_directories(./External/spirv_cross/)
+#glslang
+set(LIBS ${LIBS} glslang)
+include_directories(./External/glslang/)
 
 add_compile_definitions(WITH_OPENCV2)
 

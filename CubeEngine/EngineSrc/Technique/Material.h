@@ -76,6 +76,7 @@ public:
 	uint32_t getMaterialFlag();
 	void updateFullDescriptionStr();
 	std::string getFullDescriptionStr();
+	std::unordered_map<std::string,TechniqueVar> & getVarList();
 private:
     std::string m_vsPath;
     std::string m_fsPath;

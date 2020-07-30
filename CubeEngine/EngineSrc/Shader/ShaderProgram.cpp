@@ -221,6 +221,11 @@ void ShaderProgram::reload()
     delete oldShader;
 }
 
+DeviceShader* ShaderProgram::getDeviceShader()
+{
+    return shader;
+}
+
 void ShaderProgram::processShaderText(const char* pShaderText, std::string & finalStr)
 {
 	//calculate Global Macro and mutation
@@ -286,10 +291,18 @@ void ShaderProgram::createShader(bool isStrict)
 
 void ShaderProgram::addShader(DeviceShader * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict)
 {
-    tzw::Data data = tzw::Tfile::shared()->getData(filePath,true);
+    tzw::Data data = tzw::Tfile::shared()->getData(filePath,false);
     std::string finalText;
     processShaderText(data.getString().c_str(), finalText);
-    ShaderProgram->addShader((const unsigned char *)finalText.c_str(), finalText.size(),ShaderType, (const unsigned char *)filePath.c_str());
+    if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device){
+        ShaderProgram->addShader((const unsigned char *)finalText.c_str(), finalText.size(),ShaderType, (const unsigned char *)filePath.c_str());
+    }
+    else{
+        ShaderProgram->addShader((const unsigned char *)data.getBytes(), data.getSize(),ShaderType, (const unsigned char *)filePath.c_str());
+    
+    }
+    
+    
 }
 
 } // namespace tzw

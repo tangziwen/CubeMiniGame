@@ -78,7 +78,7 @@ void Sprite::submitDrawCmd(RenderCommand::RenderType passType)
 {
 	//getContentSize();
 	//getWorldPos2D();
-    RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::GUI);
+    RenderCommand command(m_mesh,m_material,this, RenderCommand::RenderType::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);

@@ -52,7 +52,7 @@ void Mesh::finish(bool isPassToGPU)
 void Mesh::submit(RenderFlag::BufferStorageType storageType)
 {
 	if (m_vertices.empty()) return;
-    if(Engine::shared()->getRenderDeviceType() != RenderDeviceType::OpenGl_Device)return;
+    //if(Engine::shared()->getRenderDeviceType() != RenderDeviceType::OpenGl_Device)return;
     if(m_ibo == 0)
     {
         createBufferObject();

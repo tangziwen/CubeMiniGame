@@ -1,8 +1,10 @@
 ﻿#pragma once
 #include "VkRenderBackEnd.h"
+
 #include <assert.h>
 #include <vector>
 #define GLFW_INCLUDE_NONE
+
 #include "GLFW/glfw3.h"
 #include "Utility/file/Tfile.h"
 #include "Engine/Engine.h"
@@ -18,6 +20,16 @@
 #include "vk/DeviceBufferVK.h"
 #include "Rendering/Renderer.h"
 #include "Technique/Material.h"
+
+
+
+#include "spirv_cross.hpp"
+#include "spirv_glsl.hpp"
+#include "glslang/SPIRV/GlslangToSpv.h"
+#include "glslang/Include/Types.h"
+#include "glslang/public/ShaderLang.h"
+#include "Mesh/Mesh.h"
+//#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
 {
@@ -48,7 +60,12 @@ VkShaderModule VulkanCreateShaderModule(VkDevice& device, const char* pFileName)
     char* pShaderCode = (char *)data.getBytes();//ReadBinaryFile(pFileName, codeSize);
     codeSize = data.getSize();
     assert(pShaderCode);
-  
+
+
+    
+
+
+    
     VkShaderModuleCreateInfo shaderCreateInfo = {};
     shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shaderCreateInfo.codeSize = codeSize;
@@ -379,7 +396,8 @@ VkApplicationInfo appInfo = {};
             CHECK_VULKAN_ERROR("vkAllocateCommandBuffers error %d\n", res);
     
             printf("Created command buffers\n");
-        }
+    }
+
     void VKRenderBackEnd::RecordCommandBuffers()
         {
         VkCommandBufferBeginInfo beginInfo = {};
@@ -434,6 +452,60 @@ VkApplicationInfo appInfo = {};
         }
     
         printf("Command buffers recorded\n");    
+    }
+    void VKRenderBackEnd::updateRecordCmdBuff(int swapImageIndex, int index, RenderItem* item, DevicePipelineVK * thePipeline)
+    {
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    
+        VkClearColorValue clearColor = { 164.0f/256.0f, 30.0f/256.0f, 34.0f/256.0f, 0.0f };
+        VkClearValue clearValue = {};
+        clearValue.color = clearColor;
+    
+        VkImageSubresourceRange imageRange = {};
+        imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageRange.levelCount = 1;
+        imageRange.layerCount = 1;
+
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+		clearValues[1].depthStencil = {1.0f, 0};
+	
+        auto screenSize = Engine::shared()->winSize();
+        VkRenderPassBeginInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_renderPass;   
+        renderPassInfo.renderArea.offset.x = 0;
+        renderPassInfo.renderArea.offset.y = 0;
+        renderPassInfo.renderArea.extent.width = screenSize.x;
+        renderPassInfo.renderArea.extent.height = screenSize.y;
+        renderPassInfo.clearValueCount = clearValues.size();
+        renderPassInfo.pClearValues = clearValues.data();
+        VkCommandBuffer & command = m_generalCmdBuff[swapImageIndex][index];
+        VkResult res = vkBeginCommandBuffer(command, &beginInfo);
+        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+        renderPassInfo.framebuffer = m_fbs[swapImageIndex];
+
+        vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        auto vbo = static_cast<DeviceBufferVK *>(item->m_mesh->getArrayBuf()->bufferId());
+        vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, thePipeline->getPipeline());
+        VkBuffer vertexBuffers[] = {vbo->getBuffer()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(command, 0, 1, vertexBuffers, offsets);
+            
+        auto ibo = static_cast<DeviceBufferVK *>(item->m_mesh->getIndexBuf()->bufferId());
+        vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+        vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, thePipeline->getPipelineLayOut(), 0, 1, &item->m_descriptorSet, 0, nullptr);
+        vkCmdDrawIndexed(command, static_cast<uint32_t>(item->m_mesh->getIndicesSize()), 1, 0, 0, 0);
+        vkCmdEndRenderPass(command);
+               
+        res = vkEndCommandBuffer(command);
+        CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
     }
     void VKRenderBackEnd::CreateRenderPass()
     {
@@ -536,6 +608,17 @@ VkApplicationInfo appInfo = {};
 
         m_fsModule = VulkanCreateShaderModule(m_device, "VulkanShaders/fs.spv");
         assert(m_fsModule);
+
+        m_shader = new DeviceShaderVK();
+        m_shader->create();
+        tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/vs.spv",false);
+        m_shader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::VertexShader,(const unsigned char *)"VulkanShaders/vs.spv");
+
+        tzw::Data data2 = tzw::Tfile::shared()->getData("VulkanShaders/fs.spv",false);
+        m_shader->addShader((const unsigned char *)data2.getBytes(),data2.getSize(),DeviceShaderType::FragmentShader,(const unsigned char *)"VulkanShaders/fs.spv");
+
+        //shader 创建完毕，根据shader内容构建描述符集布局
+        m_shader->finish();
     }
     void VKRenderBackEnd::CreatePipeline()
     {
@@ -543,11 +626,11 @@ VkApplicationInfo appInfo = {};
     
         shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-        shaderStageCreateInfo[0].module = m_vsModule;
+        shaderStageCreateInfo[0].module = *m_shader->getVsModule();
         shaderStageCreateInfo[0].pName = "main";
         shaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        shaderStageCreateInfo[1].module = m_fsModule;
+        shaderStageCreateInfo[1].module = *m_shader->getFsModule();
         shaderStageCreateInfo[1].pName = "main";   
 	    
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -755,6 +838,35 @@ VkApplicationInfo appInfo = {};
         depthImageView = createImageView(depthImage, depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT);
     }
 
+    void VKRenderBackEnd::createCommandBufferForGeneral(int size)
+    {
+        m_generalCmdBuff.resize(m_images.size());
+        for(int i = 0;i <m_images.size(); i++)
+        {
+            m_generalCmdBuff[i].resize(size);
+            VkCommandBufferAllocateInfo cmdBufAllocInfo = {};
+            cmdBufAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
+            cmdBufAllocInfo.commandPool = m_generalCmdBufPool;
+            cmdBufAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
+            cmdBufAllocInfo.commandBufferCount = size;
+    
+            auto res = vkAllocateCommandBuffers(m_device, &cmdBufAllocInfo, m_generalCmdBuff[i].data());
+            if(res){
+                abort();
+            }
+        }
+
+    }
+
+    void VKRenderBackEnd::createCommandBufferPoolForGeneral()
+    {
+        VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
+        cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        cmdPoolCreateInfo.queueFamilyIndex = m_gfxQueueFamily;
+        VkResult res = vkCreateCommandPool(m_device, &cmdPoolCreateInfo, NULL, &m_generalCmdBufPool);    
+        CHECK_VULKAN_ERROR("vkCreateCommandPool error %d\n", res);
+    }
+
 	
     void VKRenderBackEnd::updateUniformBuffer(uint32_t currentImage)
     {
@@ -803,44 +915,22 @@ VkApplicationInfo appInfo = {};
 
     void VKRenderBackEnd::CreateDescriptorSetLayout()
     {
-        VkDescriptorSetLayoutBinding uboLayoutBinding{};
-        uboLayoutBinding.binding = 0;
-        uboLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uboLayoutBinding.descriptorCount = 1;
-        uboLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT;
-
-
-        VkDescriptorSetLayoutBinding samplerLayoutBinding{};
-        samplerLayoutBinding.binding = 1;
-        samplerLayoutBinding.descriptorCount = 1;
-        samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        samplerLayoutBinding.pImmutableSamplers = nullptr;
-        samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
-
-	
-
-		std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
-        VkDescriptorSetLayoutCreateInfo layoutInfo{};
-        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-        layoutInfo.bindingCount = bindings.size();
-        layoutInfo.pBindings = bindings.data();
-
-        auto res = vkCreateDescriptorSetLayout(m_device, &layoutInfo, nullptr, &descriptorSetLayout);
-        assert(!res);
+        descriptorSetLayout = m_shader->getDescriptorSetLayOut();
+        return;
     }
     void VKRenderBackEnd::createDescriptorPool()
     {
 		std::array<VkDescriptorPoolSize, 2> poolSizes{};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = static_cast<uint32_t>(m_images.size());
+		poolSizes[0].descriptorCount = 20;//static_cast<uint32_t>(m_images.size());
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = static_cast<uint32_t>(m_images.size());
+		poolSizes[1].descriptorCount = 20;//static_cast<uint32_t>(m_images.size());
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = static_cast<uint32_t>(m_images.size());
+		poolInfo.maxSets = 20;//static_cast<uint32_t>(m_images.size());
 
         if (vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create descriptor pool!");
@@ -1186,6 +1276,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         vkGetDeviceQueue(m_device, m_gfxQueueFamily, 0, &m_queue);
         createSwapChain();
         CreateCommandBuffer();
+        createCommandBufferPoolForGeneral();
+        createCommandBufferForGeneral(100);
         CreateRenderPass();
 		createDepthResources();
         CreateFramebuffer();
@@ -1215,22 +1307,57 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
 
+        unsigned int totalCount = 0;
         //CPU here
         Renderer::shared()->collectPrimitives();
+        auto drawSize = Renderer::shared()->getGUICommandList().size();
         for(RenderCommand & a : Renderer::shared()->getGUICommandList())
         {
             Material * mat = a.getMat();
-            mat->getFullDescriptionStr();
+            std::string & matStr = mat->getFullDescriptionStr();
+
+            DevicePipelineVK * currPipeLine;
+            auto iter = m_matPipelinePool.find(matStr);
+            if(iter == m_matPipelinePool.end())
+            {
+                currPipeLine = new DevicePipelineVK(mat, m_renderPass);
+                m_matPipelinePool[matStr]  =currPipeLine;
+            }
+            else{
+                currPipeLine = iter->second;
+            }
+            RenderItem * item;
+            auto descPool = m_matDescriptorSetPool.find(matStr);
+            if(descPool == m_matDescriptorSetPool.end())
+            {
+                auto pool = new DescriptorSetObjPool(currPipeLine->getDescriptorSetLayOut());
+                m_matDescriptorSetPool[matStr] = pool;
+                item = pool->findOrCreateDescrptorSet(mat, a.getDrawableObj());
+            }else
+            {
+                item = descPool->second->findOrCreateDescrptorSet(mat, a.getDrawableObj());
+            }
+            //update uniform.
+            void* data;
+            vkMapMemory(m_device, item->m_uniformBuffereMemory, 0, sizeof(Matrix44), 0, &data);
+                Matrix44 wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
+                memcpy(data, &wvp, sizeof(Matrix44));
+            vkUnmapMemory(m_device, item->m_uniformBuffereMemory);
+            item->m_mesh = a.getMesh();
+            item->updateDescriptor();
+            updateRecordCmdBuff(ImageIndex, totalCount, item, currPipeLine);
+            totalCount++;
         }
         Renderer::shared()->clearCommands();
-        //CHECK_VULKAN_ERROR("vkAcquireNextImageKHR error %d\n" , res);
+
+
         updateUniformBuffer(ImageIndex);
  
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount   = 1;
-        submitInfo.pCommandBuffers      = &m_cmdBufs[ImageIndex];
+        submitInfo.commandBufferCount   = totalCount;
+        submitInfo.pCommandBuffers      = m_generalCmdBuff[ImageIndex].data();//&m_cmdBufs[ImageIndex];
 
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -1278,6 +1405,105 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     VkDevice VKRenderBackEnd::getDevice()
     {
         return m_device;
+    }
+
+    VkDescriptorPool& VKRenderBackEnd::getDescriptorPool()
+    {
+        return descriptorPool;
+    }
+
+    DescriptorSetObjPool::DescriptorSetObjPool(VkDescriptorSetLayout &layout)
+    {
+        m_layout = layout;
+    }
+
+    RenderItem* DescriptorSetObjPool::findOrCreateDescrptorSet(Material* mat, void* obj)
+    {
+        auto iter = m_pool.find(obj);
+        if(iter == m_pool.end())
+        {
+            auto item = new RenderItem();
+            //create unfirom Buffer
+
+            VkDeviceSize bufferSize = sizeof(Matrix44);
+
+            VKRenderBackEnd::shared()->createVKBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, item->m_uniformBuffer, item->m_uniformBuffereMemory);
+
+            //CreateDescriptor
+            VkDescriptorSet descriptorSet;
+            VkDescriptorSetAllocateInfo allocInfo{};
+            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+            allocInfo.descriptorPool = VKRenderBackEnd::shared()->getDescriptorPool();
+            allocInfo.descriptorSetCount = 1;
+            allocInfo.pSetLayouts = &m_layout;
+
+            auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &descriptorSet);
+            printf("create descriptor sets\n");
+            if ( res!= VK_SUCCESS) {
+                printf("bad  descriptor!!!! %d",res);
+                abort();
+            }
+            item->m_descriptorSet = descriptorSet;
+            item->m_mat = mat;
+            m_pool[obj] = item;
+            return item;
+        
+        }
+        else
+        {
+        return iter->second;
+        }
+    }
+
+    void RenderItem::updateDescriptor()
+    {
+        auto & varList = m_mat->getVarList();
+        std::vector<VkWriteDescriptorSet> descriptorWrites{};
+        //update descriptor
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = m_uniformBuffer;
+        bufferInfo.offset = 0;
+        bufferInfo.range = sizeof(Matrix44);
+
+        VkWriteDescriptorSet writeSet;
+        writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        writeSet.dstSet = m_descriptorSet;
+        writeSet.dstBinding = 0;
+        writeSet.dstArrayElement = 0;
+        writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeSet.descriptorCount = 1;
+        writeSet.pBufferInfo = &bufferInfo;
+
+        descriptorWrites.emplace_back(writeSet);
+        for(auto &i : varList)
+        {
+            TechniqueVar* var = &i.second;
+            switch(var->type)
+            {
+            
+                case TechniqueVar::Type::Texture:
+                {
+                    auto tex = var->data.rawData.texInfo.tex;
+
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
+                    imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
+
+                    VkWriteDescriptorSet texWriteSet;
+                    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    texWriteSet.dstSet = m_descriptorSet;
+                    texWriteSet.dstBinding = 1;
+                    texWriteSet.dstArrayElement = 0;
+                    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    texWriteSet.descriptorCount = 1;
+                    texWriteSet.pImageInfo = &imageInfo;
+
+                    descriptorWrites.emplace_back(texWriteSet);
+                }
+            }
+        }
+        vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
     }
 
 }

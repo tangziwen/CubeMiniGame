@@ -808,6 +808,12 @@ std::string Material::getFullDescriptionStr()
 	return m_fullDescString;
 }
 
+std::unordered_map<std::string, TechniqueVar>& Material::getVarList()
+{
+	// TODO: 在此处插入 return 语句
+	return m_varList;
+}
+
 RenderFlag::RenderStage Material::getRenderStage() const
 {
 	return m_renderStage;

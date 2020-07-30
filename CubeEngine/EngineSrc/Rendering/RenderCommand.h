@@ -4,6 +4,7 @@
 #include "../Math/Matrix44.h"
 #include "Mesh/InstanceData.h"
 #include <vector>
+
 namespace tzw {
 class Mesh;
 class Material;
@@ -43,7 +44,7 @@ public:
         Single,
 		Instanced,
     };
-    RenderCommand(Mesh * mesh,Material * material,RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
+    RenderCommand(Mesh * mesh,Material * material, void * obj, RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
     void render();
 
     RenderType type() const;
@@ -66,7 +67,9 @@ public:
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
     Material * getMat();
     Mesh * getMesh();
+    void * getDrawableObj();
 private:
+    void *m_obj;
 	RenderFlag::RenderStage m_renderState;
     Mesh * m_mesh;
 	InstancedMesh * m_instancedMesh;

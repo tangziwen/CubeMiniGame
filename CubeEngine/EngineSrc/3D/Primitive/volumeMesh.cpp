@@ -20,7 +20,7 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 
 void SimpleMesh::submitDrawCmd(RenderCommand::RenderType passType)
 {
-	RenderCommand command(m_mesh,m_material,RenderCommand::RenderType::Common);
+	RenderCommand command(m_mesh,m_material,this,RenderCommand::RenderType::Common);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	Renderer::shared()->addRenderCommand(command);
