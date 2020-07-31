@@ -5,21 +5,46 @@
 #include "spirv_cross.hpp"
 #include "spirv_glsl.hpp"
 #include <iostream>
+#include "shaderc/shaderc.hpp"
+#include "EngineSrc/Utility/log/Log.h"
 namespace tzw{
 void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceShaderType type, const unsigned char* fileInfoStr)
 {
-	auto pShaderCode = buff;//ReadBinaryFile(pFileName, codeSize);
-    int codeSize = size;
-    assert(pShaderCode);
-  
-    VkShaderModuleCreateInfo shaderCreateInfo = {};
-    shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
-    shaderCreateInfo.codeSize = codeSize;
-    shaderCreateInfo.pCode = (const uint32_t*)pShaderCode;
-    
+    assert(buff);
+
+    //compile GLSL to spir-v
+    shaderc::Compiler compiler;
+    shaderc::CompileOptions options;
+    shaderc_shader_kind compileKind = shaderc_shader_kind::shaderc_glsl_vertex_shader;
+    switch(type)
+    {
+    case DeviceShaderType::VertexShader:
+        compileKind = shaderc_shader_kind::shaderc_glsl_vertex_shader;
+    break;
+    case DeviceShaderType::FragmentShader:
+        compileKind = shaderc_shader_kind::shaderc_glsl_fragment_shader;
+    break;
+    case DeviceShaderType::TessControlShader:
+        compileKind = shaderc_shader_kind::shaderc_glsl_tess_control_shader;
+    break;
+    case DeviceShaderType::TessEvaulateShader:
+        compileKind = shaderc_shader_kind::shaderc_glsl_tess_evaluation_shader;
+    break;
+    }
+    shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv((const char*)buff, size, compileKind, (const char *)fileInfoStr);
+    if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
+        //handle errors
+        tlogError("compile shader to Spir-v Error, %s", fileInfoStr);
+        tlogError("%s",result.GetErrorMessage().c_str());
+        abort();
+    }
+    std::vector<uint32_t> byteCode;
+    byteCode.assign(result.cbegin(), result.cend());
+
+    //reflection
     try{
     
-    spirv_cross::Compiler  glsl((const uint32_t*)pShaderCode, codeSize / sizeof(uint32_t));
+    spirv_cross::Compiler  glsl(byteCode);
 	// The SPIR-V is now parsed, and we can perform reflection on it.
 	spirv_cross::ShaderResources resources = glsl.get_shader_resources();
 
@@ -66,9 +91,21 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
         std::cout<<(e.what());
         abort();
     }
+
+
+    //create Shader Module
+    VkShaderModuleCreateInfo shaderCreateInfo = {};
+    shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
+    shaderCreateInfo.codeSize = byteCode.size() * sizeof(uint32_t);
+    shaderCreateInfo.pCode = &byteCode[0];
     VkShaderModule * shaderModule = (VkShaderModule *)malloc(sizeof(shaderModule));
     VkResult res = vkCreateShaderModule(VKRenderBackEnd::shared()->getDevice(), &shaderCreateInfo, NULL, shaderModule);
-    printf("vkCreateShaderModule error %d\n", res);
+    if(res != 0)
+    {
+        printf("res fuck fuck %d",res);
+        abort();
+    
+    }
     printf("Created shader %s\n", fileInfoStr);
     switch(type)
     {
@@ -110,6 +147,17 @@ VkShaderModule* DeviceShaderVK::getVsModule()
 VkShaderModule* DeviceShaderVK::getFsModule()
 {
     return m_fsShader;
+}
+
+DeviceShaderVKLocationInfo DeviceShaderVK::getLocationInfo(std::string name)
+{
+    auto result = m_nameInfoMap.find(name);
+    if(result == m_nameInfoMap.end())
+    {
+        tlogError("criticalError%s", name);
+        abort();
+    }
+    return result->second;
 }
 
 std::unordered_map<std::string, DeviceShaderVKLocationInfo>& DeviceShaderVK::getNameLocationMap()

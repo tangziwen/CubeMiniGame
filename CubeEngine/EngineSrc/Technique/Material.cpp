@@ -175,6 +175,11 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 		auto& shaders = doc["shaders"];
 		m_vsPath = shaders["vs"].GetString();
 		m_fsPath = shaders["fs"].GetString();
+		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::Vulkan_Device)
+		{
+			m_vsPath = "Vulkan" + m_vsPath;
+			m_fsPath = "Vulkan" + m_fsPath;
+		}
 		m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
 		if (!m_program)
 		{

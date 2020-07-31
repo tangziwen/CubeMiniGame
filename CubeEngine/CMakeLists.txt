@@ -60,6 +60,9 @@ include_directories(./External/spirv_cross/)
 set(LIBS ${LIBS} glslang)
 include_directories(./External/glslang/)
 
+#shaderc
+set(LIBS ${LIBS} shaderc_combined)
+
 add_compile_definitions(WITH_OPENCV2)
 
 #rapidJson

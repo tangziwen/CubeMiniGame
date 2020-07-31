@@ -294,15 +294,7 @@ void ShaderProgram::addShader(DeviceShader * ShaderProgram, std::string filePath
     tzw::Data data = tzw::Tfile::shared()->getData(filePath,false);
     std::string finalText;
     processShaderText(data.getString().c_str(), finalText);
-    if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device){
-        ShaderProgram->addShader((const unsigned char *)finalText.c_str(), finalText.size(),ShaderType, (const unsigned char *)filePath.c_str());
-    }
-    else{
-        ShaderProgram->addShader((const unsigned char *)data.getBytes(), data.getSize(),ShaderType, (const unsigned char *)filePath.c_str());
-    
-    }
-    
-    
+    ShaderProgram->addShader((const unsigned char *)finalText.c_str(), finalText.size(),ShaderType, (const unsigned char *)filePath.c_str());
 }
 
 } // namespace tzw

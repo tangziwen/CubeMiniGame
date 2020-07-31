@@ -12,11 +12,6 @@ ShaderProgram *ShaderMgr::getByPath(uint32_t mutationFlag, std::string vs, std::
     auto result = m_pool.find(info);
     if(result == m_pool.end())
     {
-        if (Engine::shared()->getRenderDeviceType() == RenderDeviceType::Vulkan_Device)
-        {
-            vs = "VulkanShaders/vs.spv";
-            fs = "VulkanShaders/fs.spv";
-        }
 		tlog("create shader %s %s", vs.c_str(), fs.c_str());
         ShaderProgram * shader = new ShaderProgram(mutationFlag, vs.c_str(),fs.c_str(), tcs, tes);
         m_pool.insert(std::make_pair(info,shader));

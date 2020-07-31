@@ -23,6 +23,7 @@ namespace tzw {
 class DeviceTextureVK;
 class DeviceBufferVK;
 class DeviceShaderVK;
+
 typedef struct {
     VkImage image;
     VkCommandBuffer cmd;
@@ -55,10 +56,10 @@ struct RenderItem{
     Mesh * m_mesh;
     void updateDescriptor();
 };
-struct DescriptorSetObjPool
+struct RenderItemPool
 {
-    DescriptorSetObjPool(VkDescriptorSetLayout &layout);
-    RenderItem* findOrCreateDescrptorSet(Material * mat, void *obj);
+    RenderItemPool(VkDescriptorSetLayout &layout);
+    RenderItem* findOrCreateRenderItem(Material * mat, void *obj);
     std::unordered_map<void *, RenderItem*> m_pool;
     VkDescriptorSetLayout m_layout;
 };
@@ -127,18 +128,11 @@ private:
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void VKRenderBackEnd::createSyncObjects();
-
-    
-
 	//depth resource
 	VkImage depthImage;
     VkDeviceMemory depthImageMemory;
     VkImageView depthImageView;
-
 	std::vector<uint16_t> indices;
-	
-	
-	
     VkInstance m_inst;
     VkSurfaceKHR m_surface;
     VkSwapchainKHR m_swapChainKHR;
@@ -188,7 +182,7 @@ private:
     //renderer
     std::unordered_map<std::string, DevicePipelineVK *>m_matPipelinePool;
 
-    std::unordered_map<std::string, DescriptorSetObjPool*> m_matDescriptorSetPool;
+    std::unordered_map<std::string, RenderItemPool*> m_matDescriptorSetPool;
 };
 
 } // namespace tzw

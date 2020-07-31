@@ -29,6 +29,7 @@
 #include "glslang/Include/Types.h"
 #include "glslang/public/ShaderLang.h"
 #include "Mesh/Mesh.h"
+
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -460,10 +461,6 @@ VkApplicationInfo appInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
     
-        VkClearColorValue clearColor = { 164.0f/256.0f, 30.0f/256.0f, 34.0f/256.0f, 0.0f };
-        VkClearValue clearValue = {};
-        clearValue.color = clearColor;
-    
         VkImageSubresourceRange imageRange = {};
         imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
         imageRange.levelCount = 1;
@@ -502,6 +499,7 @@ VkApplicationInfo appInfo = {};
 
         vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, thePipeline->getPipelineLayOut(), 0, 1, &item->m_descriptorSet, 0, nullptr);
         vkCmdDrawIndexed(command, static_cast<uint32_t>(item->m_mesh->getIndicesSize()), 1, 0, 0, 0);
+
         vkCmdEndRenderPass(command);
                
         res = vkEndCommandBuffer(command);
@@ -611,11 +609,11 @@ VkApplicationInfo appInfo = {};
 
         m_shader = new DeviceShaderVK();
         m_shader->create();
-        tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/vs.spv",false);
-        m_shader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::VertexShader,(const unsigned char *)"VulkanShaders/vs.spv");
+        tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/vulkanTest_v.glsl",false);
+        m_shader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::VertexShader,(const unsigned char *)"vulkanTest_v.glsl");
 
-        tzw::Data data2 = tzw::Tfile::shared()->getData("VulkanShaders/fs.spv",false);
-        m_shader->addShader((const unsigned char *)data2.getBytes(),data2.getSize(),DeviceShaderType::FragmentShader,(const unsigned char *)"VulkanShaders/fs.spv");
+        tzw::Data data2 = tzw::Tfile::shared()->getData("VulkanShaders/vulkanTest_f.glsl",false);
+        m_shader->addShader((const unsigned char *)data2.getBytes(),data2.getSize(),DeviceShaderType::FragmentShader,(const unsigned char *)"vulkanTest_f.glsl");
 
         //shader 创建完毕，根据shader内容构建描述符集布局
         m_shader->finish();
@@ -730,7 +728,11 @@ VkApplicationInfo appInfo = {};
         pipelineInfo.basePipelineIndex = -1;
     
         VkResult res = vkCreateGraphicsPipelines(m_device, VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &m_pipeline);
-        CHECK_VULKAN_ERROR("vkCreateGraphicsPipelines error %d\n", res);
+        //CHECK_VULKAN_ERROR("vkCreateGraphicsPipelines error %d\n", res);
+        if(res){
+            printf("fuck %d", res);
+            abort();
+        }
     
         printf("Graphics pipeline created\n");
     }
@@ -1307,10 +1309,41 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
 
-        unsigned int totalCount = 0;
+
         //CPU here
         Renderer::shared()->collectPrimitives();
         auto drawSize = Renderer::shared()->getGUICommandList().size();
+
+        VkCommandBufferBeginInfo beginInfo = {};
+        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    
+        VkImageSubresourceRange imageRange = {};
+        imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+        imageRange.levelCount = 1;
+        imageRange.layerCount = 1;
+
+
+		std::array<VkClearValue, 2> clearValues{};
+		clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+		clearValues[1].depthStencil = {1.0f, 0};
+	
+        auto screenSize = Engine::shared()->winSize();
+        VkRenderPassBeginInfo renderPassInfo = {};
+        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfo.renderPass = m_renderPass;   
+        renderPassInfo.renderArea.offset.x = 0;
+        renderPassInfo.renderArea.offset.y = 0;
+        renderPassInfo.renderArea.extent.width = screenSize.x;
+        renderPassInfo.renderArea.extent.height = screenSize.y;
+        renderPassInfo.clearValueCount = clearValues.size();
+        renderPassInfo.pClearValues = clearValues.data();
+        VkCommandBuffer & command = m_generalCmdBuff[ImageIndex][0];
+        res = vkBeginCommandBuffer(command, &beginInfo);
+        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+        renderPassInfo.framebuffer = m_fbs[ImageIndex];
+
+        vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         for(RenderCommand & a : Renderer::shared()->getGUICommandList())
         {
             Material * mat = a.getMat();
@@ -1330,12 +1363,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             auto descPool = m_matDescriptorSetPool.find(matStr);
             if(descPool == m_matDescriptorSetPool.end())
             {
-                auto pool = new DescriptorSetObjPool(currPipeLine->getDescriptorSetLayOut());
+                auto pool = new RenderItemPool(currPipeLine->getDescriptorSetLayOut());
                 m_matDescriptorSetPool[matStr] = pool;
-                item = pool->findOrCreateDescrptorSet(mat, a.getDrawableObj());
+                item = pool->findOrCreateRenderItem(mat, a.getDrawableObj());
             }else
             {
-                item = descPool->second->findOrCreateDescrptorSet(mat, a.getDrawableObj());
+                item = descPool->second->findOrCreateRenderItem(mat, a.getDrawableObj());
             }
             //update uniform.
             void* data;
@@ -1344,19 +1377,35 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 memcpy(data, &wvp, sizeof(Matrix44));
             vkUnmapMemory(m_device, item->m_uniformBuffereMemory);
             item->m_mesh = a.getMesh();
-            item->updateDescriptor();
-            updateRecordCmdBuff(ImageIndex, totalCount, item, currPipeLine);
-            totalCount++;
-        }
-        Renderer::shared()->clearCommands();
 
+
+            item->updateDescriptor();
+
+            //recordDrawCommand
+            auto vbo = static_cast<DeviceBufferVK *>(item->m_mesh->getArrayBuf()->bufferId());
+            vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
+            VkBuffer vertexBuffers[] = {vbo->getBuffer()};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(command, 0, 1, vertexBuffers, offsets);
+            
+            auto ibo = static_cast<DeviceBufferVK *>(item->m_mesh->getIndexBuf()->bufferId());
+            vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, 1, &item->m_descriptorSet, 0, nullptr);
+            vkCmdDrawIndexed(command, static_cast<uint32_t>(item->m_mesh->getIndicesSize()), 1, 0, 0, 0);
+        }
+        vkCmdEndRenderPass(command);
+        res = vkEndCommandBuffer(command);
+        CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+        Renderer::shared()->clearCommands();
+        
 
         updateUniformBuffer(ImageIndex);
  
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount   = totalCount;
+        submitInfo.commandBufferCount   = 1;
         submitInfo.pCommandBuffers      = m_generalCmdBuff[ImageIndex].data();//&m_cmdBufs[ImageIndex];
 
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
@@ -1412,12 +1461,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         return descriptorPool;
     }
 
-    DescriptorSetObjPool::DescriptorSetObjPool(VkDescriptorSetLayout &layout)
+    RenderItemPool::RenderItemPool(VkDescriptorSetLayout &layout)
     {
         m_layout = layout;
     }
 
-    RenderItem* DescriptorSetObjPool::findOrCreateDescrptorSet(Material* mat, void* obj)
+    RenderItem* RenderItemPool::findOrCreateRenderItem(Material* mat, void* obj)
     {
         auto iter = m_pool.find(obj);
         if(iter == m_pool.end())
@@ -1475,6 +1524,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         writeSet.pBufferInfo = &bufferInfo;
 
         descriptorWrites.emplace_back(writeSet);
+        auto shader = static_cast<DeviceShaderVK * >(m_mat->getProgram()->getDeviceShader());
         for(auto &i : varList)
         {
             TechniqueVar* var = &i.second;
@@ -1490,10 +1540,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                     imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
                     imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
 
+                    auto locationInfo = shader->getLocationInfo(i.first);
                     VkWriteDescriptorSet texWriteSet;
                     texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     texWriteSet.dstSet = m_descriptorSet;
-                    texWriteSet.dstBinding = 1;
+                    texWriteSet.dstBinding = locationInfo.binding;
                     texWriteSet.dstArrayElement = 0;
                     texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     texWriteSet.descriptorCount = 1;
