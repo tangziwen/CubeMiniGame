@@ -132,6 +132,11 @@ namespace tzw
 		glEnable(GL_CULL_FACE);
 	}
 
+	void ImGui_ImplGlfwVK_RenderDrawLists(ImDrawData* draw_data)
+	{
+	
+	
+	}
 	GUISystem::GUISystem()
 	{
 		
@@ -244,11 +249,25 @@ namespace tzw
 	{
 		ImGui::PushFont(m_fontLarge);
 	}
+
+	ImDrawData* GUISystem::getDrawData()
+	{
+		return ImGui::GetDrawData();
+	}
 	
 	void GUISystem::initGUI()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
-		g_imguiShader = ShaderMgr::shared()->getByPath(0, "Shaders/IMGUI_v.glsl", "Shaders/IMGUI_f.glsl");
+		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
+		{
+			g_imguiShader = ShaderMgr::shared()->getByPath(0, "Shaders/IMGUI_v.glsl", "Shaders/IMGUI_f.glsl");
+		}
+		else
+		{
+		
+			g_imguiShader = ShaderMgr::shared()->getByPath(0, "VulkanShaders/IMGUI_v.glsl", "VulkanShaders/IMGUI_f.glsl");
+		}
+		
 		m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 		m_arrayBuf->create();
 		m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
@@ -277,7 +296,17 @@ namespace tzw
 		io.KeyMap[ImGuiKey_Y] = TZW_KEY_Y;
 		io.KeyMap[ImGuiKey_Z] = TZW_KEY_Z;
 		//ImGui::StyleColorsClassic();
-		io.RenderDrawListsFn = ImGui_ImplGlfwGL2_RenderDrawLists;
+		
+		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
+		{
+			io.RenderDrawListsFn = ImGui_ImplGlfwGL2_RenderDrawLists;
+			
+		}
+		else
+		{
+			//io.RenderDrawListsFn = ImGui_ImplGlfwVK_RenderDrawLists;
+		}
+		
 		ImGui::StyleColorsLight();
 		ImGuiStyle& style = ImGui::GetStyle();
 		// Load Fonts

@@ -298,8 +298,9 @@ void Engine::onStart()
     Engine::shared()->initSingletons();
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
+	GUISystem::shared()->initGUI();
 	if(m_type == RenderDeviceType::OpenGl_Device){
-		GUISystem::shared()->initGUI();
+		
 		Renderer::shared()->init();
 	}
 

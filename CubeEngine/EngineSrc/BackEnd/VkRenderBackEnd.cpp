@@ -29,7 +29,7 @@
 #include "glslang/Include/Types.h"
 #include "glslang/public/ShaderLang.h"
 #include "Mesh/Mesh.h"
-
+#include "2D/GUISystem.h"
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -1342,11 +1342,15 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         res = vkBeginCommandBuffer(command, &beginInfo);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfo.framebuffer = m_fbs[ImageIndex];
-
+        std::unordered_map<Material *,std::vector<RenderCommand>> mapList;
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+
+        //UI的东西很特殊，一定需要根据队列的顺序来绘制,普通物体可以按材质分组绘制
+        std::set<Material *> materialSet;
         for(RenderCommand & a : Renderer::shared()->getGUICommandList())
         {
             Material * mat = a.getMat();
+
             std::string & matStr = mat->getFullDescriptionStr();
 
             DevicePipelineVK * currPipeLine;
@@ -1359,11 +1363,19 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             else{
                 currPipeLine = iter->second;
             }
+            
+            auto iterResult = materialSet.find(mat);
+            if(iterResult == materialSet.end())
+            {
+                materialSet.insert(mat);
+                //update material-wise parameter.
+                currPipeLine->updateUniform();
+            }
             RenderItem * item;
             auto descPool = m_matDescriptorSetPool.find(matStr);
             if(descPool == m_matDescriptorSetPool.end())
             {
-                auto pool = new RenderItemPool(currPipeLine->getDescriptorSetLayOut());
+                auto pool = new RenderItemPool(mat);
                 m_matDescriptorSetPool[matStr] = pool;
                 item = pool->findOrCreateRenderItem(mat, a.getDrawableObj());
             }else
@@ -1391,21 +1403,31 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             auto ibo = static_cast<DeviceBufferVK *>(item->m_mesh->getIndexBuf()->bufferId());
             vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, 1, &item->m_descriptorSet, 0, nullptr);
+            std::vector<VkDescriptorSet> descriptorSetList = {item->m_descriptorSet,};
+            if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
+                descriptorSetList.emplace_back(currPipeLine->getMaterialDescriptorSet());
+            }
+            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(command, static_cast<uint32_t>(item->m_mesh->getIndicesSize()), 1, 0, 0, 0);
         }
+
+
+        //IMGUI
+        GUISystem::shared()->renderIMGUI();
+
+        auto imguiDrawData = GUISystem::shared()->getDrawData();
         vkCmdEndRenderPass(command);
         res = vkEndCommandBuffer(command);
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
         Renderer::shared()->clearCommands();
-        
+
 
         updateUniformBuffer(ImageIndex);
  
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount   = 1;
+        submitInfo.commandBufferCount   = 1;//cube Engine cmd + imgui CMD
         submitInfo.pCommandBuffers      = m_generalCmdBuff[ImageIndex].data();//&m_cmdBufs[ImageIndex];
 
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
@@ -1461,9 +1483,13 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         return descriptorPool;
     }
 
-    RenderItemPool::RenderItemPool(VkDescriptorSetLayout &layout)
+    RenderItemPool::RenderItemPool(Material * mat)
     {
-        m_layout = layout;
+        auto shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
+        m_mat = mat;
+        m_layout = shader->getDescriptorSetLayOut();
+
+        //create material-wise descripotr
     }
 
     RenderItem* RenderItemPool::findOrCreateRenderItem(Material* mat, void* obj)

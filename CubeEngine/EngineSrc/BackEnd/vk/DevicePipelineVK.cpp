@@ -5,6 +5,7 @@
 #include "Engine/Engine.h"
 #include "../VkRenderBackEnd.h"
 #include "DeviceShaderVK.h"
+#include "DeviceTextureVK.h"
 #include <array>
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 #define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
@@ -41,6 +42,14 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
 {
     m_mat = mat;
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
+    m_shader = shader;
+    bool isHaveMaterialDescripotrSet = false;
+    if(shader->isHaveMaterialDescriptorSetLayOut())
+    {
+        isHaveMaterialDescripotrSet = true;
+        crateMaterialDescriptorSet();
+        createMaterialUniformBuffer();
+    }
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo[2] = {};
     
     shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -114,7 +123,14 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
     pipelineMSCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
     
     VkPipelineColorBlendAttachmentState blendAttachState = {};
-    blendAttachState.colorWriteMask = 0xf;
+    blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+    blendAttachState.srcColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
+    blendAttachState.dstColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
+    blendAttachState.colorBlendOp=VK_BLEND_OP_ADD;
+    blendAttachState.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;
+    blendAttachState.dstAlphaBlendFactor=VK_BLEND_FACTOR_ZERO;
+    blendAttachState.alphaBlendOp=VK_BLEND_OP_ADD;
+    blendAttachState.blendEnable = m_mat->isIsEnableBlend();
     
     VkPipelineColorBlendStateCreateInfo blendCreateInfo = {};
     blendCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
@@ -128,11 +144,19 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
     //pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    pipelineLayoutInfo.setLayoutCount = 1;
-
-    auto descSetlayOut = shader->getDescriptorSetLayOut();
-    pipelineLayoutInfo.pSetLayouts = &descSetlayOut;
-
+    if(!isHaveMaterialDescripotrSet)
+    {
+        pipelineLayoutInfo.setLayoutCount = 1;
+        auto descSetlayOut = shader->getDescriptorSetLayOut();
+        pipelineLayoutInfo.pSetLayouts = &descSetlayOut;
+    }
+    else
+    {
+        std::vector<VkDescriptorSetLayout> layOutList = {shader->getDescriptorSetLayOut(), shader->getMaterialDescriptorSetLayOut()};
+        pipelineLayoutInfo.setLayoutCount = layOutList.size();
+        auto descSetlayOut = shader->getDescriptorSetLayOut();
+        pipelineLayoutInfo.pSetLayouts = layOutList.data();
+    }
     if (vkCreatePipelineLayout(VKRenderBackEnd::shared()->getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
         abort();
     }
@@ -156,6 +180,9 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
     CHECK_VULKAN_ERROR("vkCreateGraphicsPipelines error %d\n", res);
     
     printf("Graphics pipeline created\n");
+
+    updateMaterialDescriptorSet();//only update once
+    updateUniform();//will be update every frame, or every change.
 }
 
 VkDescriptorSetLayout& DevicePipelineVK::getDescriptorSetLayOut()
@@ -172,6 +199,129 @@ VkPipelineLayout& DevicePipelineVK::getPipelineLayOut()
 VkPipeline& DevicePipelineVK::getPipeline()
 {
     return m_pipeline;
+}
+
+VkDescriptorSet& DevicePipelineVK::getMaterialDescriptorSet()
+{
+    // TODO: 在此处插入 return 语句
+    return m_materialDescripotrSet;
+}
+
+void DevicePipelineVK::updateMaterialDescriptorSet()
+{
+    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    if(!shader->findLocationInfo("t_shaderUnifom")) return;
+
+    auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
+
+    //update material parameter
+    auto & varList = m_mat->getVarList();
+    std::vector<VkWriteDescriptorSet> descriptorWrites{};
+    for(auto &i : varList)
+    {
+        TechniqueVar* var = &i.second;
+        switch(var->type)
+        {
+            case TechniqueVar::Type::Texture:
+            {
+                auto locationInfo = shader->getLocationInfo(i.first);
+                if(locationInfo.set != 1) continue;
+                auto tex = var->data.rawData.texInfo.tex;
+
+                VkDescriptorImageInfo imageInfo{};
+                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
+                imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
+
+
+                VkWriteDescriptorSet texWriteSet;
+                texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                texWriteSet.dstSet = m_materialDescripotrSet;
+                texWriteSet.dstBinding = locationInfo.binding;
+                texWriteSet.dstArrayElement = 0;
+                texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                texWriteSet.descriptorCount = 1;
+                texWriteSet.pImageInfo = &imageInfo;
+
+                descriptorWrites.emplace_back(texWriteSet);
+                break;
+            }
+        }
+    }
+    //update materials uniform buffer
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = m_matUniformBuffer;
+    bufferInfo.offset = 0;
+    bufferInfo.range = materialUniformBufferInfo.size;
+
+    VkWriteDescriptorSet writeSet;
+    writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeSet.dstSet = m_materialDescripotrSet;
+    writeSet.dstBinding = materialUniformBufferInfo.binding;
+    writeSet.dstArrayElement = 0;
+    writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writeSet.descriptorCount = 1;
+    writeSet.pBufferInfo = &bufferInfo;
+    descriptorWrites.emplace_back(writeSet);
+
+
+    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+}
+
+void DevicePipelineVK::updateUniform()
+{
+    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    if(!shader->findLocationInfo("t_shaderUnifom")) return;
+    auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
+    //update material parameter
+    auto & varList = m_mat->getVarList();
+    std::vector<VkWriteDescriptorSet> descriptorWrites{};
+    for(auto &i : varList)
+    {
+        TechniqueVar* var = &i.second;
+        switch(var->type)
+        {
+            case TechniqueVar::Type::Vec4:
+            {
+                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
+                if(idx>= 0)
+                {
+                    auto blockMember = materialUniformBufferInfo.m_member[idx];
+                    void* data;
+                    //copy new data
+                    vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory, 0, sizeof(Matrix44), 0, &data);
+                        void * offsetDst = (char *)data + blockMember.offset;
+                        memcpy(offsetDst, &(var->data.rawData.v4), blockMember.size);
+                    vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
+                }
+                break;
+            }
+        }
+    }
+}
+
+void DevicePipelineVK::createMaterialUniformBuffer()
+{
+    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    //create material-wise uniform buffer
+    auto uniformInfo = shader->getLocationInfo("t_shaderUnifom");
+    VKRenderBackEnd::shared()->createVKBuffer(uniformInfo.size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_matUniformBuffer, m_matUniformBufferMemory);
+}
+
+void DevicePipelineVK::crateMaterialDescriptorSet()
+{
+    //CreateDescriptor
+    VkDescriptorSetAllocateInfo allocInfo{};
+    allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    allocInfo.descriptorPool = VKRenderBackEnd::shared()->getDescriptorPool();
+    allocInfo.descriptorSetCount = 1;
+    allocInfo.pSetLayouts = &m_shader->getMaterialDescriptorSetLayOut();
+
+    auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &m_materialDescripotrSet);
+    if(res!= VK_SUCCESS)
+    {
+        abort();
+    }
 }
 
 }

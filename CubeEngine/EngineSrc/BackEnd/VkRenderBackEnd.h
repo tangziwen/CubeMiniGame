@@ -58,10 +58,11 @@ struct RenderItem{
 };
 struct RenderItemPool
 {
-    RenderItemPool(VkDescriptorSetLayout &layout);
+    RenderItemPool(Material * mat);
     RenderItem* findOrCreateRenderItem(Material * mat, void *obj);
     std::unordered_map<void *, RenderItem*> m_pool;
     VkDescriptorSetLayout m_layout;
+    Material * m_mat;
 };
 
 class VKRenderBackEnd:public Singleton<VKRenderBackEnd>, public RenderBackEndBase

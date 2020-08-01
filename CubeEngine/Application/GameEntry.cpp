@@ -89,7 +89,10 @@ TestVulkanEntry::TestVulkanEntry()
 
 void TestVulkanEntry::onStart()
 {
-	showSplash2();
+	g_binding_game_objects();
+	GameWorld::shared();
+	GameWorld::shared()->init();	
+	showSplash();
 }
 
 void TestVulkanEntry::onExit()

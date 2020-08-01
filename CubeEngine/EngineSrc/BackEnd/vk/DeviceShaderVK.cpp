@@ -66,16 +66,23 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
             info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
         }
         m_nameInfoMap[resource.name.c_str()] = info;
+        m_setInfoMap[set].emplace_back(info);
 	}
 	for (auto &resource : resources.uniform_buffers)
 	{
 		unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
 		unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
-		printf("Uniform %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
+        spirv_cross::SPIRType uniformBufferType      = glsl.get_type(resource.type_id);
+        const std::string &varName      = glsl.get_name(resource.id);
+        unsigned uniformBufferStructSize  = glsl.get_declared_struct_size(uniformBufferType);
+        uint32_t member_count = uniformBufferType.member_types.size();
+        glsl.get_member_name(resource.base_type_id, 0);
+		printf("Uniform %s at set = %u, binding = %u, size %u name %s\n", resource.name.c_str(), set, binding,uniformBufferStructSize, varName.c_str());
         DeviceShaderVKLocationInfo info;
         info.set = set;
         info.binding = binding;
         info.type = DeviceShaderVKLocationType::Uniform;
+        info.size = uniformBufferStructSize;
         if(type == DeviceShaderType::VertexShader){
             info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
         }
@@ -83,7 +90,19 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
         
             info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
         }
-        m_nameInfoMap[resource.name.c_str()] = info;
+        //uniform block each member
+        for (int i = 0; i < member_count; i++)
+        {
+			BlockBufferMember ubm;
+			ubm.name = glsl.get_member_name(resource.base_type_id, i);
+			auto &member_type = glsl.get_type(uniformBufferType.member_types[i]);
+
+			ubm.size = glsl.get_declared_struct_member_size(uniformBufferType, i);
+			ubm.offset = glsl.type_struct_member_offset(uniformBufferType, i);
+			info.m_member.push_back(ubm);
+        }
+        m_nameInfoMap[varName] = info;
+        m_setInfoMap[set].emplace_back(info);
 	}
     }
     catch(const spirv_cross::CompilerError &e){
@@ -160,6 +179,11 @@ DeviceShaderVKLocationInfo DeviceShaderVK::getLocationInfo(std::string name)
     return result->second;
 }
 
+bool DeviceShaderVK::findLocationInfo(std::string name)
+{
+    return m_nameInfoMap.find(name)!= m_nameInfoMap.end();
+}
+
 std::unordered_map<std::string, DeviceShaderVKLocationInfo>& DeviceShaderVK::getNameLocationMap()
 {
     return m_nameInfoMap;
@@ -167,36 +191,70 @@ std::unordered_map<std::string, DeviceShaderVKLocationInfo>& DeviceShaderVK::get
 
 void DeviceShaderVK::createDescriptorSetLayOut()
 {
-    auto shader = this;
-    auto& locationMap = shader->getNameLocationMap();
-    std::vector<VkDescriptorSetLayoutBinding> descriptorLayoutList;
-    for(auto & locationInfo : locationMap){
-        VkDescriptorSetLayoutBinding layOutBinding{};
-        layOutBinding.binding = locationInfo.second.binding;
-        if(locationInfo.second.type == DeviceShaderVKLocationType::Uniform)
-        {
-            layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        }
-        else if(locationInfo.second.type == DeviceShaderVKLocationType::Sampler)
-        {
-            layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        }
+    m_descriptorSetLayout.resize(m_setInfoMap.size());
+
+    for(auto&iter :m_setInfoMap){
+        int setIndex = iter.first;
+        auto shader = this;
+        auto& locationMap = iter.second;//shader->getNameLocationMap();
+        std::vector<VkDescriptorSetLayoutBinding> descriptorLayoutList;
+        for(auto & locationInfo : locationMap){
+            VkDescriptorSetLayoutBinding layOutBinding{};
+            layOutBinding.binding = locationInfo.binding;
+            if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+            {
+                layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            }
+            else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+            {
+                layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            }
         
-        layOutBinding.descriptorCount = 1;
-        layOutBinding.stageFlags = locationInfo.second.stageFlag;
-        descriptorLayoutList.emplace_back(layOutBinding);
+            layOutBinding.descriptorCount = 1;
+            layOutBinding.stageFlags = locationInfo.stageFlag;
+            descriptorLayoutList.emplace_back(layOutBinding);
+        }
+        VkDescriptorSetLayoutCreateInfo layoutInfo{};
+        layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
+        layoutInfo.bindingCount = descriptorLayoutList.size();
+        layoutInfo.pBindings = descriptorLayoutList.data();
+        auto outDescripotr = m_descriptorSetLayout[setIndex];
+        auto res = vkCreateDescriptorSetLayout(VKRenderBackEnd::shared()->getDevice(), &layoutInfo, nullptr, &outDescripotr);
+        if(res != VK_SUCCESS){
+        
+            abort();
+        }
+        m_descriptorSetLayout[setIndex] = outDescripotr;
     }
-    VkDescriptorSetLayoutCreateInfo layoutInfo{};
-    layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-    layoutInfo.bindingCount = descriptorLayoutList.size();
-    layoutInfo.pBindings = descriptorLayoutList.data();
-    auto res = vkCreateDescriptorSetLayout(VKRenderBackEnd::shared()->getDevice(), &layoutInfo, nullptr, &m_descriptorSetLayout);
-    assert(!res);
 }
 
 VkDescriptorSetLayout& DeviceShaderVK::getDescriptorSetLayOut()
 {
-    return m_descriptorSetLayout;
+    return m_descriptorSetLayout[0];
+}
+
+VkDescriptorSetLayout& DeviceShaderVK::getMaterialDescriptorSetLayOut()
+{
+    return m_descriptorSetLayout[1];
+}
+
+bool DeviceShaderVK::isHaveMaterialDescriptorSetLayOut()
+{
+    return m_setInfoMap.find(1) != m_setInfoMap.end();
+}
+
+int DeviceShaderVKLocationInfo::getBlockMemberIndex(std::string name)
+{
+    for(int i = 0; i < m_member.size(); i++)
+    {
+        if(m_member[i].name == name)
+        {
+            return i;
+        }
+    
+    }
+
+    return -1;
 }
 
 }
