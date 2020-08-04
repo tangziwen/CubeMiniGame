@@ -57,8 +57,8 @@ public:
 	bool findLocationInfo(std::string name);
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> & getNameLocationMap();
 	void createDescriptorSetLayOut();
-	VkDescriptorSetLayout & getDescriptorSetLayOut();
-	VkDescriptorSetLayout & getMaterialDescriptorSetLayOut();
+	VkDescriptorSetLayout getDescriptorSetLayOut();
+	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();
 	bool isHaveMaterialDescriptorSetLayOut();
 private:
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> m_nameInfoMap;

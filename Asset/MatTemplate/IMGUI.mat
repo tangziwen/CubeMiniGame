@@ -1,0 +1,13 @@
+{
+	"shaders":{
+		"vs" : "Shaders/IMGUI_v.glsl",
+		"fs" : "Shaders/IMGUI_f.glsl"
+	},
+	"name" : "Sprite",
+	"BlendEnable" : true,
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		]
+	}
+}

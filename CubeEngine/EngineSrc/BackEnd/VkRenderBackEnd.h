@@ -129,6 +129,7 @@ private:
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void VKRenderBackEnd::createSyncObjects();
+    void initImguiStuff();
 	//depth resource
 	VkImage depthImage;
     VkDeviceMemory depthImageMemory;
@@ -180,6 +181,14 @@ private:
     size_t currentFrame = 0;
     VkDebugUtilsMessengerEXT debugMessenger;
 
+    VkDebugReportCallbackEXT callback;
+    //imgui
+    DeviceBufferVK *m_imguiIndex;
+    DeviceBufferVK *m_imguiVertex;
+    Material * m_imguiMat;
+    DevicePipelineVK * m_imguiPipeline;
+    VkDescriptorSet m_imguiDescriptorSet;
+    DeviceBufferVK * m_imguiUniformBuffer;
     //renderer
     std::unordered_map<std::string, DevicePipelineVK *>m_matPipelinePool;
 

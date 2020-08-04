@@ -38,7 +38,7 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
+DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass, std::function<void (std::vector<VkVertexInputAttributeDescription> &)> vertexDescriptionCallBack)
 {
     m_mat = mat;
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
@@ -71,7 +71,15 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     std::vector<VkVertexInputAttributeDescription> attributeDecsriptionList;
-    CreateVertexBufferDescription(attributeDecsriptionList);
+    if(vertexDescriptionCallBack)
+    {
+        vertexDescriptionCallBack(attributeDecsriptionList);
+    }
+    else
+    {
+        defaultCreateVertexBufferDescription(attributeDecsriptionList);
+    }
+    
 		
 
 
@@ -185,23 +193,23 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass)
     updateUniform();//will be update every frame, or every change.
 }
 
-VkDescriptorSetLayout& DevicePipelineVK::getDescriptorSetLayOut()
+VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
     return shader->getDescriptorSetLayOut();
 }
 
-VkPipelineLayout& DevicePipelineVK::getPipelineLayOut()
+VkPipelineLayout DevicePipelineVK::getPipelineLayOut()
 {
     return m_pipelineLayout;
 }
 
-VkPipeline& DevicePipelineVK::getPipeline()
+VkPipeline DevicePipelineVK::getPipeline()
 {
     return m_pipeline;
 }
 
-VkDescriptorSet& DevicePipelineVK::getMaterialDescriptorSet()
+VkDescriptorSet DevicePipelineVK::getMaterialDescriptorSet()
 {
     // TODO: 在此处插入 return 语句
     return m_materialDescripotrSet;
@@ -314,14 +322,39 @@ void DevicePipelineVK::crateMaterialDescriptorSet()
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
     allocInfo.descriptorPool = VKRenderBackEnd::shared()->getDescriptorPool();
+    auto layout = m_shader->getMaterialDescriptorSetLayOut();
     allocInfo.descriptorSetCount = 1;
-    allocInfo.pSetLayouts = &m_shader->getMaterialDescriptorSetLayOut();
+    allocInfo.pSetLayouts = &layout;
 
     auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &m_materialDescripotrSet);
     if(res!= VK_SUCCESS)
     {
         abort();
     }
+}
+
+void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
+{
+    attributeDescriptions.resize(3);
+
+	//local position
+    attributeDescriptions[0].binding = 0;
+    attributeDescriptions[0].location = 0;
+    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[0].offset = offsetof(VertexData, m_pos);
+
+
+	//color
+    attributeDescriptions[1].binding = 0;
+    attributeDescriptions[1].location = 1;
+    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
+    attributeDescriptions[1].offset = offsetof(VertexData, m_color);
+	
+	//uv
+	attributeDescriptions[2].binding = 0;
+    attributeDescriptions[2].location = 2;
+    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
+    attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
 }
 
 }

@@ -228,12 +228,12 @@ void DeviceShaderVK::createDescriptorSetLayOut()
     }
 }
 
-VkDescriptorSetLayout& DeviceShaderVK::getDescriptorSetLayOut()
+VkDescriptorSetLayout DeviceShaderVK::getDescriptorSetLayOut()
 {
     return m_descriptorSetLayout[0];
 }
 
-VkDescriptorSetLayout& DeviceShaderVK::getMaterialDescriptorSetLayOut()
+VkDescriptorSetLayout DeviceShaderVK::getMaterialDescriptorSetLayOut()
 {
     return m_descriptorSetLayout[1];
 }

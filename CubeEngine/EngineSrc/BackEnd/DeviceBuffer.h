@@ -6,6 +6,7 @@ namespace tzw
 enum class DeviceBufferType{
 	Vertex,
 	Index,
+	Uniform
 };
 class DeviceBuffer
 {

@@ -37,7 +37,7 @@ namespace tzw
 
 #define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
-
+const bool enableValidationLayers = true;
 const int MAX_FRAMES_IN_FLIGHT = 1;
 static void initVk()
 {
@@ -45,15 +45,45 @@ static void initVk()
 }
 
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
-    std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
+std::vector<const char*> getRequiredExtensions() {
+	std::vector<const char*> extensions;
 
+	unsigned int glfwExtensionCount = 0;
+	const char** glfwExtensions;
+	glfwExtensions = glfwGetRequiredInstanceExtensions(&glfwExtensionCount);
+
+	for (unsigned int i = 0; i < glfwExtensionCount; i++) {
+		extensions.push_back(glfwExtensions[i]);
+	}
+
+	if (enableValidationLayers) {
+		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+	}
+
+	return extensions;
+}
+
+PFN_vkCreateDebugReportCallbackEXT my_vkCreateDebugReportCallbackEXT = NULL; 
+
+       
+VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
+    VkDebugReportFlagsEXT       flags,
+    VkDebugReportObjectTypeEXT  objectType,
+    uint64_t                    object,
+    size_t                      location,
+    int32_t                     messageCode,
+    const char*                 pLayerPrefix,
+    const char*                 pMessage,
+    void*                       pUserData)
+{
+    printf("validation Layer %s\n", pMessage);
     return VK_FALSE;
 }
+
 const std::vector<const char*> validationLayers = {
-    "VK_LAYER_KHRONOS_validation"
+    "VK_LAYER_LUNARG_standard_validation"
 };
-const bool enableValidationLayers = true;
+
 VkShaderModule VulkanCreateShaderModule(VkDevice& device, const char* pFileName)
 {
     int codeSize = 0;
@@ -95,7 +125,11 @@ bool VKRenderBackEnd::memory_type_from_properties(uint32_t typeBits, VkFlags req
     // No memory types matched, return failure
     return false;
 }
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback2(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
+	std::cerr << "validation layer: " << msg << std::endl;
 
+	return VK_FALSE;
+}
 static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 {
     VkSurfaceKHR surface;
@@ -128,13 +162,6 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
             printf("Instance extension %d - %s\n", i, ExtProps[i].extensionName);
         }
     }
-    void populateDebugMessengerCreateInfo(VkDebugUtilsMessengerCreateInfoEXT& createInfo) {
-        createInfo = {};
-        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-        createInfo.pfnUserCallback = debugCallback;
-    }
     void VKRenderBackEnd::CreateInstance()
     {
 VkApplicationInfo appInfo = {};       
@@ -146,7 +173,6 @@ VkApplicationInfo appInfo = {};
     const char* pInstExt[] = {
 #ifdef ENABLE_DEBUG_LAYERS
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
-        VK_EXT_DEBUG_UTILS_EXTENSION_NAME,
 #endif        
         VK_KHR_SURFACE_EXTENSION_NAME,
 #ifdef _WIN32    
@@ -168,17 +194,31 @@ VkApplicationInfo appInfo = {};
 #ifdef ENABLE_DEBUG_LAYERS    
     instInfo.enabledLayerCount = ARRAY_SIZE_IN_ELEMENTS(pInstLayers);
     instInfo.ppEnabledLayerNames = pInstLayers;
-	VkDebugUtilsMessengerCreateInfoEXT debugCreateInfo;
-    populateDebugMessengerCreateInfo(debugCreateInfo);
-    instInfo.pNext = (VkDebugUtilsMessengerCreateInfoEXT*) &debugCreateInfo;
 #endif    
     instInfo.enabledExtensionCount = ARRAY_SIZE_IN_ELEMENTS(pInstExt);
     instInfo.ppEnabledExtensionNames = pInstExt;         
 
     VkResult res = vkCreateInstance(&instInfo, NULL, &m_inst);
     CHECK_VULKAN_ERROR("vkCreateInstance %d\n", res);
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_inst, "vkCreateDebugUtilsMessengerEXT");
-    func(m_inst, &debugCreateInfo, NULL, &debugMessenger);
+#ifdef ENABLE_DEBUG_LAYERS
+    // Get the address to the vkCreateDebugReportCallbackEXT function
+    my_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_inst, "vkCreateDebugReportCallbackEXT"));
+    
+    // Register the debug callback
+    VkDebugReportCallbackCreateInfoEXT callbackCreateInfo;
+    callbackCreateInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
+    callbackCreateInfo.pNext       = NULL;
+    callbackCreateInfo.flags       = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT |
+                                     VK_DEBUG_REPORT_WARNING_BIT_EXT |
+                                     VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
+                                     VK_DEBUG_REPORT_DEBUG_BIT_EXT;
+    callbackCreateInfo.pfnCallback = &MyDebugReportCallback;
+    callbackCreateInfo.pUserData   = NULL;
+
+    VkDebugReportCallbackEXT callback;
+    res = my_vkCreateDebugReportCallbackEXT(m_inst, &callbackCreateInfo, NULL, &callback);
+    CHECK_VULKAN_ERROR("my_vkCreateDebugReportCallbackEXT error %d\n", res);
+#endif
     }
     void VKRenderBackEnd::VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices)
     {
@@ -1061,6 +1101,84 @@ void VKRenderBackEnd::createSyncObjects() {
             }
         }
  }
+void VKRenderBackEnd::initImguiStuff()
+{
+    m_imguiIndex = static_cast<DeviceBufferVK*>(createBuffer_imp());
+    m_imguiIndex->init(DeviceBufferType::Index);
+    m_imguiIndex->setAlignment(256);
+    m_imguiIndex->allocateEmpty(256);
+
+    m_imguiVertex = static_cast<DeviceBufferVK*>(createBuffer_imp());
+    m_imguiVertex->init(DeviceBufferType::Vertex);
+    m_imguiVertex->setAlignment(256);
+    m_imguiVertex->allocateEmpty(256);
+
+    m_imguiMat = new Material();
+    m_imguiMat->loadFromTemplate("IMGUI");
+
+
+    m_imguiPipeline =  new DevicePipelineVK(m_imguiMat, m_renderPass,
+        [](std::vector<VkVertexInputAttributeDescription>& inputAttrDesc)
+        {
+            inputAttrDesc.resize(3);
+	        //local position
+            inputAttrDesc[0].binding = 0;
+            inputAttrDesc[0].location = 0;
+            inputAttrDesc[0].format = VK_FORMAT_R32G32_SFLOAT;
+            inputAttrDesc[0].offset = offsetof(ImDrawVert, pos);
+
+
+	        //uv
+            inputAttrDesc[1].binding = 0;
+            inputAttrDesc[1].location = 1;
+            inputAttrDesc[1].format = VK_FORMAT_R32G32_SFLOAT;
+            inputAttrDesc[1].offset = offsetof(ImDrawVert, uv);
+	
+	        //col
+	        inputAttrDesc[2].binding = 0;
+            inputAttrDesc[2].location = 2;
+            inputAttrDesc[2].format = VK_FORMAT_R8G8B8A8_UNORM;
+            inputAttrDesc[2].offset = offsetof(ImDrawVert, col);
+        }
+    );
+
+    auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
+    VkDescriptorSetLayout layout = m_imguiPipeline->getDescriptorSetLayOut();
+    VkDescriptorSetAllocateInfo alloc_info = {};
+    alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+    alloc_info.descriptorPool = getDescriptorPool();
+    alloc_info.descriptorSetCount = 1;
+    alloc_info.pSetLayouts = &layout;
+    auto res = vkAllocateDescriptorSets(m_device, &alloc_info, &m_imguiDescriptorSet);
+    if(res)
+    {
+    
+        abort();
+    }
+
+
+    m_imguiUniformBuffer = static_cast<DeviceBufferVK*>(createBuffer_imp());
+    m_imguiUniformBuffer->init(DeviceBufferType::Uniform);
+    m_imguiUniformBuffer->allocateEmpty(sizeof(Matrix44));
+
+    //update descriptor
+    VkDescriptorBufferInfo bufferInfo{};
+    bufferInfo.buffer = m_imguiUniformBuffer->getBuffer();
+    bufferInfo.offset = 0;
+    bufferInfo.range = sizeof(Matrix44);
+
+    VkWriteDescriptorSet writeSet;
+    writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeSet.dstSet = m_imguiDescriptorSet;
+    writeSet.dstBinding = 0;
+    writeSet.dstArrayElement = 0;
+    writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+    writeSet.descriptorCount = 1;
+    writeSet.pBufferInfo = &bufferInfo;
+
+    
+    vkUpdateDescriptorSets(m_device, 1, &writeSet, 0, nullptr);
+}
 void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
@@ -1296,11 +1414,13 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         createDescriptorSets();
         RecordCommandBuffers();
         createSyncObjects();
+        
     }
 
     void VKRenderBackEnd::RenderScene()
     {
 
+        
         vkWaitForFences(m_device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         unsigned ImageIndex = 0;
     
@@ -1414,8 +1534,109 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
         //IMGUI
         GUISystem::shared()->renderIMGUI();
+        if(!m_imguiPipeline)
+        {
+            initImguiStuff();
+        }
+        auto draw_data = GUISystem::shared()->getDrawData();
+        if (draw_data->TotalVtxCount > 0)
+        {
+            // Create or resize the vertex/index buffers
+            size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
+            size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
+            if (m_imguiVertex->getBuffer() == VK_NULL_HANDLE || m_imguiVertex->getSize() < vertex_size)
+                m_imguiVertex->allocateEmpty(vertex_size);
+                //CreateOrResizeBuffer(rb->VertexBuffer, rb->VertexBufferMemory, rb->VertexBufferSize, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            if (m_imguiIndex->getBuffer() == VK_NULL_HANDLE || m_imguiIndex->getSize() < index_size)
+                m_imguiIndex->allocateEmpty(index_size);
+                //CreateOrResizeBuffer(rb->IndexBuffer, rb->IndexBufferMemory, rb->IndexBufferSize, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
-        auto imguiDrawData = GUISystem::shared()->getDrawData();
+            // Upload vertex/index data into a single contiguous GPU buffer
+            ImDrawVert* vtx_dst = NULL;
+            ImDrawIdx* idx_dst = NULL;
+            VkResult err = vkMapMemory(m_device, m_imguiVertex->getMemory(), 0, vertex_size, 0, (void**)(&vtx_dst));
+
+            err = vkMapMemory(m_device, m_imguiIndex->getMemory(), 0, index_size, 0, (void**)(&idx_dst));
+            for (int n = 0; n < draw_data->CmdListsCount; n++)
+            {
+                const ImDrawList* cmd_list = draw_data->CmdLists[n];
+                memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+                memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+                vtx_dst += cmd_list->VtxBuffer.Size;
+                idx_dst += cmd_list->IdxBuffer.Size;
+            }
+            VkMappedMemoryRange range[2] = {};
+            range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            range[0].memory = m_imguiVertex->getMemory();
+            range[0].size = VK_WHOLE_SIZE;
+            range[1].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
+            range[1].memory = m_imguiIndex->getMemory();
+            range[1].size = VK_WHOLE_SIZE;
+            err = vkFlushMappedMemoryRanges(m_device, 2, range);
+            vkUnmapMemory(m_device, m_imguiVertex->getMemory());
+            vkUnmapMemory(m_device, m_imguiIndex->getMemory());
+
+            vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipeline());
+
+
+            std::vector<VkDescriptorSet> descriptorSetList = {m_imguiDescriptorSet,};
+            if(static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
+                descriptorSetList.emplace_back(m_imguiPipeline->getMaterialDescriptorSet());
+            }
+            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+
+
+            VkBuffer vertex_buffers[1] = { m_imguiVertex->getBuffer() };
+            VkDeviceSize vertex_offset[1] = { 0 };
+            vkCmdBindVertexBuffers(command, 0, 1, vertex_buffers, vertex_offset);
+            vkCmdBindIndexBuffer(command, m_imguiVertex->getBuffer(), 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+
+
+            // Render command lists
+            // (Because we merged all buffers into a single one, we maintain our own offset into them)
+            int global_vtx_offset = 0;
+            int global_idx_offset = 0;
+            for (int n = 0; n < draw_data->CmdListsCount; n++)
+            {
+                const ImDrawList* cmd_list = draw_data->CmdLists[n];
+                for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
+                {
+                    const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+
+                    /*
+                    // Project scissor/clipping rectangles into framebuffer space
+                    ImVec4 clip_rect;
+                    clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
+                    clip_rect.y = (pcmd->ClipRect.y - clip_off.y) * clip_scale.y;
+                    clip_rect.z = (pcmd->ClipRect.z - clip_off.x) * clip_scale.x;
+                    clip_rect.w = (pcmd->ClipRect.w - clip_off.y) * clip_scale.y;
+
+                    if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
+                    {
+                        // Negative offsets are illegal for vkCmdSetScissor
+                        if (clip_rect.x < 0.0f)
+                            clip_rect.x = 0.0f;
+                        if (clip_rect.y < 0.0f)
+                            clip_rect.y = 0.0f;
+
+                        // Apply scissor/clipping rectangle
+                        VkRect2D scissor;
+                        scissor.offset.x = (int32_t)(clip_rect.x);
+                        scissor.offset.y = (int32_t)(clip_rect.y);
+                        scissor.extent.width = (uint32_t)(clip_rect.z - clip_rect.x);
+                        scissor.extent.height = (uint32_t)(clip_rect.w - clip_rect.y);
+                        vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+
+                        
+                    }*/
+                    // Draw
+                    vkCmdDrawIndexed(command, pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
+                }
+                global_idx_offset += cmd_list->IdxBuffer.Size;
+                global_vtx_offset += cmd_list->VtxBuffer.Size;
+            }
+        }
+
         vkCmdEndRenderPass(command);
         res = vkEndCommandBuffer(command);
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
