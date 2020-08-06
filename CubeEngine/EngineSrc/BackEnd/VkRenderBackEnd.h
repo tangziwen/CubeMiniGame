@@ -75,8 +75,9 @@ public:
     VkSurfaceKHR &getVKSurface();
     void initDevices();
     void RenderScene();
-    virtual DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag);
-    virtual DeviceShader * createShader_imp();
+    DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag) override;
+    DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat byte_size, unsigned int loadingFlag) override;
+    DeviceShader * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
     VkDevice getDevice();
     VkDescriptorPool & getDescriptorPool();

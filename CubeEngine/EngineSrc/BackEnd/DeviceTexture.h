@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Rendering/ImageFormat.h"
 
 namespace tzw
 {
@@ -10,7 +10,10 @@ struct ImageMetaInfo
 	int width;
 	int height;
 	int dds_mipMapLevel;
+	ImageFormat m_imageFormat;
 };
+
+
 
 class DeviceTexture
 {

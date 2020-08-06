@@ -51,8 +51,8 @@ public:
 	void addShader(const unsigned char * buff, size_t size, DeviceShaderType type, const unsigned char * fileInfoStr) override;
 	bool create() override;
 	bool finish() override;
-	VkShaderModule * getVsModule();
-	VkShaderModule * getFsModule();
+	VkShaderModule getVsModule();
+	VkShaderModule getFsModule();
 	DeviceShaderVKLocationInfo getLocationInfo(std::string name);
 	bool findLocationInfo(std::string name);
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> & getNameLocationMap();
@@ -63,10 +63,10 @@ public:
 private:
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> m_nameInfoMap;
 	std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>> m_setInfoMap;
-	VkShaderModule * m_vsShader;
-	VkShaderModule * m_fsShader;
-	VkShaderModule * m_tsShader;
-	VkShaderModule * m_teShader;
+	VkShaderModule m_vsShader;
+	VkShaderModule m_fsShader;
+	VkShaderModule m_tsShader;
+	VkShaderModule m_teShader;
 	std::vector<VkDescriptorSetLayout> m_descriptorSetLayout;
 
 };

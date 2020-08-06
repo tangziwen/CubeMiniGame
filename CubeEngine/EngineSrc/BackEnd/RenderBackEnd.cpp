@@ -80,6 +80,19 @@ DeviceTexture * RenderBackEnd::loadTexture_imp(const unsigned char* buf, size_t 
 	return texture;
 }
 
+DeviceTexture* RenderBackEnd::loadTextureRaw_imp(const unsigned char* buf, int width, int height,ImageFormat format, unsigned int loadingFlag)
+{
+	ImageFileInfo info;
+	DeviceTextureGL * texture = new DeviceTextureGL();
+	
+	texture->m_uid =  SOIL_create_OGL_texture((const unsigned char *)buf, &width, &height, ImageFormatGetSize(format), SOIL_CREATE_NEW_ID, loadingFlag);
+	texture->m_metaInfo.channels = ImageFormatGetSize(format);
+	texture->m_metaInfo.width = width;
+	texture->m_metaInfo.height = height;
+	texture->m_metaInfo.dds_mipMapLevel = 0;
+	return texture;
+}
+
 DeviceShader* RenderBackEnd::createShader_imp()
 {
 	return new DeviceShaderGL();

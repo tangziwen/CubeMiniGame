@@ -7,11 +7,23 @@ namespace tzw
 {
 class Material;
 class DeviceShaderVK;
+struct DeviceVertexAttributeDescVK
+{
+	VkFormat format;
+	int offset;
+
+};
+struct DeviceVertexInput{
+	int stride;
+	void addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc);
+	std::vector<DeviceVertexAttributeDescVK> m_attributeList;
+
+};
 class DevicePipelineVK
 {
 public:
 	DevicePipelineVK(Material * mat, VkRenderPass targetRenderPass
-		,std::function<void (std::vector<VkVertexInputAttributeDescription> &)> vertexDescriptionCallBack = nullptr);
+		,DeviceVertexInput vertexInput);
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkPipelineLayout getPipelineLayOut();
 	VkPipeline getPipeline();
@@ -29,6 +41,7 @@ private:
 	VkBuffer m_matUniformBuffer;
 	VkDeviceMemory m_matUniformBufferMemory;
 	DeviceShaderVK * m_shader;
+	DeviceVertexInput m_vertexInput;
 };
 
 

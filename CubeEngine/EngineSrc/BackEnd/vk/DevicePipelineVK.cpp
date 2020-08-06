@@ -38,8 +38,9 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass, std::function<void (std::vector<VkVertexInputAttributeDescription> &)> vertexDescriptionCallBack)
+DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput)
 {
+    m_vertexInput = vertexInput;
     m_mat = mat;
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
     m_shader = shader;
@@ -54,11 +55,11 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass,
     
     shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-    shaderStageCreateInfo[0].module = *shader->getVsModule();
+    shaderStageCreateInfo[0].module = shader->getVsModule();
     shaderStageCreateInfo[0].pName = "main";
     shaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shaderStageCreateInfo[1].module = *shader->getFsModule();
+    shaderStageCreateInfo[1].module = shader->getFsModule();
     shaderStageCreateInfo[1].pName = "main";   
 	    
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -67,20 +68,20 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass,
     //create vertex input
     VkVertexInputBindingDescription bindingDescription{};
     bindingDescription.binding = 0;
-    bindingDescription.stride = sizeof(VertexData);
+    bindingDescription.stride = m_vertexInput.stride;
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
 
     std::vector<VkVertexInputAttributeDescription> attributeDecsriptionList;
-    if(vertexDescriptionCallBack)
+    attributeDecsriptionList.resize(m_vertexInput.m_attributeList.size());
+
+    for(int i = 0; i < m_vertexInput.m_attributeList.size(); i++)
     {
-        vertexDescriptionCallBack(attributeDecsriptionList);
-    }
-    else
-    {
-        defaultCreateVertexBufferDescription(attributeDecsriptionList);
-    }
+        attributeDecsriptionList[i].binding = 0;
+        attributeDecsriptionList[i].location = i;
+        attributeDecsriptionList[i].format = m_vertexInput.m_attributeList[i].format;
+        attributeDecsriptionList[i].offset = m_vertexInput.m_attributeList[i].offset;
     
-		
+    }	
 
 
     vertexInputInfo.vertexBindingDescriptionCount = 1;
@@ -123,7 +124,14 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass,
     VkPipelineRasterizationStateCreateInfo rastCreateInfo = {};
     rastCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
-    rastCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    if(mat->getIsCullFace()){
+    
+        rastCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+    }
+    else{
+        rastCreateInfo.cullMode = VK_CULL_MODE_NONE;
+    }
+    
     rastCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rastCreateInfo.lineWidth = 1.0f;
     
@@ -133,7 +141,7 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass,
     VkPipelineColorBlendAttachmentState blendAttachState = {};
     blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
     blendAttachState.srcColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
-    blendAttachState.dstColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
+    blendAttachState.dstColorBlendFactor=VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
     blendAttachState.colorBlendOp=VK_BLEND_OP_ADD;
     blendAttachState.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;
     blendAttachState.dstAlphaBlendFactor=VK_BLEND_FACTOR_ZERO;
@@ -355,6 +363,11 @@ void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertex
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
+}
+
+void DeviceVertexInput::addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc)
+{
+    m_attributeList.emplace_back(vertexAttributeDesc);
 }
 
 }

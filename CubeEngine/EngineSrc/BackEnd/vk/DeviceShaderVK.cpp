@@ -117,8 +117,8 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
     shaderCreateInfo.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
     shaderCreateInfo.codeSize = byteCode.size() * sizeof(uint32_t);
     shaderCreateInfo.pCode = &byteCode[0];
-    VkShaderModule * shaderModule = (VkShaderModule *)malloc(sizeof(shaderModule));
-    VkResult res = vkCreateShaderModule(VKRenderBackEnd::shared()->getDevice(), &shaderCreateInfo, NULL, shaderModule);
+    VkShaderModule shaderModule = VK_NULL_HANDLE;
+    VkResult res = vkCreateShaderModule(VKRenderBackEnd::shared()->getDevice(), &shaderCreateInfo, NULL, &shaderModule);
     if(res != 0)
     {
         printf("res fuck fuck %d",res);
@@ -158,12 +158,12 @@ bool DeviceShaderVK::finish()
 	return true;
 }
 
-VkShaderModule* DeviceShaderVK::getVsModule()
+VkShaderModule DeviceShaderVK::getVsModule()
 {
     return m_vsShader;
 }
 
-VkShaderModule* DeviceShaderVK::getFsModule()
+VkShaderModule DeviceShaderVK::getFsModule()
 {
     return m_fsShader;
 }

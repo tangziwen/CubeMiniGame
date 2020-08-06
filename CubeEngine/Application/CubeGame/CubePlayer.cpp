@@ -69,7 +69,7 @@ namespace tzw
 		auto pos = getPos();
 		oldPosX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
 		oldPosZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-		Sky::shared()->setCamera(m_camera);
+		//Sky::shared()->setCamera(m_camera);
 		EventMgr::shared()->addFixedPiorityListener(this);
 
 		m_enableGravity = true;

@@ -108,7 +108,7 @@ void GlyphAtlas::generateGLTexture()
             glBuffer[2*(i+j*width_pow)] = glBuffer[2*(i+j*width_pow)+1];
         }
     }
-    m_texture= new Texture(glBuffer,width_pow,height_pow);
+    m_texture= new Texture(glBuffer,width_pow,height_pow, ImageFormat::R8G8);
     delete [] glBuffer;
 }
 

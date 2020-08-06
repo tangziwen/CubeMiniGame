@@ -107,12 +107,12 @@ namespace tzw
 		ImGui::SetDragDropPayload("DND_DEMO_CELL", &val, sizeof(int)); 
 	}
 
-	bool imgui_ImageButton(unsigned int val, ImVec2 size)
+	bool imgui_ImageButton(DeviceTexture* val, ImVec2 size)
 	{
 		return ImGui::ImageButton(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1,0));
 	}
 
-	void imgui_Image(unsigned int val, ImVec2 size)
+	void imgui_Image(DeviceTexture* val, ImVec2 size)
 	{
 		ImGui::Image(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1,0));
 	}
@@ -174,13 +174,16 @@ namespace tzw
 		BIND_MODULE_CUSTOM_FUNC_PY("TR", &translation);
 		BIND_MODULE_CUSTOM_FUNC_PY("tlog", &tlog_lua);
 		
+		BIND_BEGIN_CLASS_PY(DeviceTexture)
+		.def(py::init<>());
+
 		//vec2
 	    BIND_BEGIN_CLASS_PY(vec2)
         .def(py::init<>())
         BIND_PROP_PY(vec2, x)
         BIND_PROP_PY(vec2, y);
 
-
+		
 		//vec3
 	     BIND_BEGIN_CLASS_PY(vec3)
 		.def(py::init<>())

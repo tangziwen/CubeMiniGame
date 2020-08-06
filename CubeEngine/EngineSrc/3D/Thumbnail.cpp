@@ -92,6 +92,7 @@ namespace tzw {
 
 	void ThumbNail::initTexture()
 	{
+		return;
 		m_texture = new Texture();
 		m_frameBuffer = new FrameBuffer();
 		m_frameBuffer->init(1024, 1024,1,true, true);

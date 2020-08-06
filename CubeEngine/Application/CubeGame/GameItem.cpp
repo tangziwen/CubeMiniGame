@@ -62,6 +62,7 @@ namespace tzw
 
 	int GameItem::getThumbNailTextureId()
 	{
+		return 0;
 		if(m_thumbNail)
 		{
 			return m_thumbNail->getTexture()->handle()->m_uid;

@@ -208,7 +208,7 @@ VkApplicationInfo appInfo = {};
     VkDebugReportCallbackCreateInfoEXT callbackCreateInfo;
     callbackCreateInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
     callbackCreateInfo.pNext       = NULL;
-    callbackCreateInfo.flags       = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | VK_DEBUG_REPORT_ERROR_BIT_EXT |
+    callbackCreateInfo.flags       = VK_DEBUG_REPORT_ERROR_BIT_EXT |
                                      VK_DEBUG_REPORT_WARNING_BIT_EXT |
                                      VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
                                      VK_DEBUG_REPORT_DEBUG_BIT_EXT;
@@ -420,6 +420,7 @@ VkApplicationInfo appInfo = {};
     {
             VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
             cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+            cmdPoolCreateInfo.flags = VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
             cmdPoolCreateInfo.queueFamilyIndex = m_gfxQueueFamily;
     
             VkResult res = vkCreateCommandPool(m_device, &cmdPoolCreateInfo, NULL, &m_cmdBufPool);    
@@ -664,11 +665,11 @@ VkApplicationInfo appInfo = {};
     
         shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-        shaderStageCreateInfo[0].module = *m_shader->getVsModule();
+        shaderStageCreateInfo[0].module = m_shader->getVsModule();
         shaderStageCreateInfo[0].pName = "main";
         shaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
         shaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-        shaderStageCreateInfo[1].module = *m_shader->getFsModule();
+        shaderStageCreateInfo[1].module = m_shader->getFsModule();
         shaderStageCreateInfo[1].pName = "main";   
 	    
         VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -904,6 +905,7 @@ VkApplicationInfo appInfo = {};
     {
         VkCommandPoolCreateInfo cmdPoolCreateInfo = {};
         cmdPoolCreateInfo.sType = VK_STRUCTURE_TYPE_COMMAND_POOL_CREATE_INFO;
+        cmdPoolCreateInfo.flags= VK_COMMAND_POOL_CREATE_RESET_COMMAND_BUFFER_BIT;
         cmdPoolCreateInfo.queueFamilyIndex = m_gfxQueueFamily;
         VkResult res = vkCreateCommandPool(m_device, &cmdPoolCreateInfo, NULL, &m_generalCmdBufPool);    
         CHECK_VULKAN_ERROR("vkCreateCommandPool error %d\n", res);
@@ -1105,42 +1107,25 @@ void VKRenderBackEnd::initImguiStuff()
 {
     m_imguiIndex = static_cast<DeviceBufferVK*>(createBuffer_imp());
     m_imguiIndex->init(DeviceBufferType::Index);
-    m_imguiIndex->setAlignment(256);
-    m_imguiIndex->allocateEmpty(256);
+    m_imguiIndex->setAlignment(1024);
+    m_imguiIndex->allocateEmpty(1024);
 
     m_imguiVertex = static_cast<DeviceBufferVK*>(createBuffer_imp());
     m_imguiVertex->init(DeviceBufferType::Vertex);
-    m_imguiVertex->setAlignment(256);
-    m_imguiVertex->allocateEmpty(256);
+    m_imguiVertex->setAlignment(1024);
+    m_imguiVertex->allocateEmpty(1024);
 
     m_imguiMat = new Material();
     m_imguiMat->loadFromTemplate("IMGUI");
 
 
-    m_imguiPipeline =  new DevicePipelineVK(m_imguiMat, m_renderPass,
-        [](std::vector<VkVertexInputAttributeDescription>& inputAttrDesc)
-        {
-            inputAttrDesc.resize(3);
-	        //local position
-            inputAttrDesc[0].binding = 0;
-            inputAttrDesc[0].location = 0;
-            inputAttrDesc[0].format = VK_FORMAT_R32G32_SFLOAT;
-            inputAttrDesc[0].offset = offsetof(ImDrawVert, pos);
+    DeviceVertexInput imguiVertexInput;
+    imguiVertexInput.stride = sizeof(ImDrawVert);
+    imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, IM_OFFSETOF(ImDrawVert, pos)});
+    imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, IM_OFFSETOF(ImDrawVert, uv)});
+    imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8A8_UNORM, IM_OFFSETOF(ImDrawVert, col)});
 
-
-	        //uv
-            inputAttrDesc[1].binding = 0;
-            inputAttrDesc[1].location = 1;
-            inputAttrDesc[1].format = VK_FORMAT_R32G32_SFLOAT;
-            inputAttrDesc[1].offset = offsetof(ImDrawVert, uv);
-	
-	        //col
-	        inputAttrDesc[2].binding = 0;
-            inputAttrDesc[2].location = 2;
-            inputAttrDesc[2].format = VK_FORMAT_R8G8B8A8_UNORM;
-            inputAttrDesc[2].offset = offsetof(ImDrawVert, col);
-        }
-    );
+    m_imguiPipeline =  new DevicePipelineVK(m_imguiMat, m_renderPass,imguiVertexInput);
 
     auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
     VkDescriptorSetLayout layout = m_imguiPipeline->getDescriptorSetLayOut();
@@ -1152,9 +1137,11 @@ void VKRenderBackEnd::initImguiStuff()
     auto res = vkAllocateDescriptorSets(m_device, &alloc_info, &m_imguiDescriptorSet);
     if(res)
     {
-    
         abort();
     }
+
+
+
 
 
     m_imguiUniformBuffer = static_cast<DeviceBufferVK*>(createBuffer_imp());
@@ -1169,6 +1156,7 @@ void VKRenderBackEnd::initImguiStuff()
 
     VkWriteDescriptorSet writeSet;
     writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    writeSet.pNext = nullptr;
     writeSet.dstSet = m_imguiDescriptorSet;
     writeSet.dstBinding = 0;
     writeSet.dstArrayElement = 0;
@@ -1177,7 +1165,30 @@ void VKRenderBackEnd::initImguiStuff()
     writeSet.pBufferInfo = &bufferInfo;
 
     
-    vkUpdateDescriptorSets(m_device, 1, &writeSet, 0, nullptr);
+
+    ImGuiIO& io = ImGui::GetIO();
+
+    unsigned char* pixels;
+    int width, height;
+    io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
+    auto m_imguiTextureFont = new DeviceTextureVK();
+    m_imguiTextureFont->initDataRaw(pixels, width, height, ImageFormat::R8G8B8A8);
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+    imageInfo.imageView = m_imguiTextureFont->getImageView();
+    imageInfo.sampler = m_imguiTextureFont->getSampler();
+
+    VkWriteDescriptorSet texWriteSet{};
+    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    texWriteSet.dstSet = m_imguiDescriptorSet;
+    texWriteSet.dstBinding = 1;
+    texWriteSet.dstArrayElement = 0;
+    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    texWriteSet.descriptorCount = 1;
+    texWriteSet.pImageInfo = &imageInfo;
+
+    VkWriteDescriptorSet writeSetList[] = {writeSet, texWriteSet};
+    vkUpdateDescriptorSets(m_device, 2, writeSetList, 0, nullptr);
 }
 void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 {
@@ -1429,7 +1440,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
 
-
+        vkQueueWaitIdle(m_queue);
         //CPU here
         Renderer::shared()->collectPrimitives();
         auto drawSize = Renderer::shared()->getGUICommandList().size();
@@ -1477,7 +1488,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             auto iter = m_matPipelinePool.find(matStr);
             if(iter == m_matPipelinePool.end())
             {
-                currPipeLine = new DevicePipelineVK(mat, m_renderPass);
+                DeviceVertexInput imguiVertexInput;
+                imguiVertexInput.stride = sizeof(VertexData);
+                imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
+                imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
+                imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
+                currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
                 m_matPipelinePool[matStr]  =currPipeLine;
             }
             else{
@@ -1534,13 +1550,21 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
         //IMGUI
         GUISystem::shared()->renderIMGUI();
-        if(!m_imguiPipeline)
-        {
-            initImguiStuff();
-        }
+
         auto draw_data = GUISystem::shared()->getDrawData();
         if (draw_data->TotalVtxCount > 0)
         {
+            if(!m_imguiPipeline)
+            {
+                initImguiStuff();
+            }
+            void* data;
+            vkMapMemory(m_device, m_imguiUniformBuffer->getMemory(), 0, sizeof(Matrix44), 0, &data);
+		        Matrix44 projection;
+                auto screenSize = Engine::shared()->winSize();
+		        projection.ortho(0.0f, screenSize.x, screenSize.y, 0.0f, 0.1f, 10.0f);
+                memcpy(data, &projection, sizeof(Matrix44));
+            vkUnmapMemory(m_device, m_imguiUniformBuffer->getMemory());
             // Create or resize the vertex/index buffers
             size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
             size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
@@ -1555,7 +1579,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             ImDrawVert* vtx_dst = NULL;
             ImDrawIdx* idx_dst = NULL;
             VkResult err = vkMapMemory(m_device, m_imguiVertex->getMemory(), 0, vertex_size, 0, (void**)(&vtx_dst));
-
             err = vkMapMemory(m_device, m_imguiIndex->getMemory(), 0, index_size, 0, (void**)(&idx_dst));
             for (int n = 0; n < draw_data->CmdListsCount; n++)
             {
@@ -1589,7 +1612,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             VkBuffer vertex_buffers[1] = { m_imguiVertex->getBuffer() };
             VkDeviceSize vertex_offset[1] = { 0 };
             vkCmdBindVertexBuffers(command, 0, 1, vertex_buffers, vertex_offset);
-            vkCmdBindIndexBuffer(command, m_imguiVertex->getBuffer(), 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+            vkCmdBindIndexBuffer(command, m_imguiIndex->getBuffer(), 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 
 
             // Render command lists
@@ -1681,6 +1704,13 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     DeviceTexture* VKRenderBackEnd::loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag)
     {
         DeviceTextureVK * texture = new DeviceTextureVK(buf, buffSize);
+        return texture;
+    }
+
+    DeviceTexture* VKRenderBackEnd::loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat format, unsigned int loadingFlag)
+    {
+        DeviceTextureVK * texture = new DeviceTextureVK();
+        texture->initDataRaw(buf, width, height,format);
         return texture;
     }
 

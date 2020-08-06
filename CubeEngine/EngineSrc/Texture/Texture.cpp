@@ -73,21 +73,14 @@ namespace tzw
 		*/
 	}
 
-	Texture::Texture(unsigned char* rawData, int w, int h, bool needFlipY)
+	Texture::Texture(unsigned char* rawData, int w, int h,ImageFormat format, bool needFlipY)
 	{
-		/*
-		auto flags = 0;
-		if (needFlipY)
-		{
-			flags = SOIL_FLAG_INVERT_Y;
-		}
-		this->m_textureId = SOIL_create_OGL_texture(rawData, &w, &h, 2, 0, flags);
+		this->m_textureId =  Engine::shared()->getRenderBackEnd()->loadTextureRaw_imp(rawData,w, h, format, 0);
 		m_type = RenderFlag::TextureType::Texture2D;
 		m_width = w;
 		m_height = h;
 		initData();
 		m_isLoaded = true;
-		*/
 	}
 
 	Texture::Texture(std::string PosXFilename,
@@ -116,6 +109,8 @@ namespace tzw
 	void
 	Texture::setFilter(Texture::FilterType type, int filter)
 	{
+		if(Engine::shared()->getRenderDeviceType() != RenderDeviceType::OpenGl_Device)
+			return;
 		switch (filter)
 		{
 		case 0:
