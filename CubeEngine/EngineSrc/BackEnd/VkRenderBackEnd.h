@@ -16,6 +16,7 @@
 
 #include <unordered_map>
 #include "Rendering/RenderCommand.h"
+#include <EngineSrc\BackEnd\vk\DeviceItemBufferPoolVK.h>
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 namespace tzw {
@@ -54,12 +55,14 @@ struct RenderItem{
     Material * m_mat;
     TransformationInfo matrixInfo;
     Mesh * m_mesh;
+    size_t m_itemBufferOffset;
     void updateDescriptor();
+    void setUpItemUnifom(DeviceItemBufferPoolVK * pool);
 };
 struct RenderItemPool
 {
     RenderItemPool(Material * mat);
-    RenderItem* findOrCreateRenderItem(Material * mat, void *obj);
+    RenderItem* findOrCreateRenderItem(DevicePipelineVK * pipeline, void *obj);
     std::unordered_map<void *, RenderItem*> m_pool;
     VkDescriptorSetLayout m_layout;
     Material * m_mat;
@@ -81,7 +84,7 @@ public:
     DeviceBuffer * createBuffer_imp() override;
     VkDevice getDevice();
     VkDescriptorPool & getDescriptorPool();
-
+    DeviceItemBufferPoolVK * getItemBufferPool();
 
 //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
@@ -194,6 +197,7 @@ private:
     std::unordered_map<std::string, DevicePipelineVK *>m_matPipelinePool;
 
     std::unordered_map<std::string, RenderItemPool*> m_matDescriptorSetPool;
+    DeviceItemBufferPoolVK * m_itemBufferPool;
 };
 
 } // namespace tzw

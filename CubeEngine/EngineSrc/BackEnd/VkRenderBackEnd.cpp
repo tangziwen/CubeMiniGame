@@ -966,16 +966,16 @@ VkApplicationInfo appInfo = {};
     {
 		std::array<VkDescriptorPoolSize, 2> poolSizes{};
 		poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-		poolSizes[0].descriptorCount = 20;//static_cast<uint32_t>(m_images.size());
+		poolSizes[0].descriptorCount = 256;
+
 		poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-		poolSizes[1].descriptorCount = 20;//static_cast<uint32_t>(m_images.size());
+		poolSizes[1].descriptorCount = 256;
 
 		VkDescriptorPoolCreateInfo poolInfo{};
 		poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 		poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 		poolInfo.pPoolSizes = poolSizes.data();
-		poolInfo.maxSets = 20;//static_cast<uint32_t>(m_images.size());
-
+		poolInfo.maxSets = 512;
         if (vkCreateDescriptorPool(m_device, &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
             throw std::runtime_error("failed to create descriptor pool!");
         }
@@ -1425,6 +1425,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         createDescriptorSets();
         RecordCommandBuffers();
         createSyncObjects();
+
+        m_itemBufferPool = new DeviceItemBufferPoolVK(1024 * 1024 * 20);
         
     }
 
@@ -1440,8 +1442,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
 
-        vkQueueWaitIdle(m_queue);
         //CPU here
+        m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();
         auto drawSize = Renderer::shared()->getGUICommandList().size();
 
@@ -1507,21 +1509,24 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 //update material-wise parameter.
                 currPipeLine->updateUniform();
             }
+            currPipeLine->collcetItemWiseDescritporSet();
             RenderItem * item;
             auto descPool = m_matDescriptorSetPool.find(matStr);
             if(descPool == m_matDescriptorSetPool.end())
             {
                 auto pool = new RenderItemPool(mat);
                 m_matDescriptorSetPool[matStr] = pool;
-                item = pool->findOrCreateRenderItem(mat, a.getDrawableObj());
+                item = pool->findOrCreateRenderItem(currPipeLine, a.getDrawableObj());
             }else
             {
-                item = descPool->second->findOrCreateRenderItem(mat, a.getDrawableObj());
+                item = descPool->second->findOrCreateRenderItem(currPipeLine, a.getDrawableObj());
             }
             //update uniform.
+            item->matrixInfo = a.m_transInfo;
+            item->setUpItemUnifom(m_itemBufferPool);
             void* data;
             vkMapMemory(m_device, item->m_uniformBuffereMemory, 0, sizeof(Matrix44), 0, &data);
-                Matrix44 wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
+                Matrix44 wvp = item->matrixInfo.m_projectMatrix * (item->matrixInfo.m_viewMatrix  * item->matrixInfo.m_worldMatrix );
                 memcpy(data, &wvp, sizeof(Matrix44));
             vkUnmapMemory(m_device, item->m_uniformBuffereMemory);
             item->m_mesh = a.getMesh();
@@ -1552,6 +1557,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         GUISystem::shared()->renderIMGUI();
 
         auto draw_data = GUISystem::shared()->getDrawData();
+        int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
+        int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
+        // Will project scissor/clipping rectangles into framebuffer space
+        ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
+        ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
         if (draw_data->TotalVtxCount > 0)
         {
             if(!m_imguiPipeline)
@@ -1626,7 +1636,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 {
                     const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
-                    /*
+                    
                     // Project scissor/clipping rectangles into framebuffer space
                     ImVec4 clip_rect;
                     clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
@@ -1648,10 +1658,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                         scissor.offset.y = (int32_t)(clip_rect.y);
                         scissor.extent.width = (uint32_t)(clip_rect.z - clip_rect.x);
                         scissor.extent.height = (uint32_t)(clip_rect.w - clip_rect.y);
-                        vkCmdSetScissor(command_buffer, 0, 1, &scissor);
+                        vkCmdSetScissor(command, 0, 1, &scissor);
 
                         
-                    }*/
+                    }
                     // Draw
                     vkCmdDrawIndexed(command, pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
                 }
@@ -1743,7 +1753,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //create material-wise descripotr
     }
 
-    RenderItem* RenderItemPool::findOrCreateRenderItem(Material* mat, void* obj)
+    RenderItem* RenderItemPool::findOrCreateRenderItem(DevicePipelineVK * pipeline, void* obj)
     {
         auto iter = m_pool.find(obj);
         if(iter == m_pool.end())
@@ -1754,23 +1764,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             VkDeviceSize bufferSize = sizeof(Matrix44);
 
             VKRenderBackEnd::shared()->createVKBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, item->m_uniformBuffer, item->m_uniformBuffereMemory);
-
-            //CreateDescriptor
-            VkDescriptorSet descriptorSet;
-            VkDescriptorSetAllocateInfo allocInfo{};
-            allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-            allocInfo.descriptorPool = VKRenderBackEnd::shared()->getDescriptorPool();
-            allocInfo.descriptorSetCount = 1;
-            allocInfo.pSetLayouts = &m_layout;
-
-            auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &descriptorSet);
-            printf("create descriptor sets\n");
-            if ( res!= VK_SUCCESS) {
-                printf("bad  descriptor!!!! %d",res);
-                abort();
-            }
-            item->m_descriptorSet = descriptorSet;
-            item->m_mat = mat;
+            item->m_descriptorSet = pipeline->giveItemWiseDescriptorSet();
+            item->m_mat = pipeline->getMat();
             m_pool[obj] = item;
             return item;
         
@@ -1832,6 +1827,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             }
         }
         vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+    }
+
+    void RenderItem::setUpItemUnifom(DeviceItemBufferPoolVK * pool)
+    {
+        m_itemBufferOffset = pool->giveMeBuffer(sizeof(Matrix44));
     }
 
 }

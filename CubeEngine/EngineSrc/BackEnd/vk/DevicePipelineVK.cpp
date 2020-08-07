@@ -44,6 +44,8 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     m_mat = mat;
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
     m_shader = shader;
+    //create descriptor pool
+    createDescriptorPool();
     bool isHaveMaterialDescripotrSet = false;
     if(shader->isHaveMaterialDescriptorSetLayOut())
     {
@@ -197,6 +199,7 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     
     printf("Graphics pipeline created\n");
 
+
     updateMaterialDescriptorSet();//only update once
     updateUniform();//will be update every frame, or every change.
 }
@@ -286,7 +289,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
 
 void DevicePipelineVK::updateUniform()
 {
-    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderVK * shader = m_shader;
     if(!shader->findLocationInfo("t_shaderUnifom")) return;
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
     //update material parameter
@@ -316,6 +319,87 @@ void DevicePipelineVK::updateUniform()
     }
 }
 
+void DevicePipelineVK::collcetItemWiseDescritporSet()
+{
+    m_currItemWiseDescriptorSetIdx = 0;
+}
+
+VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
+{
+    VkDescriptorSet target;
+    if(m_currItemWiseDescriptorSetIdx< m_itemDescritptorSetList.size()){
+    
+        target = m_itemDescritptorSetList[m_currItemWiseDescriptorSetIdx];
+    }
+    else
+    {
+        auto layOut = m_shader->getDescriptorSetLayOut();
+        //create DescriptorSet
+        VkDescriptorSet descriptorSet;
+        VkDescriptorSetAllocateInfo allocInfo{};
+        allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        allocInfo.descriptorPool = m_descriptorPool;
+        allocInfo.descriptorSetCount = 1;
+        allocInfo.pSetLayouts = &layOut;
+
+        auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &descriptorSet);
+        printf("create descriptor sets\n");
+        if ( res!= VK_SUCCESS) {
+            printf("bad  descriptor!!!! %d",res);
+            abort();
+        }
+        target = descriptorSet;
+        m_itemDescritptorSetList.emplace_back(descriptorSet);
+    }
+    m_currItemWiseDescriptorSetIdx ++;
+    return target;
+}
+
+Material* DevicePipelineVK::getMat()
+{
+    return m_mat;
+}
+
+void DevicePipelineVK::createDescriptorPool()
+{
+    //每个shader必有两个descriptorSet存在的情况必然是1比1，所以加起来来预估一个池比例
+    unsigned uniformBuffCount = 0;
+    unsigned textuerCount = 0;
+    auto& setInfo = m_shader->getSetInfo();
+    for(auto iter : setInfo)
+    {
+        for(auto & locationInfo : iter.second){
+            if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+            {
+                uniformBuffCount ++;
+            }
+            else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+            {
+                textuerCount++;
+            }
+        }
+    
+    }
+    unsigned guessCount = 512;
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = guessCount * uniformBuffCount;
+
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = guessCount * textuerCount;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = guessCount;
+
+    m_totalItemWiseDesSet = guessCount;
+    if (vkCreateDescriptorPool(VKRenderBackEnd::shared()->getDevice(), &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS) {
+        abort();
+    }
+}
+
 void DevicePipelineVK::createMaterialUniformBuffer()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
@@ -329,7 +413,7 @@ void DevicePipelineVK::crateMaterialDescriptorSet()
     //CreateDescriptor
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = VKRenderBackEnd::shared()->getDescriptorPool();
+    allocInfo.descriptorPool = m_descriptorPool;
     auto layout = m_shader->getMaterialDescriptorSetLayOut();
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;

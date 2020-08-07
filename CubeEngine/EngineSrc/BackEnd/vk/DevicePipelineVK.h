@@ -30,10 +30,17 @@ public:
 	VkDescriptorSet getMaterialDescriptorSet();
 	void updateMaterialDescriptorSet();
 	void updateUniform();
+	void collcetItemWiseDescritporSet();
+	VkDescriptorSet giveItemWiseDescriptorSet();
+	Material * getMat();
 private:
+	void createDescriptorPool();
 	void createMaterialUniformBuffer();
 	void crateMaterialDescriptorSet();
 	void defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions);
+	std::vector<VkDescriptorSet> m_itemDescritptorSetList;
+	int m_currItemWiseDescriptorSetIdx;
+	size_t m_totalItemWiseDesSet;
 	VkDescriptorSet m_materialDescripotrSet;
 	Material * m_mat;
 	VkPipeline m_pipeline;
@@ -42,6 +49,7 @@ private:
 	VkDeviceMemory m_matUniformBufferMemory;
 	DeviceShaderVK * m_shader;
 	DeviceVertexInput m_vertexInput;
+	VkDescriptorPool m_descriptorPool;
 };
 
 

@@ -60,6 +60,7 @@ public:
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();
 	bool isHaveMaterialDescriptorSetLayOut();
+	std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>> & getSetInfo();
 private:
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> m_nameInfoMap;
 	std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>> m_setInfoMap;

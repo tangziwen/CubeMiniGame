@@ -243,6 +243,11 @@ bool DeviceShaderVK::isHaveMaterialDescriptorSetLayOut()
     return m_setInfoMap.find(1) != m_setInfoMap.end();
 }
 
+std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>>& DeviceShaderVK::getSetInfo()
+{
+    return m_setInfoMap;
+}
+
 int DeviceShaderVKLocationInfo::getBlockMemberIndex(std::string name)
 {
     for(int i = 0; i < m_member.size(); i++)
