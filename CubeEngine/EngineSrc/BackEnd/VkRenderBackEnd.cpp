@@ -1524,11 +1524,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             //update uniform.
             item->matrixInfo = a.m_transInfo;
             item->setUpItemUnifom(m_itemBufferPool);
+            //???
             void* data;
-            vkMapMemory(m_device, item->m_uniformBuffereMemory, 0, sizeof(Matrix44), 0, &data);
+            vkMapMemory(m_device, m_itemBufferPool->getBuffer()->getMemory(), item->m_itemBufferOffset, sizeof(Matrix44), 0, &data);
                 Matrix44 wvp = item->matrixInfo.m_projectMatrix * (item->matrixInfo.m_viewMatrix  * item->matrixInfo.m_worldMatrix );
                 memcpy(data, &wvp, sizeof(Matrix44));
-            vkUnmapMemory(m_device, item->m_uniformBuffereMemory);
+            vkUnmapMemory(m_device, m_itemBufferPool->getBuffer()->getMemory());
             item->m_mesh = a.getMesh();
 
 
@@ -1744,6 +1745,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         return descriptorPool;
     }
 
+    DeviceItemBufferPoolVK* VKRenderBackEnd::getItemBufferPool()
+    {
+        return m_itemBufferPool;
+    }
+
     RenderItemPool::RenderItemPool(Material * mat)
     {
         auto shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
@@ -1782,8 +1788,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         std::vector<VkWriteDescriptorSet> descriptorWrites{};
         //update descriptor
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_uniformBuffer;
-        bufferInfo.offset = 0;
+        bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
+        bufferInfo.offset = m_itemBufferOffset;
         bufferInfo.range = sizeof(Matrix44);
 
         VkWriteDescriptorSet writeSet;
@@ -1832,6 +1838,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     void RenderItem::setUpItemUnifom(DeviceItemBufferPoolVK * pool)
     {
         m_itemBufferOffset = pool->giveMeBuffer(sizeof(Matrix44));
+        void* data;
+        vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
+            Matrix44 wvp = matrixInfo.m_projectMatrix * (matrixInfo.m_viewMatrix  * matrixInfo.m_worldMatrix );
+            memcpy(data, &wvp, sizeof(Matrix44));
+        vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
     }
 
 }
