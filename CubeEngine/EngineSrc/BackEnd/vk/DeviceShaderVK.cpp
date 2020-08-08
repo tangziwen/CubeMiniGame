@@ -34,6 +34,7 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
     shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv((const char*)buff, size, compileKind, (const char *)fileInfoStr);
     if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
         //handle errors
+    	tlogError("buff %s", buff);
         tlogError("compile shader to Spir-v Error, %s", fileInfoStr);
         tlogError("%s",result.GetErrorMessage().c_str());
         abort();

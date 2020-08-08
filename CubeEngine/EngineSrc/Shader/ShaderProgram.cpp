@@ -291,7 +291,7 @@ void ShaderProgram::createShader(bool isStrict)
 
 void ShaderProgram::addShader(DeviceShader * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict)
 {
-    tzw::Data data = tzw::Tfile::shared()->getData(filePath,false);
+    tzw::Data data = tzw::Tfile::shared()->getData(filePath,true);
     std::string finalText;
     processShaderText(data.getString().c_str(), finalText);
     ShaderProgram->addShader((const unsigned char *)finalText.c_str(), finalText.size(),ShaderType, (const unsigned char *)filePath.c_str());
