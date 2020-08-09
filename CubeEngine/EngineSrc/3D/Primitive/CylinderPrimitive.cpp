@@ -30,7 +30,7 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
     setIsAccpectOcTtree(true);
 }
 
-void CylinderPrimitive::submitDrawCmd(RenderCommand::RenderType passType)
+void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStage passType)
 {
 	if(getIsVisible())
 	{

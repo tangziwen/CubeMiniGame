@@ -26,12 +26,6 @@ class RenderCommand
 {
     friend class Renderer;
 public:
-    enum class RenderType
-    {
-        GUI,
-        Common,
-		Shadow,
-    };
     enum class PrimitiveType
     {
 		Lines,
@@ -44,11 +38,9 @@ public:
         Single,
 		Instanced,
     };
-    RenderCommand(Mesh * mesh,Material * material, void * obj, RenderType type = RenderType::Common,PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
+    RenderCommand(Mesh * mesh,Material * material, void * obj, RenderFlag::RenderStage renderStage, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
     void render();
 
-    RenderType type() const;
-    void setType(const RenderType &type);
     RenderBatchType batchType() const;
 	void setBatchType(const RenderBatchType &type);
     unsigned int Zorder() const;
@@ -74,7 +66,6 @@ private:
     Mesh * m_mesh;
 	InstancedMesh * m_instancedMesh;
     Material *m_material;
-    RenderType m_type;
     PrimitiveType m_primitiveType;
     unsigned int m_Zorder;
     DepthPolicy m_depthTestPolicy;

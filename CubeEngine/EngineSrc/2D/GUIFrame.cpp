@@ -57,9 +57,9 @@ GUIFrame *GUIFrame::create(vec2 size)
     return frame;
 }
 
-void GUIFrame::submitDrawCmd(RenderCommand::RenderType passType)
+void GUIFrame::submitDrawCmd(RenderFlag::RenderStage passType)
 {
-    RenderCommand command(m_mesh, m_material, this, RenderCommand::RenderType::GUI);
+    RenderCommand command(m_mesh, m_material, this, RenderFlag::RenderStage::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);

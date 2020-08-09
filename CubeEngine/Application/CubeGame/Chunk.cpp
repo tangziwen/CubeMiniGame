@@ -182,7 +182,7 @@ namespace tzw
 	/// <summary>
 	/// Submits the draw command.
 	/// </summary>
-	void Chunk::submitDrawCmd(RenderCommand::RenderType passType)
+	void Chunk::submitDrawCmd(RenderFlag::RenderStage passType)
 	{
 		/// just for test
 		if (m_currenState != State::LOADED)
@@ -193,7 +193,7 @@ namespace tzw
 			return;
 		if (m_mesh[0]->getIndexBuf()->bufferId() == 0)
 			return;
-		if (passType != RenderCommand::RenderType::Common)
+		if (passType != RenderFlag::RenderStage::COMMON)
 		{
 			return;
 		}

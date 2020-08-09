@@ -74,11 +74,11 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setRenderRect(m_contentSize);
 }
 
-void Sprite::submitDrawCmd(RenderCommand::RenderType passType)
+void Sprite::submitDrawCmd(RenderFlag::RenderStage passType)
 {
 	//getContentSize();
 	//getWorldPos2D();
-    RenderCommand command(m_mesh,m_material,this, RenderCommand::RenderType::GUI);
+    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     Renderer::shared()->addRenderCommand(command);

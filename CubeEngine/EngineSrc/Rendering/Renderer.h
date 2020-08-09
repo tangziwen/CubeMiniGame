@@ -52,6 +52,8 @@ public:
 	void updateThumbNail(ThumbNail * thumb);
 	void setVertexAttribute(ShaderProgram * program);
 	void collectPrimitives();
+	std::vector<RenderCommand> & getShadowList();
+	std::vector<RenderCommand> & getCommonList();
 	std::vector<RenderCommand> & getGUICommandList();
 private:
     void initQuad();

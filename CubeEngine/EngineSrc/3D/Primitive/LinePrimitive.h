@@ -16,7 +16,7 @@ class LinePrimitive : public Drawable3D
 public:
 	LinePrimitive(vec3 begin, vec3 end);
 	LinePrimitive();
-	virtual void submitDrawCmd(RenderCommand::RenderType passType);
+	virtual void submitDrawCmd(RenderFlag::RenderStage stage);
 	void initBuffer();
 	virtual void setUpTransFormation(TransformationInfo &info);
 	void append(vec3 begin, vec3 end, vec3 color = vec3(1, 1, 1));

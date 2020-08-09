@@ -32,7 +32,7 @@ Model *Model::create(std::string modelFilePath, bool useCache)
     return theModel;
 }
 
-void Model::submitDrawCmd(RenderCommand::RenderType passType)
+void Model::submitDrawCmd(RenderFlag::RenderStage passType)
 {
 	if(getIsVisible())
 	{

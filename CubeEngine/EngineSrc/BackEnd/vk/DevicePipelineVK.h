@@ -1,4 +1,6 @@
 #pragma once
+#include <deque>
+
 #include "vulkan/vulkan.h"
 #include <string>
 #include <vector>
@@ -35,10 +37,12 @@ public:
 	Material * getMat();
 private:
 	void createDescriptorPool();
+	void createMaterialDescriptorPool();
 	void createMaterialUniformBuffer();
 	void crateMaterialDescriptorSet();
 	void defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions);
-	std::vector<VkDescriptorSet> m_itemDescritptorSetList;
+	std::deque<VkDescriptorSet> m_itemDescritptorSetList;
+	std::vector<VkDescriptorPool> m_descriptorPoolList;
 	int m_currItemWiseDescriptorSetIdx;
 	size_t m_totalItemWiseDesSet;
 	VkDescriptorSet m_materialDescripotrSet;
@@ -49,7 +53,7 @@ private:
 	VkDeviceMemory m_matUniformBufferMemory;
 	DeviceShaderVK * m_shader;
 	DeviceVertexInput m_vertexInput;
-	VkDescriptorPool m_descriptorPool;
+	VkDescriptorPool m_materialDescriptorPool;
 };
 
 

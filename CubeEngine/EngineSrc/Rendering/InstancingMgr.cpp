@@ -5,7 +5,7 @@
 #include "Mesh/InstancedMesh.h"
 namespace tzw
 {
-	void InstancingMgr::prepare(RenderCommand::RenderType renderType)
+	void InstancingMgr::prepare(RenderFlag::RenderStage renderType)
 	{
 		for(auto & innerMap : m_map)
 		{
@@ -14,11 +14,11 @@ namespace tzw
 				int clearID = 0;
 				switch(renderType)
 				{
-				case RenderCommand::RenderType::GUI: break;
-				case RenderCommand::RenderType::Common:
+				case RenderFlag::RenderStage::GUI: break;
+				case RenderFlag::RenderStage::COMMON:
 					clearID = COMMON_PASS_INSTANCE;
 					break;
-				case RenderCommand::RenderType::Shadow:
+				case RenderFlag::RenderStage::SHADOW:
 					clearID = SHADOW_PASS_INSTANCE;
 					break;
 				default: ;
@@ -31,9 +31,9 @@ namespace tzw
 		}
 	}
 
-	void InstancingMgr::pushInstanceRenderData(RenderCommand::RenderType renderType, InstanceRendereData data)
+	void InstancingMgr::pushInstanceRenderData(RenderFlag::RenderStage stage, InstanceRendereData data)
 	{
-		int clearID = getInstancedIndexFromRenderType(renderType);
+		int clearID = getInstancedIndexFromRenderType(stage);
 		auto mesh_to_instance = m_map.find(data.material);
 		InstancedMesh * instacing = nullptr;
 		if(mesh_to_instance != m_map.end())
@@ -76,7 +76,7 @@ namespace tzw
 		
 	}
 
-	void InstancingMgr::generateDrawCall(RenderCommand::RenderType renderType)
+	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage renderType)
 	{
 		int clearID = getInstancedIndexFromRenderType(renderType);
 		for(auto & innerMap : m_map)
@@ -111,22 +111,22 @@ namespace tzw
 			instacing->pushInstance(data.data);
 		}
 		instacing->submitInstanced();
-		RenderCommand command(instacing->getMesh(), dataList[0].material, nullptr, RenderCommand::RenderType::Common, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+		RenderCommand command(instacing->getMesh(), dataList[0].material, nullptr, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 		command.setInstancedMesh(instacing);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		setUpTransFormation(command.m_transInfo);
 		return command;
 	}
-	int InstancingMgr::getInstancedIndexFromRenderType(RenderCommand::RenderType renderType)
+	int InstancingMgr::getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType)
 	{
 		int clearID = 0;
 		switch(renderType)
 		{
-		case RenderCommand::RenderType::GUI: break;
-		case RenderCommand::RenderType::Common:
+		case RenderFlag::RenderStage::GUI: break;
+		case RenderFlag::RenderStage::COMMON:
 			clearID = COMMON_PASS_INSTANCE;
 			break;
-		case RenderCommand::RenderType::Shadow:
+		case RenderFlag::RenderStage::SHADOW:
 			clearID = SHADOW_PASS_INSTANCE;
 			break;
 		default: ;

@@ -31,11 +31,11 @@ RightPrismPrimitive::RightPrismPrimitive(float width,  float height, float depth
     setIsAccpectOcTtree(true);
 }
 
-void RightPrismPrimitive::submitDrawCmd(RenderCommand::RenderType passType)
+void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage stage)
 {
 	if(getIsVisible())
 	{
-		RenderCommand command(m_mesh, m_material,this,passType);
+		RenderCommand command(m_mesh, m_material,this,stage);
 		setUpCommand(command);
 		Renderer::shared()->addRenderCommand(command);
 	}

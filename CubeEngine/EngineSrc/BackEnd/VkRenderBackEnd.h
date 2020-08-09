@@ -50,8 +50,6 @@ struct VulkanPhysicalDevices {
 };
 struct RenderItem{
     VkDescriptorSet m_descriptorSet;
-    VkBuffer m_uniformBuffer;
-    VkDeviceMemory m_uniformBuffereMemory;
     Material * m_mat;
     TransformationInfo matrixInfo;
     Mesh * m_mesh;

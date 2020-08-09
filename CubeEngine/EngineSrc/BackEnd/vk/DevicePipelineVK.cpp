@@ -9,6 +9,7 @@
 #include <array>
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 #define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
+static const unsigned int DescriptorGuessCount = 512; 
 namespace tzw
 {
 
@@ -40,12 +41,13 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput)
 {
+	m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
     m_mat = mat;
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
     m_shader = shader;
-    //create descriptor pool
-    createDescriptorPool();
+    //create material descriptor pool
+    createMaterialDescriptorPool();
     bool isHaveMaterialDescripotrSet = false;
     if(shader->isHaveMaterialDescriptorSetLayOut())
     {
@@ -222,7 +224,7 @@ VkPipeline DevicePipelineVK::getPipeline()
 
 VkDescriptorSet DevicePipelineVK::getMaterialDescriptorSet()
 {
-    // TODO: 在此处插入 return 语句
+
     return m_materialDescripotrSet;
 }
 
@@ -333,12 +335,17 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
     }
     else
     {
+    	if(m_currItemWiseDescriptorSetIdx >= m_totalItemWiseDesSet)
+    	{
+    		//create another descriptor pool
+    		createDescriptorPool();
+    	}
         auto layOut = m_shader->getDescriptorSetLayOut();
         //create DescriptorSet
         VkDescriptorSet descriptorSet;
         VkDescriptorSetAllocateInfo allocInfo{};
         allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        allocInfo.descriptorPool = m_descriptorPool;
+        allocInfo.descriptorPool = m_descriptorPoolList.back();
         allocInfo.descriptorSetCount = 1;
         allocInfo.pSetLayouts = &layOut;
 
@@ -369,6 +376,7 @@ void DevicePipelineVK::createDescriptorPool()
     for(auto iter : setInfo)
     {
         for(auto & locationInfo : iter.second){
+        	if(locationInfo.set != 0) continue;
             if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
             {
                 uniformBuffCount ++;
@@ -380,22 +388,61 @@ void DevicePipelineVK::createDescriptorPool()
         }
     
     }
-    unsigned guessCount = 512;
+
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = guessCount * uniformBuffCount;
+	poolSizes[0].descriptorCount = DescriptorGuessCount * uniformBuffCount;
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = guessCount * textuerCount;
+	poolSizes[1].descriptorCount = DescriptorGuessCount * textuerCount;
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
 	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
 	poolInfo.pPoolSizes = poolSizes.data();
-	poolInfo.maxSets = guessCount;
+	poolInfo.maxSets = DescriptorGuessCount;
+	VkDescriptorPool descriptorPool;
+    m_totalItemWiseDesSet += DescriptorGuessCount;
+    if (vkCreateDescriptorPool(VKRenderBackEnd::shared()->getDevice(), &poolInfo, nullptr, &descriptorPool) != VK_SUCCESS) {
+        abort();
+    }
+	m_descriptorPoolList.emplace_back(descriptorPool);
+}
 
-    m_totalItemWiseDesSet = guessCount;
-    if (vkCreateDescriptorPool(VKRenderBackEnd::shared()->getDevice(), &poolInfo, nullptr, &m_descriptorPool) != VK_SUCCESS) {
+void DevicePipelineVK::createMaterialDescriptorPool()
+{
+    unsigned uniformBuffCount = 0;
+    unsigned textuerCount = 0;
+    auto& setInfo = m_shader->getSetInfo();
+    for(auto iter : setInfo)
+    {
+        for(auto & locationInfo : iter.second){
+        	if(locationInfo.set != 1) continue;
+            if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+            {
+                uniformBuffCount ++;
+            }
+            else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+            {
+                textuerCount++;
+            }
+        }
+    
+    }
+
+	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+	poolSizes[0].descriptorCount = 1 * uniformBuffCount;
+
+	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+	poolSizes[1].descriptorCount = 1 * textuerCount;
+
+	VkDescriptorPoolCreateInfo poolInfo{};
+	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
+	poolInfo.poolSizeCount = static_cast<uint32_t>(poolSizes.size());
+	poolInfo.pPoolSizes = poolSizes.data();
+	poolInfo.maxSets = 1;
+    if (vkCreateDescriptorPool(VKRenderBackEnd::shared()->getDevice(), &poolInfo, nullptr, &m_materialDescriptorPool) != VK_SUCCESS) {
         abort();
     }
 }
@@ -413,7 +460,7 @@ void DevicePipelineVK::crateMaterialDescriptorSet()
     //CreateDescriptor
     VkDescriptorSetAllocateInfo allocInfo{};
     allocInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-    allocInfo.descriptorPool = m_descriptorPool;
+    allocInfo.descriptorPool = m_materialDescriptorPool;
     auto layout = m_shader->getMaterialDescriptorSetLayOut();
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;

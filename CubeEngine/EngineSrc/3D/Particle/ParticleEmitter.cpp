@@ -129,9 +129,9 @@ ParticleEmitter::pushCommand()
 {}
 
 void
-ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
+ParticleEmitter::submitDrawCmd(RenderFlag::RenderStage passType)
 {
-  if (passType == RenderCommand::RenderType::Shadow) {
+  if (passType == RenderFlag::RenderStage::SHADOW) {
     return;
   }
   m_mesh->clearInstances();
@@ -164,7 +164,7 @@ ParticleEmitter::submitDrawCmd(RenderCommand::RenderType passType)
   if (m_mesh->getInstanceSize() > 0) {
     reCache();
     RenderCommand command(
-      m_mesh, getMaterial(),this, RenderCommand::RenderType::Common,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+      m_mesh, getMaterial(),this, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
     setUpTransFormation(command.m_transInfo);
     command.setRenderState(RenderFlag::RenderStage::TRANSPARENT);
     Renderer::shared()->addRenderCommand(command);

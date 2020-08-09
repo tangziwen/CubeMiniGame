@@ -5,10 +5,10 @@
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
-RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj, RenderType type, PrimitiveType primitiveType, RenderBatchType batchType)
-    :m_mesh(mesh),m_material(material),m_type(type),
+RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
+    :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
-	m_renderState(material->getRenderStage()),
+	m_renderState(renderStage),
 m_batchType(batchType)
 {
     m_obj = obj;
@@ -19,15 +19,6 @@ void RenderCommand::render()
 
 
 
-}
-RenderCommand::RenderType RenderCommand::type() const
-{
-    return m_type;
-}
-
-void RenderCommand::setType(const RenderType &type)
-{
-    m_type = type;
 }
 
 RenderCommand::RenderBatchType RenderCommand::batchType() const

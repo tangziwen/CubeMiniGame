@@ -54,7 +54,7 @@ namespace tzw
 		m_isNeedUpdateRenderInfo;
 	}
 
-	void GamePartRenderNode::submitDrawCmd(RenderCommand::RenderType passType)
+	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStage passType)
 	{
 		if(getIsVisible())
 		{

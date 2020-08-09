@@ -75,7 +75,7 @@ void Node::setPos(float x, float y, float z)
 	setPos(vec3(x, y, z));
 }
 
-void Node::submitDrawCmd(RenderCommand::RenderType passType)
+void Node::submitDrawCmd(RenderFlag::RenderStage renderStage)
 {
 
 }

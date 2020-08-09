@@ -31,7 +31,7 @@ CubePrimitive::CubePrimitive(float width, float depth, float height, bool isNeed
     setIsAccpectOcTtree(true);
 }
 
-void CubePrimitive::submitDrawCmd(RenderCommand::RenderType passType)
+void CubePrimitive::submitDrawCmd(RenderFlag::RenderStage passType)
 {
 	if(getIsVisible())
 	{

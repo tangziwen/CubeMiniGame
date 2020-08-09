@@ -18,9 +18,9 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 	setIsAccpectOcTtree(false);
 }
 
-void SimpleMesh::submitDrawCmd(RenderCommand::RenderType passType)
+void SimpleMesh::submitDrawCmd(RenderFlag::RenderStage stage)
 {
-	RenderCommand command(m_mesh,m_material,this,RenderCommand::RenderType::Common);
+	RenderCommand command(m_mesh,m_material,this, stage);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	Renderer::shared()->addRenderCommand(command);

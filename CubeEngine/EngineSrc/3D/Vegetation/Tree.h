@@ -64,7 +64,7 @@ namespace tzw {
 	  void addTreeGroup(TreeGroup* treeGroup);
 	  void clearTreeGroup();
 	  void finish();
-	  void submitDrawCmd(RenderCommand::RenderType passType) override;
+	  void submitDrawCmd(RenderFlag::RenderStage passType) override;
 	  void initMesh();
 	  void setUpTransFormation(TransformationInfo& info) override;
 	  void submitShadowDraw();

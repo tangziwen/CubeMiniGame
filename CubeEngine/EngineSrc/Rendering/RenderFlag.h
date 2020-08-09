@@ -59,6 +59,8 @@ enum class RenderStage
 	COMMON,
 	TRANSPARENT,
 	AFTER_DEPTH_CLEAR,
+	GUI,
+	SHADOW
 };
 
 enum class BufferStorageType

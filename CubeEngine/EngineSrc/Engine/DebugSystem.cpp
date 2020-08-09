@@ -22,7 +22,7 @@ void DebugSystem::doRender(float dt)
 	if(m_line->getLineCount() > 0)
 	{
 		m_line->initBuffer();
-		m_line->submitDrawCmd(RenderCommand::RenderType::Common);
+		m_line->submitDrawCmd(RenderFlag::RenderStage::COMMON);
 	}
 }
 

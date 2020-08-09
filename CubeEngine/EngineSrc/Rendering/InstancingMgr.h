@@ -16,12 +16,12 @@ typedef std::unordered_map<Mesh *, InstancedMesh*[MAX_INSTANCE_INDEX]> innerMesh
 class InstancingMgr :public Singleton<InstancingMgr>
 	{
 	public:
-		void prepare(RenderCommand::RenderType renderType);
-		void pushInstanceRenderData(RenderCommand::RenderType renderType, InstanceRendereData data);
-		void generateDrawCall(RenderCommand::RenderType renderType);
+		void prepare(RenderFlag::RenderStage renderType);
+		void pushInstanceRenderData(RenderFlag::RenderStage renderType, InstanceRendereData data);
+		void generateDrawCall(RenderFlag::RenderStage renderType);
 		void setUpTransFormation(TransformationInfo& info);
 		RenderCommand generateSingleCommand(std::vector<InstanceRendereData> data);
-		int getInstancedIndexFromRenderType(RenderCommand::RenderType renderType);
+		int getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType);
 	private:
 		std::unordered_map<Material *, innerMeshMap> m_map;
 	};

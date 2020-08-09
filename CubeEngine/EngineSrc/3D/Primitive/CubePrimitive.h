@@ -8,7 +8,7 @@ class CubePrimitive : public Drawable3D
 {
 public:
     CubePrimitive(float width, float depth, float height, bool isNeedPreGenerateMat = true);
-	void submitDrawCmd(RenderCommand::RenderType passType) override;
+	void submitDrawCmd(RenderFlag::RenderStage passType) override;
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);
 	virtual bool isHit(Ray ray);

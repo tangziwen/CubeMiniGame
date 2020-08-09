@@ -16,9 +16,9 @@ LinePrimitive::LinePrimitive():m_mesh(nullptr)
 	init();
 }
 
-void LinePrimitive::submitDrawCmd(RenderCommand::RenderType passType)
+void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage  stage)
 {
-	RenderCommand command(m_mesh,m_material,this,RenderCommand::RenderType::Common);
+	RenderCommand command(m_mesh,m_material,this,stage);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
     Renderer::shared()->addRenderCommand(command);
