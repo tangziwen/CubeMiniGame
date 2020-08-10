@@ -48,23 +48,7 @@ struct VulkanPhysicalDevices {
     std::vector< std::vector<VkSurfaceFormatKHR> > m_surfaceFormats;
     std::vector<VkSurfaceCapabilitiesKHR> m_surfaceCaps;
 };
-struct RenderItem{
-    VkDescriptorSet m_descriptorSet;
-    Material * m_mat;
-    TransformationInfo matrixInfo;
-    Mesh * m_mesh;
-    size_t m_itemBufferOffset;
-    void updateDescriptor();
-    void setUpItemUnifom(DeviceItemBufferPoolVK * pool);
-};
-struct RenderItemPool
-{
-    RenderItemPool(Material * mat);
-    RenderItem* findOrCreateRenderItem(DevicePipelineVK * pipeline, void *obj);
-    std::unordered_map<void *, RenderItem*> m_pool;
-    VkDescriptorSetLayout m_layout;
-    Material * m_mat;
-};
+
 
 class VKRenderBackEnd:public Singleton<VKRenderBackEnd>, public RenderBackEndBase
 {
@@ -108,7 +92,7 @@ private:
     void createSwapChain();
     void CreateCommandBuffer();
     void RecordCommandBuffers();
-    void updateRecordCmdBuff(int swapImageIndex, int index, RenderItem * item, DevicePipelineVK * pipeline);
+
 
     void CreateRenderPass();
     void CreateFramebuffer();
@@ -199,7 +183,7 @@ private:
     //renderer
     std::unordered_map<std::string, DevicePipelineVK *>m_matPipelinePool;
 
-    std::unordered_map<std::string, RenderItemPool*> m_matDescriptorSetPool;
+
     DeviceItemBufferPoolVK * m_itemBufferPool;
 };
 
