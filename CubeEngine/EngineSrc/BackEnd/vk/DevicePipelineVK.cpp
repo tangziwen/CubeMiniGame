@@ -141,6 +141,8 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     
     VkPipelineMultisampleStateCreateInfo pipelineMSCreateInfo = {};
     pipelineMSCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
+    pipelineMSCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+    pipelineMSCreateInfo.flags = 0;
     
     VkPipelineColorBlendAttachmentState blendAttachState = {};
     blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
@@ -204,6 +206,7 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
 
     updateMaterialDescriptorSet();//only update once
     updateUniform();//will be update every frame, or every change.
+    printf("pipeline create %p\n", m_pipeline);
 }
 
 VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
@@ -255,7 +258,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
                 imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
 
 
-                VkWriteDescriptorSet texWriteSet;
+                VkWriteDescriptorSet texWriteSet{};
                 texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 texWriteSet.dstSet = m_materialDescripotrSet;
                 texWriteSet.dstBinding = locationInfo.binding;
@@ -275,7 +278,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
     bufferInfo.offset = 0;
     bufferInfo.range = materialUniformBufferInfo.size;
 
-    VkWriteDescriptorSet writeSet;
+    VkWriteDescriptorSet writeSet{};
     writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
     writeSet.dstSet = m_materialDescripotrSet;
     writeSet.dstBinding = materialUniformBufferInfo.binding;
@@ -391,10 +394,10 @@ void DevicePipelineVK::createDescriptorPool()
 
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = DescriptorGuessCount * uniformBuffCount;
+	poolSizes[0].descriptorCount = std::max(DescriptorGuessCount * uniformBuffCount, (unsigned)1);
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = DescriptorGuessCount * textuerCount;
+	poolSizes[1].descriptorCount = std::max(DescriptorGuessCount * textuerCount, (unsigned)1);
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -432,10 +435,10 @@ void DevicePipelineVK::createMaterialDescriptorPool()
 
 	std::array<VkDescriptorPoolSize, 2> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-	poolSizes[0].descriptorCount = 1 * uniformBuffCount;
+	poolSizes[0].descriptorCount = std::max(1 * uniformBuffCount, (unsigned)1);
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-	poolSizes[1].descriptorCount = 1 * textuerCount;
+	poolSizes[1].descriptorCount = std::max(1 * textuerCount, (unsigned)1);
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;

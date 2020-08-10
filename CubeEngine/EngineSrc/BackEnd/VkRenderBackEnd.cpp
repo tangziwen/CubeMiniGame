@@ -1046,7 +1046,7 @@ VkApplicationInfo appInfo = {};
 
         auto res = vkCreateBuffer(m_device, &bufferInfo, nullptr, &buffer);
         assert(!res);
-        VkMemoryRequirements memRequirements;
+        VkMemoryRequirements memRequirements{};
         vkGetBufferMemoryRequirements(m_device, buffer, &memRequirements);
 
         VkMemoryAllocateInfo alloc_info = {};
@@ -1512,11 +1512,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
                 currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
                 m_matPipelinePool[matStr]  =currPipeLine;
+                currPipeLine->collcetItemWiseDescritporSet();
             }
             else{
                 currPipeLine = iter->second;
             }
-            
+            //continue;
             auto iterResult = materialSet.find(mat);
             if(iterResult == materialSet.end())
             {
@@ -1524,7 +1525,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 //update material-wise parameter.
                 currPipeLine->updateUniform();
             }
-            currPipeLine->collcetItemWiseDescritporSet();
             RenderItem * item;
             auto descPool = m_matDescriptorSetPool.find(matStr);
             if(descPool == m_matDescriptorSetPool.end())
@@ -1544,6 +1544,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             item->updateDescriptor();
 
+            
             //recordDrawCommand
             auto vbo = static_cast<DeviceBufferVK *>(item->m_mesh->getArrayBuf()->bufferId());
             vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
@@ -1580,6 +1581,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
                 currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
                 m_matPipelinePool[matStr]  =currPipeLine;
+                currPipeLine->collcetItemWiseDescritporSet();
             }
             else{
                 currPipeLine = iter->second;
@@ -1592,7 +1594,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 //update material-wise parameter.
                 currPipeLine->updateUniform();
             }
-            currPipeLine->collcetItemWiseDescritporSet();
             RenderItem * item;
             auto descPool = m_matDescriptorSetPool.find(matStr);
             if(descPool == m_matDescriptorSetPool.end())
@@ -1754,8 +1755,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         Renderer::shared()->clearCommands();
 
 
-        updateUniformBuffer(ImageIndex);
- 
+        //updateUniformBuffer(ImageIndex);
+        if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
+            vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
+        }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1783,6 +1786,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         presentInfo.swapchainCount     = 1;
         presentInfo.pSwapchains        = &m_swapChainKHR;
         presentInfo.pImageIndices      = &ImageIndex;
+        presentInfo.waitSemaphoreCount = 1;
+        presentInfo.pWaitSemaphores = signalSemaphores;
     
         res = vkQueuePresentKHR(m_queue, &presentInfo);    
         CHECK_VULKAN_ERROR("vkQueuePresentKHR error %d\n" , res);

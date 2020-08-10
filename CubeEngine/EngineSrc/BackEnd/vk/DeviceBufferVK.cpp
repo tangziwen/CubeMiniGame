@@ -55,7 +55,7 @@ namespace tzw
         abort();
         }
 
-        VkMemoryRequirements memRequirements;
+        VkMemoryRequirements memRequirements{};
         vkGetBufferMemoryRequirements(device, m_buffer, &memRequirements);
 
         VkMemoryAllocateInfo alloc_info = {};
