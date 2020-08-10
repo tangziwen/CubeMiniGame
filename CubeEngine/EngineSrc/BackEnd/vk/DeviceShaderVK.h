@@ -54,6 +54,7 @@ public:
 	VkShaderModule getVsModule();
 	VkShaderModule getFsModule();
 	DeviceShaderVKLocationInfo getLocationInfo(std::string name);
+	bool hasLocationInfo(std::string name);
 	bool findLocationInfo(std::string name);
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> & getNameLocationMap();
 	void createDescriptorSetLayOut();

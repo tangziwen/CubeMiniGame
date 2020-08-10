@@ -180,6 +180,12 @@ DeviceShaderVKLocationInfo DeviceShaderVK::getLocationInfo(std::string name)
     return result->second;
 }
 
+bool DeviceShaderVK::hasLocationInfo(std::string name)
+{
+    auto result = m_nameInfoMap.find(name);
+    return (result != m_nameInfoMap.end());
+}
+
 bool DeviceShaderVK::findLocationInfo(std::string name)
 {
     return m_nameInfoMap.find(name)!= m_nameInfoMap.end();

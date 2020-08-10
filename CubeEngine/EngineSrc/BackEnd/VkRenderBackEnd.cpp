@@ -67,7 +67,7 @@ std::vector<const char*> getRequiredExtensions() {
 
 PFN_vkCreateDebugReportCallbackEXT my_vkCreateDebugReportCallbackEXT = NULL; 
 
-       
+FILE * vulkanValidationFile = nullptr;
 VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
     VkDebugReportFlagsEXT       flags,
     VkDebugReportObjectTypeEXT  objectType,
@@ -78,7 +78,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
     const char*                 pMessage,
     void*                       pUserData)
 {
+    if(!vulkanValidationFile){
+        vulkanValidationFile = fopen("./vulkanLog.txt", "w");
+    }
     printf("validation Layer %s\n", pMessage);
+    fprintf(vulkanValidationFile, "validation Layer %s\n", pMessage);
     return VK_FALSE;
 }
 
@@ -152,6 +156,63 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 	{
 	m_imguiPipeline = nullptr;
 	}
+    void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset)
+    {
+       auto & varList = mat->getVarList();
+        std::vector<VkWriteDescriptorSet> descriptorWrites{};
+        //update descriptor
+        VkDescriptorBufferInfo bufferInfo{};
+        bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
+        bufferInfo.offset = m_offset;
+        bufferInfo.range = sizeof(Matrix44);
+
+        VkWriteDescriptorSet writeSet{};
+        writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		writeSet.pNext = nullptr;
+        writeSet.dstSet = itemDescSet;
+        writeSet.dstBinding = 0;
+        writeSet.dstArrayElement = 0;
+        writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        writeSet.descriptorCount = 1;
+        writeSet.pBufferInfo = &bufferInfo;
+
+        descriptorWrites.emplace_back(writeSet);
+        auto shader = static_cast<DeviceShaderVK * >(mat->getProgram()->getDeviceShader());
+        for(auto &i : varList)
+        {
+            TechniqueVar* var = &i.second;
+            if(!shader->hasLocationInfo(i.first)){continue;}
+            switch(var->type)
+            {
+            
+                case TechniqueVar::Type::Texture:
+                {
+                    auto tex = var->data.rawData.texInfo.tex;
+					if(!tex)
+					{
+						abort();
+					}
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
+                    imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
+
+                    auto locationInfo = shader->getLocationInfo(i.first);
+                    VkWriteDescriptorSet texWriteSet{};
+                    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    texWriteSet.dstSet = itemDescSet;
+                    texWriteSet.dstBinding = locationInfo.binding;
+                    texWriteSet.dstArrayElement = 0;
+                    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    texWriteSet.descriptorCount = 1;
+                    texWriteSet.pImageInfo = &imageInfo;
+
+                    descriptorWrites.emplace_back(texWriteSet);
+                }
+            }
+        }
+        vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+    }
     void VKRenderBackEnd::VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps)
     {
         unsigned NumExt = 0;
@@ -1001,6 +1062,7 @@ VkApplicationInfo appInfo = {};
         if (vkAllocateDescriptorSets(m_device, &allocInfo, descriptorSets.data()) != VK_SUCCESS) {
             abort();
         }
+        printf("createDescriptorSets 111 %p %p\n",descriptorSets[0], descriptorSets[1]);
 
         for (size_t i = 0; i < m_images.size(); i++) {
             VkDescriptorBufferInfo bufferInfo{};
@@ -1147,7 +1209,7 @@ void VKRenderBackEnd::initImguiStuff()
     {
         abort();
     }
-
+     printf("create descriptor sets 44444 %p\n", m_imguiDescriptorSet);
 
 
 
@@ -1309,6 +1371,18 @@ const VkSurfaceFormatKHR& VKRenderBackEnd::GetSurfaceFormat() const
         return m_physicsDevices.m_devices[m_gfxDevIndex];
     }
 
+    const VulkanPhysicalDevices VKRenderBackEnd::GetPhysDeviceWrapper()
+    {
+        assert(m_gfxDevIndex >= 0);
+        return m_physicsDevices;
+    }
+
+    VkPhysicalDeviceProperties VKRenderBackEnd::GetPhysDeviceProperties()
+    {
+        assert(m_gfxDevIndex >= 0);
+        return m_physicsDevices.m_devProps[m_gfxDevIndex];
+    }
+
 void VKRenderBackEnd::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
 	VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
 {
@@ -1450,6 +1524,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
 
+        vkDeviceWaitIdle(m_device);
         //CPU here
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();
@@ -1484,7 +1559,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         renderPassInfo.renderArea.extent.height = screenSize.y;
         renderPassInfo.clearValueCount = clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
-        VkCommandBuffer & command = m_generalCmdBuff[ImageIndex][0];
+        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][0];
+        vkResetCommandBuffer(command, 0);
         res = vkBeginCommandBuffer(command, &beginInfo);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfo.framebuffer = m_fbs[ImageIndex];
@@ -1494,8 +1570,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
 
 		std::set<Material *> materialSet;
+        std::set<void *> m_fuckingObjList;
         for(RenderCommand & a : commonList)
         {
+
         	if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
             Material * mat = a.getMat();
 
@@ -1512,11 +1590,13 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
                 currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
                 m_matPipelinePool[matStr]  =currPipeLine;
-                currPipeLine->collcetItemWiseDescritporSet();
+                
             }
             else{
                 currPipeLine = iter->second;
             }
+            currPipeLine->collcetItemWiseDescritporSet();
+
             //continue;
             auto iterResult = materialSet.find(mat);
             if(iterResult == materialSet.end())
@@ -1536,17 +1616,33 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             {
                 item = descPool->second->findOrCreateRenderItem(currPipeLine, a.getDrawableObj());
             }
-            //update uniform.
-            item->matrixInfo = a.m_transInfo;
-            item->setUpItemUnifom(m_itemBufferPool);
-            item->m_mesh = a.getMesh();
-
-
-            item->updateDescriptor();
-
             
+            //update uniform.
+            VkDescriptorSet itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
+            item->matrixInfo = a.m_transInfo;
+            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
+            void* data;
+            vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
+                Matrix44 wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
+            memcpy(data, &wvp, sizeof(Matrix44));
+            vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
+            //item->setUpItemUnifom(m_itemBufferPool);
+            item->m_mesh = a.getMesh();
+            if(m_fuckingObjList.find(item) == m_fuckingObjList.end()){
+                m_fuckingObjList.insert(item);
+            
+            }else
+            {
+                printf("fuck my self\n");
+                //abort();
+            }
+
+            updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset);
+            //item->updateDescriptor();
+
             //recordDrawCommand
             auto vbo = static_cast<DeviceBufferVK *>(item->m_mesh->getArrayBuf()->bufferId());
+            
             vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
             VkBuffer vertexBuffers[] = {vbo->getBuffer()};
             VkDeviceSize offsets[] = {0};
@@ -1557,7 +1653,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             std::vector<VkDescriptorSet> descriptorSetList = {item->m_descriptorSet,};
             if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.emplace_back(currPipeLine->getMaterialDescriptorSet());
+                descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
             }
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(command, static_cast<uint32_t>(item->m_mesh->getIndicesSize()), 1, 0, 0, 0);
@@ -1566,6 +1662,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //UI的东西很特殊，一定需要根据队列的顺序来绘制,普通物体可以按材质分组绘制
         for(RenderCommand & a : Renderer::shared()->getGUICommandList())
         {
+            continue;
             Material * mat = a.getMat();
 
             std::string & matStr = mat->getFullDescriptionStr();
@@ -1625,7 +1722,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             std::vector<VkDescriptorSet> descriptorSetList = {item->m_descriptorSet,};
             if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.emplace_back(currPipeLine->getMaterialDescriptorSet());
+                descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
             }
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(command, static_cast<uint32_t>(item->m_mesh->getIndicesSize()), 1, 0, 0, 0);
@@ -1693,7 +1790,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             std::vector<VkDescriptorSet> descriptorSetList = {m_imguiDescriptorSet,};
             if(static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.emplace_back(m_imguiPipeline->getMaterialDescriptorSet());
+                descriptorSetList.push_back(m_imguiPipeline->getMaterialDescriptorSet());
             }
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
 

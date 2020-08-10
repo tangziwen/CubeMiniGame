@@ -243,6 +243,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
     for(auto &i : varList)
     {
+        if(!shader->hasLocationInfo(i.first)){continue;}
         TechniqueVar* var = &i.second;
         switch(var->type)
         {
@@ -335,6 +336,7 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
     if(m_currItemWiseDescriptorSetIdx< m_itemDescritptorSetList.size()){
     
         target = m_itemDescritptorSetList[m_currItemWiseDescriptorSetIdx];
+        printf("reused descriptor sets\n");
     }
     else
     {
@@ -353,7 +355,7 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
         allocInfo.pSetLayouts = &layOut;
 
         auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &descriptorSet);
-        printf("create descriptor sets\n");
+        printf("create descriptor sets 222222%p\n", descriptorSet);
         if ( res!= VK_SUCCESS) {
             printf("bad  descriptor!!!! %d",res);
             abort();
@@ -361,6 +363,7 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
         target = descriptorSet;
         m_itemDescritptorSetList.emplace_back(descriptorSet);
     }
+    printf("the Descriptor %p\n", target);
     m_currItemWiseDescriptorSetIdx ++;
     return target;
 }
@@ -448,6 +451,7 @@ void DevicePipelineVK::createMaterialDescriptorPool()
     if (vkCreateDescriptorPool(VKRenderBackEnd::shared()->getDevice(), &poolInfo, nullptr, &m_materialDescriptorPool) != VK_SUCCESS) {
         abort();
     }
+    
 }
 
 void DevicePipelineVK::createMaterialUniformBuffer()
@@ -473,6 +477,7 @@ void DevicePipelineVK::crateMaterialDescriptorSet()
     {
         abort();
     }
+    printf("create descriptor sets 33333333%p\n", m_materialDescripotrSet);
 }
 
 void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)

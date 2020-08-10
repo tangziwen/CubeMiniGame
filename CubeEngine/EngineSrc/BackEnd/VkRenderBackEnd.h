@@ -92,10 +92,14 @@ public:
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;
     const VkSurfaceCapabilitiesKHR GetSurfaceCaps() const;
     const VkPhysicalDevice& GetPhysDevice();
+    const VulkanPhysicalDevices GetPhysDeviceWrapper();
+    VkPhysicalDeviceProperties GetPhysDeviceProperties();
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
     void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
 private:
+
+    void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset);
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
     void CreateInstance();
     void VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices);
@@ -168,6 +172,7 @@ private:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPipelineLayout pipelineLayout;
+    
     /*
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;

@@ -72,6 +72,7 @@ namespace tzw
  
         res = vkAllocateMemory(device, &alloc_info, NULL,
                                &(m_memory));
+        //printf("allocate Memory %zd\n", m_bufferSize);
         if(res){
         
         abort();
