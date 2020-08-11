@@ -20,6 +20,8 @@
 #include "vk/DeviceMemoryPoolVK.h"
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
+
+#define VK_CHECK_RESULT(func) {VkResult result = func; if(result !=VK_SUCCESS) {abort();}}
 namespace tzw {
 
 class DeviceTextureVK;
@@ -40,6 +42,21 @@ struct texture_object {
     VkDeviceMemory mem;
     VkImageView view;
     int32_t tex_width, tex_height;
+};
+
+struct FrameBufferAttachmentVK {
+	VkImage image;
+	VkDeviceMemory mem;
+	VkImageView view;
+	VkFormat format;
+};
+
+struct FrameBufferVK{
+	int32_t width, height;
+	VkFramebuffer frameBuffer;
+	FrameBufferAttachmentVK position, normal, albedo;
+	FrameBufferAttachmentVK depth;
+	VkRenderPass renderPass;
 };
 struct VulkanPhysicalDevices {
     std::vector<VkPhysicalDevice> m_devices;
@@ -83,6 +100,7 @@ public:
 	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
     void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
     DeviceMemoryPoolVK * getMemoryPool();
+    VkFormat getFormat(ImageFormat imageFormat);
 private:
 
     void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset);
@@ -97,6 +115,12 @@ private:
 
 
     void CreateRenderPass();
+    void createDeferredFrameBuffer();
+    	// Create a frame buffer attachment
+	void createAttachment(
+		VkFormat format,
+		VkImageUsageFlagBits usage,
+		FrameBufferAttachmentVK *attachment);
     void CreateFramebuffer();
     void CreateShaders();
     void CreatePipeline();

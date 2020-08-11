@@ -14,6 +14,7 @@ public:
 	const VkImageView getImageView();
 	const VkSampler getSampler();
 	void initDataRaw(const unsigned char * buff, size_t w, size_t h, ImageFormat format);
+	void initEmpty(size_t w, size_t h, ImageFormat format);
 private:
 	void initData(const unsigned char * buff, size_t size);
 	VkImage m_textureImage;
