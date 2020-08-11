@@ -234,7 +234,15 @@ VkDescriptorSet DevicePipelineVK::getMaterialDescriptorSet()
 void DevicePipelineVK::updateMaterialDescriptorSet()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
-    if(!shader->findLocationInfo("t_shaderUnifom")) return;
+    if(!shader->findLocationInfo("t_shaderUnifom")) 
+    {
+        if(m_shader->isHaveMaterialDescriptorSetLayOut())
+        {
+            printf("what the fuck\n");
+            abort();
+        }
+        return;
+    }
 
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
 
@@ -289,7 +297,10 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
     writeSet.pBufferInfo = &bufferInfo;
     descriptorWrites.emplace_back(writeSet);
 
-
+    if(descriptorWrites.size() == 0){
+        printf("the update is not valid\n");
+    
+    }
     vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 }
 
@@ -336,7 +347,6 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
     if(m_currItemWiseDescriptorSetIdx< m_itemDescritptorSetList.size()){
     
         target = m_itemDescritptorSetList[m_currItemWiseDescriptorSetIdx];
-        printf("reused descriptor sets\n");
     }
     else
     {
@@ -363,7 +373,6 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
         target = descriptorSet;
         m_itemDescritptorSetList.emplace_back(descriptorSet);
     }
-    printf("the Descriptor %p\n", target);
     m_currItemWiseDescriptorSetIdx ++;
     return target;
 }

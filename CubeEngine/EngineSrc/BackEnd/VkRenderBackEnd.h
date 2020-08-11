@@ -17,6 +17,7 @@
 #include <unordered_map>
 #include "Rendering/RenderCommand.h"
 #include <EngineSrc\BackEnd\vk\DeviceItemBufferPoolVK.h>
+#include "vk/DeviceMemoryPoolVK.h"
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 namespace tzw {
@@ -81,6 +82,7 @@ public:
 	void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory);
 	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
     void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
+    DeviceMemoryPoolVK * getMemoryPool();
 private:
 
     void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset);
@@ -120,6 +122,8 @@ private:
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
     void VKRenderBackEnd::createSyncObjects();
     void initImguiStuff();
+
+    void initVMAPool();
 	//depth resource
 	VkImage depthImage;
     VkDeviceMemory depthImageMemory;
@@ -185,6 +189,7 @@ private:
 
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
+    DeviceMemoryPoolVK * m_memoryPool;
 };
 
 } // namespace tzw

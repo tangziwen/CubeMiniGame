@@ -30,6 +30,7 @@ void Material::loadFromTemplate(std::string name)
 {
 	//tlog("load Material %s\n", name.c_str());
 	loadFromFile(std::string("MatTemplate/") + name + ".mat");
+	updateFullDescriptionStr();
 	//tlog("load Material finished %s\n", name.c_str());
 }
 

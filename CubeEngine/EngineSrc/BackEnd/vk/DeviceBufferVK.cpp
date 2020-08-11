@@ -1,5 +1,6 @@
 #include "DeviceBufferVK.h"
 #include "../VkRenderBackEnd.h"
+
 namespace tzw
 {
     DeviceBufferVK::DeviceBufferVK()
@@ -7,6 +8,9 @@ namespace tzw
         m_buffer = VK_NULL_HANDLE;
         m_memory = VK_NULL_HANDLE;
         m_alignment = 0;
+        m_bufferSize = 0;
+        m_isUsePool = false;
+        m_offset = 0;
     }
     void DeviceBufferVK::allocate(void* data, size_t ammount)
 	{
@@ -20,8 +24,23 @@ namespace tzw
 
     void DeviceBufferVK::allocateEmpty(size_t ammount)
     {
+        if(!m_isUsePool)
+        {
+            allocateEmptySingleImp(ammount);
+        }
+        else
+        {
+            allocateEmptyPoolImp(ammount);
+        }   
+    }
+    void DeviceBufferVK::allocateEmptySingleImp(size_t ammount)
+    {
         VkResult res = VK_SUCCESS;
         auto device = VKRenderBackEnd::shared()->getDevice();
+        if(m_buffer != VK_NULL_HANDLE && m_memory != VK_NULL_HANDLE && (ammount <= m_bufferSize))
+        {
+            return;
+        }
         if (m_buffer != VK_NULL_HANDLE)
             vkDestroyBuffer(device, m_buffer, nullptr);
         if (m_memory != VK_NULL_HANDLE)
@@ -54,7 +73,6 @@ namespace tzw
         
         abort();
         }
-
         VkMemoryRequirements memRequirements{};
         vkGetBufferMemoryRequirements(device, m_buffer, &memRequirements);
 
@@ -83,7 +101,48 @@ namespace tzw
         abort();
         }
     }
+    void DeviceBufferVK::allocateEmptyPoolImp(size_t ammount)
+    {
+        VkResult res = VK_SUCCESS;
+        auto device = VKRenderBackEnd::shared()->getDevice();
+        if(m_buffer != VK_NULL_HANDLE && m_memory != VK_NULL_HANDLE && (ammount <= m_bufferSize))
+        {
+            return;
+        }
+        auto memoryPool = VKRenderBackEnd::shared()->getMemoryPool();
+        if (m_buffer != VK_NULL_HANDLE)
+        {
+            memoryPool->destroyBuffer(m_buffer, m_bufferInfo);
+        }
+        VkBufferCreateInfo bufferInfo{};
+        bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
+        if(m_alignment > 0)
+        {
+            bufferInfo.size = ((ammount - 1) / m_alignment + 1) * m_alignment;
+        }
+        else
+        {
+            bufferInfo.size = ammount;
+        }
+        
+        if(m_type == DeviceBufferType::Vertex){
+            bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
+        
+        }
+        else if(m_type == DeviceBufferType::Index){
+            bufferInfo.usage = VK_BUFFER_USAGE_INDEX_BUFFER_BIT;
+        }
+        else if(m_type == DeviceBufferType::Uniform){
+            bufferInfo.usage = VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT;
+        }
+        bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
+        auto info = memoryPool->getBuffer(bufferInfo, m_buffer);
+        m_memory = info.getMemory();
+        m_bufferSize = info.getSize();
+        m_offset = info.getOffset();
+        m_bufferInfo = info;
+    }
 	bool DeviceBufferVK::init(DeviceBufferType type)
 	{
         m_type = type;
@@ -112,4 +171,5 @@ namespace tzw
     {
         return m_memory;
     }
+ 
 }

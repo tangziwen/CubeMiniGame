@@ -1,6 +1,7 @@
 #pragma once
 #include "../DeviceBuffer.h"
 #include "vulkan/vulkan.h"
+#include "DeviceMemoryPoolVK.h"
 namespace tzw
 {
 
@@ -18,10 +19,15 @@ public:
 	void setAlignment(size_t newAlignment);
 	VkDeviceMemory getMemory();
 private:
+	void allocateEmptySingleImp(size_t ammount);
+	void allocateEmptyPoolImp(size_t ammount);
 	VkBuffer m_buffer;
 	VkDeviceMemory m_memory;
 	size_t m_bufferSize;
 	size_t m_alignment;
+	size_t m_offset;
+	bool m_isUsePool;
+	BufferInfo m_bufferInfo;// only used for pool allocation
 };
 };
 
