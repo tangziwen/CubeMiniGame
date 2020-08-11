@@ -17,8 +17,10 @@ class DeviceMemoryPoolVK
 {
 public:
 	DeviceMemoryPoolVK(VkPhysicalDevice phyDevice, VkDevice device, VkInstance inst);
-	BufferInfo getBuffer(VkBufferCreateInfo bufferCreateInfo, VkBuffer targetBuffer);
+	BufferInfo getBuffer(VkBufferCreateInfo bufferCreateInfo, VkBuffer* targetBuffer);
 	void destroyBuffer(VkBuffer targetBuffer, BufferInfo info);
+	void map(BufferInfo info, void ** data);
+	void unmap(BufferInfo info);
 };
 };
 

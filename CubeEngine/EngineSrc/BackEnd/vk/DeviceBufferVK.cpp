@@ -17,9 +17,20 @@ namespace tzw
         auto device = VKRenderBackEnd::shared()->getDevice();
         allocateEmpty(ammount);
         void* mapData;
-        vkMapMemory(device, m_memory, 0, ammount, 0, &mapData);
+        if(!m_isUsePool)
+        {
+            vkMapMemory(device, m_memory, m_offset, ammount, 0, &mapData);
+                memcpy(mapData, data, (size_t) ammount);
+            vkUnmapMemory(device, m_memory);
+        }
+        else
+        {
+            auto memoryPool = VKRenderBackEnd::shared()->getMemoryPool();
+            memoryPool->map(m_bufferInfo, &mapData);
             memcpy(mapData, data, (size_t) ammount);
-        vkUnmapMemory(device, m_memory);
+            memoryPool->unmap(m_bufferInfo);
+        }
+
 	}
 
     void DeviceBufferVK::allocateEmpty(size_t ammount)
@@ -137,7 +148,7 @@ namespace tzw
         }
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        auto info = memoryPool->getBuffer(bufferInfo, m_buffer);
+        auto info = memoryPool->getBuffer(bufferInfo, &m_buffer);
         m_memory = info.getMemory();
         m_bufferSize = info.getSize();
         m_offset = info.getOffset();
@@ -163,6 +174,10 @@ namespace tzw
     {
         return m_bufferSize;
     }
+    size_t DeviceBufferVK::getOffset()
+    {
+        return m_offset;
+    }
     void DeviceBufferVK::setAlignment(size_t newAlignment)
     {
         m_alignment = newAlignment;
@@ -170,6 +185,11 @@ namespace tzw
     VkDeviceMemory DeviceBufferVK::getMemory()
     {
         return m_memory;
+    }
+
+    void DeviceBufferVK::setUsePool(bool isUsed)
+    {
+        m_isUsePool = isUsed;
     }
  
 }

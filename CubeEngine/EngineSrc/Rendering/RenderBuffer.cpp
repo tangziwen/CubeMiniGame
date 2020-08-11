@@ -24,6 +24,8 @@ void RenderBuffer::create()
         break;
     }
     m_bufferId->init(targetType);
+
+    m_bufferId->setUsePool(true);
 }
 
 void RenderBuffer::allocate(void *data, unsigned int amount, RenderFlag::BufferStorageType storageType)

@@ -16,8 +16,10 @@ public:
 	VkBuffer getBuffer();
 	size_t getAlignment();
 	size_t getSize();
+	size_t getOffset();
 	void setAlignment(size_t newAlignment);
 	VkDeviceMemory getMemory();
+	void setUsePool(bool isUsed) override;
 private:
 	void allocateEmptySingleImp(size_t ammount);
 	void allocateEmptyPoolImp(size_t ammount);

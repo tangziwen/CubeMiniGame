@@ -42,4 +42,9 @@ namespace tzw
 		}
 	}
 
+	void DeviceBufferGL::setUsePool(bool isUsed)
+	{
+		//no use, only for vulkan
+	}
+
 }

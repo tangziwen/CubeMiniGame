@@ -16,6 +16,7 @@ public:
 	virtual bool init(DeviceBufferType type) = 0;
 	unsigned int m_uid;//temporally for opengl
 	virtual void bind() = 0;//only for GL
+	virtual void setUsePool(bool isUsed) = 0;//only for vulkan
 	DeviceBufferType m_type;
 };
 };
