@@ -34,6 +34,11 @@ const VkSampler DeviceTextureVK::getSampler()
     return m_sampler;
 }
 
+VkImageLayout DeviceTextureVK::getImageLayOut()
+{
+    return m_imageLayOut;
+}
+
 void DeviceTextureVK::initDataRaw(const unsigned char * buff, size_t texWidth, size_t texHeight, ImageFormat format)
 {
     auto backEnd = VKRenderBackEnd::shared();
@@ -62,7 +67,7 @@ void DeviceTextureVK::initDataRaw(const unsigned char * buff, size_t texWidth, s
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         backEnd->copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+    m_imageLayOut = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     vkDestroyBuffer(backEnd->getDevice(), stagingBuffer, nullptr);
     vkFreeMemory(backEnd->getDevice(), stagingBufferMemory, nullptr);
 
@@ -136,11 +141,20 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
     if(rtFlag ==TextureRtFlagVK::DEPTH_ATTACHEMENT)
     {
         backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
-        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, flag);
-    }else{
+        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, flag);
+        m_imageLayOut = VK_IMAGE_LAYOUT_GENERAL;
+    }
+    else if(rtFlag ==TextureRtFlagVK::COLOR_ATTACHMENT)
+    {
+        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
+        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, flag);
+        m_imageLayOut = VK_IMAGE_LAYOUT_GENERAL;
+    }
+    else{
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
         backEnd->copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight), flag);
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, flag);
+        m_imageLayOut = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     }
     
 
@@ -148,7 +162,15 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
     vkFreeMemory(backEnd->getDevice(), stagingBufferMemory, nullptr);
 
 
-    m_textureImageView = backEnd->createImageView(m_textureImage, vkformat, flag);
+    if(rtFlag ==TextureRtFlagVK::DEPTH_ATTACHEMENT)
+    {
+        m_textureImageView = backEnd->createImageView(m_textureImage, vkformat, VK_IMAGE_ASPECT_DEPTH_BIT);
+        m_textureStencilImageView = backEnd->createImageView(m_textureImage, vkformat, VK_IMAGE_ASPECT_STENCIL_BIT);
+    }
+    else{
+        m_textureImageView = backEnd->createImageView(m_textureImage, vkformat, flag);
+    }
+    
 
 
 
@@ -203,7 +225,7 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
         backEnd->copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+    m_imageLayOut = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
     vkDestroyBuffer(backEnd->getDevice(), stagingBuffer, nullptr);
     vkFreeMemory(backEnd->getDevice(), stagingBufferMemory, nullptr);
 

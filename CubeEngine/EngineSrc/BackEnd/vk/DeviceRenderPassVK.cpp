@@ -22,8 +22,8 @@ namespace tzw
             attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-            attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+            attachDesc.initialLayout = texture->getImageLayOut();
+            attachDesc.finalLayout = texture->getImageLayOut();
             attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             attachmentDescList.emplace_back(attachDesc);
             
@@ -50,7 +50,7 @@ namespace tzw
         depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         attachmentDescList.emplace_back(depthAttachmentDesc);
 		
@@ -92,5 +92,9 @@ namespace tzw
     VkFramebuffer DeviceRenderPassVK::getFrameBuffer()
     {
         return m_frameBuffer;
+    }
+    std::vector<DeviceTextureVK*>& DeviceRenderPassVK::getTextureList()
+    {
+        return m_textureList;
     }
 }

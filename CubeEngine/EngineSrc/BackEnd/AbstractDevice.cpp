@@ -79,15 +79,17 @@ void AbstractDevice::createRenderBackEnd(GLFWwindow * window)
 {
     if(m_deviceType == RenderDeviceType::OpenGl_Device)
     {
-        RenderBackEnd::shared()->initDevice(window);
         Engine::shared()->setRenderBackEnd(RenderBackEnd::shared());
         Engine::shared()->setRenderDeviceType(RenderDeviceType::OpenGl_Device);
+        RenderBackEnd::shared()->initDevice(window);
+
     }
     else
     {
-        VKRenderBackEnd::shared()->initDevice(window);
         Engine::shared()->setRenderBackEnd(VKRenderBackEnd::shared());
         Engine::shared()->setRenderDeviceType(RenderDeviceType::Vulkan_Device);
+        VKRenderBackEnd::shared()->initDevice(window);
+
     }
 }
 

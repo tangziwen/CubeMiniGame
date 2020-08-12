@@ -117,6 +117,7 @@ private:
 
 
     void CreateRenderPass();
+    void CreateTextureToScreenRenderPass();
     void CreateDerrferredRenderPass();
     void createDeferredFrameBuffer();
     	// Create a frame buffer attachment
@@ -171,6 +172,7 @@ private:
     unsigned m_gfxQueueFamily;
     std::vector<VkImageView> m_views;	
     VkRenderPass m_renderPass;
+    VkRenderPass m_textureToScreenRenderPass;
     VkRenderPass m_gbufferRenderPass;
     std::vector<VkFramebuffer> m_fbs;
     VkShaderModule m_vsModule;
@@ -179,6 +181,9 @@ private:
     VkPipeline m_pipeline;
     DeviceBufferVK * m_vertexBuffer;
     DeviceBufferVK * m_indexBuffer;
+
+    DeviceBufferVK * m_quadVertexBuffer;
+    DeviceBufferVK * m_quadIndexBuffer;
     //VkBuffer vertexBuffer;
     //VkBuffer indexBuffer;
     std::vector<VkBuffer> uniformBuffers;
@@ -190,7 +195,8 @@ private:
     VkPipelineLayout pipelineLayout;
 
     void drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
-    void drawObjs_Common(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
+    void drawObjs_Common(VkCommandBuffer command,VkRenderPass renderPass , std::vector<RenderCommand>& renderList);
+
     /*
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;
@@ -221,6 +227,9 @@ private:
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
     DeviceRenderPassVK * m_deferredRenderPass;
+    DeviceRenderPassVK * m_deferredLightingPass;
+    DevicePipelineVK * m_dirLightingPassPiepeline;
+    DevicePipelineVK * m_textureToScreenPipeline;
     std::set<DevicePipelineVK *> m_fuckingObjList;
 };
 

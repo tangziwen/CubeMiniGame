@@ -25,7 +25,7 @@ class DevicePipelineVK
 {
 public:
 	DevicePipelineVK(Material * mat, VkRenderPass targetRenderPass
-		,DeviceVertexInput vertexInput);
+		,DeviceVertexInput vertexInput, int colorAttachmentCount = 1);
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkPipelineLayout getPipelineLayOut();
 	VkPipeline getPipeline();

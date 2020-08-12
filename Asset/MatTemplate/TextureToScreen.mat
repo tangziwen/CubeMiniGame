@@ -1,7 +1,7 @@
 {
 	"shaders":{
 		"vs" : "Shaders/ScreenQuad_v.glsl",
-		"fs" : "Shaders/LightPassDir_f.glsl"
+		"fs" : "Shaders/TextureToScreen_f.glsl"
 	},
 	"name" : "DirectLight",
 	"DepthTestEnable" : false,

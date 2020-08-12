@@ -39,7 +39,7 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput)
+DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput, int colorAttachmentCount)
 {
 	m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
@@ -144,21 +144,29 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     pipelineMSCreateInfo.rasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
     pipelineMSCreateInfo.flags = 0;
     
-    VkPipelineColorBlendAttachmentState blendAttachState = {};
-    blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-    blendAttachState.srcColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
-    blendAttachState.dstColorBlendFactor=VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-    blendAttachState.colorBlendOp=VK_BLEND_OP_ADD;
-    blendAttachState.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;
-    blendAttachState.dstAlphaBlendFactor=VK_BLEND_FACTOR_ZERO;
-    blendAttachState.alphaBlendOp=VK_BLEND_OP_ADD;
-    blendAttachState.blendEnable = m_mat->isIsEnableBlend();
+    std::vector<VkPipelineColorBlendAttachmentState> blendStateList;
+    for(int i = 0; i < colorAttachmentCount; i++)
+    {
+        VkPipelineColorBlendAttachmentState blendAttachState = {};
+        blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
+        blendAttachState.srcColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
+        blendAttachState.dstColorBlendFactor=VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendAttachState.colorBlendOp=VK_BLEND_OP_ADD;
+        blendAttachState.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;
+        blendAttachState.dstAlphaBlendFactor=VK_BLEND_FACTOR_ZERO;
+        blendAttachState.alphaBlendOp=VK_BLEND_OP_ADD;
+        blendAttachState.blendEnable = m_mat->isIsEnableBlend();
+
+        blendStateList.emplace_back(blendAttachState);
+    
+    }
+
     
     VkPipelineColorBlendStateCreateInfo blendCreateInfo = {};
     blendCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
     blendCreateInfo.logicOp = VK_LOGIC_OP_COPY;
-    blendCreateInfo.attachmentCount = 1;
-    blendCreateInfo.pAttachments = &blendAttachState;
+    blendCreateInfo.attachmentCount = blendStateList.size();
+    blendCreateInfo.pAttachments = blendStateList.data();
  
 
 
@@ -166,17 +174,16 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     //pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    std::vector<VkDescriptorSetLayout> layOutList = {shader->getDescriptorSetLayOut(),};
     if(!isHaveMaterialDescripotrSet)
     {
-        pipelineLayoutInfo.setLayoutCount = 1;
-        auto descSetlayOut = shader->getDescriptorSetLayOut();
-        pipelineLayoutInfo.pSetLayouts = &descSetlayOut;
+        pipelineLayoutInfo.setLayoutCount = layOutList.size();
+        pipelineLayoutInfo.pSetLayouts = layOutList.data();
     }
     else
     {
-        std::vector<VkDescriptorSetLayout> layOutList = {shader->getDescriptorSetLayOut(), shader->getMaterialDescriptorSetLayOut()};
+        layOutList.emplace_back( shader->getMaterialDescriptorSetLayOut());
         pipelineLayoutInfo.setLayoutCount = layOutList.size();
-        auto descSetlayOut = shader->getDescriptorSetLayOut();
         pipelineLayoutInfo.pSetLayouts = layOutList.data();
     }
     if (vkCreatePipelineLayout(VKRenderBackEnd::shared()->getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {

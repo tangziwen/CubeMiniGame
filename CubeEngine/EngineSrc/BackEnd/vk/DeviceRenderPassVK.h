@@ -12,6 +12,7 @@ public:
 	DeviceRenderPassVK(int width, int height, int colorAttachNum, ImageFormat format);
 	VkRenderPass getRenderPass();
 	VkFramebuffer getFrameBuffer();
+	std::vector<DeviceTextureVK *> & getTextureList();
 private:
 	VkRenderPass m_renderPass;
 	VkFramebuffer m_frameBuffer;

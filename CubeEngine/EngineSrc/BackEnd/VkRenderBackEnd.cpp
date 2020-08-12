@@ -584,7 +584,7 @@ VkApplicationInfo appInfo = {};
 
         VkAttachmentDescription attachDesc = {};    
         attachDesc.format = GetSurfaceFormat().format;
-        attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
         attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -595,11 +595,11 @@ VkApplicationInfo appInfo = {};
         VkAttachmentDescription depthAttachment{};
         depthAttachment.format = VK_FORMAT_D24_UNORM_S8_UINT;
         depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
         depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 		std::vector<VkAttachmentDescription> attachmentDescList = {attachDesc, depthAttachment};
@@ -615,9 +615,99 @@ VkApplicationInfo appInfo = {};
 
         printf("Created a render pass\n");
     }
+    void VKRenderBackEnd::CreateTextureToScreenRenderPass()
+    {
+        VkAttachmentReference attachRef = {};
+        attachRef.attachment = 0;
+        attachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference depthAttachmentRef{};
+        depthAttachmentRef.attachment = 1;
+        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+	
+        VkSubpassDescription subpassDesc = {};
+        subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        subpassDesc.colorAttachmentCount = 1;
+        subpassDesc.pColorAttachments = &attachRef;
+		subpassDesc.pDepthStencilAttachment = &depthAttachmentRef;
+
+        VkAttachmentDescription attachDesc = {};    
+        attachDesc.format = GetSurfaceFormat().format;
+        attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        attachDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
+
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = VK_FORMAT_D24_UNORM_S8_UINT;
+        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+
+		std::vector<VkAttachmentDescription> attachmentDescList = {attachDesc, depthAttachment};
+        VkRenderPassCreateInfo renderPassCreateInfo = {};
+        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        renderPassCreateInfo.attachmentCount = attachmentDescList.size();
+        renderPassCreateInfo.pAttachments = attachmentDescList.data();
+        renderPassCreateInfo.subpassCount = 1;
+        renderPassCreateInfo.pSubpasses = &subpassDesc;
+        
+        VkResult res = vkCreateRenderPass(m_device, &renderPassCreateInfo, NULL, &m_textureToScreenRenderPass);
+        CHECK_VULKAN_ERROR("vkCreateRenderPass error %d\n", res);
+
+        printf("Created a render pass\n");
+    }
     void VKRenderBackEnd::CreateDerrferredRenderPass()
     {
-        m_deferredRenderPass = new DeviceRenderPassVK(1024, 768, 4, ImageFormat::R8G8B8A8);
+        auto size = Engine::shared()->winSize();
+        m_deferredRenderPass = new DeviceRenderPassVK(size.x, size.y, 4, ImageFormat::R8G8B8A8);
+        m_deferredLightingPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R8G8B8A8);
+
+
+        DeviceVertexInput imguiVertexInput;
+        imguiVertexInput.stride = sizeof(VertexData);
+        imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
+        imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
+        imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
+        Material * mat = new Material();
+        mat->loadFromTemplate("DirectLight");
+        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_deferredLightingPass->getRenderPass(), imguiVertexInput, 4);
+
+
+        Material * matTextureToScreen = new Material();
+        matTextureToScreen->loadFromTemplate("TextureToScreen");
+        m_textureToScreenPipeline = new DevicePipelineVK(matTextureToScreen, m_textureToScreenRenderPass, imguiVertexInput);
+
+        VertexData vertices[] = {
+            // Vertex data for face 0
+            VertexData(vec3(-1.0f, -1.0f,  1.0f), vec2(0.0f, 0.0f)),  // v0
+            VertexData(vec3( 1.0f, -1.0f,  1.0f), vec2(1.f, 0.0f)), // v1
+            VertexData(vec3(-1.0f,  1.0f,  1.0f), vec2(0.0f, 1.f)),  // v2
+            VertexData(vec3( 1.0f,  1.0f,  1.0f), vec2(1.f, 1.f)), // v3
+        };
+        auto vbuffer = createBuffer_imp();
+        vbuffer->init(DeviceBufferType::Vertex);
+
+        vbuffer->allocate(vertices, sizeof(vertices[0]) * ARRAY_SIZE_IN_ELEMENTS(vertices));
+        m_quadVertexBuffer = static_cast<DeviceBufferVK *>(vbuffer);
+
+
+        indices = {
+         0,  1,  2,  1,  3,  2,
+
+		};
+        auto ibuffer = createBuffer_imp();
+        ibuffer->init(DeviceBufferType::Index);
+
+        ibuffer->allocate(indices.data(), sizeof(indices[0]) * indices.size());
+        m_quadIndexBuffer = static_cast<DeviceBufferVK *>(ibuffer);
     }
     void VKRenderBackEnd::createDeferredFrameBuffer()
     {
@@ -1320,7 +1410,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         }
     }
 }
-void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command, std::vector<RenderCommand>& renderList)
+void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass renderPass, std::vector<RenderCommand>& renderList)
 {
     for(RenderCommand & a : renderList)
     {
@@ -1338,7 +1428,9 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command, std::vector<Rende
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-            currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
+            currPipeLine = new DevicePipelineVK(mat, renderPass, imguiVertexInput, 4);
             m_matPipelinePool[matStr]  =currPipeLine;
                 
         }
@@ -1432,7 +1524,29 @@ void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkIm
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         destinationStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-    } else {
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    }
+    else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
+        barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+        barrier.dstAccessMask = VK_IMAGE_LAYOUT_GENERAL;
+
+        sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        destinationStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+    }
+    else {
         throw std::invalid_argument("unsupported layout transition!");
     }
 
@@ -1622,6 +1736,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         createCommandBufferPoolForGeneral();
         createCommandBufferForGeneral(100);
         CreateRenderPass();
+        CreateTextureToScreenRenderPass();
 		createDepthResources();
         CreateFramebuffer();
         CreateShaders();
@@ -1646,7 +1761,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     void VKRenderBackEnd::RenderScene()
     {
 
-        
+        auto screenSize = Engine::shared()->winSize();
         vkWaitForFences(m_device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
         unsigned ImageIndex = 0;
     
@@ -1659,38 +1774,42 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //CPU here
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();
+        auto & commonList = Renderer::shared()->getCommonList();
         m_fuckingObjList.clear();
 
-        /*
+        
         //------------deferred g - pass begin-------------
         VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
-        VkCommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+        VkCommandBufferBeginInfo beginInfoDeffered = {};
+        beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
 
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-		clearValues[1].depthStencil = {1.0f, 0};
+		std::array<VkClearValue, 5> clearValuesDefferred{};
+		clearValuesDefferred[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValuesDefferred[1].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValuesDefferred[2].color = {0.0f, 0.0f, 0.0f, 1.0f};
+        clearValuesDefferred[3].color = {0.0f, 0.0f, 0.0f, 1.0f};
+		clearValuesDefferred[4].depthStencil = {1.0f, 0};
 	
-        auto screenSize = Engine::shared()->winSize();
-        VkRenderPassBeginInfo renderPassInfo = {};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_deferredRenderPass->getRenderPass();   
-        renderPassInfo.renderArea.offset.x = 0;
-        renderPassInfo.renderArea.offset.y = 0;
-        renderPassInfo.renderArea.extent.width = screenSize.x;
-        renderPassInfo.renderArea.extent.height = screenSize.y;
-        renderPassInfo.clearValueCount = clearValues.size();
-        renderPassInfo.pClearValues = clearValues.data();
+        
+        VkRenderPassBeginInfo renderPassInfoDeferred = {};
+        renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfoDeferred.renderPass = m_deferredRenderPass->getRenderPass();   
+        renderPassInfoDeferred.renderArea.offset.x = 0;
+        renderPassInfoDeferred.renderArea.offset.y = 0;
+        renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
+        renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
+        renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
+        renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
         
         vkResetCommandBuffer(deferredCommand, 0);
-        res = vkBeginCommandBuffer(deferredCommand, &beginInfo);
+        res = vkBeginCommandBuffer(deferredCommand, &beginInfoDeffered);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfo.framebuffer = m_deferredRenderPass->getFrameBuffer();
-        std::unordered_map<Material *,std::vector<RenderCommand>> mapList;
-        vkCmdBeginRenderPass(deferredCommand, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+        renderPassInfoDeferred.framebuffer = m_deferredRenderPass->getFrameBuffer();
+        vkCmdBeginRenderPass(deferredCommand, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
+        drawObjs_Common(deferredCommand, m_deferredRenderPass->getRenderPass(), commonList);
 
 
         vkCmdEndRenderPass(deferredCommand);
@@ -1698,13 +1817,199 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
 
         //------------deferred g - pass end-----------------
-        */
+
+        //------------deferred Lighting Pass begin---------------
+        VkCommandBuffer lightPassCmd = m_generalCmdBuff[ImageIndex][1];
+        {
+            
+            VkCommandBufferBeginInfo beginInfoDeffered = {};
+            beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            std::array<VkClearValue, 2> clearValuesDefferred{};
+            clearValuesDefferred[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
+            clearValuesDefferred[1].depthStencil = {1.0f, 0};
+            VkRenderPassBeginInfo renderPassInfoDeferred = {};
+            renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfoDeferred.renderPass = m_deferredLightingPass->getRenderPass();   
+            renderPassInfoDeferred.renderArea.offset.x = 0;
+            renderPassInfoDeferred.renderArea.offset.y = 0;
+            renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
+            renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
+            renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
+            renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
+
+            vkResetCommandBuffer(lightPassCmd, 0);
+            res = vkBeginCommandBuffer(lightPassCmd, &beginInfoDeffered);
+            CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+            renderPassInfoDeferred.framebuffer = m_deferredLightingPass->getFrameBuffer();
+            vkCmdBeginRenderPass(lightPassCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
+
+            
+            vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
+
+            m_dirLightingPassPiepeline->collcetItemWiseDescritporSet();
+            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
+            //update uniform.
+            VkDescriptorSet itemDescriptorSet = m_dirLightingPassPiepeline->giveItemWiseDescriptorSet();
+
+            //update descriptor
+            std::vector<VkWriteDescriptorSet> descriptorWrites{};
+            //update descriptor
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
+            bufferInfo.offset = m_itemBufferOffset;
+            bufferInfo.range = sizeof(Matrix44);
+
+            VkWriteDescriptorSet writeSet{};
+            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		    writeSet.pNext = nullptr;
+            writeSet.dstSet = itemDescriptorSet;
+            writeSet.dstBinding = 0;
+            writeSet.dstArrayElement = 0;
+            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writeSet.descriptorCount = 1;
+            writeSet.pBufferInfo = &bufferInfo;
+            descriptorWrites.emplace_back(writeSet);
+
+            auto gbufferTex = m_deferredRenderPass->getTextureList();
+            std::vector<VkDescriptorImageInfo> imageInfoList;
+            for(int i =0; i < m_deferredRenderPass->getTextureList().size(); i++)
+            {
+                auto tex = gbufferTex[i];
+                VkDescriptorImageInfo imageInfo{};
+                imageInfo.imageLayout = tex->getImageLayOut();
+                imageInfo.imageView = tex->getImageView();
+                imageInfo.sampler = tex->getSampler();
+                imageInfoList.emplace_back(imageInfo);
+                VkWriteDescriptorSet texWriteSet{};
+                texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                texWriteSet.dstSet = itemDescriptorSet;
+                texWriteSet.dstBinding = i + 1;
+                texWriteSet.dstArrayElement = 0;
+                texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                texWriteSet.descriptorCount = 1;
+                texWriteSet.pImageInfo = (imageInfoList.data() + imageInfoList.size() - 1);
+
+                descriptorWrites.emplace_back(texWriteSet);
+            }
+            vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+
+            VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(lightPassCmd, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(lightPassCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            if(static_cast<DeviceShaderVK *>(m_dirLightingPassPiepeline->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
+                descriptorSetList.push_back(m_dirLightingPassPiepeline->getMaterialDescriptorSet());
+            }
+            vkCmdBindDescriptorSets(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(lightPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
+            
+            vkCmdEndRenderPass(lightPassCmd);
+            res = vkEndCommandBuffer(lightPassCmd);
+            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+
+        }
+
+        //------------deferred Lighting Pass end---------------
         
+        //------------Texture To Screen Pass begin---------------
+        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][2];
+        {
+            
+            VkCommandBufferBeginInfo beginInfoDeffered = {};
+            beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            std::array<VkClearValue, 2> clearValuesDefferred{};
+            clearValuesDefferred[0].color = {1.0f, 0.0f, 0.0f, 1.0f};
+            clearValuesDefferred[1].depthStencil = {1.0f, 0};
+            VkRenderPassBeginInfo renderPassInfoDeferred = {};
+            renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfoDeferred.renderPass = m_textureToScreenRenderPass;   
+            renderPassInfoDeferred.renderArea.offset.x = 0;
+            renderPassInfoDeferred.renderArea.offset.y = 0;
+            renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
+            renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
+            renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
+            renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
+
+            vkResetCommandBuffer(textureToScreenCmd, 0);
+            res = vkBeginCommandBuffer(textureToScreenCmd, &beginInfoDeffered);
+            CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+            renderPassInfoDeferred.framebuffer = m_fbs[ImageIndex];
+            vkCmdBeginRenderPass(textureToScreenCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
 
 
-        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][1];
-		auto & commonList = Renderer::shared()->getCommonList();
+            vkCmdBindPipeline(textureToScreenCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textureToScreenPipeline->getPipeline());
+
+            m_textureToScreenPipeline->collcetItemWiseDescritporSet();
+            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
+            //update uniform.
+            VkDescriptorSet itemDescriptorSet = m_textureToScreenPipeline->giveItemWiseDescriptorSet();
+
+            //update descriptor
+            std::vector<VkWriteDescriptorSet> descriptorWrites{};
+            //update descriptor
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
+            bufferInfo.offset = m_itemBufferOffset;
+            bufferInfo.range = sizeof(Matrix44);
+
+            VkWriteDescriptorSet writeSet{};
+            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		    writeSet.pNext = nullptr;
+            writeSet.dstSet = itemDescriptorSet;
+            writeSet.dstBinding = 0;
+            writeSet.dstArrayElement = 0;
+            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writeSet.descriptorCount = 1;
+            writeSet.pBufferInfo = &bufferInfo;
+            descriptorWrites.emplace_back(writeSet);
+
+            auto lightingResultTex = m_deferredLightingPass->getTextureList();
+            std::vector<VkDescriptorImageInfo> imageInfoList;
+
+            auto tex = lightingResultTex[0];
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = tex->getImageLayOut();
+            imageInfo.imageView = tex->getImageView();
+            imageInfo.sampler = tex->getSampler();
+  
+            VkWriteDescriptorSet texWriteSet{};
+            texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            texWriteSet.dstSet = itemDescriptorSet;
+            texWriteSet.dstBinding = 1;
+            texWriteSet.dstArrayElement = 0;
+            texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            texWriteSet.descriptorCount = 1;
+            texWriteSet.pImageInfo = &imageInfo;
+
+            descriptorWrites.emplace_back(texWriteSet);
+
+            vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+
+            VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(textureToScreenCmd, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(textureToScreenCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            if(static_cast<DeviceShaderVK *>(m_textureToScreenPipeline->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
+                descriptorSetList.push_back(m_textureToScreenPipeline->getMaterialDescriptorSet());
+            }
+            vkCmdBindDescriptorSets(textureToScreenCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textureToScreenPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(textureToScreenCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
+
+
+            vkCmdEndRenderPass(textureToScreenCmd);
+            res = vkEndCommandBuffer(textureToScreenCmd);
+            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+        }
+        //------------Texture To Screen Pass end---------------
+        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][3];
+		
 
         
 	
@@ -1726,7 +2031,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 		clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
 		clearValues[1].depthStencil = {1.0f, 0};
 	
-        auto screenSize = Engine::shared()->winSize();
+        
         VkRenderPassBeginInfo renderPassInfo = {};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
         renderPassInfo.renderPass = m_renderPass;   
@@ -1741,9 +2046,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         res = vkBeginCommandBuffer(command, &beginInfo);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfo.framebuffer = m_fbs[ImageIndex];
-        std::unordered_map<Material *,std::vector<RenderCommand>> mapList;
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        drawObjs_Common(command, commonList);
+        //drawObjs_Common(command, m_renderPass, commonList);
         drawObjs(command, Renderer::shared()->getGUICommandList());
 
         //IMGUI
@@ -1874,10 +2178,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
+        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, textureToScreenCmd, command};
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount   = 1;//cube Engine cmd + imgui CMD
-        submitInfo.pCommandBuffers      = &command;//&m_cmdBufs[ImageIndex];
+        submitInfo.commandBufferCount   = commandList.size();
+        submitInfo.pCommandBuffers      = commandList.data();
 
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
