@@ -10,7 +10,8 @@ class DeviceRenderPassVK
 {
 public:
 	DeviceRenderPassVK(int width, int height, int colorAttachNum, ImageFormat format);
-
+	VkRenderPass getRenderPass();
+	VkFramebuffer getFrameBuffer();
 private:
 	VkRenderPass m_renderPass;
 	VkFramebuffer m_frameBuffer;

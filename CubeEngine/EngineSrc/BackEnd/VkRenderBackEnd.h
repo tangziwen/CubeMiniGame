@@ -190,7 +190,7 @@ private:
     VkPipelineLayout pipelineLayout;
 
     void drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
-    
+    void drawObjs_Common(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
     /*
 	VkImage textureImage;
 	VkDeviceMemory textureImageMemory;

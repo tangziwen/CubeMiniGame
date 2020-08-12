@@ -85,4 +85,12 @@ namespace tzw
 		fbufCreateInfo.layers = 1;
 		VK_CHECK_RESULT(vkCreateFramebuffer(VKRenderBackEnd::shared()->getDevice(), &fbufCreateInfo, nullptr, &m_frameBuffer));
 	}
+    VkRenderPass DeviceRenderPassVK::getRenderPass()
+    {
+        return m_renderPass;
+    }
+    VkFramebuffer DeviceRenderPassVK::getFrameBuffer()
+    {
+        return m_frameBuffer;
+    }
 }
