@@ -19,6 +19,7 @@
 #include <EngineSrc\BackEnd\vk\DeviceItemBufferPoolVK.h>
 #include "vk/DeviceMemoryPoolVK.h"
 #include "vk/DeviceRenderPassVK.h"
+#include <set>
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 
@@ -187,6 +188,8 @@ private:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPipelineLayout pipelineLayout;
+
+    void drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
     
     /*
 	VkImage textureImage;
@@ -218,6 +221,7 @@ private:
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
     DeviceRenderPassVK * m_deferredRenderPass;
+    std::set<DevicePipelineVK *> m_fuckingObjList;
 };
 
 } // namespace tzw

@@ -1251,6 +1251,74 @@ void VKRenderBackEnd::initVMAPool()
 {
     m_memoryPool = new DeviceMemoryPoolVK(GetPhysDevice(), m_device, m_inst);
 }
+void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList)
+{
+    //UI的东西很特殊，一定需要根据队列的顺序来绘制,普通物体可以按材质分组绘制
+    for(RenderCommand & a : renderList)
+    {
+        Material * mat = a.getMat();
+
+        std::string & matStr = mat->getFullDescriptionStr();
+
+        DevicePipelineVK * currPipeLine;
+        auto iter = m_matPipelinePool.find(matStr);
+        if(iter == m_matPipelinePool.end())
+        {
+            DeviceVertexInput imguiVertexInput;
+            imguiVertexInput.stride = sizeof(VertexData);
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
+            currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
+            m_matPipelinePool[matStr]  =currPipeLine;
+                
+        }
+        else{
+            currPipeLine = iter->second;
+        }
+        if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
+        {
+            m_fuckingObjList.insert(currPipeLine);
+            currPipeLine->collcetItemWiseDescritporSet();
+            //update material-wise parameter.
+            currPipeLine->updateUniform();
+        }
+
+        //update uniform.
+        VkDescriptorSet itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
+
+        size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
+        void* data;
+        vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
+            Matrix44 wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
+        memcpy(data, &wvp, sizeof(Matrix44));
+        vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
+		auto mesh = a.getMesh();
+		updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset);
+        //item->updateDescriptor();
+
+        //recordDrawCommand
+        auto vbo = static_cast<DeviceBufferVK *>(mesh->getArrayBuf()->bufferId());
+        auto ibo = static_cast<DeviceBufferVK *>(mesh->getIndexBuf()->bufferId());
+
+        if(vbo && ibo){
+            vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
+            VkBuffer vertexBuffers[] = {vbo->getBuffer()};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(command, 0, 1, vertexBuffers, offsets);
+            
+        
+            vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
+                descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
+            }
+            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(command, static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
+        }
+    }
+}
 void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 {
     vkEndCommandBuffer(commandBuffer);
@@ -1524,20 +1592,25 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();
 
+
+
+        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][1];
 		auto & commonList = Renderer::shared()->getCommonList();
 
         
 	
         auto drawSize = Renderer::shared()->getGUICommandList().size();
 
+
+
+
+
+
+        m_fuckingObjList.clear();
+
         VkCommandBufferBeginInfo beginInfo = {};
         beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
         beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-    
-        VkImageSubresourceRange imageRange = {};
-        imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imageRange.levelCount = 1;
-        imageRange.layerCount = 1;
 
 
 		std::array<VkClearValue, 2> clearValues{};
@@ -1554,18 +1627,13 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         renderPassInfo.renderArea.extent.height = screenSize.y;
         renderPassInfo.clearValueCount = clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
-        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][0];
+        
         vkResetCommandBuffer(command, 0);
         res = vkBeginCommandBuffer(command, &beginInfo);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfo.framebuffer = m_fbs[ImageIndex];
         std::unordered_map<Material *,std::vector<RenderCommand>> mapList;
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-
-
-
-
-        std::set<DevicePipelineVK *> m_fuckingObjList;
 
         for(RenderCommand & a : commonList)
         {
@@ -1632,68 +1700,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             }
         }
 
-        //UI的东西很特殊，一定需要根据队列的顺序来绘制,普通物体可以按材质分组绘制
-        for(RenderCommand & a : Renderer::shared()->getGUICommandList())
-        {
-            Material * mat = a.getMat();
-
-            std::string & matStr = mat->getFullDescriptionStr();
-
-            DevicePipelineVK * currPipeLine;
-            auto iter = m_matPipelinePool.find(matStr);
-            if(iter == m_matPipelinePool.end())
-            {
-                DeviceVertexInput imguiVertexInput;
-                imguiVertexInput.stride = sizeof(VertexData);
-                imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-                imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
-                imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-                currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
-                m_matPipelinePool[matStr]  =currPipeLine;
-                
-            }
-            else{
-                currPipeLine = iter->second;
-            }
-            if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
-            {
-                m_fuckingObjList.insert(currPipeLine);
-                currPipeLine->collcetItemWiseDescritporSet();
-                //update material-wise parameter.
-                currPipeLine->updateUniform();
-            }
-
-            //update uniform.
-            VkDescriptorSet itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
-
-            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
-            void* data;
-            vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
-                Matrix44 wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
-            memcpy(data, &wvp, sizeof(Matrix44));
-            vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
-			auto mesh = a.getMesh();
-			updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset);
-            //item->updateDescriptor();
-
-            //recordDrawCommand
-            auto vbo = static_cast<DeviceBufferVK *>(mesh->getArrayBuf()->bufferId());
-            vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
-            VkBuffer vertexBuffers[] = {vbo->getBuffer()};
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(command, 0, 1, vertexBuffers, offsets);
-            
-            auto ibo = static_cast<DeviceBufferVK *>(mesh->getIndexBuf()->bufferId());
-            vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
-            if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
-            }
-            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(command, static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
-        }
-
+        drawObjs(command, Renderer::shared()->getGUICommandList());
 
         //IMGUI
         GUISystem::shared()->renderIMGUI();
@@ -1826,7 +1833,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = 1;//cube Engine cmd + imgui CMD
-        submitInfo.pCommandBuffers      = m_generalCmdBuff[ImageIndex].data();//&m_cmdBufs[ImageIndex];
+        submitInfo.pCommandBuffers      = &command;//&m_cmdBufs[ImageIndex];
 
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
