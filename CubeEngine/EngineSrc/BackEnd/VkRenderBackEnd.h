@@ -18,6 +18,7 @@
 #include "Rendering/RenderCommand.h"
 #include <EngineSrc\BackEnd\vk\DeviceItemBufferPoolVK.h>
 #include "vk/DeviceMemoryPoolVK.h"
+#include "vk/DeviceRenderPassVK.h"
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 
@@ -89,8 +90,8 @@ public:
 //helper
     bool memory_type_from_properties(uint32_t typeBits, VkFlags requirements_mask, uint32_t *typeIndex);
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
-	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
-	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
+	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
+	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT);
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;
     const VkSurfaceCapabilitiesKHR GetSurfaceCaps() const;
     const VkPhysicalDevice& GetPhysDevice();
@@ -115,6 +116,7 @@ private:
 
 
     void CreateRenderPass();
+    void CreateDerrferredRenderPass();
     void createDeferredFrameBuffer();
     	// Create a frame buffer attachment
 	void createAttachment(
@@ -168,6 +170,7 @@ private:
     unsigned m_gfxQueueFamily;
     std::vector<VkImageView> m_views;	
     VkRenderPass m_renderPass;
+    VkRenderPass m_gbufferRenderPass;
     std::vector<VkFramebuffer> m_fbs;
     VkShaderModule m_vsModule;
     VkShaderModule m_fsModule;
@@ -214,6 +217,7 @@ private:
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
+    DeviceRenderPassVK * m_deferredRenderPass;
 };
 
 } // namespace tzw
