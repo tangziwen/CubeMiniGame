@@ -8,10 +8,10 @@ layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 v_texcoord;
 void main() 
 {
-	vec3 lightDir = vec3(-0.5, -1, 0);
+	vec3 lightDir = vec3(-0.5, 1, 0);
 	vec3 albedo = texture(RT_albedo, v_texcoord).rgb;
 	vec3 normal = texture(RT_normal, v_texcoord).rgb;
-	vec3 resultColor = albedo;// * clamp(dot(lightDir, normal.xyz), 0, 1);
+	vec3 resultColor = albedo * (dot(normalize(lightDir), normal.xyz));
 	
 	out_Color = vec4(resultColor, 1.0);
 }

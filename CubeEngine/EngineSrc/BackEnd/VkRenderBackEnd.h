@@ -105,7 +105,7 @@ public:
     VkFormat getFormat(ImageFormat imageFormat);
 private:
 
-    void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset);
+    void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset, size_t bufferRange);
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
     void CreateInstance();
     void VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices);

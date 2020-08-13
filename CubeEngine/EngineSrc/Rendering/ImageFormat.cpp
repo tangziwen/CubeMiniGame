@@ -15,6 +15,8 @@ size_t tzw::ImageFormatGetSize(ImageFormat format)
         return 8;
     case ImageFormat::D24_S8:
         return 4;
+    case ImageFormat::R8G8B8A8_S:
+        return 4;
     }
     return 1;
 }

@@ -49,6 +49,14 @@ static void initVk()
 }
 
 
+struct ItemUniform
+{
+    alignas(16) Matrix44 wvp;
+    alignas(16) Matrix44 wv;
+    alignas(16) Matrix44 world;
+    alignas(16) Matrix44 view;
+    alignas(16) Matrix44 projection;
+};
 
 static FrameBufferVK offScreenFrameBuf;
 std::vector<const char*> getRequiredExtensions() {
@@ -156,7 +164,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 	{
 	m_imguiPipeline = nullptr;
 	}
-    void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset)
+    void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
     {
        auto & varList = mat->getVarList();
         std::vector<VkWriteDescriptorSet> descriptorWrites{};
@@ -164,7 +172,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
         bufferInfo.offset = m_offset;
-        bufferInfo.range = sizeof(Matrix44);
+        bufferInfo.range = bufferRange;
 
         VkWriteDescriptorSet writeSet{};
         writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -667,7 +675,7 @@ VkApplicationInfo appInfo = {};
     void VKRenderBackEnd::CreateDerrferredRenderPass()
     {
         auto size = Engine::shared()->winSize();
-        m_deferredRenderPass = new DeviceRenderPassVK(size.x, size.y, 4, ImageFormat::R8G8B8A8);
+        m_deferredRenderPass = new DeviceRenderPassVK(size.x, size.y, 4, ImageFormat::R8G8B8A8_S);
         m_deferredLightingPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R8G8B8A8);
 
 
@@ -1197,6 +1205,8 @@ VkApplicationInfo appInfo = {};
             return VK_FORMAT_R8G8B8_UNORM;
         case ImageFormat::R8G8B8A8:
             return VK_FORMAT_R8G8B8A8_UNORM;
+        case ImageFormat::R8G8B8A8_S:
+            return VK_FORMAT_R8G8B8A8_SNORM;
         case ImageFormat::R16G16B16A16:
             return VK_FORMAT_R16G16B16A16_UNORM;
         case ImageFormat::D24_S8:
@@ -1385,7 +1395,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         memcpy(data, &wvp, sizeof(Matrix44));
         vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
 		auto mesh = a.getMesh();
-		updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset);
+		updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset, sizeof(Matrix44));
         //item->updateDescriptor();
 
         //recordDrawCommand
@@ -1430,6 +1440,11 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
+
+            //use for terrain
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
+            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
+
             currPipeLine = new DevicePipelineVK(mat, renderPass, imguiVertexInput, 4);
             m_matPipelinePool[matStr]  =currPipeLine;
                 
@@ -1448,14 +1463,19 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
         //update uniform.
         VkDescriptorSet itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
 
-        size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
+        size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(ItemUniform));
         void* data;
         vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
-            Matrix44 wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
-        memcpy(data, &wvp, sizeof(Matrix44));
+            ItemUniform uniformStruct;
+            uniformStruct.wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
+            uniformStruct.wv = a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix;
+            uniformStruct.world = a.m_transInfo.m_worldMatrix;
+            uniformStruct.view = a.m_transInfo.m_viewMatrix;
+            uniformStruct.projection = a.m_transInfo.m_projectMatrix;
+        memcpy(data, &uniformStruct, sizeof(uniformStruct));
         vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
 		auto mesh = a.getMesh();
-        updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset);
+        updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset, sizeof(uniformStruct));
 
         //recordDrawCommand
         auto vbo = static_cast<DeviceBufferVK *>(mesh->getArrayBuf()->bufferId());
@@ -1769,8 +1789,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
-
-        vkDeviceWaitIdle(m_device);
         //CPU here
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();

@@ -1,8 +1,13 @@
 #extension GL_ARB_separate_shader_objects : enable
 
 layout(binding = 0) uniform UniformBufferObject {
-    mat4 mvp;
+	mat4 mvp;
+	mat4 wv;
+	mat4 TU_mMatrix;
+	mat4 view;
+	mat4 projection;
 } t_ObjectUniform;
+
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
 layout(location = 2) in vec2 texcoord;
@@ -22,6 +27,6 @@ void main() {
 	gl_Position.y = -gl_Position.y;
 	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 	fragColor = inColor;
-	v_normal = inNormal;
-	v_tangent = inTangent;
+	v_normal = (t_ObjectUniform.TU_mMatrix * vec4(inNormal,0.0)).xyz;
+	v_tangent = (t_ObjectUniform.TU_mMatrix * vec4(inTangent,0.0)).xyz;
 }
