@@ -207,6 +207,7 @@ void VegetationBatch::commitRenderCmd()
 			setUpTransFormation(command.m_transInfo);
 		}
 		break;
+
 	case VegetationType::QUAD:
 		{
 			auto theMesh = m_quadMesh;
@@ -220,6 +221,7 @@ void VegetationBatch::commitRenderCmd()
 			setUpTransFormation(command.m_transInfo);
 		}
 		break;
+	
 	case VegetationType::ModelType:
 		{
 			for(auto i = 0; i < m_model->getMeshCount(); i++)

@@ -39,7 +39,7 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput, int colorAttachmentCount)
+DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
 {
 	m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
@@ -69,14 +69,36 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
     vertexInputInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
+    std::vector<VkVertexInputBindingDescription> bindingDescriptionList;
     //create vertex input
     VkVertexInputBindingDescription bindingDescription{};
     bindingDescription.binding = 0;
     bindingDescription.stride = m_vertexInput.stride;
     bindingDescription.inputRate = VK_VERTEX_INPUT_RATE_VERTEX;
+    bindingDescriptionList.emplace_back(bindingDescription);
 
+
+    VkVertexInputBindingDescription instancingBindingDescription{};
+
+    
+    if(isSupportInstancing)
+    {
+        instancingBindingDescription.binding = 1;
+        instancingBindingDescription.stride = instanceVertexInput.stride;
+        instancingBindingDescription.inputRate = VK_VERTEX_INPUT_RATE_INSTANCE;
+        bindingDescriptionList.emplace_back(instancingBindingDescription);
+    }
+    
     std::vector<VkVertexInputAttributeDescription> attributeDecsriptionList;
-    attributeDecsriptionList.resize(m_vertexInput.m_attributeList.size());
+    if(isSupportInstancing)
+    {
+        attributeDecsriptionList.resize(m_vertexInput.m_attributeList.size() + instanceVertexInput.m_attributeList.size());
+    }
+    else{
+    
+        attributeDecsriptionList.resize(m_vertexInput.m_attributeList.size());
+    }
+    
 
     for(int i = 0; i < m_vertexInput.m_attributeList.size(); i++)
     {
@@ -84,13 +106,21 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
         attributeDecsriptionList[i].location = i;
         attributeDecsriptionList[i].format = m_vertexInput.m_attributeList[i].format;
         attributeDecsriptionList[i].offset = m_vertexInput.m_attributeList[i].offset;
-    
-    }	
+    }
+    if(isSupportInstancing){
+        size_t normalVertexSize = m_vertexInput.m_attributeList.size();
+        for(int i = normalVertexSize; i < instanceVertexInput.m_attributeList.size() + normalVertexSize; i++)
+        {
+            attributeDecsriptionList[i].binding = 1;
+            attributeDecsriptionList[i].location = i;
+            attributeDecsriptionList[i].format = instanceVertexInput.m_attributeList[i - normalVertexSize].format;
+            attributeDecsriptionList[i].offset = instanceVertexInput.m_attributeList[i - normalVertexSize].offset;
+        }
+    }
 
-
-    vertexInputInfo.vertexBindingDescriptionCount = 1;
+    vertexInputInfo.vertexBindingDescriptionCount = bindingDescriptionList.size();
     vertexInputInfo.vertexAttributeDescriptionCount = static_cast<uint32_t>(attributeDecsriptionList.size());
-    vertexInputInfo.pVertexBindingDescriptions = &bindingDescription;
+    vertexInputInfo.pVertexBindingDescriptions = bindingDescriptionList.data();
     vertexInputInfo.pVertexAttributeDescriptions = attributeDecsriptionList.data();
 
     VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};

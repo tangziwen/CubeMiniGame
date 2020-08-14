@@ -30,6 +30,7 @@
 #include "glslang/Include/Types.h"
 #include "glslang/public/ShaderLang.h"
 #include "Mesh/Mesh.h"
+#include "Mesh/InstancedMesh.h"
 #include "2D/GUISystem.h"
 #include "Texture/TextureMgr.h"
 #include "Utility/log/Log.h"
@@ -199,6 +200,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
                     auto tex = var->data.rawData.texInfo.tex;
 					if(!tex)
 					{
+                        printf("abort%s %p\n", i.first.c_str(), mat);
 						abort();
 					}
                     VkDescriptorImageInfo imageInfo{};
@@ -686,12 +688,14 @@ VkApplicationInfo appInfo = {};
         imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
         Material * mat = new Material();
         mat->loadFromTemplate("DirectLight");
-        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_deferredLightingPass->getRenderPass(), imguiVertexInput, 4);
+
+        DeviceVertexInput emptyInstancingInput;
+        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_deferredLightingPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput, 4);
 
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
-        m_textureToScreenPipeline = new DevicePipelineVK(matTextureToScreen, m_textureToScreenRenderPass, imguiVertexInput);
+        m_textureToScreenPipeline = new DevicePipelineVK(matTextureToScreen, m_textureToScreenRenderPass, imguiVertexInput, false, emptyInstancingInput);
 
         VertexData vertices[] = {
             // Vertex data for face 0
@@ -1283,7 +1287,8 @@ void VKRenderBackEnd::initImguiStuff()
     imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, IM_OFFSETOF(ImDrawVert, uv)});
     imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8A8_UNORM, IM_OFFSETOF(ImDrawVert, col)});
 
-    m_imguiPipeline =  new DevicePipelineVK(m_imguiMat, m_renderPass,imguiVertexInput);
+    DeviceVertexInput instancingInput;
+    m_imguiPipeline =  new DevicePipelineVK(m_imguiMat, m_renderPass,imguiVertexInput, false, instancingInput);
 
     auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
     VkDescriptorSetLayout layout = m_imguiPipeline->getDescriptorSetLayOut();
@@ -1370,7 +1375,9 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-            currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput);
+
+            DeviceVertexInput instanceInput;
+            currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput, false, instanceInput);
             m_matPipelinePool[matStr]  =currPipeLine;
                 
         }
@@ -1425,7 +1432,7 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
     for(RenderCommand & a : renderList)
     {
 
-        if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
+        //if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
         Material * mat = a.getMat();
 
         std::string & matStr = mat->getFullDescriptionStr();
@@ -1433,19 +1440,37 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
         auto iter = m_matPipelinePool.find(matStr);
         if(iter == m_matPipelinePool.end())
         {
-            DeviceVertexInput imguiVertexInput;
-            imguiVertexInput.stride = sizeof(VertexData);
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
+            DeviceVertexInput vertexInput;
+            vertexInput.stride = sizeof(VertexData);
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
 
             //use for terrain
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
-            imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
+            vertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
+            //instancing optional
+            DeviceVertexInput instanceInput;
+            //instancing
+            if(a.batchType() != RenderCommand::RenderBatchType::Single)
+            {
+                instanceInput.stride = sizeof(InstanceData);
+                //matrix
+                instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)});
+                instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform) + sizeof(float) * 4});
+                instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 8});
+                instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 12});
 
-            currPipeLine = new DevicePipelineVK(mat, renderPass, imguiVertexInput, 4);
+                instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
+
+                currPipeLine = new DevicePipelineVK(mat, renderPass, vertexInput, true, instanceInput, 4);
+            }else //single draw call
+            {
+                currPipeLine = new DevicePipelineVK(mat, renderPass, vertexInput, false, instanceInput, 4);
+            }
+            
             m_matPipelinePool[matStr]  =currPipeLine;
                 
         }
@@ -1474,7 +1499,14 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
             uniformStruct.projection = a.m_transInfo.m_projectMatrix;
         memcpy(data, &uniformStruct, sizeof(uniformStruct));
         vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
-		auto mesh = a.getMesh();
+		Mesh * mesh = nullptr;
+        if(a.batchType() != RenderCommand::RenderBatchType::Single)
+        {
+            mesh = a.getInstancedMesh()->getMesh();
+        }else
+        {
+            mesh = a.getMesh();
+        }
         updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset, sizeof(uniformStruct));
 
         //recordDrawCommand
@@ -1495,7 +1527,18 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
                 descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
             }
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(command, static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
+            if(a.batchType() != RenderCommand::RenderBatchType::Single)
+            {
+                auto instancingMesh = a.getInstancedMesh();
+                auto instVBO = static_cast<DeviceBufferVK *>(instancingMesh->getInstanceBuf()->bufferId());
+                VkBuffer instanceVertexBuffers[] = {instVBO->getBuffer()};
+                VkDeviceSize instanceOffsets[] = {0};
+                vkCmdBindVertexBuffers(command, 1, 1, instanceVertexBuffers, instanceOffsets);
+                vkCmdDrawIndexed(command, static_cast<uint32_t>(mesh->getIndicesSize()), instancingMesh->getInstanceSize(), 0, 0, 0);
+            }else
+            {
+                vkCmdDrawIndexed(command, static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
+            }
         }
     }
 }
@@ -1789,6 +1832,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
+        vkDeviceWaitIdle(m_device);
         //CPU here
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();

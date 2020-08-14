@@ -5,6 +5,7 @@
 	},
 	"name" : "Grass",
 	"cullFace" : false,
+	"BlendEnable" : false,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_camPos", "type":"semantic_CameraPos"},

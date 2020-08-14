@@ -328,6 +328,10 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				{
 					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png", true));
 				}
+				else if(name == "NormalMap")
+				{
+					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultNormalMap.png", true));
+				}
 				else
 				{
 					setTex(name, nullptr);
@@ -632,6 +636,7 @@ Material *Material::clone()
 void Material::reload()
 {
 	m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
+	updateFullDescriptionStr();
 }
 
 bool Material::getIsCullFace()
