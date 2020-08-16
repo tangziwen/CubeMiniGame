@@ -184,8 +184,8 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         writeSet.descriptorCount = 1;
         writeSet.pBufferInfo = &bufferInfo;
-
-        descriptorWrites.emplace_back(writeSet);
+		vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
+        //descriptorWrites.emplace_back(writeSet);
         auto shader = static_cast<DeviceShaderVK * >(mat->getProgram()->getDeviceShader());
         std::vector<VkDescriptorImageInfo> imageInfoList;
         for(auto &i : varList)
@@ -216,13 +216,13 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
                     texWriteSet.dstArrayElement = 0;
                     texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                     texWriteSet.descriptorCount = 1;
-                    texWriteSet.pImageInfo = (imageInfoList.data() + imageInfoList.size() - 1);
-
-                    descriptorWrites.emplace_back(texWriteSet);
+                    texWriteSet.pImageInfo = &imageInfo;//(imageInfoList.data() + imageInfoList.size() - 1);
+					vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
+                    //descriptorWrites.emplace_back(texWriteSet);
                 }
             }
         }
-        vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+        //vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
     }
     void VKRenderBackEnd::VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps)
     {
@@ -1931,7 +1931,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
             writeSet.descriptorCount = 1;
             writeSet.pBufferInfo = &bufferInfo;
-            descriptorWrites.emplace_back(writeSet);
+        	vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
+            //descriptorWrites.emplace_back(writeSet);
 
             auto gbufferTex = m_deferredRenderPass->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
@@ -1942,7 +1943,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 imageInfo.imageLayout = tex->getImageLayOut();
                 imageInfo.imageView = tex->getImageView();
                 imageInfo.sampler = tex->getSampler();
-                imageInfoList.emplace_back(imageInfo);
                 VkWriteDescriptorSet texWriteSet{};
                 texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                 texWriteSet.dstSet = itemDescriptorSet;
@@ -1950,11 +1950,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 texWriteSet.dstArrayElement = 0;
                 texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 texWriteSet.descriptorCount = 1;
-                texWriteSet.pImageInfo = (imageInfoList.data() + imageInfoList.size() - 1);
-
+                texWriteSet.pImageInfo = &imageInfo;
+				vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
                 descriptorWrites.emplace_back(texWriteSet);
             }
-            vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+            
 
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
