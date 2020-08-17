@@ -31,6 +31,7 @@ public:
 	static int debugPanelPiority;
     static const char * versionStr;
     static int focusPiority;
+    static bool isUseVulkan;
 };
 } // namespace tzw
 

@@ -4,7 +4,7 @@
 #include <cmath>
 #define MATH_TOLERANCE              2e-37f
 #define MATH_EPSILON                0.000001f
-#define USE_VULKAN 1
+#include "Engine/EngineDef.h"
 namespace tzw {
 
 Matrix44::Matrix44()
@@ -128,46 +128,51 @@ void Matrix44::ortho(float left, float right, float bottom, float top, float nea
 	float lr = 1 / (left - right);
 	float bt = 1 / (bottom - top);
 	float nf = 1 / (near - far);
-#ifdef USE_VULKAN
-	m_data[0] = -2 * lr;
-	m_data[1] = 0;
-	m_data[2] = 0;
-	m_data[3] = 0;
+    if(EngineDef::isUseVulkan)
+    {
+	    m_data[0] = -2 * lr;
+	    m_data[1] = 0;
+	    m_data[2] = 0;
+	    m_data[3] = 0;
 
-	m_data[4] = 0;
-	m_data[5] = 2 * bt;
-	m_data[6] = 0;
-	m_data[7] = 0;
+	    m_data[4] = 0;
+	    m_data[5] = 2 * bt;
+	    m_data[6] = 0;
+	    m_data[7] = 0;
 
 
-	m_data[8] = 0;
-	m_data[9] = 0;
-	m_data[10] = 1 * nf;
-	m_data[11] = 0;
+	    m_data[8] = 0;
+	    m_data[9] = 0;
+	    m_data[10] = 1 * nf;
+	    m_data[11] = 0;
 
-	m_data[12] = (left + right) * lr;
-	m_data[13] = -(top + bottom) * bt;
-	m_data[14] = (near) * nf;
-	m_data[15] = 1;
+	    m_data[12] = (left + right) * lr;
+	    m_data[13] = -(top + bottom) * bt;
+	    m_data[14] = (near) * nf;
+	    m_data[15] = 1;
+    }
+    else
+    {
+	    m_data[0] = -2 * lr;
+	    m_data[1] = 0;
+	    m_data[2] = 0;
+	    m_data[3] = 0;
+	    m_data[4] = 0;
+	    m_data[5] = -2 * bt;
+	    m_data[6] = 0;
+	    m_data[7] = 0;
+	    m_data[8] = 0;
+	    m_data[9] = 0;
+	    m_data[10] = 2 * nf;
+	    m_data[11] = 0;
+	    m_data[12] = (left + right) * lr;
+	    m_data[13] = (top + bottom) * bt;
+	    m_data[14] = (far + near) * nf;
+	    m_data[15] = 1;
+    
+    }
 
-#else
-	m_data[0] = -2 * lr;
-	m_data[1] = 0;
-	m_data[2] = 0;
-	m_data[3] = 0;
-	m_data[4] = 0;
-	m_data[5] = -2 * bt;
-	m_data[6] = 0;
-	m_data[7] = 0;
-	m_data[8] = 0;
-	m_data[9] = 0;
-	m_data[10] = 2 * nf;
-	m_data[11] = 0;
-	m_data[12] = (left + right) * lr;
-	m_data[13] = (top + bottom) * bt;
-	m_data[14] = (far + near) * nf;
-	m_data[15] = 1;
-#endif
+
 }
 
 #define M_PI 3.141592654
@@ -177,43 +182,44 @@ void Matrix44::perspective(float fovy, float aspect, float near, float far)
 	fovy = ToRadian(fovy);
 	float f = 1.0 / tan(fovy / 2);
 	float nf = 1.0 / (near - far);
-#ifdef USE_VULKAN
-	m_data[0] = f / aspect;
-	m_data[1] = 0;
-	m_data[2] = 0;
-	m_data[3] = 0;
-	m_data[4] = 0;
-	m_data[5] = -f;
-	m_data[6] = 0;
-	m_data[7] = 0;
-	m_data[8] = 0;
-	m_data[9] = 0;
-	m_data[10] = (far) * nf;
-	m_data[11] = -1;
-	m_data[12] = 0;
-	m_data[13] = 0;
-	m_data[14] = (far * near) * nf;
-	m_data[15] = 0;
-#else
+    if(EngineDef::isUseVulkan)
+    {
+	    m_data[0] = f / aspect;
+	    m_data[1] = 0;
+	    m_data[2] = 0;
+	    m_data[3] = 0;
+	    m_data[4] = 0;
+	    m_data[5] = -f;
+	    m_data[6] = 0;
+	    m_data[7] = 0;
+	    m_data[8] = 0;
+	    m_data[9] = 0;
+	    m_data[10] = (far) * nf;
+	    m_data[11] = -1;
+	    m_data[12] = 0;
+	    m_data[13] = 0;
+	    m_data[14] = (far * near) * nf;
+	    m_data[15] = 0;
+    }
+    else{
 
-	m_data[0] = f / aspect;
-	m_data[1] = 0;
-	m_data[2] = 0;
-	m_data[3] = 0;
-	m_data[4] = 0;
-	m_data[5] = f;
-	m_data[6] = 0;
-	m_data[7] = 0;
-	m_data[8] = 0;
-	m_data[9] = 0;
-	m_data[10] = (far + near) * nf;
-	m_data[11] = -1;
-	m_data[12] = 0;
-	m_data[13] = 0;
-	m_data[14] = (2 * far * near) * nf;
-	m_data[15] = 0;
-#endif
-
+	    m_data[0] = f / aspect;
+	    m_data[1] = 0;
+	    m_data[2] = 0;
+	    m_data[3] = 0;
+	    m_data[4] = 0;
+	    m_data[5] = f;
+	    m_data[6] = 0;
+	    m_data[7] = 0;
+	    m_data[8] = 0;
+	    m_data[9] = 0;
+	    m_data[10] = (far + near) * nf;
+	    m_data[11] = -1;
+	    m_data[12] = 0;
+	    m_data[13] = 0;
+	    m_data[14] = (2 * far * near) * nf;
+	    m_data[15] = 0;
+    }
 }
 
 Matrix44 Matrix44::inverted(bool *invertible)

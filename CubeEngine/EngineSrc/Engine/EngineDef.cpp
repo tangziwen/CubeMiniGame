@@ -6,4 +6,6 @@ int EngineDef::debugPanelPiority = 100;
 const char * EngineDef::versionStr = "Tiny Builder";
 
 int EngineDef::focusPiority = 997;
+
+bool EngineDef::isUseVulkan = true;
 } // namespace tzw

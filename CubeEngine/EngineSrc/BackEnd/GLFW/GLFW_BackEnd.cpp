@@ -104,13 +104,13 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 	{
 		monitor = nullptr;
 	}
-    if(isVulkanAvabile && g_isuesVulkan)
+    if(isVulkanAvabile && EngineDef::isUseVulkan)
     {
         //disable init opengl
         glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
     }
 	m_window = glfwCreateWindow(w, h, EngineDef::versionStr, monitor, NULL);
-    if(isVulkanAvabile && g_isuesVulkan)
+    if(isVulkanAvabile && EngineDef::isUseVulkan)
     {
         AbstractDevice::shared()->setRenderDevice(RenderDeviceType::Vulkan_Device);
     }else{
