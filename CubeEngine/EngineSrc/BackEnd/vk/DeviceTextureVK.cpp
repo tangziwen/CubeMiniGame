@@ -14,6 +14,7 @@ DeviceTextureVK::DeviceTextureVK(const unsigned char* buff, size_t size)
 
 DeviceTextureVK::DeviceTextureVK(std::string filepath)
 {
+    m_filePath = filepath;
     auto data =Tfile::shared()->getData(filepath,false);
     initData(data.getBytes(), data.getSize());
 }

@@ -24,6 +24,7 @@ public:
 	void initEmpty(size_t w, size_t h, ImageFormat format, TextureRtFlagVK rtFlag = TextureRtFlagVK::NOT_TREAT_AS_RT);
 	void generateMipmaps(VkImage image, VkFormat imageFormat, int32_t texWidth, int32_t texHeight, uint32_t mipLevels);
 private:
+	std::string m_filePath;
 	void initData(const unsigned char * buff, size_t size);
 	VkImage m_textureImage;
 	VkDeviceMemory m_textureImageMemory;

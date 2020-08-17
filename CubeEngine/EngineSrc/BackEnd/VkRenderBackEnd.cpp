@@ -1834,7 +1834,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
-        vkDeviceWaitIdle(m_device);
         //CPU here
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();
