@@ -34,9 +34,11 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
     shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv((const char*)buff, size, compileKind, (const char *)fileInfoStr);
     if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
         //handle errors
-    	tlogError("buff %s", buff);
-        tlogError("compile shader to Spir-v Error, %s", fileInfoStr);
-        tlogError("%s",result.GetErrorMessage().c_str());
+    	//tlogError("buff %s", buff);
+        printf("buff %s\n", buff);
+        //tlogError("compile shader to Spir-v Error, %s", fileInfoStr);
+        printf("%s\n", result.GetErrorMessage().c_str());
+        //tlogError("%s",result.GetErrorMessage().c_str());
         abort();
     }
     std::vector<uint32_t> byteCode;
@@ -218,7 +220,7 @@ void DeviceShaderVK::createDescriptorSetLayOut()
             }
         
             layOutBinding.descriptorCount = 1;
-            layOutBinding.stageFlags = locationInfo.stageFlag;
+            layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;//locationInfo.stageFlag;
             descriptorLayoutList.emplace_back(layOutBinding);
         }
         VkDescriptorSetLayoutCreateInfo layoutInfo{};

@@ -63,6 +63,9 @@ include_directories(./External/glslang/)
 #shaderc
 set(LIBS ${LIBS} shaderc_combined)
 
+#gli
+include_directories(./External/gli/)
+
 add_compile_definitions(WITH_OPENCV2)
 
 #rapidJson

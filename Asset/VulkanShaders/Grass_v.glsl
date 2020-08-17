@@ -33,7 +33,7 @@ void main() {
 #ifdef FLAG_EnableInstanced
 	mat4 modelMatrix = a_instance_offset;
 	gl_Position = t_ObjectUniform.mvp * modelMatrix * vec4(inPosition,1.0);
-	v_normal = (t_ObjectUniform.TU_mMatrix * modelMatrix* vec4(inNormal,0.0)).xyz;
+	v_normal = vec3(0, 1, 0);//(t_ObjectUniform.TU_mMatrix * modelMatrix* vec4(inNormal,0.0)).xyz;
 	v_tangent = (t_ObjectUniform.TU_mMatrix * modelMatrix * vec4(inTangent,0.0)).xyz;
 #else
     gl_Position = t_ObjectUniform.mvp * vec4(inPosition, 1.0);
@@ -41,8 +41,5 @@ void main() {
 	v_tangent = (t_ObjectUniform.TU_mMatrix * vec4(inTangent,0.0)).xyz;
 #endif
 	v_texcoord = texcoord;
-	//hack for vulkan
-	gl_Position.y = -gl_Position.y;
-	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 	fragColor = inColor;
 }

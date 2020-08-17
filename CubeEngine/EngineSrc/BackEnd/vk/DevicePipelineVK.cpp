@@ -7,6 +7,7 @@
 #include "DeviceShaderVK.h"
 #include "DeviceTextureVK.h"
 #include <array>
+#include "Scene/SceneMgr.h"
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 #define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
 static const unsigned int DescriptorGuessCount = 512; 
@@ -349,6 +350,9 @@ void DevicePipelineVK::updateUniform()
     //update material parameter
     auto & varList = m_mat->getVarList();
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
+    void* data;
+    //copy new data
+    vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory, 0, sizeof(materialUniformBufferInfo.size), 0, &data);
     for(auto &i : varList)
     {
         TechniqueVar* var = &i.second;
@@ -360,17 +364,95 @@ void DevicePipelineVK::updateUniform()
                 if(idx>= 0)
                 {
                     auto blockMember = materialUniformBufferInfo.m_member[idx];
-                    void* data;
-                    //copy new data
-                    vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory, 0, sizeof(Matrix44), 0, &data);
-                        void * offsetDst = (char *)data + blockMember.offset;
-                        memcpy(offsetDst, &(var->data.rawData.v4), blockMember.size);
-                    vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
+
+                    void * offsetDst = (char *)data + blockMember.offset;
+                    memcpy(offsetDst, &(var->data.rawData.v4), blockMember.size);
                 }
                 break;
             }
+            case TechniqueVar::Type::Semantic:
+            {
+                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
+                if(idx>= 0)
+                {
+                    auto blockMember = materialUniformBufferInfo.m_member[idx];
+                    void * offsetDst = (char *)data + blockMember.offset;
+                    switch(var->semantic)
+                    {
+		                case TechniqueVar::SemanticType::NO_SEMANTIC: break;
+                        case TechniqueVar::SemanticType::WIN_SIZE:
+		                {
+                            
+
+                            vec2 winSize = Engine::shared()->winSize();
+                            memcpy(offsetDst, &winSize, blockMember.size);
+                        }
+		                break;
+		                case TechniqueVar::SemanticType::ModelViewProj: break;
+		                case TechniqueVar::SemanticType::Model: break;
+		                case TechniqueVar::SemanticType::View: break;
+		                case TechniqueVar::SemanticType::Project: break;
+		                case TechniqueVar::SemanticType::InvertedProj: break;
+		                case TechniqueVar::SemanticType::CamPos:
+		                {
+                            if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+                            {
+                                vec3 worldPos = g_GetCurrScene()->defaultCamera()->getWorldPos();
+                                memcpy(offsetDst, &worldPos, blockMember.size);
+                            }
+
+		                }
+		                break;
+                        case TechniqueVar::SemanticType::InvertedViewProj:
+		                {
+                            if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+                            {
+			                    auto currScene = g_GetCurrScene();
+			                    auto cam = currScene->defaultCamera();
+                                auto invertedMat = cam->getViewProjectionMatrix().inverted();
+                                memcpy(offsetDst, invertedMat.data(), blockMember.size);
+                            }
+
+                        }
+		                break;
+		                case TechniqueVar::SemanticType::CamDir:
+		                {
+                            if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+                            {
+                                vec3 camDir = g_GetCurrScene()->defaultCamera()->getForward();
+                                memcpy(offsetDst, &camDir, blockMember.size);
+                            }
+		                }
+		                break;
+		                case TechniqueVar::SemanticType::SunDirection:
+		                {
+                            if(g_GetCurrScene())
+                            {
+                                auto dirLight = g_GetCurrScene()->getDirectionLight();
+                                vec3 sunDir = dirLight->dir();
+                                memcpy(offsetDst, &sunDir, blockMember.size);
+                            }
+		                }
+		                break;
+		                case TechniqueVar::SemanticType::SunColor:
+		                {
+                            if(g_GetCurrScene())
+                            {
+                                auto dirLight = g_GetCurrScene()->getDirectionLight();
+                                vec3 sunColor = dirLight->getLightColor() * dirLight->intensity();
+                                memcpy(offsetDst, &sunColor, blockMember.size);
+                            }
+		                }
+		                break;
+		                default: ;
+                    }
+                }
+
+            }
+            break;
         }
     }
+     vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
 }
 
 void DevicePipelineVK::collcetItemWiseDescritporSet()

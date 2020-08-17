@@ -34,7 +34,9 @@ vec3 CalcBumpedNormal(vec3 inputNormal)
 
 void main() 
 {
-	out_albedo = texture(DiffuseMap, v_texcoord) * fragColor;
+	vec4 col = texture(DiffuseMap, v_texcoord);
+	col.rgb = pow(col.rgb, vec3(2.2)) * fragColor.rgb;
+	out_albedo = col;
 	out_position = vec4(0, 0, 0, 1.0);
 	out_normal = vec4(CalcBumpedNormal(v_normal),1.0);
 	out_mix = vec4(texture(RoughnessMap, v_texcoord).r, texture(MetallicMap, v_texcoord).r, 0, 1.0);

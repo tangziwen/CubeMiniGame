@@ -11,6 +11,7 @@ enum class ImageFormat
 	R16G16B16A16,
 	D24_S8,
 	R8G8B8A8_S,
+	R16G16B16A16_SFLOAT
 };
 size_t ImageFormatGetSize(ImageFormat format);
 } // namespace tzw

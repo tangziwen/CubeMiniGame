@@ -13,6 +13,11 @@
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_roughness", "type":"float", "default":5.0},
+			{"name" : "TU_camPos", "type":"semantic_CameraPos"},
+			{"name" : "TU_winSize", "type":"semantic_WinSize"},
+			{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
+			{"name" : "TU_sunColor", "type":"semantic_SunColor"},
+			{"name" : "TU_sunDirection", "type":"semantic_SunDirection"},
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [

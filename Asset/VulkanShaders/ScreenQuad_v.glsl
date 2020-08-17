@@ -3,9 +3,6 @@
 layout(binding = 0) uniform UniformBufferObject {
     mat4 mvp;
 } t_ObjectUniform;
-layout(set = 1, binding = 0) uniform UniformBufferObjectMat {
-    vec4 TU_color;
-} t_shaderUnifom;
 layout(location = 0) in vec3 inPosition;
 layout(location = 1) in vec4 inColor;
 layout(location = 2) in vec2 texcoord;

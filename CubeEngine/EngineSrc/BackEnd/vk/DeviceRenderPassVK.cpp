@@ -47,7 +47,7 @@ namespace tzw
         depthAttachmentDesc.format = VK_FORMAT_D24_UNORM_S8_UINT;
         depthAttachmentDesc.samples = VK_SAMPLE_COUNT_1_BIT;
         depthAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
         depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;

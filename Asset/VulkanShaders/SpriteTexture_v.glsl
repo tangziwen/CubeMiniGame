@@ -20,8 +20,5 @@ void main() {
 	
 	v_texcoord = texcoord;
 
-	//hack for vulkan
-	gl_Position.y = -gl_Position.y;
-	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
     fragColor = inColor * t_shaderUnifom.TU_color;
 }

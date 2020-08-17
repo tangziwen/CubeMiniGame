@@ -17,9 +17,6 @@ layout(location = 1) out vec2 v_texcoord;
 
 void main() {
     gl_Position = t_ObjectUniform.mvp * vec4(inPosition.xy, -0.5, 1.0);
-	//hack for vulkan
-	gl_Position.y = -gl_Position.y;
-	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 	v_texcoord = texcoord;
     fragColor = inColor * t_shaderUnifom.TU_color;
 }

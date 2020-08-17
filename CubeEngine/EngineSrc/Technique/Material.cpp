@@ -288,6 +288,18 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				{
 					var.setAsSemantic(TechniqueVar::SemanticType::CamDir);
 				}
+				else if(typeStr =="semantic_WinSize") 
+				{
+					var.setAsSemantic(TechniqueVar::SemanticType::WIN_SIZE);
+				}
+				else if(typeStr =="semantic_SunDirection") 
+				{
+					var.setAsSemantic(TechniqueVar::SemanticType::SunDirection);
+				}
+				else if(typeStr =="semantic_SunColor") 
+				{
+					var.setAsSemantic(TechniqueVar::SemanticType::SunColor);
+				}
 			}
 			m_varList[theName] = var;
 		}

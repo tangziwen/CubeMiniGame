@@ -678,7 +678,7 @@ VkApplicationInfo appInfo = {};
     {
         auto size = Engine::shared()->winSize();
         m_deferredRenderPass = new DeviceRenderPassVK(size.x, size.y, 4, ImageFormat::R8G8B8A8_S);
-        m_deferredLightingPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R8G8B8A8);
+        m_deferredLightingPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R16G16B16A16_SFLOAT);
 
 
         DeviceVertexInput imguiVertexInput;
@@ -1215,6 +1215,8 @@ VkApplicationInfo appInfo = {};
             return VK_FORMAT_R16G16B16A16_UNORM;
         case ImageFormat::D24_S8:
             return VK_FORMAT_D24_UNORM_S8_UINT;
+        case ImageFormat::R16G16B16A16_SFLOAT:
+            return VK_FORMAT_R16G16B16A16_SFLOAT;
         }
         return VK_FORMAT_R8G8B8A8_UNORM;
     }
@@ -1555,7 +1557,7 @@ void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkFreeCommandBuffers(m_device, m_cmdBufPool, 1, &commandBuffer);
 }
 
-void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags)
+void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, int baseMipLevel, int levelCount)
 {
    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -1567,8 +1569,8 @@ void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkIm
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = image;
     barrier.subresourceRange.aspectMask = aspectFlags;
-    barrier.subresourceRange.baseMipLevel = 0;
-    barrier.subresourceRange.levelCount = 1;
+    barrier.subresourceRange.baseMipLevel = baseMipLevel;
+    barrier.subresourceRange.levelCount = levelCount;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
 
@@ -1626,7 +1628,7 @@ void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkIm
 }
 
 
-	void VKRenderBackEnd::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkImageAspectFlags aspectFlags) 
+	void VKRenderBackEnd::copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkImageAspectFlags aspectFlags, int mipLevel) 
     {
         VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -1635,7 +1637,7 @@ void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkIm
         region.bufferRowLength = 0;
         region.bufferImageHeight = 0;
         region.imageSubresource.aspectMask = aspectFlags;
-        region.imageSubresource.mipLevel = 0;
+        region.imageSubresource.mipLevel = mipLevel;
         region.imageSubresource.baseArrayLayer = 0;
         region.imageSubresource.layerCount = 1;
         region.imageOffset = {0, 0, 0};
@@ -1689,7 +1691,7 @@ const VkSurfaceFormatKHR& VKRenderBackEnd::GetSurfaceFormat() const
     }
 
 void VKRenderBackEnd::createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling,
-	VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory)
+	VkImageUsageFlags usage, VkMemoryPropertyFlags properties, VkImage& image, VkDeviceMemory& imageMemory, int mipLevels)
 {
     VkImageCreateInfo imageInfo{};
     imageInfo.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
@@ -1697,7 +1699,7 @@ void VKRenderBackEnd::createImage(uint32_t width, uint32_t height, VkFormat form
     imageInfo.extent.width = width;
     imageInfo.extent.height = height;
     imageInfo.extent.depth = 1;
-    imageInfo.mipLevels = 1;
+    imageInfo.mipLevels = mipLevels;
     imageInfo.arrayLayers = 1;
     imageInfo.format = format;
     imageInfo.tiling = tiling;
@@ -1758,7 +1760,7 @@ void VKRenderBackEnd::createTextureSampler()
     }
 }
 
-VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags)
+VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags,int baseMipLevel, int levelCount)
 	{
     VkImageViewCreateInfo viewInfo{};
     viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1766,8 +1768,8 @@ VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkI
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = format;
     viewInfo.subresourceRange.aspectMask = aspectFlags;
-    viewInfo.subresourceRange.baseMipLevel = 0;
-    viewInfo.subresourceRange.levelCount = 1;
+    viewInfo.subresourceRange.baseMipLevel = baseMipLevel;
+    viewInfo.subresourceRange.levelCount = levelCount;
     viewInfo.subresourceRange.baseArrayLayer = 0;
     viewInfo.subresourceRange.layerCount = 1;
 
@@ -1908,7 +1910,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             
             vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
-
+            m_dirLightingPassPiepeline->updateUniform();
             m_dirLightingPassPiepeline->collcetItemWiseDescritporSet();
             size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
             //update uniform.
@@ -1996,6 +1998,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
             renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
 
+            
             vkResetCommandBuffer(textureToScreenCmd, 0);
             res = vkBeginCommandBuffer(textureToScreenCmd, &beginInfoDeffered);
             CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);

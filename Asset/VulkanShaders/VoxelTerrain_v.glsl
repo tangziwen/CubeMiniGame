@@ -32,10 +32,6 @@ void main() {
     gl_Position = t_ObjectUniform.mvp * vec4(inPosition, 1.0);
 	
 	v_texcoord = texcoord;
-
-	//hack for vulkan
-	gl_Position.y = -gl_Position.y;
-	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 	
 	v_worldPos = (t_ObjectUniform.TU_mMatrix * vec4(inPosition, 1.0)).xyz;
 	fragColor = inColor * t_shaderUnifom.TU_color;

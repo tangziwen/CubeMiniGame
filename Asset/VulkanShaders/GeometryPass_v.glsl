@@ -41,8 +41,5 @@ void main() {
 	v_tangent = (t_ObjectUniform.TU_mMatrix * vec4(inTangent,0.0)).xyz;
 #endif
 	v_texcoord = texcoord;
-	//hack for vulkan
-	gl_Position.y = -gl_Position.y;
-	gl_Position.z = (gl_Position.z + gl_Position.w) / 2.0;
 	fragColor = inColor;
 }
