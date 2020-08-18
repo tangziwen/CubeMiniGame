@@ -694,6 +694,10 @@ VkApplicationInfo appInfo = {};
         DeviceVertexInput emptyInstancingInput;
         m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_deferredLightingPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput, 4);
 
+        m_skyPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R16G16B16A16_SFLOAT);
+        Material * matSkyPass = new Material();
+        matSkyPass->loadFromTemplate("Sky");
+        m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
@@ -1978,9 +1982,126 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         }
 
         //------------deferred Lighting Pass end---------------
-        
+        //------------Sky Pass begin---------------
+        VkCommandBuffer skyCmd = m_generalCmdBuff[ImageIndex][2];
+        //------------Sky Pass end---------------
+        {
+
+            VkCommandBufferBeginInfo beginInfoDeffered = {};
+            beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+            beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+            std::array<VkClearValue, 2> clearValuesDefferred{};
+            clearValuesDefferred[0].color = {1.0f, 0.0f, 0.0f, 1.0f};
+            clearValuesDefferred[1].depthStencil = {1.0f, 0};
+            VkRenderPassBeginInfo renderPassInfoDeferred = {};
+            renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+            renderPassInfoDeferred.renderPass = m_skyPass->getRenderPass();   
+            renderPassInfoDeferred.renderArea.offset.x = 0;
+            renderPassInfoDeferred.renderArea.offset.y = 0;
+            renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
+            renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
+            renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
+            renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
+
+            
+            vkResetCommandBuffer(skyCmd, 0);
+            res = vkBeginCommandBuffer(skyCmd, &beginInfoDeffered);
+            CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+            renderPassInfoDeferred.framebuffer = m_skyPass->getFrameBuffer();//m_fbs[ImageIndex];
+            vkCmdBeginRenderPass(skyCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
+
+
+
+            vkCmdBindPipeline(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipeline());
+
+            m_skyPassPipeLine->collcetItemWiseDescritporSet();
+            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
+            //update uniform.
+            VkDescriptorSet itemDescriptorSet = m_skyPassPipeLine->giveItemWiseDescriptorSet();
+
+            //update descriptor
+            std::vector<VkWriteDescriptorSet> descriptorWrites{};
+            //update descriptor
+            VkDescriptorBufferInfo bufferInfo{};
+            bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
+            bufferInfo.offset = m_itemBufferOffset;
+            bufferInfo.range = sizeof(Matrix44);
+
+            VkWriteDescriptorSet writeSet{};
+            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+		    writeSet.pNext = nullptr;
+            writeSet.dstSet = itemDescriptorSet;
+            writeSet.dstBinding = 0;
+            writeSet.dstArrayElement = 0;
+            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+            writeSet.descriptorCount = 1;
+            writeSet.pBufferInfo = &bufferInfo;
+            descriptorWrites.emplace_back(writeSet);
+
+
+            std::vector<VkDescriptorImageInfo> imageInfoList;
+            auto texList = m_deferredLightingPass->getTextureList();
+            auto tex = m_deferredRenderPass->getDepthMap();
+            VkDescriptorImageInfo imageInfo{};
+            imageInfo.imageLayout = tex->getImageLayOut();
+            imageInfo.imageView = tex->getImageView();
+            imageInfo.sampler = tex->getSampler();
+  
+            VkWriteDescriptorSet texWriteSet{};
+            texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            texWriteSet.dstSet = itemDescriptorSet;
+            texWriteSet.dstBinding = 1;
+            texWriteSet.dstArrayElement = 0;
+            texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            texWriteSet.descriptorCount = 1;
+            texWriteSet.pImageInfo = &imageInfo;
+
+            descriptorWrites.emplace_back(texWriteSet);
+
+
+
+            
+            
+            
+            auto colorTex = texList[0];
+            VkDescriptorImageInfo imageColorInfo{};
+            imageColorInfo.imageLayout = colorTex->getImageLayOut();
+            imageColorInfo.imageView = colorTex->getImageView();
+            imageColorInfo.sampler = colorTex->getSampler();
+  
+            VkWriteDescriptorSet texColorWriteSet{};
+            texColorWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+            texColorWriteSet.dstSet = itemDescriptorSet;
+            texColorWriteSet.dstBinding = 2;
+            texColorWriteSet.dstArrayElement = 0;
+            texColorWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+            texColorWriteSet.descriptorCount = 1;
+            texColorWriteSet.pImageInfo = &imageColorInfo;
+            descriptorWrites.emplace_back(texColorWriteSet);
+            
+
+            vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+
+            VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(skyCmd, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(skyCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            if(static_cast<DeviceShaderVK *>(m_skyPassPipeLine->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
+                descriptorSetList.push_back(m_skyPassPipeLine->getMaterialDescriptorSet());
+            }
+            vkCmdBindDescriptorSets(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(skyCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
+
+
+            vkCmdEndRenderPass(skyCmd);
+            res = vkEndCommandBuffer(skyCmd);
+            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+        }
+
         //------------Texture To Screen Pass begin---------------
-        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][2];
+        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][3];
         {
             
             VkCommandBufferBeginInfo beginInfoDeffered = {};
@@ -2034,7 +2155,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             writeSet.pBufferInfo = &bufferInfo;
             descriptorWrites.emplace_back(writeSet);
 
-            auto lightingResultTex = m_deferredLightingPass->getTextureList();
+            auto lightingResultTex = m_skyPass->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
 
             auto tex = lightingResultTex[0];
@@ -2074,7 +2195,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
         }
         //------------Texture To Screen Pass end---------------
-        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][3];
+        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][4];
 		
 
         
@@ -2244,7 +2365,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, textureToScreenCmd, command};
+        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, textureToScreenCmd, command};
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = commandList.size();

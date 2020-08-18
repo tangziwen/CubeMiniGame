@@ -4,6 +4,9 @@
 		"fs" : "Shaders/Sky_f.glsl"
 	},
 	"name" : "Sky",
+	"cullFace" : false,
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
 	"property" : {
 		"attributes" : [
 			{"name" : "sun_intensity", "type":"float", "default":22.0},

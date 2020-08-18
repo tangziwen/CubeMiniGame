@@ -35,6 +35,7 @@ namespace tzw
         //depth texture
         auto texture = new DeviceTextureVK();
         texture->initEmpty(width, height, ImageFormat::D24_S8, TextureRtFlagVK::DEPTH_ATTACHEMENT);
+        m_depthTexture = texture;
         m_textureList.emplace_back(texture);
 
         VkSubpassDescription subpassDesc = {};
@@ -96,5 +97,12 @@ namespace tzw
     std::vector<DeviceTextureVK*>& DeviceRenderPassVK::getTextureList()
     {
         return m_textureList;
+    }
+
+    DeviceTextureVK * DeviceRenderPassVK::getDepthMap()
+    {
+    
+        return m_depthTexture;
+    
     }
 }

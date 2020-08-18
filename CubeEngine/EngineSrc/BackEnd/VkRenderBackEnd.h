@@ -229,7 +229,9 @@ private:
     DeviceMemoryPoolVK * m_memoryPool;
     DeviceRenderPassVK * m_deferredRenderPass;
     DeviceRenderPassVK * m_deferredLightingPass;
+    DeviceRenderPassVK * m_skyPass;
     DevicePipelineVK * m_dirLightingPassPiepeline;
+    DevicePipelineVK * m_skyPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;
     std::set<DevicePipelineVK *> m_fuckingObjList;
 };
