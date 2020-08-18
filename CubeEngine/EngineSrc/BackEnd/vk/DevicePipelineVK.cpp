@@ -313,8 +313,8 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
                 texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 texWriteSet.descriptorCount = 1;
                 texWriteSet.pImageInfo = &imageInfo;
-
-                descriptorWrites.emplace_back(texWriteSet);
+                vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
+                //descriptorWrites.emplace_back(texWriteSet);
                 break;
             }
         }
@@ -333,13 +333,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
     writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writeSet.descriptorCount = 1;
     writeSet.pBufferInfo = &bufferInfo;
-    descriptorWrites.emplace_back(writeSet);
-
-    if(descriptorWrites.size() == 0){
-        printf("the update is not valid\n");
-    
-    }
-    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
 }
 
 void DevicePipelineVK::updateUniform()

@@ -21,6 +21,8 @@
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
+		["environmentMap", 0, "IBLTest/autumn_irradiance_latlong.dds"],
+		["prefilterMap", 0, "IBLTest/autumn_radiance_latlong.dds"]
 		]
 	}
 }

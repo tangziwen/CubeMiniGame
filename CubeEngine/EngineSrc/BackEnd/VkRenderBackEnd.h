@@ -107,7 +107,6 @@ public:
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 private:
-
     void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset, size_t bufferRange);
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
     void CreateInstance();

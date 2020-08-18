@@ -377,7 +377,8 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
     samplerInfo.compareOp = VK_COMPARE_OP_ALWAYS;
     samplerInfo.mipmapMode = VK_SAMPLER_MIPMAP_MODE_LINEAR;
 
-    if (vkCreateSampler(backEnd->getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) {
+    if (vkCreateSampler(backEnd->getDevice(), &samplerInfo, nullptr, &m_sampler) != VK_SUCCESS) 
+    {
         abort();
     }
 }

@@ -203,12 +203,14 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
                         printf("abort%s %p\n", i.first.c_str(), mat);
 						abort();
 					}
+                    auto locationInfo = shader->getLocationInfo(i.first);
+                    if(locationInfo.set != 0) continue;
                     VkDescriptorImageInfo imageInfo{};
                     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
                     imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
                     imageInfoList.emplace_back(imageInfo);
-                    auto locationInfo = shader->getLocationInfo(i.first);
+                    
                     VkWriteDescriptorSet texWriteSet{};
                     texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
                     texWriteSet.dstSet = itemDescSet;

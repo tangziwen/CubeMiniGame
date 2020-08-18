@@ -4,7 +4,8 @@ layout(set = 0, binding = 3) uniform sampler2D RT_normal;
 layout(set = 0, binding = 4) uniform sampler2D RT_mix;
 layout(set = 0, binding = 5) uniform sampler2D RT_depth;
 
-
+layout(set = 1, binding = 1) uniform sampler2D environmentMap;
+layout(set = 1, binding = 2) uniform sampler2D prefilterMap;
 layout(location = 0) out vec4 out_Color;
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 v_texcoord;
@@ -25,6 +26,16 @@ layout(set = 1, binding = 0) uniform UniformBufferObjectMat
 #define PI (3.14159264)
 #define MIN_ROUGHNESS (0.04)
 
+vec4 dualParobolidSampleLOD(sampler2D tex, vec3 r, float LODLevel)
+{
+	vec2 uv;
+	uv.x = atan(r.x,r.z) / PI;
+	uv.y = r.y;
+	uv= uv* 0.5 + 0.5;
+	uv.y = 1.0 -uv.y;
+	return textureLod(tex, uv, LODLevel);
+}
+
 vec2 getScreenCoord()
 {
 	vec2 tmp = gl_FragCoord.xy;
@@ -32,11 +43,11 @@ vec2 getScreenCoord()
 	return tmp;
 }
 
-vec4 getWorldPosFromDepth()
+vec4 getWorldPosFromDepth(float depthValue)
 {
   vec4 clipSpaceLocation;
   clipSpaceLocation.xy = v_texcoord * 2.0 - 1.0;
-  clipSpaceLocation.z = texture(RT_depth, v_texcoord).x;
+  clipSpaceLocation.z = depthValue;
   clipSpaceLocation.w = 1.0;
   vec4 homogenousLocation = t_shaderUnifom.TU_viewProjectInverted * clipSpaceLocation;
   return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
@@ -147,17 +158,31 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	vec3 specular     = nominator / max(denominator, 0.001);
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
-	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + albedo * 0.25;
+
+	//IBL 
+	const float MAX_REFLECTION_LOD = 8.0;
+	vec3 reflectionVector = normalize(reflect(-V, N));
+
+	vec3 irradiance = dualParobolidSampleLOD(environmentMap, N, 0).rgb;
+	vec3 prefilteredColor = dualParobolidSampleLOD(prefilterMap, reflectionVector,Roughness *MAX_REFLECTION_LOD).rgb;
+	irradiance = pow(irradiance, vec3(2.2));
+	prefilteredColor = pow(prefilteredColor, vec3(2.2));
+	vec3 ambientDiffuse = kD * irradiance * albedo;
+	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
+	vec3 ambient = (ambientDiffuse + ambientSpecular);
+	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + ambient;
 }
 void main() 
 {
 	vec3 albedo = texture(RT_albedo, v_texcoord).rgb;
 	vec3 normal = texture(RT_normal, v_texcoord).rgb;
-	vec3 mix = texture(RT_mix, v_texcoord).rgb;
-	float metallic = mix.y;
-	float roughness = mix.x;
-	vec4 worldPos = getWorldPosFromDepth();
+	float depth = texture(RT_depth, v_texcoord).x;
+	vec3 mixMap = texture(RT_mix, v_texcoord).rgb;
+	float metallic = mixMap.y;
+	float roughness = mixMap.x;
+	float dFactor = step(depth, 0.99999);
+	vec4 worldPos = getWorldPosFromDepth(depth);
 	vec3 worldView = normalize(t_shaderUnifom.TU_camPos.xyz - worldPos.xyz);
 	vec3 resultColor = calculateLightPBR(albedo, metallic, normalize(normal), normalize(t_shaderUnifom.TU_sunDirection), t_shaderUnifom.TU_sunColor, normalize(worldView), roughness, 1);
-	out_Color = vec4(resultColor, 1.0);
+	out_Color = vec4(mix(vec3(0,0,0), resultColor, vec3(dFactor)), 1.0);
 }
