@@ -7,9 +7,12 @@
 	"cullFace" : false,
 	"DepthTestEnable" : false,
 	"DepthWriteEnable" : false,
+	"BlendEnable" : true,
 	"property" : {
 		"attributes" : [
 			{"name" : "sun_intensity", "type":"float", "default":22.0},
+			{"name" : "TU_sunDirection", "type":"semantic_SunDirection"},
+			{"name" : "TU_winSize", "type":"semantic_WinSize"},
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [

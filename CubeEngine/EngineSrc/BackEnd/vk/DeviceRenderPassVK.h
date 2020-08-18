@@ -5,20 +5,32 @@
 namespace tzw
 {
 
+struct DeviceRenderPassAttachmentInfo
+{
+	ImageFormat format;
+	int attachmentIndex;
+	bool isDepth;
+};
+
 class DeviceTextureVK;
 class DeviceRenderPassVK
 {
 public:
-	DeviceRenderPassVK(int width, int height, int colorAttachNum, ImageFormat format);
+	enum class OpType
+	{
+		CLEAR_AND_STORE,
+		LOAD_AND_STORE,
+	};
+	DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format);
 	VkRenderPass getRenderPass();
-	VkFramebuffer getFrameBuffer();
-	DeviceTextureVK * getDepthMap();
-	std::vector<DeviceTextureVK *> & getTextureList();
+	size_t getAttachmentCount();
+	std::vector<DeviceRenderPassAttachmentInfo> & getAttachmentList();
+	OpType getOpType();
 private:
+	OpType m_opType;
 	VkRenderPass m_renderPass;
-	VkFramebuffer m_frameBuffer;
-	std::vector<DeviceTextureVK *>m_textureList;
-	DeviceTextureVK * m_depthTexture;
+	std::vector<DeviceRenderPassAttachmentInfo> m_attachmentList;
+
 };
 };
 

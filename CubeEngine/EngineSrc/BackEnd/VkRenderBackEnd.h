@@ -19,6 +19,7 @@
 #include <EngineSrc\BackEnd\vk\DeviceItemBufferPoolVK.h>
 #include "vk/DeviceMemoryPoolVK.h"
 #include "vk/DeviceRenderPassVK.h"
+#include "vk/DeviceFrameBufferVK.h"
 #include <set>
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
@@ -29,7 +30,7 @@ namespace tzw {
 class DeviceTextureVK;
 class DeviceBufferVK;
 class DeviceShaderVK;
-
+class SpherePrimitive;
 typedef struct {
     VkImage image;
     VkCommandBuffer cmd;
@@ -227,13 +228,19 @@ private:
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
+
     DeviceRenderPassVK * m_deferredRenderPass;
+    DeviceFrameBufferVK * m_gbuffer;
     DeviceRenderPassVK * m_deferredLightingPass;
+    DeviceFrameBufferVK * m_lightingPassBuffer;
     DeviceRenderPassVK * m_skyPass;
+    DeviceFrameBufferVK * m_skyPassBuffer;
+
     DevicePipelineVK * m_dirLightingPassPiepeline;
     DevicePipelineVK * m_skyPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;
     std::set<DevicePipelineVK *> m_fuckingObjList;
+    Mesh * m_sphere;
 };
 
 } // namespace tzw

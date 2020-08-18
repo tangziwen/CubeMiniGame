@@ -35,6 +35,8 @@
 #include "Texture/TextureMgr.h"
 #include "Utility/log/Log.h"
 
+#include "3D/Primitive/SpherePrimitive.h"
+#include <EngineSrc\Scene\SceneMgr.h>
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -676,12 +678,67 @@ VkApplicationInfo appInfo = {};
 
         printf("Created a render pass\n");
     }
+
+	tzw::vec3 pointOnSurface(float u, float v)
+	{
+        float m_radius = 100;
+		return vec3(cos(u) * sin(v) * m_radius, cos(v) * m_radius, sin(u) * sin(v) * m_radius);
+	}
     void VKRenderBackEnd::CreateDerrferredRenderPass()
     {
-        auto size = Engine::shared()->winSize();
-        m_deferredRenderPass = new DeviceRenderPassVK(size.x, size.y, 4, ImageFormat::R8G8B8A8_S);
-        m_deferredLightingPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R16G16B16A16_SFLOAT);
 
+
+
+		m_sphere = new Mesh();
+		float PI = 3.1416;
+		float startU=0;
+		float startV=0;
+		float endU=PI*2;
+		float endV=PI;
+		float stepU=(endU-startU)/24; // step size between U-points on the grid
+		float stepV=(endV-startV)/24; // step size between V-points on the grid
+		for(int i=0;i<24;i++){ // U-points
+			for(int j=0;j<24;j++){ // V-points
+				float u=i*stepU+startU;
+					float v=j*stepV+startV;
+					float un=(i+1==24) ? endU : (i+1)*stepU+startU;
+					float vn=(j+1==24) ? endV : (j+1)*stepV+startV;
+					// Find the four points of the grid
+					// square by evaluating the parametric
+					// surface function
+					vec3 p0=pointOnSurface(u, v);
+					vec3 p1=pointOnSurface(u, vn);
+					vec3 p2=pointOnSurface(un, v);
+					vec3 p3=pointOnSurface(un, vn);
+					// NOTE: For spheres, the normal is just the normalized
+					// version of each vertex point; this generally won't be the case for
+					// other parametric surfaces.
+					// Output the first triangle of this grid square
+						
+					m_sphere->addVertex(VertexData(p0, p0.normalized(), vec2(u, 1.0 - v)));
+					m_sphere->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
+					m_sphere->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+
+
+					m_sphere->addVertex(VertexData(p3, p3.normalized(), vec2(un, 1.0 - vn)));
+					m_sphere->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
+					m_sphere->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+			}
+		}
+		m_sphere->finish();
+
+
+        auto size = Engine::shared()->winSize();
+        m_deferredRenderPass = new DeviceRenderPassVK(4, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R8G8B8A8_S);
+        m_gbuffer = new DeviceFrameBufferVK(size.x, size.y, m_deferredRenderPass);
+        m_deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
+        m_lightingPassBuffer = new DeviceFrameBufferVK(size.x, size.y, m_deferredLightingPass);
 
         DeviceVertexInput imguiVertexInput;
         imguiVertexInput.stride = sizeof(VertexData);
@@ -694,7 +751,9 @@ VkApplicationInfo appInfo = {};
         DeviceVertexInput emptyInstancingInput;
         m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_deferredLightingPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput, 4);
 
-        m_skyPass = new DeviceRenderPassVK(size.x, size.y, 1, ImageFormat::R16G16B16A16_SFLOAT);
+        m_skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
+        m_skyPassBuffer = new DeviceFrameBufferVK(size.x, size.y, m_skyPass);
+
         Material * matSkyPass = new Material();
         matSkyPass->loadFromTemplate("Sky");
         m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
@@ -1875,7 +1934,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         vkResetCommandBuffer(deferredCommand, 0);
         res = vkBeginCommandBuffer(deferredCommand, &beginInfoDeffered);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfoDeferred.framebuffer = m_deferredRenderPass->getFrameBuffer();
+        renderPassInfoDeferred.framebuffer = m_gbuffer->getFrameBuffer();
         vkCmdBeginRenderPass(deferredCommand, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
         drawObjs_Common(deferredCommand, m_deferredRenderPass->getRenderPass(), commonList);
@@ -1910,7 +1969,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkResetCommandBuffer(lightPassCmd, 0);
             res = vkBeginCommandBuffer(lightPassCmd, &beginInfoDeffered);
             CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-            renderPassInfoDeferred.framebuffer = m_deferredLightingPass->getFrameBuffer();
+            renderPassInfoDeferred.framebuffer = m_lightingPassBuffer->getFrameBuffer();
             vkCmdBeginRenderPass(lightPassCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
             
@@ -1941,9 +2000,9 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         	vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
             //descriptorWrites.emplace_back(writeSet);
 
-            auto gbufferTex = m_deferredRenderPass->getTextureList();
+            auto gbufferTex = m_gbuffer->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
-            for(int i =0; i < m_deferredRenderPass->getTextureList().size(); i++)
+            for(int i =0; i < m_gbuffer->getTextureList().size(); i++)
             {
                 auto tex = gbufferTex[i];
                 VkDescriptorImageInfo imageInfo{};
@@ -2007,17 +2066,22 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkResetCommandBuffer(skyCmd, 0);
             res = vkBeginCommandBuffer(skyCmd, &beginInfoDeffered);
             CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-            renderPassInfoDeferred.framebuffer = m_skyPass->getFrameBuffer();//m_fbs[ImageIndex];
+            renderPassInfoDeferred.framebuffer = m_lightingPassBuffer->getFrameBuffer(); //m_skyPassBuffer->getFrameBuffer();//m_fbs[ImageIndex];
             vkCmdBeginRenderPass(skyCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
 
 
             vkCmdBindPipeline(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipeline());
-
+            m_skyPassPipeLine->updateUniform();
             m_skyPassPipeLine->collcetItemWiseDescritporSet();
             size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
             //update uniform.
             VkDescriptorSet itemDescriptorSet = m_skyPassPipeLine->giveItemWiseDescriptorSet();
+            void* data;
+            vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
+            Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
+            memcpy(data, &m, sizeof(Matrix44));
+            vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
 
             //update descriptor
             std::vector<VkWriteDescriptorSet> descriptorWrites{};
@@ -2040,8 +2104,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
 
             std::vector<VkDescriptorImageInfo> imageInfoList;
-            auto texList = m_deferredLightingPass->getTextureList();
-            auto tex = m_deferredRenderPass->getDepthMap();
+            auto texList = m_lightingPassBuffer->getTextureList();
+            auto tex = m_gbuffer->getDepthMap();
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = tex->getImageLayOut();
             imageInfo.imageView = tex->getImageView();
@@ -2058,41 +2122,22 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             descriptorWrites.emplace_back(texWriteSet);
 
-
-
-            
-            
-            
-            auto colorTex = texList[0];
-            VkDescriptorImageInfo imageColorInfo{};
-            imageColorInfo.imageLayout = colorTex->getImageLayOut();
-            imageColorInfo.imageView = colorTex->getImageView();
-            imageColorInfo.sampler = colorTex->getSampler();
-  
-            VkWriteDescriptorSet texColorWriteSet{};
-            texColorWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            texColorWriteSet.dstSet = itemDescriptorSet;
-            texColorWriteSet.dstBinding = 2;
-            texColorWriteSet.dstArrayElement = 0;
-            texColorWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            texColorWriteSet.descriptorCount = 1;
-            texColorWriteSet.pImageInfo = &imageColorInfo;
-            descriptorWrites.emplace_back(texColorWriteSet);
-            
-
+            auto sphereMesh = m_sphere;
             vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 
-            VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
+            auto vbo = static_cast<DeviceBufferVK *>(sphereMesh->getArrayBuf()->bufferId());
+            auto ibo = static_cast<DeviceBufferVK *>(sphereMesh->getIndexBuf()->bufferId());
+            VkBuffer vertexBuffers[] = {vbo->getBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(skyCmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(skyCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindIndexBuffer(skyCmd, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
             std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
             if(static_cast<DeviceShaderVK *>(m_skyPassPipeLine->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
                 descriptorSetList.push_back(m_skyPassPipeLine->getMaterialDescriptorSet());
             }
             vkCmdBindDescriptorSets(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(skyCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
+            vkCmdDrawIndexed(skyCmd, static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
 
 
             vkCmdEndRenderPass(skyCmd);
@@ -2155,7 +2200,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             writeSet.pBufferInfo = &bufferInfo;
             descriptorWrites.emplace_back(writeSet);
 
-            auto lightingResultTex = m_skyPass->getTextureList();
+            auto lightingResultTex = m_lightingPassBuffer->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
 
             auto tex = lightingResultTex[0];
