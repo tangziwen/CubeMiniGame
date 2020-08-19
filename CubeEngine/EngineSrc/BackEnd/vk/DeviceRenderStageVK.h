@@ -13,6 +13,8 @@ public:
 	DeviceRenderStageVK(DeviceRenderPassVK * renderPass, DeviceFrameBufferVK * frameBuffer);
 	DeviceRenderPassVK * getRenderPass();
 	DeviceFrameBufferVK * getFrameBuffer();
+	void prepare(VkCommandBuffer command);
+	void finish(VkCommandBuffer command);
 private:
 	DeviceRenderPassVK * m_renderPass;
 	DeviceFrameBufferVK * m_frameBuffer;

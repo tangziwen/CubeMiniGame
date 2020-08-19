@@ -42,7 +42,7 @@
 namespace tzw
 {
 
-#define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
+
 #define ARRAY_SIZE_IN_ELEMENTS(a) (sizeof(a)/sizeof(a[0]))
 const bool enableValidationLayers = true;
 const int MAX_FRAMES_IN_FLIGHT = 1;
@@ -681,7 +681,7 @@ VkApplicationInfo appInfo = {};
 
 	tzw::vec3 pointOnSurface(float u, float v)
 	{
-        float m_radius = 100;
+        float m_radius = 6360000.0f;
 		return vec3(cos(u) * sin(v) * m_radius, cos(v) * m_radius, sin(u) * sin(v) * m_radius);
 	}
     void VKRenderBackEnd::CreateDerrferredRenderPass()
@@ -735,11 +735,15 @@ VkApplicationInfo appInfo = {};
 
 
         auto size = Engine::shared()->winSize();
-        m_deferredRenderPass = new DeviceRenderPassVK(4, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R8G8B8A8_S);
-        m_gbuffer = new DeviceFrameBufferVK(size.x, size.y, m_deferredRenderPass);
-        m_deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
-        m_lightingPassBuffer = new DeviceFrameBufferVK(size.x, size.y, m_deferredLightingPass);
+        auto gBufferRenderPass = new DeviceRenderPassVK(4, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R8G8B8A8_S);
+        auto gBuffer = new DeviceFrameBufferVK(size.x, size.y, gBufferRenderPass);
+        m_gPassStage = new DeviceRenderStageVK(gBufferRenderPass, gBuffer);
 
+
+        auto deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
+        auto deferredLightingBuffer= new DeviceFrameBufferVK(size.x, size.y, deferredLightingPass);
+        m_DeferredLightingStage = new DeviceRenderStageVK(deferredLightingPass, deferredLightingBuffer);
+       
         DeviceVertexInput imguiVertexInput;
         imguiVertexInput.stride = sizeof(VertexData);
         imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
@@ -749,14 +753,15 @@ VkApplicationInfo appInfo = {};
         mat->loadFromTemplate("DirectLight");
 
         DeviceVertexInput emptyInstancingInput;
-        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_deferredLightingPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput, 4);
+        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput, 4);
 
-        m_skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
-        m_skyPassBuffer = new DeviceFrameBufferVK(size.x, size.y, m_skyPass);
+        auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
+        m_skyStage = new DeviceRenderStageVK(skyPass, m_DeferredLightingStage->getFrameBuffer());
+
 
         Material * matSkyPass = new Material();
         matSkyPass->loadFromTemplate("Sky");
-        m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyPass->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+        m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
@@ -1908,70 +1913,19 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         
         //------------deferred g - pass begin-------------
         VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
-        VkCommandBufferBeginInfo beginInfoDeffered = {};
-        beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
 
-
-		std::array<VkClearValue, 5> clearValuesDefferred{};
-		clearValuesDefferred[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValuesDefferred[1].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValuesDefferred[2].color = {0.0f, 0.0f, 0.0f, 1.0f};
-        clearValuesDefferred[3].color = {0.0f, 0.0f, 0.0f, 1.0f};
-		clearValuesDefferred[4].depthStencil = {1.0f, 0};
-	
-        
-        VkRenderPassBeginInfo renderPassInfoDeferred = {};
-        renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfoDeferred.renderPass = m_deferredRenderPass->getRenderPass();   
-        renderPassInfoDeferred.renderArea.offset.x = 0;
-        renderPassInfoDeferred.renderArea.offset.y = 0;
-        renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
-        renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
-        renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
-        renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
-        
-        vkResetCommandBuffer(deferredCommand, 0);
-        res = vkBeginCommandBuffer(deferredCommand, &beginInfoDeffered);
-        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfoDeferred.framebuffer = m_gbuffer->getFrameBuffer();
-        vkCmdBeginRenderPass(deferredCommand, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
-
-        drawObjs_Common(deferredCommand, m_deferredRenderPass->getRenderPass(), commonList);
-
-
-        vkCmdEndRenderPass(deferredCommand);
-        res = vkEndCommandBuffer(deferredCommand);
-        CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+        m_gPassStage->prepare(deferredCommand);
+        drawObjs_Common(deferredCommand, m_gPassStage->getRenderPass()->getRenderPass(), commonList);
+        m_gPassStage->finish(deferredCommand);
 
         //------------deferred g - pass end-----------------
 
         //------------deferred Lighting Pass begin---------------
         VkCommandBuffer lightPassCmd = m_generalCmdBuff[ImageIndex][1];
         {
-            
-            VkCommandBufferBeginInfo beginInfoDeffered = {};
-            beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            std::array<VkClearValue, 2> clearValuesDefferred{};
-            clearValuesDefferred[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-            clearValuesDefferred[1].depthStencil = {1.0f, 0};
-            VkRenderPassBeginInfo renderPassInfoDeferred = {};
-            renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfoDeferred.renderPass = m_deferredLightingPass->getRenderPass();   
-            renderPassInfoDeferred.renderArea.offset.x = 0;
-            renderPassInfoDeferred.renderArea.offset.y = 0;
-            renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
-            renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
-            renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
-            renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
 
-            vkResetCommandBuffer(lightPassCmd, 0);
-            res = vkBeginCommandBuffer(lightPassCmd, &beginInfoDeffered);
-            CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-            renderPassInfoDeferred.framebuffer = m_lightingPassBuffer->getFrameBuffer();
-            vkCmdBeginRenderPass(lightPassCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
+            m_DeferredLightingStage->prepare(lightPassCmd);
             
             vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
             m_dirLightingPassPiepeline->updateUniform();
@@ -2000,9 +1954,9 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         	vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
             //descriptorWrites.emplace_back(writeSet);
 
-            auto gbufferTex = m_gbuffer->getTextureList();
+            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();//m_gbuffer->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
-            for(int i =0; i < m_gbuffer->getTextureList().size(); i++)
+            for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
                 VkDescriptorImageInfo imageInfo{};
@@ -2020,7 +1974,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 				vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
                 descriptorWrites.emplace_back(texWriteSet);
             }
-            
+
 
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
@@ -2034,9 +1988,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindDescriptorSets(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(lightPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
             
-            vkCmdEndRenderPass(lightPassCmd);
-            res = vkEndCommandBuffer(lightPassCmd);
-            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+            m_DeferredLightingStage->finish(lightPassCmd);
 
         }
 
@@ -2046,30 +1998,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //------------Sky Pass end---------------
         {
 
-            VkCommandBufferBeginInfo beginInfoDeffered = {};
-            beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            std::array<VkClearValue, 2> clearValuesDefferred{};
-            clearValuesDefferred[0].color = {1.0f, 0.0f, 0.0f, 1.0f};
-            clearValuesDefferred[1].depthStencil = {1.0f, 0};
-            VkRenderPassBeginInfo renderPassInfoDeferred = {};
-            renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfoDeferred.renderPass = m_skyPass->getRenderPass();   
-            renderPassInfoDeferred.renderArea.offset.x = 0;
-            renderPassInfoDeferred.renderArea.offset.y = 0;
-            renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
-            renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
-            renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
-            renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
-
-            
-            vkResetCommandBuffer(skyCmd, 0);
-            res = vkBeginCommandBuffer(skyCmd, &beginInfoDeffered);
-            CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-            renderPassInfoDeferred.framebuffer = m_lightingPassBuffer->getFrameBuffer(); //m_skyPassBuffer->getFrameBuffer();//m_fbs[ImageIndex];
-            vkCmdBeginRenderPass(skyCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
-
-
+            m_skyStage->prepare(skyCmd);
 
             vkCmdBindPipeline(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipeline());
             m_skyPassPipeLine->updateUniform();
@@ -2104,8 +2033,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
 
             std::vector<VkDescriptorImageInfo> imageInfoList;
-            auto texList = m_lightingPassBuffer->getTextureList();
-            auto tex = m_gbuffer->getDepthMap();
+            auto tex = m_gPassStage->getFrameBuffer()->getDepthMap();
             VkDescriptorImageInfo imageInfo{};
             imageInfo.imageLayout = tex->getImageLayOut();
             imageInfo.imageView = tex->getImageView();
@@ -2139,10 +2067,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindDescriptorSets(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(skyCmd, static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
 
-
-            vkCmdEndRenderPass(skyCmd);
-            res = vkEndCommandBuffer(skyCmd);
-            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+            m_skyStage->finish(skyCmd);
         }
 
         //------------Texture To Screen Pass begin---------------
@@ -2165,8 +2090,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
             renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
 
-            
-            vkResetCommandBuffer(textureToScreenCmd, 0);
+
             res = vkBeginCommandBuffer(textureToScreenCmd, &beginInfoDeffered);
             CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
             renderPassInfoDeferred.framebuffer = m_fbs[ImageIndex];
@@ -2200,7 +2124,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             writeSet.pBufferInfo = &bufferInfo;
             descriptorWrites.emplace_back(writeSet);
 
-            auto lightingResultTex = m_lightingPassBuffer->getTextureList();
+            auto lightingResultTex = m_skyStage->getFrameBuffer()->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
 
             auto tex = lightingResultTex[0];
@@ -2273,8 +2197,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         renderPassInfo.renderArea.extent.height = screenSize.y;
         renderPassInfo.clearValueCount = clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
-        
-        vkResetCommandBuffer(command, 0);
+
         res = vkBeginCommandBuffer(command, &beginInfo);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfo.framebuffer = m_fbs[ImageIndex];

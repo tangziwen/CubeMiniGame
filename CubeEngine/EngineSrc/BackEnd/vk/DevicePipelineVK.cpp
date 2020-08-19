@@ -364,6 +364,54 @@ void DevicePipelineVK::updateUniform()
                 }
                 break;
             }
+            case TechniqueVar::Type::Float:
+            {
+                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
+                if(idx>= 0)
+                {
+                    auto blockMember = materialUniformBufferInfo.m_member[idx];
+
+                    void * offsetDst = (char *)data + blockMember.offset;
+                    memcpy(offsetDst, &(var->data.rawData.f), blockMember.size);
+                }
+                break;
+            }
+            case TechniqueVar::Type::Integer:
+            {
+                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
+                if(idx>= 0)
+                {
+                    auto blockMember = materialUniformBufferInfo.m_member[idx];
+
+                    void * offsetDst = (char *)data + blockMember.offset;
+                    memcpy(offsetDst, &(var->data.rawData.i), blockMember.size);
+                }
+                break;
+            }
+            case TechniqueVar::Type::Vec2:
+            {
+                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
+                if(idx>= 0)
+                {
+                    auto blockMember = materialUniformBufferInfo.m_member[idx];
+
+                    void * offsetDst = (char *)data + blockMember.offset;
+                    memcpy(offsetDst, &(var->data.rawData.v2), blockMember.size);
+                }
+                break;
+            }
+            case TechniqueVar::Type::Vec3:
+            {
+                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
+                if(idx>= 0)
+                {
+                    auto blockMember = materialUniformBufferInfo.m_member[idx];
+
+                    void * offsetDst = (char *)data + blockMember.offset;
+                    memcpy(offsetDst, &(var->data.rawData.v3), blockMember.size);
+                }
+                break;
+            }
             case TechniqueVar::Type::Semantic:
             {
                 int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
@@ -441,7 +489,6 @@ void DevicePipelineVK::updateUniform()
 		                default: ;
                     }
                 }
-
             }
             break;
         }
@@ -624,6 +671,24 @@ void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertex
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
+}
+
+
+void DevicePipelineVK::updateDescriptorByBinding(VkDescriptorSet descSet, int binding, DeviceTextureVK* texture)
+{
+    VkDescriptorImageInfo imageInfo{};
+    imageInfo.imageLayout = texture->getImageLayOut();
+    imageInfo.imageView = texture->getImageView();
+    imageInfo.sampler = texture->getSampler();
+    VkWriteDescriptorSet texWriteSet{};
+    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+    texWriteSet.dstSet = descSet;
+    texWriteSet.dstBinding = binding;
+    texWriteSet.dstArrayElement = 0;
+    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    texWriteSet.descriptorCount = 1;
+    texWriteSet.pImageInfo = &imageInfo;
+	vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
 }
 
 void DeviceVertexInput::addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc)

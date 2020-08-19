@@ -6,6 +6,7 @@ namespace tzw
 {
 	DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, DeviceRenderPassVK * renderPass)
 	{
+        m_size = vec2(w,h);
         auto & attachmentList = renderPass->getAttachmentList();
         m_depthTexture = nullptr;
         for(int i =0 ; i < attachmentList.size(); i++){
@@ -52,5 +53,9 @@ namespace tzw
     VkFramebuffer DeviceFrameBufferVK::getFrameBuffer()
     {
         return m_frameBuffer;
+    }
+    vec2 DeviceFrameBufferVK::getSize()
+    {
+        return m_size;
     }
 }

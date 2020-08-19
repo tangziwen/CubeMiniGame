@@ -21,9 +21,11 @@
 #include "vk/DeviceRenderPassVK.h"
 #include "vk/DeviceFrameBufferVK.h"
 #include <set>
+#include "vk/DeviceRenderStageVK.h"
+#include <unordered_set>
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
-
+#define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
 #define VK_CHECK_RESULT(func) {VkResult result = func; if(result !=VK_SUCCESS) {abort();}}
 namespace tzw {
 
@@ -229,17 +231,15 @@ private:
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
 
-    DeviceRenderPassVK * m_deferredRenderPass;
-    DeviceFrameBufferVK * m_gbuffer;
-    DeviceRenderPassVK * m_deferredLightingPass;
-    DeviceFrameBufferVK * m_lightingPassBuffer;
-    DeviceRenderPassVK * m_skyPass;
-    DeviceFrameBufferVK * m_skyPassBuffer;
+    DeviceRenderStageVK * m_gPassStage;
+    DeviceRenderStageVK * m_DeferredLightingStage;
+    DeviceRenderStageVK * m_skyStage;
+
 
     DevicePipelineVK * m_dirLightingPassPiepeline;
     DevicePipelineVK * m_skyPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;
-    std::set<DevicePipelineVK *> m_fuckingObjList;
+    std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     Mesh * m_sphere;
 };
 

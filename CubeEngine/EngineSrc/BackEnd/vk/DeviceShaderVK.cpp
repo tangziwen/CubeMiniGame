@@ -257,6 +257,8 @@ std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>>& DeviceShaderVK
     return m_setInfoMap;
 }
 
+
+
 int DeviceShaderVKLocationInfo::getBlockMemberIndex(std::string name)
 {
     for(int i = 0; i < m_member.size(); i++)

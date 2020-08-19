@@ -14,10 +14,12 @@ public:
 	DeviceTextureVK * getDepthMap();
 	std::vector<DeviceTextureVK *> & getTextureList();
 	VkFramebuffer getFrameBuffer();
+	vec2 getSize();
 private:
 	VkFramebuffer m_frameBuffer;
 	std::vector<DeviceTextureVK *>m_textureList;
 	DeviceTextureVK * m_depthTexture;
+	vec2 m_size;
 };
 };
 

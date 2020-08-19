@@ -9,6 +9,7 @@ namespace tzw
 {
 class Material;
 class DeviceShaderVK;
+class DeviceTextureVK;
 struct DeviceVertexAttributeDescVK
 {
 	VkFormat format;
@@ -35,6 +36,7 @@ public:
 	void collcetItemWiseDescritporSet();
 	VkDescriptorSet giveItemWiseDescriptorSet();
 	Material * getMat();
+	void updateDescriptorByBinding(VkDescriptorSet descSet, int binding, DeviceTextureVK * texture);
 private:
 	void createDescriptorPool();
 	void createMaterialDescriptorPool();
