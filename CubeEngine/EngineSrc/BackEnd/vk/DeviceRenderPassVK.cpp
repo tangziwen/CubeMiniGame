@@ -41,7 +41,7 @@ namespace tzw
             }
             attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachDesc.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             attachDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             attachmentDescList.emplace_back(attachDesc);
@@ -83,7 +83,7 @@ namespace tzw
         }
         depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         attachmentDescList.emplace_back(depthAttachmentDesc);
 		
@@ -114,8 +114,8 @@ namespace tzw
         renderPassCreateInfo.pAttachments = attachmentDescList.data();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDesc;
-		//renderPassCreateInfo.dependencyCount = 2;
-		//renderPassCreateInfo.pDependencies = dependencies.data();
+		renderPassCreateInfo.dependencyCount = 2;
+		renderPassCreateInfo.pDependencies = dependencies.data();
 
         VkResult res = vkCreateRenderPass(VKRenderBackEnd::shared()->getDevice(), &renderPassCreateInfo, NULL, &m_renderPass);
         if(res != VK_SUCCESS)
