@@ -533,11 +533,6 @@ VkApplicationInfo appInfo = {};
         VkClearColorValue clearColor = { 164.0f/256.0f, 30.0f/256.0f, 34.0f/256.0f, 0.0f };
         VkClearValue clearValue = {};
         clearValue.color = clearColor;
-    
-        VkImageSubresourceRange imageRange = {};
-        imageRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-        imageRange.levelCount = 1;
-        imageRange.layerCount = 1;
 
 
 		std::array<VkClearValue, 2> clearValues{};
@@ -623,7 +618,27 @@ VkApplicationInfo appInfo = {};
         renderPassCreateInfo.pAttachments = attachmentDescList.data();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDesc;
-        
+		// Use subpass dependencies for attachment layout transitions
+		std::array<VkSubpassDependency, 2> dependencies;
+
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		//renderPassCreateInfo.dependencyCount = 2;
+		//renderPassCreateInfo.pDependencies = dependencies.data();
         VkResult res = vkCreateRenderPass(m_device, &renderPassCreateInfo, NULL, &m_renderPass);
         CHECK_VULKAN_ERROR("vkCreateRenderPass error %d\n", res);
 
@@ -651,7 +666,7 @@ VkApplicationInfo appInfo = {};
         attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        attachDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
         attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
         attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
 
@@ -673,6 +688,28 @@ VkApplicationInfo appInfo = {};
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDesc;
         
+
+		// Use subpass dependencies for attachment layout transitions
+		std::array<VkSubpassDependency, 2> dependencies;
+
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		//renderPassCreateInfo.dependencyCount = 2;
+		//renderPassCreateInfo.pDependencies = dependencies.data();
         VkResult res = vkCreateRenderPass(m_device, &renderPassCreateInfo, NULL, &m_textureToScreenRenderPass);
         CHECK_VULKAN_ERROR("vkCreateRenderPass error %d\n", res);
 
@@ -753,7 +790,7 @@ VkApplicationInfo appInfo = {};
         mat->loadFromTemplate("DirectLight");
 
         DeviceVertexInput emptyInstancingInput;
-        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput, 4);
+        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
         auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
         m_skyStage = new DeviceRenderStageVK(skyPass, m_DeferredLightingStage->getFrameBuffer());
@@ -1465,7 +1502,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         }
 
         //update uniform.
-        VkDescriptorSet itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
+        DeviceDescriptorVK * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
 
         size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
         void* data;
@@ -1474,7 +1511,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         memcpy(data, &wvp, sizeof(Matrix44));
         vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
 		auto mesh = a.getMesh();
-		updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset, sizeof(Matrix44));
+		updateItemDescriptor(itemDescriptorSet->getDescSet(), mat, m_itemBufferOffset, sizeof(Matrix44));
         //item->updateDescriptor();
 
         //recordDrawCommand
@@ -1490,7 +1527,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         
             vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
             if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
                 descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
             }
@@ -1558,7 +1595,7 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
         }
             
         //update uniform.
-        VkDescriptorSet itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
+        DeviceDescriptorVK * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
 
         size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(ItemUniform));
         void* data;
@@ -1579,7 +1616,7 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
         {
             mesh = a.getMesh();
         }
-        updateItemDescriptor(itemDescriptorSet, mat, m_itemBufferOffset, sizeof(uniformStruct));
+        updateItemDescriptor(itemDescriptorSet->getDescSet(), mat, m_itemBufferOffset, sizeof(uniformStruct));
 
         //recordDrawCommand
         auto vbo = static_cast<DeviceBufferVK *>(mesh->getArrayBuf()->bufferId());
@@ -1594,7 +1631,7 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
             
             vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
             if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
                 descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
             }
@@ -1638,6 +1675,10 @@ void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkIm
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.image = image;
+    if(aspectFlags == 0)
+    {
+        abort();
+    }
     barrier.subresourceRange.aspectMask = aspectFlags;
     barrier.subresourceRange.baseMipLevel = baseMipLevel;
     barrier.subresourceRange.levelCount = levelCount;
@@ -1662,17 +1703,17 @@ void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkIm
     }
     else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL) {
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-        barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+        barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        destinationStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
     }
     else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL) {
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
         barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT;
 
         sourceStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-        destinationStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+        destinationStage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
     }
     else if (oldLayout == VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL && newLayout == VK_IMAGE_LAYOUT_GENERAL) {
         barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
@@ -1837,6 +1878,10 @@ VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkI
     viewInfo.image = image;
     viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
     viewInfo.format = format;
+    if(aspectFlags==0)
+    {
+        abort();
+    }
     viewInfo.subresourceRange.aspectMask = aspectFlags;
     viewInfo.subresourceRange.baseMipLevel = baseMipLevel;
     viewInfo.subresourceRange.levelCount = levelCount;
@@ -1904,6 +1949,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
+        vkDeviceWaitIdle(m_device);
         //CPU here
         m_itemBufferPool->reset();
         Renderer::shared()->collectPrimitives();
@@ -1932,26 +1978,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             m_dirLightingPassPiepeline->collcetItemWiseDescritporSet();
             size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
             //update uniform.
-            VkDescriptorSet itemDescriptorSet = m_dirLightingPassPiepeline->giveItemWiseDescriptorSet();
+            DeviceDescriptorVK * itemDescriptorSet = m_dirLightingPassPiepeline->giveItemWiseDescriptorSet();
 
             //update descriptor
             std::vector<VkWriteDescriptorSet> descriptorWrites{};
-            //update descriptor
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
-            bufferInfo.offset = m_itemBufferOffset;
-            bufferInfo.range = sizeof(Matrix44);
-
-            VkWriteDescriptorSet writeSet{};
-            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		    writeSet.pNext = nullptr;
-            writeSet.dstSet = itemDescriptorSet;
-            writeSet.dstBinding = 0;
-            writeSet.dstArrayElement = 0;
-            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            writeSet.descriptorCount = 1;
-            writeSet.pBufferInfo = &bufferInfo;
-        	vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
+            itemDescriptorSet->updateDescriptorByBinding(0, VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer(),m_itemBufferOffset, sizeof(Matrix44));
             //descriptorWrites.emplace_back(writeSet);
 
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();//m_gbuffer->getTextureList();
@@ -1959,20 +1990,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                VkDescriptorImageInfo imageInfo{};
-                imageInfo.imageLayout = tex->getImageLayOut();
-                imageInfo.imageView = tex->getImageView();
-                imageInfo.sampler = tex->getSampler();
-                VkWriteDescriptorSet texWriteSet{};
-                texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                texWriteSet.dstSet = itemDescriptorSet;
-                texWriteSet.dstBinding = i + 1;
-                texWriteSet.dstArrayElement = 0;
-                texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                texWriteSet.descriptorCount = 1;
-                texWriteSet.pImageInfo = &imageInfo;
-				vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
-                descriptorWrites.emplace_back(texWriteSet);
+                itemDescriptorSet->updateDescriptorByBinding(i + 1, tex);
             }
 
 
@@ -1981,7 +1999,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindVertexBuffers(lightPassCmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(lightPassCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
             if(static_cast<DeviceShaderVK *>(m_dirLightingPassPiepeline->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
                 descriptorSetList.push_back(m_dirLightingPassPiepeline->getMaterialDescriptorSet());
             }
@@ -2005,7 +2023,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             m_skyPassPipeLine->collcetItemWiseDescritporSet();
             size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
             //update uniform.
-            VkDescriptorSet itemDescriptorSet = m_skyPassPipeLine->giveItemWiseDescriptorSet();
+            DeviceDescriptorVK * itemDescriptorSet = m_skyPassPipeLine->giveItemWiseDescriptorSet();
             void* data;
             vkMapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory(), m_itemBufferOffset, sizeof(Matrix44), 0, &data);
             Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
@@ -2013,45 +2031,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getMemory());
 
             //update descriptor
-            std::vector<VkWriteDescriptorSet> descriptorWrites{};
-            //update descriptor
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
-            bufferInfo.offset = m_itemBufferOffset;
-            bufferInfo.range = sizeof(Matrix44);
 
-            VkWriteDescriptorSet writeSet{};
-            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		    writeSet.pNext = nullptr;
-            writeSet.dstSet = itemDescriptorSet;
-            writeSet.dstBinding = 0;
-            writeSet.dstArrayElement = 0;
-            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            writeSet.descriptorCount = 1;
-            writeSet.pBufferInfo = &bufferInfo;
-            descriptorWrites.emplace_back(writeSet);
-
-
-            std::vector<VkDescriptorImageInfo> imageInfoList;
+            itemDescriptorSet->updateDescriptorByBinding(0, VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer(),m_itemBufferOffset, sizeof(Matrix44));
             auto tex = m_gPassStage->getFrameBuffer()->getDepthMap();
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = tex->getImageLayOut();
-            imageInfo.imageView = tex->getImageView();
-            imageInfo.sampler = tex->getSampler();
-  
-            VkWriteDescriptorSet texWriteSet{};
-            texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            texWriteSet.dstSet = itemDescriptorSet;
-            texWriteSet.dstBinding = 1;
-            texWriteSet.dstArrayElement = 0;
-            texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            texWriteSet.descriptorCount = 1;
-            texWriteSet.pImageInfo = &imageInfo;
-
-            descriptorWrites.emplace_back(texWriteSet);
+            itemDescriptorSet->updateDescriptorByBinding(1, tex);
 
             auto sphereMesh = m_sphere;
-            vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
 
             auto vbo = static_cast<DeviceBufferVK *>(sphereMesh->getArrayBuf()->bufferId());
             auto ibo = static_cast<DeviceBufferVK *>(sphereMesh->getIndexBuf()->bufferId());
@@ -2060,7 +2045,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindVertexBuffers(skyCmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(skyCmd, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
             if(static_cast<DeviceShaderVK *>(m_skyPassPipeLine->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
                 descriptorSetList.push_back(m_skyPassPipeLine->getMaterialDescriptorSet());
             }
@@ -2103,7 +2088,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             m_textureToScreenPipeline->collcetItemWiseDescritporSet();
             size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
             //update uniform.
-            VkDescriptorSet itemDescriptorSet = m_textureToScreenPipeline->giveItemWiseDescriptorSet();
+            DeviceDescriptorVK * itemDescriptorSet = m_textureToScreenPipeline->giveItemWiseDescriptorSet();
 
             //update descriptor
             std::vector<VkWriteDescriptorSet> descriptorWrites{};
@@ -2116,7 +2101,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             VkWriteDescriptorSet writeSet{};
             writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		    writeSet.pNext = nullptr;
-            writeSet.dstSet = itemDescriptorSet;
+            writeSet.dstSet = itemDescriptorSet->getDescSet();
             writeSet.dstBinding = 0;
             writeSet.dstArrayElement = 0;
             writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -2135,7 +2120,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
   
             VkWriteDescriptorSet texWriteSet{};
             texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            texWriteSet.dstSet = itemDescriptorSet;
+            texWriteSet.dstSet = itemDescriptorSet->getDescSet();
             texWriteSet.dstBinding = 1;
             texWriteSet.dstArrayElement = 0;
             texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -2151,7 +2136,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindVertexBuffers(textureToScreenCmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(textureToScreenCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet,};
+            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
             if(static_cast<DeviceShaderVK *>(m_textureToScreenPipeline->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
                 descriptorSetList.push_back(m_textureToScreenPipeline->getMaterialDescriptorSet());
             }

@@ -5,6 +5,7 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include "DeviceDescriptorVK.h"
 namespace tzw
 {
 class Material;
@@ -34,7 +35,7 @@ public:
 	void updateMaterialDescriptorSet();
 	void updateUniform();
 	void collcetItemWiseDescritporSet();
-	VkDescriptorSet giveItemWiseDescriptorSet();
+	DeviceDescriptorVK * giveItemWiseDescriptorSet();
 	Material * getMat();
 	void updateDescriptorByBinding(VkDescriptorSet descSet, int binding, DeviceTextureVK * texture);
 private:
@@ -43,7 +44,7 @@ private:
 	void createMaterialUniformBuffer();
 	void crateMaterialDescriptorSet();
 	void defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions);
-	std::deque<VkDescriptorSet> m_itemDescritptorSetList;
+	std::deque<DeviceDescriptorVK *> m_itemDescritptorSetList;
 	std::vector<VkDescriptorPool> m_descriptorPoolList;
 	int m_currItemWiseDescriptorSetIdx;
 	size_t m_totalItemWiseDesSet;

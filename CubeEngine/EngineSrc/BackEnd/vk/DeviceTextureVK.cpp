@@ -230,19 +230,19 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
         flag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
         break;
     }
-    backEnd->createImage(texWidth, texHeight, vkformat, VK_IMAGE_TILING_OPTIMAL, usageFlag, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory);
+    backEnd->createImage(texWidth, texHeight, vkformat, VK_IMAGE_TILING_OPTIMAL, usageFlag | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory);
 
     if(rtFlag ==TextureRtFlagVK::DEPTH_ATTACHEMENT)
     {
         backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
-        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, flag);
-        m_imageLayOut = VK_IMAGE_LAYOUT_GENERAL;
+        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL, flag);
+        m_imageLayOut = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
     }
     else if(rtFlag ==TextureRtFlagVK::COLOR_ATTACHMENT)
     {
         backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
-        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, flag);
-        m_imageLayOut = VK_IMAGE_LAYOUT_GENERAL;
+        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, flag);
+        m_imageLayOut = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
     }
     else{
     backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
@@ -310,9 +310,6 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
     VkFormat vkformat = VKRenderBackEnd::shared()->getFormat(ImageFormat::R8G8B8A8);
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
-    
-
-    printf("is it empty %d\n", t.empty());
     if(t.empty())
     {
         mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
@@ -324,11 +321,10 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
 
         stbi_image_free(pixels);
 
-        backEnd->createImage(texWidth, texHeight, vkformat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory, mipLevels);
+        backEnd->createImage(texWidth, texHeight, vkformat, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory, mipLevels);
 
-        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
-            backEnd->copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
-        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_ASPECT_COLOR_BIT, 0, mipLevels);
+        backEnd->copyBufferToImage(stagingBuffer, m_textureImage, static_cast<uint32_t>(texWidth), static_cast<uint32_t>(texHeight));
         generateMipmaps(m_textureImage, vkformat, texWidth, texHeight, mipLevels);
     }else
     {

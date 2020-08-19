@@ -283,9 +283,9 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
     }
 
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
-
-    //update material parameter
     auto & varList = m_mat->getVarList();
+    //update material parameter
+    
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
     for(auto &i : varList)
     {
@@ -347,85 +347,51 @@ void DevicePipelineVK::updateUniform()
     void* data;
     //copy new data
     vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory, 0, sizeof(materialUniformBufferInfo.size), 0, &data);
-    for(auto &i : varList)
+
+    for(int idx = 0; idx < materialUniformBufferInfo.m_member.size(); idx++)
     {
-        TechniqueVar* var = &i.second;
-        switch(var->type)
+        auto & blockMember = materialUniformBufferInfo.m_member[idx];
+        auto iter = varList.find(blockMember.name);
+        if(iter !=varList.end())
         {
-            case TechniqueVar::Type::Vec4:
+            void * offsetDst = (char *)data + blockMember.offset;
+            TechniqueVar* var = &iter->second;
+            switch(var->type)
             {
-                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
-                if(idx>= 0)
+                case TechniqueVar::Type::Vec4:
                 {
-                    auto blockMember = materialUniformBufferInfo.m_member[idx];
-
-                    void * offsetDst = (char *)data + blockMember.offset;
                     memcpy(offsetDst, &(var->data.rawData.v4), blockMember.size);
+                    break;
                 }
-                break;
-            }
-            case TechniqueVar::Type::Float:
-            {
-                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
-                if(idx>= 0)
+                case TechniqueVar::Type::Float:
                 {
-                    auto blockMember = materialUniformBufferInfo.m_member[idx];
 
-                    void * offsetDst = (char *)data + blockMember.offset;
                     memcpy(offsetDst, &(var->data.rawData.f), blockMember.size);
-                }
-                break;
-            }
-            case TechniqueVar::Type::Integer:
-            {
-                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
-                if(idx>= 0)
-                {
-                    auto blockMember = materialUniformBufferInfo.m_member[idx];
 
-                    void * offsetDst = (char *)data + blockMember.offset;
+                    break;
+                }
+                case TechniqueVar::Type::Integer:
+                {
                     memcpy(offsetDst, &(var->data.rawData.i), blockMember.size);
+                    break;
                 }
-                break;
-            }
-            case TechniqueVar::Type::Vec2:
-            {
-                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
-                if(idx>= 0)
+                case TechniqueVar::Type::Vec2:
                 {
-                    auto blockMember = materialUniformBufferInfo.m_member[idx];
-
-                    void * offsetDst = (char *)data + blockMember.offset;
                     memcpy(offsetDst, &(var->data.rawData.v2), blockMember.size);
+                    break;
                 }
-                break;
-            }
-            case TechniqueVar::Type::Vec3:
-            {
-                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
-                if(idx>= 0)
+                case TechniqueVar::Type::Vec3:
                 {
-                    auto blockMember = materialUniformBufferInfo.m_member[idx];
-
-                    void * offsetDst = (char *)data + blockMember.offset;
                     memcpy(offsetDst, &(var->data.rawData.v3), blockMember.size);
+                    break;
                 }
-                break;
-            }
-            case TechniqueVar::Type::Semantic:
-            {
-                int idx = materialUniformBufferInfo.getBlockMemberIndex(i.first);
-                if(idx>= 0)
+                case TechniqueVar::Type::Semantic:
                 {
-                    auto blockMember = materialUniformBufferInfo.m_member[idx];
-                    void * offsetDst = (char *)data + blockMember.offset;
                     switch(var->semantic)
                     {
 		                case TechniqueVar::SemanticType::NO_SEMANTIC: break;
                         case TechniqueVar::SemanticType::WIN_SIZE:
 		                {
-                            
-
                             vec2 winSize = Engine::shared()->winSize();
                             memcpy(offsetDst, &winSize, blockMember.size);
                         }
@@ -489,10 +455,11 @@ void DevicePipelineVK::updateUniform()
 		                default: ;
                     }
                 }
+                break;
             }
-            break;
         }
     }
+
      vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
 }
 
@@ -501,9 +468,9 @@ void DevicePipelineVK::collcetItemWiseDescritporSet()
     m_currItemWiseDescriptorSetIdx = 0;
 }
 
-VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
+DeviceDescriptorVK * DevicePipelineVK::giveItemWiseDescriptorSet()
 {
-    VkDescriptorSet target;
+    DeviceDescriptorVK * target;
     if(m_currItemWiseDescriptorSetIdx< m_itemDescritptorSetList.size()){
     
         target = m_itemDescritptorSetList[m_currItemWiseDescriptorSetIdx];
@@ -525,13 +492,12 @@ VkDescriptorSet DevicePipelineVK::giveItemWiseDescriptorSet()
         allocInfo.pSetLayouts = &layOut;
 
         auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &descriptorSet);
-        printf("create descriptor sets 222222%p\n", descriptorSet);
         if ( res!= VK_SUCCESS) {
             printf("bad  descriptor!!!! %d",res);
             abort();
         }
-        target = descriptorSet;
-        m_itemDescritptorSetList.emplace_back(descriptorSet);
+        target = new DeviceDescriptorVK(descriptorSet);
+        m_itemDescritptorSetList.emplace_back(target);
     }
     m_currItemWiseDescriptorSetIdx ++;
     return target;

@@ -1,6 +1,7 @@
 #include "DeviceRenderPassVK.h"
 #include "../VkRenderBackEnd.h"
 #include "DeviceTextureVK.h"
+#include <array>
 namespace tzw
 {
 	DeviceRenderPassVK::DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format)
@@ -40,8 +41,8 @@ namespace tzw
             }
             attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            attachDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            attachDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+            attachDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             attachmentDescList.emplace_back(attachDesc);
             
@@ -80,21 +81,42 @@ namespace tzw
             }
             break;
         }
-        depthAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-        depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
         depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
         attachmentDescList.emplace_back(depthAttachmentDesc);
 		
+
+
+		// Use subpass dependencies for attachment layout transitions
+		std::array<VkSubpassDependency, 2> dependencies;
+
+		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[0].dstSubpass = 0;
+		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
+		dependencies[1].srcSubpass = 0;
+		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
+		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
+		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
+
         VkRenderPassCreateInfo renderPassCreateInfo = {};
         renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
         renderPassCreateInfo.attachmentCount = attachmentDescList.size();
         renderPassCreateInfo.pAttachments = attachmentDescList.data();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDesc;
-        
+		//renderPassCreateInfo.dependencyCount = 2;
+		//renderPassCreateInfo.pDependencies = dependencies.data();
+
         VkResult res = vkCreateRenderPass(VKRenderBackEnd::shared()->getDevice(), &renderPassCreateInfo, NULL, &m_renderPass);
         if(res != VK_SUCCESS)
         {
