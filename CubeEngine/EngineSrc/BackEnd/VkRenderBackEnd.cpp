@@ -169,7 +169,11 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 	}
     void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
     {
-       auto & varList = mat->getVarList();
+        auto shader = static_cast<DeviceShaderVK * >(mat->getProgram()->getDeviceShader());
+        auto theList = shader->getSetInfo()[0];
+        auto theSize = theList.size();
+        int count = 0;
+        auto & varList = mat->getVarList();
         std::vector<VkWriteDescriptorSet> descriptorWrites{};
         //update descriptor
         VkDescriptorBufferInfo bufferInfo{};
@@ -186,9 +190,9 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         writeSet.descriptorCount = 1;
         writeSet.pBufferInfo = &bufferInfo;
+        count += 1;
 		vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
-        //descriptorWrites.emplace_back(writeSet);
-        auto shader = static_cast<DeviceShaderVK * >(mat->getProgram()->getDeviceShader());
+
         std::vector<VkDescriptorImageInfo> imageInfoList;
         for(auto &i : varList)
         {
@@ -222,11 +226,14 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
                     texWriteSet.descriptorCount = 1;
                     texWriteSet.pImageInfo = &imageInfo;//(imageInfoList.data() + imageInfoList.size() - 1);
 					vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
-                    //descriptorWrites.emplace_back(texWriteSet);
+                    count += 1;
                 }
             }
         }
-        //vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+        if(count != theSize){
+            abort();
+        
+        }
     }
     void VKRenderBackEnd::VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps)
     {
@@ -772,12 +779,12 @@ VkApplicationInfo appInfo = {};
 
 
         auto size = Engine::shared()->winSize();
-        auto gBufferRenderPass = new DeviceRenderPassVK(4, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R8G8B8A8_S);
+        auto gBufferRenderPass = new DeviceRenderPassVK(4, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
         auto gBuffer = new DeviceFrameBufferVK(size.x, size.y, gBufferRenderPass);
         m_gPassStage = new DeviceRenderStageVK(gBufferRenderPass, gBuffer);
 
 
-        auto deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::CLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
+        auto deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         auto deferredLightingBuffer= new DeviceFrameBufferVK(size.x, size.y, deferredLightingPass);
         m_DeferredLightingStage = new DeviceRenderStageVK(deferredLightingPass, deferredLightingBuffer);
        
@@ -792,13 +799,14 @@ VkApplicationInfo appInfo = {};
         DeviceVertexInput emptyInstancingInput;
         m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
-        auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT);
+        auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
         m_skyStage = new DeviceRenderStageVK(skyPass, m_DeferredLightingStage->getFrameBuffer());
 
 
         Material * matSkyPass = new Material();
         matSkyPass->loadFromTemplate("Sky");
         m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
@@ -1970,7 +1978,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         VkCommandBuffer lightPassCmd = m_generalCmdBuff[ImageIndex][1];
         {
 
-
             m_DeferredLightingStage->prepare(lightPassCmd);
             
             vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
@@ -1992,8 +1999,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 auto tex = gbufferTex[i];
                 itemDescriptorSet->updateDescriptorByBinding(i + 1, tex);
             }
-
-
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(lightPassCmd, 0, 1, vertexBuffers, offsets);
@@ -2114,7 +2119,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             auto tex = lightingResultTex[0];
             VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout = tex->getImageLayOut();
+            imageInfo.imageLayout =VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;// tex->getImageLayOut();
             imageInfo.imageView = tex->getImageView();
             imageInfo.sampler = tex->getSampler();
   

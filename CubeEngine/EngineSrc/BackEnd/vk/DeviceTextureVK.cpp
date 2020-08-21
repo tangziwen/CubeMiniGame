@@ -21,6 +21,7 @@ DeviceTextureVK::DeviceTextureVK(std::string filepath)
 
 DeviceTextureVK::DeviceTextureVK()
 {
+    m_isDepth = false;
 }
 
 const VkImage DeviceTextureVK::getImage()
@@ -41,6 +42,11 @@ const VkSampler DeviceTextureVK::getSampler()
 VkImageLayout DeviceTextureVK::getImageLayOut()
 {
     return m_imageLayOut;
+}
+
+bool DeviceTextureVK::getIsDepth()
+{
+    return m_isDepth;
 }
 
 
@@ -214,6 +220,7 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
         break;
     case TextureRtFlagVK::DEPTH_ATTACHEMENT:
         usageFlag |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+        m_isDepth = true;
         break;
     }
     VkImageAspectFlags flag = 0;

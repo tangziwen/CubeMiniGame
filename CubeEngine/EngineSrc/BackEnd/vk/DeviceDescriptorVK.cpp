@@ -11,7 +11,16 @@ namespace tzw
 	void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceTextureVK* texture)
 	{
         VkDescriptorImageInfo imageInfo{};
-        imageInfo.imageLayout = texture->getImageLayOut();
+        if(texture->getIsDepth())
+        {
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;//VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//texture->getImageLayOut();
+        }
+        else
+        {
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        
+        }
+        
         imageInfo.imageView = texture->getImageView();
         imageInfo.sampler = texture->getSampler();
         VkWriteDescriptorSet texWriteSet{};

@@ -18,10 +18,10 @@ class DeviceRenderPassVK
 public:
 	enum class OpType
 	{
-		CLEAR_AND_STORE,
+		LOADCLEAR_AND_STORE,
 		LOAD_AND_STORE,
 	};
-	DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format);
+	DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread);
 	VkRenderPass getRenderPass();
 	size_t getAttachmentCount();
 	std::vector<DeviceRenderPassAttachmentInfo> & getAttachmentList();

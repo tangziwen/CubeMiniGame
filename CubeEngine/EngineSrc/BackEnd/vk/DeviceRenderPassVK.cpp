@@ -4,7 +4,7 @@
 #include <array>
 namespace tzw
 {
-	DeviceRenderPassVK::DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format)
+	DeviceRenderPassVK::DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread)
 	{
         m_opType = opType;
         std::vector<VkAttachmentReference> colorAttachmentRefs;
@@ -30,19 +30,29 @@ namespace tzw
                 {
                     attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
                     attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                    attachDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
                 }
                 break;
-                case OpType::CLEAR_AND_STORE:
+                case OpType::LOADCLEAR_AND_STORE:
                 {
                     attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                     attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                    attachDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
                 }
                 break;
             }
+
+            if(isNeedTransitionToRread)
+            {
+                attachDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+            }else
+            {
+                attachDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+            
+            }
             attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            attachDesc.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-            attachDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
             attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
             attachmentDescList.emplace_back(attachDesc);
             
@@ -74,7 +84,7 @@ namespace tzw
                 depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             }
             break;
-            case OpType::CLEAR_AND_STORE:
+            case OpType::LOADCLEAR_AND_STORE:
             {
                 depthAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                 depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
