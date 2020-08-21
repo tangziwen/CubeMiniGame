@@ -60,6 +60,7 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
         DeviceShaderVKLocationInfo info;
         info.set = set;
         info.binding = binding;
+        info.name = resource.name;
         info.type = DeviceShaderVKLocationType::Sampler;
         if(type == DeviceShaderType::VertexShader){
             info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
@@ -86,6 +87,7 @@ void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceSha
         info.binding = binding;
         info.type = DeviceShaderVKLocationType::Uniform;
         info.size = uniformBufferStructSize;
+        info.name = resource.name;
         if(type == DeviceShaderType::VertexShader){
             info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
         }

@@ -43,6 +43,7 @@ struct DeviceShaderVKLocationInfo{
 	VkShaderStageFlags stageFlag;
 	std::vector<BlockBufferMember> m_member;
 	size_t size;
+	std::string name;
 	int getBlockMemberIndex(std::string name);
 };
 

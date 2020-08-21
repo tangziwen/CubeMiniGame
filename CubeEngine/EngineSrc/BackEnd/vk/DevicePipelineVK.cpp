@@ -272,6 +272,15 @@ VkDescriptorSet DevicePipelineVK::getMaterialDescriptorSet()
 void DevicePipelineVK::updateMaterialDescriptorSet()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    auto setInfo = shader->getSetInfo();
+    auto matDescIter = setInfo.find(1);
+    if(matDescIter == setInfo.end())
+    {
+        
+        return;
+    }
+    auto & matDescSet = matDescIter->second;
+    auto & varList = m_mat->getVarList();
     if(!shader->findLocationInfo("t_shaderUnifom")) 
     {
         if(m_shader->isHaveMaterialDescriptorSetLayOut())
@@ -282,58 +291,63 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
         return;
     }
 
-    auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
-    auto & varList = m_mat->getVarList();
-    //update material parameter
-    
-    std::vector<VkWriteDescriptorSet> descriptorWrites{};
-    for(auto &i : varList)
+    for(auto& i :matDescSet)
     {
-        if(!shader->hasLocationInfo(i.first)){continue;}
-        TechniqueVar* var = &i.second;
-        switch(var->type)
+        switch(i.type)
         {
-            case TechniqueVar::Type::Texture:
+            //currently the uniform descriptor only can show once, and always be called "t_shaderUnifom"
+            case DeviceShaderVKLocationType::Uniform:
             {
-                auto locationInfo = shader->getLocationInfo(i.first);
-                if(locationInfo.set != 1) continue;
-                auto tex = var->data.rawData.texInfo.tex;
+                //update materials uniform buffer
+                VkDescriptorBufferInfo bufferInfo{};
+                bufferInfo.buffer = m_matUniformBuffer;
+                bufferInfo.offset = 0;
+                bufferInfo.range = i.size;
 
-                VkDescriptorImageInfo imageInfo{};
-                imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
-                imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
-
-
-                VkWriteDescriptorSet texWriteSet{};
-                texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                texWriteSet.dstSet = m_materialDescripotrSet;
-                texWriteSet.dstBinding = locationInfo.binding;
-                texWriteSet.dstArrayElement = 0;
-                texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                texWriteSet.descriptorCount = 1;
-                texWriteSet.pImageInfo = &imageInfo;
-                vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
-                //descriptorWrites.emplace_back(texWriteSet);
-                break;
+                VkWriteDescriptorSet writeSet{};
+                writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                writeSet.dstSet = m_materialDescripotrSet;
+                writeSet.dstBinding = i.binding;
+                writeSet.dstArrayElement = 0;
+                writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                writeSet.descriptorCount = 1;
+                writeSet.pBufferInfo = &bufferInfo;
+                vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
             }
-        }
-    }
-    //update materials uniform buffer
-    VkDescriptorBufferInfo bufferInfo{};
-    bufferInfo.buffer = m_matUniformBuffer;
-    bufferInfo.offset = 0;
-    bufferInfo.range = materialUniformBufferInfo.size;
+            break;
+            case DeviceShaderVKLocationType::Sampler:
+            {
+                auto iter = varList.find(i.name);
+                if(iter != varList.end())
+                {
 
-    VkWriteDescriptorSet writeSet{};
-    writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    writeSet.dstSet = m_materialDescripotrSet;
-    writeSet.dstBinding = materialUniformBufferInfo.binding;
-    writeSet.dstArrayElement = 0;
-    writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-    writeSet.descriptorCount = 1;
-    writeSet.pBufferInfo = &bufferInfo;
-    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
+                    TechniqueVar* var = &(iter->second);
+                    assert(var->type == TechniqueVar::Type::Texture);
+                    auto tex = var->data.rawData.texInfo.tex;
+                    VkDescriptorImageInfo imageInfo{};
+                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+                    imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
+                    imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
+
+
+                    VkWriteDescriptorSet texWriteSet{};
+                    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+                    texWriteSet.dstSet = m_materialDescripotrSet;
+                    texWriteSet.dstBinding = i.binding;
+                    texWriteSet.dstArrayElement = 0;
+                    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                    texWriteSet.descriptorCount = 1;
+                    texWriteSet.pImageInfo = &imageInfo;
+                    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
+                }
+            }
+            break;
+        
+        }
+    
+    
+    }
+    return;
 }
 
 void DevicePipelineVK::updateUniform()
