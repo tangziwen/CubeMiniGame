@@ -17,7 +17,8 @@ struct DeviceVertexAttributeDescVK
 	int offset;
 
 };
-struct DeviceVertexInput{
+struct DeviceVertexInput
+{
 	int stride;
 	void addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc);
 	std::vector<DeviceVertexAttributeDescVK> m_attributeList;
@@ -29,15 +30,15 @@ public:
 	DevicePipelineVK(Material * mat, VkRenderPass targetRenderPass
 		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1);
 	VkDescriptorSetLayout getDescriptorSetLayOut();
+	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();
 	VkPipelineLayout getPipelineLayOut();
 	VkPipeline getPipeline();
-	VkDescriptorSet getMaterialDescriptorSet();
+	DeviceDescriptorVK * getMaterialDescriptorSet();
 	void updateMaterialDescriptorSet();
 	void updateUniform();
 	void collcetItemWiseDescritporSet();
 	DeviceDescriptorVK * giveItemWiseDescriptorSet();
 	Material * getMat();
-	void updateDescriptorByBinding(VkDescriptorSet descSet, int binding, DeviceTextureVK * texture);
 private:
 	void createDescriptorPool();
 	void createMaterialDescriptorPool();
@@ -48,7 +49,7 @@ private:
 	std::vector<VkDescriptorPool> m_descriptorPoolList;
 	int m_currItemWiseDescriptorSetIdx;
 	size_t m_totalItemWiseDesSet;
-	VkDescriptorSet m_materialDescripotrSet;
+	DeviceDescriptorVK * m_materialDescripotrSet;
 	Material * m_mat;
 	VkPipeline m_pipeline;
 	VkPipelineLayout m_pipelineLayout;

@@ -4,12 +4,17 @@
 #include "DeviceBufferVK.h"
 namespace tzw
 {
-	DeviceDescriptorVK::DeviceDescriptorVK(VkDescriptorSet descSet):
-		m_descriptorSet(descSet)
+	DeviceDescriptorVK::DeviceDescriptorVK(VkDescriptorSet descSet, DeviceDescriptorSetLayoutVK * layout):
+		m_descriptorSet(descSet), m_layout(layout)
 	{
 	}
 	void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceTextureVK* texture)
 	{
+        if(!m_layout->isHaveThisBinding(binding))
+        {
+        
+            abort();
+        }
         VkDescriptorImageInfo imageInfo{};
         if(texture->getIsDepth())
         {
@@ -35,6 +40,11 @@ namespace tzw
 	}
     void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceBufferVK* buffer, size_t offset, size_t range)
     {
+        if(!m_layout->isHaveThisBinding(binding))
+        {
+        
+            abort();
+        }
         //update descriptor
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = buffer->getBuffer();
@@ -45,7 +55,7 @@ namespace tzw
         writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
 		writeSet.pNext = nullptr;
         writeSet.dstSet = m_descriptorSet;
-        writeSet.dstBinding = 0;
+        writeSet.dstBinding = binding;
         writeSet.dstArrayElement = 0;
         writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
         writeSet.descriptorCount = 1;

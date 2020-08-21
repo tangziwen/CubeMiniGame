@@ -2,6 +2,7 @@
 #include "../DeviceShader.h"
 #include "vulkan/vulkan.h"
 #include <unordered_map>
+#include "DeviceDescriptorSetLayoutVK.h"
 namespace tzw
 {
 class DeviceTextureVK;
@@ -62,9 +63,9 @@ public:
 	void createDescriptorSetLayOut();
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();
-	bool isHaveMaterialDescriptorSetLayOut();
+	bool isHavePerObjectDescriptorSetLayOut();
 	std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>> & getSetInfo();
-	
+	DeviceDescriptorSetLayoutVK * getLayOutBySet(unsigned setID);
 private:
 	std::unordered_map<std::string, DeviceShaderVKLocationInfo> m_nameInfoMap;
 	std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>> m_setInfoMap;
@@ -72,7 +73,8 @@ private:
 	VkShaderModule m_fsShader;
 	VkShaderModule m_tsShader;
 	VkShaderModule m_teShader;
-	std::vector<VkDescriptorSetLayout> m_descriptorSetLayout;
+	//std::vector<VkDescriptorSetLayout> m_descriptorSetLayout;
+	std::vector<DeviceDescriptorSetLayoutVK * > m_descriptorSetLayouts;
 
 };
 };

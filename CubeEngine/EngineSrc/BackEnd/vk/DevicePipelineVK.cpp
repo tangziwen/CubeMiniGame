@@ -49,13 +49,8 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     m_shader = shader;
     //create material descriptor pool
     createMaterialDescriptorPool();
-    bool isHaveMaterialDescripotrSet = false;
-    if(shader->isHaveMaterialDescriptorSetLayOut())
-    {
-        isHaveMaterialDescripotrSet = true;
-        crateMaterialDescriptorSet();
-        createMaterialUniformBuffer();
-    }
+    crateMaterialDescriptorSet();
+    createMaterialUniformBuffer();
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo[2] = {};
     
     shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -205,22 +200,21 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     //pipeline layout
     VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
     pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-    std::vector<VkDescriptorSetLayout> layOutList = {shader->getDescriptorSetLayOut(),};
-    if(!isHaveMaterialDescripotrSet)
+    std::vector<VkDescriptorSetLayout> layOutList = {shader->getMaterialDescriptorSetLayOut(), };
+    if(!shader->isHavePerObjectDescriptorSetLayOut())
     {
         pipelineLayoutInfo.setLayoutCount = layOutList.size();
         pipelineLayoutInfo.pSetLayouts = layOutList.data();
     }
     else
     {
-        layOutList.emplace_back( shader->getMaterialDescriptorSetLayOut());
+        layOutList.emplace_back( shader->getDescriptorSetLayOut());
         pipelineLayoutInfo.setLayoutCount = layOutList.size();
         pipelineLayoutInfo.pSetLayouts = layOutList.data();
     }
     if (vkCreatePipelineLayout(VKRenderBackEnd::shared()->getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
         abort();
     }
-
     VkGraphicsPipelineCreateInfo pipelineInfo = {};
     pipelineInfo.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
     pipelineInfo.stageCount = ARRAY_SIZE_IN_ELEMENTS(shaderStageCreateInfo);
@@ -253,6 +247,12 @@ VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
     return shader->getDescriptorSetLayOut();
 }
 
+VkDescriptorSetLayout DevicePipelineVK::getMaterialDescriptorSetLayOut()
+{
+    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    return shader->getMaterialDescriptorSetLayOut();
+}
+
 VkPipelineLayout DevicePipelineVK::getPipelineLayOut()
 {
     return m_pipelineLayout;
@@ -263,7 +263,7 @@ VkPipeline DevicePipelineVK::getPipeline()
     return m_pipeline;
 }
 
-VkDescriptorSet DevicePipelineVK::getMaterialDescriptorSet()
+DeviceDescriptorVK* DevicePipelineVK::getMaterialDescriptorSet()
 {
 
     return m_materialDescripotrSet;
@@ -273,7 +273,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
     auto setInfo = shader->getSetInfo();
-    auto matDescIter = setInfo.find(1);
+    auto matDescIter = setInfo.find(0);
     if(matDescIter == setInfo.end())
     {
         
@@ -281,15 +281,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
     }
     auto & matDescSet = matDescIter->second;
     auto & varList = m_mat->getVarList();
-    if(!shader->findLocationInfo("t_shaderUnifom")) 
-    {
-        if(m_shader->isHaveMaterialDescriptorSetLayOut())
-        {
-            printf("what the fuck\n");
-            abort();
-        }
-        return;
-    }
+
 
     for(auto& i :matDescSet)
     {
@@ -306,7 +298,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
 
                 VkWriteDescriptorSet writeSet{};
                 writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                writeSet.dstSet = m_materialDescripotrSet;
+                writeSet.dstSet = m_materialDescripotrSet->getDescSet();
                 writeSet.dstBinding = i.binding;
                 writeSet.dstArrayElement = 0;
                 writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -332,7 +324,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
 
                     VkWriteDescriptorSet texWriteSet{};
                     texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    texWriteSet.dstSet = m_materialDescripotrSet;
+                    texWriteSet.dstSet = m_materialDescripotrSet->getDescSet();
                     texWriteSet.dstBinding = i.binding;
                     texWriteSet.dstArrayElement = 0;
                     texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
@@ -510,7 +502,7 @@ DeviceDescriptorVK * DevicePipelineVK::giveItemWiseDescriptorSet()
             printf("bad  descriptor!!!! %d",res);
             abort();
         }
-        target = new DeviceDescriptorVK(descriptorSet);
+        target = new DeviceDescriptorVK(descriptorSet, m_shader->getLayOutBySet(1));
         m_itemDescritptorSetList.emplace_back(target);
     }
     m_currItemWiseDescriptorSetIdx ++;
@@ -607,8 +599,11 @@ void DevicePipelineVK::createMaterialUniformBuffer()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
     //create material-wise uniform buffer
-    auto uniformInfo = shader->getLocationInfo("t_shaderUnifom");
-    VKRenderBackEnd::shared()->createVKBuffer(uniformInfo.size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_matUniformBuffer, m_matUniformBufferMemory);
+    if(shader->hasLocationInfo("t_shaderUnifom"))
+    {
+        auto uniformInfo = shader->getLocationInfo("t_shaderUnifom");
+        VKRenderBackEnd::shared()->createVKBuffer(uniformInfo.size, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, m_matUniformBuffer, m_matUniformBufferMemory);
+    }
 }
 
 void DevicePipelineVK::crateMaterialDescriptorSet()
@@ -620,8 +615,9 @@ void DevicePipelineVK::crateMaterialDescriptorSet()
     auto layout = m_shader->getMaterialDescriptorSetLayOut();
     allocInfo.descriptorSetCount = 1;
     allocInfo.pSetLayouts = &layout;
-
-    auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &m_materialDescripotrSet);
+    VkDescriptorSet descriptorSet;
+    auto res = vkAllocateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), &allocInfo, &descriptorSet);
+    m_materialDescripotrSet = new DeviceDescriptorVK(descriptorSet, m_shader->getLayOutBySet(0));
     if(res!= VK_SUCCESS)
     {
         abort();
@@ -651,24 +647,6 @@ void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertex
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
-}
-
-
-void DevicePipelineVK::updateDescriptorByBinding(VkDescriptorSet descSet, int binding, DeviceTextureVK* texture)
-{
-    VkDescriptorImageInfo imageInfo{};
-    imageInfo.imageLayout = texture->getImageLayOut();
-    imageInfo.imageView = texture->getImageView();
-    imageInfo.sampler = texture->getSampler();
-    VkWriteDescriptorSet texWriteSet{};
-    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    texWriteSet.dstSet = descSet;
-    texWriteSet.dstBinding = binding;
-    texWriteSet.dstArrayElement = 0;
-    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    texWriteSet.descriptorCount = 1;
-    texWriteSet.pImageInfo = &imageInfo;
-	vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
 }
 
 void DeviceVertexInput::addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc)

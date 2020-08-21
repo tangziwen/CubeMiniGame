@@ -1,17 +1,4 @@
-layout(set = 0, binding = 1) uniform sampler2D RT_albedo;
-layout(set = 0, binding = 2) uniform sampler2D RT_position;
-layout(set = 0, binding = 3) uniform sampler2D RT_normal;
-layout(set = 0, binding = 4) uniform sampler2D RT_mix;
-layout(set = 0, binding = 5) uniform sampler2D RT_depth;
-
-layout(set = 1, binding = 1) uniform sampler2D environmentMap;
-layout(set = 1, binding = 2) uniform sampler2D prefilterMap;
-layout(location = 0) out vec4 out_Color;
-layout(location = 0) in vec4 fragColor;
-layout(location = 1) in vec2 v_texcoord;
-
-
-layout(set = 1, binding = 0) uniform UniformBufferObjectMat 
+layout(set = 0, binding = 0) uniform UniformBufferObjectMat 
 {
 	vec4 TU_color;
 	vec3 TU_camPos;
@@ -20,6 +7,21 @@ layout(set = 1, binding = 0) uniform UniformBufferObjectMat
 	vec3 TU_sunDirection;
 	vec3 TU_sunColor;
 } t_shaderUnifom;
+
+layout(set = 0, binding = 1) uniform sampler2D RT_albedo;
+layout(set = 0, binding = 2) uniform sampler2D RT_position;
+layout(set = 0, binding = 3) uniform sampler2D RT_normal;
+layout(set = 0, binding = 4) uniform sampler2D RT_mix;
+layout(set = 0, binding = 5) uniform sampler2D RT_depth;
+
+layout(set = 0, binding = 6) uniform sampler2D environmentMap;
+layout(set = 0, binding = 7) uniform sampler2D prefilterMap;
+layout(location = 0) out vec4 out_Color;
+layout(location = 0) in vec4 fragColor;
+layout(location = 1) in vec2 v_texcoord;
+
+
+
 
 
 #define Square(x) (x*x)

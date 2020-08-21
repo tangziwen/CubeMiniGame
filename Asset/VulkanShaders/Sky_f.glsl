@@ -1,6 +1,6 @@
 layout(set = 0, binding = 1) uniform sampler2D DepthMap;
 
-layout(set = 1, binding = 0) uniform UniformBufferObjectMat 
+layout(set = 0, binding = 0) uniform UniformBufferObjectMat 
 {
 	vec3 TU_sunDirection;
 	vec2 TU_winSize;
@@ -8,12 +8,12 @@ layout(set = 1, binding = 0) uniform UniformBufferObjectMat
 } t_shaderUnifom;
 
 
-layout(set = 1, binding = 1) uniform sampler2D tint;//the color of the sky on the half-sphere where the sun is. (time x height)
-layout(set = 1, binding = 2) uniform sampler2D tint2;//the color of the sky on the opposite half-sphere. (time x height)
-layout(set = 1, binding = 3) uniform sampler2D sun;//sun texture (radius x time)
-layout(set = 1, binding = 4) uniform sampler2D moon;//moon texture (circular)
-layout(set = 1, binding = 5) uniform sampler2D clouds1;//light clouds texture (spherical UV projection)
-layout(set = 1, binding = 6) uniform sampler2D clouds2;//heavy clouds texture (spherical UV projection)
+layout(set = 0, binding = 1) uniform sampler2D tint;//the color of the sky on the half-sphere where the sun is. (time x height)
+layout(set = 0, binding = 2) uniform sampler2D tint2;//the color of the sky on the opposite half-sphere. (time x height)
+layout(set = 0, binding = 3) uniform sampler2D sun;//sun texture (radius x time)
+layout(set = 0, binding = 4) uniform sampler2D moon;//moon texture (circular)
+layout(set = 0, binding = 5) uniform sampler2D clouds1;//light clouds texture (spherical UV projection)
+layout(set = 0, binding = 6) uniform sampler2D clouds2;//heavy clouds texture (spherical UV projection)
 
 
 layout(location = 0) in vec4 fragColor;

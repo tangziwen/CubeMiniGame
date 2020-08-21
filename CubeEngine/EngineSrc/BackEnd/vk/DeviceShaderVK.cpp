@@ -202,12 +202,13 @@ std::unordered_map<std::string, DeviceShaderVKLocationInfo>& DeviceShaderVK::get
 
 void DeviceShaderVK::createDescriptorSetLayOut()
 {
-    m_descriptorSetLayout.resize(m_setInfoMap.size());
+    m_descriptorSetLayouts.resize(m_setInfoMap.size());
 
     for(auto&iter :m_setInfoMap){
         int setIndex = iter.first;
         auto shader = this;
         auto& locationMap = iter.second;//shader->getNameLocationMap();
+        auto layout = new DeviceDescriptorSetLayoutVK(setIndex);
         std::vector<VkDescriptorSetLayoutBinding> descriptorLayoutList;
         for(auto & locationInfo : locationMap){
             VkDescriptorSetLayoutBinding layOutBinding{};
@@ -224,32 +225,36 @@ void DeviceShaderVK::createDescriptorSetLayOut()
             layOutBinding.descriptorCount = 1;
             layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;//locationInfo.stageFlag;
             descriptorLayoutList.emplace_back(layOutBinding);
+            layout->addBinding(locationInfo.binding, locationInfo.name);
         }
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
         layoutInfo.bindingCount = descriptorLayoutList.size();
         layoutInfo.pBindings = descriptorLayoutList.data();
-        auto outDescripotr = m_descriptorSetLayout[setIndex];
-        auto res = vkCreateDescriptorSetLayout(VKRenderBackEnd::shared()->getDevice(), &layoutInfo, nullptr, &outDescripotr);
+        
+        VkDescriptorSetLayout outLayout;
+        auto res = vkCreateDescriptorSetLayout(VKRenderBackEnd::shared()->getDevice(), &layoutInfo, nullptr, &outLayout);
         if(res != VK_SUCCESS){
         
             abort();
         }
-        m_descriptorSetLayout[setIndex] = outDescripotr;
+        layout->setLayout(outLayout);
+        m_descriptorSetLayouts[setIndex] = layout;
+
     }
 }
 
 VkDescriptorSetLayout DeviceShaderVK::getDescriptorSetLayOut()
 {
-    return m_descriptorSetLayout[0];
+    return m_descriptorSetLayouts[1]->getLayout();
 }
 
 VkDescriptorSetLayout DeviceShaderVK::getMaterialDescriptorSetLayOut()
 {
-    return m_descriptorSetLayout[1];
+    return m_descriptorSetLayouts[0]->getLayout();
 }
 
-bool DeviceShaderVK::isHaveMaterialDescriptorSetLayOut()
+bool DeviceShaderVK::isHavePerObjectDescriptorSetLayOut()
 {
     return m_setInfoMap.find(1) != m_setInfoMap.end();
 }
@@ -257,6 +262,11 @@ bool DeviceShaderVK::isHaveMaterialDescriptorSetLayOut()
 std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>>& DeviceShaderVK::getSetInfo()
 {
     return m_setInfoMap;
+}
+
+DeviceDescriptorSetLayoutVK* DeviceShaderVK::getLayOutBySet(unsigned setID)
+{
+    return m_descriptorSetLayouts[setID];
 }
 
 

@@ -1,4 +1,4 @@
-layout(binding = 1) uniform sampler2D texSampler;
+layout(set = 0, binding = 1) uniform sampler2D texSampler;
 
 layout(location = 0) out vec4 out_Color;
 layout(location = 0) in vec4 fragColor;

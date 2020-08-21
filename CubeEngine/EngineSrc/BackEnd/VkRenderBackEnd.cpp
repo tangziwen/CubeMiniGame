@@ -37,6 +37,8 @@
 
 #include "3D/Primitive/SpherePrimitive.h"
 #include <EngineSrc\Scene\SceneMgr.h>
+
+#include "Base/TAssert.h"
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -170,7 +172,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
     void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
     {
         auto shader = static_cast<DeviceShaderVK * >(mat->getProgram()->getDeviceShader());
-        auto theList = shader->getSetInfo()[0];
+        auto theList = shader->getSetInfo()[1];
         auto theSize = theList.size();
         int count = 0;
         auto & varList = mat->getVarList();
@@ -191,6 +193,10 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         writeSet.descriptorCount = 1;
         writeSet.pBufferInfo = &bufferInfo;
         count += 1;
+        if(!shader->findLocationInfo("t_ObjectUniform"))
+        {
+            abort();
+        }
 		vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
 
         std::vector<VkDescriptorImageInfo> imageInfoList;
@@ -210,7 +216,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 						abort();
 					}
                     auto locationInfo = shader->getLocationInfo(i.first);
-                    if(locationInfo.set != 0) continue;
+                    if(locationInfo.set != 1) continue;
                     VkDescriptorImageInfo imageInfo{};
                     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
@@ -1209,7 +1215,7 @@ VkApplicationInfo appInfo = {};
 
     void VKRenderBackEnd::CreateDescriptorSetLayout()
     {
-        descriptorSetLayout = m_shader->getDescriptorSetLayOut();
+        descriptorSetLayout = m_shader->getMaterialDescriptorSetLayOut();
         return;
     }
     void VKRenderBackEnd::createDescriptorPool()
@@ -1274,7 +1280,6 @@ VkApplicationInfo appInfo = {};
             descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
             descriptorWrites[1].descriptorCount = 1;
             descriptorWrites[1].pImageInfo = &imageInfo;
-
             vkUpdateDescriptorSets(m_device, descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
         }
     }
@@ -1443,7 +1448,8 @@ void VKRenderBackEnd::initImguiStuff()
     writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     writeSet.descriptorCount = 1;
     writeSet.pBufferInfo = &bufferInfo;
-
+    VkWriteDescriptorSet writeSetList[] = {writeSet};
+    vkUpdateDescriptorSets(m_device, 1, writeSetList, 0, nullptr);
     
 
     ImGuiIO& io = ImGui::GetIO();
@@ -1453,22 +1459,7 @@ void VKRenderBackEnd::initImguiStuff()
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
     auto m_imguiTextureFont = new DeviceTextureVK();
     m_imguiTextureFont->initDataRaw(pixels, width, height, ImageFormat::R8G8B8A8);
-    VkDescriptorImageInfo imageInfo{};
-    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-    imageInfo.imageView = m_imguiTextureFont->getImageView();
-    imageInfo.sampler = m_imguiTextureFont->getSampler();
-
-    VkWriteDescriptorSet texWriteSet{};
-    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-    texWriteSet.dstSet = m_imguiDescriptorSet;
-    texWriteSet.dstBinding = 1;
-    texWriteSet.dstArrayElement = 0;
-    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-    texWriteSet.descriptorCount = 1;
-    texWriteSet.pImageInfo = &imageInfo;
-
-    VkWriteDescriptorSet writeSetList[] = {writeSet, texWriteSet};
-    vkUpdateDescriptorSets(m_device, 2, writeSetList, 0, nullptr);
+    m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
 }
 void VKRenderBackEnd::initVMAPool()
 {
@@ -1535,10 +1526,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         
             vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
-            if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
-            }
+            std::vector<VkDescriptorSet> descriptorSetList = {currPipeLine->getMaterialDescriptorSet()->getDescSet(), itemDescriptorSet->getDescSet(),};
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(command, static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
         }
@@ -1639,10 +1627,7 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
             
             vkCmdBindIndexBuffer(command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
-            if(static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(currPipeLine->getMaterialDescriptorSet());
-            }
+            std::vector<VkDescriptorSet> descriptorSetList = {currPipeLine->getMaterialDescriptorSet()->getDescSet(), itemDescriptorSet->getDescSet(),};
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             if(a.batchType() != RenderCommand::RenderBatchType::Single)
             {
@@ -1983,36 +1968,25 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
             m_dirLightingPassPiepeline->updateUniform();
             m_dirLightingPassPiepeline->collcetItemWiseDescritporSet();
-            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
-            //update uniform.
-            DeviceDescriptorVK * itemDescriptorSet = m_dirLightingPassPiepeline->giveItemWiseDescriptorSet();
 
-            //update descriptor
-            std::vector<VkWriteDescriptorSet> descriptorWrites{};
-            itemDescriptorSet->updateDescriptorByBinding(0, VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer(),m_itemBufferOffset, sizeof(Matrix44));
-            //descriptorWrites.emplace_back(writeSet);
 
-            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();//m_gbuffer->getTextureList();
+            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                itemDescriptorSet->updateDescriptorByBinding(i + 1, tex);
+                m_dirLightingPassPiepeline->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(lightPassCmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(lightPassCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
-            if(static_cast<DeviceShaderVK *>(m_dirLightingPassPiepeline->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(m_dirLightingPassPiepeline->getMaterialDescriptorSet());
-            }
+            std::vector<VkDescriptorSet> descriptorSetList = {m_dirLightingPassPiepeline->getMaterialDescriptorSet()->getDescSet()};
             vkCmdBindDescriptorSets(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(lightPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
             
             m_DeferredLightingStage->finish(lightPassCmd);
-
         }
 
         //------------deferred Lighting Pass end---------------
@@ -2039,7 +2013,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             itemDescriptorSet->updateDescriptorByBinding(0, VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer(),m_itemBufferOffset, sizeof(Matrix44));
             auto tex = m_gPassStage->getFrameBuffer()->getDepthMap();
-            itemDescriptorSet->updateDescriptorByBinding(1, tex);
+            m_skyPassPipeLine->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
 
             auto sphereMesh = m_sphere;
 
@@ -2050,10 +2024,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindVertexBuffers(skyCmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(skyCmd, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
-            if(static_cast<DeviceShaderVK *>(m_skyPassPipeLine->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(m_skyPassPipeLine->getMaterialDescriptorSet());
-            }
+            std::vector<VkDescriptorSet> descriptorSetList = {m_skyPassPipeLine->getMaterialDescriptorSet()->getDescSet(), itemDescriptorSet->getDescSet(),};
             vkCmdBindDescriptorSets(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(skyCmd, static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
 
@@ -2063,7 +2034,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //------------Texture To Screen Pass begin---------------
         VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][3];
         {
-            
+            //TAssert(this == nullptr, "hehehehe %d %d", 100 , 500);
             VkCommandBufferBeginInfo beginInfoDeffered = {};
             beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
             beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
@@ -2091,60 +2062,16 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindPipeline(textureToScreenCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textureToScreenPipeline->getPipeline());
 
             m_textureToScreenPipeline->collcetItemWiseDescritporSet();
-            size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
-            //update uniform.
-            DeviceDescriptorVK * itemDescriptorSet = m_textureToScreenPipeline->giveItemWiseDescriptorSet();
-
-            //update descriptor
-            std::vector<VkWriteDescriptorSet> descriptorWrites{};
-            //update descriptor
-            VkDescriptorBufferInfo bufferInfo{};
-            bufferInfo.buffer = VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer()->getBuffer();
-            bufferInfo.offset = m_itemBufferOffset;
-            bufferInfo.range = sizeof(Matrix44);
-
-            VkWriteDescriptorSet writeSet{};
-            writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-		    writeSet.pNext = nullptr;
-            writeSet.dstSet = itemDescriptorSet->getDescSet();
-            writeSet.dstBinding = 0;
-            writeSet.dstArrayElement = 0;
-            writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            writeSet.descriptorCount = 1;
-            writeSet.pBufferInfo = &bufferInfo;
-            descriptorWrites.emplace_back(writeSet);
-
             auto lightingResultTex = m_skyStage->getFrameBuffer()->getTextureList();
-            std::vector<VkDescriptorImageInfo> imageInfoList;
-
             auto tex = lightingResultTex[0];
-            VkDescriptorImageInfo imageInfo{};
-            imageInfo.imageLayout =VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;// tex->getImageLayOut();
-            imageInfo.imageView = tex->getImageView();
-            imageInfo.sampler = tex->getSampler();
-  
-            VkWriteDescriptorSet texWriteSet{};
-            texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-            texWriteSet.dstSet = itemDescriptorSet->getDescSet();
-            texWriteSet.dstBinding = 1;
-            texWriteSet.dstArrayElement = 0;
-            texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            texWriteSet.descriptorCount = 1;
-            texWriteSet.pImageInfo = &imageInfo;
-
-            descriptorWrites.emplace_back(texWriteSet);
-
-            vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), descriptorWrites.size(), descriptorWrites.data(), 0, nullptr);
+            m_textureToScreenPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
 
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(textureToScreenCmd, 0, 1, vertexBuffers, offsets);
             vkCmdBindIndexBuffer(textureToScreenCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-            std::vector<VkDescriptorSet> descriptorSetList = {itemDescriptorSet->getDescSet(),};
-            if(static_cast<DeviceShaderVK *>(m_textureToScreenPipeline->getMat()->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(m_textureToScreenPipeline->getMaterialDescriptorSet());
-            }
+            std::vector<VkDescriptorSet> descriptorSetList = {m_textureToScreenPipeline->getMaterialDescriptorSet()->getDescSet()};
             vkCmdBindDescriptorSets(textureToScreenCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textureToScreenPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(textureToScreenCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
 
@@ -2254,10 +2181,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipeline());
 
 
-            std::vector<VkDescriptorSet> descriptorSetList = {m_imguiDescriptorSet,};
-            if(static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader())->isHaveMaterialDescriptorSetLayOut()){
-                descriptorSetList.push_back(m_imguiPipeline->getMaterialDescriptorSet());
-            }
+            std::vector<VkDescriptorSet> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet()->getDescSet(), m_imguiDescriptorSet,};
             vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
 
 

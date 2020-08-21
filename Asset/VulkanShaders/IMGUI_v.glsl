@@ -1,12 +1,14 @@
 #extension GL_ARB_separate_shader_objects : enable
 
-layout(set = 0, binding = 0) uniform UniformBufferObject {
+layout(set = 0, binding = 0) uniform UniformBufferObjectMat {
+    vec4 TU_color;
+} t_shaderUnifom;
+
+layout(set = 1, binding = 0) uniform UniformBufferObject {
     mat4 mvp;
 } t_ObjectUniform;
 
-layout(set = 1, binding = 0) uniform UniformBufferObjectMat {
-    vec4 TU_color;
-} t_shaderUnifom;
+
 
 layout(location = 0) in vec2 inPosition;
 layout(location = 1) in vec2 texcoord;
