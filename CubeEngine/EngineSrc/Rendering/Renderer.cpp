@@ -780,6 +780,11 @@ std::vector<RenderCommand>& Renderer::getGUICommandList()
 	return m_GUICommandList;
 }
 
+std::vector<RenderCommand>& Renderer::getTransparentList()
+{
+	return m_transparentCommandList;
+}
+
 void Renderer::geometryPass()
 {
 	m_gbuffer->bindForWriting();

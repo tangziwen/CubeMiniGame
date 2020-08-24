@@ -805,13 +805,19 @@ VkApplicationInfo appInfo = {};
         DeviceVertexInput emptyInstancingInput;
         m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
-        auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        
+
+        auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_skyStage = new DeviceRenderStageVK(skyPass, m_DeferredLightingStage->getFrameBuffer());
 
 
         Material * matSkyPass = new Material();
         matSkyPass->loadFromTemplate("Sky");
         m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+
+
+        auto transparentPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        m_transparentStage = new DeviceRenderStageVK(transparentPass, m_DeferredLightingStage->getFrameBuffer());
 
 
         Material * matTextureToScreen = new Material();
@@ -1472,10 +1478,10 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
     {
         Material * mat = a.getMat();
 
-        std::string & matStr = mat->getFullDescriptionStr();
+        //std::string & matStr = mat->getFullDescriptionStr();
 
         DevicePipelineVK * currPipeLine;
-        auto iter = m_matPipelinePool.find(matStr);
+        auto iter = m_matPipelinePool.find(mat);
         if(iter == m_matPipelinePool.end())
         {
             DeviceVertexInput imguiVertexInput;
@@ -1486,7 +1492,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
 
             DeviceVertexInput instanceInput;
             currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput, false, instanceInput);
-            m_matPipelinePool[matStr]  =currPipeLine;
+            m_matPipelinePool[mat]  =currPipeLine;
                 
         }
         else{
@@ -1540,9 +1546,9 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
         //if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
         Material * mat = a.getMat();
 
-        std::string & matStr = mat->getFullDescriptionStr();
+        //std::string & matStr = mat->getFullDescriptionStr();
         DevicePipelineVK * currPipeLine;
-        auto iter = m_matPipelinePool.find(matStr);
+        auto iter = m_matPipelinePool.find(mat);
         if(iter == m_matPipelinePool.end())
         {
             DeviceVertexInput vertexInput;
@@ -1576,7 +1582,7 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
                 currPipeLine = new DevicePipelineVK(mat, renderPass, vertexInput, false, instanceInput, 4);
             }
             
-            m_matPipelinePool[matStr]  =currPipeLine;
+            m_matPipelinePool[mat]  =currPipeLine;
                 
         }
         else{
@@ -1986,12 +1992,126 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkCmdBindDescriptorSets(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
             vkCmdDrawIndexed(lightPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
             
-            m_DeferredLightingStage->finish(lightPassCmd);
-        }
 
+            vkCmdEndRenderPass(lightPassCmd);
+
+
+            //我们要拷贝Gbuffer里的深度到LightPass的深度里，好jb麻烦，首先要把Gbuffer的depth layout从shader_read转成transfer_src，把lightPass的depth从depth_attachment转
+            //成TransDepth，然后再blit,blit结束后，还要再把这两个图转到各自的layOut(前者是shader_read，后者仍然还是深度attachment)，是个夹心饼干的做法
+            VkImageMemoryBarrier barrier{};
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = m_gPassStage->getFrameBuffer()->getDepthMap()->getImage();
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            vkCmdPipelineBarrier(lightPassCmd,
+                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
+
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = m_DeferredLightingStage->getFrameBuffer()->getDepthMap()->getImage();
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            vkCmdPipelineBarrier(lightPassCmd,
+                VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
+
+            //blit the Gbuffer depth to deferredlight light pass depth.
+            vec2 blitSize = m_DeferredLightingStage->getFrameBuffer()->getSize();
+            VkImageBlit blit{};
+            blit.srcOffsets[0] = {0, 0, 0};
+            blit.srcOffsets[1] = {(int32_t)blitSize.x, (int32_t)blitSize.y, 1};
+            blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            blit.srcSubresource.mipLevel = 0;
+            blit.srcSubresource.baseArrayLayer = 0;
+            blit.srcSubresource.layerCount = 1;
+            blit.dstOffsets[0] = {0, 0, 0};
+            blit.dstOffsets[1] = {(int32_t)blitSize.x, (int32_t)blitSize.y, 1};
+            blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            blit.dstSubresource.mipLevel = 0;
+            blit.dstSubresource.baseArrayLayer = 0;
+            blit.dstSubresource.layerCount = 1;
+
+            vkCmdBlitImage(lightPassCmd, m_gPassStage->getFrameBuffer()->getDepthMap()->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+                m_DeferredLightingStage->getFrameBuffer()->getDepthMap()->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
+            
+ 
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = m_gPassStage->getFrameBuffer()->getDepthMap()->getImage();
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+            barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+            vkCmdPipelineBarrier(lightPassCmd,
+                VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
+            
+            barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+            barrier.image = m_DeferredLightingStage->getFrameBuffer()->getDepthMap()->getImage();
+            barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+            barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+            barrier.subresourceRange.baseArrayLayer = 0;
+            barrier.subresourceRange.layerCount = 1;
+            barrier.subresourceRange.levelCount = 1;
+            barrier.subresourceRange.baseMipLevel = 0;
+            barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+            barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+            barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+            vkCmdPipelineBarrier(lightPassCmd,
+                VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
+                0, nullptr,
+                0, nullptr,
+                1, &barrier);
+            
+            int res = vkEndCommandBuffer(lightPassCmd);
+            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+            //m_DeferredLightingStage->finish(lightPassCmd);
+        }
         //------------deferred Lighting Pass end---------------
+
+        //------------transparent pass begin ------------------
+        VkCommandBuffer transparentCmd = m_generalCmdBuff[ImageIndex][2];
+        m_transparentStage->prepare(transparentCmd);
+        auto transList = Renderer::shared()->getTransparentList();
+        drawObjs_Common(transparentCmd, m_transparentStage->getRenderPass()->getRenderPass(), transList);
+        m_transparentStage->finish(transparentCmd);
+
+        //------------transparent pass end ------------------
+
         //------------Sky Pass begin---------------
-        VkCommandBuffer skyCmd = m_generalCmdBuff[ImageIndex][2];
+        VkCommandBuffer skyCmd = m_generalCmdBuff[ImageIndex][3];
         //------------Sky Pass end---------------
         {
 
@@ -2032,7 +2152,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         }
 
         //------------Texture To Screen Pass begin---------------
-        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][3];
+        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][4];
         {
             //TAssert(this == nullptr, "hehehehe %d %d", 100 , 500);
             VkCommandBufferBeginInfo beginInfoDeffered = {};
@@ -2081,7 +2201,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
         }
         //------------Texture To Screen Pass end---------------
-        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][4];
+        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][5];
 		
 
         
@@ -2247,7 +2367,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, textureToScreenCmd, command};
+        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, transparentCmd, textureToScreenCmd, command};
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = commandList.size();

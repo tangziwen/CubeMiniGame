@@ -225,7 +225,7 @@ private:
     VkDescriptorSet m_imguiDescriptorSet;
     DeviceBufferVK * m_imguiUniformBuffer;
     //renderer
-    std::unordered_map<std::string, DevicePipelineVK *>m_matPipelinePool;
+    std::unordered_map<Material *, DevicePipelineVK *>m_matPipelinePool;
 
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
@@ -234,7 +234,7 @@ private:
     DeviceRenderStageVK * m_gPassStage;
     DeviceRenderStageVK * m_DeferredLightingStage;
     DeviceRenderStageVK * m_skyStage;
-
+    DeviceRenderStageVK * m_transparentStage;
 
     DevicePipelineVK * m_dirLightingPassPiepeline;
     DevicePipelineVK * m_skyPassPipeLine;

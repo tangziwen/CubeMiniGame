@@ -332,7 +332,11 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				//t->setWarp(RenderFlag::WarpAddress::Clamp);
 			}else
 			{
-				if(name == "MetallicMap")
+				if(name == "DiffuseMap")
+				{
+					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png", true));
+				}
+				else if(name == "MetallicMap")
 				{
 					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png", true));
 				}

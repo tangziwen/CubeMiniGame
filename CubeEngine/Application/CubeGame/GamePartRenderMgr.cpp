@@ -155,6 +155,17 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 		{
 			mat = Material::createFromTemplate("ModelRimLight");
 			newMatList.m_matList.emplace_back(mat);
+			auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
+			mat->setTex("DiffuseMap", texture);
+
+			auto metallicTexture =  TextureMgr::shared()->getByPath(surface->getMetallicPath());
+			mat->setTex("MetallicMap", metallicTexture);
+
+			auto roughnessTexture =  TextureMgr::shared()->getByPath(surface->getRoughnessPath());
+			mat->setTex("RoughnessMap", roughnessTexture);
+
+			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
+			mat->setTex("NormalMap", normalMapTexture);
 		}
 		else
 		{

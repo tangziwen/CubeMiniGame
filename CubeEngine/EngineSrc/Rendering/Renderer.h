@@ -55,6 +55,7 @@ public:
 	std::vector<RenderCommand> & getShadowList();
 	std::vector<RenderCommand> & getCommonList();
 	std::vector<RenderCommand> & getGUICommandList();
+	std::vector<RenderCommand> & getTransparentList();
 private:
     void initQuad();
 	void initMaterials();
