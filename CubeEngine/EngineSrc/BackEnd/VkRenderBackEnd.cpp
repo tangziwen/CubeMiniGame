@@ -1465,9 +1465,10 @@ void VKRenderBackEnd::initImguiStuff()
     unsigned char* pixels;
     int width, height;
     io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
-    auto m_imguiTextureFont = new DeviceTextureVK();
+    m_imguiTextureFont = new DeviceTextureVK();
     m_imguiTextureFont->initDataRaw(pixels, width, height, ImageFormat::R8G8B8A8);
-    m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
+    io.Fonts->TexID = m_imguiTextureFont;
+    //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
 }
 void VKRenderBackEnd::initVMAPool()
 {
@@ -1540,7 +1541,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         }
     }
 }
-void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass renderPass, std::vector<RenderCommand>& renderList)
+void VKRenderBackEnd::drawObjs_Common(std::unordered_map<Material *, DevicePipelineVK *> & pipelinepool, VkCommandBuffer command,DeviceRenderPassVK * renderPass , std::vector<RenderCommand>& renderList)
 {
     for(RenderCommand & a : renderList)
     {
@@ -1550,8 +1551,8 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
 
         //std::string & matStr = mat->getFullDescriptionStr();
         DevicePipelineVK * currPipeLine;
-        auto iter = m_matPipelinePool.find(mat);
-        if(iter == m_matPipelinePool.end())
+        auto iter = pipelinepool.find(mat);
+        if(iter == pipelinepool.end())
         {
             DeviceVertexInput vertexInput;
             vertexInput.stride = sizeof(VertexData);
@@ -1578,13 +1579,13 @@ void VKRenderBackEnd::drawObjs_Common(VkCommandBuffer command,VkRenderPass rende
 
                 instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
 
-                currPipeLine = new DevicePipelineVK(mat, renderPass, vertexInput, true, instanceInput, 4);
+                currPipeLine = new DevicePipelineVK(mat, renderPass->getRenderPass(), vertexInput, true, instanceInput, renderPass->getAttachmentCount()-1);
             }else //single draw call
             {
-                currPipeLine = new DevicePipelineVK(mat, renderPass, vertexInput, false, instanceInput, 4);
+                currPipeLine = new DevicePipelineVK(mat, renderPass->getRenderPass(), vertexInput, false, instanceInput, renderPass->getAttachmentCount()-1);
             }
             
-            m_matPipelinePool[mat]  =currPipeLine;
+            pipelinepool[mat]  =currPipeLine;
                 
         }
         else{
@@ -1962,7 +1963,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
 
         m_gPassStage->prepare(deferredCommand);
-        drawObjs_Common(deferredCommand, m_gPassStage->getRenderPass()->getRenderPass(), commonList);
+        drawObjs_Common(m_matPipelinePool,deferredCommand, m_gPassStage->getRenderPass(), commonList);
         m_gPassStage->finish(deferredCommand);
 
         //------------deferred g - pass end-----------------
@@ -2107,7 +2108,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         VkCommandBuffer transparentCmd = m_generalCmdBuff[ImageIndex][2];
         m_transparentStage->prepare(transparentCmd);
         auto transList = Renderer::shared()->getTransparentList();
-        drawObjs_Common(transparentCmd, m_transparentStage->getRenderPass()->getRenderPass(), transList);
+        drawObjs_Common(m_matPipelinePool, transparentCmd, m_transparentStage->getRenderPass(), transList);
         m_transparentStage->finish(transparentCmd);
 
         //------------transparent pass end ------------------
@@ -2243,7 +2244,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         //drawObjs_Common(command, m_renderPass, commonList);
         drawObjs(command, Renderer::shared()->getGUICommandList());
-
+        if(!m_imguiPipeline)
+        {
+            initImguiStuff();
+        }
         //IMGUI
         GUISystem::shared()->renderIMGUI();
 
@@ -2255,10 +2259,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
         if (draw_data->TotalVtxCount > 0)
         {
-            if(!m_imguiPipeline)
-            {
-                initImguiStuff();
-            }
+
             void* data;
             vkMapMemory(m_device, m_imguiUniformBuffer->getMemory(), 0, sizeof(Matrix44), 0, &data);
 		        Matrix44 projection;
@@ -2300,31 +2301,48 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkUnmapMemory(m_device, m_imguiVertex->getMemory());
             vkUnmapMemory(m_device, m_imguiIndex->getMemory());
 
-            vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipeline());
 
-
-            std::vector<VkDescriptorSet> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet()->getDescSet(), m_imguiDescriptorSet,};
-            vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-
-
-            VkBuffer vertex_buffers[1] = { m_imguiVertex->getBuffer() };
-            VkDeviceSize vertex_offset[1] = { 0 };
-            vkCmdBindVertexBuffers(command, 0, 1, vertex_buffers, vertex_offset);
-            vkCmdBindIndexBuffer(command, m_imguiIndex->getBuffer(), 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
 
 
             // Render command lists
             // (Because we merged all buffers into a single one, we maintain our own offset into them)
             int global_vtx_offset = 0;
             int global_idx_offset = 0;
+            m_imguiPipeline->collcetItemWiseDescritporSet();
             for (int n = 0; n < draw_data->CmdListsCount; n++)
             {
                 const ImDrawList* cmd_list = draw_data->CmdLists[n];
                 for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
                 {
+                    
                     const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
-                    pcmd->TextureId;
+
+                    auto descriptiorSet = m_imguiPipeline->giveItemWiseDescriptorSet();
+
+                    descriptiorSet->updateDescriptorByBinding(0,m_imguiUniformBuffer,0, sizeof(Matrix44));
+                    if(pcmd->TextureId)
+                    {
+                        descriptiorSet->updateDescriptorByBinding(1,static_cast<DeviceTextureVK * >(pcmd->TextureId));
+                    }
+                    else
+                    {
+                        descriptiorSet->updateDescriptorByBinding(1,m_imguiTextureFont);
+                    }
+                    
+                    
+                    vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipeline());
+
+
+                    std::vector<VkDescriptorSet> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet()->getDescSet(), descriptiorSet->getDescSet(),};
+                    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+
+
+                    VkBuffer vertex_buffers[1] = { m_imguiVertex->getBuffer() };
+                    VkDeviceSize vertex_offset[1] = { 0 };
+                    vkCmdBindVertexBuffers(command, 0, 1, vertex_buffers, vertex_offset);
+                    vkCmdBindIndexBuffer(command, m_imguiIndex->getBuffer(), 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
+                    
                     // Project scissor/clipping rectangles into framebuffer space
                     ImVec4 clip_rect;
                     clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
@@ -2368,16 +2386,18 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         auto & thumbNailList = Renderer::shared()->getThumbNailList();
 	    for(auto thumbnail : thumbNailList)
 	    {
-		    if(!thumbnail->isIsDone())
+		    if(!thumbnail->isIsDone() || true)
 		    {
-                thumbnail->initFrameBufferVK(m_thumbNailRenderStage->getRenderPass());
+                if(!thumbnail->getFrameBufferVK()){
+                    thumbnail->initFrameBufferVK(m_thumbNailRenderStage->getRenderPass());
+                }
+                
                 std::vector<RenderCommand> thumbnailCommandList;
                 thumbnail->getSnapShotCommand(thumbnailCommandList);
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
                 m_thumbNailRenderStage->prepare(thumbNailCommand);
-                drawObjs_Common(thumbNailCommand, m_thumbNailRenderStage->getRenderPass()->getRenderPass(), thumbnailCommandList);
+                drawObjs_Common(m_thumbNailPipelinePool, thumbNailCommand, m_thumbNailRenderStage->getRenderPass(), thumbnailCommandList);
                 m_thumbNailRenderStage->finish(thumbNailCommand);
-			    //thumbnail->doSnapShot();
                 isAnythumbnail = true;
 			    thumbnail->setIsDone(true);
                 break;

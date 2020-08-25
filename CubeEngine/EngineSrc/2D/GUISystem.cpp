@@ -375,10 +375,15 @@ namespace tzw
 	void GUISystem::NewFrame()
 	{
 		if (!m_isInit) return;
-		if (!g_FontTexture)
+		if(!EngineDef::isUseVulkan)
 		{
-			ImGui_ImplGlfwGL2_CreateDeviceObjects();
+			if (!g_FontTexture)
+			{
+				ImGui_ImplGlfwGL2_CreateDeviceObjects();
+			}
+		
 		}
+
 		auto& io = ImGui::GetIO();
 		auto h = Engine::shared()->windowHeight();
 		auto w = Engine::shared()->windowWidth();

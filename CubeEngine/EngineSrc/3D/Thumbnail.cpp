@@ -2,6 +2,7 @@
 #include "Rendering/FrameBuffer.h"
 #include "Rendering/Renderer.h"
 #include "BackEnd/RenderBackEnd.h"
+#include "BackEnd/vk/DeviceTextureVK.h"
 #define GLEW_STATIC
 #include <GL/glew.h>
 
@@ -10,12 +11,15 @@
 namespace tzw {
 	ThumbNail::ThumbNail(Drawable3D* node):m_node(node),m_isDone(false)
 	{
+		m_frameBufferVK = nullptr;
 		initTexture();
 	}
 
 	void ThumbNail::initFrameBufferVK(DeviceRenderPassVK* renderPass)
 	{
 		m_frameBufferVK = new DeviceFrameBufferVK(1024,1024, renderPass);
+		DeviceTextureVK * texture = m_frameBufferVK->getTextureList()[0];
+		m_texture->setTextureId(static_cast<DeviceTexture *>(texture));
 	}
 
 	void ThumbNail::doSnapShot()
@@ -156,7 +160,8 @@ namespace tzw {
 			//m_texture->setTextureId(m_frameBuffer->getTexture(0));
 		}else{
 		
-		
+			m_texture = new Texture();
+
 		}
 
 		

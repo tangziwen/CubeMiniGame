@@ -45,7 +45,7 @@ namespace tzw
 			else
 			{
 			
-				clearValuesDefferred[i].color = {0.0f, 0.0f, 0.0f, 1.0f};
+				clearValuesDefferred[i].color = {1.0f, 0.0f, 0.0f, 1.0f};
 			}
 			
 		

@@ -64,7 +64,7 @@ namespace tzw
 	{
 		if(m_thumbNail)
 		{
-			return 0;//m_thumbNail->getTexture()->handle();
+			return m_thumbNail->getTexture()->handle();
 		}
 		else if(m_texture)
 		{
