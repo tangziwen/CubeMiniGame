@@ -785,6 +785,11 @@ std::vector<RenderCommand>& Renderer::getTransparentList()
 	return m_transparentCommandList;
 }
 
+std::vector<ThumbNail*>& Renderer::getThumbNailList()
+{
+	return m_thumbNailList;
+}
+
 void Renderer::geometryPass()
 {
 	m_gbuffer->bindForWriting();

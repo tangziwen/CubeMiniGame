@@ -91,6 +91,7 @@ class GameState():
 def onEngineInit():
 	print("Python init")
 	GameState.testIcon = CubeEngine.TextureMgr.shared().getByPathSimple("UITexture/Icon/icons8-border-none-96.png")
+	print ("hehehehe", GameState.testIcon)
 
 test_var = 21
 localTestVar = 4
@@ -146,6 +147,7 @@ def InitInventory():
 					"ThumbNail" : item.getThumbNailTextureId()
 					}
 		GameState.m_inventory.append(itemTable)
+	print("initInventory finish", inventoryAmount)
 
 def on_game_start():
 	InitInventory()
@@ -191,7 +193,7 @@ def onDrawWindow(windowType):
 		ImGui.BeginGroup()
 		iconTexture = GameState.testIcon.handle()
 		item = Game.ItemMgr.shared().getItemByIndex(i)
-		if item.getThumbNailTextureId() != 0 :
+		if item.getThumbNailTextureId() != None :
 			iconTexture = item.getThumbNailTextureId()
 		
 

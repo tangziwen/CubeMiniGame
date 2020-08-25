@@ -3,6 +3,8 @@
 #include "vulkan/vulkan.h"
 #include <unordered_map>
 #include "DeviceDescriptorSetLayoutVK.h"
+#define MATERIAL_DESCRIPTOR_SET_ID (0)
+#define OBJECT_DESCRIPTOR_SET_ID (1)
 namespace tzw
 {
 class DeviceTextureVK;

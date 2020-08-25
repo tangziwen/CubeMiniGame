@@ -17,6 +17,15 @@ namespace tzw
 	{
 		return m_frameBuffer;
 	}
+	void DeviceRenderStageVK::setRenderPass(DeviceRenderPassVK* renderPass)
+	{
+		m_renderPass = renderPass;
+	}
+	void DeviceRenderStageVK::setFrameBuffer(DeviceFrameBufferVK* frameBuffer)
+	{
+		m_frameBuffer = frameBuffer;
+	}
+
 	void DeviceRenderStageVK::prepare(VkCommandBuffer command)
 	{
 

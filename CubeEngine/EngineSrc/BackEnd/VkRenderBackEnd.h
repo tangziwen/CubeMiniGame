@@ -235,6 +235,7 @@ private:
     DeviceRenderStageVK * m_DeferredLightingStage;
     DeviceRenderStageVK * m_skyStage;
     DeviceRenderStageVK * m_transparentStage;
+    DeviceRenderStageVK * m_thumbNailRenderStage;
 
     DevicePipelineVK * m_dirLightingPassPiepeline;
     DevicePipelineVK * m_skyPassPipeLine;

@@ -7,6 +7,7 @@
 #include <iostream>
 #include "shaderc/shaderc.hpp"
 #include "EngineSrc/Utility/log/Log.h"
+#include "Base/TAssert.h"
 namespace tzw{
 void DeviceShaderVK::addShader(const unsigned char* buff, size_t size, DeviceShaderType type, const unsigned char* fileInfoStr)
 {
@@ -210,9 +211,14 @@ void DeviceShaderVK::createDescriptorSetLayOut()
         auto& locationMap = iter.second;//shader->getNameLocationMap();
         auto layout = new DeviceDescriptorSetLayoutVK(setIndex);
         std::vector<VkDescriptorSetLayoutBinding> descriptorLayoutList;
+        std::unordered_set<int> bindingSet;
         for(auto & locationInfo : locationMap){
             VkDescriptorSetLayoutBinding layOutBinding{};
             layOutBinding.binding = locationInfo.binding;
+
+            TAssert(bindingSet.find(locationInfo.binding) == bindingSet.end(), "binding is duplicated");
+            bindingSet.insert(locationInfo.binding);
+
             if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
             {
                 layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;

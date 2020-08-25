@@ -64,7 +64,7 @@ struct GameItem
 	vec3 m_tintColor;
 	std::string m_surfaceName;
 	int getTypeInInt();
-	int getThumbNailTextureId();
+	DeviceTexture * getThumbNailTextureId();
 	ThumbNail *m_thumbNail;
 	Texture * m_texture;
 };

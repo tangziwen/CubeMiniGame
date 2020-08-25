@@ -39,6 +39,7 @@
 #include <EngineSrc\Scene\SceneMgr.h>
 
 #include "Base/TAssert.h"
+#include "3D/Thumbnail.h"
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -737,7 +738,8 @@ VkApplicationInfo appInfo = {};
     void VKRenderBackEnd::CreateDerrferredRenderPass()
     {
 
-
+        auto thumbnailPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        m_thumbNailRenderStage = new DeviceRenderStageVK(thumbnailPass, nullptr);
 
 		m_sphere = new Mesh();
 		float PI = 3.1416;
@@ -1955,7 +1957,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         auto & commonList = Renderer::shared()->getCommonList();
         m_fuckingObjList.clear();
 
-        
+
         //------------deferred g - pass begin-------------
         VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
 
@@ -2322,7 +2324,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 {
                     const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
 
-                    
+                    pcmd->TextureId;
                     // Project scissor/clipping rectangles into framebuffer space
                     ImVec4 clip_rect;
                     clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
@@ -2361,6 +2363,26 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
         Renderer::shared()->clearCommands();
 
+        bool isAnythumbnail = false;
+        VkCommandBuffer thumbNailCommand = m_generalCmdBuff[ImageIndex][6];
+        auto & thumbNailList = Renderer::shared()->getThumbNailList();
+	    for(auto thumbnail : thumbNailList)
+	    {
+		    if(!thumbnail->isIsDone())
+		    {
+                thumbnail->initFrameBufferVK(m_thumbNailRenderStage->getRenderPass());
+                std::vector<RenderCommand> thumbnailCommandList;
+                thumbnail->getSnapShotCommand(thumbnailCommandList);
+                m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
+                m_thumbNailRenderStage->prepare(thumbNailCommand);
+                drawObjs_Common(thumbNailCommand, m_thumbNailRenderStage->getRenderPass()->getRenderPass(), thumbnailCommandList);
+                m_thumbNailRenderStage->finish(thumbNailCommand);
+			    //thumbnail->doSnapShot();
+                isAnythumbnail = true;
+			    thumbnail->setIsDone(true);
+                break;
+		    }
+	    }
 
         //updateUniformBuffer(ImageIndex);
         if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
@@ -2368,6 +2390,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
         std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, transparentCmd, textureToScreenCmd, command};
+        if(isAnythumbnail)
+        {
+            commandList.emplace_back(thumbNailCommand);
+        }
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = commandList.size();

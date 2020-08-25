@@ -60,16 +60,15 @@ namespace tzw
 		return (int) m_type;
 	}
 
-	int GameItem::getThumbNailTextureId()
+	DeviceTexture * GameItem::getThumbNailTextureId()
 	{
-		return 0;
 		if(m_thumbNail)
 		{
-			return m_thumbNail->getTexture()->handle()->m_uid;
+			return 0;//m_thumbNail->getTexture()->handle();
 		}
 		else if(m_texture)
 		{
-			return m_texture->handle()->m_uid;	
+			return m_texture->handle();	
 		}else
 		{
 			return 0;

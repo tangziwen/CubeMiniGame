@@ -523,7 +523,7 @@ void DevicePipelineVK::createDescriptorPool()
     for(auto iter : setInfo)
     {
         for(auto & locationInfo : iter.second){
-        	if(locationInfo.set != 0) continue;
+        	if(locationInfo.set != OBJECT_DESCRIPTOR_SET_ID) continue;
             if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
             {
                 uniformBuffCount ++;
@@ -564,7 +564,7 @@ void DevicePipelineVK::createMaterialDescriptorPool()
     for(auto iter : setInfo)
     {
         for(auto & locationInfo : iter.second){
-        	if(locationInfo.set != 1) continue;
+        	if(locationInfo.set != MATERIAL_DESCRIPTOR_SET_ID) continue;
             if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
             {
                 uniformBuffCount ++;

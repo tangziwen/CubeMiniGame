@@ -82,19 +82,29 @@ namespace tzw
             {
                 depthAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
                 depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             }
             break;
             case OpType::LOADCLEAR_AND_STORE:
             {
                 depthAttachmentDesc.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
                 depthAttachmentDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+                depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
             }
             break;
         }
         depthAttachmentDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
         depthAttachmentDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachmentDesc.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-        depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        
+        if(isNeedTransitionToRread)
+        {
+            depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
+        }else
+        {
+            depthAttachmentDesc.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+            
+        }
+        
         attachmentDescList.emplace_back(depthAttachmentDesc);
 		
 
