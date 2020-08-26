@@ -503,7 +503,8 @@ void Material::setVar(std::string name, const vec4 & value)
 void Material::setVar(std::string name, const TechniqueVar &value)
 {
 	TechniqueVar var = value;
-	m_varList.insert(std::make_pair(name, var));
+	//m_varList.insert(std::make_pair(name, var));
+	m_varList[name] = var;
 }
 
 /**

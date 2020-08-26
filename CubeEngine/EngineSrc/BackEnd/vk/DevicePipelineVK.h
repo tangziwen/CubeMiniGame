@@ -1,6 +1,6 @@
 #pragma once
 #include <deque>
-
+#include "Math/vec2.h"
 #include "vulkan/vulkan.h"
 #include <string>
 #include <vector>
@@ -27,7 +27,7 @@ struct DeviceVertexInput
 class DevicePipelineVK
 {
 public:
-	DevicePipelineVK(Material * mat, VkRenderPass targetRenderPass
+	DevicePipelineVK(vec2 viewPortSize, Material * mat, VkRenderPass targetRenderPass
 		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1);
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();

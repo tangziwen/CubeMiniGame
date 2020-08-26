@@ -12,7 +12,7 @@
 #include <EngineSrc\Mesh\VertexData.h>
 #include <array>
 #include <iostream>
-
+#include "Technique/MaterialPool.h"
 
 #include "SOIL2/stb_image.h"
 #include "vk/DeviceTextureVK.h"
@@ -803,9 +803,9 @@ VkApplicationInfo appInfo = {};
         imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
         Material * mat = new Material();
         mat->loadFromTemplate("DirectLight");
-
+        auto winSize = Engine::shared()->winSize();
         DeviceVertexInput emptyInstancingInput;
-        m_dirLightingPassPiepeline = new DevicePipelineVK(mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+        m_dirLightingPassPiepeline = new DevicePipelineVK(winSize, mat, m_DeferredLightingStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
         
 
@@ -815,7 +815,16 @@ VkApplicationInfo appInfo = {};
 
         Material * matSkyPass = new Material();
         matSkyPass->loadFromTemplate("Sky");
-        m_skyPassPipeLine = new DevicePipelineVK(matSkyPass, m_skyStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+        
+        m_skyPassPipeLine = new DevicePipelineVK(winSize, matSkyPass, m_skyStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+
+
+	    Material * matFog = new Material();
+	    matFog->loadFromTemplate("GlobalFog");
+	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
+        auto fogPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        m_fogStage = new DeviceRenderStageVK(fogPass, m_DeferredLightingStage->getFrameBuffer());
+        m_fogPassPipeLine = new DevicePipelineVK(winSize, matFog, m_fogStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
 
 
         auto transparentPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
@@ -824,7 +833,7 @@ VkApplicationInfo appInfo = {};
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
-        m_textureToScreenPipeline = new DevicePipelineVK(matTextureToScreen, m_textureToScreenRenderPass, imguiVertexInput, false, emptyInstancingInput);
+        m_textureToScreenPipeline = new DevicePipelineVK(winSize, matTextureToScreen, m_textureToScreenRenderPass, imguiVertexInput, false, emptyInstancingInput);
 
         VertexData vertices[] = {
             // Vertex data for face 0
@@ -1418,7 +1427,8 @@ void VKRenderBackEnd::initImguiStuff()
     imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8A8_UNORM, IM_OFFSETOF(ImDrawVert, col)});
 
     DeviceVertexInput instancingInput;
-    m_imguiPipeline =  new DevicePipelineVK(m_imguiMat, m_renderPass,imguiVertexInput, false, instancingInput);
+    vec2 winSize = Engine::shared()->winSize();
+    m_imguiPipeline =  new DevicePipelineVK(winSize, m_imguiMat, m_renderPass,imguiVertexInput, false, instancingInput);
 
     auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
     VkDescriptorSetLayout layout = m_imguiPipeline->getDescriptorSetLayOut();
@@ -1494,7 +1504,8 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
             imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
 
             DeviceVertexInput instanceInput;
-            currPipeLine = new DevicePipelineVK(mat, m_renderPass, imguiVertexInput, false, instanceInput);
+            vec2 winSize = Engine::shared()->winSize();
+            currPipeLine = new DevicePipelineVK(winSize, mat, m_renderPass, imguiVertexInput, false, instanceInput);
             m_matPipelinePool[mat]  =currPipeLine;
                 
         }
@@ -1541,7 +1552,7 @@ void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderComman
         }
     }
 }
-void VKRenderBackEnd::drawObjs_Common(std::unordered_map<Material *, DevicePipelineVK *> & pipelinepool, VkCommandBuffer command,DeviceRenderPassVK * renderPass , std::vector<RenderCommand>& renderList)
+void VKRenderBackEnd::drawObjs_Common(std::unordered_map<Material *, DevicePipelineVK *> & pipelinepool, VkCommandBuffer command,DeviceRenderStageVK * renderStage , std::vector<RenderCommand>& renderList)
 {
     for(RenderCommand & a : renderList)
     {
@@ -1579,10 +1590,10 @@ void VKRenderBackEnd::drawObjs_Common(std::unordered_map<Material *, DevicePipel
 
                 instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
 
-                currPipeLine = new DevicePipelineVK(mat, renderPass->getRenderPass(), vertexInput, true, instanceInput, renderPass->getAttachmentCount()-1);
+                currPipeLine = new DevicePipelineVK(renderStage->getFrameBuffer()->getSize(), mat,renderStage->getRenderPass()->getRenderPass(), vertexInput, true, instanceInput, renderStage->getRenderPass()->getAttachmentCount()-1);
             }else //single draw call
             {
-                currPipeLine = new DevicePipelineVK(mat, renderPass->getRenderPass(), vertexInput, false, instanceInput, renderPass->getAttachmentCount()-1);
+                currPipeLine = new DevicePipelineVK(renderStage->getFrameBuffer()->getSize(), mat, renderStage->getRenderPass()->getRenderPass(), vertexInput, false, instanceInput, renderStage->getRenderPass()->getAttachmentCount()-1);
             }
             
             pipelinepool[mat]  =currPipeLine;
@@ -1963,7 +1974,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
 
         m_gPassStage->prepare(deferredCommand);
-        drawObjs_Common(m_matPipelinePool,deferredCommand, m_gPassStage->getRenderPass(), commonList);
+        drawObjs_Common(m_matPipelinePool,deferredCommand, m_gPassStage, commonList);
         m_gPassStage->finish(deferredCommand);
 
         //------------deferred g - pass end-----------------
@@ -2108,7 +2119,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         VkCommandBuffer transparentCmd = m_generalCmdBuff[ImageIndex][2];
         m_transparentStage->prepare(transparentCmd);
         auto transList = Renderer::shared()->getTransparentList();
-        drawObjs_Common(m_matPipelinePool, transparentCmd, m_transparentStage->getRenderPass(), transList);
+        drawObjs_Common(m_matPipelinePool, transparentCmd, m_transparentStage, transList);
         m_transparentStage->finish(transparentCmd);
 
         //------------transparent pass end ------------------
@@ -2154,8 +2165,36 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             m_skyStage->finish(skyCmd);
         }
 
+
+        VkCommandBuffer fogPassCmd = m_generalCmdBuff[ImageIndex][4];
+        {
+
+            m_fogStage->prepare(fogPassCmd);
+            
+            vkCmdBindPipeline(fogPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_fogPassPipeLine->getPipeline());
+            m_fogPassPipeLine->updateUniform();
+            m_fogPassPipeLine->collcetItemWiseDescritporSet();
+
+
+            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
+            std::vector<VkDescriptorImageInfo> imageInfoList;
+            for(int i =0; i < gbufferTex.size(); i++)
+            {
+                auto tex = gbufferTex[i];
+                m_fogPassPipeLine->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+            }
+            VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
+            VkDeviceSize offsets[] = {0};
+            vkCmdBindVertexBuffers(fogPassCmd, 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(fogPassCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+
+            std::vector<VkDescriptorSet> descriptorSetList = {m_fogPassPipeLine->getMaterialDescriptorSet()->getDescSet()};
+            vkCmdBindDescriptorSets(fogPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_fogPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(fogPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
+            m_fogStage->finish(fogPassCmd);
+        }
         //------------Texture To Screen Pass begin---------------
-        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][4];
+        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][5];
         {
             //TAssert(this == nullptr, "hehehehe %d %d", 100 , 500);
             VkCommandBufferBeginInfo beginInfoDeffered = {};
@@ -2204,7 +2243,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
         }
         //------------Texture To Screen Pass end---------------
-        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][5];
+        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][6];
 		
 
         
@@ -2382,11 +2421,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         Renderer::shared()->clearCommands();
 
         bool isAnythumbnail = false;
-        VkCommandBuffer thumbNailCommand = m_generalCmdBuff[ImageIndex][6];
+        VkCommandBuffer thumbNailCommand = m_generalCmdBuff[ImageIndex][7];
         auto & thumbNailList = Renderer::shared()->getThumbNailList();
 	    for(auto thumbnail : thumbNailList)
 	    {
-		    if(!thumbnail->isIsDone() || true)
+		    if(!thumbnail->isIsDone())
 		    {
                 if(!thumbnail->getFrameBufferVK()){
                     thumbnail->initFrameBufferVK(m_thumbNailRenderStage->getRenderPass());
@@ -2395,8 +2434,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 std::vector<RenderCommand> thumbnailCommandList;
                 thumbnail->getSnapShotCommand(thumbnailCommandList);
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
-                m_thumbNailRenderStage->prepare(thumbNailCommand);
-                drawObjs_Common(m_thumbNailPipelinePool, thumbNailCommand, m_thumbNailRenderStage->getRenderPass(), thumbnailCommandList);
+                m_thumbNailRenderStage->prepare(thumbNailCommand, vec4(0.5, 0.5, 0.5, 1.0));
+                drawObjs_Common(m_thumbNailPipelinePool, thumbNailCommand, m_thumbNailRenderStage, thumbnailCommandList);
                 m_thumbNailRenderStage->finish(thumbNailCommand);
                 isAnythumbnail = true;
 			    thumbnail->setIsDone(true);
@@ -2409,7 +2448,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, transparentCmd, textureToScreenCmd, command};
+        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, transparentCmd, fogPassCmd, textureToScreenCmd, command};
         if(isAnythumbnail)
         {
             commandList.emplace_back(thumbNailCommand);

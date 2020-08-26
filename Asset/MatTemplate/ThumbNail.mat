@@ -1,0 +1,20 @@
+{
+	"shaders":{
+		"vs" : "Shaders/GeometryPass_v.glsl",
+		"fs" : "Shaders/GeometryPassPBR_forward_f.glsl"
+	},
+	"name" : "ModelPBR",
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_camPos", "type":"semantic_CameraPos"},
+			{"name" : "TU_roughness", "type":"float", "default":1.0},
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["DiffuseMap", 0],
+			["MetallicMap", 1],
+			["RoughnessMap", 2],
+			["NormalMap", 3]
+		]
+	}
+}

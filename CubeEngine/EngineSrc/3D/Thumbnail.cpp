@@ -61,12 +61,17 @@ namespace tzw {
 			else if(m_node->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Instancing))
 			{
 				std::vector<InstanceRendereData> theList;
+				std::vector<RenderCommand> cmdList;
 				m_node->getCommandForInstanced(theList);
-				auto command = InstancingMgr::shared()->generateSingleCommand(theList);
-				command.m_transInfo.m_projectMatrix = p;
-				command.m_transInfo.m_viewMatrix = node.getViewMatrix();
-				Renderer::shared()->renderCommon(command);
-				RenderBackEnd::shared()->setClearColor(0, 0, 0);
+				InstancingMgr::shared()->generateSingleCommand(theList, cmdList);
+				for(auto&command : cmdList){
+				
+					command.m_transInfo.m_projectMatrix = p;
+					command.m_transInfo.m_viewMatrix = node.getViewMatrix();
+					Renderer::shared()->renderCommon(command);
+					RenderBackEnd::shared()->setClearColor(0, 0, 0);
+				}
+
 			}
 		}
 		else
@@ -107,10 +112,24 @@ namespace tzw {
 		{
 			std::vector<InstanceRendereData> theList;
 			m_node->getCommandForInstanced(theList);
-			auto command = InstancingMgr::shared()->generateSingleCommand(theList);
-			command.m_transInfo.m_projectMatrix = p;
-			command.m_transInfo.m_viewMatrix = node.getViewMatrix();
-			commandList.emplace_back(command);
+			std::vector<RenderCommand> cmdList;
+			InstancingMgr::shared()->generateSingleCommand(theList, cmdList);
+			for(auto & command : cmdList)
+			{
+				Material * mat = new Material();
+				mat->loadFromTemplate("ThumbNail");
+				auto varList = command.getMat()->getVarList();
+				mat->setVar("DiffuseMap", varList["DiffuseMap"]);
+				mat->setVar("MetallicMap", varList["MetallicMap"]);
+				mat->setVar("RoughnessMap", varList["RoughnessMap"]);
+				mat->setVar("NormalMap", varList["NormalMap"]);
+				mat->setIsEnableInstanced(command.getMat()->isEnableInstanced());
+				mat->reload();
+				command.setMat(mat);
+				command.m_transInfo.m_projectMatrix = p;
+				command.m_transInfo.m_viewMatrix = node.getViewMatrix();
+				commandList.emplace_back(command);
+			}
 		}
 	}
 

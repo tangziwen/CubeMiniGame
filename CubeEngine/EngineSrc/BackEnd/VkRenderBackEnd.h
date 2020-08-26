@@ -199,7 +199,7 @@ private:
     VkPipelineLayout pipelineLayout;
 
     void drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
-    void drawObjs_Common(std::unordered_map<Material *, DevicePipelineVK *> & pipelinepool, VkCommandBuffer command,DeviceRenderPassVK * renderPass , std::vector<RenderCommand>& renderList);
+    void drawObjs_Common(std::unordered_map<Material *, DevicePipelineVK *> & pipelinepool, VkCommandBuffer command, DeviceRenderStageVK * renderStage , std::vector<RenderCommand>& renderList);
 
     /*
 	VkImage textureImage;
@@ -234,11 +234,13 @@ private:
     DeviceRenderStageVK * m_gPassStage;
     DeviceRenderStageVK * m_DeferredLightingStage;
     DeviceRenderStageVK * m_skyStage;
+    DeviceRenderStageVK * m_fogStage;
     DeviceRenderStageVK * m_transparentStage;
     DeviceRenderStageVK * m_thumbNailRenderStage;
 
     DevicePipelineVK * m_dirLightingPassPiepeline;
     DevicePipelineVK * m_skyPassPipeLine;
+    DevicePipelineVK * m_fogPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;
     std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     DeviceTextureVK * m_imguiTextureFont;

@@ -4,7 +4,8 @@
         "fs": "Shaders/GlobalFog_f.glsl"
     },
   "name": "PostEffect",
-	"DepthTestEnable" : true,
+	"cullFace" : false,
+	"DepthTestEnable" : false,
 	"DepthWriteEnable" : false,
 	"BlendEnable" : true,
 	"SrcBlendFactor" : "SrcAlpha",
@@ -12,6 +13,7 @@
   "property": {
     "attributes": [
 		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
+		{"name" : "TU_winSize", "type":"semantic_WinSize"},
       {
         "name": "fog_near",
         "type": "float",

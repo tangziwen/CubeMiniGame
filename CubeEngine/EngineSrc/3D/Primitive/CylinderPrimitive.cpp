@@ -182,18 +182,18 @@ void CylinderPrimitive::initMesh()
 		m_mesh->addVertex(VertexData(up_1, circleUV(up_1, centerTop, m_radiusTop), m_color));
 		m_mesh->addVertex(VertexData(up_2, circleUV(up_2, centerTop, m_radiusTop), m_color));
 		m_mesh->addVertex(VertexData(centerTop, vec2(0.5, 0.5), m_color));
-		m_mesh->addIndex(index + 0 + 5);
-		m_mesh->addIndex(index + 1 + 5);
-		m_mesh->addIndex(index + 2 + 5);
+		m_mesh->addIndex(index + 0 + 6);
+		m_mesh->addIndex(index + 1 + 6);
+		m_mesh->addIndex(index + 2 + 6);
 
 		//bottom
 		vec3 centerBottom = vec3(0.0, 0.0, -halfHeight);
 		m_mesh->addVertex(VertexData(down_2, circleUV(down_2, centerBottom, m_radiusBottom, true), m_color));
 		m_mesh->addVertex(VertexData(down_1, circleUV(down_1, centerBottom, m_radiusBottom, true), m_color));
 		m_mesh->addVertex(VertexData(centerBottom, vec2(0.5, 0.5), m_color));
-		m_mesh->addIndex(index + 3 + 5);
-		m_mesh->addIndex(index + 4 + 5);
-		m_mesh->addIndex(index + 5 + 5);
+		m_mesh->addIndex(index + 3 + 6);
+		m_mesh->addIndex(index + 4 + 6);
+		m_mesh->addIndex(index + 5 + 6);
 		theta += step;
 		index += 12;
 	}

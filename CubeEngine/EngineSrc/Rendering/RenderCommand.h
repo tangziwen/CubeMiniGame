@@ -58,6 +58,7 @@ public:
 	InstancedMesh* getInstancedMesh() const;
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
     Material * getMat();
+    void setMat(Material * newMat);
     Mesh * getMesh();
     void * getDrawableObj();
 private:

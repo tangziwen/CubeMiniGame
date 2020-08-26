@@ -20,7 +20,7 @@ class InstancingMgr :public Singleton<InstancingMgr>
 		void pushInstanceRenderData(RenderFlag::RenderStage renderType, InstanceRendereData data);
 		void generateDrawCall(RenderFlag::RenderStage renderType);
 		void setUpTransFormation(TransformationInfo& info);
-		RenderCommand generateSingleCommand(std::vector<InstanceRendereData> data);
+		void generateSingleCommand(std::vector<InstanceRendereData> data, std::vector<RenderCommand> & cmdList);
 		int getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType);
 	private:
 		std::unordered_map<Material *, innerMeshMap> m_map;

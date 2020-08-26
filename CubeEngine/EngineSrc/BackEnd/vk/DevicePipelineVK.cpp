@@ -40,7 +40,7 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
+DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
 {
 	m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
@@ -122,18 +122,18 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};
     pipelineIACreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
     pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-    auto screenSize = Engine::shared()->winSize();
+    //auto screenSize = Engine::shared()->winSize();
     VkViewport vp = {};
     vp.x = 0.0f;
     vp.y = 0.0f;
-    vp.width  = (float)screenSize.x;
-    vp.height = (float)screenSize.y;
+    vp.width  = (float)viewPortSize.x;
+    vp.height = (float)viewPortSize.y;
     vp.minDepth = 0.0f;
     vp.maxDepth = 1.0f;
         
     VkRect2D scissor{};
     scissor.offset = {0, 0};
-    scissor.extent = VkExtent2D{(uint32_t)screenSize.x, (uint32_t)screenSize.y};
+    scissor.extent = VkExtent2D{(uint32_t)viewPortSize.x, (uint32_t)viewPortSize.y};
 
     VkPipelineViewportStateCreateInfo vpCreateInfo = {};
     vpCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_VIEWPORT_STATE_CREATE_INFO;
@@ -161,7 +161,6 @@ DevicePipelineVK::DevicePipelineVK(Material* mat, VkRenderPass targetRenderPass 
     else{
         rastCreateInfo.cullMode = VK_CULL_MODE_NONE;
     }
-    
     rastCreateInfo.frontFace = VK_FRONT_FACE_COUNTER_CLOCKWISE;
     rastCreateInfo.lineWidth = 1.0f;
     

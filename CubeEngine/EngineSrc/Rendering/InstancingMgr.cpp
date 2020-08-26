@@ -3,6 +3,7 @@
 #include "Renderer.h"
 #include "Scene/SceneMgr.h"
 #include "Mesh/InstancedMesh.h"
+#include <unordered_set>
 namespace tzw
 {
 	void InstancingMgr::prepare(RenderFlag::RenderStage renderType)
@@ -102,20 +103,33 @@ namespace tzw
 		mat.setToIdentity();
 		info.m_worldMatrix = mat;
 	}
-	RenderCommand InstancingMgr::generateSingleCommand(std::vector<InstanceRendereData> dataList)
+	void InstancingMgr::generateSingleCommand(std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
 	{
-		auto instacing = new InstancedMesh();
-		instacing->setMesh(dataList[0].m_mesh);
-		for(auto data: dataList)
+		std::unordered_map<Mesh *,InstancedMesh * > tmpMeshList;
+		std::unordered_map<Mesh *,Material * > tmpMatList;
+		for(auto data : dataList)
 		{
-			instacing->pushInstance(data.data);
+			if(tmpMeshList.find(data.m_mesh) == tmpMeshList.end())
+			{
+				auto instancing = new InstancedMesh();
+				instancing->setMesh(data.m_mesh);
+				tmpMeshList[data.m_mesh] = instancing;
+				tmpMatList[data.m_mesh] = data.material;
+			}
+			tmpMeshList[data.m_mesh]->pushInstance(data.data);
 		}
-		instacing->submitInstanced();
-		RenderCommand command(instacing->getMesh(), dataList[0].material, nullptr, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-		command.setInstancedMesh(instacing);
-		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-		setUpTransFormation(command.m_transInfo);
-		return command;
+		
+		for(auto iter : tmpMeshList)
+		{
+			auto instancing = iter.second;
+			instancing->submitInstanced();
+			RenderCommand command(instancing->getMesh(), tmpMatList[instancing->getMesh()], nullptr, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			command.setInstancedMesh(instancing);
+			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+			setUpTransFormation(command.m_transInfo);
+			cmdList.emplace_back(command);
+		}
+		return;
 	}
 	int InstancingMgr::getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType)
 	{

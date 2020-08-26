@@ -26,7 +26,7 @@ namespace tzw
 		m_frameBuffer = frameBuffer;
 	}
 
-	void DeviceRenderStageVK::prepare(VkCommandBuffer command)
+	void DeviceRenderStageVK::prepare(VkCommandBuffer command, vec4 clearColor, vec2 clearDepthStencil)
 	{
 
 		VkCommandBufferBeginInfo beginInfoDeffered = {};
@@ -40,12 +40,12 @@ namespace tzw
 		{
 			if(attachmentList[i].isDepth){
 			
-				clearValuesDefferred[4].depthStencil = {1.0f, 0};
+				clearValuesDefferred[i].depthStencil = {clearDepthStencil.x, (uint32_t)clearDepthStencil.y};
 			}
 			else
 			{
 			
-				clearValuesDefferred[i].color = {1.0f, 0.0f, 0.0f, 1.0f};
+				clearValuesDefferred[i].color = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 			}
 			
 		

@@ -83,6 +83,10 @@ Material* RenderCommand::getMat()
 {
     return m_material;
 }
+void RenderCommand::setMat(Material* newMat)
+{
+    m_material = newMat;
+}
 Mesh* RenderCommand::getMesh()
 {
     return m_mesh;
