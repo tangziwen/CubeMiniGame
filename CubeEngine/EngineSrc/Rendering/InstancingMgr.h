@@ -19,6 +19,7 @@ class InstancingMgr :public Singleton<InstancingMgr>
 		void prepare(RenderFlag::RenderStage renderType);
 		void pushInstanceRenderData(RenderFlag::RenderStage renderType, InstanceRendereData data);
 		void generateDrawCall(RenderFlag::RenderStage renderType);
+		void generateDrawCall(RenderFlag::RenderStage renderType, std::vector<RenderCommand>& cmmdList);
 		void setUpTransFormation(TransformationInfo& info);
 		void generateSingleCommand(std::vector<InstanceRendereData> data, std::vector<RenderCommand> & cmdList);
 		int getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType);

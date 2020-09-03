@@ -10,15 +10,19 @@ namespace tzw
 {
 	ShadowMap::ShadowMap()
 	{
-		m_program = ShaderMgr::shared()->getByPath(0, "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
-		m_InstancedProgram = ShaderMgr::shared()->getByPath(static_cast<uint32_t>(ShaderOption::EnableInstanced), "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
+		//m_program = ShaderMgr::shared()->getByPath(0, "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
+		//m_InstancedProgram = ShaderMgr::shared()->getByPath(static_cast<uint32_t>(ShaderOption::EnableInstanced), "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
 		int shadowMapSize[] = {1024, 1024, 1024};
-		for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
+
+		if(!EngineDef::isUseVulkan)
 		{
-			auto shadowMap = new ShadowMapFBO();
-			shadowMap->Init(shadowMapSize[i], shadowMapSize[i]);
-			m_shadowMapList.push_back(shadowMap);
+			for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
+			{
+				auto shadowMap = new ShadowMapFBO();
+				shadowMap->Init(shadowMapSize[i], shadowMapSize[i]);
+				m_shadowMapList.push_back(shadowMap);
+			}
 		}
 	}
 
@@ -87,8 +91,8 @@ namespace tzw
 		float fov, aspect,near,far;
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
 		m_zlistView[0] = near;
-		m_zlistView[1] = 15.0f;
-		m_zlistView[2] = 50.0f;
+		m_zlistView[1] = 5.0f;
+		m_zlistView[2] = 100.0f;
 		m_zlistView[3] = far;
 
 		auto projection = camera->projection();
@@ -96,7 +100,14 @@ namespace tzw
 		{
 			auto result = projection * vec4(0.0, 0.0, -1 * m_zlistView[i], 1.0);
 			result.z /= result.w;
-			m_zlistNDC[i] = result.z * 0.5f + 0.5f;
+			if(EngineDef::isUseVulkan)
+			{
+				m_zlistNDC[i] = result.z;
+			}else{
+				m_zlistNDC[i] = result.z * 0.5f + 0.5f;
+			
+			}
+
 		}
 		return;
 	}

@@ -468,6 +468,24 @@ void DevicePipelineVK::updateUniform()
      vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
 }
 
+void DevicePipelineVK::updateUniformSingle(std::string name, void* buff, size_t size)
+{
+    DeviceShaderVK * shader = m_shader;
+    if(!shader->findLocationInfo("t_shaderUnifom")) return;
+    auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
+    int idx = materialUniformBufferInfo.getBlockMemberIndex(name);
+    void * data;
+    vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory, 0, sizeof(materialUniformBufferInfo.size), 0, &data);
+    auto & blockMember = materialUniformBufferInfo.m_member[idx];
+    void * offsetDst = (char *)data + blockMember.offset;
+    if(size > blockMember.size){
+        printf("excepted size is %d, current is %d!!!", size, blockMember.size);
+        abort();
+    }
+    memcpy(offsetDst, buff, size);
+    vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
+}
+
 void DevicePipelineVK::collcetItemWiseDescritporSet()
 {
     m_currItemWiseDescriptorSetIdx = 0;

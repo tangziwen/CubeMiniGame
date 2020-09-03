@@ -94,6 +94,23 @@ namespace tzw
 		}
 
 	}
+	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage renderType, std::vector<RenderCommand>& cmmdList)
+	{
+		int clearID = getInstancedIndexFromRenderType(renderType);
+		for(auto & innerMap : m_map)
+		{
+			for(auto & t: innerMap.second)
+			{
+				t.second[clearID]->submitInstanced();
+				RenderCommand command(t.first, innerMap.first, nullptr, innerMap.first->getRenderStage(), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				command.setInstancedMesh(t.second[clearID]);
+				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+				setUpTransFormation(command.m_transInfo);
+				cmmdList.emplace_back(command);
+			}
+		}
+	}
+
 	void InstancingMgr::setUpTransFormation(TransformationInfo& info)
 	{
 		auto currCam = g_GetCurrScene()->defaultCamera();

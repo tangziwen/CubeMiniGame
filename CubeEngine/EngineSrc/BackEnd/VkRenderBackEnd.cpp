@@ -40,6 +40,9 @@
 
 #include "Base/TAssert.h"
 #include "3D/Thumbnail.h"
+#include "../3D/ShadowMap/ShadowMap.h"
+#include "Rendering/InstancingMgr.h"
+#include "3D/Vegetation/Tree.h"
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -792,6 +795,19 @@ VkApplicationInfo appInfo = {};
         m_gPassStage = new DeviceRenderStageVK(gBufferRenderPass, gBuffer);
 
 
+        m_shadowMat = new Material();
+        m_shadowMat->loadFromTemplate("Shadow");
+        m_shadowInstancedMat = new Material();
+        m_shadowInstancedMat->loadFromTemplate("ShadowInstance");
+
+        for(int i = 0; i < 3; i ++)
+        {
+            auto shadowRenderPass = new DeviceRenderPassVK(0, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+            auto shadowBuffer = new DeviceFrameBufferVK(1024, 1024, shadowRenderPass);
+            m_ShadowStage[i] = new DeviceRenderStageVK(shadowRenderPass, shadowBuffer);
+        }
+
+
         auto deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         auto deferredLightingBuffer= new DeviceFrameBufferVK(size.x, size.y, deferredLightingPass);
         m_DeferredLightingStage = new DeviceRenderStageVK(deferredLightingPass, deferredLightingBuffer);
@@ -1484,6 +1500,17 @@ void VKRenderBackEnd::initVMAPool()
 {
     m_memoryPool = new DeviceMemoryPoolVK(GetPhysDevice(), m_device, m_inst);
 }
+void VKRenderBackEnd::shadowPass()
+{
+    ShadowMap::shared()->calculateProjectionMatrix();
+
+    for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++)
+    {
+        auto aabb = ShadowMap::shared()->getPotentialRange(i);
+    
+    
+    }
+}
 void VKRenderBackEnd::drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList)
 {
     //UI的东西很特殊，一定需要根据队列的顺序来绘制,普通物体可以按材质分组绘制
@@ -1970,6 +1997,55 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         m_fuckingObjList.clear();
 
 
+
+        ShadowMap::shared()->calculateProjectionMatrix();
+        VkCommandBuffer shadowCommand[3] = {m_generalCmdBuff[ImageIndex][10],m_generalCmdBuff[ImageIndex][11],m_generalCmdBuff[ImageIndex][12] };
+        for (int i = 0 ; i < 3 ; i++)
+        {
+            Renderer::shared()->clearShadowList();
+            auto aabb = ShadowMap::shared()->getPotentialRange(i);
+		    std::vector<Drawable3D *> shadowNeedDrawList;
+		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), aabb);
+            InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW);
+		    std::vector<InstanceRendereData> istanceCommandList;
+		    for(auto obj:shadowNeedDrawList)
+		    {
+			    if(!obj->getIsVisible()) continue;
+			    if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
+			    {
+				    obj->submitDrawCmd(RenderFlag::RenderStage::SHADOW);
+			    }
+			    else//instancing
+			    {
+				    obj->getCommandForInstanced(istanceCommandList);   
+			    }
+		    }
+		    for(auto& instanceData : istanceCommandList)
+	        {
+		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData);
+	        }
+
+            Tree::shared()->submitShadowDraw();
+            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW);
+            auto & shadowList = Renderer::shared()->getShadowList();
+            m_ShadowStage[i]->prepare(shadowCommand[i]);
+            for(auto & command : shadowList)
+            {
+                if(command.batchType() != RenderCommand::RenderBatchType::Single){
+                
+                    command.setMat(m_shadowInstancedMat);
+                }else
+                {
+                    command.setMat(m_shadowMat);
+                }
+                command.m_transInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
+                command.m_transInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(i);
+
+            }
+            drawObjs_Common(m_matPipelinePool, shadowCommand[i], m_ShadowStage[i], shadowList);
+            m_ShadowStage[i]->finish(shadowCommand[i]);
+        }
+
         //------------deferred g - pass begin-------------
         VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
 
@@ -1987,6 +2063,15 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             
             vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
             m_dirLightingPassPiepeline->updateUniform();
+            Matrix44 lightVPList[3] = {};
+            float shadowEnd[3] = {};
+            for(int i = 0; i < 3; i++)
+            {
+                shadowEnd[i] =  ShadowMap::shared()->getCascadeEnd(i);
+                lightVPList[i] = ShadowMap::shared()->getLightProjectionMatrix(i) * ShadowMap::shared()->getLightViewMatrix();
+            }
+            m_dirLightingPassPiepeline->updateUniformSingle("TU_LightVP",lightVPList, sizeof(lightVPList));
+            m_dirLightingPassPiepeline->updateUniformSingle("TU_ShadowMapEnd", shadowEnd, sizeof(shadowEnd));
             m_dirLightingPassPiepeline->collcetItemWiseDescritporSet();
 
 
@@ -1997,6 +2082,16 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 auto tex = gbufferTex[i];
                 m_dirLightingPassPiepeline->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
+            std::vector<DeviceTextureVK *> shadowList = {
+                m_ShadowStage[0]->getFrameBuffer()->getDepthMap(),
+                m_ShadowStage[1]->getFrameBuffer()->getDepthMap(), 
+                m_ShadowStage[2]->getFrameBuffer()->getDepthMap()
+            };
+            //m_dirLightingPassPiepeline->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList);
+            m_dirLightingPassPiepeline->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList[0]);
+            m_dirLightingPassPiepeline->getMaterialDescriptorSet()->updateDescriptorByBinding(9, shadowList[1]);
+            m_dirLightingPassPiepeline->getMaterialDescriptorSet()->updateDescriptorByBinding(10, shadowList[2]);
+
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
             vkCmdBindVertexBuffers(lightPassCmd, 0, 1, vertexBuffers, offsets);
@@ -2448,7 +2543,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {deferredCommand, lightPassCmd, skyCmd, transparentCmd, fogPassCmd, textureToScreenCmd, command};
+        std::vector<VkCommandBuffer> commandList = {shadowCommand[0], shadowCommand[1], shadowCommand[2], deferredCommand, lightPassCmd, skyCmd, transparentCmd, fogPassCmd, textureToScreenCmd, command};
         if(isAnythumbnail)
         {
             commandList.emplace_back(thumbNailCommand);

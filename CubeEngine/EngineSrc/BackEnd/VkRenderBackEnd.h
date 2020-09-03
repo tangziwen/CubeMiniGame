@@ -156,6 +156,8 @@ private:
     void initImguiStuff();
 
     void initVMAPool();
+
+    void shadowPass();
 	//depth resource
 	VkImage depthImage;
     VkDeviceMemory depthImageMemory;
@@ -221,6 +223,8 @@ private:
     DeviceBufferVK *m_imguiIndex;
     DeviceBufferVK *m_imguiVertex;
     Material * m_imguiMat;
+    Material * m_shadowMat;
+    Material * m_shadowInstancedMat;
     DevicePipelineVK * m_imguiPipeline;
     VkDescriptorSet m_imguiDescriptorSet;
     DeviceBufferVK * m_imguiUniformBuffer;
@@ -231,6 +235,7 @@ private:
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
 
+    DeviceRenderStageVK * m_ShadowStage[3];
     DeviceRenderStageVK * m_gPassStage;
     DeviceRenderStageVK * m_DeferredLightingStage;
     DeviceRenderStageVK * m_skyStage;

@@ -770,6 +770,11 @@ void Renderer::collectPrimitives()
 
 }
 
+std::vector<RenderCommand>& Renderer::getShadowList()
+{
+	return m_shadowCommandList;
+}
+
 std::vector<RenderCommand>& Renderer::getCommonList()
 {
 	return m_CommonCommand;
@@ -788,6 +793,11 @@ std::vector<RenderCommand>& Renderer::getTransparentList()
 std::vector<ThumbNail*>& Renderer::getThumbNailList()
 {
 	return m_thumbNailList;
+}
+
+void Renderer::clearShadowList()
+{
+	m_shadowCommandList;
 }
 
 void Renderer::geometryPass()

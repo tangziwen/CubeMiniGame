@@ -36,6 +36,7 @@ public:
 	DeviceDescriptorVK * getMaterialDescriptorSet();
 	void updateMaterialDescriptorSet();
 	void updateUniform();
+	void updateUniformSingle(std::string name, void * buff, size_t size);
 	void collcetItemWiseDescritporSet();
 	DeviceDescriptorVK * giveItemWiseDescriptorSet();
 	Material * getMat();

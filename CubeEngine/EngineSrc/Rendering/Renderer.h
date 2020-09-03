@@ -57,6 +57,7 @@ public:
 	std::vector<RenderCommand> & getGUICommandList();
 	std::vector<RenderCommand> & getTransparentList();
 	std::vector<ThumbNail *> & getThumbNailList();
+	void clearShadowList();
 private:
     void initQuad();
 	void initMaterials();
