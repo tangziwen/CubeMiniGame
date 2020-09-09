@@ -51,13 +51,13 @@ LaserPrimitive::LaserPrimitive(vec3 begin, vec3 end, float width, bool isOriginI
 	Node::setRotateQ(q);
 }
 
-void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stage)
+void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material, this, RenderFlag::RenderStage::COMMON);
+	RenderCommand command(m_mesh,m_material, this, stageType);
     setUpTransFormation(command.m_transInfo);
 	command.setRenderState(RenderFlag::RenderStage::TRANSPARENT);
 	//command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
-    Renderer::shared()->addRenderCommand(command);
+	 queues->addRenderCommand(command, requirementArg);
 }
 
 void LaserPrimitive::initBuffer()

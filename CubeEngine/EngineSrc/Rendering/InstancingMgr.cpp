@@ -77,32 +77,50 @@ namespace tzw
 		
 	}
 
-	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage renderType)
+	void InstancingMgr::generateDrawCall(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 	{
+		RenderFlag::RenderStage renderType;
+		switch(requirementType){
+		case RenderFlag::RenderStageType::SHADOW:
+			renderType = RenderFlag::RenderStage::SHADOW;
+			break;
+		case RenderFlag::RenderStageType::COMMON:
+			renderType = RenderFlag::RenderStage::COMMON;
+			break;
+		}
 		int clearID = getInstancedIndexFromRenderType(renderType);
 		for(auto & innerMap : m_map)
 		{
 			for(auto & t: innerMap.second)
 			{
 				t.second[clearID]->submitInstanced();
-				RenderCommand command(t.first, innerMap.first, nullptr, innerMap.first->getRenderStage(), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(t.second[clearID]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
-				Renderer::shared()->addRenderCommand(command);
+				queues->addRenderCommand(command, requirementArg);
 			}
 		}
 
 	}
-	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage renderType, std::vector<RenderCommand>& cmmdList)
+	void InstancingMgr::generateDrawCall(RenderFlag::RenderStageType requirementType, int requirementArg, std::vector<RenderCommand>& cmmdList)
 	{
+		RenderFlag::RenderStage renderType;
+		switch(requirementType){
+		case RenderFlag::RenderStageType::SHADOW:
+			renderType = RenderFlag::RenderStage::SHADOW;
+			break;
+		case RenderFlag::RenderStageType::COMMON:
+			renderType = RenderFlag::RenderStage::COMMON;
+			break;
+		}
 		int clearID = getInstancedIndexFromRenderType(renderType);
 		for(auto & innerMap : m_map)
 		{
 			for(auto & t: innerMap.second)
 			{
 				t.second[clearID]->submitInstanced();
-				RenderCommand command(t.first, innerMap.first, nullptr, innerMap.first->getRenderStage(), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(t.second[clearID]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
@@ -120,7 +138,7 @@ namespace tzw
 		mat.setToIdentity();
 		info.m_worldMatrix = mat;
 	}
-	void InstancingMgr::generateSingleCommand(std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
+	void InstancingMgr::generateSingleCommand(RenderFlag::RenderStageType requirementType, std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
 	{
 		std::unordered_map<Mesh *,InstancedMesh * > tmpMeshList;
 		std::unordered_map<Mesh *,Material * > tmpMatList;
@@ -140,7 +158,7 @@ namespace tzw
 		{
 			auto instancing = iter.second;
 			instancing->submitInstanced();
-			RenderCommand command(instancing->getMesh(), tmpMatList[instancing->getMesh()], nullptr, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(instancing->getMesh(), tmpMatList[instancing->getMesh()], nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(instancing);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);

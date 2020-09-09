@@ -30,13 +30,13 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
     setIsAccpectOcTtree(true);
 }
 
-void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStage passType)
+void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
-		RenderCommand command(m_mesh, m_material, this, passType);
+		RenderCommand command(m_mesh, m_material, this, stageType);
 		setUpCommand(command);
-		Renderer::shared()->addRenderCommand(command);
+		queues->addRenderCommand(command, requirementArg);
 	}
 }
 

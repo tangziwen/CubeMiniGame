@@ -43,6 +43,7 @@
 #include "../3D/ShadowMap/ShadowMap.h"
 #include "Rendering/InstancingMgr.h"
 #include "3D/Vegetation/Tree.h"
+#include "Scene/SceneCuller.h"
 //#include "vk/DeviceShaderVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -1992,42 +1993,15 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         vkDeviceWaitIdle(m_device);
         //CPU here
         m_itemBufferPool->reset();
-        Renderer::shared()->collectPrimitives();
-        auto & commonList = Renderer::shared()->getCommonList();
+        SceneCuller::shared()->collectPrimitives();
+        RenderQueues * renderQueues = SceneCuller::shared()->getRenderQueues();
+        auto & commonList = renderQueues->getCommonList();
         m_fuckingObjList.clear();
 
-
-
-        ShadowMap::shared()->calculateProjectionMatrix();
         VkCommandBuffer shadowCommand[3] = {m_generalCmdBuff[ImageIndex][10],m_generalCmdBuff[ImageIndex][11],m_generalCmdBuff[ImageIndex][12] };
         for (int i = 0 ; i < 3 ; i++)
         {
-            Renderer::shared()->clearShadowList();
-            auto aabb = ShadowMap::shared()->getPotentialRange(i);
-		    std::vector<Drawable3D *> shadowNeedDrawList;
-		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), aabb);
-            InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW);
-		    std::vector<InstanceRendereData> istanceCommandList;
-		    for(auto obj:shadowNeedDrawList)
-		    {
-			    if(!obj->getIsVisible()) continue;
-			    if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
-			    {
-				    obj->submitDrawCmd(RenderFlag::RenderStage::SHADOW);
-			    }
-			    else//instancing
-			    {
-				    obj->getCommandForInstanced(istanceCommandList);   
-			    }
-		    }
-		    for(auto& instanceData : istanceCommandList)
-	        {
-		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData);
-	        }
-
-            Tree::shared()->submitShadowDraw();
-            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW);
-            auto & shadowList = Renderer::shared()->getShadowList();
+            auto & shadowList = renderQueues->getShadowList(i);
             m_ShadowStage[i]->prepare(shadowCommand[i]);
             for(auto & command : shadowList)
             {
@@ -2213,7 +2187,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //------------transparent pass begin ------------------
         VkCommandBuffer transparentCmd = m_generalCmdBuff[ImageIndex][2];
         m_transparentStage->prepare(transparentCmd);
-        auto transList = Renderer::shared()->getTransparentList();
+        auto transList = renderQueues->getTransparentList();
         drawObjs_Common(m_matPipelinePool, transparentCmd, m_transparentStage, transList);
         m_transparentStage->finish(transparentCmd);
 
@@ -2343,7 +2317,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
         
 	
-        auto drawSize = Renderer::shared()->getGUICommandList().size();
+        auto drawSize = renderQueues->getGUICommandList().size();
 
 
 
@@ -2377,7 +2351,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         renderPassInfo.framebuffer = m_fbs[ImageIndex];
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         //drawObjs_Common(command, m_renderPass, commonList);
-        drawObjs(command, Renderer::shared()->getGUICommandList());
+        drawObjs(command, renderQueues->getGUICommandList());
         if(!m_imguiPipeline)
         {
             initImguiStuff();
@@ -2513,7 +2487,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         vkCmdEndRenderPass(command);
         res = vkEndCommandBuffer(command);
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
-        Renderer::shared()->clearCommands();
+        renderQueues->clearCommands();
 
         bool isAnythumbnail = false;
         VkCommandBuffer thumbNailCommand = m_generalCmdBuff[ImageIndex][7];

@@ -27,8 +27,8 @@ namespace tzw {
 		void insertInstanceData(InstanceData data);
 		void clear();
 		void setUpTransFormation(TransformationInfo& info);
-		void commitRenderCmd();
-		void commitShadowRenderCmd();
+		void commitRenderCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg);
+		void commitShadowRenderCmd(RenderQueues * queues, int level);
 		Model * m_model;
 		Mesh * m_quadMesh;
 		std::vector<InstancedMesh *> m_instancedMeshList;
@@ -42,12 +42,12 @@ namespace tzw {
 		VegetationInfo();
 		void init(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2);
 		void clear();
-		void commitRenderCmd();
+		void commitRenderCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg);
 		void insert(InstanceData inst);
 		// VegetationType m_type;
 		VegetationBatch * m_lodBatch[3];
 		bool anyHas();
-		void submitShadowDraw();
+		void submitShadowDraw(RenderQueues * queues, int level);
 	};
 	class TreeGroup
 	{
@@ -64,16 +64,16 @@ namespace tzw {
 	  void addTreeGroup(TreeGroup* treeGroup);
 	  void clearTreeGroup();
 	  void finish();
-	  void submitDrawCmd(RenderFlag::RenderStage passType) override;
+	  void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg) override;
 	  void initMesh();
 	  void setUpTransFormation(TransformationInfo& info) override;
-	  void submitShadowDraw();
+	  void submitShadowDraw(RenderQueues * queues, int level);
 	  unsigned int getTypeId() override;
 	  Mesh* m_mesh{};
 		Mesh* m_leafMesh{};
 		Material * m_barkMat;
 		Material * m_leafMat;
-	  void pushCommand();
+	  void pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg);
 	  bool m_isFinish;
 
 	private:

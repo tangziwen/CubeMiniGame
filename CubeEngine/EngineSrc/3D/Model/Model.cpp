@@ -32,11 +32,19 @@ Model *Model::create(std::string modelFilePath, bool useCache)
     return theModel;
 }
 
-void Model::submitDrawCmd(RenderFlag::RenderStage passType)
+void Model::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
-		auto type = passType;
+		auto type = RenderFlag::RenderStage::COMMON;
+		switch(stageType){
+			case RenderFlag::RenderStageType::COMMON:
+				type = RenderFlag::RenderStage::COMMON;
+				break;
+			case RenderFlag::RenderStageType::SHADOW:
+				type = RenderFlag::RenderStage::SHADOW;
+				break;
+		}
 		if(m_currPose == -1)
 		{
 		    for(auto mesh : m_meshList)
@@ -51,20 +59,20 @@ void Model::submitDrawCmd(RenderFlag::RenderStage passType)
 				{
 					mat= m_effectList[mesh->getMatIndex()];
 				}
-		        RenderCommand command(mesh,mat, this, type);
+		        RenderCommand command(mesh,mat, this, stageType);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
-		        Renderer::shared()->addRenderCommand(command);
+		        queues->addRenderCommand(command, requirementArg);
 		    }
 		}else
 		{
 		    for(auto mesh : m_extraMeshList[m_currPose])
 		    {
 		        auto tech = m_effectList[mesh->getMatIndex()];
-		        RenderCommand command(mesh,tech, this, type);
+		        RenderCommand command(mesh,tech, this, stageType);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
-		        Renderer::shared()->addRenderCommand(command);
+		        queues->addRenderCommand(command, requirementArg);
 		    }
 		}
 

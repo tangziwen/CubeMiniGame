@@ -13,7 +13,6 @@ class Renderer
 public:
     Renderer();
     static Renderer * shared();
-    void addRenderCommand(RenderCommand& command);
     void renderAll();
     void renderAllCommon();
 	void renderAllShadow(int index);
@@ -51,7 +50,7 @@ public:
 	void onChangeScreenSize(int newW, int newH);
 	void updateThumbNail(ThumbNail * thumb);
 	void setVertexAttribute(ShaderProgram * program);
-	void collectPrimitives();
+
 	std::vector<RenderCommand> & getShadowList();
 	std::vector<RenderCommand> & getCommonList();
 	std::vector<RenderCommand> & getGUICommandList();

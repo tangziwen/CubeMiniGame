@@ -190,7 +190,7 @@ void VegetationBatch::setUpTransFormation(TransformationInfo& info)
 	info.m_worldMatrix = mat;
 }
 
-void VegetationBatch::commitRenderCmd()
+void VegetationBatch::commitRenderCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
 	switch (m_type)
 	{
@@ -199,11 +199,11 @@ void VegetationBatch::commitRenderCmd()
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
 			m_instancedMeshList[0]->submitInstanced();
-			RenderCommand command(theMesh, mat, this, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(theMesh, mat, this, stageType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
-			Renderer::shared()->addRenderCommand(command);
+			queues->addRenderCommand(command, requirementArg);
 			setUpTransFormation(command.m_transInfo);
 		}
 		break;
@@ -213,11 +213,11 @@ void VegetationBatch::commitRenderCmd()
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
 			m_instancedMeshList[0]->submitInstanced();
-			RenderCommand command(theMesh, mat, this, RenderFlag::RenderStage::COMMON, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(theMesh, mat, this, stageType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
-			Renderer::shared()->addRenderCommand(command);
+			queues->addRenderCommand(command, requirementArg);
 			setUpTransFormation(command.m_transInfo);
 		}
 		break;
@@ -230,11 +230,11 @@ void VegetationBatch::commitRenderCmd()
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
 				m_instancedMeshList[i]->submitInstanced();
-				RenderCommand command(theMesh, mat, this, RenderFlag::RenderStage::COMMON,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(theMesh, mat, this, stageType,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
-				Renderer::shared()->addRenderCommand(command);
+				queues->addRenderCommand(command, requirementArg);
 				setUpTransFormation(command.m_transInfo);
 			}
 		}
@@ -243,7 +243,7 @@ void VegetationBatch::commitRenderCmd()
 	}
 }
 
-void VegetationBatch::commitShadowRenderCmd()
+void VegetationBatch::commitShadowRenderCmd(RenderQueues * queues, int level)
 {
 	switch (m_type)
 	{
@@ -259,11 +259,11 @@ void VegetationBatch::commitShadowRenderCmd()
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
 				m_instancedMeshList[i]->submitInstanced();
-				RenderCommand command(theMesh, mat, this, RenderFlag::RenderStage::SHADOW,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(theMesh, mat, this, RenderFlag::RenderStageType::SHADOW, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
-				Renderer::shared()->addRenderCommand(command);
+				queues->addRenderCommand(command,level);
 				setUpTransFormation(command.m_transInfo);
 			}
 		}
@@ -308,13 +308,13 @@ void VegetationInfo::clear()
 	}
 }
 
-void VegetationInfo::commitRenderCmd()
+void VegetationInfo::commitRenderCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
 	for(int i = 0; i < 3; i++)
 	{
 		if(m_lodBatch[i] && m_lodBatch[i]->m_totalCount)
 		{
-			m_lodBatch[i]->commitRenderCmd();
+			m_lodBatch[i]->commitRenderCmd(stageType, queues, requirementArg);
 		}
 	}
 }
@@ -369,10 +369,10 @@ bool VegetationInfo::anyHas()
 	return false;
 }
 
-void VegetationInfo::submitShadowDraw()
+void VegetationInfo::submitShadowDraw(RenderQueues * queues, int level)
 {
-	if(m_lodBatch[0] && m_lodBatch[0]->m_totalCount) m_lodBatch[0]->commitShadowRenderCmd();
-	if(m_lodBatch[1] && m_lodBatch[1]->m_totalCount) m_lodBatch[1]->commitShadowRenderCmd();
+	if(m_lodBatch[0] && m_lodBatch[0]->m_totalCount) m_lodBatch[0]->commitShadowRenderCmd(queues, level);
+	if(m_lodBatch[1] && m_lodBatch[1]->m_totalCount) m_lodBatch[1]->commitShadowRenderCmd(queues, level);
 }
 
 TreeGroup::TreeGroup(int treeClass)
@@ -441,13 +441,13 @@ void Tree::setUpTransFormation(TransformationInfo &info)
 	info.m_worldMatrix = mat;
 }
 
-void Tree::submitShadowDraw()
+void Tree::submitShadowDraw(RenderQueues * queues, int level)
 {
 	for(auto info :m_infoList)
 	{
 		if(info->anyHas())
 		{
-			info->submitShadowDraw();
+			info->submitShadowDraw(queues, level);
 
 		}
 	}
@@ -458,7 +458,7 @@ unsigned int Tree::getTypeId()
 	return 2333;
 }
 
-void Tree::pushCommand()
+void Tree::pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	//regroup
 	for(auto iter : m_tree)
@@ -485,7 +485,7 @@ void Tree::pushCommand()
 		{
 			if(info->anyHas())
 			{
-				info->commitRenderCmd();
+				info->commitRenderCmd(requirementType, queues, requirementArg);
 
 			}
 		}
@@ -533,11 +533,11 @@ void Tree::finish()
 	m_isFinish = true;
 }
 
-void Tree::submitDrawCmd(RenderFlag::RenderStage passType)
+void Tree::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh, m_material,this, RenderFlag::RenderStage::COMMON);
+	RenderCommand command(m_mesh, m_material,this, requirementType);
 	setUpTransFormation(command.m_transInfo);
-	Renderer::shared()->addRenderCommand(command);
+	queues->addRenderCommand(command, requirementArg);
 }
 
 void Tree::initMesh()

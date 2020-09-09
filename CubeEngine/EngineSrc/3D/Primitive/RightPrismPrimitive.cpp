@@ -31,13 +31,13 @@ RightPrismPrimitive::RightPrismPrimitive(float width,  float height, float depth
     setIsAccpectOcTtree(true);
 }
 
-void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage stage)
+void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
-		RenderCommand command(m_mesh, m_material,this,stage);
+		RenderCommand command(m_mesh, m_material,this, requirementType);
 		setUpCommand(command);
-		Renderer::shared()->addRenderCommand(command);
+		queues->addRenderCommand(command, requirementArg);
 	}
 }
 

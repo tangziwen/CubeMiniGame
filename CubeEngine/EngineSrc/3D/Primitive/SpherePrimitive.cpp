@@ -21,11 +21,11 @@ namespace tzw
 		initMesh();
 	}
 
-	void SpherePrimitive::submitDrawCmd(RenderFlag::RenderStage stage)
+	void SpherePrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 	{
-		RenderCommand command(m_mesh, m_material,this,stage);
+		RenderCommand command(m_mesh, m_material, this, stageType);
 		setUpTransFormation(command.m_transInfo);
-		Renderer::shared()->addRenderCommand(command);
+		queues->addRenderCommand(command, requirementArg);
 	}
 
 	bool SpherePrimitive::intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint)

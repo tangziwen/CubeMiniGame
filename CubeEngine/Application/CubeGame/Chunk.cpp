@@ -182,7 +182,7 @@ namespace tzw
 	/// <summary>
 	/// Submits the draw command.
 	/// </summary>
-	void Chunk::submitDrawCmd(RenderFlag::RenderStage passType)
+	void Chunk::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 	{
 		/// just for test
 		if (m_currenState != State::LOADED)
@@ -193,7 +193,7 @@ namespace tzw
 			return;
 		if (m_mesh[0]->getIndexBuf()->bufferId() == 0)
 			return;
-		if (passType != RenderFlag::RenderStage::COMMON)
+		if (requirementType != RenderFlag::RenderStageType::COMMON)
 		{
 			return;
 		}
@@ -239,16 +239,16 @@ namespace tzw
 		}
 
 
-		RenderCommand command(m_mesh[m_currentLOD], m_material, this, passType);
+		RenderCommand command(m_mesh[m_currentLOD], m_material, this, requirementType);
 		setUpTransFormation(command.m_transInfo);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-		Renderer::shared()->addRenderCommand(command);
+		queues->addRenderCommand(command, requirementArg);
 		if(isNeedShowTransition)
 		{
-			RenderCommand command(m_meshTransition[m_currentLOD], m_material, this, passType);
+			RenderCommand command(m_meshTransition[m_currentLOD], m_material, this, requirementType);
 			setUpTransFormation(command.m_transInfo);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-			Renderer::shared()->addRenderCommand(command);
+			queues->addRenderCommand(command, requirementArg);
 		}
 		
 		if (true)

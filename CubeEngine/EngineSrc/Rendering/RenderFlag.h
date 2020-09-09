@@ -54,6 +54,12 @@ enum class BlendingFactor
     ConstantAlpha
 };
 
+
+enum class RenderStageType
+{
+    COMMON,
+    SHADOW,
+};
 enum class RenderStage
 {
 	COMMON,

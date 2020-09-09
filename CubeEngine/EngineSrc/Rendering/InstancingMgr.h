@@ -2,7 +2,7 @@
 #include "Base/Singleton.h"
 #include <unordered_map>
 #include "RenderCommand.h"
-
+#include "Rendering/RenderQueues.h"
 namespace tzw
 {
 class Mesh;
@@ -18,10 +18,10 @@ class InstancingMgr :public Singleton<InstancingMgr>
 	public:
 		void prepare(RenderFlag::RenderStage renderType);
 		void pushInstanceRenderData(RenderFlag::RenderStage renderType, InstanceRendereData data);
-		void generateDrawCall(RenderFlag::RenderStage renderType);
-		void generateDrawCall(RenderFlag::RenderStage renderType, std::vector<RenderCommand>& cmmdList);
+		void generateDrawCall(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg);
+		void generateDrawCall(RenderFlag::RenderStageType requirementType, int requirementArg, std::vector<RenderCommand>& cmmdList);
 		void setUpTransFormation(TransformationInfo& info);
-		void generateSingleCommand(std::vector<InstanceRendereData> data, std::vector<RenderCommand> & cmdList);
+		void generateSingleCommand(RenderFlag::RenderStageType requirementType, std::vector<InstanceRendereData> data, std::vector<RenderCommand> & cmdList);
 		int getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType);
 	private:
 		std::unordered_map<Material *, innerMeshMap> m_map;

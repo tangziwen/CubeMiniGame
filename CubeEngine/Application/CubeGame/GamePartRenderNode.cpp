@@ -54,7 +54,7 @@ namespace tzw
 		m_isNeedUpdateRenderInfo;
 	}
 
-	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStage passType)
+	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 	{
 		if(getIsVisible())
 		{
@@ -66,13 +66,13 @@ namespace tzw
 			}
 			for(auto &info : m_infoList)
 			{
-				RenderCommand command(info.mesh, info.material,this, passType);
+				RenderCommand command(info.mesh, info.material,this, requirementType);
 				setUpCommand(command);
 				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{
 					command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
 				}
-				Renderer::shared()->addRenderCommand(command);
+				queues->addRenderCommand(command, requirementArg);
 			}
 		}
 	}

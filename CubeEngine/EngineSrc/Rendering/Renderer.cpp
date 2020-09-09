@@ -60,19 +60,6 @@ Renderer *Renderer::shared()
 	return Renderer::m_instance;
 }
 
-void Renderer::addRenderCommand(RenderCommand& command)
-{
-	switch (command.getRenderState())
-	{
-		case RenderFlag::RenderStage::SHADOW: m_shadowCommandList.push_back(command);break;
-		case RenderFlag::RenderStage::COMMON: m_CommonCommand.push_back(command);break;
-		case RenderFlag::RenderStage::TRANSPARENT: m_transparentCommandList.push_back(command);break;
-		case RenderFlag::RenderStage::AFTER_DEPTH_CLEAR: m_clearDepthCommandList.push_back(command);break;
-			case RenderFlag::RenderStage::GUI: m_GUICommandList.push_back(command); break;
-	default: ;
-	}
-}
-
 bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 {
 	return a.Zorder() < b.Zorder();
@@ -80,7 +67,7 @@ bool GUICommandSort(const RenderCommand &a,const RenderCommand &b)
 std::vector<FrameBuffer *> autoExposureList;
 void Renderer::renderAll()
 {
-	collectPrimitives();
+	//collectPrimitives();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	handleThumbNail();
 	Engine::shared()->setDrawCallCount(int(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size()));
@@ -722,54 +709,6 @@ void Renderer::setVertexAttribute(ShaderProgram* program)
 	}
 }
 
-void Renderer::collectPrimitives()
-{
-	auto currScene = SceneMgr::shared()->getCurrScene();
-	std::vector<Node *> directDrawList = currScene->getDirectDrawList();
-	for(auto node : directDrawList)
-	{
-		node->submitDrawCmd(RenderFlag::RenderStage::COMMON);
-		if(node->onSubmitDrawCommand)
-		{
-			node->onSubmitDrawCommand(RenderFlag::RenderStage::COMMON);
-		}
-	
-	}
-	directDrawList.clear();
-	auto cam = SceneMgr::shared()->getCurrScene()->defaultCamera();
-	OctreeScene * octreeScene =  SceneMgr::shared()->getCurrScene()->getOctreeScene();
-	SceneMgr::shared()->getCurrScene()->getOctreeScene()->cullingByCamera(cam);
-	//vegetation
-	Tree::shared()->clearTreeGroup();
-	auto &visibleList = octreeScene->getVisibleList();
-	for(auto obj : visibleList)
-	{
-		obj->submitDrawCmd(RenderFlag::RenderStage::COMMON);
-		if(obj->onSubmitDrawCommand)
-		{
-			obj->onSubmitDrawCommand(RenderFlag::RenderStage::COMMON);
-		}
-	}
-	Tree::shared()->pushCommand();
-    std::vector<Drawable3D *> nodeList;
-	octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
-	InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON);
-	std::vector<InstanceRendereData> istanceCommandList;
-    for(auto node:nodeList)
-    {
-        if(node->getIsVisible())
-        {
-            node->getCommandForInstanced(istanceCommandList);   
-        }
-    }
-    for(auto& instanceData : istanceCommandList)
-    {
-	    InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::COMMON, instanceData);
-    }
-	InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::COMMON);
-
-}
-
 std::vector<RenderCommand>& Renderer::getShadowList()
 {
 	return m_shadowCommandList;
@@ -854,30 +793,6 @@ void Renderer::shadowPass()
 	for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
 	{
 		m_shadowCommandList.clear();
-		auto aabb = ShadowMap::shared()->getPotentialRange(i);
-		std::vector<Drawable3D *> shadowNeedDrawList;
-		g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), aabb);
-		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW);
-		std::vector<InstanceRendereData> istanceCommandList;
-		for(auto obj:shadowNeedDrawList)
-		{
-			if(!obj->getIsVisible()) continue;
-			if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
-			{
-				obj->submitDrawCmd(RenderFlag::RenderStage::SHADOW);
-			}
-			else//instancing
-			{
-				obj->getCommandForInstanced(istanceCommandList);   
-			}
-		}
-
-		Tree::shared()->submitShadowDraw();
-		for(auto& instanceData : istanceCommandList)
-	    {
-		    InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData);
-	    }
-		InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW);
 		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 		shadowBuffer->BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);

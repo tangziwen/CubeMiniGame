@@ -39,6 +39,7 @@ void Sprite::initWithTexture(std::string texturePath)
     m_contentSize = m_texture->getSize();
     setRenderRect(m_contentSize);
     setUpTechnique();
+    m_material->setRenderStage(RenderFlag::RenderStage::GUI);
 
 }
 
@@ -74,14 +75,14 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setRenderRect(m_contentSize);
 }
 
-void Sprite::submitDrawCmd(RenderFlag::RenderStage passType)
+void Sprite::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	//getContentSize();
 	//getWorldPos2D();
-    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
+    RenderCommand command(m_mesh,m_material,this, requirementType);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
-    Renderer::shared()->addRenderCommand(command);
+    queues->addRenderCommand(command, requirementArg);
 }
 
 void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt)

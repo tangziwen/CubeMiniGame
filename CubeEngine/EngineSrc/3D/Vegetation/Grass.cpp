@@ -49,16 +49,6 @@ unsigned int Grass::getTypeId()
 	return 2333;
 }
 
-void Grass::pushCommand()
-{
-	if (! m_isFinish) return;
-	RenderCommand command(m_mesh, getMaterial(), this, RenderFlag::RenderStage::COMMON,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-	setUpTransFormation(command.m_transInfo);
-	Renderer::shared()->addRenderCommand(command);
-	setUpTransFormation(command.m_transInfo);
-}
-
 void Grass::finish()
 {
 
@@ -66,11 +56,11 @@ void Grass::finish()
 	m_isFinish = true;
 }
 
-void Grass::submitDrawCmd(RenderFlag::RenderStage stage)
+void Grass::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh, m_material,this, RenderFlag::RenderStage::COMMON);
+	RenderCommand command(m_mesh, m_material,this, stageType);
 	setUpTransFormation(command.m_transInfo);
-	Renderer::shared()->addRenderCommand(command);
+	queues->addRenderCommand(command, requirementArg);
 }
 
 void Grass::initMesh()

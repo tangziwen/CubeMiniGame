@@ -5,13 +5,21 @@
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
-RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
+RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj,RenderFlag::RenderStageType renderStageType, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
-	m_renderState(renderStage),
-m_batchType(batchType)
+    m_batchType(batchType)
 {
     m_obj = obj;
+    switch(renderStageType)
+    {
+        case RenderFlag::RenderStageType::SHADOW:
+            m_renderState = RenderFlag::RenderStage::SHADOW;
+            break;
+        case RenderFlag::RenderStageType::COMMON:
+            m_renderState = material->getRenderStage();
+            break;
+    }
 }
 
 void RenderCommand::render()

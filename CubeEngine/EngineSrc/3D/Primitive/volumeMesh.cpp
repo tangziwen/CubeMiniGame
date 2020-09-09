@@ -18,12 +18,12 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 	setIsAccpectOcTtree(false);
 }
 
-void SimpleMesh::submitDrawCmd(RenderFlag::RenderStage stage)
+void SimpleMesh::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material,this, stage);
+	RenderCommand command(m_mesh,m_material,this, stageType);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-	Renderer::shared()->addRenderCommand(command);
+	queues->addRenderCommand(command, requirementArg);
 }
 
 bool SimpleMesh::getIsAccpectOcTtree() const

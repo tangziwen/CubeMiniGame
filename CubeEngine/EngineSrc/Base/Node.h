@@ -10,9 +10,10 @@
 #include "Rendering/RenderCommand.h"
 #include "../Action/ActionMgr.h"
 #include <functional>
-
+#include "Rendering/RenderQueues.h"
 namespace tzw {
 class Scene;
+class SceneCuller;
 class Node : public ActionMgr
 {
 public:
@@ -33,7 +34,7 @@ public:
 	vec3 getPos() const;
 	virtual void setPos(const vec3 &pos);
 	void setPos(float x, float y, float z);
-	virtual void submitDrawCmd(RenderFlag::RenderStage renderStage);
+	virtual void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg);
 	std::function<void (RenderFlag::RenderStage)> onSubmitDrawCommand;
 	virtual void logicUpdate(float dt);
 	vec3 getRotateE();

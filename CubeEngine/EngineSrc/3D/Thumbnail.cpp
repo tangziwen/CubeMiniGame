@@ -24,6 +24,7 @@ namespace tzw {
 
 	void ThumbNail::doSnapShot()
 	{
+		/*
 		if(!EngineDef::isUseVulkan)
 		{
 			glDisable(GL_SCISSOR_TEST);
@@ -80,7 +81,7 @@ namespace tzw {
 		
 		
 		}
-		
+		*/
 
 	}
 
@@ -98,7 +99,7 @@ namespace tzw {
 		{
 			for (int i = 0; i < m_node->getMeshCount(); i++)
 			{
-				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, RenderFlag::RenderStage::COMMON);
+				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, RenderFlag::RenderStageType::COMMON);
 
     			m_node->setUpCommand(command);
 				m_node->setUpTransFormation(command.m_transInfo);
@@ -113,7 +114,7 @@ namespace tzw {
 			std::vector<InstanceRendereData> theList;
 			m_node->getCommandForInstanced(theList);
 			std::vector<RenderCommand> cmdList;
-			InstancingMgr::shared()->generateSingleCommand(theList, cmdList);
+			InstancingMgr::shared()->generateSingleCommand(RenderFlag::RenderStageType::COMMON, theList, cmdList);
 			for(auto & command : cmdList)
 			{
 				Material * mat = new Material();

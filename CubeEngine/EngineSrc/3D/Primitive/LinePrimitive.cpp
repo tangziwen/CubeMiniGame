@@ -16,12 +16,12 @@ LinePrimitive::LinePrimitive():m_mesh(nullptr)
 	init();
 }
 
-void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage  stage)
+void LinePrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material,this,stage);
+	RenderCommand command(m_mesh,m_material,this,stageType);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
-    Renderer::shared()->addRenderCommand(command);
+    queues->addRenderCommand(command, requirementArg);
 }
 
 void LinePrimitive::initBuffer()

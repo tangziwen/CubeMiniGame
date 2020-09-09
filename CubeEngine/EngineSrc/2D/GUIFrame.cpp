@@ -57,12 +57,12 @@ GUIFrame *GUIFrame::create(vec2 size)
     return frame;
 }
 
-void GUIFrame::submitDrawCmd(RenderFlag::RenderStage passType)
+void GUIFrame::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
 {
-    RenderCommand command(m_mesh, m_material, this, RenderFlag::RenderStage::GUI);
+    RenderCommand command(m_mesh, m_material, this, stageType);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
-    Renderer::shared()->addRenderCommand(command);
+    queues->addRenderCommand(command, requirementArg);
 }
 
 void GUIFrame::setContentSize(const vec2 &contentSize)

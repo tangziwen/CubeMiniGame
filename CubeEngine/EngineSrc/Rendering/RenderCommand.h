@@ -38,7 +38,7 @@ public:
         Single,
 		Instanced,
     };
-    RenderCommand(Mesh * mesh,Material * material, void * obj, RenderFlag::RenderStage renderStage, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
+    RenderCommand(Mesh * mesh,Material * material, void * obj, RenderFlag::RenderStageType renderStageType, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
     void render();
 
     RenderBatchType batchType() const;

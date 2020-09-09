@@ -13,6 +13,7 @@ LabelNew::LabelNew():
 	m_material = new Material();
     m_material = Material::createFromTemplate("Text");
     m_material->setVar("color",getUniformColor());
+    m_material->setRenderStage(RenderFlag::RenderStage::GUI);
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
@@ -110,16 +111,16 @@ void LabelNew::genMesh()
     m_mesh->finish();
 }
 
-void LabelNew::submitDrawCmd(RenderFlag::RenderStage passType)
+void LabelNew::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
 	    //m_material->setVar("color", getUniformColor());
 	    m_material->setTex("SpriteTexture",m_atlas->texture());
-	    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
+	    RenderCommand command(m_mesh,m_material,this, requirementType);
 	    setUpTransFormation(command.m_transInfo);
 	    command.setZorder(m_globalPiority);
-	    Renderer::shared()->addRenderCommand(command);
+	    queues->addRenderCommand(command, requirementArg);
     }
 }
 

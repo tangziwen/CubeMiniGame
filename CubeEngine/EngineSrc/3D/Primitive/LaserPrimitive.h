@@ -9,7 +9,7 @@ class LaserPrimitive : public Drawable3D
 {
 public:
 	LaserPrimitive(vec3 begin, vec3 end, float width, bool isOriginInStart);
-	virtual void submitDrawCmd(RenderFlag::RenderStage stage);
+	void submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg) override;
 	void initBuffer();
 private:
 	void init();

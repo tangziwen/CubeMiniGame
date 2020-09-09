@@ -18,7 +18,7 @@ public:
     Font *getFont() const;
     void setFont(Font *font);
     void genMesh();
-    virtual void submitDrawCmd(RenderFlag::RenderStage passType);
+    void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg) override;
     void initAtlas();
 private:
     GlyphAtlas * m_atlas;
