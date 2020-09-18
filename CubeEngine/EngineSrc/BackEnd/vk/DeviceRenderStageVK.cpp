@@ -11,6 +11,7 @@ namespace tzw
 {
     DeviceBufferVK * DeviceRenderStageVK::m_quadVertexBuffer = nullptr;
     DeviceBufferVK * DeviceRenderStageVK::m_quadIndexBuffer = nullptr;
+    Mesh * DeviceRenderStageVK::m_sphere = nullptr;
 	DeviceRenderStageVK::DeviceRenderStageVK(DeviceRenderPassVK* renderPass, DeviceFrameBufferVK* frameBuffer)
 		:m_renderPass(renderPass),m_frameBuffer(frameBuffer),m_singlePipeline(nullptr)
 	{
@@ -200,7 +201,7 @@ namespace tzw
         }
 	}
 
-    void DeviceRenderStageVK::drawFullScreenQuad()
+    void DeviceRenderStageVK::drawScreenQuad()
     {
         if(!m_quadIndexBuffer && !m_quadVertexBuffer)
         {
@@ -211,6 +212,22 @@ namespace tzw
         vkCmdBindVertexBuffers(m_command, 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(m_command, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
         vkCmdDrawIndexed(m_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
+    }
+
+    void DeviceRenderStageVK::drawSphere()
+    {
+        if(!m_sphere)
+        {
+            initSphere();
+        }
+        auto sphereMesh = m_sphere;
+        auto vbo = static_cast<DeviceBufferVK *>(sphereMesh->getArrayBuf()->bufferId());
+        auto ibo = static_cast<DeviceBufferVK *>(sphereMesh->getIndexBuf()->bufferId());
+        VkBuffer vertexBuffers[] = {vbo->getBuffer()};
+        VkDeviceSize offsets[] = {0};
+        vkCmdBindVertexBuffers(m_command, 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(m_command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdDrawIndexed(m_command, static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
     }
 
     VkCommandBuffer DeviceRenderStageVK::getCommand()
@@ -272,6 +289,58 @@ namespace tzw
 
         ibuffer->allocate(indices, sizeof(indices));
         m_quadIndexBuffer = static_cast<DeviceBufferVK *>(ibuffer);
+    }
+	static vec3 pointOnSurface(float u, float v)
+	{
+        float m_radius = 1.0f;
+		return vec3(cos(u) * sin(v) * m_radius, cos(v) * m_radius, sin(u) * sin(v) * m_radius);
+	}
+    void DeviceRenderStageVK::initSphere()
+    {
+
+		m_sphere = new Mesh();
+		float PI = 3.1416;
+		float startU=0;
+		float startV=0;
+		float endU=PI*2;
+		float endV=PI;
+		float stepU=(endU-startU)/24; // step size between U-points on the grid
+		float stepV=(endV-startV)/24; // step size between V-points on the grid
+		for(int i=0;i<24;i++){ // U-points
+			for(int j=0;j<24;j++){ // V-points
+				float u=i*stepU+startU;
+					float v=j*stepV+startV;
+					float un=(i+1==24) ? endU : (i+1)*stepU+startU;
+					float vn=(j+1==24) ? endV : (j+1)*stepV+startV;
+					// Find the four points of the grid
+					// square by evaluating the parametric
+					// surface function
+					vec3 p0=pointOnSurface(u, v);
+					vec3 p1=pointOnSurface(u, vn);
+					vec3 p2=pointOnSurface(un, v);
+					vec3 p3=pointOnSurface(un, vn);
+					// NOTE: For spheres, the normal is just the normalized
+					// version of each vertex point; this generally won't be the case for
+					// other parametric surfaces.
+					// Output the first triangle of this grid square
+						
+					m_sphere->addVertex(VertexData(p0, p0.normalized(), vec2(u, 1.0 - v)));
+					m_sphere->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
+					m_sphere->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+
+
+					m_sphere->addVertex(VertexData(p3, p3.normalized(), vec2(un, 1.0 - vn)));
+					m_sphere->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
+					m_sphere->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+					m_sphere->addIndex(m_sphere->getIndicesSize());
+			}
+		}
+		m_sphere->finish();
     }
 
     void DeviceRenderStageVK::fetchCommand()

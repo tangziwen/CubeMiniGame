@@ -101,6 +101,10 @@ namespace tzw
         writeSet.pBufferInfo = &bufferInfo;
         vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
     }
+    void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceItemBuffer * itemBuff)
+    {
+        updateDescriptorByBinding(binding, VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer(), itemBuff->m_offset, itemBuff->m_size);
+    }
     VkDescriptorSet DeviceDescriptorVK::getDescSet()
     {
         return m_descriptorSet;

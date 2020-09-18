@@ -19,7 +19,8 @@ public:
 	void prepare(vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0));
 	void finish();
 	void draw(std::vector<RenderCommand> & cmdList);
-	void drawFullScreenQuad();
+	void drawScreenQuad();
+	void drawSphere();
 	VkCommandBuffer getCommand();
 	void createSinglePipeline(Material * material);
 	DevicePipelineVK * getSinglePipeline();
@@ -27,6 +28,7 @@ public:
 	void bindSinglePipelineDescriptor(DeviceDescriptorVK * extraItemDescriptor);
 private:
 	void initFullScreenQuad();
+	void initSphere();
 	void fetchCommand();
 	DeviceRenderPassVK * m_renderPass;
 	DeviceFrameBufferVK * m_frameBuffer;
@@ -36,6 +38,7 @@ private:
 	std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     static DeviceBufferVK * m_quadVertexBuffer;
     static DeviceBufferVK * m_quadIndexBuffer;
+	static Mesh * m_sphere;
 };
 };
 

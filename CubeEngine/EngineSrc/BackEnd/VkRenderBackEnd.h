@@ -120,7 +120,9 @@ public:
     VkCommandBuffer getGeneralCommandBuffer();
     void clearCommandBuffer();
     std::unordered_map<Material *, DevicePipelineVK *> & getPipelinePool();
+    void getStageAndAcessMaskFromLayOut(VkImageLayout layout, VkPipelineStageFlags & stage, VkAccessFlags & access);
     void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset, size_t bufferRange);
+    void blitTexture(VkCommandBuffer command, DeviceTextureVK * srdTex, DeviceTextureVK * dstTex, vec2 size, VkImageLayout srcLayout, VkImageLayout dstLayout);
 private:
     
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
@@ -254,9 +256,9 @@ private:
     DeviceRenderStageVK * m_fogStage;
     DeviceRenderStageVK * m_transparentStage;
     DeviceRenderStageVK * m_thumbNailRenderStage;
-
-    DevicePipelineVK * m_dirLightingPassPiepeline;
-    DevicePipelineVK * m_skyPassPipeLine;
+    DeviceRenderStageVK * m_textureToScreenRenderStage[2];
+    //DevicePipelineVK * m_dirLightingPassPiepeline;
+    //DevicePipelineVK * m_skyPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;
     std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     DeviceTextureVK * m_imguiTextureFont;
