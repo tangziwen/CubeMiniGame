@@ -21,6 +21,7 @@
 #include "Mesh/Mesh.h"
 #include "Mesh/InstancedMesh.h"
 
+#include "Scene/SceneCuller.h"
 namespace tzw {
 Renderer * Renderer::m_instance = nullptr;
 Renderer::Renderer(): m_quad(nullptr), m_dirLightProgram(nullptr), m_postEffect(nullptr), m_blurVEffect(nullptr),
@@ -68,9 +69,11 @@ std::vector<FrameBuffer *> autoExposureList;
 void Renderer::renderAll()
 {
 	//collectPrimitives();
+	SceneCuller::shared()->collectPrimitives();
+	auto renderQueues = SceneCuller::shared()->getRenderQueues();
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	handleThumbNail();
-	Engine::shared()->setDrawCallCount(int(m_transparentCommandList.size() + m_CommonCommand.size() + m_GUICommandList.size()));
+	Engine::shared()->setDrawCallCount(int(renderQueues->getTransparentList().size() + renderQueues->getCommonList().size() + renderQueues->getGUICommandList().size()));
 	if(m_enable3DRender)
 	{
 		shadowPass();
@@ -144,7 +147,7 @@ void Renderer::renderAll()
 	auto gbufferSize = m_gbuffer->getFrameSize();
 	glBlitFramebuffer(0, 0, gbufferSize.x, gbufferSize.y, 0, 0, screenSize.x, screenSize.y,
 	                  GL_DEPTH_BUFFER_BIT, GL_NEAREST);
-	if (!m_transparentCommandList.empty())
+	if (!renderQueues->getTransparentList().empty())
 	{
 		RenderBackEnd::shared()->setDepthTestEnable(true);
 		RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
@@ -153,7 +156,7 @@ void Renderer::renderAll()
 		renderAllTransparent();	
 		RenderBackEnd::shared()->disableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	}
-	if(!m_clearDepthCommandList.empty())
+	if(!renderQueues->getTransparentList().empty())
 	{
 		RenderBackEnd::shared()->setDepthMaskWriteEnable(true);
 		glClear(GL_DEPTH_BUFFER_BIT);
@@ -170,9 +173,9 @@ void Renderer::renderAll()
 
 void Renderer::renderAllCommon()
 {
-	for(auto i = m_CommonCommand.begin();i!=m_CommonCommand.end();++i)
+	RenderQueues * queues = SceneCuller::shared()->getRenderQueues();
+	for(auto& command : queues->getCommonList())
 	{
-		RenderCommand &command = (*i);
 		renderCommon(command);
 	}
 
@@ -180,19 +183,19 @@ void Renderer::renderAllCommon()
 
 void Renderer::renderAllShadow(int index)
 {
+	RenderQueues * queues = SceneCuller::shared()->getRenderQueues();
 	Matrix44 lightViewMatrix = ShadowMap::shared()->getLightViewMatrix();
-	for (auto i = m_shadowCommandList.begin(); i != m_shadowCommandList.end(); ++i)
+	for (auto& command : queues->getShadowList(index))
 	{
-		RenderCommand &command = (*i);
 		renderShadow(command, index, lightViewMatrix);
 	}
 }
 
 void Renderer::renderAllTransparent()
 {
-	for(auto i = m_transparentCommandList.begin();i!=m_transparentCommandList.end();++i)
+	RenderQueues * queues = SceneCuller::shared()->getRenderQueues();
+	for(RenderCommand & command : queues->getTransparentList())
 	{
-		RenderCommand &command = (*i);
 		renderCommon(command);
 	}
 }
@@ -200,9 +203,9 @@ void Renderer::renderAllTransparent()
 
 void Renderer::renderAllClearDepthTransparent()
 {
-	for(auto i = m_clearDepthCommandList.begin();i!=m_clearDepthCommandList.end();++i)
+	RenderQueues * queues = SceneCuller::shared()->getRenderQueues();
+	for(RenderCommand & command : queues->getAfterDepthList())
 	{
-		RenderCommand &command = (*i);
 		renderCommon(command);
 	}
 }
@@ -212,11 +215,12 @@ void Renderer::renderAllGUI()
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::AlphaBlend);
 	RenderBackEnd::shared()->setBlendFactor(RenderFlag::BlendingFactor::SrcAlpha,
 											RenderFlag::BlendingFactor::OneMinusSrcAlpha);
+	RenderQueues * queues = SceneCuller::shared()->getRenderQueues();
 	
 	RenderBackEnd::shared()->enableFunction(RenderFlag::RenderFunction::DepthTest);
-	for(auto iter:m_GUICommandList)
+	for(RenderCommand & command : queues->getGUICommandList())
 	{
-		renderGUI(iter);
+		renderGUI(command);
 	}
 	GUISystem::shared()->renderIMGUI();
 	 
@@ -304,11 +308,8 @@ void Renderer::renderTransparent(RenderCommand & command)
 
 void Renderer::clearCommands()
 {
-	m_CommonCommand.clear();
-	m_GUICommandList.clear();
-	m_transparentCommandList.clear();
-	m_shadowCommandList.clear();
-	m_clearDepthCommandList.clear();
+	RenderQueues * queues = SceneCuller::shared()->getRenderQueues();
+	queues->clearCommands();
 }
 
 void Renderer::render(const RenderCommand &command)
@@ -709,34 +710,9 @@ void Renderer::setVertexAttribute(ShaderProgram* program)
 	}
 }
 
-std::vector<RenderCommand>& Renderer::getShadowList()
-{
-	return m_shadowCommandList;
-}
-
-std::vector<RenderCommand>& Renderer::getCommonList()
-{
-	return m_CommonCommand;
-}
-
-std::vector<RenderCommand>& Renderer::getGUICommandList()
-{
-	return m_GUICommandList;
-}
-
-std::vector<RenderCommand>& Renderer::getTransparentList()
-{
-	return m_transparentCommandList;
-}
-
 std::vector<ThumbNail*>& Renderer::getThumbNailList()
 {
 	return m_thumbNailList;
-}
-
-void Renderer::clearShadowList()
-{
-	m_shadowCommandList;
 }
 
 void Renderer::geometryPass()
@@ -778,7 +754,6 @@ void Renderer::shadowPass()
 	{
 		for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
 		{
-			m_shadowCommandList.clear();
 			auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 			shadowBuffer->BindForWriting();
 			glClear(GL_DEPTH_BUFFER_BIT);
@@ -792,7 +767,6 @@ void Renderer::shadowPass()
 	glDepthMask (true);
 	for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++) 
 	{
-		m_shadowCommandList.clear();
 		auto shadowBuffer = ShadowMap::shared()->getFBO(i);
 		shadowBuffer->BindForWriting();
 		glClear(GL_DEPTH_BUFFER_BIT);

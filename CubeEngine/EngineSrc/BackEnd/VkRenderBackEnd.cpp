@@ -59,14 +59,7 @@ static void initVk()
 }
 
 
-struct ItemUniform
-{
-    alignas(16) Matrix44 wvp;
-    alignas(16) Matrix44 wv;
-    alignas(16) Matrix44 world;
-    alignas(16) Matrix44 view;
-    alignas(16) Matrix44 projection;
-};
+
 
 static FrameBufferVK offScreenFrameBuf;
 std::vector<const char*> getRequiredExtensions() {
@@ -172,7 +165,8 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 }
 	VKRenderBackEnd::VKRenderBackEnd()
 	{
-	m_imguiPipeline = nullptr;
+	    m_imguiPipeline = nullptr;
+        m_renderPath = new RenderPath();
 	}
     void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
     {
@@ -198,49 +192,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         writeSet.descriptorCount = 1;
         writeSet.pBufferInfo = &bufferInfo;
         count += 1;
-        if(!shader->findLocationInfo("t_ObjectUniform"))
-        {
-            abort();
-        }
 		vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
-
-        std::vector<VkDescriptorImageInfo> imageInfoList;
-        for(auto &i : varList)
-        {
-            TechniqueVar* var = &i.second;
-            if(!shader->hasLocationInfo(i.first)){continue;}
-            switch(var->type)
-            {
-            
-                case TechniqueVar::Type::Texture:
-                {
-                    auto tex = var->data.rawData.texInfo.tex;
-					if(!tex)
-					{
-                        printf("abort%s %p\n", i.first.c_str(), mat);
-						abort();
-					}
-                    auto locationInfo = shader->getLocationInfo(i.first);
-                    if(locationInfo.set != 1) continue;
-                    VkDescriptorImageInfo imageInfo{};
-                    imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-                    imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
-                    imageInfo.sampler = static_cast<DeviceTextureVK *>(tex->getTextureId())->getSampler();
-                    imageInfoList.emplace_back(imageInfo);
-                    
-                    VkWriteDescriptorSet texWriteSet{};
-                    texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-                    texWriteSet.dstSet = itemDescSet;
-                    texWriteSet.dstBinding = locationInfo.binding;
-                    texWriteSet.dstArrayElement = 0;
-                    texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-                    texWriteSet.descriptorCount = 1;
-                    texWriteSet.pImageInfo = &imageInfo;//(imageInfoList.data() + imageInfoList.size() - 1);
-					vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
-                    count += 1;
-                }
-            }
-        }
         if(count != theSize){
             abort();
         
@@ -491,7 +443,7 @@ VkApplicationInfo appInfo = {};
         SwapChainCreateInfo.preTransform     = VK_SURFACE_TRANSFORM_IDENTITY_BIT_KHR;
         SwapChainCreateInfo.imageArrayLayers = 1;
         SwapChainCreateInfo.imageSharingMode = VK_SHARING_MODE_EXCLUSIVE;
-        SwapChainCreateInfo.presentMode      = VK_PRESENT_MODE_FIFO_KHR;
+        SwapChainCreateInfo.presentMode      = VK_PRESENT_MODE_IMMEDIATE_KHR;
         SwapChainCreateInfo.clipped          = true;
         SwapChainCreateInfo.compositeAlpha   = VK_COMPOSITE_ALPHA_OPAQUE_BIT_KHR;
     
@@ -839,12 +791,12 @@ VkApplicationInfo appInfo = {};
 	    Material * matFog = new Material();
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
-        auto fogPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        auto fogPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
         m_fogStage = new DeviceRenderStageVK(fogPass, m_DeferredLightingStage->getFrameBuffer());
-        m_fogPassPipeLine = new DevicePipelineVK(winSize, matFog, m_fogStage->getRenderPass()->getRenderPass(), imguiVertexInput, false, emptyInstancingInput);
+        m_fogStage->createSinglePipeline(matFog);
 
 
-        auto transparentPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        auto transparentPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_transparentStage = new DeviceRenderStageVK(transparentPass, m_DeferredLightingStage->getFrameBuffer());
 
 
@@ -1174,8 +1126,11 @@ VkApplicationInfo appInfo = {};
     void VKRenderBackEnd::createCommandBufferForGeneral(int size)
     {
         m_generalCmdBuff.resize(m_images.size());
+        m_commandBufferIndex.resize(m_images.size());
+
         for(int i = 0;i <m_images.size(); i++)
         {
+            m_commandBufferIndex[i] = 0;
             m_generalCmdBuff[i].resize(size);
             VkCommandBufferAllocateInfo cmdBufAllocInfo = {};
             cmdBufAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -1705,6 +1660,40 @@ void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
     vkFreeCommandBuffers(m_device, m_cmdBufPool, 1, &commandBuffer);
 }
 
+void VKRenderBackEnd::prepareFrame()
+{
+    VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &m_imageIndex);
+    if (imagesInFlight[m_imageIndex] != VK_NULL_HANDLE) {
+        vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
+    }
+    clearCommandBuffer();
+    m_renderPath->prepare();
+}
+
+void VKRenderBackEnd::endFrame()
+{
+}
+
+VkCommandBuffer VKRenderBackEnd::getGeneralCommandBuffer()
+{
+    auto cmd = m_generalCmdBuff[m_imageIndex][m_commandBufferIndex[m_imageIndex]];
+    m_commandBufferIndex[m_imageIndex] += 1;
+    return cmd;
+}
+
+void VKRenderBackEnd::clearCommandBuffer()
+{
+    for(unsigned& commandIndex : m_commandBufferIndex)
+    {
+        commandIndex = 0;
+    }
+}
+
+std::unordered_map<Material*, DevicePipelineVK*>& VKRenderBackEnd::getPipelinePool()
+{
+    return m_matPipelinePool;
+}
+
 void VKRenderBackEnd::transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags, int baseMipLevel, int levelCount)
 {
    VkCommandBuffer commandBuffer = beginSingleTimeCommands();
@@ -1981,16 +1970,9 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
     void VKRenderBackEnd::RenderScene()
     {
-
+        VkResult res;
         auto screenSize = Engine::shared()->winSize();
-        vkWaitForFences(m_device, 1, &inFlightFences[currentFrame], VK_TRUE, UINT64_MAX);
-        unsigned ImageIndex = 0;
-    
-        VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &ImageIndex);
-        if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
-        }
-        vkDeviceWaitIdle(m_device);
+        prepareFrame();
         //CPU here
         m_itemBufferPool->reset();
         SceneCuller::shared()->collectPrimitives();
@@ -1998,11 +1980,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         auto & commonList = renderQueues->getCommonList();
         m_fuckingObjList.clear();
 
-        VkCommandBuffer shadowCommand[3] = {m_generalCmdBuff[ImageIndex][10],m_generalCmdBuff[ImageIndex][11],m_generalCmdBuff[ImageIndex][12] };
         for (int i = 0 ; i < 3 ; i++)
         {
             auto & shadowList = renderQueues->getShadowList(i);
-            m_ShadowStage[i]->prepare(shadowCommand[i]);
+            m_ShadowStage[i]->prepare();
             for(auto & command : shadowList)
             {
                 if(command.batchType() != RenderCommand::RenderBatchType::Single){
@@ -2016,26 +1997,27 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 command.m_transInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(i);
 
             }
-            drawObjs_Common(m_matPipelinePool, shadowCommand[i], m_ShadowStage[i], shadowList);
-            m_ShadowStage[i]->finish(shadowCommand[i]);
+            //drawObjs_Common(m_matPipelinePool, shadowCommand[i], m_ShadowStage[i], shadowList);
+            m_ShadowStage[i]->draw(shadowList);
+            m_ShadowStage[i]->finish();
+            m_renderPath->addRenderStage(m_ShadowStage[i]);
         }
 
         //------------deferred g - pass begin-------------
-        VkCommandBuffer deferredCommand = m_generalCmdBuff[ImageIndex][0];
-
-        m_gPassStage->prepare(deferredCommand);
-        drawObjs_Common(m_matPipelinePool,deferredCommand, m_gPassStage, commonList);
-        m_gPassStage->finish(deferredCommand);
+        m_gPassStage->prepare();
+        //drawObjs_Common(m_matPipelinePool,deferredCommand, m_gPassStage, commonList);
+        m_gPassStage->draw(commonList);
+        m_gPassStage->finish();
+        m_renderPath->addRenderStage(m_gPassStage);
 
         //------------deferred g - pass end-----------------
 
         //------------deferred Lighting Pass begin---------------
-        VkCommandBuffer lightPassCmd = m_generalCmdBuff[ImageIndex][1];
         {
 
-            m_DeferredLightingStage->prepare(lightPassCmd);
+            m_DeferredLightingStage->prepare();
             
-            vkCmdBindPipeline(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
+            vkCmdBindPipeline(m_DeferredLightingStage->getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipeline());
             m_dirLightingPassPiepeline->updateUniform();
             Matrix44 lightVPList[3] = {};
             float shadowEnd[3] = {};
@@ -2068,15 +2050,15 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(lightPassCmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(lightPassCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindVertexBuffers(m_DeferredLightingStage->getCommand(), 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(m_DeferredLightingStage->getCommand(), m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
             std::vector<VkDescriptorSet> descriptorSetList = {m_dirLightingPassPiepeline->getMaterialDescriptorSet()->getDescSet()};
-            vkCmdBindDescriptorSets(lightPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(lightPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
+            vkCmdBindDescriptorSets(m_DeferredLightingStage->getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_dirLightingPassPiepeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(m_DeferredLightingStage->getCommand(), static_cast<uint32_t>(6), 1, 0, 0, 0);
             
 
-            vkCmdEndRenderPass(lightPassCmd);
+            vkCmdEndRenderPass(m_DeferredLightingStage->getCommand());
 
 
             //我们要拷贝Gbuffer里的深度到LightPass的深度里，好jb麻烦，首先要把Gbuffer的depth layout从shader_read转成transfer_src，把lightPass的depth从depth_attachment转
@@ -2095,7 +2077,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
-            vkCmdPipelineBarrier(lightPassCmd,
+            vkCmdPipelineBarrier(m_DeferredLightingStage->getCommand(),
                 VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
                 0, nullptr,
                 0, nullptr,
@@ -2114,7 +2096,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-            vkCmdPipelineBarrier(lightPassCmd,
+            vkCmdPipelineBarrier(m_DeferredLightingStage->getCommand(),
                 VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0,
                 0, nullptr,
                 0, nullptr,
@@ -2136,7 +2118,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             blit.dstSubresource.baseArrayLayer = 0;
             blit.dstSubresource.layerCount = 1;
 
-            vkCmdBlitImage(lightPassCmd, m_gPassStage->getFrameBuffer()->getDepthMap()->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
+            vkCmdBlitImage(m_DeferredLightingStage->getCommand(), m_gPassStage->getFrameBuffer()->getDepthMap()->getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, 
                 m_DeferredLightingStage->getFrameBuffer()->getDepthMap()->getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &blit, VK_FILTER_NEAREST);
             
  
@@ -2153,7 +2135,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
             barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-            vkCmdPipelineBarrier(lightPassCmd,
+            vkCmdPipelineBarrier(m_DeferredLightingStage->getCommand(),
                 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0,
                 0, nullptr,
                 0, nullptr,
@@ -2172,35 +2154,37 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             barrier.newLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
             barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
             barrier.dstAccessMask = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-            vkCmdPipelineBarrier(lightPassCmd,
+            vkCmdPipelineBarrier(m_DeferredLightingStage->getCommand(),
                 VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT, 0,
                 0, nullptr,
                 0, nullptr,
                 1, &barrier);
             
-            int res = vkEndCommandBuffer(lightPassCmd);
+            int res = vkEndCommandBuffer(m_DeferredLightingStage->getCommand());
             CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
             //m_DeferredLightingStage->finish(lightPassCmd);
+            m_renderPath->addRenderStage(m_DeferredLightingStage);
         }
         //------------deferred Lighting Pass end---------------
 
         //------------transparent pass begin ------------------
-        VkCommandBuffer transparentCmd = m_generalCmdBuff[ImageIndex][2];
-        m_transparentStage->prepare(transparentCmd);
+        //VkCommandBuffer transparentCmd = m_generalCmdBuff[m_imageIndex][2];
+        m_transparentStage->prepare();
         auto transList = renderQueues->getTransparentList();
-        drawObjs_Common(m_matPipelinePool, transparentCmd, m_transparentStage, transList);
-        m_transparentStage->finish(transparentCmd);
+        //drawObjs_Common(m_matPipelinePool, transparentCmd, m_transparentStage, transList);
+        m_transparentStage->draw(transList);
+        m_transparentStage->finish();
+        m_renderPath->addRenderStage(m_transparentStage);
 
         //------------transparent pass end ------------------
 
         //------------Sky Pass begin---------------
-        VkCommandBuffer skyCmd = m_generalCmdBuff[ImageIndex][3];
-        //------------Sky Pass end---------------
+        
         {
 
-            m_skyStage->prepare(skyCmd);
+            m_skyStage->prepare();
 
-            vkCmdBindPipeline(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipeline());
+            vkCmdBindPipeline(m_skyStage->getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipeline());
             m_skyPassPipeLine->updateUniform();
             m_skyPassPipeLine->collcetItemWiseDescritporSet();
             size_t m_itemBufferOffset = m_itemBufferPool->giveMeBuffer(sizeof(Matrix44));
@@ -2224,46 +2208,37 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             auto ibo = static_cast<DeviceBufferVK *>(sphereMesh->getIndexBuf()->bufferId());
             VkBuffer vertexBuffers[] = {vbo->getBuffer()};
             VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(skyCmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(skyCmd, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+            vkCmdBindVertexBuffers(m_skyStage->getCommand(), 0, 1, vertexBuffers, offsets);
+            vkCmdBindIndexBuffer(m_skyStage->getCommand(), ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
             std::vector<VkDescriptorSet> descriptorSetList = {m_skyPassPipeLine->getMaterialDescriptorSet()->getDescSet(), itemDescriptorSet->getDescSet(),};
-            vkCmdBindDescriptorSets(skyCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(skyCmd, static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
+            vkCmdBindDescriptorSets(m_skyStage->getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_skyPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+            vkCmdDrawIndexed(m_skyStage->getCommand(), static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
 
-            m_skyStage->finish(skyCmd);
+            m_skyStage->finish();
+            m_renderPath->addRenderStage(m_skyStage);
         }
+        //------------Sky Pass end---------------
 
-
-        VkCommandBuffer fogPassCmd = m_generalCmdBuff[ImageIndex][4];
         {
-
-            m_fogStage->prepare(fogPassCmd);
-            
-            vkCmdBindPipeline(fogPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_fogPassPipeLine->getPipeline());
-            m_fogPassPipeLine->updateUniform();
-            m_fogPassPipeLine->collcetItemWiseDescritporSet();
-
-
+            m_fogStage->prepare();
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                m_fogPassPipeLine->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+                m_fogStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
             VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(fogPassCmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(fogPassCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
-            std::vector<VkDescriptorSet> descriptorSetList = {m_fogPassPipeLine->getMaterialDescriptorSet()->getDescSet()};
-            vkCmdBindDescriptorSets(fogPassCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_fogPassPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(fogPassCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
-            m_fogStage->finish(fogPassCmd);
+            m_fogStage->bindSinglePipelineDescriptor();
+            m_fogStage->drawFullScreenQuad();
+            m_fogStage->finish();
+            m_renderPath->addRenderStage(m_fogStage);
         }
+
         //------------Texture To Screen Pass begin---------------
-        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[ImageIndex][5];
+        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[m_imageIndex][20];
         {
             //TAssert(this == nullptr, "hehehehe %d %d", 100 , 500);
             VkCommandBufferBeginInfo beginInfoDeffered = {};
@@ -2285,7 +2260,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
             res = vkBeginCommandBuffer(textureToScreenCmd, &beginInfoDeffered);
             CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-            renderPassInfoDeferred.framebuffer = m_fbs[ImageIndex];
+            renderPassInfoDeferred.framebuffer = m_fbs[m_imageIndex];
             vkCmdBeginRenderPass(textureToScreenCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
 
@@ -2312,7 +2287,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
         }
         //------------Texture To Screen Pass end---------------
-        VkCommandBuffer command = m_generalCmdBuff[ImageIndex][6];
+        VkCommandBuffer command = m_generalCmdBuff[m_imageIndex][21];
 		
 
         
@@ -2346,9 +2321,9 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         renderPassInfo.clearValueCount = clearValues.size();
         renderPassInfo.pClearValues = clearValues.data();
 
-        res = vkBeginCommandBuffer(command, &beginInfo);
+         res = vkBeginCommandBuffer(command, &beginInfo);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfo.framebuffer = m_fbs[ImageIndex];
+        renderPassInfo.framebuffer = m_fbs[m_imageIndex];
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
         //drawObjs_Common(command, m_renderPass, commonList);
         drawObjs(command, renderQueues->getGUICommandList());
@@ -2490,7 +2465,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         renderQueues->clearCommands();
 
         bool isAnythumbnail = false;
-        VkCommandBuffer thumbNailCommand = m_generalCmdBuff[ImageIndex][7];
+        //VkCommandBuffer thumbNailCommand = m_generalCmdBuff[m_imageIndex][7];
         auto & thumbNailList = Renderer::shared()->getThumbNailList();
 	    for(auto thumbnail : thumbNailList)
 	    {
@@ -2503,29 +2478,34 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 std::vector<RenderCommand> thumbnailCommandList;
                 thumbnail->getSnapShotCommand(thumbnailCommandList);
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
-                m_thumbNailRenderStage->prepare(thumbNailCommand, vec4(0.5, 0.5, 0.5, 1.0));
-                drawObjs_Common(m_thumbNailPipelinePool, thumbNailCommand, m_thumbNailRenderStage, thumbnailCommandList);
-                m_thumbNailRenderStage->finish(thumbNailCommand);
+                m_thumbNailRenderStage->prepare(vec4(0.5, 0.5, 0.5, 1.0));
+                m_thumbNailRenderStage->draw(thumbnailCommandList);
+                //drawObjs_Common(m_thumbNailPipelinePool, thumbNailCommand, m_thumbNailRenderStage, thumbnailCommandList);
+                m_thumbNailRenderStage->finish();
                 isAnythumbnail = true;
 			    thumbnail->setIsDone(true);
+                m_renderPath->addRenderStage(m_thumbNailRenderStage);
                 break;
 		    }
 	    }
 
         //updateUniformBuffer(ImageIndex);
-        if (imagesInFlight[ImageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(m_device, 1, &imagesInFlight[ImageIndex], VK_TRUE, UINT64_MAX);
+        if (imagesInFlight[m_imageIndex] != VK_NULL_HANDLE) {
+            vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
         }
-        imagesInFlight[ImageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {shadowCommand[0], shadowCommand[1], shadowCommand[2], deferredCommand, lightPassCmd, skyCmd, transparentCmd, fogPassCmd, textureToScreenCmd, command};
-        if(isAnythumbnail)
+        imagesInFlight[m_imageIndex] = inFlightFences[currentFrame];
+        std::vector<VkCommandBuffer> commandList = {textureToScreenCmd, command};
+        for(auto stage : m_renderPath->getStages())
         {
-            commandList.emplace_back(thumbNailCommand);
+           commandList.emplace_back( static_cast<DeviceRenderStageVK *>(stage)->getCommand());
         }
+        commandList.emplace_back(textureToScreenCmd);
+        commandList.emplace_back(command);
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
         submitInfo.commandBufferCount   = commandList.size();
         submitInfo.pCommandBuffers      = commandList.data();
+
 
         VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
         VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
@@ -2547,7 +2527,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
         presentInfo.swapchainCount     = 1;
         presentInfo.pSwapchains        = &m_swapChainKHR;
-        presentInfo.pImageIndices      = &ImageIndex;
+        presentInfo.pImageIndices      = &m_imageIndex;
         presentInfo.waitSemaphoreCount = 1;
         presentInfo.pWaitSemaphores = signalSemaphores;
     

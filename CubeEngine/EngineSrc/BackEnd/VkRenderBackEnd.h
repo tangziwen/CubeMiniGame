@@ -7,8 +7,7 @@
 #define VK_USE_PLATFORM_WIN32_KHR
 #include "vulkan/vulkan.h"
 #include "vulkan/vk_sdk_platform.h"
-
-
+#include "Rendering/RenderPath.h"
 
 #include <vector>
 #include "RenderBackEndBase.h"
@@ -55,7 +54,14 @@ struct FrameBufferAttachmentVK {
 	VkImageView view;
 	VkFormat format;
 };
-
+struct ItemUniform
+{
+    alignas(16) Matrix44 wvp;
+    alignas(16) Matrix44 wv;
+    alignas(16) Matrix44 world;
+    alignas(16) Matrix44 view;
+    alignas(16) Matrix44 projection;
+};
 struct FrameBufferVK{
 	int32_t width, height;
 	VkFramebuffer frameBuffer;
@@ -109,8 +115,14 @@ public:
 
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-private:
+	virtual void prepareFrame();
+	virtual void endFrame();
+    VkCommandBuffer getGeneralCommandBuffer();
+    void clearCommandBuffer();
+    std::unordered_map<Material *, DevicePipelineVK *> & getPipelinePool();
     void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset, size_t bufferRange);
+private:
+    
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
     void CreateInstance();
     void VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices);
@@ -245,11 +257,13 @@ private:
 
     DevicePipelineVK * m_dirLightingPassPiepeline;
     DevicePipelineVK * m_skyPassPipeLine;
-    DevicePipelineVK * m_fogPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;
     std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     DeviceTextureVK * m_imguiTextureFont;
     Mesh * m_sphere;
+    unsigned m_imageIndex;
+    std::vector<unsigned> m_commandBufferIndex;
+    RenderPath * m_renderPath;
 };
 
 } // namespace tzw

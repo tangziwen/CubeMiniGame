@@ -284,10 +284,7 @@ void Engine::update(float delta)
 		VKRenderBackEnd::shared()->RenderScene();
 	}
 	AudioSystem::shared()->update();
-	
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
-
-	
 }
 
 void Engine::onStart()

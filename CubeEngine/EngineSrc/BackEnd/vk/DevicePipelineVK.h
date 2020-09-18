@@ -6,6 +6,7 @@
 #include <vector>
 #include <functional>
 #include "DeviceDescriptorVK.h"
+#include "Rendering/RenderFlag.h"
 namespace tzw
 {
 class Material;
@@ -59,6 +60,7 @@ private:
 	DeviceShaderVK * m_shader;
 	DeviceVertexInput m_vertexInput;
 	VkDescriptorPool m_materialDescriptorPool;
+	VkBlendFactor getBlendFactor(RenderFlag::BlendingFactor factor);
 };
 
 

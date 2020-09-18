@@ -62,6 +62,8 @@ public:
     DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat format, unsigned int loadingFlag) override;
     DeviceShader * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
+	void prepareFrame() override;
+	void endFrame() override;
 private:
 	bool m_isCheckGL;
     static RenderBackEnd * m_instance;

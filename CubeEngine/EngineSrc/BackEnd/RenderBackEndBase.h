@@ -16,5 +16,7 @@ public:
 	virtual DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat format, unsigned int loadingFlag)= 0;
 	virtual DeviceShader * createShader_imp() = 0;
 	virtual DeviceBuffer * createBuffer_imp() = 0;
+	virtual void prepareFrame() = 0;
+	virtual void endFrame() = 0;
 }; // namespace tzw
 }

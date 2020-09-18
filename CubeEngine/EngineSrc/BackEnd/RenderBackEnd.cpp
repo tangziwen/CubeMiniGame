@@ -103,6 +103,14 @@ DeviceBuffer* RenderBackEnd::createBuffer_imp()
 	return new DeviceBufferGL();
 }
 
+void RenderBackEnd::prepareFrame()
+{
+}
+
+void RenderBackEnd::endFrame()
+{
+}
+
 RenderBackEnd *RenderBackEnd::shared()
 {
 	if(!m_instance)

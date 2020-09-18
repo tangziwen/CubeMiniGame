@@ -51,12 +51,7 @@ public:
 	void updateThumbNail(ThumbNail * thumb);
 	void setVertexAttribute(ShaderProgram * program);
 
-	std::vector<RenderCommand> & getShadowList();
-	std::vector<RenderCommand> & getCommonList();
-	std::vector<RenderCommand> & getGUICommandList();
-	std::vector<RenderCommand> & getTransparentList();
 	std::vector<ThumbNail *> & getThumbNailList();
-	void clearShadowList();
 private:
     void initQuad();
 	void initMaterials();
@@ -109,11 +104,6 @@ private:
     bool m_enable3DRender;
     bool m_enableGUIRender;
 	bool m_isNeedSortGUI;
-    std::vector<RenderCommand> m_GUICommandList;
-    std::vector<RenderCommand> m_CommonCommand;
-	std::vector<RenderCommand> m_transparentCommandList;
-	std::vector<RenderCommand> m_shadowCommandList;
-	std::vector<RenderCommand> m_clearDepthCommandList;
     static Renderer * m_instance;
     FrameBuffer * m_gbuffer;
 	FrameBuffer * m_offScreenBuffer;

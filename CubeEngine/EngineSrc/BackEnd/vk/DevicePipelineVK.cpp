@@ -174,9 +174,10 @@ DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, VkRenderPas
     {
         VkPipelineColorBlendAttachmentState blendAttachState = {};
         blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        blendAttachState.srcColorBlendFactor=VK_BLEND_FACTOR_SRC_ALPHA;
-        blendAttachState.dstColorBlendFactor=VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        blendAttachState.srcColorBlendFactor= getBlendFactor(m_mat->getFactorSrc());
+        blendAttachState.dstColorBlendFactor=getBlendFactor(m_mat->getFactorDst());
         blendAttachState.colorBlendOp=VK_BLEND_OP_ADD;
+
         blendAttachState.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;
         blendAttachState.dstAlphaBlendFactor=VK_BLEND_FACTOR_ZERO;
         blendAttachState.alphaBlendOp=VK_BLEND_OP_ADD;
@@ -664,6 +665,32 @@ void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertex
     attributeDescriptions[2].location = 2;
     attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
     attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
+}
+
+VkBlendFactor DevicePipelineVK::getBlendFactor(RenderFlag::BlendingFactor factor)
+{
+    switch (factor)
+    {
+    case tzw::RenderFlag::BlendingFactor::One:
+        return VK_BLEND_FACTOR_ONE;
+        break;
+    case tzw::RenderFlag::BlendingFactor::Zero:
+        return VK_BLEND_FACTOR_ZERO;
+        break;
+    case tzw::RenderFlag::BlendingFactor::SrcAlpha:
+        return VK_BLEND_FACTOR_SRC_ALPHA;
+        break;
+    case tzw::RenderFlag::BlendingFactor::OneMinusSrcAlpha:
+        return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+        break;
+    case tzw::RenderFlag::BlendingFactor::ConstantAlpha:
+        return VK_BLEND_FACTOR_CONSTANT_ALPHA;
+        break;
+    default:
+        return VK_BLEND_FACTOR_ONE;
+        break;
+    }
+    return VK_BLEND_FACTOR_ONE;
 }
 
 void DeviceVertexInput::addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc)

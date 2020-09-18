@@ -66,7 +66,6 @@ void AbstractDevice::update()
         m_isFirstFrame = false;
     }
     // Clear color and depth buffer
-    
     Engine::shared()->update(delta);
 }
 
