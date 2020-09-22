@@ -63,7 +63,7 @@ public:
     DeviceShader * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
 	void prepareFrame() override;
-	void endFrame() override;
+	void endFrame(RenderPath * renderPath) override;
 private:
 	bool m_isCheckGL;
     static RenderBackEnd * m_instance;

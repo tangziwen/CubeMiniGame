@@ -20,6 +20,9 @@ public:
 	void setAlignment(size_t newAlignment);
 	VkDeviceMemory getMemory();
 	void setUsePool(bool isUsed) override;
+	void map();
+	void unmap();
+	void copyFrom( void * ptr, size_t size, size_t memOffset = 0);
 private:
 	void allocateEmptySingleImp(size_t ammount);
 	void allocateEmptyPoolImp(size_t ammount);
@@ -29,6 +32,7 @@ private:
 	size_t m_alignment;
 	size_t m_offset;
 	bool m_isUsePool;
+	void * m_tmpData;
 	BufferInfo m_bufferInfo;// only used for pool allocation
 };
 };

@@ -115,8 +115,8 @@ public:
 
 	VkCommandBuffer beginSingleTimeCommands();
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
-	virtual void prepareFrame();
-	virtual void endFrame();
+	void prepareFrame() override;
+	void endFrame(RenderPath * renderPath) override;
     VkCommandBuffer getGeneralCommandBuffer();
     void clearCommandBuffer();
     std::unordered_map<Material *, DevicePipelineVK *> & getPipelinePool();

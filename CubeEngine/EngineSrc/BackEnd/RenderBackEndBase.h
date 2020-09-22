@@ -8,6 +8,7 @@ namespace tzw {
 class DeviceTexture;
 class DeviceShader;
 class DeviceBuffer;
+class RenderPath;
 class RenderBackEndBase
 {
 public:
@@ -17,6 +18,6 @@ public:
 	virtual DeviceShader * createShader_imp() = 0;
 	virtual DeviceBuffer * createBuffer_imp() = 0;
 	virtual void prepareFrame() = 0;
-	virtual void endFrame() = 0;
+	virtual void endFrame(RenderPath * renderPath) = 0;
 }; // namespace tzw
 }

@@ -107,7 +107,7 @@ void RenderBackEnd::prepareFrame()
 {
 }
 
-void RenderBackEnd::endFrame()
+void RenderBackEnd::endFrame(RenderPath * renderPath)
 {
 }
 

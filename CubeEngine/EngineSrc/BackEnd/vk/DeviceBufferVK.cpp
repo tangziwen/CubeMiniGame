@@ -191,5 +191,38 @@ namespace tzw
     {
         m_isUsePool = isUsed;
     }
+
+    void DeviceBufferVK::map()
+    {
+        auto device = VKRenderBackEnd::shared()->getDevice();
+        if(!m_isUsePool)
+        {
+            vkMapMemory(device, m_memory, m_offset, m_bufferSize, 0, &m_tmpData);
+        }
+        else
+        {
+            auto memoryPool = VKRenderBackEnd::shared()->getMemoryPool();
+            memoryPool->map(m_bufferInfo, &m_tmpData);
+        }
+    }
+
+    void DeviceBufferVK::unmap()
+    {
+        auto device = VKRenderBackEnd::shared()->getDevice();
+        if(!m_isUsePool)
+        {
+            vkUnmapMemory(device, m_memory);
+        }
+        else
+        {
+            auto memoryPool = VKRenderBackEnd::shared()->getMemoryPool();
+            memoryPool->unmap(m_bufferInfo);
+        }
+    }
+
+    void DeviceBufferVK::copyFrom(void* ptr, size_t size, size_t memOffset)
+    {
+        memcpy((char *)m_tmpData + memOffset, ptr, size);
+    }
  
 }

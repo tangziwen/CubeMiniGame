@@ -927,7 +927,7 @@ VkApplicationInfo appInfo = {};
 
         for(int i = 0 ; i < 2; i++)
         {
-            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
             auto frameBuffer = new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             m_guiStage[i] = new DeviceRenderStageVK(pass, frameBuffer);
         }
@@ -1802,8 +1802,54 @@ void VKRenderBackEnd::prepareFrame()
     m_renderPath->prepare();
 }
 
-void VKRenderBackEnd::endFrame()
+void VKRenderBackEnd::endFrame(RenderPath * renderPath)
 {
+    std::vector<VkCommandBuffer> commandList = {};
+    for(auto stage : renderPath->getStages())
+    {
+        commandList.emplace_back( static_cast<DeviceRenderStageVK *>(stage)->getCommand());
+    }
+
+
+    if (imagesInFlight[m_imageIndex] != VK_NULL_HANDLE) {
+        vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
+    }
+    imagesInFlight[m_imageIndex] = inFlightFences[currentFrame];
+
+
+    VkSubmitInfo submitInfo = {};
+    submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
+    submitInfo.commandBufferCount   = commandList.size();
+    submitInfo.pCommandBuffers      = commandList.data();
+
+
+    VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
+    VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
+    submitInfo.waitSemaphoreCount = 1;
+    submitInfo.pWaitSemaphores = waitSemaphores;
+    submitInfo.pWaitDstStageMask = waitStages;
+
+
+    VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
+    submitInfo.signalSemaphoreCount = 1;
+    submitInfo.pSignalSemaphores = signalSemaphores;
+
+    vkResetFences(m_device, 1, &inFlightFences[currentFrame]);
+    
+    VkResult res = vkQueueSubmit(m_queue, 1, &submitInfo, inFlightFences[currentFrame]);    
+    CHECK_VULKAN_ERROR("vkQueueSubmit error %d\n", res);
+    
+    VkPresentInfoKHR presentInfo = {};
+    presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
+    presentInfo.swapchainCount     = 1;
+    presentInfo.pSwapchains        = &m_swapChainKHR;
+    presentInfo.pImageIndices      = &m_imageIndex;
+    presentInfo.waitSemaphoreCount = 1;
+    presentInfo.pWaitSemaphores = signalSemaphores;
+    
+    res = vkQueuePresentKHR(m_queue, &presentInfo);    
+    CHECK_VULKAN_ERROR("vkQueuePresentKHR error %d\n" , res);
+    currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
 VkCommandBuffer VKRenderBackEnd::getGeneralCommandBuffer()
@@ -2285,37 +2331,13 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         m_textureToScreenRenderStage[m_imageIndex]->finish();
         m_renderPath->addRenderStage(m_textureToScreenRenderStage[m_imageIndex]);
         //------------Texture To Screen Pass end---------------
-
-
-        VkCommandBuffer command = m_generalCmdBuff[m_imageIndex][21];
 		
+
+        //------------GUI Pass begin---------------
         auto drawSize = renderQueues->getGUICommandList().size();
-
-        VkCommandBufferBeginInfo beginInfo = {};
-        beginInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfo.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-
-
-		std::array<VkClearValue, 2> clearValues{};
-		clearValues[0].color = {0.0f, 0.0f, 0.0f, 1.0f};
-		clearValues[1].depthStencil = {1.0f, 0};
-	
-        
-        VkRenderPassBeginInfo renderPassInfo = {};
-        renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfo.renderPass = m_renderPass;   
-        renderPassInfo.renderArea.offset.x = 0;
-        renderPassInfo.renderArea.offset.y = 0;
-        renderPassInfo.renderArea.extent.width = screenSize.x;
-        renderPassInfo.renderArea.extent.height = screenSize.y;
-        renderPassInfo.clearValueCount = clearValues.size();
-        renderPassInfo.pClearValues = clearValues.data();
-
-         res = vkBeginCommandBuffer(command, &beginInfo);
-        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfo.framebuffer = m_fbs[m_imageIndex];
-        vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        drawObjs(command, renderQueues->getGUICommandList());
+        m_guiStage[m_imageIndex]->prepare();
+        m_guiStage[m_imageIndex]->beginRenderPass();
+        m_guiStage[m_imageIndex]->draw(renderQueues->getGUICommandList());
         if(!m_imguiPipeline)
         {
             initImguiStuff();
@@ -2332,13 +2354,15 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         if (draw_data->TotalVtxCount > 0)
         {
 
-            void* data;
-            vkMapMemory(m_device, m_imguiUniformBuffer->getMemory(), 0, sizeof(Matrix44), 0, &data);
+            //void* data;
+            //vkMapMemory(m_device, m_imguiUniformBuffer->getMemory(), 0, sizeof(Matrix44), 0, &data);
+            m_imguiUniformBuffer->map();
 		        Matrix44 projection;
                 auto screenSize = Engine::shared()->winSize();
 		        projection.ortho(0.0f, screenSize.x, screenSize.y, 0.0f, 0.1f, 10.0f);
-                memcpy(data, &projection, sizeof(Matrix44));
-            vkUnmapMemory(m_device, m_imguiUniformBuffer->getMemory());
+                m_imguiUniformBuffer->copyFrom(&projection, sizeof(Matrix44));
+            //vkUnmapMemory(m_device, m_imguiUniformBuffer->getMemory());
+            m_imguiUniformBuffer->unmap();
             // Create or resize the vertex/index buffers
             size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
             size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
@@ -2350,17 +2374,25 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 //CreateOrResizeBuffer(rb->IndexBuffer, rb->IndexBufferMemory, rb->IndexBufferSize, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
             // Upload vertex/index data into a single contiguous GPU buffer
-            ImDrawVert* vtx_dst = NULL;
-            ImDrawIdx* idx_dst = NULL;
-            VkResult err = vkMapMemory(m_device, m_imguiVertex->getMemory(), 0, vertex_size, 0, (void**)(&vtx_dst));
-            err = vkMapMemory(m_device, m_imguiIndex->getMemory(), 0, index_size, 0, (void**)(&idx_dst));
+            //ImDrawVert* vtx_dst = NULL;
+            //ImDrawIdx* idx_dst = NULL;
+            size_t vtx_dst_offset = 0;
+            size_t idx_dst_offset = 0;
+            //VkResult err = vkMapMemory(m_device, m_imguiVertex->getMemory(), 0, vertex_size, 0, (void**)(&vtx_dst));
+            m_imguiVertex->map();
+            //err = vkMapMemory(m_device, m_imguiIndex->getMemory(), 0, index_size, 0, (void**)(&idx_dst));
+            m_imguiIndex->map();
             for (int n = 0; n < draw_data->CmdListsCount; n++)
             {
                 const ImDrawList* cmd_list = draw_data->CmdLists[n];
-                memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
-                memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
-                vtx_dst += cmd_list->VtxBuffer.Size;
-                idx_dst += cmd_list->IdxBuffer.Size;
+                //memcpy(vtx_dst, cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert));
+                m_imguiVertex->copyFrom(cmd_list->VtxBuffer.Data, cmd_list->VtxBuffer.Size * sizeof(ImDrawVert), vtx_dst_offset);
+                //memcpy(idx_dst, cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx));
+                m_imguiIndex->copyFrom(cmd_list->IdxBuffer.Data, cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx), idx_dst_offset);
+                //vtx_dst += cmd_list->VtxBuffer.Size;
+                vtx_dst_offset += cmd_list->VtxBuffer.Size * sizeof(ImDrawVert);
+                //idx_dst += cmd_list->IdxBuffer.Size;
+                idx_dst_offset += cmd_list->IdxBuffer.Size * sizeof(ImDrawIdx);
             }
             VkMappedMemoryRange range[2] = {};
             range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
@@ -2369,12 +2401,9 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             range[1].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
             range[1].memory = m_imguiIndex->getMemory();
             range[1].size = VK_WHOLE_SIZE;
-            err = vkFlushMappedMemoryRanges(m_device, 2, range);
-            vkUnmapMemory(m_device, m_imguiVertex->getMemory());
-            vkUnmapMemory(m_device, m_imguiIndex->getMemory());
-
-
-
+            VkResult err = vkFlushMappedMemoryRanges(m_device, 2, range);
+            m_imguiVertex->unmap();
+            m_imguiIndex->unmap();
 
             // Render command lists
             // (Because we merged all buffers into a single one, we maintain our own offset into them)
@@ -2402,19 +2431,16 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                         descriptiorSet->updateDescriptorByBinding(1,m_imguiTextureFont);
                     }
                     
+
+                    m_guiStage[m_imageIndex]->bindPipeline(m_imguiPipeline);
+
+                    std::vector<DeviceDescriptorVK *> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet(), descriptiorSet};
                     
-                    vkCmdBindPipeline(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipeline());
+                    m_guiStage[m_imageIndex]->bindDescriptor(m_imguiPipeline, descriptorSetList);
 
+                    m_guiStage[m_imageIndex]->bindVBO(m_imguiVertex);
+                    m_guiStage[m_imageIndex]->bindIBO(m_imguiIndex);
 
-                    std::vector<VkDescriptorSet> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet()->getDescSet(), descriptiorSet->getDescSet(),};
-                    vkCmdBindDescriptorSets(command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_imguiPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-
-
-                    VkBuffer vertex_buffers[1] = { m_imguiVertex->getBuffer() };
-                    VkDeviceSize vertex_offset[1] = { 0 };
-                    vkCmdBindVertexBuffers(command, 0, 1, vertex_buffers, vertex_offset);
-                    vkCmdBindIndexBuffer(command, m_imguiIndex->getBuffer(), 0, sizeof(ImDrawIdx) == 2 ? VK_INDEX_TYPE_UINT16 : VK_INDEX_TYPE_UINT32);
-                    
                     // Project scissor/clipping rectangles into framebuffer space
                     ImVec4 clip_rect;
                     clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
@@ -2431,26 +2457,27 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                             clip_rect.y = 0.0f;
 
                         // Apply scissor/clipping rectangle
-                        VkRect2D scissor;
-                        scissor.offset.x = (int32_t)(clip_rect.x);
-                        scissor.offset.y = (int32_t)(clip_rect.y);
-                        scissor.extent.width = (uint32_t)(clip_rect.z - clip_rect.x);
-                        scissor.extent.height = (uint32_t)(clip_rect.w - clip_rect.y);
-                        vkCmdSetScissor(command, 0, 1, &scissor);
-
+                        vec4 scissorRect;
+                        scissorRect.x = clip_rect.x;
+                        scissorRect.y = clip_rect.y;
+                        scissorRect.z = clip_rect.z - clip_rect.x;
+                        scissorRect.w = clip_rect.w - clip_rect.y;
+                        m_guiStage[m_imageIndex]->setScissor(scissorRect);
                         
                     }
                     // Draw
-                    vkCmdDrawIndexed(command, pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
+                    m_guiStage[m_imageIndex]->drawElement(pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
                 }
                 global_idx_offset += cmd_list->IdxBuffer.Size;
                 global_vtx_offset += cmd_list->VtxBuffer.Size;
             }
         }
 
-        vkCmdEndRenderPass(command);
-        res = vkEndCommandBuffer(command);
-        CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+        m_guiStage[m_imageIndex]->endRenderPass();
+        m_guiStage[m_imageIndex]->finish();
+        m_renderPath->addRenderStage(m_guiStage[m_imageIndex]);
+        //------------GUI Pass end---------------
+
         renderQueues->clearCommands();
 
         bool isAnythumbnail = false;
@@ -2478,52 +2505,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 break;
 		    }
 	    }
-
-        //updateUniformBuffer(ImageIndex);
-        if (imagesInFlight[m_imageIndex] != VK_NULL_HANDLE) {
-            vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
-        }
-        imagesInFlight[m_imageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {};
-        for(auto stage : m_renderPath->getStages())
-        {
-           commandList.emplace_back( static_cast<DeviceRenderStageVK *>(stage)->getCommand());
-        }
-
-        commandList.emplace_back(command);
-        VkSubmitInfo submitInfo = {};
-        submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;
-        submitInfo.commandBufferCount   = commandList.size();
-        submitInfo.pCommandBuffers      = commandList.data();
-
-
-        VkSemaphore waitSemaphores[] = {imageAvailableSemaphores[currentFrame]};
-        VkPipelineStageFlags waitStages[] = {VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT};
-        submitInfo.waitSemaphoreCount = 1;
-        submitInfo.pWaitSemaphores = waitSemaphores;
-        submitInfo.pWaitDstStageMask = waitStages;
-
-
-        VkSemaphore signalSemaphores[] = {renderFinishedSemaphores[currentFrame]};
-        submitInfo.signalSemaphoreCount = 1;
-        submitInfo.pSignalSemaphores = signalSemaphores;
-
-        vkResetFences(m_device, 1, &inFlightFences[currentFrame]);
-    
-        res = vkQueueSubmit(m_queue, 1, &submitInfo, inFlightFences[currentFrame]);    
-        CHECK_VULKAN_ERROR("vkQueueSubmit error %d\n", res);
-    
-        VkPresentInfoKHR presentInfo = {};
-        presentInfo.sType              = VK_STRUCTURE_TYPE_PRESENT_INFO_KHR;
-        presentInfo.swapchainCount     = 1;
-        presentInfo.pSwapchains        = &m_swapChainKHR;
-        presentInfo.pImageIndices      = &m_imageIndex;
-        presentInfo.waitSemaphoreCount = 1;
-        presentInfo.pWaitSemaphores = signalSemaphores;
-    
-        res = vkQueuePresentKHR(m_queue, &presentInfo);    
-        CHECK_VULKAN_ERROR("vkQueuePresentKHR error %d\n" , res);
-        currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
+        endFrame(m_renderPath);
     }
 
     DeviceTexture* VKRenderBackEnd::loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag)
