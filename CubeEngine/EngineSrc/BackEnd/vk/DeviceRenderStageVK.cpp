@@ -33,58 +33,15 @@ namespace tzw
 		m_frameBuffer = frameBuffer;
 	}
 
-	void DeviceRenderStageVK::prepare(vec4 clearColor, vec2 clearDepthStencil)
+	void DeviceRenderStageVK::prepare()
 	{
         m_fuckingObjList.clear();
 		fetchCommand();
-		VkCommandBufferBeginInfo beginInfoDeffered = {};
-        beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-
-		auto attachmentList = m_renderPass->getAttachmentList();
-		std::vector<VkClearValue> clearValuesDefferred{};
-		clearValuesDefferred.resize(attachmentList.size());
-		for(int i = 0; i < attachmentList.size(); i++)
-		{
-			if(attachmentList[i].isDepth){
-			
-				clearValuesDefferred[i].depthStencil = {clearDepthStencil.x, (uint32_t)clearDepthStencil.y};
-			}
-			else
-			{
-			
-				clearValuesDefferred[i].color = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
-			}
-			
-		
-		}
-
-		VkRenderPassBeginInfo renderPassInfoDeferred = {};
-        renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfoDeferred.renderPass = getRenderPass()->getRenderPass();   
-        renderPassInfoDeferred.renderArea.offset.x = 0;
-        renderPassInfoDeferred.renderArea.offset.y = 0;
-        renderPassInfoDeferred.renderArea.extent.width = m_frameBuffer->getSize().x;
-        renderPassInfoDeferred.renderArea.extent.height = m_frameBuffer->getSize().y;
-        renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
-        renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
-
-        int res = vkBeginCommandBuffer(m_command, &beginInfoDeffered);
-        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfoDeferred.framebuffer = m_frameBuffer->getFrameBuffer();
-        vkCmdBeginRenderPass(m_command, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
-
-        if(m_singlePipeline)
-        {
-            vkCmdBindPipeline(getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_singlePipeline->getPipeline());
-            m_singlePipeline->updateUniform();
-            m_singlePipeline->collcetItemWiseDescritporSet();
-        }
 
 	}
 	void DeviceRenderStageVK::finish()
 	{
-        vkCmdEndRenderPass(m_command);
+        //vkCmdEndRenderPass(m_command);
         int res = vkEndCommandBuffer(m_command);
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
 	}
@@ -262,6 +219,59 @@ namespace tzw
     {
         VkDescriptorSet descriptorSetList[] = {m_singlePipeline->getMaterialDescriptorSet()->getDescSet(), extraItemDescriptor->getDescSet() };
         vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_singlePipeline->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
+    }
+
+    void DeviceRenderStageVK::beginRenderPass(vec4 clearColor, vec2 clearDepthStencil)
+    {
+		VkCommandBufferBeginInfo beginInfoDeffered = {};
+        beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+        beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+
+		auto attachmentList = m_renderPass->getAttachmentList();
+		std::vector<VkClearValue> clearValuesDefferred{};
+		clearValuesDefferred.resize(attachmentList.size());
+		for(int i = 0; i < attachmentList.size(); i++)
+		{
+			if(attachmentList[i].isDepth){
+			
+				clearValuesDefferred[i].depthStencil = {clearDepthStencil.x, (uint32_t)clearDepthStencil.y};
+			}
+			else
+			{
+			
+				clearValuesDefferred[i].color = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
+			}
+			
+		
+		}
+
+		VkRenderPassBeginInfo renderPassInfoDeferred = {};
+        renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+        renderPassInfoDeferred.renderPass = getRenderPass()->getRenderPass();   
+        renderPassInfoDeferred.renderArea.offset.x = 0;
+        renderPassInfoDeferred.renderArea.offset.y = 0;
+        renderPassInfoDeferred.renderArea.extent.width = m_frameBuffer->getSize().x;
+        renderPassInfoDeferred.renderArea.extent.height = m_frameBuffer->getSize().y;
+        renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
+        renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
+
+        int res = vkBeginCommandBuffer(m_command, &beginInfoDeffered);
+        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+        renderPassInfoDeferred.framebuffer = m_frameBuffer->getFrameBuffer();
+        vkCmdBeginRenderPass(m_command, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
+
+        if(m_singlePipeline)
+        {
+            vkCmdBindPipeline(getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_singlePipeline->getPipeline());
+            m_singlePipeline->updateUniform();
+            m_singlePipeline->collcetItemWiseDescritporSet();
+        }
+
+    }
+
+    void DeviceRenderStageVK::endRenderPass()
+    {
+        vkCmdEndRenderPass(m_command);
     }
 
     void DeviceRenderStageVK::initFullScreenQuad()

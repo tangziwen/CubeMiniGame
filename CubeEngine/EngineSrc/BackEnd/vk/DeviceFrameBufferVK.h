@@ -10,6 +10,7 @@ class DeviceTextureVK;
 class DeviceFrameBufferVK
 {
 public:
+	DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, VkFramebuffer renderPass);
 	DeviceFrameBufferVK(int w, int h, DeviceRenderPassVK * renderPass);
 	DeviceTextureVK * getDepthMap();
 	std::vector<DeviceTextureVK *> & getTextureList();

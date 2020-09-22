@@ -16,7 +16,7 @@ public:
 	DeviceFrameBufferVK * getFrameBuffer();
 	void setRenderPass(DeviceRenderPassVK * renderPass);
 	void setFrameBuffer(DeviceFrameBufferVK * frameBuffer);
-	void prepare(vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0));
+	void prepare();
 	void finish();
 	void draw(std::vector<RenderCommand> & cmdList);
 	void drawScreenQuad();
@@ -26,6 +26,8 @@ public:
 	DevicePipelineVK * getSinglePipeline();
 	void bindSinglePipelineDescriptor();
 	void bindSinglePipelineDescriptor(DeviceDescriptorVK * extraItemDescriptor);
+	void beginRenderPass(vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0));
+	void endRenderPass();
 private:
 	void initFullScreenQuad();
 	void initSphere();

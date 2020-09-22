@@ -4,7 +4,8 @@
 #include <array>
 namespace tzw
 {
-	DeviceRenderPassVK::DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread)
+	DeviceRenderPassVK::DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread, bool isOutputToScreen)
+        :m_isNeedTransitionToRead(isNeedTransitionToRread),m_isOutPutToScreen(isOutputToScreen)
 	{
         m_opType = opType;
         std::vector<VkAttachmentReference> colorAttachmentRefs;
@@ -30,7 +31,15 @@ namespace tzw
                 {
                     attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
                     attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                    attachDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    if(isOutputToScreen)
+                    {
+                        attachDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                    }
+                    else
+                    {
+                        attachDesc.initialLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                    }
+                    
                 }
                 break;
                 case OpType::LOADCLEAR_AND_STORE:
@@ -47,8 +56,14 @@ namespace tzw
                 attachDesc.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
             }else
             {
-                attachDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            
+                if(isOutputToScreen){
+                    attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+                
+                }else
+                {
+                
+                    attachDesc.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+                }
             }
             attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
@@ -134,8 +149,8 @@ namespace tzw
         renderPassCreateInfo.pAttachments = attachmentDescList.data();
         renderPassCreateInfo.subpassCount = 1;
         renderPassCreateInfo.pSubpasses = &subpassDesc;
-		renderPassCreateInfo.dependencyCount = 2;
-		renderPassCreateInfo.pDependencies = dependencies.data();
+		//renderPassCreateInfo.dependencyCount = 2;
+		//renderPassCreateInfo.pDependencies = dependencies.data();
 
         VkResult res = vkCreateRenderPass(VKRenderBackEnd::shared()->getDevice(), &renderPassCreateInfo, NULL, &m_renderPass);
         if(res != VK_SUCCESS)

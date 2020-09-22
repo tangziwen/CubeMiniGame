@@ -257,6 +257,7 @@ private:
     DeviceRenderStageVK * m_transparentStage;
     DeviceRenderStageVK * m_thumbNailRenderStage;
     DeviceRenderStageVK * m_textureToScreenRenderStage[2];
+    DeviceRenderStageVK * m_guiStage[2];
     //DevicePipelineVK * m_dirLightingPassPiepeline;
     //DevicePipelineVK * m_skyPassPipeLine;
     DevicePipelineVK * m_textureToScreenPipeline;

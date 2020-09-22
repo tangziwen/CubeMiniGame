@@ -916,14 +916,22 @@ VkApplicationInfo appInfo = {};
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
-/*
+
         for(int i = 0 ; i < 2; i++)
         {
-            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
-            m_textureToScreenRenderStage[i] = new DeviceRenderStageVK(pass, m_DeferredLightingStage->getFrameBuffer());        
+            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto frameBuffer = new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
+            m_textureToScreenRenderStage[i] = new DeviceRenderStageVK(pass, frameBuffer);
+            m_textureToScreenRenderStage[i]->createSinglePipeline(matTextureToScreen);
         }
-*/
-        
+
+        for(int i = 0 ; i < 2; i++)
+        {
+            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto frameBuffer = new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
+            m_guiStage[i] = new DeviceRenderStageVK(pass, frameBuffer);
+        }
+
         m_textureToScreenPipeline = new DevicePipelineVK(winSize, matTextureToScreen, m_textureToScreenRenderPass, imguiVertexInput, false, emptyInstancingInput);
 
         VertexData vertices[] = {
@@ -1448,6 +1456,8 @@ VkApplicationInfo appInfo = {};
             return VK_FORMAT_D24_UNORM_S8_UINT;
         case ImageFormat::R16G16B16A16_SFLOAT:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
+        case ImageFormat::Surface_Format:
+            return GetSurfaceFormat().format;
         }
         return VK_FORMAT_R8G8B8A8_UNORM;
     }
@@ -2125,6 +2135,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         {
             auto & shadowList = renderQueues->getShadowList(i);
             m_ShadowStage[i]->prepare();
+            m_ShadowStage[i]->beginRenderPass();
             for(auto & command : shadowList)
             {
                 if(command.batchType() != RenderCommand::RenderBatchType::Single){
@@ -2140,14 +2151,16 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             }
             //drawObjs_Common(m_matPipelinePool, shadowCommand[i], m_ShadowStage[i], shadowList);
             m_ShadowStage[i]->draw(shadowList);
+            m_ShadowStage[i]->endRenderPass();
             m_ShadowStage[i]->finish();
             m_renderPath->addRenderStage(m_ShadowStage[i]);
         }
 
         //------------deferred g - pass begin-------------
         m_gPassStage->prepare();
-        //drawObjs_Common(m_matPipelinePool,deferredCommand, m_gPassStage, commonList);
+        m_gPassStage->beginRenderPass();
         m_gPassStage->draw(commonList);
+        m_gPassStage->endRenderPass();
         m_gPassStage->finish();
         m_renderPath->addRenderStage(m_gPassStage);
 
@@ -2157,6 +2170,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         {
 
             m_DeferredLightingStage->prepare();
+            m_DeferredLightingStage->beginRenderPass();
             auto pipeline = m_DeferredLightingStage->getSinglePipeline();
             Matrix44 lightVPList[3] = {};
             float shadowEnd[3] = {};
@@ -2189,17 +2203,14 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             m_DeferredLightingStage->bindSinglePipelineDescriptor();
             m_DeferredLightingStage->drawScreenQuad();
 
-            vkCmdEndRenderPass(m_DeferredLightingStage->getCommand());
-
+            m_DeferredLightingStage->endRenderPass();
             blitTexture(m_DeferredLightingStage->getCommand(),
                 m_gPassStage->getFrameBuffer()->getDepthMap(), 
                 m_DeferredLightingStage->getFrameBuffer()->getDepthMap(),
                 m_DeferredLightingStage->getFrameBuffer()->getSize(), 
                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
-            int res = vkEndCommandBuffer(m_DeferredLightingStage->getCommand());
-            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
-
+            m_DeferredLightingStage->finish();
             m_renderPath->addRenderStage(m_DeferredLightingStage);
         }
         //------------deferred Lighting Pass end---------------
@@ -2207,8 +2218,10 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         //------------transparent pass begin ------------------
         {
         m_transparentStage->prepare();
+        m_transparentStage->beginRenderPass();
         auto transList = renderQueues->getTransparentList();
         m_transparentStage->draw(transList);
+        m_transparentStage->endRenderPass();
         m_transparentStage->finish();
         m_renderPath->addRenderStage(m_transparentStage);
         }
@@ -2219,6 +2232,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         
         {
             m_skyStage->prepare();
+            m_skyStage->beginRenderPass();
             DeviceItemBuffer itemBuf = m_itemBufferPool->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
             DeviceDescriptorVK * itemDescriptorSet = m_skyStage->getSinglePipeline()->giveItemWiseDescriptorSet();
@@ -2233,6 +2247,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             m_skyStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
             m_skyStage->bindSinglePipelineDescriptor(itemDescriptorSet);
             m_skyStage->drawSphere();
+            m_skyStage->endRenderPass();
             m_skyStage->finish();
             m_renderPath->addRenderStage(m_skyStage);
         }
@@ -2240,6 +2255,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
 
         {
             m_fogStage->prepare();
+            m_fogStage->beginRenderPass();
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
             for(int i =0; i < gbufferTex.size(); i++)
@@ -2251,60 +2267,26 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             VkDeviceSize offsets[] = {0};
             m_fogStage->bindSinglePipelineDescriptor();
             m_fogStage->drawScreenQuad();
+            m_fogStage->endRenderPass();
             m_fogStage->finish();
             m_renderPath->addRenderStage(m_fogStage);
         }
 
         //------------Texture To Screen Pass begin---------------
-        VkCommandBuffer textureToScreenCmd = m_generalCmdBuff[m_imageIndex][20];
-        {
 
-            VkCommandBufferBeginInfo beginInfoDeffered = {};
-            beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-            beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-            std::array<VkClearValue, 2> clearValuesDefferred{};
-            clearValuesDefferred[0].color = {1.0f, 0.0f, 0.0f, 1.0f};
-            clearValuesDefferred[1].depthStencil = {1.0f, 0};
-            VkRenderPassBeginInfo renderPassInfoDeferred = {};
-            renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-            renderPassInfoDeferred.renderPass = m_textureToScreenRenderPass;   
-            renderPassInfoDeferred.renderArea.offset.x = 0;
-            renderPassInfoDeferred.renderArea.offset.y = 0;
-            renderPassInfoDeferred.renderArea.extent.width = screenSize.x;
-            renderPassInfoDeferred.renderArea.extent.height = screenSize.y;
-            renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
-            renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
-
-
-            res = vkBeginCommandBuffer(textureToScreenCmd, &beginInfoDeffered);
-            CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-            renderPassInfoDeferred.framebuffer = m_fbs[m_imageIndex];
-            vkCmdBeginRenderPass(textureToScreenCmd, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
-
-
-
-            vkCmdBindPipeline(textureToScreenCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textureToScreenPipeline->getPipeline());
-
-            m_textureToScreenPipeline->collcetItemWiseDescritporSet();
-            auto lightingResultTex = m_skyStage->getFrameBuffer()->getTextureList();
-            auto tex = lightingResultTex[0];
-            m_textureToScreenPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
-
-            VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
-            VkDeviceSize offsets[] = {0};
-            vkCmdBindVertexBuffers(textureToScreenCmd, 0, 1, vertexBuffers, offsets);
-            vkCmdBindIndexBuffer(textureToScreenCmd, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-
-            std::vector<VkDescriptorSet> descriptorSetList = {m_textureToScreenPipeline->getMaterialDescriptorSet()->getDescSet()};
-            vkCmdBindDescriptorSets(textureToScreenCmd, VK_PIPELINE_BIND_POINT_GRAPHICS, m_textureToScreenPipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
-            vkCmdDrawIndexed(textureToScreenCmd, static_cast<uint32_t>(6), 1, 0, 0, 0);
-
-
-            vkCmdEndRenderPass(textureToScreenCmd);
-            res = vkEndCommandBuffer(textureToScreenCmd);
-            CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
-        }
+        m_textureToScreenRenderStage[m_imageIndex]->prepare();
+        m_textureToScreenRenderStage[m_imageIndex]->beginRenderPass();
+        auto lightingResultTex = m_fogStage->getFrameBuffer()->getTextureList();
+        auto tex = lightingResultTex[0];
+        m_textureToScreenRenderStage[m_imageIndex]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
+        m_textureToScreenRenderStage[m_imageIndex]->bindSinglePipelineDescriptor();
+        m_textureToScreenRenderStage[m_imageIndex]->drawScreenQuad();
+        m_textureToScreenRenderStage[m_imageIndex]->endRenderPass();
+        m_textureToScreenRenderStage[m_imageIndex]->finish();
+        m_renderPath->addRenderStage(m_textureToScreenRenderStage[m_imageIndex]);
         //------------Texture To Screen Pass end---------------
+
+
         VkCommandBuffer command = m_generalCmdBuff[m_imageIndex][21];
 		
         auto drawSize = renderQueues->getGUICommandList().size();
@@ -2333,7 +2315,6 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfo.framebuffer = m_fbs[m_imageIndex];
         vkCmdBeginRenderPass(command, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
-        //drawObjs_Common(command, m_renderPass, commonList);
         drawObjs(command, renderQueues->getGUICommandList());
         if(!m_imguiPipeline)
         {
@@ -2486,7 +2467,8 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
                 std::vector<RenderCommand> thumbnailCommandList;
                 thumbnail->getSnapShotCommand(thumbnailCommandList);
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
-                m_thumbNailRenderStage->prepare(vec4(0.5, 0.5, 0.5, 1.0));
+                m_thumbNailRenderStage->prepare();
+                m_thumbNailRenderStage->beginRenderPass(vec4(0.5, 0.5, 0.5, 1.0));
                 m_thumbNailRenderStage->draw(thumbnailCommandList);
                 //drawObjs_Common(m_thumbNailPipelinePool, thumbNailCommand, m_thumbNailRenderStage, thumbnailCommandList);
                 m_thumbNailRenderStage->finish();
@@ -2502,12 +2484,12 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
             vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
         }
         imagesInFlight[m_imageIndex] = inFlightFences[currentFrame];
-        std::vector<VkCommandBuffer> commandList = {textureToScreenCmd, command};
+        std::vector<VkCommandBuffer> commandList = {};
         for(auto stage : m_renderPath->getStages())
         {
            commandList.emplace_back( static_cast<DeviceRenderStageVK *>(stage)->getCommand());
         }
-        commandList.emplace_back(textureToScreenCmd);
+
         commandList.emplace_back(command);
         VkSubmitInfo submitInfo = {};
         submitInfo.sType                = VK_STRUCTURE_TYPE_SUBMIT_INFO;

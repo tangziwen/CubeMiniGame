@@ -4,7 +4,12 @@
 #include "DeviceFrameBufferVK.h"
 namespace tzw
 {
-	DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, DeviceRenderPassVK * renderPass)
+    DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, VkFramebuffer frameBuffer)
+    {
+        m_size = vec2(w,h);
+        m_frameBuffer = frameBuffer;
+    }
+    DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, DeviceRenderPassVK * renderPass)
 	{
         m_size = vec2(w,h);
         auto & attachmentList = renderPass->getAttachmentList();

@@ -21,7 +21,7 @@ public:
 		LOADCLEAR_AND_STORE,
 		LOAD_AND_STORE,
 	};
-	DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread);
+	DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread, bool isOutputToScreen = false);
 	VkRenderPass getRenderPass();
 	size_t getAttachmentCount();
 	std::vector<DeviceRenderPassAttachmentInfo> & getAttachmentList();
@@ -29,6 +29,8 @@ public:
 private:
 	OpType m_opType;
 	VkRenderPass m_renderPass;
+	bool m_isNeedTransitionToRead;
+	bool m_isOutPutToScreen;
 	std::vector<DeviceRenderPassAttachmentInfo> m_attachmentList;
 
 };
