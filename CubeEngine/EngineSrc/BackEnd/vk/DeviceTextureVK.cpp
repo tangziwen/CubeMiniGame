@@ -24,6 +24,12 @@ DeviceTextureVK::DeviceTextureVK()
     m_isDepth = false;
 }
 
+DeviceTextureVK::DeviceTextureVK(VkImage image, VkImageView view)
+{
+    m_textureImage = image;
+    m_textureImageView = view;
+}
+
 const VkImage DeviceTextureVK::getImage()
 {
     return m_textureImage;

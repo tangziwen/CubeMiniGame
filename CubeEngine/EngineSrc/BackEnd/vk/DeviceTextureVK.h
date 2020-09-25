@@ -16,6 +16,7 @@ public:
 	DeviceTextureVK(const unsigned char * buff, size_t size);
 	DeviceTextureVK(std::string filepath);
 	DeviceTextureVK();
+	DeviceTextureVK(VkImage image, VkImageView view);
 	const VkImage getImage();
 	const VkImageView getImageView();
 	const VkSampler getSampler();

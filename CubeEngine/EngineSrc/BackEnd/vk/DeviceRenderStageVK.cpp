@@ -83,10 +83,10 @@ namespace tzw
 
                     instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
 
-                    currPipeLine = new DevicePipelineVK(this->getFrameBuffer()->getSize(), mat,this->getRenderPass()->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                    currPipeLine = new DevicePipelineVK(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
                 }else //single draw call
                 {
-                    currPipeLine = new DevicePipelineVK(this->getFrameBuffer()->getSize(), mat, this->getRenderPass()->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                    currPipeLine = new DevicePipelineVK(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
                 }
             
                 m_matPipelinePool[mat]  =currPipeLine;
@@ -200,7 +200,7 @@ namespace tzw
         vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
 
         DeviceVertexInput emptyInstancingInput;
-        m_singlePipeline = new DevicePipelineVK(getFrameBuffer()->getSize(), material, getRenderPass()->getRenderPass(), vertexDataInput, false, emptyInstancingInput);
+        m_singlePipeline = new DevicePipelineVK(getFrameBuffer()->getSize(), material, getRenderPass(), vertexDataInput, false, emptyInstancingInput);
     }
 
     DevicePipelineVK* DeviceRenderStageVK::getSinglePipeline()

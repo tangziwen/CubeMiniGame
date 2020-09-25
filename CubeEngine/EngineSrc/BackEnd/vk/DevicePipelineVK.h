@@ -12,6 +12,7 @@ namespace tzw
 class Material;
 class DeviceShaderVK;
 class DeviceTextureVK;
+class DeviceRenderPassVK;
 struct DeviceVertexAttributeDescVK
 {
 	VkFormat format;
@@ -28,7 +29,7 @@ struct DeviceVertexInput
 class DevicePipelineVK
 {
 public:
-	DevicePipelineVK(vec2 viewPortSize, Material * mat, VkRenderPass targetRenderPass
+	DevicePipelineVK(vec2 viewPortSize, Material * mat, DeviceRenderPassVK* targetRenderPass
 		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1);
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();

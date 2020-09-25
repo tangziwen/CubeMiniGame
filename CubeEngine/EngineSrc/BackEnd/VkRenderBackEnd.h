@@ -125,7 +125,7 @@ public:
     void blitTexture(VkCommandBuffer command, DeviceTextureVK * srdTex, DeviceTextureVK * dstTex, vec2 size, VkImageLayout srcLayout, VkImageLayout dstLayout);
     DeviceFrameBufferVK * createSwapChainFrameBuffer(int index);
     int getCurrSwapIndex();
-    VkRenderPass getScreenRenderPass();
+    DeviceRenderPassVK* getScreenRenderPass();
 private:
     
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
@@ -194,10 +194,8 @@ private:
     VkDevice m_device;
     unsigned m_gfxDevIndex;
     unsigned m_gfxQueueFamily;
-    std::vector<VkImageView> m_views;	
-    VkRenderPass m_renderPass;
+    std::vector<VkImageView> m_views;
     VkRenderPass m_gbufferRenderPass;
-    std::vector<VkFramebuffer> m_fbs;
     VkShaderModule m_vsModule;
     VkShaderModule m_fsModule;
     DeviceShaderVK *m_shader;
@@ -214,13 +212,8 @@ private:
     std::vector<VkDeviceMemory> uniformBuffersMemory;
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPipelineLayout pipelineLayout;
+    std::vector<DeviceFrameBufferVK *> m_screenFrameBuffer;
 
-
-    /*
-	VkImage textureImage;
-	VkDeviceMemory textureImageMemory;
-	VkImageView textureImageView;
-    */
 	VkSampler textureSampler;
     DeviceTextureVK * m_myTexture;
     //sync
@@ -247,11 +240,14 @@ private:
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
+    DeviceRenderPassVK * m_screenRenderPass;
     std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     DeviceTextureVK * m_imguiTextureFont;
     unsigned m_imageIndex;
     std::vector<unsigned> m_commandBufferIndex;
     RenderPath * m_renderPath;
+    std::vector<DeviceTextureVK *> m_screenTexs;
+    DeviceTextureVK * m_screenDepth;
 };
 
 } // namespace tzw

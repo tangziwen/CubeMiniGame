@@ -312,17 +312,15 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
     }
     DeviceFrameBufferVK* VKRenderBackEnd::createSwapChainFrameBuffer(int index)
     {
-        auto size = Engine::shared()->winSize();
-        auto fb = new DeviceFrameBufferVK(size.x, size.y, m_fbs[index]);
-        return fb;
+        return m_screenFrameBuffer[index];
     }
     int VKRenderBackEnd::getCurrSwapIndex()
     {
         return m_imageIndex;
     }
-    VkRenderPass VKRenderBackEnd::getScreenRenderPass()
+    DeviceRenderPassVK* VKRenderBackEnd::getScreenRenderPass()
     {
-        return m_renderPass;
+        return m_screenRenderPass;
     }
     void VKRenderBackEnd::VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps)
     {
@@ -624,73 +622,9 @@ VkApplicationInfo appInfo = {};
 
     void VKRenderBackEnd::CreateRenderPass()
     {
-        VkAttachmentReference attachRef = {};
-        attachRef.attachment = 0;
-        attachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-        VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = 1;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-	
-        VkSubpassDescription subpassDesc = {};
-        subpassDesc.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-        subpassDesc.colorAttachmentCount = 1;
-        subpassDesc.pColorAttachments = &attachRef;
-		subpassDesc.pDepthStencilAttachment = &depthAttachmentRef;
-
-        VkAttachmentDescription attachDesc = {};    
-        attachDesc.format = GetSurfaceFormat().format;
-        attachDesc.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        attachDesc.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        attachDesc.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        attachDesc.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        attachDesc.initialLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        attachDesc.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-        attachDesc.samples = VK_SAMPLE_COUNT_1_BIT;
-
-        VkAttachmentDescription depthAttachment{};
-        depthAttachment.format = VK_FORMAT_D24_UNORM_S8_UINT;
-        depthAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-        depthAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-        depthAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		std::vector<VkAttachmentDescription> attachmentDescList = {attachDesc, depthAttachment};
-        VkRenderPassCreateInfo renderPassCreateInfo = {};
-        renderPassCreateInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassCreateInfo.attachmentCount = attachmentDescList.size();
-        renderPassCreateInfo.pAttachments = attachmentDescList.data();
-        renderPassCreateInfo.subpassCount = 1;
-        renderPassCreateInfo.pSubpasses = &subpassDesc;
-		// Use subpass dependencies for attachment layout transitions
-		std::array<VkSubpassDependency, 2> dependencies;
-
-		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[0].dstSubpass = 0;
-		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependencies[0].srcAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-		dependencies[1].srcSubpass = 0;
-		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		dependencies[1].dstAccessMask = VK_ACCESS_MEMORY_READ_BIT;
-		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-		//renderPassCreateInfo.dependencyCount = 2;
-		//renderPassCreateInfo.pDependencies = dependencies.data();
-        VkResult res = vkCreateRenderPass(m_device, &renderPassCreateInfo, NULL, &m_renderPass);
-        CHECK_VULKAN_ERROR("vkCreateRenderPass error %d\n", res);
-
-        printf("Created a render pass\n");
+        m_screenRenderPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
     }
+
     void VKRenderBackEnd::CreateTextureToScreenRenderPass()
     {
     }
@@ -705,10 +639,8 @@ VkApplicationInfo appInfo = {};
     void VKRenderBackEnd::CreateFramebuffer()
     {
         printf("try create Frame Buffer\n");
-        m_fbs.resize(m_images.size());
-    
         VkResult res;
-            
+        m_screenTexs.resize(m_images.size());
         for (unsigned i = 0 ; i < m_images.size() ; i++) {
             VkImageViewCreateInfo ViewCreateInfo = {};
             ViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -727,24 +659,14 @@ VkApplicationInfo appInfo = {};
 
             res = vkCreateImageView(m_device, &ViewCreateInfo, NULL, &m_views[i]);
             CHECK_VULKAN_ERROR("vkCreateImageView error %d\n", res);
-			std::array<VkImageView, 2> attachments = {
-		    m_views[i], //color buffer of swap chain
-		    depthImageView, //the depth buffer
-			};
-            auto screenSize = Engine::shared()->winSize();
-            VkFramebufferCreateInfo fbCreateInfo = {};
-            fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-            fbCreateInfo.renderPass = m_renderPass;
-            fbCreateInfo.attachmentCount = attachments.size();
-            fbCreateInfo.pAttachments = attachments.data();
-            fbCreateInfo.width = screenSize.x;
-            fbCreateInfo.height = screenSize.y;
-            fbCreateInfo.layers = 1;
-
-            res = vkCreateFramebuffer(m_device, &fbCreateInfo, NULL, &m_fbs[i]);
-            CHECK_VULKAN_ERROR("vkCreateFramebuffer error %d\n", res);
+            m_screenTexs[i] = new DeviceTextureVK(m_images[i], m_views[i]);
         }
-   
+        m_screenDepth = new DeviceTextureVK(depthImage, depthImageView);
+        m_screenFrameBuffer.resize(m_images.size());
+        for(unsigned i = 0; i < m_images.size(); i++)
+        {
+            m_screenFrameBuffer[i] = new DeviceFrameBufferVK(m_screenTexs[i], m_screenDepth, m_screenRenderPass);
+        }
         printf("Frame buffers created\n");
     }
     void VKRenderBackEnd::CreateShaders()
@@ -1526,6 +1448,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         createDescriptorSets();
         createSyncObjects();
         initVMAPool();
+        
         m_itemBufferPool = new DeviceItemBufferPoolVK(1024 * 1024 * 20);
         
     }

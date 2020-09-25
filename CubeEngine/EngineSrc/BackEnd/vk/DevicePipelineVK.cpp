@@ -40,7 +40,7 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, VkRenderPass targetRenderPass ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
+DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, DeviceRenderPassVK* targetRenderPass ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
 {
 	m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
@@ -227,7 +227,7 @@ DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, VkRenderPas
     pipelineInfo.pColorBlendState = &blendCreateInfo;
 	pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.layout = m_pipelineLayout;
-    pipelineInfo.renderPass = targetRenderPass;
+    pipelineInfo.renderPass = targetRenderPass->getRenderPass();
     pipelineInfo.basePipelineIndex = -1;
     
     VkResult res = vkCreateGraphicsPipelines(VKRenderBackEnd::shared()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &m_pipeline);
