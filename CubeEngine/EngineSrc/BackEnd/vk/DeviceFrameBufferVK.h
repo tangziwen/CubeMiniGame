@@ -3,6 +3,7 @@
 #include "vulkan/vulkan.h"
 #include <vector>
 #include "DeviceRenderPassVK.h"
+#include "Math/vec2.h"
 namespace tzw
 {
 

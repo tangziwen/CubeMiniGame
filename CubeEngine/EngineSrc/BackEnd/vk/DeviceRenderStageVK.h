@@ -4,10 +4,14 @@
 #include "DeviceRenderPassVK.h"
 #include "DeviceFrameBufferVK.h"
 #include "Rendering/RenderStage.h"
+#include "Rendering/RenderCommand.h"
+#include <unordered_map>
+#include <unordered_set>
 namespace tzw
 {
 
 class DeviceTextureVK;
+class DeviceDescriptorVK;
 class DeviceRenderStageVK : public RenderStage
 {
 public:

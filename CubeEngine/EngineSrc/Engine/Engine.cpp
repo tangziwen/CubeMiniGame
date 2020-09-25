@@ -28,6 +28,7 @@
 #include "Base/TimerMgr.h"
 #include "DebugSystem.h"
 #include "BackEnd/VkRenderBackEnd.h"
+#include "Rendering/GraphicsRenderer.h"
 
 namespace tzw {
 
@@ -281,7 +282,8 @@ void Engine::update(float delta)
 	
 	}else
 	{
-		VKRenderBackEnd::shared()->RenderScene();
+		GraphicsRenderer::shared()->render();
+		//VKRenderBackEnd::shared()->RenderScene();
 	}
 	AudioSystem::shared()->update();
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);

@@ -123,6 +123,9 @@ public:
     void getStageAndAcessMaskFromLayOut(VkImageLayout layout, VkPipelineStageFlags & stage, VkAccessFlags & access);
     void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset, size_t bufferRange);
     void blitTexture(VkCommandBuffer command, DeviceTextureVK * srdTex, DeviceTextureVK * dstTex, vec2 size, VkImageLayout srcLayout, VkImageLayout dstLayout);
+    DeviceFrameBufferVK * createSwapChainFrameBuffer(int index);
+    int getCurrSwapIndex();
+    VkRenderPass getScreenRenderPass();
 private:
     
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
@@ -172,6 +175,7 @@ private:
     void initVMAPool();
 
     void shadowPass();
+    DeviceFrameBufferVK * getScreenFrameBuffer();
 	//depth resource
 	VkImage depthImage;
     VkDeviceMemory depthImageMemory;
@@ -192,7 +196,6 @@ private:
     unsigned m_gfxQueueFamily;
     std::vector<VkImageView> m_views;	
     VkRenderPass m_renderPass;
-    VkRenderPass m_textureToScreenRenderPass;
     VkRenderPass m_gbufferRenderPass;
     std::vector<VkFramebuffer> m_fbs;
     VkShaderModule m_vsModule;
@@ -202,8 +205,6 @@ private:
     DeviceBufferVK * m_vertexBuffer;
     DeviceBufferVK * m_indexBuffer;
 
-    DeviceBufferVK * m_quadVertexBuffer;
-    DeviceBufferVK * m_quadIndexBuffer;
     //VkBuffer vertexBuffer;
     //VkBuffer indexBuffer;
     std::vector<VkBuffer> uniformBuffers;
@@ -214,8 +215,6 @@ private:
     VkPhysicalDeviceMemoryProperties memory_properties;
     VkPipelineLayout pipelineLayout;
 
-    void drawObjs(VkCommandBuffer command, std::vector<RenderCommand>& renderList);
-    void drawObjs_Common(std::unordered_map<Material *, DevicePipelineVK *> & pipelinepool, VkCommandBuffer command, DeviceRenderStageVK * renderStage , std::vector<RenderCommand>& renderList);
 
     /*
 	VkImage textureImage;
@@ -248,22 +247,8 @@ private:
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;
-
-    DeviceRenderStageVK * m_ShadowStage[3];
-    DeviceRenderStageVK * m_gPassStage;
-    DeviceRenderStageVK * m_DeferredLightingStage;
-    DeviceRenderStageVK * m_skyStage;
-    DeviceRenderStageVK * m_fogStage;
-    DeviceRenderStageVK * m_transparentStage;
-    DeviceRenderStageVK * m_thumbNailRenderStage;
-    DeviceRenderStageVK * m_textureToScreenRenderStage[2];
-    DeviceRenderStageVK * m_guiStage[2];
-    //DevicePipelineVK * m_dirLightingPassPiepeline;
-    //DevicePipelineVK * m_skyPassPipeLine;
-    DevicePipelineVK * m_textureToScreenPipeline;
     std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
     DeviceTextureVK * m_imguiTextureFont;
-    Mesh * m_sphere;
     unsigned m_imageIndex;
     std::vector<unsigned> m_commandBufferIndex;
     RenderPath * m_renderPath;

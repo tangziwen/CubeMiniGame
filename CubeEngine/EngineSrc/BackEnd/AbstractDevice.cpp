@@ -4,6 +4,7 @@
 #include "../Event/EventMgr.h"
 #include "RenderBackEnd.h"
 #include "VkRenderBackEnd.h"
+#include "Rendering/GraphicsRenderer.h"
 namespace tzw {
 void AbstractDevice::keyPressEvent(int theCode)
 {
@@ -88,6 +89,7 @@ void AbstractDevice::createRenderBackEnd(GLFWwindow * window)
         Engine::shared()->setRenderBackEnd(VKRenderBackEnd::shared());
         Engine::shared()->setRenderDeviceType(RenderDeviceType::Vulkan_Device);
         VKRenderBackEnd::shared()->initDevice(window);
+        GraphicsRenderer::shared()->init();
 
     }
 }
