@@ -26,8 +26,8 @@ namespace tzw
 		DeviceRenderStage * m_thumbNailRenderStage;
 		DeviceRenderStage * m_textureToScreenRenderStage[2];
 		DeviceRenderStage * m_guiStage[2];
-		DeviceBufferVK *m_imguiIndex;
-		DeviceBufferVK *m_imguiVertex;
+		DeviceBuffer *m_imguiIndex;
+		DeviceBuffer *m_imguiVertex;
 		DevicePipeline * m_imguiPipeline;
 		void initImguiStuff();
 		VkDescriptorSet m_imguiDescriptorSet;

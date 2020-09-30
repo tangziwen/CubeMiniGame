@@ -14,19 +14,12 @@ namespace tzw
 
 	}
 
-
-	void DeviceRenderStageVK::prepare()
-	{
-        m_fuckingObjList.clear();
-		fetchCommand();
-
-	}
 	void DeviceRenderStageVK::finish()
 	{
-        //vkCmdEndRenderPass(m_command);
         int res = vkEndCommandBuffer(m_command);
         CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
 	}
+
 	void DeviceRenderStageVK::draw(std::vector<RenderCommand>& cmdList)
 	{
         for(RenderCommand & a : cmdList)
@@ -283,14 +276,6 @@ namespace tzw
     {
         vkCmdDrawIndexed(m_command, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
-
-   
-	static vec3 pointOnSurface(float u, float v)
-	{
-        float m_radius = 1.0f;
-		return vec3(cos(u) * sin(v) * m_radius, cos(v) * m_radius, sin(u) * sin(v) * m_radius);
-	}
-    
 
     void DeviceRenderStageVK::fetchCommand()
 	{

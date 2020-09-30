@@ -29,13 +29,13 @@ namespace tzw
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
         auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
-        thumbnailPass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        thumbnailPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
         m_thumbNailRenderStage = backEnd->createRenderStage_imp();
         m_thumbNailRenderStage->init(thumbnailPass, nullptr);
 
         auto size = Engine::shared()->winSize();
         auto gBufferRenderPass = backEnd->createDeviceRenderpass_imp();
-        gBufferRenderPass->init(4, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        gBufferRenderPass->init(4, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
         auto gBuffer = backEnd->createFrameBuffer_imp();
         gBuffer->init(size.x, size.y, gBufferRenderPass);
 
@@ -51,7 +51,7 @@ namespace tzw
         for(int i = 0; i < 3; i ++)
         {
             auto shadowRenderPass = backEnd->createDeviceRenderpass_imp();
-            shadowRenderPass->init(0, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+            shadowRenderPass->init(0, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
             auto shadowBuffer = backEnd->createFrameBuffer_imp();
             shadowBuffer->init(1024, 1024, shadowRenderPass);
             m_ShadowStage[i] = backEnd->createRenderStage_imp();
@@ -60,7 +60,7 @@ namespace tzw
 
 
         auto deferredLightingPass = backEnd->createDeviceRenderpass_imp();
-        deferredLightingPass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        deferredLightingPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         auto deferredLightingBuffer= backEnd->createFrameBuffer_imp();
         deferredLightingBuffer->init(size.x, size.y, deferredLightingPass);
 
@@ -101,7 +101,7 @@ namespace tzw
 
 
         auto transparentPass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
-        transparentPass->init(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        transparentPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_transparentStage = backEnd->createRenderStage_imp();//new DeviceRenderStageVK(transparentPass, m_DeferredLightingStage->getFrameBuffer());
         m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer());
 
@@ -112,7 +112,7 @@ namespace tzw
         for(int i = 0 ; i < 2; i++)
         {
             auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
-            pass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            pass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer);
@@ -123,7 +123,7 @@ namespace tzw
         for(int i = 0 ; i < 2; i++)
         {
             auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
-            pass->init(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
+            pass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer);
@@ -137,7 +137,7 @@ namespace tzw
     {
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
-        m_imguiIndex = static_cast<DeviceBufferVK*>(backEnd->createBuffer_imp());
+        m_imguiIndex = backEnd->createBuffer_imp();
         m_imguiIndex->init(DeviceBufferType::Index);
         m_imguiIndex->setAlignment(1024);
         m_imguiIndex->allocateEmpty(1024);
@@ -406,10 +406,10 @@ namespace tzw
             // Create or resize the vertex/index buffers
             size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
             size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
-            if (m_imguiVertex->getBuffer() == VK_NULL_HANDLE || m_imguiVertex->getSize() < vertex_size)
+            if (!m_imguiVertex->isValid()|| m_imguiVertex->getSize() < vertex_size)
                 m_imguiVertex->allocateEmpty(vertex_size);
                 //CreateOrResizeBuffer(rb->VertexBuffer, rb->VertexBufferMemory, rb->VertexBufferSize, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
-            if (m_imguiIndex->getBuffer() == VK_NULL_HANDLE || m_imguiIndex->getSize() < index_size)
+            if (!m_imguiIndex->isValid() || m_imguiIndex->getSize() < index_size)
                 m_imguiIndex->allocateEmpty(index_size);
                 //CreateOrResizeBuffer(rb->IndexBuffer, rb->IndexBufferMemory, rb->IndexBufferSize, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
 
@@ -429,10 +429,10 @@ namespace tzw
             }
             VkMappedMemoryRange range[2] = {};
             range[0].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            range[0].memory = m_imguiVertex->getMemory();
+            range[0].memory = static_cast<DeviceBufferVK *>(m_imguiVertex)->getMemory();
             range[0].size = VK_WHOLE_SIZE;
             range[1].sType = VK_STRUCTURE_TYPE_MAPPED_MEMORY_RANGE;
-            range[1].memory = m_imguiIndex->getMemory();
+            range[1].memory = static_cast<DeviceBufferVK *>(m_imguiIndex)->getMemory();
             range[1].size = VK_WHOLE_SIZE;
             VkResult err = vkFlushMappedMemoryRanges(backEnd->getDevice(), 2, range);
             m_imguiVertex->unmap();

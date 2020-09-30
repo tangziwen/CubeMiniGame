@@ -13,16 +13,16 @@ public:
 	virtual void allocateEmpty(size_t ammount);
 	virtual bool init(DeviceBufferType type);
 	virtual void bind();
+	bool hasEnoughRoom(size_t size) override;
+	bool isValid() override;
 	VkBuffer getBuffer();
-	size_t getAlignment();
-	size_t getSize();
+	virtual size_t getSize();
 	size_t getOffset();
-	void setAlignment(size_t newAlignment);
 	VkDeviceMemory getMemory();
 	void setUsePool(bool isUsed) override;
-	void map();
-	void unmap();
-	void copyFrom( void * ptr, size_t size, size_t memOffset = 0);
+	void map() override;
+	void unmap() override;
+	void copyFrom( void * ptr, size_t size, size_t memOffset = 0) override;
 private:
 	void allocateEmptySingleImp(size_t ammount);
 	void allocateEmptyPoolImp(size_t ammount);

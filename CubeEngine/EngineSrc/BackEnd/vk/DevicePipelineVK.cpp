@@ -14,32 +14,6 @@ static const unsigned int DescriptorGuessCount = 512;
 namespace tzw
 {
 
-void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions)
-{
-
-    attributeDescriptions.resize(3);
-
-	//local position
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(VertexData, m_pos);
-
-
-	//color
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(VertexData, m_color);
-	
-	//uv
-	attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
-
-}
-
 DevicePipelineVK::DevicePipelineVK()
 {
 	
@@ -649,30 +623,6 @@ void DevicePipelineVK::crateMaterialDescriptorSet()
     printf("create descriptor sets 33333333%p\n", m_materialDescripotrSet);
 }
 
-void DevicePipelineVK::defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription>& attributeDescriptions)
-{
-    attributeDescriptions.resize(3);
-
-	//local position
-    attributeDescriptions[0].binding = 0;
-    attributeDescriptions[0].location = 0;
-    attributeDescriptions[0].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[0].offset = offsetof(VertexData, m_pos);
-
-
-	//color
-    attributeDescriptions[1].binding = 0;
-    attributeDescriptions[1].location = 1;
-    attributeDescriptions[1].format = VK_FORMAT_R32G32B32_SFLOAT;
-    attributeDescriptions[1].offset = offsetof(VertexData, m_color);
-	
-	//uv
-	attributeDescriptions[2].binding = 0;
-    attributeDescriptions[2].location = 2;
-    attributeDescriptions[2].format = VK_FORMAT_R32G32_SFLOAT;
-    attributeDescriptions[2].offset = offsetof(VertexData, m_texCoord);
-}
-
 VkBlendFactor DevicePipelineVK::getBlendFactor(RenderFlag::BlendingFactor factor)
 {
     switch (factor)
@@ -698,12 +648,5 @@ VkBlendFactor DevicePipelineVK::getBlendFactor(RenderFlag::BlendingFactor factor
     }
     return VK_BLEND_FACTOR_ONE;
 }
-
-void DeviceVertexInput::addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc)
-{
-    m_attributeList.emplace_back(vertexAttributeDesc);
-}
-
-
 
 }

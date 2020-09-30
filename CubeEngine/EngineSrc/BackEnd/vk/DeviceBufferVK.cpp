@@ -162,13 +162,17 @@ namespace tzw
 	void DeviceBufferVK::bind()
 	{
 	}
+    bool DeviceBufferVK::hasEnoughRoom(size_t size)
+    {
+        return (getBuffer() != VK_NULL_HANDLE && this->getSize() > size);
+    }
+    bool DeviceBufferVK::isValid()
+    {
+        return getBuffer() != VK_NULL_HANDLE;
+    }
     VkBuffer DeviceBufferVK::getBuffer()
     {
         return m_buffer;
-    }
-    size_t DeviceBufferVK::getAlignment()
-    {
-        return m_alignment;
     }
     size_t DeviceBufferVK::getSize()
     {
@@ -177,10 +181,6 @@ namespace tzw
     size_t DeviceBufferVK::getOffset()
     {
         return m_offset;
-    }
-    void DeviceBufferVK::setAlignment(size_t newAlignment)
-    {
-        m_alignment = newAlignment;
     }
     VkDeviceMemory DeviceBufferVK::getMemory()
     {

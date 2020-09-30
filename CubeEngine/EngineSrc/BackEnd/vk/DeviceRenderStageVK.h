@@ -17,7 +17,6 @@ class DeviceRenderStageVK : public DeviceRenderStage
 {
 public:
 	DeviceRenderStageVK();
-	void prepare();
 	void finish();
 	void draw(std::vector<RenderCommand> & cmdList);
 	void drawScreenQuad();

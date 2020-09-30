@@ -37,7 +37,6 @@ private:
 	void createMaterialDescriptorPool();
 	void createMaterialUniformBuffer();
 	void crateMaterialDescriptorSet();
-	void defaultCreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDescriptions);
 	std::deque<DeviceDescriptorVK *> m_itemDescritptorSetList;
 	std::vector<VkDescriptorPool> m_descriptorPoolList;
 	int m_currItemWiseDescriptorSetIdx;

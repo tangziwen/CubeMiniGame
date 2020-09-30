@@ -34,6 +34,8 @@ public:
 	virtual DeviceDescriptor * getMaterialDescriptorSet() = 0;
 	virtual void collcetItemWiseDescritporSet() = 0;
 	virtual DeviceDescriptor * giveItemWiseDescriptorSet() = 0;
+protected:
+
 };
 
 

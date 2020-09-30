@@ -20,7 +20,7 @@ public:
 	DeviceFrameBuffer * getFrameBuffer();
 	void setRenderPass(DeviceRenderPass * renderPass);
 	void setFrameBuffer(DeviceFrameBuffer * frameBuffer);
-	virtual void prepare() = 0;
+	virtual void prepare();
 	virtual void finish() = 0;
 	virtual void draw(std::vector<RenderCommand> & cmdList) = 0;
 	virtual void drawScreenQuad() = 0;
