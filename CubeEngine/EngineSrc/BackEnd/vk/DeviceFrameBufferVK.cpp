@@ -6,12 +6,12 @@
 #include "Engine/Engine.h"
 namespace tzw
 {
-    DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, VkFramebuffer frameBuffer)
+    void DeviceFrameBufferVK::init(int w, int h, VkFramebuffer frameBuffer)
     {
         m_size = vec2(w,h);
         m_frameBuffer = frameBuffer;
     }
-    DeviceFrameBufferVK::DeviceFrameBufferVK(int w, int h, DeviceRenderPassVK * renderPass)
+    void DeviceFrameBufferVK::init(int w, int h, DeviceRenderPass * renderPass)
 	{
         m_size = vec2(w,h);
         auto & attachmentList = renderPass->getAttachmentList();
@@ -35,13 +35,13 @@ namespace tzw
         std::vector<VkImageView> attachments;
         attachments.resize(attachmentList.size());
         for(int i = 0; i <attachmentList.size(); i++){
-            attachments[i] = m_textureList[i]->getImageView();
+            attachments[i] = static_cast<DeviceTextureVK *>(m_textureList[i])->getImageView();
         }
 
 		VkFramebufferCreateInfo fbufCreateInfo = {};
 		fbufCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
 		fbufCreateInfo.pNext = NULL;
-		fbufCreateInfo.renderPass = renderPass->getRenderPass();
+		fbufCreateInfo.renderPass = static_cast<DeviceRenderPassVK *>(renderPass)->getRenderPass();
 		fbufCreateInfo.pAttachments = attachments.data();
 		fbufCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
 		fbufCreateInfo.width = w;
@@ -50,16 +50,16 @@ namespace tzw
         
 		VK_CHECK_RESULT(vkCreateFramebuffer(VKRenderBackEnd::shared()->getDevice(), &fbufCreateInfo, nullptr, &m_frameBuffer));
 	}
-    DeviceFrameBufferVK::DeviceFrameBufferVK(DeviceTextureVK* tex, DeviceTextureVK* depth, DeviceRenderPassVK* renderPass)
+    void DeviceFrameBufferVK::init(DeviceTexture* tex, DeviceTexture* depth, DeviceRenderPass* renderPass)
     {
 		std::array<VkImageView, 2> attachments = {
-		tex->getImageView(), //color buffer of swap chain
-		depth->getImageView(), //the depth buffer
+		static_cast<DeviceTextureVK *>(tex)->getImageView(), //color buffer of swap chain
+		static_cast<DeviceTextureVK *>(depth)->getImageView(), //the depth buffer
 		};
         auto screenSize = Engine::shared()->winSize();
         VkFramebufferCreateInfo fbCreateInfo = {};
         fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
-        fbCreateInfo.renderPass = renderPass->getRenderPass();
+        fbCreateInfo.renderPass = static_cast<DeviceRenderPassVK *>(renderPass)->getRenderPass();
         fbCreateInfo.attachmentCount = attachments.size();
         fbCreateInfo.pAttachments = attachments.data();
         fbCreateInfo.width = screenSize.x;
@@ -68,11 +68,11 @@ namespace tzw
         m_size = screenSize;
         VK_CHECK_RESULT(vkCreateFramebuffer(VKRenderBackEnd::shared()->getDevice(), &fbCreateInfo, nullptr, &m_frameBuffer));
     }
-    DeviceTextureVK* DeviceFrameBufferVK::getDepthMap()
+    DeviceTexture* DeviceFrameBufferVK::getDepthMap()
     {
         return m_depthTexture;
     }
-    std::vector<DeviceTextureVK*>& DeviceFrameBufferVK::getTextureList()
+    std::vector<DeviceTexture*>& DeviceFrameBufferVK::getTextureList()
     {
         return m_textureList;
     }

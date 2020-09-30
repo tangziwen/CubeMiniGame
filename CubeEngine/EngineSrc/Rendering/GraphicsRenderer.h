@@ -1,6 +1,7 @@
 #pragma once
 #include "../Engine/EngineDef.h"
 #include "vulkan/vulkan.h"
+#include "BackEnd/DeviceRenderStage.h"
 namespace tzw
 {
 	class DevicePipelineVK;
@@ -16,18 +17,18 @@ namespace tzw
 		void init();
 		void render();
 	private:
-		DeviceRenderStageVK * m_ShadowStage[3];
-		DeviceRenderStageVK * m_gPassStage;
-		DeviceRenderStageVK * m_DeferredLightingStage;
-		DeviceRenderStageVK * m_skyStage;
-		DeviceRenderStageVK * m_fogStage;
-		DeviceRenderStageVK * m_transparentStage;
-		DeviceRenderStageVK * m_thumbNailRenderStage;
-		DeviceRenderStageVK * m_textureToScreenRenderStage[2];
-		DeviceRenderStageVK * m_guiStage[2];
+		DeviceRenderStage * m_ShadowStage[3];
+		DeviceRenderStage * m_gPassStage;
+		DeviceRenderStage * m_DeferredLightingStage;
+		DeviceRenderStage * m_skyStage;
+		DeviceRenderStage * m_fogStage;
+		DeviceRenderStage * m_transparentStage;
+		DeviceRenderStage * m_thumbNailRenderStage;
+		DeviceRenderStage * m_textureToScreenRenderStage[2];
+		DeviceRenderStage * m_guiStage[2];
 		DeviceBufferVK *m_imguiIndex;
 		DeviceBufferVK *m_imguiVertex;
-		DevicePipelineVK * m_imguiPipeline;
+		DevicePipeline * m_imguiPipeline;
 		void initImguiStuff();
 		VkDescriptorSet m_imguiDescriptorSet;
 		DeviceBufferVK * m_imguiUniformBuffer;

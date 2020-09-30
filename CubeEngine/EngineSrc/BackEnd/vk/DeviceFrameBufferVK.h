@@ -4,25 +4,24 @@
 #include <vector>
 #include "DeviceRenderPassVK.h"
 #include "Math/vec2.h"
+#include "../DeviceFrameBuffer.h"
 namespace tzw
 {
 
 class DeviceTextureVK;
-class DeviceFrameBufferVK
+class DeviceFrameBufferVK : public DeviceFrameBuffer
 {
 public:
-	DeviceFrameBufferVK(int w, int h, VkFramebuffer renderPass);
-	DeviceFrameBufferVK(int w, int h, DeviceRenderPassVK * renderPass);
-	DeviceFrameBufferVK(DeviceTextureVK * tex, DeviceTextureVK * depth, DeviceRenderPassVK * renderPass);
-	DeviceTextureVK * getDepthMap();
-	std::vector<DeviceTextureVK *> & getTextureList();
+	DeviceFrameBufferVK() = default;
+	void init(int w, int h, VkFramebuffer renderPass);
+	void init(int w, int h, DeviceRenderPass * renderPass) override;
+	void init(DeviceTexture * tex, DeviceTexture * depth, DeviceRenderPass * renderPass) override;
+	DeviceTexture * getDepthMap() override;
+	std::vector<DeviceTexture *> & getTextureList() override;
+	vec2 getSize() override;
 	VkFramebuffer getFrameBuffer();
-	vec2 getSize();
 private:
 	VkFramebuffer m_frameBuffer;
-	std::vector<DeviceTextureVK *>m_textureList;
-	DeviceTextureVK * m_depthTexture;
-	vec2 m_size;
 };
 };
 

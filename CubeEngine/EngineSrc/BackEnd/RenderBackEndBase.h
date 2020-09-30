@@ -9,6 +9,10 @@ class DeviceTexture;
 class DeviceShader;
 class DeviceBuffer;
 class RenderPath;
+class DeviceRenderPass;
+class DeviceRenderStage;
+class DeviceFrameBuffer;
+class DevicePipeline;
 class RenderBackEndBase
 {
 public:
@@ -17,6 +21,10 @@ public:
 	virtual DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat format, unsigned int loadingFlag)= 0;
 	virtual DeviceShader * createShader_imp() = 0;
 	virtual DeviceBuffer * createBuffer_imp() = 0;
+	virtual DeviceRenderPass * createDeviceRenderpass_imp() = 0;
+	virtual DevicePipeline * createPipeline_imp() = 0;
+	virtual DeviceRenderStage * createRenderStage_imp() = 0;
+	virtual DeviceFrameBuffer * createFrameBuffer_imp() = 0;
 	virtual void prepareFrame() = 0;
 	virtual void endFrame(RenderPath * renderPath) = 0;
 }; // namespace tzw

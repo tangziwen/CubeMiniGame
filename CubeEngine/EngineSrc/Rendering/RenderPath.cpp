@@ -12,12 +12,12 @@ namespace tzw
         m_stages.clear();
     }
 
-    void RenderPath::addRenderStage(RenderStage* stage)
+    void RenderPath::addRenderStage(DeviceRenderStage* stage)
     {
         m_stages.emplace_back(stage);
     }
 
-    std::vector<RenderStage *> & RenderPath::getStages()
+    std::vector<DeviceRenderStage *> & RenderPath::getStages()
     {
     
         return m_stages;

@@ -622,7 +622,8 @@ VkApplicationInfo appInfo = {};
 
     void VKRenderBackEnd::CreateRenderPass()
     {
-        m_screenRenderPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+        m_screenRenderPass = new DeviceRenderPassVK();
+        m_screenRenderPass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
     }
 
     void VKRenderBackEnd::CreateTextureToScreenRenderPass()
@@ -665,7 +666,8 @@ VkApplicationInfo appInfo = {};
         m_screenFrameBuffer.resize(m_images.size());
         for(unsigned i = 0; i < m_images.size(); i++)
         {
-            m_screenFrameBuffer[i] = new DeviceFrameBufferVK(m_screenTexs[i], m_screenDepth, m_screenRenderPass);
+            m_screenFrameBuffer[i] = new DeviceFrameBufferVK();
+            m_screenFrameBuffer[i]->init(m_screenTexs[i], m_screenDepth, m_screenRenderPass);
         }
         printf("Frame buffers created\n");
     }
@@ -1474,6 +1476,26 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     DeviceBuffer* VKRenderBackEnd::createBuffer_imp()
     {
         return new DeviceBufferVK();
+    }
+
+    DevicePipeline* VKRenderBackEnd::createPipeline_imp()
+    {
+        return new DevicePipelineVK();
+    }
+
+    DeviceRenderPass* VKRenderBackEnd::createDeviceRenderpass_imp()
+    {
+        return new DeviceRenderPassVK();
+    }
+
+    DeviceRenderStage* VKRenderBackEnd::createRenderStage_imp()
+    {
+        return new DeviceRenderStageVK();
+    }
+
+    DeviceFrameBuffer* VKRenderBackEnd::createFrameBuffer_imp()
+    {
+        return new DeviceFrameBufferVK();
     }
 
     VkDevice VKRenderBackEnd::getDevice()

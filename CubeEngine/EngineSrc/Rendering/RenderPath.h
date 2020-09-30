@@ -1,6 +1,6 @@
 #pragma once
 #include "../Engine/EngineDef.h"
-#include "RenderStage.h"
+#include "BackEnd/DeviceRenderStage.h"
 #include <vector>
 namespace tzw
 {
@@ -9,10 +9,10 @@ namespace tzw
 	public:
 		RenderPath();
 		void prepare();
-		void addRenderStage(RenderStage * stage);
-		std::vector<RenderStage *> & getStages();
+		void addRenderStage(DeviceRenderStage * stage);
+		std::vector<DeviceRenderStage *> & getStages();
 	private:
-		std::vector<RenderStage *> m_stages;
+		std::vector<DeviceRenderStage *> m_stages;
 	};
 
 

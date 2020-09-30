@@ -40,9 +40,16 @@ void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription
 
 }
 
-DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, DeviceRenderPassVK* targetRenderPass ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
+DevicePipelineVK::DevicePipelineVK()
 {
-	m_totalItemWiseDesSet = 0;
+	
+}
+
+
+void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
+{
+
+    m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
     m_mat = mat;
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
@@ -227,7 +234,7 @@ DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, DeviceRende
     pipelineInfo.pColorBlendState = &blendCreateInfo;
 	pipelineInfo.pDepthStencilState = &depthStencil;
     pipelineInfo.layout = m_pipelineLayout;
-    pipelineInfo.renderPass = targetRenderPass->getRenderPass();
+    pipelineInfo.renderPass = static_cast<DeviceRenderPassVK *>(targetRenderPass)->getRenderPass();
     pipelineInfo.basePipelineIndex = -1;
     
     VkResult res = vkCreateGraphicsPipelines(VKRenderBackEnd::shared()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &m_pipeline);
@@ -240,7 +247,6 @@ DevicePipelineVK::DevicePipelineVK(vec2 viewPortSize, Material* mat, DeviceRende
     updateUniform();//will be update every frame, or every change.
     printf("pipeline create %p\n", m_pipeline);
 }
-
 VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
 {
     DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
@@ -263,7 +269,7 @@ VkPipeline DevicePipelineVK::getPipeline()
     return m_pipeline;
 }
 
-DeviceDescriptorVK* DevicePipelineVK::getMaterialDescriptorSet()
+DeviceDescriptor* DevicePipelineVK::getMaterialDescriptorSet()
 {
 
     return m_materialDescripotrSet;
@@ -492,7 +498,7 @@ void DevicePipelineVK::collcetItemWiseDescritporSet()
     m_currItemWiseDescriptorSetIdx = 0;
 }
 
-DeviceDescriptorVK * DevicePipelineVK::giveItemWiseDescriptorSet()
+DeviceDescriptor * DevicePipelineVK::giveItemWiseDescriptorSet()
 {
     DeviceDescriptorVK * target;
     if(m_currItemWiseDescriptorSetIdx< m_itemDescritptorSetList.size()){
@@ -697,5 +703,7 @@ void DeviceVertexInput::addVertexAttributeDesc(DeviceVertexAttributeDescVK verte
 {
     m_attributeList.emplace_back(vertexAttributeDesc);
 }
+
+
 
 }

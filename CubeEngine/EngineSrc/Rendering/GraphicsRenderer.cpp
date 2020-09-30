@@ -28,14 +28,20 @@ namespace tzw
     {
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
-        auto thumbnailPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
-        m_thumbNailRenderStage = new DeviceRenderStageVK(thumbnailPass, nullptr);
+        auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
+        thumbnailPass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        m_thumbNailRenderStage = backEnd->createRenderStage_imp();
+        m_thumbNailRenderStage->init(thumbnailPass, nullptr);
 
         auto size = Engine::shared()->winSize();
-        auto gBufferRenderPass = new DeviceRenderPassVK(4, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
-        auto gBuffer = new DeviceFrameBufferVK(size.x, size.y, gBufferRenderPass);
-        m_gPassStage = new DeviceRenderStageVK(gBufferRenderPass, gBuffer);
+        auto gBufferRenderPass = backEnd->createDeviceRenderpass_imp();
+        gBufferRenderPass->init(4, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        auto gBuffer = backEnd->createFrameBuffer_imp();
+        gBuffer->init(size.x, size.y, gBufferRenderPass);
 
+        
+        m_gPassStage = backEnd->createRenderStage_imp();
+        m_gPassStage->init(gBufferRenderPass, gBuffer);
 
         m_shadowMat = new Material();
         m_shadowMat->loadFromTemplate("Shadow");
@@ -44,15 +50,22 @@ namespace tzw
 
         for(int i = 0; i < 3; i ++)
         {
-            auto shadowRenderPass = new DeviceRenderPassVK(0, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
-            auto shadowBuffer = new DeviceFrameBufferVK(1024, 1024, shadowRenderPass);
-            m_ShadowStage[i] = new DeviceRenderStageVK(shadowRenderPass, shadowBuffer);
+            auto shadowRenderPass = backEnd->createDeviceRenderpass_imp();
+            shadowRenderPass->init(0, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+            auto shadowBuffer = backEnd->createFrameBuffer_imp();
+            shadowBuffer->init(1024, 1024, shadowRenderPass);
+            m_ShadowStage[i] = backEnd->createRenderStage_imp();
+            m_ShadowStage[i]->init(shadowRenderPass, shadowBuffer);
         }
 
 
-        auto deferredLightingPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
-        auto deferredLightingBuffer= new DeviceFrameBufferVK(size.x, size.y, deferredLightingPass);
-        m_DeferredLightingStage = new DeviceRenderStageVK(deferredLightingPass, deferredLightingBuffer);
+        auto deferredLightingPass = backEnd->createDeviceRenderpass_imp();
+        deferredLightingPass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        auto deferredLightingBuffer= backEnd->createFrameBuffer_imp();
+        deferredLightingBuffer->init(size.x, size.y, deferredLightingPass);
+
+        m_DeferredLightingStage = backEnd->createRenderStage_imp();
+        m_DeferredLightingStage->init(deferredLightingPass, deferredLightingBuffer);
        
         
         DeviceVertexInput imguiVertexInput;
@@ -67,8 +80,10 @@ namespace tzw
         auto winSize = Engine::shared()->winSize();
         DeviceVertexInput emptyInstancingInput;
 
-        auto skyPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
-        m_skyStage = new DeviceRenderStageVK(skyPass, m_DeferredLightingStage->getFrameBuffer());
+        auto skyPass = backEnd->createDeviceRenderpass_imp();
+        skyPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        m_skyStage = backEnd->createRenderStage_imp();
+        m_skyStage->init(skyPass, m_DeferredLightingStage->getFrameBuffer());
 
 
         Material * matSkyPass = new Material();
@@ -78,13 +93,17 @@ namespace tzw
 	    Material * matFog = new Material();
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
-        auto fogPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
-        m_fogStage = new DeviceRenderStageVK(fogPass, m_DeferredLightingStage->getFrameBuffer());
+        auto fogPass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        m_fogStage = backEnd->createRenderStage_imp();//new DeviceRenderStageVK(fogPass, m_DeferredLightingStage->getFrameBuffer());
+        m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
         m_fogStage->createSinglePipeline(matFog);
 
 
-        auto transparentPass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
-        m_transparentStage = new DeviceRenderStageVK(transparentPass, m_DeferredLightingStage->getFrameBuffer());
+        auto transparentPass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        transparentPass->init(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        m_transparentStage = backEnd->createRenderStage_imp();//new DeviceRenderStageVK(transparentPass, m_DeferredLightingStage->getFrameBuffer());
+        m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer());
 
 
         Material * matTextureToScreen = new Material();
@@ -92,17 +111,23 @@ namespace tzw
 
         for(int i = 0 ; i < 2; i++)
         {
-            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            pass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
-            m_textureToScreenRenderStage[i] = new DeviceRenderStageVK(pass, frameBuffer);
+            auto stage = backEnd->createRenderStage_imp();
+            stage->init(pass, frameBuffer);
+            m_textureToScreenRenderStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
             m_textureToScreenRenderStage[i]->createSinglePipeline(matTextureToScreen);
         }
 
         for(int i = 0 ; i < 2; i++)
         {
-            auto pass = new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
+            pass->init(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
-            m_guiStage[i] = new DeviceRenderStageVK(pass, frameBuffer);
+            auto stage = backEnd->createRenderStage_imp();
+            stage->init(pass, frameBuffer);
+            m_guiStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
         }
 	    m_imguiPipeline = nullptr;
         m_renderPath = new RenderPath();
@@ -134,10 +159,11 @@ namespace tzw
 
         DeviceVertexInput instancingInput;
         vec2 winSize = Engine::shared()->winSize();
-        m_imguiPipeline =  new DevicePipelineVK(winSize, m_imguiMat, backEnd->getScreenRenderPass(), imguiVertexInput, false, instancingInput);
+        m_imguiPipeline = backEnd->createPipeline_imp();
+        m_imguiPipeline->init(winSize, m_imguiMat, backEnd->getScreenRenderPass(), imguiVertexInput, false, instancingInput);
 
         auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
-        VkDescriptorSetLayout layout = m_imguiPipeline->getDescriptorSetLayOut();
+        VkDescriptorSetLayout layout = static_cast<DevicePipelineVK*>(m_imguiPipeline)->getDescriptorSetLayOut();
         VkDescriptorSetAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
         alloc_info.descriptorPool = backEnd->getDescriptorPool();
@@ -257,7 +283,7 @@ namespace tzw
                 auto tex = gbufferTex[i];
                 pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
-            std::vector<DeviceTextureVK *> shadowList = {
+            std::vector<DeviceTexture *> shadowList = {
                 m_ShadowStage[0]->getFrameBuffer()->getDepthMap(),
                 m_ShadowStage[1]->getFrameBuffer()->getDepthMap(), 
                 m_ShadowStage[2]->getFrameBuffer()->getDepthMap()
@@ -271,9 +297,9 @@ namespace tzw
             m_DeferredLightingStage->drawScreenQuad();
 
             m_DeferredLightingStage->endRenderPass();
-            backEnd->blitTexture(m_DeferredLightingStage->getCommand(),
-                m_gPassStage->getFrameBuffer()->getDepthMap(), 
-                m_DeferredLightingStage->getFrameBuffer()->getDepthMap(),
+            backEnd->blitTexture(static_cast<DeviceRenderStageVK *>(m_DeferredLightingStage)->getCommand(),
+                static_cast<DeviceTextureVK *>(m_gPassStage->getFrameBuffer()->getDepthMap()), 
+                static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getDepthMap()),
                 m_DeferredLightingStage->getFrameBuffer()->getSize(), 
                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
 
@@ -302,7 +328,7 @@ namespace tzw
             m_skyStage->beginRenderPass();
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
-            DeviceDescriptorVK * itemDescriptorSet = m_skyStage->getSinglePipeline()->giveItemWiseDescriptorSet();
+            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
             itemBuf.map();
             Matrix44 scale;
             scale.setScale(vec3(6360000.0f, 6360000.0f, 6360000.0f));
@@ -441,7 +467,7 @@ namespace tzw
 
                     m_guiStage[imageIdx]->bindPipeline(m_imguiPipeline);
 
-                    std::vector<DeviceDescriptorVK *> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet(), descriptiorSet};
+                    std::vector<DeviceDescriptor *> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet(), descriptiorSet};
                     
                     m_guiStage[imageIdx]->bindDescriptor(m_imguiPipeline, descriptorSetList);
 
@@ -494,7 +520,7 @@ namespace tzw
 		    if(!thumbnail->isIsDone())
 		    {
                 if(!thumbnail->getFrameBufferVK()){
-                    thumbnail->initFrameBufferVK(m_thumbNailRenderStage->getRenderPass());
+                    thumbnail->initFrameBufferVK(static_cast<DeviceRenderPassVK *>(m_thumbNailRenderStage->getRenderPass()));
                 }
                 
                 std::vector<RenderCommand> thumbnailCommandList;

@@ -17,8 +17,10 @@ namespace tzw {
 
 	void ThumbNail::initFrameBufferVK(DeviceRenderPassVK* renderPass)
 	{
-		m_frameBufferVK = new DeviceFrameBufferVK(1024,1024, renderPass);
-		DeviceTextureVK * texture = m_frameBufferVK->getTextureList()[0];
+		m_frameBufferVK = new DeviceFrameBufferVK();
+		m_frameBufferVK->init(1024,1024, renderPass);
+		
+		DeviceTexture * texture = m_frameBufferVK->getTextureList()[0];
 		m_texture->setTextureId(static_cast<DeviceTexture *>(texture));
 	}
 

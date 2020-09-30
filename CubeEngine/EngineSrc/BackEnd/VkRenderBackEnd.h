@@ -93,6 +93,11 @@ public:
     DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat byte_size, unsigned int loadingFlag) override;
     DeviceShader * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
+    DevicePipeline * createPipeline_imp() override;
+
+    DeviceRenderPass * createDeviceRenderpass_imp() override;
+	DeviceRenderStage * createRenderStage_imp() override;
+	DeviceFrameBuffer * createFrameBuffer_imp() override;
     VkDevice getDevice();
     VkDescriptorPool & getDescriptorPool();
     DeviceItemBufferPoolVK * getItemBufferPool();

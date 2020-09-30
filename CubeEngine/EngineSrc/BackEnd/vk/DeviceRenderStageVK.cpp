@@ -9,29 +9,11 @@
 #include "Mesh/InstancedMesh.h"
 namespace tzw
 {
-    DeviceBufferVK * DeviceRenderStageVK::m_quadVertexBuffer = nullptr;
-    DeviceBufferVK * DeviceRenderStageVK::m_quadIndexBuffer = nullptr;
-    Mesh * DeviceRenderStageVK::m_sphere = nullptr;
-	DeviceRenderStageVK::DeviceRenderStageVK(DeviceRenderPassVK* renderPass, DeviceFrameBufferVK* frameBuffer)
-		:m_renderPass(renderPass),m_frameBuffer(frameBuffer),m_singlePipeline(nullptr)
+	DeviceRenderStageVK::DeviceRenderStageVK()
 	{
+
 	}
-	DeviceRenderPassVK* DeviceRenderStageVK::getRenderPass()
-	{
-		return m_renderPass;
-	}
-	DeviceFrameBufferVK* DeviceRenderStageVK::getFrameBuffer()
-	{
-		return m_frameBuffer;
-	}
-	void DeviceRenderStageVK::setRenderPass(DeviceRenderPassVK* renderPass)
-	{
-		m_renderPass = renderPass;
-	}
-	void DeviceRenderStageVK::setFrameBuffer(DeviceFrameBufferVK* frameBuffer)
-	{
-		m_frameBuffer = frameBuffer;
-	}
+
 
 	void DeviceRenderStageVK::prepare()
 	{
@@ -83,17 +65,19 @@ namespace tzw
 
                     instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
 
-                    currPipeLine = new DevicePipelineVK(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                    currPipeLine = new DevicePipelineVK();
+                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
                 }else //single draw call
                 {
-                    currPipeLine = new DevicePipelineVK(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                    currPipeLine = new DevicePipelineVK();
+                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
                 }
             
                 m_matPipelinePool[mat]  =currPipeLine;
                 
             }
             else{
-                currPipeLine = iter->second;
+                currPipeLine = static_cast<DevicePipelineVK*>(iter->second);
             }
             if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
             {
@@ -104,7 +88,7 @@ namespace tzw
             }
             
             //update uniform.
-            DeviceDescriptorVK * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
+            DeviceDescriptor * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
 
             
             DeviceItemBuffer itemBuf = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
@@ -139,7 +123,8 @@ namespace tzw
             
                 vkCmdBindIndexBuffer(m_command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-                std::vector<VkDescriptorSet> descriptorSetList = {currPipeLine->getMaterialDescriptorSet()->getDescSet(), itemDescriptorSet->getDescSet(),};
+                std::vector<VkDescriptorSet> descriptorSetList = {static_cast<DeviceDescriptorVK*>(currPipeLine->getMaterialDescriptorSet())->getDescSet(), 
+                    static_cast<DeviceDescriptorVK*>(itemDescriptorSet)->getDescSet(),};
                 vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
                 if(a.batchType() != RenderCommand::RenderBatchType::Single)
                 {
@@ -163,10 +148,10 @@ namespace tzw
         {
             initFullScreenQuad();
         }
-        VkBuffer vertexBuffers[] = {m_quadVertexBuffer->getBuffer()};
+        VkBuffer vertexBuffers[] = {static_cast<DeviceBufferVK*>(m_quadVertexBuffer)->getBuffer()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(m_command, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(m_command, m_quadIndexBuffer->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(m_command, static_cast<DeviceBufferVK*>(m_quadIndexBuffer)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
         vkCmdDrawIndexed(m_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
     }
 
@@ -191,48 +176,32 @@ namespace tzw
         return m_command;
     }
 
-    void DeviceRenderStageVK::createSinglePipeline(Material* material)
-    {
-        DeviceVertexInput vertexDataInput;
-        vertexDataInput.stride = sizeof(VertexData);
-        vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-        vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
-        vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-
-        DeviceVertexInput emptyInstancingInput;
-        m_singlePipeline = new DevicePipelineVK(getFrameBuffer()->getSize(), material, getRenderPass(), vertexDataInput, false, emptyInstancingInput);
-    }
-
-    DevicePipelineVK* DeviceRenderStageVK::getSinglePipeline()
-    {
-        return m_singlePipeline;
-    }
 
     void DeviceRenderStageVK::bindSinglePipelineDescriptor()
     {
-        VkDescriptorSet descriptorSetList[] = {m_singlePipeline->getMaterialDescriptorSet()->getDescSet(), };
-        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_singlePipeline->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
+        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), };
+        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
-    void DeviceRenderStageVK::bindSinglePipelineDescriptor(DeviceDescriptorVK* extraItemDescriptor)
+    void DeviceRenderStageVK::bindSinglePipelineDescriptor(DeviceDescriptor* extraItemDescriptor)
     {
-        VkDescriptorSet descriptorSetList[] = {m_singlePipeline->getMaterialDescriptorSet()->getDescSet(), extraItemDescriptor->getDescSet() };
-        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, m_singlePipeline->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
+        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), static_cast<DeviceDescriptorVK *>(extraItemDescriptor)->getDescSet() };
+        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
-    void DeviceRenderStageVK::bindPipeline(DevicePipelineVK* pipeline)
+    void DeviceRenderStageVK::bindPipeline(DevicePipeline* pipeline)
     {
-        vkCmdBindPipeline(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipeline());
+        vkCmdBindPipeline(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipeline());
     }
 
-    void DeviceRenderStageVK::bindDescriptor(DevicePipelineVK* pipeline, std::vector<DeviceDescriptorVK*> inDescriptorList)
+    void DeviceRenderStageVK::bindDescriptor(DevicePipeline* pipeline, std::vector<DeviceDescriptor*> inDescriptorList)
     {
         std::vector<VkDescriptorSet> descriptorSetList;
         for(auto descriptorSet : inDescriptorList)
         {
-            descriptorSetList.emplace_back(descriptorSet->getDescSet());
+            descriptorSetList.emplace_back(static_cast<DeviceDescriptorVK *>(descriptorSet)->getDescSet());
         }
-        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
     }
 
     void DeviceRenderStageVK::beginRenderPass(vec4 clearColor, vec2 clearDepthStencil)
@@ -261,7 +230,7 @@ namespace tzw
 
 		VkRenderPassBeginInfo renderPassInfoDeferred = {};
         renderPassInfoDeferred.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-        renderPassInfoDeferred.renderPass = getRenderPass()->getRenderPass();   
+        renderPassInfoDeferred.renderPass = static_cast<DeviceRenderPassVK*>(getRenderPass())->getRenderPass();   
         renderPassInfoDeferred.renderArea.offset.x = 0;
         renderPassInfoDeferred.renderArea.offset.y = 0;
         renderPassInfoDeferred.renderArea.extent.width = m_frameBuffer->getSize().x;
@@ -271,14 +240,14 @@ namespace tzw
 
         int res = vkBeginCommandBuffer(m_command, &beginInfoDeffered);
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
-        renderPassInfoDeferred.framebuffer = m_frameBuffer->getFrameBuffer();
+        renderPassInfoDeferred.framebuffer = static_cast<DeviceFrameBufferVK*>(m_frameBuffer)->getFrameBuffer();
         vkCmdBeginRenderPass(m_command, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
         if(m_singlePipeline)
         {
-            vkCmdBindPipeline(getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, m_singlePipeline->getPipeline());
-            m_singlePipeline->updateUniform();
-            m_singlePipeline->collcetItemWiseDescritporSet();
+            vkCmdBindPipeline(getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
+            static_cast<DevicePipelineVK*>(m_singlePipeline)->updateUniform();
+            static_cast<DevicePipelineVK*>(m_singlePipeline)->collcetItemWiseDescritporSet();
         }
 
     }
@@ -288,16 +257,16 @@ namespace tzw
         vkCmdEndRenderPass(m_command);
     }
 
-    void DeviceRenderStageVK::bindVBO(DeviceBufferVK* buf)
+    void DeviceRenderStageVK::bindVBO(DeviceBuffer* buf)
     {
-        VkBuffer vertex_buffers[1] = { buf->getBuffer() };
+        VkBuffer vertex_buffers[1] = { static_cast<DeviceBufferVK *>(buf)->getBuffer() };
         VkDeviceSize vertex_offset[1] = { 0 };
         vkCmdBindVertexBuffers(m_command, 0, 1, vertex_buffers, vertex_offset);
     }
 
-    void DeviceRenderStageVK::bindIBO(DeviceBufferVK* buf)
+    void DeviceRenderStageVK::bindIBO(DeviceBuffer* buf)
     {
-        vkCmdBindIndexBuffer(m_command, buf->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(m_command, static_cast<DeviceBufferVK *>(buf)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
     }
 
     void DeviceRenderStageVK::setScissor(vec4 scissorRect)
@@ -315,84 +284,13 @@ namespace tzw
         vkCmdDrawIndexed(m_command, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
-    void DeviceRenderStageVK::initFullScreenQuad()
-    {
-        VertexData vertices[] = {
-            // Vertex data for face 0
-            VertexData(vec3(-1.0f, -1.0f,  1.0f), vec2(0.0f, 0.0f)),  // v0
-            VertexData(vec3( 1.0f, -1.0f,  1.0f), vec2(1.f, 0.0f)), // v1
-            VertexData(vec3(-1.0f,  1.0f,  1.0f), vec2(0.0f, 1.f)),  // v2
-            VertexData(vec3( 1.0f,  1.0f,  1.0f), vec2(1.f, 1.f)), // v3
-        };
-        auto vbuffer = VKRenderBackEnd::shared()->createBuffer_imp();
-        vbuffer->init(DeviceBufferType::Vertex);
-
-        vbuffer->allocate(vertices, sizeof(vertices[0]) * 4);
-        m_quadVertexBuffer = static_cast<DeviceBufferVK *>(vbuffer);
-
-
-        uint16_t indices[] = {
-         0,  1,  2,  1,  3,  2,
-
-		};
-        auto ibuffer = VKRenderBackEnd::shared()->createBuffer_imp();
-        ibuffer->init(DeviceBufferType::Index);
-
-        ibuffer->allocate(indices, sizeof(indices));
-        m_quadIndexBuffer = static_cast<DeviceBufferVK *>(ibuffer);
-    }
+   
 	static vec3 pointOnSurface(float u, float v)
 	{
         float m_radius = 1.0f;
 		return vec3(cos(u) * sin(v) * m_radius, cos(v) * m_radius, sin(u) * sin(v) * m_radius);
 	}
-    void DeviceRenderStageVK::initSphere()
-    {
-
-		m_sphere = new Mesh();
-		float PI = 3.1416;
-		float startU=0;
-		float startV=0;
-		float endU=PI*2;
-		float endV=PI;
-		float stepU=(endU-startU)/24; // step size between U-points on the grid
-		float stepV=(endV-startV)/24; // step size between V-points on the grid
-		for(int i=0;i<24;i++){ // U-points
-			for(int j=0;j<24;j++){ // V-points
-				float u=i*stepU+startU;
-					float v=j*stepV+startV;
-					float un=(i+1==24) ? endU : (i+1)*stepU+startU;
-					float vn=(j+1==24) ? endV : (j+1)*stepV+startV;
-					// Find the four points of the grid
-					// square by evaluating the parametric
-					// surface function
-					vec3 p0=pointOnSurface(u, v);
-					vec3 p1=pointOnSurface(u, vn);
-					vec3 p2=pointOnSurface(un, v);
-					vec3 p3=pointOnSurface(un, vn);
-					// NOTE: For spheres, the normal is just the normalized
-					// version of each vertex point; this generally won't be the case for
-					// other parametric surfaces.
-					// Output the first triangle of this grid square
-						
-					m_sphere->addVertex(VertexData(p0, p0.normalized(), vec2(u, 1.0 - v)));
-					m_sphere->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
-					m_sphere->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
-					m_sphere->addIndex(m_sphere->getIndicesSize());
-					m_sphere->addIndex(m_sphere->getIndicesSize());
-					m_sphere->addIndex(m_sphere->getIndicesSize());
-
-
-					m_sphere->addVertex(VertexData(p3, p3.normalized(), vec2(un, 1.0 - vn)));
-					m_sphere->addVertex(VertexData(p1, p1.normalized(), vec2(u, 1.0 - vn)));
-					m_sphere->addVertex(VertexData(p2, p2.normalized(), vec2(un, 1.0 - v)));
-					m_sphere->addIndex(m_sphere->getIndicesSize());
-					m_sphere->addIndex(m_sphere->getIndicesSize());
-					m_sphere->addIndex(m_sphere->getIndicesSize());
-			}
-		}
-		m_sphere->finish();
-    }
+    
 
     void DeviceRenderStageVK::fetchCommand()
 	{

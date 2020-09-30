@@ -8,15 +8,16 @@ namespace tzw
 		m_descriptorSet(descSet), m_layout(layout)
 	{
 	}
-	void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceTextureVK* texture)
+	void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceTexture* texture)
 	{
+        DeviceTextureVK * vkTex =static_cast<DeviceTextureVK *>(texture);
         if(!m_layout->isHaveThisBinding(binding))
         {
         
             abort();
         }
         VkDescriptorImageInfo imageInfo{};
-        if(texture->getIsDepth())
+        if(vkTex->getIsDepth())
         {
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;//VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//texture->getImageLayOut();
         }
@@ -26,8 +27,8 @@ namespace tzw
         
         }
         
-        imageInfo.imageView = texture->getImageView();
-        imageInfo.sampler = texture->getSampler();
+        imageInfo.imageView = vkTex->getImageView();
+        imageInfo.sampler = vkTex->getSampler();
         VkWriteDescriptorSet texWriteSet{};
         texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         texWriteSet.dstSet = m_descriptorSet;
@@ -38,7 +39,7 @@ namespace tzw
         texWriteSet.pImageInfo = &imageInfo;
 	    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
 	}
-    void DeviceDescriptorVK::updateDescriptorByBinding(int binding, std::vector<DeviceTextureVK*>& textureList)
+    void DeviceDescriptorVK::updateDescriptorByBinding(int binding, std::vector<DeviceTexture*>& textureList)
     {
         if(!m_layout->isHaveThisBinding(binding))
         {
@@ -48,8 +49,9 @@ namespace tzw
         std::vector<VkDescriptorImageInfo> imageInfoList;
         for(auto& texture : textureList)
         {
+            DeviceTextureVK * vkTex =static_cast<DeviceTextureVK *>(texture);
             VkDescriptorImageInfo imageInfo{};
-            if(texture->getIsDepth())
+            if(vkTex->getIsDepth())
             {
                 imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
             }
@@ -59,8 +61,8 @@ namespace tzw
         
             }
         
-            imageInfo.imageView = texture->getImageView();
-            imageInfo.sampler = texture->getSampler();
+            imageInfo.imageView = vkTex->getImageView();
+            imageInfo.sampler = vkTex->getSampler();
             imageInfoList.push_back(imageInfo);
         }
 
@@ -77,16 +79,17 @@ namespace tzw
 	    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
     }
 
-    void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceBufferVK* buffer, size_t offset, size_t range)
+    void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceBuffer* buffer, size_t offset, size_t range)
     {
         if(!m_layout->isHaveThisBinding(binding))
         {
         
             abort();
         }
+        DeviceBufferVK * vkBuf = static_cast<DeviceBufferVK *>(buffer);
         //update descriptor
         VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = buffer->getBuffer();
+        bufferInfo.buffer = vkBuf->getBuffer();
         bufferInfo.offset = offset;
         bufferInfo.range = range;
 

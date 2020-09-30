@@ -4,9 +4,15 @@
 #include <array>
 namespace tzw
 {
-	DeviceRenderPassVK::DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread, bool isOutputToScreen)
-        :m_isNeedTransitionToRead(isNeedTransitionToRread),m_isOutPutToScreen(isOutputToScreen)
+	DeviceRenderPassVK::DeviceRenderPassVK()
 	{
+        
+	}
+
+    void DeviceRenderPassVK::init(int colorAttachNum, OpType opType, ImageFormat format, bool isNeedTransitionToRread, bool isOutputToScreen)
+    {
+        m_isNeedTransitionToRead = isNeedTransitionToRread;
+        m_isOutPutToScreen = isOutputToScreen;
         m_opType = opType;
         std::vector<VkAttachmentReference> colorAttachmentRefs;
         std::vector<VkAttachmentDescription> attachmentDescList;
@@ -159,24 +165,10 @@ namespace tzw
         }
 
         printf("Created a render pass\n");
-	}
+    }
+
     VkRenderPass DeviceRenderPassVK::getRenderPass()
     {
         return m_renderPass;
-    }
-
-    size_t DeviceRenderPassVK::getAttachmentCount()
-    {
-        return m_attachmentList.size();
-    }
-    std::vector<DeviceRenderPassAttachmentInfo>& DeviceRenderPassVK::getAttachmentList()
-    {
-        return m_attachmentList;
-    }
-
-    DeviceRenderPassVK::OpType DeviceRenderPassVK::getOpType()
-    {
-        return m_opType;
-    
     }
 }

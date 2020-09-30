@@ -7,40 +7,30 @@
 #include <functional>
 #include "DeviceDescriptorVK.h"
 #include "Rendering/RenderFlag.h"
+#include "../DevicePipeline.h"
 namespace tzw
 {
 class Material;
 class DeviceShaderVK;
 class DeviceTextureVK;
 class DeviceRenderPassVK;
-struct DeviceVertexAttributeDescVK
-{
-	VkFormat format;
-	int offset;
 
-};
-struct DeviceVertexInput
-{
-	int stride;
-	void addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc);
-	std::vector<DeviceVertexAttributeDescVK> m_attributeList;
-
-};
-class DevicePipelineVK
+class DevicePipelineVK : public DevicePipeline
 {
 public:
-	DevicePipelineVK(vec2 viewPortSize, Material * mat, DeviceRenderPassVK* targetRenderPass
-		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1);
+	DevicePipelineVK();
+	void init(vec2 viewPortSize, Material * mat, DeviceRenderPass* targetRenderPass
+		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) override;
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();
 	VkPipelineLayout getPipelineLayOut();
 	VkPipeline getPipeline();
-	DeviceDescriptorVK * getMaterialDescriptorSet();
+	DeviceDescriptor * getMaterialDescriptorSet();
 	void updateMaterialDescriptorSet();
 	void updateUniform();
-	void updateUniformSingle(std::string name, void * buff, size_t size);
-	void collcetItemWiseDescritporSet();
-	DeviceDescriptorVK * giveItemWiseDescriptorSet();
+	void updateUniformSingle(std::string name, void * buff, size_t size) override;
+	void collcetItemWiseDescritporSet() override;
+	DeviceDescriptor * giveItemWiseDescriptorSet() override;
 	Material * getMat();
 private:
 	void createDescriptorPool();

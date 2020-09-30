@@ -2,37 +2,19 @@
 #include "Rendering/ImageFormat.h"
 #include "vulkan/vulkan.h"
 #include <vector>
+#include "../DeviceRenderPass.h"
 namespace tzw
 {
 
-struct DeviceRenderPassAttachmentInfo
-{
-	ImageFormat format;
-	int attachmentIndex;
-	bool isDepth;
-};
-
 class DeviceTextureVK;
-class DeviceRenderPassVK
+class DeviceRenderPassVK : public DeviceRenderPass
 {
 public:
-	enum class OpType
-	{
-		LOADCLEAR_AND_STORE,
-		LOAD_AND_STORE,
-	};
-	DeviceRenderPassVK(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread, bool isOutputToScreen = false);
+	DeviceRenderPassVK();
+	void init(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread, bool isOutputToScreen = false) override;
 	VkRenderPass getRenderPass();
-	size_t getAttachmentCount();
-	std::vector<DeviceRenderPassAttachmentInfo> & getAttachmentList();
-	OpType getOpType();
 private:
-	OpType m_opType;
 	VkRenderPass m_renderPass;
-	bool m_isNeedTransitionToRead;
-	bool m_isOutPutToScreen;
-	std::vector<DeviceRenderPassAttachmentInfo> m_attachmentList;
-
 };
 };
 

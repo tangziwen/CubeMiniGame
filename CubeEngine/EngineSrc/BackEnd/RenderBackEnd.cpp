@@ -103,6 +103,26 @@ DeviceBuffer* RenderBackEnd::createBuffer_imp()
 	return new DeviceBufferGL();
 }
 
+DeviceRenderPass* RenderBackEnd::createDeviceRenderpass_imp()
+{
+	return nullptr;
+}
+
+DevicePipeline* RenderBackEnd::createPipeline_imp()
+{
+	return nullptr;
+}
+
+DeviceRenderStage* RenderBackEnd::createRenderStage_imp()
+{
+	return nullptr;
+}
+
+DeviceFrameBuffer* RenderBackEnd::createFrameBuffer_imp()
+{
+	return nullptr;
+}
+
 void RenderBackEnd::prepareFrame()
 {
 }
