@@ -136,8 +136,18 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     rastCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
     rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
     if(mat->getIsCullFace()){
-    
-        rastCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+        RenderFlag::CullMode cullMode =  mat->getCullMode();
+        if(cullMode == RenderFlag::CullMode::Back)
+        {
+            rastCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+        }
+        else if(cullMode == RenderFlag::CullMode::Front)
+        {
+            rastCreateInfo.cullMode = VK_CULL_MODE_FRONT_BIT;
+        }else
+        {
+            rastCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
+        }  
     }
     else{
         rastCreateInfo.cullMode = VK_CULL_MODE_NONE;

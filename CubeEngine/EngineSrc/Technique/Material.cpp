@@ -22,7 +22,7 @@ namespace tzw {
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
 	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
-	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false)
+	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back)
 {
 }
 
@@ -62,7 +62,22 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 	{
 		m_isCullFace = true;
 	}
-
+	if (doc.HasMember("CullMode"))
+	{
+		std::string cullModeStr = doc["CullMode"].GetString();
+		if(cullModeStr == "front")
+		{
+			m_cullMode = RenderFlag::CullMode::Front;
+		}
+		else if(cullModeStr == "back")
+		{
+			m_cullMode = RenderFlag::CullMode::Back;
+		}
+	}
+	else
+	{
+		m_cullMode = RenderFlag::CullMode::Back;
+	}
 
 	if (doc.HasMember("DepthTestEnable"))
 	{
@@ -647,6 +662,7 @@ Material *Material::clone()
 	mat->m_fsPath = m_fsPath;
 	mat->m_factorSrc = m_factorSrc;
 	mat->m_factorDst = m_factorDst;
+	mat->m_cullMode = m_cullMode;
 	return mat;
 }
 
@@ -664,6 +680,17 @@ bool Material::getIsCullFace()
 void Material::setIsCullFace(bool newVal)
 {
 	m_isCullFace = newVal;
+	updateFullDescriptionStr();
+}
+
+RenderFlag::CullMode Material::getCullMode()
+{
+	return m_cullMode;
+}
+
+void Material::setCullMode(RenderFlag::CullMode newCullMode)
+{
+	m_cullMode = newCullMode;
 	updateFullDescriptionStr();
 }
 

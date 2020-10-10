@@ -20,6 +20,7 @@ namespace tzw
 		DeviceRenderStage * m_ShadowStage[3];
 		DeviceRenderStage * m_gPassStage;
 		DeviceRenderStage * m_DeferredLightingStage;
+		DeviceRenderStage * m_PointLightingStage;
 		DeviceRenderStage * m_skyStage;
 		DeviceRenderStage * m_fogStage;
 		DeviceRenderStage * m_transparentStage;

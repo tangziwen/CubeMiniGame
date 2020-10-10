@@ -216,22 +216,25 @@ void DeviceShaderVK::createDescriptorSetLayOut()
             VkDescriptorSetLayoutBinding layOutBinding{};
             layOutBinding.binding = locationInfo.binding;
 
-            TAssert(bindingSet.find(locationInfo.binding) == bindingSet.end(), "binding is duplicated");
-            bindingSet.insert(locationInfo.binding);
+            //TAssert(bindingSet.find(locationInfo.binding) == bindingSet.end(), "binding is duplicated");
+            if(bindingSet.find(locationInfo.binding) == bindingSet.end())
+            {
+                bindingSet.insert(locationInfo.binding);
 
-            if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
-            {
-                layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-            }
-            else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
-            {
-                layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-            }
+                if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+                {
+                    layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+                }
+                else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+                {
+                    layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+                }
         
-            layOutBinding.descriptorCount = 1;
-            layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;//locationInfo.stageFlag;
-            descriptorLayoutList.emplace_back(layOutBinding);
-            layout->addBinding(locationInfo.binding, locationInfo.name);
+                layOutBinding.descriptorCount = 1;
+                layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;//locationInfo.stageFlag;
+                descriptorLayoutList.emplace_back(layOutBinding);
+                layout->addBinding(locationInfo.binding, locationInfo.name);
+            }
         }
         VkDescriptorSetLayoutCreateInfo layoutInfo{};
         layoutInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;

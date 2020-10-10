@@ -74,6 +74,11 @@ enum class BufferStorageType
 	STATIC_DRAW,
 	DYNAMIC_DRAW,
 };
+
+enum class CullMode{
+    Back,
+    Front,
+};
 }
 } // namespace tzw
 

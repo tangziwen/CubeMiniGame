@@ -53,7 +53,8 @@ public:
 	bool getIsCullFace();
 
 	void setIsCullFace(bool newVal);
-
+	RenderFlag::CullMode getCullMode();
+	void setCullMode(RenderFlag::CullMode newCullMode);
 	TechniqueVar * get(std::string);
 
 	void inspect() override;
@@ -94,6 +95,7 @@ private:
 	ShaderProgram * m_program;
 	RenderFlag::RenderStage m_renderStage;
 	std::string m_fullDescString;
+	RenderFlag::CullMode m_cullMode;
 public:
 	RenderFlag::RenderStage getRenderStage() const;
 	void setRenderStage(const RenderFlag::RenderStage renderStage);

@@ -17,8 +17,19 @@
 #include "BackEnd/vk/DeviceTextureVK.h"
 #include "BackEnd/vk/DeviceShaderVK.h"
 #include "3D/Thumbnail.h"
+#include "Scene/SceneMgr.h"
+#include "Scene/Scene.h"
+#include "Scene/OctreeScene.h"
+#include "Lighting/PointLight.h"
 namespace tzw
 {
+
+    struct PointLightUniform
+    {
+        alignas(16) Matrix44 wvp;
+        alignas(16) vec4 LightPos;
+        alignas(16) vec4 LightColor;
+    };
 
 	GraphicsRenderer::GraphicsRenderer()
 	{
@@ -66,17 +77,26 @@ namespace tzw
 
         m_DeferredLightingStage = backEnd->createRenderStage_imp();
         m_DeferredLightingStage->init(deferredLightingPass, deferredLightingBuffer);
-       
-        
+        Material * mat = new Material();
+        mat->loadFromTemplate("DirectLight");
+        m_DeferredLightingStage->createSinglePipeline(mat);
+
+        //point light
+        Material * pointLightMat = new Material();
+        pointLightMat->loadFromTemplate("PointLight");
+        auto pointLightPass = backEnd->createDeviceRenderpass_imp();
+        pointLightPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        m_PointLightingStage = backEnd->createRenderStage_imp();
+        m_PointLightingStage->init(pointLightPass, m_DeferredLightingStage->getFrameBuffer());
+        m_PointLightingStage->createSinglePipeline(pointLightMat);
+
         DeviceVertexInput imguiVertexInput;
         imguiVertexInput.stride = sizeof(VertexData);
         imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
         imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
         imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
 
-        Material * mat = new Material();
-        mat->loadFromTemplate("DirectLight");
-        m_DeferredLightingStage->createSinglePipeline(mat);
+
         auto winSize = Engine::shared()->winSize();
         DeviceVertexInput emptyInstancingInput;
 
@@ -93,16 +113,16 @@ namespace tzw
 	    Material * matFog = new Material();
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
-        auto fogPass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        auto fogPass = backEnd->createDeviceRenderpass_imp();
         fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
-        m_fogStage = backEnd->createRenderStage_imp();//new DeviceRenderStageVK(fogPass, m_DeferredLightingStage->getFrameBuffer());
+        m_fogStage = backEnd->createRenderStage_imp();
         m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
         m_fogStage->createSinglePipeline(matFog);
 
 
-        auto transparentPass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        auto transparentPass = backEnd->createDeviceRenderpass_imp();
         transparentPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
-        m_transparentStage = backEnd->createRenderStage_imp();//new DeviceRenderStageVK(transparentPass, m_DeferredLightingStage->getFrameBuffer());
+        m_transparentStage = backEnd->createRenderStage_imp();
         m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer());
 
 
@@ -305,6 +325,50 @@ namespace tzw
 
             m_DeferredLightingStage->finish();
             m_renderPath->addRenderStage(m_DeferredLightingStage);
+        }
+        //point light pass
+        {
+            m_PointLightingStage->prepare();
+            m_PointLightingStage->beginRenderPass();
+            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
+            std::vector<VkDescriptorImageInfo> imageInfoList;
+            for(int i =0; i < gbufferTex.size(); i++)
+            {
+                auto tex = gbufferTex[i];
+                m_PointLightingStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+            }
+            std::vector<Drawable3D *> pointlightList;
+            auto currScene = g_GetCurrScene();
+	        currScene->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight),pointlightList);
+            for(auto obj : pointlightList)
+            {
+                PointLight* p = static_cast<PointLight*>(obj);
+
+                DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(PointLightUniform));
+                PointLightUniform uniform;
+                //update uniform.
+                DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_PointLightingStage->getSinglePipeline())->giveItemWiseDescriptorSet();
+                itemBuf.map();
+		        auto projection = currScene->defaultCamera()->projection();
+		        Matrix44 m;
+		        m.setToIdentity();
+		        m.setTranslate(p->getWorldPos());
+		        auto r = p->getRadius();
+		        m.setScale(vec3(r, r, r));
+		        auto v = currScene->defaultCamera()->getViewMatrix();
+                uniform.wvp = projection * v * m;
+                uniform.LightPos = vec4(p->getWorldPos(), p->getRadius());
+                uniform.LightColor = vec4(p->getLightColor() * p->intensity(), 1);
+                itemBuf.copyFrom(&uniform, sizeof(PointLightUniform));
+                itemBuf.unMap();
+                itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
+                m_PointLightingStage->bindSinglePipelineDescriptor(itemDescriptorSet);
+                m_PointLightingStage->drawSphere();
+            }
+            m_PointLightingStage->endRenderPass();
+            m_PointLightingStage->finish();
+            m_renderPath->addRenderStage(m_PointLightingStage);
+        
         }
         //------------deferred Lighting Pass end---------------
 
