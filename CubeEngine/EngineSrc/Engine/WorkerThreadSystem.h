@@ -6,6 +6,7 @@
 #include <list>
 #include <thread>
 #include <mutex>
+#include <condition_variable>
 namespace tzw{
 	typedef std::function<void ()> VoidJob;
 	class WorkerJob
@@ -35,8 +36,8 @@ namespace tzw{
 		std::list<WorkerJob> m_mainThreadCB1;
 		std::list<WorkerJob> m_mainThreadCB2;
 		std::thread * m_thread;
-		std::mutex m_rwMutex;
-		int m_readyToDeathCount;
+		std::mutex m_mutex;
+		std::condition_variable m_cond_var;
 	};
 }
 

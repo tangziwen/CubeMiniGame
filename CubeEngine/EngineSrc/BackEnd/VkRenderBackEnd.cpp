@@ -97,8 +97,13 @@ VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
     if(!vulkanValidationFile){
         vulkanValidationFile = fopen("./vulkanLog.txt", "w");
     }
+	const char * errorPattern = "Validation Error:";
     printf("validation Layer %s\n", pMessage);
-    fprintf(vulkanValidationFile, "validation Layer %s\n", pMessage);
+	fprintf(vulkanValidationFile, "validation Layer %s\n", pMessage);
+	if(strncmp(pMessage, errorPattern, strlen(errorPattern)) == 0)
+	{
+		//abort();
+	}
     return VK_FALSE;
 }
 
@@ -348,7 +353,7 @@ VkApplicationInfo appInfo = {};
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
     const char* pInstExt[] = {
-#ifdef ENABLE_DEBUG_LAYERS
+#if ENABLE_DEBUG_LAYERS
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
 #endif        
         VK_KHR_SURFACE_EXTENSION_NAME,
@@ -359,16 +364,16 @@ VkApplicationInfo appInfo = {};
 #endif            
     };
     
-#ifdef ENABLE_DEBUG_LAYERS    
+#if ENABLE_DEBUG_LAYERS    
     const char* pInstLayers[] = {
-        "VK_LAYER_LUNARG_standard_validation"
+        "VK_LAYER_KHRONOS_validation"
     };
 #endif    
     
     VkInstanceCreateInfo instInfo = {};
     instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instInfo.pApplicationInfo = &appInfo;
-#ifdef ENABLE_DEBUG_LAYERS    
+#if ENABLE_DEBUG_LAYERS    
     instInfo.enabledLayerCount = ARRAY_SIZE_IN_ELEMENTS(pInstLayers);
     instInfo.ppEnabledLayerNames = pInstLayers;
 #endif    
@@ -377,7 +382,7 @@ VkApplicationInfo appInfo = {};
 
     VkResult res = vkCreateInstance(&instInfo, NULL, &m_inst);
     CHECK_VULKAN_ERROR("vkCreateInstance %d\n", res);
-#ifdef ENABLE_DEBUG_LAYERS
+#if ENABLE_DEBUG_LAYERS
     // Get the address to the vkCreateDebugReportCallbackEXT function
     my_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_inst, "vkCreateDebugReportCallbackEXT"));
     
@@ -529,14 +534,6 @@ VkApplicationInfo appInfo = {};
         devInfo.ppEnabledExtensionNames = pDevExt;
         devInfo.queueCreateInfoCount = 1;
         devInfo.pQueueCreateInfos = &qInfo;
-       
-#if ENABLE_DEBUG_LAYERS
-        devInfo.enabledLayerCount = static_cast<uint32_t>(validationLayers.size());
-        devInfo.ppEnabledLayerNames = validationLayers.data();
-#else
-        devInfo.enabledLayerCount = 0;
-#endif
-
         VkResult res = vkCreateDevice(GetPhysDevice(), &devInfo, NULL, &m_device);
 
         CHECK_VULKAN_ERROR("vkCreateDevice error %d\n", res);

@@ -62,10 +62,13 @@ static void onOption(Button * btn)
 
 }
 GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
-	m_isOpenTerrain(false), m_isOpenRenderEditor(false),
-	m_fileBrowser(nullptr),
-	m_crossHair(nullptr),m_preIsNeedShow(false),m_isVisible(false),m_crossHairTipsInfo(nullptr),m_isOpenPlayerOverLay(true)
-	
+                              m_isOpenTerrain(false), m_isOpenRenderEditor(false),
+                              m_fileBrowser(nullptr), m_NewWorldSettingUI(nullptr), m_loadWorldUI(nullptr),
+                              m_painterUI(nullptr),
+                              m_crossHair(nullptr), m_preIsNeedShow(false), m_isVisible(false),
+                              m_crossHairTipsInfo(nullptr), m_curInspectPart(nullptr), m_currControlPart(nullptr),
+                              m_isOpenPlayerOverLay(true)
+
 {
 	m_helperData = Tfile::shared()->getData("helpMain.md", true);
 }

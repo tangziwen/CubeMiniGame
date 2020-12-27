@@ -2,7 +2,6 @@
 #include <thread>
 #include <mutex>
 #include "CubeGame/LoadingUI.h"
-
 namespace tzw
 {
 	WorkerJob::WorkerJob(VoidJob work, VoidJob finish):m_work(work),m_onFinished(finish)
@@ -24,16 +23,17 @@ namespace tzw
 	WorkerThreadSystem::WorkerThreadSystem()
 	{
 		m_thread = nullptr;
-		m_readyToDeathCount = 0;
 	}
 
 
 
 	void WorkerThreadSystem::pushOrder(WorkerJob order)
 	{
-		m_rwMutex.lock();
+
+		m_mutex.lock();
 		m_JobRecieverList.push_back(order);
-		m_rwMutex.unlock();
+		m_mutex.unlock();
+		m_cond_var.notify_one();
 		if(!m_thread)
 		{
 			init();
@@ -60,20 +60,16 @@ namespace tzw
 
 	void WorkerThreadSystem::workderUpdate()
 	{
-		bool isReciverEmpty = false;
 		for(;;)
 		{
-			m_rwMutex.lock();
-			isReciverEmpty = m_JobRecieverList.empty();
-			if(!isReciverEmpty)
+			//m_mutex.lock();
+			std::unique_lock<std::mutex> locker(m_mutex);
+			while(m_JobRecieverList.empty())
 			{
-				std::swap(m_JobRecieverList, m_jobProcessList);
+				m_cond_var.wait(locker);
 			}
-			m_rwMutex.unlock();
-			if(isReciverEmpty)
-			{
-				std::this_thread::sleep_for(std::chrono::milliseconds(500));
-			}
+			std::swap(m_JobRecieverList, m_jobProcessList);
+			locker.unlock();
 			while(!m_jobProcessList.empty())
 			{
 				auto job = m_jobProcessList.front();
@@ -83,9 +79,9 @@ namespace tzw
 					job.m_work();
 					if(job.m_onFinished)
 					{
-						m_rwMutex.lock();
+						m_mutex.lock();
 						m_mainThreadCB1.push_back(job);
-						m_rwMutex.unlock();
+						m_mutex.unlock();
 					}
 				}
 			}
@@ -94,9 +90,9 @@ namespace tzw
 
 	void WorkerThreadSystem::mainThreadUpdate()
 	{
-		m_rwMutex.lock();
+		m_mutex.lock();
 		std::swap(m_mainThreadCB1, m_mainThreadCB2);
-		m_rwMutex.unlock();
+		m_mutex.unlock();
 		if(!m_mainThreadCB2.empty())
 		{
 			for(auto cb : m_mainThreadCB2)
