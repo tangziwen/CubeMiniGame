@@ -5,7 +5,8 @@
 #include <iostream>
 #include <time.h>
 #include <windows.h>
-#include <DbgHelp.h>  
+#include <DbgHelp.h>
+#include "Math/vec3.h"
 #pragma comment(lib, "dbghelp.lib")  
 
 void CreateDumpFile(const TCHAR *lpstrDumpFilePathName, EXCEPTION_POINTERS *pException)
@@ -68,7 +69,6 @@ extern "C"
 #define TEST_VULKAN_ENTRY
 int main(int argc, char *argv[]) 
 {
-
     SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)ApplicationCrashHandler);
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());

@@ -103,6 +103,8 @@ set(LIBS ${LIBS} zlib libpng )
 
 set(_src_root_path "${CMAKE_CURRENT_SOURCE_DIR}")
 
+#SIMD
+add_compile_options("/arch:AVX")
 
 
 

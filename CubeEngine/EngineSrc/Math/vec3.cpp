@@ -26,39 +26,81 @@ void vec3::set(float the_x, float the_y, float the_z)
 
 vec3 vec3::operator+(const vec3 &other) const
 {
-    return vec3(x + other.x, y + other.y, z +other.z);
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+    __m128 c = _mm_add_ps(a, b);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);//vec3(x + other.x, y + other.y, z +other.z);
 }
 
 vec3 vec3::operator -(const vec3 &other) const
 {
-    return vec3(x - other.x, y - other.y, z - other.z);
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+    __m128 c = _mm_sub_ps(a, b);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);
+    //return vec3(x - other.x, y - other.y, z - other.z);
 }
 
-vec3 vec3::operator *( float a) const
+vec3 vec3::operator *( float val) const
 {
-    auto v =vec3(x * a,y*a,z*a);
-    return v;
+
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_set1_ps(val);
+    __m128 c = _mm_mul_ps(a, b);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);
+    //auto v =vec3(x * a,y*a,z*a);
+    //return v;
 }
 
 vec3 vec3::operator *(const vec3 &other) const
 {
-    return vec3(x * other.x, y * other.y, z * other.z);
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+    __m128 c = _mm_mul_ps(a, b);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);
+    //return vec3(x * other.x, y * other.y, z * other.z);
 }
 
-vec3 vec3::operator /(float a) const
+vec3 vec3::operator /(float val) const
 {
-    auto v =vec3(x / a,y / a,z / a);
-    return v;
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_set1_ps(val);
+    __m128 c = _mm_div_ps(a, b);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);
+    //auto v =vec3(x / a,y / a,z / a);
+    //return v;
 }
 
 vec3 vec3::operator /(const vec3 &other) const
 {
-    return vec3( x / other.x, y / other.y, z / other.z);
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+    __m128 c = _mm_div_ps(a, b);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);
+    //return vec3( x / other.x, y / other.y, z / other.z);
 }
 
 vec3 vec3::operator -() const
 {
-    return vec3(-x,-y,-z);
+    __m128 a = _mm_set_ps(0.0f, z, y, x);
+    __m128 b = _mm_setzero_ps();
+    __m128 c = _mm_sub_ps(b, a);
+    float result[4];
+    _mm_store_ps(result, c);
+    return vec3(result[0], result[1], result[2]);
+    //return vec3(-x,-y,-z);
 }
 
 vec3 vec3::operator +=(const vec3 &other)
@@ -85,28 +127,6 @@ vec3 vec3::operator *=(float value)
     return vec3(x,y,z);
 }
 
-float vec3::DotProduct(const vec3 &left, const vec3 &right)
-{
-    return left.x*right.x + left.y*right.y + left.z * right.z;
-}
-
-vec3 vec3::CrossProduct(const vec3 &left, const vec3 &right)
-{
-    vec3 result;
-    float x = left.x, y = left.y, z = left.z,
-            x2 = right.x, y2 = right.y, z2 = right.z;
-    result.x = y * z2 - z * y2;
-    result.y = z * x2 - x * z2;
-    result.z = x * y2 - y * x2;
-    return result;
-}
-
-float vec3::distance(const vec3 &other) const
-{
-    vec3 dir = other - (*this);
-    return dir.length();
-}
-
 float vec3::getZ() const
 {
     return z;
@@ -115,56 +135,6 @@ float vec3::getZ() const
 void vec3::setZ(float value)
 {
     z = value;
-}
-
-float vec3::length() const
-{
-    return sqrt(x * x + y * y + z * z);
-}
-
-float vec3::squaredLength() const
-{
-    return x * x + y * y + z * z;
-}
-
-void vec3::normalize()
-{
-    float len = length();
-    len = 1 / len;
-    x*=len;
-    y*=len;
-    z*=len;
-}
-
-tzw::vec3 vec3::normalized()
-{
-	float len = length();
-	len = 1 / len;
-	return vec3(x * len, y * len, z * len);
-}
-
-vec3 vec3::scale(float value) const
-{
-    auto v =vec3(x * value,y * value,z * value);
-    return v;
-}
-
-void vec3::setLength(float newLength)
-{
-    normalize();
-    x *= newLength;
-    y *= newLength;
-    z *= newLength;
-}
-
-vec3 vec3::lerp(const vec3 &from, const vec3 &to, float the_time)
-{
-    vec3 delta = to - from;
-    vec3 result;
-    result.x = from.x + the_time*delta.x;
-    result.y = from.x + the_time*delta.y;
-    result.z = from.z + the_time*delta.z;
-	return result;
 }
 
 vec3 vec3::fromRGB(int R, int G, int B)

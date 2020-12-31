@@ -12,7 +12,7 @@ Camera *Camera::CreatePerspective(float fov, float aspect, float thenear, float 
 {
     auto camera = new Camera();
     camera->setPerspective(fov,aspect,thenear, thefar);
-    camera->m_frustum.initFrustumFromCamera(camera);
+    camera->m_frustum.initFrustumFromProjectMatrix(camera->getViewProjectionMatrix());
     return camera;
 }
 
@@ -20,7 +20,7 @@ Camera *Camera::CreateOrtho(float left, float right, float bottom, float top, fl
 {
     auto camera = new Camera();
     camera->setOrtho(left,right,bottom,top,near,far);
-    camera->m_frustum.initFrustumFromCamera(camera);
+    camera->m_frustum.initFrustumFromProjectMatrix(camera->getViewProjectionMatrix());
     return camera;
 }
 
@@ -53,7 +53,7 @@ Matrix44 Camera::projection() const
 void Camera::setProjection(const Matrix44 &projection)
 {
     m_projection = projection;
-    m_frustum.initFrustumFromCamera(this);
+    m_frustum.initFrustumFromProjectMatrix(getViewProjectionMatrix());
 }
 
 Matrix44 Camera::getViewMatrix()
@@ -185,7 +185,7 @@ void Camera::updateFrustum()
 	if(m_useCustomFrustumUpdate) return;
     if(getNeedToUpdate())
     {
-        m_frustum.initFrustumFromCamera(this);
+        m_frustum.initFrustumFromProjectMatrix(getViewProjectionMatrix());
     }
 }
 bool Camera::getUseCustomFrustumUpdate() const

@@ -4,7 +4,7 @@
 
 namespace tzw {
 
-class vec4
+class alignas(16) vec4
 {
 public:
     vec4();

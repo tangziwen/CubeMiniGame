@@ -246,6 +246,7 @@ namespace tzw
         auto & commonList = renderQueues->getCommonList();
         for (int i = 0 ; i < 3 ; i++)
         {
+            continue;
             auto & shadowList = renderQueues->getShadowList(i);
             m_ShadowStage[i]->prepare();
             m_ShadowStage[i]->beginRenderPass();

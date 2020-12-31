@@ -196,7 +196,7 @@ bool OrbitCamera::onMouseMove(vec2 pos)
 
 void OrbitCamera::logicUpdate(float dt)
 {
-	m_frustum.initFrustumFromCamera(this);
+	m_frustum.initFrustumFromProjectMatrix(getViewProjectionMatrix());
     return;
 }
 
