@@ -27,9 +27,12 @@ vec3 vec4::toVec3()
 
 vec4 vec4::operator +(const vec4 &other)
 {
-	__m128 a = _mm_set_ps(w, z, y, x);
-	__m128 b = _mm_set_ps()
-	return vec4(x + other.x, y + other.y, z + other.z, w + other.w);
+	__m128 a = _mm_load_ps(&x);
+	__m128 b = _mm_load_ps(&other.x);
+	__m128 c = _mm_add_ps(a, b);
+	float result[4];
+	_mm_store_ps(result, c);
+	return vec4(result[0], result[1], result[2], result[3]);
 }
 
 tzw::vec4 vec4::operator*(float a) const

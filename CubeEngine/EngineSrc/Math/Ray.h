@@ -25,14 +25,14 @@ public:
     void setOrigin(const vec3 &origin);
     vec3 direction() const;
     void setDirection(const vec3 &direction);
-    vec3 intersectPlane(Plane p)
+    vec3 intersectPlane(const Plane p) const
     {
         auto point = p.getNormal() * p.getDist();
         auto r = vec3::DotProduct(p.getNormal(), (point - m_origin)) / vec3::DotProduct(p.getNormal(), m_direction);
         auto result = m_origin + m_direction * r;
         return result;
     }
-    bool intersectAABB(AABB  aabb, RayAABBSide* side, vec3& hitPoint) const
+    bool intersectAABB(const AABB& aabb, RayAABBSide* side, vec3& hitPoint) const
     {
         float lowt = 0.0f;
         float t;
@@ -183,7 +183,7 @@ public:
 
         return hit;
     }
-    bool intersectAABB(AABB aabb, vec3& hitPoint) const
+    bool intersectAABB(const AABB& aabb, vec3& hitPoint) const
     {
         return intersectAABB(aabb, nullptr, hitPoint);
     }

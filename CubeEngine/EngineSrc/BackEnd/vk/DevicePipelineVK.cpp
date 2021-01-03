@@ -123,7 +123,24 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     vpCreateInfo.scissorCount = 1;
     vpCreateInfo.pScissors = &scissor;
 
+	VkPipelineDynamicStateCreateInfo vpDynamicStateInfo = {};
+	std::vector<VkDynamicState> dynamicStateArray;
+	if(m_dynamicState)
+	{
+		if(m_dynamicState & PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR)
+		{
+			 dynamicStateArray.emplace_back(VK_DYNAMIC_STATE_SCISSOR);
+		}
+		if(m_dynamicState & PIPELINE_DYNAMIC_STATE_FLAG_VIEWPORT)
+		{
+			 dynamicStateArray.emplace_back(VK_DYNAMIC_STATE_VIEWPORT);
+		}
+		vpDynamicStateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_DYNAMIC_STATE_CREATE_INFO;
+		vpDynamicStateInfo.dynamicStateCount = dynamicStateArray.size();
+		vpDynamicStateInfo.pDynamicStates = dynamicStateArray.data();
+	}
 
+	
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
     depthStencil.depthTestEnable = mat->isIsDepthTestEnable();
@@ -220,6 +237,10 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     pipelineInfo.layout = m_pipelineLayout;
     pipelineInfo.renderPass = static_cast<DeviceRenderPassVK *>(targetRenderPass)->getRenderPass();
     pipelineInfo.basePipelineIndex = -1;
+	if(m_dynamicState)
+	{
+		pipelineInfo.pDynamicState = &vpDynamicStateInfo;
+	}
     
     VkResult res = vkCreateGraphicsPipelines(VKRenderBackEnd::shared()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &m_pipeline);
     CHECK_VULKAN_ERROR("vkCreateGraphicsPipelines error %d\n", res);

@@ -21,7 +21,7 @@ void Matrix44::setToIdentity()
     m_data[15] = 1;
 }
 
-void Matrix44::setTranslate(vec3 offset)
+void Matrix44::setTranslate(const vec3 offset)
 {
     m_data[12] = offset.x;
     m_data[13] = offset.y;

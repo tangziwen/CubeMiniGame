@@ -180,6 +180,7 @@ namespace tzw
         DeviceVertexInput instancingInput;
         vec2 winSize = Engine::shared()->winSize();
         m_imguiPipeline = backEnd->createPipeline_imp();
+		m_imguiPipeline->setDynamicState(PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR);
         m_imguiPipeline->init(winSize, m_imguiMat, backEnd->getScreenRenderPass(), imguiVertexInput, false, instancingInput);
 
         auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
@@ -246,7 +247,6 @@ namespace tzw
         auto & commonList = renderQueues->getCommonList();
         for (int i = 0 ; i < 3 ; i++)
         {
-            continue;
             auto & shadowList = renderQueues->getShadowList(i);
             m_ShadowStage[i]->prepare();
             m_ShadowStage[i]->beginRenderPass();

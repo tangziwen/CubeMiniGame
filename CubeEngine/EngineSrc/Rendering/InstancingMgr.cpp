@@ -50,7 +50,7 @@ namespace tzw
 				{
 					instacing = new InstancedMesh(data.m_mesh);
 					instancedMesh->second[clearID] = instacing;
-					//instancedMesh->second[clearID]->pushInstance(data.data);
+					instancedMesh->second[clearID]->pushInstance(data.data);
 				}
 				
 			}else
