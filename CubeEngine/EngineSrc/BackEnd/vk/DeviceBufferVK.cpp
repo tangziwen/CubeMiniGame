@@ -66,7 +66,7 @@ namespace tzw
         {
             bufferInfo.size = ammount;
         }
-        
+        m_bufferSize = bufferInfo.size;
         if(m_type == DeviceBufferType::Vertex){
             bufferInfo.usage = VK_BUFFER_USAGE_VERTEX_BUFFER_BIT;
         
@@ -93,7 +93,7 @@ namespace tzw
         alloc_info.memoryTypeIndex = 0;
 
         alloc_info.allocationSize = memRequirements.size;
-        m_bufferSize = memRequirements.size;
+
         bool pass = VKRenderBackEnd::shared()->memory_type_from_properties(memRequirements.memoryTypeBits,
                                            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT |
                                                VK_MEMORY_PROPERTY_HOST_COHERENT_BIT,

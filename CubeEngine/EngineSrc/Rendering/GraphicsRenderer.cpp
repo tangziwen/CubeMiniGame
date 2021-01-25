@@ -594,6 +594,7 @@ namespace tzw
                 m_thumbNailRenderStage->prepare();
                 m_thumbNailRenderStage->beginRenderPass(vec4(0.5, 0.5, 0.5, 1.0));
                 m_thumbNailRenderStage->draw(thumbnailCommandList);
+		    	m_thumbNailRenderStage->endRenderPass();
                 m_thumbNailRenderStage->finish();
                 isAnythumbnail = true;
 			    thumbnail->setIsDone(true);
