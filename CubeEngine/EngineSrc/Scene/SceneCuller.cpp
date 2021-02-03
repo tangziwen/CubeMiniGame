@@ -41,7 +41,7 @@ namespace tzw
 		Tree::shared()->pushCommand(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
 		std::vector<Drawable3D *> nodeList;
 		octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
-		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON);
+		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON, -1);
 		std::vector<InstanceRendereData> istanceCommandList;
 		for(auto node:nodeList)
 		{
@@ -52,9 +52,9 @@ namespace tzw
 		}
 		for(auto& instanceData : istanceCommandList)
 		{
-			InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::COMMON, instanceData);
+			InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::COMMON, instanceData, 0);
 		}
-		InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
+		InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::COMMON, m_renderQueues,0,0);
 
 
 		collectShadowCmd();
@@ -73,13 +73,14 @@ namespace tzw
 	void SceneCuller::collectShadowCmd()
 	{
 		ShadowMap::shared()->calculateProjectionMatrix();
+		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW, -1);
 		for(int i = 0; i < 3; i ++)
 		{
 		
 			auto aabb = ShadowMap::shared()->getPotentialRange(i);
 			std::vector<Drawable3D *> shadowNeedDrawList;
 		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), aabb);
-            InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW);
+            
 		    std::vector<InstanceRendereData> istanceCommandList;
 		    for(auto obj:shadowNeedDrawList)
 		    {
@@ -95,10 +96,10 @@ namespace tzw
 		    }
 		    for(auto& instanceData : istanceCommandList)
 	        {
-		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData);
+		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData, i);
 	        }
             Tree::shared()->submitShadowDraw(m_renderQueues, i);
-            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::SHADOW, m_renderQueues, i);
+            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::SHADOW, m_renderQueues, i, i);
 		}
 	}
 
