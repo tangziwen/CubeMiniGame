@@ -543,6 +543,27 @@ Material* DevicePipelineVK::getMat()
     return m_mat;
 }
 
+DeviceRenderItem* DevicePipelineVK::getRenderItem(void* obj)
+{
+    auto result = m_renderItemMap.find(obj);
+    if(result != m_renderItemMap.end())
+    {
+        return result->second;
+    }
+    else
+    {
+        DeviceDescriptor * itemDescriptorSet = giveItemWiseDescriptorSet();
+        DeviceItemBuffer itemBuf = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
+        DeviceRenderItem * item = new DeviceRenderItem();
+        item->ptr = obj;
+        item->m_buff = itemBuf;
+        item->m_desc = itemDescriptorSet;
+        m_renderItemMap[obj]= item;
+        return item;
+    }
+    //return nullptr;
+}
+
 void DevicePipelineVK::createDescriptorPool()
 {
     //每个shader必有两个descriptorSet存在的情况必然是1比1，所以加起来来预估一个池比例

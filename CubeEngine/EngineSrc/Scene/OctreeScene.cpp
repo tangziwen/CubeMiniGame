@@ -4,6 +4,7 @@
 #include "../base/Camera.h"
 #include <cassert>
 #include "3D/Primitive/CubePrimitive.h"
+#include "Base/TAssert.h"
 #define MAX_DEEP 5
 namespace tzw {
 static int g_nodeIndex = 0;
@@ -11,6 +12,7 @@ void OctreeNode::genId()
 {
 	m_index = g_nodeIndex;
 	g_nodeIndex += 1;
+    TAssert(g_nodeIndex >=0, "error");
 }
 OctreeNode::OctreeNode()
 {
@@ -94,6 +96,7 @@ bool OctreeScene::addObj_R(OctreeNode *node, Drawable3D *obj)
             }
 			// the children can containt that ,so we only can put it in parent.
 			node->m_drawlist.push_back(obj);
+            obj->setOctNodeIndex(node->m_index);
 			return true;
         }
     }

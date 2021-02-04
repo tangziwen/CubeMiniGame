@@ -80,11 +80,13 @@ namespace tzw
                 currPipeLine->updateUniform();
             }
             
+
             //update uniform.
             DeviceDescriptor * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
 
             
             DeviceItemBuffer itemBuf = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
+            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
             itemBuf.map();
                 ItemUniform uniformStruct;
                 uniformStruct.wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
@@ -102,7 +104,7 @@ namespace tzw
             {
                 mesh = a.getMesh();
             }
-            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
+            
             //recordDrawCommand
             auto vbo = static_cast<DeviceBufferVK *>(mesh->getArrayBuf()->bufferId());
             auto ibo = static_cast<DeviceBufferVK *>(mesh->getIndexBuf()->bufferId());

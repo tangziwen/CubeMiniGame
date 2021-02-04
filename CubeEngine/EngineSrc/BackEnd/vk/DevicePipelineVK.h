@@ -8,6 +8,7 @@
 #include "DeviceDescriptorVK.h"
 #include "Rendering/RenderFlag.h"
 #include "../DevicePipeline.h"
+#include "../DeviceRenderItem.h"
 namespace tzw
 {
 class Material;
@@ -32,6 +33,7 @@ public:
 	void collcetItemWiseDescritporSet() override;
 	DeviceDescriptor * giveItemWiseDescriptorSet() override;
 	Material * getMat();
+	DeviceRenderItem * getRenderItem(void * obj);
 private:
 	void createDescriptorPool();
 	void createMaterialDescriptorPool();
@@ -51,6 +53,7 @@ private:
 	DeviceVertexInput m_vertexInput;
 	VkDescriptorPool m_materialDescriptorPool;
 	VkBlendFactor getBlendFactor(RenderFlag::BlendingFactor factor);
+	std::unordered_map<void *, DeviceRenderItem *> m_renderItemMap;
 };
 
 
