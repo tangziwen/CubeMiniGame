@@ -106,7 +106,7 @@ namespace tzw
     }
     void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceItemBuffer * itemBuff)
     {
-        updateDescriptorByBinding(binding, VKRenderBackEnd::shared()->getItemBufferPool()->getBuffer(), itemBuff->m_offset, itemBuff->m_size);
+        updateDescriptorByBinding(binding, itemBuff->m_pool->getBuffer(), itemBuff->m_offset, itemBuff->m_size);
     }
     VkDescriptorSet DeviceDescriptorVK::getDescSet()
     {

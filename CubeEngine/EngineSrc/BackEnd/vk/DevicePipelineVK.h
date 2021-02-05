@@ -30,7 +30,7 @@ public:
 	void updateMaterialDescriptorSet();
 	void updateUniform();
 	void updateUniformSingle(std::string name, void * buff, size_t size) override;
-	void collcetItemWiseDescritporSet() override;
+	void resetItemWiseDescritporSet() override;
 	DeviceDescriptor * giveItemWiseDescriptorSet() override;
 	Material * getMat();
 	DeviceRenderItem * getRenderItem(void * obj);
@@ -54,6 +54,7 @@ private:
 	VkDescriptorPool m_materialDescriptorPool;
 	VkBlendFactor getBlendFactor(RenderFlag::BlendingFactor factor);
 	std::unordered_map<void *, DeviceRenderItem *> m_renderItemMap;
+	DeviceItemBufferPoolVK * m_itemBufferPool;
 };
 
 

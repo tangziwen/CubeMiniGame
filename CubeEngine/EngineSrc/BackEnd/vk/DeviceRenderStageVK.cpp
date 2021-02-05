@@ -75,18 +75,21 @@ namespace tzw
             if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
             {
                 m_fuckingObjList.insert(currPipeLine);
-                currPipeLine->collcetItemWiseDescritporSet();
+                //currPipeLine->resetItemWiseDescritporSet();
                 //update material-wise parameter.
                 currPipeLine->updateUniform();
             }
             
 
             //update uniform.
-            DeviceDescriptor * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
+            DeviceRenderItem * renderItem = currPipeLine->getRenderItem(a.getDrawableObj());
+            DeviceDescriptor * itemDescriptorSet = renderItem->m_desc;//currPipeLine->giveItemWiseDescriptorSet();
+            //DeviceDescriptor * itemDescriptorSet = currPipeLine->giveItemWiseDescriptorSet();
 
             
-            DeviceItemBuffer itemBuf = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
-            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
+            DeviceItemBuffer itemBuf = renderItem->m_buff;//VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
+            //DeviceItemBuffer itemBuf = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
+            //itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
             itemBuf.map();
                 ItemUniform uniformStruct;
                 uniformStruct.wvp = a.m_transInfo.m_projectMatrix * (a.m_transInfo.m_viewMatrix  * a.m_transInfo.m_worldMatrix );
@@ -242,7 +245,7 @@ namespace tzw
         {
             vkCmdBindPipeline(getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
             static_cast<DevicePipelineVK*>(m_singlePipeline)->updateUniform();
-            static_cast<DevicePipelineVK*>(m_singlePipeline)->collcetItemWiseDescritporSet();
+            static_cast<DevicePipelineVK*>(m_singlePipeline)->resetItemWiseDescritporSet();
         }
 
     }

@@ -41,7 +41,7 @@ public:
 	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) = 0;
 	virtual void updateUniformSingle(std::string name, void * buff, size_t size) = 0;
 	virtual DeviceDescriptor * getMaterialDescriptorSet() = 0;
-	virtual void collcetItemWiseDescritporSet() = 0;
+	virtual void resetItemWiseDescritporSet() = 0;
 	virtual DeviceDescriptor * giveItemWiseDescriptorSet() = 0;
 	void setDynamicState(uint32_t state)
 	{

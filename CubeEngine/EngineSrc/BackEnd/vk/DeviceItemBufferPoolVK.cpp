@@ -7,7 +7,8 @@ namespace tzw
 
 	void DeviceItemBuffer::map()
 	{
-        vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_pool->getBuffer()->getMemory(), m_offset, m_size, 0, &m_tmpBuff);
+        VkResult isOk = vkMapMemory(VKRenderBackEnd::shared()->getDevice(), m_pool->getBuffer()->getMemory(), m_offset, m_size, 0, &m_tmpBuff);
+		//CHECK_VULKAN_ERROR("vkMapMemory error %d\n", isOk);
 	}
 
 	void DeviceItemBuffer::copyFrom(void* ptr, size_t size, size_t memOffset)

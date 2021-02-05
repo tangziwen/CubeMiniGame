@@ -74,9 +74,9 @@ std::vector<const char*> getRequiredExtensions() {
 		extensions.push_back(glfwExtensions[i]);
 	}
 
-	if (enableValidationLayers) {
+#if ENABLE_DEBUG_LAYERS
 		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
-	}
+#endif
 
 	return extensions;
 }
@@ -352,6 +352,7 @@ VkApplicationInfo appInfo = {};
     appInfo.engineVersion = 1;
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
+    /*
     const char* pInstExt[] = {
 #if ENABLE_DEBUG_LAYERS
         VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
@@ -363,7 +364,8 @@ VkApplicationInfo appInfo = {};
         VK_KHR_XCB_SURFACE_EXTENSION_NAME
 #endif            
     };
-    
+    */
+    auto vkExtensionList = getRequiredExtensions();
 #if ENABLE_DEBUG_LAYERS    
     const char* pInstLayers[] = {
         "VK_LAYER_KHRONOS_validation"
@@ -377,8 +379,8 @@ VkApplicationInfo appInfo = {};
     instInfo.enabledLayerCount = ARRAY_SIZE_IN_ELEMENTS(pInstLayers);
     instInfo.ppEnabledLayerNames = pInstLayers;
 #endif    
-    instInfo.enabledExtensionCount = ARRAY_SIZE_IN_ELEMENTS(pInstExt);
-    instInfo.ppEnabledExtensionNames = pInstExt;         
+    instInfo.enabledExtensionCount = vkExtensionList.size();//ARRAY_SIZE_IN_ELEMENTS(pInstExt);
+    instInfo.ppEnabledExtensionNames = vkExtensionList.data();         
 
     VkResult res = vkCreateInstance(&instInfo, NULL, &m_inst);
     CHECK_VULKAN_ERROR("vkCreateInstance %d\n", res);
@@ -1448,7 +1450,7 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         createSyncObjects();
         initVMAPool();
         
-        m_itemBufferPool = new DeviceItemBufferPoolVK(1024 * 1024 * 20);
+        m_itemBufferPool = new DeviceItemBufferPoolVK(1024 * 1024 * 12);
         
     }
 

@@ -251,6 +251,8 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     updateMaterialDescriptorSet();//only update once
     updateUniform();//will be update every frame, or every change.
     printf("pipeline create %p\n", m_pipeline);
+
+    m_itemBufferPool = new DeviceItemBufferPoolVK(1024 * 1024 * 5);
 }
 VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
 {
@@ -498,7 +500,7 @@ void DevicePipelineVK::updateUniformSingle(std::string name, void* buff, size_t 
     vkUnmapMemory(VKRenderBackEnd::shared()->getDevice(), m_matUniformBufferMemory);
 }
 
-void DevicePipelineVK::collcetItemWiseDescritporSet()
+void DevicePipelineVK::resetItemWiseDescritporSet()
 {
     m_currItemWiseDescriptorSetIdx = 0;
 }
@@ -553,12 +555,13 @@ DeviceRenderItem* DevicePipelineVK::getRenderItem(void* obj)
     else
     {
         DeviceDescriptor * itemDescriptorSet = giveItemWiseDescriptorSet();
-        DeviceItemBuffer itemBuf = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(sizeof(ItemUniform));
+        DeviceItemBuffer itemBuf = m_itemBufferPool->giveMeItemBuffer(sizeof(ItemUniform));
         DeviceRenderItem * item = new DeviceRenderItem();
         item->ptr = obj;
         item->m_buff = itemBuf;
         item->m_desc = itemDescriptorSet;
         m_renderItemMap[obj]= item;
+        itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
         return item;
     }
     //return nullptr;

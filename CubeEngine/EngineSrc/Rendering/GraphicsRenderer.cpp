@@ -507,7 +507,7 @@ namespace tzw
             // (Because we merged all buffers into a single one, we maintain our own offset into them)
             int global_vtx_offset = 0;
             int global_idx_offset = 0;
-            m_imguiPipeline->collcetItemWiseDescritporSet();
+            m_imguiPipeline->resetItemWiseDescritporSet();
             for (int n = 0; n < draw_data->CmdListsCount; n++)
             {
                 const ImDrawList* cmd_list = draw_data->CmdLists[n];
