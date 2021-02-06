@@ -40,7 +40,7 @@
 #include "Action/ActionCalFunc.h"
 #include "Base/TimerMgr.h"
 #include "Engine/WorkerThreadSystem.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "UI/KeyMapper.h"
 #include "UI/LoadWorldUI.h"
 #include "UI/NewWorldSettingUI.h"

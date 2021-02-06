@@ -132,10 +132,10 @@ def updateLifting(dt):
 			lift.liftUp(GameState.lift_state * dt * 2.0)
 
 def InitInventory():
-	inventoryAmount = Game.ItemMgr.shared().getItemAmount()
+	inventoryAmount = Game.GameItemMgr.shared().getItemAmount()
 	print("inventoryAmount", inventoryAmount)
 	for i in range(0, inventoryAmount):
-		item = Game.ItemMgr.shared().getItemByIndex(i)
+		item = Game.GameItemMgr.shared().getItemByIndex(i)
 		print("the Item Name",item.m_name,"the item type",item.getTypeInInt())
 		ItemClassData = "PlaceableBlock"
 		if item.isSpecialFunctionItem():
@@ -174,7 +174,7 @@ def onDrawWindow(windowType):
 	window_visible_x2 = ImGui.GetWindowPos().x + ImGui.GetWindowContentRegionMax().x
 	last_button_x2 = 0
 
-	inventoryAmount = Game.ItemMgr.shared().getItemAmount()
+	inventoryAmount = Game.GameItemMgr.shared().getItemAmount()
 	s = ImGui.GetStyle();
 	spaceX = s.ItemSpacing.x;
 	padding = s.FramePadding.x;
@@ -192,7 +192,7 @@ def onDrawWindow(windowType):
 		ImGui.PushID_str("inventory" + str(i))
 		ImGui.BeginGroup()
 		iconTexture = GameState.testIcon.handle()
-		item = Game.ItemMgr.shared().getItemByIndex(i)
+		item = Game.GameItemMgr.shared().getItemByIndex(i)
 		if item.getThumbNailTextureId() != None :
 			iconTexture = item.getThumbNailTextureId()
 		
@@ -300,7 +300,7 @@ def drawHud():
 			# print("payLoad", payLoad)
 			if payLoad != None :
 				payLoadIdx = ImGui.GetPayLoadData2Int(payLoad)
-				payLoadItem = Game.ItemMgr.shared().getItemByIndex(payLoadIdx)
+				payLoadItem = Game.GameItemMgr.shared().getItemByIndex(payLoadIdx)
 				print ("Play load Here   "+ (payLoadItem.m_name))
 				GameState.m_itemSlots[k].target = payLoadItem.m_name
 				player = Game.GameWorld.shared().getPlayer()
@@ -319,11 +319,11 @@ def drawHud():
 
 
 def findItemNameByIdx(id):
-	return Game.ItemMgr.shared().getItemByIndex(id)
+	return Game.GameItemMgr.shared().getItemByIndex(id)
 
 
 def findItemByName(name):
-	return Game.ItemMgr.shared().getItem(name)
+	return Game.GameItemMgr.shared().getItem(name)
 
 
 

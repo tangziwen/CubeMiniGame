@@ -17,7 +17,7 @@ namespace tzw
             abort();
         }
         VkDescriptorImageInfo imageInfo{};
-        if(vkTex->getIsDepth())
+        if(vkTex->getTextureRole() == TextureRoleEnum::AS_DEPTH)
         {
             imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;//VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//texture->getImageLayOut();
         }

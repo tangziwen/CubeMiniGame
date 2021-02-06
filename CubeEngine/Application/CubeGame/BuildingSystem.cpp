@@ -19,7 +19,7 @@
 #include "UIHelper.h"
 #include "CannonPart.h"
 #include "ThrusterPart.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "ButtonPart.h"
 #include "SwitchPart.h"
 
@@ -312,7 +312,7 @@ namespace tzw
 	GamePart*
 	BuildingSystem::createPart(int type, std::string itemName)
 	{
-		ItemMgr::shared()->getItem(itemName);
+		GameItemMgr::shared()->getItem(itemName);
 		GamePart* resultPart = nullptr;
 		switch ((GamePartType)type)
 		{

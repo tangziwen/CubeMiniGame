@@ -71,7 +71,7 @@ namespace tzw
 			return m_texture->handle();	
 		}else
 		{
-			return 0;
+			return nullptr;
 		}
 	}
 }

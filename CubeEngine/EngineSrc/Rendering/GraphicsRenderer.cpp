@@ -234,7 +234,7 @@ namespace tzw
         //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
     }
 
-
+#pragma optimize("", off)
 	void GraphicsRenderer::render()
 	{
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());

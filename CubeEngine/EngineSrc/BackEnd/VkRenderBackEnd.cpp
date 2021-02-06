@@ -102,6 +102,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
 	fprintf(vulkanValidationFile, "validation Layer %s\n", pMessage);
 	if(strncmp(pMessage, errorPattern, strlen(errorPattern)) == 0)
 	{
+		printf("hehe\n");
 		//abort();
 	}
     return VK_FALSE;

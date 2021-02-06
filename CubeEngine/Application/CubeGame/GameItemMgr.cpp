@@ -1,4 +1,4 @@
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include <algorithm>
 #include "BulletCollision/CollisionShapes/btCompoundShape.h"
@@ -17,12 +17,12 @@
 namespace tzw
 {
 const float bearingGap = 0.00;
-ItemMgr::ItemMgr()
+GameItemMgr::GameItemMgr()
 {
 }
 
 
-void ItemMgr::loadFromFile(std::string filePath)
+void GameItemMgr::loadFromFile(std::string filePath)
 {
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(filePath, true);
@@ -226,7 +226,7 @@ void ItemMgr::loadFromFile(std::string filePath)
 }
 
 int
-ItemMgr::getItemIndex(GameItem* item)
+GameItemMgr::getItemIndex(GameItem* item)
 {
 	for(int i = 0; i < m_itemList.size(); i++)
 	{
@@ -239,28 +239,28 @@ ItemMgr::getItemIndex(GameItem* item)
   return -1;
 }
 
-GameItem * ItemMgr::getItem(std::string name)
+GameItem * GameItemMgr::getItem(std::string name)
 {
 	return m_itemMap[name];
 }
 
-int ItemMgr::getItemAmount()
+int GameItemMgr::getItemAmount()
 {
 	return m_itemList.size();
 }
 
-GameItem* ItemMgr::getItemByIndex(int index)
+GameItem* GameItemMgr::getItemByIndex(int index)
 {
 	return m_itemList[index];
 }
 
-void ItemMgr::pushItem(GameItem* item)
+void GameItemMgr::pushItem(GameItem* item)
 {
 	m_itemMap[item->m_name] = item;
 	m_itemList.push_back(item);
 }
 std::vector<GameItem * > &
-ItemMgr::getItemList()
+GameItemMgr::getItemList()
 {
 	return m_itemList;
   // TODO: 在此处插入 return 语句

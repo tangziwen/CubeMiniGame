@@ -3,7 +3,7 @@
 #include "Scene/SceneMgr.h"
 #include "Collision/PhysicsMgr.h"
 #include "Island.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 
 namespace tzw

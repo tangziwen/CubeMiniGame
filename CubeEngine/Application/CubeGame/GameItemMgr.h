@@ -9,12 +9,12 @@
 #include <map>
 namespace tzw
 {
-class ItemMgr;
+class GameItemMgr;
 
-class ItemMgr : public Singleton<ItemMgr>
+class GameItemMgr : public Singleton<GameItemMgr>
 {
 public:
-	ItemMgr();
+	GameItemMgr();
 	void loadFromFile(std::string filePath);
 	int getItemIndex(GameItem * item);
 	GameItem * getItem(std::string name);

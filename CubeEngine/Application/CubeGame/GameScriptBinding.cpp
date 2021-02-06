@@ -4,7 +4,7 @@
 #include "CylinderPart.h"
 #include "GameItem.h"
 #include "GameWorld.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "LiftPart.h"
 #include "Lua/lua.hpp"
 #include "LuaBridge/LuaBridge.h"
@@ -129,13 +129,13 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
   BIND_FUNC_PY(BuildingSystem, liftStore)
   BIND_FUNC_PY(BuildingSystem, isIsInXRayMode);
 
-  // ItemMgr
+  // GameItemMgr
 
-  BIND_BEGIN_CLASS_PY(ItemMgr)
-  BIND_SINGLETON_PY(ItemMgr)
-  BIND_FUNC_PY(ItemMgr, getItemByIndex)
-  BIND_FUNC_PY(ItemMgr, getItemAmount)
-  BIND_FUNC_PY(ItemMgr, getItem);
+  BIND_BEGIN_CLASS_PY(GameItemMgr)
+  BIND_SINGLETON_PY(GameItemMgr)
+  BIND_FUNC_PY(GameItemMgr, getItemByIndex)
+  BIND_FUNC_PY(GameItemMgr, getItemAmount)
+  BIND_FUNC_PY(GameItemMgr, getItem);
 
   BIND_BEGIN_CLASS_PY(UIHelper)
   BIND_SINGLETON_PY(UIHelper)
@@ -277,12 +277,12 @@ g_binding_game_objects()
                                     BIND_FUNC(BuildingSystem, liftStore)
                                       BIND_FUNC(BuildingSystem, isIsInXRayMode)
                                         BIND_END_CLASS
-                                          // ItemMgr
+                                          // GameItemMgr
                                           BIND_START(luaState)
-                                            BIND_BEGIN_CLASS(ItemMgr)
-    .addStaticFunction("shared", &ItemMgr::shared)
-      BIND_FUNC(ItemMgr, getItemByIndex) BIND_FUNC(ItemMgr, getItemAmount)
-        BIND_FUNC(ItemMgr, getItem) BIND_END_CLASS
+                                            BIND_BEGIN_CLASS(GameItemMgr)
+    .addStaticFunction("shared", &GameItemMgr::shared)
+      BIND_FUNC(GameItemMgr, getItemByIndex) BIND_FUNC(GameItemMgr, getItemAmount)
+        BIND_FUNC(GameItemMgr, getItem) BIND_END_CLASS
 
           BIND_START(luaState) BIND_BEGIN_CLASS(UIHelper)
     .addStaticFunction("shared", &UIHelper::shared)

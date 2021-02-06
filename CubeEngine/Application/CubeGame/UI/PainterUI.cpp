@@ -2,7 +2,7 @@
 #include <filesystem>
 
 
-#include "CubeGame/ItemMgr.h"
+#include "CubeGame/GameItemMgr.h"
 #include "CubeGame/PartSurfaceMgr.h"
 namespace fs  = std::filesystem;
 namespace tzw
@@ -123,8 +123,8 @@ namespace tzw
 					static char newItemName[128] = "new Item";
 					static char newItemTitle[128] = "new Item";
 					ImGui::Text(TRC("you can set a template for block for further used"));
-					auto& itemList = ItemMgr::shared()->getItemList();
-					static int currSelectedItemIndex = ItemMgr::shared()->getItemIndex(ItemMgr::shared()->getItem("Block"));
+					auto& itemList = GameItemMgr::shared()->getItemList();
+					static int currSelectedItemIndex = GameItemMgr::shared()->getItemIndex(GameItemMgr::shared()->getItem("Block"));
 			        if (ImGui::BeginCombo(TRC(u8"Block List"), itemList[currSelectedItemIndex]->m_desc.c_str(), 0)) // The second parameter is the label previewed before opening the combo.
 			        {
 			            for (int n = 0; n < itemList.size(); n++)
@@ -163,7 +163,7 @@ namespace tzw
 
 						newItem->m_thumbNail = new ThumbNail(part->getNode());
 						Renderer::shared()->updateThumbNail(newItem->m_thumbNail);
-						ItemMgr::shared()->pushItem(newItem);
+						GameItemMgr::shared()->pushItem(newItem);
 					}
 					ImGui::TreePop();
 				}

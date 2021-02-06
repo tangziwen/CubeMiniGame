@@ -12,7 +12,7 @@
 
 #include "EngineSrc/Collision/PhysicsMgr.h"
 #include "BuildingSystem.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "AssistDrawSystem.h"
 #include "Shader/ShaderMgr.h"
 #include "PartSurfaceMgr.h"
@@ -44,7 +44,7 @@ namespace tzw
 
 	CubePlayer::CubePlayer(Node* mainRoot):m_seatViewMode(InSeatViewMode::ORBIT)
 	{
-		ItemMgr::shared();
+		GameItemMgr::shared();
 		initSlots();
 		m_paintGun = new PaintGun();
 		m_paintGun->color = vec3(1, 1, 1);
@@ -314,10 +314,10 @@ namespace tzw
 
 	void CubePlayer::initSlots()
 	{
-		m_itemSlots.push_back(ItemMgr::shared()->getItem("Block"));
-		m_itemSlots.push_back(ItemMgr::shared()->getItem("Wheel"));
-		m_itemSlots.push_back(ItemMgr::shared()->getItem("Bearing"));
-		m_itemSlots.push_back(ItemMgr::shared()->getItem("TerrainFormer"));
+		m_itemSlots.push_back(GameItemMgr::shared()->getItem("Block"));
+		m_itemSlots.push_back(GameItemMgr::shared()->getItem("Wheel"));
+		m_itemSlots.push_back(GameItemMgr::shared()->getItem("Bearing"));
+		m_itemSlots.push_back(GameItemMgr::shared()->getItem("TerrainFormer"));
 	}
 
 	vec3 CubePlayer::getForward() const
@@ -558,11 +558,11 @@ namespace tzw
 		{
 			m_currSelectedItem = nullptr;
 		}
-		m_currSelectedItem = ItemMgr::shared()->getItem(itemName);
+		m_currSelectedItem = GameItemMgr::shared()->getItem(itemName);
 		updateCrossHairTipsInfo();
 		if(!m_currSelectedItem) return;
 		if(itemName == "Painter") return;
-		m_previewItem->setPreviewItem(ItemMgr::shared()->getItem(itemName));
+		m_previewItem->setPreviewItem(GameItemMgr::shared()->getItem(itemName));
 
 	}
 

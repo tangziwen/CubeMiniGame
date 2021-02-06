@@ -12,7 +12,7 @@
 #include "BuildingSystem.h"
 #include "ScriptPy/ScriptPyMgr.h"
 #include "AssistDrawSystem.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "PartSurfaceMgr.h"
 #include "Base/TranslationMgr.h"
 #include "3D/Particle/ParticleEmitter.h"
@@ -454,7 +454,7 @@ void GameWorld::prepare()
 	WorkerThreadSystem::shared()->pushMainThreadOrderWithLoading("Load Blocks",
 		WorkerJob([&]()
 	{
-		ItemMgr::shared()->loadFromFile("Blocks/Blocks.json");
+		GameItemMgr::shared()->loadFromFile("Blocks/Blocks.json");
 	}));
 	//load the BlockConfig
 

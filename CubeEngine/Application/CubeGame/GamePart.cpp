@@ -3,7 +3,7 @@
 #include "BearPart.h"
 #include "GamePartRenderNode.h"
 #include "2D/GUISystem.h"
-#include "ItemMgr.h"
+#include "GameItemMgr.h"
 #include "Texture/TextureMgr.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Primitive/CylinderPrimitive.h"
@@ -644,7 +644,7 @@ namespace tzw
 
 	void GamePart::initFromItemName(std::string itemName)
 	{
-		auto item = ItemMgr::shared()->getItem(itemName);
+		auto item = GameItemMgr::shared()->getItem(itemName);
 		initFromItem(item);
 	}
 

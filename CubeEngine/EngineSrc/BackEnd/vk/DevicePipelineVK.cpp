@@ -682,26 +682,19 @@ VkBlendFactor DevicePipelineVK::getBlendFactor(RenderFlag::BlendingFactor factor
 {
     switch (factor)
     {
-    case tzw::RenderFlag::BlendingFactor::One:
+    case RenderFlag::BlendingFactor::One:
         return VK_BLEND_FACTOR_ONE;
-        break;
-    case tzw::RenderFlag::BlendingFactor::Zero:
+    case RenderFlag::BlendingFactor::Zero:
         return VK_BLEND_FACTOR_ZERO;
-        break;
-    case tzw::RenderFlag::BlendingFactor::SrcAlpha:
+    case RenderFlag::BlendingFactor::SrcAlpha:
         return VK_BLEND_FACTOR_SRC_ALPHA;
-        break;
-    case tzw::RenderFlag::BlendingFactor::OneMinusSrcAlpha:
+    case RenderFlag::BlendingFactor::OneMinusSrcAlpha:
         return VK_BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
-        break;
-    case tzw::RenderFlag::BlendingFactor::ConstantAlpha:
+    case RenderFlag::BlendingFactor::ConstantAlpha:
         return VK_BLEND_FACTOR_CONSTANT_ALPHA;
-        break;
     default:
         return VK_BLEND_FACTOR_ONE;
-        break;
     }
-    return VK_BLEND_FACTOR_ONE;
 }
 
 }
