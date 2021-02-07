@@ -37,6 +37,8 @@ public:
 	virtual void bindIBO(DeviceBuffer * buf) = 0;
 	virtual void setScissor(vec4 scissorRect) = 0;
 	virtual void drawElement(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) = 0;
+	std::string & getName(){m_name;}
+	void setName(std::string newName){m_name = newName;}
 protected:
 	void initFullScreenQuad();
 	void initSphere();
@@ -49,6 +51,7 @@ protected:
     static DeviceBuffer * m_quadVertexBuffer;
     static DeviceBuffer * m_quadIndexBuffer;
 	static Mesh * m_sphere;
+	std::string m_name;
 };
 };
 

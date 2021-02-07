@@ -61,7 +61,8 @@ static void initVk()
 
 
 
-
+static PFN_vkCmdBeginDebugUtilsLabelEXT g_CMD_BEGIN_DEBUG_UTILS_LABEL = nullptr;
+static PFN_vkCmdEndDebugUtilsLabelEXT g_CMD_END_DEBUG_UTILS_LABEL = nullptr;
 static FrameBufferVK offScreenFrameBuf;
 std::vector<const char*> getRequiredExtensions() {
 	std::vector<const char*> extensions;
@@ -75,7 +76,7 @@ std::vector<const char*> getRequiredExtensions() {
 	}
 
 #if ENABLE_DEBUG_LAYERS
-		extensions.push_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 #endif
 
 	return extensions;
@@ -153,6 +154,11 @@ bool VKRenderBackEnd::memory_type_from_properties(uint32_t typeBits, VkFlags req
     // No memory types matched, return failure
     return false;
 }
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
+        std::cerr << "validation layerAAAA: " << pCallbackData->pMessage << std::endl;
+
+        return VK_FALSE;
+    }
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback2(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
 	std::cerr << "validation layer: " << msg << std::endl;
 
@@ -328,6 +334,36 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
     {
         return m_screenRenderPass;
     }
+    static int regionCount = 0;
+    VkCommandBuffer lastCmd = nullptr;
+    void VKRenderBackEnd::beginDebugRegion(VkCommandBuffer cmd, const char* labelStr)
+    {
+        if(regionCount != 0)
+        {
+            abort();
+        }
+        regionCount = 1;
+        VkDebugUtilsLabelEXT theLabel = {};
+        theLabel.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_LABEL_EXT;
+        theLabel.pLabelName = labelStr;
+        g_CMD_BEGIN_DEBUG_UTILS_LABEL(cmd, &theLabel);
+        lastCmd = cmd;
+    }
+
+    void VKRenderBackEnd::endDebugRegion(VkCommandBuffer cmd)
+    {
+        if(regionCount != 1)
+        {
+            abort();
+        }
+        regionCount = 0;
+        if(lastCmd != cmd)
+        {
+            abort();
+        }
+        g_CMD_END_DEBUG_UTILS_LABEL(cmd);
+    }
+
     void VKRenderBackEnd::VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps)
     {
         unsigned NumExt = 0;
@@ -352,20 +388,6 @@ VkApplicationInfo appInfo = {};
     appInfo.pApplicationName = "TinyBuilder";
     appInfo.engineVersion = 1;
     appInfo.apiVersion = VK_API_VERSION_1_0;
-
-    /*
-    const char* pInstExt[] = {
-#if ENABLE_DEBUG_LAYERS
-        VK_EXT_DEBUG_REPORT_EXTENSION_NAME,
-#endif        
-        VK_KHR_SURFACE_EXTENSION_NAME,
-#ifdef _WIN32    
-        VK_KHR_WIN32_SURFACE_EXTENSION_NAME,
-#else    
-        VK_KHR_XCB_SURFACE_EXTENSION_NAME
-#endif            
-    };
-    */
     auto vkExtensionList = getRequiredExtensions();
 #if ENABLE_DEBUG_LAYERS    
     const char* pInstLayers[] = {
@@ -386,24 +408,23 @@ VkApplicationInfo appInfo = {};
     VkResult res = vkCreateInstance(&instInfo, NULL, &m_inst);
     CHECK_VULKAN_ERROR("vkCreateInstance %d\n", res);
 #if ENABLE_DEBUG_LAYERS
-    // Get the address to the vkCreateDebugReportCallbackEXT function
-    my_vkCreateDebugReportCallbackEXT = reinterpret_cast<PFN_vkCreateDebugReportCallbackEXT>(vkGetInstanceProcAddr(m_inst, "vkCreateDebugReportCallbackEXT"));
-    
-    // Register the debug callback
-    VkDebugReportCallbackCreateInfoEXT callbackCreateInfo;
-    callbackCreateInfo.sType       = VK_STRUCTURE_TYPE_DEBUG_REPORT_CREATE_INFO_EXT;
-    callbackCreateInfo.pNext       = NULL;
-    callbackCreateInfo.flags       = VK_DEBUG_REPORT_INFORMATION_BIT_EXT | 
-								     VK_DEBUG_REPORT_ERROR_BIT_EXT |
-                                     VK_DEBUG_REPORT_WARNING_BIT_EXT |
-                                     VK_DEBUG_REPORT_PERFORMANCE_WARNING_BIT_EXT |
-                                     VK_DEBUG_REPORT_DEBUG_BIT_EXT;
-    callbackCreateInfo.pfnCallback = &MyDebugReportCallback;
-    callbackCreateInfo.pUserData   = NULL;
+    VkDebugUtilsMessengerCreateInfoEXT createInfo;
+    createInfo = {};
+    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+    createInfo.pfnUserCallback = debugCallback;
 
-    VkDebugReportCallbackEXT callback;
-    res = my_vkCreateDebugReportCallbackEXT(m_inst, &callbackCreateInfo, NULL, &callback);
-    CHECK_VULKAN_ERROR("my_vkCreateDebugReportCallbackEXT error %d\n", res);
+
+    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_inst, "vkCreateDebugUtilsMessengerEXT");
+    if(func(m_inst, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+    {
+        abort();
+    }
+
+    g_CMD_BEGIN_DEBUG_UTILS_LABEL = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdBeginDebugUtilsLabelEXT");
+
+    g_CMD_END_DEBUG_UTILS_LABEL = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdEndDebugUtilsLabelEXT");
 #endif
     }
     void VKRenderBackEnd::VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices)

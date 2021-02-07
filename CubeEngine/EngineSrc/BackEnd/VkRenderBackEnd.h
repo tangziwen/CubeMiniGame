@@ -131,6 +131,8 @@ public:
     DeviceFrameBufferVK * createSwapChainFrameBuffer(int index);
     int getCurrSwapIndex();
     DeviceRenderPassVK* getScreenRenderPass();
+    void beginDebugRegion(VkCommandBuffer cmd, const char * labelStr);
+    void endDebugRegion(VkCommandBuffer cmd);
 private:
     
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);

@@ -237,6 +237,7 @@ namespace tzw
         renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
 
         int res = vkBeginCommandBuffer(m_command, &beginInfoDeffered);
+        VKRenderBackEnd::shared()->beginDebugRegion(m_command, m_name.c_str());
         CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
         renderPassInfoDeferred.framebuffer = static_cast<DeviceFrameBufferVK*>(m_frameBuffer)->getFrameBuffer();
         vkCmdBeginRenderPass(m_command, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
@@ -253,6 +254,7 @@ namespace tzw
     void DeviceRenderStageVK::endRenderPass()
     {
         vkCmdEndRenderPass(m_command);
+        VKRenderBackEnd::shared()->endDebugRegion(m_command);
     }
 
     void DeviceRenderStageVK::bindVBO(DeviceBuffer* buf)

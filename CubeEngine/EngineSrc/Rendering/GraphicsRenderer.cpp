@@ -52,6 +52,7 @@ namespace tzw
 
         
         m_gPassStage = backEnd->createRenderStage_imp();
+        m_gPassStage->setName("GBufferPass");
         m_gPassStage->init(gBufferRenderPass, gBuffer);
 
         m_shadowMat = new Material();
@@ -77,6 +78,7 @@ namespace tzw
 
         m_DeferredLightingStage = backEnd->createRenderStage_imp();
         m_DeferredLightingStage->init(deferredLightingPass, deferredLightingBuffer);
+        m_DeferredLightingStage->setName("Deferred Sun Lighting Stage");
         Material * mat = new Material();
         mat->loadFromTemplate("DirectLight");
         m_DeferredLightingStage->createSinglePipeline(mat);
@@ -89,6 +91,7 @@ namespace tzw
         m_PointLightingStage = backEnd->createRenderStage_imp();
         m_PointLightingStage->init(pointLightPass, m_DeferredLightingStage->getFrameBuffer());
         m_PointLightingStage->createSinglePipeline(pointLightMat);
+        m_PointLightingStage->setName("Deferred Point Light Stage");
 
         DeviceVertexInput imguiVertexInput;
         imguiVertexInput.stride = sizeof(VertexData);
@@ -104,7 +107,7 @@ namespace tzw
         skyPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_skyStage = backEnd->createRenderStage_imp();
         m_skyStage->init(skyPass, m_DeferredLightingStage->getFrameBuffer());
-
+        m_skyStage->setName("Sky Stage");
 
         Material * matSkyPass = new Material();
         matSkyPass->loadFromTemplate("Sky");
@@ -117,6 +120,7 @@ namespace tzw
         fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
         m_fogStage = backEnd->createRenderStage_imp();
         m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
+        m_fogStage->setName("Fog Stage");
         m_fogStage->createSinglePipeline(matFog);
 
 
@@ -234,7 +238,6 @@ namespace tzw
         //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
     }
 
-#pragma optimize("", off)
 	void GraphicsRenderer::render()
 	{
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
