@@ -157,10 +157,9 @@ float GlyphAtlasNode::U(float fakeU)
 float GlyphAtlasNode::V(float fakeV)
 {
     auto texSize = parent->texture()->getSize();
-    fakeV = 1.0 - fakeV;
     auto theY = texSize.y - m_y;
     int pos = theY - m_data.rows*fakeV;
-    return 1.0f*pos / texSize.y;
+    return 1.0 - 1.0f*pos / texSize.y;
 }
 
 } // namespace tzw

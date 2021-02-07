@@ -80,10 +80,10 @@ void LabelNew::genMesh()
         float h = gNode->m_data.rows;
         VertexData vertices[] = {
             // front
-            VertexData(vec3(0, 0,  -1.0f), gNode->UV(0.0f, 0.0f)),  // v0
-            VertexData(vec3( w,  0,  -1.0f), gNode->UV(1.0f, 0.0f)), // v1
-            VertexData(vec3( w,  h,  -1.0f), gNode->UV(1.0f, 1.0f)),  // v2
-            VertexData(vec3( 0, h,  -1.0f), gNode->UV(0.0f, 1.0f)), // v3
+            VertexData(vec3(0, 0,  -1.0f), gNode->UV(0.0f, 1.0f)),  // v0
+            VertexData(vec3( w,  0,  -1.0f), gNode->UV(1.0f, 1.0f)), // v1
+            VertexData(vec3( w,  h,  -1.0f), gNode->UV(1.0f, 0.0f)),  // v2
+            VertexData(vec3( 0, h,  -1.0f), gNode->UV(0.0f, 0.0f)), // v3
         };
         int diff = - int(gNode->m_data.rows) + int(gNode->m_data.top);
     	if(!m_font->isUnvisibleChar(c))

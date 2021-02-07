@@ -114,7 +114,7 @@ namespace tzw
 
 	void imgui_Image(DeviceTexture* val, ImVec2 size)
 	{
-		ImGui::Image(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1,0));
+		ImGui::Image(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 0), ImVec2(1,1));
 	}
 	
 	void imgui_PushStyleColor(int styleEnum, ImVec4 color)
