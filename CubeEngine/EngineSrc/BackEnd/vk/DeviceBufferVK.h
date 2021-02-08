@@ -10,7 +10,8 @@ class DeviceBufferVK : public DeviceBuffer
 public:
 	DeviceBufferVK();
 	virtual void allocate(void * data, size_t ammount);
-	virtual void allocateEmpty(size_t ammount);
+	void allocateEmpty(size_t ammount) override;
+	void allocateAndSet(size_t alloc_size, void * data, size_t ammount) override;
 	virtual bool init(DeviceBufferType type);
 	virtual void bind();
 	bool hasEnoughRoom(size_t size) override;

@@ -5,6 +5,11 @@ tzw::DeviceBuffer::DeviceBuffer()
 	m_uid = 0;
 }
 
+void tzw::DeviceBuffer::allocateAndSet(size_t alloc_size, void* data, size_t ammount)
+{
+	
+}
+
 void tzw::DeviceBuffer::allocateEmpty(size_t ammount)
 {
 }

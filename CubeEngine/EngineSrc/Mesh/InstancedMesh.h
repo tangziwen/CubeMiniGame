@@ -25,8 +25,8 @@ public:
 	Mesh * getMesh();
 	void setMesh(Mesh * mesh);
 private:
-	RenderBuffer* m_instanceBuf;
-	Mesh * m_mesh;
+	RenderBuffer* m_instanceBuf = nullptr;
+	Mesh * m_mesh = nullptr;
 	size_t m_resverdSize = 0;
 };
 

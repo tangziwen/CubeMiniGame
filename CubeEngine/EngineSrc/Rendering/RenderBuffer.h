@@ -17,6 +17,8 @@ public:
     RenderBuffer(Type bufferType);
     void create();
     void allocate(void * data, unsigned int amount, RenderFlag::BufferStorageType storageType = RenderFlag::BufferStorageType::STATIC_DRAW);
+	void allocateEmpty(unsigned int amount);
+	void allocateAndSet(size_t alloc_size, void * data, unsigned int amount);
     void copyData(void *data, size_t dataSize);
     void use();
     DeviceBuffer * bufferId() const;

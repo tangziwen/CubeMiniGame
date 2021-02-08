@@ -55,8 +55,7 @@ namespace tzw {
 					break;
 				}
 			}
-
-			m_instanceBuf->allocate(data, size * sizeof(InstanceData));
+			m_instanceBuf->allocateAndSet(size * sizeof(InstanceData), data, m_instanceOffset.size() * sizeof(InstanceData));
 			m_resverdSize = size;
 		}
 		else //already have enough space

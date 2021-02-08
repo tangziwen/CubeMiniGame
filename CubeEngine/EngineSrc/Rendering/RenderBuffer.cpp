@@ -33,7 +33,18 @@ void RenderBuffer::allocate(void *data, unsigned int amount, RenderFlag::BufferS
     m_bufferId->allocate(data, amount);
 	m_amount = amount;
 }
+	
+void RenderBuffer::allocateEmpty(unsigned amount)
+{
+    m_bufferId->allocateEmpty(amount);
+	m_amount = amount;
+}
 
+void RenderBuffer::allocateAndSet(size_t alloc_size, void* data, unsigned amount)
+{
+    m_bufferId->allocateAndSet(alloc_size, data, amount);
+	m_amount = alloc_size;
+}
 
 void RenderBuffer::copyData(void* data, size_t dataSize)
 {

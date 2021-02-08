@@ -15,15 +15,15 @@ namespace tzw
 		vmaCreateAllocator(&allocatorInfo, &g_allocator);
 	}
 
-	BufferInfo DeviceMemoryPoolVK::getBuffer(VkBufferCreateInfo bufferCreateInfo, VkBuffer* targetBuffer)
+	BufferInfo DeviceMemoryPoolVK::createBuffer(VkBufferCreateInfo bufferCreateInfo, VkBuffer* targetBuffer)
 	{
-		BufferInfo info;
+		BufferInfo info{};
 		VmaAllocationCreateInfo allocInfo = {};
 		allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
  
 		VmaAllocation allocation;
 		auto result = vmaCreateBuffer(g_allocator, &bufferCreateInfo, &allocInfo, targetBuffer, &allocation, nullptr);
-		if(result != VK_SUCCESS)
+		if(result < VK_SUCCESS)
 		{
 			abort();
 		}
@@ -38,7 +38,11 @@ namespace tzw
 
 	void DeviceMemoryPoolVK::map(BufferInfo info, void ** mappedData)
 	{
-		vmaMapMemory(g_allocator, static_cast<VmaAllocation>(info.m_ptr), mappedData);
+		auto result = vmaMapMemory(g_allocator, static_cast<VmaAllocation>(info.m_ptr), mappedData);
+		if(result != VK_SUCCESS)
+		{
+			abort();
+		}
 	}
 
 	void DeviceMemoryPoolVK::unmap(BufferInfo info)

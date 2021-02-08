@@ -17,7 +17,7 @@ namespace tzw
 	{
         auto device = VKRenderBackEnd::shared()->getDevice();
         allocateEmpty(ammount);
-        void* mapData;
+        void* mapData = nullptr;
         if(!m_isUsePool)
         {
             vkMapMemory(device, m_memory, m_offset, ammount, 0, &mapData);
@@ -27,8 +27,9 @@ namespace tzw
         else
         {
             auto memoryPool = VKRenderBackEnd::shared()->getMemoryPool();
+        	size_t currSize = m_bufferInfo.getSize();
             memoryPool->map(m_bufferInfo, &mapData);
-            memcpy(mapData, data, (size_t) ammount);
+            memcpy_s(mapData, currSize, data, (size_t) ammount);
             memoryPool->unmap(m_bufferInfo);
         }
 
@@ -45,6 +46,28 @@ namespace tzw
             allocateEmptyPoolImp(ammount);
         }   
     }
+
+    void DeviceBufferVK::allocateAndSet(size_t alloc_size, void* data, size_t ammount)
+    {
+        auto device = VKRenderBackEnd::shared()->getDevice();
+        allocateEmpty(alloc_size);
+        void* mapData = nullptr;
+        if(!m_isUsePool)
+        {
+            vkMapMemory(device, m_memory, m_offset, alloc_size, 0, &mapData);
+                memcpy(mapData, data, (size_t) ammount);
+            vkUnmapMemory(device, m_memory);
+        }
+        else
+        {
+            auto memoryPool = VKRenderBackEnd::shared()->getMemoryPool();
+        	size_t currSize = m_bufferInfo.getSize();
+            memoryPool->map(m_bufferInfo, &mapData);
+            memcpy_s(mapData, currSize, data, (size_t) ammount);
+            memoryPool->unmap(m_bufferInfo);
+        }
+    }
+
     void DeviceBufferVK::allocateEmptySingleImp(size_t ammount)
     {
         VkResult res = VK_SUCCESS;
@@ -149,7 +172,7 @@ namespace tzw
         }
         bufferInfo.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
 
-        auto info = memoryPool->getBuffer(bufferInfo, &m_buffer);
+        auto info = memoryPool->createBuffer(bufferInfo, &m_buffer);
         m_memory = info.getMemory();
         m_bufferSize = bufferInfo.size;//info.getSize();
         m_offset = info.getOffset();
