@@ -131,7 +131,7 @@ void Drawable3D::setDrawableFlag(const uint32_t drawableFlag)
 	m_drawableFlag = drawableFlag;
 }
 
-void Drawable3D::getCommandForInstanced(std::vector<InstanceRendereData> & commandList)
+void Drawable3D::getInstancedData(std::vector<InstanceRendereData> & instanceDataList)
 {
     return;
 }

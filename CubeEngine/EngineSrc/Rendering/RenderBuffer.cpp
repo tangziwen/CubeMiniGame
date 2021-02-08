@@ -13,7 +13,7 @@ RenderBuffer::RenderBuffer(Type bufferType)
 void RenderBuffer::create()
 {
     m_bufferId = Engine::shared()->getRenderBackEnd()->createBuffer_imp();
-    DeviceBufferType targetType;
+    DeviceBufferType targetType = DeviceBufferType::Vertex;
     switch(m_type)
     {
     case Type::INDEX:
@@ -34,21 +34,12 @@ void RenderBuffer::allocate(void *data, unsigned int amount, RenderFlag::BufferS
 	m_amount = amount;
 }
 
-void RenderBuffer::resubmit(void* data, unsigned offset, unsigned amount)
+
+void RenderBuffer::copyData(void* data, size_t dataSize)
 {
-    printf("resubmit");
-    return;
-    /*
-    switch(m_type)
-    {
-    case Type::INDEX:
-        RenderBackEnd::shared()->resubmit(RenderFlag::BufferTarget::IndexBuffer, offset ,amount,data);
-        break;
-    case Type::VERTEX:
-        RenderBackEnd::shared()->resubmit(RenderFlag::BufferTarget::VertexBuffer, offset ,amount,data);
-        break;
-    }
-    */
+    m_bufferId->map();
+    m_bufferId->copyFrom(data, dataSize, 0);
+    m_bufferId->unmap();
 }
 
 void RenderBuffer::use()

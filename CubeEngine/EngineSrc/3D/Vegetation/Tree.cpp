@@ -489,38 +489,8 @@ void Tree::pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues
 
 			}
 		}
-		// auto targetAmount = m_mesh->m_instanceOffset.size();
-		// if (targetAmount > 0)
-		// {
-		// 	// if(targetAmount > m_mesh->getInstanceBuf()->getAmount())
-		// 	// {
-		// 	// 	m_mesh->submitInstanced(targetAmount);
-		// 	// }else
-		// 	// {
-		// 	// 	m_mesh->reSubmitInstanced();
-		// 	// }
-		// 	m_mesh->submitInstanced();
-		// 	m_leafMesh->submitInstanced();
-		// 	// m_mesh->getInstanceBuf()->use();
-		// 	// m_mesh->getInstanceBuf()->allocate(&m_mesh->m_instanceOffset[0], m_mesh->m_instanceOffset.size() * sizeof(InstanceData), RenderFlag::BufferStorageType::DYNAMIC_DRAW);
-		// }
-		// // m_mesh->reSubmitInstanced();
-	}
-	// if(m_mesh->m_instanceOffset.size() > 0)
-	// {
-	// 	RenderCommand command(m_mesh, m_barkMat, RenderCommand::RenderType::Instanced);
-	// 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-	// 	setUpTransFormation(command.m_transInfo);
-	// 	Renderer::shared()->addRenderCommand(command);
-	// 	setUpTransFormation(command.m_transInfo);
-	//
-	// 	RenderCommand commandLeaf(m_leafMesh,  m_leafMat, RenderCommand::RenderType::Instanced);
-	// 	commandLeaf.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-	// 	setUpTransFormation(commandLeaf.m_transInfo);
-	// 	Renderer::shared()->addRenderCommand(commandLeaf);
-	// 	setUpTransFormation(commandLeaf.m_transInfo);
-	// }
 
+	}
 }
 
 void Tree::finish()

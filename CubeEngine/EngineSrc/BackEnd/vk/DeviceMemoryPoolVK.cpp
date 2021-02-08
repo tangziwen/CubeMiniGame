@@ -22,7 +22,11 @@ namespace tzw
 		allocInfo.usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
  
 		VmaAllocation allocation;
-		vmaCreateBuffer(g_allocator, &bufferCreateInfo, &allocInfo, targetBuffer, &allocation, nullptr);
+		auto result = vmaCreateBuffer(g_allocator, &bufferCreateInfo, &allocInfo, targetBuffer, &allocation, nullptr);
+		if(result != VK_SUCCESS)
+		{
+			abort();
+		}
 		info.m_ptr = allocation;
 		return info;
 	}

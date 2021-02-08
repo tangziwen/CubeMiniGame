@@ -21,13 +21,13 @@ public:
 	void clearInstances();
 	void submitInstanced(int preserveNumber = 0);
 	int getInstanceSize();
-	void reSubmitInstanced();
 	~InstancedMesh();
 	Mesh * getMesh();
 	void setMesh(Mesh * mesh);
 private:
 	RenderBuffer* m_instanceBuf;
 	Mesh * m_mesh;
+	size_t m_resverdSize = 0;
 };
 
 } // namespace tzw

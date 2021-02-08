@@ -12,6 +12,7 @@ namespace tzw
         m_isUsePool = false;
         m_offset = 0;
     }
+#pragma optimize("", off)
     void DeviceBufferVK::allocate(void* data, size_t ammount)
 	{
         auto device = VKRenderBackEnd::shared()->getDevice();
@@ -150,7 +151,7 @@ namespace tzw
 
         auto info = memoryPool->getBuffer(bufferInfo, &m_buffer);
         m_memory = info.getMemory();
-        m_bufferSize = info.getSize();
+        m_bufferSize = bufferInfo.size;//info.getSize();
         m_offset = info.getOffset();
         m_bufferInfo = info;
     }

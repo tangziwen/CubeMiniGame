@@ -23,7 +23,7 @@ namespace tzw
 		m_localAABB = GamePartRenderMgr::shared()->getPartLocalAABB(m_visualInfo);
 	}
 
-	void GamePartRenderNode::getCommandForInstanced(std::vector<InstanceRendereData> & commandList)
+	void GamePartRenderNode::getInstancedData(std::vector<InstanceRendereData> & dataList)
 	{
 		if(!m_isVisible) return;
 		if(m_infoList.empty() || m_isNeedUpdateRenderInfo)
@@ -44,7 +44,7 @@ namespace tzw
 			data.m_mesh = info.mesh;
 			data.material = info.material;
 			data.data = instance;
-			commandList.push_back(data);
+			dataList.push_back(data);
 		}
 	}
 

@@ -67,6 +67,7 @@ namespace tzw
             auto shadowBuffer = backEnd->createFrameBuffer_imp();
             shadowBuffer->init(1024, 1024, shadowRenderPass);
             m_ShadowStage[i] = backEnd->createRenderStage_imp();
+            m_ShadowStage[i]->setName("Shadow Pass");
             m_ShadowStage[i]->init(shadowRenderPass, shadowBuffer);
         }
 
@@ -140,6 +141,7 @@ namespace tzw
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer);
+            stage->setName("Texture To Screen Pass");
             m_textureToScreenRenderStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
             m_textureToScreenRenderStage[i]->createSinglePipeline(matTextureToScreen);
         }
@@ -151,6 +153,7 @@ namespace tzw
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer);
+            stage->setName("GUI Pass");
             m_guiStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
         }
 	    m_imguiPipeline = nullptr;

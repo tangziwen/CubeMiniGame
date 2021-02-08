@@ -75,9 +75,9 @@ namespace tzw
             if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
             {
                 m_fuckingObjList.insert(currPipeLine);
-                //currPipeLine->resetItemWiseDescritporSet();
                 //update material-wise parameter.
                 currPipeLine->updateUniform();
+                currPipeLine->updateMaterialDescriptorSet();
             }
             
 

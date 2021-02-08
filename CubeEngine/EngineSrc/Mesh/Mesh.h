@@ -108,7 +108,6 @@ private:
     AABB m_aabb;
     RenderBuffer* m_arrayBuf;
     RenderBuffer* m_indexBuf;
-	RenderBuffer* m_instanceBuf;
 
     unsigned int m_matIndex;
     integer_u m_vbo,m_ibo;

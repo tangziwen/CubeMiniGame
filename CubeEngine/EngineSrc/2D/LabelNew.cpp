@@ -46,6 +46,7 @@ std::string LabelNew::getString() const
 
 void LabelNew::setString(const std::string &string)
 {
+    if(m_string  == string) return;
     m_string = string;
     genMesh();
 }
@@ -137,6 +138,7 @@ void LabelNew::initAtlas()
     m_atlas->generate();
     m_atlas->generateGLTexture();
 	m_atlas->texture()->setFilter(Texture::FilterType::Linear, 0);
+    m_material->setTex("SpriteTexture",m_atlas->texture());
 }
 
 } // namespace tzw

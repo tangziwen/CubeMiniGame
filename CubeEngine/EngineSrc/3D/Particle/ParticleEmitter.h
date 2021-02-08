@@ -25,6 +25,7 @@ public:
 	void addUpdateModule(ParticleEmitterModule* module);
 	void logicUpdate(float dt) override;
 	Mesh * m_mesh{};
+	InstancedMesh * m_instancedMesh;
 	void pushCommand();
 	void initMesh();
 	void setIsState(State state);

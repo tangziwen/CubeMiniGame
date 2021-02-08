@@ -114,7 +114,7 @@ namespace tzw {
 		else if(m_node->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Instancing))
 		{
 			std::vector<InstanceRendereData> theList;
-			m_node->getCommandForInstanced(theList);
+			m_node->getInstancedData(theList);
 			std::vector<RenderCommand> cmdList;
 			InstancingMgr::shared()->generateSingleCommand(RenderFlag::RenderStageType::COMMON, theList, cmdList);
 			for(auto & command : cmdList)

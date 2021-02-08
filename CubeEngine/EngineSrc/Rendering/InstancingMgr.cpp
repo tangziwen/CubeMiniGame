@@ -6,41 +6,30 @@
 #include <unordered_set>
 namespace tzw
 {
-	void InstancingMgr::prepare(RenderFlag::RenderStage renderType, int batchNumber)
+	void InstancingMgr::prepare(RenderFlag::RenderStage renderType, int batchIdx)
 	{
-		bool isAllBatch = batchNumber < 0;
+		bool isAllBatch = batchIdx < 0;
 
 		for(auto & innerMap : m_map)
 		{
 			for(auto & t: innerMap.second)
 			{
-				int clearID = 0;
-				switch(renderType)
-				{
-				case RenderFlag::RenderStage::GUI: break;
-				case RenderFlag::RenderStage::COMMON:
-					clearID = COMMON_PASS_INSTANCE;
-					break;
-				case RenderFlag::RenderStage::SHADOW:
-					clearID = SHADOW_PASS_INSTANCE;
-					break;
-				default: ;
-				}
+				int renderTypeID = getInstancedIndexFromRenderType(renderType);
 				if(isAllBatch)
 				{
 					for(int i = 0; i < MAX_BATCHING_COUNT; i++)
 					{
-						if(t.second[clearID][i])
+						if(t.second[renderTypeID][i])
 						{
-							t.second[clearID][i]->clearInstances();
+							t.second[renderTypeID][i]->clearInstances();
 						}
 					}
 				}
 				else
 				{
-					if(t.second[clearID][batchNumber])
+					if(t.second[renderTypeID][batchIdx])
 					{
-						t.second[clearID][batchNumber]->clearInstances();
+						t.second[renderTypeID][batchIdx]->clearInstances();
 					}
 				}
 
@@ -50,7 +39,7 @@ namespace tzw
 
 	void InstancingMgr::pushInstanceRenderData(RenderFlag::RenderStage stage, InstanceRendereData data, int batchID)
 	{
-		int clearID = getInstancedIndexFromRenderType(stage);
+		int renderTypeID = getInstancedIndexFromRenderType(stage);
 		auto mesh_to_instance = m_map.find(data.material);
 		InstancedMesh * instacing = nullptr;
 		if(mesh_to_instance != m_map.end())// already have this Material
@@ -58,15 +47,15 @@ namespace tzw
 			auto instancedMesh = mesh_to_instance->second.find(data.m_mesh);
 			if(instancedMesh != mesh_to_instance->second.end()) //have this material and mesh
 			{
-				if(instancedMesh->second[clearID][batchID])//already have this instancing
+				if(instancedMesh->second[renderTypeID][batchID])//already have this instancing
 				{
-					instacing = instancedMesh->second[clearID][batchID];
+					instacing = instancedMesh->second[renderTypeID][batchID];
 				}
 				else//no instancing.
 				{
 					instacing = new InstancedMesh(data.m_mesh);
-					instancedMesh->second[clearID][batchID] = instacing;
-					instancedMesh->second[clearID][batchID]->pushInstance(data.data);
+					instancedMesh->second[renderTypeID][batchID] = instacing;
+					instancedMesh->second[renderTypeID][batchID]->pushInstance(data.data);
 				}
 				
 			}
@@ -80,11 +69,12 @@ namespace tzw
 						mesh_to_instance->second[data.m_mesh][i][j] = nullptr;
 					}
 				}
-				mesh_to_instance->second[data.m_mesh][clearID][batchID] = instacing;
+				mesh_to_instance->second[data.m_mesh][renderTypeID][batchID] = instacing;
 			}
-		}else //total empty
+		}
+		else //total empty
 		{
-			innerMeshMap newMap;
+			innerMeshMap newMap{};
 			m_map.insert(std::make_pair(data.material, newMap));// = newMap;
 			instacing = new InstancedMesh(data.m_mesh);
 			for(int i =0 ; i< MAX_INSTANCE_INDEX; i++)
@@ -94,15 +84,14 @@ namespace tzw
 					m_map[data.material][data.m_mesh][i][j] = nullptr;
 				}
 			}
-			m_map[data.material][data.m_mesh][clearID][batchID] = instacing;
+			m_map[data.material][data.m_mesh][renderTypeID][batchID] = instacing;
 		}
 		instacing->pushInstance(data.data);
-		
 	}
 
 	void InstancingMgr::generateDrawCall(RenderFlag::RenderStageType requirementType, RenderQueues * queues,int batchID, int requirementArg)
 	{
-		RenderFlag::RenderStage renderType;
+		RenderFlag::RenderStage renderType = RenderFlag::RenderStage::COMMON;
 		switch(requirementType){
 		case RenderFlag::RenderStageType::SHADOW:
 			renderType = RenderFlag::RenderStage::SHADOW;
@@ -111,7 +100,7 @@ namespace tzw
 			renderType = RenderFlag::RenderStage::COMMON;
 			break;
 		}
-		int clearID = getInstancedIndexFromRenderType(renderType);
+		int renderTypeID = getInstancedIndexFromRenderType(renderType);
 		for(auto & innerMap : m_map)
 		{
 			for(auto & t: innerMap.second)
@@ -121,11 +110,11 @@ namespace tzw
 				{
 					for(int i = 0; i < MAX_BATCHING_COUNT; i++)
 					{
-						if(t.second[clearID][i] && t.second[clearID][i]->getInstanceSize()> 0)
+						if(t.second[renderTypeID][i] && t.second[renderTypeID][i]->getInstanceSize()> 0)
 						{
-							t.second[clearID][i]->submitInstanced();
+							t.second[renderTypeID][i]->submitInstanced();
 							RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-							command.setInstancedMesh(t.second[clearID][i]);
+							command.setInstancedMesh(t.second[renderTypeID][i]);
 							command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 							setUpTransFormation(command.m_transInfo);
 							queues->addRenderCommand(command, requirementArg);
@@ -134,19 +123,17 @@ namespace tzw
 				}
 				else
 				{
-					if(t.second[clearID][batchID] &&t.second[clearID][batchID]->getInstanceSize()> 0)
+					if(t.second[renderTypeID][batchID] &&t.second[renderTypeID][batchID]->getInstanceSize()> 0)
 					{
-						t.second[clearID][batchID]->submitInstanced();
+						t.second[renderTypeID][batchID]->submitInstanced();
 						RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-						command.setInstancedMesh(t.second[clearID][batchID]);
+						command.setInstancedMesh(t.second[renderTypeID][batchID]);
 						command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 						setUpTransFormation(command.m_transInfo);
 						queues->addRenderCommand(command, requirementArg);
 					
 					}
-
 				}
-
 			}
 		}
 

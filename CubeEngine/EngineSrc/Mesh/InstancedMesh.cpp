@@ -2,7 +2,7 @@
 #include <iostream>
 #include <assert.h>
 #include "Utility/log/Log.h"
-
+#include <array>
 namespace tzw {
 
 	InstancedMesh::InstancedMesh()
@@ -36,30 +36,39 @@ namespace tzw {
 	{
 		m_instanceOffset.clear();
 	}
-
+	std::array<int, 4> g_GrowList{16, 32, 64, 128};
 	void InstancedMesh::submitInstanced(int preserveNumber)
 	{
-		if (m_instanceOffset.size() > 0 || preserveNumber > 0)
+		if(m_instanceOffset.size() <= 0) return;
+		m_instanceBuf->use();
+		size_t size = m_instanceOffset.size();
+		void * data = &m_instanceOffset[0];
+		if ( size > m_resverdSize)
+		{
+			bool isUsedFixedSize = false;
+			for(auto growSize : g_GrowList)
+			{
+				if(size <growSize)
+				{
+					size = growSize;
+					isUsedFixedSize = true;
+					break;
+				}
+			}
+
+			m_instanceBuf->allocate(data, size * sizeof(InstanceData));
+			m_resverdSize = size;
+		}
+		else //already have enough space
 		{
 			m_instanceBuf->use();
-			int size = (preserveNumber > 0) ?preserveNumber:m_instanceOffset.size();
-			void * data = (preserveNumber > 0)?NULL:&m_instanceOffset[0];
-			m_instanceBuf->allocate(data, size * sizeof(InstanceData));
+			m_instanceBuf->copyData(data, size * sizeof(InstanceData));
 		}
 	}
 
 	int InstancedMesh::getInstanceSize()
 	{
 		return m_instanceOffset.size();
-	}
-
-	void InstancedMesh::reSubmitInstanced()
-	{
-		if (m_instanceOffset.size() > 0)
-		{
-			m_instanceBuf->use();
-			m_instanceBuf->resubmit(&m_instanceOffset[0], 0, m_instanceOffset.size() * sizeof(InstanceData));
-		}
 	}
 
 	InstancedMesh::~InstancedMesh()

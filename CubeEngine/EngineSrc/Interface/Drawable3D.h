@@ -41,7 +41,7 @@ public:
 	void setColor(vec4 newColor) override;
 	uint32_t getDrawableFlag() const;
 	void setDrawableFlag(const uint32_t drawableFlag);
-	virtual void getCommandForInstanced(std::vector<InstanceRendereData> & commandList);
+	virtual void getInstancedData(std::vector<InstanceRendereData> & dataList);
 protected:
     AABB m_localAABB;
     AABB m_worldAABBCache;

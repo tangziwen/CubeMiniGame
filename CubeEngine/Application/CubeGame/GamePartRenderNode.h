@@ -16,7 +16,7 @@ class GamePartRenderNode : public Drawable3D
 			NO_INSTANCING,
 		};
 		GamePartRenderNode(GameItem * item, GamePart * partInstance);
-		void getCommandForInstanced(std::vector<InstanceRendereData> & commandList) override;
+		void getInstancedData(std::vector<InstanceRendereData> & commandList) override;
 		void setColor(vec4 newColor) override;
 		void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg) override;
 		VisualInfo * getVisualInfo();

@@ -10,7 +10,6 @@ Mesh::Mesh()
 {
 	m_arrayBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 	m_indexBuf = new RenderBuffer(RenderBuffer::Type::INDEX);
-	m_instanceBuf = new RenderBuffer(RenderBuffer::Type::VERTEX);
 }
 
 void Mesh::addIndex(unsigned int index)
@@ -64,19 +63,12 @@ void Mesh::submit(RenderFlag::BufferStorageType storageType)
     //pass data to the IBO
     m_indexBuf->use();
     m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u), storageType);
-
-	if (m_instanceOffset.size() > 0)
-	{
-		m_instanceBuf->use();
-		m_instanceBuf->allocate(&m_instanceOffset[0], m_instanceOffset.size() * sizeof(InstanceData), storageType);
-	}
 }
 
 Mesh::~Mesh()
 {
 	delete m_arrayBuf;
 	delete m_indexBuf;
-	delete m_instanceBuf;
 }
 
 unsigned int Mesh::getMatIndex() const
@@ -160,36 +152,16 @@ void Mesh::calcTangents()
     }
 }
 
-void Mesh::submitInstanced(int preserveNumber)
-{
-	if (m_instanceOffset.size() > 0 || preserveNumber > 0)
-	{
-		m_instanceBuf->use();
-		int size = (preserveNumber > 0) ?preserveNumber:m_instanceOffset.size();
-		void * data = (preserveNumber > 0)?NULL:&m_instanceOffset[0];
-		m_instanceBuf->allocate(data, size * sizeof(InstanceData));
-	}
-}
-
-void Mesh::reSubmitInstanced()
-{
-	if (m_instanceOffset.size() > 0)
-	{
-		m_instanceBuf->use();
-		m_instanceBuf->resubmit(&m_instanceOffset[0], 0, m_instanceOffset.size() * sizeof(InstanceData));
-	}
-}
-
 void Mesh::reSubmit()
 {
 	if(m_arrayBuf && !m_vertices.empty())
 	{
 		m_arrayBuf->use();
-		m_arrayBuf->resubmit(&m_vertices[0], 0, m_vertices.size() * sizeof(VertexData));
+		//m_arrayBuf->resubmit(&m_vertices[0], 0, m_vertices.size() * sizeof(VertexData));
 
 
 	    m_indexBuf->use();
-	    m_indexBuf->resubmit(&m_indices[0], 0, m_indices.size() * sizeof(short_u));
+	    //m_indexBuf->resubmit(&m_indices[0], 0, m_indices.size() * sizeof(short_u));
 	}
 }
 
@@ -592,11 +564,6 @@ RenderBuffer *Mesh::getIndexBuf() const
     return m_indexBuf;
 }
 
-RenderBuffer * Mesh::getInstanceBuf() const
-{
-	return m_instanceBuf;
-}
-
 void Mesh::clearVertices()
 {
     m_vertices.clear();
@@ -673,7 +640,6 @@ void Mesh::createBufferObject()
     //create vbo and ibo buffer
     m_arrayBuf->create();
     m_indexBuf->create();
-	m_instanceBuf->create();
 
     //record the handle
     m_ibo = m_indexBuf->bufferId()->m_uid;
