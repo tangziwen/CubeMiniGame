@@ -19,7 +19,7 @@ static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 
 #include "EngineSrc/Collision/PhysicsMgr.h"
 #include <random>
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 
 namespace tzw
 {
@@ -253,8 +253,8 @@ namespace tzw
 		
 		if (true)
 		{
-			Tree::shared()->addTreeGroup(m_tree);
-			Tree::shared()->addTreeGroup(m_grass);
+			FoliageSystem::shared()->addTreeGroup(m_tree);
+			FoliageSystem::shared()->addTreeGroup(m_grass);
 		}
 	}
 

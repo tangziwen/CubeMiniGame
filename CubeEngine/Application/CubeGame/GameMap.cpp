@@ -180,8 +180,8 @@ void GameMap::init(float ratio, int width, int depth, int height)
 	    VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
 		VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTreeLod1.tzw");
 		VegetationBatInfo lod2(VegetationType::QUAD, "treeTest/treeLod2.png", vec2(10, 10));
-		//reg Tree class
-		m_treeID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
+		//reg FoliageSystem class
+		m_treeID = FoliageSystem::shared()->regVegetation(&lod0, &lod1, &lod2);
 	}
 
 
@@ -189,7 +189,7 @@ void GameMap::init(float ratio, int width, int depth, int height)
 	    VegetationBatInfo lod0(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
 		VegetationBatInfo lod1(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
 		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
-		m_grassID = Tree::shared()->regVegetation(&lod0, &lod1, &lod2);
+		m_grassID = FoliageSystem::shared()->regVegetation(&lod0, &lod1, &lod2);
 	}
 
 }

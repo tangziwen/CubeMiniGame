@@ -245,7 +245,17 @@ namespace tzw
         		g_GetCurrScene()->addNode(pointLight);
         		
 				//auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
-        		break;
+
+            }
+			break;
+        case TZW_KEY_G:
+			{
+				auto model = new Model();
+        		model->initWithFile("wheat_02.tzw");
+				model->setPos(getPos());
+        		//model->setScale(100, 100, 100);
+        		model->setIsAccpectOcTtree(true);
+        		g_GetCurrScene()->addNode(model);
             }
 			break;
         case TZW_KEY_TAB:

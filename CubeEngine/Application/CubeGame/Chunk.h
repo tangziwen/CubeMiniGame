@@ -2,7 +2,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include <vector>
 #include "3D/Vegetation/Grass.h"
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 #include "GameMap.h"
 
 
