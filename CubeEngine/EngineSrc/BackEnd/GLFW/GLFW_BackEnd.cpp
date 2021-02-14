@@ -9,10 +9,12 @@
 #include "vulkan/vulkan.h"
 #include "vulkan/vk_sdk_platform.h"
 #define GLFW_INCLUDE_NONE
+#define GLFW_EXPOSE_NATIVE_WIN32
 #include "GLFW/glfw3.h"
+#include "GLFW/glfw3native.h"
 #include <algorithm>
 #include <strstream>
-#include "EngineSrc/BackEnd/VKRenderBackEnd.h"
+#include "EngineSrc/BackEnd/VkRenderBackEnd.h"
 
 const bool g_isuesVulkan = true;
 namespace tzw {
@@ -131,6 +133,10 @@ GLFW_BackEnd::prepare(int width, int height, bool isFullScreen)
 	glfwSetMouseButtonCallback(m_window, mouse_button_callback);
 	glfwSetCursorPosCallback(m_window, cursor_position_callback);
 	AbstractDevice::shared()->init(w, h);
+
+	//disable input method
+	auto winHandle = glfwGetWin32Window(m_window);
+	auto ime_handle = ImmAssociateContext(winHandle,0);
 }
 
 void
@@ -153,7 +159,7 @@ GLFW_BackEnd::run()
 }
 
 GLFW_BackEnd::GLFW_BackEnd()
-  : m_window(nullptr)
+  : m_window(nullptr),m_w(1024),m_h(1024)
 {}
 
 void

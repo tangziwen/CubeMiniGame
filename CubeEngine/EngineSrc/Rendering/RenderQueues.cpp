@@ -1,5 +1,5 @@
 #include "RenderQueues.h"
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 #include "Rendering/InstancingMgr.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 namespace tzw

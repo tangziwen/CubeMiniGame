@@ -15,7 +15,7 @@
 #include "Shader/ShaderMgr.h"
 #include "3D/Thumbnail.h"
 #include "3D/Primitive/SpherePrimitive.h"
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 #include "Lighting/PointLight.h"
 #include "Scene/OctreeScene.h"
 #include "Mesh/Mesh.h"

@@ -56,10 +56,10 @@ namespace tzw {
 	  std::vector<InstanceData> m_instance;
 		int m_treeClass;
 	};
-	class Tree : public Singleton<Tree>, public Drawable3D
+	class FoliageSystem : public Singleton<FoliageSystem>, public Drawable3D
 	{
 	public:
-	  explicit Tree();
+	  explicit FoliageSystem();
 		int regVegetation(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2);
 	  void addTreeGroup(TreeGroup* treeGroup);
 	  void clearTreeGroup();

@@ -1,7 +1,7 @@
 #include "SceneCuller.h"
 #include "SceneMgr.h"
 #include "OctreeScene.h"
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 #include "Rendering/InstancingMgr.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 namespace tzw
@@ -28,7 +28,7 @@ namespace tzw
 		OctreeScene * octreeScene =  SceneMgr::shared()->getCurrScene()->getOctreeScene();
 		SceneMgr::shared()->getCurrScene()->getOctreeScene()->cullingByCamera(cam);
 		//vegetation
-		Tree::shared()->clearTreeGroup();
+		FoliageSystem::shared()->clearTreeGroup();
 		auto &visibleList = octreeScene->getVisibleList();
 		for(auto obj : visibleList)
 		{
@@ -38,7 +38,7 @@ namespace tzw
 				obj->onSubmitDrawCommand(RenderFlag::RenderStage::COMMON);
 			}
 		}
-		Tree::shared()->pushCommand(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
+		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
 		std::vector<Drawable3D *> nodeList;
 		octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
 		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON, -1);
@@ -97,7 +97,7 @@ namespace tzw
 	        {
 		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData, i);
 	        }
-            Tree::shared()->submitShadowDraw(m_renderQueues, i);
+            FoliageSystem::shared()->submitShadowDraw(m_renderQueues, i);
             InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::SHADOW, m_renderQueues, i, i);
 		}
 	}

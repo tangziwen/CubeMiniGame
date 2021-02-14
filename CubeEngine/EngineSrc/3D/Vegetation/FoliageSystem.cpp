@@ -1,7 +1,7 @@
 #include "EngineSrc/Technique/MaterialPool.h"
 #include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
-#include "EngineSrc/3D/Vegetation/Tree.h"
+#include "EngineSrc/3D/Vegetation/FoliageSystem.h"
 
 #include "3D/Model/Model.h"
 #include "Mesh/InstancedMesh.h"
@@ -380,11 +380,11 @@ TreeGroup::TreeGroup(int treeClass)
 	m_treeClass = treeClass;
 }
 
-Tree::Tree()
+FoliageSystem::FoliageSystem()
 {
 	 
 	m_isFinish = false;
-	std::string materialName = "Tree";
+	std::string materialName = "FoliageSystem";
 
 	m_barkMat = Material::createFromTemplate("ModelInstance");
 	auto tex = TextureMgr::shared()->getByPath("Models/tree/bark.jpg");
@@ -404,7 +404,7 @@ Tree::Tree()
 	 
 }
 
-int Tree::regVegetation(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2)
+int FoliageSystem::regVegetation(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2)
 {
 	auto info = new VegetationInfo();
 	// info->m_type = type;
@@ -413,12 +413,12 @@ int Tree::regVegetation(const VegetationBatInfo * lod0, const VegetationBatInfo 
 	return m_infoList.size() -1;
 }
 
-void Tree::addTreeGroup(TreeGroup* treeGroup)
+void FoliageSystem::addTreeGroup(TreeGroup* treeGroup)
 {
 	m_tree[treeGroup->m_treeClass].insert(treeGroup);
 }
 
-void Tree::clearTreeGroup()
+void FoliageSystem::clearTreeGroup()
 {
 	for(auto p : m_tree)
 	{
@@ -431,7 +431,7 @@ void Tree::clearTreeGroup()
 }
 
 
-void Tree::setUpTransFormation(TransformationInfo &info)
+void FoliageSystem::setUpTransFormation(TransformationInfo &info)
 {
 	auto currCam = g_GetCurrScene()->defaultCamera();
 	info.m_projectMatrix = currCam->projection();
@@ -441,7 +441,7 @@ void Tree::setUpTransFormation(TransformationInfo &info)
 	info.m_worldMatrix = mat;
 }
 
-void Tree::submitShadowDraw(RenderQueues * queues, int level)
+void FoliageSystem::submitShadowDraw(RenderQueues * queues, int level)
 {
 	for(auto info :m_infoList)
 	{
@@ -453,12 +453,12 @@ void Tree::submitShadowDraw(RenderQueues * queues, int level)
 	}
 }
 
-unsigned int Tree::getTypeId()
+unsigned int FoliageSystem::getTypeId()
 {
 	return 2333;
 }
 
-void Tree::pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+void FoliageSystem::pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	//regroup
 	for(auto iter : m_tree)
@@ -493,7 +493,7 @@ void Tree::pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues
 	}
 }
 
-void Tree::finish()
+void FoliageSystem::finish()
 {
 
 	// m_mesh->finish();
@@ -503,14 +503,14 @@ void Tree::finish()
 	m_isFinish = true;
 }
 
-void Tree::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+void FoliageSystem::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh, m_material,this, requirementType);
 	setUpTransFormation(command.m_transInfo);
 	queues->addRenderCommand(command, requirementArg);
 }
 
-void Tree::initMesh()
+void FoliageSystem::initMesh()
 {
 	// auto treeModel = Model::create("Models/tree/tree.tzw", false);
 	//

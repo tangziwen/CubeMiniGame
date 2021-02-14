@@ -5,7 +5,7 @@
 #include "../Game/DebugInfoPanel.h"
 #include "../Interface/Drawable3D.h"
 #include "../Engine/EngineDef.h"
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 #include "Rendering/InstancingMgr.h"
 
 namespace tzw {

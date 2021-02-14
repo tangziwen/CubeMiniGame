@@ -42,7 +42,7 @@
 #include "3D/Thumbnail.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 #include "Rendering/InstancingMgr.h"
-#include "3D/Vegetation/Tree.h"
+#include "3D/Vegetation/FoliageSystem.h"
 #include "Scene/SceneCuller.h"
 #include "Rendering/GraphicsRenderer.h"
 //#include "vk/DeviceShaderVK.h"
