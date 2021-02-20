@@ -19,7 +19,7 @@ ControlPart::ControlPart()
 
 }
 static Audio * audio;
-static AudioEvent * event = NULL;
+static AudioEvent * event = nullptr;
 ControlPart::ControlPart(std::string itemName):
 	m_audioEvent(nullptr)
 {

@@ -35,7 +35,7 @@ namespace tzw
 		rapidjson::StringBuffer buffer;
 		std::string filePath = "./Translation_" + m_languageName + ".json";
 		rapidjson::Value stringList(rapidjson::kArrayType);
-		for(auto val : m_currDict)
+		for(const auto& val : m_currDict)
 		{
 			rapidjson::Value theStringItem(rapidjson::kObjectType);
 			theStringItem.AddMember("original", val.first, doc.GetAllocator());

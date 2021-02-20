@@ -75,7 +75,7 @@ Tvector TbaseMath::uniformHemisphericalVector(Tvector normal)
     double r2s=sqrt(r2);
     Tvector w=normal;
     Tvector u;
-    if(fabs(w.x())>0.1)
+    if(fabsf(w.x())>0.1f)
     {
         u = Tvector(0,1,0);
     }else

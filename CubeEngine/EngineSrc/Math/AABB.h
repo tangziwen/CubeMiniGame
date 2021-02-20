@@ -105,7 +105,7 @@ public:
         m_min = vec3(999999, 999999, 999999);
         m_max = vec3(-999999, -999999, -999999);
     }
-    void merge(AABB box)
+    void merge(const AABB& box)
     {
         // Calculate the new minimum point.
         m_min.setX(std::min(m_min.x, box.min().x));
@@ -152,7 +152,7 @@ public:
     {
         m_max = max;
     }
-    bool isCanCotain(AABB aabb)
+    bool isCanCotain(const AABB& aabb)
     {
         if (m_min.x <aabb.min().x && m_min.y <aabb.min().y && m_min.z <aabb.min().z
             && m_max.x>aabb.max().x && m_max.y>aabb.max().y && m_max.z>aabb.max().z)
@@ -164,7 +164,7 @@ public:
             return false;
         }
     }
-    bool isIntersect(AABB aabb, vec3 &overLap);
+    bool isIntersect(const AABB& aabb, vec3 &overLap);
     vec3 half()
     {
         return size() / 2.0f;

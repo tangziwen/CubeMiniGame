@@ -80,7 +80,7 @@ public:
 	int getInstanceSize();
 	bool isEmpty();
 	void pushInstance(InstanceData instanceData);
-	void pushInstances(std::vector<InstanceData> instancePos);
+	void pushInstances(const std::vector<InstanceData>& instancePos);
 	void clearInstances();
 	void calcTangents();
 	void submitInstanced(int preserveNumber = 0);

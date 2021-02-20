@@ -14,7 +14,7 @@ namespace tzw
 	NodeAttrValue UseNode::execute()
 	{
 		auto attrVal = m_bearingAttr->eval();
-		for(auto val : attrVal.m_list)
+		for(const auto& val : attrVal.m_list)
 		{
 			auto node = static_cast<ResNode *>(val.usrPtr);
 			auto part = dynamic_cast<GamePart *>(node->getProxy());

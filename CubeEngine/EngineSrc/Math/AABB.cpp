@@ -60,7 +60,7 @@ std::vector<AABB> AABB::split8()
     return result;
 }
 
-bool AABB::isIntersect(AABB aabb, vec3& overLap)
+bool AABB::isIntersect(const AABB& aabb, vec3& overLap)
 {
     bool isHit= ((m_min.x >= aabb.m_min.x && m_min.x <= aabb.m_max.x) || (aabb.m_min.x >= m_min.x && aabb.m_min.x <= m_max.x)) &&
            ((m_min.y >= aabb.m_min.y && m_min.y <= aabb.m_max.y) || (aabb.m_min.y >= m_min.y && aabb.m_min.y <= m_max.y)) &&
@@ -70,7 +70,7 @@ bool AABB::isIntersect(AABB aabb, vec3& overLap)
         if(min().x<aabb.min().x || max().x >aabb.max().x)
         {
             float offset_x_1 =aabb.max().x - min().x,offset_x_2 = aabb.min().x - max().x;
-            if(fabs(offset_x_1)< fabs(offset_x_2))
+            if(fabsf(offset_x_1)< fabsf(offset_x_2))
             {
                 overLap.x = offset_x_1;
             }else{
@@ -81,7 +81,7 @@ bool AABB::isIntersect(AABB aabb, vec3& overLap)
         {
             float offset_y_1 =aabb.max().y - min().y,offset_y_2 = aabb.min().y - max().y;
 
-            if(fabs(offset_y_1)< fabs(offset_y_2))
+            if(fabsf(offset_y_1)< fabsf(offset_y_2))
             {
                 overLap.y = offset_y_1;
             }else{
@@ -93,7 +93,7 @@ bool AABB::isIntersect(AABB aabb, vec3& overLap)
         {
             float offset_z_1 =aabb.max().z - min().z,offset_z_2 = aabb.min().z - max().z;
 
-            if(fabs(offset_z_1)< fabs(offset_z_2))
+            if(fabsf(offset_z_1)< fabsf(offset_z_2))
             {
                 overLap.z = offset_z_1;
             }else{

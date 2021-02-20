@@ -161,7 +161,6 @@ private:
     void CreateVertexBufferDescription(std::vector<VkVertexInputAttributeDescription> & attributeDecription);
 
     void CreateVertexBuffer();
-    void updateUniformBuffer(uint32_t currentImage);
     void CreateIndexBuffer();
     void CreateDescriptorSetLayout();
     void createDescriptorPool();

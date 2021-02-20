@@ -9,7 +9,7 @@ namespace tzw
 		ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 		ImGui::Begin(TRC(u8"∂¡»° ¿ΩÁ"),isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 		ImGui::Text("WorldList:");
-		for(auto entry : m_entryList)
+		for(const auto & entry : m_entryList)
 		{
 			auto worldName = entry.filename().string();
 			if(ImGui::Button(worldName.c_str()))
@@ -30,7 +30,7 @@ namespace tzw
 	{
 		m_entryList.clear();
 	    std::string path = "./Data/PlayerData/Save/";
-		for (auto entry : fs::directory_iterator(path))
+		for (const auto& entry : fs::directory_iterator(path))
 		{
 			m_entryList.push_back(entry);
 		}

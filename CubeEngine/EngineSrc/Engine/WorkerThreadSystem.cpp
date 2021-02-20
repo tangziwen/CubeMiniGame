@@ -95,7 +95,7 @@ namespace tzw
 		m_mutex.unlock();
 		if(!m_mainThreadCB2.empty())
 		{
-			for(auto cb : m_mainThreadCB2)
+			for(const auto &cb : m_mainThreadCB2)
 			{
 				if(cb.m_onFinished)
 				{

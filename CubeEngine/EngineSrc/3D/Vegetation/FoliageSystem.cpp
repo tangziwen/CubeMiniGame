@@ -461,7 +461,7 @@ unsigned int FoliageSystem::getTypeId()
 void FoliageSystem::pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
 {
 	//regroup
-	for(auto iter : m_tree)
+	for(const auto& iter : m_tree)
 	{
 		// std::copy(iter->m_instance.begin(), iter->m_instance.end(), m_mesh->m_instanceOffset.begin());
 		auto info = m_infoList[iter.first];

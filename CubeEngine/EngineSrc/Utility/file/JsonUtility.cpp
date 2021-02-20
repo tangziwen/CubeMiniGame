@@ -1,4 +1,3 @@
-#pragma once
 #include "JsonUtility.h"
 namespace tzw
 {

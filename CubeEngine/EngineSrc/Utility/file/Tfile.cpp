@@ -34,7 +34,7 @@ Data Tfile::getData(std::string filename, bool forString)
           mode = "rb";
 
 	//search the file
-	for(auto searchPath :m_searchPath)
+	for(const auto& searchPath :m_searchPath)
 	{
 		std::string realFileName = searchPath + filename;
           // Read the file from hardware
@@ -86,13 +86,12 @@ Data Tfile::getData(std::string filename, bool forString)
 		}
 	}
 	//search the zip
-	for(auto zipData : m_searchZip)
+	for(const auto& zipData : m_searchZip)
     {
 		struct zip_t *zip = zipData.second;
 		if(zip)
 		{
-    		std::string zipFilename = filename;
-			if(zip_entry_open(zip, zipFilename.c_str()) == 0)
+			if(zip_entry_open(zip, filename.c_str()) == 0)
 			{
 				void * buf = nullptr;
 
@@ -265,7 +264,7 @@ std::string Tfile::getFileNameWithOutExtension(std::string path)
 
 bool Tfile::isExist(std::string path)
 {
-	for(auto searchPath :m_searchPath)
+	for(const auto& searchPath :m_searchPath)
 	{
 		 if(std::filesystem::exists(searchPath + path))
 			 return true;
@@ -287,13 +286,12 @@ bool Tfile::isExist(std::string path)
 		}
 	}
 	//search the zip
-	for(auto zipData : m_searchZip)
+	for(const auto& zipData : m_searchZip)
     {
 		struct zip_t *zip = zipData.second;
 		if(zip)
 		{
-    		std::string zipFilename = path;
-			if(zip_entry_open(zip, zipFilename.c_str()) == 0)
+			if(zip_entry_open(zip, path.c_str()) == 0)
 			{
 				isZipFind = true;
 				zip_entry_close(zip);
@@ -328,7 +326,7 @@ Tfile::Tfile()
 
 Tfile::~Tfile()
 {
-	for(auto zip :m_searchZip)
+	for(const auto& zip :m_searchZip)
 	{
 		zip_close(zip.second);
 	}

@@ -252,7 +252,7 @@ bool Drawable3DGroup::hitBySphere(t_Sphere &sphere, std::vector<vec3>& hitPoint)
     //sort by Dist
     if (!resultList.empty())
     {
-        std::sort(resultList.begin(),resultList.end(),[sphere](tmpDataList p1, tmpDataList p2)    {
+        std::sort(resultList.begin(),resultList.end(),[sphere](const tmpDataList& p1, const tmpDataList& p2)    {
             float dist1 = sphere.centre().distance(p1.obj->getPos());
             float dist2 = sphere.centre().distance(p2.obj->getPos());
             return dist1<dist2;

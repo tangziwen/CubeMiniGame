@@ -39,7 +39,7 @@ void Camera::setOrtho(float left,float right,float bottom,float top,float near,f
     m_projection.ortho(left,right,bottom,top,near,far);
 }
 
-bool Camera::isOutOfFrustum(AABB aabb)
+bool Camera::isOutOfFrustum(const AABB& aabb)
 {
     return m_frustum.isOutOfFrustum(aabb);
 }

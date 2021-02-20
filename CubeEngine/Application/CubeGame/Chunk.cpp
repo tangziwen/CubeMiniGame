@@ -191,7 +191,7 @@ namespace tzw
 			return;
 		if (m_isNeedSubmitMesh)
 			return;
-		if (m_mesh[0]->getIndexBuf()->bufferId() == 0)
+		if (m_mesh[0]->getIndexBuf()->bufferId() == nullptr)
 			return;
 		if (requirementType != RenderFlag::RenderStageType::COMMON)
 		{

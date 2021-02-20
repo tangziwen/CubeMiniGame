@@ -96,7 +96,7 @@ void Mesh::pushInstance(InstanceData instancePos)
 	m_instanceOffset.push_back(instancePos);
 }
 
-void Mesh::pushInstances(std::vector<InstanceData> instancePos)
+void Mesh::pushInstances(const std::vector<InstanceData> & instancePos)
 {
 	m_instanceOffset = instancePos;
 }

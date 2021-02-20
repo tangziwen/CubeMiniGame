@@ -16,8 +16,8 @@ public:
 	InstancedMesh(Mesh * mesh);
 	RenderBuffer *getInstanceBuf() const;
 	std::vector<InstanceData> m_instanceOffset;
-	void pushInstance(InstanceData instanceData);
-	void pushInstances(std::vector<InstanceData> instancePos);
+	void pushInstance(const InstanceData& instanceData);
+	void pushInstances(const std::vector<InstanceData>& instancePos);
 	void clearInstances();
 	void submitInstanced(int preserveNumber = 0);
 	int getInstanceSize();

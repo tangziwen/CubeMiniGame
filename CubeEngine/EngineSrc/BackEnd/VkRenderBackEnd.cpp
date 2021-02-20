@@ -1,5 +1,4 @@
-﻿#pragma once
-#include "VkRenderBackEnd.h"
+﻿#include "VkRenderBackEnd.h"
 
 #include <assert.h>
 #include <vector>
@@ -851,26 +850,8 @@ VkApplicationInfo appInfo = {};
         CHECK_VULKAN_ERROR("vkCreateCommandPool error %d\n", res);
     }
 
-	
-    void VKRenderBackEnd::updateUniformBuffer(uint32_t currentImage)
-    {
-        static float angle = 0.0;
-        auto screenSize = Engine::shared()->winSize();
-        float aspect = screenSize.x / screenSize.y;
-        Matrix44 proj;
-        proj.perspective(45, aspect, 0.1, 100.f);
 
-        Quaternion q;
-        q.fromAxisAngle(vec3(1, 1, 0).normalized(), angle);
-        angle += 0.5;
-        Matrix44 model;
-        model.setRotation(q);
-        model.setTranslate(vec3(0, 0, -5));
-        void* data;
-        vkMapMemory(m_device, uniformBuffersMemory[currentImage], 0, sizeof(Matrix44), 0, &data);
-            memcpy(data, &(proj * model), sizeof(Matrix44));
-        vkUnmapMemory(m_device, uniformBuffersMemory[currentImage]);
-    }
+
     void VKRenderBackEnd::CreateIndexBuffer()
     {
 

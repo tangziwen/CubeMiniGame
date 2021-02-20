@@ -573,7 +573,7 @@ void DevicePipelineVK::createDescriptorPool()
     unsigned uniformBuffCount = 0;
     unsigned textuerCount = 0;
     auto& setInfo = m_shader->getSetInfo();
-    for(auto iter : setInfo)
+    for(const auto& iter : setInfo)
     {
         for(auto & locationInfo : iter.second){
         	if(locationInfo.set != OBJECT_DESCRIPTOR_SET_ID) continue;
@@ -614,7 +614,7 @@ void DevicePipelineVK::createMaterialDescriptorPool()
     unsigned uniformBuffCount = 0;
     unsigned textuerCount = 0;
     auto& setInfo = m_shader->getSetInfo();
-    for(auto iter : setInfo)
+    for(const auto& iter : setInfo)
     {
         for(auto & locationInfo : iter.second){
         	if(locationInfo.set != MATERIAL_DESCRIPTOR_SET_ID) continue;

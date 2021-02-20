@@ -22,12 +22,12 @@ namespace tzw {
 		return m_instanceBuf;
 	}
 
-	void InstancedMesh::pushInstance(InstanceData instanceData)
+	void InstancedMesh::pushInstance(const InstanceData& instanceData)
 	{
 		m_instanceOffset.push_back(instanceData);
 	}
 
-	void InstancedMesh::pushInstances(std::vector<InstanceData> instancePos)
+	void InstancedMesh::pushInstances(const std::vector<InstanceData>& instancePos)
 	{
 		m_instanceOffset = instancePos;
 	}

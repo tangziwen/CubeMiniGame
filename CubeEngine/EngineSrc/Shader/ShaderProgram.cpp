@@ -236,7 +236,7 @@ void ShaderProgram::processShaderText(const char* pShaderText, std::string & fin
 	auto glsl_ver = "#version 420\n";
     prefix += glsl_ver;
     char * tmpStr = (char *)malloc(128);
-	for(auto i : ShaderMgr::shared()->m_macros)
+	for(const auto &i : ShaderMgr::shared()->m_macros)
 	{	
 		sprintf(tmpStr, "#define %s %s\n", i.first.c_str(), i.second.c_str());
         prefix+= tmpStr;

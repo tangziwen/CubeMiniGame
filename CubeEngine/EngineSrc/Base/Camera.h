@@ -14,7 +14,7 @@ public:
 
     void setPerspective(float fov, float aspect, float near, float far);
     void setOrtho(float left, float right, float bottom, float top, float near, float far);
-    bool isOutOfFrustum(AABB aabb);
+    bool isOutOfFrustum(const AABB& aabb);
     Matrix44 projection() const;
     void setProjection(const Matrix44 &projection);
     Matrix44 getViewMatrix();
