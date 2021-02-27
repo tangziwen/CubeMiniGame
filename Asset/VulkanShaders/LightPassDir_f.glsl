@@ -60,6 +60,7 @@ vec4 step4(vec4 value1, vec4 value2)
 #define SampleShadowMap(the_sampler, UV, result) result = texture( the_sampler, UV).r;
 float pcf_3x3(vec2 pInLitTC, float litZ, vec2 vInvShadowMapWH, sampler2D shadowIndex)
 {
+	vec4 bias = vec4(0.005, 0.005, 0.005, 0.005);
 	vec2 TexelPos = pInLitTC / vInvShadowMapWH - vec2(0.5);	// bias to be consistent with texture filtering hardware
 	vec2 Fraction = fract(TexelPos);
 	vec2 TexelCenter = floor(TexelPos) + vec2(0.5);	// bias to get reliable texel center content
@@ -70,22 +71,23 @@ float pcf_3x3(vec2 pInLitTC, float litZ, vec2 vInvShadowMapWH, sampler2D shadowI
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,0))*vInvShadowMapWH, Values0.y );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,0))*vInvShadowMapWH, Values0.z );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,0))*vInvShadowMapWH, Values0.w );
-	Values0 = step4(Values0, vec4(litZ, litZ, litZ, litZ));
+	Values0 = step4(Values0 + bias, vec4(litZ, litZ, litZ, litZ));
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,1))*vInvShadowMapWH, Values1.x );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,1))*vInvShadowMapWH, Values1.y );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,1))*vInvShadowMapWH, Values1.z );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,1))*vInvShadowMapWH, Values1.w );
-	Values1 = step4(Values1, vec4(litZ, litZ, litZ, litZ));
+	Values1 = step4(Values1 + bias, vec4(litZ, litZ, litZ, litZ));
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,2))*vInvShadowMapWH, Values2.x );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,2))*vInvShadowMapWH, Values2.y );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,2))*vInvShadowMapWH, Values2.z );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,2))*vInvShadowMapWH, Values2.w );
-	Values2 = step4(Values2, vec4(litZ, litZ, litZ, litZ));
+	Values2 = step4(Values2 + bias, vec4(litZ, litZ, litZ, litZ));
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(0,3))*vInvShadowMapWH, Values3.x );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(1,3))*vInvShadowMapWH, Values3.y );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(2,3))*vInvShadowMapWH, Values3.z );
 	SampleShadowMap(shadowIndex, (Sample00TexelCenter+vec2(3,3))*vInvShadowMapWH, Values3.w );
-	Values3 = step4(Values3, vec4(litZ, litZ, litZ, litZ));
+	
+	Values3 = step4(Values3 + bias, vec4(litZ, litZ, litZ, litZ));
 
 	vec2 VerticalLerp00 = mix(vec2(Values0.x, Values1.x), vec2(Values0.y, Values1.y), Fraction.xx);
 	float PCFResult00 = mix(VerticalLerp00.x, VerticalLerp00.y, Fraction.y);
@@ -199,9 +201,19 @@ float GeometrySmith(vec3 N, vec3 V, vec3 L, float roughness)
     return ggx1 * ggx2;
 }
 
-vec3 fresnelSchlick(float cosTheta, vec3 F0)
+float Pow5( float x )
 {
-    return F0 + (1.0 - F0) * pow(1.0 - cosTheta, 5.0);
+	float xx = x*x;
+	return xx * xx * x;
+}
+
+vec3 fresnelSchlick(float VoH, vec3 specularColor)
+{
+	float Fc = Pow5( 1 - VoH );					// 1 sub, 3 mul
+	//return Fc + (1 - Fc) * SpecularColor;		// 1 add, 3 mad
+	
+	// Anything less than 2% is physically impossible and is instead considered to be shadowing
+	return clamp( 50.0 * specularColor.g, 0.0, 1.0) * Fc + (1 - Fc) * specularColor;
 }
 
 
@@ -216,13 +228,26 @@ vec3 EnvBRDFApprox( vec3 SpecularColor, float Roughness, float NoV )
 	return SpecularColor * AB.x + AB.y;
 }
 
+float Vis_Schlick( float roughness, float NoV, float NoL )
+{
+	float k = (roughness * roughness) * 0.5;
+	float Vis_SchlickV = NoV * (1 - k) + k;
+	float Vis_SchlickL = NoL * (1 - k) + k;
+	return 0.25 / ( Vis_SchlickV * Vis_SchlickL );
+}
+
+vec3 diffuseLambert(vec3 diffuseColor)
+{
+	return diffuseColor * (1 / PI);
+
+}
 vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightColor,vec3 V,float Roughness, float shadowFactor)
 {
 	L = -L;
-	vec3 F0 = vec3(0.04); 
+	vec3 F0 = vec3(0.08); 
 	F0 = mix(F0, albedo, metallic);
 	
-	float NoV = max(0.0, dot(N, V));
+	float NoV = max(0.0, abs(dot(N, V)));
 	
 	// calculate per-light radiance
 	vec3 H = normalize(V + L);
@@ -231,16 +256,12 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	// cook-torrance brdf
 	float NDF = DistributionGGX(N, H, Roughness);
 	
-	float G   = GeometrySmith(N, V, L, Roughness);      
+	//float G   = GeometrySmith(N, V, L, Roughness); 
+	float G   = Vis_Schlick(Roughness, NoV, dot(N, L));     
 	vec3 F    = fresnelSchlick(max(dot(H, V), 0.0), F0);       
 
-	vec3 kS = F;
-	vec3 kD = vec3(1.0) - kS;
-	kD *= 1.0 - metallic;
-
-	vec3 nominator    = vec3(NDF)* G * F;
-	float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0); 
-	vec3 specular     = nominator / max(denominator, 0.001);
+	vec3 diffuseColor = albedo - albedo * metallic;
+	vec3 specular     = vec3(NDF)* G * F;
 	// add to outgoing radiance Lo
 	float NdotL = max(dot(N, L), 0.0);
 
@@ -252,10 +273,10 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	vec3 prefilteredColor = dualParobolidSampleLOD(prefilterMap, reflectionVector,Roughness *MAX_REFLECTION_LOD).rgb;
 	irradiance = pow(irradiance, vec3(2.2));
 	prefilteredColor = pow(prefilteredColor, vec3(2.2));
-	vec3 ambientDiffuse = kD * irradiance * albedo;
+	vec3 ambientDiffuse = diffuseColor * irradiance;
 	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 	vec3 ambient = (ambientDiffuse + ambientSpecular);
-	return (kD * albedo / PI + specular) * radiance * NdotL * shadowFactor + ambient;
+	return (diffuseLambert(diffuseColor) + specular) * radiance * NdotL * shadowFactor + ambient;
 }
 void main() 
 {
