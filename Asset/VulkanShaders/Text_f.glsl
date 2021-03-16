@@ -5,5 +5,5 @@ layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 v_texcoord;
 void main() 
 {
-  out_Color = texture(SpriteTexture, v_texcoord) * fragColor;//vec4( fragColor.rgb, fragColor.a);
+	out_Color = vec4(fragColor.rgb, texture(SpriteTexture, v_texcoord).r * fragColor.a);
 }
