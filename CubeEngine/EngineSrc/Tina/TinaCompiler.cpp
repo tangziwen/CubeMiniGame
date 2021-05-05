@@ -80,9 +80,22 @@ OperandLocation TinaCompiler::getLeafAddr(TinaASTNode* ast_node, TinaProgram & p
 		if(iter == m_constMap.end())
 		{
 			TinaVal val;
-			float rawVal = atof(ast_node->m_op.m_tokenValue.c_str());
-			val.m_data.valF = rawVal;
-			val.m_type = TinaValType::Float;
+			if(ast_node->m_op.m_tokenType == TokenType::TOKEN_TYPE_NUM)
+			{
+				float rawVal = atof(ast_node->m_op.m_tokenValue.c_str());
+				val.m_data.valF = rawVal;
+				val.m_type = TinaValType::Float;
+
+			}
+			else
+			{
+				auto strSize = ast_node->m_op.m_tokenValue.size() + 1;
+				char * buff = (char*)malloc(strSize);
+				strcpy_s(buff,strSize, ast_node->m_op.m_tokenValue.c_str());
+				val.m_data.valStr = buff;
+				val.m_type = TinaValType::String;
+			}
+
 			program.constVal.push_back(val);
 			addr = program.constVal.size() - 1;
 			m_constMap[ast_node->m_op.m_tokenValue] = addr;

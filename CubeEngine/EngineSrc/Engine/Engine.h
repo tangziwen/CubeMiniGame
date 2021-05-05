@@ -15,6 +15,7 @@ public:
     float windowWidth() const;
     void setWindowSize(float w, float h);
     static int run(int argc, char *argv[],AppEntry * delegate);
+	static void preSetting();
     float windowHeight() const;
     AppEntry *delegate() const;
     void setDelegate(AppEntry *delegate);

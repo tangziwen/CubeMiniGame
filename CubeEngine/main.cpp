@@ -9,39 +9,8 @@
 #include "Math/vec3.h"
 #include "Tina/TinaParser.h"
 #include "Tina/TinaRunTime.h"
-#pragma comment(lib, "dbghelp.lib")  
-
-void CreateDumpFile(const TCHAR *lpstrDumpFilePathName, EXCEPTION_POINTERS *pException)
-{
-    // 创建Dump文件
-    HANDLE hDumpFile = CreateFile(lpstrDumpFilePathName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
-
-    // Dump信息
-    //
-    MINIDUMP_EXCEPTION_INFORMATION dumpInfo;
-    dumpInfo.ExceptionPointers = pException;
-    dumpInfo.ThreadId = GetCurrentThreadId();
-    dumpInfo.ClientPointers = TRUE;
-
-    // 写入Dump文件内容
-    //
-    MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, MiniDumpNormal, &dumpInfo, NULL, NULL);
-
-    CloseHandle(hDumpFile);
-}
-// 处理Unhandled Exception的回调函数
-//
-LONG ApplicationCrashHandler(EXCEPTION_POINTERS *pException)
-{
-    // 在这里添加处理程序崩溃情况的代码
-    // 现在很多软件都是弹出一个发送错误报告的对话框
-
-    // 这里以弹出一个错误对话框并退出程序为例子
-    CreateDumpFile(TEXT("last.dmp"), pException);
-    FatalAppExit(-1, TEXT("Sorry, it crashed, please send the dump file to me(tzwtangziwen@163.com)"));
-
-    return EXCEPTION_EXECUTE_HANDLER;
-}
+#include "Utility/file/Tfile.h"
+#pragma comment(lib, "dbghelp.lib")
 
 using namespace std;
 using namespace tzw;
@@ -64,17 +33,17 @@ extern "C"
 {
   __declspec(dllexport) int AmdPowerXpressRequestHighPerformance = 1;
 }
-	// static SoLoud::Soloud gSoloud; // SoLoud engine
-	// static SoLoud::Wav gWave;      // One wave file
+
 #pragma comment(linker, "/subsystem:console")
 
 #define TEST_VULKAN_ENTRY
 int main(int argc, char *argv[]) 
 {
-
-
+    Engine::preSetting();
+	
+	auto data = Tfile::shared()->getData("test.tina", true);
 	TinaTokenizer *tokenizer = new TinaTokenizer();
-	tokenizer->loadStr("{local a,b; b= 2; a = (5 + b) * 2; print a;}");
+	tokenizer->loadStr(data.getString());
 	std::vector<TokenInfo> result =  tokenizer->getTokenList();
 	for(TokenInfo& token : result)
 	{
@@ -90,7 +59,7 @@ int main(int argc, char *argv[])
 	runtime->execute(&program);
 
 	return 0;
-    SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)ApplicationCrashHandler);
+    
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());
 #else

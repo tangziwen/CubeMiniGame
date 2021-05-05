@@ -1,19 +1,25 @@
 #pragma once
+#include <string>
+
 namespace tzw
 {
 enum class TinaValType
 {
 	Int,
 	Float,
+	String,
 	Ref,
 	Nil,
 };
 struct TinaVal
 {
+	TinaVal();
+	~TinaVal();
 	union 
 	{
 		int valI;
 		float valF;
+		char * valStr;
 		TinaVal* valRef;//ptr
 	} m_data;
 	TinaValType m_type;
@@ -21,6 +27,7 @@ struct TinaVal
 };
 TinaVal valAdd_impF(TinaVal * a, TinaVal * b);
 TinaVal valAdd_impI(TinaVal * a, TinaVal * b);
+TinaVal valAdd_impStr(TinaVal * a, TinaVal * b);
 TinaVal valMul_impF(TinaVal * a, TinaVal * b);
 TinaVal valMul_impI(TinaVal * a, TinaVal * b);
 TinaVal valSub_impF(TinaVal * a, TinaVal * b);

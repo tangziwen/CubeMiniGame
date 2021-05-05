@@ -110,7 +110,7 @@ void TinaRunTime::execute(TinaProgram* program)
 					val = program->constVal[cmd.m_A.m_addr];
 				}
 
-				printf("Program Print %s\n", val.toStr());
+				printf("[PRNT]%s\n", val.toStr());
 			}break;
 			case ILCommandType::HALT:
 			{
