@@ -7,6 +7,8 @@
 #include <windows.h>
 #include <DbgHelp.h>
 #include "Math/vec3.h"
+#include "Tina/TinaParser.h"
+#include "Tina/TinaRunTime.h"
 #pragma comment(lib, "dbghelp.lib")  
 
 void CreateDumpFile(const TCHAR *lpstrDumpFilePathName, EXCEPTION_POINTERS *pException)
@@ -69,6 +71,25 @@ extern "C"
 #define TEST_VULKAN_ENTRY
 int main(int argc, char *argv[]) 
 {
+
+
+	TinaTokenizer *tokenizer = new TinaTokenizer();
+	tokenizer->loadStr("{local a,b; b= 2; a = (5 + b) * 2; print a;}");
+	std::vector<TokenInfo> result =  tokenizer->getTokenList();
+	for(TokenInfo& token : result)
+	{
+		token.print();
+	}
+	TinaParser parser;
+	parser.parse(result);
+
+	TinaCompiler * compiler = new TinaCompiler();
+	TinaProgram program = compiler->gen(parser.getRoot());
+
+	TinaRunTime * runtime = new TinaRunTime();
+	runtime->execute(&program);
+
+	return 0;
     SetUnhandledExceptionFilter((LPTOP_LEVEL_EXCEPTION_FILTER)ApplicationCrashHandler);
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());
