@@ -37,10 +37,12 @@ extern "C"
 #pragma comment(linker, "/subsystem:console")
 
 #define TEST_VULKAN_ENTRY
+#define TEST_SCRIPT 1
 int main(int argc, char *argv[]) 
 {
     Engine::preSetting();
-	
+
+#if TEST_SCRIPT
 	auto data = Tfile::shared()->getData("test.tina", true);
 	TinaTokenizer *tokenizer = new TinaTokenizer();
 	tokenizer->loadStr(data.getString());
@@ -56,9 +58,10 @@ int main(int argc, char *argv[])
 	TinaProgram program = compiler->gen(parser.getRoot());
 
 	TinaRunTime * runtime = new TinaRunTime();
-	runtime->execute(&program);
+	runtime->execute(&program, "main");
 
 	return 0;
+#endif
     
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());

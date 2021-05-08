@@ -177,6 +177,10 @@ TokenInfo TinaTokenizer::getNextToken()
 		{
 			result.m_tokenType = TokenType::TOKEN_TYPE_PRINT;
 		}
+		else if(result.m_tokenValue == "function")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_FUNCDEF;
+		}
 		else
 		{
 			result.m_tokenType = TokenType::TOKEN_TYPE_IDENTIFIER;

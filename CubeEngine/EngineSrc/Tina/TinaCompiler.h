@@ -20,10 +20,9 @@ enum class ILCommandType
 	DIV,
 	JMP,
 	CALL,
-	RETURN,
+	RET,
 	PRINT,
 	HALT,
-
 };
 
 
@@ -63,6 +62,11 @@ struct ILCmd
 	ILCmd(ILCommandType type, OperandLocation A, OperandLocation B, OperandLocation C);
 };
 
+struct TinaFunctionInfo
+{
+	std::string m_name;
+	size_t m_entryAddr;
+};
 struct TinaProgram
 {
 	TinaProgram()
@@ -73,6 +77,9 @@ struct TinaProgram
 	std::vector<std::string> stackVar;
 	std::vector<TinaVal> constVal;
 	std::vector<ILCmd> cmdList;
+	std::vector<TinaFunctionInfo> functionInfoList;
+
+	TinaFunctionInfo* findFunctionInfoFromName(std::string funcName);
 };
 //statk vars are early binding, we only save index
 //env vars (upvaule) are late binding, we must look up in runtime

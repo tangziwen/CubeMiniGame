@@ -10,6 +10,8 @@ enum class TinaASTNodeType
 	SEQUENCE,
 	LOCAL_DECLARE,
 	PRINT,
+	FUNC_DEF,
+	FUNC_PARAMETER_LIST,
 };
 //recursive descent parser
 struct TinaASTNode
@@ -70,6 +72,7 @@ public:
 	void parse(std::vector<TokenInfo> tokenList);
 	TinaASTNode * getRoot();
 private:
+	TinaASTNode * parseFunctionDef();
 	TinaASTNode * parseStatement();
 	TinaASTNode * parseBlockStatement();
 	TinaASTNode * parsePrintStatement();

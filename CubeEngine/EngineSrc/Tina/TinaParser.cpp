@@ -21,13 +21,53 @@ void TinaParser::parse(std::vector<TokenInfo> tokenList)
 	m_tokenList = tokenList;
 	m_tokenPos = 0;
 	m_root = new TinaASTNode(TinaASTNodeType::SEQUENCE);
-	auto exprNode = parseBlockStatement();
-	m_root->addChild(exprNode);
+	while(currToken().m_tokenType != TokenType::TOKEN_TYPE_FINISHED)
+	{
+		switch(currToken().m_tokenType)
+		{
+		case TokenType::TOKEN_TYPE_FUNCDEF:
+		{
+			auto funcDefNode = parseFunctionDef();
+			m_root->addChild(funcDefNode);
+		}
+		break;
+		case TokenType::TOKEN_TYPE_LEFT_BRACE:
+		{
+			auto exprNode = parseBlockStatement();
+			m_root->addChild(exprNode);
+		}
+		break;
+		
+		}
+	}
 }
 
 TinaASTNode* TinaParser::getRoot()
 {
 	return m_root;
+}
+
+TinaASTNode* TinaParser::parseFunctionDef()
+{
+	auto funcNode = new TinaASTNode(TinaASTNodeType::FUNC_DEF);
+	nextToken();
+	funcNode->m_op = currToken();//functionName
+	//follow a parameter list
+	auto paramNode = new TinaASTNode(TinaASTNodeType::FUNC_PARAMETER_LIST);
+	funcNode->addChild(paramNode);
+	nextToken();//eat the left (
+	while(currToken().m_tokenType != TokenType::TOKEN_TYPE_RIGHT_PARENTHESES)
+	{
+		//ignore comma
+		if(currToken().m_tokenType == TokenType::TOKEN_TYPE_IDENTIFIER)
+		{
+			paramNode->addChild(new TinaASTNode(currToken(), TinaASTNodeType::LEAF));
+		}
+		nextToken();
+	}
+	nextToken();//eat the right )
+	funcNode->addChild(parseBlockStatement());//add the function body
+	return funcNode;
 }
 
 TinaASTNode* TinaParser::parseStatement()
@@ -269,8 +309,11 @@ TinaASTNode* TinaParser::parsePostfixExpr()
 		//invoke like a(void)
 		if(tryNextToken().m_tokenType == TokenType::TOKEN_TYPE_RIGHT_PARENTHESES)
 		{
+			nextToken();
+			nextToken();//skip right
 			opNode = new TinaASTNode(TinaASTNodeType::CALL);
 			opNode->addChild(leftNode);
+			
 		}
 		else
 		{

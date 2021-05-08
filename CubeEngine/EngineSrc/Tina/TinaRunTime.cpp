@@ -4,9 +4,16 @@
 
 namespace tzw
 {
-void TinaRunTime::execute(TinaProgram* program)
+void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 {
-	for (;;m_PC++)
+	//find function entry addr
+	auto info = program->findFunctionInfoFromName(functionName);
+	if(info)
+	{
+		m_PC = info->m_entryAddr;
+	}
+
+	for (;;)
 	{
 		auto& cmd = program->cmdList[m_PC];
 		if (cmd.m_type == ILCommandType::HALT)
@@ -93,9 +100,28 @@ void TinaRunTime::execute(TinaProgram* program)
 			}break;
 			case ILCommandType::CALL:
 			{
+				printf("call\n");
+				//store the PC
+				m_funcAddrStack.push(m_PC);
+				//jump to function
+				auto info = program->findFunctionInfoFromName("func1");
+				if(info)
+				{
+					m_PC = info->m_entryAddr;
+					continue;
+				}
 			}break;
-			case ILCommandType::RETURN:
+			case ILCommandType::RET:
 			{
+				if(m_funcAddrStack.empty())
+				{
+					return;//halft
+				}
+				else
+				{
+					m_PC = m_funcAddrStack.top();//restore the PC
+					m_funcAddrStack.pop();
+				}
 			}break;
 			case ILCommandType::PRINT:
 			{
@@ -159,6 +185,8 @@ void TinaRunTime::execute(TinaProgram* program)
 			break;
 			default:;
 		}
+
+		m_PC++;
 	}
 }
 

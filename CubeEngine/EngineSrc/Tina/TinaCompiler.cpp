@@ -25,13 +25,7 @@ TinaProgram TinaCompiler::gen(TinaASTNode* astRootNode)
 	TinaProgram program;
 	m_stackMap.clear();
 	m_constMap.clear();
-	
-	std::vector<ILCmd> cmdList;
-	std::vector<std::string> stackVar;
-	std::vector<std::string> envVar;
-	std::vector<std::string> constVal;
 	evalR(astRootNode, program);
-
 	program.cmdList.push_back(ILCmd(ILCommandType::HALT));
 	return program;
 }
@@ -116,7 +110,25 @@ OperandLocation TinaCompiler::getLeafAddr(TinaASTNode* ast_node, TinaProgram & p
 OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 {
 	OperandLocation noUsedLocation;
-	if(ast_node->m_type == TinaASTNodeType::SEQUENCE)
+
+	if(ast_node->m_type == TinaASTNodeType::FUNC_DEF)
+	{
+		OperandLocation lastLocation;
+		size_t functionJmpAddr = program.cmdList.size();
+		//fetchinfo
+		TinaFunctionInfo info;
+		info.m_entryAddr =functionJmpAddr;
+		info.m_name = ast_node->m_op.m_tokenValue;
+		program.functionInfoList.push_back(info);
+		//generate function body
+		lastLocation = evalR(ast_node->m_children[1], program);
+
+		//always generate ret cmd
+		program.cmdList.push_back(ILCmd(ILCommandType::RET));
+
+		return lastLocation;
+	}
+	else if(ast_node->m_type == TinaASTNodeType::SEQUENCE)
 	{
 		OperandLocation lastLocation;
 		for(TinaASTNode * child : ast_node->m_children)
@@ -222,6 +234,7 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 				break;
 		}
 	}
+	return noUsedLocation;
 }
 
 OperandLocation TinaCompiler::evalL(TinaASTNode* ast_node, TinaProgram& program)
@@ -246,5 +259,16 @@ OperandLocation TinaCompiler::genTmpValue()
 void TinaCompiler::decreaseRegIndex(int count)
 {
 	m_registerIndex -= count;
+}
+TinaFunctionInfo* TinaProgram::findFunctionInfoFromName(std::string funcName)
+{
+	for(int i = 0; i < functionInfoList.size(); i++)
+	{
+		if(functionInfoList[i].m_name == funcName)
+		{
+			return &functionInfoList[i];
+		}
+	}
+	return nullptr;
 }
 }
