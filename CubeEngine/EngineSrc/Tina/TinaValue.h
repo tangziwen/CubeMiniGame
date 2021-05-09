@@ -3,12 +3,20 @@
 
 namespace tzw
 {
+
+struct TinaFunctionRuntimeInfo
+{
+	char m_name[32];
+	size_t m_entryAddr;
+};
+
 enum class TinaValType
 {
 	Int,
 	Float,
 	String,
 	Ref,
+	FuncPtr,
 	Nil,
 };
 struct TinaVal
@@ -21,10 +29,12 @@ struct TinaVal
 		float valF;
 		char * valStr;
 		TinaVal* valRef;//ptr
+		TinaFunctionRuntimeInfo valFunctPtr;
 	} m_data;
 	TinaValType m_type;
 	char * toStr();
 };
+
 TinaVal valAdd_impF(TinaVal * a, TinaVal * b);
 TinaVal valAdd_impI(TinaVal * a, TinaVal * b);
 TinaVal valAdd_impStr(TinaVal * a, TinaVal * b);

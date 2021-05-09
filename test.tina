@@ -1,3 +1,20 @@
+function func2()
+{
+	print "bbbbb";
+	func3();
+}
+
+function func3()
+{
+	print "ccccc";
+}
+
+function func1()
+{
+	print "aaaa";
+}
+
+function main()
 {
 	local a,b;
 	b= 2;
@@ -6,5 +23,9 @@
 	local helloStr,tinaStr;
 	helloStr = "hello, ";
 	tinaStr = "Tina";
+	func1();
+	func2();
+	c = func1;
+	c();
 	print helloStr + tinaStr;
 }

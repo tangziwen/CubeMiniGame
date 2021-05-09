@@ -64,9 +64,11 @@ struct ILCmd
 
 struct TinaFunctionInfo
 {
-	std::string m_name;
-	size_t m_entryAddr;
+	TinaFunctionRuntimeInfo m_rtInfo;
+	std::vector<std::string> stackVar;
+	std::unordered_map<std::string, int> m_stackMap;//for accelerate searching
 };
+
 struct TinaProgram
 {
 	TinaProgram()
@@ -74,11 +76,10 @@ struct TinaProgram
 		
 	};
 	std::vector<std::string> strLiteral;//string literal, use for env variable look up, member look up etc.
-	std::vector<std::string> stackVar;
 	std::vector<TinaVal> constVal;
 	std::vector<ILCmd> cmdList;
-	std::vector<TinaFunctionInfo> functionInfoList;
-
+	std::vector<TinaFunctionInfo *> functionInfoList;
+	std::unordered_map<std::string, TinaVal*> m_envMap;
 	TinaFunctionInfo* findFunctionInfoFromName(std::string funcName);
 };
 //statk vars are early binding, we only save index
@@ -90,10 +91,11 @@ public:
 	TinaProgram gen(TinaASTNode * astRootNode);
 private:
 	unsigned char m_registerIndex = 0;
-	std::unordered_map<std::string, int> m_stackMap;
+	
 	std::unordered_map<std::string, int> m_envSymbolMap;
 	//常量没有名字，直接放值
 	std::unordered_map<std::string, int> m_constMap;
+	TinaFunctionInfo * m_currParsingFunc = nullptr;
 	OperandLocation getLeafAddr(TinaASTNode * node, TinaProgram & program);
 	OperandLocation evalR(TinaASTNode * node, TinaProgram & program);
 	OperandLocation evalL(TinaASTNode * node, TinaProgram & program);

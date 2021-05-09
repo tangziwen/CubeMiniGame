@@ -23,7 +23,6 @@ ILCmd::ILCmd(ILCommandType type, OperandLocation A, OperandLocation B, OperandLo
 TinaProgram TinaCompiler::gen(TinaASTNode* astRootNode)
 {
 	TinaProgram program;
-	m_stackMap.clear();
 	m_constMap.clear();
 	evalR(astRootNode, program);
 	program.cmdList.push_back(ILCmd(ILCommandType::HALT));
@@ -45,8 +44,8 @@ OperandLocation TinaCompiler::getLeafAddr(TinaASTNode* ast_node, TinaProgram & p
 	if(ast_node->m_op.m_tokenType == TokenType::TOKEN_TYPE_IDENTIFIER)
 	{
 
-		auto localIter = m_stackMap.find(ast_node->m_op.m_tokenValue);
-		if(localIter != m_stackMap.end())//local var
+		auto localIter = m_currParsingFunc->m_stackMap.find(ast_node->m_op.m_tokenValue);
+		if(localIter != m_currParsingFunc->m_stackMap.end())//local var
 		{
 			src = OperandLocation::locationType::STACK;
 			addr = localIter->second;
@@ -116,10 +115,18 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		OperandLocation lastLocation;
 		size_t functionJmpAddr = program.cmdList.size();
 		//fetchinfo
-		TinaFunctionInfo info;
-		info.m_entryAddr =functionJmpAddr;
-		info.m_name = ast_node->m_op.m_tokenValue;
+		TinaFunctionInfo *info = new TinaFunctionInfo();
+		info->m_rtInfo.m_entryAddr =functionJmpAddr;
+		strcpy(info->m_rtInfo.m_name, ast_node->m_op.m_tokenValue.c_str());
 		program.functionInfoList.push_back(info);
+
+		//register a env var
+		TinaVal * functionObj = new TinaVal();
+		functionObj->m_data.valFunctPtr = info->m_rtInfo;
+		functionObj->m_type = TinaValType::FuncPtr;
+		program.m_envMap[ast_node->m_op.m_tokenValue.c_str()] = functionObj;
+
+		m_currParsingFunc = info;
 		//generate function body
 		lastLocation = evalR(ast_node->m_children[1], program);
 
@@ -142,13 +149,14 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		
 		for(int i = 0; i < ast_node->m_children.size(); i++)
 		{
-			program.stackVar.push_back(ast_node->m_children[i]->m_op.m_tokenValue);
-			m_stackMap[ast_node->m_children[i]->m_op.m_tokenValue] = program.stackVar.size() - 1;
+			m_currParsingFunc->stackVar.push_back(ast_node->m_children[i]->m_op.m_tokenValue);
+			m_currParsingFunc->m_stackMap[ast_node->m_children[i]->m_op.m_tokenValue] = m_currParsingFunc->stackVar.size() - 1;
 		}
 		return noUsedLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::CALL)
 	{
+		/*
 		if(ast_node->m_children.size() > 1)
 		{
 			for(int i = 1; i < ast_node->m_children.size(); i++)
@@ -157,9 +165,11 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 			}
 		}
 		int argNum = ast_node->m_children.size() - 1;
+		*/
+		auto callLocation = evalR(ast_node->m_children[0], program);
 		program.cmdList.push_back(ILCmd(ILCommandType::CALL,
-			getLeafAddr(ast_node->m_children[0], program), OperandLocation(OperandLocation::locationType::IMEEDIATE, argNum), OperandLocation(OperandLocation::locationType::REGISTER, m_registerIndex - argNum + 1)));
-		m_registerIndex -= argNum;
+			callLocation, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));
+		//m_registerIndex -= argNum;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::PRINT)
 	{
@@ -264,9 +274,9 @@ TinaFunctionInfo* TinaProgram::findFunctionInfoFromName(std::string funcName)
 {
 	for(int i = 0; i < functionInfoList.size(); i++)
 	{
-		if(functionInfoList[i].m_name == funcName)
+		if(funcName == functionInfoList[i]->m_rtInfo.m_name)
 		{
-			return &functionInfoList[i];
+			return functionInfoList[i];
 		}
 	}
 	return nullptr;

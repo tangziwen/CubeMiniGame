@@ -8,9 +8,11 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 {
 	//find function entry addr
 	auto info = program->findFunctionInfoFromName(functionName);
+	//copy global definition
+	m_envMap = program->m_envMap;
 	if(info)
 	{
-		m_PC = info->m_entryAddr;
+		m_PC = info->m_rtInfo.m_entryAddr;
 	}
 
 	for (;;)
@@ -103,13 +105,15 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 				printf("call\n");
 				//store the PC
 				m_funcAddrStack.push(m_PC);
+
+				TinaVal a;
+				getVal(program, cmd.m_A, &a);
 				//jump to function
-				auto info = program->findFunctionInfoFromName("func1");
-				if(info)
-				{
-					m_PC = info->m_entryAddr;
-					continue;
-				}
+				auto& info = a.m_data.valFunctPtr;//program->findFunctionInfoFromName("func1");
+
+				m_PC = info.m_entryAddr;
+				continue;
+
 			}break;
 			case ILCommandType::RET:
 			{
