@@ -117,7 +117,7 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		//fetchinfo
 		TinaFunctionInfo *info = new TinaFunctionInfo();
 		info->m_rtInfo.m_entryAddr =functionJmpAddr;
-		info->m_rtInfo.m_varCount = ast_node->m_children[0]->m_children.size();
+		
 		strcpy(info->m_rtInfo.m_name, ast_node->m_op.m_tokenValue.c_str());
 		program.functionInfoList.push_back(info);
 
@@ -140,7 +140,7 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 
 		//always generate ret cmd
 		program.cmdList.push_back(ILCmd(ILCommandType::RET));
-
+		info->m_rtInfo.m_varCount = info->stackVar.size();
 		return lastLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::FUNC_PARAMETER_LIST)
@@ -173,8 +173,13 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 	}
 	else if(ast_node->m_type == TinaASTNodeType::CALL)
 	{
+		int argNum = 0;
+		if(ast_node->m_children.size() > 1)
+		{
+			argNum = ast_node->m_children[1]->m_children.size();
+		}
 		//push stack base pointer.
-		program.cmdList.push_back(ILCmd(ILCommandType::PUSH, OperandLocation(OperandLocation::locationType::IMEEDIATE, m_currParsingFunc->m_rtInfo.m_varCount)));
+		program.cmdList.push_back(ILCmd(ILCommandType::PUSH, OperandLocation(OperandLocation::locationType::IMEEDIATE, argNum)));
 		
 		//apply argument eval argument move to register then move to stack var
 		if(ast_node->m_children.size() > 1)
@@ -187,11 +192,9 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 				program.cmdList.push_back(ILCmd(ILCommandType::MOV,
 					OperandLocation(OperandLocation::locationType::STACK, i), argtmpLoc));
 			}
-			int argNum = argList.size();
 		}
 		auto callLocation = evalR(ast_node->m_children[0], program);
-		program.cmdList.push_back(ILCmd(ILCommandType::CALL,
-			callLocation));
+		program.cmdList.push_back(ILCmd(ILCommandType::CALL, callLocation, OperandLocation(OperandLocation::locationType::IMEEDIATE, m_currParsingFunc->stackVar.size())));
 		OperandLocation returnLocation(OperandLocation::locationType::RETREG, 0);
 		OperandLocation tmploc = genTmpValue();
 		//move return value to a tempory register.
@@ -210,8 +213,11 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		auto locationL = evalR(ast_node->m_children[0], program);
 		OperandLocation returnLocation(OperandLocation::locationType::RETREG, 0);
 		program.cmdList.push_back(ILCmd(ILCommandType::MOV, returnLocation, locationL));
+		//pop stack base pointer.
+		program.cmdList.push_back(ILCmd(ILCommandType::POP, OperandLocation(OperandLocation::locationType::IMEEDIATE, m_currParsingFunc->m_rtInfo.m_varCount)));
 		//add ret command.
 		program.cmdList.push_back(ILCmd(ILCommandType::RET));
+
 		return noUsedLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::LEAF)//identifier const up-value

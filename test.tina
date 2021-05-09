@@ -7,8 +7,8 @@ function sum(a,b)
 //entry function
 function main()
 {
-	//local a;
-	//a = 5;
-	print sum(1, 1) + sum(2, 10);
+	local a;
+	a = 99;
+	print sum(1, 1) + sum(7, 2) + a;
 	//print "hahaha";
 }
