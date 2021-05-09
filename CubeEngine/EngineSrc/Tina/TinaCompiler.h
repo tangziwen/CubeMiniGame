@@ -31,12 +31,13 @@ struct OperandLocation
 {
 	enum class locationType
 	{
-		REGISTER = 0,
+		INVALID = 0,
+		REGISTER,
 		ENV,
 		CONSTVAL,
 		IMEEDIATE,
-		INVALID,
 		STACK,
+		RETREG,
 	};
 	locationType m_locSrc = locationType::INVALID;
 	unsigned char m_addr = 0;

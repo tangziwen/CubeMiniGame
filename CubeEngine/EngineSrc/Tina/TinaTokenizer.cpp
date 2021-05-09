@@ -104,7 +104,45 @@ bool TokenInfo::isLogicCompare()
 void TinaTokenizer::loadStr(std::string str)
 {
 	strcpy_s(m_buff, sizeof(m_buff), str.c_str());
+	int buffSize = str.size();
 	m_buffPos = 0;
+
+	//remove comment
+	size_t tmpIdx = m_buffPos;
+	while(tmpIdx < buffSize - 1)
+	{
+		if(m_buff[tmpIdx] == '/' && m_buff[tmpIdx + 1] == '/') // single line comment
+		{
+			size_t singleCmIdx = tmpIdx;
+			m_buff[tmpIdx] = ' ';
+			m_buff[tmpIdx + 1] = ' ';
+			tmpIdx+=2;
+			while(tmpIdx < buffSize && m_buff[tmpIdx] !='\r' && m_buff[tmpIdx] !='\n' )
+			{
+				m_buff[tmpIdx] = ' ';
+				tmpIdx++;
+			}
+		}
+
+		if(m_buff[tmpIdx] == '/' && m_buff[tmpIdx + 1] == '*') // block comment
+		{
+			size_t singleCmIdx = tmpIdx;
+			m_buff[tmpIdx] = ' ';
+			m_buff[tmpIdx + 1] = ' ';
+			tmpIdx+=2;
+			while((tmpIdx < buffSize -1) && (m_buff[tmpIdx] !='*' || m_buff[tmpIdx + 1] !='/'))
+			{
+				m_buff[tmpIdx] = ' ';
+				tmpIdx++;
+			}
+			if(tmpIdx < buffSize -1 && (m_buff[tmpIdx] =='*' && m_buff[tmpIdx + 1] =='/'))
+			{
+				m_buff[tmpIdx] = ' ';
+				m_buff[tmpIdx + 1] = ' ';
+			}
+		}
+		tmpIdx++;
+	}
 }
 
 void TinaTokenizer::nextChar()
@@ -180,6 +218,10 @@ TokenInfo TinaTokenizer::getNextToken()
 		else if(result.m_tokenValue == "function")
 		{
 			result.m_tokenType = TokenType::TOKEN_TYPE_FUNCDEF;
+		}
+		else if(result.m_tokenValue == "return")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_RETURN;
 		}
 		else
 		{

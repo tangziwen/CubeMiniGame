@@ -36,14 +36,24 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 				{
 					m_register[cmd.m_A.m_addr] = val;
 				}
+				else if (cmd.m_A.m_locSrc == OperandLocation::locationType::STACK)
+				{
+					m_stack[m_SBP + cmd.m_A.m_addr] = val;
+				}
+				else if (cmd.m_A.m_locSrc == OperandLocation::locationType::RETREG)
+				{
+					m_retReg = val;
+				}
 			}
 			break;
-			case ILCommandType::PUSH:
+			case ILCommandType::PUSH://push stack base pointer
 			{
+				m_SBP += cmd.m_A.m_addr;
 			}
 			break;
 			case ILCommandType::POP:
 			{
+
 			}break;
 			case ILCommandType::ADD:
 			{
@@ -124,22 +134,15 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 				else
 				{
 					m_PC = m_funcAddrStack.top();//restore the PC
+					//restore the SBP
+					//m_SBP += cmd.m_A.m_addr;
 					m_funcAddrStack.pop();
 				}
 			}break;
 			case ILCommandType::PRINT:
 			{
 				TinaVal val;
-				//From
-				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//from register
-				{
-					val = m_register[cmd.m_A.m_addr];
-				}
-				else if (cmd.m_A.m_locSrc == OperandLocation::locationType::CONSTVAL)
-				{
-					val = program->constVal[cmd.m_A.m_addr];
-				}
-
+				getVal(program, cmd.m_A, &val);
 				printf("[PRNT]%s\n", val.toStr());
 			}break;
 			case ILCommandType::HALT:
@@ -239,9 +242,14 @@ void TinaRunTime::getVal(TinaProgram* program, OperandLocation location, TinaVal
 	{
 		*val = m_register[location.m_addr];
 	}
+	else if(location.m_locSrc == OperandLocation::locationType::RETREG)//To ref in special return register.
+	{
+		*val = m_retReg;
+	}
 	else if(location.m_locSrc == OperandLocation::locationType::STACK)//To ref in specified register.
 	{
 		*val = m_stack[m_SBP + location.m_addr];
 	}
 }
+
 }

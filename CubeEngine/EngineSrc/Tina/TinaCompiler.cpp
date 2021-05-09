@@ -117,6 +117,7 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		//fetchinfo
 		TinaFunctionInfo *info = new TinaFunctionInfo();
 		info->m_rtInfo.m_entryAddr =functionJmpAddr;
+		info->m_rtInfo.m_varCount = ast_node->m_children[0]->m_children.size();
 		strcpy(info->m_rtInfo.m_name, ast_node->m_op.m_tokenValue.c_str());
 		program.functionInfoList.push_back(info);
 
@@ -127,12 +128,28 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		program.m_envMap[ast_node->m_op.m_tokenValue.c_str()] = functionObj;
 
 		m_currParsingFunc = info;
+		
+		//parse function parameter List
+		for(int i = 0; i < ast_node->m_children[0]->m_children.size(); i++)
+		{
+			m_currParsingFunc->stackVar.push_back(ast_node->m_children[0]->m_children[i]->m_op.m_tokenValue);
+			m_currParsingFunc->m_stackMap[ast_node->m_children[0]->m_children[i]->m_op.m_tokenValue] = m_currParsingFunc->stackVar.size() - 1;
+		}
 		//generate function body
 		lastLocation = evalR(ast_node->m_children[1], program);
 
 		//always generate ret cmd
 		program.cmdList.push_back(ILCmd(ILCommandType::RET));
 
+		return lastLocation;
+	}
+	else if(ast_node->m_type == TinaASTNodeType::FUNC_PARAMETER_LIST)
+	{
+		OperandLocation lastLocation;
+		for(TinaASTNode * child : ast_node->m_children)
+		{
+			lastLocation = evalR(child, program);
+		}
 		return lastLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::SEQUENCE)
@@ -156,25 +173,45 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 	}
 	else if(ast_node->m_type == TinaASTNodeType::CALL)
 	{
-		/*
+		//push stack base pointer.
+		program.cmdList.push_back(ILCmd(ILCommandType::PUSH, OperandLocation(OperandLocation::locationType::IMEEDIATE, m_currParsingFunc->m_rtInfo.m_varCount)));
+		
+		//apply argument eval argument move to register then move to stack var
 		if(ast_node->m_children.size() > 1)
 		{
-			for(int i = 1; i < ast_node->m_children.size(); i++)
+			auto & argList = ast_node->m_children[1]->m_children;
+			for(int i = 0; i < argList.size(); i++)
 			{
-				evalR(ast_node->m_children[i], program);
+				auto argtmpLoc = evalR(argList[i], program);
+				//move to stack
+				program.cmdList.push_back(ILCmd(ILCommandType::MOV,
+					OperandLocation(OperandLocation::locationType::STACK, i), argtmpLoc));
 			}
+			int argNum = argList.size();
 		}
-		int argNum = ast_node->m_children.size() - 1;
-		*/
 		auto callLocation = evalR(ast_node->m_children[0], program);
 		program.cmdList.push_back(ILCmd(ILCommandType::CALL,
-			callLocation, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));
-		//m_registerIndex -= argNum;
+			callLocation));
+		OperandLocation returnLocation(OperandLocation::locationType::RETREG, 0);
+		OperandLocation tmploc = genTmpValue();
+		//move return value to a tempory register.
+		program.cmdList.push_back(ILCmd(ILCommandType::MOV, tmploc, returnLocation));
+		return tmploc;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::PRINT)
 	{
 		auto locationL = evalR(ast_node->m_children[0], program);
 		program.cmdList.push_back(ILCmd(ILCommandType::PRINT,locationL));
+		return noUsedLocation;
+	}
+	else if(ast_node->m_type == TinaASTNodeType::RETURN)
+	{
+		//move return value to retRegister.
+		auto locationL = evalR(ast_node->m_children[0], program);
+		OperandLocation returnLocation(OperandLocation::locationType::RETREG, 0);
+		program.cmdList.push_back(ILCmd(ILCommandType::MOV, returnLocation, locationL));
+		//add ret command.
+		program.cmdList.push_back(ILCmd(ILCommandType::RET));
 		return noUsedLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::LEAF)//identifier const up-value

@@ -8,6 +8,7 @@ struct TinaFunctionRuntimeInfo
 {
 	char m_name[32];
 	size_t m_entryAddr;
+	size_t m_varCount;
 };
 
 enum class TinaValType

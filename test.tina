@@ -1,31 +1,14 @@
-function func2()
+function sum(a,b)
 {
-	print "bbbbb";
-	func3();
+	return a + b;
+	print "caonima";//this line should never be reached.
 }
 
-function func3()
-{
-	print "ccccc";
-}
-
-function func1()
-{
-	print "aaaa";
-}
-
+//entry function
 function main()
 {
-	local a,b;
-	b= 2;
-	a = (5 + b) * 2;
-	print a;
-	local helloStr,tinaStr;
-	helloStr = "hello, ";
-	tinaStr = "Tina";
-	func1();
-	func2();
-	c = func1;
-	c();
-	print helloStr + tinaStr;
+	//local a;
+	//a = 5;
+	print sum(1, 1) + sum(2, 10);
+	//print "hahaha";
 }

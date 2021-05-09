@@ -92,7 +92,7 @@ TinaASTNode* TinaParser::parseBlockStatement()
 		nextToken();
 		while(currToken().m_tokenType != TokenType::TOKEN_TYPE_RIGHT_BRACE)
 		{
-			if(currToken().m_tokenType == TokenType::TOKEN_TYPE_PRINT )
+			if(currToken().m_tokenType == TokenType::TOKEN_TYPE_PRINT || currToken().m_tokenType == TokenType::TOKEN_TYPE_RETURN )
 			{
 				TinaASTNode * node = parsePrintStatement();
 				blockNode->addChild(node);
@@ -122,12 +122,19 @@ TinaASTNode* TinaParser::parsePrintStatement()
 		nextToken();//eat the print
 		statementNode->addChild(parseSingleStatement());
 	}
+	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_RETURN)//start with return
+	{
+		statementNode = new TinaASTNode(TinaASTNodeType::RETURN);
+		nextToken();//eat the return
+		statementNode->addChild(parseSingleStatement());
+	}
 	else
 	{
 		statementNode = parseSingleStatement();
 	}
 	return statementNode;
 }
+
 
 TinaASTNode* TinaParser::parseSingleStatement()
 {
