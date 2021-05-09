@@ -13,7 +13,6 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 	if(info)
 	{
 		m_PC = info->m_rtInfo.m_entryAddr;
-		
 		m_SBP = 0;
 		m_SP = info->m_rtInfo.m_varCount + m_SBP;
 	}
@@ -51,8 +50,6 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 			break;
 			case ILCommandType::PUSH://push stack base pointer
 			{
-
-
 				m_SBP = m_SP;
 				m_SP += cmd.m_A.m_addr;
 			}
@@ -60,7 +57,7 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 			case ILCommandType::POP:
 			{
 				m_SP = m_SBP;
-				m_SBP -= m_funcAddrStack.top().argCount;
+				m_SBP -= m_funcAddrStack.top().localVarCount;
 			}break;
 			case ILCommandType::ADD:
 			{
@@ -120,16 +117,16 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 			case ILCommandType::CALL:
 			{
 				printf("call\n");
-				//store the PC
+				//store the PC & current layer function stack var count
 				FunctionEntryInfo entryInfo;
 				entryInfo.pc = m_PC;
-				entryInfo.argCount = cmd.m_B.m_addr;
+				entryInfo.localVarCount = cmd.m_B.m_addr;
 				m_funcAddrStack.push(entryInfo);
 					
 				TinaVal a;
 				getVal(program, cmd.m_A, &a);
 				//jump to function
-				auto& info = a.m_data.valFunctPtr;//program->findFunctionInfoFromName("func1");
+				auto& info = a.m_data.valFunctPtr;
 
 				m_PC = info.m_entryAddr;
 				continue;

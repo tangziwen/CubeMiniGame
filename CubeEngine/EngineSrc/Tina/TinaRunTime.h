@@ -8,7 +8,7 @@ namespace tzw
 struct FunctionEntryInfo
 {
 	size_t pc;
-	size_t argCount;
+	size_t localVarCount;
 };
 class TinaRunTime
 {
