@@ -18,6 +18,7 @@ enum class TinaValType
 	String,
 	Ref,
 	FuncPtr,
+	Boolean,
 	Nil,
 };
 struct TinaVal

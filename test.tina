@@ -1,5 +1,6 @@
 function sum(a,b)
 {
+	print c;
 	return a + b;
 	print "caonima";//this line should never be reached.
 }
@@ -8,7 +9,12 @@ function sum(a,b)
 function main()
 {
 	local a;
-	a = 99;
+	local b;
+	b = 10;
+	a = 99 + b;
+	c = 100;
 	print sum(1, 1) + sum(7, 2) + a;
+	fuck = sum;//function pointer
+	print fuck(3, 4);
 	//print "hahaha";
 }

@@ -101,6 +101,11 @@ bool TokenInfo::isLogicCompare()
 	|| m_tokenType == TokenType::TOKEN_TYPE_OP_GREATER || m_tokenType == TokenType::TOKEN_TYPE_OP_NOT_EQUAL || m_tokenType == TokenType::TOKEN_TYPE_OP_GREATER_OR_EQUAL || m_tokenType == TokenType::TOKEN_TYPE_OP_LESS_OR_EQUAL;
 }
 
+bool TokenInfo::isCmdToken()
+{
+	return m_tokenType == TokenType::TOKEN_TYPE_PRINT || m_tokenType == TokenType::TOKEN_TYPE_RETURN || m_tokenType == TokenType::TOKEN_TYPE_IF;
+}
+
 void TinaTokenizer::loadStr(std::string str)
 {
 	strcpy_s(m_buff, sizeof(m_buff), str.c_str());
@@ -222,6 +227,14 @@ TokenInfo TinaTokenizer::getNextToken()
 		else if(result.m_tokenValue == "return")
 		{
 			result.m_tokenType = TokenType::TOKEN_TYPE_RETURN;
+		}
+		else if(result.m_tokenValue == "if")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_IF;
+		}
+		else if(result.m_tokenValue == "else")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_ELSE;
 		}
 		else
 		{

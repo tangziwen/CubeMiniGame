@@ -192,9 +192,11 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 				program.cmdList.push_back(ILCmd(ILCommandType::MOV,
 					OperandLocation(OperandLocation::locationType::STACK, i), argtmpLoc));
 			}
+			decreaseRegIndex(argList.size());
 		}
 		auto callLocation = evalR(ast_node->m_children[0], program);
 		program.cmdList.push_back(ILCmd(ILCommandType::CALL, callLocation, OperandLocation(OperandLocation::locationType::IMEEDIATE, m_currParsingFunc->stackVar.size())));
+		decreaseRegIndex(1);
 		OperandLocation returnLocation(OperandLocation::locationType::RETREG, 0);
 		OperandLocation tmploc = genTmpValue();
 		//move return value to a tempory register.
@@ -212,6 +214,9 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		//move return value to retRegister.
 		auto locationL = evalR(ast_node->m_children[0], program);
 		OperandLocation returnLocation(OperandLocation::locationType::RETREG, 0);
+		
+		//move return value to return value register
+		decreaseRegIndex(1);
 		program.cmdList.push_back(ILCmd(ILCommandType::MOV, returnLocation, locationL));
 		//pop stack base pointer.
 		program.cmdList.push_back(ILCmd(ILCommandType::POP, OperandLocation(OperandLocation::locationType::IMEEDIATE, m_currParsingFunc->m_rtInfo.m_varCount)));
@@ -280,7 +285,7 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 					
 					auto locationR = evalR(ast_node->m_children[1], program);
 					auto locationL = evalL(ast_node->m_children[0], program);
-					//return resultLocation;
+					decreaseRegIndex(2);
 					program.cmdList.push_back(ILCmd(ILCommandType::MOVINDIRECT, locationL, locationR));
 					return locationL;
 				}

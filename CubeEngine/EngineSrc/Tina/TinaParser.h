@@ -13,6 +13,7 @@ enum class TinaASTNodeType
 	FUNC_DEF,
 	FUNC_PARAMETER_LIST,
 	RETURN,
+	IF,
 };
 //recursive descent parser
 struct TinaASTNode
@@ -35,7 +36,7 @@ struct TinaASTNode
  *
  * <localDeclare>	: <local> <identifier> {, <identifier>} ;
  *					| <singlestatement>
- * <PrintStatement>	: {<print> | <return>} <singlestatement>
+ * <PrintStatement>	: {<print> | <return> | <if>} <singlestatement>
  *					| <singlestatement>
  * <singlestatement>	: ;
  *				| <expr> ;

@@ -18,6 +18,8 @@ enum class TokenType
 	TOKEN_TYPE_PRINT,
 	TOKEN_TYPE_FUNCDEF,
 	TOKEN_TYPE_RETURN,
+	TOKEN_TYPE_IF,
+	TOKEN_TYPE_ELSE,
 	TOKEN_TYPE_OP_COMMA,
 	TOKEN_TYPE_OP_PLUS,
 	TOKEN_TYPE_OP_MINUS,
@@ -41,6 +43,7 @@ struct TokenInfo
 	void print();
 	TokenType m_tokenType = TokenType::TOKEN_TYPE_NOT_INVALID;
 	bool isLogicCompare();
+	bool isCmdToken();
 	std::string m_tokenValue;
 };
 
