@@ -19,10 +19,13 @@ enum class ILCommandType
 	MUL,
 	DIV,
 	JMP,
+	JNE,
+	JE,
 	CALL,
 	RET,
 	PRINT,
 	HALT,
+	GRT,
 };
 
 

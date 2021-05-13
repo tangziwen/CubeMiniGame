@@ -340,6 +340,18 @@ TokenInfo TinaTokenizer::getNextToken()
 		result.m_tokenType = TokenType::TOKEN_TYPE_OP_LESS_OR_EQUAL;
 	}
 
+	else if(currChar() == '>')
+	{
+		nextChar();
+		nextChar();
+		result.m_tokenType = TokenType::TOKEN_TYPE_OP_GREATER;
+	}
+	else if(currChar() == '<')
+	{
+		nextChar();
+		nextChar();
+		result.m_tokenType = TokenType::TOKEN_TYPE_OP_LESS;
+	}
 	else if(currChar() == '=')
 	{
 		nextChar();

@@ -161,6 +161,26 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		}
 		return lastLocation;
 	}
+	else if(ast_node->m_type == TinaASTNodeType::IF)
+	{
+		OperandLocation noUsedLocation;
+
+		auto testLocation = evalR(ast_node->m_children[0], program);
+		program.cmdList.push_back(ILCmd(ILCommandType::JNE, testLocation, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));
+		int jneJmpCmdIndex = program.cmdList.size() - 1;
+		auto if_body = evalR(ast_node->m_children[1], program);
+		int elseAddr = program.cmdList.size() + 1;
+		program.cmdList[jneJmpCmdIndex].m_B.m_addr = elseAddr;
+		program.cmdList.push_back(ILCmd(ILCommandType::JMP, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));//jump outside.
+		int jmpCmdIndex = program.cmdList.size() - 1;
+		if(ast_node->m_children.size() > 2)
+		{
+			auto else_body = evalR(ast_node->m_children[2], program);
+		}
+		int outterAddr = program.cmdList.size() + 1;
+		program.cmdList[jmpCmdIndex].m_A.m_addr = outterAddr;
+		return noUsedLocation;
+	}
 	else if(ast_node->m_type == TinaASTNodeType::LOCAL_DECLARE) // add declare
 	{
 		
@@ -288,6 +308,17 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 					decreaseRegIndex(2);
 					program.cmdList.push_back(ILCmd(ILCommandType::MOVINDIRECT, locationL, locationR));
 					return locationL;
+				}
+				break;
+			case TokenType::TOKEN_TYPE_OP_GREATER:
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::GRT, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
 				}
 				break;
 		}

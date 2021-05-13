@@ -17,4 +17,16 @@ function main()
 	fuck = sum;//function pointer
 	print fuck(3, 4);
 	//print "hahaha";
+	if (3 + 5 > 18)
+	{
+		print "go True";
+	}
+	else if(3 > 500)
+	{
+		print "go False";
+	}
+	else
+	{
+		print "shit";
+	}
 }

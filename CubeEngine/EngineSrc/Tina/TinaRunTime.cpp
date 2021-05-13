@@ -111,9 +111,46 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 				}
 					
 			}break;
+			case ILCommandType::GRT:
+			{
+				TinaVal a, b;
+				getVal(program, cmd.m_B, &a);
+				getVal(program, cmd.m_C, &b);
+
+				//To
+				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
+				{
+					m_register[cmd.m_A.m_addr] = valGreater(&a, &b);
+				}
+					
+			}break;
 			case ILCommandType::JMP:
 			{
+				m_PC = cmd.m_A.m_addr;
+				continue;
 			}break;
+			case ILCommandType::JE:
+			{
+				TinaVal conditionVal;
+				getVal(program, cmd.m_A, &conditionVal);
+				if(conditionVal.m_data.valI)
+				{
+					m_PC = cmd.m_B.m_addr;
+					continue;
+				}
+			}
+			break;
+			case ILCommandType::JNE:
+			{
+				TinaVal conditionVal;
+				getVal(program, cmd.m_A, &conditionVal);
+				if(!conditionVal.m_data.valI)
+				{
+					m_PC = cmd.m_B.m_addr;
+					continue;
+				}
+			}
+			break;
 			case ILCommandType::CALL:
 			{
 				printf("call\n");

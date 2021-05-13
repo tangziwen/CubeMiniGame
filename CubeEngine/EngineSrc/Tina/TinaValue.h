@@ -46,8 +46,11 @@ TinaVal valSub_impF(TinaVal * a, TinaVal * b);
 TinaVal valSub_impI(TinaVal * a, TinaVal * b);
 TinaVal valDiv_impF(TinaVal * a, TinaVal * b);
 TinaVal valDiv_impI(TinaVal * a, TinaVal * b);
+TinaVal valGreater_impF(TinaVal * a, TinaVal * b);
+TinaVal valGreater_impI(TinaVal * a, TinaVal * b);
 TinaVal valAdd(TinaVal * a, TinaVal * b);
 TinaVal valMul(TinaVal * a, TinaVal * b);
 TinaVal valSub(TinaVal * a, TinaVal * b);
 TinaVal valDiv(TinaVal * a, TinaVal * b);
+TinaVal valGreater(TinaVal * a, TinaVal * b);
 }

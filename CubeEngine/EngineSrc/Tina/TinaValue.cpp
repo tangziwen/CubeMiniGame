@@ -114,6 +114,22 @@ TinaVal valDiv_impI(TinaVal* a, TinaVal* b)
 	return val;
 }
 
+TinaVal valGreater_impF(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valF > b->m_data.valF;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valGreater_impI(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valI > b->m_data.valI;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
 TinaVal valAdd(TinaVal* a, TinaVal* b)
 {
 	if(a->m_type == b->m_type)// life is so much easier
@@ -186,6 +202,24 @@ TinaVal valDiv(TinaVal* a, TinaVal* b)
 		else if(a->m_type == TinaValType::Int)
 		{
 			return valDiv_impI(a, b);
+		}
+		
+	}else//dirty type boosting, fuck you coder.
+	{
+
+	}
+}
+TinaVal valGreater(TinaVal* a, TinaVal* b)
+{
+	if(a->m_type == b->m_type)// life is so much easier
+	{
+		if(a->m_type == TinaValType::Float)
+		{
+			return valGreater_impF(a, b);
+		}
+		else if(a->m_type == TinaValType::Int)
+		{
+			return valGreater_impI(a, b);
 		}
 		
 	}else//dirty type boosting, fuck you coder.
