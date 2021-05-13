@@ -48,9 +48,26 @@ TinaVal valDiv_impF(TinaVal * a, TinaVal * b);
 TinaVal valDiv_impI(TinaVal * a, TinaVal * b);
 TinaVal valGreater_impF(TinaVal * a, TinaVal * b);
 TinaVal valGreater_impI(TinaVal * a, TinaVal * b);
+TinaVal valGreaterOREqual_impF(TinaVal * a, TinaVal * b);
+TinaVal valGreaterOREqual_impI(TinaVal * a, TinaVal * b);
+TinaVal valLess_impF(TinaVal * a, TinaVal * b);
+TinaVal valLess_impI(TinaVal * a, TinaVal * b);
+TinaVal valLessOrEqual_impF(TinaVal * a, TinaVal * b);
+TinaVal valLessOrEqual_impI(TinaVal * a, TinaVal * b);
+TinaVal valEqual_impF(TinaVal * a, TinaVal * b);
+TinaVal valEqual_impI(TinaVal * a, TinaVal * b);
+TinaVal valNotEqual_impF(TinaVal * a, TinaVal * b);
+TinaVal valNotEqual_impI(TinaVal * a, TinaVal * b);
+
+
 TinaVal valAdd(TinaVal * a, TinaVal * b);
 TinaVal valMul(TinaVal * a, TinaVal * b);
 TinaVal valSub(TinaVal * a, TinaVal * b);
 TinaVal valDiv(TinaVal * a, TinaVal * b);
 TinaVal valGreater(TinaVal * a, TinaVal * b);
+TinaVal valGreaterOREqual(TinaVal * a, TinaVal * b);
+TinaVal valLess(TinaVal * a, TinaVal * b);
+TinaVal valLessOrEqual(TinaVal * a, TinaVal * b);
+TinaVal valEqual(TinaVal * a, TinaVal * b);
+TinaVal valNotEqual(TinaVal * a, TinaVal * b);
 }

@@ -145,6 +145,16 @@ TinaASTNode* TinaParser::parsePrintStatement()
 		}
 
 	}
+	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_WHILE)//start with while
+	{
+		statementNode = new TinaASTNode(TinaASTNodeType::WHILE);
+		nextToken();//eat the while
+
+		nextToken();//eat the left (
+		statementNode->addChild(parseExpr());
+		nextToken();//eat the right )
+		statementNode->addChild(parseBlockStatement());//parse loop body Block
+	}
 	else
 	{
 		statementNode = parseSingleStatement();

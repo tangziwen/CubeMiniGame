@@ -75,9 +75,28 @@ OperandLocation TinaCompiler::getLeafAddr(TinaASTNode* ast_node, TinaProgram & p
 			TinaVal val;
 			if(ast_node->m_op.m_tokenType == TokenType::TOKEN_TYPE_NUM)
 			{
-				float rawVal = atof(ast_node->m_op.m_tokenValue.c_str());
-				val.m_data.valF = rawVal;
-				val.m_type = TinaValType::Float;
+				bool isFloat = false;
+				const char * test = ast_node->m_op.m_tokenValue.c_str();
+				for (auto i = 0; i < ast_node->m_op.m_tokenValue.size(); i++)
+				{
+					if(test[i] == '.')
+					{
+						isFloat = true;
+					}
+				}
+				if(isFloat)
+				{
+					float rawVal = atof(ast_node->m_op.m_tokenValue.c_str());
+					val.m_data.valF = rawVal;
+					val.m_type = TinaValType::Float;
+				}
+				else
+				{
+					float rawVal = atoi(ast_node->m_op.m_tokenValue.c_str());
+					val.m_data.valI = rawVal;
+					val.m_type = TinaValType::Int;
+				}
+
 
 			}
 			else
@@ -179,6 +198,18 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		}
 		int outterAddr = program.cmdList.size() + 1;
 		program.cmdList[jmpCmdIndex].m_A.m_addr = outterAddr;
+		return noUsedLocation;
+	}
+	else if(ast_node->m_type == TinaASTNodeType::WHILE)
+	{
+		OperandLocation noUsedLocation;
+		int firstAddr = program.cmdList.size();
+		auto testLocation = evalR(ast_node->m_children[0], program);
+		program.cmdList.push_back(ILCmd(ILCommandType::JNE, testLocation, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));
+		int jneJmpCmdIndex = program.cmdList.size() - 1;
+		auto loopBody = evalR(ast_node->m_children[1], program);
+		program.cmdList.push_back(ILCmd(ILCommandType::JMP, OperandLocation(OperandLocation::locationType::IMEEDIATE, firstAddr)));//jump back.
+		program.cmdList[jneJmpCmdIndex].m_B.m_addr = program.cmdList.size();
 		return noUsedLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::LOCAL_DECLARE) // add declare
@@ -316,7 +347,62 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 					auto locationR = evalR(ast_node->m_children[1], program);
 					decreaseRegIndex(2);
 					auto resultLocation = genTmpValue();
-					program.cmdList.push_back(ILCmd(ILCommandType::GRT, 
+					program.cmdList.push_back(ILCmd(ILCommandType::LOG_GRT, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
+				}
+				break;
+			case TokenType::TOKEN_TYPE_OP_GREATER_OR_EQUAL:
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::LOG_GE, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
+				}
+				break;
+			case TokenType::TOKEN_TYPE_OP_LESS:
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::LOG_LES, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
+				}
+				break;
+			case TokenType::TOKEN_TYPE_OP_LESS_OR_EQUAL:
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::LOG_LE, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
+				}
+				break;
+			case TokenType::TOKEN_TYPE_OP_EQUAL:
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::LOG_EQ, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
+				}
+				break;
+			case TokenType::TOKEN_TYPE_OP_NOT_EQUAL:
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::LOG_NE, 
 						resultLocation, locationL, locationR));
 					return resultLocation;
 				}

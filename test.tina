@@ -29,4 +29,11 @@ function main()
 	{
 		print "shit";
 	}
+	local d;
+	d = 0;
+	while(d < 100)
+	{
+		print d;
+		d = d + 1;
+	}
 }

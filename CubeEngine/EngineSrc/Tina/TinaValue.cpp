@@ -130,6 +130,87 @@ TinaVal valGreater_impI(TinaVal* a, TinaVal* b)
 	return val;
 }
 
+
+TinaVal valGreaterOREqual_impF(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valF >= b->m_data.valF;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valGreaterOREqual_impI(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valI >= b->m_data.valI;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valLess_impF(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valF < b->m_data.valF;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valLess_impI(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valI < b->m_data.valI;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valLessOrEqual_impF(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valF <= b->m_data.valF;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valLessOrEqual_impI(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valI <= b->m_data.valI;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valEqual_impF(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valF == b->m_data.valF;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valEqual_impI(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valI == b->m_data.valI;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valNotEqual_impF(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valF != b->m_data.valF;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
+TinaVal valNotEqual_impI(TinaVal* a, TinaVal* b)
+{
+	TinaVal val;
+	val.m_data.valI = a->m_data.valI != b->m_data.valI;
+	val.m_type = TinaValType::Boolean;
+	return val;
+}
+
 TinaVal valAdd(TinaVal* a, TinaVal* b)
 {
 	if(a->m_type == b->m_type)// life is so much easier
@@ -220,6 +301,97 @@ TinaVal valGreater(TinaVal* a, TinaVal* b)
 		else if(a->m_type == TinaValType::Int)
 		{
 			return valGreater_impI(a, b);
+		}
+		
+	}else//dirty type boosting, fuck you coder.
+	{
+
+	}
+}
+TinaVal valGreaterOREqual(TinaVal* a, TinaVal* b)
+{
+	if(a->m_type == b->m_type)// life is so much easier
+	{
+		if(a->m_type == TinaValType::Float)
+		{
+			return valGreaterOREqual_impF(a, b);
+		}
+		else if(a->m_type == TinaValType::Int)
+		{
+			return valGreaterOREqual_impI(a, b);
+		}
+		
+	}else//dirty type boosting, fuck you coder.
+	{
+
+	}
+}
+TinaVal valLess(TinaVal* a, TinaVal* b)
+{
+	if(a->m_type == b->m_type)// life is so much easier
+	{
+		if(a->m_type == TinaValType::Float)
+		{
+			return valLess_impF(a, b);
+		}
+		else if(a->m_type == TinaValType::Int)
+		{
+			return valLess_impI(a, b);
+		}
+		
+	}else//dirty type boosting, fuck you coder.
+	{
+
+	}
+}
+TinaVal valLessOrEqual(TinaVal* a, TinaVal* b)
+{
+	if(a->m_type == b->m_type)// life is so much easier
+	{
+		if(a->m_type == TinaValType::Float)
+		{
+			return valLessOrEqual_impF(a, b);
+		}
+		else if(a->m_type == TinaValType::Int)
+		{
+			return valLessOrEqual_impI(a, b);
+		}
+		
+	}else//dirty type boosting, fuck you coder.
+	{
+
+	}
+}
+TinaVal valEqual(TinaVal* a, TinaVal* b)
+{
+	if(a->m_type == b->m_type)// life is so much easier
+	{
+		if(a->m_type == TinaValType::Float)
+		{
+			return valEqual_impF(a, b);
+		}
+		else if(a->m_type == TinaValType::Int)
+		{
+			return valEqual_impI(a, b);
+		}
+		
+	}else//dirty type boosting, fuck you coder.
+	{
+
+	}
+}
+
+TinaVal valNotEqual(TinaVal* a, TinaVal* b)
+{
+	if(a->m_type == b->m_type)// life is so much easier
+	{
+		if(a->m_type == TinaValType::Float)
+		{
+			return valNotEqual_impF(a, b);
+		}
+		else if(a->m_type == TinaValType::Int)
+		{
+			return valNotEqual_impI(a, b);
 		}
 		
 	}else//dirty type boosting, fuck you coder.

@@ -103,7 +103,7 @@ bool TokenInfo::isLogicCompare()
 
 bool TokenInfo::isCmdToken()
 {
-	return m_tokenType == TokenType::TOKEN_TYPE_PRINT || m_tokenType == TokenType::TOKEN_TYPE_RETURN || m_tokenType == TokenType::TOKEN_TYPE_IF;
+	return m_tokenType == TokenType::TOKEN_TYPE_PRINT || m_tokenType == TokenType::TOKEN_TYPE_RETURN || m_tokenType == TokenType::TOKEN_TYPE_IF || m_tokenType == TokenType::TOKEN_TYPE_WHILE ;
 }
 
 void TinaTokenizer::loadStr(std::string str)
@@ -235,6 +235,18 @@ TokenInfo TinaTokenizer::getNextToken()
 		else if(result.m_tokenValue == "else")
 		{
 			result.m_tokenType = TokenType::TOKEN_TYPE_ELSE;
+		}
+		else if(result.m_tokenValue == "while")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_WHILE;
+		}
+		else if(result.m_tokenValue == "break")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_BREAK;
+		}
+		else if(result.m_tokenValue == "continue")
+		{
+			result.m_tokenType = TokenType::TOKEN_TYPE_CONTINUE;
 		}
 		else
 		{

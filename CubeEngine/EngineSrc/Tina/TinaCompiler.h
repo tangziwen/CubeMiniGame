@@ -25,7 +25,12 @@ enum class ILCommandType
 	RET,
 	PRINT,
 	HALT,
-	GRT,
+	LOG_GRT,
+	LOG_GE,
+	LOG_LES,
+	LOG_LE,
+	LOG_EQ,
+	LOG_NE
 };
 
 

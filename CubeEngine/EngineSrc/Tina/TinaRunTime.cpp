@@ -111,7 +111,7 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 				}
 					
 			}break;
-			case ILCommandType::GRT:
+			case ILCommandType::LOG_GRT:
 			{
 				TinaVal a, b;
 				getVal(program, cmd.m_B, &a);
@@ -121,6 +121,71 @@ void TinaRunTime::execute(TinaProgram* program, std::string functionName)
 				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
 				{
 					m_register[cmd.m_A.m_addr] = valGreater(&a, &b);
+				}
+					
+			}break;
+			case ILCommandType::LOG_GE:
+			{
+				TinaVal a, b;
+				getVal(program, cmd.m_B, &a);
+				getVal(program, cmd.m_C, &b);
+
+				//To
+				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
+				{
+					m_register[cmd.m_A.m_addr] = valGreaterOREqual(&a, &b);
+				}
+					
+			}break;
+			case ILCommandType::LOG_LES:
+			{
+				TinaVal a, b;
+				getVal(program, cmd.m_B, &a);
+				getVal(program, cmd.m_C, &b);
+
+				//To
+				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
+				{
+					m_register[cmd.m_A.m_addr] = valLess(&a, &b);
+				}
+					
+			}break;
+			case ILCommandType::LOG_LE:
+			{
+				TinaVal a, b;
+				getVal(program, cmd.m_B, &a);
+				getVal(program, cmd.m_C, &b);
+
+				//To
+				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
+				{
+					m_register[cmd.m_A.m_addr] = valLessOrEqual(&a, &b);
+				}
+					
+			}break;
+			case ILCommandType::LOG_EQ:
+			{
+				TinaVal a, b;
+				getVal(program, cmd.m_B, &a);
+				getVal(program, cmd.m_C, &b);
+
+				//To
+				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
+				{
+					m_register[cmd.m_A.m_addr] = valEqual(&a, &b);
+				}
+					
+			}break;
+			case ILCommandType::LOG_NE:
+			{
+				TinaVal a, b;
+				getVal(program, cmd.m_B, &a);
+				getVal(program, cmd.m_C, &b);
+
+				//To
+				if(cmd.m_A.m_locSrc == OperandLocation::locationType::REGISTER)//To ref in specified register.
+				{
+					m_register[cmd.m_A.m_addr] = valNotEqual(&a, &b);
 				}
 					
 			}break;

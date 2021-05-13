@@ -14,6 +14,7 @@ enum class TinaASTNodeType
 	FUNC_PARAMETER_LIST,
 	RETURN,
 	IF,
+	WHILE,
 };
 //recursive descent parser
 struct TinaASTNode
