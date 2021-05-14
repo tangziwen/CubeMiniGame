@@ -35,5 +35,9 @@ function main()
 	{
 		print d;
 		d = d + 1;
+		if(d > 50)
+		{
+			break;
+		}
 	}
 }

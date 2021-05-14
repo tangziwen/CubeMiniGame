@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
     Engine::preSetting();
 
 #if TEST_SCRIPT
-	auto data = Tfile::shared()->getData("test.tina", true);
+	auto data = Tfile::shared()->getData("TinaTest/while.tina", true);
 	TinaTokenizer *tokenizer = new TinaTokenizer();
 	tokenizer->loadStr(data.getString());
 	std::vector<TokenInfo> result =  tokenizer->getTokenList();

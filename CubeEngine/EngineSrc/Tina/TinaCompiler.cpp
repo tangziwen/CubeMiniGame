@@ -209,7 +209,29 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		int jneJmpCmdIndex = program.cmdList.size() - 1;
 		auto loopBody = evalR(ast_node->m_children[1], program);
 		program.cmdList.push_back(ILCmd(ILCommandType::JMP, OperandLocation(OperandLocation::locationType::IMEEDIATE, firstAddr)));//jump back.
-		program.cmdList[jneJmpCmdIndex].m_B.m_addr = program.cmdList.size();
+		program.cmdList[jneJmpCmdIndex].m_B.m_addr = program.cmdList.size();//回填不满足While跳出
+		for(auto index :m_breakList)//回填Break
+		{
+			program.cmdList[index].m_A.m_addr = program.cmdList.size();
+		}
+		m_breakList.clear();
+		for(auto index :m_continueList)//回填continue
+		{
+			program.cmdList[index].m_A.m_addr = firstAddr;
+		}
+		m_continueList.clear();
+		return noUsedLocation;
+	}
+	else if(ast_node->m_type == TinaASTNodeType::BREAK)
+	{
+		program.cmdList.push_back(ILCmd(ILCommandType::JMP, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));
+		m_breakList.push_back(program.cmdList.size() - 1);
+		return noUsedLocation;
+	}
+	else if(ast_node->m_type == TinaASTNodeType::CONTINUE)
+	{
+		program.cmdList.push_back(ILCmd(ILCommandType::JMP, OperandLocation(OperandLocation::locationType::IMEEDIATE, 0)));
+		m_continueList.push_back(program.cmdList.size() - 1);
 		return noUsedLocation;
 	}
 	else if(ast_node->m_type == TinaASTNodeType::LOCAL_DECLARE) // add declare

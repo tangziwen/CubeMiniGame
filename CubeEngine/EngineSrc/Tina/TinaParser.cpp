@@ -171,6 +171,23 @@ TinaASTNode* TinaParser::parseSingleStatement()
 		statementNode = new TinaASTNode(TinaASTNodeType::SEQUENCE);
 		nextToken();
 	}
+	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_BREAK)//break statement
+	{
+		statementNode = new TinaASTNode(TinaASTNodeType::BREAK);
+		nextToken();//eat the break;
+		nextToken();//eat the semicolon;
+	}
+	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_CONTINUE)//continue statement
+	{
+		statementNode = new TinaASTNode(TinaASTNodeType::CONTINUE);
+		nextToken();//eat the continue;
+		nextToken();//eat the semicolon;
+	}
+	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_SEMICOLON)//empty statement
+	{
+		statementNode = new TinaASTNode(TinaASTNodeType::SEQUENCE);
+		nextToken();
+	}
 	else
 	{
 		statementNode = parseExpr();

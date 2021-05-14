@@ -110,6 +110,8 @@ private:
 	OperandLocation evalL(TinaASTNode * node, TinaProgram & program);
 	OperandLocation genTmpValue();
 	void decreaseRegIndex(int count = 1);
+	std::vector<int> m_breakList;
+	std::vector<int> m_continueList;
 };
 
 }

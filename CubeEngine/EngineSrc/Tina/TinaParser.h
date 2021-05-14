@@ -8,6 +8,8 @@ enum class TinaASTNodeType
 	OPERATOR,
 	LEAF, //identifier literal
 	SEQUENCE,
+	CONTINUE,
+	BREAK,
 	LOCAL_DECLARE,
 	PRINT,
 	FUNC_DEF,
@@ -37,10 +39,11 @@ struct TinaASTNode
  *
  * <localDeclare>	: <local> <identifier> {, <identifier>} ;
  *					| <singlestatement>
- * <PrintStatement>	: {<print> | <return> | <if>} <singlestatement>
+ * <PrintStatement>	: [<print> | <return> | <if>] <singlestatement>
  *					| <singlestatement>
  * <singlestatement>	: ;
- *				| <expr> ;
+ *				| {<break> | <continue>} ;
+ *				|  <expr> ;
  *				
  * <expr>		: <assignexpr> {, <assignexpr>}
  * 
