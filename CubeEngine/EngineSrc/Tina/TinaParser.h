@@ -32,10 +32,10 @@ struct TinaASTNode
 };
 
 /*
- * <statement>	: blockstatement
- *				| singlestatement
- *
- * <blockstatement>	: <{> { <localDeclare> } | {<PrintStatement>} <}>
+ * <statement>	: <flowControlStatement>
+ * <flowControlStatement> : [<if> <while>] <blockStatement>
+ * <blockstatement>	: <{> { <singlestatement>} <}>
+ *					| <singlestatement>
  *
  * <localDeclare>	: <local> <identifier> {, <identifier>} ;
  *					| <singlestatement>
@@ -80,6 +80,7 @@ public:
 private:
 	TinaASTNode * parseFunctionDef();
 	TinaASTNode * parseStatement();
+	TinaASTNode * parseFlowControlStatement();
 	TinaASTNode * parseBlockStatement();
 	TinaASTNode * parsePrintStatement();
 	TinaASTNode * parseSingleStatement();

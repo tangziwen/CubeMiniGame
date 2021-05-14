@@ -39,5 +39,10 @@ function main()
 		{
 			break;
 		}
+		if(d > 30)
+		{
+			continue;
+		}
+		print "hew hew";
 	}
 }

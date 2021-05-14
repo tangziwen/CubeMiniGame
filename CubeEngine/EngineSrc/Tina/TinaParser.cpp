@@ -33,7 +33,7 @@ void TinaParser::parse(std::vector<TokenInfo> tokenList)
 		break;
 		case TokenType::TOKEN_TYPE_LEFT_BRACE:
 		{
-			auto exprNode = parseBlockStatement();
+			auto exprNode = parseStatement();
 			m_root->addChild(exprNode);
 		}
 		break;
@@ -66,49 +66,94 @@ TinaASTNode* TinaParser::parseFunctionDef()
 		nextToken();
 	}
 	nextToken();//eat the right )
-	funcNode->addChild(parseBlockStatement());//add the function body
+	funcNode->addChild(parseStatement());//add the function body
 	return funcNode;
 }
 
 TinaASTNode* TinaParser::parseStatement()
 {
 	TinaASTNode * node;
-	if(currToken().m_tokenType == TokenType::TOKEN_TYPE_LEFT_BRACE)
 	{
-		node = parseBlockStatement();
+		node = parseFlowControlStatement();
+	}
+	return node;
+}
+
+TinaASTNode * TinaParser::parseFlowControlStatement()
+{
+	auto blockNode = new TinaASTNode(TinaASTNodeType::SEQUENCE);
+	TinaASTNode * statementNode = nullptr;
+	if(currToken().m_tokenType == TokenType::TOKEN_TYPE_IF || currToken().m_tokenType == TokenType::TOKEN_TYPE_WHILE)
+	{
+		if(currToken().m_tokenType == TokenType::TOKEN_TYPE_IF)//start with If
+		{
+			statementNode = new TinaASTNode(TinaASTNodeType::IF);
+			nextToken();//eat the if
+
+			nextToken();//eat the left (
+			statementNode->addChild(parseExpr());
+			nextToken();//eat the right )
+			statementNode->addChild(parseFlowControlStatement());//parse if Block
+
+			if(currToken().m_tokenType == TokenType::TOKEN_TYPE_ELSE)
+			{
+				nextToken();//eat the else
+				statementNode->addChild(parseFlowControlStatement());//parse else Block
+			}
+
+		}
+		else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_WHILE)//start with while
+		{
+			statementNode = new TinaASTNode(TinaASTNodeType::WHILE);
+			nextToken();//eat the while
+
+			nextToken();//eat the left (
+			statementNode->addChild(parseExpr());
+			nextToken();//eat the right )
+			statementNode->addChild(parseBlockStatement());//parse loop body Block
+		}
+		blockNode->addChild(statementNode);
 	}
 	else
 	{
-		node = parseSingleStatement();
+		auto node = parseBlockStatement();
+		blockNode->addChild(node);
 	}
-	return node;
+	return blockNode;
 }
 
 TinaASTNode* TinaParser::parseBlockStatement()
 {
 	auto blockNode = new TinaASTNode(TinaASTNodeType::SEQUENCE);
+
 	if(currToken().m_tokenType == TokenType::TOKEN_TYPE_LEFT_BRACE)
 	{
-		nextToken();
+		nextToken();//eat the left brace
 		while(currToken().m_tokenType != TokenType::TOKEN_TYPE_RIGHT_BRACE)
 		{
-			if(currToken().isCmdToken())
-			{
-				TinaASTNode * node = parsePrintStatement();
-				blockNode->addChild(node);
-			}
-			else if(currToken().m_tokenType == TokenType::LOCAL )
-			{
-				TinaASTNode * node = parseLocalDeclare();
-				blockNode->addChild(node);
-			}
-			else
-			{
-				TinaASTNode * statementNode = parseSingleStatement();
-				blockNode->addChild(statementNode);
-			}
+			TinaASTNode * statementNode = parseStatement();
+			blockNode->addChild(statementNode);
 		}
 		nextToken();//eat the right brace
+	}
+	else
+	{
+		if(currToken().isCmdToken())
+		{
+			TinaASTNode * node = parsePrintStatement();
+			blockNode->addChild(node);
+		}
+		else if(currToken().m_tokenType == TokenType::LOCAL )
+		{
+			TinaASTNode * node = parseLocalDeclare();
+			blockNode->addChild(node);
+		}
+		else
+		{
+			TinaASTNode * statementNode = parseSingleStatement();
+			blockNode->addChild(statementNode);
+		}
+
 	}
 	return blockNode;
 }
@@ -127,33 +172,6 @@ TinaASTNode* TinaParser::parsePrintStatement()
 		statementNode = new TinaASTNode(TinaASTNodeType::RETURN);
 		nextToken();//eat the return
 		statementNode->addChild(parseSingleStatement());
-	}
-	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_IF)//start with If
-	{
-		statementNode = new TinaASTNode(TinaASTNodeType::IF);
-		nextToken();//eat the if
-
-		nextToken();//eat the left (
-		statementNode->addChild(parseExpr());
-		nextToken();//eat the right )
-		statementNode->addChild(parseBlockStatement());//parse if Block
-
-		if(currToken().m_tokenType == TokenType::TOKEN_TYPE_ELSE)
-		{
-			nextToken();//eat the else
-			statementNode->addChild(parseBlockStatement());//parse else Block
-		}
-
-	}
-	else if(currToken().m_tokenType == TokenType::TOKEN_TYPE_WHILE)//start with while
-	{
-		statementNode = new TinaASTNode(TinaASTNodeType::WHILE);
-		nextToken();//eat the while
-
-		nextToken();//eat the left (
-		statementNode->addChild(parseExpr());
-		nextToken();//eat the right )
-		statementNode->addChild(parseBlockStatement());//parse loop body Block
 	}
 	else
 	{

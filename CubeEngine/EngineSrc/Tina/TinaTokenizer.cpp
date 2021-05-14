@@ -103,7 +103,7 @@ bool TokenInfo::isLogicCompare()
 
 bool TokenInfo::isCmdToken()
 {
-	return m_tokenType == TokenType::TOKEN_TYPE_PRINT || m_tokenType == TokenType::TOKEN_TYPE_RETURN || m_tokenType == TokenType::TOKEN_TYPE_IF || m_tokenType == TokenType::TOKEN_TYPE_WHILE ;
+	return m_tokenType == TokenType::TOKEN_TYPE_PRINT || m_tokenType == TokenType::TOKEN_TYPE_RETURN;
 }
 
 void TinaTokenizer::loadStr(std::string str)

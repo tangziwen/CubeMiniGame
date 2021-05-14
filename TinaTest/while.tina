@@ -1,0 +1,22 @@
+//entry function
+function main()
+{
+	local d;
+	d = 0;
+	while(d < 100)
+	{
+		print d;
+		d = d + 1;
+		if(d > 50)
+		{
+			break;
+		}
+		if(d > 35) 
+		{
+		
+			continue;
+		
+		}
+		print "hehehe";
+	}
+}
