@@ -308,6 +308,17 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 	{
 		switch (ast_node->m_op.m_tokenType)
 		{
+			case TokenType::TOKEN_TYPE_LEFT_SQUARE_BRACKET://array assign
+				{
+					auto locationL = evalR(ast_node->m_children[0], program);
+					auto locationR = evalR(ast_node->m_children[1], program);
+					decreaseRegIndex(2);
+					auto resultLocation = genTmpValue();
+					program.cmdList.push_back(ILCmd(ILCommandType::ADD, 
+						resultLocation, locationL, locationR));
+					return resultLocation;
+				}
+				break;
 			case TokenType::TOKEN_TYPE_OP_PLUS:
 				{
 					auto locationL = evalR(ast_node->m_children[0], program);
