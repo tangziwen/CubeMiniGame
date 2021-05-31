@@ -23,7 +23,7 @@ namespace tzw
             attachRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
             colorAttachmentRefs.emplace_back(attachRef);
 
-            DeviceRenderPassAttachmentInfo attachInfo;
+            DeviceRenderPassAttachmentInfo attachInfo = {};
             attachInfo.attachmentIndex = i;
             attachInfo.format = format;
             attachInfo.isDepth = false;
@@ -82,7 +82,7 @@ namespace tzw
         VkAttachmentReference depthAttachmentRef{};
         depthAttachmentRef.attachment = attachmentDescList.size();
         depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-        DeviceRenderPassAttachmentInfo depthAttachInfo;
+        DeviceRenderPassAttachmentInfo depthAttachInfo = {};
         depthAttachInfo.attachmentIndex = depthAttachmentRef.attachment;
         depthAttachInfo.isDepth = true;
         depthAttachInfo.format = ImageFormat::D24_S8;
@@ -132,7 +132,7 @@ namespace tzw
 
 		// Use subpass dependencies for attachment layout transitions
 		std::array<VkSubpassDependency, 2> dependencies;
-
+        
 		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
 		dependencies[0].dstSubpass = 0;
 		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;

@@ -8,11 +8,14 @@ namespace tzw
 	{
 	public:
 		RenderPath();
-		void prepare();
+		void prepare(DeviceRenderCommand * cmd);
+		void finish();
 		void addRenderStage(DeviceRenderStage * stage);
 		std::vector<DeviceRenderStage *> & getStages();
+		DeviceRenderCommand * getCmd();
 	private:
 		std::vector<DeviceRenderStage *> m_stages;
+		DeviceRenderCommand * m_deviceCmd;
 	};
 
 

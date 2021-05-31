@@ -9,6 +9,7 @@
 #include "DevicePipeline.h"
 #include "DeviceBuffer.h"
 #include "DeviceDescriptor.h"
+#include "DeviceRenderCommand.h"
 namespace tzw
 {
 class DeviceRenderStage
@@ -20,7 +21,7 @@ public:
 	DeviceFrameBuffer * getFrameBuffer();
 	void setRenderPass(DeviceRenderPass * renderPass);
 	void setFrameBuffer(DeviceFrameBuffer * frameBuffer);
-	virtual void prepare();
+	virtual void prepare(DeviceRenderCommand* renderCommand);
 	virtual void finish() = 0;
 	virtual void draw(std::vector<RenderCommand> & cmdList) = 0;
 	virtual void drawScreenQuad() = 0;
@@ -52,6 +53,7 @@ protected:
     static DeviceBuffer * m_quadIndexBuffer;
 	static Mesh * m_sphere;
 	std::string m_name;
+	DeviceRenderCommand * m_deviceRenderCommand;
 };
 };
 

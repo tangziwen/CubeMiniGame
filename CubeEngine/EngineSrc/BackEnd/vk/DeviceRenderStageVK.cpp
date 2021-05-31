@@ -16,8 +16,8 @@ namespace tzw
 
 	void DeviceRenderStageVK::finish()
 	{
-        int res = vkEndCommandBuffer(m_command);
-        CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
+        //int res = vkEndCommandBuffer(m_command);
+        //CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
 	}
 
 	void DeviceRenderStageVK::draw(std::vector<RenderCommand>& cmdList)
@@ -111,30 +111,32 @@ namespace tzw
             //recordDrawCommand
             auto vbo = static_cast<DeviceBufferVK *>(mesh->getArrayBuf()->bufferId());
             auto ibo = static_cast<DeviceBufferVK *>(mesh->getIndexBuf()->bufferId());
+
+        	DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
             if(vbo && ibo)
             {
-                vkCmdBindPipeline(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
+                vkCmdBindPipeline(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipeline());
                 VkBuffer vertexBuffers[] = {vbo->getBuffer()};
                 VkDeviceSize offsets[] = {0};
-                vkCmdBindVertexBuffers(m_command, 0, 1, vertexBuffers, offsets);
+                vkCmdBindVertexBuffers(command->getVK(), 0, 1, vertexBuffers, offsets);
             
             
-                vkCmdBindIndexBuffer(m_command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+                vkCmdBindIndexBuffer(command->getVK(), ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
                 std::vector<VkDescriptorSet> descriptorSetList = {static_cast<DeviceDescriptorVK*>(currPipeLine->getMaterialDescriptorSet())->getDescSet(), 
                     static_cast<DeviceDescriptorVK*>(itemDescriptorSet)->getDescSet(),};
-                vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+                vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
                 if(a.batchType() != RenderCommand::RenderBatchType::Single)
                 {
                     auto instancingMesh = a.getInstancedMesh();
                     auto instVBO = static_cast<DeviceBufferVK *>(instancingMesh->getInstanceBuf()->bufferId());
                     VkBuffer instanceVertexBuffers[] = {instVBO->getBuffer()};
                     VkDeviceSize instanceOffsets[] = {0};
-                    vkCmdBindVertexBuffers(m_command, 1, 1, instanceVertexBuffers, instanceOffsets);
-                    vkCmdDrawIndexed(m_command, static_cast<uint32_t>(mesh->getIndicesSize()), instancingMesh->getInstanceSize(), 0, 0, 0);
+                    vkCmdBindVertexBuffers(command->getVK(), 1, 1, instanceVertexBuffers, instanceOffsets);
+                    vkCmdDrawIndexed(command->getVK(), static_cast<uint32_t>(mesh->getIndicesSize()), instancingMesh->getInstanceSize(), 0, 0, 0);
                 }else
                 {
-                    vkCmdDrawIndexed(m_command, static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
+                    vkCmdDrawIndexed(command->getVK(), static_cast<uint32_t>(mesh->getIndicesSize()), 1, 0, 0, 0);
                 }
             }
         }
@@ -142,15 +144,16 @@ namespace tzw
 
     void DeviceRenderStageVK::drawScreenQuad()
     {
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         if(!m_quadIndexBuffer && !m_quadVertexBuffer)
         {
             initFullScreenQuad();
         }
         VkBuffer vertexBuffers[] = {static_cast<DeviceBufferVK*>(m_quadVertexBuffer)->getBuffer()};
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(m_command, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(m_command, static_cast<DeviceBufferVK*>(m_quadIndexBuffer)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-        vkCmdDrawIndexed(m_command, static_cast<uint32_t>(6), 1, 0, 0, 0);
+        vkCmdBindVertexBuffers(command->getVK(), 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(command->getVK(), static_cast<DeviceBufferVK*>(m_quadIndexBuffer)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdDrawIndexed(command->getVK(), static_cast<uint32_t>(6), 1, 0, 0, 0);
     }
 
     void DeviceRenderStageVK::drawSphere()
@@ -159,37 +162,35 @@ namespace tzw
         {
             initSphere();
         }
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         auto sphereMesh = m_sphere;
         auto vbo = static_cast<DeviceBufferVK *>(sphereMesh->getArrayBuf()->bufferId());
         auto ibo = static_cast<DeviceBufferVK *>(sphereMesh->getIndexBuf()->bufferId());
         VkBuffer vertexBuffers[] = {vbo->getBuffer()};
         VkDeviceSize offsets[] = {0};
-        vkCmdBindVertexBuffers(m_command, 0, 1, vertexBuffers, offsets);
-        vkCmdBindIndexBuffer(m_command, ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-        vkCmdDrawIndexed(m_command, static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
+        vkCmdBindVertexBuffers(command->getVK(), 0, 1, vertexBuffers, offsets);
+        vkCmdBindIndexBuffer(command->getVK(), ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdDrawIndexed(command->getVK(), static_cast<uint32_t>(sphereMesh->getIndicesSize()), 1, 0, 0, 0);
     }
-
-    VkCommandBuffer DeviceRenderStageVK::getCommand()
-    {
-        return m_command;
-    }
-
 
     void DeviceRenderStageVK::bindSinglePipelineDescriptor()
     {
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), };
-        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
+        vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
     void DeviceRenderStageVK::bindSinglePipelineDescriptor(DeviceDescriptor* extraItemDescriptor)
     {
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), static_cast<DeviceDescriptorVK *>(extraItemDescriptor)->getDescSet() };
-        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
+        vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
     void DeviceRenderStageVK::bindPipeline(DevicePipeline* pipeline)
     {
-        vkCmdBindPipeline(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipeline());
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdBindPipeline(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipeline());
     }
 
     void DeviceRenderStageVK::bindDescriptor(DevicePipeline* pipeline, std::vector<DeviceDescriptor*> inDescriptorList)
@@ -199,15 +200,12 @@ namespace tzw
         {
             descriptorSetList.emplace_back(static_cast<DeviceDescriptorVK *>(descriptorSet)->getDescSet());
         }
-        vkCmdBindDescriptorSets(m_command, VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
     }
 
     void DeviceRenderStageVK::beginRenderPass(vec4 clearColor, vec2 clearDepthStencil)
     {
-		VkCommandBufferBeginInfo beginInfoDeffered = {};
-        beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
-        beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
-
 		auto attachmentList = m_renderPass->getAttachmentList();
 		std::vector<VkClearValue> clearValuesDefferred{};
 		clearValuesDefferred.resize(attachmentList.size());
@@ -219,11 +217,8 @@ namespace tzw
 			}
 			else
 			{
-			
 				clearValuesDefferred[i].color = {clearColor.x, clearColor.y, clearColor.z, clearColor.w};
 			}
-			
-		
 		}
 
 		VkRenderPassBeginInfo renderPassInfoDeferred = {};
@@ -236,15 +231,15 @@ namespace tzw
         renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
         renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
 
-        int res = vkBeginCommandBuffer(m_command, &beginInfoDeffered);
-        VKRenderBackEnd::shared()->beginDebugRegion(m_command, m_name.c_str());
-        CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);
+        DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        VKRenderBackEnd::shared()->beginDebugRegion(command->getVK(), m_name.c_str());
+        
         renderPassInfoDeferred.framebuffer = static_cast<DeviceFrameBufferVK*>(m_frameBuffer)->getFrameBuffer();
-        vkCmdBeginRenderPass(m_command, &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
+        vkCmdBeginRenderPass(command->getVK(), &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
         if(m_singlePipeline)
         {
-            vkCmdBindPipeline(getCommand(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
+            vkCmdBindPipeline(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
             static_cast<DevicePipelineVK*>(m_singlePipeline)->updateUniform();
             static_cast<DevicePipelineVK*>(m_singlePipeline)->resetItemWiseDescritporSet();
         }
@@ -253,20 +248,23 @@ namespace tzw
 
     void DeviceRenderStageVK::endRenderPass()
     {
-        vkCmdEndRenderPass(m_command);
-        VKRenderBackEnd::shared()->endDebugRegion(m_command);
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdEndRenderPass(command->getVK());
+        VKRenderBackEnd::shared()->endDebugRegion(command->getVK());
     }
 
     void DeviceRenderStageVK::bindVBO(DeviceBuffer* buf)
     {
         VkBuffer vertex_buffers[1] = { static_cast<DeviceBufferVK *>(buf)->getBuffer() };
         VkDeviceSize vertex_offset[1] = { 0 };
-        vkCmdBindVertexBuffers(m_command, 0, 1, vertex_buffers, vertex_offset);
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdBindVertexBuffers(command->getVK(), 0, 1, vertex_buffers, vertex_offset);
     }
 
     void DeviceRenderStageVK::bindIBO(DeviceBuffer* buf)
     {
-        vkCmdBindIndexBuffer(m_command, static_cast<DeviceBufferVK *>(buf)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdBindIndexBuffer(command->getVK(), static_cast<DeviceBufferVK *>(buf)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
     }
 
     void DeviceRenderStageVK::setScissor(vec4 scissorRect)
@@ -276,16 +274,18 @@ namespace tzw
         scissor.offset.y = (int32_t)(scissorRect.y);
         scissor.extent.width = (uint32_t)(scissorRect.z);
         scissor.extent.height = (uint32_t)(scissorRect.w);
-        vkCmdSetScissor(m_command, 0, 1, &scissor);
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdSetScissor(command->getVK(), 0, 1, &scissor);
     }
 
     void DeviceRenderStageVK::drawElement(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance)
     {
-        vkCmdDrawIndexed(m_command, indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdDrawIndexed(command->getVK(), indexCount, instanceCount, firstIndex, vertexOffset, firstInstance);
     }
 
     void DeviceRenderStageVK::fetchCommand()
 	{
-		m_command = VKRenderBackEnd::shared()->getGeneralCommandBuffer();
+		//m_command = VKRenderBackEnd::shared()->getGeneralCommandBuffer();
 	}
 }

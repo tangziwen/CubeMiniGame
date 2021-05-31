@@ -35,10 +35,11 @@ namespace tzw
 		m_frameBuffer = frameBuffer;
 	}
 
-	void DeviceRenderStage::prepare()
+	void DeviceRenderStage::prepare(DeviceRenderCommand* renderCommand)
 	{
         m_fuckingObjList.clear();
-		fetchCommand();
+		//fetchCommand();
+		m_deviceRenderCommand = renderCommand;
 
 	}
 

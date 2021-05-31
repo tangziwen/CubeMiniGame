@@ -21,7 +21,6 @@ public:
 	void draw(std::vector<RenderCommand> & cmdList);
 	void drawScreenQuad();
 	void drawSphere();
-	VkCommandBuffer getCommand();
 	void bindSinglePipelineDescriptor() override;
 	void bindSinglePipelineDescriptor(DeviceDescriptor * extraItemDescriptor) override;
 	void bindPipeline(DevicePipeline * pipeline) override;
@@ -34,7 +33,6 @@ public:
 	void drawElement(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 protected:
 	void fetchCommand() override;
-	VkCommandBuffer m_command;
 };
 };
 

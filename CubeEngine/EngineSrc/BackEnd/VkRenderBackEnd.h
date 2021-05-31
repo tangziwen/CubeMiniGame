@@ -22,6 +22,8 @@
 #include <set>
 #include "vk/DeviceRenderStageVK.h"
 #include <unordered_set>
+#include "DeviceRenderCommand.h"
+#include "vk/DeviceRenderCommandVK.h"
 class GLFW_BackEnd;
 #define DEMO_TEXTURE_COUNT 1
 #define CHECK_VULKAN_ERROR(a, b) {if(b){printf(a, b);abort();}}
@@ -122,7 +124,9 @@ public:
 	void endSingleTimeCommands(VkCommandBuffer commandBuffer);
 	void prepareFrame() override;
 	void endFrame(RenderPath * renderPath) override;
-    VkCommandBuffer getGeneralCommandBuffer();
+    DeviceRenderCommand* getGeneralCommandBuffer();
+	void beginGeneralCommandBuffer();
+	void endGeneralCommandBuffer();
     void clearCommandBuffer();
     std::unordered_map<Material *, DevicePipelineVK *> & getPipelinePool();
     void getStageAndAcessMaskFromLayOut(VkImageLayout layout, VkPipelineStageFlags & stage, VkAccessFlags & access);
@@ -193,7 +197,7 @@ private:
     VkQueue m_queue;
     VulkanPhysicalDevices m_physicsDevices;
     std::vector<VkCommandBuffer> m_cmdBufs;
-    std::vector<std::vector<VkCommandBuffer>> m_generalCmdBuff;
+    std::vector<std::vector<DeviceRenderCommandVK>> m_generalCmdBuff;
     VkCommandPool m_cmdBufPool;
     VkCommandPool m_generalCmdBufPool;
     std::vector<VkImage> m_images;

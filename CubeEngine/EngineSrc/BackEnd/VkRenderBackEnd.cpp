@@ -825,17 +825,24 @@ VkApplicationInfo appInfo = {};
         for(int i = 0;i <m_images.size(); i++)
         {
             m_commandBufferIndex[i] = 0;
-            m_generalCmdBuff[i].resize(size);
+        	std::vector<VkCommandBuffer> tmpVec;
+            tmpVec.resize(size);
             VkCommandBufferAllocateInfo cmdBufAllocInfo = {};
             cmdBufAllocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
             cmdBufAllocInfo.commandPool = m_generalCmdBufPool;
             cmdBufAllocInfo.level = VK_COMMAND_BUFFER_LEVEL_PRIMARY;
             cmdBufAllocInfo.commandBufferCount = size;
     
-            auto res = vkAllocateCommandBuffers(m_device, &cmdBufAllocInfo, m_generalCmdBuff[i].data());
+            auto res = vkAllocateCommandBuffers(m_device, &cmdBufAllocInfo, tmpVec.data());
             if(res){
                 abort();
             }
+
+        	for(auto cmd : tmpVec)
+        	{
+        		DeviceRenderCommandVK vk(cmd);
+        		m_generalCmdBuff[i].push_back(vk);
+        	}
         }
 
     }
@@ -1091,18 +1098,17 @@ void VKRenderBackEnd::prepareFrame()
         vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
     }
     clearCommandBuffer();
-    m_renderPath->prepare();
     m_itemBufferPool->reset();
 }
 
 void VKRenderBackEnd::endFrame(RenderPath * renderPath)
 {
     std::vector<VkCommandBuffer> commandList = {};
-    for(auto stage : renderPath->getStages())
+    /*for(auto stage : renderPath->getStages())
     {
         commandList.emplace_back( static_cast<DeviceRenderStageVK *>(stage)->getCommand());
-    }
-
+    }*/
+    commandList.push_back( static_cast<DeviceRenderCommandVK *>( renderPath->getCmd())->getVK());
 
     if (imagesInFlight[m_imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
@@ -1145,11 +1151,26 @@ void VKRenderBackEnd::endFrame(RenderPath * renderPath)
     currentFrame = (currentFrame + 1) % MAX_FRAMES_IN_FLIGHT;
 }
 
-VkCommandBuffer VKRenderBackEnd::getGeneralCommandBuffer()
+DeviceRenderCommand * VKRenderBackEnd::getGeneralCommandBuffer()
 {
-    auto cmd = m_generalCmdBuff[m_imageIndex][m_commandBufferIndex[m_imageIndex]];
+    auto cmd = &m_generalCmdBuff[m_imageIndex][m_commandBufferIndex[m_imageIndex]];
     m_commandBufferIndex[m_imageIndex] += 1;
     return cmd;
+}
+
+void VKRenderBackEnd::beginGeneralCommandBuffer()
+{
+	/*VkCommandBufferBeginInfo beginInfoDeffered = {};
+    beginInfoDeffered.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
+    beginInfoDeffered.flags = VK_COMMAND_BUFFER_USAGE_SIMULTANEOUS_USE_BIT;
+    
+    int res = vkBeginCommandBuffer(getGeneralCommandBuffer()->get(), &beginInfoDeffered);
+	CHECK_VULKAN_ERROR("vkBeginCommandBuffer error %d\n", res);*/
+}
+
+void VKRenderBackEnd::endGeneralCommandBuffer()
+{
+    //vkEndCommandBuffer(getGeneralCommandBuffer());
 }
 
 void VKRenderBackEnd::clearCommandBuffer()

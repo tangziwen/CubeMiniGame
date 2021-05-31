@@ -246,7 +246,10 @@ namespace tzw
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
         auto screenSize = Engine::shared()->winSize();
         backEnd->prepareFrame();
-        m_renderPath->prepare();
+        
+		auto cmd = backEnd->getGeneralCommandBuffer();
+        cmd->startRecord();
+		m_renderPath->prepare(cmd);
         //CPU here
         SceneCuller::shared()->collectPrimitives();
         RenderQueues * renderQueues = SceneCuller::shared()->getRenderQueues();
@@ -254,7 +257,7 @@ namespace tzw
         for (int i = 0 ; i < 3 ; i++)
         {
             auto & shadowList = renderQueues->getShadowList(i);
-            m_ShadowStage[i]->prepare();
+            m_ShadowStage[i]->prepare(cmd);
             m_ShadowStage[i]->beginRenderPass();
             for(auto & command : shadowList)
             {
@@ -277,7 +280,7 @@ namespace tzw
         }
 
         //------------deferred g - pass begin-------------
-        m_gPassStage->prepare();
+        m_gPassStage->prepare(cmd);
         m_gPassStage->beginRenderPass();
         m_gPassStage->draw(commonList);
         m_gPassStage->endRenderPass();
@@ -289,7 +292,7 @@ namespace tzw
         //------------deferred Lighting Pass begin---------------
         {
 
-            m_DeferredLightingStage->prepare();
+            m_DeferredLightingStage->prepare(cmd);
             m_DeferredLightingStage->beginRenderPass();
             auto pipeline = m_DeferredLightingStage->getSinglePipeline();
             Matrix44 lightVPList[3] = {};
@@ -324,7 +327,7 @@ namespace tzw
             m_DeferredLightingStage->drawScreenQuad();
 
             m_DeferredLightingStage->endRenderPass();
-            backEnd->blitTexture(static_cast<DeviceRenderStageVK *>(m_DeferredLightingStage)->getCommand(),
+            backEnd->blitTexture(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(),
                 static_cast<DeviceTextureVK *>(m_gPassStage->getFrameBuffer()->getDepthMap()), 
                 static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getDepthMap()),
                 m_DeferredLightingStage->getFrameBuffer()->getSize(), 
@@ -335,7 +338,7 @@ namespace tzw
         }
         //point light pass
         {
-            m_PointLightingStage->prepare();
+            m_PointLightingStage->prepare(cmd);
             m_PointLightingStage->beginRenderPass();
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
             std::vector<VkDescriptorImageInfo> imageInfoList;
@@ -381,7 +384,7 @@ namespace tzw
 
         //------------transparent pass begin ------------------
         {
-        m_transparentStage->prepare();
+        m_transparentStage->prepare(cmd);
         m_transparentStage->beginRenderPass();
         auto transList = renderQueues->getTransparentList();
         m_transparentStage->draw(transList);
@@ -395,7 +398,7 @@ namespace tzw
         //------------Sky Pass begin---------------
         
         {
-            m_skyStage->prepare();
+            m_skyStage->prepare(cmd);
             m_skyStage->beginRenderPass();
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
@@ -417,7 +420,7 @@ namespace tzw
         }
         //------------Sky Pass end---------------
         {
-            m_fogStage->prepare();
+            m_fogStage->prepare(cmd);
             m_fogStage->beginRenderPass();
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
             for(int i =0; i < gbufferTex.size(); i++)
@@ -435,7 +438,7 @@ namespace tzw
         //------------Texture To Screen Pass begin---------------
 
         int imageIdx = backEnd->getCurrSwapIndex();
-        m_textureToScreenRenderStage[imageIdx]->prepare();
+        m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
         m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
         auto lightingResultTex = m_fogStage->getFrameBuffer()->getTextureList();
         auto tex = lightingResultTex[0];
@@ -450,7 +453,7 @@ namespace tzw
 
         //------------GUI Pass begin---------------
         auto drawSize = renderQueues->getGUICommandList().size();
-        m_guiStage[imageIdx]->prepare();
+        m_guiStage[imageIdx]->prepare(cmd);
         m_guiStage[imageIdx]->beginRenderPass();
         m_guiStage[imageIdx]->draw(renderQueues->getGUICommandList());
         if(!m_imguiPipeline)
@@ -597,7 +600,7 @@ namespace tzw
                 std::vector<RenderCommand> thumbnailCommandList;
                 thumbnail->getSnapShotCommand(thumbnailCommandList);
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
-                m_thumbNailRenderStage->prepare();
+                m_thumbNailRenderStage->prepare(cmd);
                 m_thumbNailRenderStage->beginRenderPass(vec4(0.5, 0.5, 0.5, 1.0));
                 m_thumbNailRenderStage->draw(thumbnailCommandList);
 		    	m_thumbNailRenderStage->endRenderPass();
@@ -608,6 +611,8 @@ namespace tzw
                 break;
 		    }
 	    }
+		//backEnd->endGeneralCommandBuffer();
+		cmd->endRecord();
         backEnd->endFrame(m_renderPath);
 	}
 }
