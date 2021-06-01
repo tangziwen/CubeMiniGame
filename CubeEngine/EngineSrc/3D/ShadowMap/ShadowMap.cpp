@@ -13,14 +13,14 @@ namespace tzw
 		//m_program = ShaderMgr::shared()->getByPath(0, "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		//m_InstancedProgram = ShaderMgr::shared()->getByPath(static_cast<uint32_t>(ShaderOption::EnableInstanced), "Shaders/ShadowNaive_v.glsl", "Shaders/ShadowNaive_f.glsl");
 		m_camera = new Camera();
-		int shadowMapSize[] = {1024, 1024, 1024};
+		m_shadowMapSize = 2048;
 
 		if(!EngineDef::isUseVulkan)
 		{
 			for (int i =0; i < SHADOWMAP_CASCADE_NUM; i++)
 			{
 				auto shadowMap = new ShadowMapFBO();
-				shadowMap->Init(shadowMapSize[i], shadowMapSize[i]);
+				shadowMap->Init(m_shadowMapSize, m_shadowMapSize);
 				m_shadowMapList.push_back(shadowMap);
 			}
 		}
@@ -92,7 +92,7 @@ namespace tzw
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
 		m_zlistView[0] = near;
 		m_zlistView[1] = 5.0f;
-		m_zlistView[2] = 100.0f;
+		m_zlistView[2] = 35.0f;
 		m_zlistView[3] = far;
 
 		auto projection = camera->projection();
@@ -136,7 +136,7 @@ namespace tzw
 		calculateZList();
 		float fov, aspect,near,far;
 		camera->getPerspectInfo(&fov, & aspect, &near, &far);
-		int shadowMapSize[] = {512, 1024, 1024};
+
 		for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
 		{
 			AABB aabb;
@@ -171,7 +171,7 @@ namespace tzw
 			vec2 vWorldUnitsPerTexel;
             // The world units per texel are used to snap the shadow the orthographic projection
             // to texel sized increments.  This keeps the edges of the shadows from shimmering.
-            float fWorldUnitsPerTexel = fCascadeBound / (float)shadowMapSize[i];
+            float fWorldUnitsPerTexel = fCascadeBound / (float)m_shadowMapSize;
             vWorldUnitsPerTexel = vec2( fWorldUnitsPerTexel, fWorldUnitsPerTexel);
 
 

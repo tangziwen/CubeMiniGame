@@ -22,6 +22,11 @@ namespace tzw
 		void setupRead();
 		void calculateZList();
 		float getCascadeEnd(int index);
+		int getShadowMapSize() const
+		{
+			return m_shadowMapSize;
+		}
+
 	private:
 		ShaderProgram * m_program;
 		ShaderProgram * m_InstancedProgram;
@@ -30,5 +35,6 @@ namespace tzw
 		std::vector<ShadowMapFBO *> m_shadowMapList;
 		float m_zlistView[SHADOWMAP_CASCADE_NUM + 1]{};
 		float m_zlistNDC[SHADOWMAP_CASCADE_NUM + 1]{};
+		int m_shadowMapSize;
 	};
 }

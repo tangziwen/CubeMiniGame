@@ -65,7 +65,7 @@ namespace tzw
             auto shadowRenderPass = backEnd->createDeviceRenderpass_imp();
             shadowRenderPass->init(0, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
             auto shadowBuffer = backEnd->createFrameBuffer_imp();
-            shadowBuffer->init(1024, 1024, shadowRenderPass);
+            shadowBuffer->init(ShadowMap::shared()->getShadowMapSize(), ShadowMap::shared()->getShadowMapSize(), shadowRenderPass);
             m_ShadowStage[i] = backEnd->createRenderStage_imp();
             m_ShadowStage[i]->setName("Shadow Pass");
             m_ShadowStage[i]->init(shadowRenderPass, shadowBuffer);

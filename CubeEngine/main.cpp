@@ -37,7 +37,7 @@ extern "C"
 #pragma comment(linker, "/subsystem:console")
 
 #define TEST_VULKAN_ENTRY
-#define TEST_SCRIPT 1
+#define TEST_SCRIPT 0
 int main(int argc, char *argv[]) 
 {
     Engine::preSetting();
