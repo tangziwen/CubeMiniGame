@@ -30,7 +30,7 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
     setIsAccpectOcTtree(true);
 }
 
-void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{

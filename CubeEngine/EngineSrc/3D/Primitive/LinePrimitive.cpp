@@ -16,7 +16,7 @@ LinePrimitive::LinePrimitive():m_mesh(nullptr)
 	init();
 }
 
-void LinePrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh,m_material,this,stageType);
     setUpTransFormation(command.m_transInfo);

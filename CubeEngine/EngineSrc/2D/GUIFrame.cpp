@@ -57,9 +57,9 @@ GUIFrame *GUIFrame::create(vec2 size)
     return frame;
 }
 
-void GUIFrame::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void GUIFrame::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 {
-    RenderCommand command(m_mesh, m_material, this, stageType);
+    RenderCommand command(m_mesh, m_material, this, m_material->getRenderStage());
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     queues->addRenderCommand(command, requirementArg);

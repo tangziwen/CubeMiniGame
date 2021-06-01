@@ -101,7 +101,7 @@ namespace tzw {
 		{
 			for (int i = 0; i < m_node->getMeshCount(); i++)
 			{
-				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, RenderFlag::RenderStageType::COMMON);
+				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, m_node->getMaterial()->getRenderStage());
 
     			m_node->setUpCommand(command);
 				m_node->setUpTransFormation(command.m_transInfo);
@@ -116,7 +116,7 @@ namespace tzw {
 			std::vector<InstanceRendereData> theList;
 			m_node->getInstancedData(theList);
 			std::vector<RenderCommand> cmdList;
-			InstancingMgr::shared()->generateSingleCommand(RenderFlag::RenderStageType::COMMON, theList, cmdList);
+			InstancingMgr::shared()->generateSingleCommand(RenderFlag::RenderStage::COMMON, theList, cmdList);
 			for(auto & command : cmdList)
 			{
 				Material * mat = new Material();

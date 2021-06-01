@@ -56,7 +56,7 @@ void Grass::finish()
 	m_isFinish = true;
 }
 
-void Grass::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void Grass::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh, m_material,this, stageType);
 	setUpTransFormation(command.m_transInfo);

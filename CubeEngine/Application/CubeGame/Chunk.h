@@ -35,7 +35,7 @@ namespace tzw
 		bool intersectBySphere(const t_Sphere & sphere, std::vector<vec3> & hitPoint) override;
 		void logicUpdate(float delta) override;
 		bool getIsAccpectOcTtree() const override;
-		void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg) override;
+		void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg) override;
 		void load(int lodLevel);
 		void unload();
 		void deformSphere(vec3 pos, float value, float range = 1.0f);

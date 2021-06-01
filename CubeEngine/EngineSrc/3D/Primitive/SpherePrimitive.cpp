@@ -21,7 +21,7 @@ namespace tzw
 		initMesh();
 	}
 
-	void SpherePrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+	void SpherePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 	{
 		RenderCommand command(m_mesh, m_material, this, stageType);
 		setUpTransFormation(command.m_transInfo);

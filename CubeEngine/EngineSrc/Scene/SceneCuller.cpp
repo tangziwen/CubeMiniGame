@@ -16,7 +16,7 @@ namespace tzw
 		std::vector<Node *> directDrawList = currScene->getDirectDrawList();
 		for(auto node : directDrawList)
 		{
-			node->submitDrawCmd(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
+			node->submitDrawCmd(RenderFlag::RenderStage::COMMON, m_renderQueues, 0);
 			if(node->onSubmitDrawCommand)
 			{
 				node->onSubmitDrawCommand(RenderFlag::RenderStage::COMMON);
@@ -32,13 +32,15 @@ namespace tzw
 		auto &visibleList = octreeScene->getVisibleList();
 		for(auto obj : visibleList)
 		{
-			obj->submitDrawCmd(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
+			obj->submitDrawCmd(RenderFlag::RenderStage::COMMON, m_renderQueues, 0);
 			if(obj->onSubmitDrawCommand)
 			{
 				obj->onSubmitDrawCommand(RenderFlag::RenderStage::COMMON);
 			}
 		}
-		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
+		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStage::COMMON, m_renderQueues, 0);
+
+		
 		std::vector<Drawable3D *> nodeList;
 		octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing),static_cast<uint32_t>(RenderFlag::RenderStage::COMMON), nodeList);
 		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON, -1);
@@ -54,7 +56,7 @@ namespace tzw
 		{
 			InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::COMMON, instanceData, 0);
 		}
-		InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::COMMON, m_renderQueues,0,0);
+		InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::COMMON, m_renderQueues,0,0);
 
 		collectShadowCmd();
 	}
@@ -86,7 +88,7 @@ namespace tzw
 			    if(!obj->getIsVisible()) continue;
 			    if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
 			    {
-				    obj->submitDrawCmd(RenderFlag::RenderStageType::COMMON, m_renderQueues, i);
+				    obj->submitDrawCmd(RenderFlag::RenderStage::COMMON, m_renderQueues, i);
 			    }
 			    else//instancing
 			    {
@@ -98,7 +100,7 @@ namespace tzw
 		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData, i);
 	        }
             FoliageSystem::shared()->submitShadowDraw(m_renderQueues, i);
-            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStageType::SHADOW, m_renderQueues, i, i);
+            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW, m_renderQueues, i, i);
 		}
 	}
 

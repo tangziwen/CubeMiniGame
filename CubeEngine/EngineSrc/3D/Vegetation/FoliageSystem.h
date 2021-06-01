@@ -27,7 +27,7 @@ namespace tzw {
 		void insertInstanceData(InstanceData data);
 		void clear();
 		void setUpTransFormation(TransformationInfo& info);
-		void commitRenderCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg);
+		void commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg);
 		void commitShadowRenderCmd(RenderQueues * queues, int level);
 		Model * m_model;
 		Mesh * m_quadMesh;
@@ -42,7 +42,7 @@ namespace tzw {
 		VegetationInfo();
 		void init(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2);
 		void clear();
-		void commitRenderCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg);
+		void commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg);
 		void insert(InstanceData inst);
 		// VegetationType m_type;
 		VegetationBatch * m_lodBatch[3];
@@ -64,7 +64,7 @@ namespace tzw {
 	  void addTreeGroup(TreeGroup* treeGroup);
 	  void clearTreeGroup();
 	  void finish();
-	  void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg) override;
+	  void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg) override;
 	  void initMesh();
 	  void setUpTransFormation(TransformationInfo& info) override;
 	  void submitShadowDraw(RenderQueues * queues, int level);
@@ -73,7 +73,7 @@ namespace tzw {
 		Mesh* m_leafMesh{};
 		Material * m_barkMat;
 		Material * m_leafMat;
-	  void pushCommand(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg);
+	  void pushCommand(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg);
 	  bool m_isFinish;
 
 	private:

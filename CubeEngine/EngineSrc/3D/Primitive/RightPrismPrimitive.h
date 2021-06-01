@@ -8,7 +8,7 @@ class RightPrismPrimitive : public Drawable3D
 {
 public:
     RightPrismPrimitive(float width, float height, float depth, bool isNeedPreGenerateMat = true);
-	void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg) override;
+	void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg) override;
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);
 	virtual bool isHit(Ray ray);

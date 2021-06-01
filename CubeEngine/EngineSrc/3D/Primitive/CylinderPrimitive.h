@@ -8,7 +8,7 @@ class CylinderPrimitive : public Drawable3D
 {
 public:
     CylinderPrimitive(float radiusTop, float radiusBottom, float height);
-    void submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg) override;
+    void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg) override;
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	void setColor(vec4 color) override;
 	vec3 XYZ2RhoPhiZ(vec3 xyz);

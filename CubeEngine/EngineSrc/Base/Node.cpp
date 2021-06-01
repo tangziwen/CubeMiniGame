@@ -75,7 +75,7 @@ void Node::setPos(float x, float y, float z)
 	setPos(vec3(x, y, z));
 }
 
-void Node::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void Node::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueues * queues, int requirementArg)
 {
 
 }

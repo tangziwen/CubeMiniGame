@@ -55,7 +55,7 @@ namespace tzw
 		m_isNeedUpdateRenderInfo;
 	}
 
-	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
 	{
 		if(getIsVisible())
 		{
@@ -67,7 +67,7 @@ namespace tzw
 			}
 			for(auto &info : m_infoList)
 			{
-				RenderCommand command(info.mesh, info.material,this, requirementType);
+				RenderCommand command(info.mesh, info.material,this, info.material->getRenderStage());
 				setUpCommand(command);
 				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{

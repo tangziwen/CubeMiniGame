@@ -75,7 +75,7 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setRenderRect(m_contentSize);
 }
 
-void Sprite::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
 {
 	//getContentSize();
 	//getWorldPos2D();

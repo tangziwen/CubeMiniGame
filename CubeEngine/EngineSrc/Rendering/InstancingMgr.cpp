@@ -6,151 +6,132 @@
 #include <unordered_set>
 namespace tzw
 {
-	void InstancingMgr::prepare(RenderFlag::RenderStage renderType, int batchIdx)
+	void InstancingMgr::prepare(RenderFlag::RenderStage renderStage, int batchIdx)
 	{
 		bool isAllBatch = batchIdx < 0;
+		uint32_t stageID = static_cast<uint32_t> (renderStage);
+		auto innerMatMapIter =  m_map.find(stageID);
+		if(innerMatMapIter == m_map.end()) return;
 
-		for(auto & innerMap : m_map)
+		for(auto & innerMap : innerMatMapIter->second)
 		{
 			for(auto & t: innerMap.second)
 			{
-				int renderTypeID = getInstancedIndexFromRenderType(renderType);
 				if(isAllBatch)
 				{
 					for(int i = 0; i < MAX_BATCHING_COUNT; i++)
 					{
-						if(t.second[renderTypeID][i])
+						if(t.second[i])
 						{
-							t.second[renderTypeID][i]->clearInstances();
+							t.second[i]->clearInstances();
 						}
 					}
 				}
 				else
 				{
-					if(t.second[renderTypeID][batchIdx])
+					if(t.second[batchIdx])
 					{
-						t.second[renderTypeID][batchIdx]->clearInstances();
+						t.second[batchIdx]->clearInstances();
 					}
 				}
 
 			}
 		}
+
+		
 	}
 
 	void InstancingMgr::pushInstanceRenderData(RenderFlag::RenderStage stage, InstanceRendereData data, int batchID)
 	{
 		int renderTypeID = getInstancedIndexFromRenderType(stage);
-		auto mesh_to_instance = m_map.find(data.material);
+		uint32_t stageID = static_cast<uint32_t>(stage);
+		auto mat_to_mesh = m_map.find(stageID);
 		InstancedMesh * instacing = nullptr;
-		if(mesh_to_instance != m_map.end())// already have this Material
+		if(mat_to_mesh != m_map.end())//already have this stage
 		{
-			auto instancedMesh = mesh_to_instance->second.find(data.m_mesh);
-			if(instancedMesh != mesh_to_instance->second.end()) //have this material and mesh
+			auto mesh_to_instance = mat_to_mesh->second.find(data.material);
+			
+			if(mesh_to_instance != mat_to_mesh->second.end())// already have this Material
 			{
-				if(instancedMesh->second[renderTypeID][batchID])//already have this instancing
+				auto instancedMesh = mesh_to_instance->second.find(data.m_mesh);
+				if(instancedMesh != mesh_to_instance->second.end()) //have this material and mesh
 				{
-					instacing = instancedMesh->second[renderTypeID][batchID];
+					if(instancedMesh->second[batchID])//already have this instancing
+					{
+						instacing = instancedMesh->second[batchID];
+					}
+					else//no instancing.
+					{
+						instacing = new InstancedMesh(data.m_mesh);
+						instancedMesh->second[batchID] = instacing;
+						instancedMesh->second[batchID]->pushInstance(data.data);
+					}
+					
 				}
-				else//no instancing.
+				else//have this material and not find this mesh
 				{
 					instacing = new InstancedMesh(data.m_mesh);
-					instancedMesh->second[renderTypeID][batchID] = instacing;
-					instancedMesh->second[renderTypeID][batchID]->pushInstance(data.data);
-				}
-				
-			}
-			else//have this material and not find this mesh
-			{
-				instacing = new InstancedMesh(data.m_mesh);
-				for(int i =0 ; i< MAX_INSTANCE_INDEX; i++)
-				{
 					for(int j = 0; j < MAX_BATCHING_COUNT; j++)
 					{
-						mesh_to_instance->second[data.m_mesh][i][j] = nullptr;
+						mesh_to_instance->second[data.m_mesh][j] = nullptr;
 					}
+					mesh_to_instance->second[data.m_mesh][batchID] = instacing;
 				}
-				mesh_to_instance->second[data.m_mesh][renderTypeID][batchID] = instacing;
+			}
+			else //inner_mat_empty
+			{
+				innerMeshMap newMap{};
+				mat_to_mesh->second.insert(std::make_pair(data.material, newMap));// = newMap;
+				instacing = new InstancedMesh(data.m_mesh);
+
+				for(int j = 0; j < MAX_BATCHING_COUNT; j++)
+				{
+					mat_to_mesh->second[data.material][data.m_mesh][j] = nullptr;
+				}
+
+				mat_to_mesh->second[data.material][data.m_mesh][batchID] = instacing;
 			}
 		}
 		else //total empty
 		{
-			innerMeshMap newMap{};
-			m_map.insert(std::make_pair(data.material, newMap));// = newMap;
+			innerMatMap newMatMap{};
+			m_map.insert(std::make_pair(stageID, newMatMap));// = newMap;
+			innerMeshMap newMeshMap{};
+			m_map[stageID].insert(std::make_pair(data.material, newMeshMap));// = newMap;
 			instacing = new InstancedMesh(data.m_mesh);
-			for(int i =0 ; i< MAX_INSTANCE_INDEX; i++)
+
+			for(int j = 0; j < MAX_BATCHING_COUNT; j++)
 			{
-				for(int j = 0; j < MAX_BATCHING_COUNT; j++)
-				{
-					m_map[data.material][data.m_mesh][i][j] = nullptr;
-				}
+				m_map[stageID][data.material][data.m_mesh][j] = nullptr;
 			}
-			m_map[data.material][data.m_mesh][renderTypeID][batchID] = instacing;
+
+			m_map[stageID][data.material][data.m_mesh][batchID] = instacing;
 		}
+		
 		instacing->pushInstance(data.data);
 	}
 
-	void InstancingMgr::generateDrawCall(RenderFlag::RenderStageType requirementType, RenderQueues * queues,int batchID, int requirementArg)
+	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage requirementStage, RenderQueues * queues,int batchID, int requirementArg)
 	{
-		RenderFlag::RenderStage renderType = RenderFlag::RenderStage::COMMON;
-		switch(requirementType){
-		case RenderFlag::RenderStageType::SHADOW:
-			renderType = RenderFlag::RenderStage::SHADOW;
-			break;
-		case RenderFlag::RenderStageType::COMMON:
-			renderType = RenderFlag::RenderStage::COMMON;
-			break;
-		}
-		int renderTypeID = getInstancedIndexFromRenderType(renderType);
-		for(auto & innerMap : m_map)
-		{
-			for(auto & t: innerMap.second)
-			{
-				bool isNeedFullBatchCommit = batchID < 0;
-				if(isNeedFullBatchCommit)
-				{
-					for(int i = 0; i < MAX_BATCHING_COUNT; i++)
-					{
-						if(t.second[renderTypeID][i] && t.second[renderTypeID][i]->getInstanceSize()> 0)
-						{
-							t.second[renderTypeID][i]->submitInstanced();
-							RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-							command.setInstancedMesh(t.second[renderTypeID][i]);
-							command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-							setUpTransFormation(command.m_transInfo);
-							queues->addRenderCommand(command, requirementArg);
-						}
-					}
-				}
-				else
-				{
-					if(t.second[renderTypeID][batchID] &&t.second[renderTypeID][batchID]->getInstanceSize()> 0)
-					{
-						t.second[renderTypeID][batchID]->submitInstanced();
-						RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-						command.setInstancedMesh(t.second[renderTypeID][batchID]);
-						command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-						setUpTransFormation(command.m_transInfo);
-						queues->addRenderCommand(command, requirementArg);
-					
-					}
-				}
-			}
-		}
+		uint32_t renderType = static_cast<uint32_t>(requirementStage);
+		auto innerMatIter = m_map.find(renderType);
+		if(innerMatIter  == m_map.end()) return;
+		std::vector<RenderCommand> cmdList;
+		generateDrawCall(requirementStage, batchID, requirementArg, cmdList);
 
+		for(auto & cmd : cmdList)
+		{
+			queues->addRenderCommand(cmd, requirementArg);
+		}
 	}
-	void InstancingMgr::generateDrawCall(RenderFlag::RenderStageType requirementType, int batchID, int requirementArg, std::vector<RenderCommand>& cmmdList)
+
+	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage requirementStage, int batchID, int requirementArg, std::vector<RenderCommand>& cmmdList)
 	{
-		RenderFlag::RenderStage renderType;
-		switch(requirementType){
-		case RenderFlag::RenderStageType::SHADOW:
-			renderType = RenderFlag::RenderStage::SHADOW;
-			break;
-		case RenderFlag::RenderStageType::COMMON:
-			renderType = RenderFlag::RenderStage::COMMON;
-			break;
-		}
-		int clearID = getInstancedIndexFromRenderType(renderType);
-		for(auto & innerMap : m_map)
+		uint32_t renderType = static_cast<uint32_t>(requirementStage);
+		auto innerMatIter = m_map.find(renderType);
+		if(innerMatIter  == m_map.end()) return;
+
+		for(auto & innerMap : innerMatIter->second)
 		{
 			for(auto & t: innerMap.second)
 			{
@@ -159,30 +140,28 @@ namespace tzw
 				{
 					for(int i = 0; i < MAX_BATCHING_COUNT; i++)
 					{
-						if(t.second[clearID][i] &&t.second[clearID][i]->getInstanceSize()> 0)
+						if(t.second[i] && t.second[i]->getInstanceSize()> 0)
 						{
-							t.second[clearID][i]->submitInstanced();
-							RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-							command.setInstancedMesh(t.second[clearID][i]);
+							t.second[i]->submitInstanced();
+							RenderCommand command(t.first, innerMap.first, nullptr, requirementStage, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+							command.setInstancedMesh(t.second[i]);
 							command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 							setUpTransFormation(command.m_transInfo);
-							cmmdList.emplace_back(command);
+							cmmdList.push_back(command);
 						}
-
 					}
 				}
 				else
 				{
-					if(t.second[clearID][batchID] &&t.second[clearID][batchID]->getInstanceSize()> 0)
+					if(t.second[batchID] &&t.second[batchID]->getInstanceSize()> 0)
 					{
-						t.second[clearID][batchID]->submitInstanced();
-						RenderCommand command(t.first, innerMap.first, nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-						command.setInstancedMesh(t.second[clearID][batchID]);
+						t.second[batchID]->submitInstanced();
+						RenderCommand command(t.first, innerMap.first, nullptr, requirementStage, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+						command.setInstancedMesh(t.second[batchID]);
 						command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 						setUpTransFormation(command.m_transInfo);
-						cmmdList.emplace_back(command);
+						cmmdList.push_back(command);
 					}
-
 				}
 			}
 		}
@@ -197,7 +176,7 @@ namespace tzw
 		mat.setToIdentity();
 		info.m_worldMatrix = mat;
 	}
-	void InstancingMgr::generateSingleCommand(RenderFlag::RenderStageType requirementType, std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
+	void InstancingMgr::generateSingleCommand(RenderFlag::RenderStage requirementType, std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
 	{
 		std::unordered_map<Mesh *,InstancedMesh * > tmpMeshList;
 		std::unordered_map<Mesh *,Material * > tmpMatList;

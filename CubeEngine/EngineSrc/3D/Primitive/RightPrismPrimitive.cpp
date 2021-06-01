@@ -31,7 +31,7 @@ RightPrismPrimitive::RightPrismPrimitive(float width,  float height, float depth
     setIsAccpectOcTtree(true);
 }
 
-void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{

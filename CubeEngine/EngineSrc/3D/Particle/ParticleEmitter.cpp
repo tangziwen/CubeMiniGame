@@ -130,9 +130,9 @@ namespace tzw {
 	void ParticleEmitter::pushCommand()
 	{}
 
-	void ParticleEmitter::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues* queues, int requirementArg)
+	void ParticleEmitter::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues* queues, int requirementArg)
 	{
-		if (requirementType == RenderFlag::RenderStageType::SHADOW) {
+		if (requirementType == RenderFlag::RenderStage::SHADOW) {
 			return;
 		}
 		m_instancedMesh->clearInstances();

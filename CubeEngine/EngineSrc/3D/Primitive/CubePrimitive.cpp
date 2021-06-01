@@ -31,12 +31,12 @@ CubePrimitive::CubePrimitive(float width, float depth, float height, bool isNeed
     setIsAccpectOcTtree(true);
 }
 
-void CubePrimitive::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void CubePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
         RenderFlag::RenderStage stage = RenderFlag::RenderStage::COMMON;
-        if(stageType == RenderFlag::RenderStageType::SHADOW)
+        if(stageType == RenderFlag::RenderStage::SHADOW)
         {
             stage = RenderFlag::RenderStage::SHADOW;
         }

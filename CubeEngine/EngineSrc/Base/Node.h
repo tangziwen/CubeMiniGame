@@ -34,7 +34,7 @@ public:
 	vec3 getPos() const;
 	virtual void setPos(const vec3 &pos);
 	void setPos(float x, float y, float z);
-	virtual void submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg);
+	virtual void submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueues * queues, int requirementArg);
 	std::function<void (RenderFlag::RenderStage)> onSubmitDrawCommand;
 	virtual void logicUpdate(float dt);
 	vec3 getRotateE();

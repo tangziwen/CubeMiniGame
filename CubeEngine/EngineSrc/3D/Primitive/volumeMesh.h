@@ -11,7 +11,7 @@ class SimpleMesh : public Drawable3D
 {
 public:
 	SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint32_t * indices, uint32_t indicesSize);
-	void submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg) override;
+	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg) override;
 	void initBuffer();
 	virtual bool getIsAccpectOcTtree() const;
 private:

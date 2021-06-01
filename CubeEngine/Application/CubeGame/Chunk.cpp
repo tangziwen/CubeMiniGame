@@ -182,7 +182,7 @@ namespace tzw
 	/// <summary>
 	/// Submits the draw command.
 	/// </summary>
-	void Chunk::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+	void Chunk::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
 	{
 		/// just for test
 		if (m_currenState != State::LOADED)
@@ -193,7 +193,7 @@ namespace tzw
 			return;
 		if (m_mesh[0]->getIndexBuf()->bufferId() == nullptr)
 			return;
-		if (requirementType != RenderFlag::RenderStageType::COMMON)
+		if (requirementType != RenderFlag::RenderStage::COMMON)
 		{
 			return;
 		}

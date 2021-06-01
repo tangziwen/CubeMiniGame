@@ -32,19 +32,10 @@ Model *Model::create(std::string modelFilePath, bool useCache)
     return theModel;
 }
 
-void Model::submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg)
+void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
-		auto type = RenderFlag::RenderStage::COMMON;
-		switch(stageType){
-			case RenderFlag::RenderStageType::COMMON:
-				type = RenderFlag::RenderStage::COMMON;
-				break;
-			case RenderFlag::RenderStageType::SHADOW:
-				type = RenderFlag::RenderStage::SHADOW;
-				break;
-		}
 		if(m_currPose == -1)
 		{
 		    for(auto mesh : m_meshList)

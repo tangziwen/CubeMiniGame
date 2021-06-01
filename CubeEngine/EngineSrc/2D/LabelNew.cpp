@@ -112,7 +112,7 @@ void LabelNew::genMesh()
     m_mesh->finish();
 }
 
-void LabelNew::submitDrawCmd(RenderFlag::RenderStageType requirementType, RenderQueues * queues, int requirementArg)
+void LabelNew::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{

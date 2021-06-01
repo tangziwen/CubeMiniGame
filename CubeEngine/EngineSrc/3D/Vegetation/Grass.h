@@ -12,7 +12,7 @@ class Grass : public Drawable3D
 public:
 	explicit Grass(std::string filePath);
 	void finish();
-	void submitDrawCmd(RenderFlag::RenderStageType stageType, RenderQueues * queues, int requirementArg) override;
+	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg) override;
 	void initMesh();
 	void setUpTransFormation(TransformationInfo & info) override;
 	unsigned int getTypeId() override;
