@@ -29,8 +29,8 @@ public:
     void removeObj(Drawable3D * obj);
     void updateObj(Drawable3D * obj);
     bool hitByRay(const Ray &ray, vec3 &hitPoint);
-    void cullingByCamera(Camera * camera);
-	void cullingByCameraExtraFlag(Camera * camera, uint32_t flags, std::vector<Drawable3D *> & resultList);
+    void cullingByCamera(Camera * camera, uint32_t renderStageFlag);
+	void cullingByCameraExtraFlag(Camera * camera, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D *> & resultList);
     void getRange(std::vector<Drawable3D *> * list, uint32_t flags, AABB aabb);
     int getAmount();
     std::vector<Drawable3D *>& getVisibleList();
@@ -38,7 +38,7 @@ public:
 	OctreeNode * getNodeByIndex(int index);
 private:
     int getAmount_R(OctreeNode * node);
-	void cullingByCameraFlag_R(OctreeNode * node,Camera * camera, uint32_t flags, std::vector<Drawable3D *> & resultList);
+	void cullingByCameraFlag_R(OctreeNode * node,Camera * camera, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D *> & resultList);
     void cullingImp_R(OctreeNode * node, uint32_t flags, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);
     OctreeNode * m_root;
     bool addObj_R(OctreeNode * node,Drawable3D * obj);

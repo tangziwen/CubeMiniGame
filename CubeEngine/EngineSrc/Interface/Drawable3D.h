@@ -41,6 +41,14 @@ public:
 	void setColor(vec4 newColor) override;
 	uint32_t getDrawableFlag() const;
 	void setDrawableFlag(const uint32_t drawableFlag);
+	uint32_t getRenderStageFlag() const
+	{
+		return m_renderStageFlag;
+	}
+	void setRenderStageFlag(const uint32_t renderStage)
+	{
+		m_renderStageFlag = renderStage;
+	}
 	virtual void getInstancedData(std::vector<InstanceRendereData> & dataList);
 protected:
     AABB m_localAABB;
@@ -48,6 +56,7 @@ protected:
 	bool m_isHitable;
 	int m_octNodeIndex;
 	uint32_t m_drawableFlag;
+	uint32_t m_renderStageFlag;
 };
 
 class Drawable3DGroup

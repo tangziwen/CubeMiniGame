@@ -10,6 +10,7 @@ Drawable3D::Drawable3D()
 	setLocalPiority(-999);
 	m_octNodeIndex = -1;
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
+	m_renderStageFlag = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
 }
 
 Drawable3D::~Drawable3D()

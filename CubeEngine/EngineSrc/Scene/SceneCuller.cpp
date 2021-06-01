@@ -26,7 +26,7 @@ namespace tzw
 		directDrawList.clear();
 		auto cam = SceneMgr::shared()->getCurrScene()->defaultCamera();
 		OctreeScene * octreeScene =  SceneMgr::shared()->getCurrScene()->getOctreeScene();
-		SceneMgr::shared()->getCurrScene()->getOctreeScene()->cullingByCamera(cam);
+		SceneMgr::shared()->getCurrScene()->getOctreeScene()->cullingByCamera(cam, static_cast<uint32_t>(RenderFlag::RenderStage::COMMON));
 		//vegetation
 		FoliageSystem::shared()->clearTreeGroup();
 		auto &visibleList = octreeScene->getVisibleList();
@@ -40,7 +40,7 @@ namespace tzw
 		}
 		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStageType::COMMON, m_renderQueues, 0);
 		std::vector<Drawable3D *> nodeList;
-		octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing), nodeList);
+		octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing),static_cast<uint32_t>(RenderFlag::RenderStage::COMMON), nodeList);
 		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON, -1);
 		std::vector<InstanceRendereData> instanceDataList;
 		for(auto node:nodeList)

@@ -1111,7 +1111,7 @@ void Renderer::pointLightPass()
 	glCullFace(GL_FRONT);
 	std::vector<Drawable3D *> pointlightList;
 	auto currScene = g_GetCurrScene();
-	g_GetCurrScene()->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight),pointlightList);
+	g_GetCurrScene()->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight), static_cast<uint32_t>(RenderFlag::RenderStage::All),pointlightList);
 	for(auto obj : pointlightList)
 	{
 		PointLight* p = static_cast<PointLight*>(obj);

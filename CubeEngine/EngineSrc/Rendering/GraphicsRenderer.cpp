@@ -350,7 +350,7 @@ namespace tzw
             }
             std::vector<Drawable3D *> pointlightList;
             auto currScene = g_GetCurrScene();
-	        currScene->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight),pointlightList);
+	        currScene->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight), static_cast<uint32_t>(RenderFlag::RenderStage::All),pointlightList);
             for(auto obj : pointlightList)
             {
                 PointLight* p = static_cast<PointLight*>(obj);

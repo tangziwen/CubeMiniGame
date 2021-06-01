@@ -197,16 +197,16 @@ bool OctreeScene::hitByRay(const Ray &ray, vec3 &hitPoint)
     return hitByRay_R(m_root,ray,hitPoint);
 }
 
-void OctreeScene::cullingByCamera(Camera *camera)
+void OctreeScene::cullingByCamera(Camera *camera, uint32_t renderStageFlag)
 {
     //clear visible List;
     m_visibleList.clear();
-	cullingByCameraExtraFlag(camera, static_cast<uint32_t>(DrawableFlag::Drawable), m_visibleList);
+	cullingByCameraExtraFlag(camera, static_cast<uint32_t>(DrawableFlag::Drawable), renderStageFlag, m_visibleList);
 }
 
-void OctreeScene::cullingByCameraExtraFlag(Camera* camera, uint32_t flags, std::vector<Drawable3D*>& resultList)
+void OctreeScene::cullingByCameraExtraFlag(Camera* camera, uint32_t drawableFlag, uint32_t renderStageFlag, std::vector<Drawable3D*>& resultList)
 {
-	cullingByCameraFlag_R(m_root,camera, flags, resultList);
+	cullingByCameraFlag_R(m_root,camera, drawableFlag, renderStageFlag, resultList);
     //auto test = [camera](const AABB& targetAABB){return !camera->isOutOfFrustum(targetAABB);};
 	//cullingImp_R(m_root,flags, &resultList,test);
 }
@@ -254,7 +254,7 @@ static int compare(const void * a, const void * b)
     }
 }
 
-void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32_t flags, std::vector<Drawable3D*>& resultList)
+void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D*>& resultList)
 {
 	if(!camera->isOutOfFrustum(node->aabb))
     {
@@ -263,7 +263,7 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
             Drawable3D * obj = node->m_drawlist[i];
             if(!camera->isOutOfFrustum(obj->getAABB()))
             {
-            	if(obj->getDrawableFlag() & flags)
+            	if((obj->getDrawableFlag() & itemFlags) && (obj->getRenderStageFlag() & renderStageFlag))
             	{
             		resultList.push_back (obj);
             	}
@@ -272,7 +272,7 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
         if(!node->m_child[0]) return;//terminal node return directly
         for(int i=0;i<8;i++)
         {
-            cullingByCameraFlag_R(node->m_child[i],camera, flags, resultList);
+            cullingByCameraFlag_R(node->m_child[i],camera, itemFlags, renderStageFlag, resultList);
         }
     }
 }

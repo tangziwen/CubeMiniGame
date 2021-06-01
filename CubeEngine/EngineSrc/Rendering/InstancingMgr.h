@@ -2,6 +2,7 @@
 #include "Base/Singleton.h"
 #include <unordered_map>
 #include "RenderCommand.h"
+#include "RenderFlag.h"
 #include "Rendering/RenderQueues.h"
 namespace tzw
 {
