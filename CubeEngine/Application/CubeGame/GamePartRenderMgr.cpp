@@ -32,7 +32,7 @@ void GamePartRenderMgr::getRenderInfo(bool isInstancing, GamePartRenderNode * pa
 	}
 	else
 	{
-		auto model = GamePartRenderMgr::shared()->getModel(isInstancing, visualInfo);
+		auto model = getModel(isInstancing, visualInfo);
 		auto meshList = model->getMeshList();
 		for(auto mesh : meshList)
 		{
@@ -49,7 +49,8 @@ void GamePartRenderMgr::getRenderInfo(bool isInstancing, GamePartRenderNode * pa
 				{
 					material = matList[0];
 				}
-			}else
+			}
+			else
 			{
 				auto& newMatList = createModelMatList(model, part);
 				if(newMatList.m_matList.size() > 1)
@@ -239,8 +240,8 @@ std::string GamePartRenderMgr::getVisualTypeStr(VisualInfo visualInfo)
 std::string GamePartRenderMgr::getSurfaceStr(PartSurface* surface)
 {
 	char resultTmp[128];
-	sprintf(resultTmp, "%s:%d %d%d", surface->getName().c_str());
-	return std::string();
+	sprintf(resultTmp, "%s", surface->getName().c_str());
+	return std::string(resultTmp);
 }
 Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 {

@@ -39,10 +39,10 @@ class GamePartRenderNode : public Drawable3D
 		RenderMode m_renderMode;
 		VisualInfo m_visualInfo;
 		std::vector<GamePartRenderInfo>m_infoList;
-		PartSurface* m_partSurface;
+		PartSurface* m_partSurface{};
 		vec4 m_color;
 		bool m_isNeedUpdateRenderInfo;
-		Material * m_specifiedMat;
+		Material * m_specifiedMat{};
 		GamePart * m_partParent;
 		bool m_isHovering;
 		

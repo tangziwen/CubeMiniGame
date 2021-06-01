@@ -1,7 +1,7 @@
 #include "GamePartRenderNode.h"
 
 
-
+#include "GamePart.h"
 #include "3D/Model/Model.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "Rendering/Renderer.h"
@@ -16,6 +16,7 @@ namespace tzw
 		m_item = item;
 		m_partParent = partInstance;
 		m_visualInfo = m_item->m_visualInfo;
+		m_partSurface = partInstance->getPartSurface();
 		setRenderMode(RenderMode::COMMON);
 		auto size = m_visualInfo.size;
 		//auto cube = new CubePrimitive(size.x, size.y, size.z, false);
@@ -30,7 +31,7 @@ namespace tzw
 		{
 			m_infoList.clear();
 			m_isNeedUpdateRenderInfo = false;
-			GamePartRenderMgr::shared()->getRenderInfo(true, this, m_visualInfo, m_partSurface, m_infoList);
+			GamePartRenderMgr::shared()->getRenderInfo(true, this, m_visualInfo, m_partSurface,  m_infoList);
 		}
 		for(auto info : m_infoList)
 		{

@@ -30,6 +30,7 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 v_texcoord;
 layout(location = 2) out vec3 v_normal;
 layout(location = 3) out vec3 v_tangent;
+layout(location = 4) out vec3 v_color;
 void main() {
 	
 	
@@ -38,10 +39,12 @@ void main() {
 	gl_Position = t_ObjectUniform.mvp * modelMatrix * vec4(inPosition,1.0);
 	v_normal = (t_ObjectUniform.TU_mMatrix * modelMatrix* vec4(inNormal,0.0)).xyz;
 	v_tangent = (t_ObjectUniform.TU_mMatrix * modelMatrix * vec4(inTangent,0.0)).xyz;
+	v_color = a_instance_offset2.xyz;
 #else
     gl_Position = t_ObjectUniform.mvp * vec4(inPosition, 1.0);
 	v_normal = (t_ObjectUniform.TU_mMatrix * vec4(inNormal,0.0)).xyz;
 	v_tangent = (t_ObjectUniform.TU_mMatrix * vec4(inTangent,0.0)).xyz;
+	v_color = vec3(1.0, 1.0, 1.0);
 #endif
 	v_texcoord = texcoord;
 	fragColor = inColor;
