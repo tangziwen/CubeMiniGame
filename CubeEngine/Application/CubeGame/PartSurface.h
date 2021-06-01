@@ -7,7 +7,7 @@ namespace tzw
 	{
 	public:
 		PartSurface(const std::string& diffusePath, const std::string& roughnessPath, const std::string& metallicPath,
-					const std::string& normalMapPath);
+					const std::string& normalMapPath, bool isTransparent = false);
 		std::string getDiffusePath() const;
 		void setDiffusePath(const std::string& diffusePath);
 		std::string getRoughnessPath() const;
@@ -23,6 +23,7 @@ namespace tzw
 		std::string m_metallicPath;
 		std::string m_normalMapPath;
 		std::string m_name;
+		bool m_isTransparent;
 	public:
 		std::string getName() const;
 		void setName(const std::string& name);

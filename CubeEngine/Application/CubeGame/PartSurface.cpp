@@ -5,11 +5,12 @@
 namespace tzw
 {
 	PartSurface::PartSurface(const std::string& diffusePath, const std::string& roughnessPath,
-							const std::string& metallicPath, const std::string& normalMapPath):
+							const std::string& metallicPath, const std::string& normalMapPath, bool isTransparent):
 		m_diffusePath(diffusePath),
 		m_RoughnessPath(roughnessPath),
 		m_metallicPath(metallicPath),
-		m_normalMapPath(normalMapPath)
+		m_normalMapPath(normalMapPath),
+		m_isTransparent(isTransparent)
 	{
 		
 	}

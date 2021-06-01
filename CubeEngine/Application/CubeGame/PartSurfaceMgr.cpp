@@ -116,6 +116,12 @@ void PartSurfaceMgr::loadFromFile(std::string filePath)
 		"Texture/BuiltInTexture/defaultRoughnessMap.png",
 		"Texture/BuiltInTexture/defaultMetallic.png", 
 		"Texture/concrete3-Unity2-1/concrete3-Normal-ogl.png"));
+
+	addItem("Glass", new PartSurface(
+		"Texture/concrete3-Unity2-1/concrete3-albedo.png", 
+		"Texture/BuiltInTexture/defaultRoughnessMap.png",
+		"Texture/BuiltInTexture/defaultMetallic.png", 
+		"Texture/concrete3-Unity2-1/concrete3-Normal-ogl.png", true));
 	for(auto iter :m_itemList)
 	{
 		char titleTips[128];

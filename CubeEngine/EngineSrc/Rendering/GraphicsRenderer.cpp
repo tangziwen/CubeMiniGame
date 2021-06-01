@@ -128,6 +128,7 @@ namespace tzw
         auto transparentPass = backEnd->createDeviceRenderpass_imp();
         transparentPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_transparentStage = backEnd->createRenderStage_imp();
+		m_transparentStage->setName("TransparentPass");
         m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer());
 
 
