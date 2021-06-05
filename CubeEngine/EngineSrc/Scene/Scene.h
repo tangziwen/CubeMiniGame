@@ -31,7 +31,7 @@ public:
     void setDefaultCamera(Camera *defaultCamera);
 
     bool hitByRay(const Ray &ray, vec3 &hitPoint);
-    void getRange(std::vector<Drawable3D *>* list,uint32_t flag, AABB aabb);
+    void getRange(std::vector<Drawable3D *>* list,uint32_t itemFlag, uint32_t renderStageFlag, AABB aabb);
     Node * root();
     ConsolePanel *getConsolePanel() const;
     void setConsolePanel(ConsolePanel *consolePanel);

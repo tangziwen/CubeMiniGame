@@ -18,6 +18,8 @@ namespace tzw
 		m_visualInfo = m_item->m_visualInfo;
 		m_partSurface = partInstance->getPartSurface();
 		setRenderMode(RenderMode::COMMON);
+		
+		setRenderStageFlag(uint32_t(RenderFlag::RenderStage::COMMON) | uint32_t(RenderFlag::RenderStage::SHADOW));
 		auto size = m_visualInfo.size;
 		//auto cube = new CubePrimitive(size.x, size.y, size.z, false);
 		//m_localAABB = cube->getMesh()->getAabb();
@@ -149,7 +151,6 @@ namespace tzw
 			setDrawableFlag(static_cast<uint32_t>(DrawableFlag::Drawable));
 			break;
 		}
-		
 	}
 }
 

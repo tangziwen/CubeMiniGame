@@ -172,7 +172,7 @@ namespace tzw
 		AABB aabb;
 		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
 		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), aabb);
+		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
 		if (!list.empty())
 		{
 			Drawable3DGroup group(&list[0], list.size());
@@ -193,7 +193,7 @@ namespace tzw
 		AABB aabb;
 		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
 		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), aabb);
+		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
 		if (!list.empty())
 		{
 			Drawable3DGroup group(&list[0], list.size());
@@ -213,7 +213,7 @@ namespace tzw
 		AABB aabb;
 		aabb.update(vec3(pos.x - dist, pos.y - dist, pos.z - dist));
 		aabb.update(vec3(pos.x + dist, pos.y + dist, pos.z + dist));
-		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), aabb);
+		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
 		if (!list.empty())
 		{
 			for(auto i = list.begin(); i != list.end();)

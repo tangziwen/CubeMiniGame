@@ -80,7 +80,8 @@ namespace tzw
 		
 			auto aabb = ShadowMap::shared()->getPotentialRange(i);
 			std::vector<Drawable3D *> shadowNeedDrawList;
-		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), aabb);
+		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), 
+				static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW), aabb);
             
 		    std::vector<InstanceRendereData> istanceCommandList;
 		    for(auto obj:shadowNeedDrawList)

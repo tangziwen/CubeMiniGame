@@ -211,10 +211,10 @@ void OctreeScene::cullingByCameraExtraFlag(Camera* camera, uint32_t drawableFlag
 	//cullingImp_R(m_root,flags, &resultList,test);
 }
 
-void OctreeScene::getRange(std::vector<Drawable3D *> *list, uint32_t flags, AABB aabb)
+void OctreeScene::getRange(std::vector<Drawable3D *> *list, uint32_t drawableFlag, uint32_t renderStageFlag,  AABB aabb)
 {
     auto test = [&aabb](const AABB& targetAABB){vec3 noNeedVar; return aabb.isIntersect(targetAABB, noNeedVar);};
-    cullingImp_R(m_root,flags, list,test);
+    cullingImp_R(m_root,drawableFlag, renderStageFlag, list,test);
 }
 
 int OctreeScene::getAmount()
@@ -277,14 +277,14 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
     }
 }
 
-void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t flags,  std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
+void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
 {
 	if(testFunc(node->aabb))
     {
         //put self
         for(auto drawObj : node->m_drawlist)
         {
-            if(drawObj->getDrawableFlag() & flags)
+            if((drawObj->getDrawableFlag() & itemFlags) && (drawObj->getRenderStageFlag() & renderStageFlag))
             {
         		if(testFunc(drawObj->getAABB()))
 	            {
@@ -296,7 +296,7 @@ void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t flags,  std::vector<Dr
         if(!node->m_child[0]) return;
         for(int i =0;i<8;i++)
         {
-            cullingImp_R(node->m_child[i], flags, list, testFunc);
+            cullingImp_R(node->m_child[i], itemFlags, renderStageFlag, list, testFunc);
         }
     }
 }

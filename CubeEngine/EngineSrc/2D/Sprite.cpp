@@ -79,7 +79,7 @@ void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues
 {
 	//getContentSize();
 	//getWorldPos2D();
-    RenderCommand command(m_mesh,m_material,this, requirementType);
+    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     queues->addRenderCommand(command, requirementArg);
