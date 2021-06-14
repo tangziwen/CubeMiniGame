@@ -7,7 +7,6 @@
 #define NOMINMAX
 #include "dirent.h"
 #include "Base/TranslationMgr.h"
-#include "Rendering/Renderer.h"
 
 
 namespace tzw
@@ -48,11 +47,11 @@ namespace tzw
 			}
 		}
 		m_isFullScreen = Engine::shared()->isIsFullScreen();
-		m_isOpenSSAO = Renderer::shared()->isSsaoEnable();
-		m_isOpenBloom = Renderer::shared()->isBloomEnable();
-		m_isOpenAA = Renderer::shared()->isAaEnable();
-		m_isOpenFog = Renderer::shared()->isFogEnable();
-		m_isOpenShadow = Renderer::shared()->isShadowEnable();
+		//m_isOpenSSAO = Renderer::shared()->isSsaoEnable();
+		//m_isOpenBloom = Renderer::shared()->isBloomEnable();
+		//m_isOpenAA = Renderer::shared()->isAaEnable();
+		//m_isOpenFog = Renderer::shared()->isFogEnable();
+		//m_isOpenShadow = Renderer::shared()->isShadowEnable();
 		
 	}
 	
@@ -116,44 +115,27 @@ namespace tzw
 		if(ImGui::RadioButton(TRC(u8"开##SSAO"), m_isOpenSSAO)) m_isOpenSSAO = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##SSAO"), !m_isOpenSSAO)) m_isOpenSSAO = false;
-		if(m_isOpenSSAO != Renderer::shared()->isSsaoEnable())
-		{
-			ImGui::SameLine();
-			ImGui::TextUnformatted("*");
-		}
+
 
 		ImGui::TextUnformatted(TRC(u8"Bloom"));
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"开##BLOOM"), m_isOpenBloom)) m_isOpenBloom = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##BLOOM"), !m_isOpenBloom)) m_isOpenBloom = false;
-		if(m_isOpenBloom != Renderer::shared()->isBloomEnable())
-		{
-			ImGui::SameLine();
-			ImGui::TextUnformatted("*");
-		}
+
 
 		ImGui::TextUnformatted(TRC(u8"阴影:"));
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"开##SHADOW"), m_isOpenShadow)) m_isOpenShadow = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##SHADOW"), !m_isOpenShadow)) m_isOpenShadow = false;
-		if(m_isOpenShadow != Renderer::shared()->isShadowEnable())
-		{
-			ImGui::SameLine();
-			ImGui::TextUnformatted("*");
-		}
-
+	
 		ImGui::TextUnformatted(TRC(u8"抗锯齿:"));
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"开##AA"), m_isOpenAA)) m_isOpenAA = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##AA"), !m_isOpenAA)) m_isOpenAA = false;
-		if(m_isOpenAA != Renderer::shared()->isAaEnable())
-		{
-			ImGui::SameLine();
-			ImGui::TextUnformatted("*");
-		}
+
 
 
 		ImGui::TextUnformatted(TRC(u8"雾效:"));
@@ -161,11 +143,7 @@ namespace tzw
 		if(ImGui::RadioButton(TRC(u8"开##FOG"), m_isOpenFog)) m_isOpenFog = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##FOG"), !m_isOpenFog)) m_isOpenFog = false;
-		if(m_isOpenFog != Renderer::shared()->isFogEnable())
-		{
-			ImGui::SameLine();
-			ImGui::TextUnformatted("*");
-		}
+
 
 		if(ImGui::Button(TRC(u8"保存设置")))
 		{
@@ -181,11 +159,7 @@ namespace tzw
 				auto h = atof(ptrH);
 				Engine::shared()->changeScreenSetting(w, h, m_isFullScreen);
 			}
-			Renderer::shared()->setSsaoEnable(m_isOpenSSAO);
-			Renderer::shared()->setBloomEnable(m_isOpenBloom);
-			Renderer::shared()->setAaEnable(m_isOpenAA);
-			Renderer::shared()->setFogEnable(m_isOpenFog);
-			Renderer::shared()->setShadowEnable(m_isOpenShadow);
+
 
 			TranslationMgr::shared()->load(items_lang[m_langItemCurrent]);
 			Engine::shared()->saveConfig();

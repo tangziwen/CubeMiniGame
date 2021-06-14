@@ -63,6 +63,11 @@ namespace tzw
 		TextureMgr::shared()->getByPath(m_normalMapPath, true);
 	}
 
+	bool PartSurface::getIsTransparent() const
+	{
+		return m_isTransparent;
+	}
+
 	std::string PartSurface::getName() const
 	{
 		return m_name;

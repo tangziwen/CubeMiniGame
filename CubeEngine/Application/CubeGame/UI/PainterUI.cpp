@@ -4,6 +4,7 @@
 
 #include "CubeGame/GameItemMgr.h"
 #include "CubeGame/PartSurfaceMgr.h"
+#include "Rendering/GraphicsRenderer.h"
 namespace fs  = std::filesystem;
 namespace tzw
 {
@@ -162,7 +163,7 @@ namespace tzw
 						part->initFromItem(newItem);
 
 						newItem->m_thumbNail = new ThumbNail(part->getNode());
-						Renderer::shared()->updateThumbNail(newItem->m_thumbNail);
+						GraphicsRenderer::shared()->updateThumbNail(newItem->m_thumbNail);
 						GameItemMgr::shared()->pushItem(newItem);
 					}
 					ImGui::TreePop();

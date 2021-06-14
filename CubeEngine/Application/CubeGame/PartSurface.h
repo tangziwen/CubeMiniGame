@@ -17,6 +17,7 @@ namespace tzw
 		std::string getNormalMapPath() const;
 		void setNormalMapPath(const std::string& normalMapPath);
 		void cache();
+		bool getIsTransparent() const;
 	private:
 		std::string m_diffusePath;
 		std::string m_RoughnessPath;

@@ -4,7 +4,6 @@
 #include "GamePart.h"
 #include "3D/Model/Model.h"
 #include "3D/Primitive/CubePrimitive.h"
-#include "Rendering/Renderer.h"
 
 namespace tzw
 {
@@ -57,7 +56,7 @@ namespace tzw
 		m_isNeedUpdateRenderInfo;
 	}
 
-	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 	{
 		if(getIsVisible())
 		{

@@ -8,7 +8,6 @@
 #include "Island.h"
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
-#include "Rendering/Renderer.h"
 #include "BuildingSystem.h"
 #include "3D/Model/Model.h"
 #include "Base/TranslationMgr.h"

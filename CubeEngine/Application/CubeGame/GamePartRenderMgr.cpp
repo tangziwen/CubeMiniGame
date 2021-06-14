@@ -167,27 +167,41 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 
 			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
 			mat->setTex("NormalMap", normalMapTexture);
+			mat->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 		}
 		else
 		{
-			mat = Material::createFromTemplate("ModelPBR");
-			mat->setIsEnableInstanced(true);
-			mat->reload();
 
-			auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
-			mat->setTex("DiffuseMap", texture);
+			if(!surface->getIsTransparent())
+			{
+				mat = Material::createFromTemplate("ModelPBR");
+				mat->setIsEnableInstanced(true);
+				mat->reload();
+				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
+				mat->setTex("DiffuseMap", texture);
 
-			auto metallicTexture =  TextureMgr::shared()->getByPath(surface->getMetallicPath());
-			mat->setTex("MetallicMap", metallicTexture);
+				auto metallicTexture =  TextureMgr::shared()->getByPath(surface->getMetallicPath());
+				mat->setTex("MetallicMap", metallicTexture);
 
-			auto roughnessTexture =  TextureMgr::shared()->getByPath(surface->getRoughnessPath());
-			mat->setTex("RoughnessMap", roughnessTexture);
+				auto roughnessTexture =  TextureMgr::shared()->getByPath(surface->getRoughnessPath());
+				mat->setTex("RoughnessMap", roughnessTexture);
 
-			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
-			mat->setTex("NormalMap", normalMapTexture);
+				auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
+				mat->setTex("NormalMap", normalMapTexture);
 
-			newMatList.m_matList.emplace_back(mat);
-		
+				newMatList.m_matList.emplace_back(mat);
+			}
+			else
+			{
+				mat = Material::createFromTemplate("ModelTransparent");
+				mat->setIsEnableInstanced(true);
+				mat->reload();
+				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
+				mat->setTex("SpriteTexture", texture);
+
+				newMatList.m_matList.emplace_back(mat);
+				mat->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+			}
 		}//default;
 
 		processMatList(part, &newMatList);

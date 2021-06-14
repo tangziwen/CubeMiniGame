@@ -18,7 +18,7 @@ class GamePartRenderNode : public Drawable3D
 		GamePartRenderNode(GameItem * item, GamePart * partInstance);
 		void getInstancedData(std::vector<InstanceRendereData> & commandList) override;
 		void setColor(vec4 newColor) override;
-		void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg) override;
+		void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg) override;
 		VisualInfo * getVisualInfo();
 		PartSurface* getPartSurface() const;
 		void setPartSurface(PartSurface* const partSurface);

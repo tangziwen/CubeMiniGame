@@ -10,9 +10,10 @@
 #include <utility>
 #include <rapidjson/rapidjson.h>
 #include <rapidjson/document.h>
+
+#include "Rendering/GraphicsRenderer.h"
 #include "Utility/log/Log.h"
 #include "Utility/file/Tfile.h"
-#include "Rendering/Renderer.h"
 
 namespace tzw
 {
@@ -167,6 +168,10 @@ void GameItemMgr::loadFromFile(std::string filePath)
 							}
 						}
 					}
+					if(visualData.HasMember("IsTransparent"))
+					{
+						gameItem->m_visualInfo.isTransparent = visualData["IsTransparent"].GetBool();
+					}
 					gameItem->m_visualInfo.size = visualSize;
 				}
 
@@ -200,7 +205,8 @@ void GameItemMgr::loadFromFile(std::string filePath)
 				part->initFromItem(gameItem);
 
 				gameItem->m_thumbNail = new ThumbNail(part->getNode());
-				Renderer::shared()->updateThumbNail(gameItem->m_thumbNail);
+				GraphicsRenderer::shared()->updateThumbNail(gameItem->m_thumbNail);
+				//Renderer::shared()->updateThumbNail(gameItem->m_thumbNail);
 			} else
 			{
 				gameItem->m_thumbNail = nullptr;

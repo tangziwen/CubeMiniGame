@@ -182,7 +182,7 @@ namespace tzw
 	/// <summary>
 	/// Submits the draw command.
 	/// </summary>
-	void Chunk::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+	void Chunk::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 	{
 		/// just for test
 		if (m_currenState != State::LOADED)

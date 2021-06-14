@@ -281,7 +281,6 @@ def drawHud():
 			item = getItemFromSpecifiedSlotIndex(k);
 			if item.getThumbNailTextureId() != 0 :
 				iconTexture = item.getThumbNailTextureId()
-			
 			ImGui.Image(iconTexture, ImGui.ImVec2(itemSize, itemSize));
 			if GameState.m_currIndex == k :
 				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
