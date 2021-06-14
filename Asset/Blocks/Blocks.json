@@ -1,0 +1,557 @@
+{
+	"Parts" :
+	[
+		{
+			"name" : "Painter",
+			"desc":"喷涂器",
+			"description":"可以用来给方块和地形喷绘颜色，右键打开颜色面板",
+			"Type":"SPECIAL_PART_PAINTER",
+			"Icon":"UITexture/Icon/Painter.png"
+		},
+		{
+			"name" : "Digger",
+			"desc":"挖掘机",
+			"description":"用来挖掘地形",
+			"Type":"SPECIAL_PART_DIGGER",
+			"Icon":"UITexture/Icon/Digger.png"
+		},
+		{
+		"name" : "Lift",
+		"desc":"升降机",
+		"description":"用来放置载具，载具放在升降机上时物理不会开启",
+		"Type":"GAME_PART_LIFT",
+		"Icon":"UITexture/Icon/Lift.png",
+		"CollisionSize":0.5,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.125],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.125, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[-0.125, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.125, 0.0],"normal":[0.0, 1.0, 0.0],"up":[0.0, 0.0, 1.0]},
+				{"pos" :[0.0, -0.125, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, 1.0]}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[0.25, 0.25,0.25]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.25, 0.25, 0.25]
+		}
+		},
+		{
+		"name" : "Seat",
+		"desc":"座椅",
+		"description":"用来驾驶载具",
+		"Type":"GAME_PART_CONTROL",
+		"CollisionSize":0.5,
+		"attach":[
+				{"pos" :[0.0, -0.15, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/ControlSeat2/ControlSeat2.tzw",
+			"DiffusePath":"Blocks/ControlSeat2/controlseat2_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.5, 0.5, 0.5],
+			"Mass":30
+		}
+		},
+		{
+		"name" : "Button",
+		"desc":"按钮",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BUTTON",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.028],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Button/Button.tzw",
+			"DiffusePath":"Blocks/Button/button_diffuse.png",
+			"ExtraMeshList":["Blocks/Button/ButtonPressed.tzw"]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.3, 0.05, 0.18]
+		}
+		},
+		{
+			"name" : "Switch",
+			"desc":"开关",
+			"description":"暂无描述",
+			"Type":"GAME_PART_SWITCH",
+			"CollisionSize":0.25,
+			"attach":[
+					{"pos" :[0.0, 0.0, -0.028],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+					],
+			"Visual":
+			{
+				"Type":"Mesh",
+				"size":[1.0, 1.0, 1.0],
+				"FilePath":"Blocks/Switch/SwitchOFF.tzw",
+				"DiffusePath":"Blocks/Switch/SwitchOff_diffuse.png",
+				"ExtraMeshList":["Blocks/Switch/SwitchOn.tzw"]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[0.3, 0.05, 0.18]
+			}
+		},
+		{
+		"name" : "Block-S",
+		"desc":"方块小",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+				{"pos" :[0.0, 0.0, -0.125],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0], "locale":"front"},
+				{"pos" :[0.125, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+				{"pos" :[-0.125, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+				{"pos" :[0.0, 0.125, 0.0],"normal":[0.0, 1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"up"},
+				{"pos" :[0.0, -0.125, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[0.25, 0.25,0.25]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.25, 0.25, 0.25],
+			"Mass":1.0
+		}
+		},
+		{
+		"name" : "Block",
+		"desc":"方块",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.5,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0], "locale":"front"},
+				{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+				{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+				{"pos" :[0.0, 0.25, 0.0],"normal":[0.0, 1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"up"},
+				{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[0.5, 0.5,0.5]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[0.5, 0.5, 0.5],
+			"Mass":1.0
+		}
+		},
+		{
+		"name" : "Block-L",
+		"desc":"方块大",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":1.0,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+				{"pos" :[0.0, 0.0, -0.5],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0], "locale":"front"},
+				{"pos" :[0.5, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+				{"pos" :[-0.5, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+				{"pos" :[0.0, 0.5, 0.0],"normal":[0.0, 1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"up"},
+				{"pos" :[0.0, -0.5, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+				],
+		"Visual":
+		{
+			"Type":"CubePrimitive",
+			"size":[1.0, 1.0,1.0]
+		},
+		"Physics":
+		{
+			"Type": "BoxShape",
+			"size":[1.0, 1.0, 1.0],
+			"Mass":1.0
+		}
+		},
+		{
+			"name" : "RightPrism-S",
+			"desc":"直棱柱小",
+			"description":"暂无描述",
+			"Type":"GAME_PART_BLOCK",
+			"CollisionSize":0.25,
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+					{"pos" :[0.125, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+					{"pos" :[-0.125, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+					{"pos" :[0.0, -0.125, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+					],
+			"Visual":
+			{
+				"Type":"RightPrismPrimitive",
+				"size":[0.25, 0.25, 0.25]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[0.25, 0.25, 0.25]
+			}
+		},
+		{
+			"name" : "RightPrism",
+			"desc":"直棱柱",
+			"description":"暂无描述",
+			"Type":"GAME_PART_BLOCK",
+			"CollisionSize":0.5,
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+					{"pos" :[0.25, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+					{"pos" :[-0.25, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+					{"pos" :[0.0, -0.25, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+					],
+			"Visual":
+			{
+				"Type":"RightPrismPrimitive",
+				"size":[0.5, 0.5, 0.5]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[0.5, 0.5, 0.5]
+			}
+		},
+		{
+			"name" : "RightPrism-L",
+			"desc":"直棱柱大",
+			"description":"暂无描述",
+			"Type":"GAME_PART_BLOCK",
+			"CollisionSize":1.0,
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0], "locale":"back"},
+					{"pos" :[0.5, 0.0, 0.0],"normal":[1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"right"},
+					{"pos" :[-0.5, 0.0, 0.0],"normal":[-1.0, 0.0, 0.0],"up":[0.0, 1.0, 0.0], "locale":"left"},
+					{"pos" :[0.0, -0.5, 0.0],"normal":[0.0, -1.0, 0.0],"up":[0.0, 0.0, -1.0], "locale":"down"}
+					],
+			"Visual":
+			{
+				"Type":"RightPrismPrimitive",
+				"size":[1.0, 1.0, 1.0]
+			},
+			"Physics":
+			{
+				"Type": "BoxShape",
+				"size":[1.0, 1.0, 1.0]
+			}
+		},
+		{
+		"name" : "Wheel-Bike",
+		"desc":"单车轮",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.075],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.075],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Wheel/Wheel.tzw",
+			"DiffusePath":"Blocks/Wheel/wheel_dif.png",
+			"RoughnessPath":"Blocks/Wheel/Wheel_Roughness.png",
+			"MetallicPath":"Blocks/Wheel/Wheel_Metallic.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.6, 0.6, 0.2],
+			"Mass":32
+		}
+		},
+		{
+		"name" : "WheelOffRoad-Medium",
+		"desc":"越野轮-中型",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.272234],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/WheelMedium/wheel_medium.tzw",
+			"DiffusePath":"Blocks/WheelMedium/wheel_medium_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.542, 0.542, 0.272234],
+			"Mass":68
+		}
+		},
+		{
+		"name" : "WheelOffRoad-Small",
+		"desc":"越野轮-小",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/WheelSmall/wheel_small.tzw",
+			"DiffusePath":"Blocks/WheelSmall/wheel_small_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.36, 0.36, 0.2],
+			"Mass":30
+		}
+		},
+		{
+		"name" : "WheelOffRoad-Normal",
+		"desc":"越野轮-普通",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/WheelNormal/wheel_normal.tzw",
+			"DiffusePath":"Blocks/WheelNormal/wheel_normal_diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.48, 0.48, 0.2],
+			"Mass":32
+		}
+		},
+		{
+		"name" : "Thruster",
+		"desc":"推进器",
+		"description":"暂无描述",
+		"Type":"GAME_PART_THRUSTER",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.05],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Thruster/Thruster.tzw",
+			"DiffusePath":"Blocks/Thruster/Thruster_DefaultMaterial_BaseColor.png",
+			"RoughnessPath":"Blocks/Thruster/Thruster_DefaultMaterial_Roughness.png",
+			"MetallicPath":"Blocks/Thruster/Thruster_DefaultMaterial_Metallic.png",
+			"NormalMapPath":"Blocks/Thruster/Thruster_DefaultMaterial_Normal.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.1, 0.25,0.5]
+		}
+		},
+		{
+		"name" : "Cannon",
+		"desc":"炮筒",
+		"description":"暂无描述",
+		"Type":"GAME_PART_CANNON",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Cannon/Cannon.tzw",
+			"DiffusePath":"Blocks/Cannon/cannon_DefaultMaterial_BaseColor.png",
+			"RoughnessPath":"Blocks/Cannon/cannon_DefaultMaterial_Roughness.png",
+			"MetallicPath":"Blocks/Cannon/cannon_DefaultMaterial_Metallic.png",
+			"NormalMapPath":"Blocks/Cannon/cannon_DefaultMaterial_Normal.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.1, 0.1, 0.8]
+		}
+		},
+		{
+		"name" : "Bearing",
+		"desc":"轴承",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BEARING",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.025],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.025],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Bearing/Bearing.tzw",
+			"DiffusePath":"Blocks/Bearing/diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.15, 0.15, 0.1]
+		}
+		},
+		{
+		"name" : "LightPad",
+		"desc":"灯板",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.025],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.025],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/LightPad/LightPad.tzw",
+			"DiffusePath":"Blocks/Bearing/diffuse.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.15, 0.15, 0.1]
+		}
+		},
+		{
+		"name" : "Pipe-S",
+		"desc":"管子小",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.125],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.125],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.125, 0.125, 0.25]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.125, 0.125, 0.25]
+		}
+		},
+		{
+		"name" : "Pipe",
+		"desc":"管子",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":0.5,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.25, 0.25, 0.5]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.25, 0.25, 0.5]
+		}
+		},
+		{
+		"name" : "Pipe-L",
+		"desc":"管子大",
+		"description":"暂无描述",
+		"Type":"GAME_PART_BLOCK",
+		"CollisionSize":1.0,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.5],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.5],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.5, 0.5, 1.0]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.5, 0.5, 1.0]
+		}
+		},
+		{
+			"name" : "LargePipe",
+			"desc":"粗管",
+			"description":"暂无描述",
+			"Type":"GAME_PART_BLOCK",
+			"CollisionSize":1.0,
+			"attach":[
+					{"pos" :[0.0, 0.0, 0.25],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+					{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+					],
+			"Visual":
+			{
+				"Type":"CylinderPrimitive",
+				"size":[0.1, 0.1, 0.5]
+			},
+			"Physics":
+			{
+				"Type": "CylinderShape",
+				"size":[0.1, 0.1, 0.5]
+			}
+		},
+		{
+		"name" : "Spring",
+		"desc":"弹簧",
+		"description":"暂无描述",
+		"Type":"GAME_PART_SPRING",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, 0.2],"normal":[0.0, 0.0, 1.0],"up":[0.0, 1.0, 0.0]},
+				{"pos" :[0.0, 0.0, -0.2],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"CylinderPrimitive",
+			"size":[0.1, 0.1,0.4]
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.1, 0.1, 0.4]
+		}
+		}
+	]
+}
