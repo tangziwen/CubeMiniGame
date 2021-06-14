@@ -1,6 +1,5 @@
 #include "ParticleUpdateSizeModule.h"
 #include "EngineSrc/Technique/MaterialPool.h"
-#include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "Utility/math/TbaseMath.h"
 #include "Particle.h"

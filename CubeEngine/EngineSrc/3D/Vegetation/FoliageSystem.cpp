@@ -1,5 +1,4 @@
 #include "EngineSrc/Technique/MaterialPool.h"
-#include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "EngineSrc/3D/Vegetation/FoliageSystem.h"
 
@@ -190,7 +189,7 @@ void VegetationBatch::setUpTransFormation(TransformationInfo& info)
 	info.m_worldMatrix = mat;
 }
 
-void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	switch (m_type)
 	{
@@ -243,7 +242,7 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 	}
 }
 
-void VegetationBatch::commitShadowRenderCmd(RenderQueues * queues, int level)
+void VegetationBatch::commitShadowRenderCmd(RenderQueue * queues, int level)
 {
 	switch (m_type)
 	{
@@ -308,7 +307,7 @@ void VegetationInfo::clear()
 	}
 }
 
-void VegetationInfo::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void VegetationInfo::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	for(int i = 0; i < 3; i++)
 	{
@@ -369,7 +368,7 @@ bool VegetationInfo::anyHas()
 	return false;
 }
 
-void VegetationInfo::submitShadowDraw(RenderQueues * queues, int level)
+void VegetationInfo::submitShadowDraw(RenderQueue * queues, int level)
 {
 	if(m_lodBatch[0] && m_lodBatch[0]->m_totalCount) m_lodBatch[0]->commitShadowRenderCmd(queues, level);
 	if(m_lodBatch[1] && m_lodBatch[1]->m_totalCount) m_lodBatch[1]->commitShadowRenderCmd(queues, level);
@@ -441,7 +440,7 @@ void FoliageSystem::setUpTransFormation(TransformationInfo &info)
 	info.m_worldMatrix = mat;
 }
 
-void FoliageSystem::submitShadowDraw(RenderQueues * queues, int level)
+void FoliageSystem::submitShadowDraw(RenderQueue * queues, int level)
 {
 	for(auto info :m_infoList)
 	{
@@ -458,7 +457,7 @@ unsigned int FoliageSystem::getTypeId()
 	return 2333;
 }
 
-void FoliageSystem::pushCommand(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+void FoliageSystem::pushCommand(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
 	//regroup
 	for(const auto& iter : m_tree)
@@ -503,7 +502,7 @@ void FoliageSystem::finish()
 	m_isFinish = true;
 }
 
-void FoliageSystem::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+void FoliageSystem::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh, m_material,this, requirementType);
 	setUpTransFormation(command.m_transInfo);

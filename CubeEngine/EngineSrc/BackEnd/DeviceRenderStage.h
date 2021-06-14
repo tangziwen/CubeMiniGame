@@ -10,20 +10,21 @@
 #include "DeviceBuffer.h"
 #include "DeviceDescriptor.h"
 #include "DeviceRenderCommand.h"
+#include "Rendering/RenderQueues.h"
 namespace tzw
 {
 class DeviceRenderStage
 {
 public:
-	DeviceRenderStage() = default;
-	void init(DeviceRenderPass * renderPass, DeviceFrameBuffer * frameBuffer);
+	DeviceRenderStage();
+	void init(DeviceRenderPass * renderPass, DeviceFrameBuffer * frameBuffer, uint32_t renderStage = (uint32_t)RenderFlag::RenderStage::All);
 	DeviceRenderPass * getRenderPass();
 	DeviceFrameBuffer * getFrameBuffer();
 	void setRenderPass(DeviceRenderPass * renderPass);
 	void setFrameBuffer(DeviceFrameBuffer * frameBuffer);
 	virtual void prepare(DeviceRenderCommand* renderCommand);
 	virtual void finish() = 0;
-	virtual void draw(std::vector<RenderCommand> & cmdList) = 0;
+	virtual void draw(RenderQueue * renderQueue) = 0;
 	virtual void drawScreenQuad() = 0;
 	virtual void drawSphere() = 0;
 	void createSinglePipeline(Material * material);
@@ -40,6 +41,7 @@ public:
 	virtual void drawElement(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) = 0;
 	std::string & getName(){m_name;}
 	void setName(std::string newName){m_name = newName;}
+	RenderQueue * getSelfRenderQueue();
 protected:
 	void initFullScreenQuad();
 	void initSphere();
@@ -54,6 +56,8 @@ protected:
 	static Mesh * m_sphere;
 	std::string m_name;
 	DeviceRenderCommand * m_deviceRenderCommand;
+	RenderQueue * m_selfRenderQueue;
+	uint32_t m_renderStage;
 };
 };
 

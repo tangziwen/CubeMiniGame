@@ -3,6 +3,7 @@
 #include "../Texture/TextureMgr.h"
 
 #include "BackEnd/vk/DeviceFrameBufferVK.h"
+#include "Rendering/RenderQueues.h"
 namespace tzw
 {
 	class FrameBuffer;
@@ -12,7 +13,7 @@ namespace tzw
 		ThumbNail(Drawable3D * node);
 		void initFrameBufferVK(DeviceRenderPassVK * renderPass);
 		void doSnapShot();
-		void getSnapShotCommand(std::vector<RenderCommand>&commandList);
+		void getSnapShotCommand(RenderQueue * renderquue);
 		Drawable3D* getNode() const;
 		void setNode(Drawable3D* const node);
 		bool isIsDone() const;

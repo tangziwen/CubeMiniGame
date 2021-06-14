@@ -20,9 +20,13 @@ namespace tzw
         //CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
 	}
 
-	void DeviceRenderStageVK::draw(std::vector<RenderCommand>& cmdList)
+	void DeviceRenderStageVK::draw(RenderQueue * renderQueue)
 	{
-        for(RenderCommand & a : cmdList)
+		if(renderQueue)
+		{
+			renderQueue->dispatch(m_selfRenderQueue, m_renderStage);
+		}
+        for(RenderCommand & a : m_selfRenderQueue->getList())
         {
 
             //if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;

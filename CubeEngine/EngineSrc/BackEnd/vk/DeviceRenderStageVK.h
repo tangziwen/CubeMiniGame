@@ -18,7 +18,7 @@ class DeviceRenderStageVK : public DeviceRenderStage
 public:
 	DeviceRenderStageVK();
 	void finish();
-	void draw(std::vector<RenderCommand> & cmdList);
+	void draw(RenderQueue * renderQueue) override;
 	void drawScreenQuad();
 	void drawSphere();
 	void bindSinglePipelineDescriptor() override;

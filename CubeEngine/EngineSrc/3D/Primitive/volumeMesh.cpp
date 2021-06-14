@@ -1,5 +1,4 @@
 #include "volumeMesh.h"
-#include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 
 namespace tzw {
@@ -18,7 +17,7 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 	setIsAccpectOcTtree(false);
 }
 
-void SimpleMesh::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void SimpleMesh::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh,m_material,this, stageType);
     setUpTransFormation(command.m_transInfo);

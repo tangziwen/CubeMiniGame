@@ -29,7 +29,7 @@ class InstancingMgr :public Singleton<InstancingMgr>
 	public:
 		void prepare(RenderFlag::RenderStage renderType, int batchNumber);
 		void pushInstanceRenderData(RenderFlag::RenderStage renderType, InstanceRendereData data, int batchID);
-		void generateDrawCall(RenderFlag::RenderStage requirementType, RenderQueues * queues, int batchID, int requirementArg);
+		void generateDrawCall(RenderFlag::RenderStage requirementType, RenderQueue * queues, int batchID, int requirementArg);
 		void generateDrawCall(RenderFlag::RenderStage requirementType,  int batchID, int requirementArg, std::vector<RenderCommand>& cmmdList);
 		void setUpTransFormation(TransformationInfo& info);
 		void generateSingleCommand(RenderFlag::RenderStage requirementType, std::vector<InstanceRendereData> data, std::vector<RenderCommand> & cmdList);

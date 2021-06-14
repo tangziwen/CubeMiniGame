@@ -1,6 +1,5 @@
 #include "GUIFrame.h"
 #include "../Scene/SceneMgr.h"
-#include "../Rendering/Renderer.h"
 #include "GUIStyleMgr.h"
 #include "../Technique/MaterialPool.h"
 namespace tzw {
@@ -57,7 +56,7 @@ GUIFrame *GUIFrame::create(vec2 size)
     return frame;
 }
 
-void GUIFrame::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void GUIFrame::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
     RenderCommand command(m_mesh, m_material, this, m_material->getRenderStage());
     setUpTransFormation(command.m_transInfo);

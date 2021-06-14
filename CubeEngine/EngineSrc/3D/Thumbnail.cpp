@@ -1,6 +1,5 @@
 #include "Thumbnail.h"
 #include "Rendering/FrameBuffer.h"
-#include "Rendering/Renderer.h"
 #include "BackEnd/RenderBackEnd.h"
 #include "BackEnd/vk/DeviceTextureVK.h"
 #define GLEW_STATIC
@@ -87,7 +86,7 @@ namespace tzw {
 
 	}
 
-	void ThumbNail::getSnapShotCommand(std::vector<RenderCommand>& commandList)
+	void ThumbNail::getSnapShotCommand(RenderQueue * renderquue)
 	{
 		auto m = Matrix44();
 		m.setToIdentity();
@@ -108,7 +107,7 @@ namespace tzw {
 
 				command.m_transInfo.m_projectMatrix = p;
 				command.m_transInfo.m_viewMatrix = node.getViewMatrix();
-				commandList.emplace_back(command);
+				renderquue->addRenderCommand(command, 0);
 			}
 		}
 		else if(m_node->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Instancing))
@@ -131,7 +130,7 @@ namespace tzw {
 				command.setMat(mat);
 				command.m_transInfo.m_projectMatrix = p;
 				command.m_transInfo.m_viewMatrix = node.getViewMatrix();
-				commandList.emplace_back(command);
+				renderquue->addRenderCommand(command, 0);
 			}
 		}
 	}

@@ -32,7 +32,7 @@ Model *Model::create(std::string modelFilePath, bool useCache)
     return theModel;
 }
 
-void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{

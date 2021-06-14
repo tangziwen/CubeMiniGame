@@ -16,7 +16,6 @@
 
 #include "EngineSrc/Rendering/RenderBuffer.h"
 #include "EngineSrc/Rendering/RenderCommand.h"
-#include "EngineSrc/Rendering/Renderer.h"
 
 #include "EngineSrc/Scene/Scene.h"
 #include "EngineSrc/Scene/SceneMgr.h"

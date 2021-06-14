@@ -10,7 +10,6 @@
 #define BORDER_TOP 3
 
 #include "../Scene/SceneMgr.h"
-#include "../Rendering/Renderer.h"
 namespace tzw {
 
 GUIWindow *GUIWindow::create(std::string titleText, vec4 color, vec2 size)

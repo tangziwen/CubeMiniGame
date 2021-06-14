@@ -1,5 +1,6 @@
 #pragma once
 #include "../Engine/EngineDef.h"
+#include "3D/Thumbnail.h"
 #include "vulkan/vulkan.h"
 #include "BackEnd/DeviceRenderStage.h"
 namespace tzw
@@ -16,6 +17,8 @@ namespace tzw
 		GraphicsRenderer();
 		void init();
 		void render();
+		void updateThumbNail(ThumbNail * thumb);
+		std::vector<ThumbNail *> & getThumbNailList();
 	private:
 		DeviceRenderStage * m_ShadowStage[3];
 		DeviceRenderStage * m_gPassStage;
@@ -38,6 +41,8 @@ namespace tzw
 		Material * m_shadowInstancedMat;
 		RenderPath * m_renderPath;
 		DeviceTextureVK * m_imguiTextureFont;
+		std::vector<ThumbNail *> m_thumbNailList;
+		void handleThumbNails();
 	};
 
 

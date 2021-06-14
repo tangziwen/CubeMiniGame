@@ -18,7 +18,7 @@ public:
 		Y_FIXED,
 	};
 	ParticleEmitter(int maxSpawn);
-	void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg) override;
+	void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg) override;
 	void setUpTransFormation(TransformationInfo & info) override;
 	unsigned int getTypeId() override;
 	void addInitModule(ParticleEmitterModule* module);

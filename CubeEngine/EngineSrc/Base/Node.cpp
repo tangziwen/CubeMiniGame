@@ -6,7 +6,6 @@
 #include "../Scene/Scene.h"
 #include <algorithm>
 #include "../Event/EventMgr.h"
-#include "../Rendering/Renderer.h"
 #include "Utility/log/Log.h"
 #include "../Scene/OctreeScene.h"
 namespace tzw {
@@ -75,7 +74,7 @@ void Node::setPos(float x, float y, float z)
 	setPos(vec3(x, y, z));
 }
 
-void Node::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueues * queues, int requirementArg)
+void Node::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg)
 {
 
 }
@@ -232,7 +231,7 @@ void Node::addChild(Node *node, bool isNeedSort)
 	EventMgr::shared()->notifyListenerChange();
 	if (isNeedSort)
 	{
-		Renderer::shared()->notifySortGui();
+		//Renderer::shared()->notifySortGui();
 	}
 }
 
@@ -368,7 +367,7 @@ void Node::setGlobalPiority(unsigned int globalPiority)
 {
     m_globalPiority = globalPiority;
 	EventMgr::shared()->notifyListenerChange();
-	Renderer::shared()->notifySortGui();
+	//Renderer::shared()->notifySortGui();
 }
 
 size_t Node::getChildrenAmount()
@@ -507,7 +506,7 @@ void Node::setLocalPiority(int zOrder)
         m_parent->sortChildren();
     }
 	EventMgr::shared()->notifyListenerChange();
-	Renderer::shared()->notifySortGui();
+	//Renderer::shared()->notifySortGui();
 }
 
 static bool NodeSort(const Node *a,const Node *b)

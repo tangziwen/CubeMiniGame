@@ -5,6 +5,7 @@
 #include <unordered_map>
 #include "Rendering/RenderCommand.h"
 #include "Rendering/RenderQueues.h"
+#include <array>
 namespace tzw {
 	class SceneCuller:public Singleton<SceneCuller>
 	{
@@ -12,9 +13,11 @@ namespace tzw {
 		SceneCuller();
 		void collectPrimitives();
 		void clearCommands();
-		RenderQueues * getRenderQueues();
+		RenderQueue * getRenderQueues();
+		RenderQueue * getCSMQueues(int layer);
 	private:
-		RenderQueues * m_renderQueues;
+		RenderQueue * m_renderQueues;
+		RenderQueue*  m_CSMQueue[3];
 		void collectShadowCmd();
 	
 	};

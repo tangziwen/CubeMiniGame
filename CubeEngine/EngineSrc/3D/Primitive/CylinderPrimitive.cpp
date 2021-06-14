@@ -1,7 +1,6 @@
 #include "CylinderPrimitive.h"
 #include <algorithm>
 #include "../../Rendering/RenderCommand.h"
-#include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 #include "EngineSrc/Technique/MaterialPool.h"
@@ -30,7 +29,7 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
     setIsAccpectOcTtree(true);
 }
 
-void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void CylinderPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{

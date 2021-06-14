@@ -8,10 +8,15 @@ namespace tzw
 {
 	SceneCuller::SceneCuller()
 	{
-		m_renderQueues = new RenderQueues();
+		m_renderQueues = new RenderQueue();
+		for(int i = 0; i < 3; i++)
+		{
+			m_CSMQueue[i] = new RenderQueue();
+		}
 	}
 	void SceneCuller::collectPrimitives()
 	{
+		clearCommands();
 		auto currScene = SceneMgr::shared()->getCurrScene();
 		std::vector<Node *> directDrawList = currScene->getDirectDrawList();
 		for(auto node : directDrawList)
@@ -64,17 +69,26 @@ namespace tzw
 	void SceneCuller::clearCommands()
 	{
 		m_renderQueues->clearCommands();
+		for(int i = 0; i < 3; i++)
+		{
+			m_CSMQueue[i]->clearCommands();
+		}
 	}
 
-	RenderQueues* SceneCuller::getRenderQueues()
+	RenderQueue* SceneCuller::getRenderQueues()
 	{
 		return m_renderQueues;
+	}
+
+	RenderQueue* SceneCuller::getCSMQueues(int layer)
+	{
+		return m_CSMQueue[layer];
 	}
 
 	void SceneCuller::collectShadowCmd()
 	{
 		ShadowMap::shared()->calculateProjectionMatrix();
-		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW, -1);
+		//InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW, -1);
 		for(int i = 0; i < 3; i ++)
 		{
 		
@@ -82,26 +96,30 @@ namespace tzw
 			std::vector<Drawable3D *> shadowNeedDrawList;
 		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), 
 				static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW), aabb);
-            
+
+			
+			
 		    std::vector<InstanceRendereData> istanceCommandList;
 		    for(auto obj:shadowNeedDrawList)
 		    {
 			    if(!obj->getIsVisible()) continue;
 			    if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
 			    {
-				    obj->submitDrawCmd(RenderFlag::RenderStage::COMMON, m_renderQueues, i);
+				    obj->submitDrawCmd(RenderFlag::RenderStage::COMMON, m_CSMQueue[i], i);
 			    }
 			    else//instancing
 			    {
 				    obj->getInstancedData(istanceCommandList);   
 			    }
 		    }
+			FoliageSystem::shared()->submitShadowDraw(m_CSMQueue[i], i);
+			
 		    for(auto& instanceData : istanceCommandList)
 	        {
 		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData, i);
 	        }
-            FoliageSystem::shared()->submitShadowDraw(m_renderQueues, i);
-            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW, m_renderQueues, i, i);
+            
+            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW, m_CSMQueue[i], i, i);
 		}
 	}
 

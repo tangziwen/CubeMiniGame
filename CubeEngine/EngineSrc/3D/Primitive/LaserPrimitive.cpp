@@ -1,5 +1,4 @@
 #include "LaserPrimitive.h"
-#include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "LinePrimitive.h"
 
@@ -51,7 +50,7 @@ LaserPrimitive::LaserPrimitive(vec3 begin, vec3 end, float width, bool isOriginI
 	Node::setRotateQ(q);
 }
 
-void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh,m_material, this, stageType);
     setUpTransFormation(command.m_transInfo);

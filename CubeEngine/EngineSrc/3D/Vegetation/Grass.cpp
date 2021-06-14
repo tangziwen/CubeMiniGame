@@ -1,6 +1,5 @@
 #include "Grass.h"
 #include "EngineSrc/Technique/MaterialPool.h"
-#include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "EngineSrc/3D/Vegetation/Grass.h"
 namespace tzw {
@@ -56,7 +55,7 @@ void Grass::finish()
 	m_isFinish = true;
 }
 
-void Grass::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void Grass::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh, m_material,this, stageType);
 	setUpTransFormation(command.m_transInfo);

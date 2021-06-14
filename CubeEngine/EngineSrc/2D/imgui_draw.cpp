@@ -30,6 +30,8 @@ Index of this file:
 #ifndef IMGUI_DEFINE_MATH_OPERATORS
 #define IMGUI_DEFINE_MATH_OPERATORS
 #endif
+#include <cstdint>
+
 #include "imgui_internal.h"
 
 #include <stdio.h>      // vsnprintf, sscanf, printf

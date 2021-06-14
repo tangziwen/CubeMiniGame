@@ -11,7 +11,6 @@
 #include "3D/ShadowMap/ShadowMap.h"
 #include "2D/GUISystem.h"
 #include "BackEnd/vk/DeviceBufferVK.h"
-#include "Rendering/Renderer.h"
 #include "BackEnd/VkRenderBackEnd.h"
 #include <EngineSrc\Scene\SceneMgr.h>
 #include "BackEnd/vk/DeviceTextureVK.h"
@@ -53,7 +52,7 @@ namespace tzw
         
         m_gPassStage = backEnd->createRenderStage_imp();
         m_gPassStage->setName("GBufferPass");
-        m_gPassStage->init(gBufferRenderPass, gBuffer);
+        m_gPassStage->init(gBufferRenderPass, gBuffer, (uint32_t)RenderFlag::RenderStage::COMMON);
 
         m_shadowMat = new Material();
         m_shadowMat->loadFromTemplate("Shadow");
@@ -129,7 +128,7 @@ namespace tzw
         transparentPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_transparentStage = backEnd->createRenderStage_imp();
 		m_transparentStage->setName("TransparentPass");
-        m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer());
+        m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::TRANSPARENT);
 
 
         Material * matTextureToScreen = new Material();
@@ -153,7 +152,7 @@ namespace tzw
             pass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
-            stage->init(pass, frameBuffer);
+            stage->init(pass, frameBuffer, (uint32_t)RenderFlag::RenderStage::GUI);
             stage->setName("GUI Pass");
             m_guiStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
         }
@@ -241,9 +240,10 @@ namespace tzw
         io.Fonts->TexID = m_imguiTextureFont;
         //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
     }
-
+#pragma optimize("", off)
 	void GraphicsRenderer::render()
 	{
+		handleThumbNails();
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
         auto screenSize = Engine::shared()->winSize();
         backEnd->prepareFrame();
@@ -253,14 +253,15 @@ namespace tzw
 		m_renderPath->prepare(cmd);
         //CPU here
         SceneCuller::shared()->collectPrimitives();
-        RenderQueues * renderQueues = SceneCuller::shared()->getRenderQueues();
-        auto & commonList = renderQueues->getCommonList();
+        RenderQueue * renderQueues = SceneCuller::shared()->getRenderQueues();
+		
+        auto & commonList = renderQueues->getList();
         for (int i = 0 ; i < 3 ; i++)
         {
-            auto & shadowList = renderQueues->getShadowList(i);
+            auto shadowList = SceneCuller::shared()->getCSMQueues(i);
             m_ShadowStage[i]->prepare(cmd);
             m_ShadowStage[i]->beginRenderPass();
-            for(auto & command : shadowList)
+            for(auto & command : shadowList->getList())
             {
                 if(command.batchType() != RenderCommand::RenderBatchType::Single){
                 
@@ -283,7 +284,7 @@ namespace tzw
         //------------deferred g - pass begin-------------
         m_gPassStage->prepare(cmd);
         m_gPassStage->beginRenderPass();
-        m_gPassStage->draw(commonList);
+        m_gPassStage->draw(renderQueues);
         m_gPassStage->endRenderPass();
         m_gPassStage->finish();
         m_renderPath->addRenderStage(m_gPassStage);
@@ -387,8 +388,7 @@ namespace tzw
         {
         m_transparentStage->prepare(cmd);
         m_transparentStage->beginRenderPass();
-        auto transList = renderQueues->getTransparentList();
-        m_transparentStage->draw(transList);
+        m_transparentStage->draw(renderQueues);
         m_transparentStage->endRenderPass();
         m_transparentStage->finish();
         m_renderPath->addRenderStage(m_transparentStage);
@@ -453,10 +453,9 @@ namespace tzw
 		
 
         //------------GUI Pass begin---------------
-        auto drawSize = renderQueues->getGUICommandList().size();
         m_guiStage[imageIdx]->prepare(cmd);
         m_guiStage[imageIdx]->beginRenderPass();
-        m_guiStage[imageIdx]->draw(renderQueues->getGUICommandList());
+        m_guiStage[imageIdx]->draw(renderQueues);
         if(!m_imguiPipeline)
         {
             initImguiStuff();
@@ -586,10 +585,10 @@ namespace tzw
         m_renderPath->addRenderStage(m_guiStage[imageIdx]);
         //------------GUI Pass end---------------
 
-        renderQueues->clearCommands();
+        //renderQueues->clearCommands();
 
         bool isAnythumbnail = false;
-        auto & thumbNailList = Renderer::shared()->getThumbNailList();
+        auto & thumbNailList = getThumbNailList();
 	    for(auto thumbnail : thumbNailList)
 	    {
 		    if(!thumbnail->isIsDone())
@@ -599,11 +598,11 @@ namespace tzw
                 }
                 
                 std::vector<RenderCommand> thumbnailCommandList;
-                thumbnail->getSnapShotCommand(thumbnailCommandList);
+                thumbnail->getSnapShotCommand(m_thumbNailRenderStage->getSelfRenderQueue());
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
                 m_thumbNailRenderStage->prepare(cmd);
                 m_thumbNailRenderStage->beginRenderPass(vec4(0.5, 0.5, 0.5, 1.0));
-                m_thumbNailRenderStage->draw(thumbnailCommandList);
+                m_thumbNailRenderStage->draw(nullptr);
 		    	m_thumbNailRenderStage->endRenderPass();
                 m_thumbNailRenderStage->finish();
                 isAnythumbnail = true;
@@ -615,5 +614,28 @@ namespace tzw
 		//backEnd->endGeneralCommandBuffer();
 		cmd->endRecord();
         backEnd->endFrame(m_renderPath);
+	}
+
+	void GraphicsRenderer::updateThumbNail(ThumbNail* thumb)
+	{
+		m_thumbNailList.push_back(thumb);
+	}
+
+	std::vector<ThumbNail*>& GraphicsRenderer::getThumbNailList()
+	{
+		return m_thumbNailList;
+	}
+
+	void GraphicsRenderer::handleThumbNails()
+	{
+		for(auto thumbnail : m_thumbNailList)
+		{
+			if(!thumbnail->isIsDone())
+			{
+				thumbnail->doSnapShot();
+				//thumbnail->setIsDone(true);
+			}
+		}
+		//m_thumbNailList.clear();
 	}
 }

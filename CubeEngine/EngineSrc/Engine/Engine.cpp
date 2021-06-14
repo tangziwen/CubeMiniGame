@@ -1,7 +1,6 @@
 #include "Engine.h"
 #include "../Scene/SceneMgr.h"
 #include "../Texture/TextureMgr.h"
-#include "../Rendering/Renderer.h"
 #include "../Game/ConsolePanel.h"
 #include "../BackEnd/RenderBackEndBase.h"
 #include "../Event/EventMgr.h"
@@ -123,15 +122,6 @@ void Engine::loadConfig()
 	m_windowHeight = height;
 	auto enable3D = doc["3DEnable"].GetBool();
 	auto enable2D = doc["2DEnable"].GetBool();
-	Renderer::shared()->setEnable3DRender(enable3D);
-	Renderer::shared()->setEnableGUIRender(enable2D);
-	Renderer::shared()->setSkyEnable(doc["SkyEnable"].GetBool());
-	Renderer::shared()->setFogEnable(doc["FogEnable"].GetBool());
-	Renderer::shared()->setSsaoEnable(doc["SSAOEnable"].GetBool());
-	Renderer::shared()->setBloomEnable(doc["BloomEnable"].GetBool());
-	Renderer::shared()->setHdrEnable(doc["HDREnable"].GetBool());
-	Renderer::shared()->setAaEnable(doc["AAEnable"].GetBool());
-	Renderer::shared()->setShadowEnable(doc["ShadowEnable"].GetBool());
 	RenderBackEnd::shared()->setIsCheckGL(doc["IsGraphicsDebugCheck"].GetBool());
 
 	m_isFullScreen = doc["IsFullScreen"].GetBool();
@@ -156,7 +146,7 @@ void Engine::saveConfig()
 	doc["width"].SetInt(m_windowWidth);
 	doc["height"].SetInt(m_windowHeight);
 
-
+	/*
 	doc["3DEnable"].SetBool(Renderer::shared()->enable3DRender());
 	doc["2DEnable"].SetBool(Renderer::shared()->enableGUIRender());
 
@@ -167,6 +157,7 @@ void Engine::saveConfig()
 	doc["HDREnable"].SetBool(Renderer::shared()->isHdrEnable());
 	doc["AAEnable"].SetBool(Renderer::shared()->isAaEnable());
 	doc["ShadowEnable"].SetBool(Renderer::shared()->isShadowEnable());
+	*/
 	doc["IsGraphicsDebugCheck"].SetBool(RenderBackEnd::shared()->isCheckGL());
 	
 	doc["IsFullScreen"].SetBool(m_isFullScreen);
@@ -189,7 +180,7 @@ void Engine::changeScreenSetting(int w, int h, bool isFullScreen)
 	m_windowHeight = h;
 	m_windowWidth = w;
 	m_isFullScreen = isFullScreen;
-	Renderer::shared()->onChangeScreenSize(w, h);
+	//Renderer::shared()->onChangeScreenSize(w, h);
 }
 
 RenderBackEndBase* Engine::getRenderBackEnd()
@@ -276,16 +267,7 @@ void Engine::update(float delta)
     m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
     int applyRenderBefore = clock();
 	resetVerticesIndicesCount();
-	if(m_type == RenderDeviceType::OpenGl_Device)
-	{
-		DebugSystem::shared()->doRender(delta);
-		Renderer::shared()->renderAll();
-	
-	}else
-	{
-		GraphicsRenderer::shared()->render();
-		//VKRenderBackEnd::shared()->RenderScene();
-	}
+	GraphicsRenderer::shared()->render();
 	AudioSystem::shared()->update();
     m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
 }
@@ -299,11 +281,6 @@ void Engine::onStart()
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();
-	if(m_type == RenderDeviceType::OpenGl_Device){
-		
-		Renderer::shared()->init();
-	}
-
 	AudioSystem::shared()->init();
 	uuid4_init();
 	//WorkerThreadSystem::shared()->init();
@@ -328,7 +305,7 @@ void Engine::initSingletons()
 {
     SceneMgr::shared()->init();
     TextureMgr::shared();
-    Renderer::shared();
+    //Renderer::shared();
     EffectMgr::shared();
 	ScriptPyMgr::shared()->init();
 }

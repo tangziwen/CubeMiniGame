@@ -1,7 +1,6 @@
 #include "RightPrismPrimitive.h"
 #include <algorithm>
 #include "../../Rendering/RenderCommand.h"
-#include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 #include "EngineSrc/Technique/MaterialPool.h"
@@ -31,7 +30,7 @@ RightPrismPrimitive::RightPrismPrimitive(float width,  float height, float depth
     setIsAccpectOcTtree(true);
 }
 
-void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{

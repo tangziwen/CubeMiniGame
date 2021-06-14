@@ -1,5 +1,4 @@
 #include "LinePrimitive.h"
-#include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 namespace tzw {
 
@@ -16,7 +15,7 @@ LinePrimitive::LinePrimitive():m_mesh(nullptr)
 	init();
 }
 
-void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
 	RenderCommand command(m_mesh,m_material,this,stageType);
     setUpTransFormation(command.m_transInfo);

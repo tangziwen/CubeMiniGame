@@ -1,6 +1,5 @@
 #include "SpherePrimitive.h"
 #include "../../Rendering/RenderCommand.h"
-#include "../../Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 namespace tzw
@@ -21,7 +20,7 @@ namespace tzw
 		initMesh();
 	}
 
-	void SpherePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg)
+	void SpherePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 	{
 		RenderCommand command(m_mesh, m_material, this, stageType);
 		setUpTransFormation(command.m_transInfo);

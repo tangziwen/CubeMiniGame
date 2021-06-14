@@ -1,6 +1,5 @@
 #include "ParticleEmitterModule.h"
 #include "EngineSrc/Technique/MaterialPool.h"
-#include "EngineSrc/Rendering/Renderer.h"
 #include "../../Scene/SceneMgr.h"
 
 namespace tzw {

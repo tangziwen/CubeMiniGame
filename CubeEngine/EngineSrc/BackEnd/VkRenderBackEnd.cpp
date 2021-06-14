@@ -18,7 +18,6 @@
 #include "vk/DeviceShaderVK.h"
 #include "vk/DeviceBufferVK.h"
 #include "vk/DeviceRenderPassVK.h"
-#include "Rendering/Renderer.h"
 #include "Technique/Material.h"
 
 

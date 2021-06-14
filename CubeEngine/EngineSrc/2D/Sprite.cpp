@@ -1,5 +1,4 @@
 #include "Sprite.h"
-#include "../Rendering/Renderer.h"
 #include "../Scene/SceneMgr.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
 namespace tzw {
@@ -75,7 +74,7 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setRenderRect(m_contentSize);
 }
 
-void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
 	//getContentSize();
 	//getWorldPos2D();

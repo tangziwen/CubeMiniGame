@@ -130,7 +130,7 @@ namespace tzw {
 	void ParticleEmitter::pushCommand()
 	{}
 
-	void ParticleEmitter::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues* queues, int requirementArg)
+	void ParticleEmitter::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue* queues, int requirementArg)
 	{
 		if (requirementType == RenderFlag::RenderStage::SHADOW) {
 			return;

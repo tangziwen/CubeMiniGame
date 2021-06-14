@@ -12,7 +12,7 @@ public:
     Model();
     void initWithFile(std::string modelFilePath, bool useCache = false);
     static Model * create(std::string modelFilePath, bool useCache = false);
-	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueues * queues, int requirementArg) override;
+	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg) override;
 	Mesh * getMesh(int id) override;
 	Mesh * getMesh() override;
 	Material * getMat(int index);

@@ -12,11 +12,18 @@ namespace tzw
     DeviceBuffer * DeviceRenderStage::m_quadVertexBuffer = nullptr;
     DeviceBuffer * DeviceRenderStage::m_quadIndexBuffer = nullptr;
     Mesh * DeviceRenderStage::m_sphere = nullptr;
-	void DeviceRenderStage::init(DeviceRenderPass* renderPass, DeviceFrameBuffer* frameBuffer)
+
+	DeviceRenderStage::DeviceRenderStage()
+	{
+		m_selfRenderQueue = new RenderQueue();
+	}
+
+	void DeviceRenderStage::init(DeviceRenderPass* renderPass, DeviceFrameBuffer* frameBuffer, uint32_t renderStage)
 	{
         m_renderPass = renderPass;
         m_frameBuffer = frameBuffer;
         m_singlePipeline = nullptr;
+		m_renderStage = renderStage;
 	}
 	DeviceRenderPass* DeviceRenderStage::getRenderPass()
 	{
@@ -60,6 +67,11 @@ namespace tzw
     {
         return m_singlePipeline;
     }
+
+	RenderQueue* DeviceRenderStage::getSelfRenderQueue()
+	{
+		return  m_selfRenderQueue;
+	}
 
     void DeviceRenderStage::initFullScreenQuad()
     {

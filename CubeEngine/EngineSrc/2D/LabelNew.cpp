@@ -1,5 +1,4 @@
 #include "LabelNew.h"
-#include "../Rendering/Renderer.h"
 #include "../Scene/SceneMgr.h"
 #include "../Font/FontMgr.h"
 #include "Utility/misc/Tmisc.h"
@@ -112,13 +111,13 @@ void LabelNew::genMesh()
     m_mesh->finish();
 }
 
-void LabelNew::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueues * queues, int requirementArg)
+void LabelNew::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
 	    //m_material->setVar("color", getUniformColor());
 	    m_material->setTex("SpriteTexture",m_atlas->texture());
-	    RenderCommand command(m_mesh,m_material,this, requirementType);
+	    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
 	    setUpTransFormation(command.m_transInfo);
 	    command.setZorder(m_globalPiority);
 	    queues->addRenderCommand(command, requirementArg);
