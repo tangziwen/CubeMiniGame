@@ -1,0 +1,17 @@
+{
+	"shaders":{
+		"vs" : "Shaders/GeometryPass_v.glsl",
+		"fs" : "Shaders/SpriteTexture_f.glsl"
+	},
+	"name" : "ModelTransparent",
+	"RenderStage": "TRANSPARENT",
+	"BlendEnable" : true,
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["SpriteTexture", 0]
+		]
+	}
+}
