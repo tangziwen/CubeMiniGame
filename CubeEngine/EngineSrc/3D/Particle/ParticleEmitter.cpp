@@ -1,6 +1,5 @@
 #include "ParticleEmitter.h"
 #include "../../Scene/SceneMgr.h"
-#include "EngineSrc/Rendering/Renderer.h"
 #include "EngineSrc/Technique/MaterialPool.h"
 #include "Particle.h"
 #include "Utility/math/TbaseMath.h"

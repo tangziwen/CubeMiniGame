@@ -59,9 +59,9 @@ namespace tzw
 		}
 		for(auto& instanceData : instanceDataList)
 		{
-			InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::COMMON, instanceData, 0);
+			m_renderQueues->addInstancedData(instanceData);
 		}
-		InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::COMMON, m_renderQueues,0,0);
+		m_renderQueues->generateInstancedDrawCall();
 
 		collectShadowCmd();
 	}
@@ -88,7 +88,6 @@ namespace tzw
 	void SceneCuller::collectShadowCmd()
 	{
 		ShadowMap::shared()->calculateProjectionMatrix();
-		//InstancingMgr::shared()->prepare(RenderFlag::RenderStage::SHADOW, -1);
 		for(int i = 0; i < 3; i ++)
 		{
 		
@@ -114,12 +113,12 @@ namespace tzw
 		    }
 			FoliageSystem::shared()->submitShadowDraw(m_CSMQueue[i], i);
 			
+			
 		    for(auto& instanceData : istanceCommandList)
 	        {
-		        InstancingMgr::shared()->pushInstanceRenderData(RenderFlag::RenderStage::SHADOW, instanceData, i);
+				m_CSMQueue[i]->addInstancedData(instanceData);
 	        }
-            
-            InstancingMgr::shared()->generateDrawCall(RenderFlag::RenderStage::SHADOW, m_CSMQueue[i], i, i);
+            m_CSMQueue[i]->generateInstancedDrawCall();
 		}
 	}
 
