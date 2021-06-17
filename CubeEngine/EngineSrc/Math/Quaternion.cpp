@@ -25,17 +25,17 @@ void Quaternion::fromRotationMatrix(Matrix44 *mat)
 	auto xaxis = mat->right().normalized();
 	auto yaxis = mat->up().normalized();
 	auto zaxis = (mat->forward() * -1).normalized();
-    float trace = xaxis.x + yaxis.y + zaxis.z + 1.0f;
+    float trace = xaxis.x + yaxis.y + zaxis.z;
 
-    if (trace > 0.000001)
+    if (trace > 0.0f)
     {
-        float s = 0.5f / std::sqrt(trace);
+        float s = 0.5f / std::sqrt(trace + 1.0f);
         w = 0.25f / s;
         x = (yaxis.z - zaxis.y) * s;
         y = (zaxis.x - xaxis.z) * s;
         z = (xaxis.y - yaxis.x) * s;
     }
-    else
+    else //对角是负的
     {
         // Note: since xaxis, yaxis, and zaxis are normalized, 
         // we will never divide by zero in the code below.
