@@ -22,7 +22,7 @@ namespace tzw {
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
 	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
-	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back)
+	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),m_primitiveTopology(PrimitiveTopology::TriangleList)
 {
 }
 
@@ -867,6 +867,16 @@ std::unordered_map<std::string, TechniqueVar>& Material::getVarList()
 {
 	// TODO: 在此处插入 return 语句
 	return m_varList;
+}
+
+PrimitiveTopology Material::getPrimitiveTopology()
+{
+	return m_primitiveTopology;
+}
+
+void Material::setPrimitiveTopology(PrimitiveTopology newTopology)
+{
+	m_primitiveTopology = newTopology;
 }
 
 RenderFlag::RenderStage Material::getRenderStage() const

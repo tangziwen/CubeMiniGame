@@ -12,9 +12,9 @@ class DebugSystem : public Singleton<DebugSystem>
 public:
 	DebugSystem();
 	void handleDraw(float dt);
-	void doRender(float dt);
+	void doRender(RenderQueue * queue, float dt);
 	void drawBoundingBox(AABB aabb, Matrix44 mat);
-	void drawPointCross(vec3 pointInWorld);
+	void drawPointCross(vec3 pointInWorld, vec3 color);
 	void drawLine(vec3 A, vec3 B);
 private:
 	LinePrimitive * m_line;

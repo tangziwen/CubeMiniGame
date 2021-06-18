@@ -40,14 +40,16 @@ namespace tzw
 		for (auto i = 0; i < getAttachmentCount(); i++) 
 		{
 			auto attach = getAttachment(i);
+			if(attach->m_connected) continue;
 			vec3 hitInWorld;
 			if(attach->isHit(ray, hitInWorld)) 
 			{
 				count += 1;
-				if (hitInWorld.distance(ray.origin()) < minDist) 
+				float hitNewDist = hitInWorld.distance(ray.origin());
+				if (hitNewDist < minDist) 
 				{
 					resultIndx = i;
-					minDist = hitInWorld.distance(ray.origin());
+					minDist = hitNewDist;
 					theMinimalPos = hitInWorld;
 				}
 	        }
@@ -202,70 +204,19 @@ namespace tzw
 		}
 		return adjustToOtherIslandByAlterSelfIsland(attach, selfAttah, degree);
 	}
-
+#pragma optimize("", off)
 	Matrix44 GamePart::adjustToOtherIslandByAlterSelfIsland(Attachment* attach, Attachment* selfAttah, float degree)
 	{
-		vec3 attachPosition,  Normal,  up;
-		attach->getAttachmentInfoWorld(attachPosition, Normal, up);
-		vec3 InvertedNormal = Normal * -1;
-		attachPosition = attachPosition + Normal * 0.01f;
+		Matrix44 attachOuterWorldMat = attach->getAttachmentMatOutterWorld();
 
-		vec3 right = vec3::CrossProduct(InvertedNormal, up);
-		Matrix44 attachOuterWorldMat;
-		auto data = attachOuterWorldMat.data();
-		data[0] = right.x;
-		data[1] = right.y;
-		data[2] = right.z;
-		data[3] = 0.0;
-
-		data[4] = up.x;
-		data[5] = up.y;
-		data[6] = up.z;
-		data[7] = 0.0;
-
-		data[8] = -InvertedNormal.x;
-		data[9] = -InvertedNormal.y;
-		data[10] = -InvertedNormal.z;
-		data[11] = 0.0;
-
-		data[12] = attachPosition.x;
-		data[13] = attachPosition.y;
-		data[14] = attachPosition.z;
-		data[15] = 1.0;
-
-
-		Matrix44 selfAttachmentTrans;
-		data = selfAttachmentTrans.data();
-		auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
-		vec3 normalForAttach = selfAttah->m_normal;
-		data[0] = rightForAttach.x;
-		data[1] = rightForAttach.y;
-		data[2] = rightForAttach.z;
-		data[3] = 0.0;
-
-		data[4] = selfAttah->m_up.x;
-		data[5] = selfAttah->m_up.y;
-		data[6] = selfAttah->m_up.z;
-		data[7] = 0.0;
-
-		//use invert
-		data[8] = -normalForAttach.x;
-		data[9] = -normalForAttach.y;
-		data[10] = -normalForAttach.z;
-		data[11] = 0.0;
-
-		data[12] = selfAttah->m_pos.x;
-		data[13] = selfAttah->m_pos.y;
-		data[14] = selfAttah->m_pos.z;
-		data[15] = 1.0;
-
+		Matrix44 selfAttachmentTrans = selfAttah->getAttachmentMat();
 
 		Matrix44 rotateMatrix;
 		Quaternion qRotate;
 		qRotate.fromEulerAngle(vec3(0, 0, degree));
 		rotateMatrix.setRotation(qRotate);
-		selfAttachmentTrans = selfAttachmentTrans * rotateMatrix;
-
+		selfAttachmentTrans = selfAttachmentTrans;
+		//islandMat * partMat * attachMat = outerAttachMat(With inverted normal).
 		auto result = attachOuterWorldMat * selfAttachmentTrans.inverted() * getNode()->getLocalTransform().inverted();
 
 		Quaternion q;
@@ -278,60 +229,8 @@ namespace tzw
 
 	Matrix44 GamePart::adjustToOtherIslandByAlterSelfPart(Attachment* attach, Attachment* selfAttah, float degree)
 	{
-		vec3 attachPosition,  Normal,  up;
-		attach->getAttachmentInfoWorld(attachPosition, Normal, up);
-		vec3 InvertedNormal = Normal * -1;
-		attachPosition = attachPosition + Normal * 0.01f;
-
-		vec3 right = vec3::CrossProduct(InvertedNormal, up);
-		Matrix44 attachOuterWorldMat;
-		auto data = attachOuterWorldMat.data();
-		data[0] = right.x;
-		data[1] = right.y;
-		data[2] = right.z;
-		data[3] = 0.0;
-
-		data[4] = up.x;
-		data[5] = up.y;
-		data[6] = up.z;
-		data[7] = 0.0;
-
-		data[8] = -InvertedNormal.x;
-		data[9] = -InvertedNormal.y;
-		data[10] = -InvertedNormal.z;
-		data[11] = 0.0;
-
-		data[12] = attachPosition.x;
-		data[13] = attachPosition.y;
-		data[14] = attachPosition.z;
-		data[15] = 1.0;
-
-		
-		Matrix44 selfAttachmentTrans;
-		data = selfAttachmentTrans.data();
-		auto rightForAttach = vec3::CrossProduct(selfAttah->m_normal, selfAttah->m_up);
-		vec3 normalForAttach = selfAttah->m_normal;
-		data[0] = rightForAttach.x;
-		data[1] = rightForAttach.y;
-		data[2] = rightForAttach.z;
-		data[3] = 0.0;
-
-		data[4] = selfAttah->m_up.x;
-		data[5] = selfAttah->m_up.y;
-		data[6] = selfAttah->m_up.z;
-		data[7] = 0.0;
-
-		//use invert
-		data[8] = -normalForAttach.x;
-		data[9] = -normalForAttach.y;
-		data[10] = -normalForAttach.z;
-		data[11] = 0.0;
-
-		data[12] = selfAttah->m_pos.x;
-		data[13] = selfAttah->m_pos.y;
-		data[14] = selfAttah->m_pos.z;
-		data[15] = 1.0;
-
+		Matrix44 attachOuterWorldMat = attach->getAttachmentMatOutterWorld();
+		Matrix44 selfAttachmentTrans = selfAttah->getAttachmentMat();
 
 		Matrix44 rotateMatrix;
 		Quaternion qRotate;
@@ -753,6 +652,7 @@ namespace tzw
 			auto newAttach = new Attachment(attach.pos, attach.normal, attach.up ,this);
 			newAttach->m_locale = attach.locale;
 			newAttach->m_collisionSize = attach.collisionSize;
+			newAttach->generateLocalBound();
 			addAttachment(newAttach);
 			//auto cube = new CubePrimitive(newAttach->m_collisionSize, newAttach->m_collisionSize, 0.5);
 			//Quaternion q;

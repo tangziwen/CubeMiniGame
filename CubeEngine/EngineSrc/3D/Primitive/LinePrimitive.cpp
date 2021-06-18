@@ -17,7 +17,7 @@ LinePrimitive::LinePrimitive():m_mesh(nullptr)
 
 void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material,this,stageType);
+	RenderCommand command(m_mesh,m_material,this,RenderFlag::RenderStage::TRANSPARENT);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
     queues->addRenderCommand(command, requirementArg);
@@ -32,8 +32,11 @@ void LinePrimitive::initBuffer()
 	int i = 0;
 	for(auto s : m_segList)
 	{
-		m_mesh->addVertex(VertexData(s.begin,s.color));
-		m_mesh->addVertex(VertexData(s.end,s.color));
+		vec3 diff = s.end - s.begin;
+		vec3 up = vec3(0, 1, 0);
+		vec3 right = vec3::CrossProduct(-diff, up);
+		m_mesh->addVertex(VertexData(s.begin,vec4(s.color, 1.0)));
+		m_mesh->addVertex(VertexData(s.end,vec4(s.color, 1.0)));
 		m_mesh->addIndex(i);
 		m_mesh->addIndex(i + 1);
 		i += 2;
@@ -89,6 +92,7 @@ void LinePrimitive::init()
 	m_material = Material::createFromTemplate("Color");
 	m_material->setIsDepthTestEnable(false);
 	m_material->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+	m_material->setPrimitiveTopology(PrimitiveTopology::LineList);
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 } // namespace tzw

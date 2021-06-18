@@ -363,8 +363,7 @@ namespace tzw
 		bear->m_parent = island;
 		island->insert(bear);
 		bear->updateFlipped();
-		bear->attachToOtherIslandByAlterSelfIsland(attachment,
-													bear->getFirstAttachment(), 0);
+
 		attachment->m_connected = bear->getFirstAttachment();
 		auto euler = island->m_node->getRotateE();
 		if(!attachment->m_connected->m_parent->m_parent) 
@@ -375,6 +374,8 @@ namespace tzw
 		island->addNeighbor(attachment->m_parent->m_parent);
 		island->setIslandGroup( attachment->m_parent->getVehicle()->getIslandGroup());
 		
+		bear->attachToOtherIslandByAlterSelfIsland(attachment,
+													bear->getFirstAttachment(), 0);
 		return bear;
 	}
 

@@ -73,9 +73,8 @@ std::vector<const char*> getRequiredExtensions() {
 		extensions.push_back(glfwExtensions[i]);
 	}
 
-#if ENABLE_DEBUG_LAYERS
-		extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
-#endif
+    //always open debug region
+	extensions.push_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
 
 	return extensions;
 }
@@ -420,10 +419,11 @@ VkApplicationInfo appInfo = {};
         abort();
     }
 
+#endif
+
     g_CMD_BEGIN_DEBUG_UTILS_LABEL = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdBeginDebugUtilsLabelEXT");
 
     g_CMD_END_DEBUG_UTILS_LABEL = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdEndDebugUtilsLabelEXT");
-#endif
     }
     void VKRenderBackEnd::VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices)
     {

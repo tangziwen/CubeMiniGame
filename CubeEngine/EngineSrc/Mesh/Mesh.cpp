@@ -157,10 +157,12 @@ void Mesh::reSubmit()
 	if(m_arrayBuf && !m_vertices.empty())
 	{
 		m_arrayBuf->use();
+        m_arrayBuf->allocate(&m_vertices[0], m_vertices.size() * sizeof(VertexData));
 		//m_arrayBuf->resubmit(&m_vertices[0], 0, m_vertices.size() * sizeof(VertexData));
 
 
 	    m_indexBuf->use();
+        m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u));
 	    //m_indexBuf->resubmit(&m_indices[0], 0, m_indices.size() * sizeof(short_u));
 	}
 }

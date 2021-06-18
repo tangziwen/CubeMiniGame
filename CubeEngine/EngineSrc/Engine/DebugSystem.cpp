@@ -17,12 +17,12 @@ void DebugSystem::handleDraw(float dt)
 	
 }
 
-void DebugSystem::doRender(float dt)
+void DebugSystem::doRender(RenderQueue * queue,float dt)
 {
 	if(m_line->getLineCount() > 0)
 	{
 		m_line->initBuffer();
-		//m_line->submitDrawCmd(RenderFlag::RenderStage::COMMON);
+		m_line->submitDrawCmd(RenderFlag::RenderStage::COMMON, queue, 0);
 	}
 }
 
@@ -70,12 +70,12 @@ void DebugSystem::drawBoundingBox(AABB aabb, Matrix44 mat)
 
 }
 
-void DebugSystem::drawPointCross(vec3 pointInWorld)
+void DebugSystem::drawPointCross(vec3 pointInWorld, vec3 color)
 {
 	float pointSize = 0.1;
-	m_line->append(pointInWorld + vec3(-pointSize, 0, 0), pointInWorld + vec3(pointSize, 0, 0));
-	m_line->append(pointInWorld + vec3(0, -pointSize, 0), pointInWorld + vec3(0, pointSize, 0));
-	m_line->append(pointInWorld + vec3(0, 0, -pointSize), pointInWorld + vec3(0, 0, pointSize));
+	m_line->append(pointInWorld + vec3(-pointSize, 0, 0), pointInWorld + vec3(pointSize, 0, 0), color);
+	m_line->append(pointInWorld + vec3(0, -pointSize, 0), pointInWorld + vec3(0, pointSize, 0), color);
+	m_line->append(pointInWorld + vec3(0, 0, -pointSize), pointInWorld + vec3(0, 0, pointSize), color);
 }
 
 void DebugSystem::drawLine(vec3 A, vec3 B)

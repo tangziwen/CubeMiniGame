@@ -24,6 +24,11 @@ enum MaterialFlag
 	MaterialFlag_isDepthTest = 1 << 5,
 	Shader_option_End = 1 << 31,
 };
+enum class PrimitiveTopology
+{
+	TriangleList,
+	LineList,
+};
 class Material : public InspectableUI
 {
 public:
@@ -78,6 +83,8 @@ public:
 	void updateFullDescriptionStr();
 	std::string getFullDescriptionStr();
 	std::unordered_map<std::string,TechniqueVar> & getVarList();
+	PrimitiveTopology getPrimitiveTopology();
+	void setPrimitiveTopology(PrimitiveTopology newTopology);
 private:
     std::string m_vsPath;
     std::string m_fsPath;
@@ -96,6 +103,7 @@ private:
 	RenderFlag::RenderStage m_renderStage;
 	std::string m_fullDescString;
 	RenderFlag::CullMode m_cullMode;
+	PrimitiveTopology m_primitiveTopology;
 public:
 	RenderFlag::RenderStage getRenderStage() const;
 	void setRenderStage(const RenderFlag::RenderStage renderStage);

@@ -19,6 +19,7 @@ namespace tzw
 		m_connected = nullptr;
 		m_degree = 0.0f;
 		m_collisionSize = 0.25f;
+		generateLocalBound();
 	}
 
 	Attachment::Attachment()
@@ -27,6 +28,7 @@ namespace tzw
 		m_locale = "down";
 		m_degree = 0.0f;
 		m_collisionSize = 0.25f;
+		generateLocalBound();
 	}
 
 	void Attachment::getAttachmentInfo(vec3 & pos, vec3 & N, vec3 & up)
@@ -53,7 +55,7 @@ namespace tzw
 		up = mat.transofrmVec4(a_up).toVec3();
 	}
 
-	Matrix44 Attachment::getAttachmentInfoMat44()
+	Matrix44 Attachment::getAttachmentMat()
 	{
 		vec3 right = vec3::CrossProduct(m_normal, m_up);
 		Matrix44 transformForAttachPoint;
@@ -80,26 +82,55 @@ namespace tzw
 		return transformForAttachPoint;
 	}
 
+	Matrix44 Attachment::getAttachmentMatOutterWorld()
+	{
+		vec3 attachPosition,  Normal,  up;
+		getAttachmentInfoWorld(attachPosition, Normal, up);
+		vec3 InvertedNormal = Normal * -1;
+		attachPosition = attachPosition + Normal * 0.01f;
+
+		vec3 right = vec3::CrossProduct(InvertedNormal, up);
+		Matrix44 attachOuterWorldMat;
+		auto data = attachOuterWorldMat.data();
+		data[0] = right.x;
+		data[1] = right.y;
+		data[2] = right.z;
+		data[3] = 0.0;
+
+		data[4] = up.x;
+		data[5] = up.y;
+		data[6] = up.z;
+		data[7] = 0.0;
+
+		data[8] = -InvertedNormal.x;
+		data[9] = -InvertedNormal.y;
+		data[10] = -InvertedNormal.z;
+		data[11] = 0.0;
+
+		data[12] = attachPosition.x;
+		data[13] = attachPosition.y;
+		data[14] = attachPosition.z;
+		data[15] = 1.0;
+		return attachOuterWorldMat;
+	}
+
+	Matrix44 Attachment::getAttachmentMatWorld()
+	{
+		return m_parent->getNode()->getTransform() * getAttachmentMat();
+	}
+
 	bool Attachment::isHit(Ray rayInWorld, vec3& hitPointWorld)
 	{
-		auto WorldMat = m_parent->getNode()->getTransform() * getAttachmentInfoMat44();
+		auto WorldMat = getAttachmentMatWorld();
 		auto mat = (WorldMat).inverted();
 		//let the ray from world space to local space
 		rayInWorld.setOrigin((mat * vec4(rayInWorld.origin(), 1.0)).toVec3());
-		rayInWorld.setDirection((mat * vec4(rayInWorld.direction(), 0.0)).toVec3());
-		AABB collisionBox;
-		const float blockSize = 0.25f;
-		collisionBox.setMax(vec3(m_collisionSize / 2.0, m_collisionSize / 2.0, 0.1));
-		collisionBox.setMin(vec3(m_collisionSize / -2.0, m_collisionSize / -2.0, -0.1));
-		
+		rayInWorld.setDirection((mat * vec4(rayInWorld.direction().normalized(), 0.0)).toVec3());
 		vec3 hitPoint;
-		auto isHit = rayInWorld.intersectAABB(collisionBox, hitPoint);
+		auto isHit = rayInWorld.intersectAABB(m_localBound, hitPoint);
         if (isHit) 
 		{
-			//DebugSystem::shared()->drawBoundingBox(collisionBox, WorldMat);
 			hitPointWorld = (WorldMat * vec4(hitPoint, 1.0f)).toVec3();
-        	//DebugSystem::shared()->drawPointCross(hitPointWorld);
-        	//DebugSystem::shared()->drawLine((WorldMat * vec4(rayInWorld.origin(), 1.0f)).toVec3(), hitPointWorld);
 			return true;
         }
 		return false;

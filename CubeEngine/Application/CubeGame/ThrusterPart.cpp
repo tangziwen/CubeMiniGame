@@ -54,7 +54,7 @@ ThrusterPart::ThrusterPart()
 	emitter->setIsState(ParticleEmitter::State::Stop);
 
 	auto a = Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
-	Matrix44 mat = a.getAttachmentInfoMat44();
+	Matrix44 mat = a.getAttachmentMat();
 	Quaternion q;
 	q.fromRotationMatrix(&mat);
 	m_node->addChild(emitter);
@@ -92,7 +92,7 @@ ThrusterPart::ThrusterPart(std::string itemName)
 
 
 	auto a = Attachment(vec3(0.0, 0.0, -m_height / 2.0), vec3(0.0, 0.0, -1.0), vec3(0.0, 1.0, 0.0) ,this);
-	Matrix44 mat = a.getAttachmentInfoMat44();
+	Matrix44 mat = a.getAttachmentMat();
 	Quaternion q;
 	q.fromRotationMatrix(&mat);
 	auto emmiterNode = Node::create();

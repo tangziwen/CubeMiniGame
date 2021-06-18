@@ -102,7 +102,17 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
 
     VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};
     pipelineIACreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    switch(mat->getPrimitiveTopology())
+    {
+    case PrimitiveTopology::TriangleList:
+        pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+        break;
+    case PrimitiveTopology::LineList:
+        pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_LINE_LIST;
+        break;
+    default:
+        break;
+    }
     //auto screenSize = Engine::shared()->winSize();
     VkViewport vp = {};
     vp.x = 0.0f;

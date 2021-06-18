@@ -7,6 +7,7 @@
 #include "BuildingSystem.h"
 #include "Scene/SceneMgr.h"
 #include "GamePartRenderNode.h"
+#include "Engine/DebugSystem.h"
 namespace tzw
 {
 	PreviewItem::PreviewItem():
@@ -92,6 +93,7 @@ namespace tzw
 		m_currAttachment = 0;
 	}
 
+#pragma optimize("", off)
 	void PreviewItem::handlePreview(GameItem* currSelected, vec3 camPos, vec3 playerForwardDir)
 	{
 		bool isNoSelected = !currSelected;
@@ -162,6 +164,7 @@ namespace tzw
 						//if(attach && !attach->m_connected && !currSelected->isSpecialFunctionItem())
 						if(attach && !attach->m_connected && !currSelected->isSpecialFunctionItem())
 						{
+							DebugSystem::shared()->drawBoundingBox(attach->getLocalBound(), attach->getAttachmentMatWorld());
 							showPreviewPart();
 							m_previewPart->adjustToOtherIslandByAlterSelfPart(attach, m_previewPart->getAttachment(m_previewPart->getPrettyAttach(attach, m_currAttachment)), m_previewAngle);
 						}else
