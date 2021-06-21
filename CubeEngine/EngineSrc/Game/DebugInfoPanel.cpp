@@ -48,7 +48,7 @@ DebugInfoPanel::DebugInfoPanel()
 
 void DebugInfoPanel::drawIMGUI(bool * isOpen)
 {
-	ImGui::Begin("Profiler", isOpen, ImGuiWindowFlags_AlwaysAutoResize);
+	ImGui::Begin("Profiler", isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav);
 	static float f = 0.0f;
 	updateInfo();
 	ImGui::Text("Scene Nodes Amount: %d", sceneCurrNodes);
@@ -56,8 +56,6 @@ void DebugInfoPanel::drawIMGUI(bool * isOpen)
 	ImGui::Text("logicUpdate: %d ms", logicUpdateTime);
 	ImGui::Text("applyRender: %d ms", renderUpdateTime);
 	ImGui::Text("indices: %d", verticesCount);
-	ImGui::Text("GL Ver: %s", RenderBackEnd::shared()->getCurrVersion().c_str());
-	ImGui::Text("GLSL Ver: %s", RenderBackEnd::shared()->getShaderSupportVersion().c_str());
 	static int values_offset = 0;
 	
 	char buff[100];
@@ -74,7 +72,7 @@ void DebugInfoPanel::updateInfo()
 {
 	auto currentScene = g_GetCurrScene();
 	lastCalculateTime += ImGui::GetIO().DeltaTime;
-	if (lastCalculateTime > 0.5f)
+	if (lastCalculateTime > 0.25f)
 	{
 		currFPS = Engine::shared()->FPS();
 		drawCall = Engine::shared()->getDrawCallCount();

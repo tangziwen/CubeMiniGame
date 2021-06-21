@@ -59,8 +59,8 @@ void AbstractDevice::resizeGL(int w, int h)
 void AbstractDevice::update()
 {
     //calculate delta
-    m_nowTicks = clock();
-    float delta = (m_nowTicks - m_oldTicks)*1.0 /CLOCKS_PER_SEC;
+    m_nowTicks = Counter::now();
+    float delta = Counter::deltaSecond(m_oldTicks, m_nowTicks);//(m_nowTicks - m_oldTicks)*1.0 /CLOCKS_PER_SEC;
     m_oldTicks = m_nowTicks;
     if (delta > 0.1)
     {

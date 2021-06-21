@@ -6,6 +6,7 @@
 #include <string>
 #include "../Engine/EngineDef.h"
 #include "../Math/vec2.h"
+#include "Base/TimerMgr.h"
 class GLFWwindow;
 namespace tzw {
 
@@ -25,7 +26,7 @@ public:
     void setRenderDevice(RenderDeviceType deviceType);
     void createRenderBackEnd(GLFWwindow * window);
     RenderDeviceType getRenderDeviceType();
-    clock_t m_oldTicks,m_nowTicks;
+    Counter m_oldTicks,m_nowTicks;
     bool m_isFirstFrame;
     RenderDeviceType m_deviceType;
 };

@@ -6,7 +6,7 @@
 #include "BackEnd/vk/DeviceFrameBufferVK.h"
 #include "Engine/Engine.h"
 #include "BackEnd/RenderBackEndBase.h"
-#include "Scene/SceneCuller.h"
+
 #include "Technique/MaterialPool.h"
 #include "3D/ShadowMap/ShadowMap.h"
 #include "2D/GUISystem.h"
@@ -20,6 +20,7 @@
 #include "Scene/Scene.h"
 #include "Scene/OctreeScene.h"
 #include "Lighting/PointLight.h"
+#include "Scene/SceneCuller.h"
 namespace tzw
 {
 
@@ -251,8 +252,7 @@ namespace tzw
 		auto cmd = backEnd->getGeneralCommandBuffer();
         cmd->startRecord();
 		m_renderPath->prepare(cmd);
-        //CPU here
-        SceneCuller::shared()->collectPrimitives();
+
         RenderQueue * renderQueues = SceneCuller::shared()->getRenderQueues();
 		
         auto & commonList = renderQueues->getList();

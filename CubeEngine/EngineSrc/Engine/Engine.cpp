@@ -30,6 +30,7 @@
 #include "Rendering/GraphicsRenderer.h"
 #include <windows.h>
 #include <DbgHelp.h>
+#include "Scene/SceneCuller.h"
 namespace tzw {
 
 Engine * Engine::m_instance = nullptr;
@@ -255,7 +256,7 @@ float Engine::deltaTime() const
 void Engine::update(float delta)
 {
     m_deltaTime = delta;
-    int logicBefore = clock();
+	Counter logicBefore = Counter::now();
 	DebugSystem::shared()->handleDraw(delta);
 	PhysicsMgr::shared()->stepSimulation(delta);
 	TimerMgr::shared()->handle(delta);
@@ -263,13 +264,15 @@ void Engine::update(float delta)
 	EventMgr::shared()->apply(delta);
     shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();
+	SceneCuller::shared()->collectPrimitives();
+	AudioSystem::shared()->update();
+	Counter applyRenderBefore = Counter::now();
+    m_logicUpdateTime = Counter::deltaMili(logicBefore, applyRenderBefore);
 	resetDrawCallCount();
-    m_logicUpdateTime = CLOCKS_TO_MS(clock() - logicBefore);
-    int applyRenderBefore = clock();
 	resetVerticesIndicesCount();
 	GraphicsRenderer::shared()->render();
-	AudioSystem::shared()->update();
-    m_applyRenderTime = CLOCKS_TO_MS(clock() - applyRenderBefore);
+	Counter applyRenderAfter = Counter::now();
+    m_applyRenderTime = Counter::deltaMili(applyRenderBefore, applyRenderAfter);
 }
 
 void Engine::onStart()

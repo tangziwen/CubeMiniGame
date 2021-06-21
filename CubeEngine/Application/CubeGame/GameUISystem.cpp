@@ -536,7 +536,6 @@ void GameUISystem::drawIMGUI()
 				ImGui::SetNextWindowSizeConstraints(ImVec2(210, -1), ImVec2(600, -1));
 			    if (ImGui::Begin("PlayerOverLay OverLay", 0, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoFocusOnAppearing | ImGuiWindowFlags_NoNav))
 			    {
-
 			    	ImGui::Text("FPS :%.1f", Engine::shared()->FPS());
 			        ImGui::Text("Pos: %s", GameWorld::shared()->getPlayer()->getPos().getStr().c_str());
 		    		if(!GameWorld::shared()->getPlayer()->camera()->getIsEnableGravity())
@@ -558,6 +557,7 @@ void GameUISystem::drawIMGUI()
 			    	ImGui::Text("'TAB' To Open Menu");
 			    }
 			    ImGui::End();
+				//m_debugInfoPanel.drawIMGUI(nullptr);
 			}
 		}
 	}
