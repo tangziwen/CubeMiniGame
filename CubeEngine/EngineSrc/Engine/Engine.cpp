@@ -264,7 +264,7 @@ void Engine::update(float delta)
 	EventMgr::shared()->apply(delta);
     shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();
-	SceneCuller::shared()->collectPrimitives();
+	
 	AudioSystem::shared()->update();
 	Counter applyRenderBefore = Counter::now();
     m_logicUpdateTime = Counter::deltaMili(logicBefore, applyRenderBefore);

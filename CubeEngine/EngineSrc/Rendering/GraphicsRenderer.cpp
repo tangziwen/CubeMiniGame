@@ -21,6 +21,7 @@
 #include "Scene/OctreeScene.h"
 #include "Lighting/PointLight.h"
 #include "Scene/SceneCuller.h"
+
 namespace tzw
 {
 
@@ -241,7 +242,7 @@ namespace tzw
         io.Fonts->TexID = m_imguiTextureFont;
         //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
     }
-#pragma optimize("", off)
+
 	void GraphicsRenderer::render()
 	{
 		handleThumbNails();
@@ -252,7 +253,7 @@ namespace tzw
 		auto cmd = backEnd->getGeneralCommandBuffer();
         cmd->startRecord();
 		m_renderPath->prepare(cmd);
-
+        SceneCuller::shared()->collectPrimitives();
         RenderQueue * renderQueues = SceneCuller::shared()->getRenderQueues();
 		
         auto & commonList = renderQueues->getList();
