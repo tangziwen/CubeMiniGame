@@ -20,7 +20,9 @@ namespace tzw {
 		, m_historyCount(0)
 	{
 
-		auto mat = MaterialPool::shared()->getMaterialByName("Particle");
+		std::string texPath = "Texture/glow.png";
+		std::string uniqueName = "Particle" + texPath;
+		auto mat = MaterialPool::shared()->getMaterialByName(uniqueName);
 
 		if (!mat) {
 			mat = Material::createFromTemplate("Particle");
@@ -30,6 +32,7 @@ namespace tzw {
 			tex->genMipMap();
 
 			mat->setTex("DiffuseMap", tex);
+			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
 
@@ -161,7 +164,7 @@ namespace tzw {
 			m_mesh->submitOnlyVO_IO();
 		}
 		m_instancedMesh->submitInstanced();
-		if (m_mesh->getInstanceSize() > 0) {
+		if (m_instancedMesh->getInstanceSize() > 0) {
 			reCache();
 			RenderCommand command(
 				m_mesh, getMaterial(), this, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
@@ -240,10 +243,14 @@ namespace tzw {
 	void
 		ParticleEmitter::setTex(std::string filePath)
 	{
-		auto mat = getMaterial();
+		std::string uniqueName = "Particle" + filePath;
+		auto mat = MaterialPool::shared()->getMaterialByName(uniqueName);
+		//auto mat = getMaterial();
 		if (!mat) {
 			mat = Material::createFromTemplate("Particle");
+			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
+		setMaterial(mat);
 		auto tex = TextureMgr::shared()->getByPath(filePath);
 
 		tex->genMipMap();

@@ -53,4 +53,15 @@ Material * MaterialPool::getMatFromTemplate(std::string effectName)
 	return mat;
 }
 
+Material* MaterialPool::getMatFromTemplateWithUniqueName(std::string effectName, std::string uniqueName)
+{
+	std::string totalName = uniqueName + effectName;
+	auto mat = getMaterialByName(totalName);
+	if (!mat)
+	{
+		mat = Material::createFromTemplate(effectName);
+		addMaterial(totalName, mat);
+	}
+	return mat;
+}
 } // namespace tzw

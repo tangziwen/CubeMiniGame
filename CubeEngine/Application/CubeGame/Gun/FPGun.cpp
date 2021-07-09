@@ -1,5 +1,9 @@
 #include "FPGun.h"
 
+#include "CubeGame/BulletMgr.h"
+#include "CubeGame/GameUISystem.h"
+#include "Scene/SceneMgr.h"
+
 namespace tzw
 {
 
@@ -18,6 +22,14 @@ void FPGun::setIsADS(bool isADS, bool isNeedTransient)
 	if(isADS && !m_data->m_isAllowADS)//not allowed aim down sight
 		return;
 	m_isAds = isADS;
+	if(m_isAds)
+	{
+		GameUISystem::shared()->setIsNeedShowCrossHair(false);
+	}
+	else
+	{
+		GameUISystem::shared()->setIsNeedShowCrossHair(true);
+	}
 }
 
 void FPGun::toggleADS(bool isNeedTransient)
@@ -54,5 +66,12 @@ void FPGun::tick(bool isMoving, float dt)
 	{
 		m_model->setPos(vec3(m_data->m_hipPos.x, m_data->m_hipPos.y + sinf(m_shakeTime) * offset, m_data->m_hipPos.z));
 	}
+}
+
+void FPGun::shoot()
+{
+	auto cam = g_GetCurrScene()->defaultCamera();
+	auto mdata = cam->getTransform().data();
+	auto bullet = BulletMgr::shared()->fire(nullptr,cam->getWorldPos() ,cam->getWorldPos() + vec3(mdata[0], mdata[1], mdata[2]) * 0.25, cam->getForward(), 15, BulletType::HitScanTracer);
 }
 }

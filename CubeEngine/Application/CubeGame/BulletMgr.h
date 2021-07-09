@@ -23,7 +23,7 @@ class BulletMgr : public Singleton<BulletMgr>
 public:
 	BulletMgr();
 	void handleDraw(float dt);
-	Bullet* fire(vec3 fromPos, vec3 direction, float speed, BulletType bulletType);
+	Bullet* fire(Node * parentNode,vec3 testStartPos, vec3 fromPos, vec3 direction, float speed, BulletType bulletType);
 private:
 	std::vector<Bullet *> m_bullets;
 	bool m_isShowAssistInfo;

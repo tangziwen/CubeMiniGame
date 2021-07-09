@@ -74,6 +74,7 @@ namespace tzw
 
 		void setRotateQ(const Quaternion &rotateQ);
 		void setRotateQ(const vec4 &rotateQInV4);
+		FPGun * getGun();
 	private:
 		void onHitGround();
 		void handleSitDown();

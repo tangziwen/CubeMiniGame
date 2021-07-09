@@ -1,6 +1,7 @@
 #include "LaserPrimitive.h"
 #include "../../Scene/SceneMgr.h"
 #include "LinePrimitive.h"
+#include "Technique/MaterialPool.h"
 
 namespace tzw {
 
@@ -111,7 +112,7 @@ void LaserPrimitive::initBuffer()
 
 void LaserPrimitive::init()
 {
-	m_material = Material::createFromTemplate("Laser");
+	m_material = MaterialPool::shared()->getMatFromTemplateWithUniqueName("Laser", "Bullet");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/laser.png");
 	m_material->setFactorDst(RenderFlag::BlendingFactor::One);
 	m_material->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);

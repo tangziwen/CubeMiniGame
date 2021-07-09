@@ -12,6 +12,8 @@ public:
 	void setIsADS(bool isADS, bool isNeedTransient);
 	void toggleADS(bool isNeedTransient);
 	void tick(bool isMoving, float dt);
+	void shoot();
+
 protected:
 	FPGunData * m_data {nullptr};
 	Model * m_model {nullptr};

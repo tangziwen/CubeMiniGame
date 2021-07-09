@@ -156,13 +156,13 @@ void CannonPart::use()
 	switch (m_bulletMode)
 	{
 		case 0:
-			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::Projecttile);
+			BulletMgr::shared()->fire(nullptr, firePos, firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::Projecttile);
 		break;
 		case 1:
-			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::HitScanLaser);
+			BulletMgr::shared()->fire(nullptr, firePos, firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::HitScanLaser);
 		break;
 		case 2:
-			BulletMgr::shared()->fire(firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::PulseLaser);
+			BulletMgr::shared()->fire(nullptr, firePos, firePos,  m_node->getForward() * -1, getFiringVelocity(), BulletType::PulseLaser);
 		break;
 	}
 	

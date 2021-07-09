@@ -64,6 +64,7 @@ public:
 	void setPainterShow(bool isShow);
 	void drawEntryInterFace();
 	void openMainMenu();
+	void setIsNeedShowCrossHair(bool isNeedShow);
 private:
 	bool m_isVisible = true;
 	void drawToolsMenu();
@@ -77,6 +78,7 @@ private:
 	bool m_isOpenRenderEditor;
 	bool m_preIsNeedShow;
 	bool m_isOpenPlayerOverLay;
+	bool m_isNeedShowCrossHair {true};
 	DebugInfoPanel m_debugInfoPanel;
 	VehicleBroswer * m_fileBrowser;
 	NewWorldSettingUI * m_NewWorldSettingUI;

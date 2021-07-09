@@ -43,7 +43,7 @@ BulletMgr::handleDraw(float dt)
 }
 
 Bullet*
-BulletMgr::fire(vec3 fromPos,
+BulletMgr::fire(Node * parentNode, vec3 testStartPos, vec3 fromPos,
                 vec3 direction,
                 float speed,
                 BulletType bulletType)
@@ -53,9 +53,9 @@ BulletMgr::fire(vec3 fromPos,
     case BulletType::HitScanLaser: {
       PhysicsHitResult result;
       if (PhysicsMgr::shared()->rayCastCloset(
-            fromPos, fromPos + direction * 100, result)) {
+            testStartPos, testStartPos + direction * 100, result)) {
 
-      	/*
+      	
         auto emitter = new ParticleEmitter(1);
         emitter->setIsLocalPos(true);
         emitter->setTex("ParticleTex/smoke_04.png");
@@ -73,23 +73,53 @@ BulletMgr::fire(vec3 fromPos,
         emitter->setIsInfinite(false);
         emitter->setBlendState(1);
         g_GetCurrScene()->addNode(emitter);
-        */
-        auto line = new LaserPrimitive(fromPos, result.posInWorld, 1.5, true);
-        g_GetCurrScene()->addNode(line);
+        
+      	vec3 endPos = result.posInWorld;
+      	if(parentNode)
+      	{
+      		auto invMat = parentNode->getParent()->getTransform().inverted();
+      		endPos = invMat.transformVec3(endPos);
+      		fromPos = invMat.transformVec3(fromPos);
+      	}
+        auto line = new LaserPrimitive(fromPos, endPos, 1.5, true);
+      	if(parentNode)
+      	{
+      		parentNode->addChild(line);
+      	}
+        else
+        {
+	        g_GetCurrScene()->addNode(line);
+        }
+        
         bulletPtr = new LaserBullet(line);
-        bulletPtr->setDuration(100);
+        bulletPtr->setDuration(0.1);
 
-      } else {
-        auto line = new LaserPrimitive(fromPos, fromPos + direction * 100, 1.5, true);
-        g_GetCurrScene()->addNode(line);
+      } else 
+      {
+      	vec3 endPos = fromPos + direction * 100;
+      	if(parentNode)
+      	{
+      		auto invMat = parentNode->getParent()->getTransform().inverted();
+      		endPos = invMat.transformVec3(endPos);
+      		fromPos = invMat.transformVec3(fromPos);
+      	}
+        auto line = new LaserPrimitive(fromPos, endPos, 1.5, true);
+      	if(parentNode)
+      	{
+      		parentNode->addChild(line);
+      	}
+        else
+        {
+	        g_GetCurrScene()->addNode(line);
+        }
         bulletPtr = new LaserBullet(line);
-        bulletPtr->setDuration(100);
+        bulletPtr->setDuration(0.1);
       }
     } break;
     case BulletType::HitScanTracer: {
       PhysicsHitResult result;
       if (PhysicsMgr::shared()->rayCastCloset(
-            fromPos, fromPos + direction * 100, result) && false) {
+            testStartPos, testStartPos + direction * 100, result)) {
         auto emitter = new ParticleEmitter(1);
         emitter->setIsLocalPos(true);
         emitter->setTex("ParticleTex/smoke_04.png");

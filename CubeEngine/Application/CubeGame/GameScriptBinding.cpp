@@ -10,6 +10,7 @@
 #include "LuaBridge/LuaBridge.h"
 #include "ScriptPy/ScriptPyMgr.h"
 #include "UIHelper.h"
+#include "Gun/FPGun.h"
 
 #define BIND_PROP(className, PROP) .addProperty(#PROP, &className## ::##PROP)
 #define BIND_FUNC(className, FUNC) .addFunction(#FUNC, &className## ::##FUNC)
@@ -59,6 +60,10 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
     .def(py::init<>()) BIND_FUNC_PY(PreviewItem, switchAttachment)
       BIND_FUNC_PY(PreviewItem, getCurrAttachment);
 
+  BIND_BEGIN_CLASS_PY(FPGun)
+	BIND_FUNC_PY(FPGun, toggleADS)
+	BIND_FUNC_PY(FPGun, shoot);
+
   // CubePlayer
   BIND_BEGIN_CLASS_PY(CubePlayer)
   BIND_FUNC_PY(CubePlayer, getPos)
@@ -74,6 +79,7 @@ PYBIND11_EMBEDDED_MODULE(Game, m)
   BIND_FUNC_PY(CubePlayer, getPreviewItem)
   BIND_FUNC_PY(CubePlayer, pressButton)
   BIND_FUNC_PY(CubePlayer, releaseButton)
+  BIND_FUNC_PY(CubePlayer, getGun)
   BIND_FUNC_PY(CubePlayer, releaseSwitch);
 
   // GameWorld

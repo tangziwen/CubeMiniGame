@@ -262,8 +262,7 @@ namespace tzw
         		pointLight->setLightColor(vec3(1, 0, 0));
         		pointLight->setPos(getPos());
         		g_GetCurrScene()->addNode(pointLight);
-        		auto mdata = m_camera->getTransform().data();
-				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos() + vec3(mdata[0], mdata[1], mdata[2]) * 0.25, m_camera->getForward(), 15, BulletType::HitScanLaser);
+        
 
             }
 			break;
@@ -335,7 +334,7 @@ namespace tzw
 		if(button == 1)
 		{
 			isAdsMode = !isAdsMode;
-			m_gunModel->toggleADS(false);
+			//m_gunModel->toggleADS(false);
 		}
 		
 		if (GameUISystem::shared()->isVisible())
@@ -521,7 +520,9 @@ namespace tzw
 					isNeedSpecialShowBySelected = true;
 				}
 			break;
-			default: ;
+			default: 
+				isNeedSpecialShowBySelected = false;
+				;
 			}
 		}else
 		{
@@ -689,6 +690,11 @@ namespace tzw
 	void CubePlayer::setRotateQ(const vec4& rotateQInV4)
 	{
 		m_camera->setRotateQ(rotateQInV4);
+	}
+
+	FPGun* CubePlayer::getGun()
+	{
+		return m_gunModel;
 	}
 
 	void CubePlayer::onHitGround()

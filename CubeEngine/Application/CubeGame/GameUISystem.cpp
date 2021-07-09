@@ -196,7 +196,7 @@ void GameUISystem::drawIMGUI()
 				Engine::shared()->setUnlimitedCursor(true);
 				if(m_crossHair)
 				{
-					m_crossHair->setIsVisible(true);
+					m_crossHair->setIsVisible(m_isNeedShowCrossHair? true: false);
 				}
 			}
 		}
@@ -204,7 +204,23 @@ void GameUISystem::drawIMGUI()
 	}
 	else
 	{
-
+		if(GameWorld::shared()->getCurrentState() != GAME_STATE_MAIN_MENU)
+		{
+			if(currIsNeedShow)
+			{
+				if(m_crossHair)
+				{
+					m_crossHair->setIsVisible(false);
+				}
+			}
+			else
+			{
+				if(m_crossHair)
+				{
+					m_crossHair->setIsVisible(m_isNeedShowCrossHair? true: false);
+				}
+			}
+		}
 	}
 	}
 
@@ -830,6 +846,11 @@ void GameUISystem::drawEntryInterFace()
 void GameUISystem::openMainMenu()
 {
 	setWindowShow(WindowType::MainMenu, !GameUISystem::shared()->getWindowIsShow(WindowType::MainMenu));
+}
+
+void GameUISystem::setIsNeedShowCrossHair(bool isNeedShow)
+{
+	m_isNeedShowCrossHair = isNeedShow;
 }
 
 LabelNew* GameUISystem::getCrossHairTipsInfo() const
