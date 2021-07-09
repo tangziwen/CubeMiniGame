@@ -57,6 +57,7 @@ SPECIAL_PART_PAINTER = 8
 SPECIAL_PART_DIGGER = 9
 GAME_PART_BUTTON = 10
 GAME_PART_SWITCH = 11
+SPECIAL_PART_FPGUN = 12
 GAME_PART_NOT_VALID = 9999
 
 
@@ -536,8 +537,9 @@ def handleItemPrimaryUse(item):
 		
 	elif (item.getTypeInInt() == SPECIAL_PART_PAINTER) : #paint the object
 		player.paint()
-	elif (item.getTypeInInt() == SPECIAL_PART_DIGGER) : #fill the terrain
-		Game.BuildingSystem.shared().terrainForm(player.getPos(), player.getForward(), 10, 0.8, 3.0)
+	elif (item.getTypeInInt() == SPECIAL_PART_FPGUN) : #FP Gun
+		player.getGun().shoot()
+		#Game.BuildingSystem.shared().terrainForm(player.getPos(), player.getForward(), 10, 0.8, 3.0)
 	
 	player.updateCrossHairTipsInfo()
 
@@ -553,7 +555,8 @@ def handleItemSecondaryUse(item):
 		Game.GameUISystem.shared().setPainterShow(True)
 	elif (item.getTypeInInt() == SPECIAL_PART_DIGGER) : #dig the terrain
 		Game.BuildingSystem.shared().terrainForm(player.getPos(), player.getForward(), 10, -0.8, 3.0)
-	
+	elif (item.getTypeInInt() == SPECIAL_PART_FPGUN) : #FP Gun
+		player.getGun().toggleADS(True)
 	player.updateCrossHairTipsInfo()
 
 
