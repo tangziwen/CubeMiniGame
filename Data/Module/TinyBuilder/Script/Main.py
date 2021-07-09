@@ -261,35 +261,58 @@ def drawHud():
 
 
 	ImGui.SetNextWindowPos(window_pos, ImGuiCond_Always, window_pos_pivot);
-	itemSize = 64.0
+	itemSize = 80.0
 	ImGui.Begin("Hud", ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove);
+	selectColor = ImGui.ImVec4(1.0, 0.5, 0.1, 1)
 	for k, v in GameState.m_itemSlots.items():
 		# ImGui.RadioButton(v.desc, GameState.m_currIndex == k)
 		ImGui.BeginGroup();
 		needPop = False
 		if v.target == None :
+			indexText = str(k + 1)
+			posX = ImGui.GetCursorPosX()
+			CubeEngine.GUISystem.shared().imguiUseLargeFont()
+			textSize = ImGui.CalcTextSize(indexText, None, True, 0);
+			ImGui.SetCursorPosX(posX + itemSize / 2.0 - textSize.x / 2.0)
+			ImGui.Text(indexText);
+			ImGui.PopFont()
 			ImGui.Image(GameState.testIcon.handle(), ImGui.ImVec2(itemSize, itemSize));
 			if GameState.m_currIndex == k :
-				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
+				ImGui.PushStyleColor(0, selectColor);
 				sizeMin = ImGui.GetItemRectMin()
 				sizeMax = ImGui.GetItemRectMax()
-				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 0, 1, 1))
+				
+				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, selectColor)
 				needPop = True
-			
+			posX = ImGui.GetCursorPosX()
+			textSize = ImGui.CalcTextSize("Empty", None, True, 0);
+			ImGui.SetCursorPosX(posX + itemSize / 2.0 - textSize.x / 2.0)
+			ImGui.Text("Empty")
 		else:
+			
 			iconTexture = GameState.testIcon.handle()
-			item = getItemFromSpecifiedSlotIndex(k);
+			item = getItemFromSpecifiedSlotIndex(k)
+			indexText = str(k + 1)
+			posX = ImGui.GetCursorPosX()
+			CubeEngine.GUISystem.shared().imguiUseLargeFont()
+			textSize = ImGui.CalcTextSize(indexText, None, True, 0);
+			ImGui.SetCursorPosX(posX + itemSize / 2.0 - textSize.x / 2.0)
+			ImGui.Text(indexText)
+			ImGui.PopFont()
 			if item.getThumbNailTextureId() != 0 :
 				iconTexture = item.getThumbNailTextureId()
 			ImGui.Image(iconTexture, ImGui.ImVec2(itemSize, itemSize));
+			
 			if GameState.m_currIndex == k :
-				ImGui.PushStyleColor(0, ImGui.ImVec4(0.2, 0.2, 0.2, 1));
+				ImGui.PushStyleColor(0, selectColor);
 				needPop = True
 				sizeMin = ImGui.GetItemRectMin()
 				sizeMax = ImGui.GetItemRectMax()
-				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, ImGui.ImVec4(1, 0, 1, 1))
-			
-		
+				ImGui.DrawFrame(sizeMin, sizeMax, 3.0, selectColor)
+			posX = ImGui.GetCursorPosX()
+			textSize = ImGui.CalcTextSize(item.m_desc, None, True, 0);
+			ImGui.SetCursorPosX(posX + itemSize / 2.0 - textSize.x / 2.0)
+			ImGui.Text(item.m_desc)
 		if needPop :
 			ImGui.PopStyleColor()
 		

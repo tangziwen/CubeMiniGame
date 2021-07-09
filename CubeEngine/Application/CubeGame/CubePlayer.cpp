@@ -262,8 +262,8 @@ namespace tzw
         		pointLight->setLightColor(vec3(1, 0, 0));
         		pointLight->setPos(getPos());
         		g_GetCurrScene()->addNode(pointLight);
-        		
-				//auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos(), m_camera->getForward(), 15, BulletType::Projecttile);
+        		auto mdata = m_camera->getTransform().data();
+				auto bullet = BulletMgr::shared()->fire(m_camera->getWorldPos() + vec3(mdata[0], mdata[1], mdata[2]) * 0.25, m_camera->getForward(), 15, BulletType::HitScanLaser);
 
             }
 			break;

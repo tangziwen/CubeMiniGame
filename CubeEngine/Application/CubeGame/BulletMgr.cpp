@@ -54,6 +54,8 @@ BulletMgr::fire(vec3 fromPos,
       PhysicsHitResult result;
       if (PhysicsMgr::shared()->rayCastCloset(
             fromPos, fromPos + direction * 100, result)) {
+
+      	/*
         auto emitter = new ParticleEmitter(1);
         emitter->setIsLocalPos(true);
         emitter->setTex("ParticleTex/smoke_04.png");
@@ -71,23 +73,23 @@ BulletMgr::fire(vec3 fromPos,
         emitter->setIsInfinite(false);
         emitter->setBlendState(1);
         g_GetCurrScene()->addNode(emitter);
-
+        */
         auto line = new LaserPrimitive(fromPos, result.posInWorld, 1.5, true);
         g_GetCurrScene()->addNode(line);
         bulletPtr = new LaserBullet(line);
-        bulletPtr->setDuration(0.1);
+        bulletPtr->setDuration(100);
 
       } else {
         auto line = new LaserPrimitive(fromPos, fromPos + direction * 100, 1.5, true);
         g_GetCurrScene()->addNode(line);
         bulletPtr = new LaserBullet(line);
-        bulletPtr->setDuration(0.1);
+        bulletPtr->setDuration(100);
       }
     } break;
     case BulletType::HitScanTracer: {
       PhysicsHitResult result;
       if (PhysicsMgr::shared()->rayCastCloset(
-            fromPos, fromPos + direction * 100, result)) {
+            fromPos, fromPos + direction * 100, result) && false) {
         auto emitter = new ParticleEmitter(1);
         emitter->setIsLocalPos(true);
         emitter->setTex("ParticleTex/smoke_04.png");

@@ -80,6 +80,28 @@ void LaserPrimitive::initBuffer()
 	m_mesh->addIndex(2);
 	m_mesh->addIndex(3);
 	m_mesh->addIndex(0);
+
+
+
+	vec3 lB1 =m_begin - vec3(0.0, 0.0, 0.05);
+	vec3 rB1 =m_begin + vec3(0.0, 0.0, 0.05);
+
+	vec3 lE1 =m_end - vec3(0.0, 0.0, 0.05);
+	vec3 rE1 =m_end + vec3(0.0, 0.0, 0.05);
+
+	m_mesh->addVertex(VertexData(lB1, vec2(0.0f, 0.0f)));
+	m_mesh->addVertex(VertexData(rB1,vec2(0.0f, 1.0f)));
+	m_mesh->addVertex(VertexData(rE1,vec2(1.0f, 1.0f)));
+	m_mesh->addVertex(VertexData(lE1,vec2(1.0f, 0.0f)));
+	
+	m_mesh->addIndex(4);
+	m_mesh->addIndex(5);
+	m_mesh->addIndex(6);
+	
+	m_mesh->addIndex(6);
+	m_mesh->addIndex(7);
+	m_mesh->addIndex(4);
+	
 	m_mesh->finish();
 	m_localAABB.merge(m_mesh->getAabb());
 	reCache();
@@ -89,12 +111,14 @@ void LaserPrimitive::initBuffer()
 
 void LaserPrimitive::init()
 {
-	m_material = Material::createFromTemplate("ModelWithYAxis");
+	m_material = Material::createFromTemplate("Laser");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/laser.png");
 	m_material->setFactorDst(RenderFlag::BlendingFactor::One);
 	m_material->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
 	m_material->setTex("DiffuseMap", texture);
 	m_material->setIsCullFace(false);
+	m_material->setIsEnableBlend(true);
+	m_material->setIsDepthWriteEnable(false);
 	setMaterial(m_material);
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
