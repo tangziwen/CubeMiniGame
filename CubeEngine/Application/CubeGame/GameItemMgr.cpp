@@ -84,6 +84,11 @@ void GameItemMgr::loadFromFile(std::string filePath)
 				gameItem->m_type = GamePartType::SPECIAL_PART_DIGGER;
 				isSpecial = true;
 			}
+			if(type == "SPECIAL_PART_FPGUN")
+			{
+				gameItem->m_type = GamePartType::SPECIAL_PART_FPGUN;
+				isSpecial = true;
+			}
 			if(type == "GAME_PART_BUTTON")
 			{
 				gameItem->m_type = GamePartType::GAME_PART_BUTTON;

@@ -39,6 +39,8 @@
 #include "Lighting/PointLight.h"
 #include <Application\CubeGame\GamePartRenderNode.h>
 
+#include "Gun/FPGun.h"
+#include "Gun/FPGunMgr.h"
 namespace tzw
 {
 
@@ -76,23 +78,21 @@ namespace tzw
 		m_currPointPart = nullptr;
 
 		m_previewItem = new PreviewItem();
-		m_gunModel = Model::create("Models/Hammer.tzw");
-		auto tex = TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_BaseColor.png", true);
-		m_gunModel->getMat(0)->setTex("DiffuseMap", tex);
-		auto metallicTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Metallic.png", true);
-		m_gunModel->getMat(0)->setTex("MetallicMap", metallicTexture);
+		m_gunModel = FPGunMgr::shared()->loadGun("Guns/AR.json");//FPGunMgr::shared()->loadGun("Guns/Hammer.json");//
 
-		auto roughnessTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Roughness.png", true);
-		m_gunModel->getMat(0)->setTex("RoughnessMap", roughnessTexture);
+		m_gunDict["AR"] = m_gunModel;
+		m_gunDict["Hammer"] = FPGunMgr::shared()->loadGun("Guns/Hammer.json");
+		ADSPos = vec3(0.0,-0.015, -0.07);
+		hipPos = vec3(0.12,0.0, -0.22);
 
-		auto normalMapTexture =  TextureMgr::shared()->getByPath("Models/Hammer_DefaultMaterial_Normal.png", true);
-		m_gunModel->getMat(0)->setTex("NormalMap", normalMapTexture);
-		m_gunModel->setPos(0.12,0.33, -0.22);
-		m_gunModel->setRotateE(vec3(0, 3, 0));
-		float scale = 0.9;
-		m_gunModel->setScale(vec3(scale, scale, scale));
-		m_gunModel->setIsAccpectOcTtree(false);
-		m_camera->addChild(m_gunModel);
+		
+		//m_gunModel->setPos(0.12,0.6, -0.22);
+		//m_gunModel->setRotateE(vec3(0, -90.f, 0));
+		float scale = 0.01;
+		//m_gunModel->setScale(vec3(scale, scale, scale));
+		//m_gunModel->setIsAccpectOcTtree(false);
+		m_camera->addChild(m_gunModel->getModel());
+		m_camera->addChild(m_gunDict["Hammer"]->getModel());
 
 		m_footstep = AudioSystem::shared()->createSound("Audio/footstep.wav");
 		m_hitGroundSound = AudioSystem::shared()->createSound("Audio/land.ogg");
@@ -130,8 +130,12 @@ namespace tzw
 		AudioSystem::shared()->setListenerParam(getPos(),m_camera->getForward(), vec3(0,1, 0));
 		static float theTime = 0.0f;
 		static float stepLoopTime = 0.0f;
-		vec3 oldPos = m_gunModel->getPos();
+		//vec3 oldPos = m_gunModel->getPos();
 		float offset = 0.002;
+		if(isAdsMode)
+		{
+			offset = 0.0005;
+		}
 		float freq = 1.2;
 		if (m_camera->getIsMoving() && m_camera->isOnGround())
 		{
@@ -142,11 +146,26 @@ namespace tzw
 				event.setVolume(1.2f);
 				stepLoopTime = 0.0;
 			}
-			offset = 0.006;
-			freq = 6;
+			if(isAdsMode)
+			{
+				offset = 0.0008;
+			}
+			else
+			{
+				offset = 0.006;
+			}
+			freq = 8;
 		}
 		theTime += freq * dt;
-		m_gunModel->setPos(vec3(oldPos.x, -0.14 + sinf(theTime) * offset, oldPos.z));
+		if(isAdsMode)
+		{
+			//m_gunModel->setPos(vec3(ADSPos.x, ADSPos.y + sinf(theTime) * offset, ADSPos.z));
+		}
+		else
+		{
+			//m_gunModel->setPos(vec3(hipPos.x, hipPos.y + sinf(theTime) * offset, hipPos.z));
+		}
+		m_gunModel->tick(m_camera->getIsMoving() && m_camera->isOnGround(), dt);
 		if (checkIsNeedUpdateChunk())
 		{
 			GameWorld::shared()->loadChunksAroundPlayer();
@@ -312,6 +331,13 @@ namespace tzw
 
 	bool CubePlayer::onMousePress(int button, vec2 thePos)
 	{
+		printf("button %d\n", button);
+		if(button == 1)
+		{
+			isAdsMode = !isAdsMode;
+			m_gunModel->toggleADS(false);
+		}
+		
 		if (GameUISystem::shared()->isVisible())
 				return false;
 		return true;
@@ -569,11 +595,22 @@ namespace tzw
 			m_currSelectedItem = nullptr;
 		}
 		m_currSelectedItem = GameItemMgr::shared()->getItem(itemName);
+		if(m_currSelectedItem && m_currSelectedItem->getTypeInInt() == (int)GamePartType::SPECIAL_PART_FPGUN)
+		{
+			m_gunModel->getModel()->setIsVisible(false);
+			m_gunModel = m_gunDict["AR"];
+			m_gunModel->getModel()->setIsVisible(true);
+		}
+		else
+		{
+			m_gunModel->getModel()->setIsVisible(false);
+			m_gunModel = m_gunDict["Hammer"];
+			m_gunModel->getModel()->setIsVisible(true);
+		}
 		updateCrossHairTipsInfo();
 		if(!m_currSelectedItem) return;
 		if(itemName == "Painter") return;
 		m_previewItem->setPreviewItem(GameItemMgr::shared()->getItem(itemName));
-
 	}
 
 	void CubePlayer::setPreviewAngle(float angle)

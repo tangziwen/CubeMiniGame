@@ -114,7 +114,7 @@ namespace tzw
 
 	void imgui_Image(DeviceTexture* val, ImVec2 size)
 	{
-		ImGui::Image(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 0), ImVec2(1,1));
+		ImGui::Image(reinterpret_cast<ImTextureID> (val), size, ImVec2(0, 1), ImVec2(1, 0));
 	}
 	
 	void imgui_PushStyleColor(int styleEnum, ImVec4 color)
@@ -225,7 +225,10 @@ namespace tzw
 
 		BIND_BEGIN_CLASS_PY(GUISystem)
 		BIND_SINGLETON_PY(GUISystem)
-		BIND_FUNC_PY(GUISystem, isUiCapturingInput);
+		BIND_FUNC_PY(GUISystem, isUiCapturingInput)
+		BIND_FUNC_PY(GUISystem, imguiUseNormalFont)
+		BIND_FUNC_PY(GUISystem, imguiUseSmallFont)
+		BIND_FUNC_PY(GUISystem, imguiUseLargeFont);
 
 		
 		BIND_MODULE_CUSTOM_FUNC_PY("g_GetCurrScene", &g_GetCurrScene);
@@ -294,6 +297,11 @@ namespace tzw
 		BIND_MODULE_FUNC_PY(ImGui, BeginDragDropTargetAnyWindow);
 		BIND_MODULE_FUNC_PY(ImGui, EndDragDropTarget);
 		BIND_MODULE_FUNC_PY(ImGui, Separator);
+		BIND_MODULE_FUNC_PY(ImGui, GetCursorPosX);
+		BIND_MODULE_FUNC_PY(ImGui, SetCursorPosX);
+		BIND_MODULE_FUNC_PY(ImGui, CalcTextSize);
+		BIND_MODULE_FUNC_PY(ImGui, PopFont);
+		
 		BIND_MODULE_CUSTOM_FUNC_PY("RadioButton", static_cast<bool (*)(const char*, bool)>(ImGui::RadioButton));
 		BIND_MODULE_CUSTOM_FUNC_PY("Text", &imgui_text);
 		BIND_MODULE_CUSTOM_FUNC_PY("TextWrapped", &imgui_textwrapped);
@@ -441,6 +449,8 @@ namespace tzw
 		.addFunction("PushID", static_cast<void (*)(int)>(ImGui::PushID))
 		.addFunction("PushID_str", static_cast<void (*)(const char *)>(ImGui::PushID))
 		BIND_FUNC(ImGui, PopID)
+		BIND_FUNC(ImGui, GetCursorPosX)
+		BIND_FUNC(ImGui, SetCursorPosX)
 		BIND_FUNC(ImGui, BeginDragDropTarget)
 		BIND_FUNC(ImGui, BeginDragDropTargetAnyWindow)
 		BIND_FUNC(ImGui, EndDragDropTarget)

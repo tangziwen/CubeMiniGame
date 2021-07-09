@@ -95,7 +95,7 @@ namespace tzw {
 		auto node = Camera();
 		node.setPos(0.5, 0.5, 0.5);
 		node.lookAt(vec3(0, 0, 0), vec3(0, 1, 0));
-
+		renderquue->clearCommands();
 		if(m_node->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Drawable))
 		{
 			for (int i = 0; i < m_node->getMeshCount(); i++)

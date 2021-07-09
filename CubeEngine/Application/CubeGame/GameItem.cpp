@@ -24,7 +24,7 @@ namespace tzw
 
 	bool GameItem::isSpecialFunctionItem()
 	{
-		return (m_type == GamePartType::GAME_PART_LIFT) || (m_type == GamePartType::SPECIAL_PART_PAINTER) ||(m_type == GamePartType::SPECIAL_PART_DIGGER)  ;
+		return (m_type == GamePartType::GAME_PART_LIFT) || (m_type == GamePartType::SPECIAL_PART_PAINTER) ||(m_type == GamePartType::SPECIAL_PART_DIGGER)||(m_type == GamePartType::SPECIAL_PART_FPGUN)  ;
 	}
 
 	bool GameItem::hasAttributePanel()

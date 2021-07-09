@@ -19,7 +19,6 @@ void DebugSystem::handleDraw(float dt)
 
 void DebugSystem::doRender(RenderQueue * queue,float dt)
 {
-	return;
 	if(m_line->getLineCount() > 0)
 	{
 		m_line->initBuffer();

@@ -17,6 +17,7 @@ namespace tzw
 	class PartSurface;
 	class Audio;
 	class AudioEvent;
+	class FPGun;
 	class CubePlayer : public EventListener, public IMGUIObject
 	{
 	public:
@@ -82,7 +83,7 @@ namespace tzw
 		FPSCamera* m_camera;
 		OrbitCamera * m_orbitcamera;
 		FPSCamera * m_fpvCamera;
-		Model* m_gunModel;
+		FPGun* m_gunModel;
 		int oldPosX;
 		int oldPosZ;
 		int m_currSelectItemIndex;
@@ -94,6 +95,10 @@ namespace tzw
 		InSeatViewMode m_seatViewMode;
 		Audio * m_footstep;
 		Audio * m_hitGroundSound;
+		vec3 ADSPos;
+		vec3 hipPos;
+		bool isAdsMode = false;
+		std::unordered_map<std::string, FPGun *> m_gunDict;
 	};
 } // namespace tzw
 
