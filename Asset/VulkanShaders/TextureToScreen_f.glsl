@@ -264,21 +264,21 @@ float FilmWhiteClip = 0.035;
 
 vec3 FilmToneMap( vec3 LinearColor ) 
 {
-	const mat3 sRGB_2_AP0 = XYZ_2_AP0_MAT * (D65_2_D60_CAT * sRGB_2_XYZ_MAT);//mul( XYZ_2_AP0_MAT, mul( D65_2_D60_CAT, sRGB_2_XYZ_MAT ) );
-	const mat3 sRGB_2_AP1 = XYZ_2_AP1_MAT * (D65_2_D60_CAT * sRGB_2_XYZ_MAT); //mul( XYZ_2_AP1_MAT, mul( D65_2_D60_CAT, sRGB_2_XYZ_MAT ) );
+	const mat3 sRGB_2_AP0 = transpose(XYZ_2_AP0_MAT) * (transpose(D65_2_D60_CAT) * transpose(sRGB_2_XYZ_MAT));//mul( XYZ_2_AP0_MAT, mul( D65_2_D60_CAT, sRGB_2_XYZ_MAT ) );
+	const mat3 sRGB_2_AP1 = transpose(XYZ_2_AP1_MAT) * (transpose(D65_2_D60_CAT) * transpose(sRGB_2_XYZ_MAT)); //mul( XYZ_2_AP1_MAT, mul( D65_2_D60_CAT, sRGB_2_XYZ_MAT ) );
 
-	const mat3 AP0_2_sRGB = XYZ_2_sRGB_MAT* ( D60_2_D65_CAT * AP0_2_XYZ_MAT );//mul( XYZ_2_sRGB_MAT, mul( D60_2_D65_CAT, AP0_2_XYZ_MAT ) );
-	const mat3 AP1_2_sRGB =  XYZ_2_sRGB_MAT * ( D60_2_D65_CAT * AP1_2_XYZ_MAT );//mul( XYZ_2_sRGB_MAT, mul( D60_2_D65_CAT, AP1_2_XYZ_MAT ) );
+	const mat3 AP0_2_sRGB = transpose(XYZ_2_sRGB_MAT)* ( transpose(D60_2_D65_CAT) * transpose(AP0_2_XYZ_MAT) );//mul( XYZ_2_sRGB_MAT, mul( D60_2_D65_CAT, AP0_2_XYZ_MAT ) );
+	const mat3 AP1_2_sRGB =  transpose(XYZ_2_sRGB_MAT) * ( transpose(D60_2_D65_CAT) * transpose(AP1_2_XYZ_MAT) );//mul( XYZ_2_sRGB_MAT, mul( D60_2_D65_CAT, AP1_2_XYZ_MAT ) );
 	
-	const mat3 AP0_2_AP1 = XYZ_2_AP1_MAT * AP0_2_XYZ_MAT;//mul( XYZ_2_AP1_MAT, AP0_2_XYZ_MAT );
-	const mat3 AP1_2_AP0 = XYZ_2_AP0_MAT * AP1_2_XYZ_MAT;//mul( XYZ_2_AP0_MAT, AP1_2_XYZ_MAT );
+	const mat3 AP0_2_AP1 = transpose(XYZ_2_AP1_MAT) * transpose(AP0_2_XYZ_MAT);//mul( XYZ_2_AP1_MAT, AP0_2_XYZ_MAT );
+	const mat3 AP1_2_AP0 = transpose(XYZ_2_AP0_MAT) * transpose(AP1_2_XYZ_MAT);//mul( XYZ_2_AP0_MAT, AP1_2_XYZ_MAT );
 	
 	vec3 ColorAP1 = LinearColor;
 	//vec3 ColorAP1 = mul( sRGB_2_AP1, vec3(LinearColor) );
 	
 
 
-	vec3 ColorAP0 = ColorAP1 * AP1_2_AP0;//mul( AP1_2_AP0, ColorAP1 );
+	vec3 ColorAP0 = AP1_2_AP0 * ColorAP1;//mul( AP1_2_AP0, ColorAP1 );
 
 
 #if 1
@@ -307,7 +307,7 @@ vec3 FilmToneMap( vec3 LinearColor )
 #endif
 	
 	// Use ACEScg primaries as working space
-	vec3 WorkingColor = ColorAP0 * AP0_2_AP1_MAT;//mul( AP0_2_AP1_MAT, ColorAP0 );
+	vec3 WorkingColor = transpose(AP0_2_AP1_MAT) * ColorAP0;//mul( AP0_2_AP1_MAT, ColorAP0 );
 
 	WorkingColor = max( vec3(0, 0, 0), WorkingColor );
 
@@ -359,7 +359,29 @@ vec3 FilmToneMap( vec3 LinearColor )
 	return max( vec3(0.0), ToneColor );
 }
 
+
+float sdSquare(vec2 point, float width) {
+	vec2 d = abs(point) - width;
+	return min(max(d.x,d.y),0.0) + length(max(d,0.0));
+}
+
+float vignette(vec2 uv, vec2 size, float roundness, float smoothness) {
+	// Center UVs
+	uv -= 0.5;
+
+	// Shift UVs based on the larger of width or height
+	float minWidth = min(size.x, size.y);
+	uv.x = sign(uv.x) * clamp(abs(uv.x) - abs(minWidth - size.x), 0.0, 1.0);
+	uv.y = sign(uv.y) * clamp(abs(uv.y) - abs(minWidth - size.y), 0.0, 1.0);
+
+	// Signed distance calculation
+	float boxSize = minWidth * (1.0 - roundness);
+	float dist = sdSquare(uv, boxSize) - (minWidth * roundness);
+
+	return 1.0 - smoothstep(0.0, smoothness, dist);
+}
 void main() 
 {
-  out_Color = vec4(pow(FilmToneMap(texture(RenderTarget1, v_texcoord).rgb), vec3(1.0 / 2.2)), 1.0);//vec4( fragColor.rgb, fragColor.a);
+	float vignetteValue = vignette(v_texcoord, vec2(0.4, 0.3), 0.3, 0.58);
+  	out_Color = vec4(pow(FilmToneMap(texture(RenderTarget1, v_texcoord).rgb), vec3(1.0 / 2.2)) * vignetteValue, 1.0);//vec4( fragColor.rgb, fragColor.a);
 }
