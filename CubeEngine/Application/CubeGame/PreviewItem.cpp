@@ -93,7 +93,7 @@ namespace tzw
 		m_currAttachment = 0;
 	}
 
-#pragma optimize("", off)
+
 	void PreviewItem::handlePreview(GameItem* currSelected, vec3 camPos, vec3 playerForwardDir)
 	{
 		bool isNoSelected = !currSelected;

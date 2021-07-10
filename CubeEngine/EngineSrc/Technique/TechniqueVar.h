@@ -37,6 +37,7 @@ struct TechniqueVar
     	CamDir,
         SunDirection,
         SunColor,
+    	CamInfo,
     };
 	struct TexInfo
 	{

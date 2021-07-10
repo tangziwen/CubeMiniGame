@@ -204,7 +204,7 @@ namespace tzw
 		}
 		return adjustToOtherIslandByAlterSelfIsland(attach, selfAttah, degree);
 	}
-#pragma optimize("", off)
+
 	Matrix44 GamePart::adjustToOtherIslandByAlterSelfIsland(Attachment* attach, Attachment* selfAttah, float degree)
 	{
 		Matrix44 attachOuterWorldMat = attach->getAttachmentMatOutterWorld();

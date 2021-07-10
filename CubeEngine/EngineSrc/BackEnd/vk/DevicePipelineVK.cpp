@@ -481,6 +481,17 @@ void DevicePipelineVK::updateUniform()
                             }
 		                }
 		                break;
+						case TechniqueVar::SemanticType::CamInfo:
+						{
+                            if(g_GetCurrScene())
+                            {
+							auto currScene = g_GetCurrScene();
+							auto cam = currScene->defaultCamera();
+							vec4 camInfo(cam->getNear(), cam->getFar(), cam->getFov(), cam->getAspect());
+        					memcpy(offsetDst, &camInfo, blockMember.size);
+                            }
+				        }
+						break;
 		                default: ;
                     }
                 }

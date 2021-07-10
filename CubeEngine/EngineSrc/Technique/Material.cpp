@@ -315,6 +315,10 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				{
 					var.setAsSemantic(TechniqueVar::SemanticType::SunColor);
 				}
+				else if(typeStr =="semantic_CamInfo") 
+				{
+					var.setAsSemantic(TechniqueVar::SemanticType::CamInfo);
+				}
 			}
 			m_varList[theName] = var;
 		}
@@ -774,6 +778,13 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 		{
 			program->setUniform3Float(name.c_str(), g_GetCurrScene()->defaultCamera()->getForward());
 		}
+		break;
+		case TechniqueVar::SemanticType::CamInfo:
+		{
+			auto currScene = g_GetCurrScene();
+			auto cam = currScene->defaultCamera();
+        	program->setUniform4Float(name.c_str(), vec4(cam->getNear(), cam->getFar(), cam->getFov(), cam->getAspect()));
+        }
 		break;
 		default: ;
 	}

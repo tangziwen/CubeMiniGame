@@ -276,7 +276,7 @@ vec3 calculateLightPBR(vec3 albedo, float metallic, vec3 N, vec3 L, vec3 lightCo
 	vec3 ambientDiffuse = diffuseColor * irradiance;
 	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 	vec3 ambient = (ambientDiffuse + ambientSpecular);
-	return (diffuseLambert(diffuseColor) + specular) * radiance * NdotL * shadowFactor + ambient;
+	return (diffuseLambert(diffuseColor) + specular) * radiance * NdotL * shadowFactor;
 }
 void main() 
 {

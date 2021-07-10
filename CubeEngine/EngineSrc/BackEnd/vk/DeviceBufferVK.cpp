@@ -12,7 +12,7 @@ namespace tzw
         m_isUsePool = false;
         m_offset = 0;
     }
-#pragma optimize("", off)
+
     void DeviceBufferVK::allocate(void* data, size_t ammount)
 	{
         auto device = VKRenderBackEnd::shared()->getDevice();

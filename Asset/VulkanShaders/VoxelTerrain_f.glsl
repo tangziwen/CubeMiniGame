@@ -327,4 +327,5 @@ void main()
 	out_position = vec4(v_worldPos.xyz, 1.0);
 	out_normal = vec4(CalcBumpedNormal(getTerrainTex(NormalTex).rgb),1.0);
 	out_mix = vec4(getTerrainTex(RoughnessTex).r,0.0,0.0,1.0);
+  //out_mix = vec4(0.1,0.0,0.0,1.0);
 }

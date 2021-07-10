@@ -8,6 +8,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 	vec3 fog_color;
 	vec2 TU_winSize;
 	mat4 TU_viewProjectInverted;
+	vec4 TU_camInfo;
 } t_shaderUnifom;
 
 
@@ -68,7 +69,7 @@ float getFogFactorEXP(float density, float dist)
 
 float getFogFactor(float depth)
 {
-	float fogFactor = getFogFactorByDist(t_shaderUnifom.fog_near, t_shaderUnifom.fog_far, getDist(0.1, 200, depth));
+	float fogFactor = getFogFactorByDist(t_shaderUnifom.fog_near, t_shaderUnifom.fog_far, getDist(t_shaderUnifom.TU_camInfo.x, t_shaderUnifom.TU_camInfo.y, depth));
 	vec3 worldPos = getWorldPosFromDepth(depth).xyz;
 	float heightFactor = 1.0 - smoothstep(t_shaderUnifom.fog_height_min, t_shaderUnifom.fog_height_max, worldPos.y);
 	float finalFogFactor = heightFactor * fogFactor;

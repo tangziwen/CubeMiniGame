@@ -14,6 +14,7 @@
     "attributes": [
 		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
 		{"name" : "TU_winSize", "type":"semantic_WinSize"},
+		{"name" : "TU_camInfo", "type":"semantic_CamInfo"},
       {
         "name": "fog_near",
         "type": "float",

@@ -28,6 +28,10 @@ public:
     vec3 unproject(vec3 src);
 	vec3 worldToScreen(vec3 worldPos);
 	void getPerspectInfo(float * fov, float * aspect, float * near, float * far);
+	float getFov() const {return m_fov;}
+	float getNear() const {return m_near;}
+	float getFar() const {return m_far;}
+	float getAspect() const {return m_aspect;}
 protected:
     Frustum m_frustum;
     bool m_useCustomFrustumUpdate;
