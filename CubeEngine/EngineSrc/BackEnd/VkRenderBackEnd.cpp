@@ -219,6 +219,13 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         VkAccessFlags dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
         getStageAndAcessMaskFromLayOut(dstLayout, dstStageFlag, dstAccessMask);
 
+		VkImageAspectFlags aspectFlag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+		TAssert(srcTex->getTextureRole() == dstTex->getTextureRole(), "both texture must have same role!");
+
+		if(srcTex->getTextureRole() == TextureRoleEnum::AS_COLOR)
+		{
+			aspectFlag = VK_IMAGE_ASPECT_COLOR_BIT;
+		}
         //我们要拷贝Gbuffer里的深度到LightPass的深度里，好jb麻烦，首先要把Gbuffer的depth layout从shader_read转成transfer_src，把lightPass的depth从depth_attachment转
         //成TransDepth，然后再blit,blit结束后，还要再把这两个图转到各自的layOut(前者是shader_read，后者仍然还是深度attachment)，是个夹心饼干的做法
         VkImageMemoryBarrier barrier{};
@@ -226,7 +233,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         barrier.image = srcTex->getImage();
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        barrier.subresourceRange.aspectMask = aspectFlag;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         barrier.subresourceRange.levelCount = 1;
@@ -246,7 +253,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         barrier.image = dstTex->getImage();
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        barrier.subresourceRange.aspectMask = aspectFlag;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         barrier.subresourceRange.levelCount = 1;
@@ -266,13 +273,13 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         VkImageBlit blit{};
         blit.srcOffsets[0] = {0, 0, 0};
         blit.srcOffsets[1] = {(int32_t)blitSize.x, (int32_t)blitSize.y, 1};
-        blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        blit.srcSubresource.aspectMask = aspectFlag;
         blit.srcSubresource.mipLevel = 0;
         blit.srcSubresource.baseArrayLayer = 0;
         blit.srcSubresource.layerCount = 1;
         blit.dstOffsets[0] = {0, 0, 0};
         blit.dstOffsets[1] = {(int32_t)blitSize.x, (int32_t)blitSize.y, 1};
-        blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        blit.dstSubresource.aspectMask = aspectFlag;
         blit.dstSubresource.mipLevel = 0;
         blit.dstSubresource.baseArrayLayer = 0;
         blit.dstSubresource.layerCount = 1;
@@ -285,7 +292,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         barrier.image = srcTex->getImage();
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        barrier.subresourceRange.aspectMask = aspectFlag;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         barrier.subresourceRange.levelCount = 1;
@@ -304,7 +311,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         barrier.image = dstTex->getImage();
         barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
         barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-        barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        barrier.subresourceRange.aspectMask = aspectFlag;
         barrier.subresourceRange.baseArrayLayer = 0;
         barrier.subresourceRange.layerCount = 1;
         barrier.subresourceRange.levelCount = 1;

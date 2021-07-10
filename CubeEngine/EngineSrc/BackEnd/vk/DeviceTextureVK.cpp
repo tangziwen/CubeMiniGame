@@ -230,7 +230,7 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
     case TextureUsageEnum::SAMPLE_AND_ATTACHMENT:
         if(m_textureRole == TextureRoleEnum::AS_COLOR)
         {
-	        usageFlag |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	        usageFlag |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT |VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
         }
         else if(m_textureRole == TextureRoleEnum::AS_DEPTH)
         {
