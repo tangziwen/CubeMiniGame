@@ -9,11 +9,12 @@
 	"DepthWriteEnable" : false,
 	"BlendEnable" : true,
 	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
+	"DstBlendFactor" : "One",
   "property": {
     "attributes": [
 		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
 		{"name" : "TU_winSize", "type":"semantic_WinSize"},
+		{"name" : "TU_camPos", "type":"semantic_CameraPos"},
       {
         "name": "fog_near",
         "type": "float",

@@ -25,6 +25,7 @@ namespace tzw
 		DeviceRenderStage * m_DeferredLightingStage;
 		DeviceRenderStage * m_PointLightingStage;
 		DeviceRenderStage * m_skyStage;
+		DeviceRenderStage * m_SSRStage;
 		DeviceRenderStage * m_fogStage;
 		DeviceRenderStage * m_transparentStage;
 		DeviceRenderStage * m_thumbNailRenderStage;
@@ -42,6 +43,7 @@ namespace tzw
 		Material * m_shadowInstancedMat;
 		RenderPath * m_renderPath;
 		DeviceTextureVK * m_imguiTextureFont;
+		DeviceTextureVK * m_sceneCopyTex;
 		std::vector<ThumbNail *> m_thumbNailList;
 		void handleThumbNails();
 	};

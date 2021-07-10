@@ -7,10 +7,13 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 	float fog_height_max;
 	vec3 fog_color;
 	vec2 TU_winSize;
+	vec3 TU_camPos;
 	mat4 TU_viewProjectInverted;
 } t_shaderUnifom;
 
-
+layout(set = 1, binding = 0) uniform UniformBufferObject {
+	mat4 VP;
+} t_ObjectUniform;
 
 layout(set = 0, binding = 1) uniform sampler2D RT_albedo;
 layout(set = 0, binding = 2) uniform sampler2D RT_position;
@@ -82,7 +85,35 @@ const float SOFTNESS = 0.45;
 void main() 
 {
 	float depth = texture(RT_depth, getScreenCoord()).r;
-	float fogFactor = getFogFactor(depth);
+	vec3 normal = texture(RT_normal, getScreenCoord() ).xyz;
 	vec3 worldPos = getWorldPosFromDepth(depth).xyz;
-	out_Color = vec4(t_shaderUnifom.fog_color.rgb, fogFactor);
+	vec3 viewDir = normalize(worldPos - t_shaderUnifom.TU_camPos.xyz);
+	vec3 reflectDir = reflect(viewDir, normal);
+	vec3 stepWorldPos = worldPos;
+	vec3 reflectColor = vec3(0, 0, 0);
+	float isHit = 0.0;
+	for(int i = 0; i < 30; i++)
+	{
+
+		stepWorldPos += reflectDir * 0.05;
+
+		vec4 fuckPos = t_ObjectUniform.VP * vec4(stepWorldPos, 1.0);
+		fuckPos.xyz /= fuckPos.w;
+		vec2 newUV = fuckPos.xy;
+		newUV = newUV * 0.5 + vec2(0.5);
+		float currDepth = texture(RT_depth, newUV).r;
+		vec3 sceneColor = texture(RT_SceneCopy, newUV).rgb;
+		if(newUV.x > 1.0 || newUV.x < 0.0 || newUV.y > 1.0 || newUV.y < 0.0)
+		{
+			break;
+		}
+
+		if(fuckPos.z > currDepth)
+		{
+			reflectColor = sceneColor;
+			isHit = 1.0;
+			break;
+		}
+	}
+	out_Color = vec4(reflectColor, isHit * 0.5);
 }

@@ -115,6 +115,25 @@ namespace tzw
         matSkyPass->loadFromTemplate("Sky");
         m_skyStage->createSinglePipeline(matSkyPass);
 
+
+
+
+		m_sceneCopyTex = new DeviceTextureVK();
+		m_sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
+		
+	    Material * matSSR = new Material();
+	    matSSR->loadFromTemplate("SSR");
+	    MaterialPool::shared()->addMaterial("SSR", matSSR);
+        auto SSRPass = backEnd->createDeviceRenderpass_imp();
+        SSRPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+		
+        m_SSRStage = backEnd->createRenderStage_imp();
+        m_SSRStage->init(SSRPass, m_DeferredLightingStage->getFrameBuffer());
+        m_SSRStage->setName("SSR Stage");
+        m_SSRStage->createSinglePipeline(matSSR);
+
+
+		
 	    Material * matFog = new Material();
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
@@ -434,6 +453,39 @@ namespace tzw
             m_renderPath->addRenderStage(m_skyStage);
         }
         //------------Sky Pass end---------------
+
+        //Copy Scene
+        backEnd->blitTexture(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(),
+            static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]), 
+            static_cast<DeviceTextureVK *>(m_sceneCopyTex),
+            m_DeferredLightingStage->getFrameBuffer()->getSize(), 
+            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+        
+        {
+            m_SSRStage->prepare(cmd);
+            m_SSRStage->beginRenderPass();
+            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
+            for(int i =0; i < gbufferTex.size(); i++)
+            {
+                auto tex = gbufferTex[i];
+                m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+            }
+			m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 1, m_sceneCopyTex);
+            DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
+            //update uniform.
+            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
+            itemBuf.map();
+            Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
+            itemBuf.copyFrom(&m, sizeof(Matrix44));
+            itemBuf.unMap();
+            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
+            m_SSRStage->bindSinglePipelineDescriptor(itemDescriptorSet);
+            m_SSRStage->drawScreenQuad();
+            m_SSRStage->endRenderPass();
+            m_SSRStage->finish();
+            m_renderPath->addRenderStage(m_SSRStage);
+        }
+		
         {
             m_fogStage->prepare(cmd);
             m_fogStage->beginRenderPass();
@@ -453,7 +505,7 @@ namespace tzw
         {
             m_aaStage->prepare(cmd);
             m_aaStage->beginRenderPass();
-            auto deferredOutPut = m_DeferredLightingStage->getFrameBuffer()->getTextureList();
+            auto deferredOutPut = m_fogStage->getFrameBuffer()->getTextureList();
 			m_aaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, deferredOutPut[0]);
             m_aaStage->bindSinglePipelineDescriptor();
             m_aaStage->drawScreenQuad();
