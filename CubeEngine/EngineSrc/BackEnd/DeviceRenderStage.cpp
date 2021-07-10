@@ -90,7 +90,7 @@ namespace tzw
 
 
         uint16_t indices[] = {
-         0,  1,  2,  1,  3,  2,
+         0,  2,  1,  1,  2,  3,
 
 		};
         auto ibuffer = VKRenderBackEnd::shared()->createBuffer_imp();

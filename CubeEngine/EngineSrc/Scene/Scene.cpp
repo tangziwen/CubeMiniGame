@@ -108,7 +108,7 @@ void Scene::setDebugInfoPanel(DebugInfoPanel *debugInfoPanel)
 
 void Scene::createDefaultCameras()
 {
-    m_defaultCamera = Camera::CreatePerspective(60.0f,1.0f* Engine::shared()->windowWidth()/Engine::shared()->windowHeight(),0.01,200);
+    m_defaultCamera = Camera::CreatePerspective(60.0f,1.0f* Engine::shared()->windowWidth()/Engine::shared()->windowHeight(),0.01,350);
     m_defaultGUICamera = Camera::CreateOrtho(0,Engine::shared()->windowWidth(),0,Engine::shared()->windowHeight(),-1,100);
 	//m_root.addChild(m_defaultCamera);
 }

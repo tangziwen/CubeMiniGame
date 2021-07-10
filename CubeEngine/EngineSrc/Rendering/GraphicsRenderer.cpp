@@ -120,12 +120,25 @@ namespace tzw
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
         auto fogPass = backEnd->createDeviceRenderpass_imp();
         fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+		
         m_fogStage = backEnd->createRenderStage_imp();
         m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
         m_fogStage->setName("Fog Stage");
         m_fogStage->createSinglePipeline(matFog);
 
 
+        auto FXAAPass = backEnd->createDeviceRenderpass_imp();
+        FXAAPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+	    Material * matFXAA = new Material();
+	    matFXAA->loadFromTemplate("FXAA");
+        auto fxAABuffer = backEnd->createFrameBuffer_imp();
+        fxAABuffer->init(size.x, size.y, FXAAPass);
+		m_aaStage = backEnd->createRenderStage_imp();
+		m_aaStage->init(FXAAPass, fxAABuffer);
+		m_aaStage->setName("FXAA Stage");
+		m_aaStage->createSinglePipeline(matFXAA);
+
+		
         auto transparentPass = backEnd->createDeviceRenderpass_imp();
         transparentPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
         m_transparentStage = backEnd->createRenderStage_imp();
@@ -436,13 +449,24 @@ namespace tzw
             m_fogStage->finish();
             m_renderPath->addRenderStage(m_fogStage);
         }
-
+		
+        {
+            m_aaStage->prepare(cmd);
+            m_aaStage->beginRenderPass();
+            auto deferredOutPut = m_DeferredLightingStage->getFrameBuffer()->getTextureList();
+			m_aaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, deferredOutPut[0]);
+            m_aaStage->bindSinglePipelineDescriptor();
+            m_aaStage->drawScreenQuad();
+            m_aaStage->endRenderPass();
+            m_aaStage->finish();
+            m_renderPath->addRenderStage(m_aaStage);
+        }
         //------------Texture To Screen Pass begin---------------
 
         int imageIdx = backEnd->getCurrSwapIndex();
         m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
         m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
-        auto lightingResultTex = m_fogStage->getFrameBuffer()->getTextureList();
+        auto lightingResultTex = m_aaStage->getFrameBuffer()->getTextureList();
         auto tex = lightingResultTex[0];
         m_textureToScreenRenderStage[imageIdx]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
         m_textureToScreenRenderStage[imageIdx]->bindSinglePipelineDescriptor();

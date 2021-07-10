@@ -28,7 +28,7 @@
       {
         "name": "fog_far",
         "type": "float",
-        "default": 350,
+        "default": 450,
         "ui_info": {
           "range": [
             0,
