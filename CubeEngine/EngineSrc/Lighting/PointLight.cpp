@@ -16,6 +16,7 @@ PointLight::PointLight()
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::PointLight);
 	m_localAABB.setMin(vec3(-m_radius, -m_radius,- m_radius));
 	m_localAABB.setMax(vec3(m_radius, m_radius, m_radius));
+	Drawable3D::reCache();
 }
 
 void PointLight::tick(float dt)
@@ -31,6 +32,9 @@ float PointLight::getRadius() const
 void PointLight::setRadius(const float radius)
 {
 	m_radius = radius;
+	m_localAABB.setMin(vec3(-m_radius, -m_radius,- m_radius));
+	m_localAABB.setMax(vec3(m_radius, m_radius, m_radius));
+	reCache();
 }
 
 } // namespace tzw

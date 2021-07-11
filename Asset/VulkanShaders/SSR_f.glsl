@@ -171,8 +171,8 @@ void main()
 					stepLength *= 0.5;
 					stepDirection = -1.0;
 					//放水
-					epsilon += 0.00005;
-					epsilon = min(epsilon, 0.0003);
+					epsilon += 0.00002;
+					epsilon = min(epsilon, 0.0002);
 				}
 			}
 			else // make larger step.

@@ -37,6 +37,8 @@ Data Tfile::getData(std::string filename, bool forString)
 	for(const auto& searchPath :m_searchPath)
 	{
 		std::string realFileName = searchPath + filename;
+
+		
           // Read the file from hardware
 		FILE *fp = fopen(realFileName.c_str (), mode);	
 		if(!fp)

@@ -4,6 +4,7 @@
 #include "SOIL2/stb_image.h"
 #include "../VkRenderBackEnd.h"
 #include "Utility/file/Tfile.h"
+#include "Utility/log/Log.h"
 
 namespace tzw
 {
@@ -15,6 +16,10 @@ DeviceTextureVK::DeviceTextureVK(const unsigned char* buff, size_t size)
 DeviceTextureVK::DeviceTextureVK(std::string filepath)
 {
     m_filePath = filepath;
+	if(filepath.find("terrain_atlas_roughness") != std::string::npos)
+	{
+		tlog("shit");
+	}
     auto data =Tfile::shared()->getData(filepath,false);
     initData(data.getBytes(), data.getSize());
 }

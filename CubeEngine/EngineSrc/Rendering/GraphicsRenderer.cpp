@@ -388,7 +388,8 @@ namespace tzw
             for(auto obj : pointlightList)
             {
                 PointLight* p = static_cast<PointLight*>(obj);
-
+                if(!p->getIsVisible())
+                    continue;;
                 DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(PointLightUniform));
                 PointLightUniform uniform;
                 //update uniform.

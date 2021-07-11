@@ -340,11 +340,20 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 				bool isNeedMipMap = true;
 				if(Tfile::shared()->isExist(filePathInfolder))
 				{
+					if(filePathInfolder.find("terrain_atlas_roughness") != std::string::npos)
+					{
+						tlog("shit b");
+					}
 					t = TextureMgr::shared()->getByPath(filePathInfolder, isNeedMipMap);
 					
 				}
 				else
 				{
+					std::string path = tex[2].GetString();
+					if(path.find("terrain_atlas_roughness") != std::string::npos)
+					{
+						tlog("shit a");
+					}
 					t = TextureMgr::shared()->getByPath(tex[2].GetString(), isNeedMipMap);
 				}
 				setTex(name, t);

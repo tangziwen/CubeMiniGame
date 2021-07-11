@@ -139,10 +139,10 @@ BulletMgr::fire(Node * parentNode, vec3 testStartPos, vec3 fromPos,
         g_GetCurrScene()->addNode(emitter);
       }
 
-      auto line = new LaserPrimitive(fromPos, fromPos + direction * 15, 0.3, true);
+      auto line = new LaserPrimitive(fromPos, fromPos + direction * 15, 0.5, true);
       g_GetCurrScene()->addNode(line);
       bulletPtr = new LaserBullet(line);
-      bulletPtr->setDuration(0.1);
+      bulletPtr->setDuration(0.032);
     } break;
     case BulletType::Projecttile: {
       float blockSize = 0.2;

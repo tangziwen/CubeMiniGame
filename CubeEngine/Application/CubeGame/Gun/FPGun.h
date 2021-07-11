@@ -3,6 +3,8 @@
 #include "EngineSrc/3D/Model/Model.h"
 namespace tzw
 {
+class Audio;
+class PointLight;
 class FPGun
 {
 public:
@@ -18,7 +20,10 @@ protected:
 	FPGunData * m_data {nullptr};
 	Model * m_model {nullptr};
 	bool m_isAds {false};
+	PointLight * m_pointLight {nullptr};
 	float m_shakeTime {0.f};
+	float m_flashTime {0.f};
+	Audio * m_fireSound {nullptr};
 };
 
 

@@ -140,6 +140,7 @@ void Mesh::calcTangents()
 	    Bitangent.y = f * (-DeltaU2 * Edge1.y - DeltaU1 * Edge2.y);
 	    Bitangent.z = f * (-DeltaU2 * Edge1.z - DeltaU1 * Edge2.z);
 
+
 	    v0.m_tangent += Tangent;
 	    v1.m_tangent += Tangent;
 	    v2.m_tangent += Tangent;
@@ -148,6 +149,7 @@ void Mesh::calcTangents()
     size_t vertexCount = m_vertices.size();
     // Normalize all the vertex normals
     for (unsigned int i = 0 ; i < vertexCount ; i++) {
+    	
         m_vertices[i].m_tangent.normalize();
     }
 }

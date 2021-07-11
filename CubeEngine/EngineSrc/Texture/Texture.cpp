@@ -31,6 +31,7 @@ namespace tzw
 		else
 		{
 			loadingFlag = SOIL_FLAG_INVERT_Y;
+			
 		}
 		this->m_textureId =  Engine::shared()->getRenderBackEnd()->loadTexture_imp(data.getBytes(),data.getSize(),loadingFlag);//SOIL_load_OGL_texture_from_memory(data.getBytes(),data.getSize(), SOIL_LOAD_AUTO, SOIL_CREATE_NEW_ID, loadingFlag, &info);
 		m_type = RenderFlag::TextureType::Texture2D;

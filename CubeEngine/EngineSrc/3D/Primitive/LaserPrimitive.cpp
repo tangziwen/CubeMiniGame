@@ -63,11 +63,11 @@ void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueu
 void LaserPrimitive::initBuffer()
 {
 	m_mesh = new Mesh();
-	vec3 lB =m_begin - vec3(0.05, 0, 0);
-	vec3 rB =m_begin + vec3(0.05, 0, 0);
+	vec3 lB =m_begin - vec3(m_width * 0.01, 0, 0);
+	vec3 rB =m_begin + vec3(m_width * 0.01, 0, 0);
 
-	vec3 lE =m_end - vec3(0.05, 0, 0);
-	vec3 rE =m_end + vec3(0.05, 0, 0);
+	vec3 lE =m_end - vec3(m_width * 0.01, 0, 0);
+	vec3 rE =m_end + vec3(m_width * 0.01, 0, 0);
 
 	m_mesh->addVertex(VertexData(lB, vec2(0.0f, 0.0f)));
 	m_mesh->addVertex(VertexData(rB,vec2(0.0f, 1.0f)));
@@ -84,11 +84,11 @@ void LaserPrimitive::initBuffer()
 
 
 
-	vec3 lB1 =m_begin - vec3(0.0, 0.0, 0.05);
-	vec3 rB1 =m_begin + vec3(0.0, 0.0, 0.05);
+	vec3 lB1 =m_begin - vec3(0.0, 0.0, m_width * 0.01);
+	vec3 rB1 =m_begin + vec3(0.0, 0.0, m_width * 0.01);
 
-	vec3 lE1 =m_end - vec3(0.0, 0.0, 0.05);
-	vec3 rE1 =m_end + vec3(0.0, 0.0, 0.05);
+	vec3 lE1 =m_end - vec3(0.0, 0.0, m_width * 0.01);
+	vec3 rE1 =m_end + vec3(0.0, 0.0, m_width * 0.01);
 
 	m_mesh->addVertex(VertexData(lB1, vec2(0.0f, 0.0f)));
 	m_mesh->addVertex(VertexData(rB1,vec2(0.0f, 1.0f)));

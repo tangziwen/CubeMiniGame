@@ -146,7 +146,7 @@ vec3 atmosphere(vec3 r, vec3 r0, vec3 pSun, float iSun, float rPlanet, float rAt
 void main() 
 {
 	float depth = texture(DepthMap, getScreenCoord()).r;
-	float dFactor = step(depth, 0.9999);
+	float dFactor = step(depth, 0.999995);
 	float time = 0.0;
     vec3 skyColor = atmosphere(
         v_position,           // normalized ray direction

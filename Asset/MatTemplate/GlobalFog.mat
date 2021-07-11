@@ -18,7 +18,7 @@
       {
         "name": "fog_near",
         "type": "float",
-        "default": 50,
+        "default": 12,
         "ui_info": {
           "range": [
             0,
@@ -29,7 +29,7 @@
       {
         "name": "fog_far",
         "type": "float",
-        "default": 450,
+        "default": 250,
         "ui_info": {
           "range": [
             0,
@@ -51,7 +51,7 @@
       {
         "name": "fog_height_max",
         "type": "float",
-        "default": 120,
+        "default": 100,
         "ui_info": {
           "range": [
             0,

@@ -38,12 +38,12 @@ void main() {
 	mat4 modelMatrix = a_instance_offset;
 	gl_Position = t_ObjectUniform.mvp * modelMatrix * vec4(inPosition,1.0);
 	v_normal = (t_ObjectUniform.TU_mMatrix * modelMatrix* vec4(inNormal,0.0)).xyz;
-	v_tangent = (t_ObjectUniform.TU_mMatrix * modelMatrix * vec4(inTangent,0.0)).xyz;
+	v_tangent = (t_ObjectUniform.TU_mMatrix * modelMatrix * vec4(clamp(inTangent, vec3(-1, -1, -1), vec3(1, 1, 1)),0.0)).xyz;
 	v_color = a_instance_offset2.xyz;
 #else
     gl_Position = t_ObjectUniform.mvp * vec4(inPosition, 1.0);
 	v_normal = (t_ObjectUniform.TU_mMatrix * vec4(inNormal,0.0)).xyz;
-	v_tangent = (t_ObjectUniform.TU_mMatrix * vec4(inTangent,0.0)).xyz;
+	v_tangent = (t_ObjectUniform.TU_mMatrix * vec4(clamp(inTangent, vec3(-1, -1, -1), vec3(1, 1, 1)),0.0)).xyz;
 	v_color = vec3(1.0, 1.0, 1.0);
 #endif
 	v_texcoord = texcoord;

@@ -2,8 +2,9 @@
 
 #include "CubeGame/BulletMgr.h"
 #include "CubeGame/GameUISystem.h"
+#include "Lighting/PointLight.h"
 #include "Scene/SceneMgr.h"
-
+#include "AudioSystem/AudioSystem.h"
 namespace tzw
 {
 
@@ -15,6 +16,14 @@ FPGun::FPGun(FPGunData * gunData):
 	m_model->setRotateE(m_data->m_rotateE);
 	m_model->setScale(vec3(m_data->m_scale, m_data->m_scale, m_data->m_scale));
 	m_model->setIsAccpectOcTtree(false);
+    auto pointLight = new PointLight();
+    pointLight->setRadius(5);
+    pointLight->setLightColor(vec3(5, 2.5, 0));
+    pointLight->setPos(vec3(-33.408, 0, 0));
+	pointLight->setIsVisible(false);
+	m_pointLight = pointLight;
+	g_GetCurrScene()->addNode(pointLight);
+	m_fireSound = AudioSystem::shared()->createSound("Sound/m4a1.wav");
 }
 
 void FPGun::setIsADS(bool isADS, bool isNeedTransient)
@@ -39,6 +48,16 @@ void FPGun::toggleADS(bool isNeedTransient)
 
 void FPGun::tick(bool isMoving, float dt)
 {
+	if(m_pointLight->getIsVisible())
+	{
+		m_flashTime += dt;
+		if(m_flashTime > 0.035)
+		{
+			m_pointLight->setIsVisible(false);
+			m_flashTime = 0.0;
+		}
+	}
+
 	float offset = 0.002;
 	if(m_isAds)
 	{
@@ -72,6 +91,14 @@ void FPGun::shoot()
 {
 	auto cam = g_GetCurrScene()->defaultCamera();
 	auto mdata = cam->getTransform().data();
-	auto bullet = BulletMgr::shared()->fire(nullptr,cam->getWorldPos() ,cam->getWorldPos() + vec3(mdata[0], mdata[1], mdata[2]) * 0.25, cam->getForward(), 15, BulletType::HitScanTracer);
+	vec3 gunPointPos = m_model->getTransform().transformVec3(vec3(-33.408,0, 0));
+	
+	auto bullet = BulletMgr::shared()->fire(nullptr,cam->getWorldPos() ,gunPointPos, cam->getForward(), 15, BulletType::HitScanTracer);
+	m_pointLight->setIsVisible(true);
+	m_pointLight->setPos(cam->getWorldPos() + cam->getForward() * 0.15);
+	m_flashTime = 0.0;
+	auto event = m_fireSound->playWithOutCare();
+	event.setVolume(1.2f);
 }
 }
+
