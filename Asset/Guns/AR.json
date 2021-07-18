@@ -1,0 +1,11 @@
+{
+	"FilePath":"Models/gun.tzw",
+	"ADSPos":[0.0,-0.015, -0.07],
+	"HipPos":[0.065,-0.018, -0.17],
+	"Scale":0.01,
+	"Rotate":[0, -90, 0],
+	"MagCapacity":30,
+	"PreserveAmmoCapacity":150,
+	"Damage":25,
+	"IsAllowADS":true
+}
