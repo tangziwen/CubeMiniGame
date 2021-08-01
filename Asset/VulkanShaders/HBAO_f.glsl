@@ -98,14 +98,14 @@ float Falloff(float DistanceSquare)
   return DistanceSquare * NEG_INV_R2  + 1.0;
 }
 
-#define NOV_Bias 0.1
+#define NOV_Bias 0.15
 float computeAO(vec3 shadingPoint, vec3 marchingPoint, vec3 shadingPointNormal)
 {
 	
 	vec3 V = marchingPoint - shadingPoint;
 	float VdotV = dot(V, V);
 	float NdotV = dot(shadingPointNormal, V) * (1.0/sqrt(VdotV));
-	return clamp(NdotV - NOV_Bias, 0, 1) * clamp(Falloff(VdotV), 0.0, 1.0);
+	return clamp(NdotV - NOV_Bias, 0, 1)* clamp(Falloff(VdotV),0,1);
 }
 
 void main() 
@@ -125,11 +125,11 @@ void main()
 		vec3 Rand = texture(jitterTex, getJitterScreenCoord() ).xyz;
 		Rand.xy = Rand.xy * 2.0 - 1.0;
 		vec2 Direction = RotateDirection(vec2(cos(Angle), sin(Angle)), Rand.xy);
-		float detectRadius = (1.0 / t_shaderUnifom.TU_winSize.x) * 30;
+		float detectRadius = (1.0 ) * 30;
 		vec2 stepUV = baseUV;
 		for (float StepIndex = 0; StepIndex < NUM_STEPS; ++StepIndex)
 		{
-			stepUV += Direction * (detectRadius / NUM_STEPS);
+			stepUV += Direction * (detectRadius / NUM_STEPS)* (1.0 / t_shaderUnifom.TU_winSize.xy) ;
 			float depthA = texture(RT_depth, stepUV).r;
 			vec3 worldPosA = getWorldPosFromDepth(depthA).xyz;
 			AO += computeAO(worldPos, worldPosA, normal);
