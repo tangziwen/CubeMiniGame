@@ -128,7 +128,7 @@ namespace tzw
 			std::mt19937 rmt;
 			
 			unsigned char *  jitterTexMem  = (unsigned char * )malloc(8 * 8 * 4);
-			float numDir = 4.0;
+			float numDir = 8.0;
 			for(int w = 0; w < 8; w++)
 			{
 				for(int h = 0; h< 8; h++)

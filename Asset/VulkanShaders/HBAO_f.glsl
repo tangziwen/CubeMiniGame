@@ -31,7 +31,7 @@ layout(location = 0) out vec4 out_Color;
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 v_texcoord;
 
-#define NUM_DIRECTIONS 4
+#define NUM_DIRECTIONS 8
 #define NUM_STEPS 4
 vec2 getScreenCoord()
 {
@@ -91,7 +91,7 @@ vec2 RotateDirection(vec2 Dir, vec2 CosSin)
   return vec2(Dir.x*CosSin.x - Dir.y*CosSin.y,
               Dir.x*CosSin.y + Dir.y*CosSin.x);
 }
-#define NEG_INV_R2 -1.0/ (1.0 * 1.0)
+#define NEG_INV_R2 -1.0/ (0.5 * 0.5)
 float Falloff(float DistanceSquare)
 {
   // 1 scalar mad instruction
@@ -105,7 +105,7 @@ float computeAO(vec3 shadingPoint, vec3 marchingPoint, vec3 shadingPointNormal)
 	vec3 V = marchingPoint - shadingPoint;
 	float VdotV = dot(V, V);
 	float NdotV = dot(shadingPointNormal, V) * (1.0/sqrt(VdotV));
-	return clamp(NdotV - NOV_Bias, 0, 1) ;
+	return clamp(NdotV - NOV_Bias, 0, 1) * clamp(Falloff(VdotV), 0.0, 1.0);
 }
 
 void main() 
@@ -123,10 +123,10 @@ void main()
 
 		// Compute normalized 2D direction
 		vec3 Rand = texture(jitterTex, getJitterScreenCoord() ).xyz;
-
+		Rand.xy = Rand.xy * 2.0 - 1.0;
 		vec2 Direction = RotateDirection(vec2(cos(Angle), sin(Angle)), Rand.xy);
 		float detectRadius = (1.0 / t_shaderUnifom.TU_winSize.x) * 30;
-		vec2 stepUV = baseUV  + Rand.z * Direction * (detectRadius / NUM_STEPS);
+		vec2 stepUV = baseUV;
 		for (float StepIndex = 0; StepIndex < NUM_STEPS; ++StepIndex)
 		{
 			stepUV += Direction * (detectRadius / NUM_STEPS);
@@ -137,5 +137,5 @@ void main()
 
 	}
 	AO *= 1.0 / (NUM_DIRECTIONS * NUM_STEPS);
-	out_Color = vec4(vec3(1, 1, 1) * (1 - AO), 1.0 );
+	out_Color = vec4(vec3(1, 1, 1) * (1 - clamp(AO, 0.0, 1.0)), 1.0 );
 }
