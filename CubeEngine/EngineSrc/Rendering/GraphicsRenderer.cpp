@@ -1,4 +1,7 @@
 #include "GraphicsRenderer.h"
+
+#include <random>
+
 #include "RenderPath.h"
 #include "BackEnd/vk/DeviceRenderStageVK.h"
 
@@ -117,7 +120,46 @@ namespace tzw
 
 
 
+	    Material * matHBAO = new Material();
+	    matHBAO->loadFromTemplate("HBAO");
+		static Texture * jitterTex = nullptr;
+		if(!jitterTex)
+		{
+			std::mt19937 rmt;
+			
+			unsigned char *  jitterTexMem  = (unsigned char * )malloc(8 * 8 * 4);
+			float numDir = 4.0;
+			for(int w = 0; w < 8; w++)
+			{
+				for(int h = 0; h< 8; h++)
+				{
+				    float Rand1 = static_cast<float>(rmt()) / 4294967296.0f;
+				    float Rand2 = static_cast<float>(rmt()) / 4294967296.0f;
 
+				    // Use random rotation angles in [0,2PI/NUM_DIRECTIONS)
+				    float Angle       = 2.f * 3.14156 * Rand1 / numDir;
+                    int index = h * 8 * 4 + w * 4;
+					float tmp = cosf(Angle);
+					float tmp1 = tmp * 0.5 + 0.5;
+					float tmp2 = tmp1 * 255;
+				    jitterTexMem[index] = (unsigned char)(tmp2);
+				    jitterTexMem[index + 1] = (unsigned char)((sinf(Angle) * 0.5 + 0.5) * 255);
+				    jitterTexMem[index + 2] = (unsigned char)(Rand2 * 255);
+				    jitterTexMem[index + 3] = 0;
+				}
+			}
+			jitterTex = new Texture(jitterTexMem, 8, 8, ImageFormat::R8G8B8A8);
+		}
+		matHBAO->setTex("jitterTex", jitterTex);
+	    MaterialPool::shared()->addMaterial("HBAO", matHBAO);
+        auto HBAOPass = backEnd->createDeviceRenderpass_imp();
+        HBAOPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+
+        m_HBAOStage = backEnd->createRenderStage_imp();
+        m_HBAOStage->init(HBAOPass, m_DeferredLightingStage->getFrameBuffer());
+        m_HBAOStage->setName("HBAO Stage");
+        m_HBAOStage->createSinglePipeline(matHBAO);
+		
 		m_sceneCopyTex = new DeviceTextureVK();
 		m_sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
 		
@@ -455,13 +497,39 @@ namespace tzw
         }
         //------------Sky Pass end---------------
 
+        {
+
+
+            m_HBAOStage->prepare(cmd);
+            m_HBAOStage->beginRenderPass();
+            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
+            for(int i =0; i < gbufferTex.size(); i++)
+            {
+                auto tex = gbufferTex[i];
+                m_HBAOStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+            }
+            DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
+            //update uniform.
+            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
+            itemBuf.map();
+            Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
+            itemBuf.copyFrom(&m, sizeof(Matrix44));
+            itemBuf.unMap();
+            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
+            m_HBAOStage->bindSinglePipelineDescriptor(itemDescriptorSet);
+            m_HBAOStage->drawScreenQuad();
+            m_HBAOStage->endRenderPass();
+            m_HBAOStage->finish();
+            m_renderPath->addRenderStage(m_HBAOStage);
+        }
+		
         //Copy Scene
         backEnd->blitTexture(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(),
             static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]), 
             static_cast<DeviceTextureVK *>(m_sceneCopyTex),
             m_DeferredLightingStage->getFrameBuffer()->getSize(), 
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        
+        /*
         {
             m_SSRStage->prepare(cmd);
             m_SSRStage->beginRenderPass();
@@ -486,7 +554,7 @@ namespace tzw
             m_SSRStage->finish();
             m_renderPath->addRenderStage(m_SSRStage);
         }
-		
+		*/
         {
             m_fogStage->prepare(cmd);
             m_fogStage->beginRenderPass();

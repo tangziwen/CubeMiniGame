@@ -26,6 +26,7 @@ namespace tzw
 		DeviceRenderStage * m_PointLightingStage;
 		DeviceRenderStage * m_skyStage;
 		DeviceRenderStage * m_SSRStage;
+		DeviceRenderStage * m_HBAOStage;
 		DeviceRenderStage * m_fogStage;
 		DeviceRenderStage * m_transparentStage;
 		DeviceRenderStage * m_thumbNailRenderStage;
