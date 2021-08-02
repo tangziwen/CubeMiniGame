@@ -151,13 +151,13 @@ namespace tzw
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         if(!m_quadIndexBuffer && !m_quadVertexBuffer)
         {
-            initFullScreenQuad();
+            initFullScreenTriangleOptimized();
         }
         VkBuffer vertexBuffers[] = {static_cast<DeviceBufferVK*>(m_quadVertexBuffer)->getBuffer()};
         VkDeviceSize offsets[] = {0};
         vkCmdBindVertexBuffers(command->getVK(), 0, 1, vertexBuffers, offsets);
         vkCmdBindIndexBuffer(command->getVK(), static_cast<DeviceBufferVK*>(m_quadIndexBuffer)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
-        vkCmdDrawIndexed(command->getVK(), static_cast<uint32_t>(6), 1, 0, 0, 0);
+        vkCmdDrawIndexed(command->getVK(), static_cast<uint32_t>(3), 1, 0, 0, 0);
     }
 
     void DeviceRenderStageVK::drawSphere()

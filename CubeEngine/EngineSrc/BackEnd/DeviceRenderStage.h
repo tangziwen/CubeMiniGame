@@ -44,6 +44,7 @@ public:
 	RenderQueue * getSelfRenderQueue();
 protected:
 	void initFullScreenQuad();
+	void initFullScreenTriangleOptimized();
 	void initSphere();
 	virtual void fetchCommand() = 0;
 	DeviceRenderPass * m_renderPass;

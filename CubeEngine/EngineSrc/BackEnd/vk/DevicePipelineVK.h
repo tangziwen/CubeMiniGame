@@ -32,7 +32,6 @@ public:
 	void updateUniformSingle(std::string name, void * buff, size_t size) override;
 	void resetItemWiseDescritporSet() override;
 	DeviceDescriptor * giveItemWiseDescriptorSet() override;
-	Material * getMat();
 	DeviceRenderItem * getRenderItem(void * obj);
 private:
 	void createDescriptorPool();
@@ -44,7 +43,6 @@ private:
 	int m_currItemWiseDescriptorSetIdx;
 	size_t m_totalItemWiseDesSet;
 	DeviceDescriptorVK * m_materialDescripotrSet;
-	Material * m_mat;
 	VkPipeline m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
 	VkBuffer m_matUniformBuffer;

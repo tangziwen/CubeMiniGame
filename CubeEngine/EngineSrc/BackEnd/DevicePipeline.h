@@ -47,8 +47,13 @@ public:
 	{
 		m_dynamicState = state;
 	}
+	Material * getMat()
+	{
+		return m_mat;
+	}
 protected:
-	uint32_t m_dynamicState;
+	uint32_t m_dynamicState = 0;
+	Material * m_mat = nullptr;
 
 };
 

@@ -561,11 +561,6 @@ DeviceDescriptor * DevicePipelineVK::giveItemWiseDescriptorSet()
     return target;
 }
 
-Material* DevicePipelineVK::getMat()
-{
-    return m_mat;
-}
-
 DeviceRenderItem* DevicePipelineVK::getRenderItem(void* obj)
 {
     auto result = m_renderItemMap.find(obj);

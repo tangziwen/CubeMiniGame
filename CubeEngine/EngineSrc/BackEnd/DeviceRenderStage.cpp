@@ -72,6 +72,31 @@ namespace tzw
 	{
 		return  m_selfRenderQueue;
 	}
+	void DeviceRenderStage::initFullScreenTriangleOptimized()
+	{
+        VertexData vertices[] = {
+            // Vertex data for face 0
+            VertexData(vec3(-1.0f, -1.0f,  1.0f), vec2(0.0f, 0.0f)),  // v0
+            VertexData(vec3( 3.0f, -1.0f,  1.0f), vec2(2.f, 0.0f)), // v1
+            VertexData(vec3(-1.0f,  3.0f,  1.0f), vec2(0.0f, 2.f)),  // v2
+        };
+        auto vbuffer = VKRenderBackEnd::shared()->createBuffer_imp();
+        vbuffer->init(DeviceBufferType::Vertex);
+
+        vbuffer->allocate(vertices, sizeof(vertices[0]) * 3);
+        m_quadVertexBuffer = vbuffer;//static_cast<DeviceBufferVK *>(vbuffer);
+
+
+        uint16_t indices[] = {
+         0,  2,  1,
+
+		};
+        auto ibuffer = VKRenderBackEnd::shared()->createBuffer_imp();
+        ibuffer->init(DeviceBufferType::Index);
+
+        ibuffer->allocate(indices, sizeof(indices));
+        m_quadIndexBuffer = ibuffer;//static_cast<DeviceBufferVK *>(ibuffer);
+	}
 
     void DeviceRenderStage::initFullScreenQuad()
     {
