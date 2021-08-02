@@ -142,14 +142,17 @@ void Matrix44::perspective(float fovy, float aspect, float near, float far)
 	    m_data[1] = 0;
 	    m_data[2] = 0;
 	    m_data[3] = 0;
+
 	    m_data[4] = 0;
 	    m_data[5] = -f;
 	    m_data[6] = 0;
 	    m_data[7] = 0;
+
 	    m_data[8] = 0;
 	    m_data[9] = 0;
 	    m_data[10] = (far) * nf;
 	    m_data[11] = -1;
+
 	    m_data[12] = 0;
 	    m_data[13] = 0;
 	    m_data[14] = (far * near) * nf;

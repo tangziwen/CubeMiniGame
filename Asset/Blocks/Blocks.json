@@ -20,7 +20,7 @@
 			"desc":"突击步枪",
 			"description":"用来开枪",
 			"Type":"SPECIAL_PART_FPGUN",
-			"Icon":"UITexture/Icon/Gun.png"
+			"Icon":"UITexture/Icon/Digger.png"
 		},
 		{
 		"name" : "Lift",

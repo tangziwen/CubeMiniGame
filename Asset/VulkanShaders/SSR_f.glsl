@@ -21,11 +21,11 @@ layout(set = 0, binding = 2) uniform sampler2D RT_position;
 layout(set = 0, binding = 3) uniform sampler2D RT_normal;
 layout(set = 0, binding = 4) uniform sampler2D RT_mix;
 layout(set = 0, binding = 5) uniform sampler2D RT_depth;
-
 layout(set = 0, binding = 6) uniform sampler2D RT_SceneCopy;
+layout(set = 0, binding = 7) uniform sampler2D RT_Ao;
 
-layout(set = 0, binding = 7) uniform sampler2D environmentMap;
-layout(set = 0, binding = 8) uniform sampler2D prefilterMap;
+layout(set = 0, binding = 8) uniform sampler2D environmentMap;
+layout(set = 0, binding = 9) uniform sampler2D prefilterMap;
 layout(location = 0) out vec4 out_Color;
 layout(location = 0) in vec4 fragColor;
 layout(location = 1) in vec2 v_texcoord;
@@ -183,7 +183,7 @@ void main()
 		}
 	}
 	//IBL
-	
+	float AO = texture(RT_Ao, getScreenCoord() ).x;
 	vec3 F0 = vec3(0.08); 
 	F0 = mix(F0, albedo, metallic);
 	vec3 diffuseColor = albedo - albedo * metallic;
@@ -196,7 +196,7 @@ void main()
 	prefilteredColor = pow(prefilteredColor, vec3(2.2));
 	vec3 ambientDiffuse = diffuseColor * irradiance;
 	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
-	vec3 ambient = (ambientDiffuse + mix(ambientSpecular, F0 * reflectColor, isHit));
+	vec3 ambient = (ambientDiffuse * AO + mix(ambientSpecular, F0 * reflectColor, isHit) * AO);
 
 	out_Color = vec4(ambient, 1.0 );
 }

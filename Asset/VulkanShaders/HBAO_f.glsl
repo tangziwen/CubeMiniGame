@@ -10,6 +10,8 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 	vec3 TU_camPos;
 	mat4 TU_viewProjectInverted;
 	vec4 TU_camInfo;
+	vec4 TU_ProjInfo;
+	vec4 TU_RadiusInfo;// radius, radius*radius, radiusToscreen
 } t_shaderUnifom;
 
 layout(set = 1, binding = 0) uniform UniformBufferObject {
@@ -68,6 +70,12 @@ vec4 getWorldPosFromDepth(float depthValue)
   return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
 }
 
+
+vec3 UVToView(vec2 uv, float eye_z)
+{
+  return vec3((uv * t_shaderUnifom.TU_ProjInfo.xy + t_shaderUnifom.TU_ProjInfo.zw) * (eye_z), eye_z);
+}
+
 float getDist( float nonLinearDepth)
 {
 	float near = t_shaderUnifom.TU_camInfo.x;
@@ -75,6 +83,32 @@ float getDist( float nonLinearDepth)
 	float linearDepth = LinearizeDepth(nonLinearDepth);
 	return near + (far - near) * linearDepth;
 }
+
+vec3 FetchViewPos(vec2 UV)
+{
+  float nonlinearZ = textureLod(RT_depth,UV,0).x;
+  float ViewDepth = getDist(nonlinearZ);
+  return UVToView(UV, ViewDepth);
+}
+
+
+vec3 MinDiff(vec3 P, vec3 Pr, vec3 Pl)
+{
+  vec3 V1 = Pr - P;
+  vec3 V2 = P - Pl;
+  return (dot(V1,V1) < dot(V2,V2)) ? V1 : V2;
+}
+
+vec3 ReconstructNormal(vec2 UV, vec3 P)
+{
+  vec3 Pr = FetchViewPos(UV + vec2(1.0 / t_shaderUnifom.TU_winSize.x, 0));
+  vec3 Pl = FetchViewPos(UV + vec2(1.0 / -t_shaderUnifom.TU_winSize.x, 0));
+  vec3 Pt = FetchViewPos(UV + vec2(0, 1.0 / t_shaderUnifom.TU_winSize.y));
+  vec3 Pb = FetchViewPos(UV + vec2(0, 1.0 / -t_shaderUnifom.TU_winSize.y));
+  return normalize(cross(MinDiff(P, Pr, Pl), MinDiff(P, Pt, Pb)));
+}
+
+
 
 //RADIUS of our vignette, where 0.5 results in a circle fitting the screen
 const float RADIUS = 0.8;
@@ -91,11 +125,11 @@ vec2 RotateDirection(vec2 Dir, vec2 CosSin)
   return vec2(Dir.x*CosSin.x - Dir.y*CosSin.y,
               Dir.x*CosSin.y + Dir.y*CosSin.x);
 }
-#define NEG_INV_R2 -1.0/ (0.5 * 0.5)
+
 float Falloff(float DistanceSquare)
 {
   // 1 scalar mad instruction
-  return DistanceSquare * NEG_INV_R2  + 1.0;
+  return DistanceSquare * (-1.0 / t_shaderUnifom.TU_RadiusInfo.y)  + 1.0;
 }
 
 #define NOV_Bias 0.15
@@ -113,7 +147,9 @@ void main()
 	float depth = texture(RT_depth, getScreenCoord()).r;
 	vec3 normal = texture(RT_normal, getScreenCoord() ).xyz;
 	vec3 worldPos = getWorldPosFromDepth(depth).xyz;
-
+	vec3 viewPos = FetchViewPos(getScreenCoord()).xyz;
+	vec3 normalView = ReconstructNormal(getScreenCoord(), viewPos);
+	
 	const float Alpha = 2.0 * PI / NUM_DIRECTIONS;
 	float AO = 0;
 	vec2 baseUV = getScreenCoord();
@@ -125,17 +161,19 @@ void main()
 		vec3 Rand = texture(jitterTex, getJitterScreenCoord() ).xyz;
 		Rand.xy = Rand.xy * 2.0 - 1.0;
 		vec2 Direction = RotateDirection(vec2(cos(Angle), sin(Angle)), Rand.xy);
-		float detectRadius = (1.0 ) * 30;
+		float pixelRaidusMax = 300;
+		//note. raidusTrue / heightTrue = raidusPixel / half winsize;
+		float pixelRadius = (t_shaderUnifom.TU_RadiusInfo.x * t_shaderUnifom.TU_winSize.y * 0.5) / (t_shaderUnifom.TU_RadiusInfo.z * viewPos.z); //(t_shaderUnifom.TU_RadiusInfo.x /(t_shaderUnifom.TU_RadiusInfo.z * -viewPos.z)) *(t_shaderUnifom.TU_winSize.y * 0.5);
+		pixelRadius = min(pixelRaidusMax, pixelRadius);
 		vec2 stepUV = baseUV;
 		for (float StepIndex = 0; StepIndex < NUM_STEPS; ++StepIndex)
 		{
-			stepUV += Direction * (detectRadius / NUM_STEPS)* (1.0 / t_shaderUnifom.TU_winSize.xy) ;
-			float depthA = texture(RT_depth, stepUV).r;
-			vec3 worldPosA = getWorldPosFromDepth(depthA).xyz;
-			AO += computeAO(worldPos, worldPosA, normal);
+			stepUV += Direction * (pixelRadius / NUM_STEPS)* (1.0 / t_shaderUnifom.TU_winSize.xy) ;
+			//float depthA = texture(RT_depth, stepUV).r;
+			vec3 viewPosA = FetchViewPos(stepUV);//getWorldPosFromDepth(depthA).xyz;
+			AO += computeAO(viewPos, viewPosA, normalView);
 		}
-
 	}
 	AO *= 1.0 / (NUM_DIRECTIONS * NUM_STEPS);
-	out_Color = vec4(vec3(1, 1, 1) * (1 - clamp(AO, 0.0, 1.0)), 1.0 );
+	out_Color = vec4(vec3(1, 1, 1) * (1 - clamp(AO * 2.0, 0.0, 1.0)), 1.0 );
 }

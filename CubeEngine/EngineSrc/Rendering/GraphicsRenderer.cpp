@@ -151,12 +151,15 @@ namespace tzw
 			jitterTex = new Texture(jitterTexMem, 8, 8, ImageFormat::R8G8B8A8);
 		}
 		matHBAO->setTex("jitterTex", jitterTex);
+
 	    MaterialPool::shared()->addMaterial("HBAO", matHBAO);
         auto HBAOPass = backEnd->createDeviceRenderpass_imp();
-        HBAOPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        HBAOPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
 
         m_HBAOStage = backEnd->createRenderStage_imp();
-        m_HBAOStage->init(HBAOPass, m_DeferredLightingStage->getFrameBuffer());
+        auto hbaoBuffer= backEnd->createFrameBuffer_imp();
+        hbaoBuffer->init(size.x, size.y, HBAOPass);
+        m_HBAOStage->init(HBAOPass, hbaoBuffer);
         m_HBAOStage->setName("HBAO Stage");
         m_HBAOStage->createSinglePipeline(matHBAO);
 		
@@ -499,7 +502,17 @@ namespace tzw
 
         {
 
-
+            Matrix44 proj = g_GetCurrScene()->defaultCamera()->projection();
+            const float* P = proj.data();
+            float R = 0.8;
+            m_HBAOStage->getSinglePipeline()->getMat()->setVar("TU_RadiusInfo", vec4(R, R * R, tanf(g_GetCurrScene()->defaultCamera()->getFov() * 0.5f* 3.14 / 180.0), 0.0));
+            vec4 projInfoPerspective = vec4(
+                2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
+                2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
+                -(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
+                -(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1]  // B/N
+            );
+            m_HBAOStage->getSinglePipeline()->getMat()->setVar("TU_ProjInfo", projInfoPerspective);
             m_HBAOStage->prepare(cmd);
             m_HBAOStage->beginRenderPass();
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
@@ -529,7 +542,7 @@ namespace tzw
             static_cast<DeviceTextureVK *>(m_sceneCopyTex),
             m_DeferredLightingStage->getFrameBuffer()->getSize(), 
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        /*
+
         {
             m_SSRStage->prepare(cmd);
             m_SSRStage->beginRenderPass();
@@ -539,7 +552,10 @@ namespace tzw
                 auto tex = gbufferTex[i];
                 m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
+            //Scene copy
 			m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 1, m_sceneCopyTex);
+            //AO
+            m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 2, m_HBAOStage->getFrameBuffer()->getTextureList()[0]);
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
             DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
@@ -554,7 +570,7 @@ namespace tzw
             m_SSRStage->finish();
             m_renderPath->addRenderStage(m_SSRStage);
         }
-		*/
+
         {
             m_fogStage->prepare(cmd);
             m_fogStage->beginRenderPass();
