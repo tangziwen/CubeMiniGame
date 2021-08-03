@@ -23,8 +23,8 @@ void Camera::setOffsetPixel(float x, float y)
     m_offsetPixelX = x;
     m_offsetPixelY = y;
     auto projection = m_projection.data();
-	projection[8] = 2.0f * m_offsetPixelX / m_width;
-	projection[9] = 2.0f * m_offsetPixelY / m_height;
+	projection[2] = -2.0f * m_offsetPixelX / m_width;
+	projection[6] = 2.0f * m_offsetPixelY / m_height;
 }
 
 Camera *Camera::CreateOrtho(float left, float right, float bottom, float top, float near, float far)

@@ -48,8 +48,9 @@ namespace tzw
         //std::swap(m_bufferA, m_bufferB);//swap buffer
         m_index = (m_index + 1) &(8 - 1);
 
+        float jitterOffset = 0.04;
         //jitter the projection
-        g_GetCurrScene()->defaultCamera()->setOffsetPixel(TemporalHalton(m_index + 1, 2) - 0.5f, TemporalHalton(m_index + 1, 3) - 0.5f);
+        g_GetCurrScene()->defaultCamera()->setOffsetPixel((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
 
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
         Matrix44 proj = g_GetCurrScene()->defaultCamera()->projection();
@@ -66,13 +67,11 @@ namespace tzw
         m_tsaaStage->prepare(cmd);
         m_tsaaStage->beginRenderPass(m_bufferA);
         m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, currFrame);
-        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
-        //m_tsaaStage->bindSinglePipelineDescriptor(itemDescriptorSet);
+        //m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
         m_tsaaStage->bindSinglePipelineDescriptor();
         m_tsaaStage->drawScreenQuad();
         m_tsaaStage->endRenderPass();
         m_tsaaStage->finish();
-
         return m_tsaaStage;
     }
 
