@@ -589,7 +589,16 @@ namespace tzw
             m_renderPath->addRenderStage(m_fogStage);
         }
         //tsaa
-		m_renderPath->addRenderStage(m_tsaa.draw(cmd, m_fogStage->getFrameBuffer()->getTextureList()[0]));
+		if(m_isAAEnable)
+		{
+			m_renderPath->addRenderStage(m_tsaa.draw(cmd, m_fogStage->getFrameBuffer()->getTextureList()[0]));
+		}
+        else
+        {
+        	//reset jitter
+	        g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
+        }
+		
         /*
         {
             m_aaStage->prepare(cmd);
@@ -608,8 +617,17 @@ namespace tzw
         int imageIdx = backEnd->getCurrSwapIndex();
         m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
         m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
-        auto lightingResultTex = m_tsaa.getOutput()->getTextureList();//m_aaStage->getFrameBuffer()->getTextureList();
-        auto tex = lightingResultTex[0];
+		DeviceTexture * tex = nullptr;
+		if(m_isAAEnable)
+		{
+			tex = m_tsaa.getOutput()->getTextureList()[0];
+			
+		}
+        else
+        {
+			tex = m_fogStage->getFrameBuffer()->getTextureList()[0];
+        }
+
         m_textureToScreenRenderStage[imageIdx]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
         m_textureToScreenRenderStage[imageIdx]->bindSinglePipelineDescriptor();
         m_textureToScreenRenderStage[imageIdx]->drawScreenQuad();

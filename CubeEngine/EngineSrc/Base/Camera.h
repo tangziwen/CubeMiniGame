@@ -33,6 +33,13 @@ public:
 	float getNear() const {return m_near;}
 	float getFar() const {return m_far;}
 	float getAspect() const {return m_aspect;}
+	float getWidth() const {return m_width;}
+	float getHeight() const {return m_height;};
+	void getPixelOffset(float & offsetX, float & offsetY) const
+	{
+		offsetX = m_offsetPixelX;
+		offsetY = m_offsetPixelY;
+	}
 protected:
     Frustum m_frustum;
     bool m_useCustomFrustumUpdate;

@@ -7,6 +7,7 @@
 #define NOMINMAX
 #include "dirent.h"
 #include "Base/TranslationMgr.h"
+#include "Rendering/GraphicsRenderer.h"
 
 
 namespace tzw
@@ -49,7 +50,7 @@ namespace tzw
 		m_isFullScreen = Engine::shared()->isIsFullScreen();
 		//m_isOpenSSAO = Renderer::shared()->isSsaoEnable();
 		//m_isOpenBloom = Renderer::shared()->isBloomEnable();
-		//m_isOpenAA = Renderer::shared()->isAaEnable();
+		m_isOpenAA = GraphicsRenderer::shared()->m_isAAEnable;
 		//m_isOpenFog = Renderer::shared()->isFogEnable();
 		//m_isOpenShadow = Renderer::shared()->isShadowEnable();
 		
@@ -143,7 +144,7 @@ namespace tzw
 		if(ImGui::RadioButton(TRC(u8"开##FOG"), m_isOpenFog)) m_isOpenFog = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##FOG"), !m_isOpenFog)) m_isOpenFog = false;
-
+		GraphicsRenderer::shared()->m_isAAEnable = m_isOpenAA;
 
 		if(ImGui::Button(TRC(u8"保存设置")))
 		{

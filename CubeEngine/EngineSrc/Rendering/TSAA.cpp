@@ -45,10 +45,10 @@ namespace tzw
 	}
     DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame)
     {
-        //std::swap(m_bufferA, m_bufferB);//swap buffer
-        m_index = (m_index + 1) &(8 - 1);
+        std::swap(m_bufferA, m_bufferB);//swap buffer
+        m_index = (m_index + 1) %(8 - 1);
 
-        float jitterOffset = 0.04;
+        float jitterOffset = 0.8;
         //jitter the projection
         g_GetCurrScene()->defaultCamera()->setOffsetPixel((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
 
@@ -66,8 +66,8 @@ namespace tzw
         m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_ProjInfo", projInfoPerspective);
         m_tsaaStage->prepare(cmd);
         m_tsaaStage->beginRenderPass(m_bufferA);
-        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, currFrame);
-        //m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
+        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
+        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
         m_tsaaStage->bindSinglePipelineDescriptor();
         m_tsaaStage->drawScreenQuad();
         m_tsaaStage->endRenderPass();
