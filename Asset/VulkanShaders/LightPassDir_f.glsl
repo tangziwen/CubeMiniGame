@@ -121,7 +121,7 @@ float CalcShadowFactor(sampler2D depthSampler, vec4 LightSpacePos, vec3 surfaceN
     float z = ProjCoords.z;
 	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
 		return 1.0;
-	return clamp(1.0 - pcf_3x3(UVCoords.xy, z, vec2(1.0 / 1024.0, 1.0 / 1024.0), depthSampler), 0.1, 1.0);
+	return clamp(1.0 - pcf_3x3(UVCoords.xy, z, vec2(1.0 / 2048.0, 1.0 / 2048.0), depthSampler), 0.1, 1.0);
 }
 vec2 getScreenCoord()
 {
