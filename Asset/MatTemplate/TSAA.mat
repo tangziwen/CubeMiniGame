@@ -1,0 +1,78 @@
+{
+    "shaders": {
+        "vs": "Shaders/ScreenQuad_v.glsl",
+        "fs": "Shaders/TSAA_f.glsl"
+    },
+  "name": "PostEffect",
+	"cullFace" : false,
+	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"BlendEnable" : true,
+	"SrcBlendFactor" : "SrcAlpha",
+	"DstBlendFactor" : "One",
+  "property": {
+    "attributes": [
+		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
+		{"name" : "TU_winSize", "type":"semantic_WinSize"},
+		{"name" : "TU_camPos", "type":"semantic_CameraPos"},
+		{"name" : "TU_camInfo", "type":"semantic_CamInfo"},
+      {
+        "name": "fog_near",
+        "type": "float",
+        "default": 50,
+        "ui_info": {
+          "range": [
+            0,
+            150
+          ]
+        }
+      },
+      {
+        "name": "fog_far",
+        "type": "float",
+        "default": 450,
+        "ui_info": {
+          "range": [
+            0,
+            800
+          ]
+        }
+      },
+      {
+        "name": "fog_height_min",
+        "type": "float",
+        "default": -50,
+        "ui_info": {
+          "range": [
+            -50,
+            50
+          ]
+        }
+      },
+      {
+        "name": "fog_height_max",
+        "type": "float",
+        "default": 120,
+        "ui_info": {
+          "range": [
+            0,
+            200
+          ]
+        }
+      },
+      {
+        "name": "fog_color",
+        "type": "vec3",
+        "default": [
+          1,
+          1,
+          1
+        ]
+      }
+    ],
+    "maps": [
+		["environmentMap", 0, "IBLTest/autumn_irradiance_latlong.dds"],
+		["prefilterMap", 0, "IBLTest/autumn_radiance_latlong.dds"]
+	]
+  }
+}
