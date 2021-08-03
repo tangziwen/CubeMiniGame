@@ -8,12 +8,23 @@ Camera::Camera()
 }
 
 
-Camera *Camera::CreatePerspective(float fov, float aspect, float thenear, float thefar)
+Camera *Camera::CreatePerspective(float fov, float width, float height, float thenear, float thefar)
 {
     auto camera = new Camera();
-    camera->setPerspective(fov,aspect,thenear, thefar);
+    camera->setPerspective(fov,width / height,thenear, thefar);
+    camera->m_width = width;
+    camera->m_height = height;
     camera->m_frustum.initFrustumFromProjectMatrix(camera->getViewProjectionMatrix());
     return camera;
+}
+
+void Camera::setOffsetPixel(float x, float y)
+{
+    m_offsetPixelX = x;
+    m_offsetPixelY = y;
+    auto projection = m_projection.data();
+	projection[8] = 2.0f * m_offsetPixelX / m_width;
+	projection[9] = 2.0f * m_offsetPixelY / m_height;
 }
 
 Camera *Camera::CreateOrtho(float left, float right, float bottom, float top, float near, float far)

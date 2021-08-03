@@ -156,6 +156,9 @@ namespace tzw
         auto HBAOPass = backEnd->createDeviceRenderpass_imp();
         HBAOPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
 
+
+        m_tsaa.init();
+
         m_HBAOStage = backEnd->createRenderStage_imp();
         auto hbaoBuffer= backEnd->createFrameBuffer_imp();
         hbaoBuffer->init(size.x, size.y, HBAOPass);
@@ -459,7 +462,6 @@ namespace tzw
             m_PointLightingStage->endRenderPass();
             m_PointLightingStage->finish();
             m_renderPath->addRenderStage(m_PointLightingStage);
-        
         }
         //------------deferred Lighting Pass end---------------
 
@@ -586,7 +588,9 @@ namespace tzw
             m_fogStage->finish();
             m_renderPath->addRenderStage(m_fogStage);
         }
-		
+        //tsaa
+		m_renderPath->addRenderStage(m_tsaa.draw(cmd, m_fogStage->getFrameBuffer()->getTextureList()[0]));
+        /*
         {
             m_aaStage->prepare(cmd);
             m_aaStage->beginRenderPass();
@@ -598,12 +602,13 @@ namespace tzw
             m_aaStage->finish();
             m_renderPath->addRenderStage(m_aaStage);
         }
+        */
         //------------Texture To Screen Pass begin---------------
 
         int imageIdx = backEnd->getCurrSwapIndex();
         m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
         m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
-        auto lightingResultTex = m_aaStage->getFrameBuffer()->getTextureList();
+        auto lightingResultTex = m_tsaa.getOutput()->getTextureList();//m_aaStage->getFrameBuffer()->getTextureList();
         auto tex = lightingResultTex[0];
         m_textureToScreenRenderStage[imageIdx]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
         m_textureToScreenRenderStage[imageIdx]->bindSinglePipelineDescriptor();
@@ -763,7 +768,7 @@ namespace tzw
                 thumbnail->getSnapShotCommand(m_thumbNailRenderStage->getSelfRenderQueue());
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
                 m_thumbNailRenderStage->prepare(cmd);
-                m_thumbNailRenderStage->beginRenderPass(vec4(0.5, 0.5, 0.5, 1.0));
+                m_thumbNailRenderStage->beginRenderPass(nullptr, vec4(0.5, 0.5, 0.5, 1.0));
                 m_thumbNailRenderStage->draw(nullptr);
 		    	m_thumbNailRenderStage->endRenderPass();
                 m_thumbNailRenderStage->finish();

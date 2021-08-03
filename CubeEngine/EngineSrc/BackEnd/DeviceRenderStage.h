@@ -33,7 +33,7 @@ public:
 	virtual void bindSinglePipelineDescriptor(DeviceDescriptor * extraItemDescriptor) = 0;
 	virtual void bindPipeline(DevicePipeline * pipeline) = 0;
 	virtual void bindDescriptor(DevicePipeline * pipeline, std::vector<DeviceDescriptor *> descriptorList) = 0;
-	virtual void beginRenderPass(vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0)) = 0;
+	virtual void beginRenderPass(DeviceFrameBuffer* buffer = nullptr, vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0)) = 0;
 	virtual void endRenderPass() = 0;
 	virtual void bindVBO(DeviceBuffer * buf) = 0;
 	virtual void bindIBO(DeviceBuffer * buf) = 0;

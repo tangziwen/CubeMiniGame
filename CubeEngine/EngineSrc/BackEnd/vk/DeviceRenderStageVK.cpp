@@ -208,8 +208,9 @@ namespace tzw
         vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK *>(pipeline)->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
     }
 
-    void DeviceRenderStageVK::beginRenderPass(vec4 clearColor, vec2 clearDepthStencil)
+    void DeviceRenderStageVK::beginRenderPass(DeviceFrameBuffer* buffer, vec4 clearColor, vec2 clearDepthStencil)
     {
+        DeviceFrameBuffer * targetFrameBuffer = buffer?buffer:m_frameBuffer;
 		auto attachmentList = m_renderPass->getAttachmentList();
 		std::vector<VkClearValue> clearValuesDefferred{};
 		clearValuesDefferred.resize(attachmentList.size());
@@ -230,15 +231,15 @@ namespace tzw
         renderPassInfoDeferred.renderPass = static_cast<DeviceRenderPassVK*>(getRenderPass())->getRenderPass();   
         renderPassInfoDeferred.renderArea.offset.x = 0;
         renderPassInfoDeferred.renderArea.offset.y = 0;
-        renderPassInfoDeferred.renderArea.extent.width = m_frameBuffer->getSize().x;
-        renderPassInfoDeferred.renderArea.extent.height = m_frameBuffer->getSize().y;
+        renderPassInfoDeferred.renderArea.extent.width = targetFrameBuffer->getSize().x;
+        renderPassInfoDeferred.renderArea.extent.height = targetFrameBuffer->getSize().y;
         renderPassInfoDeferred.clearValueCount = clearValuesDefferred.size();
         renderPassInfoDeferred.pClearValues = clearValuesDefferred.data();
 
         DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         VKRenderBackEnd::shared()->beginDebugRegion(command->getVK(), m_name.c_str());
         
-        renderPassInfoDeferred.framebuffer = static_cast<DeviceFrameBufferVK*>(m_frameBuffer)->getFrameBuffer();
+        renderPassInfoDeferred.framebuffer = static_cast<DeviceFrameBufferVK*>(targetFrameBuffer)->getFrameBuffer();
         vkCmdBeginRenderPass(command->getVK(), &renderPassInfoDeferred, VK_SUBPASS_CONTENTS_INLINE);
 
         if(m_singlePipeline)

@@ -9,7 +9,7 @@ class Camera : public Node
 public:
     Camera();
 
-    static Camera * CreatePerspective(float fov, float aspect, float thenear, float thefar);
+    static Camera * CreatePerspective(float fov, float width, float height, float thenear, float thefar);
     static Camera * CreateOrtho(float left, float right, float bottom, float top, float near, float far);
 
     void setPerspective(float fov, float aspect, float near, float far);
@@ -17,6 +17,7 @@ public:
     bool isOutOfFrustum(const AABB& aabb);
     Matrix44 projection() const;
     void setProjection(const Matrix44 &projection);
+    void setOffsetPixel(float x, float y);
     Matrix44 getViewMatrix();
     Matrix44 getViewProjectionMatrix();
     void lookAt(vec3 targetPos,vec3 upFrame);
@@ -35,7 +36,7 @@ public:
 protected:
     Frustum m_frustum;
     bool m_useCustomFrustumUpdate;
-	float m_fov, m_aspect, m_near, m_far;
+	float m_fov, m_aspect, m_near, m_far,m_width, m_height,m_offsetPixelX,m_offsetPixelY;
 private:
 
     Matrix44 m_projection;

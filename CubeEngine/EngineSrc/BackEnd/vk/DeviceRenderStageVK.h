@@ -25,7 +25,7 @@ public:
 	void bindSinglePipelineDescriptor(DeviceDescriptor * extraItemDescriptor) override;
 	void bindPipeline(DevicePipeline * pipeline) override;
 	void bindDescriptor(DevicePipeline * pipeline, std::vector<DeviceDescriptor *> descriptorList) override;
-	void beginRenderPass(vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0));
+	void beginRenderPass(DeviceFrameBuffer* buffer = nullptr,vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0)) override;
 	void endRenderPass();
 	void bindVBO(DeviceBuffer * buf) override;
 	void bindIBO(DeviceBuffer * buf) override;

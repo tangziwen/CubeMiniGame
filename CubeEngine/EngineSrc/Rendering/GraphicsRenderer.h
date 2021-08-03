@@ -3,6 +3,7 @@
 #include "3D/Thumbnail.h"
 #include "vulkan/vulkan.h"
 #include "BackEnd/DeviceRenderStage.h"
+#include "TSAA.h"
 namespace tzw
 {
 	class DevicePipelineVK;
@@ -20,6 +21,7 @@ namespace tzw
 		void updateThumbNail(ThumbNail * thumb);
 		std::vector<ThumbNail *> & getThumbNailList();
 	private:
+		TSAA m_tsaa;
 		DeviceRenderStage * m_ShadowStage[3];
 		DeviceRenderStage * m_gPassStage;
 		DeviceRenderStage * m_DeferredLightingStage;
