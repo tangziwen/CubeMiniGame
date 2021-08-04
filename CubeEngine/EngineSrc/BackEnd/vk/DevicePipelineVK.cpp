@@ -404,6 +404,11 @@ void DevicePipelineVK::updateUniform()
                     memcpy(offsetDst, &(var->data.rawData.i), blockMember.size);
                     break;
                 }
+                case TechniqueVar::Type::Matrix:
+                {
+                    memcpy(offsetDst, &(var->data.rawData.m), blockMember.size);
+                    break;
+                }
                 case TechniqueVar::Type::Vec2:
                 {
                     memcpy(offsetDst, &(var->data.rawData.v2), blockMember.size);

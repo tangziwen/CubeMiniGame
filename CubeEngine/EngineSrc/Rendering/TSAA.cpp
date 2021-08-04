@@ -43,31 +43,23 @@ namespace tzw
 		}
 		return Result;
 	}
-    DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame)
+    DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
         std::swap(m_bufferA, m_bufferB);//swap buffer
         m_index = (m_index + 1) %(8 - 1);
 
-        float jitterOffset = 0.8;
+        float jitterOffset = 0.15;
         //jitter the projection
         g_GetCurrScene()->defaultCamera()->setOffsetPixel((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
 
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-        Matrix44 proj = g_GetCurrScene()->defaultCamera()->projection();
-        const float* P = proj.data();
-        float R = 0.8;
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_RadiusInfo", vec4(R, R * R, tanf(g_GetCurrScene()->defaultCamera()->getFov() * 0.5f* 3.14 / 180.0), 0.0));
-        vec4 projInfoPerspective = vec4(
-            2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
-            2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
-            -(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
-            -(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1]  // B/N
-        );
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_ProjInfo", projInfoPerspective);
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  g_GetCurrScene()->defaultCamera()->projection() * m_lastView);
+        m_lastView = g_GetCurrScene()->defaultCamera()->getViewMatrix();
         m_tsaaStage->prepare(cmd);
         m_tsaaStage->beginRenderPass(m_bufferA);
         m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
         m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
+        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, Depth);
         m_tsaaStage->bindSinglePipelineDescriptor();
         m_tsaaStage->drawScreenQuad();
         m_tsaaStage->endRenderPass();

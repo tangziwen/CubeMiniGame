@@ -591,7 +591,7 @@ namespace tzw
         //tsaa
 		if(m_isAAEnable)
 		{
-			m_renderPath->addRenderStage(m_tsaa.draw(cmd, m_fogStage->getFrameBuffer()->getTextureList()[0]));
+			m_renderPath->addRenderStage(m_tsaa.draw(cmd, m_fogStage->getFrameBuffer()->getTextureList()[0],  m_gPassStage->getFrameBuffer()->getDepthMap()));
 		}
         else
         {
