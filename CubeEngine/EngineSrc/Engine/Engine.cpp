@@ -256,6 +256,7 @@ float Engine::deltaTime() const
 void Engine::update(float delta)
 {
     m_deltaTime = delta;
+	GraphicsRenderer::shared()->preTick();
 	Counter logicBefore = Counter::now();
 	DebugSystem::shared()->handleDraw(delta);
 	PhysicsMgr::shared()->stepSimulation(delta);

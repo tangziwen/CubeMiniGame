@@ -322,7 +322,10 @@ namespace tzw
         io.Fonts->TexID = m_imguiTextureFont;
         //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
     }
-
+    void GraphicsRenderer::preTick()
+    {
+        m_tsaa.preTick();
+    }
 	void GraphicsRenderer::render()
 	{
 		handleThumbNails();

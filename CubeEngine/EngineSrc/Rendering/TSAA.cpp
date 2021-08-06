@@ -43,18 +43,25 @@ namespace tzw
 		}
 		return Result;
 	}
-    DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
+    void TSAA::preTick()
     {
-        std::swap(m_bufferA, m_bufferB);//swap buffer
         m_index = (m_index + 1) %(8 - 1);
-
+        m_lastViewProj = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
         float jitterOffset = 0.15;
         //jitter the projection
         g_GetCurrScene()->defaultCamera()->setOffsetPixel((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
+    }
+    DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
+    {
+        std::swap(m_bufferA, m_bufferB);//swap buffer
+        
+
+        
+        
 
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  g_GetCurrScene()->defaultCamera()->projection() * m_lastView);
-        m_lastView = g_GetCurrScene()->defaultCamera()->getViewMatrix();
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  m_lastViewProj);
+        
         m_tsaaStage->prepare(cmd);
         m_tsaaStage->beginRenderPass(m_bufferA);
         m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
@@ -64,6 +71,7 @@ namespace tzw
         m_tsaaStage->drawScreenQuad();
         m_tsaaStage->endRenderPass();
         m_tsaaStage->finish();
+      
         return m_tsaaStage;
     }
 

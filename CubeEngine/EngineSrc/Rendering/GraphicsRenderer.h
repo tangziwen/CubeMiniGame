@@ -21,6 +21,7 @@ namespace tzw
 		void updateThumbNail(ThumbNail * thumb);
 		std::vector<ThumbNail *> & getThumbNailList();
 		bool m_isAAEnable = false;
+		void preTick();
 	private:
 		TSAA m_tsaa;
 		DeviceRenderStage * m_ShadowStage[3];
