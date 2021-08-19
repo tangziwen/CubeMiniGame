@@ -4,6 +4,7 @@
 #include "vulkan/vulkan.h"
 #include "BackEnd/DeviceRenderStage.h"
 #include "TSAA.h"
+#include "SSGI.h"
 namespace tzw
 {
 	class DevicePipelineVK;
@@ -24,6 +25,7 @@ namespace tzw
 		void preTick();
 	private:
 		TSAA m_tsaa;
+		SSGI m_ssgi;
 		DeviceRenderStage * m_ShadowStage[3];
 		DeviceRenderStage * m_gPassStage;
 		DeviceRenderStage * m_DeferredLightingStage;

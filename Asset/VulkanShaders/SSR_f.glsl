@@ -198,5 +198,5 @@ void main()
 	vec3 ambientSpecular =  EnvBRDFApprox(F0, Roughness, NoV) * prefilteredColor;
 	vec3 ambient = (ambientDiffuse * AO + mix(ambientSpecular, F0 * reflectColor, isHit) * AO);
 
-	out_Color = vec4(ambient, 1.0 );
+	out_Color = vec4(ambient, 0.0 );
 }

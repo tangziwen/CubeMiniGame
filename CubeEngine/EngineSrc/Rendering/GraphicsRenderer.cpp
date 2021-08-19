@@ -156,7 +156,7 @@ namespace tzw
         auto HBAOPass = backEnd->createDeviceRenderpass_imp();
         HBAOPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
 
-
+        m_ssgi.init();
         m_tsaa.init();
 
         m_HBAOStage = backEnd->createRenderStage_imp();
@@ -325,6 +325,7 @@ namespace tzw
     void GraphicsRenderer::preTick()
     {
         m_tsaa.preTick();
+        m_ssgi.preTick();
     }
 	void GraphicsRenderer::render()
 	{
@@ -547,7 +548,7 @@ namespace tzw
             static_cast<DeviceTextureVK *>(m_sceneCopyTex),
             m_DeferredLightingStage->getFrameBuffer()->getSize(), 
             VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
+        //SSR
         {
             m_SSRStage->prepare(cmd);
             m_SSRStage->beginRenderPass();
@@ -575,6 +576,14 @@ namespace tzw
             m_SSRStage->finish();
             m_renderPath->addRenderStage(m_SSRStage);
         }
+
+
+        m_renderPath->addRenderStage(m_ssgi.draw(cmd, m_sceneCopyTex, 
+            m_gPassStage->getFrameBuffer()->getDepthMap(), 
+            m_gPassStage->getFrameBuffer()->getTextureList()[2],
+            m_gPassStage->getFrameBuffer()->getTextureList()[0],
+            m_SSRStage->getFrameBuffer()));
+
 
         {
             m_fogStage->prepare(cmd);
