@@ -29,6 +29,7 @@ namespace tzw
         m_tsaaStage->init(TSAAPass, m_bufferA);
         m_tsaaStage->setName("TSAA Stage");
         m_tsaaStage->createSinglePipeline(matTSAA);
+        m_offset = vec2(0, 0);
 	}
     float TemporalHalton(int Index, int Base) noexcept
 	{
@@ -45,20 +46,22 @@ namespace tzw
 	}
     void TSAA::preTick()
     {
-        m_index = (m_index + 1) %(8 - 1);
+        //last frame
+        m_index = (m_index + 1) % 16;
+        g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
         m_lastViewProj = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
-        float jitterOffset = 0.15;
+
+        //new frame
+        float jitterOffset = 1.0;
         //jitter the projection
-        g_GetCurrScene()->defaultCamera()->setOffsetPixel((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
+        m_offset = vec2((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
+        g_GetCurrScene()->defaultCamera()->setOffsetPixel(m_offset.x, m_offset.y);
     }
     DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
         std::swap(m_bufferA, m_bufferB);//swap buffer
-        
-
-        
-        
-
+        //reset jitter
+        g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
         m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  m_lastViewProj);
         

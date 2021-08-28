@@ -35,7 +35,7 @@ namespace tzw
         alignas(16) vec4 LightColor;
     };
 
-	GraphicsRenderer::GraphicsRenderer()
+	GraphicsRenderer::GraphicsRenderer():m_isAAEnable(true)
 	{
 	}
 

@@ -389,6 +389,7 @@ void FPSCamera::init(Camera *cloneObj)
 	m_width = cloneObj->getWidth();
 	m_height = cloneObj->getHeight();
 	cloneObj->getPixelOffset(m_offsetPixelX, m_offsetPixelY);
+	setOffsetPixel(m_offsetPixelX, m_offsetPixelY);
 }
 
 void FPSCamera::onHitGroundImp()
