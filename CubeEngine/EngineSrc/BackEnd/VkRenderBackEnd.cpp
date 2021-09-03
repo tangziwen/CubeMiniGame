@@ -15,7 +15,7 @@
 
 #include "SOIL2/stb_image.h"
 #include "vk/DeviceTextureVK.h"
-#include "vk/DeviceShaderVK.h"
+#include "vk/DeviceShaderCollectionVK.h"
 #include "vk/DeviceBufferVK.h"
 #include "vk/DeviceRenderPassVK.h"
 #include "Technique/Material.h"
@@ -43,7 +43,7 @@
 #include "3D/Vegetation/FoliageSystem.h"
 #include "Scene/SceneCuller.h"
 #include "Rendering/GraphicsRenderer.h"
-//#include "vk/DeviceShaderVK.h"
+//#include "vk/DeviceShaderCollectionVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
 {
@@ -180,7 +180,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 	}
     void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
     {
-        auto shader = static_cast<DeviceShaderVK * >(mat->getProgram()->getDeviceShader());
+        auto shader = static_cast<DeviceShaderCollectionVK * >(mat->getProgram()->getDeviceShader());
         auto theList = shader->getSetInfo()[1];
         auto theSize = theList.size();
         int count = 0;
@@ -705,7 +705,7 @@ VkApplicationInfo appInfo = {};
         m_fsModule = VulkanCreateShaderModule(m_device, "VulkanShaders/fs.spv");
         assert(m_fsModule);
 
-        m_shader = new DeviceShaderVK();
+        m_shader = new DeviceShaderCollectionVK();
         m_shader->create();
         tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/vulkanTest_v.glsl",false);
         m_shader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::VertexShader,(const unsigned char *)"vulkanTest_v.glsl");
@@ -1497,9 +1497,9 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
         return texture;
     }
 
-    DeviceShader* VKRenderBackEnd::createShader_imp()
+    DeviceShaderCollection* VKRenderBackEnd::createShader_imp()
     {
-        return new DeviceShaderVK();
+        return new DeviceShaderCollectionVK();
     }
 
     DeviceBuffer* VKRenderBackEnd::createBuffer_imp()

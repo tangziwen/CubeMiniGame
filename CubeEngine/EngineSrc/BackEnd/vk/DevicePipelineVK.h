@@ -12,7 +12,7 @@
 namespace tzw
 {
 class Material;
-class DeviceShaderVK;
+class DeviceShaderCollectionVK;
 class DeviceTextureVK;
 class DeviceRenderPassVK;
 
@@ -47,7 +47,7 @@ private:
 	VkPipelineLayout m_pipelineLayout;
 	VkBuffer m_matUniformBuffer;
 	VkDeviceMemory m_matUniformBufferMemory;
-	DeviceShaderVK * m_shader;
+	DeviceShaderCollectionVK * m_shader;
 	DeviceVertexInput m_vertexInput;
 	VkDescriptorPool m_materialDescriptorPool;
 	VkBlendFactor getBlendFactor(RenderFlag::BlendingFactor factor);

@@ -60,7 +60,7 @@ public:
 	void printFullDeviceInfo();
     DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag) override;
     DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat format, unsigned int loadingFlag) override;
-    DeviceShader * createShader_imp() override;
+    DeviceShaderCollection * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
 	DeviceRenderPass * createDeviceRenderpass_imp() override;
 	DevicePipeline * createPipeline_imp() override;

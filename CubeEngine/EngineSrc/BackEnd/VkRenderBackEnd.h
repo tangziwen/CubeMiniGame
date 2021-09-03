@@ -32,7 +32,7 @@ namespace tzw {
 
 class DeviceTextureVK;
 class DeviceBufferVK;
-class DeviceShaderVK;
+class DeviceShaderCollectionVK;
 class SpherePrimitive;
 typedef struct {
     VkImage image;
@@ -93,7 +93,7 @@ public:
     void RenderScene();
     DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag) override;
     DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat byte_size, unsigned int loadingFlag) override;
-    DeviceShader * createShader_imp() override;
+    DeviceShaderCollection * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
     DevicePipeline * createPipeline_imp() override;
 
@@ -208,7 +208,7 @@ private:
     VkRenderPass m_gbufferRenderPass;
     VkShaderModule m_vsModule;
     VkShaderModule m_fsModule;
-    DeviceShaderVK *m_shader;
+    DeviceShaderCollectionVK *m_shader;
     VkPipeline m_pipeline;
     DeviceBufferVK * m_vertexBuffer;
     DeviceBufferVK * m_indexBuffer;

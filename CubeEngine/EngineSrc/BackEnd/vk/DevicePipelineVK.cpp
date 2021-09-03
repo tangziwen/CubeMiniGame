@@ -1,6 +1,6 @@
 #include "DevicePipelineVK.h"
 #include "Technique/Material.h"
-#include "DeviceShaderVK.h"
+#include "DeviceShaderCollectionVK.h"
 #include "Mesh/VertexData.h"
 #include "Engine/Engine.h"
 #include "../VkRenderBackEnd.h"
@@ -26,7 +26,7 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
     m_mat = mat;
-    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(mat->getProgram()->getDeviceShader());
     m_shader = shader;
     //create material descriptor pool
     createMaterialDescriptorPool();
@@ -36,11 +36,11 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     
     shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo[0].stage = VK_SHADER_STAGE_VERTEX_BIT;
-    shaderStageCreateInfo[0].module = shader->getVsModule();
+    shaderStageCreateInfo[0].module = static_cast<DeviceShaderVK*>(shader->getVsModule())->getRawModule();
     shaderStageCreateInfo[0].pName = "main";
     shaderStageCreateInfo[1].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
     shaderStageCreateInfo[1].stage = VK_SHADER_STAGE_FRAGMENT_BIT;
-    shaderStageCreateInfo[1].module = shader->getFsModule();
+    shaderStageCreateInfo[1].module = static_cast<DeviceShaderVK*>(shader->getFsModule())->getRawModule();
     shaderStageCreateInfo[1].pName = "main";   
 	    
     VkPipelineVertexInputStateCreateInfo vertexInputInfo = {};
@@ -266,13 +266,13 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
 }
 VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
 {
-    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
     return shader->getDescriptorSetLayOut();
 }
 
 VkDescriptorSetLayout DevicePipelineVK::getMaterialDescriptorSetLayOut()
 {
-    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
     return shader->getMaterialDescriptorSetLayOut();
 }
 
@@ -294,7 +294,7 @@ DeviceDescriptor* DevicePipelineVK::getMaterialDescriptorSet()
 
 void DevicePipelineVK::updateMaterialDescriptorSet()
 {
-    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
     auto setInfo = shader->getSetInfo();
     auto matDescIter = setInfo.find(0);
     if(matDescIter == setInfo.end())
@@ -367,7 +367,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
 
 void DevicePipelineVK::updateUniform()
 {
-    DeviceShaderVK * shader = m_shader;
+    DeviceShaderCollectionVK * shader = m_shader;
     if(!shader->findLocationInfo("t_shaderUnifom")) return;
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
     //update material parameter
@@ -510,7 +510,7 @@ void DevicePipelineVK::updateUniform()
 
 void DevicePipelineVK::updateUniformSingle(std::string name, void* buff, size_t size)
 {
-    DeviceShaderVK * shader = m_shader;
+    DeviceShaderCollectionVK * shader = m_shader;
     if(!shader->findLocationInfo("t_shaderUnifom")) return;
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
     int idx = materialUniformBufferInfo.getBlockMemberIndex(name);
@@ -671,7 +671,7 @@ void DevicePipelineVK::createMaterialDescriptorPool()
 
 void DevicePipelineVK::createMaterialUniformBuffer()
 {
-    DeviceShaderVK * shader = static_cast<DeviceShaderVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
     //create material-wise uniform buffer
     if(shader->hasLocationInfo("t_shaderUnifom"))
     {

@@ -93,7 +93,7 @@ DeviceTexture* RenderBackEnd::loadTextureRaw_imp(const unsigned char* buf, int w
 	return texture;
 }
 
-DeviceShader* RenderBackEnd::createShader_imp()
+DeviceShaderCollection* RenderBackEnd::createShader_imp()
 {
 	return new DeviceShaderGL();
 }
