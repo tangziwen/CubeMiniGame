@@ -221,7 +221,7 @@ void ShaderProgram::reload()
     delete oldShader;
 }
 
-DeviceShader* ShaderProgram::getDeviceShader()
+DeviceShaderCollection* ShaderProgram::getDeviceShader()
 {
     return shader;
 }
@@ -289,7 +289,7 @@ void ShaderProgram::createShader(bool isStrict)
 
 
 
-void ShaderProgram::addShader(DeviceShader * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict)
+void ShaderProgram::addShader(DeviceShaderCollection * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict)
 {
     tzw::Data data = tzw::Tfile::shared()->getData(filePath,true);
     std::string finalText;

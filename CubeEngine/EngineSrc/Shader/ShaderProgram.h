@@ -6,7 +6,7 @@
 #include <string>
 #include <map>
 #include <unordered_map>
-#include "BackEnd/DeviceShader.h"
+#include "BackEnd/DeviceShaderCollection.h"
 namespace tzw {
 enum class ShaderOption
 {
@@ -14,7 +14,7 @@ enum class ShaderOption
     EnableDoubleSide = 1 << 2,
 	Shader_option_End = 1 << 31,
 };
-class DeviceShader;
+class DeviceShaderCollection;
 class ShaderProgram
 {
 public:
@@ -37,7 +37,7 @@ public:
 	void setAttributeBufferInt(int ID, int dataType, int offset, int size, int stride = 0);
 	int uniformLocation(std::string name);
 	void reload();
-    DeviceShader * getDeviceShader();
+    DeviceShaderCollection * getDeviceShader();
 	std::string m_fragmentShader;
 	std::string m_vertexShader;
 	std::string m_tessellationControlShader;
@@ -46,10 +46,10 @@ private:
 	uint32_t m_mutationFlag;
     void processShaderText(const char* pShaderText, std::string & finalStr);
 	void createShader(bool isStrict);
-    void addShader(DeviceShader * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict);
+    void addShader(DeviceShaderCollection * ShaderProgram, std::string filePath, DeviceShaderType ShaderType, bool isStrict);
     std::unordered_map<std::string,unsigned int> m_locationMap;
 	std::unordered_map<std::string, int> m_uniformMap;
-    DeviceShader* shader;
+    DeviceShaderCollection* shader;
 };
 } // namespace tzw
 

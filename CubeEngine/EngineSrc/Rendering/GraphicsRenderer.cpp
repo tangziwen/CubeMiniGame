@@ -17,7 +17,7 @@
 #include "BackEnd/VkRenderBackEnd.h"
 #include <EngineSrc\Scene\SceneMgr.h>
 #include "BackEnd/vk/DeviceTextureVK.h"
-#include "BackEnd/vk/DeviceShaderVK.h"
+#include "BackEnd/vk/DeviceShaderCollectionVK.h"
 #include "3D/Thumbnail.h"
 #include "Scene/SceneMgr.h"
 #include "Scene/Scene.h"
@@ -272,7 +272,7 @@ namespace tzw
 		m_imguiPipeline->setDynamicState(PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR);
         m_imguiPipeline->init(winSize, m_imguiMat, backEnd->getScreenRenderPass(), imguiVertexInput, false, instancingInput);
 
-        auto shader = static_cast<DeviceShaderVK *>(m_imguiMat->getProgram()->getDeviceShader());
+        auto shader = static_cast<DeviceShaderCollectionVK *>(m_imguiMat->getProgram()->getDeviceShader());
         VkDescriptorSetLayout layout = static_cast<DevicePipelineVK*>(m_imguiPipeline)->getDescriptorSetLayOut();
         VkDescriptorSetAllocateInfo alloc_info = {};
         alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
