@@ -23,6 +23,7 @@ public:
 	bool finish() override;
 	DeviceShaderVK * getVsModule();
 	DeviceShaderVK * getFsModule();
+	DeviceShaderVK * getCsModule();
 	DeviceShaderVKLocationInfo getLocationInfo(std::string name);
 	bool hasLocationInfo(std::string name);
 	bool findLocationInfo(std::string name);
@@ -41,6 +42,7 @@ private:
 	DeviceShaderVK * m_fsShader;
 	DeviceShaderVK * m_tsShader;
 	DeviceShaderVK * m_teShader;
+	DeviceShaderVK * m_csShader;
 	//std::vector<VkDescriptorSetLayout> m_descriptorSetLayout;
 	std::vector<DeviceDescriptorSetLayoutVK * > m_descriptorSetLayouts;
 

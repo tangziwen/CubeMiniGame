@@ -146,6 +146,12 @@ namespace tzw
         }
 	}
 
+    void DeviceRenderStageVK::dispatch(unsigned int x, unsigned int y, unsigned int z)
+    {
+        DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        vkCmdDispatch(command->getVK(), x, y, z);
+    }
+
     void DeviceRenderStageVK::drawScreenQuad()
     {
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
@@ -190,6 +196,13 @@ namespace tzw
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), static_cast<DeviceDescriptorVK *>(extraItemDescriptor)->getDescSet() };
         vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
+    }
+
+    void DeviceRenderStageVK::bindSinglePipelineDescriptorCompute()
+    {
+	    DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), };
+        vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_COMPUTE, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
     void DeviceRenderStageVK::bindPipeline(DevicePipeline* pipeline)
@@ -255,6 +268,21 @@ namespace tzw
     {
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         vkCmdEndRenderPass(command->getVK());
+        VKRenderBackEnd::shared()->endDebugRegion(command->getVK());
+    }
+
+	void DeviceRenderStageVK::beginCompute()
+    {
+        DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
+        VKRenderBackEnd::shared()->beginDebugRegion(command->getVK(), m_name.c_str());
+        vkCmdBindPipeline(command->getVK(), VK_PIPELINE_BIND_POINT_COMPUTE, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
+
+
+    }
+
+	void DeviceRenderStageVK::endCompute()
+    {
+		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
         VKRenderBackEnd::shared()->endDebugRegion(command->getVK());
     }
 

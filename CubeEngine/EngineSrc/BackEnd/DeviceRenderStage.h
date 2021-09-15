@@ -18,6 +18,7 @@ class DeviceRenderStage
 public:
 	DeviceRenderStage();
 	void init(DeviceRenderPass * renderPass, DeviceFrameBuffer * frameBuffer, uint32_t renderStage = (uint32_t)RenderFlag::RenderStage::All);
+	void initCompute();
 	DeviceRenderPass * getRenderPass();
 	DeviceFrameBuffer * getFrameBuffer();
 	void setRenderPass(DeviceRenderPass * renderPass);
@@ -27,10 +28,15 @@ public:
 	virtual void draw(RenderQueue * renderQueue) = 0;
 	virtual void drawScreenQuad() = 0;
 	virtual void drawSphere() = 0;
+	virtual void dispatch(unsigned int x, unsigned int y, unsigned int z) = 0;
+	virtual void beginCompute() = 0;
+	virtual void endCompute() = 0;
 	void createSinglePipeline(Material * material);
+	void createSingleComputePipeline(DeviceShaderCollection * shaderCollection);
 	DevicePipeline * getSinglePipeline();
 	virtual void bindSinglePipelineDescriptor() = 0;
 	virtual void bindSinglePipelineDescriptor(DeviceDescriptor * extraItemDescriptor) = 0;
+	virtual void bindSinglePipelineDescriptorCompute() = 0;
 	virtual void bindPipeline(DevicePipeline * pipeline) = 0;
 	virtual void bindDescriptor(DevicePipeline * pipeline, std::vector<DeviceDescriptor *> descriptorList) = 0;
 	virtual void beginRenderPass(DeviceFrameBuffer* buffer = nullptr, vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0)) = 0;

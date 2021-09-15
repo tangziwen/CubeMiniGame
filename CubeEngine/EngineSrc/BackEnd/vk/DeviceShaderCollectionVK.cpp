@@ -28,6 +28,9 @@ void DeviceShaderCollectionVK::addShader(const unsigned char* buff, size_t size,
     case DeviceShaderType::TessEvaulateShader:
         m_teShader = newShader;
     break;
+    case DeviceShaderType::ComputeShader:
+        m_csShader = newShader;
+    break;
     }
 }
 
@@ -37,6 +40,7 @@ bool DeviceShaderCollectionVK::create()
     m_fsShader = nullptr;
     m_tsShader = nullptr;
     m_teShader = nullptr;
+    m_csShader = nullptr;
 	return true;
 }
 
@@ -54,6 +58,10 @@ DeviceShaderVK * DeviceShaderCollectionVK::getVsModule()
 DeviceShaderVK * DeviceShaderCollectionVK::getFsModule()
 {
     return m_fsShader;
+}
+DeviceShaderVK * DeviceShaderCollectionVK::getCsModule()
+{
+    return m_csShader;
 }
 
 DeviceShaderVKLocationInfo DeviceShaderCollectionVK::getLocationInfo(std::string name)
@@ -131,7 +139,7 @@ void DeviceShaderCollectionVK::createDescriptorSetLayOut()
     //merge the reflection info
     mergeReflection(m_vsShader);
     mergeReflection(m_fsShader);
-
+    mergeReflection(m_csShader);
 
     m_descriptorSetLayouts.resize(m_setInfoMap.size());
 
@@ -159,9 +167,16 @@ void DeviceShaderCollectionVK::createDescriptorSetLayOut()
                 {
                     layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 }
-        
+                else if(locationInfo.type == DeviceShaderVKLocationType::StorageBuffer)
+                {
+                    layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+                }
+                else if(locationInfo.type == DeviceShaderVKLocationType::StorageImage)
+                {
+                    layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+                }
                 layOutBinding.descriptorCount = 1;
-                layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;//locationInfo.stageFlag;
+                layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;//locationInfo.stageFlag;
                 descriptorLayoutList.emplace_back(layOutBinding);
                 layout->addBinding(locationInfo.binding, locationInfo.name);
             }

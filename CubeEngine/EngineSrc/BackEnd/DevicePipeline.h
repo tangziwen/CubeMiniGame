@@ -11,6 +11,7 @@ namespace tzw
 class Material;
 class DeviceRenderPass;
 class DeviceDescriptor;
+class DeviceShaderCollection;
 struct DeviceVertexAttributeDescVK
 {
 	VkFormat format;
@@ -36,7 +37,8 @@ public:
 	DevicePipeline(): m_dynamicState(PIPELINE_DYNAMIC_STATE_FLAG_NONE)
 	{
 	}
-
+	
+	virtual void initCompute(DeviceShaderCollection * computeShader) = 0;
 	virtual void init(vec2 viewPortSize, Material * mat, DeviceRenderPass* targetRenderPass
 	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) = 0;
 	virtual void updateUniformSingle(std::string name, void * buff, size_t size) = 0;

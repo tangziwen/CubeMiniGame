@@ -17,6 +17,8 @@ enum class DeviceShaderVKLocationType
 {
 	Uniform,
 	Sampler,
+	StorageBuffer,
+	StorageImage,
 	
 };
 

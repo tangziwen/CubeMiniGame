@@ -24,6 +24,7 @@
 #include "Scene/OctreeScene.h"
 #include "Lighting/PointLight.h"
 #include "Scene/SceneCuller.h"
+#include "Utility/file/Tfile.h"
 
 namespace tzw
 {
@@ -212,6 +213,15 @@ namespace tzw
 		m_transparentStage->setName("TransparentPass");
         m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::TRANSPARENT);
 
+
+        m_computeTest = backEnd->createRenderStage_imp();
+        m_computeTest->initCompute();
+        m_computeTest->setName("Compute Test");
+        auto computeShader = new DeviceShaderCollectionVK();
+        tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/VulkanTestCompute.glsl",false);
+        computeShader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"VulkanTestCompute.glsl");
+        computeShader->finish();
+        m_computeTest->createSingleComputePipeline(computeShader);
 
         Material * matTextureToScreen = new Material();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
@@ -505,6 +515,22 @@ namespace tzw
             m_renderPath->addRenderStage(m_skyStage);
         }
         //------------Sky Pass end---------------
+
+        {
+            auto depthMap = m_gPassStage->getFrameBuffer()->getDepthMap();
+            auto tex = m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0];
+
+            m_computeTest->prepare(cmd);
+            m_computeTest->beginCompute();
+        
+            m_computeTest->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(0, depthMap);
+        
+            m_computeTest->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, tex);
+            m_computeTest->bindSinglePipelineDescriptorCompute();
+            m_computeTest->dispatch(1600/ 16, 960/ 16, 1);
+            m_computeTest->endCompute();
+            m_renderPath->addRenderStage(m_computeTest);
+        }
 
         {
 

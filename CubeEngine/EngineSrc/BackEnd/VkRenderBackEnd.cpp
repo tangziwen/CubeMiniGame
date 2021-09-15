@@ -718,7 +718,14 @@ VkApplicationInfo appInfo = {};
     }
     void VKRenderBackEnd::CreatePipeline()
     {
+        auto computeShader = new DeviceShaderCollectionVK();
+        tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/VulkanTestCompute.glsl",false);
+        computeShader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"VulkanTestCompute.glsl");
+        computeShader->finish();
+        auto computePipeline = createPipeline_imp();
+        computePipeline->initCompute(computeShader);
     }
+
     void VKRenderBackEnd::CreateUiniform()
     {
         VkDeviceSize bufferSize = sizeof(Matrix44);

@@ -20,6 +20,7 @@ class DevicePipelineVK : public DevicePipeline
 {
 public:
 	DevicePipelineVK();
+	void initCompute(DeviceShaderCollection * computeShader) override;
 	void init(vec2 viewPortSize, Material * mat, DeviceRenderPass* targetRenderPass
 		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) override;
 	VkDescriptorSetLayout getDescriptorSetLayOut();
@@ -37,7 +38,7 @@ private:
 	void createDescriptorPool();
 	void createMaterialDescriptorPool();
 	void createMaterialUniformBuffer();
-	void crateMaterialDescriptorSet();
+	void createMaterialDescriptorSet();
 	std::deque<DeviceDescriptorVK *> m_itemDescritptorSetList;
 	std::vector<VkDescriptorPool> m_descriptorPoolList;
 	int m_currItemWiseDescriptorSetIdx;

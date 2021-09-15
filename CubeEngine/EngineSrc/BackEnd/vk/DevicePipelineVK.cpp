@@ -18,7 +18,44 @@ DevicePipelineVK::DevicePipelineVK()
 {
 	
 }
+void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
+{
+    DeviceShaderCollectionVK * computeShaderCollection = static_cast<DeviceShaderCollectionVK *>(shader);
 
+
+    m_shader = computeShaderCollection;
+    //create material descriptor pool
+    createMaterialDescriptorPool();
+    createMaterialDescriptorSet();
+
+    VkPipelineShaderStageCreateInfo shaderStageCreateInfo[1] = {};
+    shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
+    shaderStageCreateInfo[0].stage = VK_SHADER_STAGE_COMPUTE_BIT;
+    shaderStageCreateInfo[0].module = static_cast<DeviceShaderVK*>(computeShaderCollection->getCsModule())->getRawModule();
+    shaderStageCreateInfo[0].pName = "main";
+
+
+    VkPipelineLayoutCreateInfo pipelineLayoutInfo{};
+    pipelineLayoutInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
+    std::vector<VkDescriptorSetLayout> layOutList = {computeShaderCollection->getMaterialDescriptorSetLayOut(), };
+    pipelineLayoutInfo.setLayoutCount = layOutList.size();
+    pipelineLayoutInfo.pSetLayouts = layOutList.data();
+    if (vkCreatePipelineLayout(VKRenderBackEnd::shared()->getDevice(), &pipelineLayoutInfo, nullptr, &m_pipelineLayout) != VK_SUCCESS) {
+        abort();
+    }
+
+    VkComputePipelineCreateInfo pipelineInfo = {};
+    pipelineInfo.sType = VK_STRUCTURE_TYPE_COMPUTE_PIPELINE_CREATE_INFO;
+    pipelineInfo.pNext = 0;
+    pipelineInfo.flags = 0;
+    pipelineInfo.stage = shaderStageCreateInfo[0];
+    pipelineInfo.layout = m_pipelineLayout;
+    pipelineInfo.basePipelineIndex = -1;
+
+    VkResult res = vkCreateComputePipelines(VKRenderBackEnd::shared()->getDevice(), VK_NULL_HANDLE, 1, &pipelineInfo, NULL, &m_pipeline);
+    CHECK_VULKAN_ERROR("vkCreateComputePipelines error %d\n", res);
+    printf("Compute pipeline created\n");
+}
 
 void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
 {
@@ -30,7 +67,7 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     m_shader = shader;
     //create material descriptor pool
     createMaterialDescriptorPool();
-    crateMaterialDescriptorSet();
+    createMaterialDescriptorSet();
     createMaterialUniformBuffer();
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo[2] = {};
     
@@ -634,6 +671,8 @@ void DevicePipelineVK::createMaterialDescriptorPool()
 {
     unsigned uniformBuffCount = 0;
     unsigned textuerCount = 0;
+    unsigned storageBufferCount = 0;
+    unsigned storageImageCount = 0;
     auto& setInfo = m_shader->getSetInfo();
     for(const auto& iter : setInfo)
     {
@@ -647,16 +686,30 @@ void DevicePipelineVK::createMaterialDescriptorPool()
             {
                 textuerCount++;
             }
+            if(locationInfo.type == DeviceShaderVKLocationType::StorageBuffer)
+            {
+                storageBufferCount ++;
+            }
+            if(locationInfo.type == DeviceShaderVKLocationType::StorageImage)
+            {
+                storageImageCount ++;
+            }
         }
     
     }
 
-	std::array<VkDescriptorPoolSize, 2> poolSizes{};
+	std::array<VkDescriptorPoolSize, 4> poolSizes{};
 	poolSizes[0].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
 	poolSizes[0].descriptorCount = std::max(1 * uniformBuffCount, (unsigned)1);
 
 	poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	poolSizes[1].descriptorCount = std::max(1 * textuerCount, (unsigned)1);
+
+	poolSizes[2].type = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+	poolSizes[2].descriptorCount = std::max(1 * storageBufferCount, (unsigned)1);
+
+	poolSizes[3].type = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+	poolSizes[3].descriptorCount = std::max(1 * storageImageCount, (unsigned)1);
 
 	VkDescriptorPoolCreateInfo poolInfo{};
 	poolInfo.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
@@ -671,7 +724,7 @@ void DevicePipelineVK::createMaterialDescriptorPool()
 
 void DevicePipelineVK::createMaterialUniformBuffer()
 {
-    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = m_shader;//static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
     //create material-wise uniform buffer
     if(shader->hasLocationInfo("t_shaderUnifom"))
     {
@@ -680,7 +733,7 @@ void DevicePipelineVK::createMaterialUniformBuffer()
     }
 }
 
-void DevicePipelineVK::crateMaterialDescriptorSet()
+void DevicePipelineVK::createMaterialDescriptorSet()
 {
     //CreateDescriptor
     VkDescriptorSetAllocateInfo allocInfo{};

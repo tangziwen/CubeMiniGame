@@ -8,6 +8,39 @@ namespace tzw
 		m_descriptorSet(descSet), m_layout(layout)
 	{
 	}
+
+    void DeviceDescriptorVK::updateDescriptorByBindingAsStorageImage(int binding, DeviceTexture * texture)
+    {
+        DeviceTextureVK * vkTex =static_cast<DeviceTextureVK *>(texture);
+        if(!m_layout->isHaveThisBinding(binding))
+        {
+        
+            abort();
+        }
+        VkDescriptorImageInfo imageInfo{};
+        if(vkTex->getTextureRole() == TextureRoleEnum::AS_DEPTH)
+        {
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;//VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;//texture->getImageLayOut();
+        }
+        else
+        {
+            imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+        
+        }
+        
+        imageInfo.imageView = vkTex->getImageView();
+        imageInfo.sampler = nullptr;//vkTex->getSampler();
+        VkWriteDescriptorSet texWriteSet{};
+        texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        texWriteSet.dstSet = m_descriptorSet;
+        texWriteSet.dstBinding = binding;
+        texWriteSet.dstArrayElement = 0;
+        texWriteSet.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+        texWriteSet.descriptorCount = 1;
+        texWriteSet.pImageInfo = &imageInfo;
+	    vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
+    }
+
 	void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceTexture* texture)
 	{
         DeviceTextureVK * vkTex =static_cast<DeviceTextureVK *>(texture);

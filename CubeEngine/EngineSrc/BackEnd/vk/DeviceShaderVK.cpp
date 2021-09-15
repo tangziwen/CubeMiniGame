@@ -33,6 +33,9 @@ namespace tzw
         case DeviceShaderType::TessEvaulateShader:
             compileKind = shaderc_shader_kind::shaderc_glsl_tess_evaluation_shader;
         break;
+        case DeviceShaderType::ComputeShader:
+            compileKind = shaderc_shader_kind::shaderc_glsl_compute_shader;
+        break;
         }
         shaderc::SpvCompilationResult result = compiler.CompileGlslToSpv((const char*)buff, size, compileKind, (const char *)fileInfoStr);
         if (result.GetCompilationStatus() != shaderc_compilation_status_success) {
@@ -68,6 +71,10 @@ namespace tzw
             if(type == DeviceShaderType::VertexShader){
                 info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
             }
+            else if(type == DeviceShaderType::ComputeShader)
+            {
+                info.stageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
+            }
             else{
         
                 info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
@@ -75,6 +82,7 @@ namespace tzw
             m_nameInfoMap[resource.name.c_str()] = info;
             m_setInfoMap[set].emplace_back(info);
 	    }
+        // Get all Uniform Buffer in the shader
 	    for (auto &resource : resources.uniform_buffers)
 	    {
 		    unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
@@ -112,6 +120,56 @@ namespace tzw
             m_nameInfoMap[varName] = info;
             m_setInfoMap[set].emplace_back(info);
 	    }
+	    for (auto &resource : resources.storage_buffers)
+	    {
+		    unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+		    unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
+		    printf("Storage Buffer %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
+            DeviceShaderVKLocationInfo info;
+            info.set = set;
+            info.binding = binding;
+            info.name = resource.name;
+            info.type = DeviceShaderVKLocationType::StorageBuffer;
+            if(type == DeviceShaderType::VertexShader){
+                info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
+            }
+            else if(type == DeviceShaderType::ComputeShader)
+            {
+                info.stageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
+            }
+            else
+            {
+                info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            }
+            m_nameInfoMap[resource.name.c_str()] = info;
+            m_setInfoMap[set].emplace_back(info);
+        }
+
+	    for (auto &resource : resources.storage_images)
+	    {
+		    unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
+		    unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
+		    printf("Storage Image %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
+            DeviceShaderVKLocationInfo info;
+            info.set = set;
+            info.binding = binding;
+            info.name = resource.name;
+            info.type = DeviceShaderVKLocationType::StorageImage;
+            if(type == DeviceShaderType::VertexShader){
+                info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
+            }
+            else if(type == DeviceShaderType::ComputeShader)
+            {
+                info.stageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
+            }
+            else
+            {
+                info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
+            }
+            m_nameInfoMap[resource.name.c_str()] = info;
+            m_setInfoMap[set].emplace_back(info);
+        }
+
         }
         catch(const spirv_cross::CompilerError &e){
     

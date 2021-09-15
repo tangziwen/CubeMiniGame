@@ -37,8 +37,10 @@ namespace tzw
 		DeviceRenderStage * m_transparentStage;
 		DeviceRenderStage * m_thumbNailRenderStage;
 		DeviceRenderStage * m_aaStage;
+		DeviceRenderStage * m_computeTest;
 		DeviceRenderStage * m_textureToScreenRenderStage[2];
 		DeviceRenderStage * m_guiStage[2];
+		
 		DeviceBuffer *m_imguiIndex;
 		DeviceBuffer *m_imguiVertex;
 		DevicePipeline * m_imguiPipeline;

@@ -25,6 +25,15 @@ namespace tzw
         m_singlePipeline = nullptr;
 		m_renderStage = renderStage;
 	}
+
+	void DeviceRenderStage::initCompute()
+	{
+        m_renderPass = nullptr;
+        m_frameBuffer = nullptr;
+        m_singlePipeline = nullptr;
+		m_renderStage = 0;
+	}
+
 	DeviceRenderPass* DeviceRenderStage::getRenderPass()
 	{
 		return m_renderPass;
@@ -62,6 +71,12 @@ namespace tzw
 		m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
         m_singlePipeline->init(getFrameBuffer()->getSize(), material, getRenderPass(), vertexDataInput, false, emptyInstancingInput);
     }
+
+	void DeviceRenderStage::createSingleComputePipeline(DeviceShaderCollection * shaderCollection)
+	{
+		m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
+		m_singlePipeline->initCompute(shaderCollection);
+	}
 
     DevicePipeline* DeviceRenderStage::getSinglePipeline()
     {
