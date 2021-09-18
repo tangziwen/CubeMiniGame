@@ -205,8 +205,22 @@ void DeviceTextureVK::initDataRaw(const unsigned char * buff, size_t texWidth, s
         abort();
     }
 }
+VkImageAspectFlags DeviceTextureVK::getImageAspectFlag()
+{
+    VkImageAspectFlags flag;
+    switch(m_textureRole)
+    {
+    case TextureRoleEnum::AS_COLOR:
+        flag = VK_IMAGE_ASPECT_COLOR_BIT;
+        break;
+    case TextureRoleEnum::AS_DEPTH:
+        flag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        break;
+    }
+    return flag;
+}
 
-void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat format, TextureRoleEnum texRole, TextureUsageEnum texUsage)
+void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat format, TextureRoleEnum texRole, TextureUsageEnum texUsage, int mipLevels)
 {
 
     auto backEnd = VKRenderBackEnd::shared();
@@ -244,18 +258,12 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
         }
         break;
     }
-    VkImageAspectFlags flag = 0;
-
-    switch(m_textureRole)
+    VkImageAspectFlags flag = getImageAspectFlag();
+    if(mipLevels < 0)//auto detect mip levels
     {
-    case TextureRoleEnum::AS_COLOR:
-        flag = VK_IMAGE_ASPECT_COLOR_BIT;
-        break;
-    case TextureRoleEnum::AS_DEPTH:
-        flag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
-        break;
+        mipLevels = static_cast<uint32_t>(std::floor(std::log2(std::max(texWidth, texHeight)))) + 1;
     }
-    backEnd->createImage(texWidth, texHeight, vkformat, VK_IMAGE_TILING_OPTIMAL, usageFlag | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory);
+    backEnd->createImage(texWidth, texHeight, vkformat, VK_IMAGE_TILING_OPTIMAL, usageFlag | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, m_textureImage, m_textureImageMemory, mipLevels);
 
 	//set layout
     if(m_textureUsage ==TextureUsageEnum::SAMPLE_AND_ATTACHMENT)

@@ -520,6 +520,10 @@ namespace tzw
             auto depthMap = m_gPassStage->getFrameBuffer()->getDepthMap();
             auto tex = m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0];
 
+            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
+                static_cast<DeviceTextureVK*>(depthMap), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
+            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
+            static_cast<DeviceTextureVK*>(tex), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
             m_computeTest->prepare(cmd);
             m_computeTest->beginCompute();
         
@@ -530,6 +534,11 @@ namespace tzw
             m_computeTest->dispatch(1600/ 16, 960/ 16, 1);
             m_computeTest->endCompute();
             m_renderPath->addRenderStage(m_computeTest);
+
+            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
+                static_cast<DeviceTextureVK*>(depthMap),VK_IMAGE_LAYOUT_GENERAL , VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
+            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
+            static_cast<DeviceTextureVK*>(tex), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0, 1);
         }
 
         {

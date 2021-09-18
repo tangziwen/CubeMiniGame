@@ -12,6 +12,7 @@ class DeviceFrameBuffer
 public:
 	DeviceFrameBuffer() = default;
 	virtual void init(int w, int h, DeviceRenderPass * renderPass) = 0;
+	virtual void initWithTextures(DeviceRenderPass * renderPass, const std::vector<DeviceTexture *>& textureList, int w, int h) = 0;
 	virtual void init(DeviceTexture * tex, DeviceTexture * depth, DeviceRenderPass * renderPass) = 0;
 	virtual DeviceTexture * getDepthMap() = 0;
 	virtual std::vector<DeviceTexture *> & getTextureList() = 0;

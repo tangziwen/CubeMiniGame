@@ -15,6 +15,7 @@ public:
 	DeviceFrameBufferVK() = default;
 	void init(int w, int h, VkFramebuffer renderPass);
 	void init(int w, int h, DeviceRenderPass * renderPass) override;
+	void initWithTextures(DeviceRenderPass * renderPass, const std::vector<DeviceTexture *> &textureList, int w, int h) override;
 	void init(DeviceTexture * tex, DeviceTexture * depth, DeviceRenderPass * renderPass) override;
 	DeviceTexture * getDepthMap() override;
 	std::vector<DeviceTexture *> & getTextureList() override;

@@ -50,6 +50,29 @@ namespace tzw
         
 		VK_CHECK_RESULT(vkCreateFramebuffer(VKRenderBackEnd::shared()->getDevice(), &fbufCreateInfo, nullptr, &m_frameBuffer));
 	}
+
+    void DeviceFrameBufferVK::initWithTextures(DeviceRenderPass * renderPass, const std::vector<DeviceTexture *> &textureList, int w, int h)
+    {
+        auto & attachmentList = renderPass->getAttachmentList();
+        m_textureList = textureList;
+        std::vector<VkImageView> attachments;
+        attachments.resize(attachmentList.size());
+        for(int i = 0; i <attachmentList.size(); i++){
+            attachments[i] = static_cast<DeviceTextureVK *>(m_textureList[i])->getImageView();
+        }
+
+		VkFramebufferCreateInfo fbufCreateInfo = {};
+		fbufCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
+		fbufCreateInfo.pNext = NULL;
+		fbufCreateInfo.renderPass = static_cast<DeviceRenderPassVK *>(renderPass)->getRenderPass();
+		fbufCreateInfo.pAttachments = attachments.data();
+		fbufCreateInfo.attachmentCount = static_cast<uint32_t>(attachments.size());
+		fbufCreateInfo.width = w;
+		fbufCreateInfo.height = h;
+		fbufCreateInfo.layers = 1;
+        
+		VK_CHECK_RESULT(vkCreateFramebuffer(VKRenderBackEnd::shared()->getDevice(), &fbufCreateInfo, nullptr, &m_frameBuffer));
+    }
     void DeviceFrameBufferVK::init(DeviceTexture* tex, DeviceTexture* depth, DeviceRenderPass* renderPass)
     {
 		std::array<VkImageView, 2> attachments = {
