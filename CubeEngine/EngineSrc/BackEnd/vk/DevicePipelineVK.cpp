@@ -27,6 +27,7 @@ void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
     //create material descriptor pool
     createMaterialDescriptorPool();
     createMaterialDescriptorSet();
+    createMaterialUniformBuffer();
 
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo[1] = {};
     shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -63,6 +64,7 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
     m_mat = mat;
+    m_shadingParams = mat->getShadingParams();
     DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(mat->getProgram()->getDeviceShader());
     m_shader = shader;
     //create material descriptor pool
@@ -408,7 +410,7 @@ void DevicePipelineVK::updateUniform()
     if(!shader->findLocationInfo("t_shaderUnifom")) return;
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
     //update material parameter
-    auto & varList = m_mat->getVarList();
+    auto & varList = m_shadingParams->getVarList();
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
     void* data;
     //copy new data
@@ -534,7 +536,8 @@ void DevicePipelineVK::updateUniform()
                             }
 				        }
 						break;
-		                default: ;
+		                default:
+                            break;
                     }
                 }
                 break;

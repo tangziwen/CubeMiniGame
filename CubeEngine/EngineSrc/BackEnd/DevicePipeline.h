@@ -9,6 +9,7 @@
 namespace tzw
 {
 class Material;
+class ShadingParams;
 class DeviceRenderPass;
 class DeviceDescriptor;
 class DeviceShaderCollection;
@@ -41,6 +42,7 @@ public:
 	virtual void initCompute(DeviceShaderCollection * computeShader) = 0;
 	virtual void init(vec2 viewPortSize, Material * mat, DeviceRenderPass* targetRenderPass
 	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) = 0;
+	virtual void updateUniform() = 0;
 	virtual void updateUniformSingle(std::string name, void * buff, size_t size) = 0;
 	virtual DeviceDescriptor * getMaterialDescriptorSet() = 0;
 	virtual void resetItemWiseDescritporSet() = 0;
@@ -53,9 +55,15 @@ public:
 	{
 		return m_mat;
 	}
+	ShadingParams * getShadingParams()
+	{
+		return m_shadingParams;
+	}
+	void setShadingParams(ShadingParams * params){ m_shadingParams = params;}
 protected:
 	uint32_t m_dynamicState = 0;
 	Material * m_mat = nullptr;
+	ShadingParams * m_shadingParams = nullptr;
 
 };
 

@@ -194,6 +194,7 @@ namespace tzw
         m_fogStage->setName("Fog Stage");
         m_fogStage->createSinglePipeline(matFog);
 
+        m_bloom.init(m_DeferredLightingStage->getFrameBuffer());
 
         auto FXAAPass = backEnd->createDeviceRenderpass_imp();
         FXAAPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
@@ -517,6 +518,8 @@ namespace tzw
         //------------Sky Pass end---------------
 
         {
+            m_bloom.draw(cmd, m_renderPath, m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]);
+            /*
             auto depthMap = m_gPassStage->getFrameBuffer()->getDepthMap();
             auto tex = m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0];
 
@@ -539,6 +542,8 @@ namespace tzw
                 static_cast<DeviceTextureVK*>(depthMap),VK_IMAGE_LAYOUT_GENERAL , VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
             backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
             static_cast<DeviceTextureVK*>(tex), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0, 1);
+        
+        */
         }
 
         {

@@ -22,7 +22,7 @@ namespace tzw {
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
 	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
-	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),m_primitiveTopology(PrimitiveTopology::TriangleList)
+	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),m_primitiveTopology(PrimitiveTopology::TriangleList),m_shadingParams(nullptr)
 {
 }
 
@@ -203,6 +203,7 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 			abort();
 		}
 	}
+	m_shadingParams = new ShadingParams();
 	auto& MaterialInfo = doc["property"];
 	if (MaterialInfo.HasMember("attributes"))
 	{
@@ -320,7 +321,8 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 					var.setAsSemantic(TechniqueVar::SemanticType::CamInfo);
 				}
 			}
-			m_varList[theName] = var;
+			m_shadingParams->setVar(theName, var);
+			//m_varList[theName] = var;
 		}
 	}
 
@@ -415,17 +417,7 @@ Material* Material::createFromJson(rapidjson::Value& obj, std::string envFolder)
  */
 void Material::setVar(std::string name, const Matrix44 & value)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		auto & var =  result->second;
-		var.setM(value);
-	}else
-	{
-		TechniqueVar var;
-		var.setM(value);
-		m_varList.insert(std::make_pair(name,var));
-	}
+	m_shadingParams->setVar(name, value);
 }
 
 /**
@@ -436,17 +428,7 @@ void Material::setVar(std::string name, const Matrix44 & value)
  */
 void Material::setVar(std::string name, const float &value)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		auto& var =  result->second;
-		var.setF(value);
-	}else
-	{
-		TechniqueVar var;
-		var.setF(value);
-		m_varList.insert(std::make_pair(name,var));
-	}
+	m_shadingParams->setVar(name, value);
 }
 
 /**
@@ -457,33 +439,12 @@ void Material::setVar(std::string name, const float &value)
  */
 void Material::setVar(std::string name, const int &value)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		auto& var =  result->second;
-		var.setI(value);
-	}else
-	{
-		TechniqueVar var;
-		var.setI(value);
-		m_varList.insert(std::make_pair(name,var));
-	}
+	m_shadingParams->setVar(name, value);
 }
 
  void Material::setVar(std::string name, const vec2 & value)
  {
-	 auto result = m_varList.find(name);
-	 if (result != m_varList.end())
-	 {
-		 auto &var = result->second;
-		 var.setV2(value);
-	 }
-	 else
-	 {
-		 TechniqueVar var;
-		 var.setV2(value);
-		 m_varList.insert(std::make_pair(name, var));
-	 }
+	 m_shadingParams->setVar(name, value);
  }
 
 /**
@@ -494,17 +455,7 @@ void Material::setVar(std::string name, const int &value)
  */
 void Material::setVar(std::string name, const vec3 &value)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		auto var =  result->second;
-		var.setV3(value);
-	}else
-	{
-		TechniqueVar var;
-		var.setV3(value);
-		m_varList.insert(std::make_pair(name,var));
-	}
+	m_shadingParams->setVar(name, value);
 }
 
 /**
@@ -515,24 +466,12 @@ void Material::setVar(std::string name, const vec3 &value)
  */
 void Material::setVar(std::string name, const vec4 & value)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		auto &var =  result->second;
-		var.setV4(value);
-	}else
-	{
-		TechniqueVar var;
-		var.setV4(value);
-		m_varList.insert(std::make_pair(name,var));
-	}
+	m_shadingParams->setVar(name, value);
 }
 
 void Material::setVar(std::string name, const TechniqueVar &value)
 {
-	TechniqueVar var = value;
-	//m_varList.insert(std::make_pair(name, var));
-	m_varList[name] = var;
+	m_shadingParams->setVar(name, value);
 }
 
 /**
@@ -546,27 +485,13 @@ void Material::setVar(std::string name, const TechniqueVar &value)
  */
 void Material::setTex(std::string name, Texture *texture, int id)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		auto& var =  result->second;
-		var.setT(texture, id);
-	}else
-	{
-		TechniqueVar var;
-		var.setT(texture, id);
-		m_varList.insert(std::make_pair(name,var));
-	}
+	m_shadingParams->setTex(name, texture, id);
+
 }
 
 Texture* Material::getTex(std::string name)
 {
-	auto result = m_varList.find(name);
-	if(result == m_varList.end())
-	{
-		return nullptr;
-	}
-	return result->second.data.rawData.texInfo.tex;
+	return m_shadingParams->getTex(name);
 }
 
 /**
@@ -581,6 +506,7 @@ void Material::use(ShaderProgram * extraProgram)
 		program = extraProgram;
 	}
 	program->use();
+	/*
 	for(auto &i : m_varList)
 	{
 		//need to convert to alias
@@ -644,6 +570,7 @@ void Material::use(ShaderProgram * extraProgram)
 			break;
 		}
 	}
+	*/
 }
 
 
@@ -662,7 +589,7 @@ ShaderProgram *Material::getProgram() const
 Material *Material::clone()
 {
 	auto mat = new Material();
-	mat->m_varList = m_varList;
+	mat->m_shadingParams = m_shadingParams;
 	mat->m_isEnableInstanced = m_isEnableInstanced;
 	mat->m_isCullFace = m_isCullFace;
 	mat->m_isDepthTestEnable = m_isDepthTestEnable;
@@ -707,14 +634,14 @@ void Material::setCullMode(RenderFlag::CullMode newCullMode)
 	updateFullDescriptionStr();
 }
 
-tzw::TechniqueVar * Material::get(std::string name)
+TechniqueVar * Material::get(std::string name)
 {
-	return &m_varList[name];
+	return m_shadingParams->getVar(name);
 }
 
 void Material::inspect()
 {
-	for(auto &iter:m_varList)
+	for(auto &iter:m_shadingParams->getVarList())
 	{
 		auto& var = iter.second;
 		switch (var.type)
@@ -885,8 +812,7 @@ std::string Material::getFullDescriptionStr()
 
 std::unordered_map<std::string, TechniqueVar>& Material::getVarList()
 {
-	// TODO: 在此处插入 return 语句
-	return m_varList;
+	return m_shadingParams->getVarList();
 }
 
 PrimitiveTopology Material::getPrimitiveTopology()
@@ -950,14 +876,12 @@ bool Material::isEnableInstanced()
  */
 bool Material::isExist(std::string name)
 {
-	auto result = m_varList.find(name);
-	if(result != m_varList.end())
-	{
-		return true;
-	}else
-	{
-		return false;
-	}
+	return m_shadingParams->isVarExist(name);
+}
+
+ShadingParams * Material::getShadingParams()
+{
+	return m_shadingParams;
 }
 
 } // namespace tzw
