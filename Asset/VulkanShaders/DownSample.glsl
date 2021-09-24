@@ -15,6 +15,10 @@ void main()
 {
 	vec2 UV = vec2(gl_GlobalInvocationID.x / t_shaderUnifom.TU_OutSize.x, gl_GlobalInvocationID.y / t_shaderUnifom.TU_OutSize.y);
 	ivec2 InPixelPos = ivec2(UV.x * t_shaderUnifom.TU_InSize.x, UV.y * t_shaderUnifom.TU_InSize.y);
-	vec4 color = imageLoad(inBuffer, InPixelPos);
-	imageStore(targetBuffer, ivec2(gl_GlobalInvocationID.xy), color);
+	vec4 color = vec4(0);
+	color += imageLoad(inBuffer, InPixelPos + ivec2(1, 0));
+	color += imageLoad(inBuffer, InPixelPos + ivec2(-1, 0));
+	color += imageLoad(inBuffer, InPixelPos + ivec2(0, 1));
+	color += imageLoad(inBuffer, InPixelPos + ivec2(0, -1));
+	imageStore(targetBuffer, ivec2(gl_GlobalInvocationID.xy), color / 4.0);
 }

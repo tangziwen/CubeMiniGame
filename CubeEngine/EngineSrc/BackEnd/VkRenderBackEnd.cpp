@@ -153,7 +153,16 @@ bool VKRenderBackEnd::memory_type_from_properties(uint32_t typeBits, VkFlags req
 }
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData) {
         std::cerr << "validation layerAAAA: " << pCallbackData->pMessage << std::endl;
-
+        if(!vulkanValidationFile){
+            vulkanValidationFile = fopen("./vulkanLog.txt", "w");
+        }
+        const char * errorPattern = "Validation Error:";
+        fprintf(vulkanValidationFile, "validation Layer %s\n", pCallbackData->pMessage);
+	    if(strncmp(pCallbackData->pMessage, errorPattern, strlen(errorPattern)) == 0)
+	    {
+		    printf("hehe\n");
+		    //abort();
+	    }
         return VK_FALSE;
     }
 static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback2(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType, uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData) {
@@ -1018,8 +1027,12 @@ VkApplicationInfo appInfo = {};
             return VK_FORMAT_R8G8B8A8_SNORM;
         case ImageFormat::R16G16B16A16:
             return VK_FORMAT_R16G16B16A16_UNORM;
+        case ImageFormat::D16:
+            return VK_FORMAT_D16_UNORM;
         case ImageFormat::D24_S8:
             return VK_FORMAT_D24_UNORM_S8_UINT;
+        case ImageFormat::D16_S8:
+            return VK_FORMAT_D16_UNORM_S8_UINT;
         case ImageFormat::R16G16B16A16_SFLOAT:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
         case ImageFormat::Surface_Format:
@@ -1149,6 +1162,7 @@ void VKRenderBackEnd::endFrame(RenderPath * renderPath)
     vkResetFences(m_device, 1, &inFlightFences[currentFrame]);
     
     VkResult res = vkQueueSubmit(m_queue, 1, &submitInfo, inFlightFences[currentFrame]);    
+    if(res){exit(0);}
     CHECK_VULKAN_ERROR("vkQueueSubmit error %d\n", res);
     
     VkPresentInfoKHR presentInfo = {};

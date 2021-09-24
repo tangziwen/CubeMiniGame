@@ -253,7 +253,7 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
         }
         else if(m_textureRole == TextureRoleEnum::AS_DEPTH)
         {
-	        usageFlag |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |VK_IMAGE_USAGE_TRANSFER_SRC_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+	        usageFlag |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT |VK_IMAGE_USAGE_TRANSFER_SRC_BIT ;
         	m_isDepth = true;
         }
         break;
