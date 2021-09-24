@@ -243,7 +243,7 @@ void main()
 			float stepDirection = 1.0;
 			float NoV = max(0.0, abs(dot(normal, -viewDir)));
 			float cosTheta = dot(rayDir, normal);
-			float PDF = max(cosTheta / 3.14, 0.027);//minimum 10 degree
+			float PDF = 1.0;//max(cosTheta / 3.14, 0.027);//minimum 10 degree
 			for(int i = 0; i < 8; i++)
 			{
 

@@ -118,6 +118,10 @@ void main()
 {
 	float depth = texture(RT_depth, getScreenCoord()).r;
 	vec3 normal = texture(RT_normal, getScreenCoord() ).xyz;
+	if(length(normal) < 0.00001)
+	{
+		discard;
+	}
 	vec3 worldPos = getWorldPosFromDepth(depth).xyz;
 	vec3 viewDir = normalize(worldPos - t_shaderUnifom.TU_camPos.xyz);
 	vec3 reflectDir = reflect(viewDir, normalize(normal));
