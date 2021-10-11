@@ -230,7 +230,7 @@ namespace tzw
 		clearValuesDefferred.resize(attachmentList.size());
 		for(int i = 0; i < attachmentList.size(); i++)
 		{
-			if(attachmentList[i].isDepth){
+			if(attachmentList[i].isDepthStencilAttachment){
 			
 				clearValuesDefferred[i].depthStencil = {clearDepthStencil.x, (uint32_t)clearDepthStencil.y};
 			}

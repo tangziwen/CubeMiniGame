@@ -16,7 +16,8 @@ namespace tzw
 
 	    MaterialPool::shared()->addMaterial("SSGI", matSSGI);
         auto ssgiPass = backEnd->createDeviceRenderpass_imp();
-        ssgiPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        ssgiPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
 
         m_stage = backEnd->createRenderStage_imp();
         //two buffer

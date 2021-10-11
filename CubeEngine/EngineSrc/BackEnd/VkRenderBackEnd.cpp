@@ -43,6 +43,7 @@
 #include "3D/Vegetation/FoliageSystem.h"
 #include "Scene/SceneCuller.h"
 #include "Rendering/GraphicsRenderer.h"
+
 //#include "vk/DeviceShaderCollectionVK.h"
 #define ENABLE_DEBUG_LAYERS 1
 namespace tzw
@@ -61,6 +62,7 @@ static void initVk()
 
 static PFN_vkCmdBeginDebugUtilsLabelEXT g_CMD_BEGIN_DEBUG_UTILS_LABEL = nullptr;
 static PFN_vkCmdEndDebugUtilsLabelEXT g_CMD_END_DEBUG_UTILS_LABEL = nullptr;
+static PFN_vkSetDebugUtilsObjectNameEXT g_DEBUG_UTILS_NAME = nullptr;
 static FrameBufferVK offScreenFrameBuf;
 std::vector<const char*> getRequiredExtensions() {
 	std::vector<const char*> extensions;
@@ -157,9 +159,15 @@ bool VKRenderBackEnd::memory_type_from_properties(uint32_t typeBits, VkFlags req
             vulkanValidationFile = fopen("./vulkanLog.txt", "w");
         }
         const char * errorPattern = "Validation Error:";
+        //const char * errorPattern = "Cannot call vkUpdateDescriptorSets() to perform write update";
         fprintf(vulkanValidationFile, "validation Layer %s\n", pCallbackData->pMessage);
 	    if(strncmp(pCallbackData->pMessage, errorPattern, strlen(errorPattern)) == 0)
 	    {
+            std::string tmpStr = pCallbackData->pMessage;
+            if(tmpStr.find("Cannot call vkUpdateDescriptorSets() to perform write update") != std::string::npos)
+            {
+                printf("check\n");
+            }
 		    printf("hehe\n");
 		    //abort();
 	    }
@@ -440,6 +448,8 @@ VkApplicationInfo appInfo = {};
     g_CMD_BEGIN_DEBUG_UTILS_LABEL = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdBeginDebugUtilsLabelEXT");
 
     g_CMD_END_DEBUG_UTILS_LABEL = (PFN_vkCmdEndDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdEndDebugUtilsLabelEXT");
+
+    g_DEBUG_UTILS_NAME = (PFN_vkSetDebugUtilsObjectNameEXT)vkGetInstanceProcAddr(m_inst, "vkSetDebugUtilsObjectNameEXT");
     }
     void VKRenderBackEnd::VulkanGetPhysicalDevices(const VkInstance& inst, const VkSurfaceKHR& Surface, VulkanPhysicalDevices& PhysDevices)
     {
@@ -658,7 +668,7 @@ VkApplicationInfo appInfo = {};
     void VKRenderBackEnd::CreateRenderPass()
     {
         m_screenRenderPass = new DeviceRenderPassVK();
-        m_screenRenderPass->init(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+        m_screenRenderPass->init({{ImageFormat::Surface_Format, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, false, true);
     }
 
     void VKRenderBackEnd::CreateTextureToScreenRenderPass()
@@ -1119,10 +1129,10 @@ void VKRenderBackEnd::endSingleTimeCommands(VkCommandBuffer commandBuffer)
 
 void VKRenderBackEnd::prepareFrame()
 {
-    VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &m_imageIndex);
     if (imagesInFlight[m_imageIndex] != VK_NULL_HANDLE) {
         vkWaitForFences(m_device, 1, &imagesInFlight[m_imageIndex], VK_TRUE, UINT64_MAX);
     }
+    VkResult res = vkAcquireNextImageKHR(m_device, m_swapChainKHR, UINT64_MAX, imageAvailableSemaphores[currentFrame], NULL, &m_imageIndex);
     clearCommandBuffer();
     m_itemBufferPool->reset();
 }
@@ -1432,6 +1442,18 @@ void VKRenderBackEnd::createImage(uint32_t width, uint32_t height, VkFormat form
     }
 
     vkBindImageMemory(m_device, image, imageMemory, 0);
+    VkDebugUtilsObjectNameInfoEXT info{};
+    info.objectType = VK_OBJECT_TYPE_IMAGE;
+    info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_OBJECT_NAME_INFO_EXT;
+    info.objectHandle = (uint64_t)image;
+    static int imageViewCount = 0;
+    std::string imageViewName = "imageView";
+    imageViewName += std::to_string(imageViewCount);
+    if(imageViewCount == 25) 
+        printf("holy fuck\n");
+    imageViewCount++;
+    info.pObjectName = imageViewName.c_str();
+    g_DEBUG_UTILS_NAME(m_device, &info);
 }
 
 void VKRenderBackEnd::createTextureImageView()

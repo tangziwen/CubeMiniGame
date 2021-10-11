@@ -18,7 +18,7 @@ namespace tzw
         m_depthTexture = nullptr;
         for(int i =0 ; i < attachmentList.size(); i++){
 
-            if(!attachmentList[i].isDepth)
+            if(!attachmentList[i].isDepthStencilAttachment)
             {
                 auto texture = new DeviceTextureVK();
                 texture->initEmpty(w, h, attachmentList[i].format,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
@@ -53,6 +53,7 @@ namespace tzw
 
     void DeviceFrameBufferVK::initWithTextures(DeviceRenderPass * renderPass, const std::vector<DeviceTexture *> &textureList, int w, int h)
     {
+        m_size = vec2(w,h);
         auto & attachmentList = renderPass->getAttachmentList();
         m_textureList = textureList;
         std::vector<VkImageView> attachments;
