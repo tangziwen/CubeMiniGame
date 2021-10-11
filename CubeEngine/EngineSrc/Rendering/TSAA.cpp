@@ -16,7 +16,8 @@ namespace tzw
 
 	    MaterialPool::shared()->addMaterial("TSAA", matTSAA);
         auto TSAAPass = backEnd->createDeviceRenderpass_imp();
-        TSAAPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        TSAAPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
 
         m_tsaaStage = backEnd->createRenderStage_imp();
         //two buffer

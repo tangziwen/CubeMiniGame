@@ -7,10 +7,11 @@ namespace tzw
 struct DeviceRenderPassAttachmentInfo
 {
 	ImageFormat format;
-	int attachmentIndex;
-	bool isDepth;
+	bool isDepthStencilAttachment;
 };
+typedef std::vector<DeviceRenderPassAttachmentInfo> DeviceAttachmentInfoList;
 
+typedef std::vector<ImageFormat> colorAttachmentFormatList;
 class DeviceRenderPass
 {
 public:
@@ -20,7 +21,7 @@ public:
 		LOAD_AND_STORE,
 	};
 	DeviceRenderPass();
-	virtual void init(int colorAttachNum, OpType opType, ImageFormat format,bool isNeedTransitionToRread, bool isOutputToScreen = false) = 0;
+	virtual void init(const DeviceAttachmentInfoList & attachList, OpType opType,bool isNeedTransitionToRread, bool isOutputToScreen = false) = 0;
 	size_t getAttachmentCount();
 	std::vector<DeviceRenderPassAttachmentInfo> & getAttachmentList();
 	OpType getOpType();

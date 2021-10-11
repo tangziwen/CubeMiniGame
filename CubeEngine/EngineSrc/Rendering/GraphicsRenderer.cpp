@@ -45,13 +45,19 @@ namespace tzw
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
         auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
-        thumbnailPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8, true);
+        thumbnailPass->init({{ImageFormat::R8G8B8A8, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
         m_thumbNailRenderStage = backEnd->createRenderStage_imp();
         m_thumbNailRenderStage->init(thumbnailPass, nullptr);
 
         auto size = Engine::shared()->winSize();
         auto gBufferRenderPass = backEnd->createDeviceRenderpass_imp();
-        gBufferRenderPass->init(4, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8, true);
+        gBufferRenderPass->init({{ImageFormat::R8G8B8A8, false}, 
+            {ImageFormat::R8G8B8A8, false}, 
+            {ImageFormat::R8G8B8A8, false}, 
+            {ImageFormat::R8G8B8A8, false},
+            {ImageFormat::D24_S8, true}
+            }
+            , DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
         auto gBuffer = backEnd->createFrameBuffer_imp();
         gBuffer->init(size.x, size.y, gBufferRenderPass);
 
@@ -68,7 +74,7 @@ namespace tzw
         for(int i = 0; i < 3; i ++)
         {
             auto shadowRenderPass = backEnd->createDeviceRenderpass_imp();
-            shadowRenderPass->init(0, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+            shadowRenderPass->init({{ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
             auto shadowBuffer = backEnd->createFrameBuffer_imp();
             shadowBuffer->init(ShadowMap::shared()->getShadowMapSize(), ShadowMap::shared()->getShadowMapSize(), shadowRenderPass);
             m_ShadowStage[i] = backEnd->createRenderStage_imp();
@@ -78,7 +84,8 @@ namespace tzw
 
 
         auto deferredLightingPass = backEnd->createDeviceRenderpass_imp();
-        deferredLightingPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        deferredLightingPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
         auto deferredLightingBuffer= backEnd->createFrameBuffer_imp();
         deferredLightingBuffer->init(size.x, size.y, deferredLightingPass);
 
@@ -93,8 +100,10 @@ namespace tzw
         Material * pointLightMat = new Material();
         pointLightMat->loadFromTemplate("PointLight");
         auto pointLightPass = backEnd->createDeviceRenderpass_imp();
-        pointLightPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        pointLightPass->init({
+            {ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
         m_PointLightingStage = backEnd->createRenderStage_imp();
+
         m_PointLightingStage->init(pointLightPass, m_DeferredLightingStage->getFrameBuffer());
         m_PointLightingStage->createSinglePipeline(pointLightMat);
         m_PointLightingStage->setName("Deferred Point Light Stage");
@@ -110,7 +119,8 @@ namespace tzw
         DeviceVertexInput emptyInstancingInput;
 
         auto skyPass = backEnd->createDeviceRenderpass_imp();
-        skyPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        skyPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
         m_skyStage = backEnd->createRenderStage_imp();
         m_skyStage->init(skyPass, m_DeferredLightingStage->getFrameBuffer());
         m_skyStage->setName("Sky Stage");
@@ -155,7 +165,8 @@ namespace tzw
 
 	    MaterialPool::shared()->addMaterial("HBAO", matHBAO);
         auto HBAOPass = backEnd->createDeviceRenderpass_imp();
-        HBAOPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        HBAOPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
 
         m_ssgi.init();
         m_tsaa.init();
@@ -168,13 +179,14 @@ namespace tzw
         m_HBAOStage->createSinglePipeline(matHBAO);
 		
 		m_sceneCopyTex = new DeviceTextureVK();
-		m_sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
+		m_sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		
 	    Material * matSSR = new Material();
 	    matSSR->loadFromTemplate("SSR");
 	    MaterialPool::shared()->addMaterial("SSR", matSSR);
         auto SSRPass = backEnd->createDeviceRenderpass_imp();
-        SSRPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        SSRPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
 		
         m_SSRStage = backEnd->createRenderStage_imp();
         m_SSRStage->init(SSRPass, m_DeferredLightingStage->getFrameBuffer());
@@ -187,7 +199,8 @@ namespace tzw
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
         auto fogPass = backEnd->createDeviceRenderpass_imp();
-        fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        fogPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
 		
         m_fogStage = backEnd->createRenderStage_imp();
         m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
@@ -197,7 +210,8 @@ namespace tzw
         m_bloom.init(m_DeferredLightingStage->getFrameBuffer());
 
         auto FXAAPass = backEnd->createDeviceRenderpass_imp();
-        FXAAPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        FXAAPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
 	    Material * matFXAA = new Material();
 	    matFXAA->loadFromTemplate("FXAA");
         auto fxAABuffer = backEnd->createFrameBuffer_imp();
@@ -209,11 +223,11 @@ namespace tzw
 
 		
         auto transparentPass = backEnd->createDeviceRenderpass_imp();
-        transparentPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
+        transparentPass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
         m_transparentStage = backEnd->createRenderStage_imp();
 		m_transparentStage->setName("TransparentPass");
         m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::TRANSPARENT);
-
 
         m_computeTest = backEnd->createRenderStage_imp();
         m_computeTest->initCompute();
@@ -230,7 +244,9 @@ namespace tzw
         for(int i = 0 ; i < 2; i++)
         {
             auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
-            pass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            pass->init({{
+            ImageFormat::Surface_Format, false}, {
+            ImageFormat::D24_S8, true},}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer);
@@ -242,7 +258,9 @@ namespace tzw
         for(int i = 0 ; i < 2; i++)
         {
             auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
-            pass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
+            pass->init({{
+            ImageFormat::Surface_Format, false}, {
+            ImageFormat::D24_S8, true},}, DeviceRenderPass::OpType::LOAD_AND_STORE, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer, (uint32_t)RenderFlag::RenderStage::GUI);
@@ -425,12 +443,15 @@ namespace tzw
             m_DeferredLightingStage->drawScreenQuad();
 
             m_DeferredLightingStage->endRenderPass();
+
+
+            /*
             backEnd->blitTexture(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(),
                 static_cast<DeviceTextureVK *>(m_gPassStage->getFrameBuffer()->getDepthMap()), 
                 static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getDepthMap()),
                 m_DeferredLightingStage->getFrameBuffer()->getSize(), 
                 VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-
+            */
             m_DeferredLightingStage->finish();
             m_renderPath->addRenderStage(m_DeferredLightingStage);
         }

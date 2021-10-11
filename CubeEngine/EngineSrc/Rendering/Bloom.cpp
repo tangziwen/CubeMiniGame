@@ -90,7 +90,8 @@ namespace tzw
         }
 
         auto compositePass = backEnd->createDeviceRenderpass_imp();
-        compositePass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        compositePass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, true);
 		
         auto gBuffer = backEnd->createFrameBuffer_imp();
 
@@ -108,7 +109,7 @@ namespace tzw
             {
                 auto tex = new DeviceTextureVK();
                 vec2 size = getLayerSize(i);
-                tex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
+                tex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
                 m_bloomTexture[i][j] = tex;
             }
         }
