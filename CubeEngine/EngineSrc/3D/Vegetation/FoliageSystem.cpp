@@ -419,7 +419,7 @@ void FoliageSystem::addTreeGroup(TreeGroup* treeGroup)
 
 void FoliageSystem::clearTreeGroup()
 {
-	for(auto p : m_tree)
+	for(auto &p : m_tree)
 	{
 		p.second.clear();
 	}
@@ -468,7 +468,7 @@ void FoliageSystem::pushCommand(RenderFlag::RenderStage requirementType, RenderQ
 		auto theSet = tg.second;
 		for(auto group : theSet)
 		{
-			for(auto inst :group->m_instance)
+			for(auto &inst :group->m_instance)
 			{
 				info->insert(inst);
 			}
