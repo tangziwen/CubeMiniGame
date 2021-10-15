@@ -217,7 +217,7 @@ void main()
 	vec3 viewDir = normalize(worldPos - t_shaderUnifom.TU_camPos.xyz);
 	float epsilon = 0.0001;
 	vec3 totalColor = vec3(0);
-	int NumRays = 8;
+	int NumRays = 4;
 	
 	uvec2 RandomSeed = Rand3DPCG16(ivec3(gl_FragCoord.x, gl_FragCoord.y, t_shaderUnifom.TU_FrameIndex)).xy;
 	//SSGI
