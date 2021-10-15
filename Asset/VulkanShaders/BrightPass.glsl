@@ -16,7 +16,7 @@ void main()
 	vec4 color = imageLoad(inBuffer, InPixelPos);
 	float gray = color.r * 0.3 + color.g * 0.6 + color.b * 0.1;
 	vec4 resultColor = vec4(0, 0, 0, 1.0);
-	if(gray > 0.5)
+	if(gray > 1.0)
 	{
 		resultColor = color;
 	}
