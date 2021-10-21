@@ -45,7 +45,6 @@
 #include "Rendering/GraphicsRenderer.h"
 
 //#include "vk/DeviceShaderCollectionVK.h"
-#define ENABLE_DEBUG_LAYERS 1
 namespace tzw
 {
 
@@ -410,40 +409,44 @@ VkApplicationInfo appInfo = {};
     appInfo.engineVersion = 1;
     appInfo.apiVersion = VK_API_VERSION_1_0;
     auto vkExtensionList = getRequiredExtensions();
-#if ENABLE_DEBUG_LAYERS    
+   
     const char* pInstLayers[] = {
         "VK_LAYER_KHRONOS_validation"
     };
-#endif    
+
     
     VkInstanceCreateInfo instInfo = {};
     instInfo.sType = VK_STRUCTURE_TYPE_INSTANCE_CREATE_INFO;
     instInfo.pApplicationInfo = &appInfo;
-#if ENABLE_DEBUG_LAYERS    
-    instInfo.enabledLayerCount = ARRAY_SIZE_IN_ELEMENTS(pInstLayers);
-    instInfo.ppEnabledLayerNames = pInstLayers;
-#endif    
+    if(m_isEnableValidation)
+    {
+        instInfo.enabledLayerCount = ARRAY_SIZE_IN_ELEMENTS(pInstLayers);
+        instInfo.ppEnabledLayerNames = pInstLayers;
+    }
+
+  
     instInfo.enabledExtensionCount = vkExtensionList.size();//ARRAY_SIZE_IN_ELEMENTS(pInstExt);
     instInfo.ppEnabledExtensionNames = vkExtensionList.data();         
 
     VkResult res = vkCreateInstance(&instInfo, NULL, &m_inst);
     CHECK_VULKAN_ERROR("vkCreateInstance %d\n", res);
-#if ENABLE_DEBUG_LAYERS
-    VkDebugUtilsMessengerCreateInfoEXT createInfo;
-    createInfo = {};
-    createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
-    createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
-    createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
-    createInfo.pfnUserCallback = debugCallback;
-
-
-    auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_inst, "vkCreateDebugUtilsMessengerEXT");
-    if(func(m_inst, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+    if(m_isEnableValidation)
     {
-        abort();
-    }
+        VkDebugUtilsMessengerCreateInfoEXT createInfo;
+        createInfo = {};
+        createInfo.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+        createInfo.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT;
+        createInfo.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT;
+        createInfo.pfnUserCallback = debugCallback;
 
-#endif
+
+        auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(m_inst, "vkCreateDebugUtilsMessengerEXT");
+        if(func(m_inst, &createInfo, nullptr, &debugMessenger) != VK_SUCCESS)
+        {
+            abort();
+        }
+
+    }
 
     g_CMD_BEGIN_DEBUG_UTILS_LABEL = (PFN_vkCmdBeginDebugUtilsLabelEXT)vkGetInstanceProcAddr(m_inst, "vkCmdBeginDebugUtilsLabelEXT");
 
@@ -1449,8 +1452,6 @@ void VKRenderBackEnd::createImage(uint32_t width, uint32_t height, VkFormat form
     static int imageViewCount = 0;
     std::string imageViewName = "imageView";
     imageViewName += std::to_string(imageViewCount);
-    if(imageViewCount == 25) 
-        printf("holy fuck\n");
     imageViewCount++;
     info.pObjectName = imageViewName.c_str();
     g_DEBUG_UTILS_NAME(m_device, &info);

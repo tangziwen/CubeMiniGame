@@ -139,6 +139,8 @@ public:
     DeviceRenderPassVK* getScreenRenderPass();
     void beginDebugRegion(VkCommandBuffer cmd, const char * labelStr);
     void endDebugRegion(VkCommandBuffer cmd);
+
+    void setIsEnableValidation(bool newVal) {m_isEnableValidation = newVal;};
 private:
     
     void VulkanEnumExtProps(std::vector<VkExtensionProperties>& ExtProps);
@@ -260,6 +262,7 @@ private:
     RenderPath * m_renderPath;
     std::vector<DeviceTextureVK *> m_screenTexs;
     DeviceTextureVK * m_screenDepth;
+    bool m_isEnableValidation = false;
 };
 
 } // namespace tzw

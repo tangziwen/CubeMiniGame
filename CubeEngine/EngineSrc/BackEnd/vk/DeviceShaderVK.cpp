@@ -62,8 +62,18 @@ namespace tzw
 	    {
 		    unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
 		    unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
+
+
 		    printf("Image %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
             DeviceShaderVKLocationInfo info;
+
+
+            const spirv_cross::SPIRType &valType = glsl.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
+            if(valType.array.size())
+            {
+                printf("shit");
+                info.arraySize = valType.array[0];
+            }
             info.set = set;
             info.binding = binding;
             info.name = resource.name;

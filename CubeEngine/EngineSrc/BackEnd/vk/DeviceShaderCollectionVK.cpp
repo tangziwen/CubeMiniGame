@@ -175,7 +175,14 @@ void DeviceShaderCollectionVK::createDescriptorSetLayOut()
                 {
                     layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 }
-                layOutBinding.descriptorCount = 1;
+                if(locationInfo.arraySize > 0)
+                {
+                    layOutBinding.descriptorCount = locationInfo.arraySize;
+                }
+                else{
+                    layOutBinding.descriptorCount = 1;
+                }
+                
                 layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;//locationInfo.stageFlag;
                 descriptorLayoutList.emplace_back(layOutBinding);
                 layout->addBinding(locationInfo.binding, locationInfo.name);

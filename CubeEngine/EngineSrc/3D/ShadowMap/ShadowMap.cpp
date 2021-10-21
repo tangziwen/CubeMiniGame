@@ -127,6 +127,7 @@ namespace tzw
 		return floor(src / tileSize) * tileSize;
 	}
 
+#pragma optimize("", off)
 	void ShadowMap::calculateProjectionMatrix()
 	{
 		auto camera = g_GetCurrScene()->defaultCamera();
@@ -143,21 +144,26 @@ namespace tzw
 			const int NUM_FRUSTUM_CORNERS = 8;
 			//camera frustum corners in view space;
 			std::vector<vec3> frustumCorners;
-			getFrustumCorners(frustumCorners, camera->projection(), m_zlistView[i], m_zlistView[i+1]);
+			getFrustumCorners(frustumCorners, camera->projection(), m_zlistView[0], m_zlistView[i+1]);
 			camera->reCache();
+			//AABB worldAABB;
 			for (unsigned j = 0 ; j < NUM_FRUSTUM_CORNERS ; j++) 
 			{
 				vec4 coord_in_world = camInv * vec4(frustumCorners[j], 1.0);
-				vec4 coord_in_LightView =  lightView * coord_in_world;
-				aabb.update(vec3(coord_in_LightView.x, coord_in_LightView.y, coord_in_LightView.z));
+				aabb.update(coord_in_world.toVec3());
+				//vec4 coord_in_LightView =  lightView * coord_in_world;
+				//aabb.update(vec3(coord_in_LightView.x, coord_in_LightView.y, coord_in_LightView.z));
 			}
+
+			aabb.transForm(lightView);
 			Matrix44 mat;
 			auto min_val = aabb.min();
 			auto max_val = aabb.max();
 
 
+
 			//fit to scene
-			vec3 vDiagonal = frustumCorners[0] - frustumCorners[6];
+			vec3 vDiagonal = frustumCorners[6] - frustumCorners[0];
 			vDiagonal = vec3(vDiagonal.length(), vDiagonal.length(), vDiagonal.length());
 			float fCascadeBound = vDiagonal.x;
 			vec3 halfVec = vec3(0.5, 0.5, 0.5);
@@ -165,8 +171,7 @@ namespace tzw
 			vBoarderOffset.z = 0.0;
             // Add the offsets to the projection.
             max_val += vBoarderOffset;
-            min_val -= vBoarderOffset;
-
+            min_val -= vBoarderOffset;			
 
 			vec2 vWorldUnitsPerTexel;
             // The world units per texel are used to snap the shadow the orthographic projection
@@ -181,6 +186,7 @@ namespace tzw
 
 			max_val.x = snap(max_val.x, vWorldUnitsPerTexel.x);
 			max_val.y = snap(max_val.y, vWorldUnitsPerTexel.y);
+
 
 			//look at the last 2 parameters! 
 			mat.ortho(min_val.x, max_val.x, min_val.y, max_val.y, -1 * max_val.z - 50,  -1 * min_val.z);

@@ -11,6 +11,6 @@
 	"AAEnable": true,
 	"ShadowEnable": true,
 	"IsFullScreen": false,
-	"IsGraphicsDebugCheck": false,
+	"IsGraphicsDebugCheck": true,
 	"Language": "Chinese"
 }
