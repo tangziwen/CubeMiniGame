@@ -123,8 +123,8 @@ void Engine::loadConfig()
 	m_windowHeight = height;
 	auto enable3D = doc["3DEnable"].GetBool();
 	auto enable2D = doc["2DEnable"].GetBool();
-	RenderBackEnd::shared()->setIsCheckGL(doc["IsGraphicsDebugCheck"].GetBool());
-
+	//RenderBackEnd::shared()->setIsCheckGL(doc["IsGraphicsDebugCheck"].GetBool());
+	VKRenderBackEnd::shared()->setIsEnableValidation(doc["IsGraphicsDebugCheck"].GetBool());
 	m_isFullScreen = doc["IsFullScreen"].GetBool();
 
 	TranslationMgr::shared()->load(doc["Language"].GetString()); 

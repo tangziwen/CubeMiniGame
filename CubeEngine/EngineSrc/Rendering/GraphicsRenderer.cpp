@@ -435,9 +435,9 @@ namespace tzw
                 m_ShadowStage[2]->getFrameBuffer()->getDepthMap()
             };
 
-            pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList[0]);
-            pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(9, shadowList[1]);
-            pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(10, shadowList[2]);
+            pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList);
+            //pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(9, shadowList[1]);
+            //pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(10, shadowList[2]);
 
             m_DeferredLightingStage->bindSinglePipelineDescriptor();
             m_DeferredLightingStage->drawScreenQuad();

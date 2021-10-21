@@ -58,6 +58,7 @@ struct DeviceShaderVKLocationInfo{
 	size_t size;
 	std::string name;
 	int getBlockMemberIndex(std::string name);
+	int arraySize = -1;
 };
 
 class DeviceShader

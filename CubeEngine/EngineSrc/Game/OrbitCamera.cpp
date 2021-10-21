@@ -293,6 +293,10 @@ void OrbitCamera::init(Camera *cloneObj)
     setScale(vec3(1.0,1.0,1.0));
     EventMgr::shared()->addFixedPiorityListener(this);
 	cloneObj->getPerspectInfo(&m_fov, &m_aspect, &m_near, &m_far);
+	m_width = cloneObj->getWidth();
+	m_height = cloneObj->getHeight();
+	cloneObj->getPixelOffset(m_offsetPixelX, m_offsetPixelY);
+	setOffsetPixel(m_offsetPixelX, m_offsetPixelY);
 }
 
 void OrbitCamera::collideAndSlide(vec3 vel, vec3 gravity)

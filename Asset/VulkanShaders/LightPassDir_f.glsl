@@ -19,10 +19,10 @@ layout(set = 0, binding = 5) uniform sampler2D RT_depth;
 layout(set = 0, binding = 6) uniform sampler2D environmentMap;
 layout(set = 0, binding = 7) uniform sampler2D prefilterMap;
 
-layout(set = 0, binding = 8) uniform sampler2D TU_ShadowMap_1;
-layout(set = 0, binding = 9) uniform sampler2D TU_ShadowMap_2;
-layout(set = 0, binding = 10) uniform sampler2D TU_ShadowMap_3;
-//layout(set = 0, binding = 8) uniform sampler2D TU_ShadowMap[3];
+//layout(set = 0, binding = 8) uniform sampler2D TU_ShadowMap_1;
+//layout(set = 0, binding = 9) uniform sampler2D TU_ShadowMap_2;
+//layout(set = 0, binding = 10) uniform sampler2D TU_ShadowMap_3;
+layout(set = 0, binding = 8) uniform sampler2D TU_ShadowMap[3];
 
 layout(location = 0) out vec4 out_Color;
 layout(location = 0) in vec4 fragColor;
@@ -291,6 +291,7 @@ void main()
 	vec3 worldView = normalize(t_shaderUnifom.TU_camPos.xyz - worldPos.xyz);
 	float shadowFactor = 1.0;
 	
+	/*
 	if(depth < t_shaderUnifom.TU_ShadowMapEnd[0])
 	{
 		shadowFactor = CalcShadowFactor(TU_ShadowMap_1, t_shaderUnifom.TU_LightVP[0] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
@@ -305,6 +306,42 @@ void main()
 	{
 		shadowFactor = CalcShadowFactor(TU_ShadowMap_3, t_shaderUnifom.TU_LightVP[2] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
 	}
+	*/
+	
+	
+
+	vec4 colorList[NUM_CASCADES] = vec4[NUM_CASCADES](vec4(1, 0, 0, 1), vec4(0, 1, 0, 1), vec4(0, 0, 1, 1));
+	for(int i = 0; i < NUM_CASCADES; i++)
+	{
+		vec4 uv = t_shaderUnifom.TU_LightVP[i] * worldPos;
+		uv.xyz / uv.w;
+		uv.x = uv.x * 0.5 + 0.5;
+		uv.y = uv.y * 0.5 + 0.5;
+		
+		if(uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0)
+		{
+			shadowFactor = CalcShadowFactor(TU_ShadowMap[i], t_shaderUnifom.TU_LightVP[i] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
+			break;
+		}
+	}
+
+/*
+	vec4 colorList[NUM_CASCADES] = vec4[NUM_CASCADES](vec4(1, 0, 0, 1), vec4(0, 1, 0, 1), vec4(0, 0, 1, 1));
+	for(int i = 0; i < NUM_CASCADES; i++)
+	{
+		vec4 uv = t_shaderUnifom.TU_LightVP[i] * worldPos;
+		uv.xyz / uv.w;
+		uv.x = uv.x * 0.5 + 0.5;
+		uv.y = uv.y * 0.5 + 0.5;
+		
+		if(uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0)
+		{
+			out_Color = colorList[i];
+			break;
+		}
+	}
+*/
+
 	/*
 	for(int i = 0; i < NUM_CASCADES; i++)
 	{

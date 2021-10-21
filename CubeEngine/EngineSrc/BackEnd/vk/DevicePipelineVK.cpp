@@ -689,7 +689,14 @@ void DevicePipelineVK::createMaterialDescriptorPool()
             }
             else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
             {
-                textuerCount++;
+                if(locationInfo.arraySize > 0)
+                {
+                    textuerCount += locationInfo.arraySize;
+                }
+                else
+                {
+                    textuerCount++;
+                }
             }
             if(locationInfo.type == DeviceShaderVKLocationType::StorageBuffer)
             {
