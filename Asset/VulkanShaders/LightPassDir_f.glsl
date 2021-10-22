@@ -112,16 +112,12 @@ float pcf_3x3(vec2 pInLitTC, float litZ, vec2 vInvShadowMapWH, sampler2D shadowI
 	
 	return (PCFResult00 + PCFResult10 + PCFResult20 + PCFResult01 + PCFResult11 + PCFResult21 + PCFResult02 + PCFResult12 + PCFResult22) * .11111;
 }
-float CalcShadowFactor(sampler2D depthSampler, vec4 LightSpacePos, vec3 surfaceNormal, vec3 lightDir)                                                  
-{   
-    vec3 ProjCoords = LightSpacePos.xyz / LightSpacePos.w;                                  
-    vec2 UVCoords;                                                                          
-    UVCoords.x =0.5 * ProjCoords.x + 0.5;                                                  
-    UVCoords.y = 0.5 * ProjCoords.y + 0.5;
-    float z = ProjCoords.z;
-	if (UVCoords.x < 0 || UVCoords.x > 1 || UVCoords.y < 0 || UVCoords.y > 1)
+
+float CalcShadowFactor(sampler2D depthSampler, vec3 litUV, vec3 surfaceNormal, vec3 lightDir)                                                  
+{
+	if (litUV.x < 0 || litUV.x > 1 || litUV.y < 0 || litUV.y > 1)
 		return 1.0;
-	return clamp(1.0 - pcf_3x3(UVCoords.xy, z, vec2(1.0 / 2048.0, 1.0 / 2048.0), depthSampler), 0.1, 1.0);
+	return clamp(1.0 - pcf_3x3(litUV.xy, litUV.z, vec2(1.0 / 2048.0, 1.0 / 2048.0), depthSampler), 0.1, 1.0);
 }
 vec2 getScreenCoord()
 {
@@ -290,37 +286,18 @@ void main()
 	vec4 worldPos = getWorldPosFromDepth(depth);
 	vec3 worldView = normalize(t_shaderUnifom.TU_camPos.xyz - worldPos.xyz);
 	float shadowFactor = 1.0;
-	
-	/*
-	if(depth < t_shaderUnifom.TU_ShadowMapEnd[0])
-	{
-		shadowFactor = CalcShadowFactor(TU_ShadowMap_1, t_shaderUnifom.TU_LightVP[0] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
-	}
-	else
-	if(depth < t_shaderUnifom.TU_ShadowMapEnd[1])
-	{
-		shadowFactor = CalcShadowFactor(TU_ShadowMap_2, t_shaderUnifom.TU_LightVP[1] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
-	}
-	else
-	if(depth < t_shaderUnifom.TU_ShadowMapEnd[2])
-	{
-		shadowFactor = CalcShadowFactor(TU_ShadowMap_3, t_shaderUnifom.TU_LightVP[2] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
-	}
-	*/
-	
-	
 
 	vec4 colorList[NUM_CASCADES] = vec4[NUM_CASCADES](vec4(1, 0, 0, 1), vec4(0, 1, 0, 1), vec4(0, 0, 1, 1));
 	for(int i = 0; i < NUM_CASCADES; i++)
 	{
-		vec4 uv = t_shaderUnifom.TU_LightVP[i] * worldPos;
-		uv.xyz / uv.w;
-		uv.x = uv.x * 0.5 + 0.5;
-		uv.y = uv.y * 0.5 + 0.5;
-		
-		if(uv.x > 0.0 && uv.x < 1.0 && uv.y > 0.0 && uv.y < 1.0)
+		vec4 litUV = t_shaderUnifom.TU_LightVP[i] * worldPos;
+		litUV.xyz / litUV.w;
+		litUV.x = litUV.x * 0.5 + 0.5;
+		litUV.y = litUV.y * 0.5 + 0.5;
+		//CSM的包围盒被扩展了一些，所以也要判断uv.z的范围，比如玩家在坡上时，扩张后，看坡地的物体可能深度超过第一级CSM的深度
+		if(litUV.x > 0.0 && litUV.x < 1.0 && litUV.y > 0.0 && litUV.y < 1.0 && litUV.z > 0.0 && litUV.z <= 1.0)
 		{
-			shadowFactor = CalcShadowFactor(TU_ShadowMap[i], t_shaderUnifom.TU_LightVP[i] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
+			shadowFactor = CalcShadowFactor(TU_ShadowMap[i], litUV.xyz, normal, t_shaderUnifom.TU_sunDirection);
 			break;
 		}
 	}
@@ -341,17 +318,6 @@ void main()
 		}
 	}
 */
-
-	/*
-	for(int i = 0; i < NUM_CASCADES; i++)
-	{
-		if(depth < t_shaderUnifom.TU_ShadowMapEnd[i])
-		{
-			shadowFactor = CalcShadowFactor(i, t_shaderUnifom.TU_LightVP[i] * worldPos, normal, t_shaderUnifom.TU_sunDirection);
-			break;
-		}
-	}
-	*/
 	vec3 resultColor = calculateLightPBR(albedo, metallic, normalize(normal), normalize(t_shaderUnifom.TU_sunDirection), t_shaderUnifom.TU_sunColor, normalize(worldView), roughness, shadowFactor);
 	out_Color = vec4(mix(vec3(0,0,0), resultColor, vec3(dFactor)), 1.0);
 }
