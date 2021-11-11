@@ -51,9 +51,10 @@ namespace tzw
 
         auto size = Engine::shared()->winSize();
         auto gBufferRenderPass = backEnd->createDeviceRenderpass_imp();
-        gBufferRenderPass->init({{ImageFormat::R8G8B8A8, false}, 
+        gBufferRenderPass->init({
             {ImageFormat::R8G8B8A8, false}, 
             {ImageFormat::R8G8B8A8, false}, 
+            {ImageFormat::R8G8B8A8_S, false}, 
             {ImageFormat::R8G8B8A8, false},
             {ImageFormat::D24_S8, true}
             }
