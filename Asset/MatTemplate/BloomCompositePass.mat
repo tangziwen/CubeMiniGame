@@ -6,11 +6,12 @@
 	"name" : "BloomCompositPass",
 	"DepthTestEnable" : false,
 	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
+	"BlendEnable" : true,
+	"SrcBlendFactor" : "One",
+	"DstBlendFactor" : "One",
 	"property" : {
 		"attributes" : [
+		{"name" : "TU_winSize", "type":"semantic_WinSize"},
 		{"name" : "BloomStrength", "type":"float", "default":0.1, "ui_info":{"range":[0.0, 2.0]}}
 		],
 		"maps" : [

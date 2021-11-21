@@ -5,6 +5,7 @@
 #include "BackEnd/DeviceRenderStage.h"
 #include "TSAA.h"
 #include "SSGI.h"
+#include "Bloom.h"
 namespace tzw
 {
 	class DevicePipelineVK;
@@ -26,6 +27,7 @@ namespace tzw
 	private:
 		TSAA m_tsaa;
 		SSGI m_ssgi;
+		Bloom m_bloom;
 		DeviceRenderStage * m_ShadowStage[3];
 		DeviceRenderStage * m_gPassStage;
 		DeviceRenderStage * m_DeferredLightingStage;

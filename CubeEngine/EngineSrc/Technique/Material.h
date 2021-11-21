@@ -10,6 +10,7 @@
 #include "2D/InspectableUI.h"
 #include "rapidjson/document.h"
 #include "Rendering/RenderFlag.h"
+#include "ShadingParams.h"
 namespace tzw {
 class StdMaterial;
 class Node;
@@ -29,6 +30,8 @@ enum class PrimitiveTopology
 	TriangleList,
 	LineList,
 };
+
+
 class Material : public InspectableUI
 {
 public:
@@ -85,11 +88,12 @@ public:
 	std::unordered_map<std::string,TechniqueVar> & getVarList();
 	PrimitiveTopology getPrimitiveTopology();
 	void setPrimitiveTopology(PrimitiveTopology newTopology);
+	ShadingParams * getShadingParams();
 private:
     std::string m_vsPath;
     std::string m_fsPath;
 	bool m_isEnableInstanced;
-    std::unordered_map<std::string,TechniqueVar> m_varList;
+	ShadingParams * m_shadingParams;
 	RenderFlag::BlendingFactor m_factorSrc;
 	RenderFlag::BlendingFactor m_factorDst;
 	bool m_isCullFace;

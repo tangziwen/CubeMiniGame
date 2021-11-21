@@ -27,6 +27,7 @@ void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
     //create material descriptor pool
     createMaterialDescriptorPool();
     createMaterialDescriptorSet();
+    createMaterialUniformBuffer();
 
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo[1] = {};
     shaderStageCreateInfo[0].sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -63,6 +64,7 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
     m_totalItemWiseDesSet = 0;
     m_vertexInput = vertexInput;
     m_mat = mat;
+    m_shadingParams = mat->getShadingParams();
     DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(mat->getProgram()->getDeviceShader());
     m_shader = shader;
     //create material descriptor pool
@@ -331,7 +333,7 @@ DeviceDescriptor* DevicePipelineVK::getMaterialDescriptorSet()
 
 void DevicePipelineVK::updateMaterialDescriptorSet()
 {
-    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getProgram()->getDeviceShader());
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_shader);
     auto setInfo = shader->getSetInfo();
     auto matDescIter = setInfo.find(0);
     if(matDescIter == setInfo.end())
@@ -340,7 +342,7 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
         return;
     }
     auto & matDescSet = matDescIter->second;
-    auto & varList = m_mat->getVarList();
+    auto & varList = m_shadingParams->getVarList();
 
 
     for(auto& i :matDescSet)
@@ -372,10 +374,10 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
                 auto iter = varList.find(i.name);
                 if(iter != varList.end())
                 {
-
                     TechniqueVar* var = &(iter->second);
                     assert(var->type == TechniqueVar::Type::Texture);
                     auto tex = var->data.rawData.texInfo.tex;
+                    /*
                     VkDescriptorImageInfo imageInfo{};
                     imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
                     imageInfo.imageView = static_cast<DeviceTextureVK *>(tex->getTextureId())->getImageView();
@@ -391,6 +393,8 @@ void DevicePipelineVK::updateMaterialDescriptorSet()
                     texWriteSet.descriptorCount = 1;
                     texWriteSet.pImageInfo = &imageInfo;
                     vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &texWriteSet, 0, nullptr);
+                    */
+                    m_materialDescripotrSet->updateDescriptorByBinding(i.binding, static_cast<DeviceTextureVK *>(tex->getTextureId()));
                 }
             }
             break;
@@ -408,7 +412,7 @@ void DevicePipelineVK::updateUniform()
     if(!shader->findLocationInfo("t_shaderUnifom")) return;
     auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
     //update material parameter
-    auto & varList = m_mat->getVarList();
+    auto & varList = m_shadingParams->getVarList();
     std::vector<VkWriteDescriptorSet> descriptorWrites{};
     void* data;
     //copy new data
@@ -534,7 +538,8 @@ void DevicePipelineVK::updateUniform()
                             }
 				        }
 						break;
-		                default: ;
+		                default:
+                            break;
                     }
                 }
                 break;

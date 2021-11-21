@@ -45,13 +45,13 @@ namespace tzw
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
         auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
-        thumbnailPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        thumbnailPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8, true);
         m_thumbNailRenderStage = backEnd->createRenderStage_imp();
         m_thumbNailRenderStage->init(thumbnailPass, nullptr);
 
         auto size = Engine::shared()->winSize();
         auto gBufferRenderPass = backEnd->createDeviceRenderpass_imp();
-        gBufferRenderPass->init(4, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8_S, true);
+        gBufferRenderPass->init(4, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R8G8B8A8, true);
         auto gBuffer = backEnd->createFrameBuffer_imp();
         gBuffer->init(size.x, size.y, gBufferRenderPass);
 
@@ -187,13 +187,14 @@ namespace tzw
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
         auto fogPass = backEnd->createDeviceRenderpass_imp();
-        fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
+        fogPass->init(1, DeviceRenderPass::OpType::LOAD_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, false);
 		
         m_fogStage = backEnd->createRenderStage_imp();
         m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
         m_fogStage->setName("Fog Stage");
         m_fogStage->createSinglePipeline(matFog);
 
+        m_bloom.init(m_DeferredLightingStage->getFrameBuffer());
 
         auto FXAAPass = backEnd->createDeviceRenderpass_imp();
         FXAAPass->init(1, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, ImageFormat::R16G16B16A16_SFLOAT, true);
@@ -516,30 +517,7 @@ namespace tzw
         }
         //------------Sky Pass end---------------
 
-        {
-            auto depthMap = m_gPassStage->getFrameBuffer()->getDepthMap();
-            auto tex = m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0];
-
-            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-                static_cast<DeviceTextureVK*>(depthMap), VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
-            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-            static_cast<DeviceTextureVK*>(tex), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
-            m_computeTest->prepare(cmd);
-            m_computeTest->beginCompute();
-        
-            m_computeTest->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(0, depthMap);
-        
-            m_computeTest->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, tex);
-            m_computeTest->bindSinglePipelineDescriptorCompute();
-            m_computeTest->dispatch(1600/ 16, 960/ 16, 1);
-            m_computeTest->endCompute();
-            m_renderPath->addRenderStage(m_computeTest);
-
-            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-                static_cast<DeviceTextureVK*>(depthMap),VK_IMAGE_LAYOUT_GENERAL , VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, 0, 1);
-            backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-            static_cast<DeviceTextureVK*>(tex), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0, 1);
-        }
+ 
 
         {
 
@@ -635,6 +613,11 @@ namespace tzw
             m_fogStage->finish();
             m_renderPath->addRenderStage(m_fogStage);
         }
+
+        //bloom
+        {
+            m_bloom.draw(cmd, m_renderPath, m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]);
+        }
         //tsaa
 		if(m_isAAEnable)
 		{
@@ -659,6 +642,7 @@ namespace tzw
             m_renderPath->addRenderStage(m_aaStage);
         }
         */
+
         //------------Texture To Screen Pass begin---------------
 
         int imageIdx = backEnd->getCurrSwapIndex();

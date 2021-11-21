@@ -28,8 +28,8 @@ public:
 	VkPipelineLayout getPipelineLayOut();
 	VkPipeline getPipeline();
 	DeviceDescriptor * getMaterialDescriptorSet();
-	void updateMaterialDescriptorSet();
-	void updateUniform();
+	void updateMaterialDescriptorSet() override;
+	void updateUniform() override;
 	void updateUniformSingle(std::string name, void * buff, size_t size) override;
 	void resetItemWiseDescritporSet() override;
 	DeviceDescriptor * giveItemWiseDescriptorSet() override;
