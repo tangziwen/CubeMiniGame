@@ -1,0 +1,22 @@
+{
+	"Crops" :
+	[
+		{
+			"name" : "Wheat",
+			"desc":"小麦",
+			"description":"种植用小麦",
+			"stage0":
+			{
+				"Foliage":"SimpleGrass"
+			},
+			"stage1":
+			{
+				"Foliage":"SimpleGrass"
+			},
+			"stage2":
+			{
+				"Foliage":"SimpleGrass"
+			}
+		}
+	]
+}

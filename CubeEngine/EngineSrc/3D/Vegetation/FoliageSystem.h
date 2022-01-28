@@ -7,6 +7,7 @@
 namespace tzw {
 	class Model;
 	class InstancedMesh;
+	class FoliageSystem;
     enum class VegetationType
     {
 	    QUAD_TRI,
@@ -24,7 +25,7 @@ namespace tzw {
 	struct VegetationBatch
 	{
 		VegetationBatch(const VegetationBatInfo * info);
-		void insertInstanceData(InstanceData data);
+		void insertInstanceData(InstanceData& data);
 		void clear();
 		void setUpTransFormation(TransformationInfo& info);
 		void commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg);
@@ -39,35 +40,43 @@ namespace tzw {
 	};
 	struct VegetationInfo
 	{
-		VegetationInfo();
+		VegetationInfo(std::string name);
 		void init(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2);
 		void clear();
 		void commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg);
-		void insert(InstanceData inst);
+		void insert(InstanceData& inst);
 		// VegetationType m_type;
 		VegetationBatch * m_lodBatch[3];
 		bool anyHas();
 		void submitShadowDraw(RenderQueue * queues, int level);
+		std::string m_name;
+		int vegClassId = -1;
 	};
-	class TreeGroup
+
+	class Foliage
 	{
 	public:
-		TreeGroup(int treeClass);
-	  std::vector<InstanceData> m_instance;
+		Foliage(int treeClass);
+		std::vector<InstanceData> m_instance;
 		int m_treeClass;
+		void setIsVisible(bool isVisible);
+		bool m_isPersistent = false;
 	};
+
 	class FoliageSystem : public Singleton<FoliageSystem>, public Drawable3D
 	{
 	public:
 	  explicit FoliageSystem();
-		int regVegetation(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2);
-	  void addTreeGroup(TreeGroup* treeGroup);
+	  int regVegetation(VegetationInfo * vegeInfo);
+	  void addTreeGroup(Foliage* treeGroup);
+	  void removeFoliage(Foliage * foliage);
 	  void clearTreeGroup();
 	  void finish();
 	  void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg) override;
 	  void initMesh();
 	  void setUpTransFormation(TransformationInfo& info) override;
 	  void submitShadowDraw(RenderQueue * queues, int level);
+	  VegetationInfo* getVegetationInfoByName(std::string name);
 	  unsigned int getTypeId() override;
 	  Mesh* m_mesh{};
 		Mesh* m_leafMesh{};
@@ -77,7 +86,7 @@ namespace tzw {
 	  bool m_isFinish;
 
 	private:
-		std::unordered_map<int, std::unordered_set<TreeGroup*>> m_tree;
+		std::unordered_map<int, std::unordered_set<Foliage*>> m_tree;
 		std::vector<VegetationInfo *> m_infoList;
 	};
 

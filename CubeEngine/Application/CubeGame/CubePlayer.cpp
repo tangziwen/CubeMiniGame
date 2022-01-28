@@ -41,6 +41,8 @@
 
 #include "Gun/FPGun.h"
 #include "Gun/FPGunMgr.h"
+
+#include "CropSystem.h"
 namespace tzw
 {
 
@@ -257,11 +259,18 @@ namespace tzw
 			{
         		//m_camera->setUseCustomFrustumUpdate(true);
         		
+
+
+				CropSystem::shared()->getCropByName("Wheat")->plantCrop(getPos());
+
+
+				/*
         		auto pointLight = new PointLight();
         		pointLight->setRadius(10);
         		pointLight->setLightColor(vec3(1, 0, 0));
         		pointLight->setPos(getPos());
         		g_GetCurrScene()->addNode(pointLight);
+				*/
         
 
             }

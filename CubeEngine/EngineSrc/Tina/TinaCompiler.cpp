@@ -123,7 +123,7 @@ OperandLocation TinaCompiler::getLeafAddr(TinaASTNode* ast_node, TinaProgram & p
 	abort();
 }
 
-//#pragma optimize("", off)
+
 //Eval R vaule for expr£¬ it will generate a temp var
 OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 {

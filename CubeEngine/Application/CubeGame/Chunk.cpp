@@ -62,11 +62,9 @@ namespace tzw
 
 		m_tmpNeighborChunk.clear();
 
-		m_grass = new TreeGroup(GameMap::shared()->getGrassId());
 
-		m_grass2 = new TreeGroup(GameMap::shared()->getGrassId());
-
-		m_tree = new TreeGroup(GameMap::shared()->getTreeId());
+		m_tree = nullptr;
+		m_grass = nullptr;
 
 		m_isHitable = true;
 
@@ -250,12 +248,7 @@ namespace tzw
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			queues->addRenderCommand(command, requirementArg);
 		}
-		
-		if (true)
-		{
-			FoliageSystem::shared()->addTreeGroup(m_tree);
-			FoliageSystem::shared()->addTreeGroup(m_grass);
-		}
+
 	}
 
 	void
@@ -310,6 +303,13 @@ namespace tzw
 
 			delete m_meshTransition[i];
 			m_meshTransition[i] = nullptr;
+		}
+		if( m_tree && m_grass)
+		{
+			FoliageSystem::shared()->removeFoliage(m_tree);
+			FoliageSystem::shared()->removeFoliage(m_grass);
+			m_tree = nullptr;
+			m_grass = nullptr;
 		}
 
 	}
@@ -934,11 +934,13 @@ BAAAABB
 	void
 	Chunk::generateVegetation()
 	{
-		m_grassPosList.clear();
-		m_tree->m_instance.clear();
-		m_grass->m_instance.clear();
 		size_t indexCount = m_mesh[0]->m_indices.size();
-		if (indexCount <= 0) return;
+		if (indexCount <= 0) return;//这个块完全在地形内部或者是空气
+
+		m_grassPosList.clear();
+		m_grass = new Foliage(GameMap::shared()->getGrassId());
+		m_tree = new Foliage(GameMap::shared()->getTreeId());
+
 		float grassDensity = 1.0;
 		float step = 1.0 / grassDensity;
 		vec3 theBasePoint = GameMap::shared()->voxelToWorldPos(this->m_x * MAX_BLOCK + LOD_SHIFT, this->m_y * MAX_BLOCK + LOD_SHIFT, this->m_z * MAX_BLOCK + LOD_SHIFT);
@@ -1028,6 +1030,8 @@ BAAAABB
 			}
 		}
 		m_isTreeloaded = true;
+		FoliageSystem::shared()->addTreeGroup(m_tree);
+		FoliageSystem::shared()->addTreeGroup(m_grass);
 	}
 
 	bool Chunk::getIsInitData()

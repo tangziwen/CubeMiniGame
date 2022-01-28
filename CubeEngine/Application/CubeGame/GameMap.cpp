@@ -5,6 +5,7 @@
 #include "FastNoise/FastNoise.h"
 #include <algorithm>
 #include "3D/Terrain/Transvoxel.h"
+#include "CropSystem.h"
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
 
@@ -174,23 +175,29 @@ void GameMap::init(float ratio, int width, int depth, int height)
     mapBufferSize_Y = ((GAME_MAP_HEIGHT * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
     mapBufferSize_Z = ((GAME_MAP_DEPTH * MAX_BLOCK)/GAME_MAX_BUFFER_SIZE) + 1;
 	m_totalBuffer = new GameMapBuffer[(mapBufferSize_X) * (mapBufferSize_Y) * (mapBufferSize_Z)];
+
+
 	{
-		auto tmpTree = Model::create("treeTest/tzwTree.tzw");
-		auto aabb = tmpTree->localAABB();
 	    VegetationBatInfo lod0(VegetationType::ModelType, "treeTest/tzwTree.tzw");
 		VegetationBatInfo lod1(VegetationType::ModelType, "treeTest/tzwTreeLod1.tzw");
 		VegetationBatInfo lod2(VegetationType::QUAD, "treeTest/treeLod2.png", vec2(10, 10));
-		//reg FoliageSystem class
-		m_treeID = FoliageSystem::shared()->regVegetation(&lod0, &lod1, &lod2);
-	}
 
+		auto info = new VegetationInfo("SimpleTree");
+		info->init(&lod0, &lod1, &lod2);
+		m_treeID = FoliageSystem::shared()->regVegetation(info);
+	}
 
 	{
 	    VegetationBatInfo lod0(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
 		VegetationBatInfo lod1(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
 		VegetationBatInfo lod2(VegetationType::QUAD_TRI, "Texture/grass_billboard.tga");
-		m_grassID = FoliageSystem::shared()->regVegetation(&lod0, &lod1, &lod2);
+
+		auto info = new VegetationInfo("SimpleGrass");
+		info->init(&lod0, &lod1, &lod2);
+		m_grassID = FoliageSystem::shared()->regVegetation(info);
 	}
+
+	CropSystem::shared()->initFromFile();
 
 }
 

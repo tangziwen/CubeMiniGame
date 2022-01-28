@@ -65,9 +65,9 @@ namespace tzw
 		int getCurrentLod();
 	private:
 		int m_currentLOD;
-		TreeGroup * m_grass;
-		TreeGroup * m_grass2;
-		TreeGroup * m_tree;
+		Foliage * m_grass;
+		Foliage * m_grass2;
+		Foliage * m_tree;
 	    Mesh * m_mesh[3];
 		Mesh * m_meshTransition[3];
 		void sampleForLod(int lodLevel, voxelInfo * out);

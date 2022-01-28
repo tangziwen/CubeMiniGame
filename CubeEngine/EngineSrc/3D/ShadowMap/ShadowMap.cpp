@@ -127,7 +127,6 @@ namespace tzw
 		return floor(src / tileSize) * tileSize;
 	}
 
-#pragma optimize("", off)
 	void ShadowMap::calculateProjectionMatrix()
 	{
 		auto camera = g_GetCurrScene()->defaultCamera();

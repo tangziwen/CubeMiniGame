@@ -124,7 +124,7 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 	}
 }
 
-void VegetationBatch::insertInstanceData(InstanceData inst)
+void VegetationBatch::insertInstanceData(InstanceData& inst)
 {
 	switch (m_type)
 	{
@@ -271,7 +271,8 @@ void VegetationBatch::commitShadowRenderCmd(RenderQueue * queues, int level)
 	}
 }
 
-VegetationInfo::VegetationInfo()
+VegetationInfo::VegetationInfo(std::string name):
+	m_name(name)
 {
 }
 
@@ -318,7 +319,7 @@ void VegetationInfo::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQu
 	}
 }
 
-void VegetationInfo::insert(InstanceData inst)
+void VegetationInfo::insert(InstanceData& inst)
 {
 	auto cam = g_GetCurrScene()->defaultCamera();
 	auto dist = cam->getWorldPos().distance(inst.transform.getTranslation());
@@ -374,7 +375,7 @@ void VegetationInfo::submitShadowDraw(RenderQueue * queues, int level)
 	if(m_lodBatch[1] && m_lodBatch[1]->m_totalCount) m_lodBatch[1]->commitShadowRenderCmd(queues, level);
 }
 
-TreeGroup::TreeGroup(int treeClass)
+Foliage::Foliage(int treeClass)
 {
 	m_treeClass = treeClass;
 }
@@ -403,26 +404,34 @@ FoliageSystem::FoliageSystem()
 	 
 }
 
-int FoliageSystem::regVegetation(const VegetationBatInfo * lod0, const VegetationBatInfo * lod1, const VegetationBatInfo * lod2)
+int FoliageSystem::regVegetation(VegetationInfo * vegeInfo)
 {
-	auto info = new VegetationInfo();
-	// info->m_type = type;
-	info->init(lod0, lod1, lod2);
-	m_infoList.push_back(info);
-	return m_infoList.size() -1;
+	m_infoList.push_back(vegeInfo);
+	int id = m_infoList.size() -1;
+	vegeInfo->vegClassId = id;
+	return id;
 }
 
-void FoliageSystem::addTreeGroup(TreeGroup* treeGroup)
+void FoliageSystem::addTreeGroup(Foliage* treeGroup)
 {
 	m_tree[treeGroup->m_treeClass].insert(treeGroup);
 }
 
+void FoliageSystem::removeFoliage(Foliage* foliage)
+{
+	m_tree[foliage->m_treeClass].erase(foliage);
+	delete foliage;
+}
+
 void FoliageSystem::clearTreeGroup()
 {
+	
+	/*
 	for(auto &p : m_tree)
 	{
 		p.second.clear();
 	}
+	*/
 	for(auto info :m_infoList)
 	{
 		info->clear();	
@@ -448,6 +457,17 @@ void FoliageSystem::submitShadowDraw(RenderQueue * queues, int level)
 		{
 			info->submitShadowDraw(queues, level);
 
+		}
+	}
+}
+
+VegetationInfo* FoliageSystem::getVegetationInfoByName(std::string name)
+{
+	for(auto info :m_infoList)
+	{
+		if(info->m_name == name)
+		{
+			return info;
 		}
 	}
 }
@@ -485,7 +505,6 @@ void FoliageSystem::pushCommand(RenderFlag::RenderStage requirementType, RenderQ
 			if(info->anyHas())
 			{
 				info->commitRenderCmd(requirementType, queues, requirementArg);
-
 			}
 		}
 
