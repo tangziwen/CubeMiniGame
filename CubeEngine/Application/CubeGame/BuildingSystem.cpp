@@ -22,6 +22,7 @@
 #include "GameItemMgr.h"
 #include "ButtonPart.h"
 #include "SwitchPart.h"
+#include "PlanterPart.h"
 
 namespace tzw
 {
@@ -339,6 +340,9 @@ namespace tzw
 			break;
         case GamePartType::GAME_PART_BUTTON:
 			resultPart = new ButtonPart(itemName);
+			break;
+        case GamePartType::GAME_PART_PLANTER:
+			resultPart = new PlanterPart(itemName);
 			break;
         case GamePartType::GAME_PART_SWITCH:
 			resultPart = new SwitchPart(itemName);

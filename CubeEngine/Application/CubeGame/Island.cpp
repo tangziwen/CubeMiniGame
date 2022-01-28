@@ -17,7 +17,7 @@
 #include "AudioSystem/AudioSystem.h"
 #include "ButtonPart.h"
 #include "SwitchPart.h"
-
+#include "PlanterPart.h"
 namespace tzw {
 Vehicle* Island::getVehicle() const
 {
@@ -431,6 +431,11 @@ void Island::load(rapidjson::Value& island)
 				case GamePartType::GAME_PART_BUTTON:
 					{
 						part = new ButtonPart(item["ItemName"].GetString());
+					}
+				break;
+				case GamePartType::GAME_PART_PLANTER:
+					{
+						part = new PlanterPart(item["ItemName"].GetString());
 					}
 				break;
 				case GamePartType::GAME_PART_SWITCH:

@@ -271,18 +271,6 @@ namespace tzw
         		pointLight->setPos(getPos());
         		g_GetCurrScene()->addNode(pointLight);
 				*/
-        
-
-            }
-			break;
-        case TZW_KEY_G:
-			{
-				auto model = new Model();
-        		model->initWithFile("wheat_02.tzw");
-				model->setPos(getPos());
-        		//model->setScale(100, 100, 100);
-        		model->setIsAccpectOcTtree(true);
-        		g_GetCurrScene()->addNode(model);
             }
 			break;
         case TZW_KEY_TAB:

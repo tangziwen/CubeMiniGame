@@ -410,6 +410,31 @@
 		}
 		},
 		{
+		"name" : "Planter",
+		"desc":"种植机",
+		"description":"暂无描述",
+		"Type":"GAME_PART_PLANTER",
+		"CollisionSize":0.25,
+		"attach":[
+				{"pos" :[0.0, 0.0, -0.25],"normal":[0.0, 0.0, -1.0],"up":[0.0, 1.0, 0.0]}
+				],
+		"Visual":
+		{
+			"Type":"Mesh",
+			"size":[1.0, 1.0, 1.0],
+			"FilePath":"Blocks/Cannon/Cannon.tzw",
+			"DiffusePath":"Blocks/Cannon/cannon_DefaultMaterial_BaseColor.png",
+			"RoughnessPath":"Blocks/Cannon/cannon_DefaultMaterial_Roughness.png",
+			"MetallicPath":"Blocks/Cannon/cannon_DefaultMaterial_Metallic.png",
+			"NormalMapPath":"Blocks/Cannon/cannon_DefaultMaterial_Normal.png"
+		},
+		"Physics":
+		{
+			"Type": "CylinderShape",
+			"size":[0.1, 0.1, 0.8]
+		}
+		},
+		{
 		"name" : "Bearing",
 		"desc":"轴承",
 		"description":"暂无描述",

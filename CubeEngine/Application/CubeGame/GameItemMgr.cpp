@@ -93,6 +93,10 @@ void GameItemMgr::loadFromFile(std::string filePath)
 			{
 				gameItem->m_type = GamePartType::GAME_PART_BUTTON;
 			}
+			if(type == "GAME_PART_PLANTER")
+			{
+				gameItem->m_type = GamePartType::GAME_PART_PLANTER;
+			}
 			if(type == "GAME_PART_SWITCH")
 			{
 				gameItem->m_type = GamePartType::GAME_PART_SWITCH;
