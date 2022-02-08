@@ -63,6 +63,8 @@ int main(int argc, char *argv[])
 	return 0;
 #endif
     
+	return Engine::run(argc,argv,new PTMEntry());
+
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());
 #else

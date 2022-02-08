@@ -33,6 +33,7 @@ public:
     void setIsUseTexture(bool isUseTexture);
     void setUpTechnique();
 	void setUpTransFormation(TransformationInfo &info) override;
+    std::string getSpriteManggledName();
 protected:
     bool m_isUseTexture;
     Texture * m_texture;

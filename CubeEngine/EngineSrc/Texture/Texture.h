@@ -39,6 +39,7 @@ public:
     void initData();
 	DeviceTexture * getTextureId() const;
 	void setTextureId(DeviceTexture * textureId);
+    std::string getFilePath(){return m_filePath;}
 private:
     RenderFlag::TextureType m_type;
     void setMinFilter(FilterType t);
@@ -49,6 +50,7 @@ private:
 	unsigned char *m_imgData;
 	int m_channel;
 	bool m_isLoaded;
+    std::string m_filePath;
 };
 
 } // namespace tzw

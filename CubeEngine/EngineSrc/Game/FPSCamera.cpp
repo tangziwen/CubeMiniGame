@@ -169,6 +169,7 @@ bool FPSCamera::onKeyRelease(int keyCode)
 			}
 		}
 		break;
+	default: ;
     }
     return false;
 }

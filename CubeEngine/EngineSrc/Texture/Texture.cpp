@@ -9,11 +9,11 @@
 #include <algorithm>
 namespace tzw
 {
-	Texture::Texture(): m_isLoaded(false)
+	Texture::Texture(): m_isLoaded(false),m_filePath("empty")
 	{
 	}
 
-	Texture::Texture(std::string filePath)
+	Texture::Texture(std::string filePath):m_filePath(filePath)
 	{
 		auto data =Tfile::shared()->getData(filePath,false);
 		unsigned short loadingFlag = SOIL_FLAG_INVERT_Y;
@@ -57,7 +57,7 @@ namespace tzw
 		m_isLoaded = true;
 	}
 
-	Texture::Texture(std::string filePath, char faceMode[6])
+	Texture::Texture(std::string filePath, char faceMode[6]):m_filePath(filePath)
 	{
 		/*
 		std::string resultFilePath = Engine::shared()->getFilePath(filePath);
@@ -74,7 +74,7 @@ namespace tzw
 		*/
 	}
 
-	Texture::Texture(unsigned char* rawData, int w, int h,ImageFormat format, bool needFlipY)
+	Texture::Texture(unsigned char* rawData, int w, int h,ImageFormat format, bool needFlipY):m_filePath("rawData")
 	{
 		this->m_textureId =  Engine::shared()->getRenderBackEnd()->loadTextureRaw_imp(rawData,w, h, format, 0);
 		m_type = RenderFlag::TextureType::Texture2D;
@@ -89,7 +89,7 @@ namespace tzw
 					std::string PosYFilename,
 					std::string NegYFilename,
 					std::string PosZFilename,
-					std::string NegZFilename)
+					std::string NegZFilename):m_filePath(PosXFilename)
 	{
 		/*
 		this->m_textureId = SOIL_load_OGL_cubemap(PosXFilename.c_str(),

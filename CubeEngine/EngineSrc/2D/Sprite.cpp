@@ -1,6 +1,7 @@
 #include "Sprite.h"
 #include "../Scene/SceneMgr.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
+#include "Technique/MaterialPool.h"
 namespace tzw {
 
 Sprite::Sprite()
@@ -26,7 +27,8 @@ Sprite *Sprite::createWithColor(vec4 color,vec2 contentSize)
 
 void Sprite::initWithTexture(std::string texturePath)
 {
-	m_material = new Material();
+    //MaterialPool::shared()->getMaterialByName(getSpriteManggledName())
+	//m_material = new Material();
     m_mesh = new tzw::Mesh();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
@@ -44,7 +46,7 @@ void Sprite::initWithTexture(std::string texturePath)
 
 void Sprite::initWithTexture(Texture *texture)
 {
-	m_material = new Material();
+	//m_material = new Material();
     m_mesh = new tzw::Mesh();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
@@ -151,16 +153,23 @@ void Sprite::setIsUseTexture(bool isUseTexture)
 
 void Sprite::setUpTechnique()
 {
-    if(m_texture)
+    m_material = MaterialPool::shared()->getMaterialByName(getSpriteManggledName());
+    if (!m_material)
     {
-        m_material->loadFromTemplate("Sprite");
-        m_material->setTex("SpriteTexture", m_texture);
-    }else
-    {
-        m_material->loadFromTemplate("SpriteColor");
-        m_material = Material::createFromTemplate("SpriteColor");
+        m_material = new Material();
+        if(m_texture)
+        {
+            m_material->loadFromTemplate("Sprite");
+            m_material->setTex("SpriteTexture", m_texture);
+        }else
+        {
+            m_material->loadFromTemplate("SpriteColor");
+            m_material = Material::createFromTemplate("SpriteColor");
+        }
+        m_material->setVar("color",getUniformColor());
+
+        MaterialPool::shared()->addMaterial(getSpriteManggledName(), m_material);
     }
-    m_material->setVar("color",getUniformColor());
 }
 
 void Sprite::setUpTransFormation(TransformationInfo& info)
@@ -169,6 +178,19 @@ void Sprite::setUpTransFormation(TransformationInfo& info)
     info.m_projectMatrix = currCam->projection();
     info.m_viewMatrix = currCam->getViewMatrix();
     info.m_worldMatrix = getTransform();
+}
+std::string Sprite::getSpriteManggledName()
+{
+    std::string name = "Sprite:";
+    if (m_texture)
+    {
+        name += m_texture->getFilePath();
+    }
+    else
+    {
+        name += "withColor";
+    }
+    return name;
 }
 } // namespace tzw
 

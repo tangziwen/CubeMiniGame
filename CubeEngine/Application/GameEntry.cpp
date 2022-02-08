@@ -4,6 +4,7 @@
 #include "Action/TintTo.h"
 #include "Action/ActionSequence.h"
 #include "Action/ActionCalFunc.h"
+#include "PTMGame/PTMWorld.h"
 
 namespace tzw {
 	class ActionSequence;
@@ -100,5 +101,25 @@ void TestVulkanEntry::onExit()
 }
 
 void TestVulkanEntry::onUpdate(float delta)
+{
+}
+
+
+PTMEntry::PTMEntry()
+{
+}
+
+void PTMEntry::onStart()
+{
+
+
+	PTMWorld::shared()->initMap();
+}
+
+void PTMEntry::onExit()
+{
+}
+
+void PTMEntry::onUpdate(float delta)
 {
 }
