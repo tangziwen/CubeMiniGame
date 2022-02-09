@@ -1,4 +1,5 @@
 #pragma once
+#include <string>
 #include "Rendering/ImageFormat.h"
 
 namespace tzw
