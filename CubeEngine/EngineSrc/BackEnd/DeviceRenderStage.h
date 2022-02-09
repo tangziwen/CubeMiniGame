@@ -7,6 +7,7 @@
 #include <unordered_set>
 #include "DeviceFrameBuffer.h"
 #include "DevicePipeline.h"
+#include "DeviceMaterial.h"
 #include "DeviceBuffer.h"
 #include "DeviceDescriptor.h"
 #include "DeviceRenderCommand.h"
@@ -57,6 +58,8 @@ protected:
 	DeviceFrameBuffer * m_frameBuffer;
 	DevicePipeline * m_singlePipeline;
 	std::unordered_map<Material *, DevicePipeline *>m_matPipelinePool;
+	std::unordered_map<Material *, DeviceMaterial *>m_deviceMaterialPool;
+	std::unordered_map<std::string, DevicePipeline *>m_pipelinePool;
 	std::unordered_set<DevicePipeline *> m_fuckingObjList;
     static DeviceBuffer * m_quadVertexBuffer;
     static DeviceBuffer * m_quadIndexBuffer;

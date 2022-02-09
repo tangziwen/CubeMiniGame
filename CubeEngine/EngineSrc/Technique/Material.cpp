@@ -801,7 +801,7 @@ uint32_t Material::getMaterialFlag()
 void Material::updateFullDescriptionStr()
 {
 	std::ostringstream ostr;
-	ostr<< getMutationFlag() << m_program->m_vertexShader << m_program->m_fragmentShader << (int)m_renderStage;
+	ostr<< getMutationFlag() << m_program->m_vertexShader << m_program->m_fragmentShader << "|" << (int)m_renderStage <<"|" <<(uint32_t)getMaterialFlag();
 	m_fullDescString = ostr.str();
 }
 
