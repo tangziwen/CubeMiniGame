@@ -43,6 +43,7 @@
 #include "3D/Vegetation/FoliageSystem.h"
 #include "Scene/SceneCuller.h"
 #include "Rendering/GraphicsRenderer.h"
+#include "vk/DeviceMaterialVK.h"
 
 //#include "vk/DeviceShaderCollectionVK.h"
 namespace tzw
@@ -1576,6 +1577,11 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     DevicePipeline* VKRenderBackEnd::createPipeline_imp()
     {
         return new DevicePipelineVK();
+    }
+
+    DeviceMaterial* VKRenderBackEnd::createDeviceMaterial_imp()
+    {
+        return new DeviceMaterialVK();
     }
 
     DeviceRenderPass* VKRenderBackEnd::createDeviceRenderpass_imp()

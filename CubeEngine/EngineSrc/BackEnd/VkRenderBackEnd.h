@@ -96,6 +96,7 @@ public:
     DeviceShaderCollection * createShader_imp() override;
     DeviceBuffer * createBuffer_imp() override;
     DevicePipeline * createPipeline_imp() override;
+    virtual DeviceMaterial * createDeviceMaterial_imp() override;
 
     DeviceRenderPass * createDeviceRenderpass_imp() override;
 	DeviceRenderStage * createRenderStage_imp() override;

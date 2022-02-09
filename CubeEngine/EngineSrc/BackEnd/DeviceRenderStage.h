@@ -35,6 +35,7 @@ public:
 	void createSinglePipeline(Material * material);
 	void createSingleComputePipeline(DeviceShaderCollection * shaderCollection);
 	DevicePipeline * getSinglePipeline();
+	DeviceMaterial * getSolorDeviceMaterial();
 	virtual void bindSinglePipelineDescriptor() = 0;
 	virtual void bindSinglePipelineDescriptor(DeviceDescriptor * extraItemDescriptor) = 0;
 	virtual void bindSinglePipelineDescriptorCompute() = 0;
@@ -57,10 +58,12 @@ protected:
 	DeviceRenderPass * m_renderPass;
 	DeviceFrameBuffer * m_frameBuffer;
 	DevicePipeline * m_singlePipeline;
+	DeviceMaterial * m_soloMaterial;
 	std::unordered_map<Material *, DevicePipeline *>m_matPipelinePool;
 	std::unordered_map<Material *, DeviceMaterial *>m_deviceMaterialPool;
 	std::unordered_map<std::string, DevicePipeline *>m_pipelinePool;
 	std::unordered_set<DevicePipeline *> m_fuckingObjList;
+	std::unordered_set<DeviceMaterial *> m_activeMatList;
     static DeviceBuffer * m_quadVertexBuffer;
     static DeviceBuffer * m_quadIndexBuffer;
 	static Mesh * m_sphere;

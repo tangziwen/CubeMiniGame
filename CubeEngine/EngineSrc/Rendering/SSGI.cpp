@@ -49,10 +49,10 @@ namespace tzw
         m_stage->getSinglePipeline()->getMat()->setVar("TU_FrameIndex",  m_index);
         m_stage->prepare(cmd);
         m_stage->beginRenderPass(OutPutTarget);
-        m_stage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, currFrame);
-        m_stage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, Depth);
-        m_stage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, normal);
-        m_stage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(4, baseColor);
+        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, currFrame);
+        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, Depth);
+        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, normal);
+        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(4, baseColor);
         m_stage->bindSinglePipelineDescriptor();
         m_stage->drawScreenQuad();
         m_stage->endRenderPass();

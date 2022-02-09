@@ -13,6 +13,7 @@ class DeviceRenderPass;
 class DeviceRenderStage;
 class DeviceFrameBuffer;
 class DevicePipeline;
+class DeviceMaterial;
 class RenderBackEndBase
 {
 public:
@@ -25,6 +26,7 @@ public:
 	virtual DevicePipeline * createPipeline_imp() = 0;
 	virtual DeviceRenderStage * createRenderStage_imp() = 0;
 	virtual DeviceFrameBuffer * createFrameBuffer_imp() = 0;
+	virtual DeviceMaterial * createDeviceMaterial_imp();
 	virtual void prepareFrame() = 0;
 	virtual void endFrame(RenderPath * renderPath) = 0;
 }; // namespace tzw

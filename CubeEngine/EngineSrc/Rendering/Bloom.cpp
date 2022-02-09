@@ -134,8 +134,8 @@ namespace tzw
             }
         }
 
-        m_brightStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, sceneColor);
-        m_brightStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[0][0]);
+        m_brightStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, sceneColor);
+        m_brightStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[0][0]);
 
         m_brightStage->bindSinglePipelineDescriptorCompute();
         vec2 disptachSize = getLayerSize(0);
@@ -154,8 +154,8 @@ namespace tzw
 
             m_DownSampleStage[i]->prepare(cmd);
             m_DownSampleStage[i]->beginCompute();
-            m_DownSampleStage[i]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, m_bloomTexture[i][0]);
-            m_DownSampleStage[i]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[i + 1][0]);
+            m_DownSampleStage[i]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, m_bloomTexture[i][0]);
+            m_DownSampleStage[i]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[i + 1][0]);
 
             m_DownSampleStage[i]->bindSinglePipelineDescriptorCompute();
             vec2 disptachSize = getLayerSize(i + 1);
@@ -176,8 +176,8 @@ namespace tzw
             //Blur V
             m_blurStage[i][0]->prepare(cmd);
             m_blurStage[i][0]->beginCompute();
-            m_blurStage[i][0]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, m_bloomTexture[i][0]);
-            m_blurStage[i][0]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[i][1]);
+            m_blurStage[i][0]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, m_bloomTexture[i][0]);
+            m_blurStage[i][0]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[i][1]);
 
             m_blurStage[i][0]->bindSinglePipelineDescriptorCompute();
             
@@ -192,8 +192,8 @@ namespace tzw
             //Blur H
             m_blurStage[i][1]->prepare(cmd);
             m_blurStage[i][1]->beginCompute();
-            m_blurStage[i][1]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, m_bloomTexture[i][1]);
-            m_blurStage[i][1]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[i][0]);
+            m_blurStage[i][1]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, m_bloomTexture[i][1]);
+            m_blurStage[i][1]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[i][0]);
 
             m_blurStage[i][1]->bindSinglePipelineDescriptorCompute();
             m_blurStage[i][1]->dispatch(disptachSize.x/ 16, disptachSize.y/ 16, 1);
@@ -228,9 +228,9 @@ namespace tzw
         m_bloomCompositeStage->prepare(cmd);
         m_bloomCompositeStage->beginRenderPass();
 
-        m_bloomCompositeStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bloomTexture[0][0]);
-        m_bloomCompositeStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, m_bloomTexture[1][0]);
-        m_bloomCompositeStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, m_bloomTexture[2][0]);
+        m_bloomCompositeStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bloomTexture[0][0]);
+        m_bloomCompositeStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, m_bloomTexture[1][0]);
+        m_bloomCompositeStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, m_bloomTexture[2][0]);
         m_bloomCompositeStage->bindSinglePipelineDescriptor();
         m_bloomCompositeStage->drawScreenQuad();
         m_bloomCompositeStage->endRenderPass();

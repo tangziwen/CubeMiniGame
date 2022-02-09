@@ -8,5 +8,9 @@ namespace tzw
 	{
 		return nullptr;
 	}
+	DeviceMaterial * RenderBackEndBase::createDeviceMaterial_imp()
+	{
+		return nullptr;
+	}
 } // namespace tzw
 

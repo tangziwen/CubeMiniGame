@@ -7,6 +7,8 @@
 #include "Rendering/RenderCommand.h"
 #include "BackEnd/vk/DeviceBufferVK.h"
 #include "Mesh/InstancedMesh.h"
+#include "DeviceMaterialVK.h"
+#include "Technique/Material.h"
 namespace tzw
 {
 	DeviceRenderStageVK::DeviceRenderStageVK()
@@ -33,7 +35,63 @@ namespace tzw
             Material * mat = a.getMat();
 
             //std::string & matStr = mat->getFullDescriptionStr();
-            DevicePipelineVK * currPipeLine;
+            DevicePipelineVK * currPipeLine = nullptr;
+            DeviceMaterialVK * currDeviceMat = nullptr;
+            auto deviceMatIter = m_deviceMaterialPool.find(mat);
+            if (deviceMatIter == m_deviceMaterialPool.end())
+            {
+                auto deviceMaterial = new DeviceMaterialVK();
+                deviceMaterial->init(mat);
+                m_deviceMaterialPool[mat] =  deviceMaterial;
+                currDeviceMat = deviceMaterial;
+            }
+            else
+            {
+                currDeviceMat = static_cast<DeviceMaterialVK *>(deviceMatIter->second);
+            }
+
+            auto iter = m_pipelinePool.find(mat->getFullDescriptionStr());
+            if(iter == m_pipelinePool.end())
+            {
+                DeviceVertexInput vertexInput;
+                vertexInput.stride = sizeof(VertexData);
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
+
+                //use for terrain
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
+                vertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
+                //instancing optional
+                DeviceVertexInput instanceInput;
+                //instancing
+                if(a.batchType() != RenderCommand::RenderBatchType::Single)
+                {
+                    instanceInput.stride = sizeof(InstanceData);
+                    //matrix
+                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)});
+                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform) + sizeof(float) * 4});
+                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 8});
+                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 12});
+
+                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
+
+                    currPipeLine = new DevicePipelineVK();
+                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                }else //single draw call
+                {
+                    currPipeLine = new DevicePipelineVK();
+                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                }
+                m_pipelinePool[mat->getFullDescriptionStr()] = currPipeLine;
+            }
+            else
+            {
+                currPipeLine = static_cast<DevicePipelineVK*>(iter->second);
+            }
+            /*
             auto iter = m_matPipelinePool.find(mat);
             if(iter == m_matPipelinePool.end())
             {
@@ -76,14 +134,21 @@ namespace tzw
             else{
                 currPipeLine = static_cast<DevicePipelineVK*>(iter->second);
             }
+            */
+
             if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
             {
                 m_fuckingObjList.insert(currPipeLine);
-                //update material-wise parameter.
-                currPipeLine->updateUniform();
-                currPipeLine->updateMaterialDescriptorSet();
             }
             
+            if(m_activeMatList.find(currDeviceMat) == m_activeMatList.end())
+            {
+                m_activeMatList.insert(currDeviceMat);
+
+                //update material-wise parameter.
+                currDeviceMat->updateUniform();
+                currDeviceMat->updateMaterialDescriptorSet();
+            }
 
             //update uniform.
             DeviceRenderItem * renderItem = currPipeLine->getRenderItem(a.getDrawableObj());
@@ -127,7 +192,7 @@ namespace tzw
             
                 vkCmdBindIndexBuffer(command->getVK(), ibo->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
 
-                std::vector<VkDescriptorSet> descriptorSetList = {static_cast<DeviceDescriptorVK*>(currPipeLine->getMaterialDescriptorSet())->getDescSet(), 
+                std::vector<VkDescriptorSet> descriptorSetList = {static_cast<DeviceDescriptorVK*>(currDeviceMat->getMaterialDescriptorSet())->getDescSet(), 
                     static_cast<DeviceDescriptorVK*>(itemDescriptorSet)->getDescSet(),};
                 vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, currPipeLine->getPipelineLayOut(), 0, descriptorSetList.size(), descriptorSetList.data(), 0, nullptr);
                 if(a.batchType() != RenderCommand::RenderBatchType::Single)
@@ -187,21 +252,21 @@ namespace tzw
     void DeviceRenderStageVK::bindSinglePipelineDescriptor()
     {
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
-        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), };
+        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_soloMaterial->getMaterialDescriptorSet())->getDescSet(), };
         vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
     void DeviceRenderStageVK::bindSinglePipelineDescriptor(DeviceDescriptor* extraItemDescriptor)
     {
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
-        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), static_cast<DeviceDescriptorVK *>(extraItemDescriptor)->getDescSet() };
+        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_soloMaterial->getMaterialDescriptorSet())->getDescSet(), static_cast<DeviceDescriptorVK *>(extraItemDescriptor)->getDescSet() };
         vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
     void DeviceRenderStageVK::bindSinglePipelineDescriptorCompute()
     {
 	    DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
-        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_singlePipeline->getMaterialDescriptorSet())->getDescSet(), };
+        VkDescriptorSet descriptorSetList[] = {static_cast<DeviceDescriptorVK*>(m_soloMaterial->getMaterialDescriptorSet())->getDescSet(), };
         vkCmdBindDescriptorSets(command->getVK(), VK_PIPELINE_BIND_POINT_COMPUTE, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipelineLayOut(), 0, (sizeof(descriptorSetList) / sizeof(descriptorSetList[0])), descriptorSetList, 0, nullptr);
     }
 
@@ -259,7 +324,7 @@ namespace tzw
         if(m_singlePipeline)
         {
             vkCmdBindPipeline(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
-            static_cast<DevicePipelineVK*>(m_singlePipeline)->updateUniform();
+            m_soloMaterial->updateUniform();
             static_cast<DevicePipelineVK*>(m_singlePipeline)->resetItemWiseDescritporSet();
         }
     }

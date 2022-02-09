@@ -68,9 +68,9 @@ namespace tzw
         
         m_tsaaStage->prepare(cmd);
         m_tsaaStage->beginRenderPass(m_bufferA);
-        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
-        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
-        m_tsaaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, Depth);
+        m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
+        m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
+        m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, Depth);
         m_tsaaStage->bindSinglePipelineDescriptor();
         m_tsaaStage->drawScreenQuad();
         m_tsaaStage->endRenderPass();

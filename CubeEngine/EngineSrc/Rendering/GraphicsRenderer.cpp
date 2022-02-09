@@ -302,6 +302,9 @@ namespace tzw
 		m_imguiPipeline->setDynamicState(PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR);
         m_imguiPipeline->init(winSize, m_imguiMat, backEnd->getScreenRenderPass(), imguiVertexInput, false, instancingInput);
 
+        m_imguiMaterial = backEnd->createDeviceMaterial_imp();
+        m_imguiMaterial->init(m_imguiMat);
+
         auto shader = static_cast<DeviceShaderCollectionVK *>(m_imguiMat->getProgram()->getDeviceShader());
         VkDescriptorSetLayout layout = static_cast<DevicePipelineVK*>(m_imguiPipeline)->getDescriptorSetLayOut();
         VkDescriptorSetAllocateInfo alloc_info = {};
@@ -412,6 +415,8 @@ namespace tzw
             m_DeferredLightingStage->prepare(cmd);
             m_DeferredLightingStage->beginRenderPass();
             auto pipeline = m_DeferredLightingStage->getSinglePipeline();
+            auto material = m_DeferredLightingStage->getSolorDeviceMaterial();
+            
             Matrix44 lightVPList[3] = {};
             float shadowEnd[3] = {};
             for(int i = 0; i < 3; i++)
@@ -419,8 +424,8 @@ namespace tzw
                 shadowEnd[i] =  ShadowMap::shared()->getCascadeEnd(i);
                 lightVPList[i] = ShadowMap::shared()->getLightProjectionMatrix(i) * ShadowMap::shared()->getLightViewMatrix();
             }
-            pipeline->updateUniformSingle("TU_LightVP",lightVPList, sizeof(lightVPList));
-            pipeline->updateUniformSingle("TU_ShadowMapEnd", shadowEnd, sizeof(shadowEnd));
+            material->updateUniformSingle("TU_LightVP",lightVPList, sizeof(lightVPList));
+            material->updateUniformSingle("TU_ShadowMapEnd", shadowEnd, sizeof(shadowEnd));
 
 
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
@@ -428,7 +433,7 @@ namespace tzw
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+                material->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             std::vector<DeviceTexture *> shadowList = {
                 m_ShadowStage[0]->getFrameBuffer()->getDepthMap(),
@@ -436,7 +441,7 @@ namespace tzw
                 m_ShadowStage[2]->getFrameBuffer()->getDepthMap()
             };
 
-            pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList);
+            material->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList);
             //pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(9, shadowList[1]);
             //pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(10, shadowList[2]);
 
@@ -465,7 +470,7 @@ namespace tzw
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                m_PointLightingStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+                m_PointLightingStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             std::vector<Drawable3D *> pointlightList;
             auto currScene = g_GetCurrScene();
@@ -530,7 +535,7 @@ namespace tzw
             itemBuf.unMap();
             itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
             auto tex = m_gPassStage->getFrameBuffer()->getDepthMap();
-            m_skyStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
+            m_skyStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
             m_skyStage->bindSinglePipelineDescriptor(itemDescriptorSet);
             m_skyStage->drawSphere();
             m_skyStage->endRenderPass();
@@ -560,7 +565,7 @@ namespace tzw
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                m_HBAOStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+                m_HBAOStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
@@ -591,12 +596,12 @@ namespace tzw
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+                m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             //Scene copy
-			m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 1, m_sceneCopyTex);
+			m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 1, m_sceneCopyTex);
             //AO
-            m_SSRStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 2, m_HBAOStage->getFrameBuffer()->getTextureList()[0]);
+            m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 2, m_HBAOStage->getFrameBuffer()->getTextureList()[0]);
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
             DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
@@ -627,7 +632,7 @@ namespace tzw
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
-                m_fogStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
+                m_fogStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
             }
             m_fogStage->bindSinglePipelineDescriptor();
             m_fogStage->drawScreenQuad();
@@ -779,7 +784,7 @@ namespace tzw
 
                     m_guiStage[imageIdx]->bindPipeline(m_imguiPipeline);
 
-                    std::vector<DeviceDescriptor *> descriptorSetList = {m_imguiPipeline->getMaterialDescriptorSet(), descriptiorSet};
+                    std::vector<DeviceDescriptor *> descriptorSetList = {m_imguiMaterial->getMaterialDescriptorSet(), descriptiorSet};
                     
                     m_guiStage[imageIdx]->bindDescriptor(m_imguiPipeline, descriptorSetList);
 

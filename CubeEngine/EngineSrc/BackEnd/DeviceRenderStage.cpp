@@ -70,18 +70,28 @@ namespace tzw
         DeviceVertexInput emptyInstancingInput;
 		m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
         m_singlePipeline->init(getFrameBuffer()->getSize(), material, getRenderPass(), vertexDataInput, false, emptyInstancingInput);
+		m_soloMaterial = VKRenderBackEnd::shared()->createDeviceMaterial_imp();
+		m_soloMaterial->init(material);
+		
     }
 
 	void DeviceRenderStage::createSingleComputePipeline(DeviceShaderCollection * shaderCollection)
 	{
 		m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
 		m_singlePipeline->initCompute(shaderCollection);
+		m_soloMaterial = VKRenderBackEnd::shared()->createDeviceMaterial_imp();
+		m_soloMaterial->initCompute(shaderCollection);
 	}
 
     DevicePipeline* DeviceRenderStage::getSinglePipeline()
     {
         return m_singlePipeline;
     }
+
+	DeviceMaterial* DeviceRenderStage::getSolorDeviceMaterial()
+	{
+		return m_soloMaterial;
+	}
 
 	RenderQueue* DeviceRenderStage::getSelfRenderQueue()
 	{

@@ -46,6 +46,7 @@ namespace tzw
 		DeviceBuffer *m_imguiIndex;
 		DeviceBuffer *m_imguiVertex;
 		DevicePipeline * m_imguiPipeline;
+		DeviceMaterial * m_imguiMaterial;
 		void initImguiStuff();
 		VkDescriptorSet m_imguiDescriptorSet;
 		DeviceBufferVK * m_imguiUniformBuffer;
