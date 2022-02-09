@@ -22,11 +22,17 @@ public:
     virtual void setAlpha(float alphaValue);
 	void setIsVisible(bool isDrawable) override;
 	void setUpTransFormation(TransformationInfo &info) override;
+    virtual bool isOutOfScreen();
+    void recacheAABB();
+    virtual void onTransformChanged() override;
+    virtual NodeType getNodeType();
 protected:
     vec4 m_uniformColor;
     vec2 m_contentSize;
     vec2 m_anchorPoint;
     vec2 m_anchorPointInPoints;
+    AABB m_localAABB;
+    AABB m_worldAABBCache;
 };
 
 } // namespace tzw

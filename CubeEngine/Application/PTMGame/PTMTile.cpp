@@ -31,7 +31,7 @@ namespace tzw
 			}
 			if(rndNumber == 3)
 			{
-				m_sprite = Sprite::create("PTM/desert.png");
+				m_sprite = Sprite::create("PTM/plain.png");
 			}
 			if(rndNumber == 4)
 			{

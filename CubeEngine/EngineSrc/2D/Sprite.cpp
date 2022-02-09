@@ -37,8 +37,8 @@ void Sprite::initWithTexture(std::string texturePath)
     m_mesh->addIndex(2);
     m_mesh->addIndex(3);
     m_texture = TextureMgr::shared()->getByPath(texturePath);
-    m_contentSize = m_texture->getSize();
-    setRenderRect(m_contentSize);
+    Drawable2D::setContentSize(m_texture->getSize());
+    setRenderRect(m_contentSize, vec2(0,0), vec2(1,1), m_uniformColor);
     setUpTechnique();
     m_material->setRenderStage(RenderFlag::RenderStage::GUI);
 
@@ -56,7 +56,8 @@ void Sprite::initWithTexture(Texture *texture)
     m_mesh->addIndex(3);
     m_texture = texture;
     m_contentSize = m_texture->getSize();
-    setRenderRect(m_contentSize);
+    Drawable2D::setContentSize(m_texture->getSize());
+    setRenderRect(m_contentSize, vec2(0,0), vec2(1,1), m_uniformColor);
     setUpTechnique();
 }
 
@@ -72,8 +73,8 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     m_mesh->addIndex(2);
     m_mesh->addIndex(3);
     setUniformColor(color);
-    m_contentSize = contentSize;
-    setRenderRect(m_contentSize);
+    Drawable2D::setContentSize(contentSize);
+    setRenderRect(m_contentSize, vec2(0,0), vec2(1,1), m_uniformColor);
 }
 
 void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
@@ -86,25 +87,37 @@ void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue 
     queues->addRenderCommand(command, requirementArg);
 }
 
-void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt)
+void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt, vec4 color)
 {
     auto width = size.x;
     auto height = size.y;
     m_mesh->clearVertices();
-    m_mesh->addVertex(tzw::VertexData(vec3(0,0,-1),vec2(lb.x,lb.y)));// left bottom
-    m_mesh->addVertex(tzw::VertexData(vec3(width,0,-1),vec2(rt.x,lb.y)));// right bottom
-    m_mesh->addVertex(tzw::VertexData(vec3(width,height,-1),vec2(rt.x,rt.y))); // right top
-    m_mesh->addVertex(tzw::VertexData(vec3(0,height,-1),vec2(lb.x,rt.y))); // left top
+    auto vertex_0 = VertexData(vec3(0,0,-1),vec2(lb.x,lb.y));
+    vertex_0.m_color = color;
+    m_mesh->addVertex(vertex_0);// left bottom
+    auto  vertex_1 = VertexData(vec3(width,0,-1),vec2(rt.x,lb.y));
+    vertex_1.m_color = color;
+    m_mesh->addVertex(vertex_1);// right bottom
+    auto  vertex_2 = VertexData(vec3(width,height,-1),vec2(rt.x,rt.y));
+    vertex_2.m_color = color;
+    m_mesh->addVertex(vertex_2); // right top
+    auto vertex_3 = VertexData(vec3(0,height,-1),vec2(lb.x,rt.y));
+    vertex_3.m_color = color;
+    m_mesh->addVertex(vertex_3); // left top
     m_mesh->finish(true);
 }
 
-void Sprite::setRenderRect( vec4 v1, vec4 v2,vec4 v3, vec4 v4)
+void Sprite::setRenderRect( vec4 v1, vec4 v2,vec4 v3, vec4 v4, vec4 color)
 {
     m_mesh->clearVertices();
-    m_mesh->addVertex(tzw::VertexData(vec3(v1.x,v1.y,-1),vec2(v1.z,v1.w)));// left bottom
-    m_mesh->addVertex(tzw::VertexData(vec3(v2.x,v2.y,-1),vec2(v2.z,v2.w)));// right bottom
-    m_mesh->addVertex(tzw::VertexData(vec3(v3.x,v3.y,-1),vec2(v3.z,v3.w))); // right top
-    m_mesh->addVertex(tzw::VertexData(vec3(v4.x,v4.y,-1),vec2(v4.z,v4.w))); // left top
+    auto vertex_0 = VertexData(vec3(v1.x,v1.y,-1),vec2(v1.z,v1.w));
+    m_mesh->addVertex(vertex_0);// left bottom
+    auto vertex_1 = VertexData(vec3(v2.x,v2.y,-1),vec2(v2.z,v2.w));
+    m_mesh->addVertex(vertex_1);// right bottom
+    auto vertex_2 = VertexData(vec3(v3.x,v3.y,-1),vec2(v3.z,v3.w));
+    m_mesh->addVertex(vertex_2); // right top
+    auto vertex_3 = VertexData(vec3(v4.x,v4.y,-1),vec2(v4.z,v4.w));
+    m_mesh->addVertex(vertex_3); // left top
     m_mesh->finish(true);
 
 
@@ -114,15 +127,17 @@ void Sprite::setRenderRect( vec4 v1, vec4 v2,vec4 v3, vec4 v4)
     aabb.update(v2.toVec3());
     aabb.update(v3.toVec3());
     aabb.update(v4.toVec3());
-    m_contentSize.x = aabb.max().x - aabb.min().x;
-    m_contentSize.y = aabb.max().y - aabb.min().y;
+    //m_contentSize.x = aabb.max().x - aabb.min().x;
+    //m_contentSize.y = aabb.max().y - aabb.min().y;
+    Drawable2D::setContentSize(vec2(aabb.max().x - aabb.min().x, aabb.max().y - aabb.min().y));
 }
 
 
 void Sprite::setContentSize(const vec2 &contentSize)
 {
-    m_contentSize = contentSize;
-    setRenderRect(m_contentSize);
+    //m_contentSize = contentSize;
+    Drawable2D::setContentSize(contentSize);
+    setRenderRect(m_contentSize, vec2(0,0), vec2(1,1), m_uniformColor);
 }
 
 Texture *Sprite::texture() const

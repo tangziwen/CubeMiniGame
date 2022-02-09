@@ -4,7 +4,8 @@
 #include "PTMMapCamera.h"
 #include "PTMTile.h"
 #include "PTMTown.h"
-#define PTM_MAP_SIZE (4)
+#include "PTMNation.h"
+#define PTM_MAP_SIZE (96)
 namespace tzw
 {
 	class PTMWorld : public Singleton<PTMWorld>
@@ -14,8 +15,11 @@ namespace tzw
 		void initMap();
 		Node * getMapRootNode();
 	private:
+		PTMNation * createNation(std::string nationName);
+
 		PTMTile * m_maptiles[PTM_MAP_SIZE][PTM_MAP_SIZE];
 		std::vector<PTMTown * > m_pronviceList;
+		std::vector<PTMNation * > m_nationList;
 
 		PTMMapCamera * m_mapCamera;
 		Node * m_mapRootNode;

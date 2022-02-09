@@ -1,6 +1,7 @@
 #include "Drawable2D.h"
 #include "Event/EventMgr.h"
 #include "Scene/SceneMgr.h"
+#include "Engine/Engine.h"
 
 namespace tzw {
 
@@ -23,6 +24,8 @@ void Drawable2D::setContentSize(const vec2 &contentSize)
     m_contentSize = contentSize;
     m_anchorPointInPoints = vec2(m_contentSize.x * m_anchorPoint.x,m_contentSize.y * m_anchorPoint.y);
     m_needToUpdate = true;
+    m_localAABB.setMin(vec3(0, 0, 0));
+    m_localAABB.setMax(vec3(m_contentSize.x, m_contentSize.y, 0));
 }
 
 vec2 Drawable2D::anchorPoint() const
@@ -38,6 +41,33 @@ void Drawable2D::setUpTransFormation(TransformationInfo &info)
     info.m_viewMatrix = currCam->getViewMatrix();
     info.m_worldMatrix = getTransform();
 }
+bool Drawable2D::isOutOfScreen()
+{
+    vec2 screen = vec2(Engine::shared()->windowWidth(), Engine::shared()->windowHeight());
+    vec3 aabb_min = m_worldAABBCache.min();
+    vec3 aabb_max = m_worldAABBCache.max();
+    return (aabb_min.x > screen.x) || (aabb_min.y > screen.y) || (aabb_max.x < 0) || (aabb_max.y < 0);
+}
+
+void Drawable2D::recacheAABB()
+{
+    if(getNeedToUpdate())
+    {
+        m_worldAABBCache = m_localAABB;
+        m_worldAABBCache.transForm(getTransform());
+    }
+}
+
+void Drawable2D::onTransformChanged()
+{
+    recacheAABB();
+}
+
+Node::NodeType Drawable2D::getNodeType()
+{
+    return NodeType::DrawableUI;
+}
+
 void Drawable2D::setAnchorPoint(const vec2 &anchorPoint)
 {
     m_anchorPoint = anchorPoint;
@@ -56,13 +86,11 @@ Matrix44 Drawable2D::getLocalTransform()
 void Drawable2D::setUniformColor(const vec4 &color)
 {
     m_uniformColor = color;
-    m_material->setVar("color",color);
 }
 
 void Drawable2D::setUniformColor(const vec3 &color)
 {
     m_uniformColor = vec4(color.x, color.y, color.z, 1.0);
-    m_material->setVar("color", color);
 }
 
 vec4 Drawable2D::getUniformColor()
@@ -73,7 +101,6 @@ vec4 Drawable2D::getUniformColor()
 void Drawable2D::setAlpha(float alphaValue)
 {
     m_uniformColor.w = alphaValue;
-    m_material->setVar("color", m_uniformColor);
 }
 
 void Drawable2D::setIsVisible(bool isDrawable)

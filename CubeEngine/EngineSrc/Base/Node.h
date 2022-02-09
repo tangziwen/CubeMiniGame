@@ -23,6 +23,7 @@ public:
 		NormalNode,
 		Drawable3D,
 		Drawable,
+		DrawableUI
 	};
 
 	Node();
@@ -86,6 +87,7 @@ public:
 	virtual Quaternion getRotateQ() const;
 	virtual void setRotateQ(const Quaternion &rotateQ);
 	virtual void setRotateQ(const vec4 &rotateQInV4);
+	virtual void onTransformChanged();
 	unsigned int getGlobalPiority() const;
 	void setGlobalPiority(unsigned int globalPiority);
 	size_t getChildrenAmount();

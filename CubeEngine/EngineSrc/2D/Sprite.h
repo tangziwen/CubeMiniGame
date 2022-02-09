@@ -23,9 +23,9 @@ public:
     void initWithTexture(Texture * texture);
     void initWithColor(vec4 color, vec2 getContentSize);
     void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg) override;
-    void setRenderRect(vec2 size, vec2 lb = vec2(0,0), vec2 rt= vec2(1,1));
-    void setRenderRect(vec4 lt, vec4 v2, vec4 v3, vec4 v4);
-    virtual void setContentSize(const vec2 &getContentSize);
+    void setRenderRect(vec2 size, vec2 lb = vec2(0,0), vec2 rt= vec2(1,1), vec4 color = vec4(1,1,1,1) );
+    void setRenderRect(vec4 lt, vec4 v2, vec4 v3, vec4 v4, vec4 color = vec4(1,1,1,1));
+    void setContentSize(const vec2 &getContentSize) override;
     Texture *texture() const;
     void setTexture(Texture *texture);
     void setTexture(std::string texturePath);

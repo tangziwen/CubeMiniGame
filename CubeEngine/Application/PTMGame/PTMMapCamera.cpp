@@ -57,7 +57,10 @@ namespace tzw
 	void PTMMapCamera::onFrameUpdate(float dt)
 	{
 		vec2 currPos = m_mapRootNode->getPos2D();
-		m_mapRootNode->setPos2D(currPos.x + m_slide * -50.f * dt, currPos.y + m_forward * -50.f * dt);
+		if(m_slide != 0 || m_forward != 0)//如果完全没变动不设置位置，避免设了个相同的位置导致大量子Node重新缓存
+		{
+			m_mapRootNode->setPos2D(currPos.x + m_slide * -50.f * dt, currPos.y + m_forward * -50.f * dt);
+		}
 	}
 
 	void PTMMapCamera::init()

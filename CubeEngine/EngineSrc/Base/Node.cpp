@@ -8,6 +8,7 @@
 #include "../Event/EventMgr.h"
 #include "Utility/log/Log.h"
 #include "../Scene/OctreeScene.h"
+#include <EngineSrc/Interface/Drawable2D.h>
 namespace tzw {
 
 Node::Node()
@@ -99,7 +100,7 @@ void Node::setRotateE(const vec3 &rotate)
     //theRotate.x = TbaseMath::clampf(rotate.x,-60.f,60.f);
     //theRotate.y = TbaseMath::clampf(rotate.y,0.f,360.f);
     m_rotateQ.fromEulerAngle(m_rotateE);
-    m_needToUpdate = true;
+    setNeedToUpdate(true);
 }
 
 void Node::setRotateE(float x, float y, float z)
@@ -115,7 +116,7 @@ vec3 Node::getScale() const
 void Node::setScale(const vec3 &scale)
 {
     m_scale = scale;
-    m_needToUpdate = true;
+    setNeedToUpdate(true);
 }
 
 void Node::setScale(float x, float y, float z)
@@ -163,16 +164,12 @@ void Node::visit(std::vector<Node*>&directDrawList)
 	}
 	if(m_isVisible && m_isValid)
 	{
-		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )
+		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )// UI element
 		{
-            directDrawList.emplace_back(this);
-            /*
-			submitDrawCmd(passType);
-			if(onSubmitDrawCommand)
-			{
-				onSubmitDrawCommand(RenderCommand::RenderType::Common);
-			}
-            */
+            if(this->getNodeType() == NodeType::DrawableUI &&  !static_cast<Drawable2D *>(this)->isOutOfScreen())
+            {
+                directDrawList.emplace_back(this);
+            }
 		}
 		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
@@ -313,6 +310,10 @@ bool Node::getNeedToUpdate() const
 void Node::setNeedToUpdate(bool needToUpdate)
 {
     m_needToUpdate = needToUpdate;
+    if(needToUpdate)
+    {
+        onTransformChanged();
+    }
 	for(auto child :m_children)
 	{
 		child->setNeedToUpdate(needToUpdate);
@@ -544,13 +545,17 @@ void Node::setRotateQ(const Quaternion &rotateQ)
     float x,y,z;
     m_rotateQ.toEulserAngel(&x,&y,&z);
     m_rotateE = vec3(x, y, z);
-    m_needToUpdate = true;
+    setNeedToUpdate(true);
 }
 
 void Node::setRotateQ(const vec4& rotateQInV4)
 {
 	auto q = Quaternion(rotateQInV4.x, rotateQInV4.y, rotateQInV4.z, rotateQInV4.w);
 	setRotateQ(q);
+}
+
+void Node::onTransformChanged()
+{
 }
 
 

@@ -23,7 +23,7 @@ namespace tzw
 				tile->coord_y = j;
 				m_maptiles[i][j] = tile;
 				tile->m_graphics->updateGraphics();
-				if (rand() % 100 > 50)
+				if (rand() % 100 > 95)
 				{
 					auto town = new PTMTown(tile);
 					m_pronviceList.push_back(town);
@@ -31,11 +31,24 @@ namespace tzw
 				}
 			}
 		}
+
+		createNation("Wei");
+		createNation("Shu");
+		createNation("Wu");
+
 	}
 
 	Node* PTMWorld::getMapRootNode()
 	{
 		return m_mapRootNode;
+	}
+
+	PTMNation* PTMWorld::createNation(std::string nationName)
+	{
+		auto nation = new PTMNation();
+		nation->setName(nationName);
+		m_nationList.push_back(nation);
+		return nation;
 	}
 
 }
