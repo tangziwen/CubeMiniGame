@@ -686,7 +686,7 @@ namespace tzw
 			tex = m_fogStage->getFrameBuffer()->getTextureList()[0];
         }
 
-        m_textureToScreenRenderStage[imageIdx]->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
+        m_textureToScreenRenderStage[imageIdx]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
         m_textureToScreenRenderStage[imageIdx]->bindSinglePipelineDescriptor();
         m_textureToScreenRenderStage[imageIdx]->drawScreenQuad();
         m_textureToScreenRenderStage[imageIdx]->endRenderPass();

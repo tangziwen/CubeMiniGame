@@ -112,8 +112,8 @@ PTMEntry::PTMEntry()
 void PTMEntry::onStart()
 {
 
-
-	PTMWorld::shared()->initMap();
+	showSplash();
+	//PTMWorld::shared()->initMap();
 }
 
 void PTMEntry::onExit()
