@@ -89,6 +89,7 @@ public:
 	void submitOnlyVO_IO();
 	bool intersectWithRay(const Ray & rayInMeshSpace, vec3 * hitPoint);
 	void submit(RenderFlag::BufferStorageType storageType = RenderFlag::BufferStorageType::STATIC_DRAW);
+    void submitVBO(RenderFlag::BufferStorageType storageType = RenderFlag::BufferStorageType::STATIC_DRAW);
 	~Mesh();
 private:
     void triangleSplit ( int index, int callee, int newPoint, int t1, int t2 );

@@ -65,6 +65,13 @@ void Mesh::submit(RenderFlag::BufferStorageType storageType)
     m_indexBuf->allocate(&m_indices[0], m_indices.size() * sizeof(short_u), storageType);
 }
 
+void Mesh::submitVBO(RenderFlag::BufferStorageType storageType)
+{
+    //pass data to the VBO
+    m_arrayBuf->use();
+    m_arrayBuf->allocate(&m_vertices[0], m_vertices.size() * sizeof(VertexData), storageType);
+}
+
 Mesh::~Mesh()
 {
 	delete m_arrayBuf;

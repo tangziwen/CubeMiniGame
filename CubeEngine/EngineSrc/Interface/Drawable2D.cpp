@@ -11,7 +11,7 @@ Drawable2D::Drawable2D()
     m_contentSize = vec2(0,0);
     m_anchorPoint = vec2(0,0);
     m_anchorPointInPoints = vec2(0,0);
-    m_uniformColor = vec4(1.0, 1.0, 1.0, 1.0);
+
 }
 
 vec2 Drawable2D::getContentSize() const
@@ -83,24 +83,11 @@ Matrix44 Drawable2D::getLocalTransform()
     return Node::getLocalTransform()*mat;
 }
 
-void Drawable2D::setUniformColor(const vec4 &color)
-{
-    m_uniformColor = color;
-}
 
-void Drawable2D::setUniformColor(const vec3 &color)
-{
-    m_uniformColor = vec4(color.x, color.y, color.z, 1.0);
-}
-
-vec4 Drawable2D::getUniformColor()
-{
-    return m_uniformColor;
-}
 
 void Drawable2D::setAlpha(float alphaValue)
 {
-    m_uniformColor.w = alphaValue;
+    m_color.w = alphaValue;
 }
 
 void Drawable2D::setIsVisible(bool isDrawable)

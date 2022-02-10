@@ -16,7 +16,7 @@ GUIRadioFrame *GUIRadioFrame::create(std::string titleText, vec4 color, vec2 siz
 {
 	auto frame = new GUIRadioFrame();
 	frame->initLabel();
-	frame->setUniformColor(color);
+	frame->setColor(color);
 	frame->setTitle(titleText);
 	frame->setContentSize(size);
 	frame->initDetailLabel();
@@ -119,10 +119,10 @@ void GUIRadioFrame::focusAndTintColor(Button *btn)
 {
 	if(m_focusBtn)
 	{
-		m_focusBtn->getLabel()->setUniformColor(vec3(1.0,1.0,1.0));
+		m_focusBtn->getLabel()->setColor(vec3(1.0,1.0,1.0));
 	}
 	m_focusBtn = btn;
-	m_focusBtn->getLabel()->setUniformColor(vec3(1.0,0.0,0.0));
+	m_focusBtn->getLabel()->setColor(vec3(1.0,0.0,0.0));
 }
 
 void GUIRadioFrame::initTipsLabel()

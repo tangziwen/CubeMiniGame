@@ -65,6 +65,11 @@ void Drawable::setColor(vec4 newColor)
 	getMaterial()->setVar("TU_color", newColor);
 }
 
+void Drawable::setColor(vec3 newColorV3)
+{
+    setColor(vec4(newColorV3, 1.0f));
+}
+
 vec4 Drawable::getColor()
 {
 	return m_color;

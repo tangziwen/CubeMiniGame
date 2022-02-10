@@ -20,6 +20,7 @@ public:
     virtual void setUpTransFormation(TransformationInfo & info);
 	virtual void setUpCommand(RenderCommand & command);
 	virtual void setColor(vec4 newColor);
+    virtual void setColor(vec3 newColorV3);
 	virtual vec4 getColor();
 protected:
     Material * m_material;

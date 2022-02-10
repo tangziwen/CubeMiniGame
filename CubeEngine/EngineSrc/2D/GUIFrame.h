@@ -16,8 +16,8 @@ public:
 	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg) override;
 	void setContentSize(const vec2 &getContentSize) override;
     bool isInTheRect(vec2 touchPos);
-	void setUniformColor(const tzw::vec4 &color) override;
-	void setUniformColor(const tzw::vec3 &color) override;
+	void setColor(vec4 color) override;
+	void setColor(vec3 color) override;
 private:
 	vec4 m_color;
     Mesh * m_mesh;

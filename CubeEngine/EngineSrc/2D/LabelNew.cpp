@@ -11,7 +11,7 @@ LabelNew::LabelNew():
     m_mesh = new Mesh();
 	m_material = new Material();
     m_material = Material::createFromTemplate("Text");
-    m_material->setVar("color",getUniformColor());
+    m_material->setVar("color",getColor());
     m_material->setRenderStage(RenderFlag::RenderStage::GUI);
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }

@@ -64,7 +64,7 @@ bool Button::onMouseRelease(int button, vec2 pos)
         {
             if(m_type == Type::SimpleText)
                 {
-                    m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
+                    m_frameBG->setColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
                     auto cs = m_frameBG->getContentSize();
                     m_label->setPos2D(cs.x/2,cs.y/2);
                 }
@@ -91,7 +91,7 @@ bool Button::onMousePress(int button, vec2 pos)
 
             if(m_type == Type::SimpleText)
                 {
-                    m_frameBG->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColorHightLight);
+                    m_frameBG->setColor(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColorHightLight);
                     auto cs = m_frameBG->getContentSize();
                     m_label->setPos2D(cs.x/2 + 2,cs.y/2 -2);
                 }

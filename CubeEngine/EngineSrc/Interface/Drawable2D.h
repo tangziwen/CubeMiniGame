@@ -16,9 +16,7 @@ public:
     virtual void setAnchorPoint(const vec2 &anchorPoint);
 
 	Matrix44 getLocalTransform() override;
-    virtual void setUniformColor(const tzw::vec4 &color);
-    virtual void setUniformColor(const tzw::vec3 &color);
-    virtual vec4 getUniformColor();
+
     virtual void setAlpha(float alphaValue);
 	void setIsVisible(bool isDrawable) override;
 	void setUpTransFormation(TransformationInfo &info) override;
@@ -27,7 +25,6 @@ public:
     virtual void onTransformChanged() override;
     virtual NodeType getNodeType();
 protected:
-    vec4 m_uniformColor;
     vec2 m_contentSize;
     vec2 m_anchorPoint;
     vec2 m_anchorPointInPoints;

@@ -36,7 +36,7 @@ void GUIFrame::setRenderRect()
 GUIFrame *GUIFrame::create(vec4 color, vec2 size)
 {
     auto frame = new GUIFrame();
-    frame->setUniformColor(color);
+    frame->setColor(color);
     frame->setContentSize(size);
     return frame;
 }
@@ -44,14 +44,14 @@ GUIFrame *GUIFrame::create(vec4 color, vec2 size)
 GUIFrame *GUIFrame::create(vec4 color)
 {
     auto frame = new GUIFrame();
-    frame->setUniformColor(color);
+    frame->setColor(color);
     return frame;
 }
 
 GUIFrame *GUIFrame::create(vec2 size)
 {
     auto frame = new GUIFrame();
-    frame->setUniformColor(vec4(33.0/255,33.0/255,37.0/255,1.0));
+    frame->setColor(vec4(33.0/255,33.0/255,37.0/255,1.0));
     frame->setContentSize(size);
     return frame;
 }
@@ -84,15 +84,15 @@ bool GUIFrame::isInTheRect(vec2 touchPos)
     }
 }
 
-void GUIFrame::setUniformColor(const tzw::vec4 &color)
+void GUIFrame::setColor(vec4 color)
 {
 	m_color = color;
 	setRenderRect();
 }
 
-void GUIFrame::setUniformColor(const tzw::vec3 &color)
+void GUIFrame::setColor(vec3 color)
 {
-	this->setUniformColor(vec4(color,1.0));
+	this->setColor(vec4(color,1.0));
 }
 
 } // namespace tzw

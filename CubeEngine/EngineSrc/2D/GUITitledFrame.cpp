@@ -18,7 +18,7 @@ GUIWindow *GUIWindow::create(std::string titleText, vec4 color, vec2 size)
     frame->initLabel();
     frame->initBorders();
     frame->initCloseBtn();
-    frame->setUniformColor(color);
+    frame->setColor(color);
     frame->setContentSize(size);
     frame->setTitle(titleText);
     return frame;
@@ -104,7 +104,7 @@ bool GUIWindow::onMouseMove(vec2 pos)
 void GUIWindow::initLabel()
 {
     m_label = LabelNew::create(" ",FontMgr::shared()->getTitleFont());
-	m_label->setUniformColor(GUIStyleMgr::shared()->defaultPalette()->titleColor);
+	m_label->setColor(GUIStyleMgr::shared()->defaultPalette()->titleColor);
     m_labelFrame = GUIFrame::create(vec4(33.0/255,33.0/255,37.0/255,1.0));
     m_labelFrame->addChild(m_label);
     addChild(m_labelFrame);

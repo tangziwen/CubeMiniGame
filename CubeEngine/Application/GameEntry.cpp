@@ -35,7 +35,7 @@ static void showSplash()
 		splashSprite->removeFromParent();
 	};
 	std::vector<Action *> actionList;
-	actionList.push_back(new ActionInterval(1.0));
+	actionList.push_back(new ActionInterval(2.0));
 	actionList.push_back(new TintTo(0.3, vec4(1, 1, 1, 0),vec4(1, 1, 1, 1)));
 	actionList.push_back(new ActionInterval(1.5f));
 	actionList.push_back(new TintTo(0.3, vec4(1, 1, 1, 1),vec4(1, 1, 1, 0)));
