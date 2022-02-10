@@ -4,8 +4,6 @@
 		"fs" : "Shaders/SpriteColor_f.glsl"
 	},
 	"name" : "SpriteColor",
-	"BlendEnable" : true,
-	"DepthTestEnable" : false,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}

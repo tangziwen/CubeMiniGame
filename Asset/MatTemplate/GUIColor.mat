@@ -4,11 +4,14 @@
 		"fs" : "Shaders/GUIColor_f.glsl"
 	},
 	"name" : "Color",
+	"BlendEnable" : true,
+	"DepthTestEnable" : false,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
 		],
 		"maps" : [
+			["SpriteTexture", 0]
 		]
 	}
 }
