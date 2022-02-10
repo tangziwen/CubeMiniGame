@@ -5,6 +5,8 @@
 #include "PTMTile.h"
 #include "PTMTown.h"
 #include "PTMNation.h"
+#include "PTMPlayerController.h"
+#include "PTMHUD.h"
 #define PTM_MAP_SIZE (96)
 namespace tzw
 {
@@ -25,6 +27,8 @@ namespace tzw
 
 		PTMMapCamera * m_mapCamera;
 		Node * m_mapRootNode;
+		PTMHUD * m_hud;
+		PTMPlayerController * m_controller;
 		void loadNations();
 		void loadTowns();
 		void loadOwnerShips();

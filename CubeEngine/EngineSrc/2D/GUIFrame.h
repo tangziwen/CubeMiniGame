@@ -19,7 +19,6 @@ public:
 	void setColor(vec4 color) override;
 	void setColor(vec3 color) override;
 private:
-	vec4 m_color;
     Mesh * m_mesh;
 };
 

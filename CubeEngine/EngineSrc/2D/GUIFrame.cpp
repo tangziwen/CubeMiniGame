@@ -51,14 +51,14 @@ GUIFrame *GUIFrame::create(vec4 color)
 GUIFrame *GUIFrame::create(vec2 size)
 {
     auto frame = new GUIFrame();
-    frame->setColor(vec4(33.0/255,33.0/255,37.0/255,1.0));
+    frame->setColor(vec4(80.0/255,80.0/255,80.0/255,1.0));
     frame->setContentSize(size);
     return frame;
 }
 
 void GUIFrame::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-    RenderCommand command(m_mesh, m_material, this, m_material->getRenderStage());
+    RenderCommand command(m_mesh, m_material, this, RenderFlag::RenderStage::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(m_globalPiority);
     queues->addRenderCommand(command, requirementArg);
@@ -66,7 +66,8 @@ void GUIFrame::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * qu
 
 void GUIFrame::setContentSize(const vec2 &contentSize)
 {
-    m_contentSize = contentSize;
+    Drawable2D::setContentSize(contentSize);
+    //m_contentSize = contentSize;
     setRenderRect();
 }
 

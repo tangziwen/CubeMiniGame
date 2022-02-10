@@ -2,6 +2,8 @@
 #include "Scene/SceneMgr.h"
 #include "EngineSrc/CubeEngine.h"
 #include "Utility/file/Tfile.h"
+#include "2D/GUIFrame.h"
+#include "2D/GUITitledFrame.h"
 namespace tzw
 {
 
@@ -14,16 +16,16 @@ namespace tzw
 	{
 		m_mapRootNode = Node::create();
 		g_GetCurrScene()->addNode(m_mapRootNode);
+		m_hud = new PTMHUD();
+		m_hud->init();
+
+		m_controller = new PTMPlayerController();
+
 		m_mapCamera = new PTMMapCamera(m_mapRootNode);
 
 		loadNations();
-		auto wei = createNation("Wei");
-		wei->setNationColor(vec3(0.1, 0.1, 0.8));
-		auto shu = createNation("Shu");
-		shu->setNationColor(vec3(0.1, 0.8, 0.1));
-		auto wu = createNation("Wu");
-		wu->setNationColor(vec3(0.8, 0.1, 0.8));
-
+		m_controller->control(m_nationList[0]);//test control the first country
+		m_hud->setController(m_controller);
 		for(int i = 0; i < PTM_MAP_SIZE; i++)
 		{
 			for(int j = 0; j < PTM_MAP_SIZE; j++)
@@ -39,6 +41,11 @@ namespace tzw
 		loadTowns();
 
 		loadOwnerShips();
+
+		auto window = GUIWindow::create("caonima", vec2(200, 350));
+		g_GetCurrScene()->addNode(window);
+		return;
+
 	}
 
 	Node* PTMWorld::getMapRootNode()

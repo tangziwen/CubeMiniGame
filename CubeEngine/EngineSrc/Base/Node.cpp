@@ -148,7 +148,7 @@ Matrix44 Node::getScalingMatrix()
     s.setScale(m_scale);
     return s;
 }
-
+#pragma optimize("", off)
 void Node::visit(std::vector<Node*>&directDrawList)
 {
 	auto scene = g_GetCurrScene()->getOctreeScene();
