@@ -1,0 +1,14 @@
+{
+	"Towns":
+	[
+		{"id":1, "owner":1},
+		{"id":2, "owner":1},
+		{"id":3, "owner":1},
+		{"id":4, "owner":2},
+		{"id":5, "owner":2},
+		{"id":6, "owner":3},
+		{"id":7, "owner":3}
+	]
+
+
+}

@@ -1,0 +1,10 @@
+{
+	"Nations":
+	[
+		{"id":1, "name":"wei", "flag_color":[0.1, 0.1, 0.8] },
+		{"id":2, "name":"shu", "flag_color":[0.1, 0.8, 0.0] },
+		{"id":3, "name":"wu", "flag_color":[0.8, 0.1, 0.0] }
+	]
+
+
+}

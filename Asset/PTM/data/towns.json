@@ -1,0 +1,14 @@
+{
+	"Towns":
+	[
+		{"id":1, "name":"guilin", "pos":[40, 20] },
+		{"id":2, "name":"yunnan", "pos":[23, 23] },
+		{"id":3, "name":"guangzhou", "pos":[30, 29] },
+		{"id":4, "name":"jiangling", "pos":[69, 24] },
+		{"id":5, "name":"changsha", "pos":[50, 26] },
+		{"id":6, "name":"jingzhou", "pos":[43, 31] },
+		{"id":7, "name":"shangyong", "pos":[40, 37] }
+	]
+
+
+}

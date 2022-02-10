@@ -805,7 +805,7 @@ void Material::updateFullDescriptionStr()
 	m_fullDescString = ostr.str();
 }
 
-std::string Material::getFullDescriptionStr()
+const std::string& Material::getFullDescriptionStr()
 {
 	return m_fullDescString;
 }

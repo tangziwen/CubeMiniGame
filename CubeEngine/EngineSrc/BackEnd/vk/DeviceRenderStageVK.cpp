@@ -91,55 +91,6 @@ namespace tzw
             {
                 currPipeLine = static_cast<DevicePipelineVK*>(iter->second);
             }
-            /*
-            auto iter = m_matPipelinePool.find(mat);
-            if(iter == m_matPipelinePool.end())
-            {
-                DeviceVertexInput vertexInput;
-                vertexInput.stride = sizeof(VertexData);
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
-
-                //use for terrain
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
-                //instancing optional
-                DeviceVertexInput instanceInput;
-                //instancing
-                if(a.batchType() != RenderCommand::RenderBatchType::Single)
-                {
-                    instanceInput.stride = sizeof(InstanceData);
-                    //matrix
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform) + sizeof(float) * 4});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 8});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 12});
-
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
-
-                    currPipeLine = new DevicePipelineVK();
-                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
-                }else //single draw call
-                {
-                    currPipeLine = new DevicePipelineVK();
-                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
-                }
-            
-                m_matPipelinePool[mat]  =currPipeLine;
-                
-            }
-            else{
-                currPipeLine = static_cast<DevicePipelineVK*>(iter->second);
-            }
-            */
-
-            if(m_fuckingObjList.find(currPipeLine) == m_fuckingObjList.end())
-            {
-                m_fuckingObjList.insert(currPipeLine);
-            }
             
             if(m_activeMatList.find(currDeviceMat) == m_activeMatList.end())
             {

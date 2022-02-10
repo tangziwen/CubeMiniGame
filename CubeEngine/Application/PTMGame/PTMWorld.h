@@ -20,9 +20,14 @@ namespace tzw
 		PTMTile * m_maptiles[PTM_MAP_SIZE][PTM_MAP_SIZE];
 		std::vector<PTMTown * > m_pronviceList;
 		std::vector<PTMNation * > m_nationList;
+		std::unordered_map<uint32_t, PTMNation * > m_nationIDMap;
+		std::unordered_map<uint32_t, PTMTown * > m_townIDMap;
 
 		PTMMapCamera * m_mapCamera;
 		Node * m_mapRootNode;
+		void loadNations();
+		void loadTowns();
+		void loadOwnerShips();
 		
 	};
 

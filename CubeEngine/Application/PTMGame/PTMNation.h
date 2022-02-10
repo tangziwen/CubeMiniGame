@@ -15,7 +15,10 @@ namespace tzw
 		std::string getName() { return m_name; }
 		void setNationColor(vec3 nationColor) { m_nationColor = nationColor; }
 		vec3 getNationColor() { return m_nationColor; }
+		uint32_t getIdx() {return m_idx;};
+		void setIdx(uint32_t newIdx) {m_idx = newIdx;};
 	private:
+		uint32_t m_idx = {0};
 		std::string m_name;
 		vec3 m_nationColor;
 		std::vector<PTMTown * > m_townList;

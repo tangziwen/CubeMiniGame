@@ -17,9 +17,9 @@ layout(location = 0) out vec4 fragColor;
 layout(location = 1) out vec2 v_texcoord;
 
 void main() {
-    gl_Position = t_ObjectUniform.mvp * vec4(inPosition, 1.0);
+	gl_Position = t_ObjectUniform.mvp * vec4(inPosition, 1.0);
 	
 	v_texcoord = texcoord;
 
-    fragColor = inColor * t_shaderUnifom.TU_color;
+	fragColor = inColor * t_shaderUnifom.TU_color;
 }

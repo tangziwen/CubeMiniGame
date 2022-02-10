@@ -39,13 +39,18 @@ namespace tzw
 			}
 			
 		}
-		m_sprite->setPos2D(m_parent->coord_x * 32,  m_parent->coord_y * 32 );
+		m_sprite->setPos2D(m_parent->getCanvasPos());
 		PTMWorld::shared()->getMapRootNode()->addChild(m_sprite);
 	}
 
 	PTMTile::PTMTile()
 	{
 		m_graphics = new PTMTileGraphic(this);
+	}
+
+	vec2 PTMTile::getCanvasPos()
+	{
+		return vec2(coord_x * 32,  coord_y * 32 );
 	}
 
 }

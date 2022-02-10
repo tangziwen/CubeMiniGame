@@ -62,7 +62,6 @@ protected:
 	std::unordered_map<Material *, DevicePipeline *>m_matPipelinePool;
 	std::unordered_map<Material *, DeviceMaterial *>m_deviceMaterialPool;
 	std::unordered_map<std::string, DevicePipeline *>m_pipelinePool;
-	std::unordered_set<DevicePipeline *> m_fuckingObjList;
 	std::unordered_set<DeviceMaterial *> m_activeMatList;
     static DeviceBuffer * m_quadVertexBuffer;
     static DeviceBuffer * m_quadIndexBuffer;

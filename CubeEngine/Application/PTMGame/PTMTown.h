@@ -4,6 +4,7 @@
 #include "EngineSrc/Event/Event.h"
 namespace tzw
 {
+	class LabelNew;
 	struct PTMTile;
 	class PTMTown;
 	class PTMNation;
@@ -16,6 +17,7 @@ namespace tzw
 		PTMTown * m_parent;
 		Sprite * m_townSprite;
 		Sprite * m_flagSprite;
+		LabelNew * m_label;
 		
 	};
 	class PTMTown :public EventListener

@@ -166,11 +166,14 @@ void Node::visit(std::vector<Node*>&directDrawList)
 	{
 		if(!getIsAccpectOcTtree() || this->getNodeType() != NodeType::Drawable3D )// UI element
 		{
-            if(this->getNodeType() == NodeType::DrawableUI &&  !static_cast<Drawable2D *>(this)->isOutOfScreen())
+            if(this->getNodeType() == NodeType::DrawableUI )
             {
-                directDrawList.emplace_back(this);
+                if(!static_cast<Drawable2D *>(this)->isOutOfScreen())
+                {
+                    directDrawList.emplace_back(this);
+                }
             }
-            else
+            else 
             {
                 directDrawList.emplace_back(this);
             }
@@ -212,10 +215,10 @@ void Node::addChild(Node *node, bool isNeedSort)
     {
     	node->setIsValid(true);
         node->setScene(m_scene);
-        
+        node->m_parent = this;
         //refresh the new child's transform cache
         node->setNeedToUpdate(true);
-        node->m_parent = this;
+
 		//for performance issuse, the Zorder < -99 no need to sort, just insert away.
 		if (node->getLocalPiority() < -99 || !isNeedSort)
 		{

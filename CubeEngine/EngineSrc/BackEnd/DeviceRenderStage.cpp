@@ -53,7 +53,7 @@ namespace tzw
 
 	void DeviceRenderStage::prepare(DeviceRenderCommand* renderCommand)
 	{
-        m_fuckingObjList.clear();
+		m_activeMatList.clear();
 		//fetchCommand();
 		m_deviceRenderCommand = renderCommand;
 

@@ -19,6 +19,7 @@ namespace tzw
 		unsigned short coord_x;
 		unsigned short coord_y;
 		PTMTileGraphic * m_graphics;
+		vec2 getCanvasPos();
 	};
 
 }

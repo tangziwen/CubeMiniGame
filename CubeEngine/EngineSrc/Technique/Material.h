@@ -84,7 +84,7 @@ public:
 	uint32_t getMutationFlag();
 	uint32_t getMaterialFlag();
 	void updateFullDescriptionStr();
-	std::string getFullDescriptionStr();
+	const std::string& getFullDescriptionStr();
 	std::unordered_map<std::string,TechniqueVar> & getVarList();
 	PrimitiveTopology getPrimitiveTopology();
 	void setPrimitiveTopology(PrimitiveTopology newTopology);
