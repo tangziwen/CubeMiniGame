@@ -170,12 +170,15 @@ void Node::visit(std::vector<Node*>&directDrawList)
             {
                 directDrawList.emplace_back(this);
             }
+            else
+            {
+                directDrawList.emplace_back(this);
+            }
 		}
 		if(getNodeType()==NodeType::Drawable3D  && getIsAccpectOcTtree() && (getNeedToUpdate() || !scene->isInOctree(static_cast<Drawable3D *>(this))))
 		{
 			scene->updateObj(static_cast<Drawable3D *>(this));
 			//and update threre child
-
 		}
 		////traversal the children
 		for(auto child : m_children)
