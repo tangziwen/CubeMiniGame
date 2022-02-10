@@ -16,6 +16,7 @@ public:
 	virtual void initCompute(DeviceShaderCollection * shader) = 0;
 	virtual void init(Material* material) = 0;
 	virtual void updateUniformSingle(std::string name, void * buff, size_t size) =0;
+	virtual void updateMaterialDescriptorSet() = 0;
 	Material * getMat()
 	{
 		return m_mat;

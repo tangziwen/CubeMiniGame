@@ -27,9 +27,9 @@ namespace tzw
         ShadingParams * BrightParams = new ShadingParams();
         BrightParams->setVar("TU_InSize", vec2(1600, 960));
         BrightParams->setVar("TU_OutSize", getLayerSize(0));
-        m_brightStage->getSinglePipeline()->setShadingParams(BrightParams);
-        m_brightStage->getSinglePipeline()->updateMaterialDescriptorSet();
-        m_brightStage->getSinglePipeline()->updateUniform();
+        m_brightStage->getSolorDeviceMaterial()->setShadingParams(BrightParams);
+        m_brightStage->getSolorDeviceMaterial()->updateMaterialDescriptorSet();
+        m_brightStage->getSolorDeviceMaterial()->updateUniform();
 
         //down Sample stage
         for(int i = 0; i < BLOOM_LAYERS - 1; i ++)
@@ -46,9 +46,9 @@ namespace tzw
             ShadingParams * params = new ShadingParams();
             params->setVar("TU_InSize", getLayerSize(i));
             params->setVar("TU_OutSize", getLayerSize(i + 1));
-            m_DownSampleStage[i]->getSinglePipeline()->setShadingParams(params);
-            m_DownSampleStage[i]->getSinglePipeline()->updateMaterialDescriptorSet();
-            m_DownSampleStage[i]->getSinglePipeline()->updateUniform();
+            m_DownSampleStage[i]->getSolorDeviceMaterial()->setShadingParams(params);
+            m_DownSampleStage[i]->getSolorDeviceMaterial()->updateMaterialDescriptorSet();
+            m_DownSampleStage[i]->getSolorDeviceMaterial()->updateUniform();
         }
 
         //Gaussain Blur
@@ -66,9 +66,9 @@ namespace tzw
             ShadingParams * params = new ShadingParams();
             params->setVar("TU_InSize", getLayerSize(i));
             params->setVar("TU_OutSize", getLayerSize(i));
-            m_blurStage[i][0]->getSinglePipeline()->setShadingParams(params);
-            m_blurStage[i][0]->getSinglePipeline()->updateMaterialDescriptorSet();
-            m_blurStage[i][0]->getSinglePipeline()->updateUniform();
+            m_blurStage[i][0]->getSolorDeviceMaterial()->setShadingParams(params);
+            m_blurStage[i][0]->getSolorDeviceMaterial()->updateMaterialDescriptorSet();
+            m_blurStage[i][0]->getSolorDeviceMaterial()->updateUniform();
 
 
 
@@ -84,9 +84,9 @@ namespace tzw
             ShadingParams * Hparams = new ShadingParams();
             Hparams->setVar("TU_InSize", getLayerSize(i));
             Hparams->setVar("TU_OutSize", getLayerSize(i));
-            m_blurStage[i][1]->getSinglePipeline()->setShadingParams(Hparams);
-            m_blurStage[i][1]->getSinglePipeline()->updateMaterialDescriptorSet();
-            m_blurStage[i][1]->getSinglePipeline()->updateUniform();
+            m_blurStage[i][1]->getSolorDeviceMaterial()->setShadingParams(Hparams);
+            m_blurStage[i][1]->getSolorDeviceMaterial()->updateMaterialDescriptorSet();
+            m_blurStage[i][1]->getSolorDeviceMaterial()->updateUniform();
         }
 
         auto compositePass = backEnd->createDeviceRenderpass_imp();
