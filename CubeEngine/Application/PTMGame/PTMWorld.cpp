@@ -4,6 +4,7 @@
 #include "Utility/file/Tfile.h"
 #include "2D/GUIFrame.h"
 #include "2D/GUITitledFrame.h"
+#include "EngineSrc/Event/EventMgr.h"
 namespace tzw
 {
 
@@ -44,6 +45,31 @@ namespace tzw
 
 		auto window = GUIWindow::create("caonima", vec2(200, 350));
 		g_GetCurrScene()->addNode(window);
+
+
+		EventMgr::shared()->addFixedPiorityListener(this);
+
+		PTMGameTimeMgr::shared()->setStartDate(207,11,1);
+		PTMGameTimeMgr::shared()->setOnDayTickCallback(
+			[this](uint32_t day)
+			{
+				dailyTick();
+			}
+		);
+
+		PTMGameTimeMgr::shared()->setOnMonthTickCallback(
+			[this]()
+			{
+				monthlyTick();
+			}
+		);
+		PTMGameTimeMgr::shared()->setOnPauseStateChangedCallback(
+			[this](bool isPause)
+			{
+				m_hud->updateTimePauseState(isPause);
+				//dailyTick();
+			}
+		);
 		return;
 
 	}
@@ -53,12 +79,46 @@ namespace tzw
 		return m_mapRootNode;
 	}
 
+	void PTMWorld::onFrameUpdate(float dt)
+	{
+		PTMGameTimeMgr::shared()->tick(dt);
+	}
+
+	bool PTMWorld::onKeyPress(int keyCode)
+	{
+		switch(keyCode)
+		{
+		case TZW_KEY_SPACE:
+			PTMGameTimeMgr::shared()->togglePause();
+			m_hud->updateTimePauseState(PTMGameTimeMgr::shared()->isPause());
+			break;
+		default:
+			break;
+		};
+		return false;
+	}
+
 	PTMNation* PTMWorld::createNation(std::string nationName)
 	{
 		auto nation = new PTMNation();
 		nation->setName(nationName);
 		m_nationList.push_back(nation);
 		return nation;
+	}
+
+	void PTMWorld::dailyTick()
+	{
+		//update hud
+		m_hud->updateTimeOfDay(PTMGameTimeMgr::shared()->getCurrDate());
+	}
+
+	void PTMWorld::monthlyTick()
+	{
+		for(PTMNation * nation :m_nationList)
+		{
+			nation->onMonthlyTick();
+		}
+		m_hud->updateMonthly();
 	}
 
 	void PTMWorld::loadNations()
@@ -120,6 +180,10 @@ namespace tzw
 				m_pronviceList.push_back(town);
 				m_townIDMap[item["id"].GetUint()] = town;
 				town->updateGraphics();
+
+
+				//auto army  = new PTMArmy(nullptr, tile);
+				//army->updateGraphics();
 			}
 		}
 	}

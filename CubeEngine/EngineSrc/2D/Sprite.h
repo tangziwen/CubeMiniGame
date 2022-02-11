@@ -7,13 +7,14 @@
 #include "../Math/vec2.h"
 #include "../Math/vec4.h"
 #include <string>
+#include "../Event/Event.h"
 namespace tzw {
-
+class EventListener;
 /**
   @class Sprite
   @brief 精灵——用以描述显示在屏幕空间上的2D图形元素
 */
-class Sprite : public Drawable2D
+class Sprite : public Drawable2D , public EventListener
 {
 public:
     Sprite();
@@ -33,7 +34,13 @@ public:
     void setUpTechnique();
 	void setUpTransFormation(TransformationInfo &info) override;
     void setColor(vec4 newColor) override;
+	bool onMouseRelease(int button,vec2 pos) override;
+	bool onMousePress(int button,vec2 pos) override;
+	bool onMouseMove(vec2 pos) override;
+    void setTouchEnable(bool m_isEnable);
     std::string getSpriteManggledName();
+    bool isInTheRect(vec2 touchPos);
+    void setOnBtnClicked(const std::function<void (Sprite *)> &onBtnClicked);
 protected:
     bool m_isUseTexture;
     Texture * m_texture;
@@ -42,6 +49,9 @@ protected:
     vec2 m_lb = {0, 0};
     vec2 m_rt = {1, 1};
     bool isFirstTimeUpdateRenderRect = true;
+    bool m_isTouchEnable = false;
+    bool m_isTouched = false;
+    std::function <void(Sprite *)> m_onBtnClicked;
 };
 
 } // namespace tzw

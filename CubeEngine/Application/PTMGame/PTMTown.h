@@ -5,6 +5,7 @@
 namespace tzw
 {
 	class LabelNew;
+	class Button;
 	struct PTMTile;
 	class PTMTown;
 	class PTMNation;
@@ -18,6 +19,7 @@ namespace tzw
 		Sprite * m_townSprite;
 		Sprite * m_flagSprite;
 		LabelNew * m_label;
+
 		
 	};
 	class PTMTown :public EventListener
@@ -27,7 +29,15 @@ namespace tzw
 		void updateGraphics();
 		void setName(std::string name) { m_name = name; }
 		std::string getName() { return m_name; }
+		uint32_t getEcoLevel() {return m_ecoDevLevel;};
+		uint32_t getMilLevel() {return m_milDevLevel;};
+		PTMNation * getOwner() {return m_owner;};
+		int getGold();
+		void investEco();
+		void investMil();
 	private:
+		uint32_t m_ecoDevLevel = 1;
+		uint32_t m_milDevLevel = 1;
 		PTMTile * m_placedTile;
 		std::string m_name;
 		PTMNation * m_occupant;

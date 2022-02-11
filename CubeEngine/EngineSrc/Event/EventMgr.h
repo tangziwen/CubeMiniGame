@@ -35,6 +35,7 @@ public:
 	void handleScroll(vec2 offset);
     void apply(float delta);
     void removeEventListener(EventListener * event);
+    void removeNodeEventListener(Node * node);
     void sortFixedListener();
 	void sortNodePiorityListener();
 	void notifyListenerChange();

@@ -4,6 +4,8 @@
 #include "../Math/vec2.h"
 namespace tzw {
 
+
+
 class Drawable2D : public Drawable
 {
 public:
@@ -32,6 +34,20 @@ protected:
     AABB m_worldAABBCache;
 };
 
+
+
+class HorizonalLayOutHelper
+{
+public:
+    HorizonalLayOutHelper(Drawable2D* parent, vec2 base, float padding = 2.f);
+    void add(Drawable2D * obj);
+    void doLayout();
+protected:
+    std::vector<Drawable2D * > m_objList;
+    Drawable2D * m_parent;
+    vec2 m_origin = vec2(0,0);
+    float m_padding;
+};
 } // namespace tzw
 
 #endif // TZW_DRAWABLE2D_H

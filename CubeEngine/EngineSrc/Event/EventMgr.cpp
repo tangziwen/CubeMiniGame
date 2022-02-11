@@ -302,6 +302,15 @@ void EventMgr::removeEventListener(EventListener *event)
     }
 }
 
+void EventMgr::removeNodeEventListener(Node* node)
+{
+    auto result = m_nodeListenerMap.find(node);
+    if(result != m_nodeListenerMap.end())
+    {
+        m_nodeListenerMap.erase(result);
+    }
+}
+
 static bool eventSort(const EventListener *a,const EventListener *b)
 {
     return a->getFixedPiority() > b->getFixedPiority();

@@ -2,6 +2,7 @@
 #include "../Scene/SceneMgr.h"
 #include "EngineSrc/3D/Effect/EffectMgr.h"
 #include "Technique/MaterialPool.h"
+#include "../Event/EventMgr.h"
 namespace tzw {
 
 Sprite::Sprite()
@@ -187,6 +188,54 @@ void Sprite::setColor(vec4 newColor)
     m_color = newColor;
 }
 
+bool Sprite::onMouseRelease(int button, vec2 pos)
+{
+    if(m_isTouched)
+    {
+        if(isInTheRect(pos))
+        {
+            if(m_onBtnClicked)
+            {
+                m_onBtnClicked(this);
+            }
+            m_isTouched = false;
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Sprite::onMousePress(int button, vec2 pos)
+{
+    if(isInTheRect(pos))
+    {
+        m_isTouched = true;
+    }
+    return false;
+}
+
+bool Sprite::onMouseMove(vec2 pos)
+{
+    return false;
+}
+
+void Sprite::setTouchEnable(bool isEnable)
+{
+    bool changed = m_isTouchEnable != isEnable;
+    if(changed)
+    {
+        if(isEnable)
+        {
+            EventMgr::shared()->addNodePiorityListener(this,this);
+        }
+        else
+        {
+            EventMgr::shared()->removeNodeEventListener(this);
+        }
+    }
+}
+
+
 std::string Sprite::getSpriteManggledName()
 {
     std::string name = "Sprite:";
@@ -199,6 +248,23 @@ std::string Sprite::getSpriteManggledName()
         name += "withColor";
     }
     return name;
+}
+bool Sprite::isInTheRect(vec2 touchPos)
+{
+    auto origin = getWorldPos2D();
+    auto contentSize = m_contentSize;
+    touchPos = touchPos - origin;
+    if (touchPos.x >=0 && touchPos.x<= contentSize.x  && touchPos.y >=0 && touchPos.y<= contentSize.y)
+    {
+        return true;
+    }else
+    {
+        return false;
+    }
+}
+void Sprite::setOnBtnClicked(const std::function<void(Sprite*)>& onBtnClicked)
+{
+    m_onBtnClicked = onBtnClicked;
 }
 } // namespace tzw
 

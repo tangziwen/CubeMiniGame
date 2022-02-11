@@ -52,7 +52,7 @@ void Button::setStr(std::string str)
     if(m_type != Type::SimpleText)
         return;
     m_label->setString(str);
-    auto CS = m_label->getContentSize() + vec2(20,30);
+    auto CS = m_label->getContentSize() + vec2(8,14);
     m_frameBG->setContentSize(CS);
     m_label->setPos2D(CS.x / 2, CS.y / 2);
     adjustBorders();
@@ -179,6 +179,23 @@ void Button::manualTrigger()
 GUIFrame *Button::getFrameBG() const
 {
     return m_frameBG;
+}
+
+void Button::setEnable(bool isEnable)
+{
+    bool changed = isEnable != m_enable;
+    m_enable = isEnable;
+    if(changed)
+    {
+        if(isEnable)
+        {
+            m_label->setColor(vec4(1, 1, 1, 1));
+        }
+        else
+        {
+            m_label->setColor(vec4(0.45, 0.45, 0.45, 1));
+        }
+    }
 }
 
 void Button::init()

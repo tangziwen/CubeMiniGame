@@ -5,6 +5,10 @@
 #include "PTMTile.h"
 #include "PTMNation.h"
 #include "2D/LabelNew.h"
+#include <sstream>
+#include <sstream>
+#include "PTMPlayerController.h"
+#include "PTMGameTimeMgr.h"
 namespace tzw
 {
 
@@ -22,16 +26,60 @@ namespace tzw
 		g_GetCurrScene()->addNode(m_frame);
 
 		m_nationName = LabelNew::create("unknown");
-		m_gold = LabelNew::create("0");
+		m_gold = LabelNew::create("Gold:0");
 		m_time = LabelNew::create("1440:1:1");
 		m_frame->addChild(m_nationName);
 		m_frame->addChild(m_gold);
 		m_frame->addChild(m_time);
+		m_nationName->setPos2D(20, 25);
+		m_gold->setPos2D(200, 25);
+		m_time->setPos2D(400, 25);
 	}
 
 	void PTMHUD::setController(PTMPlayerController* controller)
 	{
 		m_controller = controller;
+		m_nationName->setString(controller->getControlledNation()->getName());
+	}
+
+	void PTMHUD::updateTimeOfDay(uint32_t day)
+	{
+		auto s = std::to_string(day);
+		uint32_t tmp =day;
+		uint32_t day_in_month = tmp %30;
+		tmp /= 30;
+		uint32_t month =  tmp % 12;
+		tmp /= 12;
+		uint32_t year = tmp;
+		std::stringstream ss;
+		ss<<"Date>> "<< (year + 1)<<":" <<(month + 1)<<":" << (day_in_month + 1);
+		m_time->setString(ss.str());
+
+		updateTimePauseState(PTMGameTimeMgr::shared()->isPause());
+	}
+
+	void PTMHUD::updateTimePauseState(bool isPause)
+	{
+		if(isPause)
+		{
+			m_time->setColor(vec4(1.0f, 0.0f, 0.0f, 1.0f));
+		}
+		else
+		{
+			m_time->setColor(vec4(0.0f, 1.0f, 0.0f, 1.0f));
+		}
+	}
+
+	void PTMHUD::updateMonthly()
+	{
+		std::stringstream ss;
+		ss<<"Gold:"<<int(m_controller->getControlledNation()->getGold());
+		m_gold->setString(ss.str());
+	}
+
+	void update()
+	{
+	
 	}
 
 }

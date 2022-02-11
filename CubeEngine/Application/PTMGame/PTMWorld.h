@@ -7,15 +7,21 @@
 #include "PTMNation.h"
 #include "PTMPlayerController.h"
 #include "PTMHUD.h"
+#include "PTMGameTimeMgr.h"
+#include "PTMArmy.h"
+#include "PTMTownGUI.h"
 #define PTM_MAP_SIZE (96)
 namespace tzw
 {
-	class PTMWorld : public Singleton<PTMWorld>
+	class PTMWorld : public Singleton<PTMWorld>, public EventListener
 	{
 	public:
 		PTMWorld();
 		void initMap();
 		Node * getMapRootNode();
+		void onFrameUpdate(float dt) override;
+		bool onKeyPress(int keyCode) override;
+		PTMPlayerController * getPlayerController() {return m_controller;};
 	private:
 		PTMNation * createNation(std::string nationName);
 
@@ -25,13 +31,20 @@ namespace tzw
 		std::unordered_map<uint32_t, PTMNation * > m_nationIDMap;
 		std::unordered_map<uint32_t, PTMTown * > m_townIDMap;
 
+		//time
+		void dailyTick();
+		void monthlyTick();
+
 		PTMMapCamera * m_mapCamera;
 		Node * m_mapRootNode;
 		PTMHUD * m_hud;
 		PTMPlayerController * m_controller;
+		PTMTownGUI * m_townGUI;
+
 		void loadNations();
 		void loadTowns();
 		void loadOwnerShips();
+
 		
 	};
 

@@ -5,6 +5,7 @@
 #include "PTMTile.h"
 #include "PTMNation.h"
 #include "2D/LabelNew.h"
+#include "PTMTownGUI.h"
 namespace tzw
 {
 
@@ -23,6 +24,13 @@ namespace tzw
 			m_townSprite->setPos2D(m_parent->m_placedTile->getCanvasPos());
 			m_townSprite->setLocalPiority(1);
 			m_parent->m_placedTile->m_graphics->m_sprite->getParent()->addChild(m_townSprite);
+			m_townSprite->setTouchEnable(true);
+			m_townSprite->setOnBtnClicked(
+			[this](Sprite *)
+			{
+				PTMTownGUI::shared()->showInspectTown(m_parent);
+			}
+			);
 			
 		}
 		vec4 flagColor = vec4(1.f, 0.f, 0.f, 1.0f);
@@ -61,6 +69,33 @@ namespace tzw
 	void PTMTown::updateGraphics()
 	{
 		m_graphics->updateGraphics();
+	}
+
+	int PTMTown::getGold()
+	{
+		return m_ecoDevLevel * 0.5f + 1.0f;
+	}
+
+	void PTMTown::investEco()
+	{
+		float totalCost = 0.0f;
+		totalCost = 20.0f + m_ecoDevLevel * 15.0f;
+		if(m_owner->isCanAfford(totalCost))
+		{
+			m_owner->payGold(totalCost);
+		}
+		m_ecoDevLevel += 1;
+	}
+
+	void PTMTown::investMil()
+	{
+		float totalCost = 0.0f;
+		totalCost = 20.0f + m_milDevLevel * 15.0f;
+		if(m_owner->isCanAfford(totalCost))
+		{
+			m_owner->payGold(totalCost);
+		}
+		m_milDevLevel += 1;
 	}
 
 }

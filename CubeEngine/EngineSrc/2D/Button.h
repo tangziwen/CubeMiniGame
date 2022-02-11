@@ -32,7 +32,8 @@ public:
     void manualTrigger();
 
     GUIFrame *getFrameBG() const;
-
+    void setEnable(bool isEnable);
+    bool isEnable() {return m_enable;};
 private:
     void init();
     void adjustBorders();
@@ -45,6 +46,7 @@ private:
     LabelNew * m_label;
 	int m_evtBtn;
 	vec2 m_evtPos;
+    bool m_enable = true;
 };
 
 } // namespace tzw

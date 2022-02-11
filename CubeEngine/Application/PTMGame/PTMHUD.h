@@ -4,6 +4,7 @@
 #include "EngineSrc/Event/Event.h"
 #include "2D/GUIFrame.h"
 #include "2D/GUITitledFrame.h"
+#include "2D/Button.h"
 namespace tzw
 {
 	class LabelNew;
@@ -17,6 +18,9 @@ namespace tzw
 		PTMHUD();
 		void init();
 		void setController(PTMPlayerController * controller);
+		void updateTimeOfDay(uint32_t day);
+		void updateTimePauseState(bool isPause);
+		void updateMonthly();
 	private:
 		GUIFrame * m_frame;
 		PTMPlayerController * m_controller;

@@ -96,4 +96,31 @@ void Drawable2D::setIsVisible(bool isDrawable)
 	EventMgr::shared()->notifyListenerChange();
 }
 
+HorizonalLayOutHelper::HorizonalLayOutHelper(Drawable2D* parent, vec2 base, float padding)
+    :m_parent(parent), m_origin(base), m_padding(padding)
+{
+}
+
+void HorizonalLayOutHelper::add(Drawable2D* obj)
+{
+    m_parent->addChild(obj);
+    m_objList.push_back(obj);
+}
+
+void HorizonalLayOutHelper::doLayout()
+{
+    Drawable2D * lastObj = nullptr;
+    vec2 pos = m_origin;
+    for(auto obj : m_objList)
+    {
+        
+        if(lastObj)
+        {
+            pos.x += lastObj->getContentSize().x + m_padding;
+        }
+        obj->setPos2D(pos);
+        lastObj = obj;
+    }
+}
+
 } // namespace tzw
