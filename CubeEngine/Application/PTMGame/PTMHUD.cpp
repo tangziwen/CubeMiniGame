@@ -9,6 +9,7 @@
 #include <sstream>
 #include "PTMPlayerController.h"
 #include "PTMGameTimeMgr.h"
+#include "PTMEventMgr.h"
 namespace tzw
 {
 
@@ -34,6 +35,13 @@ namespace tzw
 		m_nationName->setPos2D(20, 25);
 		m_gold->setPos2D(200, 25);
 		m_time->setPos2D(400, 25);
+		
+		PTMEventMgr::shared()->listen((int)PTMEventType::PLAYER_RESOURCE_CHANGED, 
+			[this](PTMEventArgPack pack)
+			{
+				updateResource();
+			}
+		);
 	}
 
 	void PTMHUD::setController(PTMPlayerController* controller)
@@ -42,10 +50,9 @@ namespace tzw
 		m_nationName->setString(controller->getControlledNation()->getName());
 	}
 
-	void PTMHUD::updateTimeOfDay(uint32_t day)
+	void PTMHUD::updateTimeOfDay()
 	{
-		auto s = std::to_string(day);
-		uint32_t tmp =day;
+		uint32_t tmp =PTMGameTimeMgr::shared()->getCurrDate();
 		uint32_t day_in_month = tmp %30;
 		tmp /= 30;
 		uint32_t month =  tmp % 12;
@@ -72,14 +79,21 @@ namespace tzw
 
 	void PTMHUD::updateMonthly()
 	{
+		updateResource();
+	}
+
+	void PTMHUD::updateResource()
+	{
 		std::stringstream ss;
 		ss<<"Gold:"<<int(m_controller->getControlledNation()->getGold());
 		m_gold->setString(ss.str());
 	}
 
-	void update()
+	void PTMHUD::updateAll()
 	{
-	
+		updateTimeOfDay();
+		updateResource();
 	}
+
 
 }

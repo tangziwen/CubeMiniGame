@@ -18,9 +18,11 @@ namespace tzw
 		PTMHUD();
 		void init();
 		void setController(PTMPlayerController * controller);
-		void updateTimeOfDay(uint32_t day);
+		void updateTimeOfDay();
 		void updateTimePauseState(bool isPause);
 		void updateMonthly();
+		void updateResource();
+		void updateAll();
 	private:
 		GUIFrame * m_frame;
 		PTMPlayerController * m_controller;

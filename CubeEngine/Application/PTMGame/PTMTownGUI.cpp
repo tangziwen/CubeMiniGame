@@ -71,7 +71,7 @@ namespace tzw
 		m_name = LabelNew::create("Name:XXXXX");
 		nameRow.add(m_name);
 		m_buildArmy = Button::create("Build Army");
-		m_buildArmy->setOnBtnClicked([](Button* btn){});
+		m_buildArmy->setOnBtnClicked([this](Button* btn){m_inspectTown->buildArmy();updateGraphics();});
 		nameRow.add(m_buildArmy);
 		nameRow.doLayout();
 

@@ -6,7 +6,7 @@
 #include "PTMNation.h"
 #include "2D/LabelNew.h"
 #include "2D/GUIFrame.h"
-
+#include "PTMArmyGUI.h"
 #define BORDER_LEFT 0
 #define BORDER_RIGHT 1
 #define BORDER_BOTTOM 2
@@ -32,6 +32,12 @@ namespace tzw
 			m_button = Button::create(vec4(1.0, 1.0, 1.0, 0.5), vec2(32, 32));
 			m_button->setPos2D(m_parent->m_placedTile->getCanvasPos());
 			m_button->setLocalPiority(2);
+			m_button->setOnBtnClicked([this](Button *)
+				{
+					PTMArmyGUI::shared()->showInspectTown(m_parent);
+				}
+			
+			);
 			m_parent->m_placedTile->m_graphics->m_sprite->getParent()->addChild(m_button);
 		}
 		if(!m_selectedBorders[0])
@@ -62,12 +68,14 @@ namespace tzw
 			m_label->setLocalPiority(1);
 			m_sprite->addChild(m_label);
 			m_label->setPos2D(0, - cs.y/2.0 -8);
+			m_label->setColor(vec4(1.0, 0.64, 0, 1));
 		}
+		m_label->setString(std::to_string(m_parent->m_currSize));
 
 	}
 
 	PTMArmy::PTMArmy(PTMNation * nation, PTMTile * targetTile)
-		:m_parent(nation),m_placedTile(targetTile)
+		:m_parent(nation),m_placedTile(targetTile),m_sizeLimit(1000)
 	{
 		m_graphics = new PTMArmyGraphics(this); 
 	}
@@ -77,8 +85,21 @@ namespace tzw
 		m_placedTile = targetTile;
 	}
 
-	void PTMArmy::dailyTick()
+	void PTMArmy::onMonthlyTick()
 	{
+	}
+
+	void PTMArmy::onDailyTick()
+	{
+		if(m_currSize < m_sizeLimit)
+		{
+			m_currSize += 50;
+		}
+		else
+		{
+			m_currSize = m_sizeLimit;//clamp
+		}
+		updateGraphics();
 	}
 
 	void PTMArmy::updateGraphics()

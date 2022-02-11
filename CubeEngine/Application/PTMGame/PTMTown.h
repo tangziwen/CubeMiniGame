@@ -2,6 +2,7 @@
 #include "Engine/EngineDef.h"
 #include "2D/Sprite.h"
 #include "EngineSrc/Event/Event.h"
+#include "PTMILogicTickable.h"
 namespace tzw
 {
 	class LabelNew;
@@ -22,7 +23,7 @@ namespace tzw
 
 		
 	};
-	class PTMTown :public EventListener
+	class PTMTown :public PTMILogicTickable
 	{
 	public:
 		PTMTown(PTMTile * placedTile);
@@ -32,9 +33,12 @@ namespace tzw
 		uint32_t getEcoLevel() {return m_ecoDevLevel;};
 		uint32_t getMilLevel() {return m_milDevLevel;};
 		PTMNation * getOwner() {return m_owner;};
-		int getGold();
+		virtual void onMonthlyTick() override;
+		virtual void onDailyTick() override;
+		float collectTax();//return the tax
 		void investEco();
 		void investMil();
+		void buildArmy();
 	private:
 		uint32_t m_ecoDevLevel = 1;
 		uint32_t m_milDevLevel = 1;
@@ -45,6 +49,7 @@ namespace tzw
 		PTMTownGraphics * m_graphics;
 		friend class PTMTownGraphics;
 		friend class PTMNation;
+		float m_taxAccum;
 	};
 
 }

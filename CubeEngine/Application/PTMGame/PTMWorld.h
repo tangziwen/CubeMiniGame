@@ -22,6 +22,7 @@ namespace tzw
 		void onFrameUpdate(float dt) override;
 		bool onKeyPress(int keyCode) override;
 		PTMPlayerController * getPlayerController() {return m_controller;};
+		PTMTile * getTile(int x, int y);
 	private:
 		PTMNation * createNation(std::string nationName);
 

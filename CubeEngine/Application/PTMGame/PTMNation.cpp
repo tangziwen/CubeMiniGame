@@ -4,6 +4,8 @@
 #include "EngineSrc/Event/EventMgr.h"
 #include "PTMTile.h"
 #include "PTMTown.h"
+#include "PTMWorld.h"
+#include "PTMEventMgr.h"
 namespace tzw
 {
 
@@ -27,32 +29,65 @@ namespace tzw
 
 	void PTMNation::onMonthlyTick()
 	{
-		collectTaxMonthly();
-		costMonthly();
+		m_gold += 3;//National tax
+
+		updateTownsMonthly();
+		updateArmiesMonthly();
 	}
 
-	void PTMNation::collectTaxMonthly()
+	void PTMNation::onDailyTick()
 	{
-		m_gold += 3;//National tax
-		for(PTMTown * town: m_townList)
+		for(PTMArmy * army : m_armyList)
 		{
-			m_gold += town->getGold();
+			army->onDailyTick();
 		}
 	}
 
-	void PTMNation::costMonthly()
+	void PTMNation::updateTownsMonthly()
 	{
+		for(PTMTown * town: m_townList)
+		{
+			town->onMonthlyTick();
+			m_gold += town->collectTax();
+		}
+	}
+
+	void PTMNation::updateArmiesMonthly()
+	{
+		for(PTMArmy * army: m_armyList)
+		{
+			army->onMonthlyTick();
+		}
 	}
 
 	void PTMNation::addGold(float diff) 
 	{
-		m_gold += diff; 
-	
+		m_gold += diff;
+		PTMEventArgPack pack;
+		pack.m_params["object"] = this;
+		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
+		{
+
+			PTMEventMgr::shared()->notify((int)PTMEventType::PLAYER_RESOURCE_CHANGED, pack);
+		}
+		PTMEventMgr::shared()->notify((int)PTMEventType::NATION_RESOURCE_CHANGED, pack);
 	}
 
 	void PTMNation::payGold(float diff)
 	{
 		m_gold -= diff;
+		PTMEventArgPack pack;
+		pack.m_params["object"] = this;
+		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
+		{
+			PTMEventMgr::shared()->notify((int)PTMEventType::PLAYER_RESOURCE_CHANGED, pack);
+		}
+		PTMEventMgr::shared()->notify((int)PTMEventType::NATION_RESOURCE_CHANGED, pack);
+	}
+
+	void PTMNation::addArmy(PTMArmy* army)
+	{
+		m_armyList.push_back(army);
 	}
 
 }

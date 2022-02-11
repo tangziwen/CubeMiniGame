@@ -70,6 +70,7 @@ namespace tzw
 				//dailyTick();
 			}
 		);
+		m_hud->updateAll();
 		return;
 
 	}
@@ -98,6 +99,11 @@ namespace tzw
 		return false;
 	}
 
+	PTMTile* PTMWorld::getTile(int x, int y)
+	{
+		return m_maptiles[x][y];
+	}
+
 	PTMNation* PTMWorld::createNation(std::string nationName)
 	{
 		auto nation = new PTMNation();
@@ -109,7 +115,11 @@ namespace tzw
 	void PTMWorld::dailyTick()
 	{
 		//update hud
-		m_hud->updateTimeOfDay(PTMGameTimeMgr::shared()->getCurrDate());
+		m_hud->updateTimeOfDay();
+		for(auto nation : m_nationList)
+		{
+			nation->onDailyTick();
+		}
 	}
 
 	void PTMWorld::monthlyTick()

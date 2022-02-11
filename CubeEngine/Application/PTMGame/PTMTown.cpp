@@ -6,6 +6,8 @@
 #include "PTMNation.h"
 #include "2D/LabelNew.h"
 #include "PTMTownGUI.h"
+#include "PTMArmy.h"
+#include "PTMWorld.h"
 namespace tzw
 {
 
@@ -71,19 +73,22 @@ namespace tzw
 		m_graphics->updateGraphics();
 	}
 
-	int PTMTown::getGold()
+	void PTMTown::onMonthlyTick()
 	{
-		return m_ecoDevLevel * 0.5f + 1.0f;
+		m_taxAccum += m_ecoDevLevel * 0.5f + 1.0f;
+	}
+
+	void PTMTown::onDailyTick()
+	{
+
 	}
 
 	void PTMTown::investEco()
 	{
 		float totalCost = 0.0f;
 		totalCost = 20.0f + m_ecoDevLevel * 15.0f;
-		if(m_owner->isCanAfford(totalCost))
-		{
-			m_owner->payGold(totalCost);
-		}
+		if (!m_owner->isCanAfford(totalCost)) return;
+		m_owner->payGold(totalCost);
 		m_ecoDevLevel += 1;
 	}
 
@@ -91,11 +96,27 @@ namespace tzw
 	{
 		float totalCost = 0.0f;
 		totalCost = 20.0f + m_milDevLevel * 15.0f;
-		if(m_owner->isCanAfford(totalCost))
-		{
-			m_owner->payGold(totalCost);
-		}
+		if (!m_owner->isCanAfford(totalCost)) return;
+		m_owner->payGold(totalCost);
 		m_milDevLevel += 1;
+	}
+
+	void PTMTown::buildArmy()
+	{
+		int x = m_placedTile->coord_x + 1;
+		int y = m_placedTile->coord_y;
+		PTMTile * targetTile = PTMWorld::shared()->getTile(x, y);
+
+		auto army = new PTMArmy(m_owner, targetTile);
+		army->updateGraphics();
+		m_owner->addArmy(army);
+	}
+
+	float PTMTown::collectTax()
+	{
+		float tmp = m_taxAccum;
+		m_taxAccum = 0.0f;
+		return tmp;
 	}
 
 }
