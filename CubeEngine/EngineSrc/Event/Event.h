@@ -131,6 +131,11 @@
 #define TZW_KEY_MENU               348
 #define TZW_KEY_LAST               TZW_KEY_MENU
 
+
+#define TZW_MOUSE_BUTTON_LEFT      0
+#define TZW_MOUSE_BUTTON_RIGHT     1
+#define TZW_MOUSE_BUTTON_MIDDLE    2
+
 namespace tzw {
 class Node;
 class EventMgr;

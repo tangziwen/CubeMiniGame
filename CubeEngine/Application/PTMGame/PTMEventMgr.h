@@ -12,6 +12,9 @@ namespace tzw
 	{
 		NATION_RESOURCE_CHANGED,
 		PLAYER_RESOURCE_CHANGED,
+		PLAYER_DESELECT_ALL_ARMIES,
+		PLAYER_SELECT_ARMY,
+		CAMERA_RIGHT_CLICK_ON_TILE,
 	
 	};
 	struct PTMEventArgPack
@@ -23,10 +26,10 @@ namespace tzw
 	{
 	public:
 		PTMEventMgr();
-		void listen(int event_type, std::function<void(PTMEventArgPack)> function);
-		void notify(int event_type, PTMEventArgPack pack);
+		void listen(enum class PTMEventType event_type, std::function<void(PTMEventArgPack)> function);
+		void notify(enum class PTMEventType event_type, PTMEventArgPack pack);
 	private:
-		std::unordered_map<int, PTMEventList> m_eventList;
+		std::unordered_map<enum class PTMEventType, PTMEventList> m_eventList;
 	};
 
 }

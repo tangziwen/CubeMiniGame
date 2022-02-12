@@ -36,7 +36,7 @@ namespace tzw
 		m_gold->setPos2D(200, 25);
 		m_time->setPos2D(400, 25);
 		
-		PTMEventMgr::shared()->listen((int)PTMEventType::PLAYER_RESOURCE_CHANGED, 
+		PTMEventMgr::shared()->listen(PTMEventType::PLAYER_RESOURCE_CHANGED, 
 			[this](PTMEventArgPack pack)
 			{
 				updateResource();

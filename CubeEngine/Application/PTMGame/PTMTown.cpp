@@ -73,9 +73,20 @@ namespace tzw
 		m_graphics->updateGraphics();
 	}
 
+	uint32_t PTMTown::getGarrisonLimit()
+	{
+		return m_garrisonBaseLimit + 100 * m_milDevLevel;
+	}
+
 	void PTMTown::onMonthlyTick()
 	{
 		m_taxAccum += m_ecoDevLevel * 0.5f + 1.0f;
+
+		if(m_garrison < getGarrisonLimit())
+		{
+			m_garrison += 50 + m_milDevLevel * 20;
+		}
+		m_garrison =std::min(m_garrison, m_garrisonBaseLimit);//clamp
 	}
 
 	void PTMTown::onDailyTick()

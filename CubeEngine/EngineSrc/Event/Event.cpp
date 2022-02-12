@@ -48,7 +48,7 @@ void EventListener::onFrameUpdate(float delta)
 }
 
 EventListener::EventListener()
-		: m_attachNode(nullptr), m_mgr(nullptr), m_isSwallow(false), m_fixedPiority(0)
+		: m_attachNode(nullptr), m_mgr(nullptr), m_isSwallow(true), m_fixedPiority(0)
 {
 
 }

@@ -11,6 +11,9 @@ namespace tzw
 		bool onKeyPress(int keyCode) override;
 		bool onKeyRelease(int keyCode) override;
 		void onFrameUpdate(float dt) override;
+		bool onMouseRelease(int button,vec2 pos) override;
+		bool onMousePress(int button,vec2 pos) override;
+		bool onMouseMove(vec2 pos) override;
 		void init();
 	private:
 		Node * m_mapRootNode;

@@ -31,14 +31,20 @@ namespace tzw
 		PTMArmy(PTMNation * nation, PTMTile * targetTile);
 		void updateGraphics();
 		void setTile(PTMTile * targetTile);
+		
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
+
+		void setIsSelected(bool isSelect);//only for player
+		void moveTo(PTMTile * tile);
 	private:
 		uint32_t m_currSize = 0;
 		uint32_t m_sizeLimit = 0;
 		PTMArmyGraphics * m_graphics = nullptr;
 		PTMNation * m_parent = nullptr;
 		PTMTile * m_placedTile = nullptr;
+		PTMTile * m_targetTile = nullptr;
+		bool m_isSelected = false;
 		friend class PTMArmyGraphics;
 	};
 

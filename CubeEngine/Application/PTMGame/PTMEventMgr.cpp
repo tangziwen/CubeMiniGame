@@ -15,7 +15,7 @@ namespace tzw
 	{
 	}
 
-	void PTMEventMgr::listen(int event_type, std::function<void(PTMEventArgPack)> fuction)
+	void PTMEventMgr::listen(enum class PTMEventType event_type, std::function<void(PTMEventArgPack)> fuction)
 	{
 		auto iter = m_eventList.find(event_type);
 		if(iter == m_eventList.end())
@@ -26,7 +26,7 @@ namespace tzw
 		m_eventList[event_type].push_back(fuction);
 	}
 
-	void PTMEventMgr::notify(int event_type, PTMEventArgPack pack)
+	void PTMEventMgr::notify(enum class PTMEventType event_type, PTMEventArgPack pack)
 	{
 		auto iter = m_eventList.find(event_type);
 		if(iter == m_eventList.end())

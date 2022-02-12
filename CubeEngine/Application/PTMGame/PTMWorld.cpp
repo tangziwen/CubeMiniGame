@@ -131,6 +131,10 @@ namespace tzw
 		m_hud->updateMonthly();
 	}
 
+	void PTMWorld::simulateAttack()
+	{
+	}
+
 	void PTMWorld::loadNations()
 	{
 		rapidjson::Document doc;

@@ -68,9 +68,9 @@ namespace tzw
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
 		{
 
-			PTMEventMgr::shared()->notify((int)PTMEventType::PLAYER_RESOURCE_CHANGED, pack);
+			PTMEventMgr::shared()->notify(PTMEventType::PLAYER_RESOURCE_CHANGED, pack);
 		}
-		PTMEventMgr::shared()->notify((int)PTMEventType::NATION_RESOURCE_CHANGED, pack);
+		PTMEventMgr::shared()->notify(PTMEventType::NATION_RESOURCE_CHANGED, pack);
 	}
 
 	void PTMNation::payGold(float diff)
@@ -80,9 +80,9 @@ namespace tzw
 		pack.m_params["object"] = this;
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
 		{
-			PTMEventMgr::shared()->notify((int)PTMEventType::PLAYER_RESOURCE_CHANGED, pack);
+			PTMEventMgr::shared()->notify(PTMEventType::PLAYER_RESOURCE_CHANGED, pack);
 		}
-		PTMEventMgr::shared()->notify((int)PTMEventType::NATION_RESOURCE_CHANGED, pack);
+		PTMEventMgr::shared()->notify(PTMEventType::NATION_RESOURCE_CHANGED, pack);
 	}
 
 	void PTMNation::addArmy(PTMArmy* army)

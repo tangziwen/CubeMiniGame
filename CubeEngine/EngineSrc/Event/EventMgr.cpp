@@ -206,11 +206,12 @@ void EventMgr::visitNode(Node *node)
 
 void EventMgr::applyKeyPress(EventInfo &info)
 {
-    for(auto event : m_list)
+
+    for (auto event :m_NodePioritylist)
     {
         if(event->onKeyPress(info.keycode) && event->isSwallow()) return;
     }
-    for (auto event :m_NodePioritylist)
+    for(auto event : m_list)
     {
         if(event->onKeyPress(info.keycode) && event->isSwallow()) return;
     }
@@ -218,11 +219,11 @@ void EventMgr::applyKeyPress(EventInfo &info)
 
 void EventMgr::applyKeyCharInput(EventInfo &info)
 {
-    for(auto event : m_list)
+    for (auto event :m_NodePioritylist)
     {
         if(event->onCharInput(info.theChar) && event->isSwallow()) return;
     }
-    for (auto event :m_NodePioritylist)
+    for(auto event : m_list)
     {
         if(event->onCharInput(info.theChar) && event->isSwallow()) return;
     }
@@ -230,35 +231,35 @@ void EventMgr::applyKeyCharInput(EventInfo &info)
 
 void EventMgr::applyKeyRelease(EventInfo &info)
 {
-    for(auto event : m_list)
-    {
-        if(event->onKeyRelease(info.keycode)&&event->isSwallow()) return;
-    }
     for (auto event :m_NodePioritylist)
     {
         if(event->onKeyRelease(info.keycode) && event->isSwallow()) return;
+    }
+    for(auto event : m_list)
+    {
+        if(event->onKeyRelease(info.keycode)&&event->isSwallow()) return;
     }
 }
 
 void EventMgr::applyMousePress(EventInfo &info)
 {
-    for(auto event : m_list)
-    {
-        if (event->onMousePress(info.arg,info.pos) && event->isSwallow()) return;
-    }
     for (auto event :m_NodePioritylist)
     {
         if(event->onMousePress(info.arg,info.pos) && event->isSwallow()) return;
+    }
+    for(auto event : m_list)
+    {
+        if (event->onMousePress(info.arg,info.pos) && event->isSwallow()) return;
     }
 }
 
 void EventMgr::applyMouseRelease(EventInfo &info)
 {
-    for(auto event : m_list)
+    for (auto event :m_NodePioritylist)
     {
         if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow()) return;
     }
-    for (auto event :m_NodePioritylist)
+    for(auto event : m_list)
     {
         if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow()) return;
     }
@@ -266,14 +267,14 @@ void EventMgr::applyMouseRelease(EventInfo &info)
 
 void EventMgr::applyMouseMove(EventInfo &info)
 {
-    for(auto event : m_list)
-    {
-        if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
-    }
     for (auto event :m_NodePioritylist)
     {
         if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
 	}
+    for(auto event : m_list)
+    {
+        if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
+    }
 }
 
 void EventMgr::applyScroll(EventInfo& info)

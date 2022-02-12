@@ -35,7 +35,7 @@ namespace tzw
 		//time
 		void dailyTick();
 		void monthlyTick();
-
+		void simulateAttack();
 		PTMMapCamera * m_mapCamera = nullptr;
 		Node * m_mapRootNode = nullptr;
 		PTMHUD * m_hud = nullptr;

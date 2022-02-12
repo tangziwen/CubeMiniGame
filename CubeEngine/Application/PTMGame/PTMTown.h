@@ -33,6 +33,7 @@ namespace tzw
 		uint32_t getEcoLevel() {return m_ecoDevLevel;};
 		uint32_t getMilLevel() {return m_milDevLevel;};
 		PTMNation * getOwner() {return m_owner;};
+		uint32_t getGarrisonLimit();
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
 		float collectTax();//return the tax
@@ -42,6 +43,8 @@ namespace tzw
 	private:
 		uint32_t m_ecoDevLevel = 1;
 		uint32_t m_milDevLevel = 1;
+		uint32_t m_garrison = 100;
+		uint32_t m_garrisonBaseLimit = 1000;
 		PTMTile * m_placedTile;
 		std::string m_name;
 		PTMNation * m_occupant;
