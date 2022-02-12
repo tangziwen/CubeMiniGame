@@ -36,11 +36,11 @@ namespace tzw
 		void dailyTick();
 		void monthlyTick();
 
-		PTMMapCamera * m_mapCamera;
-		Node * m_mapRootNode;
-		PTMHUD * m_hud;
-		PTMPlayerController * m_controller;
-		PTMTownGUI * m_townGUI;
+		PTMMapCamera * m_mapCamera = nullptr;
+		Node * m_mapRootNode = nullptr;
+		PTMHUD * m_hud = nullptr;
+		PTMPlayerController * m_controller = nullptr;
+		PTMTownGUI * m_townGUI = nullptr;
 
 		void loadNations();
 		void loadTowns();

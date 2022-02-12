@@ -13,7 +13,7 @@ namespace tzw
 
 
 	PTMTownGraphics::PTMTownGraphics(PTMTown* parent):m_parent(parent), 
-		m_townSprite(nullptr), m_flagSprite(nullptr)
+		m_townSprite(nullptr), m_flagSprite(nullptr),m_label(nullptr)
 	{
 
 	}

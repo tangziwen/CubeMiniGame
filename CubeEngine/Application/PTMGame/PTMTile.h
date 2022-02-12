@@ -9,16 +9,16 @@ namespace tzw
 	{
 		PTMTileGraphic(PTMTile * m_parent);
 		void updateGraphics();
-		Sprite * m_sprite;
-		PTMTile * m_parent;
+		Sprite * m_sprite = nullptr;
+		PTMTile * m_parent = nullptr;
 	};
 
 	struct PTMTile
 	{
 		PTMTile();
-		unsigned short coord_x;
-		unsigned short coord_y;
-		PTMTileGraphic * m_graphics;
+		unsigned short coord_x{0};
+		unsigned short coord_y{0};
+		PTMTileGraphic * m_graphics = nullptr;
 		vec2 getCanvasPos();
 	};
 

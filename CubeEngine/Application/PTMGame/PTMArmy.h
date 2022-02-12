@@ -18,11 +18,11 @@ namespace tzw
 		PTMArmyGraphics(PTMArmy * parent);
 		void updateGraphics();
 	private:
-		PTMArmy * m_parent;
-		Sprite * m_sprite;
-		LabelNew * m_label;
-		GUIFrame * m_selectedBorders[4];
-		Button * m_button;
+		PTMArmy * m_parent = nullptr;
+		Sprite * m_sprite = nullptr;
+		LabelNew * m_label = nullptr;
+		GUIFrame * m_selectedBorders[4] {nullptr};
+		Button * m_button {nullptr};
 		
 	};
 	class PTMArmy : public PTMILogicTickable
@@ -34,11 +34,11 @@ namespace tzw
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
 	private:
-		uint32_t m_currSize;
-		uint32_t m_sizeLimit;
-		PTMArmyGraphics * m_graphics;
-		PTMNation * m_parent;
-		PTMTile * m_placedTile;
+		uint32_t m_currSize = 0;
+		uint32_t m_sizeLimit = 0;
+		PTMArmyGraphics * m_graphics = nullptr;
+		PTMNation * m_parent = nullptr;
+		PTMTile * m_placedTile = nullptr;
 		friend class PTMArmyGraphics;
 	};
 

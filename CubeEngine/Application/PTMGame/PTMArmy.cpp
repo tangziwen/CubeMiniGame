@@ -18,9 +18,11 @@ namespace tzw
 
 	PTMArmyGraphics::PTMArmyGraphics(PTMArmy* parent):
 		m_parent(parent), 
-		m_sprite(nullptr)
+		m_sprite(nullptr),
+		m_label(nullptr),
+		m_selectedBorders{nullptr},
+		m_button(nullptr)
 	{
-		memset(m_selectedBorders, 0, sizeof(m_selectedBorders));
 	}
 
 	void PTMArmyGraphics::updateGraphics()
@@ -75,7 +77,7 @@ namespace tzw
 	}
 
 	PTMArmy::PTMArmy(PTMNation * nation, PTMTile * targetTile)
-		:m_parent(nation),m_placedTile(targetTile),m_sizeLimit(1000)
+		:m_sizeLimit(1000),m_parent(nation),m_placedTile(targetTile)
 	{
 		m_graphics = new PTMArmyGraphics(this); 
 	}

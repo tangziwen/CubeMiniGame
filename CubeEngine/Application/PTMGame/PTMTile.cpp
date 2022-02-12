@@ -37,13 +37,14 @@ namespace tzw
 			{
 				m_sprite = Sprite::create("PTM/mountains.png");
 			}
-			
+			PTMWorld::shared()->getMapRootNode()->addChild(m_sprite);
 		}
 		m_sprite->setPos2D(m_parent->getCanvasPos());
-		PTMWorld::shared()->getMapRootNode()->addChild(m_sprite);
+		
 	}
 
 	PTMTile::PTMTile()
+		:coord_x(0), coord_y(0)
 	{
 		m_graphics = new PTMTileGraphic(this);
 	}
