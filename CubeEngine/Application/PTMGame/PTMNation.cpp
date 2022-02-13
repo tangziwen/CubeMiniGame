@@ -25,6 +25,7 @@ namespace tzw
 	{
 		m_townList.push_back(town);
 		town->m_owner = this;
+		town->updateGraphics();
 	}
 
 	void PTMNation::onMonthlyTick()

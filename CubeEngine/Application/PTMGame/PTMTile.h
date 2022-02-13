@@ -1,4 +1,5 @@
 #pragma once
+#include "PTMPawn.h"
 #include "Engine/EngineDef.h"
 #include "2D/Sprite.h"
 #include "EngineSrc/Event/Event.h"
@@ -20,6 +21,11 @@ namespace tzw
 		unsigned short coord_y{0};
 		PTMTileGraphic * m_graphics = nullptr;
 		vec2 getCanvasPos();
+
+		void setPawn(PTMPawn * pawn);
+		void removePawn();
+		PTMPawn * getPawn() {return m_pawn;}
+		PTMPawn * m_pawn = nullptr;
 	};
 
 }

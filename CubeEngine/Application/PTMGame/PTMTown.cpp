@@ -60,12 +60,11 @@ namespace tzw
 	}
 
 	PTMTown::PTMTown(PTMTile * placedTile)
-		:m_placedTile(placedTile),
-		m_occupant(nullptr),
+		:m_occupant(nullptr),
 		m_owner(nullptr)
 	{
-		m_graphics = new PTMTownGraphics(this); 
-		
+		PTMPawn::setTile(placedTile);
+		m_graphics = new PTMTownGraphics(this);
 	}
 
 	void PTMTown::updateGraphics()
@@ -73,7 +72,7 @@ namespace tzw
 		m_graphics->updateGraphics();
 	}
 
-	uint32_t PTMTown::getGarrisonLimit()
+	int PTMTown::getGarrisonLimit()
 	{
 		return m_garrisonBaseLimit + 100 * m_milDevLevel;
 	}
@@ -92,6 +91,11 @@ namespace tzw
 	void PTMTown::onDailyTick()
 	{
 
+	}
+
+	PawnTile PTMTown::getPawnType()
+	{
+		return PawnTile::TOWN_PAWN;
 	}
 
 	void PTMTown::investEco()

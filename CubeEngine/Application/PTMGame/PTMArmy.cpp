@@ -1,4 +1,7 @@
 #include "PTMArmy.h"
+
+#include <array>
+
 #include "Scene/SceneMgr.h"
 #include "EngineSrc/CubeEngine.h"
 #include "EngineSrc/Event/EventMgr.h"
@@ -9,6 +12,8 @@
 #include "PTMArmyGUI.h"
 #include "PTMWorld.h"
 #include "PTMEventMgr.h"
+#include "PTMTown.h"
+#include "PTMPawnJudge.h"
 #define BORDER_LEFT 0
 #define BORDER_RIGHT 1
 #define BORDER_BOTTOM 2
@@ -88,14 +93,16 @@ namespace tzw
 	}
 
 	PTMArmy::PTMArmy(PTMNation * nation, PTMTile * targetTile)
-		:m_sizeLimit(1000),m_parent(nation),m_placedTile(targetTile)
+		:m_sizeLimit(1000),m_parent(nation)
 	{
+		PTMPawn::setTile(targetTile);
 		m_graphics = new PTMArmyGraphics(this); 
 	}
 
 	void PTMArmy::setTile(PTMTile* targetTile)
 	{
-		m_placedTile = targetTile;
+		PTMPawn::setTile(targetTile);
+
 	}
 
 	void PTMArmy::onMonthlyTick()
@@ -132,22 +139,28 @@ namespace tzw
 			int idx = 0;
 			for(vec2 & i : neighbor)
 			{
-				float halmitonDist = std::abs(target.x - i.x) + std::abs(target.y - i.y);
-				if(halmitonDist < minDist)
+				PTMTile* testTile =PTMWorld::shared()->getTile((int)i.x, (int)i.y);
+				if(!testTile->getPawn())//no obstacle
 				{
-					minIdx = idx;
-					minDist = halmitonDist;
+					float halmitonDist = std::abs(target.x - i.x) + std::abs(target.y - i.y);
+					if(halmitonDist < minDist)
+					{
+						minIdx = idx;
+						minDist = halmitonDist;
+					}
 				}
+
 				++idx;
 			}
 
 			PTMTile* tile= PTMWorld::shared()->getTile((int)neighbor[minIdx].x, (int)neighbor[minIdx].y);
-			m_placedTile = tile;
+			setTile(tile);
 			if(m_placedTile == m_targetTile) //arrive
 			{
 				m_targetTile = nullptr;
 			}
 		}
+		simulateMilitary();
 		updateGraphics();
 	}
 
@@ -160,6 +173,43 @@ namespace tzw
 	void PTMArmy::moveTo(PTMTile* tile)
 	{
 		m_targetTile = tile;
+	}
+
+	void PTMArmy::simulateMilitary()
+	{
+		std::vector<PTMPawn * > pawnList;
+		std::array<int, 3> offsetArray = {-1, 0, 1};
+		for(int i = 0; i <offsetArray.size(); i ++ )
+		{
+			for(int j = 0; j <offsetArray.size(); j ++ )
+			{
+				int x = getCurrentTile()->coord_x;
+				int y = getCurrentTile()->coord_y;
+				PTMPawn * pawn = PTMWorld::shared()->getTile(x + offsetArray[i], y + offsetArray[j])->getPawn();
+				if(pawn && pawn != this)
+				{
+					pawnList.push_back(pawn);
+				}
+			}
+		}
+
+		for(PTMPawn * pawn : pawnList)
+		{
+			if(pawn->getPawnType() == PawnTile::TOWN_PAWN)
+			{
+				PTMTown * town = static_cast<PTMTown *>(pawn);
+				if(town->getOwner() != PTMWorld::shared()->getPlayerController()->getControlledNation())
+				{
+					PTMPawnJudge::shared()->offensive(this, town);
+				}
+				
+			}
+		}
+	}
+
+	PawnTile PTMArmy::getPawnType()
+	{
+		return PawnTile::ARMY_PAWN;
 	}
 
 	void PTMArmy::updateGraphics()

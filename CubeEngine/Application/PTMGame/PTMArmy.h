@@ -3,6 +3,7 @@
 #include "2D/Sprite.h"
 #include "EngineSrc/Event/Event.h"
 #include "PTMILogicTickable.h"
+#include "PTMPawn.h"
 namespace tzw
 {
 	class LabelNew;
@@ -25,27 +26,29 @@ namespace tzw
 		Button * m_button {nullptr};
 		
 	};
-	class PTMArmy : public PTMILogicTickable
+	class PTMArmy : public PTMILogicTickable, public PTMPawn
 	{
 	public:
 		PTMArmy(PTMNation * nation, PTMTile * targetTile);
 		void updateGraphics();
-		void setTile(PTMTile * targetTile);
+		void setTile(PTMTile * targetTile) override;
 		
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
 
 		void setIsSelected(bool isSelect);//only for player
 		void moveTo(PTMTile * tile);
+		void simulateMilitary();
+		PawnTile getPawnType() override;
 	private:
 		uint32_t m_currSize = 0;
 		uint32_t m_sizeLimit = 0;
 		PTMArmyGraphics * m_graphics = nullptr;
 		PTMNation * m_parent = nullptr;
-		PTMTile * m_placedTile = nullptr;
 		PTMTile * m_targetTile = nullptr;
 		bool m_isSelected = false;
 		friend class PTMArmyGraphics;
+		friend class PTMPawnJudge;
 	};
 
 }

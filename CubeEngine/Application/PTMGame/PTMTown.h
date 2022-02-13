@@ -3,6 +3,7 @@
 #include "2D/Sprite.h"
 #include "EngineSrc/Event/Event.h"
 #include "PTMILogicTickable.h"
+#include "PTMPawn.h"
 namespace tzw
 {
 	class LabelNew;
@@ -23,19 +24,20 @@ namespace tzw
 
 		
 	};
-	class PTMTown :public PTMILogicTickable
+	class PTMTown :public PTMILogicTickable, public PTMPawn
 	{
 	public:
 		PTMTown(PTMTile * placedTile);
 		void updateGraphics();
 		void setName(std::string name) { m_name = name; }
 		std::string getName() { return m_name; }
-		uint32_t getEcoLevel() {return m_ecoDevLevel;};
-		uint32_t getMilLevel() {return m_milDevLevel;};
-		PTMNation * getOwner() {return m_owner;};
-		uint32_t getGarrisonLimit();
+		uint32_t getEcoLevel() {return m_ecoDevLevel;}
+		uint32_t getMilLevel() {return m_milDevLevel;}
+		PTMNation * getOwner() {return m_owner;}
+		int getGarrisonLimit();
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
+		PawnTile getPawnType() override;
 		float collectTax();//return the tax
 		void investEco();
 		void investMil();
@@ -43,16 +45,16 @@ namespace tzw
 	private:
 		uint32_t m_ecoDevLevel = 1;
 		uint32_t m_milDevLevel = 1;
-		uint32_t m_garrison = 100;
-		uint32_t m_garrisonBaseLimit = 1000;
-		PTMTile * m_placedTile;
+		int m_garrison = 100;
+		int m_garrisonBaseLimit = 1000;
 		std::string m_name;
-		PTMNation * m_occupant;
-		PTMNation * m_owner;
+		PTMNation * m_occupant = nullptr;
+		PTMNation * m_owner = nullptr;
 		PTMTownGraphics * m_graphics;
 		friend class PTMTownGraphics;
 		friend class PTMNation;
-		float m_taxAccum;
+		friend class PTMPawnJudge;
+		float m_taxAccum{};
 	};
 
 }

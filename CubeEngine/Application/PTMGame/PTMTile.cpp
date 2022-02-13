@@ -3,6 +3,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include "PTMWorld.h"
+#include "PTMPawn.h"
 namespace tzw
 {
 
@@ -54,4 +55,14 @@ namespace tzw
 		return vec2(coord_x * 32,  coord_y * 32 );
 	}
 
+	void PTMTile::setPawn(PTMPawn* pawn)
+	{
+		m_pawn = pawn;
+		//pawn->setTile(this);
+	}
+
+	void PTMTile::removePawn()
+	{
+		m_pawn = nullptr;
+	}
 }
