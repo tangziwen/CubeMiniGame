@@ -26,7 +26,7 @@
 		{"id":23, "name":"jilin", "owner":"dongbei", "pos":[72, 48], "own_color":[140, 50, 100] },
 		{"id":24, "name":"kuye", "owner":"dongbei", "pos":[81, 47], "own_color":[100, 200, 100] },
 		{"id":25, "name":"longjiang", "owner":"dongbei", "pos":[74, 42], "own_color":[60, 170, 100] },
-		{"id":26, "name":"haibin", "owner":"newcali", "pos":[70, 72], "own_color":[70, 25, 170] },
+		{"id":26, "name":"neohawaii", "owner":"newcali", "pos":[70, 72], "own_color":[70, 25, 170] },
 		{"id":27, "name":"upcali", "owner":"newcali", "pos":[76, 70], "own_color":[200, 150, 0] },
 		{"id":28, "name":"downcali", "owner":"newcali", "pos":[76, 72], "own_color":[200, 120, 0] },
 		{"id":29, "name":"pyongyang", "owner":"korea", "pos":[71, 57], "own_color":[200, 0, 0] },
