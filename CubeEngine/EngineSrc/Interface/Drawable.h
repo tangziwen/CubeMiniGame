@@ -22,10 +22,13 @@ public:
 	virtual void setColor(vec4 newColor);
     virtual void setColor(vec3 newColorV3);
 	virtual vec4 getColor();
+	virtual void setOverLayColor(vec4 newColor);
+	virtual vec4 getOverLayColor();
 protected:
     Material * m_material;
     Camera * m_camera;
 	vec4 m_color;
+	vec4 m_overLayColor = {1, 1, 1, 0.0};
 };
 
 } // namespace tzw

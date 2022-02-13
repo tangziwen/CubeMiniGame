@@ -6,6 +6,7 @@
 namespace tzw
 {
 	struct PTMTile;
+	class PTMTown;
 	struct PTMTileGraphic
 	{
 		PTMTileGraphic(PTMTile * m_parent);
@@ -26,6 +27,7 @@ namespace tzw
 		void removePawn();
 		PTMPawn * getPawn() {return m_pawn;}
 		PTMPawn * m_pawn = nullptr;
+		PTMTown * m_owner = nullptr;
 	};
 
 }

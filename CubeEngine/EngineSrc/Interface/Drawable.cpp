@@ -74,5 +74,15 @@ vec4 Drawable::getColor()
 {
 	return m_color;
 }
+
+void Drawable::setOverLayColor(vec4 newColor)
+{
+	m_overLayColor = newColor;
+}
+
+vec4 Drawable::getOverLayColor()
+{
+	return m_overLayColor;
+}
 } // namespace tzw
 

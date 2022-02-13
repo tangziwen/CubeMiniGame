@@ -1,10 +1,15 @@
 #include "PTMWorld.h"
+
+#include <iostream>
+
 #include "Scene/SceneMgr.h"
 #include "EngineSrc/CubeEngine.h"
 #include "Utility/file/Tfile.h"
 #include "2D/GUIFrame.h"
 #include "2D/GUITitledFrame.h"
 #include "EngineSrc/Event/EventMgr.h"
+#include "SOIL2/stb_image.h"
+
 namespace tzw
 {
 
@@ -15,6 +20,13 @@ namespace tzw
 
 	void PTMWorld::initMap()
 	{
+		std::string filePath = "PTM/pronvices.bmp";
+		auto data = Tfile::shared()->getData(filePath, true);
+		int width;
+		int height;
+		int channels = 3;
+		m_provincesBitMap = stbi_load_from_memory(data.getBytes(), data.getSize(), &width, &height, &channels, 3);
+		std::cout<<width<<height<<channels;
 		m_mapRootNode = Node::create();
 		g_GetCurrScene()->addNode(m_mapRootNode);
 		m_hud = new PTMHUD();
@@ -101,6 +113,14 @@ namespace tzw
 
 	PTMTile* PTMWorld::getTile(int x, int y)
 	{
+		if(x < 0 || x >= PTM_MAP_SIZE)
+		{
+			return nullptr;
+		}
+		if(y < 0 || y >= PTM_MAP_SIZE)
+		{
+			return nullptr;
+		}
 		return m_maptiles[x][y];
 	}
 
@@ -159,12 +179,13 @@ namespace tzw
 				auto nation = createNation(item["name"].GetString());
 				nation->setIdx(item["id"].GetUint());
 				m_nationIDMap[nation->getIdx()] = nation;
+				m_nationNameMap[item["name"].GetString()] = nation;
 				auto& flagColor = item["flag_color"];
 				nation->setNationColor(vec3(flagColor[0].GetDouble(), flagColor[1].GetDouble(), flagColor[2].GetDouble()));
 			}
 		}
 	}
-
+#pragma optimize("", off)
 	void PTMWorld::loadTowns()
 	{
 		rapidjson::Document doc;
@@ -187,15 +208,37 @@ namespace tzw
 			{
 				auto& item = towns[i];
 				int x = item["pos"][0].GetInt();
-				int y = item["pos"][1].GetInt();
+				int y = PTM_MAP_SIZE - item["pos"][1].GetInt();
 				PTMTile * tile = m_maptiles[x][y];
 				auto town = new PTMTown(tile);
 				town->setName(item["name"].GetString());
 				m_pronviceList.push_back(town);
 				m_townIDMap[item["id"].GetUint()] = town;
+
+				//计算占领地块
+				int r = item["own_color"][0].GetInt();
+				int g = item["own_color"][1].GetInt();
+				int b = item["own_color"][2].GetInt();
+
+				for(int i = 0; i < PTM_MAP_SIZE; i++)
+				{
+					for(int j = 0; j < PTM_MAP_SIZE; j++)
+					{
+						int x0 = i;
+						int y0 = j;//PTM_MAP_SIZE - j;//reverse
+						bool checkR = m_provincesBitMap[ (y0 * PTM_MAP_SIZE + x0)*3 ] == r;
+						bool checkG = m_provincesBitMap[ (y0 * PTM_MAP_SIZE + x0)*3 + 1] == g;
+						bool checkB = m_provincesBitMap[ (y0 * PTM_MAP_SIZE + x0)*3 + 2] == b;
+						if(checkR && checkG && checkB)
+						{
+							town->addOccupyTile(getTile(i, j));
+						}
+					}
+					
+				}
+				std::string ownerName = item["owner"].GetString();
+				m_nationNameMap[ownerName]->ownTown(town);
 				town->updateGraphics();
-
-
 				//auto army  = new PTMArmy(nullptr, tile);
 				//army->updateGraphics();
 			}
@@ -204,6 +247,7 @@ namespace tzw
 
 	void PTMWorld::loadOwnerShips()
 	{
+		return;
 		rapidjson::Document doc;
 		std::string filePath = "PTM/data/ownerships.json";
 		auto data = Tfile::shared()->getData(filePath, true);

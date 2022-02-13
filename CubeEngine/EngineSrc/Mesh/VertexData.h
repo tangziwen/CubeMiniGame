@@ -31,6 +31,7 @@ public:
 	char m_matIndex[3];
 	vec3 m_matBlendFactor;
 	vec3 m_tangent;
+	vec4 m_overlayColor;
 };
 
 class VertexDataLite

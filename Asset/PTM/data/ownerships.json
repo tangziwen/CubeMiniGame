@@ -1,13 +1,13 @@
 {
 	"Towns":
 	[
-		{"id":1, "owner":1},
-		{"id":2, "owner":1},
-		{"id":3, "owner":1},
-		{"id":4, "owner":2},
-		{"id":5, "owner":2},
-		{"id":6, "owner":3},
-		{"id":7, "owner":3}
+		{"name":1, "owner":1},
+		{"name":2, "owner":1},
+		{"name":3, "owner":1},
+		{"name":4, "owner":2},
+		{"name":5, "owner":2},
+		{"name":6, "owner":3},
+		{"name":7, "owner":3}
 	]
 
 

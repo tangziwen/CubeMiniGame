@@ -34,6 +34,7 @@ public:
     void setUpTechnique();
 	void setUpTransFormation(TransformationInfo &info) override;
     void setColor(vec4 newColor) override;
+	void setOverLayColor(vec4 newColor) override;
 	bool onMouseRelease(int button,vec2 pos) override;
 	bool onMousePress(int button,vec2 pos) override;
 	bool onMouseMove(vec2 pos) override;

@@ -70,6 +70,10 @@ namespace tzw
 	void PTMTown::updateGraphics()
 	{
 		m_graphics->updateGraphics();
+		for(PTMTile * tile : m_occupyTiles)
+		{
+			tile->m_graphics->updateGraphics();
+		}
 	}
 
 	int PTMTown::getGarrisonLimit()
@@ -125,6 +129,12 @@ namespace tzw
 		auto army = new PTMArmy(m_owner, targetTile);
 		army->updateGraphics();
 		m_owner->addArmy(army);
+	}
+
+	void PTMTown::addOccupyTile(PTMTile* tile)
+	{
+		m_occupyTiles.push_back(tile);
+		tile->m_owner = this;
 	}
 
 	float PTMTown::collectTax()

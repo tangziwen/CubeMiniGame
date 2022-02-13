@@ -42,7 +42,9 @@ namespace tzw
 		void investEco();
 		void investMil();
 		void buildArmy();
+		void addOccupyTile(PTMTile * tile);
 	private:
+		std::vector<PTMTile *> m_occupyTiles;
 		uint32_t m_ecoDevLevel = 1;
 		uint32_t m_milDevLevel = 1;
 		int m_garrison = 100;

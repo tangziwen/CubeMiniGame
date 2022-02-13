@@ -30,6 +30,7 @@ namespace tzw
 		std::vector<PTMTown * > m_pronviceList;
 		std::vector<PTMNation * > m_nationList;
 		std::unordered_map<uint32_t, PTMNation * > m_nationIDMap;
+		std::unordered_map<std::string, PTMNation * > m_nationNameMap;
 		std::unordered_map<uint32_t, PTMTown * > m_townIDMap;
 
 		//time
@@ -41,6 +42,7 @@ namespace tzw
 		PTMHUD * m_hud = nullptr;
 		PTMPlayerController * m_controller = nullptr;
 		PTMTownGUI * m_townGUI = nullptr;
+		unsigned char * m_provincesBitMap = nullptr;
 
 		void loadNations();
 		void loadTowns();

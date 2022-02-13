@@ -64,6 +64,7 @@ namespace tzw
                 //use for terrain
                 vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
                 vertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
+            	vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VertexData, m_overlayColor)});
                 //instancing optional
                 DeviceVertexInput instanceInput;
                 //instancing

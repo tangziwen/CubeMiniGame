@@ -80,8 +80,10 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
 
 void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
+
     if(m_isRenderRectDirty)
     {
+
         setRenderRect(m_contentSize, m_lb, m_rt, m_color);
         m_isRenderRectDirty = false;
     }
@@ -91,6 +93,7 @@ void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue 
     queues->addRenderCommand(command, requirementArg);
 }
 
+
 void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt, vec4 color)
 {
     auto width = size.x;
@@ -98,15 +101,19 @@ void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt, vec4 color)
     m_mesh->clearVertices();
     auto vertex_0 = VertexData(vec3(0,0,-1),vec2(lb.x,lb.y));
     vertex_0.m_color = color;
+	vertex_0.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_0);// left bottom
     auto  vertex_1 = VertexData(vec3(width,0,-1),vec2(rt.x,lb.y));
     vertex_1.m_color = color;
+	vertex_1.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_1);// right bottom
     auto  vertex_2 = VertexData(vec3(width,height,-1),vec2(rt.x,rt.y));
     vertex_2.m_color = color;
+	vertex_2.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_2); // right top
     auto vertex_3 = VertexData(vec3(0,height,-1),vec2(lb.x,rt.y));
     vertex_3.m_color = color;
+	vertex_3.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_3); // left top
     if(isFirstTimeUpdateRenderRect)
     {
@@ -186,6 +193,12 @@ void Sprite::setColor(vec4 newColor)
 {
     m_isRenderRectDirty = true;
     m_color = newColor;
+}
+
+void Sprite::setOverLayColor(vec4 newColor)
+{
+	m_isRenderRectDirty = true;
+	m_overLayColor = newColor;
 }
 
 bool Sprite::onMouseRelease(int button, vec2 pos)
