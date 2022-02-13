@@ -15,6 +15,12 @@ namespace tzw
 		PTMTile * m_parent = nullptr;
 	};
 
+	enum class PTMTileType
+	{
+		TILE_NORMAL,
+		TILE_OCEAN,
+		TILE_WASTE_LAND,
+	};
 	struct PTMTile
 	{
 		PTMTile();
@@ -28,6 +34,7 @@ namespace tzw
 		PTMPawn * getPawn() {return m_pawn;}
 		PTMPawn * m_pawn = nullptr;
 		PTMTown * m_owner = nullptr;
+		PTMTileType m_tileType {PTMTileType::TILE_NORMAL};
 	};
 
 }

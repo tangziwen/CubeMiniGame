@@ -17,28 +17,32 @@ namespace tzw
 	{
 		if(!m_sprite)
 		{
-			
-			int rndNumber = rand() % 5;
-			if(rndNumber == 0)
-			{
-				m_sprite = Sprite::create("PTM/forest.png");
-			}
-			if(rndNumber == 1)
-			{
-				m_sprite = Sprite::create("PTM/plain.png");
-			}
-			if(rndNumber == 2)
+
+			if(m_parent->m_tileType == PTMTileType::TILE_OCEAN)
 			{
 				m_sprite = Sprite::create("PTM/water.png");
 			}
-			if(rndNumber == 3)
+			else
 			{
-				m_sprite = Sprite::create("PTM/plain.png");
+				int rndNumber = rand() % 4;
+				if(rndNumber == 0)
+				{
+					m_sprite = Sprite::create("PTM/forest.png");
+				}
+				if(rndNumber == 1)
+				{
+					m_sprite = Sprite::create("PTM/plain.png");
+				}
+				if(rndNumber == 2)
+				{
+					m_sprite = Sprite::create("PTM/plain.png");
+				}
+				if(rndNumber == 3)
+				{
+					m_sprite = Sprite::create("PTM/mountains.png");
+				}
 			}
-			if(rndNumber == 4)
-			{
-				m_sprite = Sprite::create("PTM/mountains.png");
-			}
+
 			
 			//m_sprite = Sprite::create("PTM/plain.png");
 			PTMWorld::shared()->getMapRootNode()->addChild(m_sprite);
@@ -46,7 +50,7 @@ namespace tzw
 		m_sprite->setPos2D(m_parent->getCanvasPos());
 		if(m_parent->m_owner && m_parent->m_owner->getOwner())
 		{
-			float overLayFactor = 0.75f;
+			float overLayFactor = 0.85f;
 			vec3 color = m_parent->m_owner->getOwner()->getNationColor();
 			/*
 			int arrayoffset[3] = {-1, 0, 1};

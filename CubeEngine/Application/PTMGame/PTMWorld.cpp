@@ -47,6 +47,13 @@ namespace tzw
 				tile->coord_x = i;
 				tile->coord_y = j;
 				m_maptiles[i][j] = tile;
+				int r = m_provincesBitMap[ (j * PTM_MAP_SIZE + i )* 3];
+				int g = m_provincesBitMap[ (j * PTM_MAP_SIZE + i )* 3 + 1];
+				int b = m_provincesBitMap[ (j * PTM_MAP_SIZE + i )* 3 + 2];
+				if(r ==0 && g == 0 && b == 255)
+				{
+					tile->m_tileType = PTMTileType::TILE_OCEAN;
+				}
 				tile->m_graphics->updateGraphics();
 			}
 		}

@@ -1,9 +1,21 @@
 {
 	"Nations":
 	[
-		{"id":1, "name":"MURC", "display_name":"火联红十字", "flag_color":[0.8, 0.1, 0.1] },
-		{"id":2, "name":"shu", "flag_color":[0.1, 0.8, 0.0] },
-		{"id":3, "name":"wu", "flag_color":[0.8, 0.1, 0.8] }
+		{"id":1, "name":"GLCITY", "display_name":"岭南", "flag_color":[0.8, 0.1, 0.1] },
+		{"id":2, "name":"ROLN", "display_name":"岭南指挥使", "flag_color":[0.8, 0.4, 0.5] },
+		{"id":3, "name":"UNSW", "display_name":"西南联盟", "flag_color":[0.27, 0.8, 0.32] },
+		{"id":4, "name":"MURC", "display_name":"火联红十字", "flag_color":[0.615, 0.3, 0.6] },
+		{"id":5, "name":"Zhongyuan", "display_name":"中原", "flag_color":[0.1, 0.8, 0.1] },
+		{"id":6, "name":"Zhongnan", "display_name":"中南", "flag_color":[0.3, 0.9, 0.1] },
+		{"id":7, "name":"dongbei", "display_name":"东北", "flag_color":[0.2, 0.95, 0.6] },
+		{"id":8, "name":"huabei", "display_name":"华北", "flag_color":[0.3, 0.8, 0.4] },
+		{"id":9, "name":"yamato", "display_name":"和", "flag_color":[0.0, 1.0, 0.0] },
+		{"id":10, "name":"korea", "display_name":"高丽", "flag_color":[0.8, 0.1, 0.1] },
+		{"id":11, "name":"newcali", "display_name":"新加州", "flag_color":[0.125, 0.7, 0.8] },
+		{"id":12, "name":"sweetsouth", "display_name":"南方阵线", "flag_color":[0.8, 0.75, 0.975] },
+		{"id":13, "name":"poseidon", "display_name":"波塞冬航运", "flag_color":[0.8, 0.1, 0.975] },
+		{"id":14, "name":"shu", "display_name":"天府", "flag_color":[0.1, 0.8, 0.95] },
+		{"id":15, "name":"wu", "display_name":"波塞冬航运", "flag_color":[0.8, 0.1, 1.0] }
 	]
 
 
