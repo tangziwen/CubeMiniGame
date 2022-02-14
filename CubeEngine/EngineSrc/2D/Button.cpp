@@ -54,6 +54,7 @@ void Button::setStr(std::string str)
     m_label->setString(str);
     auto CS = m_label->getContentSize() + vec2(8,14);
     m_frameBG->setContentSize(CS);
+    Drawable2D::setContentSize(CS);
     m_label->setPos2D(CS.x / 2, CS.y / 2);
     adjustBorders();
 }

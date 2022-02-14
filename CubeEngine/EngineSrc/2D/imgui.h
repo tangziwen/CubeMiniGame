@@ -373,6 +373,10 @@ namespace ImGui
     IMGUI_API void          SuspendLayout();
     IMGUI_API void          ResumeLayout();
 
+    //by thedmd
+    IMGUI_API               void BeginGroupPanel(const char* name, const ImVec2& size = ImVec2(0.0f, 0.0f));
+    IMGUI_API               void EndGroupPanel();
+
     // ID stack/scopes
     // - Read the FAQ for more details about how ID are handled in dear imgui. If you are creating widgets in a loop you most
     //   likely want to push a unique identifier (e.g. object pointer, loop index) to uniquely differentiate them.

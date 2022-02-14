@@ -24,12 +24,16 @@ void PTMPawnJudge::offensive_siege_impl(PTMPawn* attacker, PTMPawn* defender)
 	auto town = static_cast<PTMTown *>(defender);
 
 	float dmg = army->m_currSize * 0.3f;
-	town->m_garrison -= 200;
+	town->m_Garrison -= 75;
 	army->m_currSize -= 150.0f;
-	if(town->m_garrison <= 0)//lose
+	if(army->m_currSize <= 0)
 	{
+		army->m_parent->removeArmy(army);
+	}
+	if(town->m_Garrison <= 0)//lose
+	{
+		town->m_Garrison = 0.0f;
 		PTMWorld::shared()->getPlayerController()->getControlledNation()->ownTown(town);
-		town->m_garrison = 0.0f;
 	}
 }
 

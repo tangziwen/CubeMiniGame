@@ -7,6 +7,7 @@ namespace tzw
 {
 	class PTMTown;
 	class PTMArmy;
+	class PTMPawn;
 	class PTMNation : public PTMILogicTickable
 	{
 	public:
@@ -29,13 +30,16 @@ namespace tzw
 		bool isCanAfford(float targetGold){return m_gold >= targetGold;};
 		int getManpower() {return m_manpower;};
 		void addArmy(PTMArmy * army);
+		void removeArmy(PTMArmy * army);
 	private:
+		void garbageCollect();
 		uint32_t m_idx = {0};
 		std::string m_name;
 		vec3 m_nationColor;
 		std::vector<PTMTown * > m_townList;
 		std::vector<PTMTown * > m_occupyTownList;
 		std::vector<PTMArmy * > m_armyList;
+		std::vector<PTMPawn * > m_garbages;
 		float m_gold = {0.0f};
 		int m_manpower = {0};
 	};

@@ -42,6 +42,7 @@ namespace tzw
 		PTMHUD * m_hud = nullptr;
 		PTMPlayerController * m_controller = nullptr;
 		PTMTownGUI * m_townGUI = nullptr;
+		PTMTown * m_currInspectTown;
 		unsigned char * m_provincesBitMap = nullptr;
 
 		void loadNations();

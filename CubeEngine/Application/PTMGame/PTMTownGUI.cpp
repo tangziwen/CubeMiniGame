@@ -36,18 +36,6 @@ namespace tzw
 		bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == m_inspectTown->getOwner();
 		m_name->setString(m_inspectTown->getName());
 
-
-		{
-			std::stringstream ss;
-			ss<<"Eco Level:" << m_inspectTown->getEcoLevel();
-			m_ecoLevel->setString(ss.str());
-		}
-
-		{
-			std::stringstream ss;
-			ss<<"Mil Level:" << m_inspectTown->getMilLevel();
-			m_milLevel->setString(ss.str());
-		}
 		
 		{
 			m_buildArmy->setEnable(isControlledByPlayer);
@@ -66,32 +54,32 @@ namespace tzw
 	{
 		m_townWindow = GUIWindow::create("Town", vec2(250, 200));
 
+		VerticalLayOut * rows = new VerticalLayOut(m_townWindow);
 
-		HorizonalLayOutHelper nameRow(m_townWindow, vec2(15, 5));
+		HorizonalLayOut * nameRow = new HorizonalLayOut(rows);
+
 		m_name = LabelNew::create("Name:XXXXX");
-		nameRow.add(m_name);
+		nameRow->add(m_name);
 		m_buildArmy = Button::create("Build Army");
 		m_buildArmy->setOnBtnClicked([this](Button* btn){m_inspectTown->buildArmy();updateGraphics();});
-		nameRow.add(m_buildArmy);
-		nameRow.doLayout();
+		nameRow->add(m_buildArmy);
 
 
-		HorizonalLayOutHelper ecoRow(m_townWindow, vec2(15, 35));
+
+		HorizonalLayOut * ecoRow = new HorizonalLayOut(rows);
 		m_ecoLevel = LabelNew::create("Eco:12345678");
-		ecoRow.add(m_ecoLevel);
+		ecoRow->add(m_ecoLevel);
 		m_investEco = Button::create("invest eco");
 		m_investEco->setOnBtnClicked([this](Button* btn){m_inspectTown->investEco();updateGraphics();});
-		ecoRow.add(m_investEco);
-		ecoRow.doLayout();
+		ecoRow->add(m_investEco);
 
 
-		HorizonalLayOutHelper milRow(m_townWindow, vec2(15, 65));
+		HorizonalLayOut * milRow = new HorizonalLayOut(rows);
 		m_milLevel = LabelNew::create("Eco:12345678");
-		milRow.add(m_milLevel);
+		milRow->add(m_milLevel);
 		m_investMil = Button::create("invest Mil");
 		m_investMil->setOnBtnClicked([this](Button* btn){m_inspectTown->investMil();updateGraphics();});
-		milRow.add(m_investMil);
-		milRow.doLayout();
+		milRow->add(m_investMil);
 
 		g_GetCurrScene()->addNode(m_townWindow);
 	}

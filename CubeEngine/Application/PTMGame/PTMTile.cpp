@@ -52,21 +52,6 @@ namespace tzw
 		{
 			float overLayFactor = 0.85f;
 			vec3 color = m_parent->m_owner->getOwner()->getNationColor();
-			/*
-			int arrayoffset[3] = {-1, 0, 1};
-			for(int i = 0; i < 3; i++)
-			{
-				for(int j = 0; j < 3; j++)
-				{
-					PTMTile * tile = PTMWorld::shared()->getTile(m_parent->coord_x + i, m_parent->coord_y + j);
-					if(tile == m_parent) continue;//ignore Self
-					if(tile == nullptr || tile->m_owner != m_parent->m_owner)
-					{
-						overLayFactor = 0.2f;
-					}
-				}
-			}
-			*/
 			m_sprite->setOverLayColor(vec4(color.x, color.y, color.z, overLayFactor));
 		}
 

@@ -9,7 +9,8 @@
 #include "2D/GUITitledFrame.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include "SOIL2/stb_image.h"
-
+#include "2D/imgui.h"
+#include "PTMInspectorGUI.h"
 namespace tzw
 {
 
@@ -90,6 +91,7 @@ namespace tzw
 			}
 		);
 		m_hud->updateAll();
+		PTMInspectorGUI::shared()->init();
 		return;
 
 	}

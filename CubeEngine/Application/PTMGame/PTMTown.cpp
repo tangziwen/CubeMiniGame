@@ -8,6 +8,8 @@
 #include "PTMTownGUI.h"
 #include "PTMArmy.h"
 #include "PTMWorld.h"
+#include <sstream>
+#include "PTMInspectorGUI.h"
 namespace tzw
 {
 
@@ -30,7 +32,7 @@ namespace tzw
 			m_townSprite->setOnBtnClicked(
 			[this](Sprite *)
 			{
-				PTMTownGUI::shared()->showInspectTown(m_parent);
+				PTMInspectorGUI::shared()->setInspectTown(m_parent);
 			}
 			);
 			
@@ -57,6 +59,16 @@ namespace tzw
 			m_townSprite->addChild(m_label);
 			m_label->setPos2D(0, - cs.y/2.0 -8);
 		}
+		if(!m_grassion)
+		{
+			m_grassion = LabelNew::create("100%");
+			vec2 cs = m_label->getContentSize();
+			m_grassion->setLocalPiority(2);
+			m_townSprite->addChild(m_grassion);
+		}
+		std::stringstream ss;
+		ss << (int)((m_parent->m_Garrison * 1.0 /  m_parent->getGarrisonLimit()) * 100.0) << "%";
+		m_grassion->setString(ss.str());
 	}
 
 	PTMTown::PTMTown(PTMTile * placedTile)
@@ -78,23 +90,22 @@ namespace tzw
 
 	int PTMTown::getGarrisonLimit()
 	{
-		return m_garrisonBaseLimit + 100 * m_milDevLevel;
+		return m_GarrisonLimitBase + 100 * m_MilDevLevel;
 	}
 
 	void PTMTown::onMonthlyTick()
 	{
-		m_taxAccum += m_ecoDevLevel * 0.5f + 1.0f;
-
-		if(m_garrison < getGarrisonLimit())
-		{
-			m_garrison += 50 + m_milDevLevel * 20;
-		}
-		m_garrison =std::min(m_garrison, m_garrisonBaseLimit);//clamp
+		m_taxAccum += m_EcoDevLevel * 0.5f + 1.0f;
 	}
 
 	void PTMTown::onDailyTick()
 	{
-
+		if(m_Garrison < getGarrisonLimit())
+		{
+			m_Garrison += 50 + m_MilDevLevel * 20;
+		}
+		m_Garrison =std::min(m_Garrison, getGarrisonLimit());//clamp
+		updateGraphics();
 	}
 
 	PawnTile PTMTown::getPawnType()
@@ -105,19 +116,19 @@ namespace tzw
 	void PTMTown::investEco()
 	{
 		float totalCost = 0.0f;
-		totalCost = 20.0f + m_ecoDevLevel * 15.0f;
+		totalCost = 20.0f + m_EcoDevLevel * 15.0f;
 		if (!m_owner->isCanAfford(totalCost)) return;
 		m_owner->payGold(totalCost);
-		m_ecoDevLevel += 1;
+		m_EcoDevLevel += 1;
 	}
 
 	void PTMTown::investMil()
 	{
 		float totalCost = 0.0f;
-		totalCost = 20.0f + m_milDevLevel * 15.0f;
+		totalCost = 20.0f + m_MilDevLevel * 15.0f;
 		if (!m_owner->isCanAfford(totalCost)) return;
 		m_owner->payGold(totalCost);
-		m_milDevLevel += 1;
+		m_MilDevLevel += 1;
 	}
 
 	void PTMTown::buildArmy()

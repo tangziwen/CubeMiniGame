@@ -17,10 +17,12 @@ namespace tzw
 	{
 	public:
 		PTMArmyGraphics(PTMArmy * parent);
+		~PTMArmyGraphics();
 		void updateGraphics();
 	private:
 		PTMArmy * m_parent = nullptr;
 		Sprite * m_sprite = nullptr;
+		Sprite * m_flagSprite = nullptr;
 		LabelNew * m_label = nullptr;
 		GUIFrame * m_selectedBorders[4] {nullptr};
 		Button * m_button {nullptr};
@@ -30,6 +32,7 @@ namespace tzw
 	{
 	public:
 		PTMArmy(PTMNation * nation, PTMTile * targetTile);
+		virtual ~PTMArmy();
 		void updateGraphics();
 		void setTile(PTMTile * targetTile) override;
 		

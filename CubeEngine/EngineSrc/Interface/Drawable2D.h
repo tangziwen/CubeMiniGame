@@ -48,6 +48,31 @@ protected:
     vec2 m_origin = vec2(0,0);
     float m_padding;
 };
+
+class HorizonalLayOut: public Drawable2D
+{
+public:
+    HorizonalLayOut();
+    HorizonalLayOut(Node * parent);
+    void add(Drawable2D * obj);
+    void doLayout();
+    void logicUpdate(float dt) override;
+protected:
+    Drawable2D * m_parent;
+    float m_padding;
+};
+class VerticalLayOut: public Drawable2D
+{
+public:
+    VerticalLayOut();
+    VerticalLayOut(Node * parent);
+    void add(Drawable2D * obj);
+    void doLayout();
+    void logicUpdate(float dt) override;
+protected:
+    Drawable2D * m_parent;
+    float m_padding;
+};
 } // namespace tzw
 
 #endif // TZW_DRAWABLE2D_H

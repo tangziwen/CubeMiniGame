@@ -32,6 +32,18 @@ namespace tzw
 	{
 	}
 
+	PTMArmyGraphics::~PTMArmyGraphics()
+	{
+		if(m_button)
+		{
+			m_button->removeFromParent();
+			delete m_button;
+			delete m_sprite;
+			delete m_flagSprite;
+			delete m_label;
+		}
+	}
+
 	void PTMArmyGraphics::updateGraphics()
 	{
 		if(!m_button)
@@ -74,6 +86,20 @@ namespace tzw
 			
 			m_button->addChild(m_sprite);
 		}
+		vec4 flagColor = vec4(1.f, 0.f, 0.f, 1.0f);
+		if(m_parent->m_parent)
+		{
+			flagColor = vec4(m_parent->m_parent->getNationColor(), 1.0f);
+		}
+		if(!m_flagSprite)
+		{
+			m_flagSprite = Sprite::createWithColor(flagColor, vec2(16, 12.f));
+			m_button->addChild(m_flagSprite);
+		}
+		else
+		{
+			m_flagSprite->setColor(flagColor);
+		}
 		if(!m_label)
 		{
 			m_label = LabelNew::create("5K");
@@ -97,6 +123,11 @@ namespace tzw
 	{
 		PTMPawn::setTile(targetTile);
 		m_graphics = new PTMArmyGraphics(this); 
+	}
+
+	PTMArmy::~PTMArmy()
+	{
+		delete m_graphics;
 	}
 
 	void PTMArmy::setTile(PTMTile* targetTile)

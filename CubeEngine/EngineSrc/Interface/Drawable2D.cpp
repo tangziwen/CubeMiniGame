@@ -123,4 +123,86 @@ void HorizonalLayOutHelper::doLayout()
     }
 }
 
+HorizonalLayOut::HorizonalLayOut()
+{
+}
+
+HorizonalLayOut::HorizonalLayOut(Node* parent)
+{
+    m_padding = 5.f;
+    parent->addChild(this);
+}
+
+void HorizonalLayOut::add(Drawable2D* obj)
+{
+    m_padding = 5.f;
+    addChild(obj);
+}
+
+void HorizonalLayOut::doLayout()
+{
+    Drawable2D * lastObj = nullptr;
+    vec2 pos = vec2(0, 0);
+    vec2 tmpContentSize;
+    for(auto obj : m_children)
+    {
+        if(lastObj)
+        {
+            pos.x += lastObj->getContentSize().x + m_padding;
+        }
+        obj->setPos2D(pos);
+        tmpContentSize.y = std::max(((Drawable2D*)obj)->getContentSize().y , tmpContentSize.y);
+        lastObj = (Drawable2D * )obj;
+    }
+    tmpContentSize.x = pos.x + lastObj->getContentSize().x;
+    setContentSize(tmpContentSize);
+}
+
+void HorizonalLayOut::logicUpdate(float dt)
+{
+    doLayout();
+}
+
+
+
+VerticalLayOut::VerticalLayOut()
+{
+    m_padding = 2.f;
+}
+
+VerticalLayOut::VerticalLayOut(Node* parent)
+{
+    m_padding = 2.f;
+    parent->addChild(this);
+}
+
+void VerticalLayOut::add(Drawable2D* obj)
+{
+    addChild(obj);
+}
+
+void VerticalLayOut::doLayout()
+{
+    Drawable2D * lastObj = nullptr;
+    vec2 pos = vec2(0, 0);
+    vec2 tmpContentSize;
+    for(auto obj : m_children)
+    {
+        if(lastObj)
+        {
+            pos.y += lastObj->getContentSize().y + m_padding;
+        }
+        obj->setPos2D(pos);
+        tmpContentSize.x = std::max(((Drawable2D*)obj)->getContentSize().x , tmpContentSize.x);
+        lastObj = (Drawable2D * )obj;
+    }
+    tmpContentSize.y = pos.y + lastObj->getContentSize().y;
+    setContentSize(tmpContentSize);
+}
+
+void VerticalLayOut::logicUpdate(float dt)
+{
+    doLayout();
+}
+
 } // namespace tzw

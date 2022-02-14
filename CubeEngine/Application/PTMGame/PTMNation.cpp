@@ -42,6 +42,11 @@ namespace tzw
 		{
 			army->onDailyTick();
 		}
+		for(PTMTown * town: m_townList)
+		{
+			town->onDailyTick();
+		}
+		garbageCollect();
 	}
 
 	void PTMNation::updateTownsMonthly()
@@ -89,6 +94,28 @@ namespace tzw
 	void PTMNation::addArmy(PTMArmy* army)
 	{
 		m_armyList.push_back(army);
+	}
+
+	void PTMNation::removeArmy(PTMArmy* army)
+	{
+		m_garbages.push_back(army);
+	}
+
+	void PTMNation::garbageCollect()
+	{
+		for(PTMPawn * garbage : m_garbages)
+		{
+			if(garbage->getPawnType() == PawnTile::ARMY_PAWN)
+			{
+				auto iter = std::find(m_armyList.begin(), m_armyList.end(), garbage);
+				if(iter != m_armyList.end())
+				{
+					m_armyList.erase(iter);
+				}
+				delete garbage;
+			}
+		}
+		m_garbages.clear();
 	}
 
 }
