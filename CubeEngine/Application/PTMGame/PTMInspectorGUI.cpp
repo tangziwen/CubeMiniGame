@@ -25,7 +25,13 @@
 {\
 std::stringstream ss;\
 ss<<OBJ->get##PROP();\
-ImGui::Text("%s: %s", OBJ->get##PROP##String(), ss.str());\
+ImGui::Text("%s: ", OBJ->get##PROP##String());\
+ImGui::SameLine();\
+ImGui::SmallButton(ss.str().c_str());\
+if(ImGui::IsItemHovered()&& GImGui->HoveredIdTimer > 0.3)\
+{\
+	ImGui::SetTooltip(OBJ->get##PROP##DescString());\
+}\
 }
 
 #define DRAW_PROPERTY_LIMIT(OBJ, PROP)\
@@ -61,6 +67,11 @@ namespace tzw
 		draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + sz, y + sz), col, 0.0f, 0);
 		ImGui::SetCursorScreenPos(ImVec2(x + sz, p.y));
 		ImGui::Text(" Owner: %s ", nation->getName().c_str());
+		ImGui::SameLine();
+		if(ImGui::Button("*##gotoNation"))
+		{
+			PTMInspectorGUI::shared()->setInspectNation(nation);
+		}
 	}
 
 	static bool DrawButtonWithTips(const char * btnstr, const char * tips)
@@ -85,6 +96,46 @@ namespace tzw
 
 	void PTMInspectorGUI::drawIMGUI()
 	{
+		BEGIN_INSPECT(m_currInspectNation, "Nation")
+			PTMNation * t = m_currInspectNation;
+			ImGui::Text("Name: %s ", t->getName().c_str());
+			DRAW_PROPERTY(t, AdminPoint)
+			DRAW_PROPERTY(t, MilitaryPoint)
+			DRAW_PROPERTY(t, GlobalManPower)
+			auto townList = t->getTownList();
+			ImGui::Text("Own Provinces: %u ", townList.size());
+			ImGui::BeginChild("Pronvices List:",ImVec2(0,0), true);
+			for(PTMTown * town : townList)
+			{
+				ImGui::Text("%s", town->getName().c_str());
+					ImGui::SameLine();
+					ImGui::PushID(town);
+					if(ImGui::Button("*##gototown"))
+					{
+						
+						m_currInspectTown = town;
+					}
+					ImGui::PopID();
+			}
+			ImGui::EndChild();
+			ImGui::Text("Global Modifier");
+			ImGui::BeginChild("Pronvices List:",ImVec2(0,0), true);
+			for(PTMTown * town : townList)
+			{
+				ImGui::Text("%s", town->getName().c_str());
+					ImGui::SameLine();
+					ImGui::PushID(town);
+					if(ImGui::Button("*##gototown"))
+					{
+						
+						m_currInspectTown = town;
+					}
+					ImGui::PopID();
+			}
+			ImGui::EndChild();
+
+		END_INSPECT(m_currInspectNation)
+
 		BEGIN_INSPECT(m_currInspectTown, "Town")
 			PTMTown * t = m_currInspectTown;
 			ImGui::Text("Name: %s ", t->getName().c_str());
@@ -130,6 +181,11 @@ namespace tzw
 	void PTMInspectorGUI::setInspectTown(PTMTown* town)
 	{
 		m_currInspectTown = town;
+	}
+
+	void PTMInspectorGUI::setInspectNation(PTMNation* nation)
+	{
+		m_currInspectNation = nation;
 	}
 
 }

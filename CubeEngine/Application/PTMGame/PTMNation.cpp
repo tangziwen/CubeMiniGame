@@ -8,11 +8,13 @@
 #include "PTMEventMgr.h"
 namespace tzw
 {
-
 	PTMNation::PTMNation()
 	{
+		m_GlobalModifier = new PTMModifierContainer();
+		m_Gold = 500.0;
 
-		m_gold = 500.0;
+		setPropByName<float>("AdminPoint", 500);
+		setPropByName<float>("AdminPoint", 750);
 	}
 
 	void PTMNation::millitaryOccupyTown(PTMTown* town)
@@ -30,8 +32,10 @@ namespace tzw
 
 	void PTMNation::onMonthlyTick()
 	{
-		m_gold += 3;//National tax
-
+		m_Gold += 3 + (*m_GlobalModifier)["national_gold_inc_modifier"];//National tax
+		m_AdminPoint += 3;
+		m_MilitaryPoint += 3;
+		m_GlobalManPower += 300;
 		updateTownsMonthly();
 		updateArmiesMonthly();
 	}
@@ -54,7 +58,7 @@ namespace tzw
 		for(PTMTown * town: m_townList)
 		{
 			town->onMonthlyTick();
-			m_gold += town->collectTax();
+			m_Gold += town->collectTax();
 		}
 	}
 
@@ -68,7 +72,7 @@ namespace tzw
 
 	void PTMNation::addGold(float diff) 
 	{
-		m_gold += diff;
+		m_Gold += diff;
 		PTMEventArgPack pack;
 		pack.m_params["object"] = this;
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
@@ -81,7 +85,7 @@ namespace tzw
 
 	void PTMNation::payGold(float diff)
 	{
-		m_gold -= diff;
+		m_Gold -= diff;
 		PTMEventArgPack pack;
 		pack.m_params["object"] = this;
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
@@ -99,6 +103,11 @@ namespace tzw
 	void PTMNation::removeArmy(PTMArmy* army)
 	{
 		m_garbages.push_back(army);
+	}
+
+	std::vector<PTMTown*>& PTMNation::getTownList()
+	{
+		return m_townList;
 	}
 
 	void PTMNation::garbageCollect()

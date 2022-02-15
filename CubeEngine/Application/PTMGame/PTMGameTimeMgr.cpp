@@ -50,13 +50,13 @@ namespace tzw
 		switch(m_speedLevel)
 		{
 		case 0:
-			result = 2.0;
+			result = 1.5;
 			break;
 		case 1:
-			result = 1.2;
+			result = 1.0;
 			break;
 		case 2:
-			result = 0.6;
+			result = 0.55;
 			break;
 		}
 		return result;

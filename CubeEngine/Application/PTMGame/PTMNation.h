@@ -3,14 +3,30 @@
 #include "2D/Sprite.h"
 #include "EngineSrc/Event/Event.h"
 #include "PTMILogicTickable.h"
+#include "PTMModifier.h"
+#include "PTMBaseDef.h"
+#include "PTMObjectReflect.h"
 namespace tzw
 {
 	class PTMTown;
 	class PTMArmy;
 	class PTMPawn;
-	class PTMNation : public PTMILogicTickable
+	class PTMNation : public PTMILogicTickable, public PTMObjectReflect
 	{
+	PTM_PROPERTY(GlobalModifier, PTMModifierContainer *, nullptr, "the Grassion of town");
+	
+	PTM_PROPERTY(MilitaryPoint, float, 0, "Mil mana")
+	PTM_PROPERTY(GlobalManPower, float, 0, "Global Man power")
+	PTM_PROPERTY(AdminPoint, float, 0, "admin mana")
+	PTM_PROPERTY(Gold, float, 0, "admin mana")
+	PTM_PROP_REFLECT_REG_DECLEAR()
+		PTM_PROP_REFLECT_REG(MilitaryPoint)
+		PTM_PROP_REFLECT_REG(GlobalManPower)
+		PTM_PROP_REFLECT_REG(AdminPoint)
+		PTM_PROP_REFLECT_REG(Gold)
+	PTM_PROP_REFLECT_REG_END
 	public:
+		
 		PTMNation();
 		void millitaryOccupyTown(PTMTown * town); //
 		void ownTown(PTMTown * town);
@@ -24,13 +40,12 @@ namespace tzw
 		virtual void onDailyTick() override;
 		void updateTownsMonthly();
 		void updateArmiesMonthly();
-		float getGold() {return m_gold;};
 		void addGold(float diff);
 		void payGold(float diff);
-		bool isCanAfford(float targetGold){return m_gold >= targetGold;};
-		int getManpower() {return m_manpower;};
+		bool isCanAfford(float targetGold){return m_Gold >= targetGold;};
 		void addArmy(PTMArmy * army);
 		void removeArmy(PTMArmy * army);
+		std::vector<PTMTown * >& getTownList();
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};
@@ -40,8 +55,6 @@ namespace tzw
 		std::vector<PTMTown * > m_occupyTownList;
 		std::vector<PTMArmy * > m_armyList;
 		std::vector<PTMPawn * > m_garbages;
-		float m_gold = {0.0f};
-		int m_manpower = {0};
 	};
 
 }

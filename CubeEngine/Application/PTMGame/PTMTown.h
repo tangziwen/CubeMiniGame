@@ -30,6 +30,7 @@ namespace tzw
 	{
 	PTM_PROPERTY(EcoDevLevel, uint32_t, 1, "the Grassion of town")
 	PTM_PROPERTY(MilDevLevel, uint32_t, 1, "the Grassion of town")
+	PTM_PROPERTY(FortLevel, uint32_t, 1, "the fort level of town")
 	PTM_PROPERTY(Garrison, int, 1000, "the Grassion of town")
 	PTM_PROPERTY(GarrisonLimitBase, int, 1000, "the Grassion of town")
 	PTM_PROPERTY(ManPower, int, 1000, "the Grassion of town")

@@ -22,8 +22,10 @@ namespace tzw
 		void init();
 		void drawIMGUI() override;
 		void setInspectTown(PTMTown * town);
+		void setInspectNation(PTMNation * nation);
 	private:
 		PTMTown * m_currInspectTown = nullptr;
+		PTMNation * m_currInspectNation = nullptr;
 	};
 
 }

@@ -34,6 +34,14 @@ public:
     static int focusPiority;
     static bool isUseVulkan;
 };
+//property
+#define TZW_PROPERTY(PROP_TYPE, PROP, DEFAULT_VALUE)\
+public:\
+PROP_TYPE get##PROP(){return m_##PROP;};\
+void set##PROP(PROP_TYPE obj){m_##PROP = obj;};\
+protected:\
+PROP_TYPE m_##PROP {DEFAULT_VALUE};
+
 } // namespace tzw
 
 #endif // TZW_ENGINECONFIG_H
