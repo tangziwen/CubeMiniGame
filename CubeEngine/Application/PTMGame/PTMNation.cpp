@@ -32,9 +32,9 @@ namespace tzw
 
 	void PTMNation::onMonthlyTick()
 	{
-		m_Gold += 3 + (*m_GlobalModifier)["national_gold_inc_modifier"];//National tax
-		m_AdminPoint += 3;
-		m_MilitaryPoint += 3;
+		m_Gold += m_NationalYearlyBaseTax / 12.0f + (*m_GlobalModifier)["national_gold_inc_modifier"];//National tax
+		m_AdminPoint += m_NationalYearlyAdimPoint / 12.0f;
+		m_MilitaryPoint += m_NationalYearlyMilPoint / 12.0f;
 		m_GlobalManPower += 300;
 		updateTownsMonthly();
 		updateArmiesMonthly();

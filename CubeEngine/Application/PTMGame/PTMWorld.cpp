@@ -194,7 +194,7 @@ namespace tzw
 			}
 		}
 	}
-#pragma optimize("", off)
+
 	void PTMWorld::loadTowns()
 	{
 		rapidjson::Document doc;

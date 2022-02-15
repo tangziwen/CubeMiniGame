@@ -19,11 +19,15 @@ namespace tzw
 	PTM_PROPERTY(GlobalManPower, float, 0, "Global Man power")
 	PTM_PROPERTY(AdminPoint, float, 0, "admin mana")
 	PTM_PROPERTY(Gold, float, 0, "admin mana")
+	PTM_PROPERTY(NationalYearlyBaseTax, float, 12.f, "admin mana")
+	PTM_PROPERTY(NationalYearlyAdimPoint, float, 12.f, "admin mana")
+	PTM_PROPERTY(NationalYearlyMilPoint, float, 12.f, "admin mana")
 	PTM_PROP_REFLECT_REG_DECLEAR()
 		PTM_PROP_REFLECT_REG(MilitaryPoint)
 		PTM_PROP_REFLECT_REG(GlobalManPower)
 		PTM_PROP_REFLECT_REG(AdminPoint)
 		PTM_PROP_REFLECT_REG(Gold)
+		PTM_PROP_REFLECT_REG(NationalYearlyBaseTax)
 	PTM_PROP_REFLECT_REG_END
 	public:
 		
