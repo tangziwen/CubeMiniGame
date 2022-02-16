@@ -42,6 +42,7 @@ namespace tzw
 		void imguiUseSmallFont();
 		void imguiUseNormalFont();
 		void imguiUseLargeFont();
+		void imgui_drawFrame(ImVec2 min, ImVec2 max, float size, ImVec4 color);
 		ImDrawData * getDrawData();
 	protected:
 		std::vector<IMGUIObject *> m_objList;

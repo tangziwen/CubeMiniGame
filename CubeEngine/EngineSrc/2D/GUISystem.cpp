@@ -1,5 +1,6 @@
 #include "GUISystem.h"
 #include "imgui.h"
+#include "imgui_internal.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
 #include "AudioSystem/AudioSystem.h"
 #include "GL/glew.h"
@@ -265,6 +266,15 @@ namespace tzw
 	void GUISystem::imguiUseLargeFont()
 	{
 		ImGui::PushFont(m_fontLarge);
+	}
+
+	void GUISystem::imgui_drawFrame(ImVec2 min, ImVec2 max, float size, ImVec4 color)
+	{
+		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, size);
+		ImGui::PushStyleColor(ImGuiCol_Border, color);
+		ImGui::RenderFrameBorder(min, max, 1);
+		ImGui::PopStyleVar(1);
+		ImGui::PopStyleColor(1);
 	}
 
 	ImDrawData* GUISystem::getDrawData()
