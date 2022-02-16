@@ -23,6 +23,7 @@ namespace tzw
 		void drawIMGUI() override;
 		void setInspectTown(PTMTown * town);
 		void setInspectNation(PTMNation * nation);
+		void drawNation();
 	private:
 		PTMTown * m_currInspectTown = nullptr;
 		PTMNation * m_currInspectNation = nullptr;

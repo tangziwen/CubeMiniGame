@@ -16,6 +16,7 @@
 #include "PTMPawnJudge.h"
 #include "2D/imgui_internal.h"
 #include <sstream>
+#include "PTMTech.h"
 #define BORDER_LEFT 0
 #define BORDER_RIGHT 1
 #define BORDER_BOTTOM 2
@@ -52,6 +53,8 @@ if(!isOpen)\
 }\
 }
 
+
+
 namespace tzw
 {
 	static void DrawNationTitle(PTMNation * nation)
@@ -74,12 +77,23 @@ namespace tzw
 		}
 	}
 
-	static bool DrawButtonWithTips(const char * btnstr, const char * tips)
+	static bool DrawButtonWithTips(const char * btnstr, const char * tips, bool condition)
 	{
+		if(!condition)
+		{
+			ImGuiContext& g = *GImGui;
+			ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, g.Style.Alpha * 0.6f);
+		}
 		bool isClicked = ImGui::Button(btnstr);
-		if(ImGui::IsItemHovered()&& GImGui->HoveredIdTimer > 0.3)
+		if(tips && ImGui::IsItemHovered()&& GImGui->HoveredIdTimer > 0.3)
 		{
 			ImGui::SetTooltip(tips);
+		}
+		if(!condition)
+		{
+			ImGui::PopItemFlag();
+			ImGui::PopStyleVar();
 		}
 		return isClicked;
 	}
@@ -96,8 +110,68 @@ namespace tzw
 
 	void PTMInspectorGUI::drawIMGUI()
 	{
+		drawNation();
+
+		BEGIN_INSPECT(m_currInspectTown, "Town")
+			PTMTown * t = m_currInspectTown;
+			ImGui::Text("Name: %s ", t->getName().c_str());
+				ImGui::SameLine();
+				DrawNationTitle(t->getOwner());
+
+			ImGui::BeginGroupPanel("Economy");
+			DRAW_PROPERTY(t, EcoDevLevel)
+				ImGui::SameLine();
+				ImGui::Button("Boost Eco");
+			DRAW_PROPERTY(t, Autonomous)
+			ImGui::EndGroupPanel();
+
+			ImGui::BeginGroupPanel("Military");
+				DRAW_PROPERTY(t, MilDevLevel)
+					ImGui::SameLine();
+					bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == t->getOwner();
+					if(!isControlledByPlayer)
+					{
+						ImGuiContext& g = *GImGui;
+						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
+						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, g.Style.Alpha * 0.6f);
+					}
+					ImGui::Button("Boost Mil");
+
+					DrawButtonWithTips("Build Army", "Build An Army", true);
+					DrawButtonWithTips("Suprress Unrest", "Build An Army", true);
+					if(!isControlledByPlayer)
+					{
+						ImGui::PopItemFlag();
+						ImGui::PopStyleVar();
+					}
+				DRAW_PROPERTY(t, Unrest)
+				DRAW_PROPERTY_LIMIT(t, Garrison)
+				DRAW_PROPERTY(t, ManPower);
+			ImGui::EndGroupPanel();
+			ImGui::BeginGroupPanel("Politics");
+			DrawButtonWithTips("Issue Edict", "Build An Army", true);
+			ImGui::EndGroupPanel();
+		END_INSPECT(m_currInspectTown)
+	}
+
+	void PTMInspectorGUI::setInspectTown(PTMTown* town)
+	{
+		m_currInspectTown = town;
+	}
+
+	void PTMInspectorGUI::setInspectNation(PTMNation* nation)
+	{
+		m_currInspectNation = nation;
+	}
+
+	void PTMInspectorGUI::drawNation()
+	{
 		BEGIN_INSPECT(m_currInspectNation, "Nation")
-			PTMNation * t = m_currInspectNation;
+		PTMNation * t = m_currInspectNation;
+		ImGui::BeginTabBar("NationTabs");
+		if(ImGui::BeginTabItem("Basic"))
+		{
+				
 			ImGui::Text("Name: %s ", t->getName().c_str());
 			DRAW_PROPERTY(t, AdminPoint)
 			DRAW_PROPERTY(t, MilitaryPoint)
@@ -132,60 +206,59 @@ namespace tzw
 					}
 					ImGui::PopID();
 			}
+
 			ImGui::EndChild();
+			ImGui::EndTabItem();
+		}
+			
 
+		if(ImGui::BeginTabItem("Technology"))
+		{
+			ImGui::Text("Tech Level");
+			ImGui::BeginTabBar("TechStages");
+			PTMTechState * techState = t->getTechState();
+			PTMTech* tech =  techState->getTech();
+			for(int i = 0; i< tech->getTotalStage(); i++)
+			{
+				PTMTechStage * stage = tech->getStage(i);
+				if(ImGui::BeginTabItem(stage->m_name.c_str()))
+				{
+					int perkID = 0;
+					for(auto& perk : stage->m_perks)
+					{
+						ImGui::BeginGroup();
+
+						bool isFinished = techState->isFinished(i, perkID);
+						bool isClicked = DrawButtonWithTips(perk.m_title.c_str(), nullptr, i <= techState->getCurrentFocusLevel() && !isFinished);
+						if(isClicked)
+						{
+							techState->setCurrentFocusIndex(perkID);
+						}
+						if(isFinished)
+						{
+							ImVec2 sizeMin = ImGui::GetItemRectMin();
+							ImVec2 sizeMax = ImGui::GetItemRectMax();
+							GUISystem::shared()->imgui_drawFrame(sizeMin, sizeMax, 3.0, ImVec4(0.f, 1.f, 0.f, 1.f));
+						}
+						else if(i == techState->getCurrentFocusLevel() && perkID == techState->getCurrentFocusIndex())
+						{
+							ImVec2 sizeMin = ImGui::GetItemRectMin();
+							ImVec2 sizeMax = ImGui::GetItemRectMax();
+							GUISystem::shared()->imgui_drawFrame(sizeMin, sizeMax, 3.0, ImVec4(1.f, 1.f, 0.f, 1.f));
+						}
+						ImGui::EndGroup();
+						ImGui::SameLine();
+						ImGui::ProgressBar(techState->getProgress(i,perkID));
+						perkID++;
+					}
+					ImGui::EndTabItem();
+				}
+			}
+			ImGui::EndTabBar();
+			ImGui::EndTabItem();
+		}
+			
 		END_INSPECT(m_currInspectNation)
-
-		BEGIN_INSPECT(m_currInspectTown, "Town")
-			PTMTown * t = m_currInspectTown;
-			ImGui::Text("Name: %s ", t->getName().c_str());
-				ImGui::SameLine();
-				DrawNationTitle(t->getOwner());
-
-			ImGui::BeginGroupPanel("Economy");
-			DRAW_PROPERTY(t, EcoDevLevel)
-				ImGui::SameLine();
-				ImGui::Button("Boost Eco");
-			DRAW_PROPERTY(t, Autonomous)
-			ImGui::EndGroupPanel();
-
-			ImGui::BeginGroupPanel("Military");
-				DRAW_PROPERTY(t, MilDevLevel)
-					ImGui::SameLine();
-					bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == t->getOwner();
-					if(!isControlledByPlayer)
-					{
-						ImGuiContext& g = *GImGui;
-						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
-						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, g.Style.Alpha * 0.6f);
-					}
-					ImGui::Button("Boost Mil");
-
-					DrawButtonWithTips("Build Army", "Build An Army");
-					DrawButtonWithTips("Suprress Unrest", "Build An Army");
-					if(!isControlledByPlayer)
-					{
-						ImGui::PopItemFlag();
-						ImGui::PopStyleVar();
-					}
-				DRAW_PROPERTY(t, Unrest)
-				DRAW_PROPERTY_LIMIT(t, Garrison)
-				DRAW_PROPERTY(t, ManPower);
-			ImGui::EndGroupPanel();
-			ImGui::BeginGroupPanel("Politics");
-			DrawButtonWithTips("Issue Edict", "Build An Army");
-			ImGui::EndGroupPanel();
-		END_INSPECT(m_currInspectTown)
-	}
-
-	void PTMInspectorGUI::setInspectTown(PTMTown* town)
-	{
-		m_currInspectTown = town;
-	}
-
-	void PTMInspectorGUI::setInspectNation(PTMNation* nation)
-	{
-		m_currInspectNation = nation;
 	}
 
 }

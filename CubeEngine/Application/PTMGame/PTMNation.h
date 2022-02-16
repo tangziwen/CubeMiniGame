@@ -11,10 +11,12 @@ namespace tzw
 	class PTMTown;
 	class PTMArmy;
 	class PTMPawn;
+	class PTMTechState;
 	class PTMNation : public PTMILogicTickable, public PTMObjectReflect
 	{
 	PTM_PROPERTY(GlobalModifier, PTMModifierContainer *, nullptr, "the Grassion of town");
-	
+	PTM_PROPERTY(TechState, PTMTechState *, nullptr, "the Grassion of town");
+
 	PTM_PROPERTY(MilitaryPoint, float, 0, "Mil mana")
 	PTM_PROPERTY(GlobalManPower, float, 0, "Global Man power")
 	PTM_PROPERTY(AdminPoint, float, 0, "admin mana")
@@ -28,6 +30,8 @@ namespace tzw
 		PTM_PROP_REFLECT_REG(AdminPoint)
 		PTM_PROP_REFLECT_REG(Gold)
 		PTM_PROP_REFLECT_REG(NationalYearlyBaseTax)
+		PTM_PROP_REFLECT_REG(NationalYearlyAdimPoint)
+		PTM_PROP_REFLECT_REG(NationalYearlyMilPoint)
 	PTM_PROP_REFLECT_REG_END
 	public:
 		

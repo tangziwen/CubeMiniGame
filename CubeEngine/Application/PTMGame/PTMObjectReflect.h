@@ -30,6 +30,12 @@ namespace tzw
 			(*iter) = val;
 		}
 		template<class T>
+		void addPropByName(std::string name, T val)
+		{
+			T * iter = (T *)m_propsLink[name];
+			(*iter) += val;
+		}
+		template<class T>
 		T getPropByName(std::string name)
 		{
 			T * iter = (T *)m_propsLink[name];

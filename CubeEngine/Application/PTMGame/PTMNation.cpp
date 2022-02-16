@@ -6,6 +6,7 @@
 #include "PTMTown.h"
 #include "PTMWorld.h"
 #include "PTMEventMgr.h"
+#include "PTMTech.h"
 namespace tzw
 {
 	PTMNation::PTMNation()
@@ -15,6 +16,8 @@ namespace tzw
 
 		setPropByName<float>("AdminPoint", 500);
 		setPropByName<float>("AdminPoint", 750);
+
+		m_TechState =  PTMTechMgr::shared()->generateTechState(this, "PTM/data/Tech/AdminTech.json");
 	}
 
 	void PTMNation::millitaryOccupyTown(PTMTown* town)
@@ -51,6 +54,10 @@ namespace tzw
 			town->onDailyTick();
 		}
 		garbageCollect();
+		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
+		{
+			m_TechState->doProgress(0.1);
+		}
 	}
 
 	void PTMNation::updateTownsMonthly()
