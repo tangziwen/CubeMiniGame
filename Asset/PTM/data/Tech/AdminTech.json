@@ -1,38 +1,74 @@
 {
-"Tech":[
-	{
-		""
-		
-		"effect":
+	"TechStages": [{
+			"Name": "Stage1",
+			"Techs": [{
+					"Name": "tech1",
+					"Title":"流官制Lv1",
+					"Effect": [
+						{
+							"param":"NationalYearlyAdimPoint",
+							"value":0.2
+						}
+					]
+				},
+				{
+					"Name": "tech2",
+					"Title":"爱国教育Lv1",
+					"Effect": [
+						{
+							"param":"NationalYearlyMilPoint",
+							"value":0.2
+						}
+					]
+				},
+				{
+					"Name": "tech3",
+					"Title":"税务清单Lv1",
+					"Effect": [
+						{
+							"param":"NationalYearlyBaseTax",
+							"value":0.2
+						}
+					]
+				}
+			]
+		},
 		{
-			"NationalYearlyBaseTax" : 0.2,
+			"Name": "Stage2",
+			"Techs": [{
+					"Name": "tech1",
+					"Title":"流官制Lv2",
+					"Effect": [
+						{
+							"param":"NationalYearlyBaseTax",
+							"value":0.2
+						}
+					]
+				},
+				{
+					"Name": "tech2",
+					"Title":"爱国教育Lv2",
+					"Effect": [
+						{
+							"param":"NationalYearlyBaseTax",
+							"value":0.2
+						}
+					]
+				},
+				{
+					"Name": "tech3",
+					"Title":"税务清单Lv2",
+					"Effect": [
+						{
+							"param":"NationalYearlyBaseTax",
+							"value":0.2
+						}
+					]
+				}
+			]
 		}
-	},
-	{
-		""
-		
-		"effect":
-		{
-			"NationalYearlyBaseTax" : 0.2,
-		}
-	},
-	{
-		""
-		
-		"effect":
-		{
-			"NationalYearlyBaseTax" : 0.2,
-		}
-	},
-	{
-		""
-		
-		"effect":
-		{
-			"NationalYearlyBaseTax" : 0.2,
-		}
-	},
-]
+	]
+
 
 
 }
