@@ -7,6 +7,7 @@
 #include "PTMWorld.h"
 #include "PTMEventMgr.h"
 #include "PTMTech.h"
+#include "PTMInGameEvent.h"
 namespace tzw
 {
 	PTMNation::PTMNation()
@@ -41,6 +42,7 @@ namespace tzw
 		m_GlobalManPower += 300;
 		updateTownsMonthly();
 		updateArmiesMonthly();
+
 	}
 
 	void PTMNation::onDailyTick()
@@ -58,6 +60,7 @@ namespace tzw
 		{
 			m_TechState->doProgress(0.1);
 		}
+
 	}
 
 	void PTMNation::updateTownsMonthly()
@@ -66,6 +69,10 @@ namespace tzw
 		{
 			town->onMonthlyTick();
 			m_Gold += town->collectTax();
+		}
+		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
+		{
+			PTMInGameEventMgr::shared()->onMonthlyTick(this);
 		}
 	}
 
@@ -115,6 +122,16 @@ namespace tzw
 	std::vector<PTMTown*>& PTMNation::getTownList()
 	{
 		return m_townList;
+	}
+
+	void PTMNation::addEvent(const PTMInGameEventInstanced& eventInstanced)
+	{
+		m_eventInstances.push_back(eventInstanced);
+	}
+
+	std::vector<PTMInGameEventInstanced>& PTMNation::getEventInstancedList()
+	{
+		return m_eventInstances;
 	}
 
 	void PTMNation::garbageCollect()

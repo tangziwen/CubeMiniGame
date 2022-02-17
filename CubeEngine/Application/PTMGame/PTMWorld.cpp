@@ -11,6 +11,7 @@
 #include "SOIL2/stb_image.h"
 #include "2D/imgui.h"
 #include "PTMInspectorGUI.h"
+#include "PTMInGameEvent.h"
 namespace tzw
 {
 
@@ -92,6 +93,8 @@ namespace tzw
 		);
 		m_hud->updateAll();
 		PTMInspectorGUI::shared()->init();
+
+		PTMInGameEventMgr::shared()->loadEventsFromFile("PTM/data/Event/default.json");
 		return;
 
 	}

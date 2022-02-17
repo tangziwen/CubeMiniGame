@@ -24,6 +24,7 @@ namespace tzw
 		void setInspectTown(PTMTown * town);
 		void setInspectNation(PTMNation * nation);
 		void drawNation();
+		void drawEvents();
 	private:
 		PTMTown * m_currInspectTown = nullptr;
 		PTMNation * m_currInspectNation = nullptr;

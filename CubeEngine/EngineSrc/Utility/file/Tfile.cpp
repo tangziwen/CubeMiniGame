@@ -309,7 +309,7 @@ rapidjson::Document Tfile::getJsonObject(std::string filePath)
 {
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(filePath, true);
-	doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
+	doc.Parse<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag>(data.getString().c_str());
 	if (doc.HasParseError())
 	{
 		tlog("[error] get json data err! %s %d offset %d",
