@@ -267,28 +267,28 @@ namespace tzw
 		PTMNation * nation = PTMWorld::shared()->getPlayerController()->getControlledNation();
 
 		auto& eventList = nation->getEventInstancedList();
-		int removeID = -1;
-		int id = 0;
-		for(auto&inGameEvent : eventList)
+		PTMInGameEvent* removeEvent {nullptr};
+		for(auto&inGameEventIter : eventList)
 		{
+			PTMInGameEventInstanced& eventInstanced = inGameEventIter.second;
+			PTMInGameEvent * inGameEvent = eventInstanced.m_parent;
 			ImGui::SetNextWindowPosCenter(ImGuiCond_Once);
-			ImGui::Begin(inGameEvent.m_parent->m_title.c_str());
-			ImGui::Text(inGameEvent.m_parent->m_desc.c_str());
-			for(auto& option:inGameEvent.m_parent->m_options)
+			ImGui::Begin(inGameEvent->m_title.c_str());
+			ImGui::Text(inGameEvent->m_desc.c_str());
+			for(auto& option:inGameEvent->m_options)
 			{
 				if(ImGui::Button(option.m_Title.c_str()))
 				{
 					option.trigger(nation);
-					removeID = id;
+					removeEvent = inGameEventIter.first;
 				}
 			}
 			ImGui::End();
-			id ++;
 		}
 
-		if(removeID >= 0)
+		if(removeEvent)
 		{
-			eventList.erase(eventList.begin() + removeID);
+			eventList.erase(removeEvent);
 		}
 		
 	}

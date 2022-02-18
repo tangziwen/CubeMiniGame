@@ -60,12 +60,6 @@ namespace tzw
 		{
 			m_TechState->doProgress(0.1);
 		}
-
-		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
-		{
-			PTMInGameEventMgr::shared()->onMonthlyTick(this);
-		}
-
 	}
 
 	void PTMNation::updateTownsMonthly()
@@ -75,7 +69,10 @@ namespace tzw
 			town->onMonthlyTick();
 			m_Gold += town->collectTax();
 		}
-
+		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
+		{
+			PTMInGameEventMgr::shared()->onMonthlyTick(this);
+		}
 	}
 
 	void PTMNation::updateArmiesMonthly()
