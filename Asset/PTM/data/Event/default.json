@@ -11,7 +11,12 @@
 		[
 			{
 				"Title":"Yes",
-			
+				"Effects": [
+					{
+						"Param":"Gold",
+						"Value":500,
+					}
+				]
 			},
 			{
 				"Title":"No",

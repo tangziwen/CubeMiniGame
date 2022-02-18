@@ -56,7 +56,7 @@ namespace tzw
 		void removeArmy(PTMArmy * army);
 		std::vector<PTMTown * >& getTownList();
 		void addEvent(const PTMInGameEventInstanced  &eventInstanced);
-		std::vector<PTMInGameEventInstanced> & getEventInstancedList();
+		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> & getEventInstancedList();
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};
@@ -66,7 +66,7 @@ namespace tzw
 		std::vector<PTMTown * > m_occupyTownList;
 		std::vector<PTMArmy * > m_armyList;
 		std::vector<PTMPawn * > m_garbages;
-		std::vector<PTMInGameEventInstanced> m_eventInstances;
+		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> m_eventTypePool;
 	};
 
 }

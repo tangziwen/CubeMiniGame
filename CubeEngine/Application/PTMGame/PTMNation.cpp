@@ -61,6 +61,11 @@ namespace tzw
 			m_TechState->doProgress(0.1);
 		}
 
+		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
+		{
+			PTMInGameEventMgr::shared()->onMonthlyTick(this);
+		}
+
 	}
 
 	void PTMNation::updateTownsMonthly()
@@ -70,10 +75,7 @@ namespace tzw
 			town->onMonthlyTick();
 			m_Gold += town->collectTax();
 		}
-		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
-		{
-			PTMInGameEventMgr::shared()->onMonthlyTick(this);
-		}
+
 	}
 
 	void PTMNation::updateArmiesMonthly()
@@ -126,12 +128,14 @@ namespace tzw
 
 	void PTMNation::addEvent(const PTMInGameEventInstanced& eventInstanced)
 	{
-		m_eventInstances.push_back(eventInstanced);
+		if(m_eventTypePool.find(eventInstanced.m_parent) != m_eventTypePool.end())
+			return;//no duplicate event
+		m_eventTypePool[eventInstanced.m_parent] = eventInstanced;
 	}
 
-	std::vector<PTMInGameEventInstanced>& PTMNation::getEventInstancedList()
+	std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced>& PTMNation::getEventInstancedList()
 	{
-		return m_eventInstances;
+		return m_eventTypePool;
 	}
 
 	void PTMNation::garbageCollect()

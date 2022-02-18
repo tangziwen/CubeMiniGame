@@ -278,6 +278,7 @@ namespace tzw
 			{
 				if(ImGui::Button(option.m_Title.c_str()))
 				{
+					option.trigger(nation);
 					removeID = id;
 				}
 			}

@@ -7,8 +7,34 @@
 #include "PTMNation.h"
 #include "PTMInGameEvent.h"
 #include "Utility/math/TbaseMath.h"
+#include "PTMEventMgr.h"
 namespace tzw
 {
+
+	void PTMInGameEventOption::loadFromConfig(rapidjson::Value& jsonNode)
+	{
+		m_Title = jsonNode["Title"].GetString();
+		if(jsonNode.HasMember("Effects"))
+		{
+			auto & effects = jsonNode["Effects"];
+
+			for(int i = 0; i < effects.Size(); i++)
+			{
+				auto &effectDoc = effects[i];
+				m_effect[effectDoc["Param"].GetString()] = effectDoc["Value"].GetFloat();
+			}
+		}
+	}
+
+	void PTMInGameEventOption::trigger(PTMNation* nation)
+	{
+		for(auto &iter : m_effect)
+		{
+			nation->addPropByName<float>(iter.first, iter.second);
+		}
+		PTMEventMgr::shared()->notify(PTMEventType::PLAYER_RESOURCE_CHANGED, {});
+	}
+
 	PTMInGameEventMgr::PTMInGameEventMgr()
 	{
 	}
@@ -36,7 +62,7 @@ namespace tzw
 			inGameEvent->m_title = eventDoc["Title"].GetString();
 			inGameEvent->m_desc = eventDoc["Desc"].GetString();
 			inGameEvent->m_meanTimeToHappen = eventDoc["MTTH"].GetInt();
-			std::string groupName = eventDoc["group"].GetString();
+			std::string groupName = eventDoc["Group"].GetString();
 			auto iter = m_eventGroups.find(groupName);
 			if(iter != m_eventGroups.end())
 			{
@@ -53,9 +79,9 @@ namespace tzw
 			auto& options = eventDoc["Options"];
 			for(auto j = 0; j < options.Size(); j++)
 			{
-				auto&optionDoc =options[i];
+				auto&optionDoc =options[j];
 				PTMInGameEventOption option;
-				option.m_Title = optionDoc["Title"].GetString();
+				option.loadFromConfig(optionDoc);
 				inGameEvent->m_options.push_back(option);
 			}
 		}
@@ -73,9 +99,10 @@ namespace tzw
 					PTMInGameEventInstanced instance;
 					instance.m_parent = iter.second;
 					nation->addEvent(instance);
-					break;
+					//break;
 				}
 			}
 		}
 	}
+
 }

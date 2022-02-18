@@ -12,6 +12,8 @@ namespace tzw
 	{
 		std::string m_Title;
 		std::unordered_map<std::string, float> m_effect;
+		void loadFromConfig(rapidjson::Value & jsonNode);
+		void trigger(PTMNation * nation);
 	};
 
 	struct PTMInGameEvent
