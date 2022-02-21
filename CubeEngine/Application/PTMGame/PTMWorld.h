@@ -13,6 +13,7 @@
 #define PTM_MAP_SIZE (96)
 namespace tzw
 {
+	class TileMap2DMgr;
 	class PTMWorld : public Singleton<PTMWorld>, public EventListener
 	{
 	public:
@@ -23,6 +24,7 @@ namespace tzw
 		bool onKeyPress(int keyCode) override;
 		PTMPlayerController * getPlayerController() {return m_controller;};
 		PTMTile * getTile(int x, int y);
+		TileMap2DMgr * getTileMgr();
 	private:
 		PTMNation * createNation(std::string nationName);
 
@@ -44,6 +46,7 @@ namespace tzw
 		PTMTownGUI * m_townGUI = nullptr;
 		PTMTown * m_currInspectTown;
 		unsigned char * m_provincesBitMap = nullptr;
+		TileMap2DMgr * m_tileMgr;
 
 		void loadNations();
 		void loadTowns();

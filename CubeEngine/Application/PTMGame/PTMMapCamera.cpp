@@ -61,7 +61,7 @@ namespace tzw
 		vec2 currPos = m_mapRootNode->getPos2D();
 		if(m_slide != 0 || m_forward != 0)//如果完全没变动不设置位置，避免设了个相同的位置导致大量子Node重新缓存
 		{
-			m_mapRootNode->setPos2D(currPos.x + m_slide * -50.f * dt, currPos.y + m_forward * -50.f * dt);
+			m_mapRootNode->setPos2D(currPos.x + m_slide * -100.f * dt, currPos.y + m_forward * -100.f * dt);
 		}
 	}
 
@@ -95,6 +95,41 @@ namespace tzw
 
 	bool PTMMapCamera::onMouseMove(vec2 pos)
 	{
+		return false;
+	}
+
+	bool PTMMapCamera::onScroll(vec2 offset)
+	{
+		vec2 winSize = Engine::shared()->winSize();
+		vec2 screenCenter = vec2(0.0, 0.0);
+		auto mvp = g_GetCurrScene()->defaultGUICamera()->getViewProjectionMatrix() * m_mapRootNode->getTransform();
+		vec4 localPos = mvp.inverted().transofrmVec4(vec4(screenCenter.x, screenCenter.y, 0.f, 1.0f));
+		localPos.x /= localPos.w;
+		localPos.y /= localPos.w;
+
+
+		vec3 scale = m_mapRootNode->getScale();
+		vec3 pos = m_mapRootNode->getPos();
+		scale.x = std::clamp( scale.x + offset.y * 0.01, 0.1, 2.0);
+		scale.y = std::clamp(scale.y + offset.y * 0.01, 0.1, 2.0);
+
+		Matrix44 negTransMat;
+		negTransMat.setTranslate(vec3(-localPos.x, -localPos.y, 0.0f));
+		Matrix44 scaleMat;
+		scaleMat.setScale(scale);
+		Matrix44 posTransMat;
+		posTransMat.setTranslate(vec3(localPos.x, localPos.y, 0.0f));
+
+		Matrix44 trans;
+		trans.setTranslate(vec3(pos.x, pos.y, 0.0f));
+
+		Matrix44 finalMat = trans * posTransMat * scaleMat * negTransMat ;
+		vec3 newScale;
+		vec3 newPos;
+		finalMat.decompose(&newScale, nullptr, &newPos);
+		m_mapRootNode->setScale(newScale);
+		m_mapRootNode->setPos(newPos);
+		//printf("scroll %f %f",offset.x, offset.y);
 		return false;
 	}
 

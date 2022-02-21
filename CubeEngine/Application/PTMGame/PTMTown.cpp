@@ -27,7 +27,7 @@ namespace tzw
 			m_townSprite = Sprite::create("PTM/town.png");
 			m_townSprite->setPos2D(m_parent->m_placedTile->getCanvasPos());
 			m_townSprite->setLocalPiority(1);
-			m_parent->m_placedTile->m_graphics->m_sprite->getParent()->addChild(m_townSprite);
+			PTMWorld::shared()->getMapRootNode()->addChild(m_townSprite);
 			m_townSprite->setTouchEnable(true);
 			m_townSprite->setOnBtnClicked(
 			[this](Sprite *)

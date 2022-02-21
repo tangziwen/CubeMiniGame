@@ -14,11 +14,14 @@ namespace tzw
 		bool onMouseRelease(int button,vec2 pos) override;
 		bool onMousePress(int button,vec2 pos) override;
 		bool onMouseMove(vec2 pos) override;
+		bool onScroll(vec2 offset) override;
 		void init();
 	private:
 		Node * m_mapRootNode;
 		int m_forward;
 		int m_slide;
+		vec2 m_currPos = vec2(0, 0);
+		float zoom = 1.0f;
 	};
 
 }

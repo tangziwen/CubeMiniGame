@@ -61,7 +61,8 @@ namespace tzw
 				}
 			
 			);
-			m_parent->m_placedTile->m_graphics->m_sprite->getParent()->addChild(m_button);
+			PTMWorld::shared()->getMapRootNode()->addChild(m_button);
+			//m_parent->m_placedTile->m_graphics->m_sprite->getParent()->addChild(m_button);
 		}
 		m_button->setPos2D(m_parent->m_placedTile->getCanvasPos());
 		if(!m_selectedBorders[0])

@@ -65,6 +65,7 @@ namespace tzw
 		m_renderQueues->generateInstancedDrawCall();
 
 		DebugSystem::shared()->doRender(m_renderQueues, 0.0);
+
 		collectShadowCmd();
 	}
 

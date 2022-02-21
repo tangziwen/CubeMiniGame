@@ -22,8 +22,8 @@ layout(location = 3) in vec3 inNormal;
 layout(location = 4) in vec3 inTangent;
 
 #ifdef FLAG_EnableInstanced
-layout(location = 7) in mat4 a_instance_offset;
-layout(location = 11) in vec4 a_instance_offset2;
+layout(location = 8) in mat4 a_instance_offset;
+layout(location = 12) in vec4 a_instance_offset2;
 #endif
 
 layout(location = 0) out vec4 fragColor;

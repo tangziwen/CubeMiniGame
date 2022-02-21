@@ -3,6 +3,7 @@
 #include "Engine/EngineDef.h"
 #include "2D/Sprite.h"
 #include "EngineSrc/Event/Event.h"
+#include "2D/TileMap2DMgr.h"
 namespace tzw
 {
 	struct PTMTile;
@@ -11,7 +12,8 @@ namespace tzw
 	{
 		PTMTileGraphic(PTMTile * m_parent);
 		void updateGraphics();
-		Sprite * m_sprite = nullptr;
+		//Sprite * m_sprite = nullptr;
+		Tile2D * m_sprite = nullptr;
 		PTMTile * m_parent = nullptr;
 	};
 

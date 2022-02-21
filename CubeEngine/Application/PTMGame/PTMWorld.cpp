@@ -12,6 +12,7 @@
 #include "2D/imgui.h"
 #include "PTMInspectorGUI.h"
 #include "PTMInGameEvent.h"
+#include "2D/TileMap2DMgr.h"
 namespace tzw
 {
 
@@ -22,6 +23,35 @@ namespace tzw
 
 	void PTMWorld::initMap()
 	{
+
+
+		m_tileMgr = new TileMap2DMgr();
+		m_tileMgr->initMap(PTM_MAP_SIZE, PTM_MAP_SIZE);
+		//g_GetCurrScene()->addNode(tileMgr);
+
+		int tileTypeForest = m_tileMgr->addTileType("PTM/forest.png");
+		int tileTypePlain = m_tileMgr->addTileType("PTM/plain.png");
+		int tileTypeMountains = m_tileMgr->addTileType("PTM/mountains.png");
+		int tileTypeWater = m_tileMgr->addTileType("PTM/water.png");
+		/*
+		for(int x = 0; x < 32; x++)
+		{
+			for(int y = 0; y < 32; y++)
+			{
+				int rndNumber = rand() % 3;
+				int targetType = tileTypePlain;
+				if(rndNumber == 0)
+				{
+					targetType = tileTypeForest;
+				}
+				else if(rndNumber == 1)
+				{
+					targetType = tileTypeMountains;
+				}
+				tileMgr->addTile(targetType, x, y);
+			}
+		}
+		*/
 		std::string filePath = "PTM/pronvices.bmp";
 		auto data = Tfile::shared()->getData(filePath, true);
 		int width;
@@ -31,6 +61,8 @@ namespace tzw
 		std::cout<<width<<height<<channels;
 		m_mapRootNode = Node::create();
 		g_GetCurrScene()->addNode(m_mapRootNode);
+
+		m_mapRootNode->addChild(m_tileMgr);
 		m_hud = new PTMHUD();
 		m_hud->init();
 
@@ -134,6 +166,11 @@ namespace tzw
 			return nullptr;
 		}
 		return m_maptiles[x][y];
+	}
+
+	TileMap2DMgr* PTMWorld::getTileMgr()
+	{
+		return m_tileMgr;
 	}
 
 	PTMNation* PTMWorld::createNation(std::string nationName)

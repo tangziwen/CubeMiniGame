@@ -113,6 +113,7 @@ void PTMEntry::onStart()
 {
 
 	//showSplash();
+	
 	PTMWorld::shared()->initMap();
 }
 

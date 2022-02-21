@@ -15,44 +15,47 @@ namespace tzw
 
 	void PTMTileGraphic::updateGraphics()
 	{
+		TileMap2DMgr * tileMgr = PTMWorld::shared()->getTileMgr();
 		if(!m_sprite)
 		{
-
+			
 			if(m_parent->m_tileType == PTMTileType::TILE_OCEAN)
 			{
-				m_sprite = Sprite::create("PTM/water.png");
+				
+				m_sprite = tileMgr->addTile("PTM/water.png", m_parent->coord_x, m_parent->coord_y);
 			}
 			else
 			{
 				int rndNumber = rand() % 4;
 				if(rndNumber == 0)
 				{
-					m_sprite = Sprite::create("PTM/forest.png");
+					m_sprite = tileMgr->addTile("PTM/forest.png", m_parent->coord_x, m_parent->coord_y);//m_sprite = Sprite::create("PTM/forest.png");
 				}
 				if(rndNumber == 1)
 				{
-					m_sprite = Sprite::create("PTM/plain.png");
+					m_sprite = tileMgr->addTile("PTM/plain.png", m_parent->coord_x, m_parent->coord_y);//m_sprite = Sprite::create("PTM/plain.png");
 				}
 				if(rndNumber == 2)
 				{
-					m_sprite = Sprite::create("PTM/plain.png");
+					m_sprite = tileMgr->addTile("PTM/plain.png", m_parent->coord_x, m_parent->coord_y);//m_sprite = Sprite::create("PTM/plain.png");
 				}
 				if(rndNumber == 3)
 				{
-					m_sprite = Sprite::create("PTM/mountains.png");
+					m_sprite = tileMgr->addTile("PTM/mountains.png", m_parent->coord_x, m_parent->coord_y);//m_sprite = Sprite::create("PTM/mountains.png");
 				}
 			}
 
 			
 			//m_sprite = Sprite::create("PTM/plain.png");
-			PTMWorld::shared()->getMapRootNode()->addChild(m_sprite);
+			//PTMWorld::shared()->getMapRootNode()->addChild(m_sprite);
 		}
-		m_sprite->setPos2D(m_parent->getCanvasPos());
+		//m_sprite->setPos2D(m_parent->getCanvasPos());
 		if(m_parent->m_owner && m_parent->m_owner->getOwner())
 		{
 			float overLayFactor = 0.85f;
 			vec3 color = m_parent->m_owner->getOwner()->getNationColor();
-			m_sprite->setOverLayColor(vec4(color.x, color.y, color.z, overLayFactor));
+			//m_sprite->setOverLayColor(vec4(color.x, color.y, color.z, overLayFactor));
+			m_sprite->overLayColor = vec4(color.x, color.y, color.z, overLayFactor);
 		}
 
 		
