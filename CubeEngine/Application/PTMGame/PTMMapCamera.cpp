@@ -114,16 +114,16 @@ namespace tzw
 		scale.y = std::clamp(scale.y + offset.y * 0.01, 0.1, 2.0);
 
 		Matrix44 negTransMat;
-		negTransMat.setTranslate(vec3(-localPos.x, -localPos.y, 0.0f));
+		negTransMat.setTranslate(vec3(-pos.x, -pos.y, 0.0f));
 		Matrix44 scaleMat;
 		scaleMat.setScale(scale);
 		Matrix44 posTransMat;
-		posTransMat.setTranslate(vec3(localPos.x, localPos.y, 0.0f));
+		posTransMat.setTranslate(vec3(pos.x, pos.y, 0.0f));
 
 		Matrix44 trans;
 		trans.setTranslate(vec3(pos.x, pos.y, 0.0f));
 
-		Matrix44 finalMat = trans * posTransMat * scaleMat * negTransMat ;
+		Matrix44 finalMat = posTransMat * scaleMat * negTransMat ;
 		vec3 newScale;
 		vec3 newPos;
 		finalMat.decompose(&newScale, nullptr, &newPos);
