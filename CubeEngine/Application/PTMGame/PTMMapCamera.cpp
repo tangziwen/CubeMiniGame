@@ -110,26 +110,37 @@ namespace tzw
 
 		vec3 scale = m_mapRootNode->getScale();
 		vec3 pos = m_mapRootNode->getPos();
-		scale.x = std::clamp( scale.x + offset.y * 0.01, 0.1, 2.0);
-		scale.y = std::clamp(scale.y + offset.y * 0.01, 0.1, 2.0);
-
+		//scale.x = std::clamp( scale.x + offset.y * 0.001, 0.1, 2.0);
+		//scale.y = std::clamp(scale.y + offset.y * 0.001, 0.1, 2.0);
+		//zoom = std::clamp( zoom + offset.y * 0.001, 0.1, 2.0);
+		if(abs(offset.y) > 0.1)
+		{
+			if(offset.y > 0.5)
+			{
+				zoom = 1.1;
+			}
+			else
+			{
+				zoom = 0.9;
+			}
+		}
 		Matrix44 negTransMat;
-		negTransMat.setTranslate(vec3(-pos.x, -pos.y, 0.0f));
+		negTransMat.setTranslate(vec3(-localPos.x, -localPos.y, 0.0f));
 		Matrix44 scaleMat;
-		scaleMat.setScale(scale);
+		scaleMat.setScale(vec3(zoom, zoom, zoom));
 		Matrix44 posTransMat;
-		posTransMat.setTranslate(vec3(pos.x, pos.y, 0.0f));
+		posTransMat.setTranslate(vec3(localPos.x, localPos.y, 0.0f));
 
 		Matrix44 trans;
 		trans.setTranslate(vec3(pos.x, pos.y, 0.0f));
 
-		Matrix44 finalMat = posTransMat * scaleMat * negTransMat ;
+		Matrix44 finalMat = posTransMat * scaleMat * negTransMat *  m_mapRootNode->getTransform();
 		vec3 newScale;
 		vec3 newPos;
 		finalMat.decompose(&newScale, nullptr, &newPos);
 		m_mapRootNode->setScale(newScale);
 		m_mapRootNode->setPos(newPos);
-		//printf("scroll %f %f",offset.x, offset.y);
+		printf("scroll %f %f\n",newScale.x, newScale.y);
 		return false;
 	}
 
