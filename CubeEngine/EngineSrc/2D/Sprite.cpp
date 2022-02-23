@@ -3,6 +3,7 @@
 #include "EngineSrc/3D/Effect/EffectMgr.h"
 #include "Technique/MaterialPool.h"
 #include "../Event/EventMgr.h"
+#include "Engine/Engine.h"
 namespace tzw {
 
 Sprite::Sprite()
@@ -264,10 +265,18 @@ std::string Sprite::getSpriteManggledName()
 }
 bool Sprite::isInTheRect(vec2 touchPos)
 {
-    auto origin = getWorldPos2D();
-    auto contentSize = m_contentSize;
-    touchPos = touchPos - origin;
-    if (touchPos.x >=0 && touchPos.x<= contentSize.x  && touchPos.y >=0 && touchPos.y<= contentSize.y)
+    vec2 winSize = Engine::shared()->winSize();
+    touchPos /= winSize;
+    touchPos.y = 1.0 - touchPos.y;//flip y
+    touchPos = touchPos* 2.0f - vec2(1.0, 1.0);//NDC
+    
+    auto mvp = g_GetCurrScene()->defaultGUICamera()->getViewProjectionMatrix() * getTransform();
+    Matrix44 inverseTransform = mvp.inverted();
+    vec4 touchInLocalSpace = inverseTransform.transofrmVec4(vec4(touchPos.x, touchPos.y, 0.0, 1.0));
+    touchInLocalSpace.x /= touchInLocalSpace.w;
+    touchInLocalSpace.y /= touchInLocalSpace.w;
+
+    if (touchInLocalSpace.x >=0 && touchInLocalSpace.x<= m_contentSize.x  && touchInLocalSpace.y >=0 && touchInLocalSpace.y<= m_contentSize.y)
     {
         return true;
     }else

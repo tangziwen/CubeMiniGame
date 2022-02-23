@@ -14,6 +14,12 @@ public:
     vec2 operator - (const vec2 & other) const;
     vec2 operator / (const float & other) const;
     vec2 operator * (float a) const;
+    vec2& operator /= (const float & other);
+    vec2& operator /= (const vec2 & other);
+    vec2& operator += (const float & other);
+    vec2& operator += (const vec2 & other);
+    vec2& operator *= (const float & other);
+    vec2& operator *= (const vec2 & other);
     float x,y;
     float getX() const;
     void setX(float value);

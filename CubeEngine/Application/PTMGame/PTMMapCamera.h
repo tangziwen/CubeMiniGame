@@ -17,6 +17,8 @@ namespace tzw
 		bool onScroll(vec2 offset) override;
 		void init();
 	private:
+		bool m_isDragging = false;
+		vec2 m_lastMousePos {0, 0};
 		Node * m_mapRootNode;
 		int m_forward;
 		int m_slide;

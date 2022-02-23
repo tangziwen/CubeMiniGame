@@ -85,16 +85,31 @@ namespace tzw
 			arg.m_params["obj"] = tile;
 			PTMEventMgr::shared()->notify(PTMEventType::CAMERA_RIGHT_CLICK_ON_TILE, arg);
 		}
+		if(button == TZW_MOUSE_BUTTON_MIDDLE)
+		{
+			m_isDragging = false;
+		}
 		return false;
 	}
 
 	bool PTMMapCamera::onMousePress(int button, vec2 pos)
 	{
+		if(button == TZW_MOUSE_BUTTON_MIDDLE)
+		{
+			m_isDragging = true;
+			m_lastMousePos = pos;
+		}
 		return false;
 	}
 
 	bool PTMMapCamera::onMouseMove(vec2 pos)
 	{
+		if(m_isDragging)
+		{
+			vec2 diff = pos - m_lastMousePos;
+			m_mapRootNode->setPos2D(diff + m_mapRootNode->getPos2D());
+			m_lastMousePos = pos;
+		}
 		return false;
 	}
 
@@ -102,17 +117,13 @@ namespace tzw
 	{
 		vec2 winSize = Engine::shared()->winSize();
 		vec2 screenCenter = vec2(0.0, 0.0);
-		auto mvp = g_GetCurrScene()->defaultGUICamera()->getViewProjectionMatrix() * m_mapRootNode->getTransform();
-		vec4 localPos = mvp.inverted().transofrmVec4(vec4(screenCenter.x, screenCenter.y, 0.f, 1.0f));
-		localPos.x /= localPos.w;
-		localPos.y /= localPos.w;
-
+		auto vp = g_GetCurrScene()->defaultGUICamera()->getViewProjectionMatrix();
+		vec4 scalingPointWorld = vp.inverted().transofrmVec4(vec4(screenCenter.x, screenCenter.y, 0.f, 1.0f));
+		scalingPointWorld.x /= scalingPointWorld.w;
+		scalingPointWorld.y /= scalingPointWorld.w;
 
 		vec3 scale = m_mapRootNode->getScale();
 		vec3 pos = m_mapRootNode->getPos();
-		//scale.x = std::clamp( scale.x + offset.y * 0.001, 0.1, 2.0);
-		//scale.y = std::clamp(scale.y + offset.y * 0.001, 0.1, 2.0);
-		//zoom = std::clamp( zoom + offset.y * 0.001, 0.1, 2.0);
 		if(abs(offset.y) > 0.1)
 		{
 			if(offset.y > 0.5)
@@ -125,11 +136,11 @@ namespace tzw
 			}
 		}
 		Matrix44 negTransMat;
-		negTransMat.setTranslate(vec3(-localPos.x, -localPos.y, 0.0f));
+		negTransMat.setTranslate(vec3(-scalingPointWorld.x, -scalingPointWorld.y, 0.0f));
 		Matrix44 scaleMat;
 		scaleMat.setScale(vec3(zoom, zoom, zoom));
 		Matrix44 posTransMat;
-		posTransMat.setTranslate(vec3(localPos.x, localPos.y, 0.0f));
+		posTransMat.setTranslate(vec3(scalingPointWorld.x, scalingPointWorld.y, 0.0f));
 
 		Matrix44 trans;
 		trans.setTranslate(vec3(pos.x, pos.y, 0.0f));

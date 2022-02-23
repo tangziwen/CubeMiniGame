@@ -347,7 +347,7 @@ namespace tzw
 		BIND_START(luaState)
 		BIND_BEGIN_CLASS(vec3)
 		.addConstructor <void (*) ()> ()
-		.addFunction("__add", &vec3::operator+)
+		//.addFunction("__add", &vec3::operator+)
 		.addFunction("scale", &vec3::scale)
 		BIND_PROP(vec3, x)
 		BIND_PROP(vec3, y)

@@ -28,8 +28,17 @@ namespace tzw
 	};
 	class PTMTown :public PTMILogicTickable, public PTMPawn
 	{
+	
+	//production Level aka normal buildings
+	PTM_PROPERTY(AgriDevLevel, uint32_t, 1, "the Grassion of town")
 	PTM_PROPERTY(EcoDevLevel, uint32_t, 1, "the Grassion of town")
 	PTM_PROPERTY(MilDevLevel, uint32_t, 1, "the Grassion of town")
+	
+	//production output level
+	PTM_PROPERTY_WITH_CAPACITY(Food, float, 0, 100, "Food")
+	PTM_PROPERTY_WITH_CAPACITY(EveryDayNeeds, float, 0, 100, "Food")
+	PTM_PROPERTY_WITH_CAPACITY(LuxuryGoods, float, 0, 100, "Food")
+
 	PTM_PROPERTY(FortLevel, uint32_t, 1, "the fort level of town")
 	PTM_PROPERTY(Garrison, int, 1000, "the Grassion of town")
 	PTM_PROPERTY(GarrisonLimitBase, int, 1000, "the Grassion of town")

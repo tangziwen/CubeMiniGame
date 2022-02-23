@@ -119,10 +119,15 @@ namespace tzw
 				ImGui::SameLine();
 				DrawNationTitle(t->getOwner());
 
-			ImGui::BeginGroupPanel("Economy");
+			ImGui::BeginGroupPanel("Production");
+			DRAW_PROPERTY(t, AgriDevLevel)
+					ImGui::SameLine();
+					ImGui::Button("Boost Agri");
+
 			DRAW_PROPERTY(t, EcoDevLevel)
 				ImGui::SameLine();
 				ImGui::Button("Boost Eco");
+
 			DRAW_PROPERTY(t, Autonomous)
 			ImGui::EndGroupPanel();
 

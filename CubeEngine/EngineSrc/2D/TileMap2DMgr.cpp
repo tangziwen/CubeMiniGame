@@ -10,8 +10,8 @@ namespace tzw {
 	}
 	int TileMap2DMgr::addTileType(std::string filePath)
 	{
-		auto iter = m_materialsPool.find(filePath);
-		if(iter == m_materialsPool.end())
+		auto iter = m_tileTypeIdMap.find(filePath);
+		if(iter == m_tileTypeIdMap.end())
 		{
 			m_totalTypes ++;//inc for type id
 
@@ -29,13 +29,13 @@ namespace tzw {
 			tileType->material = material;
 			tileType->instancedMesh = instancedMesh;
 
-			m_materialsPool[filePath] = m_totalTypes;
-			m_materialsPoolFast[m_totalTypes] = tileType;
+			m_tileTypeIdMap[filePath] = m_totalTypes;
+			m_tileTypePool[m_totalTypes] = tileType;
 			return m_totalTypes;
 		}
 		else
 		{
-			return m_materialsPool[filePath];
+			return m_tileTypeIdMap[filePath];
 		}
 		
 	}
@@ -63,7 +63,7 @@ namespace tzw {
 	}
 	Tile2D * TileMap2DMgr::addTile(std::string filePath, unsigned short x, unsigned short y)
 	{
-		int typeID = m_materialsPool[filePath];
+		int typeID = m_tileTypeIdMap[filePath];
 		return addTile(typeID, x, y);
 	}
 
@@ -105,8 +105,8 @@ namespace tzw {
 
 	void TileMap2DMgr::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg)
 	{
-		if(m_tilesList.empty() || !m_mesh || m_materialsPoolFast.empty()) return;
-		for(auto& iter : m_materialsPoolFast)
+		if(m_tilesList.empty() || !m_mesh || m_tileTypePool.empty()) return;
+		for(auto& iter : m_tileTypePool)
 		{
 			TileTypeInfo * tiletype = iter.second;
 			tiletype->instancedMesh->clearInstances();
@@ -116,14 +116,14 @@ namespace tzw {
 			InstanceData data;
 			data.transform.setTranslate(vec3(tile->x * 32.f, tile->y * 32.f, 0.f));
 			data.extraInfo = tile->overLayColor;
-			m_materialsPoolFast[tile->type]->instancedMesh->pushInstance(data);
+			m_tileTypePool[tile->type]->instancedMesh->pushInstance(data);
 		}
 		auto currCam = g_GetCurrScene()->defaultGUICamera();
 		Matrix44 proj = currCam->projection();
 		Matrix44 view = currCam->getViewMatrix();
 
 		Matrix44 world = getTransform();
-		for(auto& iter : m_materialsPoolFast)
+		for(auto& iter : m_tileTypePool)
 		{
 			TileTypeInfo * tiletype = iter.second;
 			//tiletype->instancedMesh->clearInstances();

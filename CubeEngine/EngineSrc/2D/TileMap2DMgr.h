@@ -39,8 +39,8 @@ private:
 	int m_totalTypes = 0;
     Mesh * m_mesh;
 	std::vector<Tile2D * > m_tilesList;
-	std::unordered_map<std::string, int> m_materialsPool;
-	std::unordered_map<int, TileTypeInfo *> m_materialsPoolFast;
+	std::unordered_map<std::string, int> m_tileTypeIdMap;
+	std::unordered_map<int, TileTypeInfo *> m_tileTypePool;
 	unsigned short m_width;
 	unsigned short m_height;
 	Tile2D * m_tileBuff;

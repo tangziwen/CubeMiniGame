@@ -13,16 +13,205 @@ public:
 	explicit vec3(float theX);
     vec3(float the_x,float the_y,float the_z);
     void set(float the_x,float the_y, float the_z);
-    vec3 operator + (const vec3 & other) const;
-    vec3 operator - (const vec3 & other) const;
-    vec3 operator * (float a) const;
-    vec3 operator * (const vec3 & other) const;
-    vec3 operator / (float a) const;
-    vec3 operator / (const vec3 & other) const;
-    vec3 operator - () const;
-    vec3 operator +=(const vec3 & other);
-    vec3 operator -= (const vec3 & other);
-    vec3 operator *=(float value);
+
+    vec3 operator + (const vec3 & other) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+        __m128 c = _mm_add_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x + other.x, y + other.y, z +other.z);
+#endif
+    }
+
+    vec3 operator + (const float other) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set_ps(0.0f, other, other, other);
+        __m128 c = _mm_add_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x + other, y + other, z +other);
+#endif
+    }
+
+    vec3 operator - (const vec3 & other) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+        __m128 c = _mm_sub_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x - other.x, y - other.y, z - other.z);
+#endif
+    }
+
+    vec3 operator - (const float other) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set_ps(0.0f, other, other, other);
+        __m128 c = _mm_sub_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x - other, y - other, z - other);
+#endif
+    }
+
+    vec3 operator * (const float val) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set1_ps(val);
+        __m128 c = _mm_mul_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x * val, y * val, z * val);
+#endif
+
+    }
+    vec3 operator * (const vec3 & other) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+        __m128 c = _mm_mul_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x * other.x, y * other.y, z * other.z);
+#endif
+    }
+
+    vec3 operator / (const float val) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set1_ps(val);
+        __m128 c = _mm_div_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(x / val, y / val, z / val);
+#endif
+    }
+
+    vec3 operator / (const vec3 & other) const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_set_ps(0.0f, other.z, other.y, other.x);
+        __m128 c = _mm_div_ps(a, b);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3( x / other.x, y / other.y, z / other.z);
+#endif
+    }
+
+    vec3 operator - () const
+    {
+#ifdef TZW_USE_SIMD
+        __m128 a = _mm_set_ps(0.0f, z, y, x);
+        __m128 b = _mm_setzero_ps();
+        __m128 c = _mm_sub_ps(b, a);
+        float result[4];
+        _mm_store_ps(result, c);
+        return vec3(result[0], result[1], result[2]);
+#else
+        return vec3(-x,-y,-z);
+#endif
+    
+    }
+    vec3& operator +=(const vec3 & other)
+    {
+        x+=other.x;
+        y+=other.y;
+        z+=other.z;
+        return *this;
+    }
+    vec3& operator +=(const float other)
+    {
+#ifdef TZW_USE_SIMD
+        __m128 L = _mm_set_ps(0.0f, z, y, x);
+        __m128 R = _mm_set_ps(0.0f, other, other, other);
+
+        __m128 simdvector = _mm_add_ps(L, R);
+        float resultFloat[4];
+        _mm_store_ps(resultFloat, simdvector);
+        this->x = resultFloat[0];
+        this->y = resultFloat[1];
+        this->z = resultFloat[2];
+#else
+        x+=other;
+        y+=other;
+        z+=other;
+#endif
+        return *this;
+    }
+    vec3& operator -= (const vec3 & other)
+    {
+        x -= other.x;
+        y -= other.y;
+        z -= other.z;
+        return *this;
+    }
+    vec3& operator -= (const float & other)
+    {
+        x -= other;
+        y -= other;
+        z -= other;
+        return *this;
+    }
+
+    vec3& operator *=(float value)
+    {
+        x*=value;
+        y*=value;
+        z*=value;
+        return *this;
+    }
+
+    vec3& operator *=(const vec3 & other)
+    {
+        x*=other.x;
+        y*=other.y;
+        z*=other.z;
+        return *this;
+    }
+
+    vec3& operator /=(float value)
+    {
+        x/=value;
+        y/=value;
+        z/=value;
+        return *this;
+    }
+
+    vec3& operator /=(const vec3 & other)
+    {
+        x/=other.x;
+        y/=other.y;
+        z/=other.z;
+        return *this;
+    }
     static float DotProduct(const vec3& left, const vec3& right)
     {
 
