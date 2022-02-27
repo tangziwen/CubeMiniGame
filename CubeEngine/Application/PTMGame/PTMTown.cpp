@@ -95,7 +95,7 @@ namespace tzw
 
 	void PTMTown::onMonthlyTick()
 	{
-		m_taxAccum += m_EcoDevLevel * 0.5f + 1.0f;
+		//m_taxAccum += m_EcoDevLevel * 0.5f + 1.0f;
 	}
 
 	void PTMTown::onDailyTick()
@@ -151,8 +151,8 @@ namespace tzw
 
 	void PTMTown::initPops()
 	{
-		int randomNum = rand() % 15;
-		int baseNum = 5;
+		int randomNum = rand() % 4;
+		int baseNum = 3;
 		for(int i = 0; i < baseNum + randomNum; i ++)
 		{
 			PTMPop newPop;
@@ -208,16 +208,29 @@ namespace tzw
 				pop.m_happiness = 0.f;
 			}
 
+			//tax
+			float goldProduct = pop.m_job->getGoldProduct();
+			if(goldProduct > 0.f)
+			{
+				m_taxPack.m_gold += goldProduct;
+			}
+
+			float admProduct = pop.m_job->getAdmProduct();
+			if(admProduct > 0.f)
+			{
+				m_taxPack.m_adm += admProduct;
+			}
+
 		}
 		m_Food = std::clamp(m_Food, 0.0f, m_FoodCapacityBase);
 		m_EveryDayNeeds = std::clamp(m_EveryDayNeeds, 0.0f, m_EveryDayNeedsCapacityBase);
 		m_LuxuryGoods = std::clamp(m_LuxuryGoods, 0.0f, m_LuxuryGoodsCapacityBase);
 	}
 
-	float PTMTown::collectTax()
+	PTMTaxPack PTMTown::collectTax()
 	{
-		float tmp = m_taxAccum;
-		m_taxAccum = 0.0f;
+		PTMTaxPack tmp = m_taxPack;
+		m_taxPack.reset();
 		return tmp;
 	}
 

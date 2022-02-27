@@ -9,7 +9,8 @@
 #include "PTMInGameEvent.h"
 namespace tzw
 {
-	class PTMTown;
+class PTMHero;
+class PTMTown;
 	class PTMArmy;
 	class PTMPawn;
 	class PTMTechState;
@@ -57,6 +58,9 @@ namespace tzw
 		std::vector<PTMTown * >& getTownList();
 		void addEvent(const PTMInGameEventInstanced  &eventInstanced);
 		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> & getEventInstancedList();
+		void generateRandomHero();
+		PTMHero * getHeroAt(int index);
+		size_t getTotalHerosNum();
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};
@@ -66,6 +70,7 @@ namespace tzw
 		std::vector<PTMTown * > m_occupyTownList;
 		std::vector<PTMArmy * > m_armyList;
 		std::vector<PTMPawn * > m_garbages;
+		std::vector<PTMHero *> m_heroes;
 		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> m_eventTypePool;
 	};
 

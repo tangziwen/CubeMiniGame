@@ -66,14 +66,24 @@ void PTMPopFactory::loadJobs()
 		popjob.setFoodProduct(jobDoc["FoodProduct"].GetFloat());
 		popjob.setEveryDayNeedsProduct(jobDoc["EveryDayNeedsProduct"].GetFloat());
 		popjob.setLuxuryGoodsProduct(jobDoc["LuxuryGoodsProduct"].GetFloat());
+
+		if(jobDoc.HasMember("GoldProduct"))
+		{
+			popjob.setGoldProduct(jobDoc["GoldProduct"].GetFloat());
+		}
+		if(jobDoc.HasMember("AdmProduct"))
+		{
+			popjob.setAdmProduct(jobDoc["AdmProduct"].GetFloat());
+		}
 		m_jobs.push_back(popjob);
 	}
 }
 
 void PTMPopFactory::createAPop(PTMPop* pop)
 {
-	pop->m_job = &m_jobs[0];
-	pop->m_race = &m_races[0];
+	int ranNum = rand() % m_jobs.size();
+	pop->m_job = &m_jobs[ranNum];
+	pop->m_race = &m_races[1];
 	pop->m_happiness = 0.6f;
 }
 

@@ -26,9 +26,14 @@ namespace tzw
 	{
 	public:
 		PTM_PROPERTY(Name, std::string, 1, "the Grassion of town")
+		//self need
 		PTM_PROPERTY(FoodProduct, float, -1.f, "the Grassion of town")
 		PTM_PROPERTY(EveryDayNeedsProduct, float, -1.f, "the Grassion of town")
 		PTM_PROPERTY(LuxuryGoodsProduct, float, -1.f, "the Grassion of town")
+
+		//National Output (player reward)
+		PTM_PROPERTY(GoldProduct, float, -1.f, "the Grassion of town")
+		PTM_PROPERTY(AdmProduct, float, -1.f, "the Grassion of town")
 	};
 
 	struct PTMPop

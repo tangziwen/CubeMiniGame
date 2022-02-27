@@ -16,6 +16,8 @@
 #include "PTMPawnJudge.h"
 #include "2D/imgui_internal.h"
 #include <sstream>
+
+#include "PTMHero.h"
 #include "PTMTech.h"
 #define BORDER_LEFT 0
 #define BORDER_RIGHT 1
@@ -112,9 +114,10 @@ namespace tzw
 	{
 		drawEvents();
 		drawNation();
-
+		
 		BEGIN_INSPECT(m_currInspectTown, "Town")
 			PTMTown * t = m_currInspectTown;
+			bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == t->getOwner();
 			ImGui::Text("Name: %s ", t->getName().c_str());
 				ImGui::SameLine();
 				DrawNationTitle(t->getOwner());
@@ -138,7 +141,7 @@ namespace tzw
 			ImGui::BeginGroupPanel("Military");
 				DRAW_PROPERTY(t, MilDevLevel)
 					ImGui::SameLine();
-					bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == t->getOwner();
+					
 					if(!isControlledByPlayer)
 					{
 						ImGuiContext& g = *GImGui;
@@ -171,9 +174,9 @@ namespace tzw
 				sprintf(buff, "%s %s",pop->m_race->getName().c_str(), pop->m_job->getName().c_str());
 				ImGui::SmallButton(buff);
 				ImGui::SameLine();
-				ImGui::Text("HappyLevel : %d", pop->m_happinessLevel);
+				ImGui::Text("Lv: %d", pop->m_happinessLevel);
 				ImGui::SameLine();
-				ImGui::ProgressBar(pop->m_happiness);
+				ImGui::ProgressBar(pop->m_happiness, ImVec2(100, 0));
 				ImGui::PopID();
 			}
 			ImGui::EndGroupPanel();
@@ -283,7 +286,19 @@ namespace tzw
 			ImGui::EndTabBar();
 			ImGui::EndTabItem();
 		}
-			
+
+		if(ImGui::BeginTabItem("Heroes"))
+		{
+			size_t num = t->getTotalHerosNum();
+			for(int i = 0; i < num; i++)
+			{
+				PTMHero * hero = t->getHeroAt(i);
+				ImGui::PushID(hero);
+				ImGui::Text(u8"%s %s 所在行省:%s", hero->getFamilyName().c_str(), hero->getFirstName().c_str(), hero->getTownLocation()->getName().c_str());
+				ImGui::PopID();
+			}
+			ImGui::EndTabItem();
+		}
 		END_INSPECT(m_currInspectNation)
 	}
 

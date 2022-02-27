@@ -14,6 +14,17 @@ namespace tzw
 	struct PTMTile;
 	class PTMTown;
 	class PTMNation;
+
+	struct PTMTaxPack
+	{
+		float m_gold = 0.f;
+		float m_adm = 0.f;
+		void reset()
+		{
+			m_gold = 0.f;
+			m_adm = 0.f;
+		}
+	};
 	class PTMTownGraphics
 	{
 	public:
@@ -59,7 +70,7 @@ namespace tzw
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
 		PawnTile getPawnType() override;
-		float collectTax();//return the tax
+		PTMTaxPack collectTax();//return the tax
 		void investEco();
 		void investMil();
 		void buildArmy();
@@ -77,7 +88,7 @@ namespace tzw
 		friend class PTMTownGraphics;
 		friend class PTMNation;
 		friend class PTMPawnJudge;
-		float m_taxAccum{};
+		PTMTaxPack m_taxPack;
 		std::vector<PTMPop> m_pops;
 	};
 

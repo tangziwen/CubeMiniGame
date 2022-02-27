@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "PTMHero.h"
 #include "Scene/SceneMgr.h"
 #include "EngineSrc/CubeEngine.h"
 #include "Utility/file/Tfile.h"
@@ -31,6 +32,7 @@ namespace tzw
 		//load Pop metaInfo
 
 		PTMPopFactory::shared()->init();
+		PTMHeroFactory::shared()->init();
 		//g_GetCurrScene()->addNode(tileMgr);
 
 		int tileTypeForest = m_tileMgr->addTileType("PTM/forest.png");
@@ -98,6 +100,10 @@ namespace tzw
 
 		loadTowns();
 
+		for(PTMNation * nation : m_nationList)
+		{
+			nation->generateRandomHero();
+		}
 		loadOwnerShips();
 
 		auto window = GUIWindow::create("caonima", vec2(200, 350));
@@ -235,6 +241,7 @@ namespace tzw
 				m_nationNameMap[item["name"].GetString()] = nation;
 				auto& flagColor = item["flag_color"];
 				nation->setNationColor(vec3(flagColor[0].GetDouble(), flagColor[1].GetDouble(), flagColor[2].GetDouble()));
+				
 			}
 		}
 	}

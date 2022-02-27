@@ -6,6 +6,7 @@
 #include "PTMTown.h"
 #include "PTMWorld.h"
 #include "PTMEventMgr.h"
+#include "PTMHero.h"
 #include "PTMTech.h"
 #include "PTMInGameEvent.h"
 namespace tzw
@@ -67,8 +68,12 @@ namespace tzw
 		for(PTMTown * town: m_townList)
 		{
 			town->onMonthlyTick();
-			m_Gold += town->collectTax();
+			PTMTaxPack tax =  town->collectTax();
+			m_Gold += tax.m_gold;
+			m_AdminPoint += tax.m_adm;
+
 		}
+
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
 		{
 			PTMInGameEventMgr::shared()->onMonthlyTick(this);
@@ -133,6 +138,33 @@ namespace tzw
 	std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced>& PTMNation::getEventInstancedList()
 	{
 		return m_eventTypePool;
+	}
+
+	void PTMNation::generateRandomHero()
+	{
+		int randomNum = rand() % 4;
+		int baseNum = 6;
+
+		for(int i = 0; i < baseNum + randomNum; i ++)
+		{
+			PTMHero * newHero = PTMHeroFactory::shared()->genRandomHero();
+			if(!m_townList.empty())
+			{
+				newHero->setTownLocation(m_townList[rand() %m_townList.size()]);
+			}
+			
+			m_heroes.push_back(newHero);
+		}
+	}
+
+	PTMHero* PTMNation::getHeroAt(int index)
+	{
+		return m_heroes[index];
+	}
+
+	size_t PTMNation::getTotalHerosNum()
+	{
+		return m_heroes.size();
 	}
 
 	void PTMNation::garbageCollect()

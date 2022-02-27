@@ -12,6 +12,14 @@
 	{
 		"Name":"古玩商",
 		"LuxuryGoodsProduct":1.0,
+	},
+	{
+		"Name":"学者",
+		"LuxuryGoodsProduct":1.0,
+	},
+	{
+		"Name":"士人",
+		"LuxuryGoodsProduct":1.0,
 	}
 ]
 
