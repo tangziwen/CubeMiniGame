@@ -5,6 +5,8 @@
 #include "EngineSrc/Event/Event.h"
 #include "PTMILogicTickable.h"
 #include "PTMPawn.h"
+#include "PTMPop.h"
+
 namespace tzw
 {
 	class LabelNew;
@@ -34,8 +36,8 @@ namespace tzw
 	PTM_PROPERTY(EcoDevLevel, uint32_t, 1, "the Grassion of town")
 	PTM_PROPERTY(MilDevLevel, uint32_t, 1, "the Grassion of town")
 	
-	//production output level
-	PTM_PROPERTY_WITH_CAPACITY(Food, float, 0, 100, "Food")
+	//prop production and consume output level
+	PTM_PROPERTY_WITH_CAPACITY(Food, float, 500, 500, "Food")
 	PTM_PROPERTY_WITH_CAPACITY(EveryDayNeeds, float, 0, 100, "Food")
 	PTM_PROPERTY_WITH_CAPACITY(LuxuryGoods, float, 0, 100, "Food")
 
@@ -62,6 +64,10 @@ namespace tzw
 		void investMil();
 		void buildArmy();
 		void addOccupyTile(PTMTile * tile);
+		void initPops();
+		PTMPop * getPopAt(size_t index);
+		size_t getTotalPopsNum();
+		void tickPops();
 	private:
 		std::vector<PTMTile *> m_occupyTiles;
 		std::string m_name;
@@ -72,6 +78,7 @@ namespace tzw
 		friend class PTMNation;
 		friend class PTMPawnJudge;
 		float m_taxAccum{};
+		std::vector<PTMPop> m_pops;
 	};
 
 }

@@ -106,6 +106,7 @@ namespace tzw
 		}
 		m_Garrison =std::min(m_Garrison, getGarrisonLimit());//clamp
 		updateGraphics();
+		tickPops();
 	}
 
 	PawnTile PTMTown::getPawnType()
@@ -146,6 +147,71 @@ namespace tzw
 	{
 		m_occupyTiles.push_back(tile);
 		tile->m_owner = this;
+	}
+
+	void PTMTown::initPops()
+	{
+		int randomNum = rand() % 15;
+		int baseNum = 5;
+		for(int i = 0; i < baseNum + randomNum; i ++)
+		{
+			PTMPop newPop;
+			PTMPopFactory::shared()->createAPop(&newPop);
+			m_pops.push_back(newPop);
+		}
+	}
+
+	PTMPop* PTMTown::getPopAt(size_t index)
+	{
+		return &m_pops[index];
+	}
+
+	size_t PTMTown::getTotalPopsNum()
+	{
+		return m_pops.size();
+	}
+
+	void PTMTown::tickPops()
+	{
+		for(PTMPop& pop :m_pops)
+		{
+			float foodProduct = pop.m_job->getFoodProduct();
+			if(foodProduct> 0)
+			{
+				m_Food += foodProduct * (1.0f + m_AgriDevLevel * 0.05f);
+			}
+			m_Food -= pop.m_race->getFoodConsume();
+			if(m_Food < 0.f) pop.m_happiness -= 0.05f;
+
+			float EveryDayNeedsProduct = pop.m_job->getLuxuryGoodsProduct();
+			if(EveryDayNeedsProduct > 0)
+			{
+				m_EveryDayNeeds += EveryDayNeedsProduct + m_EcoDevLevel * 0.05f;
+			}
+			m_EveryDayNeeds -= pop.m_race->getEveryDayNeedsConsume();
+			
+			float LuxuryGoodsProduct = pop.m_job->getLuxuryGoodsProduct();
+			if(LuxuryGoodsProduct > 0)
+			{
+				m_LuxuryGoods += LuxuryGoodsProduct + m_EcoDevLevel * 0.05f;
+			}
+			m_LuxuryGoods -= pop.m_race->getLuxuryGoodsConsume();
+
+			if(pop.m_happiness < 0.f) // Downgrade happy level
+			{
+				pop.m_happinessLevel = std::clamp(pop.m_happinessLevel - 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
+				pop.m_happiness = 1.f;
+			}
+			if(pop.m_happiness > 1.f) // Upgrade happy level
+			{
+				pop.m_happinessLevel = std::clamp(pop.m_happinessLevel + 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
+				pop.m_happiness = 0.f;
+			}
+
+		}
+		m_Food = std::clamp(m_Food, 0.0f, m_FoodCapacityBase);
+		m_EveryDayNeeds = std::clamp(m_EveryDayNeeds, 0.0f, m_EveryDayNeedsCapacityBase);
+		m_LuxuryGoods = std::clamp(m_LuxuryGoods, 0.0f, m_LuxuryGoodsCapacityBase);
 	}
 
 	float PTMTown::collectTax()

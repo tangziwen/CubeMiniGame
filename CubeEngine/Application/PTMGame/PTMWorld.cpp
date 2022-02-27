@@ -27,6 +27,10 @@ namespace tzw
 
 		m_tileMgr = new TileMap2DMgr();
 		m_tileMgr->initMap(PTM_MAP_SIZE, PTM_MAP_SIZE);
+
+		//load Pop metaInfo
+
+		PTMPopFactory::shared()->init();
 		//g_GetCurrScene()->addNode(tileMgr);
 
 		int tileTypeForest = m_tileMgr->addTileType("PTM/forest.png");
@@ -287,6 +291,7 @@ namespace tzw
 				}
 				std::string ownerName = item["owner"].GetString();
 				m_nationNameMap[ownerName]->ownTown(town);
+				town->initPops();
 				town->updateGraphics();
 				//auto army  = new PTMArmy(nullptr, tile);
 				//army->updateGraphics();

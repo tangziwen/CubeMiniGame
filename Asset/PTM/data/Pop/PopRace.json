@@ -1,0 +1,25 @@
+{
+"PopRaces":
+[
+	{
+		"Name":"兽人",
+		"FoodConsume":1.5,
+		"EveryDayNeedsConsume":0.1,
+		"LuxuryGoods":0.0,
+	},
+	{
+		"Name":"人类",
+		"FoodConsume":1.0,
+		"EveryDayNeedsConsume":0.3,
+		"LuxuryGoods":0.1,
+	},
+	{
+		"Name":"变种人",
+		"FoodConsume":1.5,
+		"EveryDayNeedsConsume":0.2,
+		"LuxuryGoods":0.1,
+	}
+]
+
+
+}

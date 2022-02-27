@@ -1,0 +1,19 @@
+{
+"PopJobs":
+[
+	{
+		"Name":"农夫",
+		"FoodProduct":2.0,
+	},
+	{
+		"Name":"工匠",
+		"EveryDayNeedsProduct":1.0,
+	},
+	{
+		"Name":"古玩商",
+		"LuxuryGoodsProduct":1.0,
+	}
+]
+
+
+}

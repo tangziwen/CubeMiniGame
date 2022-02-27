@@ -129,6 +129,10 @@ namespace tzw
 				ImGui::Button("Boost Eco");
 
 			DRAW_PROPERTY(t, Autonomous)
+
+			DRAW_PROPERTY(t, Food)
+			DRAW_PROPERTY(t, EveryDayNeeds)
+			DRAW_PROPERTY(t, LuxuryGoods)
 			ImGui::EndGroupPanel();
 
 			ImGui::BeginGroupPanel("Military");
@@ -156,6 +160,22 @@ namespace tzw
 			ImGui::EndGroupPanel();
 			ImGui::BeginGroupPanel("Politics");
 			DrawButtonWithTips("Issue Edict", "Build An Army", true);
+			ImGui::EndGroupPanel();
+			ImGui::BeginGroupPanel("Pops");
+			size_t popsTotal = t->getTotalPopsNum();
+			for(int i = 0; i < popsTotal; i ++)
+			{
+				PTMPop * pop = t->getPopAt(i);
+				ImGui::PushID(pop);
+				char buff[128];
+				sprintf(buff, "%s %s",pop->m_race->getName().c_str(), pop->m_job->getName().c_str());
+				ImGui::SmallButton(buff);
+				ImGui::SameLine();
+				ImGui::Text("HappyLevel : %d", pop->m_happinessLevel);
+				ImGui::SameLine();
+				ImGui::ProgressBar(pop->m_happiness);
+				ImGui::PopID();
+			}
 			ImGui::EndGroupPanel();
 		END_INSPECT(m_currInspectTown)
 	}
