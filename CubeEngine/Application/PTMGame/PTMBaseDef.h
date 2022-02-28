@@ -27,4 +27,51 @@ PROP_TYPE m_##PROP##Capacity##Base {DEFAULT_CAPACITY_VALUE};
 namespace tzw
 {
 
+struct PTMFiveElement
+{
+	int ElementMetal = 0;
+	int ElementWood = 0;
+	int ElementWater = 0;
+	int ElementFire = 0;
+	int ElementEarth = 0;
+
+	void reset()
+	{
+		ElementMetal = 0;
+		ElementWood = 0;
+		ElementWater = 0;
+		ElementFire = 0;
+		ElementEarth = 0;
+	}
+	PTMFiveElement & operator +=(const PTMFiveElement & R)
+	{
+		ElementMetal += R.ElementMetal;
+		ElementWood += R.ElementWood;
+		ElementWater += R.ElementWater;
+		ElementFire += R.ElementFire;
+		ElementEarth += R.ElementEarth;
+		return (*this);
+	}
+
+	PTMFiveElement operator +(const PTMFiveElement & R)
+	{
+		PTMFiveElement result;
+		result.ElementMetal = ElementMetal + R.ElementMetal;
+		result.ElementWood = ElementWood + R.ElementWood;
+		result.ElementWater = ElementWater + R.ElementWater;
+		result.ElementFire = ElementFire + R.ElementFire;
+		result.ElementEarth = ElementEarth + R.ElementEarth;
+		return result;
+	}
+	PTMFiveElement operator * (const float R) const
+	{
+		PTMFiveElement result;
+		result.ElementMetal = ElementMetal * R;
+		result.ElementWood = ElementWood * R;
+		result.ElementWater = ElementWater * R;
+		result.ElementFire = ElementFire * R;
+		result.ElementEarth = ElementEarth * R;
+		return result;
+	}
+};
 }

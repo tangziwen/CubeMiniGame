@@ -121,6 +121,26 @@ namespace tzw
 			ImGui::Text("Name: %s ", t->getName().c_str());
 				ImGui::SameLine();
 				DrawNationTitle(t->getOwner());
+			ImGui::Text("Keeper:");ImGui::SameLine();
+			if(t->getKeeper())
+			{
+				ImGui::SmallButton(t->getKeeper()->getName().c_str());
+			}
+			else
+			{
+				ImGui::SmallButton("None");
+			}
+			ImGui::BeginChild("HeroesList", ImVec2(-1, 200));
+			{
+				size_t num = t->getTotalOnDutyHeroes();
+				for(int i = 0; i < num; i++)
+				{
+					PTMHero * hero = t->getOnDutyHeroAt(i);
+					ImGui::SmallButton(hero->getName().c_str());
+				}
+			}
+
+			ImGui::EndChild();
 
 			ImGui::BeginGroupPanel("Production");
 			DRAW_PROPERTY(t, AgriDevLevel)
@@ -166,6 +186,11 @@ namespace tzw
 			ImGui::EndGroupPanel();
 			ImGui::BeginGroupPanel("Pops");
 			size_t popsTotal = t->getTotalPopsNum();
+			const PTMPopOutputView& outputView = t->getPopOutputView();
+			ImGui::Text(u8"消费: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodInput, outputView.m_EveryDayNeedsInput, outputView.m_FoodInput);
+			ImGui::Text(u8"生产: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodOutput, outputView.m_EveryDayNeedsOutput, outputView.m_LuxuryGoodsOutput);
+			ImGui::Text(u8"盈余: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodOutput - outputView.m_FoodInput, 
+				outputView.m_EveryDayNeedsOutput - outputView.m_EveryDayNeedsInput, outputView.m_LuxuryGoodsOutput - outputView.m_LuxuryGoodsInput);
 			for(int i = 0; i < popsTotal; i ++)
 			{
 				PTMPop * pop = t->getPopAt(i);
@@ -193,8 +218,31 @@ namespace tzw
 		m_currInspectNation = nation;
 	}
 
+	void PTMInspectorGUI::setInspectTownList(PTMNation* nation, std::function<void(PTMTown*)> clickCB)
+	{
+		m_currInspectTownListNation = nation;
+		m_townListClickedCB = clickCB;
+	}
+
 	void PTMInspectorGUI::drawNation()
 	{
+		BEGIN_INSPECT(m_currInspectTownListNation, "Town List")
+		PTMNation * t = m_currInspectTownListNation;
+		auto townList = t->getTownList();
+		for(PTMTown * town : townList)
+		{
+			ImGui::Text("%s", town->getName().c_str());
+				ImGui::SameLine();
+				ImGui::PushID(town);
+				if(ImGui::Button("Select ##gototown"))
+				{
+					m_currInspectTownListNation = nullptr;
+					m_townListClickedCB(town);
+				}
+				ImGui::PopID();
+		}
+		END_INSPECT(m_currInspectNation)
+
 		BEGIN_INSPECT(m_currInspectNation, "Nation")
 		PTMNation * t = m_currInspectNation;
 		ImGui::BeginTabBar("NationTabs");
@@ -294,7 +342,16 @@ namespace tzw
 			{
 				PTMHero * hero = t->getHeroAt(i);
 				ImGui::PushID(hero);
-				ImGui::Text(u8"%s %s 所在行省:%s", hero->getFamilyName().c_str(), hero->getFirstName().c_str(), hero->getTownLocation()->getName().c_str());
+				ImGui::Text(u8"%s 所在:%s", hero->getName().c_str(), hero->getTownLocation()->getName().c_str());
+				if(ImGui::Button("Set As Keeper"))
+				{
+					setInspectTownList(t, [t, hero](PTMTown* town){t->assignTownKeeper(town, hero);});
+				}
+				ImGui::SameLine();
+				if(ImGui::Button("Assign On Duty"))
+				{
+					setInspectTownList(t, [t, hero](PTMTown* town){t->assignOnDuty(town, hero);});
+				}
 				ImGui::PopID();
 			}
 			ImGui::EndTabItem();

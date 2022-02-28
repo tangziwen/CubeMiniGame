@@ -87,4 +87,18 @@ void PTMPopFactory::createAPop(PTMPop* pop)
 	pop->m_happiness = 0.6f;
 }
 
+void PTMPop::selfUpgradeMaybe()
+{
+	int upgradeRate = 15;
+	if((rand() % 100) > (100 - upgradeRate))
+	{
+		m_happinessLevel = std::clamp(m_happinessLevel + 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
+		m_happiness = 0.f;
+	}
+	else
+	{
+		m_happiness = 1.f;
+	}
+}
+
 }

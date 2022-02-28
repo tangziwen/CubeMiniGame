@@ -1,15 +1,25 @@
 #include "PTMModifier.h"
 namespace tzw
 {
-	float PTMModifier::operator[](std::string paramName)
+	float& PTMModifier::operator[](std::string paramName)
 	{
 		return m_params[paramName.c_str()];
+	}
+
+	void PTMModifier::reset()
+	{
+		m_params.clear();
 	}
 
 	void PTMModifierContainer::add(PTMModifier* mod)
 	{
 		m_modifiedMap[mod->getName()] = mod;
 		eval();
+	}
+
+	void PTMModifierContainer::addButNoEval(PTMModifier* mod)
+	{
+		m_modifiedMap[mod->getName()] = mod;
 	}
 
 	void PTMModifierContainer::delByName(std::string name)
@@ -21,6 +31,10 @@ namespace tzw
 			//return iter->second;
 		}
 		eval();
+	}
+	void PTMModifierContainer::reset()
+	{
+		m_modifiedMap.clear();
 	}
 	void PTMModifierContainer::eval()
 	{

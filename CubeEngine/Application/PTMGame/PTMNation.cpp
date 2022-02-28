@@ -167,6 +167,25 @@ namespace tzw
 		return m_heroes.size();
 	}
 
+	void PTMNation::assignTownKeeper(PTMTown* town, PTMHero* hero)
+	{
+		PTMHero * oldKeeper = town->getKeeper();
+		if(oldKeeper) oldKeeper->setCurrRole(PTMHeroRole::Idle);
+		town->setKeeper(hero);
+		if(hero)
+		{
+			hero->setTownLocation(town);
+			hero->setCurrRole(PTMHeroRole::Keeper);
+		}
+	}
+
+	void PTMNation::assignOnDuty(PTMTown* town, PTMHero* hero)
+	{
+		town->assignOnDuty(hero);
+		hero->setTownLocation(town);
+		hero->setCurrRole(PTMHeroRole::OnDuty);
+	}
+
 	void PTMNation::garbageCollect()
 	{
 		for(PTMPawn * garbage : m_garbages)

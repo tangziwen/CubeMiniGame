@@ -6,7 +6,7 @@
 #include "PTMILogicTickable.h"
 #include "PTMPawn.h"
 #include "PTMPop.h"
-
+#include "PTMModifier.h"
 namespace tzw
 {
 	class LabelNew;
@@ -14,6 +14,7 @@ namespace tzw
 	struct PTMTile;
 	class PTMTown;
 	class PTMNation;
+	class PTMHero;
 
 	struct PTMTaxPack
 	{
@@ -23,6 +24,30 @@ namespace tzw
 		{
 			m_gold = 0.f;
 			m_adm = 0.f;
+		}
+	};
+
+	struct PTMPopOutputView
+	{
+		float m_FoodInput = 0.f;
+		float m_FoodOutput = 0.f;
+
+		float m_EveryDayNeedsInput = 0.f;
+		float m_EveryDayNeedsOutput = 0.f;
+
+		float m_LuxuryGoodsInput = 0.f;
+		float m_LuxuryGoodsOutput = 0.f;
+
+		void reset()
+		{
+			m_FoodInput = 0.f;
+			m_FoodOutput = 0.f;
+
+			m_EveryDayNeedsInput = 0.f;
+			m_EveryDayNeedsOutput = 0.f;
+
+			m_LuxuryGoodsInput = 0.f;
+			m_LuxuryGoodsOutput = 0.f;
 		}
 	};
 	class PTMTownGraphics
@@ -60,6 +85,7 @@ namespace tzw
 	PTM_PROPERTY(Autonomous, int, 5, "the Grassion of town")
 	PTM_PROPERTY(Unrest, int, 5, "the Grassion of town")
 
+	PTM_PROPERTY(Keeper, PTMHero * , nullptr, "the keeper of town")
 	public:
 		PTMTown(PTMTile * placedTile);
 		void updateGraphics();
@@ -79,7 +105,14 @@ namespace tzw
 		PTMPop * getPopAt(size_t index);
 		size_t getTotalPopsNum();
 		void tickPops();
+		
+		const PTMPopOutputView& getPopOutputView() {return m_popOutputView;}
+		size_t getTotalOnDutyHeroes() {return m_onDutyHeroes.size();};
+		PTMHero * getOnDutyHeroAt(int index);
+		void assignOnDuty(PTMHero * hero);
 	private:
+		void tickHeroAffectOfPops();
+		PTMModifierContainer m_heroModContainer;
 		std::vector<PTMTile *> m_occupyTiles;
 		std::string m_name;
 		PTMNation * m_occupant = nullptr;
@@ -90,6 +123,9 @@ namespace tzw
 		friend class PTMPawnJudge;
 		PTMTaxPack m_taxPack;
 		std::vector<PTMPop> m_pops;
+		PTMPopOutputView m_popOutputView;
+		std::vector<PTMHero * > m_onDutyHeroes;
+		PTMFiveElement m_heroesFiveElement;
 	};
 
 }

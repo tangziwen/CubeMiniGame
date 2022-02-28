@@ -8,7 +8,8 @@ namespace tzw
 	{
 	TZW_PROPERTY(std::string, Name, "");
 	public:
-		float operator [](std::string paramName);
+		float &operator [](std::string paramName);
+		void reset();
 	protected:
 		std::unordered_map<std::string, float> m_params;
 		friend class PTMModifierContainer;
@@ -18,7 +19,9 @@ namespace tzw
 	{
 	public:
 		void add(PTMModifier * mod);
+		void addButNoEval(PTMModifier * mod);
 		void delByName(std::string name);
+		void reset();
 		void eval();
 		float operator [](std::string paramName);
 	protected:

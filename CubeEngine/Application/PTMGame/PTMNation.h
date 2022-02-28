@@ -61,6 +61,9 @@ class PTMTown;
 		void generateRandomHero();
 		PTMHero * getHeroAt(int index);
 		size_t getTotalHerosNum();
+
+		void assignTownKeeper(PTMTown * town, PTMHero * hero);
+		void assignOnDuty(PTMTown * town, PTMHero * hero);
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};

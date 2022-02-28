@@ -23,11 +23,14 @@ namespace tzw
 		void drawIMGUI() override;
 		void setInspectTown(PTMTown * town);
 		void setInspectNation(PTMNation * nation);
+		void setInspectTownList(PTMNation * nation, std::function<void(PTMTown*)> clickCB);
 		void drawNation();
 		void drawEvents();
 	private:
 		PTMTown * m_currInspectTown = nullptr;
 		PTMNation * m_currInspectNation = nullptr;
+		PTMNation * m_currInspectTownListNation = nullptr;
+		std::function<void(PTMTown*)> m_townListClickedCB = {};
 	};
 
 }

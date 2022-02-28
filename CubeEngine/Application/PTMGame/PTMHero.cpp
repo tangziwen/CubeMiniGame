@@ -8,10 +8,9 @@
 
 namespace tzw
 {
-PTMHero::PTMHero(std::string FamilyName, std::string FirstName, int sex)
+PTMHero::PTMHero(std::string Name, int sex)
 {
-	m_FamilyName = FamilyName;
-	m_FirstName = FirstName;
+	m_Name = Name;
 	m_Sex = sex;
 }
 
@@ -28,7 +27,10 @@ PTMHero* PTMHeroFactory::genRandomHero()
 	{
 		firstName = m_femaleName[rand()%m_femaleName.size()];
 	}
-	auto hero = new PTMHero(familyName, firstName, sex);
+	char tmpBuff[64];
+	sprintf(tmpBuff, "%s.%s", familyName.c_str(), firstName.c_str());
+	auto hero = new PTMHero(tmpBuff, sex);
+	hero->updateOutputModifier();
 	return hero;
 }
 void PTMHeroFactory::init()
@@ -68,5 +70,21 @@ void PTMHeroFactory::init()
 		auto& nameDoc = maleNames[i];
 		m_maleName.push_back(nameDoc.GetString());
 	}
+}
+const PTMFiveElement& PTMHero::getFiveElement()
+{
+	return m_FiveElement;
+
+}
+void PTMHero::updateOutputModifier()
+{
+	m_outPutModifier.reset();
+	float rate = 1.f;
+	if(m_CurrRole == PTMHeroRole::Keeper) rate = 1.5f;
+
+}
+PTMModifier* PTMHero::getOutPutModifier()
+{
+	return &m_outPutModifier;
 }
 }
