@@ -170,20 +170,13 @@ namespace tzw
 	void PTMNation::assignTownKeeper(PTMTown* town, PTMHero* hero)
 	{
 		PTMHero * oldKeeper = town->getKeeper();
-		if(oldKeeper) oldKeeper->setCurrRole(PTMHeroRole::Idle);
-		town->setKeeper(hero);
-		if(hero)
-		{
-			hero->setTownLocation(town);
-			hero->setCurrRole(PTMHeroRole::Keeper);
-		}
+		if(oldKeeper) oldKeeper->kickFromKeeper();
+		hero->assignAsKeeper(town);
 	}
 
 	void PTMNation::assignOnDuty(PTMTown* town, PTMHero* hero)
 	{
-		town->assignOnDuty(hero);
-		hero->setTownLocation(town);
-		hero->setCurrRole(PTMHeroRole::OnDuty);
+		hero->assignOnDuty(town);
 	}
 
 	void PTMNation::garbageCollect()

@@ -4,12 +4,20 @@
 #define PTM_PROPERTY(PROP, PROP_TYPE, DEFAULT_VAL, DESC) \
 public: \
 void set##PROP(PROP_TYPE val) { m_##PROP = val; }\
+PTM_PROPERTY_BASE(PROP, PROP_TYPE, DEFAULT_VAL, DESC)
+
+#define PTM_PROPERTY_WITH_NOTIFY(PROP, PROP_TYPE, DEFAULT_VAL, DESC, NOTIFYCB) \
+public: \
+void set##PROP(PROP_TYPE val) { if( val != m_##PROP ) { NOTIFYCB(val); } m_##PROP = val; }\
+PTM_PROPERTY_BASE(PROP, PROP_TYPE, DEFAULT_VAL, DESC)
+
+#define PTM_PROPERTY_BASE(PROP, PROP_TYPE, DEFAULT_VAL, DESC) \
+public: \
 PROP_TYPE get##PROP() {return m_##PROP;}\
 constexpr const char * get##PROP##DescString() {return DESC;}\
 constexpr const char * get##PROP##String() {return #PROP;}\
 protected:\
 PROP_TYPE m_##PROP {DEFAULT_VAL};
-
 
 //property with capacity eg. Food-> Food (getter & setter), FoodCapacityBase (getter & setter)
 #define PTM_PROPERTY_WITH_CAPACITY(PROP, PROP_TYPE, DEFAULT_VAL, DEFAULT_CAPACITY_VALUE, DESC) \

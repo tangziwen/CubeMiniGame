@@ -5,13 +5,100 @@
 #include "PTMWorld.h"
 #include "PTMPawn.h"
 #include "Utility/file/Tfile.h"
-
+#include "PTMGameTimeMgr.h"
 namespace tzw
 {
 PTMHero::PTMHero(std::string Name, int sex)
 {
 	m_Name = Name;
 	m_Sex = sex;
+	m_tickDayOffset = rand() % 7;
+}
+
+const PTMFiveElement& PTMHero::getFiveElement()
+{
+	return m_FiveElement;
+
+}
+
+void PTMHero::updateOutputModifier()
+{
+	m_outPutModifier.reset();
+	float rate = 1.f;
+	if(m_CurrRole == PTMHeroRole::Keeper) rate = 1.5f;
+
+}
+PTMModifier* PTMHero::getOutPutModifier()
+{
+	return &m_outPutModifier;
+}
+void PTMHero::onCurrRoleChanged(PTMHeroRole newRole)
+{
+	if(m_CurrRole == PTMHeroRole::Keeper)
+	{
+		m_TownOfKeeper->setKeeper(nullptr);
+	}
+	if(m_CurrRole == PTMHeroRole::OnDuty)
+	{
+		m_TownOfKeeper->setKeeper(nullptr);
+	}
+	printf("hehehe");
+}
+
+void PTMHero::assignAsKeeper(PTMTown* town)
+{
+	breakOldDuty();
+	town->setKeeper(this);
+	this->m_TownOfKeeper = town;
+	this->setCurrRole(PTMHeroRole::Keeper);
+}
+
+void PTMHero::assignOnDuty(PTMTown* town)
+{
+	breakOldDuty();
+	town->assignOnDuty(this);
+	m_TownOfOnDuty = town;
+	setCurrRole(PTMHeroRole::OnDuty);
+}
+
+void PTMHero::kickFromDuty()
+{
+	m_TownOfOnDuty->kickOnDuty(this);
+	m_TownOfOnDuty = nullptr;
+	setCurrRole(PTMHeroRole::Idle);
+	return ;
+}
+
+void PTMHero::kickFromKeeper()
+{
+	m_TownOfKeeper->setKeeper(nullptr);
+	m_TownOfKeeper = nullptr;
+	setCurrRole(PTMHeroRole::Idle);
+}
+
+void PTMHero::tick(uint32_t currDate)
+{
+	if(currDate % 7 == m_tickDayOffset)
+	{
+		tick_impl(currDate);
+	}
+}
+
+void PTMHero::breakOldDuty()
+{
+	if(m_TownOfKeeper)
+	{
+		kickFromKeeper();
+	}
+	if(m_TownOfOnDuty)
+	{
+		kickFromDuty();
+	}
+}
+
+void PTMHero::tick_impl(uint32_t currDate)
+{
+
 }
 
 PTMHero* PTMHeroFactory::genRandomHero()
@@ -70,21 +157,5 @@ void PTMHeroFactory::init()
 		auto& nameDoc = maleNames[i];
 		m_maleName.push_back(nameDoc.GetString());
 	}
-}
-const PTMFiveElement& PTMHero::getFiveElement()
-{
-	return m_FiveElement;
-
-}
-void PTMHero::updateOutputModifier()
-{
-	m_outPutModifier.reset();
-	float rate = 1.f;
-	if(m_CurrRole == PTMHeroRole::Keeper) rate = 1.5f;
-
-}
-PTMModifier* PTMHero::getOutPutModifier()
-{
-	return &m_outPutModifier;
 }
 }

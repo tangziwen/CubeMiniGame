@@ -105,11 +105,13 @@ namespace tzw
 		PTMPop * getPopAt(size_t index);
 		size_t getTotalPopsNum();
 		void tickPops();
+
 		
 		const PTMPopOutputView& getPopOutputView() {return m_popOutputView;}
 		size_t getTotalOnDutyHeroes() {return m_onDutyHeroes.size();};
 		PTMHero * getOnDutyHeroAt(int index);
 		void assignOnDuty(PTMHero * hero);
+		void kickOnDuty(PTMHero * hero);
 	private:
 		void tickHeroAffectOfPops();
 		PTMModifierContainer m_heroModContainer;

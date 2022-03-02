@@ -226,22 +226,32 @@ namespace tzw
 
 	void PTMInspectorGUI::drawNation()
 	{
-		BEGIN_INSPECT(m_currInspectTownListNation, "Town List")
-		PTMNation * t = m_currInspectTownListNation;
-		auto townList = t->getTownList();
-		for(PTMTown * town : townList)
+
+		if(m_currInspectTownListNation)
 		{
-			ImGui::Text("%s", town->getName().c_str());
-				ImGui::SameLine();
-				ImGui::PushID(town);
-				if(ImGui::Button("Select ##gototown"))
-				{
-					m_currInspectTownListNation = nullptr;
-					m_townListClickedCB(town);
-				}
-				ImGui::PopID();
+			bool isOpen = true;
+			ImGui::Begin("Town List", &isOpen,ImGuiWindowFlags_NoResize);
+			ImVec2 winSize(300, 500);
+			ImGui::SetWindowSize("Town List", winSize);
+			PTMNation * t = m_currInspectTownListNation;
+			auto townList = t->getTownList();
+			for(PTMTown * town : townList)
+			{
+				ImGui::Text("%s", town->getName().c_str());
+					ImGui::SameLine();
+					ImGui::PushID(town);
+					if(ImGui::Button("Select ##gototown"))
+					{
+						m_currInspectTownListNation = nullptr;
+						m_townListClickedCB(town);
+					}
+					ImGui::PopID();
+			}
+			if(!isOpen)
+			{
+				m_currInspectTownListNation = false;
+			}
 		}
-		END_INSPECT(m_currInspectNation)
 
 		BEGIN_INSPECT(m_currInspectNation, "Nation")
 		PTMNation * t = m_currInspectNation;

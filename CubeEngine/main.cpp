@@ -36,8 +36,13 @@ extern "C"
 
 #pragma comment(linker, "/subsystem:console")
 
+#define macro_test(A,B,C) printf("hehehe" #A #B #C );
 #define TEST_VULKAN_ENTRY
 #define TEST_SCRIPT 0
+
+
+
+
 int main(int argc, char *argv[]) 
 {
     Engine::preSetting();
@@ -62,7 +67,8 @@ int main(int argc, char *argv[])
 
 	return 0;
 #endif
-    
+
+
 	return Engine::run(argc,argv,new PTMEntry());
 
 #ifdef  TEST_VULKAN_ENTRY

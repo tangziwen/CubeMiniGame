@@ -239,6 +239,7 @@ namespace tzw
 		m_LuxuryGoods = std::clamp(m_LuxuryGoods, 0.0f, m_LuxuryGoodsCapacityBase);
 	}
 
+
 	PTMHero* PTMTown::getOnDutyHeroAt(int index)
 	{
 		return m_onDutyHeroes[index];
@@ -248,6 +249,15 @@ namespace tzw
 	{
 		m_onDutyHeroes.push_back(hero);
 		
+	}
+
+	void PTMTown::kickOnDuty(PTMHero* hero)
+	{
+		auto iter = std::find(m_onDutyHeroes.begin(), m_onDutyHeroes.end(), hero);
+		if(iter != m_onDutyHeroes.end())
+		{
+			m_onDutyHeroes.erase(iter);
+		}
 	}
 
 	void PTMTown::tickHeroAffectOfPops()
