@@ -4,23 +4,29 @@
 	{
 		"Name":"农夫",
 		"FoodProduct":4.0,
+		"JobType":0,
 	},
 	{
 		"Name":"工匠",
 		"EveryDayNeedsProduct":1.0,
+		"JobType":1,
 	},
 	{
 		"Name":"古玩商",
 		"LuxuryGoodsProduct":1.0,
-	},
-	{
-		"Name":"学者",
-		"LuxuryGoodsProduct":1.0,
+		"JobType":2,
 	},
 	{
 		"Name":"士人",
 		"LuxuryGoodsProduct":1.0,
-	}
+		"JobType":3,
+	},
+	{
+		"Name":"学者",
+		"LuxuryGoodsProduct":1.0,
+		"JobType":4,
+	},
+
 ]
 
 

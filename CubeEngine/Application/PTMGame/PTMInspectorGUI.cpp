@@ -145,11 +145,19 @@ namespace tzw
 			ImGui::BeginGroupPanel("Production");
 			DRAW_PROPERTY(t, AgriDevLevel)
 					ImGui::SameLine();
-					ImGui::Button("Boost Agri");
+					ImGui::ProgressBar(t->getAgriDevProgress(), ImVec2(100, 0));
+
+			DRAW_PROPERTY(t, IndustryLevel)
+				ImGui::SameLine();
+				ImGui::ProgressBar(t->getIndustryDevProgress(), ImVec2(100, 0));
 
 			DRAW_PROPERTY(t, EcoDevLevel)
 				ImGui::SameLine();
-				ImGui::Button("Boost Eco");
+				ImGui::ProgressBar(t->getEcoDevProgress(), ImVec2(100, 0));
+
+			DRAW_PROPERTY(t, HouseHoldLevel)
+				ImGui::SameLine();
+				ImGui::ProgressBar(t->getHouseHoldDevProgress(), ImVec2(100, 0));
 
 			DRAW_PROPERTY(t, Autonomous)
 

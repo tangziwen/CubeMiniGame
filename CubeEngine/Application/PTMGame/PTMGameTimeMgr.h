@@ -28,7 +28,7 @@ namespace tzw
 		std::function<void(uint32_t)> m_dayTickCb;
 		std::function<void()> m_monthTickCb;
 		std::function<void(bool)> m_pauseStateChangedCb;
-		int m_speedLevel = 0;
+		int m_speedLevel = 1;
 		bool m_isPause = false;
 		uint32_t m_day = {0};
 		float m_duration = {0.f};

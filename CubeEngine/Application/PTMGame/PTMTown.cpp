@@ -11,6 +11,7 @@
 #include <sstream>
 #include "PTMInspectorGUI.h"
 #include "PTMHero.h"
+#include <array>
 namespace tzw
 {
 
@@ -97,6 +98,7 @@ namespace tzw
 	void PTMTown::onMonthlyTick()
 	{
 		//m_taxAccum += m_EcoDevLevel * 0.5f + 1.0f;
+		tickPops();
 	}
 
 	void PTMTown::onDailyTick()
@@ -107,7 +109,7 @@ namespace tzw
 		}
 		m_Garrison =std::min(m_Garrison, getGarrisonLimit());//clamp
 		updateGraphics();
-		tickPops();
+		
 	}
 
 	void PTMTown::onWeeklyTick()
@@ -153,16 +155,35 @@ namespace tzw
 		m_occupyTiles.push_back(tile);
 		tile->m_owner = this;
 	}
-
+#pragma  optimize("", off)
 	void PTMTown::initPops()
 	{
-		int randomNum = rand() % 4;
+
+		
+		auto & randomEngine = TbaseMath::getRandomEngine();
+		m_AgriDevLevel = randomEngine()% 3 + 2;
+		m_EcoDevLevel = randomEngine()% 3 + 2;
+		m_IndustryLevel = randomEngine()%3 + 2;
+		
+		m_HouseHoldLevel = randomEngine() % 10 + 8;
 		int baseNum = 3;
-		for(int i = 0; i < baseNum + randomNum; i ++)
+		int randomNum = randomEngine() % (m_HouseHoldLevel - baseNum  -  2);
+		int totalPops = baseNum + randomNum;
+		std::array<int, 5> jobIdx = {0, 0, 0, 0, 0};
+		std::shuffle(jobIdx.begin(), jobIdx.end(), randomEngine);
+
+		int tmp = totalPops;
+		for(int i = 0; i < jobIdx.size(); i++)
 		{
-			PTMPop newPop;
-			PTMPopFactory::shared()->createAPop(&newPop);
-			m_pops.push_back(newPop);
+			jobIdx[i] = std::clamp<int>( randomEngine() % (tmp - 1), 1, totalPops * 0.5f);
+			tmp -= jobIdx[i];
+			tmp = std::max(tmp, 2);
+			for(int j = 0; j < jobIdx[i]; j ++)
+			{
+				PTMPop newPop;
+				PTMPopFactory::shared()->createAPop(&newPop, i);
+				m_pops.push_back(newPop);
+			}
 		}
 	}
 

@@ -63,6 +63,7 @@ namespace tzw
 		m_time->setString(ss.str());
 
 		updateTimePauseState(PTMGameTimeMgr::shared()->isPause());
+		updateResource();
 	}
 
 	void PTMHUD::updateTimePauseState(bool isPause)
@@ -85,7 +86,7 @@ namespace tzw
 	void PTMHUD::updateResource()
 	{
 		std::stringstream ss;
-		ss<<"Gold:"<<int(m_controller->getControlledNation()->getGold());
+		ss<<"Gold:"<<int(m_controller->getControlledNation()->getGold())<<" ADM:"<<m_controller->getControlledNation()->getAdminPoint();
 		m_gold->setString(ss.str());
 	}
 

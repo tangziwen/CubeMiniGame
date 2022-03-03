@@ -8,6 +8,8 @@
 #include "PTMModifier.h"
 #include <random>
 
+#include "PTMILogicTickable.h"
+
 namespace tzw
 {
 class PTMTown;

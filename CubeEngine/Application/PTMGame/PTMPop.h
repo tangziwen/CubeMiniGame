@@ -24,7 +24,7 @@ namespace tzw
 
 	class PTMPopJobType
 	{
-	public:
+
 		PTM_PROPERTY(Name, std::string, 1, "the Grassion of town")
 		//self need
 		PTM_PROPERTY(FoodProduct, float, -1.f, "the Grassion of town")
@@ -34,6 +34,8 @@ namespace tzw
 		//National Output (player reward)
 		PTM_PROPERTY(GoldProduct, float, -1.f, "the Grassion of town")
 		PTM_PROPERTY(AdmProduct, float, -1.f, "the Grassion of town")
+	public:
+		int m_JobType = 0;
 	};
 
 	struct PTMPop
@@ -52,7 +54,7 @@ namespace tzw
 		void init();
 		void loadRaces();
 		void loadJobs();
-		void createAPop(PTMPop * pop);//pop的数量可能会非常的多，这里只加工和初始化，本身不负责分配
+		void createAPop(PTMPop * pop, int jobType);//pop的数量可能会非常的多，这里只加工和初始化，本身不负责分配
 	private:
 		std::vector<PTMPopRaceType> m_races;
 		std::vector<PTMPopJobType> m_jobs;

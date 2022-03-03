@@ -69,8 +69,17 @@ namespace tzw
 	
 	//production Level aka normal buildings
 	PTM_PROPERTY(AgriDevLevel, uint32_t, 1, "the Grassion of town")
+	PTM_PROPERTY(IndustryLevel, uint32_t, 1, "the Grassion of town")
 	PTM_PROPERTY(EcoDevLevel, uint32_t, 1, "the Grassion of town")
+	PTM_PROPERTY(HouseHoldLevel, uint32_t, 5, "the Grassion of town")
+
+	PTM_PROPERTY(AgriDevProgress, float, 0.f, "the Grassion of town")
+	PTM_PROPERTY(IndustryDevProgress, float, 0.f, "the Grassion of town")
+	PTM_PROPERTY(EcoDevProgress, float, 0.f, "the Grassion of town")
+	PTM_PROPERTY(HouseHoldDevProgress, float, 0.f, "the Grassion of town")
+	
 	PTM_PROPERTY(MilDevLevel, uint32_t, 1, "the Grassion of town")
+	
 	
 	//prop production and consume output level
 	PTM_PROPERTY_WITH_CAPACITY(Food, float, 500, 500, "Food")

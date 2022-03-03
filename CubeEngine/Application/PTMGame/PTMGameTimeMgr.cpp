@@ -50,13 +50,13 @@ namespace tzw
 		switch(m_speedLevel)
 		{
 		case 0:
-			result = 1.5;
+			result = 1.5f;
 			break;
 		case 1:
-			result = 1.0;
+			result = 0.8f;
 			break;
 		case 2:
-			result = 0.55;
+			result = 0.4f;
 			break;
 		}
 		return result;
@@ -79,7 +79,7 @@ namespace tzw
 
 	void PTMGameTimeMgr::tick(float dt)
 	{
-
+		if(m_isPause) return;
 		if(m_duration >= getSpeedRate())
 		{
 			m_day +=1;

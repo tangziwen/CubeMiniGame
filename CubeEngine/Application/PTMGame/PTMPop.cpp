@@ -75,14 +75,15 @@ void PTMPopFactory::loadJobs()
 		{
 			popjob.setAdmProduct(jobDoc["AdmProduct"].GetFloat());
 		}
+		popjob.m_JobType = jobDoc["JobType"].GetInt();
 		m_jobs.push_back(popjob);
 	}
 }
 
-void PTMPopFactory::createAPop(PTMPop* pop)
+void PTMPopFactory::createAPop(PTMPop* pop, int jobType)
 {
-	int ranNum = rand() % m_jobs.size();
-	pop->m_job = &m_jobs[ranNum];
+
+	pop->m_job = &m_jobs[jobType];
 	pop->m_race = &m_races[1];
 	pop->m_happiness = 0.6f;
 }
