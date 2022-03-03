@@ -6,8 +6,13 @@
 #include "PTMPawn.h"
 #include "Utility/file/Tfile.h"
 #include "PTMGameTimeMgr.h"
+#include <array>
+#include <algorithm>
 namespace tzw
 {
+constexpr float MEAN_POINT_BASE = 30.f;
+constexpr float POINT_MAX = 45.f;
+constexpr float POINT_MIN = 15.0f;
 PTMHero::PTMHero(std::string Name, int sex)
 {
 	m_Name = Name;
@@ -78,10 +83,24 @@ void PTMHero::kickFromKeeper()
 
 void PTMHero::tick(uint32_t currDate)
 {
+
+}
+
+void PTMHero::onMonthlyTick()
+{
+}
+
+void PTMHero::onDailyTick()
+{
+	uint32_t currDate = PTMGameTimeMgr::shared()->getCurrDate();
 	if(currDate % 7 == m_tickDayOffset)
 	{
 		tick_impl(currDate);
 	}
+}
+
+void PTMHero::onWeeklyTick()
+{
 }
 
 void PTMHero::breakOldDuty()
@@ -103,6 +122,8 @@ void PTMHero::tick_impl(uint32_t currDate)
 
 PTMHero* PTMHeroFactory::genRandomHero()
 {
+	auto& engine = TbaseMath::getRandomEngine();
+
 	int sex = rand() % 2;
 	std::string firstName = "";
 	std::string familyName = m_familyName[rand()%m_familyName.size()];
@@ -117,11 +138,42 @@ PTMHero* PTMHeroFactory::genRandomHero()
 	char tmpBuff[64];
 	sprintf(tmpBuff, "%s.%s", familyName.c_str(), firstName.c_str());
 	auto hero = new PTMHero(tmpBuff, sex);
+	float totalPoint = 0.f;
+	do{
+		totalPoint= (*m_heroAttritdist)(m_generator);
+	}while( totalPoint<POINT_MIN || totalPoint>POINT_MAX );
+
+	std::normal_distribution<float> levelDist(2.f, 1.5f);
+	hero->m_Level = std::clamp<int>(levelDist(engine), 0, 3);
+
+	totalPoint += hero->m_Level * (10 + engine() % 3);
+	std::array<int, 5> idx = {0, 1, 2, 3, 4};
+	std::shuffle(idx.begin(), idx.end(), engine);
+	
+	int mainElement = idx[0];
+	std::normal_distribution<float> dist(totalPoint / 5.0, 1.5f);
+	for(int i = 0; i < idx.size(); i++)
+	{
+
+		if(i == idx.size() - 1)//last one
+		{
+			hero->m_FiveElement[idx[i]] = totalPoint;
+		}
+		else
+		{
+			int point = std::clamp<int>(dist(engine), 1, totalPoint * 0.75f);
+			hero->m_FiveElement[idx[i]] = point;
+			totalPoint -= point;
+		}
+
+	}
 	hero->updateOutputModifier();
 	return hero;
 }
 void PTMHeroFactory::init()
 {
+	m_heroAttritdist = new std::normal_distribution<float>(MEAN_POINT_BASE, 1.5f);
+
 	std::string filePath = "PTM/data/Hero/NameList.json";
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(filePath, true);

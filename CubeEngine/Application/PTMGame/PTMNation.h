@@ -48,6 +48,7 @@ class PTMTown;
 		void setIdx(uint32_t newIdx) {m_idx = newIdx;};
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
+		virtual void onWeeklyTick() override;
 		void updateTownsMonthly();
 		void updateArmiesMonthly();
 		void addGold(float diff);

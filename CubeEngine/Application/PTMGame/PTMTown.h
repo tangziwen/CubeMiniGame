@@ -95,6 +95,7 @@ namespace tzw
 		int getGarrisonLimit();
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
+		virtual void onWeeklyTick() override;
 		PawnTile getPawnType() override;
 		PTMTaxPack collectTax();//return the tax
 		void investEco();

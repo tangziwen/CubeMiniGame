@@ -196,6 +196,10 @@ namespace tzw
 		updateGraphics();
 	}
 
+	void PTMArmy::onWeeklyTick()
+	{
+	}
+
 	void PTMArmy::setIsSelected(bool isSelect)
 	{
 		m_isSelected = isSelect;

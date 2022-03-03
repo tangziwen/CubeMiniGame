@@ -110,6 +110,10 @@ namespace tzw
 		tickPops();
 	}
 
+	void PTMTown::onWeeklyTick()
+	{
+	}
+
 	PawnTile PTMTown::getPawnType()
 	{
 		return PawnTile::TOWN_PAWN;
@@ -181,7 +185,7 @@ namespace tzw
 			float foodProduct = pop.m_job->getFoodProduct();
 			if(foodProduct> 0)
 			{
-				float product = foodProduct * (1.0f + m_AgriDevLevel * 0.05f + m_heroModContainer["FoodProductHeroMod"]);
+				float product = foodProduct * (1.0f + m_AgriDevLevel * 0.05f + m_heroesFiveElement.ElementWood  * 0.05f);
 				m_Food += product;
 				m_popOutputView.m_FoodOutput += product;
 			}
@@ -192,7 +196,7 @@ namespace tzw
 			float EveryDayNeedsProduct = pop.m_job->getLuxuryGoodsProduct();
 			if(EveryDayNeedsProduct > 0)
 			{
-				float product = EveryDayNeedsProduct * (1.0f + m_EcoDevLevel * 0.05f + m_heroModContainer["EveryDayNeedsProductHeroMod"]);
+				float product = EveryDayNeedsProduct * (1.0f + m_EcoDevLevel * 0.05f + m_heroesFiveElement.ElementMetal  * 0.05f);
 				m_EveryDayNeeds += product;
 				m_popOutputView.m_EveryDayNeedsOutput += product;
 			}
@@ -202,7 +206,7 @@ namespace tzw
 			float LuxuryGoodsProduct = pop.m_job->getLuxuryGoodsProduct();
 			if(LuxuryGoodsProduct > 0)
 			{
-				float product = LuxuryGoodsProduct *(1.0f + m_EcoDevLevel * 0.05f + m_heroModContainer["LuxuryGoodsProductHeroMod"]);
+				float product = LuxuryGoodsProduct *(1.0f + m_EcoDevLevel * 0.05f + m_heroesFiveElement.ElementWater  * 0.05f);
 				m_LuxuryGoods += product;
 				m_popOutputView.m_LuxuryGoodsOutput += product;
 			}

@@ -2,6 +2,7 @@
 #define TBASEMATH_H
 #include <math.h>
 #include "Tvector.h"
+#include <random>
 namespace tzw{
 class TbaseMath
 {
@@ -20,6 +21,8 @@ public:
     static unsigned int nextPow2(unsigned int num);
     static float clampf(float value, float lowBound, float upBound);
     static int clampI(int value, int lowBound, int upBound);
+    static void initRandomEngine();
+    static std::default_random_engine & getRandomEngine();
 protected:
     TbaseMath();
     ~TbaseMath();

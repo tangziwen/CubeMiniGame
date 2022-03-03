@@ -31,6 +31,7 @@
 #include <windows.h>
 #include <DbgHelp.h>
 #include "Scene/SceneCuller.h"
+#include "Utility/math/TbaseMath.h"
 namespace tzw {
 
 Engine * Engine::m_instance = nullptr;
@@ -388,6 +389,7 @@ LONG ApplicationCrashHandler(EXCEPTION_POINTERS *pException)
 
 void Engine::preSetting()
 {
+	TbaseMath::initRandomEngine();
 	Tfile::shared()->addSearchPath("./Asset/");
 	Tfile::shared()->addSearchPath("./");
 	Tfile::shared()->addSearchZip("Asset.pkg");

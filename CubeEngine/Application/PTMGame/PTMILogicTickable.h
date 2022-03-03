@@ -9,6 +9,7 @@ namespace tzw
 	public:
 		virtual void onDailyTick() = 0;
 		virtual void onMonthlyTick() = 0;
+		virtual void onWeeklyTick() = 0;
 	};
 
 }

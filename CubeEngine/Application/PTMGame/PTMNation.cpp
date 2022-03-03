@@ -56,11 +56,19 @@ namespace tzw
 		{
 			town->onDailyTick();
 		}
+		for(PTMHero * hero: m_heroes)
+		{
+			hero->onDailyTick();
+		}
 		garbageCollect();
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
 		{
 			m_TechState->doProgress(0.1);
 		}
+	}
+
+	void PTMNation::onWeeklyTick()
+	{
 	}
 
 	void PTMNation::updateTownsMonthly()
@@ -152,7 +160,7 @@ namespace tzw
 			{
 				newHero->setTownLocation(m_townList[rand() %m_townList.size()]);
 			}
-			
+			newHero->setCountry(this);
 			m_heroes.push_back(newHero);
 		}
 	}

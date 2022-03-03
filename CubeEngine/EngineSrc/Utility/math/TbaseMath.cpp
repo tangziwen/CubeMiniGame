@@ -5,6 +5,8 @@ namespace tzw {
 double TbaseMath::PI = 3.141592654;
 
 double TbaseMath::PI_OVER_180 = TbaseMath::PI / 180.0;
+
+static std::default_random_engine g_RANDOM_ENGINE;
 float TbaseMath::Ang2Radius(float angle)
 {
     return TbaseMath::PI * angle /180;
@@ -35,6 +37,17 @@ int TbaseMath::clampI(int value, int lowBound, int upBound)
     if(value < lowBound) return lowBound;
     if(value > upBound) return upBound;
     return value;
+}
+
+void TbaseMath::initRandomEngine()
+{
+    std::random_device rd;
+    g_RANDOM_ENGINE.seed(rd());
+}
+
+std::default_random_engine& TbaseMath::getRandomEngine()
+{
+    return g_RANDOM_ENGINE;
 }
 
 float TbaseMath::randF()

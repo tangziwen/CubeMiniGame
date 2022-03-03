@@ -38,6 +38,7 @@ namespace tzw
 		
 		virtual void onMonthlyTick() override;
 		virtual void onDailyTick() override;
+		virtual void onWeeklyTick() override;
 
 		void setIsSelected(bool isSelect);//only for player
 		void moveTo(PTMTile * tile);

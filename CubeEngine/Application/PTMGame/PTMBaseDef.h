@@ -1,5 +1,5 @@
 #pragma once
-
+#include "Utility/math/TbaseMath.h"
 //property
 #define PTM_PROPERTY(PROP, PROP_TYPE, DEFAULT_VAL, DESC) \
 public: \
@@ -80,6 +80,26 @@ struct PTMFiveElement
 		result.ElementFire = ElementFire * R;
 		result.ElementEarth = ElementEarth * R;
 		return result;
+	}
+
+	int & operator [](const size_t idx)
+	{
+		switch (idx)
+		{
+		case 0:
+			return ElementMetal;
+		case 1:
+			return ElementWood;
+		case 2:
+			return ElementWater;
+		case 3:
+			return ElementFire;
+		case 4:
+			return ElementEarth;
+		default:
+			//abort();
+			break;
+		}
 	}
 };
 }

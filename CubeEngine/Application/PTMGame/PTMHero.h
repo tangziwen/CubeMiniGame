@@ -6,10 +6,12 @@
 #include "2D/TileMap2DMgr.h"
 #include "PTMBaseDef.h"
 #include "PTMModifier.h"
+#include <random>
 
 namespace tzw
 {
 class PTMTown;
+class PTMNation;
 enum class PTMHeroRole
 {
 	Idle,
@@ -32,7 +34,7 @@ enum class PTMHeroMood
 	Tired,
 };
 
-class PTMHero
+class PTMHero: public PTMILogicTickable
 {
 	PTM_PROPERTY(Name, std::string, 1, "the Grassion of town")
 	PTM_PROPERTY(TownLocation, PTMTown * , nullptr, "the location of hero")
@@ -41,6 +43,8 @@ class PTMHero
 	PTM_PROPERTY(CurrRole, PTMHeroRole , PTMHeroRole::Idle, "the location of hero")
 	PTM_PROPERTY(CurrState, PTMHeroState , PTMHeroState::Working, "the location of hero")
 	PTM_PROPERTY(CurrMood, PTMHeroMood , PTMHeroMood::Normal, "the location of hero")
+	PTM_PROPERTY(Country, PTMNation * , nullptr, "the location of hero")
+	PTM_PROPERTY(Level, int , 0, "the location of hero")
 	PTM_PROPERTY(Sex, int, 0, "sex") // 0 male, 1 female
 public:
 	PTMHero(std::string Name, int sex);
@@ -53,6 +57,10 @@ public:
 	void kickFromDuty();
 	void kickFromKeeper();
 	void tick(uint32_t currDate);
+
+	virtual void onMonthlyTick() override;
+	virtual void onDailyTick() override;
+	virtual void onWeeklyTick() override;
 protected:
 	void breakOldDuty();
 	void tick_impl(uint32_t currDate);
@@ -71,5 +79,7 @@ private:
 	std::vector<std::string> m_familyName;
 	std::vector<std::string> m_femaleName;
 	std::vector<std::string> m_maleName;
+	std::default_random_engine m_generator;
+	std::normal_distribution<float> * m_heroAttritdist;
 };
 }
