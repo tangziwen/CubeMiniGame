@@ -214,6 +214,8 @@ namespace tzw
 			}
 			ImGui::EndGroupPanel();
 		END_INSPECT(m_currInspectTown)
+
+		drawHeroDetail();
 	}
 
 	void PTMInspectorGUI::setInspectTown(PTMTown* town)
@@ -230,6 +232,11 @@ namespace tzw
 	{
 		m_currInspectTownListNation = nation;
 		m_townListClickedCB = clickCB;
+	}
+
+	void PTMInspectorGUI::setInspectHero(PTMHero* hero)
+	{
+		m_currInspectHero = hero;
 	}
 
 	void PTMInspectorGUI::drawNation()
@@ -272,7 +279,13 @@ namespace tzw
 			DRAW_PROPERTY(t, MilitaryPoint)
 			DRAW_PROPERTY(t, GlobalManPower)
 			auto townList = t->getTownList();
+			ImGui::Text("Admin Heroes size %d", t->getAdminHeroes().size());
+			ImGui::Text("Eco Heroes size %d", t->getEcoHeroes().size());
+			ImGui::Text("Research Heroes size %d", t->getResearchHeroes().size());
+			ImGui::Text("Mil Heroes size %d", t->getMilHeroes().size());
+
 			ImGui::Text("Own Provinces: %u ", townList.size());
+			
 			ImGui::BeginChild("Pronvices List:",ImVec2(0,0), true);
 			for(PTMTown * town : townList)
 			{
@@ -288,25 +301,20 @@ namespace tzw
 			}
 			ImGui::EndChild();
 			ImGui::Text("Global Modifier");
-			ImGui::BeginChild("Pronvices List:",ImVec2(0,0), true);
-			for(PTMTown * town : townList)
-			{
-				ImGui::Text("%s", town->getName().c_str());
-					ImGui::SameLine();
-					ImGui::PushID(town);
-					if(ImGui::Button("*##gototown"))
-					{
-						
-						m_currInspectTown = town;
-					}
-					ImGui::PopID();
-			}
-
-			ImGui::EndChild();
 			ImGui::EndTabItem();
 		}
 			
+		if(ImGui::BeginTabItem("Admin"))
+		{
+			ImGui::Text("Tech Level");
 
+			auto & heroes = t->getAdminHeroes();
+			for(PTMHero * hero : heroes)
+			{
+				drawHeroSmall(hero, false);
+			}
+			ImGui::EndTabItem();
+		}
 		if(ImGui::BeginTabItem("Technology"))
 		{
 			ImGui::Text("Tech Level");
@@ -359,7 +367,7 @@ namespace tzw
 			for(int i = 0; i < num; i++)
 			{
 				PTMHero * hero = t->getHeroAt(i);
-				drawHero(hero);
+				drawHeroSmall(hero, true);
 			}
 			ImGui::EndTabItem();
 		}
@@ -397,10 +405,14 @@ namespace tzw
 		
 	}
 
-	void PTMInspectorGUI::drawHero(PTMHero* hero)
+	void PTMInspectorGUI::drawHeroSmall(PTMHero* hero, bool isShowLocation)
 	{
 		ImGui::PushID(hero);
-		ImGui::SmallButton(hero->getName().c_str());
+		if(ImGui::SmallButton(hero->getName().c_str()))
+		{
+			setInspectHero(hero);
+		}
+
 		std::string role = u8"无职位";
 		switch(hero->getCurrRole())
 		{
@@ -413,7 +425,16 @@ namespace tzw
 			role = hero->getTownOfOnDuty()->getName() + u8"普通就职";
 			break;
 		}
-		ImGui::Text(u8"所在:%s, 职位:%s", hero->getTownLocation()->getName().c_str(), role.c_str());
+		ImGui::SameLine(); ImGui::Text(u8"职位:%s", role.c_str());
+
+		if(isShowLocation)
+		{
+			ImGui::Text(u8"所在");ImGui::SameLine();
+			if( ImGui::SmallButton(hero->getTownLocation()->getName().c_str()))
+			{
+				setInspectTown(hero->getTownLocation());
+			}
+		}
 		const PTMFiveElement & fe = hero->getFiveElement();
 		ImGui::Text(u8"能力:");
 		//, fe.ElementMetal, fe.ElementWood, fe.ElementWater, fe.ElementFire, fe.ElementEarth);
@@ -422,17 +443,82 @@ namespace tzw
 		ImGui::SameLine();ImGui::TextColored(ImVec4(0.1f, 0.9f, 0.9f, 1.f), "%d", fe.ElementWater);
 		ImGui::SameLine();ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.f), "%d", fe.ElementFire);
 		ImGui::SameLine();ImGui::TextColored(ImVec4(212/255.f, 148 / 255.f, 32/255.f, 1.f), "%d", fe.ElementEarth);
-
-		if(ImGui::Button("Set As Keeper"))
-		{
-			setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignTownKeeper(town, hero);});
-		}
-		ImGui::SameLine();
-		if(ImGui::Button("Assign On Duty"))
-		{
-			setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero);});
-		}
 		ImGui::PopID();
+	}
+
+	void PTMInspectorGUI::drawHeroDetail()
+	{
+		BEGIN_INSPECT(m_currInspectHero, "Hero Detail")
+			PTMHero * hero = m_currInspectHero;
+
+
+			std::string role = u8"无职位";
+			switch(hero->getCurrRole())
+			{
+			case PTMHeroRole::Idle:
+				break;
+			case PTMHeroRole::Keeper:
+				role = hero->getTownOfKeeper()->getName() + u8"城守";
+				break;
+			case PTMHeroRole::OnDuty:
+				role = hero->getTownOfOnDuty()->getName() + u8"普通就职";
+				break;
+			case PTMHeroRole::Admin:
+				role = u8"行政";
+				break;
+			case PTMHeroRole::Eco:
+				role = u8"民生";
+				break;
+			case PTMHeroRole::Mil:
+				role = u8"扩张";
+				break;
+			}
+			ImGui::Text(u8"所在:%s, 职位:%s", hero->getTownLocation()->getName().c_str(), role.c_str());
+			const PTMFiveElement & fe = hero->getFiveElement();
+			ImGui::Text(u8"能力:");
+			//, fe.ElementMetal, fe.ElementWood, fe.ElementWater, fe.ElementFire, fe.ElementEarth);
+			ImGui::SameLine();ImGui::TextColored(ImVec4(1.0f, 0.84f, 0.f, 1.f), "%d", fe.ElementMetal);
+			ImGui::SameLine();ImGui::TextColored(ImVec4(0.1f, 0.9f, 0.1f, 1.f), "%d", fe.ElementWood);
+			ImGui::SameLine();ImGui::TextColored(ImVec4(0.1f, 0.9f, 0.9f, 1.f), "%d", fe.ElementWater);
+			ImGui::SameLine();ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.f), "%d", fe.ElementFire);
+			ImGui::SameLine();ImGui::TextColored(ImVec4(212/255.f, 148 / 255.f, 32/255.f, 1.f), "%d", fe.ElementEarth);
+
+			//local
+			ImGui::Text(u8"地方调动");
+			if(ImGui::Button("Set As Keeper"))
+			{
+				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignTownKeeper(town, hero);});
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Assign On Duty"))
+			{
+				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero);});
+			}
+
+			//central
+			ImGui::Text(u8"中央调动");
+			if(ImGui::Button("Admin"))
+			{
+				hero->getCountry()->assignAdmHero(hero);
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Eco"))
+			{
+				hero->getCountry()->assignEcoHero(hero);
+			}
+
+			if(ImGui::Button("Mil"))
+			{
+				hero->getCountry()->assignMilHero(hero);
+			}
+			ImGui::SameLine();
+			if(ImGui::Button("Research"))
+			{
+				hero->getCountry()->assignResearchHero(hero);
+			}
+
+
+		END_INSPECT(m_currInspectHero)
 	}
 
 }

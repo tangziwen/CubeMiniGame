@@ -43,7 +43,7 @@ namespace tzw
 		PTMPopRaceType * m_race = nullptr;
 		PTMPopJobType * m_job = nullptr;
 		float m_happiness = 0.5f;
-		int m_happinessLevel = 3;// 0 riot 1 unhappy 2 normal 3 relative happy 4 happy 5 super happy
+		int m_happinessLevel = 0;// 0 riot 1 unhappy 2 normal 3 relative happy 4 happy 5 super happy
 
 		void selfUpgradeMaybe();
 	};

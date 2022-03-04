@@ -66,6 +66,30 @@ void PTMHero::assignOnDuty(PTMTown* town)
 	setCurrRole(PTMHeroRole::OnDuty);
 }
 
+void PTMHero::assignResearch()
+{
+	breakOldDuty();
+	setCurrRole(PTMHeroRole::Research);
+}
+
+void PTMHero::assignAdm()
+{
+	breakOldDuty();
+	setCurrRole(PTMHeroRole::Admin);
+}
+
+void PTMHero::assignEco()
+{
+	breakOldDuty();
+	setCurrRole(PTMHeroRole::Eco);
+}
+
+void PTMHero::assignMil()
+{
+	breakOldDuty();
+	setCurrRole(PTMHeroRole::Mil);
+}
+
 void PTMHero::kickFromDuty()
 {
 	m_TownOfOnDuty->kickOnDuty(this);
@@ -112,6 +136,22 @@ void PTMHero::breakOldDuty()
 	if(m_TownOfOnDuty)
 	{
 		kickFromDuty();
+	}
+	if(m_CurrRole == PTMHeroRole::Admin)
+	{
+		m_Country->kickAdmHero(this);
+	}
+	if(m_CurrRole == PTMHeroRole::Eco)
+	{
+		m_Country->kickEcoHero(this);
+	}
+	if(m_CurrRole == PTMHeroRole::Mil)
+	{
+		m_Country->kickMilHero(this);
+	}
+	if(m_CurrRole == PTMHeroRole::Research)
+	{
+		m_Country->kickResearchHero(this);
 	}
 }
 

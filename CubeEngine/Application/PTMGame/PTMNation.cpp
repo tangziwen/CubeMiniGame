@@ -187,6 +187,86 @@ namespace tzw
 		hero->assignOnDuty(town);
 	}
 
+	void PTMNation::assignResearchHero(PTMHero* hero)
+	{
+		hero->assignResearch();
+		m_researchHeroes.push_back(hero);
+	}
+
+	void PTMNation::assignMilHero(PTMHero* hero)
+	{
+		hero->assignMil();
+		m_MilHeroes.push_back(hero);
+	}
+
+	void PTMNation::assignAdmHero(PTMHero* hero)
+	{
+		hero->assignAdm();
+		m_AdminHeroes.push_back(hero);
+	}
+
+	void PTMNation::assignEcoHero(PTMHero* hero)
+	{
+		hero->assignEco();
+		m_EcoHeroes.push_back(hero);
+	}
+
+	void PTMNation::kickResearchHero(PTMHero* hero)
+	{
+		auto iter = std::find(m_researchHeroes.begin(), m_researchHeroes.end(), hero);
+		if(iter != m_researchHeroes.end())
+		{
+			m_researchHeroes.erase(iter);
+		}
+	}
+
+	void PTMNation::kickMilHero(PTMHero* hero)
+	{
+		auto iter = std::find(m_MilHeroes.begin(), m_MilHeroes.end(), hero);
+		if(iter != m_MilHeroes.end())
+		{
+			m_MilHeroes.erase(iter);
+		}
+	}
+
+	void PTMNation::kickAdmHero(PTMHero* hero)
+	{
+		auto iter = std::find(m_AdminHeroes.begin(), m_AdminHeroes.end(), hero);
+		if(iter != m_AdminHeroes.end())
+		{
+			m_AdminHeroes.erase(iter);
+		}
+	}
+
+	void PTMNation::kickEcoHero(PTMHero* hero)
+	{
+		auto iter = std::find(m_EcoHeroes.begin(), m_EcoHeroes.end(), hero);
+		if(iter != m_EcoHeroes.end())
+		{
+			m_EcoHeroes.erase(iter);
+		}
+	}
+
+	std::vector<PTMHero*>& PTMNation::getResearchHeroes()
+	{
+		return m_researchHeroes;
+	}
+
+	std::vector<PTMHero*>& PTMNation::getEcoHeroes()
+	{
+		return m_EcoHeroes;
+	}
+
+	std::vector<PTMHero*>& PTMNation::getAdminHeroes()
+	{
+		return m_AdminHeroes;
+	}
+
+	std::vector<PTMHero*>& PTMNation::getMilHeroes()
+	{
+		return m_MilHeroes;
+	}
+
 	void PTMNation::garbageCollect()
 	{
 		for(PTMPawn * garbage : m_garbages)

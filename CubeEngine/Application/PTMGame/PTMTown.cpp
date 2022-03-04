@@ -212,7 +212,7 @@ namespace tzw
 			}
 			m_Food -= pop.m_race->getFoodConsume();
 			m_popOutputView.m_FoodInput += pop.m_race->getFoodConsume();
-			if(m_Food < 0.f) pop.m_happiness -= 0.05f;
+			
 
 			float EveryDayNeedsProduct = pop.m_job->getLuxuryGoodsProduct();
 			if(EveryDayNeedsProduct > 0)
@@ -234,11 +234,26 @@ namespace tzw
 			m_LuxuryGoods -= pop.m_race->getLuxuryGoodsConsume();
 			m_popOutputView.m_LuxuryGoodsInput += pop.m_race->getLuxuryGoodsConsume();
 
+			bool isFoodSufficient = (m_Food > 0.f);
+			bool isSufficient = isFoodSufficient && (m_LuxuryGoods > 0.f) && (m_EveryDayNeeds > 0.f);
+			if(isSufficient)
+			{
+				auto& re = TbaseMath::getRandomEngine();
+				if(re() % 10 > 7)
+				{
+					pop.m_happiness +=  (re() % 3)  * 0.01f + 0.05f;
+				}
+			}
+			else
+			{
+				pop.m_happiness -= 0.05f;
+			}
+			
 			//DownGrade and Upgrade pop Level, Downgrade is automaticly, upgrade is Randomness
 			if(pop.m_happiness < 0.f) // Downgrade happy level
 			{
 				pop.m_happinessLevel = std::clamp(pop.m_happinessLevel - 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
-				pop.m_happiness = 1.f;
+				pop.m_happiness = 0.5f;
 			}
 			if(pop.m_happiness > 1.f) // maybe Upgrade happy level
 			{

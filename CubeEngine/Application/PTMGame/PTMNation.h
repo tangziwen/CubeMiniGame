@@ -63,8 +63,25 @@ class PTMTown;
 		PTMHero * getHeroAt(int index);
 		size_t getTotalHerosNum();
 
+		//Admin assign
+
 		void assignTownKeeper(PTMTown * town, PTMHero * hero);
 		void assignOnDuty(PTMTown * town, PTMHero * hero);
+
+		void assignResearchHero(PTMHero * hero);
+		void assignMilHero(PTMHero * hero);
+		void assignAdmHero(PTMHero * hero);
+		void assignEcoHero(PTMHero * hero);
+
+		void kickResearchHero(PTMHero * hero);
+		void kickMilHero(PTMHero * hero);
+		void kickAdmHero(PTMHero * hero);
+		void kickEcoHero(PTMHero * hero);
+
+		std::vector<PTMHero *> & getResearchHeroes();
+		std::vector<PTMHero *> & getEcoHeroes();
+		std::vector<PTMHero *> & getAdminHeroes();
+		std::vector<PTMHero *> & getMilHeroes();
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};
@@ -75,6 +92,10 @@ class PTMTown;
 		std::vector<PTMArmy * > m_armyList;
 		std::vector<PTMPawn * > m_garbages;
 		std::vector<PTMHero *> m_heroes;
+		std::vector<PTMHero *> m_researchHeroes;
+		std::vector<PTMHero *> m_EcoHeroes;
+		std::vector<PTMHero *> m_AdminHeroes;
+		std::vector<PTMHero *> m_MilHeroes;
 		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> m_eventTypePool;
 	};
 

@@ -91,10 +91,11 @@ void PTMPopFactory::createAPop(PTMPop* pop, int jobType)
 void PTMPop::selfUpgradeMaybe()
 {
 	int upgradeRate = 15;
-	if((rand() % 100) > (100 - upgradeRate))
+	auto& re = TbaseMath::getRandomEngine();
+	if((re() % 100) > (100 - upgradeRate))
 	{
 		m_happinessLevel = std::clamp(m_happinessLevel + 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
-		m_happiness = 0.f;
+		m_happiness = 0.5f;
 	}
 	else
 	{

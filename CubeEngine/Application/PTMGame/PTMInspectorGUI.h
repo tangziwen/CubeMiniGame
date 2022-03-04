@@ -25,11 +25,14 @@ namespace tzw
 		void setInspectTown(PTMTown * town);
 		void setInspectNation(PTMNation * nation);
 		void setInspectTownList(PTMNation * nation, std::function<void(PTMTown*)> clickCB);
+		void setInspectHero(PTMHero * hero);
 		void drawNation();
 		void drawEvents();
-		void drawHero(PTMHero * hero);
+		void drawHeroSmall(PTMHero * hero, bool isShowLocation);
+		void drawHeroDetail();
 	private:
 		PTMTown * m_currInspectTown = nullptr;
+		PTMHero * m_currInspectHero = nullptr;
 		PTMNation * m_currInspectNation = nullptr;
 		PTMNation * m_currInspectTownListNation = nullptr;
 		std::function<void(PTMTown*)> m_townListClickedCB = {};

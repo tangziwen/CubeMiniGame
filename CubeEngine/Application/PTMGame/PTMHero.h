@@ -19,6 +19,10 @@ enum class PTMHeroRole
 	Idle,
 	Keeper,
 	OnDuty,
+	Admin,
+	Research,
+	Eco,
+	Mil,
 };
 
 enum class PTMHeroState
@@ -54,8 +58,14 @@ public:
 	void updateOutputModifier();
 	PTMModifier * getOutPutModifier();
 	void onCurrRoleChanged(PTMHeroRole newRole);
+
+
 	void assignAsKeeper(PTMTown * town);
 	void assignOnDuty(PTMTown * town);
+	void assignResearch();
+	void assignAdm();
+	void assignEco();
+	void assignMil();
 	void kickFromDuty();
 	void kickFromKeeper();
 	void tick(uint32_t currDate);
@@ -63,8 +73,9 @@ public:
 	virtual void onMonthlyTick() override;
 	virtual void onDailyTick() override;
 	virtual void onWeeklyTick() override;
-protected:
 	void breakOldDuty();
+protected:
+	
 	void tick_impl(uint32_t currDate);
 	int m_tickDayOffset = 0;//reduce the performance drop
 	PTMFiveElement m_FiveElement;
