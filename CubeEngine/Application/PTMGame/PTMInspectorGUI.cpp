@@ -136,7 +136,25 @@ namespace tzw
 				for(int i = 0; i < num; i++)
 				{
 					PTMHero * hero = t->getOnDutyHeroAt(i);
-					ImGui::SmallButton(hero->getName().c_str());
+					drawHeroSmall(hero, false);
+			        const char* items[] = { u8"训练", u8"开发", u8"工作"};
+			        int item_current_idx = (int)hero->getDutyObjective(); // Here we store our selection data as an index.
+			        const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
+			        if (ImGui::BeginCombo("##combo", combo_preview_value, 0))
+			        {
+			            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+			            {
+			                const bool is_selected = (item_current_idx == n);
+			                if (ImGui::Selectable(items[n], is_selected))
+			                    item_current_idx = n;
+
+			                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+			                if (is_selected)
+			                    ImGui::SetItemDefaultFocus();
+			            }
+			            ImGui::EndCombo();
+			        }
+					hero->setDutyObjective((DutyObjectiveEnum)item_current_idx);
 				}
 			}
 
@@ -429,7 +447,7 @@ namespace tzw
 
 		if(isShowLocation)
 		{
-			ImGui::Text(u8"所在");ImGui::SameLine();
+			ImGui::SameLine(); ImGui::Text(u8"所在");ImGui::SameLine();
 			if( ImGui::SmallButton(hero->getTownLocation()->getName().c_str()))
 			{
 				setInspectTown(hero->getTownLocation());

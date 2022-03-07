@@ -40,6 +40,13 @@ enum class PTMHeroMood
 	Tired,
 };
 
+enum class DutyObjectiveEnum
+{
+	Training,
+	Developing,
+	Working,
+};
+
 class PTMHero: public PTMILogicTickable
 {
 	PTM_PROPERTY(Name, std::string, 1, "the Grassion of town")
@@ -51,6 +58,7 @@ class PTMHero: public PTMILogicTickable
 	PTM_PROPERTY(CurrMood, PTMHeroMood , PTMHeroMood::Normal, "the location of hero")
 	PTM_PROPERTY(Country, PTMNation * , nullptr, "the location of hero")
 	PTM_PROPERTY(Level, int , 0, "the location of hero")
+	PTM_PROPERTY(DutyObjective, DutyObjectiveEnum , DutyObjectiveEnum::Training, "the location of hero")
 	PTM_PROPERTY(Sex, int, 0, "sex") // 0 male, 1 female
 public:
 	PTMHero(std::string Name, int sex);

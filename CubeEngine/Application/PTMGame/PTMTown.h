@@ -16,6 +16,7 @@ namespace tzw
 	class PTMNation;
 	class PTMHero;
 
+
 	struct PTMTaxPack
 	{
 		float m_gold = 0.f;
