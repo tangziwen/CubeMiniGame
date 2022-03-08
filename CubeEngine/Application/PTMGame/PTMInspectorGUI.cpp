@@ -114,7 +114,7 @@ namespace tzw
 	{
 		drawEvents();
 		drawNation();
-		
+		drawArmy();
 		BEGIN_INSPECT(m_currInspectTown, "Town")
 			PTMTown * t = m_currInspectTown;
 			bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == t->getOwner();
@@ -128,60 +128,83 @@ namespace tzw
 			}
 			else
 			{
-				ImGui::SmallButton("None");
-			}
-			ImGui::BeginChild("HeroesList", ImVec2(-1, 200));
-			{
-				size_t num = t->getTotalOnDutyHeroes();
-				for(int i = 0; i < num; i++)
+				if(ImGui::SmallButton("No Keeper Yet"))
 				{
-					PTMHero * hero = t->getOnDutyHeroAt(i);
-					drawHeroSmall(hero, false);
-			        const char* items[] = { u8"训练", u8"开发", u8"工作"};
-			        int item_current_idx = (int)hero->getDutyObjective(); // Here we store our selection data as an index.
-			        const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
-			        if (ImGui::BeginCombo("##combo", combo_preview_value, 0))
-			        {
-			            for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-			            {
-			                const bool is_selected = (item_current_idx == n);
-			                if (ImGui::Selectable(items[n], is_selected))
-			                    item_current_idx = n;
-
-			                // Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-			                if (is_selected)
-			                    ImGui::SetItemDefaultFocus();
-			            }
-			            ImGui::EndCombo();
-			        }
-					hero->setDutyObjective((DutyObjectiveEnum)item_current_idx);
+					setInspectHeroList(t->getOwner(), [t](PTMHero * hero){t->getOwner()->assignTownKeeper(t, hero);});
 				}
 			}
 
-			ImGui::EndChild();
+			size_t num = t->getTotalOnDutyHeroes();
+
+
+			ImGui::Text("HeroesList");ImGui::SameLine();
+			if(ImGui::SmallButton("+## assign more hero"))
+			{
+				setInspectHeroList(t->getOwner(), [t](PTMHero * hero){t->getOwner()->assignOnDuty(t, hero);});
+			}
+			if(num)
+			{
+				ImGui::BeginChild("HeroesList", ImVec2(-1, 200));
+				{
+					for(int i = 0; i < num; i++)
+					{
+						PTMHero * hero = t->getOnDutyHeroAt(i);
+						drawHeroSmall(hero, false);
+						ImGui::PushID(hero);
+						const char* items[] = { u8"训练", u8"开发", u8"工作"};
+						int item_current_idx = (int)hero->getDutyObjective(); // Here we store our selection data as an index.
+						const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
+						if (ImGui::BeginCombo("##combo", combo_preview_value, 0))
+						{
+							for (int n = 0; n < IM_ARRAYSIZE(items); n++)
+							{
+								const bool is_selected = (item_current_idx == n);
+								if (ImGui::Selectable(items[n], is_selected))
+									item_current_idx = n;
+
+								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
+								if (is_selected)
+									ImGui::SetItemDefaultFocus();
+							}
+							ImGui::EndCombo();
+						}
+						hero->setDutyObjective((DutyObjectiveEnum)item_current_idx);
+						ImGui::PopID();
+					}
+				}
+				ImGui::EndChild();
+			}
 
 			ImGui::BeginGroupPanel("Production");
+/*
 			DRAW_PROPERTY(t, AgriDevLevel)
 					ImGui::SameLine();
 					ImGui::ProgressBar(t->getAgriDevProgress(), ImVec2(100, 0));
+
+
+
+
+			DRAW_PROPERTY(t, EcoDevLevel)
+				ImGui::SameLine();
+				ImGui::ProgressBar(t->getEcoDevProgress(), ImVec2(100, 0));
+*/
 
 			DRAW_PROPERTY(t, IndustryLevel)
 				ImGui::SameLine();
 				ImGui::ProgressBar(t->getIndustryDevProgress(), ImVec2(100, 0));
 
-			DRAW_PROPERTY(t, EcoDevLevel)
-				ImGui::SameLine();
-				ImGui::ProgressBar(t->getEcoDevProgress(), ImVec2(100, 0));
-
 			DRAW_PROPERTY(t, HouseHoldLevel)
 				ImGui::SameLine();
 				ImGui::ProgressBar(t->getHouseHoldDevProgress(), ImVec2(100, 0));
 
+
+			/*
 			DRAW_PROPERTY(t, Autonomous)
 
 			DRAW_PROPERTY(t, Food)
 			DRAW_PROPERTY(t, EveryDayNeeds)
 			DRAW_PROPERTY(t, LuxuryGoods)
+			*/
 			ImGui::EndGroupPanel();
 
 			ImGui::BeginGroupPanel("Military");
@@ -196,7 +219,10 @@ namespace tzw
 					}
 					ImGui::Button("Boost Mil");
 
-					DrawButtonWithTips("Build Army", "Build An Army", true);
+					if(DrawButtonWithTips("Build Army", "Build An Army", true))
+					{
+						setInspectHeroList(t->getOwner(), [t](PTMHero * hero){t->buildArmy(hero);});
+					}
 					DrawButtonWithTips("Suprress Unrest", "Build An Army", true);
 					if(!isControlledByPlayer)
 					{
@@ -212,11 +238,14 @@ namespace tzw
 			ImGui::EndGroupPanel();
 			ImGui::BeginGroupPanel("Pops");
 			size_t popsTotal = t->getTotalPopsNum();
+
+			/*
 			const PTMPopOutputView& outputView = t->getPopOutputView();
 			ImGui::Text(u8"消费: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodInput, outputView.m_EveryDayNeedsInput, outputView.m_FoodInput);
 			ImGui::Text(u8"生产: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodOutput, outputView.m_EveryDayNeedsOutput, outputView.m_LuxuryGoodsOutput);
 			ImGui::Text(u8"盈余: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodOutput - outputView.m_FoodInput, 
 				outputView.m_EveryDayNeedsOutput - outputView.m_EveryDayNeedsInput, outputView.m_LuxuryGoodsOutput - outputView.m_LuxuryGoodsInput);
+			*/
 			for(int i = 0; i < popsTotal; i ++)
 			{
 				PTMPop * pop = t->getPopAt(i);
@@ -252,9 +281,20 @@ namespace tzw
 		m_townListClickedCB = clickCB;
 	}
 
+	void PTMInspectorGUI::setInspectHeroList(PTMNation* nation, std::function<void(PTMHero*)> clickCB)
+	{
+		m_currInspectHeroListNation = nation;
+		m_heroesListClickedCB = clickCB;
+	}
+
 	void PTMInspectorGUI::setInspectHero(PTMHero* hero)
 	{
 		m_currInspectHero = hero;
+	}
+
+	void PTMInspectorGUI::setInspectArmy(PTMArmy* army)
+	{
+		m_currInspectArmy = army;
 	}
 
 	void PTMInspectorGUI::drawNation()
@@ -283,6 +323,34 @@ namespace tzw
 			if(!isOpen)
 			{
 				m_currInspectTownListNation = false;
+			}
+		}
+
+
+		if(m_currInspectHeroListNation)
+		{
+			bool isOpen = true;
+			ImGui::Begin("Heroes List", &isOpen,ImGuiWindowFlags_NoResize);
+			ImVec2 winSize(300, 500);
+			ImGui::SetWindowSize("Heroes List", winSize);
+			PTMNation * t = m_currInspectHeroListNation;
+			size_t heroSize = t->getTotalHerosNum();
+			for(int i = 0; i < heroSize; i++)
+			{
+				PTMHero * hero = t->getHeroAt(i);
+				drawHeroSmall(hero, false);
+				ImGui::SameLine();
+				ImGui::PushID(hero);
+				if(ImGui::Button("Select ##gototown"))
+				{
+					m_currInspectHeroListNation = nullptr;
+					m_heroesListClickedCB(hero);
+				}
+				ImGui::PopID();
+			}
+			if(!isOpen)
+			{
+				m_currInspectHeroListNation = false;
 			}
 		}
 
@@ -431,6 +499,7 @@ namespace tzw
 			setInspectHero(hero);
 		}
 
+		/*
 		std::string role = u8"无职位";
 		switch(hero->getCurrRole())
 		{
@@ -444,6 +513,7 @@ namespace tzw
 			break;
 		}
 		ImGui::SameLine(); ImGui::Text(u8"职位:%s", role.c_str());
+		*/
 
 		if(isShowLocation)
 		{
@@ -537,6 +607,22 @@ namespace tzw
 
 
 		END_INSPECT(m_currInspectHero)
+	}
+
+	void PTMInspectorGUI::drawArmy()
+	{
+		BEGIN_INSPECT(m_currInspectArmy, "Army Detail")
+			auto & heroList = m_currInspectArmy->getHeroList();
+			ImGui::Text(u8"%s 部", heroList[0]->getName().c_str());
+			if(ImGui::SmallButton("+"))
+			{
+				setInspectHeroList(PTMWorld::shared()->getPlayerController()->getControlledNation(), 
+					[this](PTMHero * hero)
+					{
+						m_currInspectArmy->addHero(hero);
+					});
+			}
+		END_INSPECT(m_currInspectArmy)
 	}
 
 }

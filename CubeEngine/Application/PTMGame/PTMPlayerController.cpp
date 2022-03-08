@@ -8,6 +8,7 @@
 #include "PTMNation.h"
 #include "2D/LabelNew.h"
 #include "PTMEventMgr.h"
+#include "PTMInspectorGUI.h"
 namespace tzw
 {
 	PTMPlayerController::PTMPlayerController()
@@ -23,7 +24,7 @@ namespace tzw
 			[this](PTMEventArgPack arg)
 			{
 				PTMArmy * army = (PTMArmy *)arg.m_params["obj"];
-				PTMArmyGUI::shared()->showInspectTown(army);
+				PTMInspectorGUI::shared()->setInspectArmy(army);
 				selectArmy(army);
 			}
 		);

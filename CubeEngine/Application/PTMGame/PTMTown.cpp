@@ -11,6 +11,7 @@
 #include <sstream>
 #include "PTMInspectorGUI.h"
 #include "PTMHero.h"
+#include "PTMConfig.h"
 #include <array>
 namespace tzw
 {
@@ -97,7 +98,7 @@ namespace tzw
 
 	void PTMTown::onMonthlyTick()
 	{
-		//m_taxAccum += m_EcoDevLevel * 0.5f + 1.0f;
+		tickHeroDuty();
 		tickPops();
 	}
 
@@ -139,13 +140,13 @@ namespace tzw
 		m_MilDevLevel += 1;
 	}
 
-	void PTMTown::buildArmy()
+	void PTMTown::buildArmy(PTMHero * hero)
 	{
 		int x = m_placedTile->coord_x + 1;
 		int y = m_placedTile->coord_y;
 		PTMTile * targetTile = PTMWorld::shared()->getTile(x, y);
 
-		auto army = new PTMArmy(m_owner, targetTile);
+		auto army = new PTMArmy(m_owner, hero, targetTile);
 		army->updateGraphics();
 		m_owner->addArmy(army);
 	}
@@ -158,8 +159,6 @@ namespace tzw
 #pragma  optimize("", off)
 	void PTMTown::initPops()
 	{
-
-		
 		auto & randomEngine = TbaseMath::getRandomEngine();
 		m_AgriDevLevel = randomEngine()% 3 + 2;
 		m_EcoDevLevel = randomEngine()% 3 + 2;
@@ -199,10 +198,11 @@ namespace tzw
 
 	void PTMTown::tickPops()
 	{
-		tickHeroAffectOfPops();
+
 		m_popOutputView.reset();
 		for(PTMPop& pop :m_pops)
 		{
+			/*
 			float foodProduct = pop.m_job->getFoodProduct();
 			if(foodProduct> 0)
 			{
@@ -248,23 +248,33 @@ namespace tzw
 			{
 				pop.m_happiness -= 0.05f;
 			}
-			
+			*/
+
+
 			//DownGrade and Upgrade pop Level, Downgrade is automaticly, upgrade is Randomness
+			/*
 			if(pop.m_happiness < 0.f) // Downgrade happy level
 			{
 				pop.m_happinessLevel = std::clamp(pop.m_happinessLevel - 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
 				pop.m_happiness = 0.5f;
 			}
-			if(pop.m_happiness > 1.f) // maybe Upgrade happy level
+			*/
+			auto& re = TbaseMath::getRandomEngine();
+			if(re() % 100 > (100.f - m_heroPopEffect.upgrade_rate * 100.f))
 			{
-				pop.selfUpgradeMaybe();
-			}
+				pop.m_happiness += m_heroPopEffect.boost_percent * 0.001;
 
+				if(pop.m_happiness > 1.f) // maybe Upgrade happy level
+				{
+					pop.m_happinessLevel = std::clamp(pop.m_happinessLevel + 1, POP_MIN_HAPPY_LEVEL, POP_MAX_HAPPY_LEVEL);
+					pop.m_happiness = 0.f;
+				}
+			}
 			//tax
-			float goldProduct = pop.m_job->getGoldProduct();
+			float goldProduct = G_PTMConfigMgr["GlobalConst"]["PopBaseGold"] + G_PTMConfigMgr["GlobalConst"]["PopLevelGold"] * pop.m_happinessLevel; //pop.m_job->getGoldProduct();
 			if(goldProduct > 0.f)
 			{
-				m_taxPack.m_gold += goldProduct;
+				m_taxPack.m_gold += goldProduct * (1.0f + m_IndustryLevel * 0.01f);
 			}
 
 			float admProduct = pop.m_job->getAdmProduct();
@@ -300,24 +310,49 @@ namespace tzw
 		}
 	}
 
-	void PTMTown::tickHeroAffectOfPops()
+	void PTMTown::tickHeroDuty()
 	{
 		m_heroesFiveElement.reset();
 		m_heroModContainer.reset();
+		m_heroPopEffect.reset();
 		if(m_Keeper)
 		{
-			m_heroesFiveElement += m_Keeper->getFiveElement() * 2.0f;
-			m_Keeper->updateOutputModifier();
-			m_heroModContainer.addButNoEval(m_Keeper->getOutPutModifier());
+			//m_heroesFiveElement += m_Keeper->getFiveElement() * 2.0f;
+			//m_Keeper->updateOutputModifier();
+			//m_heroModContainer.addButNoEval(m_Keeper->getOutPutModifier());
 		}
 
 		for(PTMHero * hero : m_onDutyHeroes)
 		{
-			m_heroesFiveElement += hero->getFiveElement() * 0.5f;
-			hero->updateOutputModifier();
-			m_heroModContainer.addButNoEval(hero->getOutPutModifier());
+			switch(hero->getDutyObjective())
+			{
+			case DutyObjectiveEnum::Developing:
+				m_HouseHoldDevProgress += hero->getFiveElement().ElementEarth * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
+				if(m_HouseHoldDevProgress > 1.f)
+				{
+					m_HouseHoldLevel += 1.f;
+					m_HouseHoldDevProgress = 0.f;
+				}
+				m_IndustryDevProgress += hero->getFiveElement().ElementFire * 0.25f + hero->getFiveElement().ElementMetal * 0.25f;
+				if(m_IndustryLevel > 1.f)
+				{
+					m_IndustryLevel += 1.f;
+					m_IndustryDevProgress = 0.f;
+				}
+				break;
+			case DutyObjectiveEnum::Training:
+				break;
+			case DutyObjectiveEnum::Working:
+				m_heroPopEffect.boost_percent += hero->getFiveElement().ElementWater * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
+				m_heroPopEffect.upgrade_rate += 0.015f;
+				break;
+			}
+			//m_heroesFiveElement += hero->getFiveElement() * 0.5f;
+
+			//hero->updateOutputModifier();
+			//m_heroModContainer.addButNoEval(hero->getOutPutModifier());
 		}
-		m_heroModContainer.eval();
+		//m_heroModContainer.eval();
 	}
 
 	PTMTaxPack PTMTown::collectTax()

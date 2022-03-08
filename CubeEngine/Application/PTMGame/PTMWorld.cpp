@@ -14,12 +14,14 @@
 #include "PTMInspectorGUI.h"
 #include "PTMInGameEvent.h"
 #include "2D/TileMap2DMgr.h"
+#include "PTMConfig.h"
 namespace tzw
 {
 
 
 	PTMWorld::PTMWorld()
 	{
+		;
 	}
 
 	void PTMWorld::initMap()

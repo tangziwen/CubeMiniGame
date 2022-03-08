@@ -13,6 +13,7 @@ namespace tzw
 	class PTMArmy;
 	class GUIFrame;
 	class Button;
+	class PTMHero;
 	class PTMArmyGraphics
 	{
 	public:
@@ -31,7 +32,7 @@ namespace tzw
 	class PTMArmy : public PTMILogicTickable, public PTMPawn
 	{
 	public:
-		PTMArmy(PTMNation * nation, PTMTile * targetTile);
+		PTMArmy(PTMNation * nation, PTMHero * hero, PTMTile * targetTile);
 		virtual ~PTMArmy();
 		void updateGraphics();
 		void setTile(PTMTile * targetTile) override;
@@ -44,12 +45,15 @@ namespace tzw
 		void moveTo(PTMTile * tile);
 		void simulateMilitary();
 		PawnTile getPawnType() override;
+		std::vector<PTMHero * > & getHeroList();
+		void addHero(PTMHero * hero);
 	private:
 		uint32_t m_currSize = 0;
 		uint32_t m_sizeLimit = 0;
 		PTMArmyGraphics * m_graphics = nullptr;
 		PTMNation * m_parent = nullptr;
 		PTMTile * m_targetTile = nullptr;
+		std::vector<PTMHero * > m_herolist;
 		bool m_isSelected = false;
 		friend class PTMArmyGraphics;
 		friend class PTMPawnJudge;

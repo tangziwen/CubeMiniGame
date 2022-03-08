@@ -119,11 +119,12 @@ namespace tzw
 
 	}
 
-	PTMArmy::PTMArmy(PTMNation * nation, PTMTile * targetTile)
+	PTMArmy::PTMArmy(PTMNation * nation,PTMHero * hero, PTMTile * targetTile)
 		:m_sizeLimit(1000),m_parent(nation)
 	{
 		PTMPawn::setTile(targetTile);
-		m_graphics = new PTMArmyGraphics(this); 
+		m_graphics = new PTMArmyGraphics(this);
+		m_herolist.push_back(hero);
 	}
 
 	PTMArmy::~PTMArmy()
@@ -246,6 +247,16 @@ namespace tzw
 	PawnTile PTMArmy::getPawnType()
 	{
 		return PawnTile::ARMY_PAWN;
+	}
+
+	std::vector<PTMHero*>& PTMArmy::getHeroList()
+	{
+		return m_herolist;
+	}
+
+	void PTMArmy::addHero(PTMHero* hero)
+	{
+		m_herolist.push_back(hero);
 	}
 
 	void PTMArmy::updateGraphics()

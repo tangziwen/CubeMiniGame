@@ -15,6 +15,7 @@ namespace tzw
 	class GUIFrame;
 	class Button;
 	class PTMHero;
+	class PTMArmy;
 
 	class PTMInspectorGUI : public Singleton<PTMInspectorGUI>, public IMGUIObject
 	{
@@ -25,17 +26,24 @@ namespace tzw
 		void setInspectTown(PTMTown * town);
 		void setInspectNation(PTMNation * nation);
 		void setInspectTownList(PTMNation * nation, std::function<void(PTMTown*)> clickCB);
+		void setInspectHeroList(PTMNation * nation, std::function<void(PTMHero*)> clickCB);
 		void setInspectHero(PTMHero * hero);
+		void setInspectArmy(PTMArmy * army);
 		void drawNation();
 		void drawEvents();
 		void drawHeroSmall(PTMHero * hero, bool isShowLocation);
 		void drawHeroDetail();
+		void drawArmy();
 	private:
 		PTMTown * m_currInspectTown = nullptr;
 		PTMHero * m_currInspectHero = nullptr;
 		PTMNation * m_currInspectNation = nullptr;
 		PTMNation * m_currInspectTownListNation = nullptr;
+		PTMArmy * m_currInspectArmy = nullptr;
 		std::function<void(PTMTown*)> m_townListClickedCB = {};
+
+		PTMNation * m_currInspectHeroListNation = nullptr;
+		std::function<void(PTMHero*)> m_heroesListClickedCB = {};
 	};
 
 }

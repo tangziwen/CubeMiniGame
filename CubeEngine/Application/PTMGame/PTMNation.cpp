@@ -44,6 +44,15 @@ namespace tzw
 		updateTownsMonthly();
 		updateArmiesMonthly();
 
+		for(PTMHero * hero: m_heroes)
+		{
+			hero->onMonthlyTick();
+			PTMTaxPack upkeep = hero->collectUpKeep();
+
+			m_Gold -= upkeep.m_gold;
+			m_AdminPoint -= upkeep.m_adm;
+		}
+
 	}
 
 	void PTMNation::onDailyTick()

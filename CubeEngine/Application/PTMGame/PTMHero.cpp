@@ -8,6 +8,7 @@
 #include "PTMGameTimeMgr.h"
 #include <array>
 #include <algorithm>
+#include "PTMConfig.h"
 namespace tzw
 {
 constexpr float MEAN_POINT_BASE = 30.f;
@@ -112,6 +113,28 @@ void PTMHero::tick(uint32_t currDate)
 
 void PTMHero::onMonthlyTick()
 {
+	switch(m_CurrRole)
+	{
+	case PTMHeroRole::Idle:
+		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Idle"];
+		break;
+	case PTMHeroRole::Keeper:
+		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Keeper"];
+		break;
+	case PTMHeroRole::OnDuty:
+		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Duty"];
+		break;
+	case PTMHeroRole::Admin:
+		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Duty"];
+		break;
+	case PTMHeroRole::Research:
+		break;
+	case PTMHeroRole::Eco:
+		break;
+	case PTMHeroRole::Mil:
+		break;
+	}
+	
 }
 
 void PTMHero::onDailyTick()
@@ -153,6 +176,13 @@ void PTMHero::breakOldDuty()
 	{
 		m_Country->kickResearchHero(this);
 	}
+}
+
+const PTMTaxPack PTMHero::collectUpKeep()
+{
+	PTMTaxPack tmp = m_upKeep;
+	m_upKeep.reset();
+	return tmp;
 }
 
 void PTMHero::tick_impl(uint32_t currDate)

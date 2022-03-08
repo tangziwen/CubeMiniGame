@@ -10,6 +10,7 @@
 #include "PTMGameTimeMgr.h"
 #include "PTMArmy.h"
 #include "PTMTownGUI.h"
+
 #define PTM_MAP_SIZE (96)
 namespace tzw
 {

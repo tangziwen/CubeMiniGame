@@ -7,6 +7,7 @@
 #include "PTMPawn.h"
 #include "PTMPop.h"
 #include "PTMModifier.h"
+#include "PTMTaxPack.h"
 namespace tzw
 {
 	class LabelNew;
@@ -15,18 +16,6 @@ namespace tzw
 	class PTMTown;
 	class PTMNation;
 	class PTMHero;
-
-
-	struct PTMTaxPack
-	{
-		float m_gold = 0.f;
-		float m_adm = 0.f;
-		void reset()
-		{
-			m_gold = 0.f;
-			m_adm = 0.f;
-		}
-	};
 
 	struct PTMPopOutputView
 	{
@@ -51,6 +40,20 @@ namespace tzw
 			m_LuxuryGoodsOutput = 0.f;
 		}
 	};
+
+	struct HeroPopEffect
+	{
+		float upgrade_rate = 0.35f;
+		float boost_percent = 0.f;
+
+		void reset()
+		{
+			upgrade_rate = 0.35f;
+			boost_percent = 0.f;
+
+		}
+	};
+
 	class PTMTownGraphics
 	{
 	public:
@@ -110,7 +113,7 @@ namespace tzw
 		PTMTaxPack collectTax();//return the tax
 		void investEco();
 		void investMil();
-		void buildArmy();
+		void buildArmy(PTMHero * hero);
 		void addOccupyTile(PTMTile * tile);
 		void initPops();
 		PTMPop * getPopAt(size_t index);
@@ -124,7 +127,7 @@ namespace tzw
 		void assignOnDuty(PTMHero * hero);
 		void kickOnDuty(PTMHero * hero);
 	private:
-		void tickHeroAffectOfPops();
+		void tickHeroDuty();
 		PTMModifierContainer m_heroModContainer;
 		std::vector<PTMTile *> m_occupyTiles;
 		std::string m_name;
@@ -139,6 +142,7 @@ namespace tzw
 		PTMPopOutputView m_popOutputView;
 		std::vector<PTMHero * > m_onDutyHeroes;
 		PTMFiveElement m_heroesFiveElement;
+		HeroPopEffect m_heroPopEffect;
 	};
 
 }

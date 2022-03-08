@@ -9,6 +9,7 @@
 #include <random>
 
 #include "PTMILogicTickable.h"
+#include "PTMTaxPack.h"
 
 namespace tzw
 {
@@ -23,6 +24,7 @@ enum class PTMHeroRole
 	Research,
 	Eco,
 	Mil,
+	OnArmy,
 };
 
 enum class PTMHeroState
@@ -82,6 +84,7 @@ public:
 	virtual void onDailyTick() override;
 	virtual void onWeeklyTick() override;
 	void breakOldDuty();
+	const PTMTaxPack collectUpKeep();
 protected:
 	
 	void tick_impl(uint32_t currDate);
@@ -89,6 +92,7 @@ protected:
 	PTMFiveElement m_FiveElement;
 	PTMModifier m_outPutModifier ;//this modifier means this hero affect other things modifers
 	friend class PTMHeroFactory;
+	PTMTaxPack m_upKeep;
 };
 
 class PTMHeroFactory: public Singleton<PTMHeroFactory>
