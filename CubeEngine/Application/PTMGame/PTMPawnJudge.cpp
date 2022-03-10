@@ -4,6 +4,7 @@
 #include "PTMArmy.h"
 #include "PTMTown.h"
 #include "PTMWorld.h"
+#include "PTMHero.h"
 namespace tzw
 {
 PTMPawnJudge::PTMPawnJudge()

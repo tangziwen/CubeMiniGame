@@ -16,6 +16,7 @@
 #include "PTMPawnJudge.h"
 #include "2D/imgui_internal.h"
 #include <sstream>
+#include "PTMConfig.h"
 
 #include "PTMHero.h"
 #include "PTMTech.h"
@@ -134,56 +135,15 @@ namespace tzw
 				}
 			}
 
-			size_t num = t->getTotalOnDutyHeroes();
 
-
-			ImGui::Text("HeroesList");ImGui::SameLine();
-			if(ImGui::SmallButton("+## assign more hero"))
-			{
-				setInspectHeroList(t->getOwner(), [t](PTMHero * hero){t->getOwner()->assignOnDuty(t, hero);});
-			}
-			if(num)
-			{
-				ImGui::BeginChild("HeroesList", ImVec2(-1, 200));
-				{
-					for(int i = 0; i < num; i++)
-					{
-						PTMHero * hero = t->getOnDutyHeroAt(i);
-						drawHeroSmall(hero, false);
-						ImGui::PushID(hero);
-						const char* items[] = { u8"训练", u8"开发", u8"工作"};
-						int item_current_idx = (int)hero->getDutyObjective(); // Here we store our selection data as an index.
-						const char* combo_preview_value = items[item_current_idx];  // Pass in the preview value visible before opening the combo (it could be anything)
-						if (ImGui::BeginCombo("##combo", combo_preview_value, 0))
-						{
-							for (int n = 0; n < IM_ARRAYSIZE(items); n++)
-							{
-								const bool is_selected = (item_current_idx == n);
-								if (ImGui::Selectable(items[n], is_selected))
-									item_current_idx = n;
-
-								// Set the initial focus when opening the combo (scrolling + keyboard navigation focus)
-								if (is_selected)
-									ImGui::SetItemDefaultFocus();
-							}
-							ImGui::EndCombo();
-						}
-						hero->setDutyObjective((DutyObjectiveEnum)item_current_idx);
-						ImGui::PopID();
-					}
-				}
-				ImGui::EndChild();
-			}
+			drawDuty(t, "Training", (int)DutyObjectiveEnum::Training);
+			drawDuty(t, "Working", (int)DutyObjectiveEnum::Working);
 
 			ImGui::BeginGroupPanel("Production");
 /*
 			DRAW_PROPERTY(t, AgriDevLevel)
 					ImGui::SameLine();
 					ImGui::ProgressBar(t->getAgriDevProgress(), ImVec2(100, 0));
-
-
-
-
 			DRAW_PROPERTY(t, EcoDevLevel)
 				ImGui::SameLine();
 				ImGui::ProgressBar(t->getEcoDevProgress(), ImVec2(100, 0));
@@ -217,13 +177,10 @@ namespace tzw
 						ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
 						ImGui::PushStyleVar(ImGuiStyleVar_Alpha, g.Style.Alpha * 0.6f);
 					}
-					ImGui::Button("Boost Mil");
-
 					if(DrawButtonWithTips("Build Army", "Build An Army", true))
 					{
 						setInspectHeroList(t->getOwner(), [t](PTMHero * hero){t->buildArmy(hero);});
 					}
-					DrawButtonWithTips("Suprress Unrest", "Build An Army", true);
 					if(!isControlledByPlayer)
 					{
 						ImGui::PopItemFlag();
@@ -233,9 +190,7 @@ namespace tzw
 				DRAW_PROPERTY_LIMIT(t, Garrison)
 				DRAW_PROPERTY(t, ManPower);
 			ImGui::EndGroupPanel();
-			ImGui::BeginGroupPanel("Politics");
-			DrawButtonWithTips("Issue Edict", "Build An Army", true);
-			ImGui::EndGroupPanel();
+
 			ImGui::BeginGroupPanel("Pops");
 			size_t popsTotal = t->getTotalPopsNum();
 
@@ -578,9 +533,21 @@ namespace tzw
 				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignTownKeeper(town, hero);});
 			}
 			ImGui::SameLine();
-			if(ImGui::Button("Assign On Duty"))
+			if(ImGui::Button("Assign On Trainning"))
 			{
-				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero);});
+				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero, (int)DutyObjectiveEnum::Training);});
+			}
+
+			ImGui::SameLine();
+			if(ImGui::Button("Assign On Working"))
+			{
+				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero, (int)DutyObjectiveEnum::Working);});
+			}
+
+			ImGui::SameLine();
+			if(ImGui::Button("Assign On Developing"))
+			{
+				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero, (int)DutyObjectiveEnum::Developing);});
 			}
 
 			//central
@@ -623,6 +590,41 @@ namespace tzw
 					});
 			}
 		END_INSPECT(m_currInspectArmy)
+	}
+
+	void PTMInspectorGUI::drawDuty(PTMTown * t, std::string title, int dutyEnum)
+	{
+		DutyObjectiveEnum objective = (DutyObjectiveEnum)dutyEnum;
+
+		{
+			ImGui::PushID(title.c_str());
+			ImGui::BeginGroupPanel(title.c_str());
+			size_t num = t->getTotalOnDutyHeroes(objective);
+			ImGui::Text("HeroesList");ImGui::SameLine();
+			if(ImGui::SmallButton("+##assignMoreHero"))
+			{
+				setInspectHeroList(t->getOwner(), [t, objective](PTMHero * hero){t->getOwner()->assignOnDuty(t, hero, (int)objective);});
+			}
+			ImGui::SameLine();ImGui::Text("UpKeep %f", t->getUpKeep(objective));
+			if(num)
+			{
+				ImGui::BeginChild("HeroesList", ImVec2(-1, 200));
+				{
+					for(int i = 0; i < num; i++)
+					{
+						PTMHero * hero = t->getOnDutyHeroAt(i, objective);
+						drawHeroSmall(hero, false);
+						ImGui::PushID(hero);
+						ImGui::SameLine();
+						ImGui::ProgressBar(hero->getDutyProgress() / (hero->getDutyProgressMax() * 1.0f));
+						ImGui::PopID();
+					}
+				}
+				ImGui::EndChild();
+			}
+			ImGui::EndGroupPanel();
+			ImGui::PopID();
+		}
 	}
 
 }

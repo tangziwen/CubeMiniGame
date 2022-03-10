@@ -59,9 +59,9 @@ namespace tzw
 				if(m_changeCB)
 				{
 					m_changeCB(keyCode);
+					hide();
+					return true;
 				}
-				hide();
-				return true;
 				break;
 			
 			}

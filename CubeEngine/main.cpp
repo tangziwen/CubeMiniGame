@@ -70,7 +70,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-	return Engine::run(argc,argv,new PTMEntry());
+	//return Engine::run(argc,argv,new PTMEntry());
 
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());

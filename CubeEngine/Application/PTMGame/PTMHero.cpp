@@ -59,12 +59,13 @@ void PTMHero::assignAsKeeper(PTMTown* town)
 	this->setCurrRole(PTMHeroRole::Keeper);
 }
 
-void PTMHero::assignOnDuty(PTMTown* town)
+void PTMHero::assignOnDuty(PTMTown* town, DutyObjectiveEnum objective)
 {
 	breakOldDuty();
-	town->assignOnDuty(this);
+	town->assignOnDuty(this, objective);
 	m_TownOfOnDuty = town;
 	setCurrRole(PTMHeroRole::OnDuty);
+	setDutyObjective(objective);
 }
 
 void PTMHero::assignResearch()
@@ -113,28 +114,7 @@ void PTMHero::tick(uint32_t currDate)
 
 void PTMHero::onMonthlyTick()
 {
-	switch(m_CurrRole)
-	{
-	case PTMHeroRole::Idle:
-		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Idle"];
-		break;
-	case PTMHeroRole::Keeper:
-		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Keeper"];
-		break;
-	case PTMHeroRole::OnDuty:
-		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Duty"];
-		break;
-	case PTMHeroRole::Admin:
-		m_upKeep.m_gold += G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Duty"];
-		break;
-	case PTMHeroRole::Research:
-		break;
-	case PTMHeroRole::Eco:
-		break;
-	case PTMHeroRole::Mil:
-		break;
-	}
-	
+	m_upKeep.m_gold += getUpKeep();
 }
 
 void PTMHero::onDailyTick()
@@ -185,8 +165,128 @@ const PTMTaxPack PTMHero::collectUpKeep()
 	return tmp;
 }
 
+void PTMHero::updateDuty()
+{
+	if(!m_TownOfOnDuty) return;
+	switch(getDutyObjective())
+	{
+		case DutyObjectiveEnum::Developing:
+		{
+			float houseHoldProgress = m_TownOfOnDuty->getHouseHoldDevProgress();
+			houseHoldProgress += m_FiveElement.ElementEarth * 0.25f + m_FiveElement.ElementWood * 0.25f;
+			if(houseHoldProgress > 1.f)
+			{
+				m_TownOfOnDuty->setHouseHoldLevel(m_TownOfOnDuty->getHouseHoldLevel() + 1);
+				houseHoldProgress = 0.f;
+			}
+			m_TownOfOnDuty->setHouseHoldDevProgress(houseHoldProgress);
+
+			float industryPorgress = m_TownOfOnDuty->getIndustryDevProgress();
+			industryPorgress += getFiveElement().ElementFire * 0.25f + getFiveElement().ElementMetal * 0.25f;
+			if(industryPorgress > 1.f)
+			{
+				m_TownOfOnDuty->setIndustryLevel(m_TownOfOnDuty->getIndustryLevel() + 1);
+				industryPorgress = 0.f;
+			}
+			m_TownOfOnDuty->setIndustryDevProgress(industryPorgress);
+		}
+			break;
+		case DutyObjectiveEnum::Training:
+		{
+			auto& re = TbaseMath::getRandomEngine();
+			int idx = re()%5;
+			m_FiveElement[idx] += 1;
+		}
+			break;
+		case DutyObjectiveEnum::Working:
+			//m_heroPopEffect.boost_percent += hero->getFiveElement().ElementWater * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
+			//m_heroPopEffect.upgrade_rate += 0.015f;
+			break;
+	}
+}
+
+int PTMHero::getDutyProgressMax()
+{
+	switch(getDutyObjective())
+	{
+		case DutyObjectiveEnum::Developing:
+		{
+			return 200;
+		}
+			break;
+		case DutyObjectiveEnum::Training:
+		{
+			return 400;
+		}
+			break;
+		case DutyObjectiveEnum::Working:
+		{
+			return 100;
+		}
+			break;
+	}
+	return 0;
+}
+
+float PTMHero::getUpKeep()
+{
+	switch(m_CurrRole)
+	{
+	case PTMHeroRole::Idle:
+		return G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Idle"];
+		break;
+	case PTMHeroRole::Keeper:
+		return G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Keeper"];
+		break;
+	case PTMHeroRole::OnDuty:
+		return getDutyUpKeep();
+		break;
+	case PTMHeroRole::Admin:
+		return G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Duty"];
+		break;
+	case PTMHeroRole::Research:
+		break;
+	case PTMHeroRole::Eco:
+		break;
+	case PTMHeroRole::Mil:
+		break;
+	}
+	return 0.f;
+}
+
+float PTMHero::getDutyUpKeep()
+{
+	switch(getDutyObjective())
+	{
+		case DutyObjectiveEnum::Developing:
+		{
+			return G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Dev"];
+		}
+			break;
+		case DutyObjectiveEnum::Training:
+		{
+			return G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Training"];
+		}
+			break;
+		case DutyObjectiveEnum::Working:
+		{
+			return G_PTMConfigMgr["GlobalConst"]["HeroUpKeep_Working"];
+		}
+			break;
+	}
+	return 0;
+}
+
 void PTMHero::tick_impl(uint32_t currDate)
 {
+	m_DutyProgress += 34;
+
+	
+	if(m_DutyProgress > getDutyProgressMax())
+	{
+		updateDuty();
+		m_DutyProgress = 0;
+	}
 
 }
 

@@ -191,9 +191,9 @@ namespace tzw
 		hero->assignAsKeeper(town);
 	}
 
-	void PTMNation::assignOnDuty(PTMTown* town, PTMHero* hero)
+	void PTMNation::assignOnDuty(PTMTown* town, PTMHero* hero, int objective)
 	{
-		hero->assignOnDuty(town);
+		hero->assignOnDuty(town, (DutyObjectiveEnum)objective);
 	}
 
 	void PTMNation::assignResearchHero(PTMHero* hero)

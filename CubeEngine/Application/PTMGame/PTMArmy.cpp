@@ -235,7 +235,7 @@ namespace tzw
 			if(pawn->getPawnType() == PawnTile::TOWN_PAWN)
 			{
 				PTMTown * town = static_cast<PTMTown *>(pawn);
-				if(town->getOwner() != PTMWorld::shared()->getPlayerController()->getControlledNation())
+				if(town->getOwner() !=this->m_parent)
 				{
 					PTMPawnJudge::shared()->offensive(this, town);
 				}

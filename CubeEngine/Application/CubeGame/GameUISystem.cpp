@@ -582,7 +582,7 @@ void GameUISystem::drawIMGUI()
 
 bool GameUISystem::onKeyPress(int keyCode)
 {
-	return true;
+	return false;
 }
 
 bool GameUISystem::isVisible() const

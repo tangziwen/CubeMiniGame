@@ -4,6 +4,7 @@
 #include "EngineSrc/Event/Event.h"
 #include "PTMILogicTickable.h"
 #include "PTMPawn.h"
+#include "PTMBaseDef.h"
 namespace tzw
 {
 	class LabelNew;
@@ -29,8 +30,16 @@ namespace tzw
 		Button * m_button {nullptr};
 		
 	};
+
+	enum class PTMArmyRole
+	{
+		Hunting,
+		Aggressive,
+	};
+
 	class PTMArmy : public PTMILogicTickable, public PTMPawn
 	{
+	PTM_PROPERTY(ArmyRole, PTMArmyRole, PTMArmyRole::Hunting, "ArmyRole")
 	public:
 		PTMArmy(PTMNation * nation, PTMHero * hero, PTMTile * targetTile);
 		virtual ~PTMArmy();

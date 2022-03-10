@@ -15,8 +15,8 @@ namespace tzw
 		void hide();
 		bool onKeyRelease(int keyCode) override;
     private:
-		std::function<void(int)> m_changeCB;
-		bool m_isOpen;
+		std::function<void(int)> m_changeCB {};
+		bool m_isOpen = false;
 	};
 
 }

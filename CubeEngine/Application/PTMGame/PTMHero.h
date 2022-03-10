@@ -47,6 +47,7 @@ enum class DutyObjectiveEnum
 	Training,
 	Developing,
 	Working,
+	MAX_NUM_DUTITES
 };
 
 class PTMHero: public PTMILogicTickable
@@ -62,6 +63,7 @@ class PTMHero: public PTMILogicTickable
 	PTM_PROPERTY(Level, int , 0, "the location of hero")
 	PTM_PROPERTY(DutyObjective, DutyObjectiveEnum , DutyObjectiveEnum::Training, "the location of hero")
 	PTM_PROPERTY(Sex, int, 0, "sex") // 0 male, 1 female
+	PTM_PROPERTY(DutyProgress, int, 0, "DutyProgress")
 public:
 	PTMHero(std::string Name, int sex);
 	const PTMFiveElement & getFiveElement();
@@ -71,7 +73,7 @@ public:
 
 
 	void assignAsKeeper(PTMTown * town);
-	void assignOnDuty(PTMTown * town);
+	void assignOnDuty(PTMTown * town, DutyObjectiveEnum objective);
 	void assignResearch();
 	void assignAdm();
 	void assignEco();
@@ -85,8 +87,11 @@ public:
 	virtual void onWeeklyTick() override;
 	void breakOldDuty();
 	const PTMTaxPack collectUpKeep();
+	void updateDuty();
+	int getDutyProgressMax();
+	float getUpKeep();
 protected:
-	
+	float getDutyUpKeep();
 	void tick_impl(uint32_t currDate);
 	int m_tickDayOffset = 0;//reduce the performance drop
 	PTMFiveElement m_FiveElement;

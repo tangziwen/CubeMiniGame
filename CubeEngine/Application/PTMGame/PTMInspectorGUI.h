@@ -34,6 +34,7 @@ namespace tzw
 		void drawHeroSmall(PTMHero * hero, bool isShowLocation);
 		void drawHeroDetail();
 		void drawArmy();
+		void drawDuty(PTMTown * town, std::string title, int dutyEnum);
 	private:
 		PTMTown * m_currInspectTown = nullptr;
 		PTMHero * m_currInspectHero = nullptr;

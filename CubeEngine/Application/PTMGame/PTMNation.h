@@ -7,6 +7,7 @@
 #include "PTMBaseDef.h"
 #include "PTMObjectReflect.h"
 #include "PTMInGameEvent.h"
+
 namespace tzw
 {
 class PTMHero;
@@ -66,7 +67,7 @@ class PTMTown;
 		//Admin assign
 
 		void assignTownKeeper(PTMTown * town, PTMHero * hero);
-		void assignOnDuty(PTMTown * town, PTMHero * hero);
+		void assignOnDuty(PTMTown * town, PTMHero * hero, int objective);
 
 		void assignResearchHero(PTMHero * hero);
 		void assignMilHero(PTMHero * hero);

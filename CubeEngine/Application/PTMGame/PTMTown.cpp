@@ -274,7 +274,7 @@ namespace tzw
 			float goldProduct = G_PTMConfigMgr["GlobalConst"]["PopBaseGold"] + G_PTMConfigMgr["GlobalConst"]["PopLevelGold"] * pop.m_happinessLevel; //pop.m_job->getGoldProduct();
 			if(goldProduct > 0.f)
 			{
-				m_taxPack.m_gold += goldProduct * (1.0f + m_IndustryLevel * 0.01f);
+				m_taxPack.m_gold += goldProduct * (1.0f + (m_heroPopEffect.productBonus / 100.f));
 			}
 
 			float admProduct = pop.m_job->getAdmProduct();
@@ -290,24 +290,35 @@ namespace tzw
 	}
 
 
-	PTMHero* PTMTown::getOnDutyHeroAt(int index)
+	PTMHero* PTMTown::getOnDutyHeroAt(int index, DutyObjectiveEnum DutyObjective)
 	{
-		return m_onDutyHeroes[index];
+		return m_onDutyHeroes[(int)DutyObjective][index];
 	}
 
-	void PTMTown::assignOnDuty(PTMHero* hero)
+	void PTMTown::assignOnDuty(PTMHero* hero, DutyObjectiveEnum DutyObjective)
 	{
-		m_onDutyHeroes.push_back(hero);
+		m_onDutyHeroes[(int)DutyObjective].push_back(hero);
 		
 	}
 
 	void PTMTown::kickOnDuty(PTMHero* hero)
 	{
-		auto iter = std::find(m_onDutyHeroes.begin(), m_onDutyHeroes.end(), hero);
-		if(iter != m_onDutyHeroes.end())
+		auto objective = (int)(hero->getDutyObjective());
+		auto iter = std::find(m_onDutyHeroes[objective].begin(), m_onDutyHeroes[objective].end(), hero);
+		if(iter != m_onDutyHeroes[objective].end())
 		{
-			m_onDutyHeroes.erase(iter);
+			m_onDutyHeroes[objective].erase(iter);
 		}
+	}
+
+	float PTMTown::getUpKeep(DutyObjectiveEnum DutyObjective)
+	{
+		float sum = 0.f;
+		for(PTMHero * hero :m_onDutyHeroes[(int)DutyObjective])
+		{
+			sum += hero->getUpKeep();
+		}
+		return sum;
 	}
 
 	void PTMTown::tickHeroDuty()
@@ -322,35 +333,15 @@ namespace tzw
 			//m_heroModContainer.addButNoEval(m_Keeper->getOutPutModifier());
 		}
 
-		for(PTMHero * hero : m_onDutyHeroes)
+		for(PTMHero * hero : m_onDutyHeroes[(int)DutyObjectiveEnum::Working])
 		{
-			switch(hero->getDutyObjective())
-			{
-			case DutyObjectiveEnum::Developing:
-				m_HouseHoldDevProgress += hero->getFiveElement().ElementEarth * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
-				if(m_HouseHoldDevProgress > 1.f)
-				{
-					m_HouseHoldLevel += 1.f;
-					m_HouseHoldDevProgress = 0.f;
-				}
-				m_IndustryDevProgress += hero->getFiveElement().ElementFire * 0.25f + hero->getFiveElement().ElementMetal * 0.25f;
-				if(m_IndustryLevel > 1.f)
-				{
-					m_IndustryLevel += 1.f;
-					m_IndustryDevProgress = 0.f;
-				}
-				break;
-			case DutyObjectiveEnum::Training:
-				break;
-			case DutyObjectiveEnum::Working:
-				m_heroPopEffect.boost_percent += hero->getFiveElement().ElementWater * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
-				m_heroPopEffect.upgrade_rate += 0.015f;
-				break;
-			}
+			m_heroPopEffect.boost_percent += hero->getFiveElement().ElementWater * 0.3f + hero->getFiveElement().ElementWood * 0.3f;
+			m_heroPopEffect.upgrade_rate += 0.03f;
 			//m_heroesFiveElement += hero->getFiveElement() * 0.5f;
 
 			//hero->updateOutputModifier();
 			//m_heroModContainer.addButNoEval(hero->getOutPutModifier());
+			m_heroPopEffect.productBonus += 0.2f + hero->getFiveElement().ElementMetal * 0.5f + hero->getFiveElement().ElementWater * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
 		}
 		//m_heroModContainer.eval();
 	}

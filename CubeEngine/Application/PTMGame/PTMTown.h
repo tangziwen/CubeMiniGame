@@ -8,6 +8,7 @@
 #include "PTMPop.h"
 #include "PTMModifier.h"
 #include "PTMTaxPack.h"
+#include "PTMHero.h"
 namespace tzw
 {
 	class LabelNew;
@@ -45,12 +46,12 @@ namespace tzw
 	{
 		float upgrade_rate = 0.35f;
 		float boost_percent = 0.f;
-
+		float productBonus = 0.f;
 		void reset()
 		{
 			upgrade_rate = 0.35f;
 			boost_percent = 0.f;
-
+			productBonus = 0.f;
 		}
 	};
 
@@ -122,10 +123,11 @@ namespace tzw
 
 		
 		const PTMPopOutputView& getPopOutputView() {return m_popOutputView;}
-		size_t getTotalOnDutyHeroes() {return m_onDutyHeroes.size();};
-		PTMHero * getOnDutyHeroAt(int index);
-		void assignOnDuty(PTMHero * hero);
+		size_t getTotalOnDutyHeroes(DutyObjectiveEnum DutyObjective) {return m_onDutyHeroes[(int)DutyObjective].size();};
+		PTMHero * getOnDutyHeroAt(int index, DutyObjectiveEnum DutyObjective);
+		void assignOnDuty(PTMHero * hero, DutyObjectiveEnum DutyObjective);
 		void kickOnDuty(PTMHero * hero);
+		float getUpKeep(DutyObjectiveEnum DutyObjective);
 	private:
 		void tickHeroDuty();
 		PTMModifierContainer m_heroModContainer;
@@ -140,7 +142,7 @@ namespace tzw
 		PTMTaxPack m_taxPack;
 		std::vector<PTMPop> m_pops;
 		PTMPopOutputView m_popOutputView;
-		std::vector<PTMHero * > m_onDutyHeroes;
+		std::vector<PTMHero * > m_onDutyHeroes[(int)DutyObjectiveEnum::MAX_NUM_DUTITES];
 		PTMFiveElement m_heroesFiveElement;
 		HeroPopEffect m_heroPopEffect;
 	};
