@@ -43,6 +43,14 @@ struct PTMFiveElement
 	int ElementFire = 0;
 	int ElementEarth = 0;
 
+
+	static float GetElementEffective(float element, float againstElement)
+	{
+		float halfElement = (element * 0.5f);
+		float result = 1.0f - ((std::clamp( againstElement -  halfElement, 0.0f, element) * 1.0f) / halfElement) * 0.5f;
+		return result;
+	}
+	
 	void reset()
 	{
 		ElementMetal = 0;
@@ -51,6 +59,7 @@ struct PTMFiveElement
 		ElementFire = 0;
 		ElementEarth = 0;
 	}
+	
 	PTMFiveElement & operator +=(const PTMFiveElement & R)
 	{
 		ElementMetal += R.ElementMetal;

@@ -333,16 +333,23 @@ namespace tzw
 			//m_heroModContainer.addButNoEval(m_Keeper->getOutPutModifier());
 		}
 
+
 		for(PTMHero * hero : m_onDutyHeroes[(int)DutyObjectiveEnum::Working])
 		{
 			m_heroPopEffect.boost_percent += hero->getFiveElement().ElementWater * 0.3f + hero->getFiveElement().ElementWood * 0.3f;
 			m_heroPopEffect.upgrade_rate += 0.03f;
-			//m_heroesFiveElement += hero->getFiveElement() * 0.5f;
+			m_heroesFiveElement += hero->getFiveElement();
 
 			//hero->updateOutputModifier();
 			//m_heroModContainer.addButNoEval(hero->getOutPutModifier());
-			m_heroPopEffect.productBonus += 0.2f + hero->getFiveElement().ElementMetal * 0.5f + hero->getFiveElement().ElementWater * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
+			m_heroPopEffect.productBonus += 0.2f + hero->getFiveElement().ElementWater * 0.25f + hero->getFiveElement().ElementWood * 0.25f;
 		}
+
+		float waterEffective = PTMFiveElement::GetElementEffective(m_heroesFiveElement.ElementWater, m_heroesFiveElement.ElementEarth);
+		float woodEffective = PTMFiveElement::GetElementEffective(m_heroesFiveElement.ElementWood, m_heroesFiveElement.ElementMetal);
+
+		m_heroPopEffect.boost_percent *= waterEffective * 0.5f +  woodEffective * 0.5f;
+		m_heroPopEffect.productBonus *= waterEffective * 0.5f + woodEffective * 0.5f;
 		//m_heroModContainer.eval();
 	}
 
