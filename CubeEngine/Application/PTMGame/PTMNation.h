@@ -12,6 +12,7 @@ namespace tzw
 {
 class PTMHero;
 class PTMTown;
+class PTMDepartment;
 	class PTMArmy;
 	class PTMPawn;
 	class PTMTechState;
@@ -83,6 +84,7 @@ class PTMTown;
 		std::vector<PTMHero *> & getEcoHeroes();
 		std::vector<PTMHero *> & getAdminHeroes();
 		std::vector<PTMHero *> & getMilHeroes();
+		std::vector<PTMDepartment * > & getDepartments();
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};
@@ -98,6 +100,7 @@ class PTMTown;
 		std::vector<PTMHero *> m_AdminHeroes;
 		std::vector<PTMHero *> m_MilHeroes;
 		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> m_eventTypePool;
+		std::vector<PTMDepartment * > m_departmentList;
 	};
 
 }

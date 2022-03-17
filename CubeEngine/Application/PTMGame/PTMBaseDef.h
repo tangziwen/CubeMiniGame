@@ -32,6 +32,13 @@ protected:\
 PROP_TYPE m_##PROP {DEFAULT_VAL};\
 PROP_TYPE m_##PROP##Capacity##Base {DEFAULT_CAPACITY_VALUE};
 
+
+#define PTM_PROPERTY_SIMPLE(PROP, PROP_TYPE, DEFAULT_VAL) \
+public: \
+const PROP_TYPE & get##PROP() {return m_##PROP;}\
+protected:\
+PROP_TYPE m_##PROP {DEFAULT_VAL};
+
 namespace tzw
 {
 

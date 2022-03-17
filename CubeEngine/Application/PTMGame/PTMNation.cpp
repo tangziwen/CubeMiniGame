@@ -9,6 +9,7 @@
 #include "PTMHero.h"
 #include "PTMTech.h"
 #include "PTMInGameEvent.h"
+#include "PTMDepartment.h"
 namespace tzw
 {
 	PTMNation::PTMNation()
@@ -20,6 +21,11 @@ namespace tzw
 		setPropByName<float>("AdminPoint", 750);
 
 		m_TechState =  PTMTechMgr::shared()->generateTechState(this, "PTM/data/Tech/AdminTech.json");
+
+
+		m_departmentList.push_back(new PTMDepartment("Farming", 1));
+		m_departmentList.push_back(new PTMDepartment("Factory", 1));
+		m_departmentList.push_back(new PTMDepartment("Training", 1));
 	}
 
 	void PTMNation::millitaryOccupyTown(PTMTown* town)
@@ -274,6 +280,11 @@ namespace tzw
 	std::vector<PTMHero*>& PTMNation::getMilHeroes()
 	{
 		return m_MilHeroes;
+	}
+
+	std::vector<PTMDepartment*>& PTMNation::getDepartments()
+	{
+		return m_departmentList;
 	}
 
 	void PTMNation::garbageCollect()

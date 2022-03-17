@@ -20,6 +20,7 @@
 
 #include "PTMHero.h"
 #include "PTMTech.h"
+#include "PTMDepartment.h"
 #define BORDER_LEFT 0
 #define BORDER_RIGHT 1
 #define BORDER_BOTTOM 2
@@ -344,17 +345,20 @@ namespace tzw
 			ImGui::Text("Global Modifier");
 			ImGui::EndTabItem();
 		}
-			
-		if(ImGui::BeginTabItem("Admin"))
-		{
-			ImGui::Text("Tech Level");
+		const std::vector<PTMDepartment*> & departments = t->getDepartments();
 
-			auto & heroes = t->getAdminHeroes();
-			for(PTMHero * hero : heroes)
+		for(PTMDepartment * deparment : departments)
+		{
+			if(ImGui::BeginTabItem(deparment->getName().c_str()))
 			{
-				drawHeroSmall(hero, false);
+				ImGui::Text("Total Size %d/%d",deparment->getHeroList().size(), deparment->getTotalSlotSize());
+				auto & heroes = deparment->getHeroList();
+				for(PTMHero * hero : heroes)
+				{
+					drawHeroSmall(hero, false);
+				}
+				ImGui::EndTabItem();
 			}
-			ImGui::EndTabItem();
 		}
 		if(ImGui::BeginTabItem("Technology"))
 		{

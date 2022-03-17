@@ -47,7 +47,8 @@ extern "C"
 int main(int argc, char *argv[]) 
 {
     Engine::preSetting();
-
+	std::vector<void * > test_list = {};
+	printf("%d",  test_list.size());
 #if TEST_SCRIPT
 	auto data = Tfile::shared()->getData("TinaTest/test.tina", true);
 	TinaTokenizer *tokenizer = new TinaTokenizer();
@@ -70,7 +71,7 @@ int main(int argc, char *argv[])
 #endif
 
 
-	//return Engine::run(argc,argv,new PTMEntry());
+	return Engine::run(argc,argv,new PTMEntry());
 
 #ifdef  TEST_VULKAN_ENTRY
     return Engine::run(argc,argv,new TestVulkanEntry());
