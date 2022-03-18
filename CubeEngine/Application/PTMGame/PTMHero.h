@@ -15,6 +15,7 @@ namespace tzw
 {
 class PTMTown;
 class PTMNation;
+class PTMDepartment;
 enum class PTMHeroRole
 {
 	Idle,
@@ -61,9 +62,11 @@ class PTMHero: public PTMILogicTickable
 	PTM_PROPERTY(CurrMood, PTMHeroMood , PTMHeroMood::Normal, "the location of hero")
 	PTM_PROPERTY(Country, PTMNation * , nullptr, "the location of hero")
 	PTM_PROPERTY(Level, int , 0, "the location of hero")
+	PTM_PROPERTY(CurrExp, unsigned int , 0, "the location of hero")
 	PTM_PROPERTY(DutyObjective, DutyObjectiveEnum , DutyObjectiveEnum::Training, "the location of hero")
 	PTM_PROPERTY(Sex, int, 0, "sex") // 0 male, 1 female
 	PTM_PROPERTY(DutyProgress, int, 0, "DutyProgress")
+	PTM_PROPERTY(CurrDepartment, PTMDepartment * , nullptr, "CurrDepartment")
 public:
 	PTMHero(std::string Name, int sex);
 	const PTMFiveElement & getFiveElement();
@@ -81,6 +84,7 @@ public:
 	void kickFromDuty();
 	void kickFromKeeper();
 	void tick(uint32_t currDate);
+	void payDay(float val);
 
 	virtual void onMonthlyTick() override;
 	virtual void onDailyTick() override;
@@ -90,6 +94,8 @@ public:
 	void updateDuty();
 	int getDutyProgressMax();
 	float getUpKeep();
+	unsigned int getMaxEXP();
+	void gainExp(unsigned int exp);
 protected:
 	float getDutyUpKeep();
 	void tick_impl(uint32_t currDate);

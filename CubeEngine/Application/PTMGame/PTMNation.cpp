@@ -10,8 +10,33 @@
 #include "PTMTech.h"
 #include "PTMInGameEvent.h"
 #include "PTMDepartment.h"
+#include "PTMFarmingDepartment.h"
+#include "PTMAlchemyDepartment.h"
 namespace tzw
 {
+
+	
+	void PTMCurrencyPool::inc(PTMCurrencyEnum currencyType, float val)
+	{
+		m_currencyPool[(int)currencyType] += val;
+	}
+
+	void PTMCurrencyPool::dec(PTMCurrencyEnum currencyType, float val)
+	{
+		m_currencyPool[(int)currencyType] -= val;
+	}
+
+	float PTMCurrencyPool::get(PTMCurrencyEnum currencyType)
+	{
+		return m_currencyPool[(int)currencyType];
+	}
+
+	bool PTMCurrencyPool::isAfford(PTMCurrencyEnum currencyType, float costVal)
+	{
+		return (m_currencyPool[(int)currencyType] >= costVal);
+	}
+
+
 	PTMNation::PTMNation()
 	{
 		m_GlobalModifier = new PTMModifierContainer();
@@ -21,11 +46,6 @@ namespace tzw
 		setPropByName<float>("AdminPoint", 750);
 
 		m_TechState =  PTMTechMgr::shared()->generateTechState(this, "PTM/data/Tech/AdminTech.json");
-
-
-		m_departmentList.push_back(new PTMDepartment("Farming", 1));
-		m_departmentList.push_back(new PTMDepartment("Factory", 1));
-		m_departmentList.push_back(new PTMDepartment("Training", 1));
 	}
 
 	void PTMNation::millitaryOccupyTown(PTMTown* town)
@@ -43,20 +63,16 @@ namespace tzw
 
 	void PTMNation::onMonthlyTick()
 	{
-		m_Gold += m_NationalYearlyBaseTax / 12.0f + (*m_GlobalModifier)["national_gold_inc_modifier"];//National tax
-		m_AdminPoint += m_NationalYearlyAdimPoint / 12.0f;
-		m_MilitaryPoint += m_NationalYearlyMilPoint / 12.0f;
-		m_GlobalManPower += 300;
+		for(PTMDepartment * department : m_departmentList)
+		{
+			department->work();
+		}
 		updateTownsMonthly();
 		updateArmiesMonthly();
 
 		for(PTMHero * hero: m_heroes)
 		{
 			hero->onMonthlyTick();
-			PTMTaxPack upkeep = hero->collectUpKeep();
-
-			m_Gold -= upkeep.m_gold;
-			m_AdminPoint -= upkeep.m_adm;
 		}
 
 	}
@@ -76,26 +92,36 @@ namespace tzw
 			hero->onDailyTick();
 		}
 		garbageCollect();
+		
+		/*
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
 		{
 			m_TechState->doProgress(0.1);
 		}
+		*/
 	}
 
 	void PTMNation::onWeeklyTick()
 	{
+		float salary = m_nationalCurrencyPool.get(PTMCurrencyEnum::Dan);
+		salary /= m_heroes.size();
+		m_nationalCurrencyPool.dec(PTMCurrencyEnum::Dan, salary);
+		for(PTMHero * hero: m_heroes)
+		{
+			//payday mostly
+			hero->payDay(salary);
+			hero->onWeeklyTick();
+		}
 	}
 
 	void PTMNation::updateTownsMonthly()
 	{
+
 		for(PTMTown * town: m_townList)
 		{
 			town->onMonthlyTick();
-			PTMTaxPack tax =  town->collectTax();
-			m_Gold += tax.m_gold;
-			m_AdminPoint += tax.m_adm;
-
 		}
+
 
 		if(PTMWorld::shared()->getPlayerController()->getControlledNation() == this)
 		{
@@ -176,8 +202,22 @@ namespace tzw
 				newHero->setTownLocation(m_townList[rand() %m_townList.size()]);
 			}
 			newHero->setCountry(this);
+			addHeroToDepartment(rand()%m_departmentList.size(), newHero);
 			m_heroes.push_back(newHero);
 		}
+	}
+
+	void PTMNation::initData()
+	{
+		m_departmentList.resize(NATION_DEPARTMENT_MAX);
+
+		m_departmentList[NATION_DEPARTMENT_FARMING] = new PTMFarmingDepartment(this);
+
+		m_departmentList[NATION_DEPARTMENT_ALCHEMY] = new PTMAlchemyDepartment(this);
+		m_departmentList[NATION_DEPARTMENT_RESEARCH] = new PTMDepartment(this, "RESEARCH", 1);
+		m_departmentList[NATION_DEPARTMENT_IDLE] = new PTMDepartment(this, "Idle", 1);
+
+		generateRandomHero();
 	}
 
 	PTMHero* PTMNation::getHeroAt(int index)
@@ -262,6 +302,13 @@ namespace tzw
 		}
 	}
 
+	void PTMNation::addHeroToDepartment(int departmentIdx, PTMHero* hero)
+	{
+		if(hero->getCurrDepartment()) hero->getCurrDepartment()->removeHero(hero);
+		m_departmentList[departmentIdx]->addHero(hero);
+		hero->setCurrDepartment(m_departmentList[departmentIdx]);
+	}
+
 	std::vector<PTMHero*>& PTMNation::getResearchHeroes()
 	{
 		return m_researchHeroes;
@@ -287,6 +334,11 @@ namespace tzw
 		return m_departmentList;
 	}
 
+	PTMCurrencyPool* PTMNation::getNationalCurrency()
+	{
+		return &m_nationalCurrencyPool;
+	}
+
 	void PTMNation::garbageCollect()
 	{
 		for(PTMPawn * garbage : m_garbages)
@@ -303,5 +355,6 @@ namespace tzw
 		}
 		m_garbages.clear();
 	}
+
 
 }

@@ -7,15 +7,36 @@
 #include "PTMBaseDef.h"
 #include "PTMObjectReflect.h"
 #include "PTMInGameEvent.h"
-
+#include "PTMCurrencyEnum.h"
 namespace tzw
 {
-class PTMHero;
-class PTMTown;
-class PTMDepartment;
+	enum NationDepartmentType_E
+	{
+		NATION_DEPARTMENT_FARMING,
+		NATION_DEPARTMENT_ALCHEMY,
+		NATION_DEPARTMENT_RESEARCH,
+		NATION_DEPARTMENT_IDLE,
+		NATION_DEPARTMENT_MAX,
+	};
+	class PTMHero;
+	class PTMTown;
+	class PTMDepartment;
 	class PTMArmy;
 	class PTMPawn;
 	class PTMTechState;
+
+	class PTMCurrencyPool
+	{
+	public:
+		PTMCurrencyPool() = default;
+		void inc(PTMCurrencyEnum currencyType, float val);
+		void dec(PTMCurrencyEnum currencyType, float val);
+		float get(PTMCurrencyEnum currencyType);
+		bool isAfford(PTMCurrencyEnum currencyType, float costVal);
+	private:
+		float m_currencyPool[(int)PTMCurrencyEnum::CurrencyMax] = {};
+	};
+
 	class PTMNation : public PTMILogicTickable, public PTMObjectReflect
 	{
 	PTM_PROPERTY(GlobalModifier, PTMModifierContainer *, nullptr, "the Grassion of town");
@@ -62,6 +83,7 @@ class PTMDepartment;
 		void addEvent(const PTMInGameEventInstanced  &eventInstanced);
 		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> & getEventInstancedList();
 		void generateRandomHero();
+		void initData();
 		PTMHero * getHeroAt(int index);
 		size_t getTotalHerosNum();
 
@@ -80,11 +102,14 @@ class PTMDepartment;
 		void kickAdmHero(PTMHero * hero);
 		void kickEcoHero(PTMHero * hero);
 
+		void addHeroToDepartment(int departmentIdx, PTMHero * hero);
+
 		std::vector<PTMHero *> & getResearchHeroes();
 		std::vector<PTMHero *> & getEcoHeroes();
 		std::vector<PTMHero *> & getAdminHeroes();
 		std::vector<PTMHero *> & getMilHeroes();
 		std::vector<PTMDepartment * > & getDepartments();
+		PTMCurrencyPool * getNationalCurrency();
 	private:
 		void garbageCollect();
 		uint32_t m_idx = {0};
@@ -101,6 +126,7 @@ class PTMDepartment;
 		std::vector<PTMHero *> m_MilHeroes;
 		std::unordered_map<PTMInGameEvent *, PTMInGameEventInstanced> m_eventTypePool;
 		std::vector<PTMDepartment * > m_departmentList;
+		PTMCurrencyPool m_nationalCurrencyPool;
 	};
 
 }

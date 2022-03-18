@@ -2,7 +2,9 @@
 	"HeroUpKeep_Idle":2.0,
 	"HeroUpKeep_Keeper":7.0,
 	"HeroUpKeep_Duty":5.0,
+	"HeroUpKeep_Working":0.0,
+	"HeroUpKeep_Training":3.0,
 	"HeroUpKeep_Dev":5.0,
-	"PopBaseGold":0.75,
-	"PopLevelGold":0.25,
+	"PopBaseGold":2.0,
+	"PopLevelGold":0.5,
 }

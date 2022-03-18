@@ -104,7 +104,7 @@ namespace tzw
 
 		for(PTMNation * nation : m_nationList)
 		{
-			nation->generateRandomHero();
+			nation->initData();
 		}
 		loadOwnerShips();
 

@@ -5,6 +5,7 @@
 #include "PTMILogicTickable.h"
 #include "PTMPawn.h"
 #include "2D/GUISystem.h"
+#include "PTMCurrencyEnum.h"
 namespace tzw
 {
 	class LabelNew;
@@ -35,6 +36,7 @@ namespace tzw
 		void drawHeroDetail();
 		void drawArmy();
 		void drawDuty(PTMTown * town, std::string title, int dutyEnum);
+		const char * getCurrencyStr(PTMCurrencyEnum currency);
 	private:
 		PTMTown * m_currInspectTown = nullptr;
 		PTMHero * m_currInspectHero = nullptr;

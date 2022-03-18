@@ -14,11 +14,12 @@ namespace tzw
 constexpr float MEAN_POINT_BASE = 30.f;
 constexpr float POINT_MAX = 45.f;
 constexpr float POINT_MIN = 15.0f;
+constexpr int LUCKY_OFFSET = 5;
 PTMHero::PTMHero(std::string Name, int sex)
 {
 	m_Name = Name;
 	m_Sex = sex;
-	m_tickDayOffset = rand() % 7;
+	m_tickDayOffset = rand() % LUCKY_OFFSET;
 }
 
 const PTMFiveElement& PTMHero::getFiveElement()
@@ -112,6 +113,12 @@ void PTMHero::tick(uint32_t currDate)
 
 }
 
+void PTMHero::payDay(float val)
+{
+	gainExp(20.f * val);
+}
+
+
 void PTMHero::onMonthlyTick()
 {
 	m_upKeep.m_gold += getUpKeep();
@@ -120,7 +127,7 @@ void PTMHero::onMonthlyTick()
 void PTMHero::onDailyTick()
 {
 	uint32_t currDate = PTMGameTimeMgr::shared()->getCurrDate();
-	if(currDate % 7 == m_tickDayOffset)
+	if(currDate % LUCKY_OFFSET == m_tickDayOffset)
 	{
 		tick_impl(currDate);
 	}
@@ -128,6 +135,7 @@ void PTMHero::onDailyTick()
 
 void PTMHero::onWeeklyTick()
 {
+	
 }
 
 void PTMHero::breakOldDuty()
@@ -252,6 +260,21 @@ float PTMHero::getUpKeep()
 		break;
 	}
 	return 0.f;
+}
+
+unsigned int PTMHero::getMaxEXP()
+{
+	return (m_Level + 1) * 350;
+}
+
+void PTMHero::gainExp(unsigned int exp)
+{
+	m_CurrExp += exp;
+	if(m_CurrExp > getMaxEXP())
+	{
+		m_CurrExp = 0.0;
+		m_Level += 1;
+	}
 }
 
 float PTMHero::getDutyUpKeep()

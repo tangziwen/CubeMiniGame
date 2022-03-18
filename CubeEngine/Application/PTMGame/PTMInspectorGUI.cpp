@@ -317,15 +317,15 @@ namespace tzw
 		{
 				
 			ImGui::Text("Name: %s ", t->getName().c_str());
-			DRAW_PROPERTY(t, AdminPoint)
-			DRAW_PROPERTY(t, MilitaryPoint)
-			DRAW_PROPERTY(t, GlobalManPower)
 			auto townList = t->getTownList();
-			ImGui::Text("Admin Heroes size %d", t->getAdminHeroes().size());
-			ImGui::Text("Eco Heroes size %d", t->getEcoHeroes().size());
-			ImGui::Text("Research Heroes size %d", t->getResearchHeroes().size());
-			ImGui::Text("Mil Heroes size %d", t->getMilHeroes().size());
+			PTMCurrencyPool *pool =  t->getNationalCurrency();
 
+			for(int i = 0; i < (int)PTMCurrencyEnum::CurrencyMax; i++)
+			{
+				ImGui::PushID(i);
+				ImGui::Text("%s:%f", getCurrencyStr((PTMCurrencyEnum)i), pool->get((PTMCurrencyEnum)i));
+				ImGui::PopID();
+			}
 			ImGui::Text("Own Provinces: %u ", townList.size());
 			
 			ImGui::BeginChild("Pronvices List:",ImVec2(0,0), true);
@@ -345,21 +345,65 @@ namespace tzw
 			ImGui::Text("Global Modifier");
 			ImGui::EndTabItem();
 		}
-		const std::vector<PTMDepartment*> & departments = t->getDepartments();
 
-		for(PTMDepartment * deparment : departments)
+
+		if(ImGui::BeginTabItem("Departments"))
 		{
-			if(ImGui::BeginTabItem(deparment->getName().c_str()))
+		
+			ImGui::BeginTabBar("Departments##innerTabar");
+			const std::vector<PTMDepartment*> & departments = t->getDepartments();
+
+			for(PTMDepartment * deparment : departments)
 			{
-				ImGui::Text("Total Size %d/%d",deparment->getHeroList().size(), deparment->getTotalSlotSize());
-				auto & heroes = deparment->getHeroList();
-				for(PTMHero * hero : heroes)
+				ImGui::PushID(deparment);
+				if(ImGui::BeginTabItem(deparment->getName().c_str()))
 				{
-					drawHeroSmall(hero, false);
+					ImGui::Text("Total Size %d/%d",deparment->getHeroList().size(), deparment->getTotalSlotSize());
+					ImGui::SameLine();
+					ImGui::SmallButton("construct building");
+
+					//input
+					ImGui::BeginGroupPanel("Input");
+					ImGui::Text("the Input");
+					PTMDepartMentInputOutput * input =  deparment->getInput();
+					for(auto &iter: input->m_val)
+					{
+						ImGui::PushID((int)iter.first);
+						ImGui::Text("%s : %f ##Input", getCurrencyStr(iter.first), iter.second);
+						ImGui::PopID();
+					}
+					ImGui::EndGroupPanel();
+
+
+					ImGui::SameLine();
+
+					//output
+					ImGui::BeginGroupPanel("Output");
+					ImGui::Text("the Output");
+					PTMDepartMentInputOutput * output =  deparment->getOutput();
+					for(auto &iter: output->m_val)
+					{
+						ImGui::PushID((int)iter.first);
+						ImGui::Text("%s : %f ##Output", getCurrencyStr(iter.first), iter.second);
+						ImGui::PopID();
+					}
+					ImGui::EndGroupPanel();
+					
+					auto & heroes = deparment->getHeroList();
+					for(PTMHero * hero : heroes)
+					{
+						drawHeroSmall(hero, false);
+					}
+					ImGui::EndTabItem();
 				}
-				ImGui::EndTabItem();
+				ImGui::PopID();
 			}
+			ImGui::EndTabBar();
+
+			ImGui::EndTabItem();
 		}
+		
+		
 		if(ImGui::BeginTabItem("Technology"))
 		{
 			ImGui::Text("Tech Level");
@@ -458,22 +502,6 @@ namespace tzw
 			setInspectHero(hero);
 		}
 
-		/*
-		std::string role = u8"无职位";
-		switch(hero->getCurrRole())
-		{
-		case PTMHeroRole::Idle:
-			break;
-		case PTMHeroRole::Keeper:
-			role = hero->getTownOfKeeper()->getName() + u8"城守";
-			break;
-		case PTMHeroRole::OnDuty:
-			role = hero->getTownOfOnDuty()->getName() + u8"普通就职";
-			break;
-		}
-		ImGui::SameLine(); ImGui::Text(u8"职位:%s", role.c_str());
-		*/
-
 		if(isShowLocation)
 		{
 			ImGui::SameLine(); ImGui::Text(u8"所在");ImGui::SameLine();
@@ -481,6 +509,10 @@ namespace tzw
 			{
 				setInspectTown(hero->getTownLocation());
 			}
+		}
+		else
+		{
+			ImGui::SameLine();
 		}
 		const PTMFiveElement & fe = hero->getFiveElement();
 		ImGui::Text(u8"能力:");
@@ -530,45 +562,22 @@ namespace tzw
 			ImGui::SameLine();ImGui::TextColored(ImVec4(0.9f, 0.1f, 0.1f, 1.f), "%d", fe.ElementFire);
 			ImGui::SameLine();ImGui::TextColored(ImVec4(212/255.f, 148 / 255.f, 32/255.f, 1.f), "%d", fe.ElementEarth);
 
-			//local
-			ImGui::Text(u8"地方调动");
-			if(ImGui::Button("Set As Keeper"))
-			{
-				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignTownKeeper(town, hero);});
-			}
-			ImGui::SameLine();
-			if(ImGui::Button("Assign On Trainning"))
-			{
-				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero, (int)DutyObjectiveEnum::Training);});
-			}
-
-			ImGui::SameLine();
-			if(ImGui::Button("Assign On Working"))
-			{
-				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero, (int)DutyObjectiveEnum::Working);});
-			}
-
-			ImGui::SameLine();
-			if(ImGui::Button("Assign On Developing"))
-			{
-				setInspectTownList(hero->getCountry(), [hero](PTMTown* town){hero->getCountry()->assignOnDuty(town, hero, (int)DutyObjectiveEnum::Developing);});
-			}
 
 			//central
-			ImGui::Text(u8"中央调动");
-			if(ImGui::Button("Admin"))
+			ImGui::Text(u8"部门调动");
+			if(ImGui::Button("Farming"))
 			{
-				hero->getCountry()->assignAdmHero(hero);
+				hero->getCountry()->addHeroToDepartment(NATION_DEPARTMENT_FARMING, hero);
 			}
 			ImGui::SameLine();
-			if(ImGui::Button("Eco"))
+			if(ImGui::Button("ALCHEMY"))
 			{
-				hero->getCountry()->assignEcoHero(hero);
+				hero->getCountry()->addHeroToDepartment(NATION_DEPARTMENT_ALCHEMY, hero);
 			}
 
-			if(ImGui::Button("Mil"))
+			if(ImGui::Button("Idle"))
 			{
-				hero->getCountry()->assignMilHero(hero);
+				hero->getCountry()->addHeroToDepartment(NATION_DEPARTMENT_IDLE, hero);
 			}
 			ImGui::SameLine();
 			if(ImGui::Button("Research"))
@@ -629,6 +638,28 @@ namespace tzw
 			ImGui::EndGroupPanel();
 			ImGui::PopID();
 		}
+	}
+
+	const char* PTMInspectorGUI::getCurrencyStr(PTMCurrencyEnum currency)
+	{
+		switch (currency)
+		{
+		case tzw::PTMCurrencyEnum::Gold:
+			return "Gold";
+			break;
+		case tzw::PTMCurrencyEnum::Herb:
+			return "Herb";
+			break;
+		case tzw::PTMCurrencyEnum::Minerals:
+			return "Minerals";
+			break;
+		case tzw::PTMCurrencyEnum::Dan:
+			return "Dan";
+			break;
+		default:
+			break;
+		}
+		return "NotValid";
 	}
 
 }
