@@ -14,4 +14,9 @@ namespace tzw
 		//End Mark
 		CurrencyMax
 	};
+
+	struct PTMCurrencySet
+	{
+		float m_currency[(int)PTMCurrencyEnum::CurrencyMax] {};
+	};
 }

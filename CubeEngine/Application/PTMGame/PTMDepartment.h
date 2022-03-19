@@ -2,6 +2,7 @@
 #include "PTMBaseDef.h"
 #include "PTMCurrencyEnum.h"
 #include <unordered_map>
+#include "PTMBuilding.h"
 namespace tzw
 {
 	class PTMHero;
@@ -31,9 +32,24 @@ namespace tzw
 		PTMDepartMentInputOutput * getOutput();
 		virtual void work();
 		PTMNation * getHomeNation();
+		void loadConfig();
+		void constructBuilding(std::string buildingName);
+		void constructBuilding(PTMBuildingData * buildingData);
+		std::vector<PTMBuildingData*> & getBuildingDataList();
+		std::vector<PTMBuilding * > & getBuildings();
+		PTMBuildingData * getCurrBuildingTarget();
+		float getCurrBuildingPercentage();
+		bool getIsWorking();
 	protected:
+		void placeBuilding(PTMBuildingData * buildingData);
 		PTMDepartMentInputOutput m_input;
 		PTMDepartMentInputOutput m_output;
 		PTMNation * m_homeNation;
+		std::unordered_map<std::string, PTMBuildingData*> m_buildingDataMap;
+		std::vector<PTMBuildingData*> m_buildingDataList;
+		std::vector<PTMBuilding * > m_buildings;
+		PTMBuildingData * m_currBuildingTarget = nullptr;
+		float m_buildingProgress = 0.f;
+		bool m_isWorking = true;
 	};
 }

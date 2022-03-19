@@ -115,7 +115,14 @@ void PTMHero::tick(uint32_t currDate)
 
 void PTMHero::payDay(float val)
 {
-	gainExp(20.f * val);
+	float expVal = 3.0f * val;
+	m_estimatedMonth =  getMaxEXP() * 1.f / expVal;
+	gainExp(expVal);
+}
+
+float PTMHero::getEstimateLevelUpMonth()
+{
+	return m_estimatedMonth;
 }
 
 
@@ -264,7 +271,9 @@ float PTMHero::getUpKeep()
 
 unsigned int PTMHero::getMaxEXP()
 {
-	return (m_Level + 1) * 350;
+	int levelStage = m_Level / 10;
+	int levelSmallStage = m_Level % 10;
+	return 100.0f + levelStage * 250.0f + levelSmallStage * 15.0f;
 }
 
 void PTMHero::gainExp(unsigned int exp)

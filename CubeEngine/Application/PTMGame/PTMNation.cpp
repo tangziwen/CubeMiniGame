@@ -70,11 +70,15 @@ namespace tzw
 		updateTownsMonthly();
 		updateArmiesMonthly();
 
+		float salary = m_nationalCurrencyPool.get(PTMCurrencyEnum::Dan);
+		salary /= m_heroes.size();
+		m_nationalCurrencyPool.dec(PTMCurrencyEnum::Dan, salary);
 		for(PTMHero * hero: m_heroes)
 		{
+			//payday mostly
+			hero->payDay(salary);
 			hero->onMonthlyTick();
 		}
-
 	}
 
 	void PTMNation::onDailyTick()
@@ -103,15 +107,7 @@ namespace tzw
 
 	void PTMNation::onWeeklyTick()
 	{
-		float salary = m_nationalCurrencyPool.get(PTMCurrencyEnum::Dan);
-		salary /= m_heroes.size();
-		m_nationalCurrencyPool.dec(PTMCurrencyEnum::Dan, salary);
-		for(PTMHero * hero: m_heroes)
-		{
-			//payday mostly
-			hero->payDay(salary);
-			hero->onWeeklyTick();
-		}
+
 	}
 
 	void PTMNation::updateTownsMonthly()
@@ -127,6 +123,7 @@ namespace tzw
 		{
 			PTMInGameEventMgr::shared()->onMonthlyTick(this);
 		}
+
 	}
 
 	void PTMNation::updateArmiesMonthly()
@@ -214,7 +211,7 @@ namespace tzw
 		m_departmentList[NATION_DEPARTMENT_FARMING] = new PTMFarmingDepartment(this);
 
 		m_departmentList[NATION_DEPARTMENT_ALCHEMY] = new PTMAlchemyDepartment(this);
-		m_departmentList[NATION_DEPARTMENT_RESEARCH] = new PTMDepartment(this, "RESEARCH", 1);
+		m_departmentList[NATION_DEPARTMENT_RESEARCH] = new PTMDepartment(this, "Research", 1);
 		m_departmentList[NATION_DEPARTMENT_IDLE] = new PTMDepartment(this, "Idle", 1);
 
 		generateRandomHero();

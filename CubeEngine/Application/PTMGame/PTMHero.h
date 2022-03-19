@@ -85,6 +85,7 @@ public:
 	void kickFromKeeper();
 	void tick(uint32_t currDate);
 	void payDay(float val);
+	float getEstimateLevelUpMonth();
 
 	virtual void onMonthlyTick() override;
 	virtual void onDailyTick() override;
@@ -104,6 +105,7 @@ protected:
 	PTMModifier m_outPutModifier ;//this modifier means this hero affect other things modifers
 	friend class PTMHeroFactory;
 	PTMTaxPack m_upKeep;
+	float m_estimatedMonth = 10000.0f;
 };
 
 class PTMHeroFactory: public Singleton<PTMHeroFactory>

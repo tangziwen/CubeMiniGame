@@ -117,6 +117,7 @@ namespace tzw
 		drawEvents();
 		drawNation();
 		drawArmy();
+		drawDepartmentConstruct();
 		BEGIN_INSPECT(m_currInspectTown, "Town")
 			PTMTown * t = m_currInspectTown;
 			bool isControlledByPlayer = PTMWorld::shared()->getPlayerController()->getControlledNation() == t->getOwner();
@@ -195,13 +196,6 @@ namespace tzw
 			ImGui::BeginGroupPanel("Pops");
 			size_t popsTotal = t->getTotalPopsNum();
 
-			/*
-			const PTMPopOutputView& outputView = t->getPopOutputView();
-			ImGui::Text(u8"消费: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodInput, outputView.m_EveryDayNeedsInput, outputView.m_FoodInput);
-			ImGui::Text(u8"生产: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodOutput, outputView.m_EveryDayNeedsOutput, outputView.m_LuxuryGoodsOutput);
-			ImGui::Text(u8"盈余: 食物: %.2f, 日用品: %.2f, 奢侈品: %.2f", outputView.m_FoodOutput - outputView.m_FoodInput, 
-				outputView.m_EveryDayNeedsOutput - outputView.m_EveryDayNeedsInput, outputView.m_LuxuryGoodsOutput - outputView.m_LuxuryGoodsInput);
-			*/
 			for(int i = 0; i < popsTotal; i ++)
 			{
 				PTMPop * pop = t->getPopAt(i);
@@ -251,6 +245,11 @@ namespace tzw
 	void PTMInspectorGUI::setInspectArmy(PTMArmy* army)
 	{
 		m_currInspectArmy = army;
+	}
+
+	void PTMInspectorGUI::setInspectDepartmentBuilding(PTMDepartment* m_department)
+	{
+		m_currInspectDepartmentConstruct = m_department;
 	}
 
 	void PTMInspectorGUI::drawNation()
@@ -360,16 +359,26 @@ namespace tzw
 				{
 					ImGui::Text("Total Size %d/%d",deparment->getHeroList().size(), deparment->getTotalSlotSize());
 					ImGui::SameLine();
-					ImGui::SmallButton("construct building");
-
+					if(deparment->getIsWorking())
+					{
+						ImGui::TextColored(ImVec4(0.f, 1.0f, 0.f, 1.0f), "Working");
+					}
+					else
+					{
+						ImGui::TextColored(ImVec4(1.f, 0.0f, 0.f, 1.0f), "Lack of Resource");
+					}
+					if(deparment->getCurrBuildingTarget())
+					{
+						ImGui::Text("building :%s ", deparment->getCurrBuildingTarget()->Title.c_str());
+						ImGui::ProgressBar(deparment->getCurrBuildingPercentage());
+					}
 					//input
 					ImGui::BeginGroupPanel("Input");
-					ImGui::Text("the Input");
 					PTMDepartMentInputOutput * input =  deparment->getInput();
 					for(auto &iter: input->m_val)
 					{
 						ImGui::PushID((int)iter.first);
-						ImGui::Text("%s : %f ##Input", getCurrencyStr(iter.first), iter.second);
+						ImGui::Text("%s : %f", getCurrencyStr(iter.first), iter.second);
 						ImGui::PopID();
 					}
 					ImGui::EndGroupPanel();
@@ -379,12 +388,28 @@ namespace tzw
 
 					//output
 					ImGui::BeginGroupPanel("Output");
-					ImGui::Text("the Output");
 					PTMDepartMentInputOutput * output =  deparment->getOutput();
 					for(auto &iter: output->m_val)
 					{
 						ImGui::PushID((int)iter.first);
-						ImGui::Text("%s : %f ##Output", getCurrencyStr(iter.first), iter.second);
+						ImGui::Text("%s : %f", getCurrencyStr(iter.first), iter.second);
+						ImGui::PopID();
+					}
+					ImGui::EndGroupPanel();
+
+					ImGui::SameLine();
+
+					//Building
+					ImGui::BeginGroupPanel("Building");
+					if(ImGui::SmallButton("+"))
+					{
+						setInspectDepartmentBuilding(deparment);
+					}
+					auto & buildings =  deparment->getBuildings();
+					for(PTMBuilding* building: buildings)
+					{
+						ImGui::PushID(building);
+						ImGui::Text("%s", building->data->Title.c_str());
 						ImGui::PopID();
 					}
 					ImGui::EndGroupPanel();
@@ -497,23 +522,13 @@ namespace tzw
 	void PTMInspectorGUI::drawHeroSmall(PTMHero* hero, bool isShowLocation)
 	{
 		ImGui::PushID(hero);
-		if(ImGui::SmallButton(hero->getName().c_str()))
+		if(ImGui::Button(hero->getName().c_str(), ImVec2(80, 0)))
 		{
 			setInspectHero(hero);
 		}
-
-		if(isShowLocation)
-		{
-			ImGui::SameLine(); ImGui::Text(u8"所在");ImGui::SameLine();
-			if( ImGui::SmallButton(hero->getTownLocation()->getName().c_str()))
-			{
-				setInspectTown(hero->getTownLocation());
-			}
-		}
-		else
-		{
-			ImGui::SameLine();
-		}
+		ImGui::SameLine();
+		ImGui::Text("Lv:%d ETM: %d", hero->getLevel(), (int)std::ceil(hero->getEstimateLevelUpMonth()));
+		ImGui::SameLine();
 		const PTMFiveElement & fe = hero->getFiveElement();
 		ImGui::Text(u8"能力:");
 		//, fe.ElementMetal, fe.ElementWood, fe.ElementWater, fe.ElementFire, fe.ElementEarth);
@@ -638,6 +653,25 @@ namespace tzw
 			ImGui::EndGroupPanel();
 			ImGui::PopID();
 		}
+	}
+
+	void PTMInspectorGUI::drawDepartmentConstruct()
+	{
+		BEGIN_INSPECT(m_currInspectDepartmentConstruct, "Department Construct")
+			auto & buildingDataList = m_currInspectDepartmentConstruct->getBuildingDataList();
+			for(PTMBuildingData * data : buildingDataList)
+			{
+				ImGui::PushID(data);
+				ImGui::Text("%s", data->Title.c_str());
+				ImGui::SameLine();
+				if(ImGui::SmallButton("build"))
+				{
+					m_currInspectDepartmentConstruct->constructBuilding(data);
+					m_currInspectDepartmentConstruct = nullptr;
+				}
+				ImGui::PopID();
+			}
+		END_INSPECT(m_currInspectDepartmentConstruct)
 	}
 
 	const char* PTMInspectorGUI::getCurrencyStr(PTMCurrencyEnum currency)
