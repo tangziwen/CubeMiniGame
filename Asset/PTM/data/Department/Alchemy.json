@@ -1,0 +1,20 @@
+{
+"Buildings": 
+[
+	{
+		"Name": "AlchemyBase",
+		"Title": "炼丹房",
+		"BuildTime": 90,
+		"BuildCost": {
+			"Gold": 100.0
+		},
+		"JobSize": 1.0,
+		"Input": {"Herb":15.0, },
+		"Output": 
+		{
+			"Dan": 35.0
+		}
+	}
+
+]
+}
