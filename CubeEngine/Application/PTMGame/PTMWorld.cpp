@@ -41,25 +41,7 @@ namespace tzw
 		int tileTypePlain = m_tileMgr->addTileType("PTM/plain.png");
 		int tileTypeMountains = m_tileMgr->addTileType("PTM/mountains.png");
 		int tileTypeWater = m_tileMgr->addTileType("PTM/water.png");
-		/*
-		for(int x = 0; x < 32; x++)
-		{
-			for(int y = 0; y < 32; y++)
-			{
-				int rndNumber = rand() % 3;
-				int targetType = tileTypePlain;
-				if(rndNumber == 0)
-				{
-					targetType = tileTypeForest;
-				}
-				else if(rndNumber == 1)
-				{
-					targetType = tileTypeMountains;
-				}
-				tileMgr->addTile(targetType, x, y);
-			}
-		}
-		*/
+
 		std::string filePath = "PTM/pronvices.bmp";
 		auto data = Tfile::shared()->getData(filePath, true);
 		int width;
@@ -107,10 +89,6 @@ namespace tzw
 			nation->initData();
 		}
 		loadOwnerShips();
-
-		auto window = GUIWindow::create("caonima", vec2(200, 350));
-		g_GetCurrScene()->addNode(window);
-
 
 		EventMgr::shared()->addFixedPiorityListener(this);
 
@@ -214,6 +192,7 @@ namespace tzw
 
 	void PTMWorld::simulateAttack()
 	{
+
 	}
 
 	void PTMWorld::loadNations()
@@ -250,93 +229,49 @@ namespace tzw
 
 	void PTMWorld::loadTowns()
 	{
-		rapidjson::Document doc;
-		std::string filePath = "PTM/data/towns.json";
-		auto data = Tfile::shared()->getData(filePath, true);
-		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
-		if (doc.HasParseError())
+		int townGrid = 6;
+		int townWidth = PTM_MAP_SIZE / townGrid;
+		int id = 0;
+		for(int i = 0; i < townWidth; i++)
 		{
-			tlog("[error] get json data err! %s %d offset %d",
-				filePath.c_str(),
-				doc.GetParseError(),
-				doc.GetErrorOffset());
-			exit(1);
-		}
-
-		if (doc.HasMember("Towns"))
-		{
-			auto& towns = doc["Towns"];
-			for (unsigned int i = 0; i < towns.Size(); i++)
+			for(int j = 0; j < townWidth; j++)
 			{
-				auto& item = towns[i];
-				int x = item["pos"][0].GetInt();
-				int y = PTM_MAP_SIZE - item["pos"][1].GetInt();
+				int x = i * townGrid + rand() % (townGrid - 1);
+				int y = j * townGrid + rand() % (townGrid - 1);
+
+				int r = m_provincesBitMap[ (y * PTM_MAP_SIZE + x )* 3];
+				int g = m_provincesBitMap[ (y * PTM_MAP_SIZE + x )* 3 + 1];
+				int b = m_provincesBitMap[ (y * PTM_MAP_SIZE + x )* 3 + 2];
+				if(r ==0 && g == 0 && b == 255)
+				{
+					continue;
+				}
 				PTMTile * tile = m_maptiles[x][y];
 				auto town = new PTMTown(tile);
-				town->setName(item["name"].GetString());
+
+				town->setName("test");
 				m_pronviceList.push_back(town);
-				m_townIDMap[item["id"].GetUint()] = town;
-
-				//计算占领地块
-				int r = item["own_color"][0].GetInt();
-				int g = item["own_color"][1].GetInt();
-				int b = item["own_color"][2].GetInt();
-
-				for(int i = 0; i < PTM_MAP_SIZE; i++)
-				{
-					for(int j = 0; j < PTM_MAP_SIZE; j++)
-					{
-						int x0 = i;
-						int y0 = j;//PTM_MAP_SIZE - j;//reverse
-						bool checkR = m_provincesBitMap[ (y0 * PTM_MAP_SIZE + x0)*3 ] == r;
-						bool checkG = m_provincesBitMap[ (y0 * PTM_MAP_SIZE + x0)*3 + 1] == g;
-						bool checkB = m_provincesBitMap[ (y0 * PTM_MAP_SIZE + x0)*3 + 2] == b;
-						if(checkR && checkG && checkB)
-						{
-							town->addOccupyTile(getTile(i, j));
-						}
-					}
-					
-				}
-				std::string ownerName = item["owner"].GetString();
-				m_nationNameMap[ownerName]->ownTown(town);
+				m_townIDMap[id] = town;
 				town->initPops();
 				town->updateGraphics();
-				//auto army  = new PTMArmy(nullptr, tile);
-				//army->updateGraphics();
+				id ++;
 			}
 		}
 	}
 
 	void PTMWorld::loadOwnerShips()
 	{
-		return;
-		rapidjson::Document doc;
-		std::string filePath = "PTM/data/ownerships.json";
-		auto data = Tfile::shared()->getData(filePath, true);
-		doc.Parse<rapidjson::kParseDefaultFlags>(data.getString().c_str());
-		if (doc.HasParseError())
+		for(PTMNation *nation : m_nationList)
 		{
-			tlog("[error] get json data err! %s %d offset %d",
-				filePath.c_str(),
-				doc.GetParseError(),
-				doc.GetErrorOffset());
-			exit(1);
-		}
-
-		if (doc.HasMember("Towns"))
-		{
-			auto& towns = doc["Towns"];
-			for (unsigned int i = 0; i < towns.Size(); i++)
+			PTMTown * town;
+			do
 			{
-				auto& item = towns[i];
-				uint32_t townId = item["id"].GetUint();
-				uint32_t nationID = item["owner"].GetUint();
+				int rndIndx = rand() % m_pronviceList.size();
+				town = m_pronviceList[rndIndx];
+			}while(town->getOwner());//choose the capital
 
-				PTMTown * town = m_townIDMap[townId];
-				m_nationIDMap[nationID]->ownTown(town);
-				town->updateGraphics();
-			}
+			nation->ownTown(town);
+			town->updateGraphics();
 		}
 	}
 

@@ -75,8 +75,8 @@ namespace tzw
 		}
 		if(button == TZW_MOUSE_BUTTON_RIGHT)
 		{
-			vec2 mapRoot = m_mapRootNode->getWorldPos2D();
-			vec2 posInMap = pos - mapRoot;
+			auto m = m_mapRootNode->getTransform();
+			vec2 posInMap = m.inverted().transformVec3(vec3(pos.x, pos.y, 0)).xy();
 			int x = (int)posInMap.x / 32;
 			int y = (int)posInMap.y / 32;
 			PTMTile * tile = PTMWorld::shared()->getTile(x, y);

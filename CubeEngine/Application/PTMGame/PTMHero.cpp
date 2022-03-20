@@ -116,8 +116,8 @@ void PTMHero::tick(uint32_t currDate)
 void PTMHero::payDay(float val)
 {
 	float expVal = 3.0f * val;
-	m_estimatedMonth =  getMaxEXP() * 1.f / expVal;
 	gainExp(expVal);
+	m_estimatedMonth =  (getMaxEXP() - m_CurrExp) * 1.f / expVal;
 }
 
 float PTMHero::getEstimateLevelUpMonth()

@@ -40,7 +40,7 @@ namespace tzw
 			);
 			
 		}
-		vec4 flagColor = vec4(1.f, 0.f, 0.f, 1.0f);
+		vec4 flagColor = vec4(1.f, 1.f, 1.f, 1.0f);
 		if(m_parent->m_owner)
 		{
 			flagColor = vec4(m_parent->m_owner->getNationColor(), 1.0f);

@@ -70,9 +70,9 @@ namespace tzw
 		updateTownsMonthly();
 		updateArmiesMonthly();
 
-		float salary = m_nationalCurrencyPool.get(PTMCurrencyEnum::Dan);
-		salary /= m_heroes.size();
-		m_nationalCurrencyPool.dec(PTMCurrencyEnum::Dan, salary);
+		float totalSalary = m_nationalCurrencyPool.get(PTMCurrencyEnum::Dan);
+		float salary = totalSalary /  m_heroes.size();
+		m_nationalCurrencyPool.dec(PTMCurrencyEnum::Dan, totalSalary);
 		for(PTMHero * hero: m_heroes)
 		{
 			//payday mostly

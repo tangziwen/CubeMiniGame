@@ -63,21 +63,28 @@ namespace tzw
 {
 	static void DrawNationTitle(PTMNation * nation)
 	{
-		//Draw flag color
-		const ImVec2 p = ImGui::GetCursorScreenPos();
-		ImDrawList* draw_list = ImGui::GetWindowDrawList();
-		float x = p.x + 4.0f;
-		float y = p.y + 4.0f;
-		float sz = 16;
-		vec3 color = nation->getNationColor();
-		const ImU32 col = ImColor(color.x, color.y, color.z);
-		draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + sz, y + sz), col, 0.0f, 0);
-		ImGui::SetCursorScreenPos(ImVec2(x + sz, p.y));
-		ImGui::Text(" Owner: %s ", nation->getName().c_str());
-		ImGui::SameLine();
-		if(ImGui::Button("*##gotoNation"))
+		if(nation)
 		{
-			PTMInspectorGUI::shared()->setInspectNation(nation);
+			//Draw flag color
+			const ImVec2 p = ImGui::GetCursorScreenPos();
+			ImDrawList* draw_list = ImGui::GetWindowDrawList();
+			float x = p.x + 4.0f;
+			float y = p.y + 4.0f;
+			float sz = 16;
+			vec3 color = nation->getNationColor();
+			const ImU32 col = ImColor(color.x, color.y, color.z);
+			draw_list->AddRectFilled(ImVec2(x, y), ImVec2(x + sz, y + sz), col, 0.0f, 0);
+			ImGui::SetCursorScreenPos(ImVec2(x + sz, p.y));
+			ImGui::Text(" Owner: %s ", nation->getName().c_str());
+			ImGui::SameLine();
+			if(ImGui::Button("*##gotoNation"))
+			{
+				PTMInspectorGUI::shared()->setInspectNation(nation);
+			}
+		}
+		else
+		{
+			ImGui::Text(" Owner: unoccupy");
 		}
 	}
 
@@ -125,31 +132,10 @@ namespace tzw
 				ImGui::SameLine();
 				DrawNationTitle(t->getOwner());
 			ImGui::Text("Keeper:");ImGui::SameLine();
-			if(t->getKeeper())
-			{
-				ImGui::SmallButton(t->getKeeper()->getName().c_str());
-			}
-			else
-			{
-				if(ImGui::SmallButton("No Keeper Yet"))
-				{
-					setInspectHeroList(t->getOwner(), [t](PTMHero * hero){t->getOwner()->assignTownKeeper(t, hero);});
-				}
-			}
 
-
-			drawDuty(t, "Training", (int)DutyObjectiveEnum::Training);
-			drawDuty(t, "Working", (int)DutyObjectiveEnum::Working);
 
 			ImGui::BeginGroupPanel("Production");
-/*
-			DRAW_PROPERTY(t, AgriDevLevel)
-					ImGui::SameLine();
-					ImGui::ProgressBar(t->getAgriDevProgress(), ImVec2(100, 0));
-			DRAW_PROPERTY(t, EcoDevLevel)
-				ImGui::SameLine();
-				ImGui::ProgressBar(t->getEcoDevProgress(), ImVec2(100, 0));
-*/
+
 
 			DRAW_PROPERTY(t, IndustryLevel)
 				ImGui::SameLine();
@@ -160,13 +146,6 @@ namespace tzw
 				ImGui::ProgressBar(t->getHouseHoldDevProgress(), ImVec2(100, 0));
 
 
-			/*
-			DRAW_PROPERTY(t, Autonomous)
-
-			DRAW_PROPERTY(t, Food)
-			DRAW_PROPERTY(t, EveryDayNeeds)
-			DRAW_PROPERTY(t, LuxuryGoods)
-			*/
 			ImGui::EndGroupPanel();
 
 			ImGui::BeginGroupPanel("Military");
@@ -567,7 +546,7 @@ namespace tzw
 				role = u8"扩张";
 				break;
 			}
-			ImGui::Text(u8"所在:%s, 职位:%s", hero->getTownLocation()->getName().c_str(), role.c_str());
+			ImGui::Text(u8" 职位:%s", role.c_str());
 			const PTMFiveElement & fe = hero->getFiveElement();
 			ImGui::Text(u8"能力:");
 			//, fe.ElementMetal, fe.ElementWood, fe.ElementWater, fe.ElementFire, fe.ElementEarth);
