@@ -12,8 +12,16 @@
 #include "PTMTownGUI.h"
 
 #define PTM_MAP_SIZE (96)
+
+constexpr int townGrid = 6;
+constexpr int townWidth = PTM_MAP_SIZE / townGrid;
 namespace tzw
 {
+	struct NationLevel
+	{
+		PTMNation * m_nation;
+		int count = 5;
+	};
 	class TileMap2DMgr;
 	class PTMWorld : public Singleton<PTMWorld>, public EventListener
 	{
@@ -26,15 +34,18 @@ namespace tzw
 		PTMPlayerController * getPlayerController() {return m_controller;};
 		PTMTile * getTile(int x, int y);
 		TileMap2DMgr * getTileMgr();
+		PTMTown * getTown(int x, int y);
 	private:
 		PTMNation * createNation(std::string nationName);
 
 		PTMTile * m_maptiles[PTM_MAP_SIZE][PTM_MAP_SIZE];
+		PTMTown * m_mapTowns[townWidth][townWidth];
 		std::vector<PTMTown * > m_pronviceList;
 		std::vector<PTMNation * > m_nationList;
 		std::unordered_map<uint32_t, PTMNation * > m_nationIDMap;
 		std::unordered_map<std::string, PTMNation * > m_nationNameMap;
 		std::unordered_map<uint32_t, PTMTown * > m_townIDMap;
+		std::vector<NationLevel > m_nationLevelMap;
 
 		//time
 		void dailyTick();

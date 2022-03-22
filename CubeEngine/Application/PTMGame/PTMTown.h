@@ -128,6 +128,7 @@ namespace tzw
 		void assignOnDuty(PTMHero * hero, DutyObjectiveEnum DutyObjective);
 		void kickOnDuty(PTMHero * hero);
 		float getUpKeep(DutyObjectiveEnum DutyObjective);
+		int town_x = -1, town_y = -1;
 	private:
 		void tickHeroDuty();
 		PTMModifierContainer m_heroModContainer;
