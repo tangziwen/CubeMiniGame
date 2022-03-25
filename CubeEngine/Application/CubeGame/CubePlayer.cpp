@@ -294,6 +294,11 @@ namespace tzw
 				}
 			}
 			break;
+		case TZW_KEY_I:
+		{
+			GameUISystem::shared()->setIsShowAssetEditor(true);
+		}
+		break;
 		case TZW_KEY_V:
 			{
 				if(getSeatViewMode() == InSeatViewMode::ORBIT) 

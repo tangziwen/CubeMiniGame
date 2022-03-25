@@ -421,8 +421,6 @@ def onKeyRelease(input_event):
 			GameState.g_blockRotate = GameState.g_blockRotate + 360
 		
 		player.setPreviewAngle(GameState.g_blockRotate)
-	elif input_event.keycode == KeyConfig.TZW_KEY_I :
-		Game.GameUISystem.shared().setIsShowAssetEditor(True)
 	elif input_event.keycode == KeyConfig.TZW_KEY_F :
 		if Game.BuildingSystem.shared().getCurrentControlPart() == None :
 			result = Game.BuildingSystem.shared().rayTestPartAny(player.getPos(), player.getForward(), 10)

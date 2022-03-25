@@ -9593,7 +9593,7 @@ static float GetDraggedColumnOffset(ImGuiColumns* columns, int column_index)
 
     return x;
 }
-
+#pragma optimize("", off)
 float ImGui::GetColumnOffset(int column_index)
 {
     ImGuiWindow* window = GetCurrentWindowRead();
@@ -9722,7 +9722,7 @@ ImGuiID ImGui::GetColumnsID(const char* str_id, int columns_count)
 
     return id;
 }
-
+#pragma optimize("", off)
 void ImGui::BeginColumns(const char* str_id, int columns_count, ImGuiColumnsFlags flags)
 {
     ImGuiContext& g = *GImGui;

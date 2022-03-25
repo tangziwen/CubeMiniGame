@@ -45,6 +45,8 @@
 #include "UI/LoadWorldUI.h"
 #include "UI/NewWorldSettingUI.h"
 #include "UI/PainterUI.h"
+#include "UI/InventoryUI.h"
+#include "UI/HudUI.h"
 
 
 namespace tzw {
@@ -117,6 +119,8 @@ void GameUISystem::init()
 		Engine::shared()->setUnlimitedCursor(true);
 	};
 	m_painterUI = new PainterUI();
+	m_inventoryUI = new InventoryUI();
+	m_hud = new HudUI();
 	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
 	{
 		BuildingSystem::shared()->dumpVehicle(fileName);
@@ -170,6 +174,9 @@ void GameUISystem::drawIMGUI()
 		drawEntryInterFace();
 	}else
 	{
+
+		//Hud
+		m_hud->drawIMGUI(nullptr);
 	//KeyMapper
 		{
 			if(KeyMapper::shared()->isOpen())
@@ -355,8 +362,10 @@ void GameUISystem::drawIMGUI()
 
 		if(getWindowIsShow(WindowType::INVENTORY))
 		{
-			bool isShow = ScriptPyMgr::shared()->callFunPyBool("tzw", "tzw_game_draw_window",int(WindowType::INVENTORY));
-			setWindowShow(WindowType::INVENTORY, isShow);
+			//bool isShow = ScriptPyMgr::shared()->callFunPyBool("tzw", "tzw_game_draw_window",int(WindowType::INVENTORY));
+			bool isOpen = true;
+			m_inventoryUI->drawIMGUI(&isOpen);
+			setWindowShow(WindowType::INVENTORY, isOpen);
 		}
 		
 		if(getWindowIsShow(WindowType::VEHICLE_FILE_BROWSER))

@@ -15,6 +15,8 @@ class PainterUI;
 class VehicleBroswer;
 class NewWorldSettingUI;
 class LoadWorldUI;
+class InventoryUI;
+class HudUI;
 enum class WindowType
 {
 	INVENTORY,
@@ -84,11 +86,14 @@ private:
 	NewWorldSettingUI * m_NewWorldSettingUI;
 	LoadWorldUI * m_loadWorldUI;
 	PainterUI * m_painterUI;
+	InventoryUI * m_inventoryUI;
+	HudUI * m_hud;
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;
 	GamePart * m_curInspectPart;
 	Data m_helperData;
 	OptionPanel m_option;
+	
 	GamePart* m_currControlPart;
 public:
 	LabelNew* getCrossHairTipsInfo() const;
