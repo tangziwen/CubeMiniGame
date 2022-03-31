@@ -2,7 +2,7 @@
 #include "CubeGame/GameWorld.h"
 #include "2D/GUISystem.h"
 #include <functional>
-
+#include <array>
 namespace tzw
 {
 	class HudUI : public IMGUIObject
@@ -20,6 +20,8 @@ namespace tzw
 		Texture * m_emptyIcon;
 		bool m_isDragingInventory {false};
 		GameItem * m_currentSelectItem;
+		std::array<GameItem *, 9> m_itemSlot {nullptr};
+		int m_currIndex = 0;
 	};
 
 
