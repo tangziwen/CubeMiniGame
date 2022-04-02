@@ -212,6 +212,20 @@ public:
         z/=other.z;
         return *this;
     }
+    float& operator[](int idx)
+    {
+        switch(idx)
+        {
+        case 0:
+            return x;
+        case 1:
+            return y;
+        case 2:
+            return z;
+        default:
+            return x;
+        }
+    }
     static float DotProduct(const vec3& left, const vec3& right)
     {
 

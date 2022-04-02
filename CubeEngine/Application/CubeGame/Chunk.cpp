@@ -201,11 +201,11 @@ namespace tzw
 		auto dist = vec3(pos.x, 0, pos.z).distance(vec3(centre.x, 0, centre.z));
 
 
-		if(dist < 30.0f)
+		if(dist < 18.0f)
 		{
 			m_currentLOD = 0;
 		}
-		else if(dist < 75.0f)
+		else if(dist < 35.0f)
 		{
 			m_currentLOD = 1;
 		} else
@@ -958,9 +958,9 @@ BAAAABB
 				value = value * 0.5 + 0.5;
 				// value = std::max(value - 0.2f, 0.0f);
 				value = Tmisc::clamp(powf(value, 4.0), 0.0f, 1.0f);
-				if ((1.0 - value > 0.7))
+				//if ((1.0 - value > 0.7))
 				{
-					if (grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > 0.2)
+					//if (grassNoise.GetValue(pos.x * 0.3, pos.z * 0.3, 0.0) > 0.2)
 					{
 						auto ox = TbaseMath::randFN() * 0.5;
 						auto oz = TbaseMath::randFN() * 0.5;
@@ -991,7 +991,7 @@ BAAAABB
 						m[10] = zNew.z;
 						mat.setScale(vec3(1.0 + scale));
 						instance.transform = mat;
-						m_grass->m_instance.push_back(instance);
+						//m_grass->m_instance.push_back(instance);
 					}
 				}
 			}

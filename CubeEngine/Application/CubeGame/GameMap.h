@@ -14,6 +14,7 @@ class Chunk;
 
 struct voxelInfo
 {
+	// below 127 inside, 127 surface, above 127 outside
 	unsigned char w;
 	MatBlendInfo matInfo;
 	void setV4(vec4 v);
@@ -24,6 +25,8 @@ struct voxelInfo
 	voxelInfo();
 	void setMat(char mat1, char mat2, char mat3, vec3 blendFactor);
 };
+//each lod have ((MAX_BLOCK >> lodLevel) + MIN_PADDING + MAX_PADDING) ^ 3 data
+//´æ´¢µÃÄÚÈÝÊÇMIN_PADDING|MAX_BLOCK|MAX_PADDING
 struct ChunkInfo
 {
 	ChunkInfo(int x, int y, int z);
