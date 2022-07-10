@@ -5,6 +5,7 @@
 #include "Action/ActionSequence.h"
 #include "Action/ActionCalFunc.h"
 #include "PTMGame/PTMWorld.h"
+#include "RLGame/RLWorld.h"
 
 namespace tzw {
 	class ActionSequence;
@@ -123,4 +124,26 @@ void PTMEntry::onExit()
 
 void PTMEntry::onUpdate(float delta)
 {
+}
+
+RLGameEntry::RLGameEntry()
+{
+
+}
+
+void RLGameEntry::onStart()
+{
+
+	//showSplash();
+	RLWorld::shared()->start();
+}
+
+void RLGameEntry::onExit()
+{
+
+}
+
+void RLGameEntry::onUpdate(float delta)
+{
+
 }

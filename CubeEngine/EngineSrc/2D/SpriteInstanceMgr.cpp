@@ -1,17 +1,14 @@
-#include "TileMap2DMgr.h"
+#include "SpriteInstanceMgr.h"
 #include <algorithm>
 #include "Mesh/InstancedMesh.h"
 #include "Technique/MaterialPool.h"
 namespace tzw {
-
-	TileMap2DMgr::TileMap2DMgr()
+	SpriteInstanceMgr::SpriteInstanceMgr()
 	{
 		setIsAccpectOcTtree(false);
-		setLocalPiority(0);
 		initMesh();
 	}
-
-	int TileMap2DMgr::addTileType(std::string filePath)
+	int SpriteInstanceMgr::addTileType(std::string filePath)
 	{
 		auto iter = m_tileTypeIdMap.find(filePath);
 		if(iter == m_tileTypeIdMap.end())
@@ -28,7 +25,7 @@ namespace tzw {
 			auto instancedMesh = new InstancedMesh();
 			instancedMesh->setMesh(m_mesh);
 
-			TileTypeInfo * tileType = new TileTypeInfo();
+			SpriteTypeInfo * tileType = new SpriteTypeInfo();
 			tileType->material = material;
 			tileType->instancedMesh = instancedMesh;
 
@@ -43,43 +40,26 @@ namespace tzw {
 		
 	}
 
-	void TileMap2DMgr::initMap(int w, int h)
+	void SpriteInstanceMgr::initMap(int w, int h)
 	{
-		m_width = w;
-		m_height = h;
-		size_t buffSize = sizeof(Tile2D) * w * h;
-		m_tileBuff = (Tile2D * )malloc(buffSize);
-		Tile2D dummy;
-		for(int i = 0; i < w * h; i ++)
-			memcpy(m_tileBuff + i, &dummy, sizeof(Tile2D));
 
 	}
-	Tile2D * TileMap2DMgr::addTile(int type, unsigned short x, unsigned short y)
+
+	SpriteInstanceInfo * SpriteInstanceMgr::addTile(SpriteInstanceInfo * info)
 	{
-		int idx = getIndex(x, y);
-		Tile2D &tile = m_tileBuff[idx];
-		tile.x = x;
-		tile.y = y;
-		tile.type = type;
-		m_tilesList.emplace_back(&tile);
-		return &tile;
-	}
-	Tile2D * TileMap2DMgr::addTile(std::string filePath, unsigned short x, unsigned short y)
-	{
-		int typeID = m_tileTypeIdMap[filePath];
-		return addTile(typeID, x, y);
+		m_tilesList.emplace_back(info);
+		return info;
 	}
 
-	void TileMap2DMgr::setOverLay(unsigned short x, unsigned short y, vec4 color)
+	void SpriteInstanceMgr::setOverLay(SpriteInstanceInfo *info, vec4 color)
 	{
-		int idx = getIndex(x, y);
-		m_tileBuff[idx].overLayColor = color;
+		info->overLayColor = color;
 	}
 
-	void TileMap2DMgr::removeTileAt(unsigned short x, unsigned short y)
+	void SpriteInstanceMgr::removeTileAt(unsigned short x, unsigned short y)
 	{
 	}
-	void TileMap2DMgr::initMesh()
+	void SpriteInstanceMgr::initMesh()
 	{
 		m_mesh = new tzw::Mesh();
 		m_mesh->addIndex(0);
@@ -106,18 +86,19 @@ namespace tzw {
 		m_mesh->finish(true);
 	}
 
-	void TileMap2DMgr::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg)
+	void SpriteInstanceMgr::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg)
 	{
 		if(m_tilesList.empty() || !m_mesh || m_tileTypePool.empty()) return;
 		for(auto& iter : m_tileTypePool)
 		{
-			TileTypeInfo * tiletype = iter.second;
+			SpriteTypeInfo * tiletype = iter.second;
 			tiletype->instancedMesh->clearInstances();
 		}
-		for(Tile2D * tile : m_tilesList)
+		for(SpriteInstanceInfo * tile : m_tilesList)
 		{
+			if(!tile->m_isVisible) continue;
 			InstanceData data;
-			data.transform.setTranslate(vec3(tile->x * 32.f, tile->y * 32.f, 0.f));
+			data.transform.setTranslate(vec3(tile->pos.x, tile->pos.y, 0.f));
 			data.extraInfo = tile->overLayColor;
 			m_tileTypePool[tile->type]->instancedMesh->pushInstance(data);
 		}
@@ -128,7 +109,7 @@ namespace tzw {
 		Matrix44 world = getTransform();
 		for(auto& iter : m_tileTypePool)
 		{
-			TileTypeInfo * tiletype = iter.second;
+			SpriteTypeInfo * tiletype = iter.second;
 			//tiletype->instancedMesh->clearInstances();
 			if (tiletype->instancedMesh->getInstanceSize() == 0) continue;
 			tiletype->instancedMesh->submitInstanced();
@@ -136,7 +117,7 @@ namespace tzw {
 			command.setInstancedMesh(tiletype->instancedMesh);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 
-			
+
 			command.m_transInfo.m_projectMatrix = proj;
 			command.m_transInfo.m_viewMatrix = view;
 			command.m_transInfo.m_worldMatrix = world;
@@ -144,9 +125,5 @@ namespace tzw {
 			queues->addRenderCommand(command, 0);
 		}
 	}
-	int TileMap2DMgr::getIndex(unsigned short x, unsigned short y)
-	{
-		int tileIdx = y * m_width + x;
-		return tileIdx;
-	}
+
 } // namespace tzw

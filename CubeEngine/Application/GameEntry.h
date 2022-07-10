@@ -40,4 +40,15 @@ public:
 private:
 	float m_ticks;
 };
+
+class RLGameEntry :public tzw::AppEntry
+{
+public:
+	RLGameEntry();
+	void onStart() override;
+	void onExit() override;
+	void onUpdate(float delta) override;
+private:
+	float m_ticks;
+};
 #endif // MYAPPDELEGATE_H
