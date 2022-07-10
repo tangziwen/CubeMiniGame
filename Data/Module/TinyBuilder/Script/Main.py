@@ -104,7 +104,7 @@ def handleUIUpdate(dt):
 			# if not Game.GameUISystem.shared():isAnyShow() or Game.GameUISystem.shared():isOpenAssetEditor() :
 				
 			# 
-			drawHud()
+			#drawHud()
 			updateLifting(dt)
 		# elif GameWorld.shared():getCurrentState() == CPP_GAME.GAME_STATE_MAIN_MENU :
 		# 	drawEntryInterface()

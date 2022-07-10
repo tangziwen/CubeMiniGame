@@ -579,11 +579,11 @@ ChunkInfo* GameMap::fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod)
 	//前MIN_PADDING的元素((i, j, k)<MIN_PADDING)是上一个Chunk的，这里要做减法处理,注意LOD的元素涉及到前一个的也是在LOD的范围内的
 	int lodLevel = lod;
 	int stride = 1 << lod;
-	for (int i = 0; i < (MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING; i++)
+	for (int i = 0; i < (MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING; i++) //X
 	{
-		for (int k = 0; k < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING; k++)
+		for (int k = 0; k < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING; k++) // Z
 		{
-			for (int j = 0; j < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING;
+			for (int j = 0; j < (MAX_BLOCK>>lodLevel)  + MIN_PADDING + MAX_PADDING;// Y
 				j++) // Y in the most inner loop, cache friendly
 			{
 				int BlockROW = ((MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING);

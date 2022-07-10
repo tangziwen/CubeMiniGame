@@ -1,11 +1,11 @@
-#include "TransVoxel.h"
+﻿#include "TransVoxel.h"
 
 #include "MCTable.h"
 #include "CubeGame/GameMap.h"
 #include "transvoxel_tables.h"
 #include "CubeGame/GameConfig.h"
 #include <algorithm>
-
+#include <array>
 #include "MarchingCubes.h"
 
 
@@ -125,8 +125,65 @@ enum Corner {
 
 }
 static const float FIXED_FACTOR = 1.f / 256.f;
+
+static const float TRANSITION_CELL_SCALE = 0.25;
+constexpr int AXIS_COUNT = 3;
 namespace tzw {
 
+
+	vec3 get_border_offset(vec3 pos, const int lod_index, const Vector3i block_size) {
+		// When transition meshes are inserted between blocks of different LOD, we need to make space for them.
+		// Secondary vertex positions can be calculated by linearly transforming positions inside boundary cells
+		// so that the full-size cell is scaled to a smaller size that allows space for between one and three
+		// transition cells, as necessary, depending on the location with respect to the edges and corners of the
+		// entire block. This can be accomplished by computing offsets (Δx, Δy, Δz) for the coordinates (x, y, z)
+		// in any boundary cell.
+
+		vec3 delta;
+
+		const float p2k = 1 << lod_index; // 2 ^ lod
+		const float p2mk = 1.f / p2k; // 2 ^ (-lod)
+
+		const float wk = TRANSITION_CELL_SCALE * p2k; // 2 ^ (lod - 2), if scale is 0.25
+
+		for (unsigned int i = 0; i < AXIS_COUNT; ++i) {
+			const float p = pos[i];
+			const float s = block_size[i];
+
+			if (p < p2k) {
+				// The vertex is inside the minimum cell.
+				delta[i] = (1.0f - p2mk * p) * wk;
+
+			} else if (p > (p2k * (s - 1))) {
+				// The vertex is inside the maximum cell.
+				delta[i] = ((p2k * s) - 1.0f - p) * wk;
+			}
+		}
+
+		return delta;
+	}
+
+	inline vec3 project_border_offset(vec3 delta, vec3 normal) {
+		// Secondary position can be obtained with the following formula:
+		//
+		// | x |   | 1 - nx²   ,  -nx * ny  ,  -nx * nz |   | Δx |
+		// | y | + | -nx * ny  ,  1 - ny²   ,  -ny * nz | * | Δy |
+		// | z |   | -nx * nz  ,  -ny * nz  ,  1 - nz²  |   | Δz |
+		//
+		return vec3((1 - normal.x * normal.x) * delta.x /**/ - normal.y * normal.x * delta.y /*     */ -
+						normal.z * normal.x * delta.z,
+				/**/ -normal.x * normal.y * delta.x + (1 - normal.y * normal.y) * delta.y /*    */ -
+						normal.z * normal.y * delta.z,
+				/**/ -normal.x * normal.z * delta.x /**/ - normal.y * normal.z * delta.y /**/ +
+						(1 - normal.z * normal.z) * delta.z);
+	}
+
+	inline vec3 get_secondary_position(
+			const vec3 primary, const vec3 normal, const int lod_index, const Vector3i block_size) {
+		vec3 delta = get_border_offset(primary, lod_index, block_size);
+		delta = project_border_offset(delta, normal);
+		return primary + delta;
+	}
 	tzw::VertexData genVertexData(VoxelVertex v)
 	{
 		tzw::VertexData a(v.vertex);
@@ -177,13 +234,17 @@ inline float tof(int8_t v) {
 	return static_cast<float>(v) / 256.f;
 }
 
+inline float s8_to_snorm_noclamp(int8_t v) {
+	return v / 127.f;
+}
+
 int8_t tos(voxelInfo * info, int THE_SIZE, int x, int y, int z)
 {
 	int theIndex = x * THE_SIZE * THE_SIZE + y * THE_SIZE + z;
 	unsigned char w = info[theIndex].w;//std::clamp(info[theIndex].w, -1.f, 1.f);
 	//to 0, 255
-	uint8_t a = 255 - w;//(w * 0.5f + 0.5f) * 255.f;
-	return a - 128;
+	//uint8_t a = 255 - w;//(w * 0.5f + 0.5f) * 255.f;
+	return -(w - 127);
 }
 int8_t tos(voxelInfo * info, int BLOCKSIZE, Vector3i v)
 {
@@ -209,6 +270,23 @@ struct voxelPosInfo
 	Vector3i v;
 	voxelInfo * info;
 };
+
+inline unsigned int get_zxy_index(const Vector3i &v, const Vector3i area_size) {
+	//return v.y + area_size.y * (v.x + area_size.x * v.z); // ZXY
+	return v.z + area_size.y * (v.y + area_size.x * v.x); // ZXY
+}
+static const float INV_0x7f = 1.f / 0x7f;
+float sdf_as_float(voxelInfo & voxel)
+{
+	float snorm = (static_cast<float>(voxel.w) - 0x7f) * INV_0x7f;
+	return -1.f * snorm;
+}
+
+// SDF values considered negative have a sign bit of 1 in this algorithm
+inline uint8_t sign_f(float v) {
+	return v < 0.f;
+}
+#pragma optimize("", off)
 void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transitionMesh, int VOXEL_SIZE,
 	voxelInfo* srcData, float minValue, int lodLevel)
 {
@@ -216,17 +294,54 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 	const Vector3i block_size = block_size_with_padding - Vector3i(MIN_PADDING + MAX_PADDING);
 	const vec3 block_size_scaled = vec3(int(block_size.x) << lodLevel, int(block_size.y) << lodLevel, int(block_size.z) << lodLevel);
 
-
+	
 	const Vector3i min_pos = Vector3i(MIN_PADDING);
 	const Vector3i max_pos = block_size_with_padding - Vector3i(MAX_PADDING);
-	voxelPosInfo corner_positions[8];
+	
 	vec3 corner_gradients[8];
 	voxelInfo * info[8];
+
+	// How much to advance in the data array to get neighbor voxels
+	const unsigned int n010 = block_size_with_padding.y; // Y+1
+	const unsigned int n100 = block_size_with_padding.y * block_size_with_padding.x; // X+1
+	const unsigned int n001 = 1; // Z+1
+	const unsigned int n110 = n010 + n100;
+	const unsigned int n101 = n100 + n001;
+	const unsigned int n011 = n010 + n001;
+	const unsigned int n111 = n100 + n010 + n001;
+
 	Vector3i pos;
 	for (pos.z = min_pos.z; pos.z < max_pos.z; ++pos.z) {
 		for (pos.y = min_pos.y; pos.y < max_pos.y; ++pos.y) {
+			// TODO Optimization: change iteration to be ZXY? (Data is laid out with Y as deepest coordinate)
+			
 			for (pos.x = min_pos.x; pos.x < max_pos.x; ++pos.x) {
+				unsigned int data_index = get_zxy_index(Vector3i(pos.x, pos.y, pos.z), block_size_with_padding);
 
+				{
+					// The chosen comparison here is very important. This relates to case selections where 4 samples
+					// are equal to the isolevel and 4 others are above or below:
+					// In one of these two cases, there has to be a surface to extract, otherwise no surface will be
+					// allowed to appear if it happens to line up with integer coordinates.
+					// If we used `<` instead of `>`, it would appear to work, but would break those edge cases.
+					// `>` is chosen because it must match the comparison we do with case selection (in Transvoxel
+					// it is inverted).
+					const int isolevel = 128;
+					const bool s = srcData[data_index].w >= isolevel;
+
+					if ( //
+							(srcData[data_index + n010].w >= isolevel) == s &&
+							(srcData[data_index + n100].w >= isolevel) == s &&
+							(srcData[data_index + n110].w >= isolevel) == s &&
+							(srcData[data_index + n001].w >= isolevel) == s &&
+							(srcData[data_index + n011].w >= isolevel) == s &&
+							(srcData[data_index + n101].w >= isolevel) == s &&
+							(srcData[data_index + n111].w >= isolevel) == s) {
+						// Not crossing the isolevel, this cell won't produce any geometry.
+						// We must figure this out as fast as possible, because it will happen a lot.
+						continue;
+					}
+				}
 				//    6-------7
 				//   /|      /|
 				//  / |     / |  Corners
@@ -236,35 +351,34 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 				// |/      |/    |/
 				// 0-------1     o--x
 				//
-				// Warning: temporarily includes padding. It is undone later.
-				corner_positions[0].v = Vector3i(pos.x, pos.y, pos.z);
-				corner_positions[1].v = Vector3i(pos.x + 1, pos.y, pos.z);
-				corner_positions[2].v = Vector3i(pos.x, pos.y + 1, pos.z);
-				corner_positions[3].v = Vector3i(pos.x + 1, pos.y + 1, pos.z);
-				corner_positions[4].v = Vector3i(pos.x, pos.y, pos.z + 1);
-				corner_positions[5].v = Vector3i(pos.x + 1, pos.y, pos.z + 1);
-				corner_positions[6].v = Vector3i(pos.x, pos.y + 1, pos.z + 1);
-				corner_positions[7].v = Vector3i(pos.x + 1, pos.y + 1, pos.z + 1);
+				std::array<unsigned int, 8> corner_data_indices;
+				corner_data_indices[0] = data_index;
+				corner_data_indices[1] = data_index + n100;
+				corner_data_indices[2] = data_index + n010;
+				corner_data_indices[3] = data_index + n110;
+				corner_data_indices[4] = data_index + n001;
+				corner_data_indices[5] = data_index + n101;
+				corner_data_indices[6] = data_index + n011;
+				corner_data_indices[7] = data_index + n111;
 
-				int8_t cell_samples[8];
-				// Get the value of cells.
-				// Negative values are "solid" and positive are "air".
-				// Due to raw cells being unsigned 8-bit, they get converted to signed.
-				for (unsigned int i = 0; i < 8; ++i) {
-					cell_samples[i] = tos(srcData, VOXEL_SIZE, corner_positions[i].v);
-					corner_positions[i].info = extractVoxel(srcData, VOXEL_SIZE, corner_positions[i].v);
+				std::array<float, 8> cell_samples_sdf;
+				for (unsigned int i = 0; i < corner_data_indices.size(); ++i) {
+					cell_samples_sdf[i] = sdf_as_float(srcData[corner_data_indices[i]]);
 				}
+
+
+
 
 				// Concatenate the sign of cell values to obtain the case code.
 				// Index 0 is the less significant bit, and index 7 is the most significant bit.
-				uint8_t case_code = sign(cell_samples[0]);
-				case_code |= (sign(cell_samples[1]) << 1);
-				case_code |= (sign(cell_samples[2]) << 2);
-				case_code |= (sign(cell_samples[3]) << 3);
-				case_code |= (sign(cell_samples[4]) << 4);
-				case_code |= (sign(cell_samples[5]) << 5);
-				case_code |= (sign(cell_samples[6]) << 6);
-				case_code |= (sign(cell_samples[7]) << 7);
+				uint8_t case_code = sign_f(cell_samples_sdf[0]);
+				case_code |= (sign_f(cell_samples_sdf[1]) << 1);
+				case_code |= (sign_f(cell_samples_sdf[2]) << 2);
+				case_code |= (sign_f(cell_samples_sdf[3]) << 3);
+				case_code |= (sign_f(cell_samples_sdf[4]) << 4);
+				case_code |= (sign_f(cell_samples_sdf[5]) << 5);
+				case_code |= (sign_f(cell_samples_sdf[6]) << 6);
+				case_code |= (sign_f(cell_samples_sdf[7]) << 7);
 
 
 				// ReuseCell &current_reuse_cell = get_reuse_cell(pos);
@@ -276,25 +390,44 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 					continue;
 				}
 
+				std::array<Vector3i, 8> padded_corner_positions;
+				padded_corner_positions[0] = Vector3i(pos.x, pos.y, pos.z);
+				padded_corner_positions[1] = Vector3i(pos.x + 1, pos.y, pos.z);
+				padded_corner_positions[2] = Vector3i(pos.x, pos.y + 1, pos.z);
+				padded_corner_positions[3] = Vector3i(pos.x + 1, pos.y + 1, pos.z);
+				padded_corner_positions[4] = Vector3i(pos.x, pos.y, pos.z + 1);
+				padded_corner_positions[5] = Vector3i(pos.x + 1, pos.y, pos.z + 1);
+				padded_corner_positions[6] = Vector3i(pos.x, pos.y + 1, pos.z + 1);
+				padded_corner_positions[7] = Vector3i(pos.x + 1, pos.y + 1, pos.z + 1);
+
+
 				// TODO We might not always need all of them
 				// Compute normals
 				for (unsigned int i = 0; i < 8; ++i) {
 				
-					auto p = corner_positions[i];
+					auto p = padded_corner_positions[i];
 					
-					float nx = tof(tos(srcData, VOXEL_SIZE, p.v.x - 1, p.v.y, p.v.z));
-					float ny = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y - 1, p.v.z));
-					float nz = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y, p.v.z - 1));
-					float px = tof(tos(srcData, VOXEL_SIZE, p.v.x + 1, p.v.y, p.v.z));
-					float py = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y + 1, p.v.z));
-					float pz = tof(tos(srcData, VOXEL_SIZE, p.v.x, p.v.y, p.v.z + 1));
+					float nx = tof(tos(srcData, VOXEL_SIZE, p.x - 1, p.y, p.z));
+					float ny = tof(tos(srcData, VOXEL_SIZE, p.x, p.y - 1, p.z));
+					float nz = tof(tos(srcData, VOXEL_SIZE, p.x, p.y, p.z - 1));
+					float px = tof(tos(srcData, VOXEL_SIZE, p.x + 1, p.y, p.z));
+					float py = tof(tos(srcData, VOXEL_SIZE, p.x, p.y + 1, p.z));
+					float pz = tof(tos(srcData, VOXEL_SIZE, p.x, p.y, p.z + 1));
 					
 					//get_gradient_normal(nx, px, ny, py, nz, pz, cell_samples[i]);
 					corner_gradients[i] = vec3(nx - px, ny - py, nz - pz);
-				
-					// Undo padding here. From this point, corner positions are actual positions.
-					corner_positions[i].v = (corner_positions[i].v - min_pos) << lodLevel;
 				}
+				voxelPosInfo corner_positions[8];
+				for (unsigned int i = 0; i < padded_corner_positions.size(); ++i) {
+					const Vector3i p = padded_corner_positions[i];
+					// Get the value of cells.
+					// Negative values are "solid" and positive are "air".
+					// Due to raw cells being unsigned 8-bit, they get converted to signed.
+					corner_positions[i].info = extractVoxel(srcData, VOXEL_SIZE, p);
+					// Undo padding here. From this point, corner positions are actual positions.
+					corner_positions[i].v = (p - min_pos) << lodLevel;
+				}
+
 
 				// For cells occurring along the minimal boundaries of a block,
 				// the preceding cells needed for vertex reuse may not exist.
@@ -319,7 +452,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 				for (unsigned int i = 0; i < vertex_count; ++i) {
 
 					// The case index maps to a list of 16-bit codes providing information about the edges on which the vertices lie.
-					// The low byte of each 16-bit code contains the corner indexes of the edge��s endpoints in one nibble each,
+					// The low byte of each 16-bit code contains the corner indexes of the edge’s endpoints in one nibble each,
 					// and the high byte contains the mapping code shown in Figure 3.8(b)
 					unsigned short rvd = Transvoxel::get_regular_vertex_data(case_code, i);
 					uint8_t edge_code_low = rvd & 0xff;
@@ -332,8 +465,8 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 					// ERR_FAIL_COND(v1 <= v0);
 
 					// Get voxel values at the corners
-					int8_t sample0 = cell_samples[v0]; // called d0 in the paper
-					int8_t sample1 = cell_samples[v1]; // called d1 in the paper
+					const float sample0 = cell_samples_sdf[v0]; // called d0 in the paper
+					const float sample1 = cell_samples_sdf[v1]; // called d1 in the paper
 
 					// TODO Zero-division is not mentionned in the paper??
 					// ERR_FAIL_COND(sample1 == sample0);
@@ -342,17 +475,26 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 					// Get interpolation position
 					// We use an 8-bit fraction, allowing the new vertex to be located at one of 257 possible
 					// positions  along  the  edge  when  both  endpoints  are included.
-					int t = (sample1 << 8) / (sample1 - sample0);
+					//int t = (sample1 << 8) / (sample1 - sample0);
+					const float t = sample1 / (sample1 - sample0);
 
-					float t0 = static_cast<float>(t) / 256.f;
-					float t1 = static_cast<float>(0x100 - t) / 256.f;
-					int ti0 = t;
-					int ti1 = 0x100 - t;
 
-					const voxelPosInfo p0 = corner_positions[v0];
-					const voxelPosInfo p1 = corner_positions[v1];
 
-					if (t & 0xff) {
+					voxelPosInfo p0 = corner_positions[v0];
+					voxelPosInfo p1 = corner_positions[v1];
+					vec4 lodColor = vec4(1, 1, 1, 1);
+					switch(lodLevel)
+					{
+					case 1:
+						lodColor = vec4(0, 1, 0, 1);
+						break;
+					case 2:
+						lodColor = vec4(1, 1, 0, 1);
+						break;
+					default:
+						break;
+					}
+					if (t > 0.f && t < 1.f) {
 						// Vertex is between p0 and p1 (inside the edge)
 
 						// Each edge of a cell is assigned an 8-bit code, as shown in Figure 3.8(b),
@@ -381,20 +523,14 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 
 						// Going to create a new vertice
 
-						// TODO Implement surface shifting interpolation (see other places we interpolate too).
-						// See issue https://github.com/Zylann/godot_voxel/issues/60
-						// Seen in the paper, it fixes "steps" between LODs on flat surfaces.
-						// It is using a binary search through higher lods to find the zero-crossing edge.
-						// I did not do it here, because our data model is such that when we have low-resolution voxels,
-						// we cannot just have a look at the high-res ones, because they are not in memory.
-						// However, it might be possible on low-res blocks bordering high-res ones due to neighboring rules,
-						// or by falling back on the generator that was used to produce the volume.
+						const float t0 = t; //static_cast<float>(t) / 256.f;
+						const float t1 = 1.f - t; //static_cast<float>(0x100 - t) / 256.f;
 
-						Vector3i primary = p0.v * ti0 + p1.v * ti1;
-						vec3 primaryf = primary.to_vec3() * FIXED_FACTOR;
+						vec3 primaryf = p0.v.to_vec3() * t0 + p1.v.to_vec3() * t1;
 						cell_vertex_indices[i] = mesh->getVerticesSize();
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info));
 						vdata.m_normal = (corner_gradients[v0] * t0 + corner_gradients[v1] * t1).normalized();
+						vdata.m_color = lodColor;
 						mesh->addVertex(vdata);
 						
 
@@ -408,6 +544,7 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 						vec3 primaryf = primary.to_vec3();
 						cell_vertex_indices[i] = mesh->getVerticesSize();
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p1.info, p1.info));
+						vdata.m_color = lodColor;
 						vdata.m_normal = corner_gradients[v1];
 						mesh->addVertex(vdata);
 
@@ -426,22 +563,24 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 						cell_vertex_indices[i] = mesh->getVerticesSize();
 						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,primaryP.info, primaryP.info));
 						vdata.m_normal = corner_gradients[t == 0 ? v1 : v0].normalized();
+						vdata.m_color = lodColor;
 						mesh->addVertex(vdata);
 					}
 
 				} // for each cell vertex
 				
 				for (int t = 0; t < triangle_count; ++t) {
-					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + 2)]);
-					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + 1)]);
-					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t * 3 + 0)]);
+					const int t0 = t * 3;
+					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t0 + 2)]);
+					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t0 + 1)]);
+					mesh->addIndex(cell_vertex_indices[regular_cell_data.get_vertex_index(t0 + 0)]);
 				}
 
 			} // x
 		} // y
 	} // z
 	//if(!lodLevel) return;
-
+	
 	for (int dir = 0; dir < Cube::SIDE_COUNT; ++dir) 
 	{
 		build_transition(basePoint, transitionMesh, VOXEL_SIZE, srcData, dir, lodLevel);
@@ -451,6 +590,8 @@ void TransVoxel::generateWithoutNormal(vec3 basePoint, Mesh* mesh, Mesh * transi
 }
 
 
+
+#pragma optimize("", off)
 void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, voxelInfo * srcData, int direction, int lodLevel)
 {
 
@@ -570,46 +711,88 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 	const int max_fpos_x = max_pos[axis_x] - 1; // Another -1 here, because the 2D kernel is 3x3
 	const int max_fpos_y = max_pos[axis_y] - 1;
 
-	int8_t cell_samples[13];
+	// How much to advance in the data array to get neighbor voxels
+	const unsigned int n010 = block_size_with_padding.y;// Y+1
+	const unsigned int n100 = block_size_with_padding.y * block_size_with_padding.x;// X+1
+	const unsigned int n001 = 1; // Z+1
+
+	// Using temporay locals otherwise clang-format makes it hard to read
+	const Vector3i ftb_000 = L::face_to_block(0, 0, 0, direction, block_size_with_padding);
+	const Vector3i ftb_x00 = L::face_to_block(1, 0, 0, direction, block_size_with_padding);
+	const Vector3i ftb_0y0 = L::face_to_block(0, 1, 0, direction, block_size_with_padding);
+	// How much to advance in the data array to get neighbor voxels, using face coordinates
+	const int fn00 = get_zxy_index(ftb_000, block_size_with_padding);
+	const int fn10 = get_zxy_index(ftb_x00, block_size_with_padding) - fn00;
+	const int fn01 = get_zxy_index(ftb_0y0, block_size_with_padding) - fn00;
+	const int fn11 = fn10 + fn01;
+	const int fn21 = 2 * fn10 + fn01;
+	const int fn22 = 2 * fn10 + 2 * fn01;
+	const int fn12 = fn10 + 2 * fn01;
+	const int fn20 = 2 * fn10;
+	const int fn02 = 2 * fn01;
+
+	
 	voxelPosInfo cell_positions[13];
-	vec3 cell_gradients[13];
+	
+	const int fz = MIN_PADDING;
 
 	// Iterating in face space
 	for (int fy = min_fpos_y; fy < max_fpos_y; fy += 2) {
 		for (int fx = min_fpos_x; fx < max_fpos_x; fx += 2) {
 
-			const int fz = MIN_PADDING;
 
 			// const VoxelBuffer &fvoxels = p_voxels;
 
 			// Cell positions in block space
 			// Warning: temporarily includes padding. It is undone later.
 			cell_positions[0].v = L::face_to_block(fx, fy, fz, direction, block_size_with_padding);
-			cell_positions[1].v = L::face_to_block(fx + 1, fy, fz, direction, block_size_with_padding);
-			cell_positions[2].v = L::face_to_block(fx + 2, fy, fz, direction, block_size_with_padding);
-			cell_positions[3].v = L::face_to_block(fx, fy + 1, fz, direction, block_size_with_padding);
-			cell_positions[4].v = L::face_to_block(fx + 1, fy + 1, fz, direction, block_size_with_padding);
-			cell_positions[5].v = L::face_to_block(fx + 2, fy + 1, fz, direction, block_size_with_padding);
-			cell_positions[6].v = L::face_to_block(fx, fy + 2, fz, direction, block_size_with_padding);
-			cell_positions[7].v = L::face_to_block(fx + 1, fy + 2, fz, direction, block_size_with_padding);
-			cell_positions[8].v = L::face_to_block(fx + 2, fy + 2, fz, direction, block_size_with_padding);
-			cell_positions[0x9] = cell_positions[0];
-			cell_positions[0xA] = cell_positions[2];
-			cell_positions[0xB] = cell_positions[6];
-			cell_positions[0xC] = cell_positions[8];
 
+			const int data_index = get_zxy_index(cell_positions[0].v, block_size_with_padding);
 
 
 			
+			const int isolevel = 128;
+			{
+				const bool s = srcData[data_index].w < isolevel;
+
+				// `//` prevents clang-format from messing up
+				if ( //
+						(srcData[data_index + fn10].w < isolevel) == s && //
+						(srcData[data_index + fn20].w < isolevel) == s && //
+						(srcData[data_index + fn01].w < isolevel) == s && //
+						(srcData[data_index + fn11].w < isolevel) == s && //
+						(srcData[data_index + fn21].w < isolevel) == s && //
+						(srcData[data_index + fn02].w < isolevel) == s && //
+						(srcData[data_index + fn12].w < isolevel) == s && //
+						(srcData[data_index + fn22].w < isolevel) == s) {
+					// Not crossing the isolevel, this cell won't produce any geometry.
+					// We must figure this out as fast as possible, because it will happen a lot.
+					continue;
+				}
+			}
+			
+
+
+			std::array<unsigned int, 9> cell_data_indices;
+			cell_data_indices[0] = data_index;
+			cell_data_indices[1] = data_index + fn10;
+			cell_data_indices[2] = data_index + fn20;
+			cell_data_indices[3] = data_index + fn01;
+			cell_data_indices[4] = data_index + fn11;
+			cell_data_indices[5] = data_index + fn21;
+			cell_data_indices[6] = data_index + fn02;
+			cell_data_indices[7] = data_index + fn12;
+			cell_data_indices[8] = data_index + fn22;
+
 			//  6---7---8
 			//  |   |   |
 			//  3---4---5
 			//  |   |   |
 			//  0---1---2
-
+			std::array<float, 13> cell_samples;
 			// Full-resolution samples 0..8
 			for (unsigned int i = 0; i < 9; ++i) {
-				cell_samples[i] = tos(srcData, VOXEL_SIZE, cell_positions[i].v);
+				cell_samples[i] = sdf_as_float(srcData[cell_data_indices[i]]);//s8_to_snorm_noclamp(tos(srcData, VOXEL_SIZE, cell_positions[i].v));
 			}
 
 			//  B-------C
@@ -624,17 +807,34 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 			cell_samples[0xB] = cell_samples[6];
 			cell_samples[0xC] = cell_samples[8];
 
-			// TODO We may not need all of them!
+
+			uint16_t case_code = sign_f(cell_samples[0]);
+			case_code |= (sign_f(cell_samples[1]) << 1);
+			case_code |= (sign_f(cell_samples[2]) << 2);
+			case_code |= (sign_f(cell_samples[5]) << 3);
+			case_code |= (sign_f(cell_samples[8]) << 4);
+			case_code |= (sign_f(cell_samples[7]) << 5);
+			case_code |= (sign_f(cell_samples[6]) << 6);
+			case_code |= (sign_f(cell_samples[3]) << 7);
+			case_code |= (sign_f(cell_samples[4]) << 8);
+
+			if (case_code == 0 || case_code == 511) {
+				// The cell contains no triangles.
+				continue;
+			}
+			CRASH_COND(case_code > 511);
+
+			vec3 cell_gradients[13];
 			for (unsigned int i = 0; i < 9; ++i) {
 
-				Vector3i p = cell_positions[i].v;
+				const unsigned int di = cell_data_indices[i];
 
-				float nx = tof(tos(srcData, VOXEL_SIZE, p.x - 1, p.y, p.z));
-				float ny = tof(tos(srcData, VOXEL_SIZE, p.x, p.y - 1, p.z));
-				float nz = tof(tos(srcData, VOXEL_SIZE, p.x, p.y, p.z - 1));
-				float px = tof(tos(srcData, VOXEL_SIZE, p.x + 1, p.y, p.z));
-				float py = tof(tos(srcData, VOXEL_SIZE, p.x, p.y + 1, p.z));
-				float pz = tof(tos(srcData, VOXEL_SIZE, p.x, p.y, p.z + 1));
+				const float nx = sdf_as_float(srcData[di - n100]);
+				const float ny = sdf_as_float(srcData[di - n010]);
+				const float nz = sdf_as_float(srcData[di - n001]);
+				const float px = sdf_as_float(srcData[di + n100]);
+				const float py = sdf_as_float(srcData[di + n010]);
+				const float pz = sdf_as_float(srcData[di + n001]);
 
 				cell_gradients[i] = vec3(nx - px, ny - py, nz - pz);
 			}
@@ -643,36 +843,29 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 			cell_gradients[0xB] = cell_gradients[6];
 			cell_gradients[0xC] = cell_gradients[8];
 
+			// TODO Optimization: get rid of conditionals involved in face_to_block
+			cell_positions[1].v = L::face_to_block(fx + 1, fy + 0, fz, direction, block_size_with_padding);
+			cell_positions[2].v = L::face_to_block(fx + 2, fy + 0, fz, direction, block_size_with_padding);
+			cell_positions[3].v = L::face_to_block(fx + 0, fy + 1, fz, direction, block_size_with_padding);
+			cell_positions[4].v = L::face_to_block(fx + 1, fy + 1, fz, direction, block_size_with_padding);
+			cell_positions[5].v = L::face_to_block(fx + 2, fy + 1, fz, direction, block_size_with_padding);
+			cell_positions[6].v = L::face_to_block(fx + 0, fy + 2, fz, direction, block_size_with_padding);
+			cell_positions[7].v = L::face_to_block(fx + 1, fy + 2, fz, direction, block_size_with_padding);
+			cell_positions[8].v = L::face_to_block(fx + 2, fy + 2, fz, direction, block_size_with_padding);
+
+			cell_positions[0x9] = cell_positions[0];
+			cell_positions[0xA] = cell_positions[2];
+			cell_positions[0xB] = cell_positions[6];
+			cell_positions[0xC] = cell_positions[8];
+
+			//填充真的信息
 			for(int i = 0; i < 13; i++)
 			{
 				cell_positions[i].info = extractVoxel(srcData, VOXEL_SIZE, cell_positions[i].v);
 			}
-			// Convert grid positions into actual positions, since we don't need to use them to access the buffer anymore
 			for (unsigned int i = 0; i < 13; ++i) {
 				cell_positions[i].v = (cell_positions[i].v - min_pos) << lodLevel;
 			}
-
-			uint16_t case_code = sign(cell_samples[0]);
-			case_code |= (sign(cell_samples[1]) << 1);
-			case_code |= (sign(cell_samples[2]) << 2);
-			case_code |= (sign(cell_samples[5]) << 3);
-			case_code |= (sign(cell_samples[8]) << 4);
-			case_code |= (sign(cell_samples[7]) << 5);
-			case_code |= (sign(cell_samples[6]) << 6);
-			case_code |= (sign(cell_samples[3]) << 7);
-			case_code |= (sign(cell_samples[4]) << 8);
-
-			//ReuseTransitionCell &current_reuse_cell = get_reuse_cell_2d(fx, fy);
-			// Mark current cell unused for now
-			//current_reuse_cell.vertices[0] = -1;
-
-			if (case_code == 0 || case_code == 511) {
-				// The cell contains no triangles.
-				continue;
-			}
-
-			CRASH_COND(case_code > 511);
-
 			const uint8_t cell_class = Transvoxel::get_transition_cell_class(case_code);
 
 			CRASH_COND((cell_class & 0x7f) > 55);
@@ -690,14 +883,14 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 
 			uint8_t cell_border_mask = get_border_mask(cell_positions[0].v, block_size_scaled);
 
-			for (unsigned int i = 0; i < vertex_count; ++i) {
+			for (unsigned int vertex_index = 0; vertex_index < vertex_count; ++vertex_index) {
 
-				const uint16_t edge_code = Transvoxel::get_transition_vertex_data(case_code, i);
+				const uint16_t edge_code = Transvoxel::get_transition_vertex_data(case_code, vertex_index);
 				const uint8_t index_vertex_a = (edge_code >> 4) & 0xf;
 				const uint8_t index_vertex_b = (edge_code & 0xf);
 
-				const int sample_a = cell_samples[index_vertex_a]; // d0 and d1 in the paper
-				const int sample_b = cell_samples[index_vertex_b];
+				const float sample_a = cell_samples[index_vertex_a]; // d0 and d1 in the paper
+				const float sample_b = cell_samples[index_vertex_b];
 				// TODO Zero-division is not mentionned in the paper??
 				// ERR_FAIL_COND(sample_a == sample_b);
 				// ERR_FAIL_COND(sample_a == 0 && sample_b == 0);
@@ -705,14 +898,16 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 				// Get interpolation position
 				// We use an 8-bit fraction, allowing the new vertex to be located at one of 257 possible
 				// positions  along  the  edge  when  both  endpoints  are included.
-				const int t = (sample_b << 8) / (sample_b - sample_a);
+				//const int t = (sample_b << 8) / (sample_b - sample_a);
+				const float t = sample_b / (sample_b - sample_a);
 
-				const float t0 = static_cast<float>(t) / 256.f;
-				const float t1 = static_cast<float>(0x100 - t) / 256.f;
-				const int ti0 = t;
-				const int ti1 = 0x100 - t;
+				const float t0 = t; //static_cast<float>(t) / 256.f;
+				const float t1 = 1.f - t; //static_cast<float>(0x100 - t) / 256.f;
+				// const int ti0 = t;
+				// const int ti1 = 0x100 - t;
 
-				if (t & 0xff) {
+				vec3 testOffset = vec3(0, 0.0, 0);
+				if (t > 0.f && t < 1.f) {
 					// Vertex lies in the interior of the edge.
 					// (i.e t is either 0 or 257, meaning it's either directly on vertex a or vertex b)
 
@@ -726,8 +921,8 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 					// Bit 1 (0x2): need to subtract one to Y
 					// Bit 2 (0x4): vertex is on an interior edge, won't be reused
 					// Bit 3 (0x8): vertex is on a maximal edge, it can be reused
-					// uint8_t reuse_direction = (edge_code >> 12);
-					//
+					uint8_t reuse_direction = (edge_code >> 12);
+					
 					// bool present = (reuse_direction & direction_validity_mask) == reuse_direction;
 					//
 					// if (present) {
@@ -741,14 +936,14 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 					if (1/*cell_vertex_indices[i] == -1*/) {
 						// Going to create a new vertex
 
-						const voxelPosInfo p0 = cell_positions[index_vertex_a];
-						const voxelPosInfo p1 = cell_positions[index_vertex_b];
+						voxelPosInfo p0 = cell_positions[index_vertex_a];
+						voxelPosInfo p1 = cell_positions[index_vertex_b];
 
 						const vec3 n0 = cell_gradients[index_vertex_a];
 						const vec3 n1 = cell_gradients[index_vertex_b];
 
-						Vector3i primary = p0.v * ti0 + p1.v * ti1;
-						vec3 primaryf = primary.to_vec3() * FIXED_FACTOR;
+						//Vector3i primary = p0.v * ti0 + p1.v * ti1;
+						vec3 primaryf = p0.v.to_vec3() * t0 + p1.v.to_vec3() * t1;//primary.to_vec3() * FIXED_FACTOR;
 						vec3 normal = (n0 * t0 + n1 * t1).normalized();
 
 						bool fullres_side = (index_vertex_a < 9 || index_vertex_b < 9);
@@ -757,7 +952,7 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						vec3 secondary;
 						if (fullres_side) {
 
-							//secondary = get_secondary_position(primaryf, normal, 0, block_size_scaled);
+							secondary = get_secondary_position(primaryf, normal, 0, block_size_scaled);
 							border_mask |= (get_border_mask(p0.v, block_size_scaled) & get_border_mask(p1.v, block_size_scaled)) << 6;
 
 						} else {
@@ -767,11 +962,11 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 							border_mask = 0;
 						}
 
-						cell_vertex_indices[i] = mesh->getVerticesSize();
-						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,p0.info, p0.info));
+						cell_vertex_indices[vertex_index] = mesh->getVerticesSize();
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint + testOffset,p0.info, p0.info));
 						//vdata.m_pos = vec3(primaryf.x * BLOCK_SIZE, primaryf.y * BLOCK_SIZE, -1 * primaryf.z * BLOCK_SIZE) + basePoint;
 						vdata.m_normal = (n0 * t0 + n1 * t1).normalized();
-
+						vdata.m_color = vec4(5, 0, 0, 1);
 						mesh->addVertex(vdata);
 						// if (reuse_direction & 0x8) {
 						// 	// The vertex can be re-used later
@@ -780,14 +975,15 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 						// }
 					}
 
-				} else {
+				} 
+				else {
 					// The vertex is exactly on one of the edge endpoints.
 					// Try to reuse corner vertex from a preceding cell.
 					// Use the reuse information in transitionCornerData.
 
-					uint8_t index_vertex = (t == 0 ? index_vertex_b : index_vertex_a);
-					CRASH_COND(index_vertex >= 13);
-					uint8_t corner_data = Transvoxel::get_transition_corner_data(index_vertex);
+					const uint8_t cell_index = (t == 0 ? index_vertex_b : index_vertex_a);
+					CRASH_COND(cell_index >= 13);
+					uint8_t corner_data = Transvoxel::get_transition_corner_data(cell_index);
 					uint8_t vertex_index_to_reuse_or_create = (corner_data & 0xf);
 					uint8_t reuse_direction = ((corner_data >> 4) & 0xf);
 
@@ -804,28 +1000,28 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 					if ( 1/*cell_vertex_indices[i] == -1*/) {
 						// Going to create a new vertex
 
-						voxelPosInfo primary = cell_positions[index_vertex];
+						voxelPosInfo primary = cell_positions[cell_index];
 						vec3 primaryf = primary.v.to_vec3();
-						vec3 normal = (cell_gradients[index_vertex]).normalized();
+						vec3 normal = (cell_gradients[cell_index]).normalized();
 
-						bool fullres_side = (index_vertex < 9);
+						bool fullres_side = (cell_index < 9);
 						uint16_t border_mask = cell_border_mask;
 
 						vec3 secondary;
 						if (fullres_side) {
 
-							//secondary = get_secondary_position(primaryf, normal, 0, block_size_scaled);
+							secondary = get_secondary_position(primaryf, normal, 0, block_size_scaled);
 							border_mask |= get_border_mask(primary.v, block_size_scaled) << 6;
 
 						} else {
 							border_mask = 0;
 						}
 
-						cell_vertex_indices[i] = mesh->getVerticesSize();
-						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint,primary.info, primary.info));
-						vdata.m_normal = cell_gradients[index_vertex];
+						cell_vertex_indices[vertex_index] = mesh->getVerticesSize();
+						auto vdata = genVertexData(getVoxelVertex(primaryf, basePoint + testOffset, primary.info, primary.info));
+						vdata.m_normal = cell_gradients[cell_index];
 						//vdata.m_pos = vec3(primaryf.x * BLOCK_SIZE, primaryf.y * BLOCK_SIZE , -1 * primaryf.z * BLOCK_SIZE) + basePoint;
-
+						vdata.m_color = vec4(5, 0, 0, 1);
 						mesh->addVertex(vdata);
 
 						// // We are on a corner so the vertex will be re-usable later
@@ -840,11 +1036,14 @@ void TransVoxel::build_transition(vec3 basePoint,Mesh * mesh, int VOXEL_SIZE, vo
 
 			for (unsigned int ti = 0; ti < triangle_count; ++ti) 
 			{
-				if (!flip_triangles) {
+				if (!flip_triangles) //or double side for test
+				{
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 2)]);
-				} else {
+				} 
+				else 
+				{
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 2)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3 + 1)]);
 					mesh->addIndex(cell_vertex_indices[cell_data.get_vertex_index(ti * 3)]);

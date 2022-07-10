@@ -69,7 +69,7 @@ namespace tzw
 		//Our buttons are both drag sources and drag targets here!
 		if (ImGui::BeginDragDropSource())
 		{
-			ImGui::SetDragDropPayload("DND_DEMO_CELL", item, sizeof(item));    //# Set payload to carry the index of our item (could be anything)
+			ImGui::SetDragDropPayload("DND_DEMO_CELL", &item, sizeof(item));    //# Set payload to carry the index of our item (could be anything)
 			ImGui::Text("Dragging");   // Display preview (could be anything, e.g. when dragging an image we could decide to display the filename and a small preview of the image, etc.)
 			ImGui::EndDragDropSource();
 			m_isDragingInventory = true;

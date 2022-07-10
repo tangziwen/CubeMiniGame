@@ -92,6 +92,7 @@ namespace tzw {
 		m.setToIdentity();
 		auto p = Matrix44();
 		p.perspective(45, 1, 0.1, 50);
+		p.data()[5] *= -1.f;
 		auto node = Camera();
 		node.setPos(0.5, 0.5, 0.5);
 		node.lookAt(vec3(0, 0, 0), vec3(0, 1, 0));
@@ -120,6 +121,7 @@ namespace tzw {
 			{
 				Material * mat = new Material();
 				mat->loadFromTemplate("ThumbNail");
+				mat->setCullMode(RenderFlag::CullMode::Front);
 				auto varList = command.getMat()->getVarList();
 				mat->setVar("DiffuseMap", varList["DiffuseMap"]);
 				mat->setVar("MetallicMap", varList["MetallicMap"]);
