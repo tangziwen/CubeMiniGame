@@ -1,4 +1,6 @@
 #include "TSAA.h"
+
+#include "BackEnd/vk/DeviceTextureVK.h"
 #include "Technique/MaterialPool.h"
 #include "EngineSrc/BackEnd/VkRenderBackEnd.h"
 #include "Engine/Engine.h"
@@ -26,6 +28,9 @@ namespace tzw
 
         m_bufferB = backEnd->createFrameBuffer_imp();
         m_bufferB->init(winSize.x, winSize.y, TSAAPass);
+
+        auto tex = (DeviceTextureVK *)m_bufferB->getTextureList()[0];
+		backEnd->transitionImageLayout(tex->getImage(), backEnd->getFormat(ImageFormat::D24_S8) , VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         m_tsaaStage->init(TSAAPass, m_bufferA);
         m_tsaaStage->setName("TSAA Stage");
@@ -60,7 +65,7 @@ namespace tzw
     }
     DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
-        std::swap(m_bufferA, m_bufferB);//swap buffer
+        
         //reset jitter
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
@@ -75,7 +80,8 @@ namespace tzw
         m_tsaaStage->drawScreenQuad();
         m_tsaaStage->endRenderPass();
         m_tsaaStage->finish();
-      
+
+        std::swap(m_bufferA, m_bufferB);//swap buffer
         return m_tsaaStage;
     }
 

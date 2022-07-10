@@ -18,6 +18,7 @@ namespace tzw
 		void onTick(float dt);
 
 		void equipWeapon(RLWeapon * weapon);
+		RLWeapon * getWeapon();
 	private:
 		vec2 m_pos;
 		int m_id = 0;

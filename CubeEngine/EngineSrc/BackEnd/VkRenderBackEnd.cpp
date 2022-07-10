@@ -84,29 +84,7 @@ std::vector<const char*> getRequiredExtensions() {
 PFN_vkCreateDebugReportCallbackEXT my_vkCreateDebugReportCallbackEXT = NULL; 
 
 FILE * vulkanValidationFile = nullptr;
-VKAPI_ATTR VkBool32 VKAPI_CALL MyDebugReportCallback(
-    VkDebugReportFlagsEXT       flags,
-    VkDebugReportObjectTypeEXT  objectType,
-    uint64_t                    object,
-    size_t                      location,
-    int32_t                     messageCode,
-    const char*                 pLayerPrefix,
-    const char*                 pMessage,
-    void*                       pUserData)
-{
-    if(!vulkanValidationFile){
-        vulkanValidationFile = fopen("./vulkanLog.txt", "w");
-    }
-	const char * errorPattern = "Validation Error:";
-    printf("validation Layer %s\n", pMessage);
-	fprintf(vulkanValidationFile, "validation Layer %s\n", pMessage);
-	if(strncmp(pMessage, errorPattern, strlen(errorPattern)) == 0)
-	{
-		printf("hehe\n");
-		//abort();
-	}
-    return VK_FALSE;
-}
+
 
 const std::vector<const char*> validationLayers = {
 	"VK_LAYER_KHRONOS_validation",

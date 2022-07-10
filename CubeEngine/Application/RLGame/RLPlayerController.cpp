@@ -2,7 +2,7 @@
 
 #include "RLHero.h"
 #include "Event/EventMgr.h"
-
+#include "RLWorld.h"
 namespace tzw
 {
 
@@ -13,6 +13,8 @@ namespace tzw
 	void RLPlayerController::possess(RLHero* hero)
 	{
 		m_currPossessHero = hero;
+		m_crossHairsprite = Sprite::create("RL/CrossHair.png");
+		RLWorld::shared()->getRootNode()->addChild(m_crossHairsprite);
 	}
 	void RLPlayerController::processInput(float dt)
 	{
@@ -27,6 +29,13 @@ namespace tzw
 	void RLPlayerController::onFrameUpdate(float dt)
 	{
 		processInput(dt);
+		if(m_currPossessHero)
+		{
+			if(m_currPossessHero->getWeapon())
+			{
+				m_currPossessHero->getWeapon()->setShootDir((m_crossHairsprite->getPos2D() - m_currPossessHero->getPosition()).normalized());
+			}
+		}
 	}
 
 	bool RLPlayerController::onKeyPress(int keyCode)
@@ -70,6 +79,12 @@ namespace tzw
 		default:
 			break;
 		};
+		return false;
+	}
+	bool RLPlayerController::onMouseMove(vec2 pos)
+	{
+		m_mousePos = pos;
+		m_crossHairsprite->setPos2D(pos);
 		return false;
 	}
 }

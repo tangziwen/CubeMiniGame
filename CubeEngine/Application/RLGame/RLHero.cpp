@@ -6,7 +6,7 @@ RLHero::RLHero(int idType)
 	:m_id(idType)
 {
 }
-
+#pragma optimize("", off)
 void RLHero::setPosition(vec2 pos)
 {
 	m_pos = pos;
@@ -50,6 +50,11 @@ void RLHero::equipWeapon(RLWeapon* weapon)
 {
 	m_weapon = weapon;
 	m_weapon->setOwner(this);
+}
+
+RLWeapon * RLHero::getWeapon()
+{
+	return m_weapon;
 }
 
 }
