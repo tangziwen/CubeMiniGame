@@ -36,12 +36,25 @@ void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity)
 }
 void RLBulletPool::tick(float dt)
 {
-	for(RLBullet & bullet : m_bulletsList)
+
+	for(auto iter = m_bulletsList.begin();iter != m_bulletsList.end();)
 	{
+		RLBullet & bullet = *iter;
 		if(bullet.m_sprite)
 		{
 			bullet.m_pos += bullet.m_velocity * dt;
 			bullet.m_sprite->pos = bullet.m_pos;
+			bullet.m_t += dt;
+			if(bullet.m_t > bullet.m_lifespan)
+			{
+				//ready to kill
+				returnSprite(bullet.m_sprite);
+				iter = m_bulletsList.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
 		}
 	}
 }
@@ -51,6 +64,12 @@ SpriteInstanceInfo* RLBulletPool::assignASprite()
 	SpriteInstanceInfo * info = m_freeSpriteList.front();
 	m_freeSpriteList.pop_front();
 	return info;
+}
+
+void RLBulletPool::returnSprite(SpriteInstanceInfo* spriteInfo)
+{
+	spriteInfo->m_isVisible = false;
+	m_freeSpriteList.push_back(spriteInfo);
 }
 
 }

@@ -35,6 +35,8 @@ void RLWorld::start()
 	m_playerController->possess(hero);
 
 
+	hero = spawnHero(0);
+	hero->setPosition(vec2(75, 50));
 }
 
 Node* RLWorld::getRootNode()

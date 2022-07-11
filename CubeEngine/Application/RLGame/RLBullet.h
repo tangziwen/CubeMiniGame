@@ -11,5 +11,7 @@ struct RLBullet
 	vec2 m_velocity;
 	int m_typeID = 0;
 	SpriteInstanceInfo * m_sprite = nullptr;
+	float m_lifespan = 1.f;
+	float m_t = 0.f;
 };
 }

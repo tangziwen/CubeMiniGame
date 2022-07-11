@@ -18,6 +18,7 @@ public:
 	void spawnBullet(int type, vec2 pos, vec2 velocity);
 	void tick(float dt);
 	SpriteInstanceInfo * assignASprite();
+	void returnSprite(SpriteInstanceInfo * spriteInfo);
 private:
 	std::vector<RLBullet> m_bulletsList;
 	std::list<SpriteInstanceInfo *> m_freeSpriteList;

@@ -323,7 +323,7 @@ vec3 CalcBumpedNormal(vec3 normalMapColor)
 }
 void main() 
 {
-	out_albedo = vec4(pow(getTerrainTex(GrassTex).rgb, vec3(2.2)), 1.0);
+	out_albedo = vec4(pow(getTerrainTex(GrassTex).rgb, vec3(2.2)) * fragColor.rgb, 1.0);
 	out_position = vec4(v_worldPos.xyz, 1.0);
 	out_normal = vec4(CalcBumpedNormal(getTerrainTex(NormalTex).rgb),1.0);
 	out_mix = vec4(getTerrainTex(RoughnessTex).r,0.0,0.0,1.0);
