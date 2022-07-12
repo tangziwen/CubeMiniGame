@@ -15,6 +15,7 @@ namespace tzw
 		m_currPossessHero = hero;
 		m_crossHairsprite = Sprite::create("RL/CrossHair.png");
 		RLWorld::shared()->getRootNode()->addChild(m_crossHairsprite);
+		m_currPossessHero->setIsPlayerControll(true);
 	}
 	void RLPlayerController::processInput(float dt)
 	{

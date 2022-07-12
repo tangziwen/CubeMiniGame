@@ -22,6 +22,8 @@ void RLWorld::start()
 			m_tileMgr->addTile(tileTypeForest, i, j);
 		}
 	}
+	m_quadTree = new QuadTree2D();
+	m_quadTree->init(vec2(0, 0), vec2(ARENA_MAP_SIZE * 32, ARENA_MAP_SIZE * 32));
 	m_mapRootNode = Node::create();
 	g_GetCurrScene()->addNode(m_mapRootNode);
 	m_mapRootNode->addChild(m_tileMgr);
@@ -36,7 +38,7 @@ void RLWorld::start()
 
 
 	hero = spawnHero(0);
-	hero->setPosition(vec2(75, 50));
+	hero->setPosition(vec2(100, 50));
 }
 
 Node* RLWorld::getRootNode()
@@ -58,6 +60,11 @@ RLHero* RLWorld::spawnHero(int heroType)
 	RLHero * hero = new RLHero(heroType);
 	m_heroes.push_back(hero);
 	return hero;
+}
+
+QuadTree2D* RLWorld::getQuadTree()
+{
+	return m_quadTree;
 }
 
 }
