@@ -16,6 +16,7 @@ namespace tzw
 		m_crossHairsprite = Sprite::create("RL/CrossHair.png");
 		RLWorld::shared()->getRootNode()->addChild(m_crossHairsprite);
 		m_currPossessHero->setIsPlayerControll(true);
+		m_currPossessHero->getCollider2D()->setSourceChannel(CollisionChannel2D_Player);
 	}
 	void RLPlayerController::processInput(float dt)
 	{

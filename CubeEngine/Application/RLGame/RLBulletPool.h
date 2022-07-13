@@ -20,7 +20,7 @@ public:
 	SpriteInstanceInfo * assignASprite();
 	void returnSprite(SpriteInstanceInfo * spriteInfo);
 private:
-	std::vector<RLBullet> m_bulletsList;
+	std::vector<RLBullet*> m_bulletsList;
 	std::list<SpriteInstanceInfo *> m_freeSpriteList;
 	SpriteInstanceMgr * m_spriteMgr;
 	std::vector<SpriteInstanceInfo> m_spriteTotalPool;

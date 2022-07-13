@@ -82,8 +82,12 @@ namespace tzw
 	void QuadTree2D::removeCollider(Collider2D* obj)
 	{
 		QuadTree2DNode * node = obj->getParent();
+		if(!node) return;
 		auto iter = std::find(node->m_collidersList.begin(), node->m_collidersList.end(), obj);
-		node->m_collidersList.erase(iter);
+		if(iter != node->m_collidersList.end())
+		{
+			node->m_collidersList.erase(iter);
+		}
 		obj->setParent(nullptr);
 	}
 	void QuadTree2D::updateCollider(Collider2D* obj)
@@ -93,17 +97,31 @@ namespace tzw
 	}
 	void QuadTree2D::checkCollision(Collider2D* obj)
 	{
+		if(!obj->getIsCollisionEnable()) return;
 		m_tmpColliderList.clear();
 		m_rootNode->getRange_R(obj->getAABB(), m_tmpColliderList);
 		for(Collider2D * otherCollider: m_tmpColliderList)
 		{
 			if(obj != otherCollider)
 			{
-				if((obj->getPos() - otherCollider->getPos()).length() < (obj->getRadius() + otherCollider->getRadius()))
+				if(!otherCollider->getIsCollisionEnable()) continue;
+				bool responseOther = otherCollider->getSourceChannel() & obj->getResponseChannel();
+				bool responseSelf = obj->getSourceChannel() & otherCollider->getResponseChannel();
+				if(responseOther || responseSelf)
 				{
-					obj->onCollision(otherCollider);
-					otherCollider->onCollision(obj);
+					if((obj->getPos() - otherCollider->getPos()).length() < (obj->getRadius() + otherCollider->getRadius()))
+					{
+						if(responseOther)
+						{
+							obj->onCollision(otherCollider);
+						}
+						if(responseSelf)
+						{
+							otherCollider->onCollision(obj);
+						}
+					}
 				}
+
 
 			}		
 		}
