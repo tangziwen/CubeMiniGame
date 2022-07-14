@@ -27,6 +27,11 @@ Sprite *Sprite::createWithColor(vec4 color,vec2 contentSize)
     return newObj;
 }
 
+Sprite::~Sprite()
+{
+    removeFromParent();
+}
+
 void Sprite::initWithTexture(std::string texturePath)
 {
     //MaterialPool::shared()->getMaterialByName(getSpriteManggledName())

@@ -17,5 +17,6 @@ struct RLBullet
 	Collider2D m_collider2D;
 	float m_lifespan = 1.f;
 	float m_t = 0.f;
+	bool m_isLiving = true;
 };
 }

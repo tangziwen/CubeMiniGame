@@ -5,6 +5,13 @@
 #include <cstdint>
 namespace tzw
 {
+	struct UserDataWrapper
+	{
+		UserDataWrapper(void * userData, int tag):m_userData(userData), m_tag(tag){};
+		UserDataWrapper():m_userData(nullptr), m_tag(0){};
+		void * m_userData = nullptr;
+		int m_tag = 0;
+	};
 	enum CollisionChannel2D : uint16_t
 	{
 		CollisionChannel2D_Player = 1 << 1,
@@ -17,6 +24,7 @@ namespace tzw
 	public:
 		Collider2D();
 		Collider2D(float radius, vec2 newPos);
+		~Collider2D();
 		void setPos(vec2 newPos);
 		float getRadius(){return m_radius;}
 		void setRadius(float newRadius);
@@ -32,6 +40,8 @@ namespace tzw
 		uint16_t getResponseChannel() {return m_responseChannel;}
 		void setSourceChannel(uint16_t channel) {m_sourceChannel = channel;}
 		void setResponseChannel(uint16_t flags) {m_responseChannel = flags;}
+		void setUserData(UserDataWrapper data) {m_userData = data;};
+		UserDataWrapper getUserData() {return m_userData;};
 	protected:
 		void calculateAABB();
 		vec2 m_pos;
@@ -41,6 +51,7 @@ namespace tzw
 		bool m_isCollisionEnable = true;
 		uint16_t m_sourceChannel = CollisionChannel2D_Entity;
 		uint16_t m_responseChannel = CollisionChannel2D_Entity;
+		UserDataWrapper m_userData ;
 		
 	};
 

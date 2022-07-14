@@ -32,6 +32,7 @@ void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity)
 	newBullet->m_velocity = velocity;
 	newBullet->m_sprite = assignASprite();
 	newBullet->m_sprite->m_isVisible = true;
+	newBullet->m_lifespan = 5.f;
 	newBullet->m_collider2D.setPos(pos);
 	newBullet->m_collider2D.setRadius(16);
 	newBullet->m_collider2D.setSourceChannel(CollisionChannel2D_Bullet);
@@ -52,14 +53,13 @@ void RLBulletPool::tick(float dt)
 			bullet->m_collider2D.setPos(bullet->m_pos);
 			RLWorld::shared()->getQuadTree()->checkCollision(&bullet->m_collider2D);
 			bullet->m_t += dt;
-			if(bullet->m_t > bullet->m_lifespan)
+			if((bullet->m_t > bullet->m_lifespan) || (!bullet->m_isLiving) || checkOutOfRange(bullet))
 			{
 				//ready to kill
 				returnSprite(bullet->m_sprite);
 				RLWorld::shared()->getQuadTree()->removeCollider(&bullet->m_collider2D);
 				iter = m_bulletsList.erase(iter);
 				delete bullet;
-				
 			}
 			else
 			{
@@ -80,6 +80,12 @@ void RLBulletPool::returnSprite(SpriteInstanceInfo* spriteInfo)
 {
 	spriteInfo->m_isVisible = false;
 	m_freeSpriteList.push_back(spriteInfo);
+}
+
+bool RLBulletPool::checkOutOfRange(RLBullet* bullet)
+{
+	vec2 mapSize = RLWorld::shared()->getMapSize();
+	return (bullet->m_pos.x < 0 || bullet->m_pos.x > mapSize.x || bullet->m_pos.y < 0 || bullet->m_pos.y > mapSize.y);
 }
 
 }

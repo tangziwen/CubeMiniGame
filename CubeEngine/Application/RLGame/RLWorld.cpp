@@ -2,6 +2,7 @@
 #include "RLHero.h"
 #include "Event/EventMgr.h"
 #include "RLBulletPool.h"
+
 namespace tzw
 {
 void RLWorld::start()
@@ -23,7 +24,8 @@ void RLWorld::start()
 		}
 	}
 	m_quadTree = new QuadTree2D();
-	m_quadTree->init(vec2(0, 0), vec2(ARENA_MAP_SIZE * 32, ARENA_MAP_SIZE * 32));
+	m_quadTree->init(vec2(-AREAN_COLLISION_MAP_PADDING, -AREAN_COLLISION_MAP_PADDING), vec2(ARENA_MAP_SIZE * 32 + AREAN_COLLISION_MAP_PADDING, ARENA_MAP_SIZE * 32 + AREAN_COLLISION_MAP_PADDING));
+	
 	m_mapRootNode = Node::create();
 	g_GetCurrScene()->addNode(m_mapRootNode);
 	m_mapRootNode->addChild(m_tileMgr);
@@ -39,6 +41,7 @@ void RLWorld::start()
 
 	hero = spawnHero(0);
 	hero->setPosition(vec2(100, 50));
+	
 }
 
 Node* RLWorld::getRootNode()
@@ -48,9 +51,20 @@ Node* RLWorld::getRootNode()
 
 void RLWorld::onFrameUpdate(float dt)
 {
-	for(RLHero * hero : m_heroes)
+
+	for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 	{
+		RLHero * hero = *iter;
 		hero->onTick(dt);
+		if(!hero->isAlive())
+		{
+			iter = m_heroes.erase(iter);
+			delete hero;
+		}
+		else
+		{
+			++iter;
+		}
 	}
 	RLBulletPool::shared()->tick(dt);
 }
@@ -65,6 +79,11 @@ RLHero* RLWorld::spawnHero(int heroType)
 QuadTree2D* RLWorld::getQuadTree()
 {
 	return m_quadTree;
+}
+
+vec2 RLWorld::getMapSize()
+{
+	return vec2(ARENA_MAP_SIZE * 32, ARENA_MAP_SIZE * 32);
 }
 
 }

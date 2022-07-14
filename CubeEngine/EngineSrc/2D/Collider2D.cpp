@@ -11,6 +11,13 @@ namespace tzw
 	{
 		calculateAABB();
 	}
+	Collider2D::~Collider2D()
+	{
+		if(m_parent)
+		{
+			m_parent->m_outerParent->removeCollider(this);
+		}
+	}
 	void Collider2D::setPos(vec2 newPos)
 	{
 		m_pos = newPos;

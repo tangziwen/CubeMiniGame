@@ -19,6 +19,7 @@ public:
 	void tick(float dt);
 	SpriteInstanceInfo * assignASprite();
 	void returnSprite(SpriteInstanceInfo * spriteInfo);
+	bool checkOutOfRange(RLBullet * bullet);
 private:
 	std::vector<RLBullet*> m_bulletsList;
 	std::list<SpriteInstanceInfo *> m_freeSpriteList;

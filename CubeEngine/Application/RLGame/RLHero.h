@@ -9,6 +9,7 @@ namespace tzw
 	{
 	public:
 		RLHero(int idType);
+		~RLHero();
 		void setPosition(vec2 pos);
 		const vec2 & getPosition();
 
@@ -24,6 +25,8 @@ namespace tzw
 		void onCollision(Collider2D * self, Collider2D * other);
 		void setIsPlayerControll(bool newVal) {m_isPlayerControll = newVal;}
 		bool getIsPlayerControll() {return m_isPlayerControll;}
+		void receiveDamage(float damage);
+		bool isAlive();
 	private:
 		vec2 m_pos;
 		int m_id = 0;

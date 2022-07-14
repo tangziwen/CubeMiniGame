@@ -20,6 +20,7 @@ public:
     Sprite();
     static Sprite * create(std::string texturePath);
     static Sprite * createWithColor(vec4 color,vec2 getContentSize);
+    virtual ~Sprite();
     void initWithTexture(std::string texturePath);
     void initWithTexture(Texture * texture);
     void initWithColor(vec4 color, vec2 getContentSize);

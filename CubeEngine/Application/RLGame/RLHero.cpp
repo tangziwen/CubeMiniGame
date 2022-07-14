@@ -10,6 +10,14 @@ RLHero::RLHero(int idType)
 	{
 		onCollision(self, other);
 	};
+	m_collider->setUserData(UserDataWrapper(this, RL_OBJECT_TYPE_MONSTER));
+}
+
+RLHero::~RLHero()
+{
+	delete m_sprite;
+	delete m_collider;
+	delete m_weapon;
 }
 
 void RLHero::setPosition(vec2 pos)
@@ -93,6 +101,16 @@ void RLHero::onCollision(Collider2D* self, Collider2D* other)
 		m_hp -= 1.0f;
 		m_isHitImmune = true;
 	}
+}
+
+void RLHero::receiveDamage(float damage)
+{
+	m_hp -= damage;
+}
+
+bool RLHero::isAlive()
+{
+	return m_hp > 0.f;
 }
 
 }
