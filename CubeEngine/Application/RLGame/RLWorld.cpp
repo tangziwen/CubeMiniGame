@@ -2,7 +2,7 @@
 #include "RLHero.h"
 #include "Event/EventMgr.h"
 #include "RLBulletPool.h"
-
+#include "RLDirector.h"
 namespace tzw
 {
 void RLWorld::start()
@@ -34,14 +34,10 @@ void RLWorld::start()
 	m_playerController = new RLPlayerController();
 
 	RLHero * hero = spawnHero(0);
-	hero->setPosition(vec2(50, 50));
+	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
 	hero->equipWeapon(new RLWeapon());
 	m_playerController->possess(hero);
 
-
-	hero = spawnHero(0);
-	hero->setPosition(vec2(100, 50));
-	
 }
 
 Node* RLWorld::getRootNode()
@@ -51,7 +47,7 @@ Node* RLWorld::getRootNode()
 
 void RLWorld::onFrameUpdate(float dt)
 {
-
+	RLDirector::shared()->tick(dt);
 	for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 	{
 		RLHero * hero = *iter;
@@ -66,6 +62,7 @@ void RLWorld::onFrameUpdate(float dt)
 			++iter;
 		}
 	}
+	
 	RLBulletPool::shared()->tick(dt);
 }
 
@@ -84,6 +81,11 @@ QuadTree2D* RLWorld::getQuadTree()
 vec2 RLWorld::getMapSize()
 {
 	return vec2(ARENA_MAP_SIZE * 32, ARENA_MAP_SIZE * 32);
+}
+
+RLPlayerController* RLWorld::getPlayerController()
+{
+	return m_playerController;
 }
 
 }

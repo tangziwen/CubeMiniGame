@@ -5,6 +5,7 @@
 #include "2D/Collider2D.h"
 namespace tzw
 {
+	class RLController;
 	class RLHero
 	{
 	public:
@@ -27,6 +28,7 @@ namespace tzw
 		bool getIsPlayerControll() {return m_isPlayerControll;}
 		void receiveDamage(float damage);
 		bool isAlive();
+		void setController(RLController * controller);
 	private:
 		vec2 m_pos;
 		int m_id = 0;
@@ -38,6 +40,7 @@ namespace tzw
 		float m_hp = 100.f;
 		float m_hitTimer = 0.f;
 		bool m_isHitImmune = false;
+		RLController * m_controller = nullptr;
 	};
 }
 

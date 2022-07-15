@@ -113,4 +113,9 @@ bool RLHero::isAlive()
 	return m_hp > 0.f;
 }
 
+void RLHero::setController(RLController* controller)
+{
+	m_controller = controller;
+}
+
 }

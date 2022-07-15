@@ -28,6 +28,7 @@ namespace tzw
 		RLHero* spawnHero(int heroType);
 		QuadTree2D * getQuadTree();
 		vec2 getMapSize();
+		RLPlayerController * getPlayerController();
 	protected:
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;

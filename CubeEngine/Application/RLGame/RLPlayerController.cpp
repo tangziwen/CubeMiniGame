@@ -96,6 +96,17 @@ namespace tzw
 		m_crossHairsprite->setPos2D(pos);
 		return false;
 	}
+	vec2 RLPlayerController::getPos()
+	{
+		if(m_currPossessHero)
+		{
+			return m_currPossessHero->getPosition();
+		}
+		else
+		{
+			return vec2();
+		}
+	}
 	void RLPlayerController::calculateView()
 	{
 		vec2 center = Engine::shared()->winSize();
