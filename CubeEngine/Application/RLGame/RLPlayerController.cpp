@@ -10,12 +10,13 @@ namespace tzw
 	RLPlayerController::RLPlayerController()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
+		m_crossHairsprite = Sprite::create("RL/CrossHair.png");
+		g_GetCurrScene()->addNode(m_crossHairsprite);
 	}
 	void RLPlayerController::possess(RLHero* hero)
 	{
 		m_currPossessHero = hero;
-		m_crossHairsprite = Sprite::create("RL/CrossHair.png");
-		g_GetCurrScene()->addNode(m_crossHairsprite);
+
 		m_currPossessHero->setIsPlayerControll(true);
 		m_currPossessHero->getCollider2D()->setSourceChannel(CollisionChannel2D_Player);
 	}
@@ -40,11 +41,12 @@ namespace tzw
 				vec3 posInWorld = m_invViewMat.transformVec3(vec3(m_crossHairsprite->getPos2D().x, m_crossHairsprite->getPos2D().y, 0));
 				m_currPossessHero->getWeapon()->setShootDir((posInWorld.xy() - m_currPossessHero->getPosition()).normalized());
 			}
+			calculateView();
+			vec3 result = m_viewMat.transformVec3(vec3(0, 0, 0));
+			RLWorld::shared()->getRootNode()->setPos(vec3(result.x, result.y, 0));
 		}
 
-		calculateView();
-		vec3 result = m_viewMat.transformVec3(vec3(0, 0, 0));
-		RLWorld::shared()->getRootNode()->setPos(vec3(result.x, result.y, 0));
+
 	}
 
 	bool RLPlayerController::onKeyPress(int keyCode)

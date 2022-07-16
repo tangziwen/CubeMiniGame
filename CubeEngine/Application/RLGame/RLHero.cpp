@@ -43,7 +43,16 @@ void RLHero::updateGraphics()
 
 void RLHero::initGraphics()
 {
-	m_sprite = Sprite::create("PTM/army.png");
+	if(m_id == 0)
+	{
+		m_sprite = Sprite::create("PTM/army.png");
+
+	}
+	else
+	{
+		m_sprite = Sprite::create("RL/zombie.png");
+	}
+	
 	m_sprite->setLocalPiority(2);
 	RLWorld::shared()->getRootNode()->addChild(m_sprite);
 	m_isInitedGraphics = true;
@@ -52,6 +61,10 @@ void RLHero::initGraphics()
 
 void RLHero::onTick(float dt)
 {
+	if(m_controller)
+	{
+		m_controller->tick(dt);
+	}
 	updateGraphics();
 	if(m_weapon)
 	{
@@ -98,7 +111,7 @@ void RLHero::onCollision(Collider2D* self, Collider2D* other)
 {
 	if(getIsPlayerControll() && !m_isHitImmune)
 	{
-		m_hp -= 1.0f;
+		receiveDamage(15.0f);
 		m_isHitImmune = true;
 	}
 }
@@ -106,6 +119,10 @@ void RLHero::onCollision(Collider2D* self, Collider2D* other)
 void RLHero::receiveDamage(float damage)
 {
 	m_hp -= damage;
+	if(getIsPlayerControll() && m_hp <= 0.f)
+	{
+		RLWorld::shared()->setCurrGameState(RL_GameState::AfterMath);
+	}
 }
 
 bool RLHero::isAlive()
@@ -116,6 +133,11 @@ bool RLHero::isAlive()
 void RLHero::setController(RLController* controller)
 {
 	m_controller = controller;
+}
+
+float RLHero::getHP()
+{
+	return m_hp;
 }
 
 }

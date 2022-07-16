@@ -15,10 +15,16 @@ namespace tzw
 		if(m_time > 10.0f)
 		{
 			//genearate a wave
-			RLHero * hero = RLWorld::shared()->spawnHero(0);
-			RLAIController * ai = new RLAIController();
-			ai->possess(hero);
-			hero->setPosition(vec2(200, 50));
+			std::vector<vec2> spawnPos;
+			RLWorld::shared()->getRandomBoundaryPos(10, spawnPos);
+
+			for(int i = 0; i < 10; i++)
+			{
+				RLHero * hero = RLWorld::shared()->spawnHero(1);
+				RLAIController * ai = new RLAIController();
+				ai->possess(hero);
+				hero->setPosition(spawnPos[i]);
+			}
 			m_time = 0.f;
 		}
 	}

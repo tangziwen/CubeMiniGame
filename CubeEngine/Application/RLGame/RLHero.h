@@ -29,6 +29,7 @@ namespace tzw
 		void receiveDamage(float damage);
 		bool isAlive();
 		void setController(RLController * controller);
+		float getHP();
 	private:
 		vec2 m_pos;
 		int m_id = 0;

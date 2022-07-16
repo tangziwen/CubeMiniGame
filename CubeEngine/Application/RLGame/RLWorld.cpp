@@ -3,6 +3,7 @@
 #include "Event/EventMgr.h"
 #include "RLBulletPool.h"
 #include "RLDirector.h"
+#include "RLGUI.h"
 namespace tzw
 {
 void RLWorld::start()
@@ -33,11 +34,31 @@ void RLWorld::start()
 	RLBulletPool::shared()->initSpriteList(m_mapRootNode);
 	m_playerController = new RLPlayerController();
 
+
+
+	//init GUI
+
+	RLGUI::shared()->init();
+
+}
+
+void RLWorld::startGame()
+{
 	RLHero * hero = spawnHero(0);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
 	hero->equipWeapon(new RLWeapon());
 	m_playerController->possess(hero);
+	setCurrGameState(RL_GameState::Playing);
+}
 
+void RLWorld::goToMainMenu()
+{
+	m_currGameState = RL_GameState::MainMenu;
+}
+
+void RLWorld::goToAfterMath()
+{
+	m_currGameState = RL_GameState::AfterMath;
 }
 
 Node* RLWorld::getRootNode()
@@ -47,23 +68,27 @@ Node* RLWorld::getRootNode()
 
 void RLWorld::onFrameUpdate(float dt)
 {
-	RLDirector::shared()->tick(dt);
-	for(auto iter = m_heroes.begin();iter != m_heroes.end();)
+	if(m_currGameState ==  RL_GameState::Playing)
 	{
-		RLHero * hero = *iter;
-		hero->onTick(dt);
-		if(!hero->isAlive())
+		RLDirector::shared()->tick(dt);
+		for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 		{
-			iter = m_heroes.erase(iter);
-			delete hero;
+			RLHero * hero = *iter;
+			hero->onTick(dt);
+			if(!hero->isAlive())
+			{
+				iter = m_heroes.erase(iter);
+				delete hero;
+			}
+			else
+			{
+				++iter;
+			}
 		}
-		else
-		{
-			++iter;
-		}
+		RLBulletPool::shared()->tick(dt);
 	}
-	
-	RLBulletPool::shared()->tick(dt);
+
+
 }
 
 RLHero* RLWorld::spawnHero(int heroType)
@@ -86,6 +111,47 @@ vec2 RLWorld::getMapSize()
 RLPlayerController* RLWorld::getPlayerController()
 {
 	return m_playerController;
+}
+
+void RLWorld::getRandomBoundaryPos(int count, std::vector<vec2>& posList)
+{
+	for(int i = 0; i < count; i++)
+	{
+		int rndSide = rand() %4;
+		//bottom
+		switch(rndSide)
+		{
+		case 0://bottom
+			{
+				int idx = rand() % ARENA_MAP_SIZE;
+				posList.push_back(vec2(idx * 32, 0));
+			}
+		break;
+
+		case 1://top
+			{
+				int idx = rand() % ARENA_MAP_SIZE;
+				posList.push_back(vec2(idx * 32, (ARENA_MAP_SIZE - 1) * 32));
+			}
+		break;
+		case 2://left
+			{
+				int idx = rand() % ARENA_MAP_SIZE;
+				posList.push_back(vec2(0, idx * 32));
+			}
+		break;
+		case 3://right
+		{
+			int idx = rand() % ARENA_MAP_SIZE;
+			posList.push_back(vec2((ARENA_MAP_SIZE - 1) * 32, idx * 32));
+		}
+		break;
+		default:
+		break;
+		}
+
+	}
+	
 }
 
 }

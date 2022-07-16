@@ -17,4 +17,8 @@ namespace tzw
 	{
 
 	}
+	RLHero* RLController::getPossessHero()
+	{
+		return m_currPossessHero;
+	}
 }

@@ -16,7 +16,7 @@ public:
 	void setOwner(RLHero * hero);
 	
 protected:
-	float m_cd = 2.0;
+	float m_cd = 0.8f;
 	float m_currTime = 0.0;
 	RLHero * m_owner = nullptr;
 	vec2 m_shootDir;
