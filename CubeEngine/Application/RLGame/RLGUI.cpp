@@ -3,6 +3,7 @@
 #include "Engine/Engine.h"
 #include "RLWorld.h"
 #include "RLHero.h"
+#include "RLPlayerState.h"
 namespace tzw
 {
 RLGUI::RLGUI()
@@ -92,7 +93,8 @@ void RLGUI::drawInGame()
 	ImGui::Begin("Rotate Tips", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
 	RLHero * hero =  RLWorld::shared()->getPlayerController()->getPossessHero();
-	ImGui::Text("Player HP : %f",hero->getHP());
+	ImGui::Text("HP : %d",int(hero->getHP()));
+	ImGui::Text("Score : %u",RLPlayerState::shared()->getScore());
 	ImGui::End();
 }
 
@@ -104,6 +106,7 @@ void RLGUI::drawAfterMath()
 	if (ImGui::Begin("RL Shooter",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
 
+		ImGui::Text("your Score : %u",RLPlayerState::shared()->getScore());
 		if(ImGui::Button(TRC("Retry"), ImVec2(160, 35)))
 		{
 			//setWindowShow(WindowType::NEW_WORLD_SETTING, true);

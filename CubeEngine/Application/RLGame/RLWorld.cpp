@@ -4,6 +4,8 @@
 #include "RLBulletPool.h"
 #include "RLDirector.h"
 #include "RLGUI.h"
+#include "RLPlayerState.h"
+
 namespace tzw
 {
 void RLWorld::start()
@@ -49,6 +51,7 @@ void RLWorld::startGame()
 	hero->equipWeapon(new RLWeapon());
 	m_playerController->possess(hero);
 	setCurrGameState(RL_GameState::Playing);
+	RLPlayerState::shared()->reset();
 }
 
 void RLWorld::goToMainMenu()

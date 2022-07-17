@@ -17,7 +17,7 @@ namespace tzw
 			vec2 currPos = m_currPossessHero->getPosition();
 			vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
 			diff = diff.normalized();
-			m_currPossessHero->setPosition(currPos + diff * dt * 20);
+			m_currPossessHero->setPosition(currPos + diff * dt * 30);
 		}
 	}
 }

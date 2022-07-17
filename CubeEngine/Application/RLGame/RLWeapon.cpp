@@ -17,7 +17,7 @@ void RLWeapon::setShootDir(const vec2& shootDir)
 
 void RLWeapon::fire()
 {
-	RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), m_shootDir * 100.0f);
+	RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), m_shootDir * 200.0f);
 }
 void RLWeapon::onTick(float dt)
 {

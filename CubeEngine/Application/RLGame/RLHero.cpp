@@ -1,5 +1,6 @@
 #include "RLHero.h"
 #include "RLWorld.h"
+#include "RLPlayerState.h"
 namespace tzw
 {
 RLHero::RLHero(int idType)
@@ -119,10 +120,18 @@ void RLHero::onCollision(Collider2D* self, Collider2D* other)
 void RLHero::receiveDamage(float damage)
 {
 	m_hp -= damage;
-	if(getIsPlayerControll() && m_hp <= 0.f)
+	if(m_hp <= 0.f)
 	{
-		RLWorld::shared()->setCurrGameState(RL_GameState::AfterMath);
+		if(getIsPlayerControll())
+		{
+			RLWorld::shared()->setCurrGameState(RL_GameState::AfterMath);
+		}
+		else
+		{
+			RLPlayerState::shared()->addScore(10);
+		}
 	}
+
 }
 
 bool RLHero::isAlive()

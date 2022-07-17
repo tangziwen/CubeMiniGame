@@ -12,7 +12,7 @@ namespace tzw
 	void RLDirector::tick(float dt)
 	{
 		m_time += dt;
-		if(m_time > 10.0f)
+		if(m_time > 12.0f)
 		{
 			//genearate a wave
 			std::vector<vec2> spawnPos;
