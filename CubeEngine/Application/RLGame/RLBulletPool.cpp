@@ -8,12 +8,16 @@ namespace tzw
 RLBulletPool::RLBulletPool()
 {
 }
+int defaultBulletType = 0;
+int EnemyBulletType = 0;
+
 void RLBulletPool::initSpriteList(Node * node)
 {
 	m_spriteMgr = new SpriteInstanceMgr();
 	m_spriteMgr->setLocalPiority(3);
 	node->addChild(m_spriteMgr);
-	int defaultBulletType = m_spriteMgr->addTileType("PTM/mountains.png");
+	defaultBulletType = m_spriteMgr->addTileType("RL/Bullet.png");
+	EnemyBulletType = m_spriteMgr->addTileType("RL/EnemyBullet.png");
 	m_spriteTotalPool.resize(512);
 
 	for(int i = 0; i < m_spriteTotalPool.size(); i++)
@@ -25,7 +29,7 @@ void RLBulletPool::initSpriteList(Node * node)
 	}
 }
 
-void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity)
+void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet)
 {
 	RLBullet * newBullet = new RLBullet();
 	newBullet->m_pos = pos;
@@ -36,7 +40,17 @@ void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity)
 	newBullet->m_collider2D.setPos(pos);
 	newBullet->m_collider2D.setRadius(16);
 	newBullet->m_collider2D.setSourceChannel(CollisionChannel2D_Bullet);
-	newBullet->m_collider2D.setResponseChannel(CollisionChannel2D_Entity);
+	if(isAllyBullet)
+	{
+		newBullet->m_sprite->type = defaultBulletType;
+		newBullet->m_collider2D.setResponseChannel(CollisionChannel2D_Entity);
+	}
+	else
+	{
+		newBullet->m_sprite->type = EnemyBulletType;
+		newBullet->m_collider2D.setResponseChannel(CollisionChannel2D_Player);
+	}
+	
 	m_bulletsList.push_back(newBullet);
 	RLWorld::shared()->getQuadTree()->addCollider(&(newBullet->m_collider2D));
 }

@@ -1,0 +1,18 @@
+[
+    {
+        "Name":"Pistol",
+        "Damage": 15,
+        "CD":0.8,
+        "BulletSpeed":200.0,
+        "FireRate":0.2,
+        "FireRound":3
+    },
+    {
+        "Name":"MagicBallLauncher",
+        "Damage": 15,
+        "CD":1.0,
+        "BulletSpeed":150.0,
+        "FireRate":0.2,
+        "FireRound":1
+    }
+]

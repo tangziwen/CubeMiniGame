@@ -1,6 +1,9 @@
 #include "RLHero.h"
+
+#include "RLHeroCollection.h"
 #include "RLWorld.h"
 #include "RLPlayerState.h"
+
 namespace tzw
 {
 RLHero::RLHero(int idType)
@@ -12,6 +15,8 @@ RLHero::RLHero(int idType)
 		onCollision(self, other);
 	};
 	m_collider->setUserData(UserDataWrapper(this, RL_OBJECT_TYPE_MONSTER));
+	m_heroData = RLHeroCollection::shared()->getHeroData(idType);
+	m_hp = m_heroData->m_maxHealth;
 }
 
 RLHero::~RLHero()
@@ -44,20 +49,10 @@ void RLHero::updateGraphics()
 
 void RLHero::initGraphics()
 {
-	if(m_id == 0)
-	{
-		m_sprite = Sprite::create("PTM/army.png");
-
-	}
-	else
-	{
-		m_sprite = Sprite::create("RL/zombie.png");
-	}
-	
+	m_sprite = Sprite::create(m_heroData->m_sprite);
 	m_sprite->setLocalPiority(2);
 	RLWorld::shared()->getRootNode()->addChild(m_sprite);
 	m_isInitedGraphics = true;
-	
 }
 
 void RLHero::onTick(float dt)

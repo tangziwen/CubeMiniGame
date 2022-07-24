@@ -5,13 +5,16 @@
 #include "RLDirector.h"
 #include "RLGUI.h"
 #include "RLPlayerState.h"
+#include "RLHeroCollection.h"
+#include "RLWeaponCollection.h"
 
 namespace tzw
 {
 void RLWorld::start()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
-
+	RLWeaponCollection::shared()->loadConfig();
+	RLHeroCollection::shared()->loadConfig();
 	m_tileMgr = new TileMap2DMgr();
 	m_tileMgr->initMap(ARENA_MAP_SIZE, ARENA_MAP_SIZE);
 
@@ -48,10 +51,11 @@ void RLWorld::startGame()
 {
 	RLHero * hero = spawnHero(0);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
-	hero->equipWeapon(new RLWeapon());
+	hero->equipWeapon(new RLWeapon("Pistol"));
 	m_playerController->possess(hero);
 	setCurrGameState(RL_GameState::Playing);
 	RLPlayerState::shared()->reset();
+	RLDirector::shared()->startWave();
 }
 
 void RLWorld::goToMainMenu()

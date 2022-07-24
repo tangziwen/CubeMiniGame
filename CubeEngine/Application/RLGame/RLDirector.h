@@ -7,6 +7,7 @@ namespace tzw
 	public:
 		RLDirector();
 		void tick(float dt);
+		void startWave();
 	private:
 		float m_time = 0.f;
 	

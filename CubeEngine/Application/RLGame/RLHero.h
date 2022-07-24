@@ -6,6 +6,7 @@
 namespace tzw
 {
 	class RLController;
+	class RLHeroData;
 	class RLHero
 	{
 	public:
@@ -42,6 +43,8 @@ namespace tzw
 		float m_hitTimer = 0.f;
 		bool m_isHitImmune = false;
 		RLController * m_controller = nullptr;
+		RLHeroData * m_heroData;
+		
 	};
 }
 

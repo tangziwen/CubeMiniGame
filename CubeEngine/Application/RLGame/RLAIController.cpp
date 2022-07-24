@@ -18,6 +18,10 @@ namespace tzw
 			vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
 			diff = diff.normalized();
 			m_currPossessHero->setPosition(currPos + diff * dt * 30);
+			if(m_currPossessHero->getWeapon())
+			{
+				m_currPossessHero->getWeapon()->setShootDir(diff);
+			}
 		}
 	}
 }

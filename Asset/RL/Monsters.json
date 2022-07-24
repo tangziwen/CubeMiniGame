@@ -1,0 +1,23 @@
+[
+    {
+        "Name":"Default",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+        "DefaultWeapon":"Pistol",
+        "Sprite":"RL/Sprites/zombie.png"
+    },
+    {
+        "Name":"Zombie",
+        "MaxHealth":100,
+        "MeleeDamage":5,
+        "DefaultWeapon":"None",
+        "Sprite":"RL/Sprites/zombie.png"
+    },
+    {
+        "Name":"Wizard",
+        "MaxHealth":100,
+        "MeleeDamage":5,
+        "DefaultWeapon":"MagicBallLauncher",
+        "Sprite":"RL/Sprites/wizard.png"
+    }
+]
