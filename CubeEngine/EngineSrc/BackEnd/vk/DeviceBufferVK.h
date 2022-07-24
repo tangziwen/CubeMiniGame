@@ -30,7 +30,6 @@ private:
 	VkBuffer m_buffer;
 	VkDeviceMemory m_memory;
 	size_t m_bufferSize;
-	size_t m_alignment;
 	size_t m_offset;
 	bool m_isUsePool;
 	void * m_tmpData;
