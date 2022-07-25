@@ -26,31 +26,36 @@ void RLWeapon::setShootDir(const vec2& shootDir)
 	m_shootDir = shootDir;
 }
 
-void RLWeapon::fire()
+void RLWeapon::fireOneRound()
 {
 	RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), m_shootDir * m_data->m_bulletSpeed, m_owner->getIsPlayerControll());
 }
 
+void RLWeapon::fire()
+{
+	m_isFiring = true;
+}
+
 void RLWeapon::onTick(float dt)
 {
-	if(m_enable)
+
+	m_currTime += dt;
+	if(m_currRound <= 0)//now is reloading
 	{
-		m_currTime += dt;
-		if(m_currRound <= 0)//now is reloading
+		m_isFiring = false;
+		if(m_currTime > m_data->m_cd)
 		{
-			if(m_currTime > m_data->m_cd)
-			{
-				m_currRound = m_data->m_fireRound;
-				m_currTime = m_data->m_fireRate;//let the weapon immediately shoot
-			}
-		}else
+			m_currRound = m_data->m_fireRound;
+			m_currTime = m_data->m_fireRate;//let the weapon immediately shoot
+		}
+	}
+	else
+	{
+		if((m_isFiring || m_isAutoFiring) && m_currTime >= m_data->m_fireRate)
 		{
-			if(m_currTime >= m_data->m_fireRate)
-			{
-				fire();
-				m_currTime = 0.f;
-				m_currRound -= 1;
-			}
+			fireOneRound();
+			m_currTime = 0.f;
+			m_currRound -= 1;
 		}
 	}
 }

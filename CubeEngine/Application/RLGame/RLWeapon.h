@@ -12,21 +12,22 @@ class RLWeapon
 public:
 	RLWeapon(int typeID);
 	RLWeapon(std::string typeName);
-	bool isEnable() const
+	bool isAutoFiring() const
 	{
-		return m_enable;
+		return m_isAutoFiring;
 	}
 
-	void setEnable(bool enable)
+	void setIsAutoFiring(bool enable)
 	{
-		m_enable = enable;
+		m_isAutoFiring = enable;
 	}
 
 	vec2 getShootDir() const;
 
 	void setShootDir(const vec2& shootDir);
 
-	virtual void fire();
+	virtual void fireOneRound();
+	void fire();
 	void onTick(float dt);
 	void setOwner(RLHero * hero);
 	
@@ -36,8 +37,9 @@ protected:
 	int m_currRound = 0;
 	RLHero * m_owner = nullptr;
 	vec2 m_shootDir;
-	bool m_enable = true;
+	bool m_isAutoFiring = false;
 	int m_typeID = 0;
 	RLWeaponData * m_data;
+	bool m_isFiring = false;
 };
 }
