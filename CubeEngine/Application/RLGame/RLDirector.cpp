@@ -30,14 +30,17 @@ namespace tzw
 			if(rand() % 10 > 5)
 			{
 				hero = RLWorld::shared()->spawnHero(2);
+				RLAIController * ai = new RLAIControllerShooter();
+				ai->possess(hero);
 			}
 			else
 			{
 				hero = RLWorld::shared()->spawnHero(1);
+				RLAIController * ai = new RLAIControllerChaser();
+				ai->possess(hero);
 			}
 			hero->equipWeapon(new RLWeapon("MagicBallLauncher"));
-			RLAIController * ai = new RLAIController();
-			ai->possess(hero);
+
 			hero->setPosition(spawnPos[i]);
 		}
 		m_time = 0.f;

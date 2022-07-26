@@ -28,6 +28,7 @@ RLHero::~RLHero()
 
 void RLHero::setPosition(vec2 pos)
 {
+	m_collider->setPos(pos);
 	m_pos = pos;
 }
 const vec2& RLHero::getPosition()
@@ -37,6 +38,7 @@ const vec2& RLHero::getPosition()
 
 void RLHero::updateGraphics()
 {
+	m_pos = m_collider->getPos();
 	if(!m_isInitedGraphics)
 	{
 		initGraphics();
@@ -57,10 +59,7 @@ void RLHero::initGraphics()
 
 void RLHero::onTick(float dt)
 {
-	if(m_controller)
-	{
-		m_controller->tick(dt);
-	}
+
 	updateGraphics();
 	if(m_weapon)
 	{
@@ -70,6 +69,10 @@ void RLHero::onTick(float dt)
 	if(!m_collider->getParent())
 	{
 		RLWorld::shared()->getQuadTree()->addCollider(m_collider);
+	}
+	if(m_controller)
+	{
+		m_controller->tick(dt);
 	}
 	if(!m_isHitImmune)
 	{
@@ -84,7 +87,7 @@ void RLHero::onTick(float dt)
 			m_hitTimer = 0.f;
 		}
 	}
-	
+
 }
 
 void RLHero::equipWeapon(RLWeapon* weapon)

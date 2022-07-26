@@ -95,6 +95,7 @@ namespace tzw
 		removeCollider(obj);
 		m_rootNode->addCollider_R(obj);
 	}
+
 	void QuadTree2D::checkCollision(Collider2D* obj)
 	{
 		if(!obj->getIsCollisionEnable()) return;
@@ -105,11 +106,22 @@ namespace tzw
 			if(obj != otherCollider)
 			{
 				if(!otherCollider->getIsCollisionEnable()) continue;
-				bool responseOther = otherCollider->getSourceChannel() & obj->getResponseChannel();
-				bool responseSelf = obj->getSourceChannel() & otherCollider->getResponseChannel();
-				if(responseOther || responseSelf)
+				
+				vec2 dir = obj->getPos() - otherCollider->getPos();
+				float dist = obj->getRadius() + otherCollider->getRadius();
+				float currDist = dir.length();
+				if(currDist < dist)
 				{
-					if((obj->getPos() - otherCollider->getPos()).length() < (obj->getRadius() + otherCollider->getRadius()))
+					float diff = dist - currDist;
+					diff += 0.01f;
+					//overlap resolve
+					dir = dir.normalized();
+					//obj->setPos(obj->getPos() +  dir * diff * 0.5f);
+					otherCollider->setPos(otherCollider->getPos() +  dir * -diff * 0.5f);
+
+					bool responseOther = otherCollider->getSourceChannel() & obj->getResponseChannel();
+					bool responseSelf = obj->getSourceChannel() & otherCollider->getResponseChannel();
+					if(responseOther || responseSelf)
 					{
 						if(responseOther)
 						{
@@ -121,7 +133,6 @@ namespace tzw
 						}
 					}
 				}
-
 
 			}		
 		}
