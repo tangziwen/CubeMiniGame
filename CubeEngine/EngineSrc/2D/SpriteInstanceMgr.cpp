@@ -59,6 +59,14 @@ namespace tzw {
 	void SpriteInstanceMgr::removeTileAt(unsigned short x, unsigned short y)
 	{
 	}
+	void SpriteInstanceMgr::removeSprite(SpriteInstanceInfo* info)
+	{
+		auto iter = std::find(m_tilesList.begin(), m_tilesList.end(), info);
+		if(iter != m_tilesList.end())
+		{
+			m_tilesList.erase(iter);
+		}
+	}
 	void SpriteInstanceMgr::initMesh()
 	{
 		m_mesh = new tzw::Mesh();

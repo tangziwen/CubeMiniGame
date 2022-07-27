@@ -16,9 +16,10 @@ namespace tzw
 	void RLPlayerController::possess(RLHero* hero)
 	{
 		m_currPossessHero = hero;
-
+		m_currPossessHero->setController(this);
 		m_currPossessHero->setIsPlayerControll(true);
-		m_currPossessHero->getCollider2D()->setSourceChannel(CollisionChannel2D_Player);
+		m_currPossessHero->onPossessed();
+
 	}
 	void RLPlayerController::processInput(float dt)
 	{

@@ -31,6 +31,7 @@ namespace tzw
 		bool isAlive();
 		void setController(RLController * controller);
 		float getHP();
+		void onPossessed();
 	private:
 		vec2 m_pos;
 		int m_id = 0;

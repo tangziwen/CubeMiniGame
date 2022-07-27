@@ -95,6 +95,7 @@ void RLGUI::drawInGame()
 	RLHero * hero =  RLWorld::shared()->getPlayerController()->getPossessHero();
 	ImGui::Text("HP : %d",int(hero->getHP()));
 	ImGui::Text("Score : %u",RLPlayerState::shared()->getScore());
+	ImGui::Text("LV : %u",RLPlayerState::shared()->getCurrLevel());
 	ImGui::End();
 }
 

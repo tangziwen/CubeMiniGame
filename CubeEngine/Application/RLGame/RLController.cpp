@@ -11,6 +11,7 @@ namespace tzw
 	{
 		m_currPossessHero = hero;
 		hero->setController(this);
+		hero->onPossessed();
 	}
 
 	void RLController::tick(float dt)

@@ -1,12 +1,14 @@
 #include "RLWorld.h"
 #include "RLHero.h"
 #include "Event/EventMgr.h"
+#include "RLSpritePool.h"
 #include "RLBulletPool.h"
 #include "RLDirector.h"
 #include "RLGUI.h"
 #include "RLPlayerState.h"
 #include "RLHeroCollection.h"
 #include "RLWeaponCollection.h"
+#include "RLCollectible.h"
 
 namespace tzw
 {
@@ -36,6 +38,7 @@ void RLWorld::start()
 	g_GetCurrScene()->addNode(m_mapRootNode);
 	m_mapRootNode->addChild(m_tileMgr);
 
+	RLSpritePool::shared()->init(m_mapRootNode);
 	RLBulletPool::shared()->initSpriteList(m_mapRootNode);
 	m_playerController = new RLPlayerController();
 
@@ -94,6 +97,7 @@ void RLWorld::onFrameUpdate(float dt)
 			}
 		}
 		RLBulletPool::shared()->tick(dt);
+		RLCollectibleMgr::shared()->tick(dt);
 	}
 
 

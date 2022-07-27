@@ -31,6 +31,7 @@ public:
 	SpriteInstanceInfo * addTile(SpriteInstanceInfo * info);
 	void setOverLay(SpriteInstanceInfo *info, vec4 color);
 	void removeTileAt(unsigned short x, unsigned short y);
+	void removeSprite(SpriteInstanceInfo *info);
 	void initMesh();
 	void submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg);
 

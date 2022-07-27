@@ -116,7 +116,7 @@ namespace tzw
 					diff += 0.01f;
 					//overlap resolve
 					dir = dir.normalized();
-					//obj->setPos(obj->getPos() +  dir * diff * 0.5f);
+					obj->setPos(obj->getPos() +  dir * diff * 0.5f);
 					otherCollider->setPos(otherCollider->getPos() +  dir * -diff * 0.5f);
 
 					bool responseOther = otherCollider->getSourceChannel() & obj->getResponseChannel();

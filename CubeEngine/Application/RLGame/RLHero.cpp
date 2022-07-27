@@ -3,7 +3,7 @@
 #include "RLHeroCollection.h"
 #include "RLWorld.h"
 #include "RLPlayerState.h"
-
+#include "RLCollectible.h"
 namespace tzw
 {
 RLHero::RLHero(int idType)
@@ -108,15 +108,35 @@ Collider2D* RLHero::getCollider2D()
 
 void RLHero::onCollision(Collider2D* self, Collider2D* other)
 {
-	if(getIsPlayerControll() && !m_isHitImmune)
+	if(!getIsPlayerControll())
 	{
-		receiveDamage(15.0f);
-		m_isHitImmune = true;
+		if(other->getUserData().m_userData)
+		{
+			
+			switch(other->getUserData().m_tag)
+			{
+			case RL_OBJECT_TYPE_MONSTER:
+			{
+				
+				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
+				if(hero->getIsPlayerControll())
+				{
+					hero->receiveDamage(5.f);
+				}
+			}
+				break;
+			default:
+			{
+			}
+			break;
+			}
+		}
 	}
 }
 
 void RLHero::receiveDamage(float damage)
 {
+	if(m_isHitImmune) return;
 	m_hp -= damage;
 	if(m_hp <= 0.f)
 	{
@@ -127,9 +147,10 @@ void RLHero::receiveDamage(float damage)
 		else
 		{
 			RLPlayerState::shared()->addScore(10);
+			RLCollectibleMgr::shared()->addCollectible(0, getPosition());
 		}
 	}
-
+	m_isHitImmune = true;
 }
 
 bool RLHero::isAlive()
@@ -145,6 +166,20 @@ void RLHero::setController(RLController* controller)
 float RLHero::getHP()
 {
 	return m_hp;
+}
+
+void RLHero::onPossessed()
+{
+	if(getIsPlayerControll())
+	{
+		m_collider->setSourceChannel(CollisionChannel2D_Player);
+		m_collider->setResponseChannel(CollisionChannel2D_Entity | CollisionChannel2D_Player);
+	}
+	else
+	{
+		m_collider->setSourceChannel(CollisionChannel2D_Entity);
+		m_collider->setResponseChannel(CollisionChannel2D_Player);
+	}
 }
 
 }
