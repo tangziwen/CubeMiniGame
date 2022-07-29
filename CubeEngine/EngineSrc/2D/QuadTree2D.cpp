@@ -77,22 +77,22 @@ namespace tzw
 	}
 	void QuadTree2D::addCollider(Collider2D* obj)
 	{
-		m_rootNode->addCollider_R(obj);
+		bool isAdded = m_rootNode->addCollider_R(obj);
+		if(isAdded)
+			m_colliderList.push_back(obj);
 	}
 	void QuadTree2D::removeCollider(Collider2D* obj)
 	{
-		QuadTree2DNode * node = obj->getParent();
-		if(!node) return;
-		auto iter = std::find(node->m_collidersList.begin(), node->m_collidersList.end(), obj);
-		if(iter != node->m_collidersList.end())
+		removeCollider_imp(obj);
+		auto iter = std::find(m_colliderList.begin(), m_colliderList.end(), obj);
+		if(iter != m_colliderList.end())
 		{
-			node->m_collidersList.erase(iter);
+			m_colliderList.erase(iter);
 		}
-		obj->setParent(nullptr);
 	}
 	void QuadTree2D::updateCollider(Collider2D* obj)
 	{
-		removeCollider(obj);
+		removeCollider_imp(obj);
 		m_rootNode->addCollider_R(obj);
 	}
 
@@ -115,9 +115,17 @@ namespace tzw
 					float diff = dist - currDist;
 					diff += 0.01f;
 					//overlap resolve
-					dir = dir.normalized();
-					obj->setPos(obj->getPos() +  dir * diff * 0.5f);
-					otherCollider->setPos(otherCollider->getPos() +  dir * -diff * 0.5f);
+					if(obj->getSourceChannel() & CollisionChannel2D_Bullet || otherCollider->getSourceChannel() & CollisionChannel2D_Bullet)
+					{
+					
+					}
+					else
+					{
+						dir = dir.normalized();
+						obj->setPos(obj->getPos() +  dir * diff * 0.5f);
+						otherCollider->setPos(otherCollider->getPos() +  dir * -diff * 0.5f);
+					}
+
 
 					bool responseOther = otherCollider->getSourceChannel() & obj->getResponseChannel();
 					bool responseSelf = obj->getSourceChannel() & otherCollider->getResponseChannel();
@@ -137,8 +145,26 @@ namespace tzw
 			}		
 		}
 	}
+	void QuadTree2D::tick(float dt)
+	{
+		for(Collider2D * obj : m_colliderList)
+		{
+			checkCollision(obj);
+		}
+	}
 	void QuadTree2D::getRange(AABB2D range, std::vector<Collider2D*>& collider)
 	{
 
+	}
+	void QuadTree2D::removeCollider_imp(Collider2D* obj)
+	{
+		QuadTree2DNode * node = obj->getParent();
+		if(!node) return;
+		auto iter = std::find(node->m_collidersList.begin(), node->m_collidersList.end(), obj);
+		if(iter != node->m_collidersList.end())
+		{
+			node->m_collidersList.erase(iter);
+		}
+		obj->setParent(nullptr);
 	}
 }

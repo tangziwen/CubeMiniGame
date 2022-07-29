@@ -60,6 +60,7 @@ void RLWorld::startGame()
 	setCurrGameState(RL_GameState::Playing);
 	RLPlayerState::shared()->reset();
 	RLDirector::shared()->startWave();
+	generateLevelUpPerk();
 }
 
 void RLWorld::goToMainMenu()
@@ -98,6 +99,7 @@ void RLWorld::onFrameUpdate(float dt)
 		}
 		RLBulletPool::shared()->tick(dt);
 		RLCollectibleMgr::shared()->tick(dt);
+		m_quadTree->tick(dt);
 	}
 
 
@@ -164,6 +166,26 @@ void RLWorld::getRandomBoundaryPos(int count, std::vector<vec2>& posList)
 
 	}
 	
+}
+
+void RLWorld::generateLevelUpPerk()
+{
+
+	float offset = 128;
+	vec2 center(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f);
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(-offset, -offset)));
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(offset, -offset)));
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(-offset, offset)));
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(offset, offset)));
+}
+
+void RLWorld::clearLevelUpPerk()
+{
+	for(auto collectible : m_lvUpCollectible)
+	{
+		collectible->setIsAlive(false);
+	}
+	m_lvUpCollectible.clear();
 }
 
 }

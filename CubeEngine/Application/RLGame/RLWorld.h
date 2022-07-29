@@ -7,6 +7,7 @@
 #include "RLPlayerController.h"
 #include "2D/QuadTree2D.h"
 
+
 enum RL_OBJECT_TYPE
 {
 	RL_OBJECT_TYPE_HERO,
@@ -24,6 +25,7 @@ namespace tzw
 {
 	class RLHero;
 	class Camera;
+	class RLCollectible;
 	class RLWorld : public Singleton<RLWorld>,  public EventListener
 	{
 	public:
@@ -43,6 +45,8 @@ namespace tzw
 		void getRandomBoundaryPos(int count, std::vector<vec2>& posList);
 		RL_GameState getCurrGameState() const {return m_currGameState;}
 		void setCurrGameState(RL_GameState currGameState) { m_currGameState = currGameState;}
+		void generateLevelUpPerk();
+		void clearLevelUpPerk();
 	protected:
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;
@@ -50,7 +54,7 @@ namespace tzw
 		std::vector<RLHero * > m_heroes;
 		QuadTree2D * m_quadTree = nullptr;
 		RL_GameState m_currGameState = RL_GameState::MainMenu;
-
+		std::vector<RLCollectible *> m_lvUpCollectible;
 	};
 }
 

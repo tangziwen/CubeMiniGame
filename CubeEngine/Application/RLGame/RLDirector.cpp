@@ -27,7 +27,7 @@ namespace tzw
 		for(int i = 0; i < 8; i++)
 		{
 			RLHero * hero = nullptr;
-			if(rand() % 10 > 5)
+			if(rand() % 10 > 5 || true)
 			{
 				hero = RLWorld::shared()->spawnHero(2);
 				RLAIController * ai = new RLAIControllerShooter();

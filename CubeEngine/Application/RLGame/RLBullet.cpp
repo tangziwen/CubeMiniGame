@@ -21,6 +21,7 @@ namespace tzw
 			case RL_OBJECT_TYPE_MONSTER:
 			{
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
+
 				hero->receiveDamage(25.f);
 			}
 				break;

@@ -62,10 +62,11 @@ void RLBulletPool::tick(float dt)
 		RLBullet * bullet = *iter;
 		if(bullet->m_sprite)
 		{
+			bullet->m_pos = bullet->m_collider2D.getPos();
 			bullet->m_pos += bullet->m_velocity * dt;
 			bullet->m_sprite->pos = bullet->m_pos;
 			bullet->m_collider2D.setPos(bullet->m_pos);
-			RLWorld::shared()->getQuadTree()->checkCollision(&bullet->m_collider2D);
+			//RLWorld::shared()->getQuadTree()->checkCollision(&bullet->m_collider2D);
 			bullet->m_t += dt;
 			if((bullet->m_t > bullet->m_lifespan) || (!bullet->m_isLiving) || checkOutOfRange(bullet))
 			{

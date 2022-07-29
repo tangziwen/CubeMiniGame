@@ -30,9 +30,12 @@ public:
 	void removeCollider(Collider2D * obj);
 	void updateCollider(Collider2D * obj);
 	void checkCollision(Collider2D * obj);
+	void tick(float dt);
 	void getRange(AABB2D range, std::vector<Collider2D *> & collider);
 protected:
+	void removeCollider_imp(Collider2D * obj);
 	QuadTree2DNode * m_rootNode;
 	std::vector<Collider2D * > m_tmpColliderList;
+	std::vector<Collider2D * > m_colliderList;
 };
 }

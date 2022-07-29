@@ -14,22 +14,30 @@ public:
 	vec2 getPos();
 	void setPos(vec2 pos);
 	void initGraphics();
-	void onCollision(Collider2D * self, Collider2D * other);
+	virtual void onCollision(Collider2D * self, Collider2D * other);
 	Collider2D * m_collider = nullptr;
 	bool getIsAlive();
-private:
+	void setIsAlive(bool isAlive);
+	virtual void onCollect();
+protected:
 	unsigned int m_typeID = 0;
 	vec2 m_pos;
 	SpriteInstanceInfo * m_sprite = nullptr;
 	bool m_isAlive = true;
 	
 };
+class RLCollectibleLevelUpPerk:public RLCollectible
+{
+public:
+	RLCollectibleLevelUpPerk(unsigned int typeID, vec2 Pos);
+	virtual void onCollect() override;
 
+};
 class RLCollectibleMgr : public Singleton<RLCollectibleMgr>
 {
 public:
 	RLCollectibleMgr();
-	void addCollectible(int typeID, vec2 pos);
+	RLCollectible * addCollectible(int typeID, vec2 pos);
 	SpriteInstanceInfo * giveGraphics();
 	void removeGraphics(SpriteInstanceInfo * info);
 	void tick(float dt);

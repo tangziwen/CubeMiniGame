@@ -1,5 +1,6 @@
 #include "RLPlayerState.h"
-
+#include "RLCollectible.h"
+#include "RLWorld.h"
 namespace tzw
 {
 RLPlayerState::RLPlayerState()
@@ -34,7 +35,8 @@ void RLPlayerState::gainExp(unsigned int exp)
 	m_currExp += exp;
 	if(m_currExp >= m_maxExp)
 	{
-		m_currLevel++;
+		m_currLevel++;//level Up
+		RLWorld::shared();
 		m_currExp = m_currExp - m_maxExp;
 		m_maxExp = calculateNextLevelExp(m_currLevel);
 	}

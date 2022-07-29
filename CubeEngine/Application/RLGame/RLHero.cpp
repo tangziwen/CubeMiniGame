@@ -74,16 +74,14 @@ void RLHero::onTick(float dt)
 	{
 		m_controller->tick(dt);
 	}
-	if(!m_isHitImmune)
-	{
-		RLWorld::shared()->getQuadTree()->checkCollision(m_collider);
-	}
-	else
+
+	if(getIsPlayerControll())
 	{
 		m_hitTimer += dt;
 		if(m_hitTimer > 0.25f)
 		{
 			m_isHitImmune = false;
+			m_collider->setIsCollisionEnable(true);
 			m_hitTimer = 0.f;
 		}
 	}
@@ -151,6 +149,7 @@ void RLHero::receiveDamage(float damage)
 		}
 	}
 	m_isHitImmune = true;
+	m_collider->setIsCollisionEnable(false);
 }
 
 bool RLHero::isAlive()

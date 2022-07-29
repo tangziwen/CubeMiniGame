@@ -17,6 +17,10 @@ namespace tzw
 		{
 			onCollision(self, other);
 		};
+		if(!m_collider->getParent())
+		{
+			RLWorld::shared()->getQuadTree()->addCollider(m_collider);
+		}
 	}
 
 	RLCollectible::~RLCollectible()
@@ -53,7 +57,7 @@ namespace tzw
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
 				if(hero->getIsPlayerControll())
 				{
-					RLPlayerState::shared()->gainExp(800);
+					onCollect();
 					m_isAlive = false;
 				}
 			}
@@ -73,16 +77,52 @@ namespace tzw
 		return m_isAlive;
 	}
 
+	void RLCollectible::setIsAlive(bool isAlive)
+	{
+		m_isAlive = isAlive;
+	}
+
+	void RLCollectible::onCollect()
+	{
+		RLWorld::shared()->clearLevelUpPerk();
+	}
+
+	RLCollectibleLevelUpPerk::RLCollectibleLevelUpPerk(unsigned int typeID, vec2 Pos)
+		:RLCollectible(typeID, Pos)
+	{
+	
+	
+	}
+	void RLCollectibleLevelUpPerk::onCollect()
+	{
+		RLWorld::shared()->clearLevelUpPerk();
+	}
+
 	RLCollectibleMgr::RLCollectibleMgr()
 	{
 		m_collectibleSpriteType = RLSpritePool::shared()->get()->addTileType("RL/Bullet.png");
 	}
 
-	void RLCollectibleMgr::addCollectible(int typeID, vec2 pos)
+	RLCollectible * RLCollectibleMgr::addCollectible(int typeID, vec2 pos)
 	{
-		auto collectible = new RLCollectible(typeID, pos);
-		m_collectible.push_back(collectible);
-		collectible->initGraphics();
+		RLCollectible * collectible = nullptr;
+		switch(typeID)
+		{
+		case 0:
+			collectible = new RLCollectible(typeID, pos);
+			break;
+		case 1:
+			collectible = new RLCollectibleLevelUpPerk(typeID, pos);
+			break;
+		
+		}
+
+		if(collectible)
+		{
+			m_collectible.push_back(collectible);
+			collectible->initGraphics();
+		}
+		return collectible;
 	}
 
 	SpriteInstanceInfo* RLCollectibleMgr::giveGraphics()
@@ -103,8 +143,7 @@ namespace tzw
 		for(auto iter = m_collectible.begin();iter != m_collectible.end();)
 		{
 			RLCollectible * collectible = (*iter);
-			RLWorld::shared()->getQuadTree()->checkCollision(collectible->m_collider);
-		
+
 			if(!collectible->getIsAlive())
 			{
 				//ready to kill
@@ -119,7 +158,4 @@ namespace tzw
 			}
 		}
 	}
-
-
-
 }
