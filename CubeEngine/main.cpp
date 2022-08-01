@@ -10,6 +10,7 @@
 #include "Tina/TinaParser.h"
 #include "Tina/TinaRunTime.h"
 #include "Utility/file/Tfile.h"
+#include "Base/BlackBoard.h"
 
 #pragma comment(lib, "dbghelp.lib")
 
@@ -69,7 +70,6 @@ int main(int argc, char *argv[])
 
 	return 0;
 #endif
-
 
 	return Engine::run(argc,argv,new RLGameEntry());
 	//return Engine::run(argc,argv,new PTMEntry());

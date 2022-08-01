@@ -135,6 +135,7 @@ void RLHero::onCollision(Collider2D* self, Collider2D* other)
 void RLHero::receiveDamage(float damage)
 {
 	if(m_isHitImmune) return;
+	return;
 	m_hp -= damage;
 	if(m_hp <= 0.f)
 	{
@@ -148,8 +149,11 @@ void RLHero::receiveDamage(float damage)
 			RLCollectibleMgr::shared()->addCollectible(0, getPosition());
 		}
 	}
-	m_isHitImmune = true;
-	m_collider->setIsCollisionEnable(false);
+	if(getIsPlayerControll())
+	{
+		m_isHitImmune = true;
+		m_collider->setIsCollisionEnable(false);
+	}
 }
 
 bool RLHero::isAlive()

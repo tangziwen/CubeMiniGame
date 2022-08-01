@@ -4,9 +4,11 @@
 #include "RLController.h"
 #include "Math/vec2.h"
 #include "Utility/math/TbaseMath.h"
+#include "Base/BlackBoard.h"
 namespace tzw
 {
 	class RLHero;
+	class RLAIController;
 	enum class RLAIState
 	{
 		Idle =0,
@@ -15,6 +17,7 @@ namespace tzw
 		Charging,
 		Repositioning,
 		WobblyChasing,
+		FallBack,
 		TotalEnum,
 	
 	};
@@ -22,6 +25,7 @@ namespace tzw
 	{
 		RLHero * self = nullptr;
 		RLHero * target = nullptr;
+		RLAIController * controller = nullptr;
 		float playerDistance = 0.f;
 	};
 	struct RLAIJmpCond
@@ -37,6 +41,9 @@ namespace tzw
 	{
 		std::vector<RLAIJmpCond *> m_condList;
 	};
+
+
+	
 
 	struct RLAIJmpCondDuration : public RLAIJmpCond
 	{
@@ -114,10 +121,15 @@ namespace tzw
 		virtual void tick(float dt) override;
 		void addCondition(RLAIState inState, RLAIJmpCond* cond);
 		void checkCondition(float dt);
+		bool isCurrStateTranscationFinish();
 	protected:
+		void setCurrentTranscationFinish();
+		void resetAllTranscationFinish();
 		RLAIState m_currState = RLAIState::Chasing;
 		bool m_isFirstTimeInstate = true;
 		std::array<RLAIJmpCondList, size_t(RLAIState::TotalEnum)> m_statesCondList;
+		std::array<bool, size_t(RLAIState::TotalEnum)> m_isTranscationFinished;
+		BlackBoard m_blackBoard;
 	};
 
 
@@ -133,5 +145,19 @@ namespace tzw
 	public:
 		RLAIControllerShooter();
 
+	};
+
+
+	struct RLAITranscationCond : public RLAIJmpCond
+	{
+		RLAITranscationCond(RLAIState targetState)
+			:RLAIJmpCond(targetState)
+		{
+		
+		}
+		virtual bool isSatisfied(const RLAICondContext & context) override 
+		{
+			return context.controller->isCurrStateTranscationFinish();
+		};
 	};
 }
