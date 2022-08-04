@@ -42,6 +42,14 @@ namespace tzw
 		void setResponseChannel(uint16_t flags) {m_responseChannel = flags;}
 		void setUserData(UserDataWrapper data) {m_userData = data;};
 		UserDataWrapper getUserData() {return m_userData;};
+		vec2 getVelocity(){return m_velocity;}
+		void setVelocity(vec2 newVelocity){m_velocity = newVelocity;}
+		void applyForce(vec2 newForce) {m_velocity += newForce;};
+		float getFriction() {return m_friction;};
+		void setFriction(float newFriction) {m_friction = newFriction;};
+		void tick(float dt);
+		void setMaxSpeed(float maxSpeed) {m_maxSpeed = maxSpeed;};
+		float getMaxSpeed(){return m_maxSpeed;};
 	protected:
 		void calculateAABB();
 		vec2 m_pos;
@@ -52,7 +60,9 @@ namespace tzw
 		uint16_t m_sourceChannel = CollisionChannel2D_Entity;
 		uint16_t m_responseChannel = CollisionChannel2D_Entity;
 		UserDataWrapper m_userData ;
-		
+		vec2 m_velocity;
+		float m_friction = 0.f;
+		float m_maxSpeed = 0.f;
 	};
 
 }

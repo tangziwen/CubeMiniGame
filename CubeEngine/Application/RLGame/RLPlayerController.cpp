@@ -26,8 +26,17 @@ namespace tzw
 		if(m_currPossessHero)
 		{
 			vec2 pos = m_currPossessHero->getPosition();
-			vec2 newPos(pos.x + 50 * dt * m_xAxis, pos.y + 50 * dt * m_yAxis);
-			m_currPossessHero->setPosition(newPos);
+			
+			m_currPossessHero->m_speed = 120.0f;
+			if(fabs(m_xAxis) > 0 || fabs(m_yAxis) > 0)
+			{
+				vec2 moveDir(m_xAxis, m_yAxis);
+				moveDir = moveDir.normalized();
+				//vec2 newPos(pos.x + m_currPossessHero->m_speed * dt * moveDir.x, pos.y + m_currPossessHero->m_speed * dt * moveDir.y);
+				//m_currPossessHero->setPosition(newPos);
+
+				m_currPossessHero->doMove(moveDir, 120 * dt);
+			}
 		}
 	}
 
@@ -65,6 +74,9 @@ namespace tzw
 			break;
 		case TZW_KEY_D:
 			m_xAxis += 1;
+			break;
+		case TZW_KEY_SPACE:
+			m_currPossessHero->doDash();
 			break;
 		default:
 			break;

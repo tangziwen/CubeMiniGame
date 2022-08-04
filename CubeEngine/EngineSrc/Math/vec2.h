@@ -65,6 +65,10 @@ public:
     void setX(float value);
     float getY() const;
     void setY(float value);
+    static float DotProduct(const vec2& left, const vec2& right)
+    {
+        return left.x*right.x + left.y*right.y;
+    }
 };
 
 } // namespace tzw

@@ -53,6 +53,38 @@ namespace tzw
 			m_cb(this, other);
 		}
 	}
+	void Collider2D::tick(float dt)
+	{
+		if(m_velocity.length() > 0.0001)
+		{
+			//caps to max speed
+			if(m_velocity.length() > m_maxSpeed)
+			{
+				m_velocity = m_velocity.normalized();
+				m_velocity *= m_maxSpeed;
+			
+			}
+			setPos(m_pos + m_velocity * dt);
+
+			//apply friction
+			if(m_friction > 0)
+			{
+				vec2 moveDir = m_velocity.normalized();
+				vec2 firctionMove = moveDir * -1 * m_friction * dt;
+				m_velocity += firctionMove;
+				if(vec2::DotProduct(firctionMove, m_velocity) > 0)//move backward,over shoot!
+				{
+					m_velocity = vec2();
+				}
+			}
+
+		}
+		else
+		{
+			m_velocity = vec2();
+		}
+
+	}
 	void Collider2D::calculateAABB()
 	{
 		m_aabb.set(vec2(m_pos.x - m_radius, m_pos.y - m_radius), vec2(m_pos.x + m_radius, m_pos.y + m_radius));

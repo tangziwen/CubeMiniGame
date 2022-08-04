@@ -5,8 +5,11 @@
 #include "Mesh/Mesh.h"
 #include "../Scene/SceneMgr.h"
 #include <vector>
+#include <array>
 namespace tzw {
 
+
+constexpr int SpriteInstanceTotalLayer = 10;
 
 struct SpriteInstanceInfo
 {
@@ -14,12 +17,14 @@ struct SpriteInstanceInfo
 	int type = 0;
 	vec4 overLayColor {1.0f, 1.0f, 1.0f, 0.0f};
 	bool m_isVisible = true;
+	unsigned int layer = 0;
 };
 
 struct SpriteTypeInfo
 {
 	Material * material = nullptr;
-	InstancedMesh * instancedMesh = nullptr;
+	//InstancedMesh * instancedMesh = nullptr;
+	std::array<InstancedMesh *, SpriteInstanceTotalLayer> m_instances;
 };
 
 class SpriteInstanceMgr:public Drawable3D
@@ -34,7 +39,7 @@ public:
 	void removeSprite(SpriteInstanceInfo *info);
 	void initMesh();
 	void submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg);
-
+	int getOrAddType(const std::string & filePath);
 private:
 	int m_totalTypes = 0;
     Mesh * m_mesh;

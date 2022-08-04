@@ -149,6 +149,7 @@ namespace tzw
 	{
 		for(Collider2D * obj : m_colliderList)
 		{
+			obj->tick(dt);
 			checkCollision(obj);
 		}
 	}

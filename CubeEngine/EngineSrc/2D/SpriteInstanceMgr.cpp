@@ -22,12 +22,17 @@ namespace tzw {
 
 			
 
-			auto instancedMesh = new InstancedMesh();
-			instancedMesh->setMesh(m_mesh);
+
 
 			SpriteTypeInfo * tileType = new SpriteTypeInfo();
 			tileType->material = material;
-			tileType->instancedMesh = instancedMesh;
+			for(int i = 0; i < SpriteInstanceTotalLayer; i++)
+			{
+				auto instancedMesh = new InstancedMesh();
+				instancedMesh->setMesh(m_mesh);
+				tileType->m_instances[i] = instancedMesh;
+			}
+
 
 			m_tileTypeIdMap[filePath] = m_totalTypes;
 			m_tileTypePool[m_totalTypes] = tileType;
@@ -100,7 +105,12 @@ namespace tzw {
 		for(auto& iter : m_tileTypePool)
 		{
 			SpriteTypeInfo * tiletype = iter.second;
-			tiletype->instancedMesh->clearInstances();
+
+			for(int i = 0; i < SpriteInstanceTotalLayer; i++)
+			{
+			
+				tiletype->m_instances[i]->clearInstances();
+			}
 		}
 		for(SpriteInstanceInfo * tile : m_tilesList)
 		{
@@ -108,30 +118,49 @@ namespace tzw {
 			InstanceData data;
 			data.transform.setTranslate(vec3(tile->pos.x, tile->pos.y, 0.f));
 			data.extraInfo = tile->overLayColor;
-			m_tileTypePool[tile->type]->instancedMesh->pushInstance(data);
+			m_tileTypePool[tile->type]->m_instances[tile->layer]->pushInstance(data);
 		}
 		auto currCam = g_GetCurrScene()->defaultGUICamera();
 		Matrix44 proj = currCam->projection();
 		Matrix44 view = currCam->getViewMatrix();
 
 		Matrix44 world = getTransform();
-		for(auto& iter : m_tileTypePool)
+		for(int i = 0; i < SpriteInstanceTotalLayer; i++)
 		{
-			SpriteTypeInfo * tiletype = iter.second;
-			//tiletype->instancedMesh->clearInstances();
-			if (tiletype->instancedMesh->getInstanceSize() == 0) continue;
-			tiletype->instancedMesh->submitInstanced();
-			RenderCommand command(m_mesh, tiletype->material, this, RenderFlag::RenderStage::GUI, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
-			command.setInstancedMesh(tiletype->instancedMesh);
-			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+			for(auto& iter : m_tileTypePool)
+			{
+				SpriteTypeInfo * tiletype = iter.second;
+				InstancedMesh * instancedMesh = tiletype->m_instances[i];
+				//tiletype->instancedMesh->clearInstances();
+				if (instancedMesh->getInstanceSize() == 0) continue;
+				instancedMesh->submitInstanced();
+				RenderCommand command(m_mesh, tiletype->material, this, RenderFlag::RenderStage::GUI, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				command.setInstancedMesh(instancedMesh);
+				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 
 
-			command.m_transInfo.m_projectMatrix = proj;
-			command.m_transInfo.m_viewMatrix = view;
-			command.m_transInfo.m_worldMatrix = world;
+				command.m_transInfo.m_projectMatrix = proj;
+				command.m_transInfo.m_viewMatrix = view;
+				command.m_transInfo.m_worldMatrix = world;
 
-			queues->addRenderCommand(command, 0);
+				queues->addRenderCommand(command, 0);
+			}
 		}
+
+	}
+
+	int SpriteInstanceMgr::getOrAddType(const std::string& filePath)
+	{
+		auto iter = m_tileTypeIdMap.find(filePath);
+		if(iter != m_tileTypeIdMap.end())
+		{
+			return iter->second;
+		}
+		else
+		{
+			return addTileType(filePath);
+		}
+		return -1;
 	}
 
 } // namespace tzw
