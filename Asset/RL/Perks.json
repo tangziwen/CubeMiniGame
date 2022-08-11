@@ -1,0 +1,28 @@
+[
+	{
+		"Name":"GreenPotion",
+		"Type":"Immediately",
+		"Duration":-1,
+		"Modifiers":
+		[
+			{
+				"Attribute":"MAXHP",
+				"Type":"Add",
+				"Value":10.0
+			},
+		]
+	},
+	{
+		"Name":"GreenSkin",
+		"Type":"Pulse",
+		"Duration":-1,
+		"Modifiers":
+		[
+			{
+				"Attribute":"HP",
+				"Type":"Add",
+				"Value":0.25,
+			},
+		]
+	},
+]

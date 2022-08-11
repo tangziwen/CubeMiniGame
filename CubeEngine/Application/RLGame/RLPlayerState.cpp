@@ -36,7 +36,7 @@ void RLPlayerState::gainExp(unsigned int exp)
 	if(m_currExp >= m_maxExp)
 	{
 		m_currLevel++;//level Up
-		RLWorld::shared();
+		RLWorld::shared()->generateLevelUpPerk();
 		m_currExp = m_currExp - m_maxExp;
 		m_maxExp = calculateNextLevelExp(m_currLevel);
 	}
@@ -44,5 +44,13 @@ void RLPlayerState::gainExp(unsigned int exp)
 unsigned int RLPlayerState::getCurrLevel()
 {
 	return m_currLevel;
+}
+unsigned int RLPlayerState::getCurrExp()
+{
+	return m_currExp;
+}
+unsigned int RLPlayerState::getMaxExp()
+{
+	return m_maxExp;
 }
 }

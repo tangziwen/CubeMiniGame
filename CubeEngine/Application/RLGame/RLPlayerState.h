@@ -13,6 +13,8 @@ namespace tzw
 		unsigned int calculateNextLevelExp(unsigned int nextLevel);
 		void gainExp(unsigned int exp);
 		unsigned int getCurrLevel();
+		unsigned int getCurrExp();
+		unsigned int getMaxExp();
 	private:
 		unsigned int m_score;
 		unsigned int m_currLevel;

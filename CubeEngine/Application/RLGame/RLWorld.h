@@ -19,6 +19,7 @@ enum class RL_GameState
 	MainMenu,
 	Playing,
 	AfterMath,
+	Win
 };
 
 namespace tzw
@@ -47,6 +48,7 @@ namespace tzw
 		void setCurrGameState(RL_GameState currGameState) { m_currGameState = currGameState;}
 		void generateLevelUpPerk();
 		void clearLevelUpPerk();
+		size_t getHeroesCount();
 	protected:
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;

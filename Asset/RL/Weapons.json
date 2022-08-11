@@ -1,18 +1,27 @@
 [
-    {
-        "Name":"Pistol",
-        "Damage": 15,
-        "CD":0.8,
-        "BulletSpeed":200.0,
-        "FireRate":0.2,
-        "FireRound":3
-    },
-    {
-        "Name":"MagicBallLauncher",
-        "Damage": 15,
-        "CD":1.0,
-        "BulletSpeed":150.0,
-        "FireRate":0.2,
-        "FireRound":1
-    }
+	{
+		"Name":"Pistol",
+		"Damage": 15,
+		"CD":0.8,
+		"BulletSpeed":350.0,
+		"FireRate":0.2,
+		"FireRound":2
+	},
+	{
+		"Name":"SMG",
+		"Damage": 5,
+		"CD":3.0,
+		"BulletSpeed":250.0,
+		"FireRate":0.25,
+		"FireRound":20
+	},
+	
+	{
+		"Name":"MagicBallLauncher",
+		"Damage": 15,
+		"CD":1.0,
+		"BulletSpeed":110.0,
+		"FireRate":0.2,
+		"FireRound":1
+	}
 ]

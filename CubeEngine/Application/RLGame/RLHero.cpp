@@ -17,7 +17,8 @@ RLHero::RLHero(int idType)
 	};
 	m_collider->setUserData(UserDataWrapper(this, RL_OBJECT_TYPE_MONSTER));
 	m_heroData = RLHeroCollection::shared()->getHeroData(idType);
-	m_hp = m_heroData->m_maxHealth;
+	m_HP = m_heroData->m_maxHealth;
+	m_MAXHP = m_heroData->m_maxHealth;
 }
 
 RLHero::~RLHero()
@@ -120,6 +121,8 @@ void RLHero::onTick(float dt)
 	}
 
 	m_isMoving = false;
+
+	m_container.tick(dt);
 }
 
 void RLHero::equipWeapon(RLWeapon* weapon)
@@ -181,9 +184,9 @@ void RLHero::receiveDamage(float damage)
 	{
 		m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 1.0);
 	}
-	return;
-	m_hp -= damage;
-	if(m_hp <= 0.f)
+
+	m_HP -= damage;
+	if(m_HP <= 0.f)
 	{
 		if(getIsPlayerControll())
 		{
@@ -200,7 +203,7 @@ void RLHero::receiveDamage(float damage)
 
 bool RLHero::isAlive()
 {
-	return m_hp > 0.f;
+	return m_HP > 0.f;
 }
 
 void RLHero::setController(RLController* controller)
@@ -208,10 +211,6 @@ void RLHero::setController(RLController* controller)
 	m_controller = controller;
 }
 
-float RLHero::getHP()
-{
-	return m_hp;
-}
 
 void RLHero::onPossessed()
 {
@@ -250,6 +249,12 @@ void RLHero::doMove(vec2 dir, float delta)
 	m_moveDir = dir;
 	m_isMoving = true;
 	setPosition(getPosition() + dir * delta);
+}
+
+void RLHero::applyEffect(std::string name)
+{
+	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, name);
+	m_container.addEffectInstance(instance);
 }
 
 }

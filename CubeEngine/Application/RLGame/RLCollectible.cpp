@@ -11,6 +11,7 @@ namespace tzw
 		:m_typeID(typeID)
 	{
 		m_collider = new Collider2D(16, Pos);
+		m_collider->setSourceChannel(CollisionChannel2D_Item);
 		m_collider->setResponseChannel(CollisionChannel2D_Player);
 		setPos(Pos);
 		m_collider->m_cb = [this](Collider2D* self, Collider2D* other)
@@ -57,7 +58,7 @@ namespace tzw
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
 				if(hero->getIsPlayerControll())
 				{
-					onCollect();
+					onCollect(hero);
 					m_isAlive = false;
 				}
 			}
@@ -82,9 +83,11 @@ namespace tzw
 		m_isAlive = isAlive;
 	}
 
-	void RLCollectible::onCollect()
+	void RLCollectible::onCollect(RLHero * hero)
 	{
-		RLWorld::shared()->clearLevelUpPerk();
+		//RLWorld::shared()->clearLevelUpPerk();
+		RLPlayerState::shared()->gainExp(85);
+		//hero->setPropByName<float>("MAXHP", 500);
 	}
 
 	RLCollectibleLevelUpPerk::RLCollectibleLevelUpPerk(unsigned int typeID, vec2 Pos)
@@ -93,8 +96,9 @@ namespace tzw
 	
 	
 	}
-	void RLCollectibleLevelUpPerk::onCollect()
+	void RLCollectibleLevelUpPerk::onCollect(RLHero * hero)
 	{
+		hero->applyEffect("GreenSkin");
 		RLWorld::shared()->clearLevelUpPerk();
 	}
 

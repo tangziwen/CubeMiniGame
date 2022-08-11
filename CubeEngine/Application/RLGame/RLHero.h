@@ -4,11 +4,12 @@
 #include "RLWeapon.h"
 #include "2D/Collider2D.h"
 #include "2D/SpriteInstanceMgr.h"
+#include "RLEffectMgr.h"
 namespace tzw
 {
 	class RLController;
 	class RLHeroData;
-	class RLHero
+	class RLHero : public TObjectReflect
 	{
 	public:
 		RLHero(int idType);
@@ -31,12 +32,25 @@ namespace tzw
 		void receiveDamage(float damage);
 		bool isAlive();
 		void setController(RLController * controller);
-		float getHP();
 		void onPossessed();
 		float m_speed = 0.f;
 		void doDash();
 		void doMove(vec2 dir, float delta);
+		void applyEffect(std::string name);
+		TZW_PROPERTY(float, HP, 100.f);
+		TZW_PROPERTY(float, MAXHP, 100.f);
+		TZW_PROPERTY(float, Mana, 100.f);
+		TZW_PROPERTY(float, MaxMana, 100.f);
+		TZW_PROPERTY(float, BaseDamage, 0.f);
+
+	T_PROP_REFLECT_REG_DECLEAR()
+		T_PROP_REFLECT_REG(HP)
+		T_PROP_REFLECT_REG(MAXHP)
+		T_PROP_REFLECT_REG(Mana)
+		T_PROP_REFLECT_REG(MaxMana)
+	T_PROP_REFLECT_REG_END
 	private:
+		RLEffectContainer m_container;
 		vec2 m_pos;
 		int m_id = 0;
 		SpriteInstanceInfo * m_sprite = nullptr;
@@ -44,7 +58,6 @@ namespace tzw
 		RLWeapon * m_weapon = nullptr;
 		Collider2D * m_collider = nullptr;
 		bool m_isPlayerControll = false;
-		float m_hp = 100.f;
 		float m_hitImmuneTimer = 0.f;
 		bool m_isHitImmune = false;
 		RLController * m_controller = nullptr;

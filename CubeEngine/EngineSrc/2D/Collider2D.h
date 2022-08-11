@@ -17,6 +17,7 @@ namespace tzw
 		CollisionChannel2D_Player = 1 << 1,
 		CollisionChannel2D_Bullet = 1 << 2,
 		CollisionChannel2D_Entity = 1 << 3,
+		CollisionChannel2D_Item = 1 << 4,
 	};
 	struct QuadTree2DNode;
 	class Collider2D

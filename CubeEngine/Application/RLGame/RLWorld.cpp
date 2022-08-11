@@ -9,6 +9,7 @@
 #include "RLHeroCollection.h"
 #include "RLWeaponCollection.h"
 #include "RLCollectible.h"
+#include "RLEffectMgr.h"
 
 namespace tzw
 {
@@ -17,6 +18,7 @@ void RLWorld::start()
 	EventMgr::shared()->addFixedPiorityListener(this);
 	RLWeaponCollection::shared()->loadConfig();
 	RLHeroCollection::shared()->loadConfig();
+	RLEffectMgr::shared()->loadConfig();
 	m_tileMgr = new TileMap2DMgr();
 	m_tileMgr->initMap(ARENA_MAP_SIZE, ARENA_MAP_SIZE);
 
@@ -54,12 +56,12 @@ void RLWorld::startGame()
 {
 	RLHero * hero = spawnHero(0);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
-	hero->equipWeapon(new RLWeapon("Pistol"));
+	hero->equipWeapon(new RLWeapon("SMG"));
 	hero->getWeapon()->setIsAutoFiring(true);
 	m_playerController->possess(hero);
 	setCurrGameState(RL_GameState::Playing);
 	RLPlayerState::shared()->reset();
-	RLDirector::shared()->startWave();
+	RLDirector::shared()->generateWave();
 	generateLevelUpPerk();
 }
 
@@ -186,6 +188,11 @@ void RLWorld::clearLevelUpPerk()
 		collectible->setIsAlive(false);
 	}
 	m_lvUpCollectible.clear();
+}
+
+size_t RLWorld::getHeroesCount()
+{
+	return m_heroes.size();
 }
 
 }

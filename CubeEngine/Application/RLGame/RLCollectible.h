@@ -6,6 +6,7 @@
 namespace tzw
 {
 struct SpriteInstanceInfo;
+class RLHero;
 class RLCollectible
 {
 public:
@@ -18,7 +19,7 @@ public:
 	Collider2D * m_collider = nullptr;
 	bool getIsAlive();
 	void setIsAlive(bool isAlive);
-	virtual void onCollect();
+	virtual void onCollect(RLHero * hero);
 protected:
 	unsigned int m_typeID = 0;
 	vec2 m_pos;
@@ -30,7 +31,7 @@ class RLCollectibleLevelUpPerk:public RLCollectible
 {
 public:
 	RLCollectibleLevelUpPerk(unsigned int typeID, vec2 Pos);
-	virtual void onCollect() override;
+	virtual void onCollect(RLHero * hero) override;
 
 };
 class RLCollectibleMgr : public Singleton<RLCollectibleMgr>

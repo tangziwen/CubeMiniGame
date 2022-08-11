@@ -4,6 +4,7 @@
 #include "RLWorld.h"
 #include "RLHero.h"
 #include "RLPlayerState.h"
+#include "RLDirector.h"
 namespace tzw
 {
 RLGUI::RLGUI()
@@ -26,6 +27,9 @@ void RLGUI::drawIMGUI()
 		drawMainMenu();
 	break;
 	case RL_GameState::AfterMath:
+		drawAfterMath();
+	break;
+	case RL_GameState::Win:
 		drawAfterMath();
 	break;
 	}
@@ -93,9 +97,56 @@ void RLGUI::drawInGame()
 	ImGui::Begin("Rotate Tips", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
 
 	RLHero * hero =  RLWorld::shared()->getPlayerController()->getPossessHero();
-	ImGui::Text("HP : %d",int(hero->getHP()));
+
+	float progressBarWidth = 150.f;
 	ImGui::Text("Score : %u",RLPlayerState::shared()->getScore());
-	ImGui::Text("LV : %u",RLPlayerState::shared()->getCurrLevel());
+
+	if(RLDirector::shared()->isFinished())
+	{
+		ImGui::Text("Wave : Finished!!!");
+	}
+	else
+	{
+		if(RLDirector::shared()->getCurrentSubWave() == -1)
+		{
+			ImGui::Text("Wave : Prepare!!!");
+		}
+		else
+		{
+			ImGui::Text("Wave : %d - %d",RLDirector::shared()->getCurrentWave(), RLDirector::shared()->getCurrentSubWave());
+		}
+	}
+
+	
+	char tmp[64];
+	sprintf(tmp, "%d / %d",  int(hero->getHP()), int(hero->getMAXHP()));
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2, 0.81, 0.2, 1.0));
+	ImGui::ProgressBar(hero->getHP()/ hero->getMAXHP(), ImVec2(progressBarWidth, 0), tmp);
+	ImGui::PopStyleColor();
+
+
+	ImGui::PushID("Mana Bar");
+
+	sprintf(tmp, "%d / %d",  int(hero->getMana()), int(hero->getMaxMana()));
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3, 0.41, 1.0, 1.0));
+
+	ImGui::ProgressBar(hero->getMana() / hero->getMaxMana(), ImVec2(progressBarWidth, 0), tmp);
+	ImGui::PopStyleColor();
+	ImGui::PopID();
+
+
+	
+
+
+	sprintf(tmp, "Lv: %u",  RLPlayerState::shared()->getCurrLevel());
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.5, 0.95, 1.0, 1.0));
+	float levelRatio = (RLPlayerState::shared()->getCurrExp() * 1.f) / RLPlayerState::shared()->getMaxExp();
+	ImGui::PushID("Level Bar");
+	ImGui::ProgressBar(levelRatio, ImVec2(progressBarWidth, 0), tmp);
+	ImGui::PopID();
+	ImGui::PopStyleColor();
+	
+
 	ImGui::End();
 }
 
@@ -127,6 +178,29 @@ void RLGUI::drawAfterMath()
 		ImGui::End();
 		ImGui::PopFont();
 	}
+}
+
+void RLGUI::drawWin()
+{
+	GUISystem::shared()->imguiUseLargeFont();
+	auto screenSize = Engine::shared()->winSize();
+	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+	if (ImGui::Begin("Congrats!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
+	{
+		ImGui::Text("Your Score : %u",RLPlayerState::shared()->getScore());
+		if(ImGui::Button(TRC("Back To Menu"), ImVec2(160, 35)))
+		{
+			RLWorld::shared()->goToMainMenu();
+		}
+		ImGui::Spacing();
+		if(ImGui::Button(TRC("Exit To Windows"), ImVec2(160, 35))) 
+		{
+			exit(0);
+		}
+		ImGui::Spacing();
+		ImGui::End();
+	}
+	ImGui::PopFont();
 }
 
 }

@@ -1,6 +1,9 @@
 #ifndef TZW_ENGINECONFIG_H
 #define TZW_ENGINECONFIG_H
 #include "Base/Singleton.h"
+#include <string>
+#include <unordered_map>
+
 #define SAFE_DELETE(PTR) delete PTR; PTR = NULL
 
 #define HIGH_FOUR_BIT(a) ((a & 0xf0) >> 4)
@@ -41,6 +44,52 @@ PROP_TYPE get##PROP(){return m_##PROP;};\
 void set##PROP(PROP_TYPE obj){m_##PROP = obj;};\
 protected:\
 PROP_TYPE m_##PROP {DEFAULT_VALUE};
+
+
+//injection manually binding reflection
+
+#define T_PROP_REFLECT_REG(PROP) m_propsLink[#PROP] = &m_##PROP;//regReflect##PROP();
+
+#define T_PROP_REFLECT_REG_BEGIN(CLASS_NAME)\
+	void init_reg_reflect_##CLASS_NAME(CLASS_NAME *obj)\
+	{
+
+#define T_PROP_REFLECT_REG_END }\
+protected:\
+int m_dullObj = [this](){init_reg_reflect();return 0;}();
+
+#define T_PROP_REFLECT_DO(CLASSNAME) init_reg_reflect_##CLASSNAME(this);
+
+#define T_PROP_REFLECT_REG_DECLEAR() void init_reg_reflect(){
+
+
+
+class TObjectReflect
+{
+public:
+	template<class T>
+	void setPropByName(std::string name, T val)
+	{
+		T * iter = (T *)m_propsLink[name];
+		(*iter) = val;
+	}
+	template<class T>
+	void addPropByName(std::string name, T val)
+	{
+		T * iter = (T *)m_propsLink[name];
+		(*iter) += val;
+	}
+	template<class T>
+	T getPropByName(std::string name)
+	{
+		T * iter = (T *)m_propsLink[name];
+		return (*iter);
+	}
+
+protected:
+	std::unordered_map<std::string, void *> m_propsLink;
+};
+
 
 } // namespace tzw
 
