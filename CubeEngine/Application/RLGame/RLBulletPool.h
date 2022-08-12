@@ -15,7 +15,7 @@ class RLBulletPool: public Singleton<RLBulletPool>
 public:
 	RLBulletPool();
 	void initSpriteList(Node * node);
-	void spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet);
+	void spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet, const RLBulletInfo & info);
 	void tick(float dt);
 	SpriteInstanceInfo * assignASprite();
 	void returnSprite(SpriteInstanceInfo * spriteInfo);

@@ -1,6 +1,8 @@
 #include "RLAIController.h"
 #include "RLWorld.h"
 #include "RLHero.h"
+#include "RLUtility.h"
+#include "RLSkills.h"
 namespace tzw
 {
 #define EVERY(duration) ;
@@ -10,6 +12,7 @@ namespace tzw
 
 	void RLAIController::tick(float dt)
 	{
+
 		auto controller = RLWorld::shared()->getPlayerController();
 		if(m_currPossessHero)
 		{
@@ -57,11 +60,44 @@ namespace tzw
 				if(m_isFirstTimeInstate)
 				{
 					//store the direction in black board
+					vec2 chargeDiff =  controller->getPos() - m_currPossessHero->getPosition();
+					float chargeDistance = m_blackBoard.getData("ChargeDistance", 300.f);
+					//if(chargeDiff.length() > chargeDistance)
+					//no matter how far just charge a fixed distance
+					{
+						chargeDiff = chargeDiff.normalized();
+						chargeDiff *= chargeDistance;
 
+					}
+					m_blackBoard.writeData("ChargeTarget", m_currPossessHero->getPosition() + chargeDiff);
 				}
-				vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
-				diff = diff.normalized();
-				m_currPossessHero->setPosition(currPos + diff * dt * 30);
+				vec2 target = m_blackBoard.getData("ChargeTarget", vec2());
+				vec2 diff =  target - m_currPossessHero->getPosition();
+
+
+				if(diff.length() < 16.f)//close enough
+				{
+					setCurrentTranscationFinish();//mark current transcation finish
+				}
+				else
+				{
+				
+					diff = diff.normalized();
+					m_currPossessHero->setPosition(currPos + diff * dt * 300);
+				}
+			}
+			break;
+			case RLAIState::Skilling:
+			{
+				if(m_isFirstTimeInstate)
+				{
+
+					RLSkillBase * skill =  m_currPossessHero->playSkillToTarget(controller->getPossessHero());
+					skill->addCallBack([this](RLSkillBase * skill)
+						{
+							setCurrentTranscationFinish();//mark current transcation finish
+						});
+				}
 			}
 			break;
 			case RLAIState::FallBack:
@@ -87,13 +123,14 @@ namespace tzw
 					mat.setRotation(quat); 
 					vec4 newDir = mat * vec4(diff.x, diff.y, 0.0, 0.0);
 					vec2 repositionTarget = m_currPossessHero->getPosition() + vec2(newDir.x, newDir.y) * m_blackBoard.getData("fallBackDistance", 100.f);
+					RLUtility::shared()->clampToBorder(repositionTarget);
 					m_blackBoard.writeData("fallBackTarget", repositionTarget);
 					//m_recalRepositionTarget = false;
 					m_blackBoard.writeData("recalFallBackTarget", false);
 
 				}
 				vec2 diff = m_blackBoard.getData("fallBackTarget", vec2()) - m_currPossessHero->getPosition();
-				if(diff.length() < 0.1f)//close enough
+				if(diff.length() < 16.f)//close enough
 				{
 					setCurrentTranscationFinish();//mark current transcation finish
 					//recalculate
@@ -130,6 +167,7 @@ namespace tzw
 					mat.setRotation(quat);
 					vec4 newDir = mat * vec4(diff.x, diff.y, 0.0, 0.0);
 					vec2 repositionTarget = controller->getPos() + vec2(newDir.x, newDir.y) * length;
+					RLUtility::shared()->clampToBorder(repositionTarget);
 					m_blackBoard.writeData("repositionTarget", repositionTarget);
 					//m_recalRepositionTarget = false;
 					m_blackBoard.writeData("recalRepositionTarget", false);
@@ -195,6 +233,7 @@ namespace tzw
 			}
 			m_isFirstTimeInstate = true;
 		}
+		resetAllTranscationFinish();
 	}
 	void RLAIController::addCondition(RLAIState inState, RLAIJmpCond* cond)
 	{
@@ -230,7 +269,7 @@ namespace tzw
 		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(2.5, RLAIState::Idle, vec2(0.8, 1.6)));
 
 		//idle
-		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(0.3, RLAIState::Chasing, vec2(0.1, 0.5)));
+		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.3, RLAIState::Chasing, vec2(0.1, 0.5)));
 	}
 
 
@@ -255,5 +294,37 @@ namespace tzw
 
 		//Fall Back
 		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange, RLAIState::StationaryShooting));
+	}
+
+
+	RLAIControllerCharger::RLAIControllerCharger()
+	{
+		m_currState = RLAIState::Skilling;
+		//Charging
+		addCondition(RLAIState::Skilling, new RLAITranscationCond(RLAIState::Idle));
+
+		//idle
+		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.8, RLAIState::Skilling, vec2(0.4, 0.6)));
+	}
+
+	RLAIController* CreateAIController(std::string AIType)
+	{
+		
+		if(AIType == "None")
+		{
+			return nullptr;
+		}
+		else if(AIType == "Chaser")
+		{
+			return new RLAIControllerChaser();
+		}
+		else if(AIType == "Shooter")
+		{
+			return new RLAIControllerShooter();
+		}
+		else if(AIType == "Charger")
+		{
+			return new RLAIControllerCharger();
+		}
 	}
 }

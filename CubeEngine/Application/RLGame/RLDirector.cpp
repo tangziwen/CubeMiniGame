@@ -10,20 +10,16 @@ namespace tzw
 		std::vector<vec2> spawnPos;
 		RLWorld::shared()->getRandomBoundaryPos(15, spawnPos);
 
-		for(int i = 0; i < 3; i++)
+		for(int i = 0; i < 10; i++)
 		{
 			RLHero * hero = nullptr;
 			if(rand() % 10 > 5)
 			{
-				hero = RLWorld::shared()->spawnHero(2);
-				RLAIController * ai = new RLAIControllerShooter();
-				ai->possess(hero);
+				hero = RLWorld::shared()->spawnEnemy(2);
 			}
 			else
 			{
-				hero = RLWorld::shared()->spawnHero(1);
-				RLAIController * ai = new RLAIControllerChaser();
-				ai->possess(hero);
+				hero = RLWorld::shared()->spawnEnemy(1);
 			}
 			hero->equipWeapon(new RLWeapon("MagicBallLauncher"));
 
@@ -38,7 +34,7 @@ namespace tzw
 		{
 			m_SubWaveList[m_SubWaveIndex]->startWave();
 			m_SubWaveIndex ++;
-			m_time = 0.f;
+			m_time = -100000000.f;
 		}
 		m_time += dt;
 	}
@@ -73,6 +69,11 @@ namespace tzw
 
 	void RLDirector::tick(float dt)
 	{
+		if(isFinished() && RLWorld::shared()->getHeroesCount()<= 1)
+		{
+			RLWorld::shared()->goToWin();
+			return;
+		}
 		if(m_waveIndex >= m_waveList.size()) return;
 		m_waveList[m_waveIndex]->tick(dt);
 		if(m_waveList[m_waveIndex]->isFinished())
@@ -88,7 +89,7 @@ namespace tzw
 
 	void RLDirector::generateWave()
 	{
-		for(int i = 0; i < 5; i++)
+		for(int i = 0; i < 3; i++)
 		{
 			RLWave * wave = new RLWave();
 			wave->generateSubWaves();

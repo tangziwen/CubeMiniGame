@@ -30,7 +30,7 @@ void RLGUI::drawIMGUI()
 		drawAfterMath();
 	break;
 	case RL_GameState::Win:
-		drawAfterMath();
+		drawWin();
 	break;
 	}
 
@@ -187,6 +187,7 @@ void RLGUI::drawWin()
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("Congrats!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
+		ImGui::Text("Winner!!");
 		ImGui::Text("Your Score : %u",RLPlayerState::shared()->getScore());
 		if(ImGui::Button(TRC("Back To Menu"), ImVec2(160, 35)))
 		{

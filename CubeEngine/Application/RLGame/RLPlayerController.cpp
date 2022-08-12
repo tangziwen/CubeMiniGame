@@ -122,12 +122,15 @@ namespace tzw
 			return vec2();
 		}
 	}
+#pragma optimize("", off)
 	void RLPlayerController::calculateView()
 	{
 		vec2 center = Engine::shared()->winSize();
 		center *= 0.5f;
-		float viewPosX = std::clamp(m_currPossessHero->getPosition().x - center.x, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
-		float viewPosY = std::clamp(m_currPossessHero->getPosition().y - center.y, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
+		float p_x = m_currPossessHero->getPosition().x;
+		float p_y = m_currPossessHero->getPosition().y;
+		float viewPosX = std::clamp(p_x - center.x, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
+		float viewPosY = std::clamp(p_y - center.y, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
 		m_invViewMat.setTranslate(vec3(viewPosX, viewPosY, 0));
 		m_viewMat = m_invViewMat.inverted();
 	}

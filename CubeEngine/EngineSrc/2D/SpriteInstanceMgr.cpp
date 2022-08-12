@@ -87,14 +87,16 @@ namespace tzw {
 		vec2 size(32.f, 32.f);
 		auto width = size.x;
 		auto height = size.y;
+		float halfwidth = width / 2.0f;
+		float halfHeight = height / 2.0f;
 		m_mesh->clearVertices();
-		auto vertex_0 = VertexData(vec3(0,0,-1),vec2(lb.x,lb.y));
+		auto vertex_0 = VertexData(vec3(-halfwidth,-halfHeight,-1),vec2(lb.x,lb.y));
 		m_mesh->addVertex(vertex_0);// left bottom
-		auto  vertex_1 = VertexData(vec3(width,0,-1),vec2(rt.x,lb.y));
+		auto  vertex_1 = VertexData(vec3(halfwidth,-halfHeight,-1),vec2(rt.x,lb.y));
 		m_mesh->addVertex(vertex_1);// right bottom
-		auto  vertex_2 = VertexData(vec3(width,height,-1),vec2(rt.x,rt.y));
+		auto  vertex_2 = VertexData(vec3(halfwidth,halfHeight,-1),vec2(rt.x,rt.y));
 		m_mesh->addVertex(vertex_2); // right top
-		auto vertex_3 = VertexData(vec3(0,height,-1),vec2(lb.x,rt.y));
+		auto vertex_3 = VertexData(vec3(-halfwidth,halfHeight,-1),vec2(lb.x,rt.y));
 		m_mesh->addVertex(vertex_3); // left top
 		m_mesh->finish(true);
 	}

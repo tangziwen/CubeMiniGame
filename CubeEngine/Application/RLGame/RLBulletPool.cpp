@@ -29,7 +29,7 @@ void RLBulletPool::initSpriteList(Node * node)
 	}
 }
 
-void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet)
+void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet, const RLBulletInfo & info)
 {
 	RLBullet * newBullet = new RLBullet();
 	newBullet->m_pos = pos;
@@ -37,6 +37,7 @@ void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBul
 	newBullet->m_sprite = assignASprite();
 	newBullet->m_sprite->m_isVisible = true;
 	newBullet->m_lifespan = 5.f;
+	newBullet->m_info = info;
 	newBullet->m_collider2D.setPos(pos);
 	newBullet->m_collider2D.setRadius(16);
 	newBullet->m_collider2D.setSourceChannel(CollisionChannel2D_Bullet);

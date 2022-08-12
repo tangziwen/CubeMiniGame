@@ -9,6 +9,7 @@ namespace tzw
 {
 	class RLController;
 	class RLHeroData;
+	class RLSkillBase;
 	class RLHero : public TObjectReflect
 	{
 	public:
@@ -37,6 +38,9 @@ namespace tzw
 		void doDash();
 		void doMove(vec2 dir, float delta);
 		void applyEffect(std::string name);
+		RLHeroData * getHeroData();
+		RLSkillBase* playSkill();
+		RLSkillBase* playSkillToTarget(RLHero * hero);
 		TZW_PROPERTY(float, HP, 100.f);
 		TZW_PROPERTY(float, MAXHP, 100.f);
 		TZW_PROPERTY(float, Mana, 100.f);
@@ -50,8 +54,9 @@ namespace tzw
 		T_PROP_REFLECT_REG(MaxMana)
 	T_PROP_REFLECT_REG_END
 	private:
+		RLSkillBase * m_currSkill = nullptr;
 		RLEffectContainer m_container;
-		vec2 m_pos;
+		//vec2 m_pos;
 		int m_id = 0;
 		SpriteInstanceInfo * m_sprite = nullptr;
 		bool m_isInitedGraphics = false;

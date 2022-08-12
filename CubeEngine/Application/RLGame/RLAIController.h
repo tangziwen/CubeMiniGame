@@ -18,6 +18,7 @@ namespace tzw
 		Repositioning,
 		WobblyChasing,
 		FallBack,
+		Skilling,
 		TotalEnum,
 	
 	};
@@ -147,6 +148,12 @@ namespace tzw
 
 	};
 
+	class RLAIControllerCharger : public RLAIController
+	{
+	public:
+		RLAIControllerCharger();
+
+	};
 
 	struct RLAITranscationCond : public RLAIJmpCond
 	{
@@ -159,5 +166,16 @@ namespace tzw
 		{
 			return context.controller->isCurrStateTranscationFinish();
 		};
+		virtual void tick(float dt) override 
+		{
+			
+		};
+		virtual void resetInternal() override
+		{
+
+		}
 	};
+
+	RLAIController* CreateAIController(std::string AIType);
+
 }

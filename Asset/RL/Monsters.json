@@ -3,21 +3,36 @@
         "Name":"Default",
         "MaxHealth":75,
         "MeleeDamage":5,
+		"Speed":30,
         "DefaultWeapon":"Pistol",
-        "Sprite":"RL/Sprites/zombie.png"
+        "Sprite":"RL/Sprites/Player_One.png",
+		"AI_Type":"None"
     },
     {
         "Name":"Zombie",
         "MaxHealth":100,
         "MeleeDamage":5,
+        "Speed":30,
         "DefaultWeapon":"None",
-        "Sprite":"RL/Sprites/zombie.png"
+        "Sprite":"RL/Sprites/zombie.png",
+        "AI_Type":"Chaser"
     },
     {
         "Name":"Wizard",
         "MaxHealth":100,
         "MeleeDamage":5,
+        "Speed":30,
         "DefaultWeapon":"MagicBallLauncher",
-        "Sprite":"RL/Sprites/wizard.png"
+        "Sprite":"RL/Sprites/wizard.png",
+        "AI_Type":"Shooter"
+    },
+    {
+        "Name":"PigZombie",
+        "MaxHealth":100,
+        "MeleeDamage":5,
+        "Speed":400,
+        "DefaultWeapon":"MagicBallLauncher",
+        "Sprite":"RL/Sprites/PigZombie.png",
+        "AI_Type":"Charger"
     }
 ]

@@ -104,7 +104,7 @@ namespace tzw
 
 	RLCollectibleMgr::RLCollectibleMgr()
 	{
-		m_collectibleSpriteType = RLSpritePool::shared()->get()->addTileType("RL/Bullet.png");
+		m_collectibleSpriteType = RLSpritePool::shared()->get()->addTileType("RL/Sprites/Exp.png");
 	}
 
 	RLCollectible * RLCollectibleMgr::addCollectible(int typeID, vec2 pos)

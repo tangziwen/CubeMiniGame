@@ -5,6 +5,9 @@
 #include "RLPlayerState.h"
 #include "RLCollectible.h"
 #include "RLSpritePool.h"
+#include "RLUtility.h"
+#include "RLSkills.h"
+
 namespace tzw
 {
 RLHero::RLHero(int idType)
@@ -31,24 +34,24 @@ RLHero::~RLHero()
 
 void RLHero::setPosition(vec2 pos)
 {
+	RLUtility::shared()->clampToBorder(pos);
 	m_collider->setPos(pos);
-	m_pos = pos;
 }
 const vec2& RLHero::getPosition()
 {
-	return m_pos;
+	return m_collider->getPos();
 }
 
 void RLHero::updateGraphics()
 {
-	m_pos = m_collider->getPos();
+	vec2 pos = m_collider->getPos();
 	if(!m_isInitedGraphics)
 	{
 		initGraphics();
 	}
 	if(m_sprite)
 	{
-		m_sprite->pos = m_pos;
+		m_sprite->pos = pos;
 	}
 }
 
@@ -66,13 +69,22 @@ void RLHero::initGraphics()
 
 void RLHero::onTick(float dt)
 {
-
+	if(m_currSkill)
+	{
+		m_currSkill->onTick(dt);
+		if(m_currSkill->isFinished())
+		{
+			m_currSkill->raiseFinished();
+			delete m_currSkill;
+			m_currSkill = nullptr;
+		}
+	}
 	updateGraphics();
 	if(m_weapon)
 	{
 		m_weapon->onTick(dt);
 	}
-	m_collider->setPos(m_pos);
+	//m_collider->setPos(m_pos);
 	if(!m_collider->getParent())
 	{
 		RLWorld::shared()->getQuadTree()->addCollider(m_collider);
@@ -256,5 +268,27 @@ void RLHero::applyEffect(std::string name)
 	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, name);
 	m_container.addEffectInstance(instance);
 }
+
+RLHeroData* RLHero::getHeroData()
+{
+	return m_heroData;
+}
+
+RLSkillBase* RLHero::playSkill()
+{
+	m_currSkill = new RLSkillCharge(this);
+	m_currSkill->onEnter();
+	return m_currSkill;
+}
+
+RLSkillBase* RLHero::playSkillToTarget(RLHero* hero)
+{
+	m_currSkill = new RLSkillCharge(this);
+	m_currSkill->getBlackBoard().writeData("SkillTarget", hero);
+	m_currSkill->onEnter();
+	return m_currSkill;
+}
+
+
 
 }

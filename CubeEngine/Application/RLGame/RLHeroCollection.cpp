@@ -32,7 +32,9 @@ void RLHeroCollection::loadConfig()
 		data.m_name = node["Name"].GetString();
 		data.m_maxHealth = node["MaxHealth"].GetFloat();
 		data.m_meleeDamage = node["MeleeDamage"].GetFloat();
+		data.m_speed = node["Speed"].GetFloat();
 		data.m_sprite = node["Sprite"].GetString();
+		data.m_aiType = node["AI_Type"].GetString();
 		m_heroDataCollection.push_back(data);
 	}
 }

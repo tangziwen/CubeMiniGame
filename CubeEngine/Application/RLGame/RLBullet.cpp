@@ -22,7 +22,7 @@ namespace tzw
 			{
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
 
-				hero->receiveDamage(25.f);
+				hero->receiveDamage(m_info.m_damage);
 			}
 				break;
 			default:

@@ -1,26 +1,12 @@
 #pragma once
 #include "2D/TileMap2DMgr.h"
 #include "Engine/EngineDef.h"
+#include "RLDef.h"
 
-#define ARENA_MAP_SIZE 32
-#define AREAN_COLLISION_MAP_PADDING 32
 #include "RLPlayerController.h"
 #include "2D/QuadTree2D.h"
 
 
-enum RL_OBJECT_TYPE
-{
-	RL_OBJECT_TYPE_HERO,
-	RL_OBJECT_TYPE_MONSTER
-};
-
-enum class RL_GameState
-{
-	MainMenu,
-	Playing,
-	AfterMath,
-	Win
-};
 
 namespace tzw
 {
@@ -36,10 +22,12 @@ namespace tzw
 		void startGame();
 		void goToMainMenu();
 		void goToAfterMath();
+		void goToWin();
 		Node * getRootNode();
 		void onFrameUpdate(float dt) override;
 
 		RLHero* spawnHero(int heroType);
+		RLHero* spawnEnemy(int heroType);
 		QuadTree2D * getQuadTree();
 		vec2 getMapSize();
 		RLPlayerController * getPlayerController();
@@ -49,6 +37,7 @@ namespace tzw
 		void generateLevelUpPerk();
 		void clearLevelUpPerk();
 		size_t getHeroesCount();
+		
 	protected:
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;

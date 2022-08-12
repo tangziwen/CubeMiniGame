@@ -29,7 +29,7 @@ namespace tzw
 		void setPos(vec2 newPos);
 		float getRadius(){return m_radius;}
 		void setRadius(float newRadius);
-		vec2 getPos() {return m_pos;}
+		const vec2& getPos() {return m_pos;}
 		void setParent(QuadTree2DNode * newParent) {m_parent = newParent;}
 		QuadTree2DNode * getParent() {return m_parent;}
 		const AABB2D & getAABB();

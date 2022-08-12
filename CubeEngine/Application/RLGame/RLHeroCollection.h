@@ -12,7 +12,9 @@ namespace tzw
 		std::string m_name;
 		float m_maxHealth;
 		float m_meleeDamage;
+		float m_speed;
 		std::string m_sprite;
+		std::string m_aiType;
 
 	};
 	class RLHeroCollection : public Singleton<RLHeroCollection>

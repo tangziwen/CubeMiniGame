@@ -28,7 +28,9 @@ void RLWeapon::setShootDir(const vec2& shootDir)
 
 void RLWeapon::fireOneRound()
 {
-	RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), m_shootDir * m_data->m_bulletSpeed, m_owner->getIsPlayerControll());
+	RLBulletInfo info;
+	info.m_damage = m_data->m_damage;
+	RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), m_shootDir * m_data->m_bulletSpeed, m_owner->getIsPlayerControll(), info);
 }
 
 void RLWeapon::fire()

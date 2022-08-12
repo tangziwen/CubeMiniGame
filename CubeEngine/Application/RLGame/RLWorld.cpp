@@ -10,7 +10,7 @@
 #include "RLWeaponCollection.h"
 #include "RLCollectible.h"
 #include "RLEffectMgr.h"
-
+#include "RLAIController.h"
 namespace tzw
 {
 void RLWorld::start()
@@ -75,6 +75,11 @@ void RLWorld::goToAfterMath()
 	m_currGameState = RL_GameState::AfterMath;
 }
 
+void RLWorld::goToWin()
+{
+	m_currGameState = RL_GameState::Win;
+}
+
 Node* RLWorld::getRootNode()
 {
 	return m_mapRootNode;
@@ -111,6 +116,14 @@ RLHero* RLWorld::spawnHero(int heroType)
 {
 	RLHero * hero = new RLHero(heroType);
 	m_heroes.push_back(hero);
+	return hero;
+}
+
+RLHero* RLWorld::spawnEnemy(int heroType)
+{
+	RLHero * hero = spawnHero(heroType);
+	RLAIController * controller =  CreateAIController(hero->getHeroData()->m_aiType);
+	if(controller) controller->possess(hero);
 	return hero;
 }
 
@@ -194,5 +207,7 @@ size_t RLWorld::getHeroesCount()
 {
 	return m_heroes.size();
 }
+
+
 
 }

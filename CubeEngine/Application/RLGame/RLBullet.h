@@ -5,6 +5,10 @@ namespace tzw
 {
 class Sprite;
 class SpriteInstanceInfo;
+struct RLBulletInfo
+{
+	float m_damage = 0.f;
+};
 struct RLBullet
 {
 	RLBullet();
@@ -18,5 +22,6 @@ struct RLBullet
 	float m_lifespan = 1.f;
 	float m_t = 0.f;
 	bool m_isLiving = true;
+	RLBulletInfo m_info;
 };
 }
