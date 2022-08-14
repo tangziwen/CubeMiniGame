@@ -272,7 +272,7 @@ void RLHero::doMove(vec2 dir, float delta)
 	if(m_isDash) return;
 	m_moveDir = dir;
 	m_isMoving = true;
-	setPosition(getPosition() + dir * delta);
+	setPosition(getPosition() + dir * delta * m_heroData->m_speed);
 }
 
 void RLHero::applyEffect(std::string name)

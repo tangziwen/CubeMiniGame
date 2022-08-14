@@ -57,4 +57,12 @@ void RLPlayerState::addGold(unsigned int newGoldValue)
 {
 	m_gold += newGoldValue;
 }
+void RLPlayerState::unlockHero(std::string heroName)
+{
+	m_heroPurchasedMap.insert(heroName);
+}
+bool RLPlayerState::isHeroUnLock(std::string heroName)
+{
+	return m_heroPurchasedMap.find(heroName) != m_heroPurchasedMap.end();
+}
 }

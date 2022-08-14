@@ -38,7 +38,7 @@ namespace tzw
 			{
 				vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
 				diff = diff.normalized();
-				m_currPossessHero->setPosition(currPos + diff * dt * 30);
+				m_currPossessHero->doMove(diff, dt);
 			}
 			break;
 			
@@ -266,10 +266,10 @@ namespace tzw
 		float shootRange = 320;
 		float shootRangeOffset = 64.f;
 		//chasing
-		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(2.5, RLAIState::Idle, vec2(0.8, 1.6)));
+		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(3.0f, RLAIState::Idle, vec2(0.3f, 1.0f)));
 
 		//idle
-		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.3, RLAIState::Chasing, vec2(0.1, 0.5)));
+		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.2f, RLAIState::Chasing, vec2(0.2f, 0.4f)));
 	}
 
 

@@ -19,15 +19,19 @@ namespace tzw
 
 
 		void start();
-		void startGame();
+		void startGame(std::string heroID);
 		void goToMainMenu();
 		void goToAfterMath();
 		void goToWin();
+		void goToPurchase();
+		void goToPrepare();
 		Node * getRootNode();
 		void onFrameUpdate(float dt) override;
 
 		RLHero* spawnHero(int heroType);
+		RLHero* spawnHero(std::string heroName);
 		RLHero* spawnEnemy(int heroType);
+		RLHero* spawnEnemy(std::string heroName);
 		QuadTree2D * getQuadTree();
 		vec2 getMapSize();
 		RLPlayerController * getPlayerController();

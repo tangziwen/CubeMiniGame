@@ -2,29 +2,42 @@
 #include "RLWorld.h"
 #include "RLHero.h"
 #include "RLAIController.h"
+#include "RLHeroCollection.h"
+
 namespace tzw
 {
-	void RLSubWave::startWave()
+RLSubWave::RLSubWave(int wave, int subwaveID)
+{
+	int wizardCount = (wave) * 2 + subwaveID * 1 + 2;
+	int zombieCount = (wave) * 3 + subwaveID * 3 + 1;
+	int pigZombieCount = (wave) * 1 + subwaveID * 1 + 1;
+	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Wizard")] = wizardCount;
+	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Zombie")] = zombieCount;
+	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("PigZombie")] = pigZombieCount;
+	m_totalCount = wizardCount + zombieCount + pigZombieCount;
+}
+
+void RLSubWave::startWave()
 	{
 		//genearate a wave
 		std::vector<vec2> spawnPos;
-		RLWorld::shared()->getRandomBoundaryPos(15, spawnPos);
+		RLWorld::shared()->getRandomBoundaryPos(m_totalCount, spawnPos);
 
-		for(int i = 0; i < 10; i++)
+		int idx = 0;
+		for(auto & iter : m_generateMonster)
 		{
-			RLHero * hero = nullptr;
-			if(rand() % 10 > 5)
+			for(int i = 0; i < iter.second; i++)
 			{
-				hero = RLWorld::shared()->spawnEnemy(2);
-			}
-			else
-			{
-				hero = RLWorld::shared()->spawnEnemy(1);
-			}
-			hero->equipWeapon(new RLWeapon("MagicBallLauncher"));
+				RLHero * hero = nullptr;
+				hero = RLWorld::shared()->spawnEnemy(iter.first);
+				hero->equipWeapon(new RLWeapon("MagicBallLauncher"));
 
-			hero->setPosition(spawnPos[i]);
+				hero->setPosition(spawnPos[idx]);
+				idx++;
+			}
+
 		}
+
 	}
 	void RLWave::tick(float dt)
 	{
@@ -34,7 +47,7 @@ namespace tzw
 		{
 			m_SubWaveList[m_SubWaveIndex]->startWave();
 			m_SubWaveIndex ++;
-			m_time = -100000000.f;
+			m_time = 0;
 		}
 		m_time += dt;
 	}
@@ -42,14 +55,14 @@ namespace tzw
 	{
 		for(int i = 0; i < 5; i++)
 		{
-			RLSubWave * subWave = new RLSubWave();
+			RLSubWave * subWave = new RLSubWave(m_waveId, i);
 			if(i == 0)
 			{
 				subWave->setWaitingTime(5.f);
 			}
 			else
 			{
-				subWave->setWaitingTime(5.f);
+				subWave->setWaitingTime(20.f);
 			}
 			
 			m_SubWaveList.push_back(subWave);
@@ -91,7 +104,7 @@ namespace tzw
 	{
 		for(int i = 0; i < 3; i++)
 		{
-			RLWave * wave = new RLWave();
+			RLWave * wave = new RLWave(i);
 			wave->generateSubWaves();
 			m_waveList.push_back(wave);
 		}

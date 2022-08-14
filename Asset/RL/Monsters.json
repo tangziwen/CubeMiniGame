@@ -2,16 +2,16 @@
 
     {
         "Name":"Zombie",
-        "MaxHealth":100,
+        "MaxHealth":50,
         "MeleeDamage":5,
-        "Speed":30,
+        "Speed":100,
         "DefaultWeapon":"None",
         "Sprite":"RL/Sprites/zombie.png",
         "AI_Type":"Chaser"
     },
     {
         "Name":"Wizard",
-        "MaxHealth":100,
+        "MaxHealth":35,
         "MeleeDamage":5,
         "Speed":30,
         "DefaultWeapon":"MagicBallLauncher",
@@ -20,7 +20,7 @@
     },
     {
         "Name":"PigZombie",
-        "MaxHealth":100,
+        "MaxHealth":15,
         "MeleeDamage":5,
         "Speed":400,
         "DefaultWeapon":"MagicBallLauncher",

@@ -1,6 +1,7 @@
 #include "RLSkills.h"
 #include "Math/vec2.h"
 #include "RLHero.h"
+#include "RLUtility.h"
 namespace tzw
 {
 
@@ -32,7 +33,9 @@ namespace tzw
 			chargeDiff *= chargeDistance;
 
 		}
-		m_blackBoard.writeData("ChargeTarget", m_parent->getPosition() + chargeDiff);
+		vec2 targetPos = m_parent->getPosition() + chargeDiff;
+		RLUtility::shared()->clampToBorder(targetPos);
+		m_blackBoard.writeData("ChargeTarget", targetPos);
 	}
 
 	void RLSkillCharge::onTick(float dt)

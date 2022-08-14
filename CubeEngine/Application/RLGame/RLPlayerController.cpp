@@ -35,7 +35,7 @@ namespace tzw
 				//vec2 newPos(pos.x + m_currPossessHero->m_speed * dt * moveDir.x, pos.y + m_currPossessHero->m_speed * dt * moveDir.y);
 				//m_currPossessHero->setPosition(newPos);
 
-				m_currPossessHero->doMove(moveDir, 120 * dt);
+				m_currPossessHero->doMove(moveDir, dt);
 			}
 		}
 	}

@@ -13,8 +13,8 @@ RLHeroCollection::RLHeroCollection()
 }
 void RLHeroCollection::loadConfig()
 {
-	loadConfigImpl("RL/PlayerCharacter.json");
-	loadConfigImpl("RL/Monsters.json");
+	loadConfigImpl("RL/PlayerCharacter.json", true);
+	loadConfigImpl("RL/Monsters.json", false);
 }
 
 RLHeroData* RLHeroCollection::getHeroData(int id)
@@ -40,7 +40,12 @@ int RLHeroCollection::getHeroIDByName(std::string name)
 	return -1;
 }
 
-void RLHeroCollection::loadConfigImpl(std::string filePath)
+const std::vector<RLHeroData>& RLHeroCollection::getPlayableHeroDatas()
+{
+	return m_playableHeroDataCollection;
+}
+
+void RLHeroCollection::loadConfigImpl(std::string filePath, bool isPlayable)
 {
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(filePath, true);
@@ -64,6 +69,10 @@ void RLHeroCollection::loadConfigImpl(std::string filePath)
 		data.m_sprite = node["Sprite"].GetString();
 		data.m_aiType = node["AI_Type"].GetString();
 		m_heroDataCollection.push_back(data);
+		if(isPlayable)
+		{
+			m_playableHeroDataCollection.push_back(data);
+		}
 	}
 }
 

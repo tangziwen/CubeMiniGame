@@ -3,9 +3,27 @@
         "Name":"Default",
         "MaxHealth":75,
         "MeleeDamage":5,
-		"Speed":30,
+		"Speed":120,
         "DefaultWeapon":"Pistol",
         "Sprite":"RL/Sprites/Player_One.png",
 		"AI_Type":"None"
+    },
+    {
+        "Name":"Ninja",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+		"Speed":120,
+        "DefaultWeapon":"Pistol",
+        "Sprite":"RL/Sprites/wizard.png",
+		"AI_Type":"None"
+    },
+    {
+        "Name":"Jager",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+        "Speed":120,
+        "DefaultWeapon":"Pistol",
+        "Sprite":"RL/Sprites/PigZombie.png",
+        "AI_Type":"None"
     },
 ]

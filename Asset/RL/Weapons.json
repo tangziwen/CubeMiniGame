@@ -9,9 +9,9 @@
 	},
 	{
 		"Name":"SMG",
-		"Damage": 5,
-		"CD":3.0,
-		"BulletSpeed":250.0,
+		"Damage": 8,
+		"CD":2.0,
+		"BulletSpeed":285.0,
 		"FireRate":0.25,
 		"FireRound":20
 	},
@@ -20,7 +20,7 @@
 		"Name":"MagicBallLauncher",
 		"Damage": 15,
 		"CD":1.0,
-		"BulletSpeed":110.0,
+		"BulletSpeed":90.0,
 		"FireRate":0.2,
 		"FireRound":1
 	}

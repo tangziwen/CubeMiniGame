@@ -52,9 +52,9 @@ void RLWorld::start()
 
 }
 
-void RLWorld::startGame()
+void RLWorld::startGame(std::string heroStr)
 {
-	RLHero * hero = spawnHero(0);
+	RLHero * hero = spawnHero(heroStr);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
 	hero->equipWeapon(new RLWeapon("SMG"));
 	hero->getWeapon()->setIsAutoFiring(true);
@@ -78,6 +78,16 @@ void RLWorld::goToAfterMath()
 void RLWorld::goToWin()
 {
 	m_currGameState = RL_GameState::Win;
+}
+
+void RLWorld::goToPurchase()
+{
+	m_currGameState = RL_GameState::Purchase;
+}
+
+void RLWorld::goToPrepare()
+{
+	m_currGameState = RL_GameState::Prepare;
 }
 
 Node* RLWorld::getRootNode()
@@ -119,12 +129,25 @@ RLHero* RLWorld::spawnHero(int heroType)
 	return hero;
 }
 
+RLHero* RLWorld::spawnHero(std::string heroName)
+{
+	int id = RLHeroCollection::shared()->getHeroIDByName(heroName);
+
+	return spawnHero(id);
+}
+
 RLHero* RLWorld::spawnEnemy(int heroType)
 {
 	RLHero * hero = spawnHero(heroType);
 	RLAIController * controller =  CreateAIController(hero->getHeroData()->m_aiType);
 	if(controller) controller->possess(hero);
 	return hero;
+}
+
+RLHero* RLWorld::spawnEnemy(std::string heroName)
+{
+	int id = RLHeroCollection::shared()->getHeroIDByName(heroName);
+	return spawnEnemy(id);
 }
 
 QuadTree2D* RLWorld::getQuadTree()

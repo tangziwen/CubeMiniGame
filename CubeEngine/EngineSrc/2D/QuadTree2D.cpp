@@ -121,7 +121,15 @@ namespace tzw
 					}
 					else
 					{
-						dir = dir.normalized();
+						if(dir.length() > 0.1f)
+						{
+							dir = dir.normalized();
+						}
+						else
+						{
+							dir = vec2(1, 0);//two collider become concentric, made a new overlap resolve vector for them.
+						}
+						
 						obj->setPos(obj->getPos() +  dir * diff * 0.5f);
 						otherCollider->setPos(otherCollider->getPos() +  dir * -diff * 0.5f);
 					}

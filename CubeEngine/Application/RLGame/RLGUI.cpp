@@ -5,6 +5,7 @@
 #include "RLHero.h"
 #include "RLPlayerState.h"
 #include "RLDirector.h"
+#include "RLHeroCollection.h"
 namespace tzw
 {
 RLGUI::RLGUI()
@@ -23,6 +24,9 @@ void RLGUI::drawIMGUI()
 	case RL_GameState::Playing:
 		drawInGame();
 		break;
+	case RL_GameState::Prepare:
+		drawPrepareMenu();
+		break;
 	case RL_GameState::MainMenu:
 		drawMainMenu();
 	break;
@@ -31,6 +35,9 @@ void RLGUI::drawIMGUI()
 	break;
 	case RL_GameState::Win:
 		drawWin();
+	break;
+	case RL_GameState::Purchase:
+		drawPurchaseMenu();
 	break;
 	}
 
@@ -49,14 +56,14 @@ void RLGUI::drawMainMenu()
 		if(ImGui::Button(TRC("New Game"), ImVec2(160, 35)))
 		{
 			//setWindowShow(WindowType::NEW_WORLD_SETTING, true);
-			RLWorld::shared()->startGame();
+			RLWorld::shared()->goToPrepare();
 		}
 		ImGui::Spacing();
 
 
 		if(ImGui::Button(TRC("Purchase"), ImVec2(160, 35)))
 		{
-
+			RLWorld::shared()->goToPurchase();
 		}
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Help"), ImVec2(160, 35)))
@@ -162,12 +169,6 @@ void RLGUI::drawAfterMath()
 	{
 
 		ImGui::Text("your Score : %u",RLPlayerState::shared()->getScore());
-		if(ImGui::Button(TRC("Retry"), ImVec2(160, 35)))
-		{
-			//setWindowShow(WindowType::NEW_WORLD_SETTING, true);
-			RLWorld::shared()->startGame();
-		}
-		ImGui::Spacing();
 		if(ImGui::Button(TRC("To Main Menu"), ImVec2(160, 35)))
 		{
 			RLWorld::shared()->goToMainMenu();
@@ -205,6 +206,89 @@ void RLGUI::drawWin()
 		ImGui::End();
 	}
 	ImGui::PopFont();
+}
+
+void RLGUI::drawPurchaseMenu()
+{
+	auto screenSize = Engine::shared()->winSize();
+	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+	if (ImGui::Begin("Purchase!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize  | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
+	{
+		ImGui::Text("Purchase your hero, Gold: %u", RLPlayerState::shared()->getGold());
+		ImGui::BeginChild("InventoryViewer",ImVec2(int(350), 400), 0);
+		ImGui::Columns(3,"InventoryCol",false);
+		auto & heroList = RLHeroCollection::shared()->getPlayableHeroDatas();
+		for(int i = 0; i < heroList.size(); i++)
+		{
+			ImGui::PushID(i);
+			ImGui::BeginGroup();
+			ImGui::Text(" %s", heroList[i].m_name.c_str());
+			if(RLPlayerState::shared()->isHeroUnLock(heroList[i].m_name))
+			{
+				ImGui::TextDisabled("Purchased");
+			}
+			else
+			{
+				if(ImGui::Button("Buy"))
+				{
+					RLPlayerState::shared()->unlockHero(heroList[i].m_name);
+				}
+			}
+			
+			ImGui::EndGroup();
+			ImGui::Spacing();
+			ImGui::PopID();
+			ImGui::NextColumn();
+		}
+		ImGui::EndChild();
+		ImGui::BeginChild("Start",ImVec2(int(350), 0), 0);
+		if(ImGui::Button(TRC("Back To Menu")))
+		{
+			RLWorld::shared()->goToMainMenu();
+		}
+		ImGui::EndChild();
+		ImGui::End();
+	}
+}
+
+void RLGUI::drawPrepareMenu()
+{
+	auto screenSize = Engine::shared()->winSize();
+	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+	if (ImGui::Begin("Purchase!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize  | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
+	{
+		ImGui::Text("Purchase your hero, Gold: %u", RLPlayerState::shared()->getGold());
+		ImGui::BeginChild("InventoryViewer",ImVec2(int(350), 400), true);
+		ImGui::Columns(3,"InventoryCol",false);
+		static int currselectIdx = 0;
+		auto & heroList = RLHeroCollection::shared()->getPlayableHeroDatas();
+		for(int i = 0; i < heroList.size(); i++)
+		{
+			ImGui::PushID(i);
+			ImGui::BeginGroup();
+			if(ImGui::RadioButton( heroList[i].m_name.c_str(), currselectIdx == i))
+			{
+				currselectIdx = i;
+			}
+			ImGui::EndGroup();
+			ImGui::Spacing();
+			ImGui::PopID();
+			ImGui::NextColumn();
+		}
+		ImGui::EndChild();
+		ImGui::SameLine(0, -1);
+		ImGui::BeginChild("Start Game",ImVec2(int(90), 0), true);
+		if(ImGui::Button(TRC("Start")))
+		{
+			RLWorld::shared()->startGame(heroList[currselectIdx].m_name);
+		}
+		if(ImGui::Button(TRC("Back")))
+		{
+			RLWorld::shared()->goToMainMenu();
+		}
+		ImGui::EndChild();
+		ImGui::End();
+	}
 }
 
 }

@@ -12,7 +12,9 @@ enum RL_OBJECT_TYPE
 enum class RL_GameState
 {
 	MainMenu,
+	Prepare,
 	Playing,
 	AfterMath,
-	Win
+	Win,
+	Purchase
 };

@@ -25,9 +25,10 @@ namespace tzw
 		RLHeroData * getHeroData(int id);
 		RLHeroData * getHeroData(std::string  name);
 		int getHeroIDByName(std::string name);
-
+		const std::vector<RLHeroData> & getPlayableHeroDatas();
 	private:
-		void loadConfigImpl(std::string filePath);
+		void loadConfigImpl(std::string filePath, bool isPlayable);
 		std::vector<RLHeroData> m_heroDataCollection;
+		std::vector<RLHeroData> m_playableHeroDataCollection;
 	};
 }
