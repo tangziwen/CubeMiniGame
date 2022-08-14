@@ -15,11 +15,13 @@ namespace tzw
 		unsigned int getCurrLevel();
 		unsigned int getCurrExp();
 		unsigned int getMaxExp();
+		unsigned int getGold() {return m_gold;};
+		void addGold(unsigned int newGoldValue);
 	private:
 		unsigned int m_score;
 		unsigned int m_currLevel;
 		unsigned int m_currExp;
 		unsigned int m_maxExp;
-
+		unsigned int m_gold = 0;
 	};
 }

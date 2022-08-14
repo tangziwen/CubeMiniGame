@@ -13,7 +13,35 @@ RLHeroCollection::RLHeroCollection()
 }
 void RLHeroCollection::loadConfig()
 {
-	std::string filePath = "RL/Monsters.json";
+	loadConfigImpl("RL/PlayerCharacter.json");
+	loadConfigImpl("RL/Monsters.json");
+}
+
+RLHeroData* RLHeroCollection::getHeroData(int id)
+{
+	return &m_heroDataCollection[id];
+}
+
+RLHeroData* RLHeroCollection::getHeroData(std::string name)
+{
+	return getHeroData(getHeroIDByName(name));
+}
+
+int RLHeroCollection::getHeroIDByName(std::string name)
+{
+	for(size_t i = 0; i < m_heroDataCollection.size(); i++)
+	{
+		RLHeroData & data = m_heroDataCollection[i];
+		if(data.m_name == name)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
+void RLHeroCollection::loadConfigImpl(std::string filePath)
+{
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(filePath, true);
 	doc.Parse<rapidjson::kParseTrailingCommasFlag | rapidjson::kParseCommentsFlag>(data.getString().c_str());
@@ -37,30 +65,6 @@ void RLHeroCollection::loadConfig()
 		data.m_aiType = node["AI_Type"].GetString();
 		m_heroDataCollection.push_back(data);
 	}
-}
-
-RLHeroData* RLHeroCollection::getHeroData(int id)
-{
-
-	return &m_heroDataCollection[id];
-}
-
-RLHeroData* RLHeroCollection::getHeroData(std::string name)
-{
-	return getHeroData(getHeroIDByName(name));
-}
-
-int RLHeroCollection::getHeroIDByName(std::string name)
-{
-	for(size_t i = 0; i < m_heroDataCollection.size(); i++)
-	{
-		RLHeroData & data = m_heroDataCollection[i];
-		if(data.m_name == name)
-		{
-			return i;
-		}
-	}
-	return -1;
 }
 
 }

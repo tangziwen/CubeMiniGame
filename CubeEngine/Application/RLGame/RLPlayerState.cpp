@@ -53,4 +53,8 @@ unsigned int RLPlayerState::getMaxExp()
 {
 	return m_maxExp;
 }
+void RLPlayerState::addGold(unsigned int newGoldValue)
+{
+	m_gold += newGoldValue;
+}
 }

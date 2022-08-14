@@ -45,6 +45,7 @@ void RLGUI::drawMainMenu()
 	if (ImGui::Begin("RL Shooter",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
 
+		
 		if(ImGui::Button(TRC("New Game"), ImVec2(160, 35)))
 		{
 			//setWindowShow(WindowType::NEW_WORLD_SETTING, true);
@@ -53,7 +54,7 @@ void RLGUI::drawMainMenu()
 		ImGui::Spacing();
 
 
-		if(ImGui::Button(TRC("Option"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC("Purchase"), ImVec2(160, 35)))
 		{
 
 		}
@@ -79,6 +80,7 @@ void RLGUI::drawMainMenu()
 			TranslationMgr::shared()->dump();
 			exit(0);
 		}
+		ImGui::TextColored(ImVec4(0.7f, 0.63f, 0.0f, 1.0f), "Gold: %u", RLPlayerState::shared()->getGold());
 		ImGui::Spacing();
 		ImGui::End();
 		ImGui::PopFont();
@@ -145,7 +147,8 @@ void RLGUI::drawInGame()
 	ImGui::ProgressBar(levelRatio, ImVec2(progressBarWidth, 0), tmp);
 	ImGui::PopID();
 	ImGui::PopStyleColor();
-	
+
+	ImGui::Text("Gold: %u", RLPlayerState::shared()->getGold());
 
 	ImGui::End();
 }

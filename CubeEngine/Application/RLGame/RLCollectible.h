@@ -20,6 +20,7 @@ public:
 	bool getIsAlive();
 	void setIsAlive(bool isAlive);
 	virtual void onCollect(RLHero * hero);
+	virtual int getSpriteType();
 protected:
 	unsigned int m_typeID = 0;
 	vec2 m_pos;
@@ -27,6 +28,23 @@ protected:
 	bool m_isAlive = true;
 	
 };
+
+
+class RLCollectibleEXP:public RLCollectible
+{
+public:
+	RLCollectibleEXP(unsigned int typeID, vec2 Pos);
+	virtual void onCollect(RLHero * hero) override;
+};
+
+class RLCollectibleGold:public RLCollectible
+{
+public:
+	RLCollectibleGold(unsigned int typeID, vec2 Pos);
+	virtual void onCollect(RLHero * hero) override;
+	int getSpriteType() override;
+};
+
 class RLCollectibleLevelUpPerk:public RLCollectible
 {
 public:
@@ -39,7 +57,7 @@ class RLCollectibleMgr : public Singleton<RLCollectibleMgr>
 public:
 	RLCollectibleMgr();
 	RLCollectible * addCollectible(int typeID, vec2 pos);
-	SpriteInstanceInfo * giveGraphics();
+	SpriteInstanceInfo * giveGraphics(int collectibleType);
 	void removeGraphics(SpriteInstanceInfo * info);
 	void tick(float dt);
 private:

@@ -1,0 +1,11 @@
+[
+    {
+        "Name":"Default",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+		"Speed":30,
+        "DefaultWeapon":"Pistol",
+        "Sprite":"RL/Sprites/Player_One.png",
+		"AI_Type":"None"
+    },
+]

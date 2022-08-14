@@ -207,7 +207,19 @@ void RLHero::receiveDamage(float damage)
 		else
 		{
 			RLPlayerState::shared()->addScore(10);
-			RLCollectibleMgr::shared()->addCollectible(0, getPosition());
+			if(rand() % 10 > 3)
+			{
+				if(rand() % 10 > 2)
+				{
+					RLCollectibleMgr::shared()->addCollectible(0, getPosition());
+				}
+				else
+				{
+					RLCollectibleMgr::shared()->addCollectible(2, getPosition());
+				}
+
+			}
+			
 		}
 	}
 

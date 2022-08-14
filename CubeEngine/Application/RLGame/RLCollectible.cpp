@@ -41,7 +41,7 @@ namespace tzw
 
 	void RLCollectible::initGraphics()
 	{
-		m_sprite = RLCollectibleMgr::shared()->giveGraphics();
+		m_sprite = RLCollectibleMgr::shared()->giveGraphics(getSpriteType());
 		m_sprite->pos = m_pos;
 	}
 
@@ -90,6 +90,40 @@ namespace tzw
 		//hero->setPropByName<float>("MAXHP", 500);
 	}
 
+	int RLCollectible::getSpriteType()
+	{
+		return RLSpritePool::shared()->get()->getOrAddType("RL/Sprites/Exp.png");
+	}
+
+	RLCollectibleEXP::RLCollectibleEXP(unsigned int typeID, vec2 Pos)
+		:RLCollectible(typeID, Pos)
+	{
+	
+	
+	}
+	void RLCollectibleEXP::onCollect(RLHero * hero)
+	{
+		RLPlayerState::shared()->gainExp(85);
+	}
+
+
+	RLCollectibleGold::RLCollectibleGold(unsigned int typeID, vec2 Pos)
+		:RLCollectible(typeID, Pos)
+	{
+	
+	
+	}
+	void RLCollectibleGold::onCollect(RLHero * hero)
+	{
+		RLPlayerState::shared()->addGold(1);
+	}
+
+	int RLCollectibleGold::getSpriteType()
+	{
+		return RLSpritePool::shared()->get()->getOrAddType("RL/Sprites/Gold.png");
+	}
+
+
 	RLCollectibleLevelUpPerk::RLCollectibleLevelUpPerk(unsigned int typeID, vec2 Pos)
 		:RLCollectible(typeID, Pos)
 	{
@@ -113,12 +147,16 @@ namespace tzw
 		switch(typeID)
 		{
 		case 0:
-			collectible = new RLCollectible(typeID, pos);
+			collectible = new RLCollectibleEXP(typeID, pos);
 			break;
 		case 1:
 			collectible = new RLCollectibleLevelUpPerk(typeID, pos);
 			break;
-		
+		case 2:
+			collectible = new RLCollectibleGold(typeID, pos);
+			break;
+		default:
+			break;
 		}
 
 		if(collectible)
@@ -129,10 +167,10 @@ namespace tzw
 		return collectible;
 	}
 
-	SpriteInstanceInfo* RLCollectibleMgr::giveGraphics()
+	SpriteInstanceInfo* RLCollectibleMgr::giveGraphics(int collectibleType)
 	{
 		SpriteInstanceInfo * info = new SpriteInstanceInfo();
-		info->type = m_collectibleSpriteType;
+		info->type = collectibleType;
 		RLSpritePool::shared()->get()->addTile(info);
 		return info;
 	}

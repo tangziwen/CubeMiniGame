@@ -27,6 +27,7 @@ namespace tzw
 		int getHeroIDByName(std::string name);
 
 	private:
+		void loadConfigImpl(std::string filePath);
 		std::vector<RLHeroData> m_heroDataCollection;
 	};
 }

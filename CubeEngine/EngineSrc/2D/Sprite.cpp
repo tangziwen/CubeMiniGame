@@ -104,20 +104,22 @@ void Sprite::setRenderRect(vec2 size, vec2 lb, vec2 rt, vec4 color)
 {
     auto width = size.x;
     auto height = size.y;
+    float halfwidth = size.x /2.0f;
+    float halfHeight = size.y / 2.0f;
     m_mesh->clearVertices();
-    auto vertex_0 = VertexData(vec3(0,0,-1),vec2(lb.x,lb.y));
+    auto vertex_0 = VertexData(vec3(-halfwidth,-halfHeight,-1),vec2(lb.x,lb.y));
     vertex_0.m_color = color;
 	vertex_0.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_0);// left bottom
-    auto  vertex_1 = VertexData(vec3(width,0,-1),vec2(rt.x,lb.y));
+    auto  vertex_1 = VertexData(vec3(halfwidth,-halfHeight,-1),vec2(rt.x,lb.y));
     vertex_1.m_color = color;
 	vertex_1.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_1);// right bottom
-    auto  vertex_2 = VertexData(vec3(width,height,-1),vec2(rt.x,rt.y));
+    auto  vertex_2 = VertexData(vec3(halfwidth,halfHeight,-1),vec2(rt.x,rt.y));
     vertex_2.m_color = color;
 	vertex_2.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_2); // right top
-    auto vertex_3 = VertexData(vec3(0,height,-1),vec2(lb.x,rt.y));
+    auto vertex_3 = VertexData(vec3(-halfwidth,halfHeight,-1),vec2(lb.x,rt.y));
     vertex_3.m_color = color;
 	vertex_3.m_overlayColor = m_overLayColor;
     m_mesh->addVertex(vertex_3); // left top
