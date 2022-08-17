@@ -97,8 +97,10 @@ void RLHero::onTick(float dt)
 		m_dashVelocity = m_dashDir * m_dashSpeed * dt;//vec2(1 * m_dashSpeed* dt, 0);
 		setPosition(getPosition() + m_dashVelocity );
 		m_dashTimer += dt;
-		if(m_dashTimer >= 0.3f)
+		if(m_dashTimer >= 0.4f)
 		{
+			m_collider->setIsCollisionEnable(true);
+			m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 0.0);
 			m_isDash = false;
 		}
 	}
@@ -114,7 +116,6 @@ void RLHero::onTick(float dt)
 		if(m_isHitImmune && m_hitImmuneTimer > 0.35f)
 		{
 			m_isHitImmune = false;
-			m_collider->setIsCollisionEnable(true);
 			m_hitImmuneTimer = 0.f;
 		}
 	}
@@ -189,7 +190,6 @@ void RLHero::receiveDamage(float damage)
 	if(getIsPlayerControll())
 	{
 		m_isHitImmune = true;
-		m_collider->setIsCollisionEnable(false);
 		m_sprite->overLayColor = vec4(1.0, 1.0, 0.5, 1.0);
 	}
 	else
@@ -257,6 +257,8 @@ void RLHero::doDash()
 	m_dashSpeed = 150.0f;
 	m_isDash = true;
 	m_dashTimer = 0.0f;
+	m_collider->setIsCollisionEnable(false);
+	m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0);
 	if (m_isMoving)
 	{
 		m_dashDir = m_moveDir;
@@ -278,6 +280,12 @@ void RLHero::doMove(vec2 dir, float delta)
 void RLHero::applyEffect(std::string name)
 {
 	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, name);
+	m_container.addEffectInstance(instance);
+}
+
+void RLHero::applyEffect(RLEffect* effect)
+{
+	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, effect);
 	m_container.addEffectInstance(instance);
 }
 

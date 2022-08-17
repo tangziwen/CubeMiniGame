@@ -9,7 +9,7 @@ namespace tzw
 	RLAIController::RLAIController()
 	{
 	}
-
+#pragma optimize("", off)
 	void RLAIController::tick(float dt)
 	{
 
@@ -25,7 +25,38 @@ namespace tzw
 				//do nothing
 			}
 			break;
-
+			case RLAIState::Wandering:
+			{
+				if(m_isFirstTimeInstate)
+				{
+					vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
+					diff = diff.normalized();
+					m_blackBoard.writeData("WanderDir", diff);
+					m_blackBoard.writeData("WanderPos", RLWorld::shared()->getRandomPos());
+					m_blackBoard.writeData("WanderTimer", 0.f);
+				}
+				vec2 wanderDir = m_blackBoard.getData("WanderDir", vec2());
+				vec2 wanderPos = m_blackBoard.getData("WanderPos", vec2());
+				float wanderTimer = m_blackBoard.getData("WanderTimer", 0.f);
+				m_currPossessHero->doMove(wanderDir, dt);
+				vec2 diff = wanderPos - m_currPossessHero->getPosition();
+				wanderTimer += dt;
+				if(diff.length() < 1.f || wanderTimer > 10.0f)
+				{
+					m_blackBoard.writeData("WanderPos", RLWorld::shared()->getRandomPos());
+					wanderTimer = 0.f;
+				}
+				else
+				{
+					diff = diff.normalized();
+					float lerpFactor = 2.0f * dt;
+					wanderDir = diff * lerpFactor + wanderDir * (1.0 - lerpFactor);
+					wanderDir = wanderDir.normalized();
+					m_blackBoard.writeData("WanderDir", wanderDir);
+				}
+				m_blackBoard.writeData("WanderTimer", wanderTimer);
+			}
+			break;
 			case RLAIState::WobblyChasing:
 			{
 				vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
@@ -36,9 +67,20 @@ namespace tzw
 			
 			case RLAIState::Chasing:
 			{
+				if(m_isFirstTimeInstate)
+				{
+					vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
+					diff = diff.normalized();
+					m_blackBoard.writeData("ChaseDir", diff);
+				}
+				vec2 chaseDir = m_blackBoard.getData("ChaseDir", vec2());
+				m_currPossessHero->doMove(chaseDir, dt);
 				vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
 				diff = diff.normalized();
-				m_currPossessHero->doMove(diff, dt);
+				float lerpFactor = 2.0f * dt;
+				chaseDir = diff * lerpFactor + chaseDir * (1.0 - lerpFactor);
+				chaseDir = chaseDir.normalized();
+				m_blackBoard.writeData("ChaseDir", chaseDir);
 			}
 			break;
 			
@@ -140,7 +182,7 @@ namespace tzw
 				{
 				
 					diff = diff.normalized();
-					m_currPossessHero->setPosition(currPos + diff * dt * 30);
+					m_currPossessHero->doMove(diff, dt);
 				}
 			}
 			break;
@@ -184,7 +226,7 @@ namespace tzw
 				{
 				
 					diff = diff.normalized();
-					m_currPossessHero->setPosition(currPos + diff * dt * 30);
+					m_currPossessHero->doMove(diff, dt);
 				}
 
 			}
@@ -266,10 +308,10 @@ namespace tzw
 		float shootRange = 320;
 		float shootRangeOffset = 64.f;
 		//chasing
-		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(3.0f, RLAIState::Idle, vec2(0.3f, 1.0f)));
+		//addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(5.0f, RLAIState::Repositioning, vec2(0.3f, 1.0f)));
 
 		//idle
-		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.2f, RLAIState::Chasing, vec2(0.2f, 0.4f)));
+		//addCondition(RLAIState::Repositioning, new RLAIJmpCondDuration(1.5, RLAIState::Chasing, vec2(0.8, 1.4)));
 	}
 
 
@@ -286,10 +328,10 @@ namespace tzw
 		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange + shootRangeOffset, RLAIState::Chasing));
 		//shooting too close
 		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, 120, RLAIState::FallBack));
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(0.9, RLAIState::Repositioning, vec2(0.5, 1.0)));
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.0, RLAIState::Repositioning, vec2(0.0, 2.0)));
 
 		//repositioning
-		addCondition(RLAIState::Repositioning, new RLAIJmpCondDuration(1.5, RLAIState::Chasing, vec2(0.8, 1.4)));
+		addCondition(RLAIState::Repositioning, new RLAIJmpCondDuration(1.5, RLAIState::Chasing, vec2(0.8, 2.5)));
 
 
 		//Fall Back
@@ -305,6 +347,27 @@ namespace tzw
 
 		//idle
 		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.8, RLAIState::Skilling, vec2(0.4, 0.6)));
+	}
+
+	RLAIControllerChaseShooter::RLAIControllerChaseShooter()
+	{
+		m_currState = RLAIState::Chasing;
+		//Chasing
+		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(8.0f, RLAIState::StationaryShooting, vec2(0.0f, 3.0f)));
+
+		//idle
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(0.6, RLAIState::Chasing, vec2(0.1, 0.3)));
+	}
+
+
+	RLAIControllerWanderShooter::RLAIControllerWanderShooter()
+	{
+		m_currState = RLAIState::Wandering;
+		//Chasing
+		addCondition(RLAIState::Wandering, new RLAIJmpCondDuration(6.0f, RLAIState::StationaryShooting, vec2(0.0f, 3.0f)));
+
+		//idle
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(0.6, RLAIState::Wandering, vec2(0.1, 0.3)));
 	}
 
 	RLAIController* CreateAIController(std::string AIType)
@@ -325,6 +388,14 @@ namespace tzw
 		else if(AIType == "Charger")
 		{
 			return new RLAIControllerCharger();
+		}
+		else if(AIType == "ChaseShooter")
+		{
+			return new RLAIControllerChaseShooter();
+		}
+		else if(AIType == "WanderShooter")
+		{
+			return new RLAIControllerWanderShooter();
 		}
 	}
 }

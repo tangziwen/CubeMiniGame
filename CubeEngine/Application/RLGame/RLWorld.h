@@ -41,6 +41,7 @@ namespace tzw
 		void generateLevelUpPerk();
 		void clearLevelUpPerk();
 		size_t getHeroesCount();
+		vec2 getRandomPos();
 		
 	protected:
 		TileMap2DMgr * m_tileMgr;

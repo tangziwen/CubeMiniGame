@@ -22,15 +22,24 @@ void RLWorld::start()
 	m_tileMgr = new TileMap2DMgr();
 	m_tileMgr->initMap(ARENA_MAP_SIZE, ARENA_MAP_SIZE);
 
-	int tileTypeForest = m_tileMgr->addTileType("PTM/forest.png");
-	int tileTypePlain = m_tileMgr->addTileType("PTM/plain.png");
-	int tileTypeMountains = m_tileMgr->addTileType("PTM/mountains.png");
-	int tileTypeWater = m_tileMgr->addTileType("PTM/water.png");
+
+	std::vector<int> grassTileList;
+	grassTileList.push_back (m_tileMgr->addTileType("RL/Sprites/Grass_0.png"));
+	grassTileList.push_back (m_tileMgr->addTileType("RL/Sprites/Grass_1.png"));
+	grassTileList.push_back (m_tileMgr->addTileType("RL/Sprites/Grass_2.png"));
+	grassTileList.push_back (m_tileMgr->addTileType("RL/Sprites/Grass_3.png"));
+	grassTileList.push_back (m_tileMgr->addTileType("RL/Sprites/Grass_4.png"));
+	grassTileList.push_back (m_tileMgr->addTileType("RL/Sprites/Grass_5.png"));
+
+	 std::random_device rd;
+    std::mt19937 gen(rd());
+    std::discrete_distribution<> d({600, 5, 5, 5, 5, 5});
 	for(int i = 0; i < ARENA_MAP_SIZE; i++)
 	{
 		for(int j = 0; j < ARENA_MAP_SIZE; j++)
 		{
-			m_tileMgr->addTile(tileTypeForest, i, j);
+			int idx = d(gen);
+			m_tileMgr->addTile(grassTileList[idx], i, j);
 		}
 	}
 	m_quadTree = new QuadTree2D();
@@ -211,10 +220,13 @@ void RLWorld::generateLevelUpPerk()
 
 	float offset = 128;
 	vec2 center(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f);
-	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(-offset, -offset)));
-	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(offset, -offset)));
-	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(-offset, offset)));
-	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectible(1, center +vec2(offset, offset)));
+	m_lvUpCollectible.push_back( 
+		RLCollectibleMgr::shared()->addCollectiblePerkEffect(RLEffectMgr::shared()->get("GreenPotion"), center +vec2(-offset, -offset)));
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectiblePerkEffect(RLEffectMgr::shared()->get("MoveSpeedUp"), center +vec2(offset, -offset)));
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectiblePerkEffect(RLEffectMgr::shared()->get("HeartRecover"), center +vec2(-offset, offset)));
+	m_lvUpCollectible.push_back( RLCollectibleMgr::shared()->addCollectiblePerkEffect(RLEffectMgr::shared()->get("HeartRecover"), center +vec2(offset, offset)));
+
+
 }
 
 void RLWorld::clearLevelUpPerk()
@@ -229,6 +241,12 @@ void RLWorld::clearLevelUpPerk()
 size_t RLWorld::getHeroesCount()
 {
 	return m_heroes.size();
+}
+
+vec2 RLWorld::getRandomPos()
+{
+	float offset = 16.0f;
+	return vec2(TbaseMath::randRange(offset, ARENA_MAP_SIZE * 32.f - offset), TbaseMath::randRange(offset, ARENA_MAP_SIZE * 32.f - offset));
 }
 
 

@@ -3,19 +3,40 @@
 		"Name":"GreenPotion",
 		"Type":"Immediately",
 		"Duration":-1,
+		"SpritePath":"RL/Sprites/GreenPotion.png",
 		"Modifiers":
 		[
 			{
 				"Attribute":"MAXHP",
 				"Type":"Add",
-				"Value":10.0
+				"Value":15.0
+			},
+			{
+				"Attribute":"HP",
+				"Type":"Add",
+				"Value":100.0,
 			},
 		]
 	},
 	{
-		"Name":"GreenSkin",
+		"Name":"HeartRecover",
 		"Type":"Pulse",
 		"Duration":-1,
+		"SpritePath":"RL/Sprites/HeartRecover.png",
+		"Modifiers":
+		[
+			{
+				"Attribute":"HP",
+				"Type":"Add",
+				"Value":0.25,
+			},
+		]
+	},
+	{
+		"Name":"MoveSpeedUp",
+		"Type":"Immediately",
+		"Duration":-1,
+		"SpritePath":"RL/Sprites/MoveSpeedUp.png",
 		"Modifiers":
 		[
 			{

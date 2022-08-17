@@ -1,6 +1,6 @@
 #pragma once
 
-#define ARENA_MAP_SIZE 32
+#define ARENA_MAP_SIZE 28
 #define AREAN_COLLISION_MAP_PADDING 32
 
 enum RL_OBJECT_TYPE

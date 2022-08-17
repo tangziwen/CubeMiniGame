@@ -39,11 +39,14 @@ public:
 	RLEffectType getEffectType(){return m_effectType;}
 	const std::vector<RLModifier> & getModifierList() {return m_modifierList;}; 
 	void addModifier(const RLModifier & modifer) {m_modifierList.push_back(modifer);}
+	void setSpritePath(std::string spritePath){ m_spritePath = spritePath;}
+	std::string getSpritePath() {return m_spritePath;}
 protected:
 	float m_pulseRate = 0.25f;
 	float m_duration = 1.0f;
 	std::vector<RLModifier> m_modifierList;
 	RLEffectType m_effectType;
+	std::string m_spritePath;
 };
 
 class RLEffectInstance
@@ -70,6 +73,8 @@ public:
 	void loadConfig();
 	RLEffectMgr() = default;
 	RLEffectInstance * getInstance(TObjectReflect * owner, std::string);
+	RLEffectInstance * getInstance(TObjectReflect * owner, RLEffect * effect);
+	RLEffect * get(std::string effectName) {return m_effectPool[effectName];}
 protected:
 	std::unordered_map<std::string, RLEffect*> m_effectPool;
 

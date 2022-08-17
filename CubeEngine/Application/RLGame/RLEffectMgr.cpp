@@ -86,7 +86,7 @@ namespace tzw
 			}
 			effect->setDuration(node["Duration"].GetFloat());
 			auto & modifierList = node["Modifiers"];
-
+			effect->setSpritePath(node["SpritePath"].GetString());
 			for(int j = 0; j < modifierList.Size(); j++)
 			{
 				auto& modifierNode = modifierList[j];
@@ -99,6 +99,7 @@ namespace tzw
 				}
 				modifer.m_modifiedValue = modifierNode["Value"].GetFloat();
 				effect->addModifier(modifer);
+				
 			}
 			m_effectPool[node["Name"].GetString()] = effect;
 		}
@@ -107,6 +108,12 @@ namespace tzw
 	RLEffectInstance* RLEffectMgr::getInstance(TObjectReflect * owner, std::string effectName)
 	{
 		RLEffectInstance * m_instance = new RLEffectInstance(owner, m_effectPool[effectName]);
+		return m_instance;
+	}
+
+	RLEffectInstance* RLEffectMgr::getInstance(TObjectReflect* owner, RLEffect* effect)
+	{
+		RLEffectInstance * m_instance = new RLEffectInstance(owner, effect);
 		return m_instance;
 	}
 

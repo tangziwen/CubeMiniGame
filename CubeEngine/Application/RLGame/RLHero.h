@@ -38,6 +38,7 @@ namespace tzw
 		void doDash();
 		void doMove(vec2 dir, float delta);
 		void applyEffect(std::string name);
+		void applyEffect(RLEffect * effect);
 		RLHeroData * getHeroData();
 		RLSkillBase* playSkill();
 		RLSkillBase* playSkillToTarget(RLHero * hero);

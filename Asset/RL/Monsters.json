@@ -2,7 +2,7 @@
 
     {
         "Name":"Zombie",
-        "MaxHealth":50,
+        "MaxHealth":43,
         "MeleeDamage":5,
         "Speed":100,
         "DefaultWeapon":"None",
@@ -13,7 +13,7 @@
         "Name":"Wizard",
         "MaxHealth":35,
         "MeleeDamage":5,
-        "Speed":30,
+        "Speed":85,
         "DefaultWeapon":"MagicBallLauncher",
         "Sprite":"RL/Sprites/wizard.png",
         "AI_Type":"Shooter"
@@ -26,5 +26,14 @@
         "DefaultWeapon":"MagicBallLauncher",
         "Sprite":"RL/Sprites/PigZombie.png",
         "AI_Type":"Charger"
-    }
+    },
+    {
+        "Name":"Bat",
+        "MaxHealth":35,
+        "MeleeDamage":5,
+        "Speed":85,
+        "DefaultWeapon":"MagicBallLauncher",
+        "Sprite":"RL/Sprites/Bat.png",
+        "AI_Type":"WanderShooter"
+    },
 ]

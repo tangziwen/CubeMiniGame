@@ -3,6 +3,7 @@
 #include "RLWorld.h"
 #include "RLHero.h"
 #include "RLPlayerState.h"
+#include "RLEffectMgr.h"
 namespace tzw
 {
 
@@ -37,12 +38,6 @@ namespace tzw
 	void RLCollectible::setPos(vec2 pos)
 	{
 		m_pos = pos;
-	}
-
-	void RLCollectible::initGraphics()
-	{
-		m_sprite = RLCollectibleMgr::shared()->giveGraphics(getSpriteType());
-		m_sprite->pos = m_pos;
 	}
 
 	void RLCollectible::onCollision(Collider2D* self, Collider2D* other)
@@ -132,8 +127,18 @@ namespace tzw
 	}
 	void RLCollectibleLevelUpPerk::onCollect(RLHero * hero)
 	{
-		hero->applyEffect("GreenSkin");
+		hero->applyEffect(m_effect);
 		RLWorld::shared()->clearLevelUpPerk();
+	}
+
+	int RLCollectibleLevelUpPerk::getSpriteType()
+	{
+		return RLSpritePool::shared()->get()->getOrAddType(m_effect->getSpritePath());
+	}
+
+	void RLCollectibleLevelUpPerk::setEffect(RLEffect* effect)
+	{
+		m_effect = effect;
 	}
 
 	RLCollectibleMgr::RLCollectibleMgr()
@@ -162,7 +167,26 @@ namespace tzw
 		if(collectible)
 		{
 			m_collectible.push_back(collectible);
-			collectible->initGraphics();
+			//collectible->initGraphics();
+			SpriteInstanceInfo * sprite = RLCollectibleMgr::shared()->giveGraphics(collectible->getSpriteType());
+			sprite->pos = pos;
+			collectible->setSprite(sprite);
+		}
+		return collectible;
+	}
+
+	RLCollectible* RLCollectibleMgr::addCollectiblePerkEffect(RLEffect* effect, vec2 pos)
+	{
+		RLCollectibleLevelUpPerk * collectible = nullptr;
+		collectible = new RLCollectibleLevelUpPerk(1, pos);
+		collectible->setEffect(effect);
+		if(collectible)
+		{
+			m_collectible.push_back(collectible);
+			//collectible->initGraphics();
+			SpriteInstanceInfo * sprite = RLCollectibleMgr::shared()->giveGraphics(collectible->getSpriteType());
+			sprite->pos = pos;
+			collectible->setSprite(sprite);
 		}
 		return collectible;
 	}
@@ -196,6 +220,8 @@ namespace tzw
 			}
 			else
 			{
+
+				collectible->getSprite()->pos = collectible->m_collider->getPos(); 
 				++iter;
 			}
 		}

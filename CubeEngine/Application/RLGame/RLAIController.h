@@ -17,6 +17,7 @@ namespace tzw
 		Charging,
 		Repositioning,
 		WobblyChasing,
+		Wandering,
 		FallBack,
 		Skilling,
 		TotalEnum,
@@ -49,7 +50,7 @@ namespace tzw
 	struct RLAIJmpCondDuration : public RLAIJmpCond
 	{
 		RLAIJmpCondDuration(float duration, RLAIState targetState, vec2 randomRange = vec2(0.1, 0.5))
-			:RLAIJmpCond(targetState), m_duration(duration)
+			:RLAIJmpCond(targetState), m_duration(duration), m_randomRange(randomRange)
 		{
 			caculateRandomOffset();
 		};
@@ -155,6 +156,19 @@ namespace tzw
 
 	};
 
+	class RLAIControllerChaseShooter : public RLAIController
+	{
+	public:
+		RLAIControllerChaseShooter();
+
+	};
+
+	class RLAIControllerWanderShooter : public RLAIController
+	{
+	public:
+		RLAIControllerWanderShooter();
+
+	};
 	struct RLAITranscationCond : public RLAIJmpCond
 	{
 		RLAITranscationCond(RLAIState targetState)

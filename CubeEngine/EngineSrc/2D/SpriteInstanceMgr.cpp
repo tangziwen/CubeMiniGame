@@ -71,6 +71,10 @@ namespace tzw {
 		{
 			m_tilesList.erase(iter);
 		}
+		else
+		{
+			printf("????");
+		}
 	}
 	void SpriteInstanceMgr::initMesh()
 	{

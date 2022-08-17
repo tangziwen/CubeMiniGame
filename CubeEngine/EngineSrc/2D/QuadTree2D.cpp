@@ -115,7 +115,9 @@ namespace tzw
 					float diff = dist - currDist;
 					diff += 0.01f;
 					//overlap resolve
-					if(obj->getSourceChannel() & CollisionChannel2D_Bullet || otherCollider->getSourceChannel() & CollisionChannel2D_Bullet)
+					bool isBullet = obj->getSourceChannel() & CollisionChannel2D_Bullet || otherCollider->getSourceChannel() & CollisionChannel2D_Bullet;
+					bool isItem = obj->getSourceChannel() & CollisionChannel2D_Item || otherCollider->getSourceChannel() & CollisionChannel2D_Item;
+					if(isBullet || isItem)
 					{
 					
 					}

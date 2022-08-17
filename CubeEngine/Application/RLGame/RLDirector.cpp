@@ -8,12 +8,14 @@ namespace tzw
 {
 RLSubWave::RLSubWave(int wave, int subwaveID)
 {
-	int wizardCount = (wave) * 2 + subwaveID * 1 + 2;
-	int zombieCount = (wave) * 3 + subwaveID * 3 + 1;
+	int wizardCount = (wave) * 1 + subwaveID * 1 + 1;
+	int zombieCount = (wave) * 2 + subwaveID * 1 + 2;
 	int pigZombieCount = (wave) * 1 + subwaveID * 1 + 1;
+	int batCount = subwaveID + 1;
 	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Wizard")] = wizardCount;
 	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Zombie")] = zombieCount;
 	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("PigZombie")] = pigZombieCount;
+	m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Bat")] = batCount;
 	m_totalCount = wizardCount + zombieCount + pigZombieCount;
 }
 
@@ -48,6 +50,10 @@ void RLSubWave::startWave()
 			m_SubWaveList[m_SubWaveIndex]->startWave();
 			m_SubWaveIndex ++;
 			m_time = 0;
+			if(m_SubWaveIndex > 3)
+			{
+				m_time = -999999;
+			}
 		}
 		m_time += dt;
 	}
@@ -82,6 +88,7 @@ void RLSubWave::startWave()
 
 	void RLDirector::tick(float dt)
 	{
+
 		if(isFinished() && RLWorld::shared()->getHeroesCount()<= 1)
 		{
 			RLWorld::shared()->goToWin();
