@@ -20,7 +20,7 @@
 		"Name":"MagicBallLauncher",
 		"Damage": 15,
 		"CD":1.0,
-		"BulletSpeed":90.0,
+		"BulletSpeed":110.0,
 		"FireRate":0.2,
 		"FireRound":1
 	}

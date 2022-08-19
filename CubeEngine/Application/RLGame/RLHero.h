@@ -46,13 +46,15 @@ namespace tzw
 		TZW_PROPERTY(float, MAXHP, 100.f);
 		TZW_PROPERTY(float, Mana, 100.f);
 		TZW_PROPERTY(float, MaxMana, 100.f);
-		TZW_PROPERTY(float, BaseDamage, 0.f);
-
+		TZW_PROPERTY(float, Damage, 0.f);
+		TZW_PROPERTY(float, Speed, 0.f);
 	T_PROP_REFLECT_REG_DECLEAR()
 		T_PROP_REFLECT_REG(HP)
 		T_PROP_REFLECT_REG(MAXHP)
 		T_PROP_REFLECT_REG(Mana)
 		T_PROP_REFLECT_REG(MaxMana)
+		T_PROP_REFLECT_REG(Damage)
+		T_PROP_REFLECT_REG(Speed)
 	T_PROP_REFLECT_REG_END
 	private:
 		RLSkillBase * m_currSkill = nullptr;

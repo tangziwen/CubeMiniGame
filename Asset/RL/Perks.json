@@ -9,12 +9,12 @@
 			{
 				"Attribute":"MAXHP",
 				"Type":"Add",
-				"Value":15.0
+				"Value":10.0
 			},
 			{
 				"Attribute":"HP",
 				"Type":"Add",
-				"Value":100.0,
+				"Value":30.0,
 			},
 		]
 	},
@@ -28,7 +28,7 @@
 			{
 				"Attribute":"HP",
 				"Type":"Add",
-				"Value":0.25,
+				"Value":0.1,
 			},
 		]
 	},
@@ -40,9 +40,23 @@
 		"Modifiers":
 		[
 			{
-				"Attribute":"HP",
+				"Attribute":"Speed",
 				"Type":"Add",
-				"Value":0.25,
+				"Value":10.0,
+			},
+		]
+	},
+	{
+		"Name":"DamageUp",
+		"Type":"Immediately",
+		"Duration":-1,
+		"SpritePath":"RL/Sprites/DamageUp.png",
+		"Modifiers":
+		[
+			{
+				"Attribute":"Damage",
+				"Type":"Add",
+				"Value":10.0,
 			},
 		]
 	},

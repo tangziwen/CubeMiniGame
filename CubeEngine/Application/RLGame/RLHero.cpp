@@ -22,6 +22,7 @@ RLHero::RLHero(int idType)
 	m_heroData = RLHeroCollection::shared()->getHeroData(idType);
 	m_HP = m_heroData->m_maxHealth;
 	m_MAXHP = m_heroData->m_maxHealth;
+	m_Speed = m_heroData->m_speed;
 }
 
 RLHero::~RLHero()
@@ -97,7 +98,7 @@ void RLHero::onTick(float dt)
 		m_dashVelocity = m_dashDir * m_dashSpeed * dt;//vec2(1 * m_dashSpeed* dt, 0);
 		setPosition(getPosition() + m_dashVelocity );
 		m_dashTimer += dt;
-		if(m_dashTimer >= 0.4f)
+		if(m_dashTimer >= 0.3f)
 		{
 			m_collider->setIsCollisionEnable(true);
 			m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 0.0);
@@ -136,6 +137,8 @@ void RLHero::onTick(float dt)
 	m_isMoving = false;
 
 	m_container.tick(dt);
+
+	m_HP = std::clamp(m_HP, 0.f, m_MAXHP);
 }
 
 void RLHero::equipWeapon(RLWeapon* weapon)
@@ -169,7 +172,7 @@ void RLHero::onCollision(Collider2D* self, Collider2D* other)
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
 				if(hero->getIsPlayerControll())
 				{
-					hero->receiveDamage(5.f);
+					hero->receiveDamage(5);
 				}
 			}
 				break;
@@ -259,6 +262,11 @@ void RLHero::doDash()
 	m_dashTimer = 0.0f;
 	m_collider->setIsCollisionEnable(false);
 	m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0);
+	if(m_HP > 30.0f)
+	{
+		m_HP = std::max(15.0f, m_HP - 10.0f);
+	}
+
 	if (m_isMoving)
 	{
 		m_dashDir = m_moveDir;
@@ -274,7 +282,7 @@ void RLHero::doMove(vec2 dir, float delta)
 	if(m_isDash) return;
 	m_moveDir = dir;
 	m_isMoving = true;
-	setPosition(getPosition() + dir * delta * m_heroData->m_speed);
+	setPosition(getPosition() + dir * delta * m_Speed);
 }
 
 void RLHero::applyEffect(std::string name)

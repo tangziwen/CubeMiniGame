@@ -45,6 +45,17 @@ const std::vector<RLHeroData>& RLHeroCollection::getPlayableHeroDatas()
 	return m_playableHeroDataCollection;
 }
 
+void RLHeroCollection::getHeroRangeFromTier(int tier, std::vector<RLHeroData*>& dataList)
+{
+	for(RLHeroData& data : m_MonsterHeroDataCollection)
+	{
+		if(data.m_tier == tier)
+		{
+			dataList.push_back(&data);
+		}
+	}
+}
+
 void RLHeroCollection::loadConfigImpl(std::string filePath, bool isPlayable)
 {
 	rapidjson::Document doc;
@@ -68,10 +79,22 @@ void RLHeroCollection::loadConfigImpl(std::string filePath, bool isPlayable)
 		data.m_speed = node["Speed"].GetFloat();
 		data.m_sprite = node["Sprite"].GetString();
 		data.m_aiType = node["AI_Type"].GetString();
+		if(node.HasMember("Difficulty"))
+		{
+			data.m_difficulty = node["Difficulty"].GetFloat();
+		}
+		if(node.HasMember("Tier"))
+		{
+			data.m_tier = node["Tier"].GetInt();
+		}
 		m_heroDataCollection.push_back(data);
 		if(isPlayable)
 		{
 			m_playableHeroDataCollection.push_back(data);
+		}
+		else
+		{
+			m_MonsterHeroDataCollection.push_back(data);
 		}
 	}
 }

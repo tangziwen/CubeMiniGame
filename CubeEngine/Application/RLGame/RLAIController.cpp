@@ -318,8 +318,9 @@ namespace tzw
 	//RLAIControllerShooter
 	RLAIControllerShooter::RLAIControllerShooter()
 	{
-		float shootRange = 320;
+		float shootRange = 32.f * 10.f;
 		float shootRangeOffset = 64.f;
+		float dangerRange = 120.f;
 		//chasing
 		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, shootRange - shootRangeOffset, RLAIState::StationaryShooting));
 
@@ -327,7 +328,7 @@ namespace tzw
 		//shooting too far
 		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange + shootRangeOffset, RLAIState::Chasing));
 		//shooting too close
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, 120, RLAIState::FallBack));
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, dangerRange, RLAIState::FallBack));
 		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.0, RLAIState::Repositioning, vec2(0.0, 2.0)));
 
 		//repositioning
@@ -335,7 +336,7 @@ namespace tzw
 
 
 		//Fall Back
-		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange, RLAIState::StationaryShooting));
+		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, dangerRange * 2.0f, RLAIState::StationaryShooting));
 	}
 
 

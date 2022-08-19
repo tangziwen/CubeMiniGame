@@ -4,16 +4,36 @@
 #include <unordered_map>
 namespace tzw
 {
+	struct RLEnemyGenerateionInfo
+	{
+		std::string m_monsterName;
+		int m_maxCount;
+		int weight;
+	};
+
+	struct RLSubWaveGenerator
+	{
+
+		std::vector<RLEnemyGenerateionInfo> m_info;
+		void generate(int targetDifficulty, int targetMaxCount, std::unordered_map<int, int> & generateMonster, int & totalCount);
+		void addMonstersByTiers(int count, int tier);
+		void removeMonstersByTiers(int tier);
+	};
+
 	class RLSubWave
 	{
+	
 	public:
+		
 		RLSubWave(int wave, int subwaveID);
 		void startWave();
-		TZW_PROPERTY(float, WaitingTime, 25.0f);
 		std::unordered_map<int, int> & getGeneratedMonsterList(){return m_generateMonster;};
+		TZW_PROPERTY(float, WaitingTime, 25.0f);
+		
 	private:
 		std::unordered_map<int, int> m_generateMonster;
 		int m_totalCount = 0;
+		friend class RLWave;
 	
 	};
 	class RLWave
