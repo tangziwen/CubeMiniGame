@@ -120,8 +120,6 @@ void RLSubWave::startWave()
 			{
 				RLHero * hero = nullptr;
 				hero = RLWorld::shared()->spawnEnemy(iter.first);
-				hero->equipWeapon(new RLWeapon("MagicBallLauncher"));
-
 				hero->setPosition(spawnPos[idx]);
 				idx++;
 			}

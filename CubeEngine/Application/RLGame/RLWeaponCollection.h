@@ -15,6 +15,8 @@ namespace tzw
 		float m_bulletSpeed;
 		float m_fireRate;
 		int m_fireRound;
+		int m_splitNum;
+		float m_splitAngle;
 		int m_id;
 	};
 	class RLWeaponCollection : public Singleton<RLWeaponCollection>

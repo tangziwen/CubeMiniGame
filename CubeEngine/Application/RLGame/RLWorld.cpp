@@ -148,6 +148,7 @@ RLHero* RLWorld::spawnHero(std::string heroName)
 RLHero* RLWorld::spawnEnemy(int heroType)
 {
 	RLHero * hero = spawnHero(heroType);
+	
 	RLAIController * controller =  CreateAIController(hero->getHeroData()->m_aiType);
 	if(controller) controller->possess(hero);
 	return hero;

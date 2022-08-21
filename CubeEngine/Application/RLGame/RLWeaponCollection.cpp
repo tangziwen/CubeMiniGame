@@ -35,6 +35,21 @@ void RLWeaponCollection::loadConfig()
 		data.m_bulletSpeed = node["BulletSpeed"].GetFloat();
 		data.m_fireRate = node["FireRate"].GetFloat();
 		data.m_fireRound = node["FireRound"].GetInt();
+		if (node.HasMember("SplitNum"))
+		{
+			data.m_splitNum = node["SplitNum"].GetInt();
+		}
+		else{
+			data.m_splitNum = 0;
+		}
+		if (node.HasMember("SplitAngle"))
+		{
+			data.m_splitAngle = node["SplitAngle"].GetFloat();
+		}
+		else{
+			data.m_splitAngle = 45.0f;
+		}
+
 		data.m_id = i;
 		m_weaponDataCollection.push_back(data);
 	}

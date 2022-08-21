@@ -23,6 +23,11 @@ RLHero::RLHero(int idType)
 	m_HP = m_heroData->m_maxHealth;
 	m_MAXHP = m_heroData->m_maxHealth;
 	m_Speed = m_heroData->m_speed;
+	if(!m_heroData->m_defaultWeapon.empty())
+	{
+		equipWeapon(new RLWeapon(m_heroData->m_defaultWeapon));
+	}
+	
 }
 
 RLHero::~RLHero()

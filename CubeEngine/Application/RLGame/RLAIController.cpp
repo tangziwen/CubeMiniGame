@@ -18,6 +18,22 @@ namespace tzw
 		{
 			vec2 currPos = m_currPossessHero->getPosition();
 
+
+			if(m_currPossessHero->getWeapon())
+			{
+				vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
+				diff = diff.normalized();
+				m_currPossessHero->getWeapon()->setShootDir(diff);
+				if(m_currState == RLAIState::Idle || m_currState == RLAIState::Chasing || m_currState == RLAIState::Skilling)
+				{
+					m_currPossessHero->getWeapon()->setIsAutoFiring(false);
+				}
+				else
+				{
+					m_currPossessHero->getWeapon()->setIsAutoFiring(true);
+				}
+			}
+
 			switch(m_currState)
 			{
 			case RLAIState::Idle:
@@ -86,15 +102,7 @@ namespace tzw
 			
 			case RLAIState::StationaryShooting:
 			{
-				if(m_currPossessHero->getWeapon())
-				{
-					vec2 diff = controller->getPos() - m_currPossessHero->getPosition();
-					diff = diff.normalized();
-					m_currPossessHero->getWeapon()->setShootDir(diff);
-					{
-						m_currPossessHero->getWeapon()->fire();
-					}
-				}
+				// same as idle but can shooting
 			}
 			break;
 			case RLAIState::Charging:
@@ -192,7 +200,9 @@ namespace tzw
 				{
 					//store the direction in black board
 					vec2 diff = m_currPossessHero->getPosition() - controller->getPos();
-					float length = diff.length();
+					std::uniform_real_distribution<float> dist(200, 400);
+					auto &re = TbaseMath::getRandomEngine();
+					float length = dist(re);
 					diff = diff.normalized();
 					Matrix44 mat;
 					Quaternion quat;
@@ -214,9 +224,15 @@ namespace tzw
 					//m_recalRepositionTarget = false;
 					m_blackBoard.writeData("recalRepositionTarget", false);
 
+					if(m_isFirstTimeInstate)
+					{
+						//vec2 chaseDir = repositionTarget - m_currPossessHero->getPosition();
+						//chaseDir = chaseDir.normalized();
+						//m_blackBoard.writeData("ChaseDir", chaseDir);
+					}
 				}
 				vec2 diff = m_blackBoard.getData("repositionTarget", vec2()) - m_currPossessHero->getPosition();
-				if(diff.length() < 0.1f)//close enough
+				if(diff.length() < 5.f)//close enough
 				{
 					setCurrentTranscationFinish();//mark current transcation finish
 					//recalculate
@@ -224,9 +240,14 @@ namespace tzw
 				}
 				else
 				{
-				
+					vec2 chaseDir = m_blackBoard.getData("ChaseDir", vec2());
+					m_currPossessHero->doMove(chaseDir, dt);
+
 					diff = diff.normalized();
-					m_currPossessHero->doMove(diff, dt);
+					float lerpFactor = 1.0f * dt;
+					chaseDir = diff * lerpFactor + chaseDir * (1.0 - lerpFactor);
+					chaseDir = chaseDir.normalized();
+					m_blackBoard.writeData("ChaseDir", chaseDir);
 				}
 
 			}
@@ -320,23 +341,24 @@ namespace tzw
 	{
 		float shootRange = 32.f * 10.f;
 		float shootRangeOffset = 64.f;
-		float dangerRange = 120.f;
+		float dangerRange = 64.0f;
 		//chasing
-		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, shootRange - shootRangeOffset, RLAIState::StationaryShooting));
+		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, shootRange - shootRangeOffset, RLAIState::Repositioning));
 
 
 		//shooting too far
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange + shootRangeOffset, RLAIState::Chasing));
+		addCondition(RLAIState::Repositioning, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange + shootRangeOffset, RLAIState::Chasing));
 		//shooting too close
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, dangerRange, RLAIState::FallBack));
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.0, RLAIState::Repositioning, vec2(0.0, 2.0)));
+		addCondition(RLAIState::Repositioning, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, dangerRange, RLAIState::FallBack));
+		
+		//some time they stay
+		addCondition(RLAIState::Repositioning, new RLAIJmpCondDuration(8, RLAIState::StationaryShooting, vec2(0.8, 2.0)));
 
-		//repositioning
-		addCondition(RLAIState::Repositioning, new RLAIJmpCondDuration(1.5, RLAIState::Chasing, vec2(0.8, 2.5)));
-
+		//StationaryShooting
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.0, RLAIState::Repositioning, vec2(0.3, 1.2)));
 
 		//Fall Back
-		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, dangerRange * 2.0f, RLAIState::StationaryShooting));
+		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, dangerRange * 2.0f, RLAIState::Repositioning));
 	}
 
 
@@ -344,10 +366,10 @@ namespace tzw
 	{
 		m_currState = RLAIState::Skilling;
 		//Charging
-		addCondition(RLAIState::Skilling, new RLAITranscationCond(RLAIState::Idle));
+		addCondition(RLAIState::Skilling, new RLAITranscationCond(RLAIState::StationaryShooting));
 
 		//idle
-		addCondition(RLAIState::Idle, new RLAIJmpCondDuration(0.8, RLAIState::Skilling, vec2(0.4, 0.6)));
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(0.8, RLAIState::Skilling, vec2(0.4, 0.6)));
 	}
 
 	RLAIControllerChaseShooter::RLAIControllerChaseShooter()

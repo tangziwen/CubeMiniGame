@@ -87,6 +87,14 @@ void RLHeroCollection::loadConfigImpl(std::string filePath, bool isPlayable)
 		{
 			data.m_tier = node["Tier"].GetInt();
 		}
+		if(node.HasMember("DefaultWeapon"))
+		{
+			data.m_defaultWeapon  = node["DefaultWeapon"].GetString();
+		}else
+		{
+			data.m_defaultWeapon.clear();
+		}
+		
 		m_heroDataCollection.push_back(data);
 		if(isPlayable)
 		{

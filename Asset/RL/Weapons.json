@@ -23,5 +23,25 @@
 		"BulletSpeed":110.0,
 		"FireRate":0.2,
 		"FireRound":1
-	}
+	},
+	
+	{
+		"Name":"RapidGun",
+		"Damage": 15,
+		"CD":1.7,
+		"BulletSpeed":110.0,
+		"FireRate":0.25,
+		"FireRound":3
+	},
+	
+	{
+		"Name":"EnemyShotgun_rookie",
+		"Damage": 15,
+		"CD":1.7,
+		"BulletSpeed":110.0,
+		"FireRate":0.25,
+		"FireRound":1,
+		"SplitNum":2,
+		"SplitAngle":30,
+	},
 ]

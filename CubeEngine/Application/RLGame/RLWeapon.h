@@ -41,5 +41,7 @@ protected:
 	int m_typeID = 0;
 	RLWeaponData * m_data;
 	bool m_isFiring = false;
+	int m_splitMount = 0;
+	float m_splitAngle = 45.0f;
 };
 }

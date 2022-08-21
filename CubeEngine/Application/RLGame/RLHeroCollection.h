@@ -15,6 +15,7 @@ namespace tzw
 		float m_speed;
 		float m_difficulty;
 		int m_tier;
+		std::string m_defaultWeapon;
 		std::string m_sprite;
 		std::string m_aiType;
 
