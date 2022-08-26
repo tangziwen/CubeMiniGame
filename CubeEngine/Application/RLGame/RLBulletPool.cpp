@@ -18,7 +18,7 @@ void RLBulletPool::initSpriteList(Node * node)
 	node->addChild(m_spriteMgr);
 	defaultBulletType = m_spriteMgr->addTileType("RL/Bullet.png");
 	EnemyBulletType = m_spriteMgr->addTileType("RL/EnemyBullet.png");
-	m_spriteTotalPool.resize(512);
+	m_spriteTotalPool.resize(1024);
 
 	for(int i = 0; i < m_spriteTotalPool.size(); i++)
 	{

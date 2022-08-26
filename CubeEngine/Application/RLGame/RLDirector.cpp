@@ -8,7 +8,6 @@ namespace tzw
 {
 void RLSubWaveGenerator::generate(int targetDifficulty, int targetMaxCount, std::unordered_map<int, int>& generateMonster, int & outTotalCount)
 {
-
     auto& re = TbaseMath::getRandomEngine();
 
 	std::vector<int>weightList;
@@ -160,20 +159,13 @@ void RLSubWave::startWave()
 			int unitDifficulty = i * 2 + 1;
 	
 
-			if(i % 2 == 1)//every 4 waves, add a higher tier enemy and kick a lower one
+			if(i >=3 &&  i % 2 == 1)//every 4 waves, add a higher tier enemy and kick a lower one
 			{	
-				
 				generator.addMonstersByTiers(1, nextTier);
 				generator.removeMonstersByTiers(currTier);
 				addMonsterCount ++;
 			}
-			//every 3 waves favor shift, remove a current tier enemy & add a new one
-			if(i % 3 == 2)// 
-			{
-				generator.addMonstersByTiers(1, currTier);
-				generator.removeMonstersByTiers(currTier);
-			}
-			if(addMonsterCount == 3)
+			if(addMonsterCount == 4)
 			{
 				nextTier ++;
 				nextTier = std::min(nextTier, 3);

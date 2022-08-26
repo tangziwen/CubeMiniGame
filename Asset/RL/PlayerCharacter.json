@@ -1,10 +1,10 @@
 [
     {
         "Name":"Default",
-        "MaxHealth":75,
+        "MaxHealth":9999,
         "MeleeDamage":5,
 		"Speed":120,
-        "DefaultWeapon":"Pistol",
+        "DefaultWeapon":"SMG_DISCRETE",
         "Sprite":"RL/Sprites/Player_One.png",
 		"AI_Type":"None"
     },

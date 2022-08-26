@@ -326,7 +326,7 @@ namespace tzw
 	//RLAIControllerChaser
 	RLAIControllerChaser::RLAIControllerChaser()
 	{
-		float shootRange = 320;
+		float shootRange = 460;
 		float shootRangeOffset = 64.f;
 		//chasing
 		//addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(5.0f, RLAIState::Repositioning, vec2(0.3f, 1.0f)));

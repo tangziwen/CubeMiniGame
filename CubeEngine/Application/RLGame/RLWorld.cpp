@@ -65,7 +65,6 @@ void RLWorld::startGame(std::string heroStr)
 {
 	RLHero * hero = spawnHero(heroStr);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
-	hero->equipWeapon(new RLWeapon("SMG"));
 	hero->getWeapon()->setIsAutoFiring(true);
 	m_playerController->possess(hero);
 	setCurrGameState(RL_GameState::Playing);

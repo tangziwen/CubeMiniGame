@@ -49,7 +49,60 @@ void RLWeaponCollection::loadConfig()
 		else{
 			data.m_splitAngle = 45.0f;
 		}
+		//Aim Policy
+		if (node.HasMember("AimPolicyType"))
+		{
+			data.AimPolicyType = node["AimPolicyType"].GetString();
+		}
+		else{
+			data.AimPolicyType = "DirectShoot";
+		}
+		if (node.HasMember("SprayAngle"))
+		{
+			data.m_sprayAngle = node["SprayAngle"].GetFloat();
+		}
+		else
+		{
+			data.m_sprayAngle = 60.f;
+		}
 
+		if (node.HasMember("SprayTime"))
+		{
+			data.m_sprayTime = node["SprayTime"].GetFloat();
+		}
+		else{
+			data.m_sprayTime = 2.0;
+		}
+
+		if (node.HasMember("SplitAngleCount"))
+		{
+			data.m_splitAngleCount = node["SplitAngleCount"].GetInt();
+		}
+		else{
+			data.m_splitAngleCount = 3;
+		}
+		if (node.HasMember("ShiftBulletCount"))
+		{
+			data.m_shiftBulletCount = node["ShiftBulletCount"].GetFloat();
+		}
+		else{
+			data.m_shiftBulletCount = 3;
+		}
+
+		if (node.HasMember("CircleTime"))
+		{
+			data.m_circleTime = node["CircleTime"].GetFloat();
+		}
+		else{
+			data.m_circleTime = 2.0;
+		}
+		if (node.HasMember("IsCanChangeDirWhilstShoot"))
+		{
+			data.m_isCanChangeDirWhilstShoot = node["IsCanChangeDirWhilstShoot"].GetBool();
+		}
+		else{
+			data.m_isCanChangeDirWhilstShoot = true;
+		}
 		data.m_id = i;
 		m_weaponDataCollection.push_back(data);
 	}

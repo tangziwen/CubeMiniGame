@@ -86,6 +86,10 @@ void RLHero::onTick(float dt)
 		}
 	}
 	updateGraphics();
+	if(m_controller)
+	{
+		m_controller->tick(dt);
+	}
 	if(m_weapon)
 	{
 		m_weapon->onTick(dt);
@@ -110,10 +114,7 @@ void RLHero::onTick(float dt)
 			m_isDash = false;
 		}
 	}
-	if(m_controller)
-	{
-		m_controller->tick(dt);
-	}
+
 
 	
 	if(getIsPlayerControll())
@@ -287,7 +288,15 @@ void RLHero::doMove(vec2 dir, float delta)
 	if(m_isDash) return;
 	m_moveDir = dir;
 	m_isMoving = true;
-	setPosition(getPosition() + dir * delta * m_Speed);
+	float targetSpeed = m_Speed;
+	if(m_weapon)
+	{
+		if(!getIsPlayerControll() && m_weapon->isFiring())
+		{
+			targetSpeed *= 0.5f;
+		}
+	}
+	setPosition(getPosition() + dir * delta * targetSpeed);
 }
 
 void RLHero::applyEffect(std::string name)
