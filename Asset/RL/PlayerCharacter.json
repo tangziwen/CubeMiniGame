@@ -4,7 +4,7 @@
         "MaxHealth":9999,
         "MeleeDamage":5,
 		"Speed":120,
-        "DefaultWeapon":"SMG_DISCRETE",
+        "DefaultWeapon":"SMG",
         "Sprite":"RL/Sprites/Player_One.png",
 		"AI_Type":"None"
     },

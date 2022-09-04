@@ -16,8 +16,9 @@ namespace tzw
 
 		std::vector<RLEnemyGenerateionInfo> m_info;
 		void generate(int targetDifficulty, int targetMaxCount, std::unordered_map<int, int> & generateMonster, int & totalCount);
-		void addMonstersByTiers(int count, int tier);
+		void addMonstersByTiers(int count, int tier, bool ignoreMob);
 		void removeMonstersByTiers(int tier);
+		void removeAllMonsters();
 	};
 
 	class RLSubWave

@@ -218,6 +218,7 @@ void RLWorld::getRandomBoundaryPos(int count, std::vector<vec2>& posList)
 void RLWorld::generateLevelUpPerk()
 {
 	m_lvUpCollectible.clear();
+	return;
 	float offset = 128;
 	vec2 center(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f);
 	m_lvUpCollectible.push_back( 

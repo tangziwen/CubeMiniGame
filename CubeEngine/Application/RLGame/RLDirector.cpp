@@ -43,12 +43,12 @@ void RLSubWaveGenerator::generate(int targetDifficulty, int targetMaxCount, std:
 	}
 }
 #pragma optimize("", off)
-void RLSubWaveGenerator::addMonstersByTiers(int count, int tier)
+void RLSubWaveGenerator::addMonstersByTiers(int count, int tier, bool ignoreMob)
 {
 	for(int i = 0; i < count; i ++)
 	{
 		std::vector<RLHeroData *> heroList;
-		RLHeroCollection::shared()->getHeroRangeFromTier(tier,heroList);
+		RLHeroCollection::shared()->getHeroRangeFromTier(tier,heroList, ignoreMob);
 		//erase already added
 
 		for(auto iter = heroList.begin(); iter != heroList.end(); )
@@ -101,6 +101,11 @@ void RLSubWaveGenerator::removeMonstersByTiers(int tier)
 	}
 }
 
+void RLSubWaveGenerator::removeAllMonsters()
+{
+	m_info.clear();
+}
+
 RLSubWave::RLSubWave(int wave, int subwaveID)
 {
 
@@ -145,35 +150,81 @@ void RLSubWave::startWave()
 	{
 
 		RLSubWaveGenerator generator;
-		generator.addMonstersByTiers(3, 1);
-		int nextTier = 2;
-		int currTier = 1;
+		
+
+		int miniWavePerWave = 15;
+		int wavePerTier = 7;
+		int totalWave = 3;
 		int addMonsterCount = 0;
-		for(int i = 0; i < 10; i++)
+
+		for(int i = 0; i < totalWave * wavePerTier * miniWavePerWave; i++)
 		{
 			RLSubWave * subWave = new RLSubWave(m_waveId, i);
-
-			std::array<int, 10 > subWaveCount = {3, 5, 7, 9, 12, 14, 16, 18, 18, 18};
-			int totalCount = m_waveId * 3 + subWaveCount[i];
-			int totalDifficulty = 20 + i * 5 + m_waveId * 20;
 			int unitDifficulty = i * 2 + 1;
+
+
+			int currTier = i / (wavePerTier * miniWavePerWave);
+			int currMiniWaveInTier = i %(miniWavePerWave * wavePerTier);
+			int curWaveInTier = currMiniWaveInTier / miniWavePerWave;
+			int curMiniWaveInWave = currMiniWaveInTier % miniWavePerWave;
+
+			//the last mini wave in current wave --> Big Wave
+			if(curMiniWaveInWave % miniWavePerWave == (miniWavePerWave - 1))
+			{
+				if(curWaveInTier == 0)
+				{
+					generator.removeAllMonsters();
+					generator.addMonstersByTiers(3, currTier, true);
+				}
+				int transitionWaves = 2;
+				if(curWaveInTier >= (wavePerTier-transitionWaves))//the last two wave in current tier, make transition big wave
+				{
+					if(currTier + 1 < totalWave)
+					{
+						generator.addMonstersByTiers(1, currTier + 1, true);
+						generator.removeMonstersByTiers(currTier);
+					}
+
+				}
+				int totalCount = currTier * 3 + 3 + curWaveInTier;
+				int totalDifficulty = 20 + currTier * 100 + curWaveInTier * 15;
+				generator.generate(totalDifficulty, totalCount, subWave->m_generateMonster, subWave->m_totalCount);
+			}
+			else//mini wave
+			{
+				std::vector<RLHeroData * > mobList;
+				RLHeroCollection::shared()->getMobsFromTiers(currTier, mobList);
+				int ThirdOfWave = (miniWavePerWave / 3);
+				if(curMiniWaveInWave % miniWavePerWave == ThirdOfWave)// 1 / 3 of wave, spawn a tank
+				{
+						subWave->m_generateMonster[mobList[0]->m_id] = 1;
+						subWave->m_totalCount = 1;
+				}
+				else if(curMiniWaveInWave % miniWavePerWave == ThirdOfWave * 2)// 2 / 3 of wave, spawn a dog wave
+				{
+						subWave->m_generateMonster[mobList[1]->m_id] = 5;
+						subWave->m_totalCount = 5;
+				}
+				else
+				{
+
+
+					int MobType = (curWaveInTier / 3) + 2;//0号位留给Tank, 1号位留给疯狗
+					int MobCount = 2;
+					if(curMiniWaveInWave % 3 == 2)
+					{
+						subWave->m_generateMonster[mobList[MobType]->m_id] = MobCount + 1;
+						subWave->m_totalCount = MobCount + 1;
+					}else
+					{
+						subWave->m_generateMonster[mobList[MobType]->m_id] = MobCount;
+						subWave->m_totalCount = MobCount;
+					}
+				}
 	
 
-			if(i >=3 &&  i % 2 == 1)//every 4 waves, add a higher tier enemy and kick a lower one
-			{	
-				generator.addMonstersByTiers(1, nextTier);
-				generator.removeMonstersByTiers(currTier);
-				addMonsterCount ++;
 			}
-			if(addMonsterCount == 4)
-			{
-				nextTier ++;
-				nextTier = std::min(nextTier, 3);
-				currTier ++;
-				currTier = std::min(currTier, 2);
-			}
-
-			generator.generate(totalDifficulty, totalCount, subWave->m_generateMonster, subWave->m_totalCount);
+			//
 
 			if(i == 0)
 			{
@@ -181,7 +232,8 @@ void RLSubWave::startWave()
 			}
 			else
 			{
-				subWave->setWaitingTime(20.f);
+				
+				subWave->setWaitingTime(2.f);
 			}
 			
 			m_SubWaveList.push_back(subWave);

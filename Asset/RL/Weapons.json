@@ -10,9 +10,9 @@
 	},
 	{
 		"Name":"SMG",
-		"Damage": 8,
-		"CD":0.8,
-		"BulletSpeed":400.0,
+		"Damage": 5,
+		"CD":0.5,
+		"BulletSpeed":450.0,
 		"FireRate":0.15,
 		"FireRound":5,
 

@@ -45,13 +45,34 @@ const std::vector<RLHeroData>& RLHeroCollection::getPlayableHeroDatas()
 	return m_playableHeroDataCollection;
 }
 
-void RLHeroCollection::getHeroRangeFromTier(int tier, std::vector<RLHeroData*>& dataList)
+void RLHeroCollection::getHeroRangeFromTier(int tier, std::vector<RLHeroData*>& dataList, bool ignoreMob)
 {
 	for(RLHeroData& data : m_MonsterHeroDataCollection)
 	{
 		if(data.m_tier == tier)
 		{
+		if(ignoreMob)
+		{
+			if(!data.m_isMob)
+				dataList.push_back(&data);
+		}
+		else
+		{
 			dataList.push_back(&data);
+		}
+			
+		}
+	}
+}
+
+void RLHeroCollection::getMobsFromTiers(int tier, std::vector<RLHeroData*>& dataList)
+{
+	for(RLHeroData& data : m_MonsterHeroDataCollection)
+	{
+		if(data.m_tier == tier && data.m_isMob)
+		{
+			dataList.push_back(&data);
+				
 		}
 	}
 }
@@ -94,7 +115,14 @@ void RLHeroCollection::loadConfigImpl(std::string filePath, bool isPlayable)
 		{
 			data.m_defaultWeapon.clear();
 		}
-		
+		if(node.HasMember("IsMob"))
+		{
+			data.m_isMob  = node["IsMob"].GetBool();
+		}else
+		{
+			data.m_isMob = false;
+		}
+		data.m_id = m_heroDataCollection.size();
 		m_heroDataCollection.push_back(data);
 		if(isPlayable)
 		{

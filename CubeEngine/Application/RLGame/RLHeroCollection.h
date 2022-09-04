@@ -18,7 +18,8 @@ namespace tzw
 		std::string m_defaultWeapon;
 		std::string m_sprite;
 		std::string m_aiType;
-
+		bool m_isMob;
+		int m_id;
 	};
 	class RLHeroCollection : public Singleton<RLHeroCollection>
 	{
@@ -29,7 +30,8 @@ namespace tzw
 		RLHeroData * getHeroData(std::string  name);
 		int getHeroIDByName(std::string name);
 		const std::vector<RLHeroData> & getPlayableHeroDatas();
-		void getHeroRangeFromTier(int Tier, std::vector<RLHeroData*>& data);
+		void getHeroRangeFromTier(int Tier, std::vector<RLHeroData*>& data, bool ignoreMob);
+		void getMobsFromTiers(int tier, std::vector<RLHeroData*>& data);
 	private:
 		void loadConfigImpl(std::string filePath, bool isPlayable);
 		std::vector<RLHeroData> m_heroDataCollection;
