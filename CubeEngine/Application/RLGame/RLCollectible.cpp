@@ -27,6 +27,8 @@ namespace tzw
 
 	RLCollectible::~RLCollectible()
 	{
+		m_collider->m_cb = nullptr;
+		RLWorld::shared()->getQuadTree()->removeCollider(m_collider);
 		RLCollectibleMgr::shared()->removeGraphics(m_sprite);
 	}
 
@@ -214,7 +216,7 @@ namespace tzw
 			{
 				//ready to kill
 
-				RLWorld::shared()->getQuadTree()->removeCollider(collectible->m_collider);
+				
 				iter = m_collectible.erase(iter);
 				delete collectible;
 			}

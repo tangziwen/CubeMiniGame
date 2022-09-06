@@ -76,7 +76,6 @@ namespace tzw
 			m_xAxis += 1;
 			break;
 		case TZW_KEY_SPACE:
-			m_currPossessHero->doDash();
 			break;
 		default:
 			break;
@@ -99,6 +98,9 @@ namespace tzw
 			break;
 		case TZW_KEY_D:
 			m_xAxis -= 1;
+			break;
+		case TZW_KEY_SPACE:
+			m_currPossessHero->doDash();
 			break;
 		default:
 			break;

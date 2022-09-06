@@ -186,7 +186,7 @@ void RLSubWave::startWave()
 					}
 
 				}
-				int totalCount = currTier * 3 + 3 + curWaveInTier;
+				int totalCount = std::min(currTier * 1 + 1 + curWaveInTier, 6);
 				int totalDifficulty = 20 + currTier * 100 + curWaveInTier * 15;
 				generator.generate(totalDifficulty, totalCount, subWave->m_generateMonster, subWave->m_totalCount);
 			}
@@ -274,7 +274,7 @@ void RLSubWave::startWave()
 
 	void RLDirector::generateWave()
 	{
-		for(int i = 0; i < 3; i++)
+		for(int i = 0; i < 1; i++)
 		{
 			RLWave * wave = new RLWave(i);
 			wave->generateSubWaves();

@@ -35,6 +35,10 @@ namespace tzw
 
 		if(isCanContain(obj))
 		{
+			if(obj->getParent())
+			{
+				printf("cao");
+			}
 			m_collidersList.push_back(obj);
 			obj->setParent(this);
 			return true;
@@ -77,6 +81,10 @@ namespace tzw
 	}
 	void QuadTree2D::addCollider(Collider2D* obj)
 	{
+		if(obj->getParent())
+		{
+			printf("cao");
+		}
 		bool isAdded = m_rootNode->addCollider_R(obj);
 		if(isAdded)
 			m_colliderList.push_back(obj);

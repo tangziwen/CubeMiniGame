@@ -12,7 +12,7 @@ class RLCollectible
 {
 public:
 	RLCollectible(unsigned int typeID, vec2 Pos);
-	~RLCollectible();
+	virtual ~RLCollectible();
 	vec2 getPos();
 	void setPos(vec2 pos);
 	virtual void onCollision(Collider2D * self, Collider2D * other);
