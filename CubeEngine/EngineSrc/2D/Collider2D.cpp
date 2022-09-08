@@ -42,7 +42,7 @@ namespace tzw
 			}
 		}
 	}
-	const AABB2D& Collider2D::getAABB()
+	AABB2D& Collider2D::getAABB()
 	{
 		return m_aabb;
 	}

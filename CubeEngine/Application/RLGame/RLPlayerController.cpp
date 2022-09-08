@@ -4,6 +4,7 @@
 #include "Event/EventMgr.h"
 #include "RLWorld.h"
 #include "Engine/Engine.h"
+#include "RLBullet.h"
 namespace tzw
 {
 
@@ -76,6 +77,10 @@ namespace tzw
 			m_xAxis += 1;
 			break;
 		case TZW_KEY_SPACE:
+			m_currPossessHero->doDash();
+			break;
+		case TZW_KEY_ESCAPE:
+			RLWorld::shared()->goToPause();
 			break;
 		default:
 			break;
@@ -99,9 +104,6 @@ namespace tzw
 		case TZW_KEY_D:
 			m_xAxis -= 1;
 			break;
-		case TZW_KEY_SPACE:
-			m_currPossessHero->doDash();
-			break;
 		default:
 			break;
 		};
@@ -111,6 +113,24 @@ namespace tzw
 	{
 		m_mousePos = pos;
 		m_crossHairsprite->setPos2D(pos);
+		return false;
+	}
+	bool RLPlayerController::onMouseRelease(int button, vec2 pos)
+	{
+		if(button == TZW_MOUSE_BUTTON_RIGHT)
+		{
+			m_currPossessHero->endDeflect();
+		}
+		return false;
+	}
+	bool RLPlayerController::onMousePress(int button, vec2 pos)
+	{
+		if(button == TZW_MOUSE_BUTTON_RIGHT)
+		{
+			m_currPossessHero->startDeflect();
+
+
+		}
 		return false;
 	}
 	vec2 RLPlayerController::getPos()

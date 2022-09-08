@@ -90,7 +90,7 @@ void RLHero::onTick(float dt)
 	{
 		m_controller->tick(dt);
 	}
-	if(m_weapon)
+	if(m_weapon && !m_isDash && !m_isDeflect)
 	{
 		m_weapon->onTick(dt);
 	}
@@ -115,7 +115,47 @@ void RLHero::onTick(float dt)
 		}
 	}
 
+	if(m_isDeflect)
+	{
+		if(m_deflectTimer < 0.2f)
+		{
+			m_sprite->overLayColor = vec4(255 / 255.f, 138.f / 255.f, 54.f / 255, 1.0);
 
+			//µ¯·´
+			vec2 minV = getPosition() - vec2(32, 32);
+			vec2 maxV = getPosition() + vec2(32, 32);
+			std::vector<Collider2D*> colliderList;
+			RLWorld::shared()->getQuadTree()->getRange(AABB2D(minV, maxV), colliderList);
+			for(Collider2D * collider : colliderList)
+			{
+				//filter enemyBullet
+				if(collider->getSourceChannel() == CollisionChannel2D_Bullet
+					&& collider->getResponseChannel() == CollisionChannel2D_Player)
+				{
+					auto bullet = static_cast<RLBullet *> (collider->getUserData().m_userData);
+					vec2 diff = bullet->m_pos - getPosition();
+					if(diff.length() < 64)
+					{
+						bullet->m_velocity = bullet->m_velocity * -1;
+						bullet->m_t = 0.f;
+						bullet->m_sprite->type = 1;
+						collider->setResponseChannel(CollisionChannel2D_Entity); 
+					}
+
+				}
+			
+			
+			}
+		
+		}
+		else
+		{
+			m_sprite->overLayColor = vec4(219.f / 255.f, 52.f / 255.f, 0, 1.0);
+		
+		}
+
+		m_deflectTimer += dt;
+	}
 	
 	if(getIsPlayerControll())
 	{
@@ -199,7 +239,7 @@ void RLHero::receiveDamage(float damage)
 	if(getIsPlayerControll())
 	{
 		m_isHitImmune = true;
-		m_sprite->overLayColor = vec4(1.0, 1.0, 0.5, 1.0);
+		m_sprite->overLayColor = vec4(219.f / 255.f, 52.f / 255.f, 0, 1.0);
 	}
 	else
 	{
@@ -286,6 +326,7 @@ void RLHero::doDash()
 void RLHero::doMove(vec2 dir, float delta)
 {
 	if(m_isDash) return;
+	if(m_isDeflect) return;
 	m_moveDir = dir;
 	m_isMoving = true;
 	float targetSpeed = m_Speed;
@@ -309,6 +350,20 @@ void RLHero::applyEffect(RLEffect* effect)
 {
 	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, effect);
 	m_container.addEffectInstance(instance);
+}
+
+bool RLHero::startDeflect()
+{
+	m_isDeflect = true;
+	m_deflectTimer = 0.f;
+	return true;
+}
+
+void RLHero::endDeflect()
+{
+	m_sprite->overLayColor = vec4(1, 1, 1, 0.0);
+	m_isDeflect = false;
+	m_deflectTimer = 0.f;
 }
 
 RLHeroData* RLHero::getHeroData()

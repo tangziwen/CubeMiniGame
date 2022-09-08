@@ -24,6 +24,9 @@ void RLGUI::drawIMGUI()
 	case RL_GameState::Playing:
 		drawInGame();
 		break;
+	case RL_GameState::Pause:
+		drawPause();
+		break;
 	case RL_GameState::Prepare:
 		drawPrepareMenu();
 		break;
@@ -61,7 +64,7 @@ void RLGUI::drawMainMenu()
 		ImGui::Spacing();
 
 
-		if(ImGui::Button(TRC("Purchase"), ImVec2(160, 35)))
+		if(ImGui::Button(TRC("Collections"), ImVec2(160, 35)))
 		{
 			RLWorld::shared()->goToPurchase();
 		}
@@ -84,8 +87,7 @@ void RLGUI::drawMainMenu()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Exit"), ImVec2(160, 35))) 
 		{
-			TranslationMgr::shared()->dump();
-			exit(0);
+			RLWorld::shared()->endGame();
 		}
 		ImGui::TextColored(ImVec4(0.7f, 0.63f, 0.0f, 1.0f), "Gold: %u", RLPlayerState::shared()->getGold());
 		ImGui::Spacing();
@@ -176,7 +178,7 @@ void RLGUI::drawAfterMath()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Exit To Windows"), ImVec2(160, 35))) 
 		{
-			exit(0);
+			RLWorld::shared()->endGame();
 		}
 		ImGui::Spacing();
 		ImGui::End();
@@ -200,7 +202,34 @@ void RLGUI::drawWin()
 		ImGui::Spacing();
 		if(ImGui::Button(TRC("Exit To Windows"), ImVec2(160, 35))) 
 		{
-			exit(0);
+			RLWorld::shared()->endGame();
+		}
+		ImGui::Spacing();
+		ImGui::End();
+	}
+	ImGui::PopFont();
+}
+
+void RLGUI::drawPause()
+{
+	GUISystem::shared()->imguiUseLargeFont();
+	auto screenSize = Engine::shared()->winSize();
+	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
+	if (ImGui::Begin("Pause Windows",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
+	{
+		ImGui::Text("Pause");
+		if(ImGui::Button(TRC("Resume"), ImVec2(160, 35)))
+		{
+			RLWorld::shared()->resumeGame();
+		}
+		if(ImGui::Button(TRC("Back To Menu"), ImVec2(160, 35)))
+		{
+			RLWorld::shared()->goToMainMenu();
+		}
+		ImGui::Spacing();
+		if(ImGui::Button(TRC("Exit To Windows"), ImVec2(160, 35))) 
+		{
+			RLWorld::shared()->endGame();
 		}
 		ImGui::Spacing();
 		ImGui::End();
@@ -215,7 +244,7 @@ void RLGUI::drawPurchaseMenu()
 	if (ImGui::Begin("Purchase!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize  | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
 		ImGui::Text("Purchase your hero, Gold: %u", RLPlayerState::shared()->getGold());
-		ImGui::BeginChild("InventoryViewer",ImVec2(int(350), 400), 0);
+		ImGui::BeginChild("InventoryViewer",ImVec2(int(350), 300), true);
 		ImGui::Columns(3,"InventoryCol",false);
 		auto & heroList = RLHeroCollection::shared()->getPlayableHeroDatas();
 		for(int i = 0; i < heroList.size(); i++)
@@ -225,14 +254,65 @@ void RLGUI::drawPurchaseMenu()
 			ImGui::Text(" %s", heroList[i].m_name.c_str());
 			if(RLPlayerState::shared()->isHeroUnLock(heroList[i].m_name))
 			{
-				ImGui::TextDisabled("Purchased");
+				int level = RLPlayerState::shared()->getHeroLevel(heroList[i].m_name);
+				if(level < 5)
+				{
+					ImGui::SameLine();
+					if(RLPlayerState::shared()->isCanAffordHeroPurchase(heroList[i].m_name, HeroPurchaseAction::Unlock))
+					{
+						if(ImGui::Button("+(100)"))
+						{
+							RLPlayerState::shared()->heroUpdate(heroList[i].m_name);
+						}
+					
+					}
+					else
+					{
+						ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+						ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+						ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+						
+						
+						ImGui::Button("+(100)");
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+						ImGui::PopStyleColor();
+					}
+
+
+
+					ImGui::Text("Lv:%d", level);
+				}
+				else
+				{
+					ImGui::Text("Lv:5(Max)");
+				}
+
+				
 			}
 			else
 			{
-				if(ImGui::Button("Buy"))
+				if(RLPlayerState::shared()->isCanAffordHeroPurchase(heroList[i].m_name, HeroPurchaseAction::Unlock))
 				{
-					RLPlayerState::shared()->unlockHero(heroList[i].m_name);
+					if(ImGui::Button("Buy(500)"))
+					{
+						RLPlayerState::shared()->unlockHero(heroList[i].m_name);
+					}
 				}
+				else
+				{
+					
+
+					ImGui::PushStyleColor(ImGuiCol_Button, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+					ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+					ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+					ImGui::Button("Buy(500)");
+					ImGui::PopStyleColor();
+					ImGui::PopStyleColor();
+					ImGui::PopStyleColor();
+				
+				}
+
 			}
 			
 			ImGui::EndGroup();
@@ -241,8 +321,9 @@ void RLGUI::drawPurchaseMenu()
 			ImGui::NextColumn();
 		}
 		ImGui::EndChild();
-		ImGui::BeginChild("Start",ImVec2(int(350), 0), 0);
-		if(ImGui::Button(TRC("Back To Menu")))
+		ImGui::SameLine(0, -1);
+		ImGui::BeginChild("RightPanel",ImVec2(int(90), 0), 0);
+		if(ImGui::Button(TRC("Back")))
 		{
 			RLWorld::shared()->goToMainMenu();
 		}
@@ -257,19 +338,33 @@ void RLGUI::drawPrepareMenu()
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("Purchase!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize  | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
 	{
-		ImGui::Text("Purchase your hero, Gold: %u", RLPlayerState::shared()->getGold());
-		ImGui::BeginChild("InventoryViewer",ImVec2(int(350), 400), true);
+		ImGui::Text("Gold: %u", RLPlayerState::shared()->getGold());
+		ImGui::BeginChild("InventoryViewer",ImVec2(int(400), 400), true);
 		ImGui::Columns(3,"InventoryCol",false);
 		static int currselectIdx = 0;
 		auto & heroList = RLHeroCollection::shared()->getPlayableHeroDatas();
 		for(int i = 0; i < heroList.size(); i++)
 		{
+			
 			ImGui::PushID(i);
 			ImGui::BeginGroup();
-			if(ImGui::RadioButton( heroList[i].m_name.c_str(), currselectIdx == i))
+			if(RLPlayerState::shared()->isHeroUnLock(heroList[i].m_name))
 			{
-				currselectIdx = i;
+				int level = RLPlayerState::shared()->getHeroLevel(heroList[i].m_name);
+				char tmpStr[128];
+				sprintf(tmpStr, "%s(%d)",heroList[i].m_name.c_str(), level);
+				if(ImGui::RadioButton( tmpStr, currselectIdx == i))
+				{
+					currselectIdx = i;
+				}
 			}
+			else
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetColorU32(ImGuiCol_TextDisabled));
+				ImGui::RadioButton( "?????", 0);
+				ImGui::PopStyleColor();
+			}
+
 			ImGui::EndGroup();
 			ImGui::Spacing();
 			ImGui::PopID();

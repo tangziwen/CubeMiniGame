@@ -9,6 +9,10 @@ namespace tzw
 		{
 			onCollision(self, other);
 		};
+		UserDataWrapper wrapper;
+		wrapper.m_userData = this;
+		wrapper.m_tag = RL_OBJECT_TYPE_BULLET;
+		m_collider2D.setUserData(wrapper);
 	}
 	void RLBullet::onCollision(Collider2D* self, Collider2D* other)
 	{

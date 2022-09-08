@@ -1,10 +1,19 @@
 [
     {
-        "Name":"Default",
-        "MaxHealth":9999,
+        "Name":"Cop",
+        "MaxHealth":100,
         "MeleeDamage":5,
 		"Speed":120,
-        "DefaultWeapon":"SMG",
+        "DefaultWeapon":"Police_Pistol",
+        "Sprite":"RL/Sprites/Player_One.png",
+		"AI_Type":"None"
+    },
+    {
+        "Name":"CowBoy",
+        "MaxHealth":100,
+        "MeleeDamage":5,
+		"Speed":120,
+        "DefaultWeapon":"Revolver",
         "Sprite":"RL/Sprites/Player_One.png",
 		"AI_Type":"None"
     },
@@ -13,8 +22,17 @@
         "MaxHealth":75,
         "MeleeDamage":5,
 		"Speed":120,
-        "DefaultWeapon":"Pistol",
-        "Sprite":"RL/Sprites/wizard.png",
+        "DefaultWeapon":"Shuriken",
+        "Sprite":"RL/Sprites/Player_One.png",
+		"AI_Type":"None"
+    },
+    {
+        "Name":"Soldier",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+		"Speed":120,
+        "DefaultWeapon":"M1Garand",
+        "Sprite":"RL/Sprites/Player_One.png",
 		"AI_Type":"None"
     },
     {
@@ -22,8 +40,35 @@
         "MaxHealth":75,
         "MeleeDamage":5,
         "Speed":120,
-        "DefaultWeapon":"Pistol",
-        "Sprite":"RL/Sprites/PigZombie.png",
+        "DefaultWeapon":"DualRifle",
+        "Sprite":"RL/Sprites/Player_One.png",
         "AI_Type":"None"
+    },
+    {
+        "Name":"TrenchFighter",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+        "Speed":120,
+        "DefaultWeapon":"StandardShotgun",
+        "Sprite":"RL/Sprites/Player_One.png",
+        "AI_Type":"None"
+    },
+    {
+        "Name":"Robber",
+        "MaxHealth":75,
+        "MeleeDamage":5,
+        "Speed":120,
+        "DefaultWeapon":"SawedOffShotgun",
+        "Sprite":"RL/Sprites/Player_One.png",
+        "AI_Type":"None"
+    },
+    {
+        "Name":"Hacker",
+        "MaxHealth":9999,
+        "MeleeDamage":5,
+		"Speed":120,
+        "DefaultWeapon":"SMG",
+        "Sprite":"RL/Sprites/Player_One.png",
+		"AI_Type":"None"
     },
 ]

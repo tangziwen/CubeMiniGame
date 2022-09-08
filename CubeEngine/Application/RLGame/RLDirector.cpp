@@ -3,7 +3,9 @@
 #include "RLHero.h"
 #include "RLAIController.h"
 #include "RLHeroCollection.h"
-
+#include "rapidjson/document.h"
+#include "Utility/file/Tfile.h"
+#include "Utility/log/Log.h"
 namespace tzw
 {
 void RLSubWaveGenerator::generate(int targetDifficulty, int targetMaxCount, std::unordered_map<int, int>& generateMonster, int & outTotalCount)
@@ -48,7 +50,7 @@ void RLSubWaveGenerator::addMonstersByTiers(int count, int tier, bool ignoreMob)
 	for(int i = 0; i < count; i ++)
 	{
 		std::vector<RLHeroData *> heroList;
-		RLHeroCollection::shared()->getHeroRangeFromTier(tier,heroList, ignoreMob);
+		RLHeroCollection::shared()->getHeroRangeFromTier("Any", tier,heroList, ignoreMob);
 		//erase already added
 
 		for(auto iter = heroList.begin(); iter != heroList.end(); )
@@ -131,11 +133,75 @@ void RLSubWave::startWave()
 		}
 
 	}
-	void RLWave::tick(float dt)
+void RLWave::loadStage(std::string filePath)
+{
+
+	rapidjson::Document doc;
+	auto data = Tfile::shared()->getData(filePath, true);
+	doc.Parse<rapidjson::kParseTrailingCommasFlag | rapidjson::kParseCommentsFlag>(data.getString().c_str());
+	if (doc.HasParseError())
+	{
+		tlog("[error] get json data err! %s %d offset %d",
+			filePath.c_str(),
+			doc.GetParseError(),
+			doc.GetErrorOffset());
+		exit(1);
+	}
+	auto& WavesNode = doc["Waves"];
+	for(int i = 0; i < WavesNode.Size(); i++)
+	{
+		auto& node = WavesNode[i];
+
+		RLWaveGroupInfo group;
+		auto& groupNode = node["Group"];
+		for(int j = 0; j < groupNode.Size(); j++)
+		{
+			auto & monsterInfo = groupNode[j];
+			std::string typeName = monsterInfo[0].GetString();
+			int tier = monsterInfo[1].GetInt();
+			int num = monsterInfo[2].GetInt();
+			RLMonsterGroupInfo info;
+			info.typeName = typeName;
+			info.tier = tier;
+			info.num = num;
+			group.m_groupInfo.push_back(info);
+			
+		
+		}
+		group.m_delayTime = node["Delay"].GetFloat();
+		m_importantWaveGroup.push_back(group);
+	}
+
+	auto& SpecialRandomWavesNode = doc["SpecialRandomWaves"];
+	for(int i = 0; i < SpecialRandomWavesNode.Size(); i++)
+	{
+		auto& node = SpecialRandomWavesNode[i];
+
+		RLWaveGroupInfo group;
+		auto& groupNode = node["Group"];
+		for(int j = 0; j < groupNode.Size(); j++)
+		{
+			auto & monsterInfo = groupNode[j];
+			std::string typeName = monsterInfo[0].GetString();
+			int tier = -1;//monsterInfo[1].GetInt();
+			int num = monsterInfo[1].GetInt();
+			RLMonsterGroupInfo info;
+			info.typeName = typeName;
+			info.tier = tier;
+			info.num = num;
+			group.m_groupInfo.push_back(info);
+		
+		}
+		m_specialRandomWaves.push_back(group);
+	}
+
+}
+void RLWave::tick(float dt)
 	{
 		if(m_SubWaveIndex >= m_SubWaveList.size()) return;//out of sub wave
+		float nextWaveWaitingTime = m_SubWaveList[m_SubWaveIndex]->getWaitingTime();
 
-		if(m_time >= m_SubWaveList[m_SubWaveIndex]->getWaitingTime())
+		if(m_time >= nextWaveWaitingTime)
 		{
 			m_SubWaveList[m_SubWaveIndex]->startWave();
 			m_SubWaveIndex ++;
@@ -144,80 +210,131 @@ void RLSubWave::startWave()
 			{
 			}
 		}
+		else
+		{
+			if(RLWorld::shared()->getHeroesCount()<= 1)//only player speed it up
+			{
+				if(((nextWaveWaitingTime - m_time) > 2.0f))
+				{
+			
+					m_time = nextWaveWaitingTime - 1.97f;
+				}
+			}
+		
+		}
 		m_time += dt;
 	}
 	void RLWave::generateSubWaves()
 	{
-
+		auto& re = TbaseMath::getRandomEngine();
+		loadStage("RL/Stages.json");
 		RLSubWaveGenerator generator;
 		
 
 		int miniWavePerWave = 15;
-		int wavePerTier = 7;
+		int wavePerStage = 6;
 		int totalWave = 3;
-		int addMonsterCount = 0;
+		int BigWaveIdx = 0;
+		float prevWaveDelayTime = 0.f;
 
-		for(int i = 0; i < totalWave * wavePerTier * miniWavePerWave; i++)
+		for(int i = 0; i < totalWave * wavePerStage * miniWavePerWave; i++)
 		{
 			RLSubWave * subWave = new RLSubWave(m_waveId, i);
+			if(i == 0)
+			{
+				subWave->setWaitingTime(3.f);
+			}
+			else
+			{
+				
+				subWave->setWaitingTime(2.f + prevWaveDelayTime);
+				prevWaveDelayTime = 0.f;
+			}
 			int unitDifficulty = i * 2 + 1;
 
 
-			int currTier = i / (wavePerTier * miniWavePerWave);
-			int currMiniWaveInTier = i %(miniWavePerWave * wavePerTier);
+			int currStage = i / (wavePerStage * miniWavePerWave);
+			int currMiniWaveInTier = i %(miniWavePerWave * wavePerStage);
 			int curWaveInTier = currMiniWaveInTier / miniWavePerWave;
 			int curMiniWaveInWave = currMiniWaveInTier % miniWavePerWave;
 
 			//the last mini wave in current wave --> Big Wave
 			if(curMiniWaveInWave % miniWavePerWave == (miniWavePerWave - 1))
 			{
-				if(curWaveInTier == 0)
+				subWave->m_totalCount = 0;
+				RLWaveGroupInfo group =  m_importantWaveGroup[BigWaveIdx];
+				for(RLMonsterGroupInfo & mInfo : group.m_groupInfo)
 				{
-					generator.removeAllMonsters();
-					generator.addMonstersByTiers(3, currTier, true);
-				}
-				int transitionWaves = 2;
-				if(curWaveInTier >= (wavePerTier-transitionWaves))//the last two wave in current tier, make transition big wave
-				{
-					if(currTier + 1 < totalWave)
-					{
-						generator.addMonstersByTiers(1, currTier + 1, true);
-						generator.removeMonstersByTiers(currTier);
-					}
+					std::vector<RLHeroData * > heroList;
+					RLHeroCollection::shared()->getHeroRangeFromTier(mInfo.typeName, mInfo.tier, heroList, false);
 
+					for(int numI=0; numI < mInfo.num; numI ++)
+					{
+					
+						auto hero = heroList[re() %heroList.size()];
+						auto iter = subWave->m_generateMonster.find(hero->m_id);
+						if(iter == subWave->m_generateMonster.end())
+						{
+							subWave->m_generateMonster[hero->m_id] = 1;
+						}
+						else
+						{
+							subWave->m_generateMonster[hero->m_id] += 1;
+						}
+						subWave->m_totalCount += 1;
+					}
 				}
-				int totalCount = std::min(currTier * 1 + 1 + curWaveInTier, 6);
-				int totalDifficulty = 20 + currTier * 100 + curWaveInTier * 15;
-				generator.generate(totalDifficulty, totalCount, subWave->m_generateMonster, subWave->m_totalCount);
+				prevWaveDelayTime = group.m_delayTime;
+				BigWaveIdx++;
 			}
 			else//mini wave
 			{
 				std::vector<RLHeroData * > mobList;
-				RLHeroCollection::shared()->getMobsFromTiers(currTier, mobList);
+				RLHeroCollection::shared()->getMobsFromTiers(currStage, mobList);
+				
 				int ThirdOfWave = (miniWavePerWave / 3);
-				if(curMiniWaveInWave % miniWavePerWave == ThirdOfWave)// 1 / 3 of wave, spawn a tank
+				bool is1_3 = curMiniWaveInWave % miniWavePerWave == ThirdOfWave;
+
+				if(is1_3)// 1 / 3 of wave, spawn a special random waves
 				{
-						subWave->m_generateMonster[mobList[0]->m_id] = 1;
-						subWave->m_totalCount = 1;
-				}
-				else if(curMiniWaveInWave % miniWavePerWave == ThirdOfWave * 2)// 2 / 3 of wave, spawn a dog wave
-				{
-						subWave->m_generateMonster[mobList[1]->m_id] = 5;
-						subWave->m_totalCount = 5;
+					RLWaveGroupInfo group = m_specialRandomWaves[re()%m_specialRandomWaves.size()];
+					for(RLMonsterGroupInfo & mInfo : group.m_groupInfo)
+					{
+						std::vector<RLHeroData * > heroList;
+						RLHeroCollection::shared()->getHeroRangeFromTier(mInfo.typeName, currStage, heroList, false);
+
+						for(int numI=0; numI < mInfo.num; numI ++)
+						{
+					
+							auto hero = heroList[re() %heroList.size()];
+							auto iter = subWave->m_generateMonster.find(hero->m_id);
+							if(iter == subWave->m_generateMonster.end())
+							{
+								subWave->m_generateMonster[hero->m_id] = 1;
+							}
+							else
+							{
+								subWave->m_generateMonster[hero->m_id] += 1;
+							}
+							subWave->m_totalCount += 1;
+						}
+					}
 				}
 				else
 				{
+					int zombieTypeShiftWave = (miniWavePerWave * wavePerStage) / 3;
+					int zombieTier = i / zombieTypeShiftWave;//every stage 3 zombie type, full game 9 zombie type total
+					std::vector<RLHeroData * > zombieList;
+					RLHeroCollection::shared()->getHeroRangeFromTier("Zombie", zombieTier, zombieList, false);
 
-
-					int MobType = (curWaveInTier / 3) + 2;//0号位留给Tank, 1号位留给疯狗
 					int MobCount = 2;
 					if(curMiniWaveInWave % 3 == 2)
 					{
-						subWave->m_generateMonster[mobList[MobType]->m_id] = MobCount + 1;
+						subWave->m_generateMonster[zombieList[0]->m_id] = MobCount + 1;
 						subWave->m_totalCount = MobCount + 1;
 					}else
 					{
-						subWave->m_generateMonster[mobList[MobType]->m_id] = MobCount;
+						subWave->m_generateMonster[zombieList[0]->m_id] = MobCount;
 						subWave->m_totalCount = MobCount;
 					}
 				}
@@ -226,15 +343,7 @@ void RLSubWave::startWave()
 			}
 			//
 
-			if(i == 0)
-			{
-				subWave->setWaitingTime(5.f);
-			}
-			else
-			{
-				
-				subWave->setWaitingTime(2.f);
-			}
+
 			
 			m_SubWaveList.push_back(subWave);
 		}

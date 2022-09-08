@@ -25,6 +25,9 @@ namespace tzw
 		void goToWin();
 		void goToPurchase();
 		void goToPrepare();
+		void goToPause();
+		void resumeGame();
+		void endGame();
 		Node * getRootNode();
 		void onFrameUpdate(float dt) override;
 
@@ -37,7 +40,7 @@ namespace tzw
 		RLPlayerController * getPlayerController();
 		void getRandomBoundaryPos(int count, std::vector<vec2>& posList);
 		RL_GameState getCurrGameState() const {return m_currGameState;}
-		void setCurrGameState(RL_GameState currGameState) { m_currGameState = currGameState;}
+		void setCurrGameState(RL_GameState currGameState);
 		void generateLevelUpPerk();
 		void clearLevelUpPerk();
 		size_t getHeroesCount();

@@ -32,7 +32,7 @@ namespace tzw
 		const vec2& getPos() {return m_pos;}
 		void setParent(QuadTree2DNode * newParent) {m_parent = newParent;}
 		QuadTree2DNode * getParent() {return m_parent;}
-		const AABB2D & getAABB();
+		AABB2D & getAABB();
 		void onCollision(Collider2D * other);
 		std::function<void (Collider2D *, Collider2D * )> m_cb;
 		bool getIsCollisionEnable () {return m_isCollisionEnable;}

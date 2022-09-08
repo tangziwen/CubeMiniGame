@@ -11,6 +11,7 @@
 #include "RLCollectible.h"
 #include "RLEffectMgr.h"
 #include "RLAIController.h"
+#include "Engine/Engine.h"
 namespace tzw
 {
 void RLWorld::start()
@@ -51,7 +52,7 @@ void RLWorld::start()
 
 	RLSpritePool::shared()->init(m_mapRootNode);
 	RLBulletPool::shared()->initSpriteList(m_mapRootNode);
-	m_playerController = new RLPlayerController();
+	
 
 
 
@@ -66,6 +67,7 @@ void RLWorld::startGame(std::string heroStr)
 	RLHero * hero = spawnHero(heroStr);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
 	hero->getWeapon()->setIsAutoFiring(true);
+	m_playerController = new RLPlayerController();
 	m_playerController->possess(hero);
 	setCurrGameState(RL_GameState::Playing);
 	RLPlayerState::shared()->reset();
@@ -75,29 +77,59 @@ void RLWorld::startGame(std::string heroStr)
 
 void RLWorld::goToMainMenu()
 {
-	m_currGameState = RL_GameState::MainMenu;
+
+	setCurrGameState(RL_GameState::MainMenu);
 }
 
 void RLWorld::goToAfterMath()
 {
-	m_currGameState = RL_GameState::AfterMath;
+
+	setCurrGameState(RL_GameState::AfterMath);
 }
 
 void RLWorld::goToWin()
 {
-	m_currGameState = RL_GameState::Win;
+
+	setCurrGameState(RL_GameState::Win);
 }
 
 void RLWorld::goToPurchase()
 {
-	m_currGameState = RL_GameState::Purchase;
+	setCurrGameState(RL_GameState::Purchase);
 }
 
 void RLWorld::goToPrepare()
 {
-	m_currGameState = RL_GameState::Prepare;
+	setCurrGameState(RL_GameState::Prepare);
 }
+void RLWorld::goToPause()
+{
+	setCurrGameState(RL_GameState::Pause);
+}
+void RLWorld::resumeGame()
+{
+	setCurrGameState(RL_GameState::Playing);
+}
+void RLWorld::endGame()
+{
+	RLPlayerState::shared()->writePersistent();
+	exit(0);
+}
+void RLWorld::setCurrGameState(RL_GameState currGameState)
+{
+	if(currGameState == RL_GameState::Playing)
+	{
+		Engine::shared()->setUnlimitedCursor(true);
+	}
+	if(m_currGameState == RL_GameState::Playing && m_currGameState != currGameState)
+	{
+	
+		Engine::shared()->setUnlimitedCursor(false);
+	}
+	m_currGameState = currGameState;
+	RLPlayerState::shared()->writePersistent();
 
+}
 Node* RLWorld::getRootNode()
 {
 	return m_mapRootNode;

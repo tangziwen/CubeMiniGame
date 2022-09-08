@@ -3,6 +3,11 @@
 #include <unordered_set>
 namespace tzw
 {
+	enum class HeroPurchaseAction
+	{
+		Upgrade,
+		Unlock
+	};
 	class RLPlayerState : public Singleton<RLPlayerState>
 	{
 	public:
@@ -20,12 +25,17 @@ namespace tzw
 		void addGold(unsigned int newGoldValue);
 		void unlockHero(std::string heroName);
 		bool isHeroUnLock(std::string heroName);
+		int getHeroLevel(std::string heroName);
+		void heroUpdate(std::string heroName);
+		bool isCanAffordHeroPurchase(std::string heroName, HeroPurchaseAction);
+		void loadPersistent();
+		void writePersistent();
 	private:
 		unsigned int m_score;
 		unsigned int m_currLevel;
 		unsigned int m_currExp;
 		unsigned int m_maxExp;
 		unsigned int m_gold = 0;
-		std::unordered_set<std::string> m_heroPurchasedMap;
+		std::unordered_map<std::string, int> m_heroPurchasedMap;
 	};
 }

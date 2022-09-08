@@ -55,7 +55,11 @@ namespace tzw
 		{
 			for(Collider2D * collider : m_collidersList)
 			{
-				colliderList.push_back(collider);
+				if(collider->getAABB().isIntersect(range))
+				{
+					colliderList.push_back(collider);
+				}
+				
 			}
 			if(m_children[0])
 			{
@@ -81,10 +85,6 @@ namespace tzw
 	}
 	void QuadTree2D::addCollider(Collider2D* obj)
 	{
-		if(obj->getParent())
-		{
-			printf("cao");
-		}
 		bool isAdded = m_rootNode->addCollider_R(obj);
 		if(isAdded)
 			m_colliderList.push_back(obj);
@@ -173,7 +173,7 @@ namespace tzw
 	}
 	void QuadTree2D::getRange(AABB2D range, std::vector<Collider2D*>& collider)
 	{
-
+		m_rootNode->getRange_R(range, collider);
 	}
 	void QuadTree2D::removeCollider_imp(Collider2D* obj)
 	{

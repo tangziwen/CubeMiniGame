@@ -16,6 +16,8 @@ namespace tzw
 		bool onKeyPress(int keyCode) override;
 		bool onKeyRelease(int keyCode) override;
 		bool onMouseMove(vec2 pos) override;
+		bool onMouseRelease(int button,vec2 pos) override;
+		bool onMousePress(int button,vec2 pos) override;
 		vec2 getPos();
 	private:
 		void calculateView();

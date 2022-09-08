@@ -6,7 +6,8 @@
 enum RL_OBJECT_TYPE
 {
 	RL_OBJECT_TYPE_HERO,
-	RL_OBJECT_TYPE_MONSTER
+	RL_OBJECT_TYPE_MONSTER,
+	RL_OBJECT_TYPE_BULLET
 };
 
 enum class RL_GameState
@@ -14,6 +15,7 @@ enum class RL_GameState
 	MainMenu,
 	Prepare,
 	Playing,
+	Pause,
 	AfterMath,
 	Win,
 	Purchase

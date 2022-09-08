@@ -37,10 +37,25 @@ namespace tzw
 		friend class RLWave;
 	
 	};
+
+	struct RLMonsterGroupInfo
+	{
+		std::string typeName;
+		int tier;
+		int num;
+	};
+
+	struct RLWaveGroupInfo
+	{
+		std::vector<RLMonsterGroupInfo> m_groupInfo;
+		float m_delayTime = 0.f;
+	};
+
 	class RLWave
 	{
 	public:
 		RLWave(int wave):m_waveId(wave){};
+		void loadStage(std::string filePath);
 		void tick(float dt);
 		void generateSubWaves();
 		bool isFinished();
@@ -49,6 +64,8 @@ namespace tzw
 		TZW_PROPERTY(int, SubWaveIndex, 0);
 		float m_time = 0.f;
 		int m_waveId = 0;
+		std::vector<RLWaveGroupInfo> m_importantWaveGroup;
+		std::vector<RLWaveGroupInfo> m_specialRandomWaves;
 	};
 	class RLDirector : public Singleton<RLDirector>
 	{

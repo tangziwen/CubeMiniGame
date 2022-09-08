@@ -39,6 +39,8 @@ namespace tzw
 		void doMove(vec2 dir, float delta);
 		void applyEffect(std::string name);
 		void applyEffect(RLEffect * effect);
+		bool startDeflect();
+		void endDeflect();
 		RLHeroData * getHeroData();
 		RLSkillBase* playSkill();
 		RLSkillBase* playSkillToTarget(RLHero * hero);
@@ -82,6 +84,11 @@ namespace tzw
 		vec2 m_dashVelocity;
 		vec2 m_dashDir;
 		float m_dashSpeed;
+
+
+		//deflect
+		bool m_isDeflect;
+		float m_deflectTimer;
 	};
 }
 

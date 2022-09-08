@@ -13,6 +13,7 @@ namespace tzw
 		void drawInGame();
 		void drawAfterMath();
 		void drawWin();
+		void drawPause();
 		void drawPurchaseMenu();
 		void drawPrepareMenu();
 	};
