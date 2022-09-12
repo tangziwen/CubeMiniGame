@@ -6,6 +6,7 @@
 #include "RLPlayerState.h"
 #include "RLDirector.h"
 #include "RLHeroCollection.h"
+#include "2D/LabelNew.h"
 namespace tzw
 {
 RLGUI::RLGUI()
@@ -15,6 +16,12 @@ RLGUI::RLGUI()
 void RLGUI::init()
 {
 	GUISystem::shared()->addObject(this);
+	m_centerTips = LabelNew::create("HEHEHE");
+	m_centerTips->setLocalPiority(999);
+	vec2 size = Engine::shared()->winSize();
+	m_centerTips->setPos2D(size.x / 2.f, size.y / 2.f);
+	g_GetCurrScene()->addNode(m_centerTips);
+
 }
 
 void RLGUI::drawIMGUI()
@@ -105,11 +112,11 @@ void RLGUI::drawInGame()
 
 	ImVec2 window_pos_pivot_bottom_right = ImVec2(1.0, 1.0);
 	ImGui::SetNextWindowPos(ImVec2(50.0, screenSize.y - yOffset), ImGuiCond_Always, window_pos_pivot_bottom_right);
-	ImGui::Begin("Rotate Tips", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBringToFrontOnFocus);
+	ImGui::Begin("Rotate Tips", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_NoBringToFrontOnFocus);
 
 	RLHero * hero =  RLWorld::shared()->getPlayerController()->getPossessHero();
-
-	float progressBarWidth = 150.f;
+	
+	float progressBarWidth = screenSize.x - 55.f;
 	ImGui::Text("Score : %u",RLPlayerState::shared()->getScore());
 
 	if(RLDirector::shared()->isFinished())
@@ -128,10 +135,21 @@ void RLGUI::drawInGame()
 		}
 	}
 
-	
 	char tmp[64];
+
+
+
+	
+	ImGui::Text("Combat Strength: %d", int(RLDirector::shared()->getCombatStrength()));
+	ImGui::Text("Combat Strength: %d", int(hero->getCombatStrengh()));
+	ImGui::Text("Relative Combat Strength: %d", int(RLDirector::shared()->getCombatStrength()) - int(hero->getCombatStrengh()));
+	ImGui::Text("Gold: %u", RLPlayerState::shared()->getGold());
+	
+	
+	ImGui::PushStyleColor(ImGuiCol_FrameBg, ImVec4(1.0, 1.0, 1.0, 0.5));
+
 	sprintf(tmp, "%d / %d",  int(hero->getHP()), int(hero->getMAXHP()));
-	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2, 0.81, 0.2, 1.0));
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.2, 0.81, 0.2, 0.5));
 	ImGui::ProgressBar(hero->getHP()/ hero->getMAXHP(), ImVec2(progressBarWidth, 0), tmp);
 	ImGui::PopStyleColor();
 
@@ -139,25 +157,25 @@ void RLGUI::drawInGame()
 	ImGui::PushID("Mana Bar");
 
 	sprintf(tmp, "%d / %d",  int(hero->getMana()), int(hero->getMaxMana()));
-	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3, 0.41, 1.0, 1.0));
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.3, 0.41, 1.0, 0.5));
 
 	ImGui::ProgressBar(hero->getMana() / hero->getMaxMana(), ImVec2(progressBarWidth, 0), tmp);
 	ImGui::PopStyleColor();
 	ImGui::PopID();
 
-
-	
-
-
 	sprintf(tmp, "Lv: %u",  RLPlayerState::shared()->getCurrLevel());
-	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.5, 0.95, 1.0, 1.0));
+	ImGui::PushStyleColor(ImGuiCol_PlotHistogram, ImVec4(0.5, 0.95, 1.0, 0.5));
 	float levelRatio = (RLPlayerState::shared()->getCurrExp() * 1.f) / RLPlayerState::shared()->getMaxExp();
 	ImGui::PushID("Level Bar");
 	ImGui::ProgressBar(levelRatio, ImVec2(progressBarWidth, 0), tmp);
 	ImGui::PopID();
 	ImGui::PopStyleColor();
 
-	ImGui::Text("Gold: %u", RLPlayerState::shared()->getGold());
+	ImGui::PopStyleColor();
+	
+
+
+
 
 	ImGui::End();
 }
@@ -278,6 +296,7 @@ void RLGUI::drawPurchaseMenu()
 						ImGui::PopStyleColor();
 						ImGui::PopStyleColor();
 					}
+
 
 
 

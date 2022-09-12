@@ -34,6 +34,7 @@ RLHero::~RLHero()
 {
 	//delete m_sprite;
 	RLSpritePool::shared()->get()->removeSprite(m_sprite);
+	RLSpritePool::shared()->get()->removeSprite(m_hpBar);
 	delete m_collider;
 	delete m_weapon;
 }
@@ -58,6 +59,8 @@ void RLHero::updateGraphics()
 	if(m_sprite)
 	{
 		m_sprite->pos = pos;
+		m_hpBar->pos = pos + vec2(0, -16);
+		m_hpBar->scale = vec2(m_HP / m_MAXHP, 0.125f);
 	}
 }
 
@@ -70,6 +73,17 @@ void RLHero::initGraphics()
 	m_sprite->layer = 2;
 	m_sprite->pos = getPosition();
 	RLSpritePool::shared()->get()->addTile(m_sprite);
+
+
+	int hpBarType = RLSpritePool::shared()->get()->getOrAddType("RL/Sprites/HpBar.png");
+	SpriteInstanceInfo * hpInfo = new SpriteInstanceInfo();
+	hpInfo->type = hpBarType;
+	m_hpBar = hpInfo;
+	m_hpBar->layer = 3;
+	m_hpBar->pos = getPosition();
+	m_hpBar->scale = vec2(1, 0.125f);
+	RLSpritePool::shared()->get()->addTile(m_hpBar);
+
 	m_isInitedGraphics = true;
 }
 
@@ -308,9 +322,15 @@ void RLHero::doDash()
 	m_dashTimer = 0.0f;
 	m_collider->setIsCollisionEnable(false);
 	m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0);
-	if(m_HP > 30.0f)
+	
+	if(m_Mana > 30.0f)
 	{
-		m_HP = std::max(15.0f, m_HP - 10.0f);
+		m_Mana = std::max(15.0f, m_Mana - 10.0f);
+	}
+	else
+	{
+		m_HP = std::max(1.f, m_HP - 10.0f);
+	
 	}
 
 	if (m_isMoving)

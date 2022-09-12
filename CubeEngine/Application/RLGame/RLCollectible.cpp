@@ -53,7 +53,7 @@ namespace tzw
 			case RL_OBJECT_TYPE_MONSTER:
 			{
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
-				if(hero->getIsPlayerControll())
+				if(m_isAlive && hero->getIsPlayerControll())
 				{
 					onCollect(hero);
 					m_isAlive = false;
@@ -83,7 +83,7 @@ namespace tzw
 	void RLCollectible::onCollect(RLHero * hero)
 	{
 		//RLWorld::shared()->clearLevelUpPerk();
-		RLPlayerState::shared()->gainExp(85);
+		RLPlayerState::shared()->gainExp(25);
 		//hero->setPropByName<float>("MAXHP", 500);
 	}
 
@@ -100,7 +100,7 @@ namespace tzw
 	}
 	void RLCollectibleEXP::onCollect(RLHero * hero)
 	{
-		RLPlayerState::shared()->gainExp(85);
+		RLPlayerState::shared()->gainExp(25);
 	}
 
 

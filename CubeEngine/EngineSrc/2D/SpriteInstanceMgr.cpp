@@ -123,6 +123,7 @@ namespace tzw {
 			if(!tile->m_isVisible) continue;
 			InstanceData data;
 			data.transform.setTranslate(vec3(tile->pos.x, tile->pos.y, 0.f));
+			data.transform.setScale(vec3(tile->scale.x, tile->scale.y, 1.f));
 			data.extraInfo = tile->overLayColor;
 			m_tileTypePool[tile->type]->m_instances[tile->layer]->pushInstance(data);
 		}

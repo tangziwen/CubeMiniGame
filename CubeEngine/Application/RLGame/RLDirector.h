@@ -66,6 +66,7 @@ namespace tzw
 		int m_waveId = 0;
 		std::vector<RLWaveGroupInfo> m_importantWaveGroup;
 		std::vector<RLWaveGroupInfo> m_specialRandomWaves;
+		
 	};
 	class RLDirector : public Singleton<RLDirector>
 	{
@@ -77,10 +78,13 @@ namespace tzw
 		int getCurrentWave();
 		int getCurrentSubWave();
 		bool isFinished();
+		float getCombatStrength()  {return m_combatStrength;};
+		void addCombatStrength(float val) {m_combatStrength += val;};
 	private:
 		float m_time = 0.f;
 		std::vector<RLWave *> m_waveList;
 		int m_waveIndex = 0;
+		float m_combatStrength = 0.f;
 	
 	};
 }

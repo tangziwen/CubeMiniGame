@@ -196,6 +196,7 @@ void RLWeapon::fireOneRound()
 	{
 		RLBulletInfo info;
 		info.m_damage = m_data->m_damage + m_owner->getDamage();
+		info.m_combatStrengh = m_owner->getCombatStrengh();
 		RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), currShootDir * m_data->m_bulletSpeed, m_owner->getIsPlayerControll(), info);
 	}
 	else
@@ -215,6 +216,7 @@ void RLWeapon::fireOneRound()
 
 				RLBulletInfo info;
 				info.m_damage = m_data->m_damage + m_owner->getDamage();
+				info.m_combatStrengh = m_owner->getCombatStrengh();
 				RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), shootDir * m_data->m_bulletSpeed, m_owner->getIsPlayerControll(), info);
 			}
 		}
@@ -233,6 +235,7 @@ void RLWeapon::fireOneRound()
 
 				RLBulletInfo info;
 				info.m_damage = m_data->m_damage + m_owner->getDamage();
+				info.m_combatStrengh = m_owner->getCombatStrengh();
 				RLBulletPool::shared()->spawnBullet(1, m_owner->getPosition(), shootDir * m_data->m_bulletSpeed, m_owner->getIsPlayerControll(), info);
 			}
 		}

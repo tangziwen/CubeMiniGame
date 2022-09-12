@@ -6,6 +6,7 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include <memory>
+#include "RLHero.h"
 namespace tzw
 {
 const char * g_PlayerPersistentFile = "./ShooterPlayerConfig.json";
@@ -46,6 +47,8 @@ void RLPlayerState::gainExp(unsigned int exp)
 	{
 		m_currLevel++;//level Up
 		RLWorld::shared()->generateLevelUpPerk();
+		RLHero * hero =  RLWorld::shared()->getPlayerController()->getPossessHero();
+		hero->setCombatStrengh(hero->getCombatStrengh() + 12);
 		m_currExp = m_currExp - m_maxExp;
 		m_maxExp = calculateNextLevelExp(m_currLevel);
 	}

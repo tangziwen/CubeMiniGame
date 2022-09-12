@@ -14,6 +14,7 @@ constexpr int SpriteInstanceTotalLayer = 10;
 struct SpriteInstanceInfo
 {
 	vec2 pos;
+	vec2 scale = {1.f, 1.f};
 	int type = 0;
 	vec4 overLayColor {1.0f, 1.0f, 1.0f, 0.0f};
 	bool m_isVisible = true;

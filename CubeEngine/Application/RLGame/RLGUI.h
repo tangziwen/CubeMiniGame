@@ -3,6 +3,7 @@
 
 namespace tzw
 {
+class LabelNew;
 	class RLGUI: public Singleton<RLGUI>, public IMGUIObject
 	{
 	public:
@@ -16,5 +17,7 @@ namespace tzw
 		void drawPause();
 		void drawPurchaseMenu();
 		void drawPrepareMenu();
+	private:
+	LabelNew * m_centerTips = nullptr;
 	};
 }

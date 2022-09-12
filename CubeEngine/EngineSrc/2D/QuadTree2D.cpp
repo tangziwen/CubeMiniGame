@@ -167,8 +167,11 @@ namespace tzw
 	{
 		for(Collider2D * obj : m_colliderList)
 		{
-			obj->tick(dt);
-			checkCollision(obj);
+			if(obj)
+			{
+				obj->tick(dt);
+				checkCollision(obj);
+			}
 		}
 	}
 	void QuadTree2D::getRange(AABB2D range, std::vector<Collider2D*>& collider)

@@ -26,8 +26,22 @@ namespace tzw
 			case RL_OBJECT_TYPE_MONSTER:
 			{
 				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
-
-				hero->receiveDamage(m_info.m_damage);
+				int combatStrengthDiff = m_info.m_combatStrengh - hero->getCombatStrengh();
+				float ratio = 1.f;
+				if(combatStrengthDiff != 0)
+				{
+					if(combatStrengthDiff > 0)
+					{
+						ratio += 0.1f * combatStrengthDiff;
+					}
+					else
+					{
+						ratio -= 0.1f * abs(combatStrengthDiff);
+					}
+					ratio = std::clamp(ratio, 0.1f, 2.0f);
+				}
+				
+				hero->receiveDamage(m_info.m_damage * ratio);
 				m_isLiving = false;
 			}
 				break;

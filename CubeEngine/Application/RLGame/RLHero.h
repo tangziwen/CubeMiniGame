@@ -50,6 +50,7 @@ namespace tzw
 		TZW_PROPERTY(float, MaxMana, 100.f);
 		TZW_PROPERTY(float, Damage, 0.f);
 		TZW_PROPERTY(float, Speed, 0.f);
+		TZW_PROPERTY(int, CombatStrengh, 0);
 	T_PROP_REFLECT_REG_DECLEAR()
 		T_PROP_REFLECT_REG(HP)
 		T_PROP_REFLECT_REG(MAXHP)
@@ -64,6 +65,7 @@ namespace tzw
 		//vec2 m_pos;
 		int m_id = 0;
 		SpriteInstanceInfo * m_sprite = nullptr;
+		SpriteInstanceInfo * m_hpBar = nullptr;
 		bool m_isInitedGraphics = false;
 		RLWeapon * m_weapon = nullptr;
 		Collider2D * m_collider = nullptr;
@@ -87,8 +89,8 @@ namespace tzw
 
 
 		//deflect
-		bool m_isDeflect;
-		float m_deflectTimer;
+		bool m_isDeflect = false;
+		float m_deflectTimer = 0;
 	};
 }
 

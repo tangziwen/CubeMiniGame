@@ -1,0 +1,36 @@
+{
+	"Waves":[
+
+		//Stage 0
+		{"id":0, "Group":[["Shooter", 0, 2], ]},
+		{"id":1, "Group":[["Shooter", 0, 3], ["Tank", 0, 1],]},
+		{"id":2, "Group":[["Shooter", 0, 3], ["EliteShooter", 0, 1], ["Charger", 0, 1],]},
+		{"id":3, "Group":[["Shooter", 0, 2], ["EliteShooter", 0, 2], ["Tank", 0, 1],]},
+		{"id":4, "Group":[["Charger", 0, 2], ["Shooter", 1, 1], ["EliteShooter", 0, 2], ["Shooter", 0, 2]]},
+		{"id":5, "Group":[["Boss", 0, 1], ["Shooter", 0, 1], ["EliteShooter", 0, 1]], "Delay":999,},
+		
+		//Stage 1
+		{"id":6, "Group":[["Shooter", 1, 2], ]},
+		{"id":7, "Group":[["Shooter", 1, 3], ["Tank", 1, 1],]},
+		{"id":8, "Group":[["Shooter", 1, 4], ["EliteShooter", 1, 1], ["Charger", 1, 2],]},
+		{"id":9, "Group":[["Shooter", 1, 3], ["EliteShooter", 1, 2], ["Charger", 0, 1],]},
+		{"id":10, "Group":[["Shooter", 1, 4], ["EliteShooter", 1, 3], ["Shooter", 2, 2],]},
+		{"id":11, "Group":[["Boss", 1, 1], ["EliteShooter", 1, 2], ["Shooter", 1, 3]], "Delay":999,},
+		
+		//Stage 2
+		{"id":12, "Group":[["Shooter", 2, 2], ["EliteShooter", 1, 1],]},
+		{"id":13, "Group":[["Shooter", 2, 3], ["EliteShooter", 2, 2], ]},
+		{"id":14, "Group":[["Shooter", 2, 3], ["EliteShooter", 2, 2], ["Tank", 2, 1],]},
+		{"id":15, "Group":[["Shooter", 2, 2], ["EliteShooter", 2, 1], ["Charger", 2, 2],]},
+		{"id":16, "Group":[["Charger", 2, 3], ["EliteShooter", 2, 4], ["Shooter", 2, 2]]},
+		{"id":17, "Group":[["Boss", 2, 1], ["EliteShooter", 2, 3], ["Charger", 2, 1] ], "Delay":999,},
+	],
+
+	"SpecialRandomWaves":
+	[
+		{"id":0, "Group":[["Dog", 5],]},
+		{"id":1, "Group":[["Tank", 1],]},
+		{"id":0, "Group":[["Charger", 1], ]},
+	]
+
+}

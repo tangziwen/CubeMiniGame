@@ -127,6 +127,7 @@ void RLSubWave::startWave()
 				RLHero * hero = nullptr;
 				hero = RLWorld::shared()->spawnEnemy(iter.first);
 				hero->setPosition(spawnPos[idx]);
+				hero->setCombatStrengh(RLDirector::shared()->getCombatStrength());
 				idx++;
 			}
 
@@ -203,12 +204,12 @@ void RLWave::tick(float dt)
 
 		if(m_time >= nextWaveWaitingTime)
 		{
+			
 			m_SubWaveList[m_SubWaveIndex]->startWave();
 			m_SubWaveIndex ++;
 			m_time = 0;
-			//if(m_SubWaveIndex > 3)
-			{
-			}
+			RLDirector::shared()->addCombatStrength(0.25f);
+			
 		}
 		else
 		{

@@ -8,6 +8,7 @@ class SpriteInstanceInfo;
 struct RLBulletInfo
 {
 	float m_damage = 0.f;
+	int m_combatStrengh = 0;
 };
 struct RLBullet
 {
