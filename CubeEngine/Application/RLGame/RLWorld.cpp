@@ -69,6 +69,7 @@ void RLWorld::startGame(std::string heroStr)
 	hero->getWeapon()->setIsAutoFiring(true);
 	m_playerController = new RLPlayerController();
 	m_playerController->possess(hero);
+	hero->applyEffect("BloodDash");
 	setCurrGameState(RL_GameState::Playing);
 	RLPlayerState::shared()->reset();
 	RLDirector::shared()->generateWave();

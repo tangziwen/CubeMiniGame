@@ -89,6 +89,7 @@ void RLHero::initGraphics()
 
 void RLHero::onTick(float dt)
 {
+	m_container.tick(dt);
 	if(m_currSkill)
 	{
 		m_currSkill->onTick(dt);
@@ -196,7 +197,7 @@ void RLHero::onTick(float dt)
 
 	m_isMoving = false;
 
-	m_container.tick(dt);
+	
 
 	m_HP = std::clamp(m_HP, 0.f, m_MAXHP);
 }
@@ -322,7 +323,7 @@ void RLHero::doDash()
 	m_dashTimer = 0.0f;
 	m_collider->setIsCollisionEnable(false);
 	m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0);
-	
+	m_container.trigger(RLEffectGrantType::OnDash);
 	if(m_Mana > 30.0f)
 	{
 		m_Mana = std::max(15.0f, m_Mana - 10.0f);
@@ -349,7 +350,7 @@ void RLHero::doMove(vec2 dir, float delta)
 	if(m_isDeflect) return;
 	m_moveDir = dir;
 	m_isMoving = true;
-	float targetSpeed = m_Speed;
+	float targetSpeed = m_Speed+ m_container.modifier("MovementSpeed_Add");
 	if(m_weapon)
 	{
 		if(!getIsPlayerControll() && m_weapon->isFiring())
@@ -362,13 +363,13 @@ void RLHero::doMove(vec2 dir, float delta)
 
 void RLHero::applyEffect(std::string name)
 {
-	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, name);
+	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, name, &m_container);
 	m_container.addEffectInstance(instance);
 }
 
 void RLHero::applyEffect(RLEffect* effect)
 {
-	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, effect);
+	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, effect, &m_container);
 	m_container.addEffectInstance(instance);
 }
 

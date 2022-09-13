@@ -1,11 +1,12 @@
 #include "RLEffectMgr.h"
+#include "RLHero.h"
 #include "rapidjson/document.h"
 #include "Utility/file/Tfile.h"
 #include "Utility/log/Log.h"
 namespace tzw
 {
-	RLEffectInstance::RLEffectInstance(TObjectReflect * owner, RLEffect* effect)
-		:m_data(effect),m_owner(owner),m_currentTime(0.f), m_currentPulseTime(0.f)
+	RLEffectInstance::RLEffectInstance(RLHero * owner, RLEffect* effect, RLEffectContainer * container)
+		:m_data(effect),m_owner(owner),m_currentTime(0.f), m_parentContainer(container)
 	{
 	}
 
@@ -15,46 +16,60 @@ namespace tzw
 		for(const RLModifier & modifer : m_data->getModifierList())
 		{
 			float modifiedValue = modifer.m_modifiedValue;
-			if(m_data->getEffectType() == RLEffectType::Pulse)
-			{
-				modifiedValue *= m_data->getPulseRate();
-			}
 			switch(modifer.m_modifierType)
 			{
 			case RLModifierType::Add:
-				m_owner->addPropByName(modifer.m_attributeName, modifiedValue);
+			{
+
+				m_parentContainer->addModify(getModifiedName( modifer.m_attributeName, RLModifierType::Add), modifiedValue);
+			}
 				break;
-			case RLModifierType::Assign:
-				m_owner->setPropByName(modifer.m_attributeName, modifiedValue);
-				break;
+
 			case RLModifierType::Multiply:
-				float oldVal = m_owner->getPropByName<float>(modifer.m_attributeName);
-				m_owner->setPropByName(modifer.m_attributeName, oldVal * modifiedValue);
+			{
+				m_parentContainer->addModify(getModifiedName( modifer.m_attributeName, RLModifierType::Multiply), modifiedValue);
+			}
 				break;
 			}
 		
 		}
+
 	}
 
 	void RLEffectInstance::tick(float dt)
 	{
 		m_currentTime += dt;
-		if(m_data->getEffectType() == RLEffectType::Pulse)//pulse
-		{
-			m_currentPulseTime += dt;
-		
-			if(m_currentPulseTime > m_data->getPulseRate())
-			{
-				apply();
-				m_currentPulseTime = 0.f;
-			}
-		}
-
 	}
 	void RLEffectInstance::onLeave()
 	{
 	}
-
+	void RLEffectInstance::triggerGrant(RLEffectGrantType grant)
+	{
+		auto & grantList = m_data->getGrantList();
+		auto iter = m_data->getGrantList().find(grant);
+		if(iter != grantList.end())
+		{
+			m_owner->applyEffect(iter->second);
+		}
+	}
+	std::string RLEffectInstance::getModifiedName(const std::string &attributeName, RLModifierType type)
+	{
+		char tmp[128];
+		switch(type)
+		{
+		case RLModifierType::Add:
+			sprintf(tmp, "%s_Add",attributeName.c_str());
+			return tmp;
+			break;
+		case RLModifierType::Multiply:
+			sprintf(tmp, "%s_Mul",attributeName.c_str());
+			return tmp;
+			break;
+		}
+		return std::string();
+	}
+#define SET_GRANT_TYPE(THETYPE) else if(grantListNode.HasMember( #THETYPE))\
+	{effect->addGrantList(RLEffectGrantType::THETYPE, grantListNode[#THETYPE].GetString());}
 	void RLEffectMgr::loadConfig()
 	{
 		std::string filePath = "RL/Perks.json";
@@ -76,14 +91,8 @@ namespace tzw
 			RLEffect * effect = new RLEffect();
 
 			std::string effectTypeStr = node["Type"].GetString();
-			if(effectTypeStr == "Immediately")
-			{
-				effect->setEffectType(RLEffectType::Immediately);
-			}
-			else if(effectTypeStr == "Pulse")
-			{
-				effect->setEffectType(RLEffectType::Pulse);
-			}
+
+
 			effect->setDuration(node["Duration"].GetFloat());
 			auto & modifierList = node["Modifiers"];
 			effect->setSpritePath(node["SpritePath"].GetString());
@@ -97,44 +106,62 @@ namespace tzw
 				{
 					modifer.m_modifierType = RLModifierType::Add;
 				}
+				else if(typeStr == "Multiply")
+				{
+					modifer.m_modifierType = RLModifierType::Multiply;
+				}
 				modifer.m_modifiedValue = modifierNode["Value"].GetFloat();
 				effect->addModifier(modifer);
-				
+
+			}
+			if(node.HasMember("Grant"))
+			{
+				auto& grantListNode = node["Grant"];
+
+				if(grantListNode.HasMember("OnEnter"))
+				{
+					effect->addGrantList(RLEffectGrantType::OnEnter, grantListNode["OnEnter"].GetString());
+				}
+				SET_GRANT_TYPE(OnDash)
+				SET_GRANT_TYPE(AfterDash)
+				SET_GRANT_TYPE(OnGotHit)
+				SET_GRANT_TYPE(OnHitEnemy)
+				SET_GRANT_TYPE(OnEnemyKilled)
+				SET_GRANT_TYPE(OnFired)
+				SET_GRANT_TYPE(OnWalk)
+				SET_GRANT_TYPE(OnStill)
+				SET_GRANT_TYPE(OnDeflect)
+			
 			}
 			m_effectPool[node["Name"].GetString()] = effect;
 		}
 	}
 	
-	RLEffectInstance* RLEffectMgr::getInstance(TObjectReflect * owner, std::string effectName)
+	RLEffectInstance* RLEffectMgr::getInstance(RLHero * owner, std::string effectName, RLEffectContainer * container)
 	{
-		RLEffectInstance * m_instance = new RLEffectInstance(owner, m_effectPool[effectName]);
+		RLEffectInstance * m_instance = new RLEffectInstance(owner, m_effectPool[effectName], container);
 		return m_instance;
 	}
 
-	RLEffectInstance* RLEffectMgr::getInstance(TObjectReflect* owner, RLEffect* effect)
+	RLEffectInstance* RLEffectMgr::getInstance(RLHero* owner, RLEffect* effect, RLEffectContainer * container)
 	{
-		RLEffectInstance * m_instance = new RLEffectInstance(owner, effect);
+		RLEffectInstance * m_instance = new RLEffectInstance(owner, effect, container);
 		return m_instance;
 	}
+
 
 	void RLEffectContainer::addEffectInstance(RLEffectInstance* instance)
 	{
-		instance->apply();
-		if(instance->getEffect()->getEffectType() == RLEffectType::Immediately)
-		{
-			delete instance;
-		}
-		else
-		{
-			m_effectInstanceList.push_back(instance);
-		}
+		m_effectInstanceList.push_back(instance);
 	}
+
 	void RLEffectContainer::tick(float dt)
 	{
+		m_modifierList.clear();
 		for(auto iter = m_effectInstanceList.begin(); iter != m_effectInstanceList.end();)
 		{
-		
 			RLEffectInstance * instance = *iter;
+			instance->apply();
 			instance->tick(dt);
 			if(instance->isOutOfTime())
 			{
@@ -145,7 +172,52 @@ namespace tzw
 			{
 				iter ++;
 			}
+
+
+		}
+	}
+	void RLEffectContainer::trigger(RLEffectGrantType grantType)
+	{
+		std::vector<RLEffectInstance * > readyToTrigger;
+		for(auto iter = m_effectInstanceList.begin(); iter != m_effectInstanceList.end(); iter++)
+		{
+		
+			RLEffectInstance * instance = *iter;
+			auto & grantList = instance->getEffect()->getGrantList();
+			if(grantList.find(grantType) != grantList.end())
+			{
+				//instance->apply();
+				readyToTrigger.push_back(instance);
+			}
+		}
+
+		for(RLEffectInstance * instance : readyToTrigger)
+		{
+		
+			instance->triggerGrant(grantType);
+		}
+	}
+	float RLEffectContainer::modifier(std::string modifierName)
+	{
+		auto iter = m_modifierList.find(modifierName);
+		if(iter == m_modifierList.end()) return 0.f;
+		return iter->second;
+	}
+	void RLEffectContainer::addModify(std::string name, float value)
+	{
+		auto iter = m_modifierList.find(name);
+		if(iter == m_modifierList.end())
+		{
+			m_modifierList[name] = value;
 		
 		}
+		else
+		{
+			m_modifierList[name] += value;
+		
+		}
+	}
+	void RLEffectContainer::calModifier()
+	{
 	}
 }

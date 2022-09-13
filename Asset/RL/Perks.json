@@ -19,6 +19,30 @@
 		]
 	},
 	{
+		"Name":"BloodDashImp",
+		"Type":"Duration",
+		"Duration":1.0,
+		"SpritePath":"RL/Sprites/GreenPotion.png",
+		"Modifiers":
+		[
+			{
+				"Attribute":"MovementSpeed",
+				"Type":"Add",
+				"Value":150.0,
+			},
+		]
+	},
+	{
+		"Name":"BloodDash",
+		"Type":"OnDash",
+		"Duration":-1,
+		"SpritePath":"RL/Sprites/GreenPotion.png",
+		"Grant":
+		{
+			"OnDash":"BloodDashImp",
+		},
+	},
+	{
 		"Name":"HeartRecover",
 		"Type":"Pulse",
 		"Duration":-1,
