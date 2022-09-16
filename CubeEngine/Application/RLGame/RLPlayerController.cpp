@@ -117,6 +117,11 @@ namespace tzw
 	}
 	bool RLPlayerController::onMouseRelease(int button, vec2 pos)
 	{
+		if(button == TZW_MOUSE_BUTTON_LEFT)
+		{
+			m_currPossessHero->getWeapon()->setIsAutoFiring(false);
+
+		}
 		if(button == TZW_MOUSE_BUTTON_RIGHT)
 		{
 			m_currPossessHero->endDeflect();
@@ -125,6 +130,11 @@ namespace tzw
 	}
 	bool RLPlayerController::onMousePress(int button, vec2 pos)
 	{
+		if(button == TZW_MOUSE_BUTTON_LEFT)
+		{
+			m_currPossessHero->getWeapon()->setIsAutoFiring(true);
+
+		}
 		if(button == TZW_MOUSE_BUTTON_RIGHT)
 		{
 			m_currPossessHero->startDeflect();

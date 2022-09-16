@@ -4,10 +4,10 @@
 	{
 		"Name":"Police_Pistol",
 		"Damage": 7,
-		"CD":0.6,
+		"CD":1.4,
 		"BulletSpeed":500.0,
-		"FireRate":0.2,
-		"FireRound":11,
+		"FireRate":0.25,
+		"FireRound":6,
 		"AimPolicyType":"DirectShoot",
 	},
 	{

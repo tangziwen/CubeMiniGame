@@ -66,7 +66,7 @@ void RLWorld::startGame(std::string heroStr)
 {
 	RLHero * hero = spawnHero(heroStr);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
-	hero->getWeapon()->setIsAutoFiring(true);
+	hero->getWeapon()->setIsAutoFiring(false);
 	m_playerController = new RLPlayerController();
 	m_playerController->possess(hero);
 	hero->applyEffect("BloodDash");

@@ -118,11 +118,18 @@ void RLHero::onTick(float dt)
 	{
 		//m_dashSpeed += 900.0 * dt;
 		//m_dashSpeed = std::clamp(m_dashSpeed, 0.0f, 500.f);//about 0.16s to reach the limit
-		m_dashSpeed = 450.0f;
+		m_dashSpeed = m_Speed;
+
+		if(m_dashTimer > 0.2f && m_dashTimer <= 0.45f)
+		{
+			m_dashSpeed = 350.f;
+		}
+
 		m_dashVelocity = m_dashDir * m_dashSpeed * dt;//vec2(1 * m_dashSpeed* dt, 0);
 		setPosition(getPosition() + m_dashVelocity );
 		m_dashTimer += dt;
-		if(m_dashTimer >= 0.3f)
+
+		if(m_dashTimer >= 0.5f)
 		{
 			m_collider->setIsCollisionEnable(true);
 			m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 0.0);
