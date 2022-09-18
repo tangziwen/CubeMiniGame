@@ -47,6 +47,8 @@ void RLWorld::start()
 	m_quadTree->init(vec2(-AREAN_COLLISION_MAP_PADDING, -AREAN_COLLISION_MAP_PADDING), vec2(ARENA_MAP_SIZE * 32 + AREAN_COLLISION_MAP_PADDING, ARENA_MAP_SIZE * 32 + AREAN_COLLISION_MAP_PADDING));
 	
 	m_mapRootNode = Node::create();
+	m_scale = 1.5f;
+	m_mapRootNode->setScale(vec3(m_scale, m_scale, m_scale));
 	g_GetCurrScene()->addNode(m_mapRootNode);
 	m_mapRootNode->addChild(m_tileMgr);
 
@@ -69,7 +71,7 @@ void RLWorld::startGame(std::string heroStr)
 	hero->getWeapon()->setIsAutoFiring(false);
 	m_playerController = new RLPlayerController();
 	m_playerController->possess(hero);
-	hero->applyEffect("BloodDash");
+	hero->getWeapon()->setFullAmmo();
 	setCurrGameState(RL_GameState::Playing);
 	RLPlayerState::shared()->reset();
 	RLDirector::shared()->generateWave();
@@ -159,7 +161,6 @@ void RLWorld::onFrameUpdate(float dt)
 		RLCollectibleMgr::shared()->tick(dt);
 		m_quadTree->tick(dt);
 	}
-
 
 }
 

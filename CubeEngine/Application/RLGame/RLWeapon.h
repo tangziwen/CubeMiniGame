@@ -89,7 +89,13 @@ public:
 	void setOwner(RLHero * hero);
 	void setAimPolicy(RLAimPolicy * policy);
 	bool isFiring();
+	int getCurrRound() {return m_currRound;}
+	int getTotalRound();
+	void reload();
+	bool isReloading() {return m_isReloading;};
+	void setFullAmmo();
 protected:
+	bool m_isReloading = false;
 	float m_cd = 0.8f;
 	float m_currTime = 0.0;
 	int m_currRound = 0;

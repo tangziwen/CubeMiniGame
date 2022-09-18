@@ -45,7 +45,8 @@ namespace tzw
 		void clearLevelUpPerk();
 		size_t getHeroesCount();
 		vec2 getRandomPos();
-		
+		float getScale() {return m_scale;};
+		float getInvScale() { return 1.f / m_scale;};
 	protected:
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;
@@ -54,6 +55,7 @@ namespace tzw
 		QuadTree2D * m_quadTree = nullptr;
 		RL_GameState m_currGameState = RL_GameState::MainMenu;
 		std::vector<RLCollectible *> m_lvUpCollectible;
+		float m_scale = 1.0f;
 	};
 }
 

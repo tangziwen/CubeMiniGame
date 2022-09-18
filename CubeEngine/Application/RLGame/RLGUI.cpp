@@ -140,9 +140,7 @@ void RLGUI::drawInGame()
 
 
 	
-	ImGui::Text("Combat Strength: %d", int(RLDirector::shared()->getCombatStrength()));
-	ImGui::Text("Combat Strength: %d", int(hero->getCombatStrengh()));
-	ImGui::Text("Relative Combat Strength: %d", int(RLDirector::shared()->getCombatStrength()) - int(hero->getCombatStrengh()));
+
 	ImGui::Text("Gold: %u", RLPlayerState::shared()->getGold());
 	
 	
@@ -177,6 +175,39 @@ void RLGUI::drawInGame()
 
 
 
+	ImGui::End();
+
+
+
+	ImGui::SetNextWindowPos(ImVec2(50.0, 0.0), ImGuiCond_Always, window_pos_pivot_bottom_right);
+	ImGui::Begin("HUD", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_NoBringToFrontOnFocus);
+	ImGui::SetWindowFontScale(5.0f);
+	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.f, 1.0f, 1.0f));
+	ImGui::Text("Waves: %d", RLDirector::shared()->getCurrentSubWave() + 1);
+	RLWeapon * weapon = hero->getWeapon();
+	if(hero->getWeapon())
+	{
+		if(weapon->isReloading())
+		{
+			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.647f, 0.0f, 1.0f));
+			ImGui::Text("Reloading.");
+			ImGui::PopStyleColor();
+		}
+		else
+		{
+			if(weapon->getCurrRound()== 0)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.0f, 0.0f, 1.0f));
+				ImGui::Text("AMMO: Empty");
+				ImGui::PopStyleColor();
+			}
+			else
+			{
+				ImGui::Text("AMMO: %d / %d", hero->getWeapon()->getCurrRound(), hero->getWeapon()->getTotalRound());
+			}
+		}
+	}
+	ImGui::PopStyleColor();
 	ImGui::End();
 }
 

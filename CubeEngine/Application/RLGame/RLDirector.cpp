@@ -115,6 +115,7 @@ RLSubWave::RLSubWave(int wave, int subwaveID)
 
 void RLSubWave::startWave()
 	{
+
 		//genearate a wave
 		std::vector<vec2> spawnPos;
 		RLWorld::shared()->getRandomBoundaryPos(m_totalCount, spawnPos);
@@ -232,13 +233,13 @@ void RLWave::tick(float dt)
 		RLSubWaveGenerator generator;
 		
 
-		int miniWavePerWave = 15;
+
 		int wavePerStage = 6;
 		int totalWave = 3;
 		int BigWaveIdx = 0;
 		float prevWaveDelayTime = 0.f;
 
-		for(int i = 0; i < totalWave * wavePerStage * miniWavePerWave; i++)
+		for(int i = 0; i < totalWave * wavePerStage; i++)
 		{
 			RLSubWave * subWave = new RLSubWave(m_waveId, i);
 			if(i == 0)
@@ -248,22 +249,19 @@ void RLWave::tick(float dt)
 			else
 			{
 				
-				subWave->setWaitingTime(2.f + prevWaveDelayTime);
+				subWave->setWaitingTime(999.f);
 				prevWaveDelayTime = 0.f;
 			}
 			int unitDifficulty = i * 2 + 1;
 
 
-			int currStage = i / (wavePerStage * miniWavePerWave);
-			int currMiniWaveInTier = i %(miniWavePerWave * wavePerStage);
-			int curWaveInTier = currMiniWaveInTier / miniWavePerWave;
-			int curMiniWaveInWave = currMiniWaveInTier % miniWavePerWave;
-
+			int currStage = i / (wavePerStage);
+			int curWaveInStage = i %(wavePerStage);
 			//the last mini wave in current wave --> Big Wave
-			if(curMiniWaveInWave % miniWavePerWave == (miniWavePerWave - 1))
+			if(true)
 			{
 				subWave->m_totalCount = 0;
-				RLWaveGroupInfo group =  m_importantWaveGroup[BigWaveIdx];
+				RLWaveGroupInfo group =  m_importantWaveGroup[i];
 				for(RLMonsterGroupInfo & mInfo : group.m_groupInfo)
 				{
 					std::vector<RLHeroData * > heroList;
@@ -287,65 +285,9 @@ void RLWave::tick(float dt)
 				}
 				prevWaveDelayTime = group.m_delayTime;
 				BigWaveIdx++;
-			}
-			else//mini wave
-			{
-				std::vector<RLHeroData * > mobList;
-				RLHeroCollection::shared()->getMobsFromTiers(currStage, mobList);
-				
-				int ThirdOfWave = (miniWavePerWave / 3);
-				bool is1_3 = curMiniWaveInWave % miniWavePerWave == ThirdOfWave;
-
-				if(is1_3)// 1 / 3 of wave, spawn a special random waves
-				{
-					RLWaveGroupInfo group = m_specialRandomWaves[re()%m_specialRandomWaves.size()];
-					for(RLMonsterGroupInfo & mInfo : group.m_groupInfo)
-					{
-						std::vector<RLHeroData * > heroList;
-						RLHeroCollection::shared()->getHeroRangeFromTier(mInfo.typeName, currStage, heroList, false);
-
-						for(int numI=0; numI < mInfo.num; numI ++)
-						{
-					
-							auto hero = heroList[re() %heroList.size()];
-							auto iter = subWave->m_generateMonster.find(hero->m_id);
-							if(iter == subWave->m_generateMonster.end())
-							{
-								subWave->m_generateMonster[hero->m_id] = 1;
-							}
-							else
-							{
-								subWave->m_generateMonster[hero->m_id] += 1;
-							}
-							subWave->m_totalCount += 1;
-						}
-					}
-				}
-				else
-				{
-					int zombieTypeShiftWave = (miniWavePerWave * wavePerStage) / 3;
-					int zombieTier = i / zombieTypeShiftWave;//every stage 3 zombie type, full game 9 zombie type total
-					std::vector<RLHeroData * > zombieList;
-					RLHeroCollection::shared()->getHeroRangeFromTier("Zombie", zombieTier, zombieList, false);
-
-					int MobCount = 2;
-					if(curMiniWaveInWave % 3 == 2)
-					{
-						subWave->m_generateMonster[zombieList[0]->m_id] = MobCount + 1;
-						subWave->m_totalCount = MobCount + 1;
-					}else
-					{
-						subWave->m_generateMonster[zombieList[0]->m_id] = MobCount;
-						subWave->m_totalCount = MobCount;
-					}
-				}
-	
-
+				subWave->setWaitingTime(10000.0f);
 			}
 			//
-
-
-			
 			m_SubWaveList.push_back(subWave);
 		}
 	}

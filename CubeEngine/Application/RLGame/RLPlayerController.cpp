@@ -157,13 +157,15 @@ namespace tzw
 #pragma optimize("", off)
 	void RLPlayerController::calculateView()
 	{
+		float invWorldScale = RLWorld::shared()->getInvScale();
 		vec2 center = Engine::shared()->winSize();
-		center *= 0.5f;
+		center *= 0.5f * invWorldScale;
 		float p_x = m_currPossessHero->getPosition().x;
 		float p_y = m_currPossessHero->getPosition().y;
-		float viewPosX = std::clamp(p_x - center.x, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
-		float viewPosY = std::clamp(p_y - center.y, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
+		float viewPosX = p_x - center.x;//std::clamp(p_x - center.x, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
+		float viewPosY = p_y - center.y;//std::clamp(p_y - center.y, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
 		m_invViewMat.setTranslate(vec3(viewPosX, viewPosY, 0));
+		m_invViewMat.setScale(vec3(invWorldScale, invWorldScale, invWorldScale));
 		m_viewMat = m_invViewMat.inverted();
 	}
 }

@@ -88,9 +88,16 @@ RLWeapon::RLWeapon(std::string typeName)
 	init();
 
 }
+
+void RLWeapon::setFullAmmo()
+{
+	m_currRound = m_data->m_fireRound;
+}
+
 void RLWeapon::init()
 {
-	m_currRound = 0;//m_data->m_fireRound;
+
+	m_currRound = 0;
 	m_splitMount = m_data->m_splitNum;
 	m_splitAngle = m_data->m_splitAngle;
 
@@ -127,6 +134,14 @@ vec2 RLWeapon::getShootDir() const
 	return m_shootDir;
 }
 
+int RLWeapon::getTotalRound()
+ {return m_data->m_fireRound;}
+
+ void RLWeapon::reload()
+ {
+	m_isReloading = true;
+	m_currTime = 0.f;
+ }
 void RLWeapon::setShootDir(const vec2& shootDir)
 {
 	if(m_isCanChangeDirWhilstShoot)
@@ -145,7 +160,11 @@ void RLWeapon::setShootDir(const vec2& shootDir)
 
 void RLWeapon::fireOneRound()
 {
-	
+	if(m_currRound <= 0)
+	{
+		reload();
+		return;
+	}
 	vec2 currShootDir;
 	
 	switch(m_aimPolicy->getAimPolicyType())
@@ -258,13 +277,14 @@ void RLWeapon::onTick(float dt)
 		m_aimPolicy->tick(dt);
 	m_aimTimer += dt;
 	m_currTime += dt;
-	if(m_currRound <= 0)//now is reloading
+	if(m_isReloading)//now is reloading
 	{
 		m_isFiring = false;
 		if(m_currTime > m_data->m_cd)
 		{
 			m_currRound = m_data->m_fireRound;
 			m_currTime = m_data->m_fireRate;//let the weapon immediately shoot
+			m_isReloading = false;
 			if(m_aimPolicy)
 				m_aimPolicy->reset();
 		}
@@ -281,6 +301,7 @@ void RLWeapon::onTick(float dt)
 void RLWeapon::setOwner(RLHero* hero)
 {
 	m_owner = hero;
+
 }
 
 void RLWeapon::setAimPolicy(RLAimPolicy* policy)

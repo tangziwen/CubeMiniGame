@@ -118,23 +118,28 @@ void RLHero::onTick(float dt)
 	{
 		//m_dashSpeed += 900.0 * dt;
 		//m_dashSpeed = std::clamp(m_dashSpeed, 0.0f, 500.f);//about 0.16s to reach the limit
-		m_dashSpeed = m_Speed;
-
-		if(m_dashTimer > 0.2f && m_dashTimer <= 0.45f)
+		m_dashSpeed = 250.0f;
+		if(m_dashTimer <= 0.25f)
 		{
-			m_dashSpeed = 350.f;
+			m_collider->setIsCollisionEnable(false);
+			m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0f);
 		}
-
-		m_dashVelocity = m_dashDir * m_dashSpeed * dt;//vec2(1 * m_dashSpeed* dt, 0);
-		setPosition(getPosition() + m_dashVelocity );
-		m_dashTimer += dt;
-
-		if(m_dashTimer >= 0.5f)
+		else if(m_dashTimer > 0.25f && m_dashTimer <= 0.5f)
+		{
+			m_collider->setIsCollisionEnable(true);
+			m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 0.7f);
+		}
+		if(m_dashTimer > 0.5f)
 		{
 			m_collider->setIsCollisionEnable(true);
 			m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 0.0);
 			m_isDash = false;
 		}
+		m_dashVelocity = m_dashDir * m_dashSpeed * dt;//vec2(1 * m_dashSpeed* dt, 0);
+		setPosition(getPosition() + m_dashVelocity );
+		m_dashTimer += dt;
+
+
 	}
 
 	if(m_isDeflect)
@@ -325,6 +330,7 @@ void RLHero::onPossessed()
 
 void RLHero::doDash()
 {
+	if(m_isDash) return;
 	m_dashSpeed = 150.0f;
 	m_isDash = true;
 	m_dashTimer = 0.0f;
