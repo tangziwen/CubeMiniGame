@@ -5,11 +5,13 @@
 #include "2D/Collider2D.h"
 #include "2D/SpriteInstanceMgr.h"
 #include "RLEffectMgr.h"
+class b2Body;
 namespace tzw
 {
 	class RLController;
 	class RLHeroData;
 	class RLSkillBase;
+
 	class RLHero : public TObjectReflect
 	{
 	public:
@@ -91,6 +93,8 @@ namespace tzw
 		//deflect
 		bool m_isDeflect = false;
 		float m_deflectTimer = 0;
+		b2Body * m_body = nullptr;
+		vec2 m_position;
 	};
 }
 

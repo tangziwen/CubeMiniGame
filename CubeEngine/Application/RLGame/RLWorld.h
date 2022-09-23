@@ -5,7 +5,7 @@
 
 #include "RLPlayerController.h"
 #include "2D/QuadTree2D.h"
-
+#include "b2_world.h"
 
 
 namespace tzw
@@ -47,6 +47,8 @@ namespace tzw
 		vec2 getRandomPos();
 		float getScale() {return m_scale;};
 		float getInvScale() { return 1.f / m_scale;};
+		b2World * getB2DWorld() { return m_b2dWorld;}
+		b2Body * getGroundBody() {return m_groundBody;}
 	protected:
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;
@@ -56,6 +58,8 @@ namespace tzw
 		RL_GameState m_currGameState = RL_GameState::MainMenu;
 		std::vector<RLCollectible *> m_lvUpCollectible;
 		float m_scale = 1.0f;
+		b2World * m_b2dWorld;
+		b2Body* m_groundBody = nullptr;
 	};
 }
 

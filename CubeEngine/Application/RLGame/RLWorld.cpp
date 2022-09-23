@@ -12,6 +12,7 @@
 #include "RLEffectMgr.h"
 #include "RLAIController.h"
 #include "Engine/Engine.h"
+#include "box2d.h"
 namespace tzw
 {
 void RLWorld::start()
@@ -66,6 +67,65 @@ void RLWorld::start()
 
 void RLWorld::startGame(std::string heroStr)
 {
+	m_b2dWorld = new b2World(b2Vec2(0,-0.0));
+
+	//Ground
+	b2BodyDef groundBodyDef;
+	groundBodyDef.position.Set(ARENA_MAP_SIZE * 0.5f, -10.0f);
+	m_groundBody = m_b2dWorld->CreateBody(&groundBodyDef);
+	b2PolygonShape groundBox;
+	groundBox.SetAsBox(ARENA_MAP_SIZE, 10.0f);
+
+	b2FixtureDef fixtureGroundDef;
+	fixtureGroundDef.shape = &groundBox;
+	fixtureGroundDef.density = 0.0f;
+	fixtureGroundDef.filter.categoryBits = RL_OBSTACLE;
+	fixtureGroundDef.filter.maskBits = 0xFFFF;
+	m_groundBody->CreateFixture(&fixtureGroundDef);
+
+	//left
+	b2BodyDef groundBodyDef2;
+	groundBodyDef2.position.Set(-10, ARENA_MAP_SIZE * .5f);
+	b2Body* groundBodyLeft = m_b2dWorld->CreateBody(&groundBodyDef2);
+	b2PolygonShape groundBoxLeft;
+	groundBoxLeft.SetAsBox(10, ARENA_MAP_SIZE);
+
+	b2FixtureDef fixtureGroundLeftDef;
+	fixtureGroundLeftDef.shape = &groundBoxLeft;
+	fixtureGroundLeftDef.density = 0.0f;
+	fixtureGroundLeftDef.filter.categoryBits = RL_OBSTACLE;
+	fixtureGroundLeftDef.filter.maskBits = 0xFFFF;
+	groundBodyLeft->CreateFixture(&fixtureGroundLeftDef);
+
+
+	//right
+	b2BodyDef groundBodyDefRight;
+	groundBodyDefRight.position.Set(ARENA_MAP_SIZE + 10, ARENA_MAP_SIZE * 0.5f);
+	b2Body* groundBodyRight = m_b2dWorld->CreateBody(&groundBodyDefRight);
+	b2PolygonShape groundBoxRight;
+	groundBoxRight.SetAsBox(10.f, ARENA_MAP_SIZE);
+	b2FixtureDef fixtureGroundRightDef;
+	fixtureGroundRightDef.shape = &groundBoxRight;
+	fixtureGroundRightDef.density = 0.0f;
+	fixtureGroundRightDef.filter.categoryBits = RL_OBSTACLE;
+	fixtureGroundRightDef.filter.maskBits = 0xFFFF;
+	groundBodyRight->CreateFixture(&fixtureGroundRightDef);
+
+	//Top
+	b2BodyDef groundBodyDefTop;
+	groundBodyDefTop.position.Set(ARENA_MAP_SIZE * 0.5f, ARENA_MAP_SIZE + 10.0f);
+	b2Body* groundBodyTop = m_b2dWorld->CreateBody(&groundBodyDefTop);
+	b2PolygonShape groundBoxTop;
+	groundBoxTop.SetAsBox(ARENA_MAP_SIZE, 10.0f);
+	b2FixtureDef fixtureGroundTopDef;
+	fixtureGroundTopDef.shape = &groundBoxTop;
+	fixtureGroundTopDef.density = 0.0f;
+	fixtureGroundTopDef.filter.categoryBits = RL_OBSTACLE;
+	fixtureGroundTopDef.filter.maskBits = 0xFFFF;
+	groundBodyTop->CreateFixture(&fixtureGroundTopDef);
+
+
+
 	RLHero * hero = spawnHero(heroStr);
 	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
 	hero->getWeapon()->setIsAutoFiring(false);
@@ -140,8 +200,13 @@ Node* RLWorld::getRootNode()
 
 void RLWorld::onFrameUpdate(float dt)
 {
+	int32 velocityIterations = 6;
+	int32 positionIterations = 2;
 	if(m_currGameState ==  RL_GameState::Playing)
 	{
+
+		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
+
 		RLDirector::shared()->tick(dt);
 		for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 		{

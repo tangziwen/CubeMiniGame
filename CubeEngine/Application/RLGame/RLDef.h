@@ -10,6 +10,14 @@ enum RL_OBJECT_TYPE
 	RL_OBJECT_TYPE_BULLET
 };
 
+
+enum RL_COLLIDER_FLAG {
+	RL_OBSTACLE =          1<<1,
+	RL_PLAYER =     1<<2,
+	RL_ENEMY =        1<<3,
+	RL_PLAYER_BULLET = 1<<4,
+	RL_ENEMY_BULLET =    1<<5,
+};
 enum class RL_GameState
 {
 	MainMenu,

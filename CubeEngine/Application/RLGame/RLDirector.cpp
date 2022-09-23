@@ -200,6 +200,7 @@ void RLWave::loadStage(std::string filePath)
 }
 void RLWave::tick(float dt)
 	{
+	return;
 		if(m_SubWaveIndex >= m_SubWaveList.size()) return;//out of sub wave
 		float nextWaveWaitingTime = m_SubWaveList[m_SubWaveIndex]->getWaitingTime();
 

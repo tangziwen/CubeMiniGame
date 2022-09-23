@@ -7,6 +7,7 @@
 #include "RLSpritePool.h"
 #include "RLUtility.h"
 #include "RLSkills.h"
+#include "box2d.h"
 
 namespace tzw
 {
@@ -42,24 +43,32 @@ RLHero::~RLHero()
 void RLHero::setPosition(vec2 pos)
 {
 	RLUtility::shared()->clampToBorder(pos);
+	m_position = pos;
+	
 	m_collider->setPos(pos);
 }
 const vec2& RLHero::getPosition()
 {
+	if(m_body)
+	{
+		b2Vec2 p = m_body->GetPosition();
+		return vec2(p.x * 32.f, p.y * 32.f);
+	}
+	
 	return m_collider->getPos();
 }
 
 void RLHero::updateGraphics()
 {
-	vec2 pos = m_collider->getPos();
+	//vec2 pos = m_collider->getPos();
 	if(!m_isInitedGraphics)
 	{
 		initGraphics();
 	}
 	if(m_sprite)
 	{
-		m_sprite->pos = pos;
-		m_hpBar->pos = pos + vec2(0, -16);
+		m_sprite->pos = getPosition();
+		m_hpBar->pos = getPosition() + vec2(0, -16);
 		m_hpBar->scale = vec2(m_HP / m_MAXHP, 0.125f);
 	}
 }
@@ -84,11 +93,43 @@ void RLHero::initGraphics()
 	m_hpBar->scale = vec2(1, 0.125f);
 	RLSpritePool::shared()->get()->addTile(m_hpBar);
 
+
+	b2BodyDef bodyDef;
+	bodyDef.type = b2_dynamicBody;
+	bodyDef.position.Set(m_position.x / 32.f, m_position.y / 32.f);
+	m_body = RLWorld::shared()->getB2DWorld() ->CreateBody(&bodyDef);
+
+	b2CircleShape dynamicSphere;
+	dynamicSphere.m_radius = 0.5f;
+
+	b2FixtureDef fixtureDef;
+	fixtureDef.shape = &dynamicSphere;
+	fixtureDef.density = 1.0f; 
+	fixtureDef.friction = 1.0f;
+	fixtureDef.restitution = 0.5;
+	fixtureDef.filter.categoryBits = RL_PLAYER;
+	fixtureDef.filter.maskBits = RL_OBSTACLE | RL_ENEMY | RL_ENEMY_BULLET;
+	m_body->CreateFixture(&fixtureDef);
+
+
+
+	b2FrictionJointDef jd;
+	jd.localAnchorA.SetZero();
+	jd.localAnchorB.SetZero();
+	jd.bodyA = RLWorld::shared()->getGroundBody();
+	jd.bodyB = m_body;
+	jd.collideConnected = true;
+	jd.maxForce = 7;
+	jd.maxTorque = 0.1f * 1 * 0.5 * 10;
+
+	RLWorld::shared()->getB2DWorld()->CreateJoint(&jd);
+
 	m_isInitedGraphics = true;
 }
 
 void RLHero::onTick(float dt)
 {
+
 	m_container.tick(dt);
 	if(m_currSkill)
 	{
@@ -118,24 +159,36 @@ void RLHero::onTick(float dt)
 	{
 		//m_dashSpeed += 900.0 * dt;
 		//m_dashSpeed = std::clamp(m_dashSpeed, 0.0f, 500.f);//about 0.16s to reach the limit
-		m_dashSpeed = 250.0f;
-		if(m_dashTimer <= 0.25f)
+		m_dashSpeed = 12.f;
+		float decaySpeed = 3.f;
+		float fullSpeedTime = 0.125f;
+		float totalTime = 0.70f;
+		float firstHalf = totalTime * 0.5f;
+		//invicible
+		if(m_dashTimer <= firstHalf)
 		{
 			m_collider->setIsCollisionEnable(false);
 			m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0f);
 		}
-		else if(m_dashTimer > 0.25f && m_dashTimer <= 0.5f)
+		else
 		{
 			m_collider->setIsCollisionEnable(true);
 			m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 0.7f);
 		}
-		if(m_dashTimer > 0.5f)
+
+
+		if(m_dashTimer > totalTime)
 		{
 			m_collider->setIsCollisionEnable(true);
 			m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 0.0);
 			m_isDash = false;
 		}
-		m_dashVelocity = m_dashDir * m_dashSpeed * dt;//vec2(1 * m_dashSpeed* dt, 0);
+		float decayTime = std::max(m_dashTimer - fullSpeedTime, 0.f);
+		float ratio = 1.0f - std::min( decayTime/ (totalTime - fullSpeedTime), 1.f);
+		ratio = powf(ratio, 1.5f);
+		m_dashVelocity = m_dashDir * (m_dashSpeed *ratio + decaySpeed * (1 - ratio));//vec2(1 * m_dashSpeed* dt, 0);
+		m_body->SetLinearVelocity(b2Vec2(m_dashVelocity.x, m_dashVelocity.y));
+
 		setPosition(getPosition() + m_dashVelocity );
 		m_dashTimer += dt;
 
@@ -355,6 +408,7 @@ void RLHero::doDash()
 	{
 		m_dashDir = m_weapon->getShootDir();
 	}
+
 }
 
 void RLHero::doMove(vec2 dir, float delta)
@@ -371,7 +425,28 @@ void RLHero::doMove(vec2 dir, float delta)
 			targetSpeed *= 0.5f;
 		}
 	}
-	setPosition(getPosition() + dir * delta * targetSpeed);
+	vec2 moveTarget = dir * 5.5;
+	b2Vec2 vel = m_body->GetLinearVelocity();
+
+	float velChangeX = moveTarget.x - vel.x;
+	float velChangeY = moveTarget.y - vel.y;
+	float impulseX = m_body->GetMass() * velChangeX; //disregard time factor
+	float impulseY = m_body->GetMass() * velChangeY; //disregard time factor
+
+	
+	bool isXNeed = (moveTarget.x > 0 && moveTarget.x > vel.x) || (moveTarget.x < 0 && moveTarget.x < vel.x);
+	bool isYNeed = (moveTarget.y > 0 && moveTarget.y > vel.y) || (moveTarget.y < 0 && moveTarget.y < vel.y);
+
+	vec2 forceDir = vec2(dir.x * isXNeed, dir.y * isYNeed);
+	if(isXNeed || isYNeed)
+	{
+		forceDir = forceDir.normalized();
+		forceDir = forceDir  * 16.f;
+		m_body->ApplyForceToCenter(b2Vec2(forceDir.x, forceDir.y), true);
+	}
+
+	//m_body->ApplyLinearImpulseToCenter(b2Vec2(velChangeX, velChangeY), true);
+	//setPosition(getPosition() + dir * delta * targetSpeed);
 }
 
 void RLHero::applyEffect(std::string name)

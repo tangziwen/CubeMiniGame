@@ -31,7 +31,7 @@ void RLBulletPool::initSpriteList(Node * node)
 
 void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet, const RLBulletInfo & info)
 {
-	RLBullet * newBullet = new RLBullet();
+	RLBullet * newBullet = new RLBullet(pos, velocity);
 	newBullet->m_pos = pos;
 	newBullet->m_velocity = velocity;
 	newBullet->m_sprite = assignASprite();
@@ -40,6 +40,7 @@ void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBul
 	newBullet->m_info = info;
 	newBullet->m_collider2D.setPos(pos);
 	newBullet->m_collider2D.setRadius(16);
+
 	newBullet->m_collider2D.setSourceChannel(CollisionChannel2D_Bullet);
 	if(isAllyBullet)
 	{
@@ -63,9 +64,9 @@ void RLBulletPool::tick(float dt)
 		RLBullet * bullet = *iter;
 		if(bullet->m_sprite)
 		{
-			bullet->m_pos = bullet->m_collider2D.getPos();
-			bullet->m_pos += bullet->m_velocity * dt;
-			bullet->m_sprite->pos = bullet->m_pos;
+			//bullet->m_pos = bullet->m_body->.getPos();
+			//bullet->m_pos += bullet->m_velocity * dt;
+			bullet->m_sprite->pos = bullet->getPosition();
 			bullet->m_collider2D.setPos(bullet->m_pos);
 			//RLWorld::shared()->getQuadTree()->checkCollision(&bullet->m_collider2D);
 			bullet->m_t += dt;
