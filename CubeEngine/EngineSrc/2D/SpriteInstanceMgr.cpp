@@ -16,7 +16,7 @@ namespace tzw {
 			m_totalTypes ++;//inc for type id
 
 			auto material = new Material();
-			material->loadFromTemplate("TileMap2D");
+			material->loadFromTemplate("SpriteInstance2D");
 			auto texture = TextureMgr::shared()->getByPath(filePath);
 			material->setTex("SpriteTexture", texture);
 
@@ -125,6 +125,7 @@ namespace tzw {
 			data.transform.setTranslate(vec3(tile->pos.x, tile->pos.y, 0.f));
 			data.transform.setScale(vec3(tile->scale.x, tile->scale.y, 1.f));
 			data.extraInfo = tile->overLayColor;
+			data.extraInfo2 = vec4(tile->alpha, 0.f, 0.f, 0.f);
 			m_tileTypePool[tile->type]->m_instances[tile->layer]->pushInstance(data);
 		}
 		auto currCam = g_GetCurrScene()->defaultGUICamera();

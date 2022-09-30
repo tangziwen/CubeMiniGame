@@ -1,0 +1,18 @@
+{
+	"shaders":{
+		"vs" : "Shaders/SpriteInstance2D_v.glsl",
+		"fs" : "Shaders/SpriteInstance2D_f.glsl"
+	},
+	"name" : "TileMap2D",
+	"BlendEnable" : true,
+	"DepthTestEnable" : false,
+	"EnableInstanced" : true,
+	"property" : {
+		"attributes" : [
+			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
+		],
+		"maps" : [
+			["SpriteTexture", 0]
+		]
+	}
+}

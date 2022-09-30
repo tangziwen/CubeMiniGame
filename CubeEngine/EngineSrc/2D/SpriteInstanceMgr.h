@@ -19,6 +19,7 @@ struct SpriteInstanceInfo
 	vec4 overLayColor {1.0f, 1.0f, 1.0f, 0.0f};
 	bool m_isVisible = true;
 	unsigned int layer = 0;
+	float alpha = 1.f;
 };
 
 struct SpriteTypeInfo
