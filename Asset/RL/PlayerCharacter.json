@@ -1,7 +1,7 @@
 [
     {
         "Name":"Cop",
-        "MaxHealth":100,
+        "MaxHealth":999999,
         "MeleeDamage":5,
 		"Speed":180,
         "DefaultWeapon":"Police_Pistol",

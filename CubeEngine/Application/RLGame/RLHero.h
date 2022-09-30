@@ -1,4 +1,5 @@
 #pragma once
+#include "RLDef.h"
 #include "2D/Sprite.h"
 #include "Engine/EngineDef.h"
 #include "RLWeapon.h"
@@ -6,12 +7,13 @@
 #include "2D/SpriteInstanceMgr.h"
 #include "RLEffectMgr.h"
 class b2Body;
+class b2Joint;
 namespace tzw
 {
 	class RLController;
 	class RLHeroData;
 	class RLSkillBase;
-
+	
 	class RLHero : public TObjectReflect
 	{
 	public:
@@ -29,7 +31,7 @@ namespace tzw
 		void equipWeapon(RLWeapon * weapon);
 		RLWeapon * getWeapon();
 		Collider2D * getCollider2D();
-		void onCollision(Collider2D * self, Collider2D * other);
+		void onCollision(b2Body* self, b2Body* other, b2Contact* contact);
 		void setIsPlayerControll(bool newVal) {m_isPlayerControll = newVal;}
 		bool getIsPlayerControll() {return m_isPlayerControll;}
 		void receiveDamage(float damage);
@@ -46,6 +48,8 @@ namespace tzw
 		RLHeroData * getHeroData();
 		RLSkillBase* playSkill();
 		RLSkillBase* playSkillToTarget(RLHero * hero);
+		void enterPhase();
+		void leavePhase();
 		TZW_PROPERTY(float, HP, 100.f);
 		TZW_PROPERTY(float, MAXHP, 100.f);
 		TZW_PROPERTY(float, Mana, 100.f);
@@ -85,6 +89,7 @@ namespace tzw
 
 		bool m_isDash = false;
 		float m_dashTimer = 0.f;
+		bool m_isEnterDashSecondHalf = false;
 		vec2 m_dashVelocity;
 		vec2 m_dashDir;
 		float m_dashSpeed;
@@ -94,7 +99,10 @@ namespace tzw
 		bool m_isDeflect = false;
 		float m_deflectTimer = 0;
 		b2Body * m_body = nullptr;
+		b2Joint * m_frictionJoint = nullptr;
 		vec2 m_position;
+		RLUserDataWrapper m_wrapper;
+
 	};
 }
 

@@ -139,8 +139,11 @@ int RLWeapon::getTotalRound()
 
  void RLWeapon::reload()
  {
-	m_isReloading = true;
-	m_currTime = 0.f;
+	 if(m_currRound< m_data->m_fireRound)
+	 {
+		m_isReloading = true;
+		m_currTime = 0.f;
+	 }
  }
 void RLWeapon::setShootDir(const vec2& shootDir)
 {

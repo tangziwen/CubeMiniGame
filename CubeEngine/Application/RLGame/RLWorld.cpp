@@ -13,8 +13,34 @@
 #include "RLAIController.h"
 #include "Engine/Engine.h"
 #include "box2d.h"
+#include "RLSFX.h"
 namespace tzw
 {
+
+
+void RLContactListener::BeginContact(b2Contact* contact)
+{
+
+}
+
+void RLContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifold)
+{
+	
+	RLUserDataWrapper * wrapperA = reinterpret_cast<RLUserDataWrapper*>(contact->GetFixtureA()->GetBody()->GetUserData().pointer);
+	if(wrapperA && wrapperA->m_cb)
+	{
+
+		wrapperA->m_cb(contact->GetFixtureA()->GetBody(), contact->GetFixtureB()->GetBody(), contact);
+	}
+
+	RLUserDataWrapper * wrapperB = reinterpret_cast<RLUserDataWrapper*>(contact->GetFixtureB()->GetBody()->GetUserData().pointer);
+	if(wrapperB && wrapperB->m_cb)
+	{
+
+		wrapperB->m_cb(contact->GetFixtureB()->GetBody(), contact->GetFixtureA()->GetBody(), contact);
+	}
+}
+
 void RLWorld::start()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
@@ -69,60 +95,71 @@ void RLWorld::startGame(std::string heroStr)
 {
 	m_b2dWorld = new b2World(b2Vec2(0,-0.0));
 
-	//Ground
-	b2BodyDef groundBodyDef;
-	groundBodyDef.position.Set(ARENA_MAP_SIZE * 0.5f, -10.0f);
-	m_groundBody = m_b2dWorld->CreateBody(&groundBodyDef);
-	b2PolygonShape groundBox;
-	groundBox.SetAsBox(ARENA_MAP_SIZE, 10.0f);
+	m_contactListener = new RLContactListener();
+	m_b2dWorld->SetContactListener(m_contactListener);
+	{
+		//Ground
+		b2BodyDef groundBodyDef;
+		groundBodyDef.position.Set(ARENA_MAP_SIZE * 0.5f, -10.0f);
+		m_groundBody = m_b2dWorld->CreateBody(&groundBodyDef);
+		b2PolygonShape groundBox;
+		groundBox.SetAsBox(ARENA_MAP_SIZE, 10.0f);
 
-	b2FixtureDef fixtureGroundDef;
-	fixtureGroundDef.shape = &groundBox;
-	fixtureGroundDef.density = 0.0f;
-	fixtureGroundDef.filter.categoryBits = RL_OBSTACLE;
-	fixtureGroundDef.filter.maskBits = 0xFFFF;
-	m_groundBody->CreateFixture(&fixtureGroundDef);
+		b2FixtureDef fixtureGroundDef;
+		fixtureGroundDef.shape = &groundBox;
+		fixtureGroundDef.density = 0.0f;
+		fixtureGroundDef.filter.categoryBits = RL_OBSTACLE;
+		fixtureGroundDef.filter.maskBits = 0xFFFF;
+		m_groundBody->CreateFixture(&fixtureGroundDef);
+	}
+	{
+		//left
+		b2BodyDef groundBodyDef2;
+		groundBodyDef2.position.Set(-10, ARENA_MAP_SIZE * .5f);
+		b2Body* groundBodyLeft = m_b2dWorld->CreateBody(&groundBodyDef2);
+		b2PolygonShape groundBoxLeft;
+		groundBoxLeft.SetAsBox(10, ARENA_MAP_SIZE);
 
-	//left
-	b2BodyDef groundBodyDef2;
-	groundBodyDef2.position.Set(-10, ARENA_MAP_SIZE * .5f);
-	b2Body* groundBodyLeft = m_b2dWorld->CreateBody(&groundBodyDef2);
-	b2PolygonShape groundBoxLeft;
-	groundBoxLeft.SetAsBox(10, ARENA_MAP_SIZE);
-
-	b2FixtureDef fixtureGroundLeftDef;
-	fixtureGroundLeftDef.shape = &groundBoxLeft;
-	fixtureGroundLeftDef.density = 0.0f;
-	fixtureGroundLeftDef.filter.categoryBits = RL_OBSTACLE;
-	fixtureGroundLeftDef.filter.maskBits = 0xFFFF;
-	groundBodyLeft->CreateFixture(&fixtureGroundLeftDef);
+		b2FixtureDef fixtureGroundLeftDef;
+		fixtureGroundLeftDef.shape = &groundBoxLeft;
+		fixtureGroundLeftDef.density = 0.0f;
+		fixtureGroundLeftDef.filter.categoryBits = RL_OBSTACLE;
+		fixtureGroundLeftDef.filter.maskBits = 0xFFFF;
+		groundBodyLeft->CreateFixture(&fixtureGroundLeftDef);
+	}
 
 
-	//right
-	b2BodyDef groundBodyDefRight;
-	groundBodyDefRight.position.Set(ARENA_MAP_SIZE + 10, ARENA_MAP_SIZE * 0.5f);
-	b2Body* groundBodyRight = m_b2dWorld->CreateBody(&groundBodyDefRight);
-	b2PolygonShape groundBoxRight;
-	groundBoxRight.SetAsBox(10.f, ARENA_MAP_SIZE);
-	b2FixtureDef fixtureGroundRightDef;
-	fixtureGroundRightDef.shape = &groundBoxRight;
-	fixtureGroundRightDef.density = 0.0f;
-	fixtureGroundRightDef.filter.categoryBits = RL_OBSTACLE;
-	fixtureGroundRightDef.filter.maskBits = 0xFFFF;
-	groundBodyRight->CreateFixture(&fixtureGroundRightDef);
+	{
+		//right
+		b2BodyDef groundBodyDefRight;
+		groundBodyDefRight.position.Set(ARENA_MAP_SIZE + 10, ARENA_MAP_SIZE * 0.5f);
+		b2Body* groundBodyRight = m_b2dWorld->CreateBody(&groundBodyDefRight);
+		b2PolygonShape groundBoxRight;
+		groundBoxRight.SetAsBox(10.f, ARENA_MAP_SIZE);
+		b2FixtureDef fixtureGroundRightDef;
+		fixtureGroundRightDef.shape = &groundBoxRight;
+		fixtureGroundRightDef.density = 0.0f;
+		fixtureGroundRightDef.filter.categoryBits = RL_OBSTACLE;
+		fixtureGroundRightDef.filter.maskBits = 0xFFFF;
+		groundBodyRight->CreateFixture(&fixtureGroundRightDef);
+	}
 
-	//Top
-	b2BodyDef groundBodyDefTop;
-	groundBodyDefTop.position.Set(ARENA_MAP_SIZE * 0.5f, ARENA_MAP_SIZE + 10.0f);
-	b2Body* groundBodyTop = m_b2dWorld->CreateBody(&groundBodyDefTop);
-	b2PolygonShape groundBoxTop;
-	groundBoxTop.SetAsBox(ARENA_MAP_SIZE, 10.0f);
-	b2FixtureDef fixtureGroundTopDef;
-	fixtureGroundTopDef.shape = &groundBoxTop;
-	fixtureGroundTopDef.density = 0.0f;
-	fixtureGroundTopDef.filter.categoryBits = RL_OBSTACLE;
-	fixtureGroundTopDef.filter.maskBits = 0xFFFF;
-	groundBodyTop->CreateFixture(&fixtureGroundTopDef);
+
+	{
+		//Top
+		b2BodyDef groundBodyDefTop;
+		groundBodyDefTop.position.Set(ARENA_MAP_SIZE * 0.5f, ARENA_MAP_SIZE + 10.0f);
+		b2Body* groundBodyTop = m_b2dWorld->CreateBody(&groundBodyDefTop);
+		b2PolygonShape groundBoxTop;
+		groundBoxTop.SetAsBox(ARENA_MAP_SIZE, 10.0f);
+		b2FixtureDef fixtureGroundTopDef;
+		fixtureGroundTopDef.shape = &groundBoxTop;
+		fixtureGroundTopDef.density = 0.0f;
+		fixtureGroundTopDef.filter.categoryBits = RL_OBSTACLE;
+		fixtureGroundTopDef.filter.maskBits = 0xFFFF;
+		groundBodyTop->CreateFixture(&fixtureGroundTopDef);
+	}
+
 
 
 
@@ -208,6 +245,7 @@ void RLWorld::onFrameUpdate(float dt)
 		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
 
 		RLDirector::shared()->tick(dt);
+		RLSFXMgr::shared()->tick(dt);
 		for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 		{
 			RLHero * hero = *iter;
@@ -278,32 +316,33 @@ void RLWorld::getRandomBoundaryPos(int count, std::vector<vec2>& posList)
 	for(int i = 0; i < count; i++)
 	{
 		int rndSide = rand() %4;
+		float gapSpace = ARENA_MAP_TILE_SIZE / 2;
 		//bottom
 		switch(rndSide)
 		{
 		case 0://bottom
 			{
 				int idx = rand() % ARENA_MAP_SIZE;
-				posList.push_back(vec2(idx * 32, 0));
+				posList.push_back(vec2(idx * 32, gapSpace));
 			}
 		break;
 
 		case 1://top
 			{
 				int idx = rand() % ARENA_MAP_SIZE;
-				posList.push_back(vec2(idx * 32, (ARENA_MAP_SIZE - 1) * 32));
+				posList.push_back(vec2(idx * 32, (ARENA_MAP_SIZE - 1) * 32 - gapSpace));
 			}
 		break;
 		case 2://left
 			{
 				int idx = rand() % ARENA_MAP_SIZE;
-				posList.push_back(vec2(0, idx * 32));
+				posList.push_back(vec2(gapSpace, idx * 32));
 			}
 		break;
 		case 3://right
 		{
 			int idx = rand() % ARENA_MAP_SIZE;
-			posList.push_back(vec2((ARENA_MAP_SIZE - 1) * 32, idx * 32));
+			posList.push_back(vec2((ARENA_MAP_SIZE - 1) * 32 - gapSpace, idx * 32));
 		}
 		break;
 		default:
@@ -348,6 +387,10 @@ vec2 RLWorld::getRandomPos()
 	float offset = 16.0f;
 	return vec2(TbaseMath::randRange(offset, ARENA_MAP_SIZE * 32.f - offset), TbaseMath::randRange(offset, ARENA_MAP_SIZE * 32.f - offset));
 }
+
+
+
+
 
 
 

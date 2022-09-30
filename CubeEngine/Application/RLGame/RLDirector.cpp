@@ -200,7 +200,7 @@ void RLWave::loadStage(std::string filePath)
 }
 void RLWave::tick(float dt)
 	{
-	return;
+
 		if(m_SubWaveIndex >= m_SubWaveList.size()) return;//out of sub wave
 		float nextWaveWaitingTime = m_SubWaveList[m_SubWaveIndex]->getWaitingTime();
 
@@ -288,6 +288,11 @@ void RLWave::tick(float dt)
 				BigWaveIdx++;
 				subWave->setWaitingTime(10000.0f);
 			}
+
+			//test
+			subWave->m_generateMonster.clear();
+			subWave->m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Wizard")] = 2;
+			subWave->m_totalCount = 2;
 			//
 			m_SubWaveList.push_back(subWave);
 		}

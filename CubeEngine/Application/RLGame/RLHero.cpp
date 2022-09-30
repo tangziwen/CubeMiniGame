@@ -8,18 +8,21 @@
 #include "RLUtility.h"
 #include "RLSkills.h"
 #include "box2d.h"
-
+#include "RLSFX.h"
 namespace tzw
 {
+constexpr float characterRadius = 0.5f;
+#pragma optimize("", off)
 RLHero::RLHero(int idType)
 	:m_id(idType)
 {
 	m_collider = new Collider2D(16, vec2(0, 0));
-	m_collider->m_cb = [this](Collider2D* self, Collider2D* other)
+	m_wrapper = RLUserDataWrapper(this, RL_OBJECT_TYPE_MONSTER);
+	m_wrapper.m_cb = [this](b2Body* self, b2Body* other, b2Contact* contact)
 	{
-		onCollision(self, other);
+		//onCollision(self, other, contact);
 	};
-	m_collider->setUserData(UserDataWrapper(this, RL_OBJECT_TYPE_MONSTER));
+	
 	m_heroData = RLHeroCollection::shared()->getHeroData(idType);
 	m_HP = m_heroData->m_maxHealth;
 	m_MAXHP = m_heroData->m_maxHealth;
@@ -36,6 +39,8 @@ RLHero::~RLHero()
 	//delete m_sprite;
 	RLSpritePool::shared()->get()->removeSprite(m_sprite);
 	RLSpritePool::shared()->get()->removeSprite(m_hpBar);
+	RLWorld::shared()->getB2DWorld()->DestroyJoint(m_frictionJoint);
+	RLWorld::shared()->getB2DWorld()->DestroyBody(m_body);
 	delete m_collider;
 	delete m_weapon;
 }
@@ -52,10 +57,12 @@ const vec2& RLHero::getPosition()
 	if(m_body)
 	{
 		b2Vec2 p = m_body->GetPosition();
-		return vec2(p.x * 32.f, p.y * 32.f);
+		vec2 posInPixel = vec2(p.x * 32.f, p.y * 32.f);
+		m_position = posInPixel;
+		return posInPixel;
 	}
 	
-	return m_collider->getPos();
+	return m_position;
 }
 
 void RLHero::updateGraphics()
@@ -99,16 +106,27 @@ void RLHero::initGraphics()
 	bodyDef.position.Set(m_position.x / 32.f, m_position.y / 32.f);
 	m_body = RLWorld::shared()->getB2DWorld() ->CreateBody(&bodyDef);
 
+	m_body->GetUserData().pointer = (uintptr_t)(&m_wrapper);
 	b2CircleShape dynamicSphere;
-	dynamicSphere.m_radius = 0.5f;
+	dynamicSphere.m_radius = characterRadius;
 
 	b2FixtureDef fixtureDef;
 	fixtureDef.shape = &dynamicSphere;
 	fixtureDef.density = 1.0f; 
 	fixtureDef.friction = 1.0f;
 	fixtureDef.restitution = 0.5;
-	fixtureDef.filter.categoryBits = RL_PLAYER;
-	fixtureDef.filter.maskBits = RL_OBSTACLE | RL_ENEMY | RL_ENEMY_BULLET;
+	if(m_isPlayerControll)
+	{
+		fixtureDef.filter.categoryBits = RL_PLAYER;
+		fixtureDef.filter.maskBits = RL_OBSTACLE | RL_ENEMY | RL_ENEMY_BULLET;
+	}
+	else
+	{
+		fixtureDef.filter.categoryBits = RL_ENEMY;
+		fixtureDef.filter.maskBits = RL_OBSTACLE | RL_PLAYER | RL_PLAYER_BULLET | RL_ENEMY;
+	}
+		
+	
 	m_body->CreateFixture(&fixtureDef);
 
 
@@ -122,7 +140,7 @@ void RLHero::initGraphics()
 	jd.maxForce = 7;
 	jd.maxTorque = 0.1f * 1 * 0.5 * 10;
 
-	RLWorld::shared()->getB2DWorld()->CreateJoint(&jd);
+	m_frictionJoint = RLWorld::shared()->getB2DWorld()->CreateJoint(&jd);
 
 	m_isInitedGraphics = true;
 }
@@ -157,8 +175,6 @@ void RLHero::onTick(float dt)
 	}
 	if(m_isDash)
 	{
-		//m_dashSpeed += 900.0 * dt;
-		//m_dashSpeed = std::clamp(m_dashSpeed, 0.0f, 500.f);//about 0.16s to reach the limit
 		m_dashSpeed = 12.f;
 		float decaySpeed = 3.f;
 		float fullSpeedTime = 0.125f;
@@ -167,21 +183,24 @@ void RLHero::onTick(float dt)
 		//invicible
 		if(m_dashTimer <= firstHalf)
 		{
-			m_collider->setIsCollisionEnable(false);
 			m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0f);
 		}
 		else
 		{
-			m_collider->setIsCollisionEnable(true);
+			if(!m_isEnterDashSecondHalf)
+			{
+				leavePhase();
+				m_isEnterDashSecondHalf = true;
+			}
 			m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 0.7f);
 		}
 
 
 		if(m_dashTimer > totalTime)
 		{
-			m_collider->setIsCollisionEnable(true);
 			m_sprite->overLayColor = vec4(1.0, 1.0, 1.0, 0.0);
 			m_isDash = false;
+			m_isEnterDashSecondHalf = false;
 		}
 		float decayTime = std::max(m_dashTimer - fullSpeedTime, 0.f);
 		float ratio = 1.0f - std::min( decayTime/ (totalTime - fullSpeedTime), 1.f);
@@ -283,19 +302,19 @@ Collider2D* RLHero::getCollider2D()
 	return m_collider;
 }
 
-void RLHero::onCollision(Collider2D* self, Collider2D* other)
+void RLHero::onCollision(b2Body* self, b2Body* other, b2Contact* contact)
 {
 	if(!getIsPlayerControll())
 	{
-		if(other->getUserData().m_userData)
+		if(other->GetUserData().pointer)
 		{
-			
-			switch(other->getUserData().m_tag)
+			RLUserDataWrapper * data = reinterpret_cast<RLUserDataWrapper * >(other->GetUserData().pointer);
+			switch(data->m_tag)
 			{
 			case RL_OBJECT_TYPE_MONSTER:
 			{
 				
-				RLHero * hero = reinterpret_cast<RLHero *>(other->getUserData().m_userData);
+				RLHero * hero = reinterpret_cast<RLHero *>(data->m_userData);
 				if(hero->getIsPlayerControll())
 				{
 					hero->receiveDamage(5);
@@ -390,6 +409,7 @@ void RLHero::doDash()
 	m_collider->setIsCollisionEnable(false);
 	m_sprite->overLayColor = vec4(0.5, 0.5, 1.0, 1.0);
 	m_container.trigger(RLEffectGrantType::OnDash);
+	enterPhase();
 	if(m_Mana > 30.0f)
 	{
 		m_Mana = std::max(15.0f, m_Mana - 10.0f);
@@ -460,11 +480,61 @@ void RLHero::applyEffect(RLEffect* effect)
 	RLEffectInstance * instance =  RLEffectMgr::shared()->getInstance(this, effect, &m_container);
 	m_container.addEffectInstance(instance);
 }
+class QueryCb :public b2QueryCallback
+{
+public:
+	virtual bool ReportFixture(b2Fixture* fixture)
+	{
+	
+		m_resultBodyList.push_back(fixture->GetBody());
+		return true;
+	}
+std::vector<b2Body *> m_resultBodyList;
+};
 
 bool RLHero::startDeflect()
 {
-	m_isDeflect = true;
-	m_deflectTimer = 0.f;
+	//m_isDeflect = true;
+	//m_deflectTimer = 0.f;
+	
+	vec2 dir = m_weapon->getShootDir();
+
+	b2Vec2 p = m_body->GetPosition();
+	
+	vec2 targetPosition = vec2(p.x, p.y) + dir * 4.f;
+	
+	float explosiveRadius = 1.5f;
+	b2AABB aabb;
+	aabb.lowerBound = b2Vec2(-explosiveRadius + targetPosition.x, -explosiveRadius + targetPosition.y);
+	aabb.upperBound = b2Vec2(explosiveRadius + targetPosition.x, explosiveRadius + targetPosition.y);
+	QueryCb queryCB;
+	RLWorld::shared()->getB2DWorld()->QueryAABB(&queryCB, aabb);
+	RLSFXSpec spec = {"RL/AirJab.png", 0.3f, explosiveRadius / 0.5f};
+	RLSFXMgr::shared()->addSFX(vec2(targetPosition.x * 32.f, targetPosition.y * 32.f), spec);
+	for(b2Body * body : queryCB.m_resultBodyList)
+	{
+		if(body->GetFixtureList()[0].GetFilterData().categoryBits == RL_ENEMY)
+		{
+			b2Vec2 pos = body->GetPosition();
+			b2Vec2 diff = pos - b2Vec2(targetPosition.x, targetPosition.y);
+			float length = diff.Normalize();
+			if(length < (explosiveRadius + characterRadius))
+			{
+				diff *= 7.f;
+				RLSFXSpec spec = {"RL/Explosive.png", 0.1f};
+				RLSFXMgr::shared()->addSFX(vec2(pos.x * 32.f, pos.y * 32.f), spec);
+				body->SetLinearVelocity(b2Vec2(0, 0));
+				body->ApplyLinearImpulseToCenter(diff, true);
+
+
+				RLUserDataWrapper * data = reinterpret_cast<RLUserDataWrapper * >(body->GetUserData().pointer);
+
+
+				RLHero * hero = reinterpret_cast<RLHero *>(data->m_userData);
+				hero->receiveDamage(10.f);
+			}
+		}
+	}
 	return true;
 }
 
@@ -493,6 +563,33 @@ RLSkillBase* RLHero::playSkillToTarget(RLHero* hero)
 	m_currSkill->getBlackBoard().writeData("SkillTarget", hero);
 	m_currSkill->onEnter();
 	return m_currSkill;
+}
+
+void RLHero::enterPhase()
+{
+	b2Filter filter;
+	for ( b2Fixture* f = m_body->GetFixtureList(); f; f = f->GetNext() ) {
+		filter = f->GetFilterData();
+		filter.maskBits = RL_OBSTACLE;
+		f->SetFilterData(filter);
+	}
+}
+
+void RLHero::leavePhase()
+{
+	b2Filter filter;
+	for ( b2Fixture* f = m_body->GetFixtureList(); f; f = f->GetNext() ) {
+		filter = f->GetFilterData();
+		if(m_isPlayerControll) 
+		{
+			filter.maskBits = RL_OBSTACLE | RL_ENEMY | RL_ENEMY_BULLET;
+		}
+		else
+		{
+			filter.maskBits = RL_OBSTACLE | RL_PLAYER | RL_PLAYER_BULLET | RL_ENEMY;
+		}
+		f->SetFilterData(filter);
+	}
 }
 
 

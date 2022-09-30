@@ -31,7 +31,7 @@ void RLBulletPool::initSpriteList(Node * node)
 
 void RLBulletPool::spawnBullet(int type, vec2 pos, vec2 velocity, bool isAllyBullet, const RLBulletInfo & info)
 {
-	RLBullet * newBullet = new RLBullet(pos, velocity);
+	RLBullet * newBullet = new RLBullet(pos, velocity, isAllyBullet);
 	newBullet->m_pos = pos;
 	newBullet->m_velocity = velocity;
 	newBullet->m_sprite = assignASprite();
@@ -76,6 +76,7 @@ void RLBulletPool::tick(float dt)
 				returnSprite(bullet->m_sprite);
 				RLWorld::shared()->getQuadTree()->removeCollider(&bullet->m_collider2D);
 				iter = m_bulletsList.erase(iter);
+				RLWorld::shared()->getB2DWorld()->DestroyBody(bullet->m_body);
 				delete bullet;
 			}
 			else

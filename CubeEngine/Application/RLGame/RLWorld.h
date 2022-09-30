@@ -13,6 +13,12 @@ namespace tzw
 	class RLHero;
 	class Camera;
 	class RLCollectible;
+	class RLContactListener : public b2ContactListener
+	{
+	public:
+		void BeginContact(b2Contact* contact) override;
+		void PreSolve(b2Contact* contact, const b2Manifold* oldManifold) override;
+	};
 	class RLWorld : public Singleton<RLWorld>,  public EventListener
 	{
 	public:
@@ -60,6 +66,7 @@ namespace tzw
 		float m_scale = 1.0f;
 		b2World * m_b2dWorld;
 		b2Body* m_groundBody = nullptr;
+		RLContactListener * m_contactListener;
 	};
 }
 

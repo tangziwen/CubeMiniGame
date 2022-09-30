@@ -208,12 +208,12 @@ namespace tzw
 					Quaternion quat;
 					if (TbaseMath::randRange(0.0f, 1.0f) > 0.5f)
 					{
-						quat.fromEulerAngle(vec3(0, 0, TbaseMath::randRange(15, 75)));
+						quat.fromEulerAngle(vec3(0, 0, TbaseMath::randRange(15, 45)));
 					}
 					else
 					{
 
-						quat.fromEulerAngle(vec3(0, 0, TbaseMath::randRange(-15, -75)));
+						quat.fromEulerAngle(vec3(0, 0, TbaseMath::randRange(-15, -45)));
 					}
 					
 					mat.setRotation(quat);
@@ -273,7 +273,9 @@ namespace tzw
 		context.self = self;
 		context.target = player;
 		context.controller = this;
-		vec2 diff = player->getPosition() - self->getPosition();
+		vec2 pPos = player->getPosition();
+		vec2 selfPos = self->getPosition();
+		vec2 diff = pPos - selfPos;
 		context.playerDistance = diff.length();
 
 		for(auto condition : m_statesCondList[int(m_currState)].m_condList)
@@ -339,26 +341,28 @@ namespace tzw
 	//RLAIControllerShooter
 	RLAIControllerShooter::RLAIControllerShooter()
 	{
-		float shootRange = 32.f * 10.f;
+		float shootRange = 32.f * 8.f;
 		float shootRangeOffset = 64.f;
 		float dangerRange = 64.0f;
 		//chasing
-		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, shootRange - shootRangeOffset, RLAIState::Repositioning));
+		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, shootRange - shootRangeOffset, RLAIState::StationaryShooting));
 
 
 		//shooting too far
 		addCondition(RLAIState::Repositioning, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, shootRange + shootRangeOffset, RLAIState::Chasing));
-		//shooting too close
-		addCondition(RLAIState::Repositioning, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, dangerRange, RLAIState::FallBack));
 		
-		//some time they stay
-		addCondition(RLAIState::Repositioning, new RLAIJmpCondDuration(8, RLAIState::StationaryShooting, vec2(0.8, 2.0)));
+		//shooting too close, FallBack
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, dangerRange, RLAIState::FallBack));
+		
+		//End Fall Back
+		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, dangerRange * 2.0f, RLAIState::StationaryShooting));
 
-		//StationaryShooting
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.0, RLAIState::Repositioning, vec2(0.3, 1.2)));
+		//got to repositioning
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(3.5f, RLAIState::Repositioning, vec2(0.0f, 1.3f)));
 
-		//Fall Back
-		addCondition(RLAIState::FallBack, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::OutOfRange, dangerRange * 2.0f, RLAIState::Repositioning));
+		//repositioning over
+		addCondition(RLAIState::Repositioning, new RLAITranscationCond(RLAIState::StationaryShooting));
+
 	}
 
 

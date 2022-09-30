@@ -1,6 +1,7 @@
 #pragma once
 #include "Math/vec2.h"
 #include "2D/Collider2D.h"
+#include "RLDef.h"
 class b2Body;
 namespace tzw
 {
@@ -13,8 +14,8 @@ struct RLBulletInfo
 };
 struct RLBullet
 {
-	RLBullet(vec2 Pos, vec2 Velocity);
-	void onCollision(Collider2D * self, Collider2D * other);
+	RLBullet(vec2 Pos, vec2 Velocity, bool isAllyBullet);
+	void onCollision(b2Body * self, b2Body * other, b2Contact* contact);
 
 	vec2 m_pos;
 	vec2 m_velocity;
@@ -27,5 +28,6 @@ struct RLBullet
 	bool m_isLiving = true;
 	RLBulletInfo m_info;
 	b2Body * m_body;
+	RLUserDataWrapper m_wrapper;
 };
 }

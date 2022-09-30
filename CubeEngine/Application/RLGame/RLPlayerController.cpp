@@ -82,6 +82,9 @@ namespace tzw
 		case TZW_KEY_ESCAPE:
 			RLWorld::shared()->goToPause();
 			break;
+		case TZW_KEY_R:
+			m_currPossessHero->getWeapon()->reload();
+			break;
 		default:
 			break;
 		};

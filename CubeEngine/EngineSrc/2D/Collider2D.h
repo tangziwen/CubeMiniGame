@@ -11,6 +11,7 @@ namespace tzw
 		UserDataWrapper():m_userData(nullptr), m_tag(0){};
 		void * m_userData = nullptr;
 		int m_tag = 0;
+		std::function <void(UserDataWrapper * , UserDataWrapper *)> m_cb;
 	};
 	enum CollisionChannel2D : uint16_t
 	{
