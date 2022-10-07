@@ -8,7 +8,8 @@
 #include "RLUtility.h"
 #include "RLSkills.h"
 #include "box2d.h"
-#include "RLSFX.h"
+#include "RLDirector.h"
+//#include "RLSFX.h"
 namespace tzw
 {
 constexpr float characterRadius = 0.5f;
@@ -354,6 +355,7 @@ void RLHero::receiveDamage(float damage)
 		}
 		else
 		{
+			RLDirector::shared()->getCurrentWavePtr()->regKill(m_heroData->m_id);
 			RLPlayerState::shared()->addScore(10);
 			if(rand() % 10 > 3)
 			{
@@ -509,8 +511,8 @@ bool RLHero::startDeflect()
 	aabb.upperBound = b2Vec2(explosiveRadius + targetPosition.x, explosiveRadius + targetPosition.y);
 	QueryCb queryCB;
 	RLWorld::shared()->getB2DWorld()->QueryAABB(&queryCB, aabb);
-	RLSFXSpec spec = {"RL/AirJab.png", 0.3f, explosiveRadius / 0.5f};
-	RLSFXMgr::shared()->addSFX(vec2(targetPosition.x * 32.f, targetPosition.y * 32.f), spec);
+	//RLSFXSpec spec = {"RL/AirJab.png", 0.3f, explosiveRadius / 0.5f};
+	//RLSFXMgr::shared()->addSFX(vec2(targetPosition.x * 32.f, targetPosition.y * 32.f), spec);
 	for(b2Body * body : queryCB.m_resultBodyList)
 	{
 		if(body->GetFixtureList()[0].GetFilterData().categoryBits == RL_ENEMY)
@@ -521,8 +523,8 @@ bool RLHero::startDeflect()
 			if(length < (explosiveRadius + characterRadius))
 			{
 				diff *= 7.f;
-				RLSFXSpec spec = {"RL/Explosive.png", 0.1f};
-				RLSFXMgr::shared()->addSFX(vec2(pos.x * 32.f, pos.y * 32.f), spec);
+				//RLSFXSpec spec = {"RL/Explosive.png", 0.1f};
+				//RLSFXMgr::shared()->addSFX(vec2(pos.x * 32.f, pos.y * 32.f), spec);
 				body->SetLinearVelocity(b2Vec2(0, 0));
 				body->ApplyLinearImpulseToCenter(diff, true);
 

@@ -6,6 +6,7 @@
 #include "rapidjson/document.h"
 #include "Utility/file/Tfile.h"
 #include "Utility/log/Log.h"
+#include "RLShopMgr.h"
 namespace tzw
 {
 void RLSubWaveGenerator::generate(int targetDifficulty, int targetMaxCount, std::unordered_map<int, int>& generateMonster, int & outTotalCount)
@@ -115,7 +116,7 @@ RLSubWave::RLSubWave(int wave, int subwaveID)
 
 void RLSubWave::startWave()
 	{
-
+		setIsLaunch(true);
 		//genearate a wave
 		std::vector<vec2> spawnPos;
 		RLWorld::shared()->getRandomBoundaryPos(m_totalCount, spawnPos);
@@ -198,35 +199,30 @@ void RLWave::loadStage(std::string filePath)
 	}
 
 }
-void RLWave::tick(float dt)
+	void RLWave::tick(float dt)
 	{
 
 		if(m_SubWaveIndex >= m_SubWaveList.size()) return;//out of sub wave
-		float nextWaveWaitingTime = m_SubWaveList[m_SubWaveIndex]->getWaitingTime();
 
-		if(m_time >= nextWaveWaitingTime)
+		if(isFinishedCurrSubWave())
 		{
-			
-			m_SubWaveList[m_SubWaveIndex]->startWave();
-			m_SubWaveIndex ++;
-			m_time = 0;
-			RLDirector::shared()->addCombatStrength(0.25f);
-			
+			//go to perk selection
+			openPerkSelction();
 		}
 		else
 		{
-			if(RLWorld::shared()->getHeroesCount()<= 1)//only player speed it up
+			if(!m_SubWaveList[m_SubWaveIndex]->getIsLaunch())
 			{
-				if(((nextWaveWaitingTime - m_time) > 2.0f))
+				float nextWaveWaitingTime = m_SubWaveList[m_SubWaveIndex]->getWaitingTime();
+				if(m_time >= nextWaveWaitingTime)
 				{
-			
-					m_time = nextWaveWaitingTime - 1.97f;
+					launchNextSubWave();
 				}
+				m_time += dt;
 			}
-		
 		}
-		m_time += dt;
 	}
+
 	void RLWave::generateSubWaves()
 	{
 		auto& re = TbaseMath::getRandomEngine();
@@ -243,16 +239,7 @@ void RLWave::tick(float dt)
 		for(int i = 0; i < totalWave * wavePerStage; i++)
 		{
 			RLSubWave * subWave = new RLSubWave(m_waveId, i);
-			if(i == 0)
-			{
-				subWave->setWaitingTime(3.f);
-			}
-			else
-			{
-				
-				subWave->setWaitingTime(999.f);
-				prevWaveDelayTime = 0.f;
-			}
+
 			int unitDifficulty = i * 2 + 1;
 
 
@@ -286,7 +273,16 @@ void RLWave::tick(float dt)
 				}
 				prevWaveDelayTime = group.m_delayTime;
 				BigWaveIdx++;
-				subWave->setWaitingTime(10000.0f);
+				if(i == 0)
+				{
+					subWave->setWaitingTime(5.f);
+				}
+				else
+				{
+				
+					subWave->setWaitingTime(5.f);
+					prevWaveDelayTime = 0.f;
+				}
 			}
 
 			//test
@@ -301,6 +297,58 @@ void RLWave::tick(float dt)
 	bool RLWave::isFinished()
 	{
 		return (m_SubWaveIndex >= m_SubWaveList.size()) && (RLWorld::shared()->getHeroesCount()<= 1);
+	}
+
+	void RLWave::openPerkSelction()
+	{
+		RLShopMgr::shared()->open(m_SubWaveIndex);
+
+	}
+
+	void RLWave::launchNextSubWave()
+	{
+		m_SubWaveList[m_SubWaveIndex]->startWave();
+		m_time = 0;
+		m_killRegs.clear();
+		RLDirector::shared()->addCombatStrength(0.25f);
+	}
+
+	void RLWave::regKill(int heroID)
+	{
+		auto iter = m_killRegs.find(heroID);
+		if(iter == m_killRegs.end())
+		{
+			m_killRegs[heroID] = 1;
+		}
+		else
+		{
+			iter->second += 1;
+		}
+	}
+
+	bool RLWave::isFinishedCurrSubWave()
+	{
+		auto & generateMap = m_SubWaveList[m_SubWaveIndex]->getGeneratedMonsterList();
+
+		for(auto iter : generateMap)
+		{
+			auto killIter = m_killRegs.find(iter.first);
+			if(killIter == m_killRegs.end())
+			{
+				return false;
+			}
+			if(killIter->second != iter.second)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	void RLWave::startNextSubWave()
+	{
+		m_SubWaveIndex += 1;
+		m_killRegs.clear();
 	}
 
 
@@ -328,6 +376,12 @@ void RLWave::tick(float dt)
 	void RLDirector::startWave()
 	{
 
+	}
+
+	void RLDirector::startNextSubWave()
+	{
+		RLWorld::shared()->resumeGame();
+		m_waveList[m_waveIndex]->startNextSubWave();
 	}
 
 	void RLDirector::generateWave()

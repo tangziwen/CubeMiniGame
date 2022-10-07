@@ -172,6 +172,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 	{
 	    m_imguiPipeline = nullptr;
         m_renderPath = new RenderPath();
+        m_imageIndex = 0;
 	}
     void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
     {

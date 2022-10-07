@@ -36,5 +36,6 @@ enum class RL_GameState
 	Pause,
 	AfterMath,
 	Win,
-	Purchase
+	Purchase,
+	PerkSlect,
 };

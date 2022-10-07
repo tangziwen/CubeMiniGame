@@ -7,6 +7,8 @@
 #include "RLDirector.h"
 #include "RLHeroCollection.h"
 #include "2D/LabelNew.h"
+#include "RLPerk.h"
+#include "RLShopMgr.h"
 namespace tzw
 {
 RLGUI::RLGUI()
@@ -48,6 +50,9 @@ void RLGUI::drawIMGUI()
 	break;
 	case RL_GameState::Purchase:
 		drawPurchaseMenu();
+	break;
+	case RL_GameState::PerkSlect:
+		drawPerkSelection();
 	break;
 	}
 
@@ -209,6 +214,7 @@ void RLGUI::drawInGame()
 	}
 	ImGui::PopStyleColor();
 	ImGui::End();
+
 }
 
 void RLGUI::drawAfterMath()
@@ -434,6 +440,11 @@ void RLGUI::drawPrepareMenu()
 		ImGui::EndChild();
 		ImGui::End();
 	}
+}
+
+void RLGUI::drawPerkSelection()
+{
+	RLShopMgr::shared()->draw();
 }
 
 }

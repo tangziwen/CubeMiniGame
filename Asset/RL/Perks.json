@@ -1,87 +1,57 @@
 [
 	{
-		"Name":"GreenPotion",
-		"Type":"Immediately",
-		"Duration":-1,
-		"SpritePath":"RL/Sprites/GreenPotion.png",
-		"Modifiers":
-		[
-			{
-				"Attribute":"MAXHP",
-				"Type":"Add",
-				"Value":10.0
-			},
-			{
-				"Attribute":"HP",
-				"Type":"Add",
-				"Value":30.0,
-			},
-		]
+		"Name":"HeartContainer",
+		"Title":"Heart Container",
+		"Desc": "Increase Player Max HP",
 	},
 	{
-		"Name":"BloodDashImp",
-		"Type":"Duration",
-		"Duration":1.0,
-		"SpritePath":"RL/Sprites/GreenPotion.png",
-		"Modifiers":
-		[
-			{
-				"Attribute":"MovementSpeed",
-				"Type":"Add",
-				"Value":150.0,
-			},
-		]
+		"Name":"SpeedBoost",
+		"Title":"Speed Boost",
+		"Desc": "Increase Player Max HP",
 	},
 	{
-		"Name":"BloodDash",
-		"Type":"OnDash",
-		"Duration":-1,
-		"SpritePath":"RL/Sprites/GreenPotion.png",
-		"Grant":
-		{
-			"OnDash":"BloodDashImp",
-		},
+		"Name":"CQBBullet",
+		"Title":"CQB Bullet",
+		"Desc": "Increase closest distance bullet Damage",
 	},
 	{
-		"Name":"HeartRecover",
-		"Type":"Pulse",
-		"Duration":-1,
-		"SpritePath":"RL/Sprites/HeartRecover.png",
-		"Modifiers":
-		[
-			{
-				"Attribute":"HP",
-				"Type":"Add",
-				"Value":0.1,
-			},
-		]
+		"Name":"RangeBullet",
+		"Title":"Range Bullet",
+		"Desc": "Increase Farest distance bullet Damage",
 	},
 	{
-		"Name":"MoveSpeedUp",
-		"Type":"Immediately",
-		"Duration":-1,
-		"SpritePath":"RL/Sprites/MoveSpeedUp.png",
-		"Modifiers":
-		[
-			{
-				"Attribute":"Speed",
-				"Type":"Add",
-				"Value":10.0,
-			},
-		]
+		"Name":"LongRange",
+		"Title":"Long Range",
+		"Desc": "Increase weapon attack distance",
 	},
 	{
-		"Name":"DamageUp",
-		"Type":"Immediately",
-		"Duration":-1,
-		"SpritePath":"RL/Sprites/DamageUp.png",
-		"Modifiers":
-		[
-			{
-				"Attribute":"Damage",
-				"Type":"Add",
-				"Value":10.0,
-			},
-		]
+		"Name":"Fire Rate",
+		"Title":"Fire Rate",
+		"Desc": "Increase Player Fire Rate",
+	},
+	{
+		"Name":"ReloadSpeed",
+		"Title":"Reload Speed",
+		"Desc": "Increase Player Reload Speed",
+	},
+	{
+		"Name":"MagCap",
+		"Title":"Magazine Capacity",
+		"Desc": "Increase Player Magazine Capacity",
+	},
+	{
+		"Name":"HitBack",
+		"Title":"Hit Back Effect",
+		"Desc": "Add Hit Back effect",
+	},
+	{
+		"Name":"Grenade",
+		"Title":"Hit Back Effect",
+		"Desc": "Add Hit Back effect",
+	},
+	{
+		"Name":"Grenade",
+		"Title":"Hit Back Effect",
+		"Desc": "Add Hit Back effect",
 	},
 ]

@@ -30,7 +30,7 @@ namespace tzw
 		void startWave();
 		std::unordered_map<int, int> & getGeneratedMonsterList(){return m_generateMonster;};
 		TZW_PROPERTY(float, WaitingTime, 25.0f);
-		
+		TZW_PROPERTY(bool, IsLaunch, false);
 	private:
 		std::unordered_map<int, int> m_generateMonster;
 		int m_totalCount = 0;
@@ -59,7 +59,13 @@ namespace tzw
 		void tick(float dt);
 		void generateSubWaves();
 		bool isFinished();
+		void openPerkSelction();
+		void launchNextSubWave();
+		void regKill(int heroID);
+		bool isFinishedCurrSubWave();
+		void startNextSubWave();
 	private:
+		std::unordered_map<int, int> m_killRegs;
 		std::vector<RLSubWave*> m_SubWaveList;
 		TZW_PROPERTY(int, SubWaveIndex, 0);
 		float m_time = 0.f;
@@ -74,12 +80,14 @@ namespace tzw
 		RLDirector();
 		void tick(float dt);
 		void startWave();
+		void startNextSubWave();
 		void generateWave();
 		int getCurrentWave();
 		int getCurrentSubWave();
 		bool isFinished();
 		float getCombatStrength()  {return m_combatStrength;};
 		void addCombatStrength(float val) {m_combatStrength += val;};
+		RLWave* getCurrentWavePtr() {return m_waveList[m_waveIndex]; };
 	private:
 		float m_time = 0.f;
 		std::vector<RLWave *> m_waveList;

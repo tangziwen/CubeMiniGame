@@ -72,7 +72,7 @@ namespace tzw
 	{effect->addGrantList(RLEffectGrantType::THETYPE, grantListNode[#THETYPE].GetString());}
 	void RLEffectMgr::loadConfig()
 	{
-		std::string filePath = "RL/Perks.json";
+		std::string filePath = "RL/Effects.json";
 		rapidjson::Document doc;
 		auto data = Tfile::shared()->getData(filePath, true);
 		doc.Parse<rapidjson::kParseTrailingCommasFlag | rapidjson::kParseCommentsFlag>(data.getString().c_str());

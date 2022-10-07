@@ -1,6 +1,84 @@
 [
 	//Player Weapon
 	//pistol Like
+	
+	//SMG
+	//tier 0
+	{
+		"Name":"SMGBasic",
+		"Damage": 3,
+		"CD":1.0,
+		"BulletSpeed":525.0,
+		"FireRate":0.10,
+		"FireRound":20,
+	},
+	//tier 1
+	{
+		"Name":"SMGAdvance",
+		"Damage": 3,
+		"CD":1.0,
+		"BulletSpeed":525.0,
+		"FireRate":0.10,
+		"FireRound":20,
+	},
+	//tier 2
+	{
+		"Name":"SMGElite",
+		"Damage": 3,
+		"CD":1.0,
+		"BulletSpeed":525.0,
+		"FireRate":0.10,
+		"FireRound":20,
+	},
+
+
+	//Rifle
+	//tier 0
+	{
+		"Name":"RifleBasic",
+		"Damage": 8,
+		"CD":0.8,
+		"BulletSpeed":625.0,
+		"FireRate":0.07,
+		"FireRound":2,
+	},
+	//tier 1
+	{
+		"Name":"RifleAdvance",
+		"Damage": 8,
+		"CD":0.8,
+		"BulletSpeed":625.0,
+		"FireRate":0.07,
+		"FireRound":2,
+	},
+	//tier 2
+	{
+		"Name":"RifleElite",
+		"Damage": 8,
+		"CD":0.8,
+		"BulletSpeed":625.0,
+		"FireRate":0.07,
+		"FireRound":2,
+	},
+
+	{
+		"Name":"DualRifle",
+		"Damage": 8,
+		"CD":0.8,
+		"BulletSpeed":625.0,
+		"FireRate":0.07,
+		"FireRound":2,
+	},
+	{
+		"Name":"M1Garand",
+		"Damage": 10,
+		"CD":1.2,
+		"BulletSpeed":625.0,
+		"FireRate":0.2,
+		"FireRound":8,
+	},
+
+
 	{
 		"Name":"Police_Pistol",
 		"Damage": 7,
@@ -28,24 +106,44 @@
 		"FireRate":0.10,
 		"FireRound":20,
 	},
-	//Rifle
-	{
-		"Name":"DualRifle",
-		"Damage": 8,
-		"CD":0.8,
-		"BulletSpeed":625.0,
-		"FireRate":0.07,
-		"FireRound":2,
-	},
-	{
-		"Name":"M1Garand",
-		"Damage": 10,
-		"CD":1.2,
-		"BulletSpeed":625.0,
-		"FireRate":0.2,
-		"FireRound":8,
-	},
+
 	//Shot Gun
+	//tier 0
+	{
+		"Name":"ShotGunBasic",
+		"Damage": 4,
+		"CD":1.2,
+		"BulletSpeed":450.0,
+		"FireRate":0.2,
+		"FireRound":5,
+		"SplitNum":2,
+		"SplitAngle":30,
+		"IsCanChangeDirWhilstShoot":false,
+	},
+	//tier 1
+	{
+		"Name":"ShotGunAdvance",
+		"Damage": 4,
+		"CD":1.2,
+		"BulletSpeed":450.0,
+		"FireRate":0.2,
+		"FireRound":5,
+		"SplitNum":2,
+		"SplitAngle":30,
+		"IsCanChangeDirWhilstShoot":false,
+	},
+	//tier 2
+	{
+		"Name":"ShotGunElite",
+		"Damage": 4,
+		"CD":1.2,
+		"BulletSpeed":450.0,
+		"FireRate":0.2,
+		"FireRound":5,
+		"SplitNum":2,
+		"SplitAngle":30,
+		"IsCanChangeDirWhilstShoot":false,
+	},
 	{
 		"Name":"StandardShotgun",
 		"Damage": 4,

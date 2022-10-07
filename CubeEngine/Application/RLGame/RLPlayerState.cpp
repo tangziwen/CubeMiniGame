@@ -7,6 +7,7 @@
 #include "rapidjson/prettywriter.h"
 #include <memory>
 #include "RLHero.h"
+#include "RLPerk.h"
 namespace tzw
 {
 const char * g_PlayerPersistentFile = "./ShooterPlayerConfig.json";
@@ -15,6 +16,7 @@ RLPlayerState::RLPlayerState()
 	reset();
 	m_heroPurchasedMap = {{"Cop", 1}, {"Soldier",1}, {"TrenchFighter", 1}};//default unlock heroes.
 	loadPersistent();
+	m_PerkContainer = new RLPerkInstContainer();
 	
 }
 void RLPlayerState::reset()
@@ -181,5 +183,9 @@ void RLPlayerState::writePersistent()
 		writer.SetIndent('\t', 1);
 		doc.Accept(writer);
 		fclose(file);
+}
+RLPerkInstContainer* RLPlayerState::getPerkContainer()
+{
+	return m_PerkContainer;
 }
 }

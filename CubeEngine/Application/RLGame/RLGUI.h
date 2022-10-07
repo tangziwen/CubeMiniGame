@@ -17,6 +17,7 @@ class LabelNew;
 		void drawPause();
 		void drawPurchaseMenu();
 		void drawPrepareMenu();
+		void drawPerkSelection();
 	private:
 	LabelNew * m_centerTips = nullptr;
 	};

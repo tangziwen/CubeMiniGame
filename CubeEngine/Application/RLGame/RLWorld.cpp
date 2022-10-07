@@ -13,7 +13,9 @@
 #include "RLAIController.h"
 #include "Engine/Engine.h"
 #include "box2d.h"
-#include "RLSFX.h"
+#include "RLPerk.h"
+#include "RLShopMgr.h"
+//#include "RLSFX.h"
 namespace tzw
 {
 
@@ -43,10 +45,13 @@ void RLContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifo
 
 void RLWorld::start()
 {
+
 	EventMgr::shared()->addFixedPiorityListener(this);
 	RLWeaponCollection::shared()->loadConfig();
+	RLShopMgr::shared()->init();
 	RLHeroCollection::shared()->loadConfig();
 	RLEffectMgr::shared()->loadConfig();
+	RLPerkMgr::shared()->loadPerkList();
 	m_tileMgr = new TileMap2DMgr();
 	m_tileMgr->initMap(ARENA_MAP_SIZE, ARENA_MAP_SIZE);
 
@@ -94,7 +99,7 @@ void RLWorld::start()
 void RLWorld::startGame(std::string heroStr)
 {
 	m_b2dWorld = new b2World(b2Vec2(0,-0.0));
-
+	RLPerkMgr::shared()->startDeck();
 	m_contactListener = new RLContactListener();
 	m_b2dWorld->SetContactListener(m_contactListener);
 	{
@@ -215,6 +220,10 @@ void RLWorld::endGame()
 	RLPlayerState::shared()->writePersistent();
 	exit(0);
 }
+void RLWorld::goToPerk()
+{
+	setCurrGameState(RL_GameState::PerkSlect);
+}
 void RLWorld::setCurrGameState(RL_GameState currGameState)
 {
 	if(currGameState == RL_GameState::Playing)
@@ -245,7 +254,7 @@ void RLWorld::onFrameUpdate(float dt)
 		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
 
 		RLDirector::shared()->tick(dt);
-		RLSFXMgr::shared()->tick(dt);
+		//RLSFXMgr::shared()->tick(dt);
 		for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 		{
 			RLHero * hero = *iter;

@@ -34,6 +34,7 @@ namespace tzw
 		void goToPause();
 		void resumeGame();
 		void endGame();
+		void goToPerk();
 		Node * getRootNode();
 		void onFrameUpdate(float dt) override;
 

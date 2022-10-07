@@ -1,8 +1,10 @@
 #pragma once
 #include "Engine/EngineDef.h"
 #include <unordered_set>
+
 namespace tzw
 {
+	struct RLPerkInstContainer;
 	enum class HeroPurchaseAction
 	{
 		Upgrade,
@@ -30,6 +32,7 @@ namespace tzw
 		bool isCanAffordHeroPurchase(std::string heroName, HeroPurchaseAction);
 		void loadPersistent();
 		void writePersistent();
+		RLPerkInstContainer * getPerkContainer();
 	private:
 		unsigned int m_score;
 		unsigned int m_currLevel;
@@ -37,5 +40,6 @@ namespace tzw
 		unsigned int m_maxExp;
 		unsigned int m_gold = 0;
 		std::unordered_map<std::string, int> m_heroPurchasedMap;
+		RLPerkInstContainer *  m_PerkContainer;
 	};
 }
