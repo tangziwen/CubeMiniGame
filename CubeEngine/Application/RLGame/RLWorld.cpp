@@ -15,7 +15,7 @@
 #include "box2d.h"
 #include "RLPerk.h"
 #include "RLShopMgr.h"
-//#include "RLSFX.h"
+#include "RLSFX.h"
 namespace tzw
 {
 
@@ -254,7 +254,7 @@ void RLWorld::onFrameUpdate(float dt)
 		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
 
 		RLDirector::shared()->tick(dt);
-		//RLSFXMgr::shared()->tick(dt);
+		RLSFXMgr::shared()->tick(dt);
 		for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 		{
 			RLHero * hero = *iter;
