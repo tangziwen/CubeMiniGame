@@ -21,6 +21,12 @@ namespace tzw
 		void removeAllMonsters();
 	};
 
+	enum class SubWaveState
+	{
+		Waiting,
+		Running,
+		Finished,
+	};
 	class RLSubWave
 	{
 	
@@ -30,11 +36,12 @@ namespace tzw
 		void startWave();
 		std::unordered_map<int, int> & getGeneratedMonsterList(){return m_generateMonster;};
 		TZW_PROPERTY(float, WaitingTime, 25.0f);
-		TZW_PROPERTY(bool, IsLaunch, false);
+		TZW_PROPERTY(SubWaveState, CurrState, SubWaveState::Waiting);
 	private:
 		std::unordered_map<int, int> m_generateMonster;
 		int m_totalCount = 0;
 		friend class RLWave;
+		bool m_isFinished = false;
 	
 	};
 
@@ -72,6 +79,8 @@ namespace tzw
 		int m_waveId = 0;
 		std::vector<RLWaveGroupInfo> m_importantWaveGroup;
 		std::vector<RLWaveGroupInfo> m_specialRandomWaves;
+		float m_perkTime = 0.f;
+
 		
 	};
 	class RLDirector : public Singleton<RLDirector>

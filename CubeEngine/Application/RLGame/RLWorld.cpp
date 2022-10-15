@@ -15,6 +15,12 @@
 #include "box2d.h"
 #include "RLPerk.h"
 #include "RLShopMgr.h"
+#include "2D/LabelNew.h"
+#include "Action/TintTo.h"
+#include "Action/ActionSequence.h"
+#include "Action/ActionCalFunc.h"
+#include "2D/GUIFrame.h"
+#include "Font/FontMgr.h"
 //#include "RLSFX.h"
 namespace tzw
 {
@@ -45,7 +51,18 @@ void RLContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifo
 
 void RLWorld::start()
 {
+	m_crossHairsprite = Sprite::create("RL/CrossHair.png");
+	m_crossHairsprite->setLocalPiority(9999);
 
+	m_centerTips = LabelNew::create("Press E To Use");
+	m_centerTips->setLocalPiority(999);
+	vec2 size = Engine::shared()->winSize();
+	vec2 cs = m_centerTips->getContentSize();
+	m_centerTips->setPos2D(size.x / 2.f - cs.x * 0.5f, size.y * .5f - 200);
+	g_GetCurrScene()->addNode(m_centerTips);
+
+	g_GetCurrScene()->addNode(m_crossHairsprite);
+	//Engine::shared()->setUnlimitedCursor(true);
 	EventMgr::shared()->addFixedPiorityListener(this);
 	RLWeaponCollection::shared()->loadConfig();
 	RLShopMgr::shared()->init();
@@ -79,7 +96,7 @@ void RLWorld::start()
 	m_quadTree->init(vec2(-AREAN_COLLISION_MAP_PADDING, -AREAN_COLLISION_MAP_PADDING), vec2(ARENA_MAP_SIZE * 32 + AREAN_COLLISION_MAP_PADDING, ARENA_MAP_SIZE * 32 + AREAN_COLLISION_MAP_PADDING));
 	
 	m_mapRootNode = Node::create();
-	m_scale = 1.5f;
+	m_scale = 1.0f;
 	m_mapRootNode->setScale(vec3(m_scale, m_scale, m_scale));
 	g_GetCurrScene()->addNode(m_mapRootNode);
 	m_mapRootNode->addChild(m_tileMgr);
@@ -169,7 +186,7 @@ void RLWorld::startGame(std::string heroStr)
 
 
 	RLHero * hero = spawnHero(heroStr);
-	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f));
+	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, 5.f));
 	hero->getWeapon()->setIsAutoFiring(false);
 	m_playerController = new RLPlayerController();
 	m_playerController->possess(hero);
@@ -178,6 +195,7 @@ void RLWorld::startGame(std::string heroStr)
 	RLPlayerState::shared()->reset();
 	RLDirector::shared()->generateWave();
 	generateLevelUpPerk();
+
 }
 
 void RLWorld::goToMainMenu()
@@ -226,15 +244,7 @@ void RLWorld::goToPerk()
 }
 void RLWorld::setCurrGameState(RL_GameState currGameState)
 {
-	if(currGameState == RL_GameState::Playing)
-	{
-		Engine::shared()->setUnlimitedCursor(true);
-	}
-	if(m_currGameState == RL_GameState::Playing && m_currGameState != currGameState)
-	{
-	
-		Engine::shared()->setUnlimitedCursor(false);
-	}
+
 	m_currGameState = currGameState;
 	RLPlayerState::shared()->writePersistent();
 
@@ -250,7 +260,20 @@ void RLWorld::onFrameUpdate(float dt)
 	int32 positionIterations = 2;
 	if(m_currGameState ==  RL_GameState::Playing)
 	{
-
+		bool isNeedShowTips = false;
+		m_possibleInteractions.clear();
+		for(auto iter = m_interactions.begin();iter != m_interactions.end();)
+		{
+			RLInteraction * interaction = *iter;
+			interaction->tick(dt);
+			if(interaction->isInteractiveable())
+			{
+				isNeedShowTips = true;
+				m_possibleInteractions.push_back(interaction);
+			}
+			++iter;
+		}
+		m_centerTips->setIsVisible(isNeedShowTips);
 		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
 
 		RLDirector::shared()->tick(dt);
@@ -271,7 +294,7 @@ void RLWorld::onFrameUpdate(float dt)
 		}
 		RLBulletPool::shared()->tick(dt);
 		RLCollectibleMgr::shared()->tick(dt);
-		m_quadTree->tick(dt);
+
 	}
 
 }
@@ -397,6 +420,104 @@ vec2 RLWorld::getRandomPos()
 	return vec2(TbaseMath::randRange(offset, ARENA_MAP_SIZE * 32.f - offset), TbaseMath::randRange(offset, ARENA_MAP_SIZE * 32.f - offset));
 }
 
+bool RLWorld::onMouseMove(vec2 pos)
+{
+	m_crossHairsprite->setPos2D(pos);
+	return false;
+}
+
+void RLWorld::generateDoors()
+{
+	vec2 leftDoorPos = vec2(ARENA_MAP_SIZE * 32 * 0.5f - 200, ARENA_MAP_SIZE * 32 - 160);
+	vec2 RightDoorPos = vec2(ARENA_MAP_SIZE * 32 * 0.5f + 200, ARENA_MAP_SIZE * 32 - 160);
+	auto leftDoor = new RLStair(leftDoorPos);
+	leftDoor->initGraphics();
+	auto rightDoor = new RLStair(RightDoorPos);
+	rightDoor->initGraphics();
+	m_interactions.push_back(leftDoor);
+	m_interactions.push_back(rightDoor);
+}
+
+void RLWorld::onSubWaveFinished()
+{
+	generateDoors();
+	showTempTips("Clear!!!");
+}
+
+void RLWorld::startNextSubWave()
+{
+
+
+	auto splashSprite = GUIFrame::create(vec2(Engine::shared()->windowWidth(), Engine::shared()->windowHeight()));
+
+	 
+    //splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
+	splashSprite->setLocalPiority(999);
+	splashSprite->setColor(vec4(1, 1, 1, 0));
+    g_GetCurrScene()->addNode(splashSprite);
+
+	auto actionLambda = [splashSprite, this]
+	{
+		clearAllInteractions();
+		m_playerController->getPossessHero()->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, 5.f));
+		RLDirector::shared()->startNextSubWave();
+	};
+
+	auto finishedLambda = [splashSprite, this]
+	{
+		splashSprite->removeFromParent();
+		std::string tipsStr = "Floor";
+		char tmp[256];
+		sprintf(tmp, "Floor %d Fight!", RLDirector::shared()->getCurrentSubWave() + 1);
+		tipsStr = tmp;
+		showTempTips(tipsStr);
+	};
+	std::vector<Action *> actionList;
+	actionList.push_back(new TintTo(0.2, vec4(0, 0, 0, 0),vec4(0, 0, 0, 1)));
+	actionList.push_back(new ActionCallFunc(actionLambda));
+	actionList.push_back(new ActionInterval(0.2f));
+	actionList.push_back(new TintTo(0.2, vec4(0, 0, 0, 1),vec4(0, 0, 0, 0)));
+	actionList.push_back(new ActionCallFunc(finishedLambda));
+	splashSprite->runAction(new ActionSequence(actionList));
+
+}
+
+void RLWorld::clearAllInteractions()
+{
+	for(auto interaction : m_interactions)
+	{
+		delete interaction;
+	}
+	m_interactions.clear();
+	m_possibleInteractions.clear();
+}
+
+void RLWorld::showTempTips(std::string str)
+{
+	auto splashSprite = LabelNew::create(str, FontMgr::shared()->getTitleFont());
+
+	 
+    //splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
+	splashSprite->setLocalPiority(999);
+	splashSprite->setColor(vec4(1, 1, 1, 0));
+    g_GetCurrScene()->addNode(splashSprite);
+	vec2 size = Engine::shared()->winSize();
+	vec2 cs = m_centerTips->getContentSize();
+
+	splashSprite->setPos2D(size.x / 2.f - cs.x * 0.5f, size.y/ 2.f + 200);
+	//splashSprite->setScale(scale, scale, scale);
+	auto finishedLambda = [splashSprite]
+	{
+		splashSprite->removeFromParent();
+	};
+	std::vector<Action *> actionList;
+	actionList.push_back(new TintTo(0.2f, vec4(1, 1, 1, 0),vec4(1, 1, 1, 1)));
+	actionList.push_back(new ActionInterval(0.5f));
+	actionList.push_back(new TintTo(0.2f, vec4(1, 1, 1, 1),vec4(1, 1, 1, 0)));
+	actionList.push_back(new ActionInterval(0.1));
+	actionList.push_back(new ActionCallFunc(finishedLambda));
+	splashSprite->runAction(new ActionSequence(actionList));
+}
 
 
 

@@ -19,11 +19,12 @@ namespace tzw
 		bool onMouseRelease(int button,vec2 pos) override;
 		bool onMousePress(int button,vec2 pos) override;
 		vec2 getPos();
+		void useInteraction();
 	private:
 		void calculateView();
 		int m_yAxis = 0, m_xAxis = 0;
 		vec2 m_mousePos;
-		Sprite * m_crossHairsprite;
+		
 		Matrix44 m_viewMat;
 		Matrix44 m_invViewMat;
 	};

@@ -7,12 +7,13 @@
 #include "RLBullet.h"
 namespace tzw
 {
-
+	constexpr int CAMERA_PADDING_X = 400.f;
+	constexpr int CAMERA_PADDING_Y = 240.f;
 	RLPlayerController::RLPlayerController()
 	{
 		EventMgr::shared()->addFixedPiorityListener(this);
-		m_crossHairsprite = Sprite::create("RL/CrossHair.png");
-		g_GetCurrScene()->addNode(m_crossHairsprite);
+		
+		
 	}
 	void RLPlayerController::possess(RLHero* hero)
 	{
@@ -49,7 +50,7 @@ namespace tzw
 			if(m_currPossessHero->getWeapon())
 			{
 				
-				vec3 posInWorld = m_invViewMat.transformVec3(vec3(m_crossHairsprite->getPos2D().x, m_crossHairsprite->getPos2D().y, 0));
+				vec3 posInWorld = m_invViewMat.transformVec3(vec3(m_mousePos.x, m_mousePos.y, 0));
 				m_currPossessHero->getWeapon()->setShootDir((posInWorld.xy() - m_currPossessHero->getPosition()).normalized());
 			}
 			calculateView();
@@ -81,6 +82,9 @@ namespace tzw
 			break;
 		case TZW_KEY_ESCAPE:
 			RLWorld::shared()->goToPause();
+			break;
+		case TZW_KEY_E:
+			useInteraction();
 			break;
 		case TZW_KEY_R:
 			m_currPossessHero->getWeapon()->reload();
@@ -115,7 +119,7 @@ namespace tzw
 	bool RLPlayerController::onMouseMove(vec2 pos)
 	{
 		m_mousePos = pos;
-		m_crossHairsprite->setPos2D(pos);
+		
 		return false;
 	}
 	bool RLPlayerController::onMouseRelease(int button, vec2 pos)
@@ -157,6 +161,14 @@ namespace tzw
 			return vec2();
 		}
 	}
+	void RLPlayerController::useInteraction()
+	{
+		const std::vector<RLInteraction*> & interactionList =  RLWorld::shared()->getPossibleInteraction();
+		if(!interactionList.empty())
+		{
+			interactionList[0]->use();
+		}
+	}
 #pragma optimize("", off)
 	void RLPlayerController::calculateView()
 	{
@@ -165,8 +177,8 @@ namespace tzw
 		center *= 0.5f * invWorldScale;
 		float p_x = m_currPossessHero->getPosition().x;
 		float p_y = m_currPossessHero->getPosition().y;
-		float viewPosX = p_x - center.x;//std::clamp(p_x - center.x, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
-		float viewPosY = p_y - center.y;//std::clamp(p_y - center.y, -AREAN_COLLISION_MAP_PADDING *1.f, 9999.f);
+		float viewPosX = p_x - center.x;//std::clamp(p_x - center.x, -CAMERA_PADDING_X *1.f, CAMERA_PADDING_X *1.f);
+		float viewPosY = p_y - center.y;//std::clamp(p_y - center.y, -CAMERA_PADDING_Y *1.f, CAMERA_PADDING_Y *1.f);
 		m_invViewMat.setTranslate(vec3(viewPosX, viewPosY, 0));
 		m_invViewMat.setScale(vec3(invWorldScale, invWorldScale, invWorldScale));
 		m_viewMat = m_invViewMat.inverted();

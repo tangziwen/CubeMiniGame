@@ -18,11 +18,11 @@ RLGUI::RLGUI()
 void RLGUI::init()
 {
 	GUISystem::shared()->addObject(this);
-	m_centerTips = LabelNew::create("HEHEHE");
-	m_centerTips->setLocalPiority(999);
-	vec2 size = Engine::shared()->winSize();
-	m_centerTips->setPos2D(size.x / 2.f, size.y / 2.f);
-	g_GetCurrScene()->addNode(m_centerTips);
+	//m_centerTips = LabelNew::create("HEHEHE");
+	//m_centerTips->setLocalPiority(999);
+	//vec2 size = Engine::shared()->winSize();
+	//m_centerTips->setPos2D(size.x / 2.f, size.y / 2.f);
+	//g_GetCurrScene()->addNode(m_centerTips);
 
 }
 

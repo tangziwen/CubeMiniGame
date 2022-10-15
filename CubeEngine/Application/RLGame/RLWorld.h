@@ -6,13 +6,16 @@
 #include "RLPlayerController.h"
 #include "2D/QuadTree2D.h"
 #include "b2_world.h"
+#include "RLInteraction.h"
 
 
 namespace tzw
 {
+	class LabelNew;
 	class RLHero;
 	class Camera;
 	class RLCollectible;
+	class RLInteraction;
 	class RLContactListener : public b2ContactListener
 	{
 	public:
@@ -56,7 +59,17 @@ namespace tzw
 		float getInvScale() { return 1.f / m_scale;};
 		b2World * getB2DWorld() { return m_b2dWorld;}
 		b2Body * getGroundBody() {return m_groundBody;}
+		bool onMouseMove(vec2 pos) override;
+		void generateDoors();
+
+		void onSubWaveFinished();
+		void startNextSubWave();
+		void clearAllInteractions();
+		const std::vector<RLInteraction *> & getPossibleInteraction() {return m_possibleInteractions;}
+		void showTempTips(std::string str);
 	protected:
+		std::vector<RLInteraction *> m_possibleInteractions;
+		std::vector<RLInteraction *> m_interactions;
 		TileMap2DMgr * m_tileMgr;
 		Node * m_mapRootNode = nullptr;
 		RLPlayerController * m_playerController = nullptr;
@@ -68,6 +81,8 @@ namespace tzw
 		b2World * m_b2dWorld;
 		b2Body* m_groundBody = nullptr;
 		RLContactListener * m_contactListener;
+		Sprite * m_crossHairsprite;
+		LabelNew * m_centerTips = nullptr;
 	};
 }
 

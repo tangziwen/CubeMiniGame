@@ -116,7 +116,8 @@ RLSubWave::RLSubWave(int wave, int subwaveID)
 
 void RLSubWave::startWave()
 	{
-		setIsLaunch(true);
+
+		setCurrState(SubWaveState::Running);
 		//genearate a wave
 		std::vector<vec2> spawnPos;
 		RLWorld::shared()->getRandomBoundaryPos(m_totalCount, spawnPos);
@@ -206,12 +207,16 @@ void RLWave::loadStage(std::string filePath)
 
 		if(isFinishedCurrSubWave())
 		{
-			//go to perk selection
-			openPerkSelction();
+			if(m_SubWaveList[m_SubWaveIndex]->getCurrState() == SubWaveState::Running)
+			{
+				m_SubWaveList[m_SubWaveIndex]->setCurrState(SubWaveState::Finished);
+				RLWorld::shared()->onSubWaveFinished();
+			}
+
 		}
 		else
 		{
-			if(!m_SubWaveList[m_SubWaveIndex]->getIsLaunch())
+			if(m_SubWaveList[m_SubWaveIndex]->getCurrState() == SubWaveState::Waiting)
 			{
 				float nextWaveWaitingTime = m_SubWaveList[m_SubWaveIndex]->getWaitingTime();
 				if(m_time >= nextWaveWaitingTime)
@@ -280,15 +285,11 @@ void RLWave::loadStage(std::string filePath)
 				else
 				{
 				
-					subWave->setWaitingTime(5.f);
+					subWave->setWaitingTime(1.f);
 					prevWaveDelayTime = 0.f;
 				}
 			}
 
-			//test
-			subWave->m_generateMonster.clear();
-			subWave->m_generateMonster[RLHeroCollection::shared()->getHeroIDByName("Wizard")] = 2;
-			subWave->m_totalCount = 2;
 			//
 			m_SubWaveList.push_back(subWave);
 		}
@@ -401,7 +402,7 @@ void RLWave::loadStage(std::string filePath)
 
 	int RLDirector::getCurrentSubWave()
 	{
-		return m_waveList[m_waveIndex]->getSubWaveIndex() - 1;
+		return m_waveList[m_waveIndex]->getSubWaveIndex();
 	}
 
 	bool RLDirector::isFinished()

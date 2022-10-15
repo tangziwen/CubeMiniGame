@@ -51,7 +51,11 @@ void RLHero::setPosition(vec2 pos)
 	RLUtility::shared()->clampToBorder(pos);
 	m_position = pos;
 	
-	m_collider->setPos(pos);
+	//m_collider->setPos(pos);
+	if(m_body)
+	{
+		m_body->SetTransform(b2Vec2(pos.x / 32.f, pos.y / 32.f), 0.f);
+	}
 }
 const vec2& RLHero::getPosition()
 {
@@ -209,7 +213,6 @@ void RLHero::onTick(float dt)
 		m_dashVelocity = m_dashDir * (m_dashSpeed *ratio + decaySpeed * (1 - ratio));//vec2(1 * m_dashSpeed* dt, 0);
 		m_body->SetLinearVelocity(b2Vec2(m_dashVelocity.x, m_dashVelocity.y));
 
-		setPosition(getPosition() + m_dashVelocity );
 		m_dashTimer += dt;
 
 
@@ -357,6 +360,8 @@ void RLHero::receiveDamage(float damage)
 		{
 			RLDirector::shared()->getCurrentWavePtr()->regKill(m_heroData->m_id);
 			RLPlayerState::shared()->addScore(10);
+
+			/*
 			if(rand() % 10 > 3)
 			{
 				if(rand() % 10 > 2)
@@ -369,7 +374,7 @@ void RLHero::receiveDamage(float damage)
 				}
 
 			}
-			
+			*/
 		}
 	}
 

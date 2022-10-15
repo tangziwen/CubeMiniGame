@@ -21,9 +21,9 @@ Font *FontMgr::getFont(std::string fontFile, unsigned int fontSize)
 void FontMgr::addDefaultFonts()
 {
     //init the default font
-    m_defaultFont =  getFont("c:\\Windows\\Fonts\\simhei.ttf",14);
-    m_smallFont =  getFont("c:\\Windows\\Fonts\\simhei.ttf",10);
-    m_titleFont = getFont("c:\\Windows\\Fonts\\simhei.ttf",14);
+    m_defaultFont =  getFont("c:\\Windows\\Fonts\\simhei.ttf",21);
+    m_smallFont =  getFont("c:\\Windows\\Fonts\\simhei.ttf",14);
+    m_titleFont = getFont("c:\\Windows\\Fonts\\simhei.ttf",28);
 }
 
 FontMgr::FontMgr()
