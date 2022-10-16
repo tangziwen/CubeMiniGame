@@ -200,9 +200,9 @@ namespace tzw
 				{
 					//store the direction in black board
 					vec2 diff = m_currPossessHero->getPosition() - controller->getPos();
-					std::uniform_real_distribution<float> dist(200, 400);
+					std::uniform_real_distribution<float> dist(-16, 16);
 					auto &re = TbaseMath::getRandomEngine();
-					float length = dist(re);
+					float length = diff.length() + dist(re);
 					diff = diff.normalized();
 					Matrix44 mat;
 					Quaternion quat;
@@ -232,7 +232,7 @@ namespace tzw
 					}
 				}
 				vec2 diff = m_blackBoard.getData("repositionTarget", vec2()) - m_currPossessHero->getPosition();
-				if(diff.length() < 5.f)//close enough
+				if(diff.length() < 16.f)//close enough
 				{
 					setCurrentTranscationFinish();//mark current transcation finish
 					//recalculate
@@ -240,10 +240,11 @@ namespace tzw
 				}
 				else
 				{
-					vec2 chaseDir = m_blackBoard.getData("ChaseDir", vec2());
-					m_currPossessHero->doMove(chaseDir, dt);
-
 					diff = diff.normalized();
+					vec2 chaseDir = m_blackBoard.getData("ChaseDir", vec2());
+					m_currPossessHero->doMove(diff, dt);
+
+					
 					float lerpFactor = 1.0f * dt;
 					chaseDir = diff * lerpFactor + chaseDir * (1.0 - lerpFactor);
 					chaseDir = chaseDir.normalized();
@@ -285,6 +286,7 @@ namespace tzw
 			{
 				isNeedJmp = true;
 				targetState = condition->m_targetState;
+				break;
 			}
 		}
 		if(isNeedJmp)
@@ -344,6 +346,8 @@ namespace tzw
 		float shootRange = 32.f * 8.f;
 		float shootRangeOffset = 64.f;
 		float dangerRange = 64.0f;
+
+		/*
 		//chasing
 		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, shootRange - shootRangeOffset, RLAIState::StationaryShooting));
 
@@ -362,7 +366,16 @@ namespace tzw
 
 		//repositioning over
 		addCondition(RLAIState::Repositioning, new RLAITranscationCond(RLAIState::StationaryShooting));
+		*/
 
+		//
+		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(0.5f, RLAIState::StationaryShooting, vec2(0, 0.8f), 60));
+		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, 64.f, RLAIState::StationaryShooting));
+
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.f, RLAIState::Chasing, vec2(0.0f, 1.0f), 30));
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(0.5f, RLAIState::Repositioning, vec2(0.0f, 1.0f), 50));
+
+		addCondition(RLAIState::Repositioning, new RLAITranscationCond(RLAIState::StationaryShooting));
 	}
 
 

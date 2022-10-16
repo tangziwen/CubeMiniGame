@@ -2,7 +2,7 @@
 #include "RLHero.h"
 #include "RLWorld.h"
 #include "box2d.h"
-//#include "RLSFX.h"
+#include "RLSFX.h"
 namespace tzw
 {
 	RLBullet::RLBullet(vec2 Pos, vec2 Velocity, bool isAllyBullet)
@@ -57,9 +57,9 @@ namespace tzw
 		contact->GetWorldManifold(&worldManifold);
 		b2Vec2 hitPoint;
 		hitPoint = worldManifold.points[0];// + worldManifold.points[1];
-		//hitPoint *= 0.5f;
-		//RLSFXSpec spec = {"RL/Explosive.png", 0.1f};
-		//RLSFXMgr::shared()->addSFX(vec2(hitPoint.x * 32.f, hitPoint.y * 32.f), spec);
+
+		RLSFXSpec spec = {"RL/Explosive.png", 0.1f};
+		RLSFXMgr::shared()->addSFX(vec2(hitPoint.x * 32.f, hitPoint.y * 32.f), spec);
 		if(other->GetUserData().pointer)
 		{
 			RLUserDataWrapper * data = reinterpret_cast<RLUserDataWrapper * >(other->GetUserData().pointer);

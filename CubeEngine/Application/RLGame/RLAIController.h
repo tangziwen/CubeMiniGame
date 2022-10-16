@@ -49,14 +49,29 @@ namespace tzw
 
 	struct RLAIJmpCondDuration : public RLAIJmpCond
 	{
-		RLAIJmpCondDuration(float duration, RLAIState targetState, vec2 randomRange = vec2(0.1, 0.5))
-			:RLAIJmpCond(targetState), m_duration(duration), m_randomRange(randomRange)
+		RLAIJmpCondDuration(float duration, RLAIState targetState, vec2 randomRange = vec2(0.1, 0.5), int chance = 100)
+			:RLAIJmpCond(targetState), m_duration(duration), m_randomRange(randomRange), m_chance(chance)
 		{
 			caculateRandomOffset();
 		};
 		virtual bool isSatisfied(const RLAICondContext & context) override 
 		{
-			return m_currTime >= m_duration + m_randomOffset;
+
+			if(m_currTime >= m_duration + m_randomOffset)
+			{
+				auto &re = TbaseMath::getRandomEngine();
+				int chanceRnd = re() % 100;
+				if(chanceRnd >= (100 - m_chance))
+				{
+					return true;
+				}
+				else
+				{
+					m_currTime = 0.f;
+					return false;
+				}
+			}
+			return false;
 		};
 		virtual void tick(float dt) override 
 		{
@@ -76,6 +91,7 @@ namespace tzw
 		float m_duration = 1.0f;
 		float m_randomOffset = 0.0f;
 		vec2 m_randomRange = vec2(0.1, 0.5);
+		int m_chance = 100;
 	};
 
 
