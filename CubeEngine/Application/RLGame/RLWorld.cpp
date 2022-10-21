@@ -21,7 +21,7 @@
 #include "Action/ActionCalFunc.h"
 #include "2D/GUIFrame.h"
 #include "Font/FontMgr.h"
-//#include "RLSFX.h"
+#include "RLSFX.h"
 namespace tzw
 {
 
@@ -186,7 +186,7 @@ void RLWorld::startGame(std::string heroStr)
 
 
 	RLHero * hero = spawnHero(heroStr);
-	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, 5.f));
+	hero->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, 128.f));
 	hero->getWeapon()->setIsAutoFiring(false);
 	m_playerController = new RLPlayerController();
 	m_playerController->possess(hero);
@@ -195,6 +195,7 @@ void RLWorld::startGame(std::string heroStr)
 	RLPlayerState::shared()->reset();
 	RLDirector::shared()->generateWave();
 	generateLevelUpPerk();
+	showTempTips("Fight!!!");
 
 }
 
@@ -277,7 +278,7 @@ void RLWorld::onFrameUpdate(float dt)
 		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
 
 		RLDirector::shared()->tick(dt);
-		//RLSFXMgr::shared()->tick(dt);
+		RLSFXMgr::shared()->tick(dt);
 		for(auto iter = m_heroes.begin();iter != m_heroes.end();)
 		{
 			RLHero * hero = *iter;
@@ -345,44 +346,19 @@ RLPlayerController* RLWorld::getPlayerController()
 
 void RLWorld::getRandomBoundaryPos(int count, std::vector<vec2>& posList)
 {
-	for(int i = 0; i < count; i++)
+	vec2 topCenter(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32);
+	float heightOffset = 96;
+	float slotSize = 64.f;
+	int width = 4;
+	int height = 3;
+	vec2 basePos = vec2(topCenter.x - width * slotSize * 0.5, topCenter.y - heightOffset);
+	for(int i = 0; i < width; i++)
 	{
-		int rndSide = rand() %4;
-		float gapSpace = ARENA_MAP_TILE_SIZE / 2;
-		//bottom
-		switch(rndSide)
+		for(int j = 0; j < height; j++)
 		{
-		case 0://bottom
-			{
-				int idx = rand() % ARENA_MAP_SIZE;
-				posList.push_back(vec2(idx * 32, gapSpace));
-			}
-		break;
-
-		case 1://top
-			{
-				int idx = rand() % ARENA_MAP_SIZE;
-				posList.push_back(vec2(idx * 32, (ARENA_MAP_SIZE - 1) * 32 - gapSpace));
-			}
-		break;
-		case 2://left
-			{
-				int idx = rand() % ARENA_MAP_SIZE;
-				posList.push_back(vec2(gapSpace, idx * 32));
-			}
-		break;
-		case 3://right
-		{
-			int idx = rand() % ARENA_MAP_SIZE;
-			posList.push_back(vec2((ARENA_MAP_SIZE - 1) * 32 - gapSpace, idx * 32));
+			posList.push_back(basePos + vec2(i * slotSize, -j * slotSize));
 		}
-		break;
-		default:
-		break;
-		}
-
 	}
-	
 }
 
 void RLWorld::generateLevelUpPerk()
@@ -453,13 +429,13 @@ void RLWorld::startNextSubWave()
 	 
     //splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
 	splashSprite->setLocalPiority(999);
-	splashSprite->setColor(vec4(1, 1, 1, 0));
+	splashSprite->setColor(vec4(0, 0, 0, 0));
     g_GetCurrScene()->addNode(splashSprite);
 
 	auto actionLambda = [splashSprite, this]
 	{
 		clearAllInteractions();
-		m_playerController->getPossessHero()->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, 5.f));
+		m_playerController->getPossessHero()->setPosition(vec2(ARENA_MAP_SIZE * 32 * 0.5f, 128.f), true);
 		RLDirector::shared()->startNextSubWave();
 	};
 

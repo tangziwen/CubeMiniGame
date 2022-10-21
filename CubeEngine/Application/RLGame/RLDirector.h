@@ -2,6 +2,7 @@
 #include "Engine/EngineDef.h"
 #include <vector>
 #include <unordered_map>
+
 namespace tzw
 {
 	struct RLEnemyGenerateionInfo
@@ -47,17 +48,21 @@ namespace tzw
 
 	struct RLMonsterGroupInfo
 	{
-		std::string typeName;
-		int tier;
+		std::string monsterName;
 		int num;
 	};
 
 	struct RLWaveGroupInfo
 	{
 		std::vector<RLMonsterGroupInfo> m_groupInfo;
-		float m_delayTime = 0.f;
+		int m_difficulty = 0;
 	};
 
+	struct RLStageInfo
+	{
+		std::vector<RLWaveGroupInfo> m_importantWaveGroup;
+		std::unordered_map<int, int> generateWaveFromDifficulty(int difficulty);
+	};
 	class RLWave
 	{
 	public:
@@ -77,7 +82,7 @@ namespace tzw
 		TZW_PROPERTY(int, SubWaveIndex, 0);
 		float m_time = 0.f;
 		int m_waveId = 0;
-		std::vector<RLWaveGroupInfo> m_importantWaveGroup;
+		std::vector<RLStageInfo> m_stages;
 		std::vector<RLWaveGroupInfo> m_specialRandomWaves;
 		float m_perkTime = 0.f;
 

@@ -121,7 +121,8 @@ void RLSubWave::startWave()
 		//genearate a wave
 		std::vector<vec2> spawnPos;
 		RLWorld::shared()->getRandomBoundaryPos(m_totalCount, spawnPos);
-
+		auto& re = TbaseMath::getRandomEngine();
+		//std::shuffle(spawnPos.begin(), spawnPos.end(), re);
 		int idx = 0;
 		for(auto & iter : m_generateMonster)
 		{
@@ -151,52 +152,36 @@ void RLWave::loadStage(std::string filePath)
 			doc.GetErrorOffset());
 		exit(1);
 	}
-	auto& WavesNode = doc["Waves"];
-	for(int i = 0; i < WavesNode.Size(); i++)
+	for(int stageIdx = 0; stageIdx < doc.Size(); stageIdx++)
 	{
-		auto& node = WavesNode[i];
-
-		RLWaveGroupInfo group;
-		auto& groupNode = node["Group"];
-		for(int j = 0; j < groupNode.Size(); j++)
+		auto & stageNode = doc[stageIdx];
+		RLStageInfo stageInfo;
+		auto& WavesNode = stageNode["Waves"];
+		for(int i = 0; i < WavesNode.Size(); i++)
 		{
-			auto & monsterInfo = groupNode[j];
-			std::string typeName = monsterInfo[0].GetString();
-			int tier = monsterInfo[1].GetInt();
-			int num = monsterInfo[2].GetInt();
-			RLMonsterGroupInfo info;
-			info.typeName = typeName;
-			info.tier = tier;
-			info.num = num;
-			group.m_groupInfo.push_back(info);
+			auto& node = WavesNode[i];
+
+			RLWaveGroupInfo group;
+			auto& groupNode = node["Group"];
 			
-		
-		}
-		group.m_delayTime = node["Delay"].GetFloat();
-		m_importantWaveGroup.push_back(group);
-	}
+			for(int j = 0; j < groupNode.Size(); j++)
+			{
+				auto & monsterInfo = groupNode[j];
+				std::string monsterName = monsterInfo[0].GetString();
+				int num = monsterInfo[1].GetInt();
 
-	auto& SpecialRandomWavesNode = doc["SpecialRandomWaves"];
-	for(int i = 0; i < SpecialRandomWavesNode.Size(); i++)
-	{
-		auto& node = SpecialRandomWavesNode[i];
+				RLMonsterGroupInfo info;
+				info.monsterName = monsterName;
+				info.num = num;
 
-		RLWaveGroupInfo group;
-		auto& groupNode = node["Group"];
-		for(int j = 0; j < groupNode.Size(); j++)
-		{
-			auto & monsterInfo = groupNode[j];
-			std::string typeName = monsterInfo[0].GetString();
-			int tier = -1;//monsterInfo[1].GetInt();
-			int num = monsterInfo[1].GetInt();
-			RLMonsterGroupInfo info;
-			info.typeName = typeName;
-			info.tier = tier;
-			info.num = num;
-			group.m_groupInfo.push_back(info);
-		
+				group.m_groupInfo.push_back(info);
+			}
+			group.m_difficulty = node["Difficulty"].GetInt();
+
+			stageInfo.m_importantWaveGroup.push_back(group);
 		}
-		m_specialRandomWaves.push_back(group);
+		m_stages.push_back(stageInfo);
+
 	}
 
 }
@@ -233,15 +218,13 @@ void RLWave::loadStage(std::string filePath)
 		auto& re = TbaseMath::getRandomEngine();
 		loadStage("RL/Stages.json");
 		RLSubWaveGenerator generator;
-		
-
 
 		int wavePerStage = 6;
 		int totalWave = 3;
 		int BigWaveIdx = 0;
 		float prevWaveDelayTime = 0.f;
-
-		for(int i = 0; i < totalWave * wavePerStage; i++)
+		int maxWave = 8;
+		for(int i = 0; i < maxWave; i++)
 		{
 			RLSubWave * subWave = new RLSubWave(m_waveId, i);
 
@@ -250,47 +233,34 @@ void RLWave::loadStage(std::string filePath)
 
 			int currStage = i / (wavePerStage);
 			int curWaveInStage = i %(wavePerStage);
-			//the last mini wave in current wave --> Big Wave
-			if(true)
+			int difficulty = 0;
+			if(i == 0  || i == 1)
 			{
-				subWave->m_totalCount = 0;
-				RLWaveGroupInfo group =  m_importantWaveGroup[i];
-				for(RLMonsterGroupInfo & mInfo : group.m_groupInfo)
-				{
-					std::vector<RLHeroData * > heroList;
-					RLHeroCollection::shared()->getHeroRangeFromTier(mInfo.typeName, mInfo.tier, heroList, false);
-
-					for(int numI=0; numI < mInfo.num; numI ++)
-					{
-					
-						auto hero = heroList[re() %heroList.size()];
-						auto iter = subWave->m_generateMonster.find(hero->m_id);
-						if(iter == subWave->m_generateMonster.end())
-						{
-							subWave->m_generateMonster[hero->m_id] = 1;
-						}
-						else
-						{
-							subWave->m_generateMonster[hero->m_id] += 1;
-						}
-						subWave->m_totalCount += 1;
-					}
-				}
-				prevWaveDelayTime = group.m_delayTime;
-				BigWaveIdx++;
-				if(i == 0)
-				{
-					subWave->setWaitingTime(5.f);
-				}
-				else
-				{
-				
-					subWave->setWaitingTime(1.f);
-					prevWaveDelayTime = 0.f;
-				}
+				difficulty = 0;
 			}
-
-			//
+			else if( i == maxWave - 1 || i == maxWave - 2)
+			{
+				difficulty = 2;
+			}
+			else
+			{
+				difficulty = 1;
+			}
+			//the last mini wave in current wave --> Big Wave
+			subWave->m_totalCount = 0;
+			subWave->m_generateMonster = m_stages[m_waveId].generateWaveFromDifficulty(difficulty);
+			subWave->m_totalCount = subWave->m_generateMonster.size();
+			prevWaveDelayTime = 0;
+			BigWaveIdx++;
+			if(i == 0)
+			{
+				subWave->setWaitingTime(1.5f);
+			}
+			else
+			{
+				subWave->setWaitingTime(1.f);
+				prevWaveDelayTime = 0.f;
+			}
 			m_SubWaveList.push_back(subWave);
 		}
 	}
@@ -413,5 +383,24 @@ void RLWave::loadStage(std::string filePath)
 
 
 
+
+	std::unordered_map<int, int> RLStageInfo::generateWaveFromDifficulty(int difficulty)
+	{
+		std::vector<RLWaveGroupInfo> waves;
+		std::unordered_map<int, int> result;
+		for(int i = 0; i < m_importantWaveGroup.size(); i++)
+		{
+			if(m_importantWaveGroup[i].m_difficulty == difficulty)
+			{
+				waves.push_back(m_importantWaveGroup[i]);
+			}
+		}
+		RLWaveGroupInfo targetWave = waves[0];
+		for(RLMonsterGroupInfo& groupInfo : targetWave.m_groupInfo)
+		{
+			result[RLHeroCollection::shared()->getHeroIDByName(groupInfo.monsterName)] = groupInfo.num;
+		}
+		return result;
+	}
 
 }

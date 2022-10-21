@@ -53,7 +53,7 @@ namespace tzw
 		{
 				
 			diff = diff.normalized();
-			m_parent->setPosition(currPos + diff * dt * 300);
+			//m_parent->setPosition(currPos + diff * dt * 300 / 32.f);
 		}
 	}
 

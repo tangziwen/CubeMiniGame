@@ -369,13 +369,10 @@ namespace tzw
 		*/
 
 		//
-		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(0.5f, RLAIState::StationaryShooting, vec2(0, 0.8f), 60));
-		addCondition(RLAIState::Chasing, new RLAIJmpCondPlayerRange(RLAIJmpCondPlayerRange::Policy::CloseEnough, 64.f, RLAIState::StationaryShooting));
+		addCondition(RLAIState::Chasing, new RLAIJmpCondDuration(0.5f, RLAIState::StationaryShooting));
 
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.f, RLAIState::Chasing, vec2(0.0f, 1.0f), 30));
-		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(0.5f, RLAIState::Repositioning, vec2(0.0f, 1.0f), 50));
 
-		addCondition(RLAIState::Repositioning, new RLAITranscationCond(RLAIState::StationaryShooting));
+		addCondition(RLAIState::StationaryShooting, new RLAIJmpCondDuration(1.f, RLAIState::Chasing));
 	}
 
 

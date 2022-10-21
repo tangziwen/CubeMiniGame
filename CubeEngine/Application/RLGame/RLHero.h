@@ -19,7 +19,8 @@ namespace tzw
 	public:
 		RLHero(int idType);
 		~RLHero();
-		void setPosition(vec2 pos);
+		void setPosition(vec2 pos, bool isReset = false);
+	
 		const vec2 & getPosition();
 
 		//graphics related

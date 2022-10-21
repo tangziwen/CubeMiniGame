@@ -39,6 +39,11 @@ namespace tzw
 
 				m_currPossessHero->doMove(moveDir, dt);
 			}
+			else
+			{
+				m_currPossessHero->doMove(vec2(0, 0), dt);
+			}
+			
 		}
 	}
 

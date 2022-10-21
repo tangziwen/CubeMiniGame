@@ -28,7 +28,7 @@ RLHero::RLHero(int idType)
 	m_HP = m_heroData->m_maxHealth;
 	m_MAXHP = m_heroData->m_maxHealth;
 	m_Speed = m_heroData->m_speed;
-	if(!m_heroData->m_defaultWeapon.empty())
+	if(!m_heroData->m_defaultWeapon.empty() && m_heroData->m_defaultWeapon != "None")
 	{
 		equipWeapon(new RLWeapon(m_heroData->m_defaultWeapon));
 	}
@@ -46,7 +46,7 @@ RLHero::~RLHero()
 	delete m_weapon;
 }
 
-void RLHero::setPosition(vec2 pos)
+void RLHero::setPosition(vec2 pos, bool isReset)
 {
 	RLUtility::shared()->clampToBorder(pos);
 	m_position = pos;
@@ -55,8 +55,13 @@ void RLHero::setPosition(vec2 pos)
 	if(m_body)
 	{
 		m_body->SetTransform(b2Vec2(pos.x / 32.f, pos.y / 32.f), 0.f);
+		if(isReset)
+		{
+			m_body->SetLinearVelocity(b2Vec2(0, 0));
+		}
 	}
 }
+
 const vec2& RLHero::getPosition()
 {
 	if(m_body)
@@ -142,7 +147,7 @@ void RLHero::initGraphics()
 	jd.bodyA = RLWorld::shared()->getGroundBody();
 	jd.bodyB = m_body;
 	jd.collideConnected = true;
-	jd.maxForce = 7;
+	jd.maxForce = 9;
 	jd.maxTorque = 0.1f * 1 * 0.5 * 10;
 
 	m_frictionJoint = RLWorld::shared()->getB2DWorld()->CreateJoint(&jd);
@@ -452,7 +457,9 @@ void RLHero::doMove(vec2 dir, float delta)
 			targetSpeed *= 0.5f;
 		}
 	}
-	vec2 moveTarget = dir * 5.5;
+	vec2 moveTarget = dir * 7.0f;
+	/*
+	
 	b2Vec2 vel = m_body->GetLinearVelocity();
 
 	float velChangeX = moveTarget.x - vel.x;
@@ -468,10 +475,11 @@ void RLHero::doMove(vec2 dir, float delta)
 	if(isXNeed || isYNeed)
 	{
 		forceDir = forceDir.normalized();
-		forceDir = forceDir  * 16.f;
+		forceDir = forceDir  * 20.f;
 		m_body->ApplyForceToCenter(b2Vec2(forceDir.x, forceDir.y), true);
 	}
-
+	*/
+	m_body->SetLinearVelocity(b2Vec2(moveTarget.x, moveTarget.y));
 	//m_body->ApplyLinearImpulseToCenter(b2Vec2(velChangeX, velChangeY), true);
 	//setPosition(getPosition() + dir * delta * targetSpeed);
 }
