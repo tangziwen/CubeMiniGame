@@ -69,7 +69,7 @@ static void showSplash2()
 
 void GameEntry::onStart()
 { 
-	g_binding_game_objects();
+
 	GameWorld::shared();
 	GameWorld::shared()->init();	
 	showSplash();
@@ -91,7 +91,7 @@ TestVulkanEntry::TestVulkanEntry()
 
 void TestVulkanEntry::onStart()
 {
-	g_binding_game_objects();
+
 	GameWorld::shared();
 	GameWorld::shared()->init();	
 	showSplash();

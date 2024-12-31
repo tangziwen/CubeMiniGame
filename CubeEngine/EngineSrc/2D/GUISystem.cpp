@@ -10,7 +10,6 @@
 #include "Math/Matrix44.h"
 #include "Event/EventMgr.h"
 #include "imnodes.h"
-#include "ScriptPy/ScriptPyMgr.h"
 #include "BackEnd/RenderBackEnd.h"
 
 namespace tzw
@@ -151,7 +150,7 @@ namespace tzw
 		{
 			obj->drawIMGUI();
 		}
-		ScriptPyMgr::shared()->doScriptUIUpdate();
+		//ScriptPyMgr::shared()->doScriptUIUpdate();
 		if(ImGui::IsAnyItemHovered() && ImGui::IsMouseClicked(0))
 		{
 			AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::CLICK);

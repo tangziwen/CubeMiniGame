@@ -11,7 +11,6 @@
 #include "BuildingSystem.h"
 #include "2D/GUISystem.h"
 #include "../../EngineSrc/2D/imnodes.h"
-#include "ScriptPy/ScriptPyMgr.h"
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/writer.h"
 #include "rapidjson/document.h"

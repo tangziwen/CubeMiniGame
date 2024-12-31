@@ -186,7 +186,7 @@ void RLGUI::drawInGame()
 
 	ImGui::SetNextWindowPos(ImVec2(50.0, 0.0), ImGuiCond_Always, window_pos_pivot_bottom_right);
 	ImGui::Begin("HUD", 0, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoDecoration | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground| ImGuiWindowFlags_NoBringToFrontOnFocus);
-	ImGui::SetWindowFontScale(5.0f);
+	ImGui::SetWindowFontScale(2.0f);
 	ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 1.f, 1.0f, 1.0f));
 	ImGui::Text("Waves: %d", RLDirector::shared()->getCurrentSubWave() + 1);
 	RLWeapon * weapon = hero->getWeapon();
@@ -212,7 +212,12 @@ void RLGUI::drawInGame()
 			}
 		}
 	}
+	RLPlayerState * playerState = RLPlayerState::shared();
+	ImGui::Text("Str: %d", playerState->getStat(RL_STAT_STR));
+	ImGui::Text("Dex: %d", playerState->getStat(RL_STAT_DEX));
+	ImGui::Text("Int: %d", playerState->getStat(RL_STAT_INT));
 	ImGui::PopStyleColor();
+
 	ImGui::End();
 
 }

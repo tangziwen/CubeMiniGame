@@ -69,6 +69,7 @@ void RLWorld::start()
 	RLHeroCollection::shared()->loadConfig();
 	RLEffectMgr::shared()->loadConfig();
 	RLPerkMgr::shared()->loadPerkList();
+	RLRewardItemMgr::shared()->loadConfig();
 	m_tileMgr = new TileMap2DMgr();
 	m_tileMgr->initMap(ARENA_MAP_SIZE, ARENA_MAP_SIZE);
 
@@ -267,12 +268,20 @@ void RLWorld::onFrameUpdate(float dt)
 		{
 			RLInteraction * interaction = *iter;
 			interaction->tick(dt);
-			if(interaction->isInteractiveable())
+			if(interaction->getIsAlive())
 			{
-				isNeedShowTips = true;
-				m_possibleInteractions.push_back(interaction);
+				if(interaction->isInteractiveable())
+				{
+					isNeedShowTips = true;
+					m_possibleInteractions.push_back(interaction);
+				}
+				++iter;
 			}
-			++iter;
+			else
+			{
+				delete interaction;
+				iter = m_interactions.erase(iter);
+			}
 		}
 		m_centerTips->setIsVisible(isNeedShowTips);
 		m_b2dWorld->Step(dt, velocityIterations, positionIterations);
@@ -412,6 +421,16 @@ void RLWorld::generateDoors()
 	rightDoor->initGraphics();
 	m_interactions.push_back(leftDoor);
 	m_interactions.push_back(rightDoor);
+	vec2 center(ARENA_MAP_SIZE * 32 * 0.5f, ARENA_MAP_SIZE * 32 * 0.5f);
+
+	
+	for(int i = 0; i < 3; i++)
+	{
+		auto reward = new RLReward(RLRewardItemMgr::shared()->getNextItem(),vec2(center.x + i * 64 - 100, center.y));
+		reward->initGraphics();
+		m_interactions.push_back(reward);
+	}
+
 }
 
 void RLWorld::onSubWaveFinished()

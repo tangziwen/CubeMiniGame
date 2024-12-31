@@ -6,7 +6,6 @@
 #include "../Engine/EngineDef.h"
 #include <strstream>
 #include <iostream>
-#include "../ScriptPy/ScriptPyMgr.h"
 #include "2D/GUISystem.h"
 
 namespace tzw {
@@ -179,11 +178,11 @@ namespace tzw {
 		// Process command
 		if (command_line[0] == '!')
 		{
-			ScriptPyMgr::shared()->callFunPyVoid("tzw", "tzw_on_gm_command", command_line + 1);
+			//ScriptPyMgr::shared()->callFunPyVoid("tzw", "tzw_on_gm_command", command_line + 1);
 		}
 		else
 		{
-			ScriptPyMgr::shared()->doString(command_line);
+			//ScriptPyMgr::shared()->doString(command_line);
 		}
 	}
 

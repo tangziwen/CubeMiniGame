@@ -284,7 +284,7 @@ void Engine::onStart()
 	RenderBackEnd::shared()->printFullDeviceInfo();
     Engine::shared()->initSingletons();
     Engine::shared()->delegate()->onStart();
-	ScriptPyMgr::shared()->doScriptInit();
+	//ScriptPyMgr::shared()->doScriptInit();
 	GUISystem::shared()->initGUI();
 	AudioSystem::shared()->init();
 	uuid4_init();
@@ -312,7 +312,7 @@ void Engine::initSingletons()
     TextureMgr::shared();
     //Renderer::shared();
     EffectMgr::shared();
-	ScriptPyMgr::shared()->init();
+	//ScriptPyMgr::shared()->init();
 }
 
 vec2 Engine::winSize()
