@@ -859,9 +859,12 @@ BAAAABB
 			m_mesh[i]->clear();
 			m_meshTransition[i]->clear();
 			auto VoxelBuffer = chunkInfo->mcPoints;
-			TransVoxel::shared()->generateWithoutNormal(m_basePoint,
-															m_mesh[i], m_meshTransition[i], (MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING, VoxelBuffer[i],
-															0.0f, i);
+//			TransVoxel::shared()->generateWithoutNormal(m_basePoint,
+//															m_mesh[i], m_meshTransition[i], (MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING, VoxelBuffer[i],
+//															0.0f, i);
+			TransVoxel::shared()->generateSurfaceNets(m_basePoint,
+												m_mesh[i], m_meshTransition[i], MAX_BLOCK + MIN_PADDING + MAX_PADDING, VoxelBuffer[0],
+												0.0f, i);
 		}
 		if (m_mesh[0]->isEmpty())
 			return;
