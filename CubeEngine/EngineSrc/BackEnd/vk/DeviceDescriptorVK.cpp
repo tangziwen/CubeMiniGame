@@ -29,7 +29,7 @@ namespace tzw
         }
         
         imageInfo.imageView = vkTex->getImageView();
-        imageInfo.sampler = nullptr;//vkTex->getSampler();
+        imageInfo.sampler = VK_NULL_HANDLE;//vkTex->getSampler();
         VkWriteDescriptorSet texWriteSet{};
         texWriteSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
         texWriteSet.dstSet = m_descriptorSet;

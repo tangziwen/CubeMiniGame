@@ -3,6 +3,7 @@
 #include <algorithm>
 #include "../Scene/SceneMgr.h"
 #include "../Base/Node.h"
+#include "ScriptPy/ScriptPyMgr.h"
 
 #define EVENT_TYPE_K_RELEASE 0
 #define EVENT_TYPE_K_PRESS 1
@@ -135,13 +136,13 @@ void EventMgr::apply(float delta)
        case EVENT_TYPE_K_PRESS:
        {
 			applyKeyPress(info);
-			//ScriptPyMgr::shared()->raiseInputEvent(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_K_RELEASE:
        {
 			applyKeyRelease(info);
-			//ScriptPyMgr::shared()->raiseInputEvent(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_M_MOVE:
@@ -152,19 +153,19 @@ void EventMgr::apply(float delta)
        case EVENT_TYPE_M_SCROLL:
        {
 			applyScroll(info);
-       		//ScriptPyMgr::shared()->raiseInputEvent(info);
+       		ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_M_PRESS:
        {
 			applyMousePress(info);
-			//ScriptPyMgr::shared()->raiseInputEvent(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_M_RELEASE:
        {
 			applyMouseRelease(info);
-			//ScriptPyMgr::shared()->raiseInputEvent(info);
+			ScriptPyMgr::shared()->raiseInputEvent(info);
        }
            break;
        case EVENT_TYPE_K_CHAR_INPUT:

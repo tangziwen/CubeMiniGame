@@ -10,6 +10,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "BuildingSystem.h"
+#include "ScriptPy/ScriptPyMgr.h"
 #include "AssistDrawSystem.h"
 #include "GameItemMgr.h"
 #include "PartSurfaceMgr.h"
@@ -183,7 +184,7 @@ void GameWorld::startGame(WorldInfo worldInfo)
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
-		// ScriptPyMgr::shared()->callFunPyVoid("tzw", "on_game_start");
+		ScriptPyMgr::shared()->callFunPyVoid("tzw", "on_game_start");
 		
 		m_currentState = GAME_STATE_RUNNING;
 	}));
@@ -223,7 +224,7 @@ void GameWorld::loadGame(std::string worldName)
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
-		//ScriptPyMgr::shared()->callFunVoid("on_game_start");
+		ScriptPyMgr::shared()->callFunVoid("on_game_start");
 		m_currentState = GAME_STATE_RUNNING;
 	}));
 }
@@ -291,7 +292,7 @@ bool GameWorld::onKeyRelease(int keyCode)
 		break;
 	case TZW_KEY_F3:
 		{
-			//ScriptPyMgr::shared()->reload();
+			ScriptPyMgr::shared()->reload();
 		}
 		break;
 	default: ;
@@ -381,7 +382,7 @@ void GameWorld::init()
 	m_mainMenu->hide();
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
-	//ScriptPyMgr::shared()->callFunPyVoid("tzw","tzw_on_game_ready");
+	ScriptPyMgr::shared()->callFunPyVoid("tzw","tzw_on_game_ready");
 	
 }
 
