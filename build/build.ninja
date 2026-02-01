@@ -7134,7 +7134,7 @@ build CubeEngine.exe: CXX_EXECUTABLE_LINKER__CubeEngine_RelWithDebInfo CMakeFile
   CONFIG = RelWithDebInfo
   FLAGS = /DWIN32 /D_WINDOWS /W3 /GR /EHsc /MD /Zi /O2 /Ob1 /DNDEBUG
   LINK_FLAGS = /machine:x64 /debug /INCREMENTAL /subsystem:console
-  LINK_LIBRARIES = freetype.lib  glfw3.lib  glew32s.lib  VkLayer_utils.lib  vulkan-1.lib  spirv-cross-c.lib  spirv-cross-core.lib  spirv-cross-cpp.lib  spirv-cross-glsl.lib  spirv-cross-reflect.lib  spirv-cross-util.lib  spirv-cross-c-shared.lib  spirv-cross-hlsl.lib  spirv-cross-msl.lib  glslang.lib  shaderc_shared.lib  python37.lib  fmodex_vc.lib  opengl32.lib  Dbghelp.lib  soloud_static.lib  box2d.lib  zlib.lib  libpng.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
+  LINK_LIBRARIES = freetype.lib  glfw3.lib  glew32s.lib  VkLayer_utils.lib  vulkan-1.lib  spirv-cross-c.lib  spirv-cross-core.lib  spirv-cross-cpp.lib  spirv-cross-glsl.lib  spirv-cross-reflect.lib  spirv-cross-util.lib  spirv-cross-c-shared.lib  spirv-cross-hlsl.lib  spirv-cross-msl.lib  glslang.lib  shaderc_shared.lib  python314.lib  fmodex_vc.lib  opengl32.lib  Dbghelp.lib  soloud_static.lib  box2d.lib  zlib.lib  libpng.lib  kernel32.lib user32.lib gdi32.lib winspool.lib shell32.lib ole32.lib oleaut32.lib uuid.lib comdlg32.lib advapi32.lib
   LINK_PATH = -LIBPATH:C:\Users\SSS\Documents\MyProject\CubeMiniGame\.\CubeEngine\libVC   -LIBPATH:C:\Users\SSS\Documents\MyProject\CubeMiniGame\.\external   -LIBPATH:C:\Users\SSS\Documents\MyProject\CubeMiniGame\.\external\Bullet
   OBJECT_DIR = CMakeFiles\CubeEngine.dir
   POST_BUILD = cd .

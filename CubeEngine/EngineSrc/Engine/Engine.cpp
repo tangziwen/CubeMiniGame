@@ -128,7 +128,7 @@ void Engine::loadConfig()
 	VKRenderBackEnd::shared()->setIsEnableValidation(doc["IsGraphicsDebugCheck"].GetBool());
 	m_isFullScreen = doc["IsFullScreen"].GetBool();
 
-	TranslationMgr::shared()->load(doc["Language"].GetString()); 
+	// TranslationMgr::shared()->load(doc["Language"].GetString()); 
 }
 
 void Engine::saveConfig()
@@ -359,24 +359,24 @@ int Engine::run(int argc, char *argv[], AppEntry * delegate)
 
 void CreateDumpFile(const TCHAR *lpstrDumpFilePathName, EXCEPTION_POINTERS *pException)
 {
-    // ´´½¨DumpÎÄ¼þ
+    // ï¿½ï¿½ï¿½ï¿½Dumpï¿½Ä¼ï¿½
     HANDLE hDumpFile = CreateFile(lpstrDumpFilePathName, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
 
-    // DumpÐÅÏ¢
+    // Dumpï¿½ï¿½Ï¢
     //
     MINIDUMP_EXCEPTION_INFORMATION dumpInfo;
     dumpInfo.ExceptionPointers = pException;
     dumpInfo.ThreadId = GetCurrentThreadId();
     dumpInfo.ClientPointers = TRUE;
 
-    // Ð´ÈëDumpÎÄ¼þÄÚÈÝ
+    // Ð´ï¿½ï¿½Dumpï¿½Ä¼ï¿½ï¿½ï¿½ï¿½ï¿½
     //
     MiniDumpWriteDump(GetCurrentProcess(), GetCurrentProcessId(), hDumpFile, MiniDumpNormal, &dumpInfo, NULL, NULL);
 
     CloseHandle(hDumpFile);
 }
 
-// ´¦ÀíUnhandled ExceptionµÄ»Øµ÷º¯Êý
+// ï¿½ï¿½ï¿½ï¿½Unhandled Exceptionï¿½Ä»Øµï¿½ï¿½ï¿½ï¿½ï¿½
 //
 LONG ApplicationCrashHandler(EXCEPTION_POINTERS *pException)
 {

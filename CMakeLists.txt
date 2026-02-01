@@ -79,7 +79,7 @@ include_directories(./external/rapidjson/include)
 
 #python
 include_directories(./external/Python/include)
-set(LIBS ${LIBS} python37)
+set(LIBS ${LIBS} python314)
 
 #FMOD
 set(LIBS ${LIBS} fmodex_vc)
