@@ -12,12 +12,14 @@
 #include "FastNoise/FastNoise.h"
 #include "time.h"
 #include "3D/Terrain/TransVoxel.h"
+#include "3D/Terrain/SurfaceNets.h"
 /// <summary>	Size of the chunk. </summary>
 static int g_chunkSize = BLOCK_SIZE * MAX_BLOCK;
 #include "../EngineSrc/3D/Terrain/MCTable.h"
 #include "../EngineSrc/Collision/CollisionUtility.h"
 
 #include "EngineSrc/Collision/PhysicsMgr.h"
+#include <atomic>
 #include <random>
 #include "3D/Vegetation/FoliageSystem.h"
 
@@ -31,6 +33,32 @@ namespace tzw
 	FastNoise treeNoise;
 	/// <summary>	The LOD list[]. </summary>
 	static int lodList[] = {1, 2, 4, 8};
+	static const int seamNeighborOffsets[6][3] = {
+		{-1, 0, 0}, {1, 0, 0},
+		{0, -1, 0}, {0, 1, 0},
+		{0, 0, -1}, {0, 0, 1}
+	};
+
+	static int calcChunkLod(Chunk* chunk, const vec3& playerPos)
+	{
+		auto centre = chunk->getAABB().centre();
+		auto dist = vec3(playerPos.x, 0, playerPos.z).distance(vec3(centre.x, 0, centre.z));
+		if(dist < 18.0f)
+		{
+			return 0;
+		}
+		if(dist < 35.0f)
+		{
+			return 1;
+		}
+		return 2;
+	}
+
+	static bool isMeshReady(Mesh* mesh)
+	{
+		return mesh && !mesh->isEmpty();
+	}
+
 	Chunk::Chunk(int the_x, int the_y, int the_z)
 		: m_x(the_x)
 		, m_y(the_y)
@@ -52,7 +80,14 @@ namespace tzw
 		setPos(m_basePoint);
 
 		memset(m_mesh, 0,sizeof(m_mesh));
-		memset(m_meshTransition, 0,sizeof(m_meshTransition));
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int f = 0; f < 6; ++f)
+			{
+				m_neighborLodForGen[i][f] = -1;
+			}
+		}
+		m_needRegen.store(false);
 
 		m_needToUpdate = true;
 
@@ -151,23 +186,34 @@ namespace tzw
 			m_isNeedSubmitMesh = false;
 			for(int i = 0; i < 3;i++)
 			{
-				m_mesh[i]->finish();
-				m_meshTransition[i]->finish();
+				if (isMeshReady(m_mesh[i]))
+				{
+					m_mesh[i]->finish();
+				}
 			}
-			
-			if (m_rigidBody)
-			{
-				PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
-				delete m_rigidBody;
-				m_rigidBody = nullptr;
-			}
-			m_rigidBody = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh[0], nullptr);
 
-			m_rigidBody->setFriction(10.0);
-			PhysicsMgr::shared()->addRigidBody(m_rigidBody);
+			// if (m_rigidBody)
+			// {
+			// 	PhysicsMgr::shared()->removeRigidBody(m_rigidBody);
+			// 	delete m_rigidBody;
+			// 	m_rigidBody = nullptr;
+			// }
+			// m_rigidBody = PhysicsMgr::shared()->createRigidBodyMesh(m_mesh[0], nullptr);
+
+			// m_rigidBody->setFriction(10.0);
+			// PhysicsMgr::shared()->addRigidBody(m_rigidBody);
 			loading_mutex.lock();
 			m_currenState = State::LOADED;
 			loading_mutex.unlock();
+			return;
+		}
+
+		// Re-stitch when a neighbour LOD changed beneath us. We only fire one
+		// regeneration job at a time and not while another mesh build is already
+		// queued for submission.
+		if (m_currenState == State::LOADED && !m_isNeedSubmitMesh && m_needRegen.exchange(false))
+		{
+			WorkerThreadSystem::shared()->pushOrder(WorkerJob([this]() { genMesh(m_currentLOD); }));
 		}
 	}
 
@@ -185,11 +231,7 @@ namespace tzw
 		/// just for test
 		if (m_currenState != State::LOADED)
 			return;
-		if (m_mesh[0]->getIndicesSize() == 0)
-			return;
 		if (m_isNeedSubmitMesh)
-			return;
-		if (m_mesh[0]->getIndexBuf()->bufferId() == nullptr)
 			return;
 		if (requirementType != RenderFlag::RenderStage::COMMON)
 		{
@@ -197,58 +239,36 @@ namespace tzw
 		}
 		auto player = GameWorld::shared()->getPlayer();
 		auto pos = player->getPos();
-		auto centre = getAABB().centre();
-		auto dist = vec3(pos.x, 0, pos.z).distance(vec3(centre.x, 0, centre.z));
-
-
-		if(dist < 18.0f)
-		{
-			m_currentLOD = 0;
-		}
-		else if(dist < 35.0f)
-		{
-			m_currentLOD = 1;
-		} else
-		{
-			m_currentLOD = 2;
-		}
-		auto xList = {-1, 0, 1};
-		auto yList = {-1, 0, 1};
-		auto zList = {-1, 0, 1};
-		bool isNeedShowTransition = false;
-		for (int offsetX : xList)
-		{
-			for (int offsetY : yList)
-			{
-				for (int offsetZ : zList)
-				{
-					if(offsetX == 0 && offsetY ==0 && offsetZ == 0) continue;// skip self chunk
-					auto neighborChunk = GameWorld::shared()->getChunk(
-						this->m_x + offsetX, this->m_y + offsetY, this->m_z + offsetZ);
-					if (neighborChunk)
-					{
-						if(neighborChunk->m_currentLOD != m_currentLOD)
-						{
-							isNeedShowTransition = true;
-						}
-					}
-				}
-			}
-		}
-
-
-		RenderCommand command(m_mesh[m_currentLOD], m_material, this, requirementType);
+		m_currentLOD = calcChunkLod(this, pos);
+		Mesh* lodMesh = m_mesh[m_currentLOD];
+		if (!isMeshReady(lodMesh))
+			return;
+		if (lodMesh->getIndexBuf()->bufferId() == nullptr)
+			return;
+		RenderCommand command(lodMesh, m_material, this, requirementType);
 		setUpTransFormation(command.m_transInfo);
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		queues->addRenderCommand(command, requirementArg);
-		if(isNeedShowTransition)
-		{
-			RenderCommand command(m_meshTransition[m_currentLOD], m_material, this, requirementType);
-			setUpTransFormation(command.m_transInfo);
-			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
-			queues->addRenderCommand(command, requirementArg);
-		}
 
+		// Detect neighbour LOD changes and ask logicUpdate to rebuild this chunk
+		// so its boundary stitching matches the new neighbour LODs.
+		bool stitchMismatch = false;
+		for (int face = 0; face < 6; ++face)
+		{
+			auto neighborChunk = GameWorld::shared()->getChunk(
+				this->m_x + seamNeighborOffsets[face][0],
+				this->m_y + seamNeighborOffsets[face][1],
+				this->m_z + seamNeighborOffsets[face][2]);
+			const int neighborLod = neighborChunk ? calcChunkLod(neighborChunk, pos) : m_currentLOD;
+			if (m_neighborLodForGen[m_currentLOD][face] != neighborLod)
+			{
+				stitchMismatch = true;
+			}
+		}
+		if (stitchMismatch)
+		{
+			m_needRegen.store(true);
+		}
 	}
 
 	void
@@ -263,7 +283,6 @@ namespace tzw
 			{
 
 				m_mesh[i] = new Mesh();
-				m_meshTransition[i] = new Mesh();
 			}
 			m_material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 		}
@@ -300,9 +319,6 @@ namespace tzw
 		{
 			delete m_mesh[i];
 			m_mesh[i] = nullptr;
-
-			delete m_meshTransition[i];
-			m_meshTransition[i] = nullptr;
 		}
 		if( m_tree && m_grass)
 		{
@@ -433,8 +449,8 @@ namespace tzw
 		m_tmpNeighborChunk.clear();
 	}
 /*
-边界情况如下，B是Padding，左1 右2 A是实际内容,
-相邻区域的A互相不重叠，但相邻区域间的A和B会相互重叠
+Boundary case: B padding overlaps A's data area.
+This keeps neighboring chunk samples continuous around the edge.
 BAAAABB
     BAAAABB
 */				
@@ -524,7 +540,7 @@ BAAAABB
 		// if (!isInOutterRange(x, y, z))
 		// 	return;
 
-		//扩展到Short，为了支持+-255的操作
+		// Expand to short so edits can support positive and negative deltas.
 		short scalarInShort = scalar * 128;
 		int offset = MIN_PADDING;
 		if (isAdd)
@@ -600,15 +616,14 @@ BAAAABB
 			p = tp1 + (tp2 - tp1) / (p2.w - p1.w) * (value - p1.w);
 		else
 			p = tp1;
+
 		return p;
 	}
-
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 	/// <summary>	A macro that defines Calculate Graduated Vertical 0. </summary>
-	///
 	/// <remarks>	Tzwn, 2017/12/21. </remarks>
 	///
-	/// <param name="verts">	The vertices. </param>
+	/// <param name="verts">  The vertices. </param>
 	////////////////////////////////////////////////////////////////////////////////////////////////////
 
 #define CALC_GRAD_VERT_0(verts)                                                \
@@ -852,19 +867,71 @@ BAAAABB
 		if (!m_mesh[0])
 			return;
 
-		
+		ChunkLodBuffer lodBuffer;
+		GameMap::shared()->fetchChunkLodBuffer(m_x, m_y, m_z, lodBuffer);
+
+		// Snapshot neighbour LODs so submitDrawCmd can detect changes that
+		// invalidate the boundary stitching computed below.
+		vec3 playerPos(0, 0, 0);
+		auto player = GameWorld::shared() ? GameWorld::shared()->getPlayer() : nullptr;
+		if (player) playerPos = player->getPos();
+
+		int neighborLodForLod[3][6];
+		for (int i = 0; i < 3; ++i)
+		{
+			for (int face = 0; face < 6; ++face)
+			{
+				auto neighborChunk = GameWorld::shared()->getChunk(
+					m_x + seamNeighborOffsets[face][0],
+					m_y + seamNeighborOffsets[face][1],
+					m_z + seamNeighborOffsets[face][2]);
+				neighborLodForLod[i][face] = neighborChunk ? calcChunkLod(neighborChunk, playerPos) : i;
+			}
+		}
+
 		for(int i = 0; i < 3; i++)
 		{
-			auto chunkInfo = GameMap::shared()->fetchFromSource(m_x, m_y, m_z, i);
 			m_mesh[i]->clear();
-			m_meshTransition[i]->clear();
-			auto VoxelBuffer = chunkInfo->mcPoints;
-//			TransVoxel::shared()->generateWithoutNormal(m_basePoint,
-//															m_mesh[i], m_meshTransition[i], (MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING, VoxelBuffer[i],
-//															0.0f, i);
-			TransVoxel::shared()->generateSurfaceNets(m_basePoint,
-												m_mesh[i], m_meshTransition[i], MAX_BLOCK + MIN_PADDING + MAX_PADDING, VoxelBuffer[0],
-												0.0f, i);
+
+			SurfaceNetsStitchConfig stitchConfig;
+			const SurfaceNetsStitchConfig* stitchPtr = nullptr;
+			bool anyBoundary = false;
+			if (i + 1 < 3)
+			{
+				stitchConfig.coarseData = lodBuffer.mcPoints[i + 1].data();
+				stitchConfig.coarseVoxelSize = lodBuffer.voxelSize[i + 1];
+				stitchConfig.coarseLodLevel = i + 1;
+				for (int face = 0; face < 6; ++face)
+				{
+					// Stitch only when the neighbour will render coarser than us.
+					// Same-LOD neighbours produce matching dual vertices on their
+					// own; finer neighbours stitch from their side.
+					const bool needStitch = neighborLodForLod[i][face] > i;
+					stitchConfig.stitchFace[face] = needStitch;
+					anyBoundary = anyBoundary || needStitch;
+				}
+			}
+			// extendPositive: this chunk is the coarser side of an LOD seam on
+			// +X / +Y / +Z. The finer neighbour's -side face will be degenerate,
+			// so we must draw the +side seam from here.
+			static const int positiveFaceForAxis[3] = {1, 3, 5}; // +X, +Y, +Z
+			for (int axis = 0; axis < 3; ++axis)
+			{
+				const int face = positiveFaceForAxis[axis];
+				const bool needExtend = neighborLodForLod[i][face] < i;
+				stitchConfig.extendPositive[axis] = needExtend;
+				anyBoundary = anyBoundary || needExtend;
+			}
+			if (anyBoundary) stitchPtr = &stitchConfig;
+
+			SurfaceNets::shared()->generate(m_basePoint,
+				m_mesh[i], lodBuffer.voxelSize[i], lodBuffer.mcPoints[i].data(),
+				0.0f, i, stitchPtr);
+
+			for (int face = 0; face < 6; ++face)
+			{
+				m_neighborLodForGen[i][face] = neighborLodForLod[i][face];
+			}
 		}
 		if (m_mesh[0]->isEmpty())
 			return;
@@ -938,7 +1005,7 @@ BAAAABB
 	Chunk::generateVegetation()
 	{
 		size_t indexCount = m_mesh[0]->m_indices.size();
-		if (indexCount <= 0) return;//这个块完全在地形内部或者是空气
+		if (indexCount <= 0) return;
 
 		m_grassPosList.clear();
 		m_grass = new Foliage(GameMap::shared()->getGrassId());

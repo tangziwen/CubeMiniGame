@@ -576,7 +576,7 @@ ChunkInfo* GameMap::fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod)
 	int offset = MIN_PADDING;
 
 	//for LOD 1
-	//Ç°MIN_PADDINGµÄÔªËØ((i, j, k)<MIN_PADDING)ÊÇÉÏÒ»¸öChunkµÄ£¬ÕâÀïÒª×ö¼õ·¨´¦Àí,×¢ÒâLODµÄÔªËØÉæ¼°µ½Ç°Ò»¸öµÄÒ²ÊÇÔÚLODµÄ·¶Î§ÄÚµÄ
+	//Ç°MIN_PADDINGï¿½ï¿½Ôªï¿½ï¿½((i, j, k)<MIN_PADDING)ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½Chunkï¿½Ä£ï¿½ï¿½ï¿½ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½,×¢ï¿½ï¿½LODï¿½ï¿½Ôªï¿½ï¿½ï¿½æ¼°ï¿½ï¿½Ç°Ò»ï¿½ï¿½ï¿½ï¿½Ò²ï¿½ï¿½ï¿½ï¿½LODï¿½Ä·ï¿½Î§ï¿½Úµï¿½
 	int lodLevel = lod;
 	int stride = 1 << lod;
 	for (int i = 0; i < (MAX_BLOCK>>lodLevel) + MIN_PADDING + MAX_PADDING; i++) //X
@@ -596,6 +596,33 @@ ChunkInfo* GameMap::fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod)
 		}
 	}
 	return m_chunkInfo;
+}
+
+void GameMap::fetchChunkLodBuffer(int chunkX, int chunkY, int chunkZ, ChunkLodBuffer& outBuffer)
+{
+	const int offset = MIN_PADDING;
+	for (int lod = 0; lod < 3; ++lod)
+	{
+		const int stride = 1 << lod;
+		const int blockRow = (MAX_BLOCK >> lod) + MIN_PADDING + MAX_PADDING;
+		outBuffer.voxelSize[lod] = blockRow;
+		outBuffer.mcPoints[lod].resize(blockRow * blockRow * blockRow);
+
+		for (int i = 0; i < blockRow; ++i)
+		{
+			for (int k = 0; k < blockRow; ++k)
+			{
+				for (int j = 0; j < blockRow; ++j)
+				{
+					const int globalX = chunkX * MAX_BLOCK + (i - offset) * stride + LOD_SHIFT;
+					const int globalY = chunkY * MAX_BLOCK + (j - offset) * stride + LOD_SHIFT;
+					const int globalZ = chunkZ * MAX_BLOCK + (k - offset) * stride + LOD_SHIFT;
+					const int index = i * blockRow * blockRow + j * blockRow + k;
+					outBuffer.mcPoints[lod][index] = getDensityI(globalX, globalY, globalZ);
+				}
+			}
+		}
+	}
 }
 
 void GameMap::saveTerrain(std::string filePath)

@@ -40,6 +40,10 @@ void Mesh::addVertices(VertexData *vertices, int size)
 
 void Mesh::finish(bool isPassToGPU)
 {
+    if (m_vertices.empty() || m_indices.empty())
+    {
+        return;
+    }
 	calcTangents();
     calculateAABB();
     if(isPassToGPU)
@@ -50,7 +54,7 @@ void Mesh::finish(bool isPassToGPU)
 
 void Mesh::submit(RenderFlag::BufferStorageType storageType)
 {
-	if (m_vertices.empty()) return;
+    if (m_vertices.empty() || m_indices.empty()) return;
     //if(Engine::shared()->getRenderDeviceType() != RenderDeviceType::OpenGl_Device)return;
     if(m_ibo == 0)
     {
@@ -95,7 +99,7 @@ int Mesh::getInstanceSize()
 
 bool Mesh::isEmpty()
 {
-	return m_indices.empty();
+    return m_vertices.empty() || m_indices.empty();
 }
 
 void Mesh::pushInstance(InstanceData instancePos)
@@ -163,7 +167,7 @@ void Mesh::calcTangents()
 
 void Mesh::reSubmit()
 {
-	if(m_arrayBuf && !m_vertices.empty())
+    if(m_arrayBuf && !m_vertices.empty() && !m_indices.empty())
 	{
 		m_arrayBuf->use();
         m_arrayBuf->allocate(&m_vertices[0], m_vertices.size() * sizeof(VertexData));
@@ -225,6 +229,11 @@ void Mesh::caclNormals()
         vec3 v1 = m_vertices[index1].m_pos - m_vertices[index0].m_pos;
         vec3 v2 = m_vertices[index2].m_pos - m_vertices[index0].m_pos;
         vec3 normal = vec3::CrossProduct(v1,v2);
+        // Degenerate triangles (e.g. vertex-stitched LOD seams) have zero-area
+        // cross products. Normalising those yields NaN under the SIMD path
+        // (1 / sqrt(0) = inf, inf * 0 = NaN), which then poisons every vertex
+        // they touch and silently makes neighbouring triangles disappear.
+        if (normal.squaredLength() <= 0.0f) continue;
         normal.normalize();
 
         m_vertices[index0].m_normal += normal;
@@ -235,6 +244,7 @@ void Mesh::caclNormals()
     size_t vertexCount = m_vertices.size();
     // Normalize all the vertex normals
     for (unsigned int i = 0 ; i < vertexCount ; i++) {
+        if (m_vertices[i].m_normal.squaredLength() <= 0.0f) continue;
         m_vertices[i].m_normal.normalize();
     }
 }

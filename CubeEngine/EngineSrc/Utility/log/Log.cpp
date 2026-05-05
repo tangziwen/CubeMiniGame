@@ -29,12 +29,25 @@ namespace tzw
 		strcat(thePattern, "\n");
 		va_list vaArg;
 		va_start(vaArg,pattern);
-		vfprintf(stdout,thePattern, vaArg);
-		vfprintf(fileHandle, thePattern, vaArg);
+		va_list stdoutArg;
+		va_copy(stdoutArg, vaArg);
+		vfprintf(stdout,thePattern, stdoutArg);
+		va_end(stdoutArg);
+		if (fileHandle)
+		{
+			va_list fileArg;
+			va_copy(fileArg, vaArg);
+			vfprintf(fileHandle, thePattern, fileArg);
+			fflush(fileHandle);
+			va_end(fileArg);
+		}
 		auto consolePanel = ConsolePanel::shared();
 		if(consolePanel)
 		{
-			consolePanel->AddLog(pattern, vaArg);
+			va_list consoleArg;
+			va_copy(consoleArg, vaArg);
+			consolePanel->AddLog(pattern, consoleArg);
+			va_end(consoleArg);
 		}
 		va_end(vaArg);
 	}
@@ -55,9 +68,26 @@ namespace tzw
 		strcat(thePattern, "\n");
 		va_list vaArg;
 		va_start(vaArg,pattern);
-		vfprintf(stdout,thePattern, vaArg);
-		vfprintf(fileHandle, thePattern, vaArg);
-		ConsolePanel::shared()->AddLog(thePattern, vaArg);
+		va_list stdoutArg;
+		va_copy(stdoutArg, vaArg);
+		vfprintf(stdout,thePattern, stdoutArg);
+		va_end(stdoutArg);
+		if (fileHandle)
+		{
+			va_list fileArg;
+			va_copy(fileArg, vaArg);
+			vfprintf(fileHandle, thePattern, fileArg);
+			fflush(fileHandle);
+			va_end(fileArg);
+		}
+		auto consolePanel = ConsolePanel::shared();
+		if(consolePanel)
+		{
+			va_list consoleArg;
+			va_copy(consoleArg, vaArg);
+			consolePanel->AddLog(thePattern, consoleArg);
+			va_end(consoleArg);
+		}
 		va_end(vaArg);
 	}
 

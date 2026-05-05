@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 	return 0;
 #endif
 
-	return Engine::run(argc,argv,new RLGameEntry());
+	return Engine::run(argc,argv,new GameEntry());
 	//return Engine::run(argc,argv,new PTMEntry());
 
 #ifdef  TEST_VULKAN_ENTRY

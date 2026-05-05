@@ -3,6 +3,8 @@
 #define GAME_MAX_BUFFER_SIZE 64
 #define LOD_SHIFT 4
 
+#include <array>
+#include <vector>
 #include "GameConfig.h"
 #include "noise/noise.h"
 #include "noise/noiseutils.h"
@@ -26,7 +28,7 @@ struct voxelInfo
 	void setMat(char mat1, char mat2, char mat3, vec3 blendFactor);
 };
 //each lod have ((MAX_BLOCK >> lodLevel) + MIN_PADDING + MAX_PADDING) ^ 3 data
-//存储得内容是MIN_PADDING|MAX_BLOCK|MAX_PADDING
+//瀛樺偍寰楀唴瀹规槸MIN_PADDING|MAX_BLOCK|MAX_PADDING
 struct ChunkInfo
 {
 	ChunkInfo(int x, int y, int z);
@@ -49,6 +51,13 @@ struct GameMapBuffer
 	voxelInfo * m_buff;
 	bool isEdit;
 };
+
+struct ChunkLodBuffer
+{
+	std::array<std::vector<voxelInfo>, 3> mcPoints;
+	std::array<int, 3> voxelSize;
+};
+
 class GameMap
 {
 public:
@@ -87,6 +96,7 @@ public:
 	GameMapBuffer * m_totalBuffer;
 	vec2 getCenterOfMap();
 	ChunkInfo* fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod);
+	void fetchChunkLodBuffer(int chunkX, int chunkY, int chunkZ, ChunkLodBuffer& outBuffer);
 	void saveTerrain(std::string filePath);
 	void loadTerrain(std::string filePath);
 	void proceduralGenMapBuffer(size_t buffID_x, size_t buffID_y, size_t buffID_z);
