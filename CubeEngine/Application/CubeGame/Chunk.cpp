@@ -41,13 +41,16 @@ namespace tzw
 
 	static int calcChunkLod(Chunk* chunk, const vec3& playerPos)
 	{
+		const float chunkSize = static_cast<float>(g_chunkSize);
+		const float lod0Distance = chunkSize;
+		const float lod1Distance = chunkSize * 2.0f;
 		auto centre = chunk->getAABB().centre();
 		auto dist = vec3(playerPos.x, 0, playerPos.z).distance(vec3(centre.x, 0, centre.z));
-		if(dist < 18.0f)
+		if(dist < lod0Distance)
 		{
 			return 0;
 		}
-		if(dist < 35.0f)
+		if(dist < lod1Distance)
 		{
 			return 1;
 		}
