@@ -243,6 +243,35 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 	const bool skipNegXQuad = stitchConfig && stitchConfig->stitchFace[0];
 	const bool skipNegYQuad = stitchConfig && stitchConfig->stitchFace[2];
 	const bool skipNegZQuad = stitchConfig && stitchConfig->stitchFace[4];
+	// Same-LOD convention: the +side neighbour chunk owns the boundary quad
+	// (it draws it from its -side padding row at x|y|z == minCellExt). The
+	// -side chunk would otherwise also emit the same boundary quad from its
+	// last interior column (x|y|z == maxCell - 1), producing a duplicated /
+	// overlapping strip exactly at the chunk seam.
+	//
+	// Whether to actually skip is decided by the caller via `skipPositive`,
+	// which is only set to true when the +side neighbour really exists and
+	// will draw the boundary itself. Without this guard, world-edge chunks
+	// or chunks whose +side neighbour hasn't streamed in yet would leave the
+	// boundary completely undrawn.
+	const bool skipPosXQuad = stitchConfig && stitchConfig->skipPositive[0];
+	const bool skipPosYQuad = stitchConfig && stitchConfig->skipPositive[1];
+	const bool skipPosZQuad = stitchConfig && stitchConfig->skipPositive[2];
+	// When extendPositive[axis] is set, Pass 1 fills one extra row of dual
+	// vertices at axis-coord == maxCell so that the *seam* quad at
+	// axis-coord == maxCell - 1 can be emitted from this (coarser) side.
+	// However, the Pass 2 outer loop also visits axis-coord == maxCell, and at
+	// that index a spurious quad would be emitted whose active edge sits at
+	// axis-coord == maxCell + 1 -- i.e. one full coarse stride INTO the +side
+	// neighbour's territory. The +side (finer) neighbour already draws its own
+	// geometry there, producing a near-coplanar overlap strip that becomes
+	// visible whenever the camera moves through an LOD transition.
+	// Suppress the spurious emit explicitly. Without this the previous
+	// skipPositive fix only cleared the same-LOD overlap; the cross-LOD
+	// (extendPositive) overlap survived. See SurfaceNetsLod.md §3.7.
+	const bool extPosX = stitchConfig && stitchConfig->extendPositive[0];
+	const bool extPosY = stitchConfig && stitchConfig->extendPositive[1];
+	const bool extPosZ = stitchConfig && stitchConfig->extendPositive[2];
 	for (int z = minCellExt; z <= maxCell; ++z)
 	{
 		for (int y = minCellExt; y <= maxCell; ++y)
@@ -252,7 +281,10 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 				const unsigned char valSelf = getValue(srcData, voxelSize, x, y, z);
 				const bool selfIn = valSelf < ISOLEVEL;
 
-				if (x + 1 < voxelSize && y >= minCell && z >= minCell && !(skipNegXQuad && x == minCellExt))
+				if (x + 1 < voxelSize && y >= minCell && z >= minCell
+					&& !(skipNegXQuad && x == minCellExt)
+					&& !(skipPosXQuad && x == maxCell - 1)
+					&& !(extPosX && x == maxCell))
 				{
 					const unsigned char valX = getValue(srcData, voxelSize, x + 1, y, z);
 					if (selfIn != (valX < ISOLEVEL))
@@ -277,7 +309,10 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 					}
 				}
 
-				if (y + 1 < voxelSize && x >= minCell && z >= minCell && !(skipNegYQuad && y == minCellExt))
+				if (y + 1 < voxelSize && x >= minCell && z >= minCell
+					&& !(skipNegYQuad && y == minCellExt)
+					&& !(skipPosYQuad && y == maxCell - 1)
+					&& !(extPosY && y == maxCell))
 				{
 					const unsigned char valY = getValue(srcData, voxelSize, x, y + 1, z);
 					if (selfIn != (valY < ISOLEVEL))
@@ -302,7 +337,10 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 					}
 				}
 
-				if (z + 1 < voxelSize && x >= minCell && y >= minCell && !(skipNegZQuad && z == minCellExt))
+				if (z + 1 < voxelSize && x >= minCell && y >= minCell
+					&& !(skipNegZQuad && z == minCellExt)
+					&& !(skipPosZQuad && z == maxCell - 1)
+					&& !(extPosZ && z == maxCell))
 				{
 					const unsigned char valZ = getValue(srcData, voxelSize, x, y, z + 1);
 					if (selfIn != (valZ < ISOLEVEL))

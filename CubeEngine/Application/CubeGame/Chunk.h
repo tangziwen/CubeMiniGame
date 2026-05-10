@@ -74,6 +74,10 @@ namespace tzw
 		// generated. Index [lod][face]. Used to detect when stitching needs to be
 		// re-evaluated because a neighbour switched LOD.
 		int m_neighborLodForGen[3][6];
+		// Snapshot of neighbour presence (loaded vs. missing) at mesh-gen time.
+		// Boundary ownership depends on this, so a presence change must trigger
+		// a re-mesh even if the assumed and actual LOD happen to match.
+		bool m_neighborPresentForGen[3][6];
 		std::atomic<bool> m_needRegen;
 		void sampleForLod(int lodLevel, voxelInfo * out);
 		bool isInEdge(int i, int j, int k);

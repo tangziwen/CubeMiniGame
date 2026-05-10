@@ -88,6 +88,7 @@ namespace tzw
 			for (int f = 0; f < 6; ++f)
 			{
 				m_neighborLodForGen[i][f] = -1;
+				m_neighborPresentForGen[i][f] = false;
 			}
 		}
 		m_needRegen.store(false);
@@ -184,6 +185,17 @@ namespace tzw
 	void
 	Chunk::logicUpdate(float delta)
 	{
+		// Refresh this chunk's view-distance LOD once per frame, before any
+		// rendering or stitching uses it. Doing it here (instead of inside
+		// submitDrawCmd) makes m_currentLOD frame-stable across all chunks, so
+		// neighbour-LOD queries from submitDrawCmd / genMesh are independent of
+		// the order in which chunks are visited within a frame.
+		auto player = GameWorld::shared() ? GameWorld::shared()->getPlayer() : nullptr;
+		if (player)
+		{
+			m_currentLOD = calcChunkLod(this, player->getPos());
+		}
+
 		if (m_isNeedSubmitMesh)
 		{
 			m_isNeedSubmitMesh = false;
@@ -211,12 +223,17 @@ namespace tzw
 			return;
 		}
 
-		// Re-stitch when a neighbour LOD changed beneath us. We only fire one
-		// regeneration job at a time and not while another mesh build is already
-		// queued for submission.
+		// Re-stitch when a neighbour LOD changed beneath us. Run synchronously
+		// on the main thread (where m_currentLOD is written for every chunk
+		// in this frame's logicUpdate pass) so that genMesh sees a consistent
+		// snapshot of all neighbour LODs. Pushing this to a worker would race
+		// against next frame's main-thread LOD updates and produce drifting
+		// seam decisions as the camera moves. We also gate on
+		// !m_isNeedSubmitMesh to avoid clobbering a mesh that's queued for
+		// upload.
 		if (m_currenState == State::LOADED && !m_isNeedSubmitMesh && m_needRegen.exchange(false))
 		{
-			WorkerThreadSystem::shared()->pushOrder(WorkerJob([this]() { genMesh(m_currentLOD); }));
+			genMesh(m_currentLOD);
 		}
 	}
 
@@ -240,9 +257,8 @@ namespace tzw
 		{
 			return;
 		}
-		auto player = GameWorld::shared()->getPlayer();
-		auto pos = player->getPos();
-		m_currentLOD = calcChunkLod(this, pos);
+		// LOD was decided in logicUpdate(); just consume it here so that all
+		// chunks see consistent neighbour LOD values regardless of submit order.
 		Mesh* lodMesh = m_mesh[m_currentLOD];
 		if (!isMeshReady(lodMesh))
 			return;
@@ -253,8 +269,10 @@ namespace tzw
 		command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 		queues->addRenderCommand(command, requirementArg);
 
-		// Detect neighbour LOD changes and ask logicUpdate to rebuild this chunk
-		// so its boundary stitching matches the new neighbour LODs.
+		// Detect neighbour LOD / presence changes and ask logicUpdate to rebuild
+		// this chunk so its boundary stitching matches the new neighbour state.
+		// We read neighbour->m_currentLOD directly: that value was refreshed in
+		// the same frame's logicUpdate pass, before any submitDrawCmd call.
 		bool stitchMismatch = false;
 		for (int face = 0; face < 6; ++face)
 		{
@@ -262,8 +280,11 @@ namespace tzw
 				this->m_x + seamNeighborOffsets[face][0],
 				this->m_y + seamNeighborOffsets[face][1],
 				this->m_z + seamNeighborOffsets[face][2]);
-			const int neighborLod = neighborChunk ? calcChunkLod(neighborChunk, pos) : m_currentLOD;
-			if (m_neighborLodForGen[m_currentLOD][face] != neighborLod)
+			const bool neighborNowPresent = (neighborChunk != nullptr)
+				&& (neighborChunk->m_currenState == Chunk::State::LOADED);
+			const int neighborLod = neighborChunk ? neighborChunk->m_currentLOD : m_currentLOD;
+			if (m_neighborLodForGen[m_currentLOD][face] != neighborLod
+				|| m_neighborPresentForGen[m_currentLOD][face] != neighborNowPresent)
 			{
 				stitchMismatch = true;
 			}
@@ -873,22 +894,28 @@ BAAAABB
 		ChunkLodBuffer lodBuffer;
 		GameMap::shared()->fetchChunkLodBuffer(m_x, m_y, m_z, lodBuffer);
 
-		// Snapshot neighbour LODs so submitDrawCmd can detect changes that
-		// invalidate the boundary stitching computed below.
-		vec3 playerPos(0, 0, 0);
-		auto player = GameWorld::shared() ? GameWorld::shared()->getPlayer() : nullptr;
-		if (player) playerPos = player->getPos();
-
+		// Snapshot neighbour LOD / presence so submitDrawCmd can detect changes
+		// that invalidate the boundary stitching computed below. We read each
+		// neighbour's cached m_currentLOD instead of recomputing from player
+		// position so the snapshot matches exactly what submitDrawCmd compares
+		// against next frame (m_currentLOD is refreshed in logicUpdate before
+		// any submit).
 		int neighborLodForLod[3][6];
-		for (int i = 0; i < 3; ++i)
+		bool neighborPresent[6] = {false, false, false, false, false, false};
+		for (int face = 0; face < 6; ++face)
 		{
-			for (int face = 0; face < 6; ++face)
+			auto neighborChunk = GameWorld::shared()->getChunk(
+				m_x + seamNeighborOffsets[face][0],
+				m_y + seamNeighborOffsets[face][1],
+				m_z + seamNeighborOffsets[face][2]);
+			// Chunks are pre-allocated, so getChunk() returns non-null even for
+			// chunks that have never streamed in. Only LOADED neighbours own a
+			// boundary quad; otherwise we must draw it ourselves.
+			neighborPresent[face] = (neighborChunk != nullptr)
+				&& (neighborChunk->m_currenState == Chunk::State::LOADED);
+			for (int i = 0; i < 3; ++i)
 			{
-				auto neighborChunk = GameWorld::shared()->getChunk(
-					m_x + seamNeighborOffsets[face][0],
-					m_y + seamNeighborOffsets[face][1],
-					m_z + seamNeighborOffsets[face][2]);
-				neighborLodForLod[i][face] = neighborChunk ? calcChunkLod(neighborChunk, playerPos) : i;
+				neighborLodForLod[i][face] = neighborChunk ? neighborChunk->m_currentLOD : i;
 			}
 		}
 
@@ -925,6 +952,21 @@ BAAAABB
 				stitchConfig.extendPositive[axis] = needExtend;
 				anyBoundary = anyBoundary || needExtend;
 			}
+			// skipPositive: only delegate the +side boundary quad to the
+			// neighbour when that neighbour actually exists and is at our LOD
+			// or coarser (it will emit it from its -side padding row, or via
+			// its own extendPositive on a coarser LOD). Never skip when the
+			// neighbour is missing (world edge / not yet streamed) or when we
+			// are extending into the +side ourselves.
+			for (int axis = 0; axis < 3; ++axis)
+			{
+				const int face = positiveFaceForAxis[axis];
+				const bool neighborWillDraw = neighborPresent[face]
+					&& neighborLodForLod[i][face] >= i
+					&& !stitchConfig.extendPositive[axis];
+				stitchConfig.skipPositive[axis] = neighborWillDraw;
+				anyBoundary = anyBoundary || neighborWillDraw;
+			}
 			if (anyBoundary) stitchPtr = &stitchConfig;
 
 			SurfaceNets::shared()->generate(m_basePoint,
@@ -934,6 +976,7 @@ BAAAABB
 			for (int face = 0; face < 6; ++face)
 			{
 				m_neighborLodForGen[i][face] = neighborLodForLod[i][face];
+				m_neighborPresentForGen[i][face] = neighborPresent[face];
 			}
 		}
 		if (m_mesh[0]->isEmpty())

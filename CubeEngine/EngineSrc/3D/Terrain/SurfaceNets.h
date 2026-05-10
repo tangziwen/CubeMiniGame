@@ -44,6 +44,14 @@ namespace tzw {
 	{
 		bool stitchFace[6] = {false, false, false, false, false, false};
 		bool extendPositive[3] = {false, false, false};
+		// `skipPositive[axis]` (X / Y / Z):
+		//   When true, the +side boundary quad along that axis is NOT emitted
+		//   here because the +side neighbour chunk is known to draw it (same
+		//   LOD: neighbour emits from its -side padding row; coarser neighbour:
+		//   emits via its own extendPositive on the opposite axis).
+		//   Defaults to false so chunks at the world edge / streaming front
+		//   (no neighbour loaded) still close their own boundary.
+		bool skipPositive[3] = {false, false, false};
 		voxelInfo* coarseData = nullptr;
 		int coarseVoxelSize = 0;
 		int coarseLodLevel = 0;
