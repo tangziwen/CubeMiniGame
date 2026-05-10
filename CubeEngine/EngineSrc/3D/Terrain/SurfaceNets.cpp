@@ -284,7 +284,9 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 				if (x + 1 < voxelSize && y >= minCell && z >= minCell
 					&& !(skipNegXQuad && x == minCellExt)
 					&& !(skipPosXQuad && x == maxCell - 1)
-					&& !(extPosX && x == maxCell))
+					&& !(extPosX && x == maxCell)
+					&& !(extPosY && y == maxCell)
+					&& !(extPosZ && z == maxCell))
 				{
 					const unsigned char valX = getValue(srcData, voxelSize, x + 1, y, z);
 					if (selfIn != (valX < ISOLEVEL))
@@ -312,7 +314,9 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 				if (y + 1 < voxelSize && x >= minCell && z >= minCell
 					&& !(skipNegYQuad && y == minCellExt)
 					&& !(skipPosYQuad && y == maxCell - 1)
-					&& !(extPosY && y == maxCell))
+					&& !(extPosY && y == maxCell)
+					&& !(extPosX && x == maxCell)
+					&& !(extPosZ && z == maxCell))
 				{
 					const unsigned char valY = getValue(srcData, voxelSize, x, y + 1, z);
 					if (selfIn != (valY < ISOLEVEL))
@@ -340,7 +344,9 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, int voxelSize, voxelInfo*
 				if (z + 1 < voxelSize && x >= minCell && y >= minCell
 					&& !(skipNegZQuad && z == minCellExt)
 					&& !(skipPosZQuad && z == maxCell - 1)
-					&& !(extPosZ && z == maxCell))
+					&& !(extPosZ && z == maxCell)
+					&& !(extPosX && x == maxCell)
+					&& !(extPosY && y == maxCell))
 				{
 					const unsigned char valZ = getValue(srcData, voxelSize, x, y, z + 1);
 					if (selfIn != (valZ < ISOLEVEL))
