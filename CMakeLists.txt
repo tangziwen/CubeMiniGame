@@ -143,12 +143,12 @@ endmacro(source_group_by_dir)
 #define
 add_definitions(-DB3_USE_CLEW)
 
-file(GLOB_RECURSE project_headers ${_src_root_path}/*.h ${_src_root_path}/*.hpp)
-file(GLOB_RECURSE project_cpps ${_src_root_path}/*.cpp ${_src_root_path}/*.c)
+file(GLOB_RECURSE project_headers CONFIGURE_DEPENDS ${_src_root_path}/*.h ${_src_root_path}/*.hpp)
+file(GLOB_RECURSE project_cpps CONFIGURE_DEPENDS ${_src_root_path}/*.cpp ${_src_root_path}/*.c)
 
 # Add external directory source files
-file(GLOB_RECURSE external_headers ${CMAKE_CURRENT_SOURCE_DIR}/external/*.h ${CMAKE_CURRENT_SOURCE_DIR}/external/*.hpp)
-file(GLOB_RECURSE external_cpps ${CMAKE_CURRENT_SOURCE_DIR}/external/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/external/*.c)
+file(GLOB_RECURSE external_headers CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/external/*.h ${CMAKE_CURRENT_SOURCE_DIR}/external/*.hpp)
+file(GLOB_RECURSE external_cpps CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/external/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/external/*.c)
 
 set(all_files ${project_headers} ${project_cpps} ${external_headers} ${external_cpps})
 source_group_by_dir(all_files)
