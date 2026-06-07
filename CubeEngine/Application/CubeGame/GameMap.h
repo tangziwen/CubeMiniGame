@@ -74,7 +74,9 @@ public:
 	double getNoiseValue(float x, float y, float z);
     bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
-	voxelInfo getDensityI(int x, int y, int z);
+	// Non-materializing read: returns stored voxel if the page exists, otherwise samples procedural terrain.
+	voxelInfo sampleVoxel(int x, int y, int z);
+	voxelInfo sampleProceduralVoxel(int x, int y, int z);
     unsigned char getDensity(vec3 pos);
 	unsigned char getVoxelW(int x, int y, int z);
 	voxelInfo*  getVoxel(int x, int y ,int z);
@@ -93,20 +95,25 @@ public:
 	float edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal);
 	int getTreeId();
 	int getGrassId();
-	GameMapBuffer * m_totalBuffer;
 	vec2 getCenterOfMap();
-	ChunkInfo* fetchFromSource(int chunkX, int chunkY, int chunkZ, int lod);
 	void fetchChunkLodBuffer(int chunkX, int chunkY, int chunkZ, ChunkLodBuffer& outBuffer);
 	void saveTerrain(std::string filePath);
 	void loadTerrain(std::string filePath);
-	void proceduralGenMapBuffer(size_t buffID_x, size_t buffID_y, size_t buffID_z);
 	vec3 getMapOffset() const;
 	bool isVoxelInDomain(int x, int y, int z) const;
-	void ensureVoxelBuffer(int x, int y, int z);
-	voxelInfo* getVoxelSafe(int x, int y, int z);
-	void setVoxelSafe(int x, int y, int z, unsigned char w);
-	void setVoxelMatSafe(int x, int y, int z, int matIndex);
+	bool hasVoxelPageFor(int x, int y, int z) const;
+	bool ensureVoxelPageFor(int x, int y, int z);
+	// Writable access: explicitly materializes the owning page before returning or writing.
+	voxelInfo* ensureVoxelForWrite(int x, int y, int z);
+	bool writeVoxelDensity(int x, int y, int z, unsigned char w);
+	bool writeVoxelMaterial(int x, int y, int z, int matIndex);
 private:
+	int pageIndex(int pageX, int pageY, int pageZ) const;
+	int pageIndexForVoxel(int x, int y, int z) const;
+	int localIndexInPage(int x, int y, int z) const;
+	bool isPageAllocated(int pageIndex) const;
+	voxelInfo makeOutsideVoxel() const;
+	void generateVoxelPage(size_t buffID_x, size_t buffID_y, size_t buffID_z);
     float x_offset,y_offset,z_offset;
     float m_maxHeight;
     float m_ratio;
@@ -121,6 +128,7 @@ private:
 	int mapBufferSize_X;
 	int mapBufferSize_Y;
 	int mapBufferSize_Z;
+	GameMapBuffer * m_totalBuffer;
 	ChunkInfo * m_chunkInfo;
 	vec3 m_mapOffset;
 };

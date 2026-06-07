@@ -1,6 +1,8 @@
 #include "TerrainMeshCache.h"
 #include "Transvoxel.h"
 
+#include <algorithm>
+
 namespace tzw {
 
 TerrainMeshCacheEntry* TerrainMeshCache::find(const TerrainNodeKey& key)

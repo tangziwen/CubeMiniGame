@@ -159,12 +159,12 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 					if (operation.mode == TerrainEditMode::AddDensity)
 					{
 						const float delta = operation.densityValue * falloff * 128.0f;
-						voxelInfo* v = m_map->getVoxelSafe(x, y, z);
+						voxelInfo* v = m_map->ensureVoxelForWrite(x, y, z);
 						if (v)
 						{
 							int newW = static_cast<int>(static_cast<short>(v->w) + static_cast<short>(delta));
 							newW = std::clamp(newW, 0, 255);
-							m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
+							m_map->writeVoxelDensity(x, y, z, static_cast<unsigned char>(newW));
 							++result.editedVoxelCount;
 							result.changed = true;
 							recordAffectedVoxel(x, y, z);
@@ -174,14 +174,14 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 					{
 						int newW = static_cast<int>(std::round(operation.densityValue * falloff));
 						newW = std::clamp(newW, 0, 255);
-						m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
+						m_map->writeVoxelDensity(x, y, z, static_cast<unsigned char>(newW));
 						++result.editedVoxelCount;
 						result.changed = true;
 						recordAffectedVoxel(x, y, z);
 					}
 					else if (operation.mode == TerrainEditMode::PaintMaterial)
 					{
-						m_map->setVoxelMatSafe(x, y, z, operation.materialIndex);
+						m_map->writeVoxelMaterial(x, y, z, operation.materialIndex);
 						++result.editedVoxelCount;
 						result.changed = true;
 						recordAffectedVoxel(x, y, z);
@@ -192,12 +192,12 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 					if (operation.mode == TerrainEditMode::AddDensity)
 					{
 						const float delta = operation.densityValue * 128.0f;
-						voxelInfo* v = m_map->getVoxelSafe(x, y, z);
+						voxelInfo* v = m_map->ensureVoxelForWrite(x, y, z);
 						if (v)
 						{
 							int newW = static_cast<int>(static_cast<short>(v->w) + static_cast<short>(delta));
 							newW = std::clamp(newW, 0, 255);
-							m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
+							m_map->writeVoxelDensity(x, y, z, static_cast<unsigned char>(newW));
 							++result.editedVoxelCount;
 							result.changed = true;
 							recordAffectedVoxel(x, y, z);
@@ -207,14 +207,14 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 					{
 						int newW = static_cast<int>(std::round(operation.densityValue));
 						newW = std::clamp(newW, 0, 255);
-						m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
+						m_map->writeVoxelDensity(x, y, z, static_cast<unsigned char>(newW));
 						++result.editedVoxelCount;
 						result.changed = true;
 						recordAffectedVoxel(x, y, z);
 					}
 					else if (operation.mode == TerrainEditMode::PaintMaterial)
 					{
-						m_map->setVoxelMatSafe(x, y, z, operation.materialIndex);
+						m_map->writeVoxelMaterial(x, y, z, operation.materialIndex);
 						++result.editedVoxelCount;
 						result.changed = true;
 						recordAffectedVoxel(x, y, z);

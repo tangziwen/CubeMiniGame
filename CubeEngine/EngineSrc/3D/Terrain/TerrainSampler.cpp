@@ -33,7 +33,7 @@ int TerrainSampleBuffer::index(int x, int y, int z) const
 }
 
 TerrainSampler::TerrainSampler()
-	: m_domainSize(GAME_MAP_WIDTH * MAX_BLOCK, GAME_MAP_HEIGHT * MAX_BLOCK, GAME_MAP_DEPTH * MAX_BLOCK)
+	: m_domainSize(GAME_MAP_WIDTH_VOXELS, GAME_MAP_HEIGHT_VOXELS, GAME_MAP_DEPTH_VOXELS)
 {
 }
 
@@ -87,7 +87,7 @@ bool TerrainSampler::sample(GameMap* map, const TerrainMeshRequest& request,
 					+ TerrainInt3(x, y, z) * request.sampleStride;
 				const int index = outBuffer.index(x, y, z);
 				outBuffer.voxels[index] = isInDomain(globalSample)
-					? map->getDensityI(globalSample.x, globalSample.y, globalSample.z)
+					? map->sampleVoxel(globalSample.x, globalSample.y, globalSample.z)
 					: makeEmptyVoxel();
 			}
 		}

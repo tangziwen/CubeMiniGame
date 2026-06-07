@@ -89,12 +89,12 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 
 	if (m_useTerrainOctree)
 	{
-		int widthVoxels = m_width * MAX_BLOCK;
-		int heightVoxels = m_height * MAX_BLOCK;
-		int depthVoxels = m_depth * MAX_BLOCK;
+		int widthVoxels = GAME_MAP_WIDTH_VOXELS;
+		int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
+		int depthVoxels = GAME_MAP_DEPTH_VOXELS;
 		vec3 mapOffset = GameMap::shared()->getMapOffset();
 		TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
-			widthVoxels, heightVoxels, depthVoxels, MAX_BLOCK, BLOCK_SIZE, mapOffset);
+			widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
 		m_terrainRuntime = std::make_unique<TerrainRuntime>();
 		m_terrainRuntime->init(config);
 	}
@@ -116,12 +116,12 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 
 	if (m_useTerrainOctree)
 	{
-		int widthVoxels = m_width * MAX_BLOCK;
-		int heightVoxels = m_height * MAX_BLOCK;
-		int depthVoxels = m_depth * MAX_BLOCK;
+		int widthVoxels = GAME_MAP_WIDTH_VOXELS;
+		int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
+		int depthVoxels = GAME_MAP_DEPTH_VOXELS;
 		vec3 mapOffset = GameMap::shared()->getMapOffset();
 		TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
-			widthVoxels, heightVoxels, depthVoxels, MAX_BLOCK, BLOCK_SIZE, mapOffset);
+			widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
 		m_terrainRuntime = std::make_unique<TerrainRuntime>();
 		m_terrainRuntime->init(config);
 	}

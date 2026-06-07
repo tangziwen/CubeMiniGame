@@ -62,6 +62,8 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 	m_meshCache->touchRenderSet(renderSet, m_frameIndex);
 
 	// 3. Generate mesh for nodes that lack a ready mesh
+	const int maxSyncMeshBuildsPerFrame = 2;
+	int syncMeshBuildsThisFrame = 0;
 	for (TerrainOctreeNode* node : renderSet.nodes())
 	{
 		if (!node)
@@ -88,6 +90,10 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 
 		if (needRequest)
 		{
+			if (syncMeshBuildsThisFrame >= maxSyncMeshBuildsPerFrame)
+			{
+				continue;
+			}
 			TerrainMeshRequest request = m_meshCache->makeRequest(*node, m_octree->config());
 			m_meshCache->markRequested(request);
 
@@ -111,6 +117,7 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 			}
 
 			node->setDirty(false);
+			++syncMeshBuildsThisFrame;
 		}
 	}
 

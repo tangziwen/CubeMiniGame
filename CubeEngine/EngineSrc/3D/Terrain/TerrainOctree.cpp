@@ -1,6 +1,8 @@
 #include "TerrainOctree.h"
 #include "Transvoxel.h"
 
+#include <algorithm>
+
 namespace tzw {
 
 TerrainOctree::TerrainOctree()
