@@ -76,6 +76,7 @@ struct TerrainOctreeConfig
 	int maxDepth = 0;
 	float blockSize = 1.0f;
 	vec3 mapOffset;
+	TerrainInt3 domainSize = TerrainInt3(16, 16, 16);
 
 	static TerrainOctreeConfig fromVoxelDomain(int widthVoxels, int heightVoxels, int depthVoxels,
 		int theMeshCellCount, float theBlockSize, const vec3& theMapOffset);

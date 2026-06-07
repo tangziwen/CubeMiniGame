@@ -203,6 +203,7 @@ TerrainOctreeConfig TerrainOctreeConfig::fromVoxelDomain(int widthVoxels, int he
 	result.leafCellSize = meshCellCount;
 	result.blockSize = theBlockSize;
 	result.mapOffset = theMapOffset;
+	result.domainSize = TerrainInt3(widthVoxels, heightVoxels, depthVoxels);
 	result.maxDepth = terrainLog2(result.rootCellSize / result.leafCellSize);
 	return result;
 }
@@ -210,6 +211,11 @@ TerrainOctreeConfig TerrainOctreeConfig::fromVoxelDomain(int widthVoxels, int he
 bool TerrainOctreeConfig::isValid() const
 {
 	if (rootCellSize <= 0 || leafCellSize <= 0 || meshCellCount <= 0 || blockSize <= 0.0f)
+	{
+		return false;
+	}
+	if (domainSize.x <= 0 || domainSize.y <= 0 || domainSize.z <= 0
+		|| domainSize.x > rootCellSize || domainSize.y > rootCellSize || domainSize.z > rootCellSize)
 	{
 		return false;
 	}

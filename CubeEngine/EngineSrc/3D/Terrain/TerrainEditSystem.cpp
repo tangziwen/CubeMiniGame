@@ -4,7 +4,9 @@
 #include "TerrainOctree.h"
 #include "TerrainMeshCache.h"
 
+#include <algorithm>
 #include <cmath>
+#include <limits>
 
 namespace tzw {
 
@@ -77,6 +79,15 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 	{
 		return result;
 	}
+	if (operation.shape == TerrainEditShape::Sphere && operation.radiusWorld <= 0.0f)
+	{
+		return result;
+	}
+	if (operation.shape == TerrainEditShape::Box
+		&& (operation.halfExtentsWorld.x < 0.0f || operation.halfExtentsWorld.y < 0.0f || operation.halfExtentsWorld.z < 0.0f))
+	{
+		return result;
+	}
 
 	const vec3 mapOffset = m_map->getMapOffset();
 	const float blockSize = BLOCK_SIZE;
@@ -103,6 +114,25 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 		bounds.voxelMin = TerrainInt3(centerX - searchSize, centerY - searchSize, centerZ - searchSize);
 		bounds.voxelMaxExclusive = TerrainInt3(centerX + searchSize + 1, centerY + searchSize + 1, centerZ + searchSize + 1);
 	}
+
+	TerrainEditBounds affectedBounds;
+	affectedBounds.voxelMin = TerrainInt3(
+		std::numeric_limits<int>::max(),
+		std::numeric_limits<int>::max(),
+		std::numeric_limits<int>::max());
+	affectedBounds.voxelMaxExclusive = TerrainInt3(
+		std::numeric_limits<int>::lowest(),
+		std::numeric_limits<int>::lowest(),
+		std::numeric_limits<int>::lowest());
+	auto recordAffectedVoxel = [&affectedBounds](int x, int y, int z)
+	{
+		affectedBounds.voxelMin.x = std::min(affectedBounds.voxelMin.x, x);
+		affectedBounds.voxelMin.y = std::min(affectedBounds.voxelMin.y, y);
+		affectedBounds.voxelMin.z = std::min(affectedBounds.voxelMin.z, z);
+		affectedBounds.voxelMaxExclusive.x = std::max(affectedBounds.voxelMaxExclusive.x, x + 1);
+		affectedBounds.voxelMaxExclusive.y = std::max(affectedBounds.voxelMaxExclusive.y, y + 1);
+		affectedBounds.voxelMaxExclusive.z = std::max(affectedBounds.voxelMaxExclusive.z, z + 1);
+	};
 
 	for (int x = bounds.voxelMin.x; x < bounds.voxelMaxExclusive.x; ++x)
 	{
@@ -137,6 +167,7 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 							m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
 							++result.editedVoxelCount;
 							result.changed = true;
+							recordAffectedVoxel(x, y, z);
 						}
 					}
 					else if (operation.mode == TerrainEditMode::SetDensity)
@@ -146,12 +177,14 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 						m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
 						++result.editedVoxelCount;
 						result.changed = true;
+						recordAffectedVoxel(x, y, z);
 					}
 					else if (operation.mode == TerrainEditMode::PaintMaterial)
 					{
 						m_map->setVoxelMatSafe(x, y, z, operation.materialIndex);
 						++result.editedVoxelCount;
 						result.changed = true;
+						recordAffectedVoxel(x, y, z);
 					}
 				}
 				else // Box
@@ -167,6 +200,7 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 							m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
 							++result.editedVoxelCount;
 							result.changed = true;
+							recordAffectedVoxel(x, y, z);
 						}
 					}
 					else if (operation.mode == TerrainEditMode::SetDensity)
@@ -176,12 +210,14 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 						m_map->setVoxelSafe(x, y, z, static_cast<unsigned char>(newW));
 						++result.editedVoxelCount;
 						result.changed = true;
+						recordAffectedVoxel(x, y, z);
 					}
 					else if (operation.mode == TerrainEditMode::PaintMaterial)
 					{
 						m_map->setVoxelMatSafe(x, y, z, operation.materialIndex);
 						++result.editedVoxelCount;
 						result.changed = true;
+						recordAffectedVoxel(x, y, z);
 					}
 				}
 			}
@@ -192,15 +228,15 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 	{
 		++m_revision;
 		result.revision = m_revision;
-		result.affectedBounds = bounds;
+		result.affectedBounds = affectedBounds;
 
 		if (m_octree)
 		{
-			result.dirtiedNodeCount = m_octree->markDirtyInBounds(bounds);
+			result.dirtiedNodeCount = m_octree->markDirtyInBounds(affectedBounds);
 		}
 		if (m_cache && m_octree)
 		{
-			m_cache->invalidateInBounds(bounds, m_octree->config());
+			m_cache->invalidateInBounds(affectedBounds, m_octree->config());
 		}
 	}
 

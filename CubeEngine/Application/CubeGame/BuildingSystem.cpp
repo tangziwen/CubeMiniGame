@@ -23,10 +23,36 @@
 #include "ButtonPart.h"
 #include "SwitchPart.h"
 #include "PlanterPart.h"
+#include "GameWorld.h"
+#include "EngineSrc/3D/Terrain/TerrainDrawableNode.h"
+#include "EngineSrc/3D/Terrain/TerrainEditSystem.h"
 
 namespace tzw
 {
 	const float bearingGap = 0.00;
+
+	namespace
+	{
+		bool isTerrainDrawable(Drawable3D* drawable)
+		{
+			return dynamic_cast<Chunk*>(drawable) || dynamic_cast<TerrainDrawableNode*>(drawable);
+		}
+
+		void keepTerrainDrawablesOnly(std::vector<Drawable3D*>& list)
+		{
+			for (auto iter = list.begin(); iter != list.end();)
+			{
+				if (!isTerrainDrawable(*iter))
+				{
+					iter = list.erase(iter);
+				}
+				else
+				{
+					++iter;
+				}
+			}
+		}
+	}
 
 	BuildingSystem::BuildingSystem():m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup(nullptr),m_staticVehicle(nullptr)
 	{
@@ -174,16 +200,25 @@ namespace tzw
 		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
 		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
 		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
+		keepTerrainDrawablesOnly(list);
 		if (!list.empty())
 		{
 			Drawable3DGroup group(&list[0], list.size());
 			Ray ray(pos, dir);
 			vec3 hitPoint;
-			auto chunk = static_cast<Chunk*>(group.hitByRay(ray, hitPoint));
-			if (chunk)
+			Drawable3D* hitDrawable = group.hitByRay(ray, hitPoint);
+			if (auto chunk = dynamic_cast<Chunk*>(hitDrawable))
 			{
 				AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::DIGGING);
 				chunk->deformSphere(hitPoint, value, range);
+			}
+			else if (dynamic_cast<TerrainDrawableNode*>(hitDrawable))
+			{
+				if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
+				{
+					AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::DIGGING);
+					editSystem->deformSphere(hitPoint, range, value);
+				}
 			}
 		}
 	}
@@ -195,15 +230,23 @@ namespace tzw
 		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
 		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
 		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
+		keepTerrainDrawablesOnly(list);
 		if (!list.empty())
 		{
 			Drawable3DGroup group(&list[0], list.size());
 			Ray ray(pos, dir);
 			vec3 hitPoint;
-			auto chunk = static_cast<Chunk*>(group.hitByRay(ray, hitPoint));
-			if (chunk)
+			Drawable3D* hitDrawable = group.hitByRay(ray, hitPoint);
+			if (auto chunk = dynamic_cast<Chunk*>(hitDrawable))
 			{
 				chunk->paintSphere(hitPoint, matIndex, range);
+			}
+			else if (dynamic_cast<TerrainDrawableNode*>(hitDrawable))
+			{
+				if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
+				{
+					editSystem->paintSphere(hitPoint, range, matIndex);
+				}
 			}
 		}
 	}
@@ -215,28 +258,15 @@ namespace tzw
 		aabb.update(vec3(pos.x - dist, pos.y - dist, pos.z - dist));
 		aabb.update(vec3(pos.x + dist, pos.y + dist, pos.z + dist));
 		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
+		keepTerrainDrawablesOnly(list);
 		if (!list.empty())
 		{
-			for(auto i = list.begin(); i != list.end();)
+			Drawable3DGroup group(&list[0], list.size());
+			Ray ray(pos, dir);
+			vec3 hitPoint;
+			if (group.hitByRay(ray, hitPoint))
 			{
-				if(!dynamic_cast<Chunk*>(*i)) 
-				{
-					i = list.erase(i);
-				}else
-				{
-					i++;
-				}
-			}
-			if(!list.empty())
-			{
-				Drawable3DGroup group(&list[0], list.size());
-				Ray ray(pos, dir);
-				vec3 hitPoint;
-				if (group.hitByRay(ray, hitPoint))
-				{
-					
-					return hitPoint;
-				}
+				return hitPoint;
 			}
 		}
 		return vec3(-999999, -999999, -999999);

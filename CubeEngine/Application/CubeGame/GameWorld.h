@@ -9,7 +9,11 @@
 #include "GameUISystem.h"
 #include "GameConfig.h"
 #include <set>
+#include <memory>
+#include "EngineSrc/3D/Terrain/TerrainRuntime.h"
 namespace tzw {
+
+class TerrainEditSystem;
 
 #define GAME_STATE_MAIN_MENU 0
 #define GAME_STATE_RUNNING 1
@@ -51,6 +55,8 @@ public:
     void setCurrentState(const int &currentState);
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
+	TerrainEditSystem* getTerrainEditSystem() const;
+	bool isUsingTerrainOctree() const;
 	void loadChunksAroundPlayer();
 	void init();
 	virtual ~GameWorld();
@@ -72,6 +78,9 @@ private:
 	void prepare();
 	void initChunk();
 	WorldInfo m_currWorldInfo;
+
+	std::unique_ptr<TerrainRuntime> m_terrainRuntime;
+	bool m_useTerrainOctree = true;
 };
 
 } // namespace tzw
