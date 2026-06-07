@@ -1,4 +1,5 @@
 #include "TerrainMeshCache.h"
+#include "Transvoxel.h"
 
 namespace tzw {
 
@@ -69,6 +70,48 @@ void TerrainMeshCache::invalidate(const TerrainNodeKey& key)
 	entry.mesh.reset();
 	++entry.revision;
 	entry.request.revision = entry.revision;
+}
+
+void TerrainMeshCache::invalidateInBounds(const TerrainEditBounds& bounds, const TerrainOctreeConfig& config)
+{
+	if (!config.isValid())
+	{
+		return;
+	}
+	for (auto& pair : m_entries)
+	{
+		const TerrainNodeKey& key = pair.first;
+		TerrainMeshCacheEntry& entry = pair.second;
+		if (entry.state == TerrainMeshState::Empty)
+		{
+			continue;
+		}
+
+		const TerrainRegion region = config.regionForKey(key);
+		const int stride = region.sampleStride(config.meshCellCount);
+		const int s = std::max(stride, 1);
+		const TerrainInt3 cellMax = region.cellMaxExclusive();
+		const TerrainInt3 paddedMin(
+			region.voxelMin.x - MIN_PADDING * s,
+			region.voxelMin.y - MIN_PADDING * s,
+			region.voxelMin.z - MIN_PADDING * s);
+		const TerrainInt3 paddedMax(
+			cellMax.x + MAX_PADDING * s,
+			cellMax.y + MAX_PADDING * s,
+			cellMax.z + MAX_PADDING * s);
+
+		if (bounds.voxelMaxExclusive.x <= paddedMin.x || bounds.voxelMin.x >= paddedMax.x
+			|| bounds.voxelMaxExclusive.y <= paddedMin.y || bounds.voxelMin.y >= paddedMax.y
+			|| bounds.voxelMaxExclusive.z <= paddedMin.z || bounds.voxelMin.z >= paddedMax.z)
+		{
+			continue;
+		}
+
+		entry.state = TerrainMeshState::Empty;
+		entry.mesh.reset();
+		++entry.revision;
+		entry.request.revision = entry.revision;
+	}
 }
 
 void TerrainMeshCache::touchRenderSet(const TerrainRenderSet& renderSet, int frameIndex)

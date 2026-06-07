@@ -1,4 +1,5 @@
 #include "TerrainOctree.h"
+#include "Transvoxel.h"
 
 namespace tzw {
 
@@ -116,6 +117,53 @@ bool TerrainOctree::markDirty(const TerrainNodeKey& key)
 	}
 	node->setDirty(true);
 	return true;
+}
+
+int TerrainOctree::markDirtyInBounds(const TerrainEditBounds& bounds)
+{
+	if (!isValid())
+	{
+		return 0;
+	}
+	int count = 0;
+	markDirtyInBoundsRecursive(m_root.get(), bounds, count);
+	return count;
+}
+
+void TerrainOctree::markDirtyInBoundsRecursive(TerrainOctreeNode* node, const TerrainEditBounds& bounds, int& count)
+{
+	if (!node)
+	{
+		return;
+	}
+
+	const int stride = node->region().sampleStride(m_config.meshCellCount);
+	const int s = std::max(stride, 1);
+
+	const TerrainInt3 cellMax = node->region().cellMaxExclusive();
+	const TerrainInt3 paddedMin(
+		node->region().voxelMin.x - MIN_PADDING * s,
+		node->region().voxelMin.y - MIN_PADDING * s,
+		node->region().voxelMin.z - MIN_PADDING * s);
+	const TerrainInt3 paddedMax(
+		cellMax.x + MAX_PADDING * s,
+		cellMax.y + MAX_PADDING * s,
+		cellMax.z + MAX_PADDING * s);
+
+	if (bounds.voxelMaxExclusive.x <= paddedMin.x || bounds.voxelMin.x >= paddedMax.x
+		|| bounds.voxelMaxExclusive.y <= paddedMin.y || bounds.voxelMin.y >= paddedMax.y
+		|| bounds.voxelMaxExclusive.z <= paddedMin.z || bounds.voxelMin.z >= paddedMax.z)
+	{
+		return;
+	}
+
+	node->setDirty(true);
+	++count;
+
+	for (int i = 0; i < 8; ++i)
+	{
+		markDirtyInBoundsRecursive(node->child(i), bounds, count);
+	}
 }
 
 const TerrainOctreeConfig& TerrainOctree::config() const

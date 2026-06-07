@@ -1,6 +1,5 @@
 #pragma once
 #include "EngineSrc/CubeEngine.h"
-#include <atomic>
 #include <vector>
 #include "3D/Vegetation/Grass.h"
 #include "3D/Vegetation/FoliageSystem.h"
@@ -70,15 +69,6 @@ namespace tzw
 		Foliage * m_grass2;
 		Foliage * m_tree;
 	    Mesh * m_mesh[3];
-		// Snapshot of neighbour chunk LODs at the moment each LOD mesh was
-		// generated. Index [lod][face]. Used to detect when stitching needs to be
-		// re-evaluated because a neighbour switched LOD.
-		int m_neighborLodForGen[3][6];
-		// Snapshot of neighbour presence (loaded vs. missing) at mesh-gen time.
-		// Boundary ownership depends on this, so a presence change must trigger
-		// a re-mesh even if the assumed and actual LOD happen to match.
-		bool m_neighborPresentForGen[3][6];
-		std::atomic<bool> m_needRegen;
 		void sampleForLod(int lodLevel, voxelInfo * out);
 		bool isInEdge(int i, int j, int k);
 	    bool isInRange(int i,int j, int k);

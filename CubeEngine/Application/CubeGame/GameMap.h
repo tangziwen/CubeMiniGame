@@ -101,6 +101,11 @@ public:
 	void loadTerrain(std::string filePath);
 	void proceduralGenMapBuffer(size_t buffID_x, size_t buffID_y, size_t buffID_z);
 	vec3 getMapOffset() const;
+	bool isVoxelInDomain(int x, int y, int z) const;
+	void ensureVoxelBuffer(int x, int y, int z);
+	voxelInfo* getVoxelSafe(int x, int y, int z);
+	void setVoxelSafe(int x, int y, int z, unsigned char w);
+	void setVoxelMatSafe(int x, int y, int z, int matIndex);
 private:
     float x_offset,y_offset,z_offset;
     float m_maxHeight;

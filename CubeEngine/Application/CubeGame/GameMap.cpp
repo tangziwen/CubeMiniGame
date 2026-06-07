@@ -723,6 +723,80 @@ vec3 GameMap::getMapOffset() const
 	return m_mapOffset;
 }
 
+bool GameMap::isVoxelInDomain(int x, int y, int z) const
+{
+	return x >= 0 && y >= 0 && z >= 0
+		&& x < mapBufferSize_X * GAME_MAX_BUFFER_SIZE
+		&& y < mapBufferSize_Y * GAME_MAX_BUFFER_SIZE
+		&& z < mapBufferSize_Z * GAME_MAX_BUFFER_SIZE;
+}
+
+void GameMap::ensureVoxelBuffer(int x, int y, int z)
+{
+	int buffIDX = x / GAME_MAX_BUFFER_SIZE;
+	int buffIDY = y / GAME_MAX_BUFFER_SIZE;
+	int buffIDZ = z / GAME_MAX_BUFFER_SIZE;
+	int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * mapBufferSize_Z + buffIDZ;
+	if (!m_totalBuffer[buffIndex].m_buff)
+	{
+		proceduralGenMapBuffer(buffIDX, buffIDY, buffIDZ);
+	}
+}
+
+voxelInfo* GameMap::getVoxelSafe(int x, int y, int z)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return nullptr;
+	}
+	ensureVoxelBuffer(x, y, z);
+	int buffIDX = x / GAME_MAX_BUFFER_SIZE;
+	int buffIDY = y / GAME_MAX_BUFFER_SIZE;
+	int buffIDZ = z / GAME_MAX_BUFFER_SIZE;
+	int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * mapBufferSize_Z + buffIDZ;
+	int currX = x % GAME_MAX_BUFFER_SIZE;
+	int currY = y % GAME_MAX_BUFFER_SIZE;
+	int currZ = z % GAME_MAX_BUFFER_SIZE;
+	int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+	return &m_totalBuffer[buffIndex].m_buff[cellIndex];
+}
+
+void GameMap::setVoxelSafe(int x, int y, int z, unsigned char w)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return;
+	}
+	ensureVoxelBuffer(x, y, z);
+	int buffIDX = x / GAME_MAX_BUFFER_SIZE;
+	int buffIDY = y / GAME_MAX_BUFFER_SIZE;
+	int buffIDZ = z / GAME_MAX_BUFFER_SIZE;
+	int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * mapBufferSize_Z + buffIDZ;
+	int currX = x % GAME_MAX_BUFFER_SIZE;
+	int currY = y % GAME_MAX_BUFFER_SIZE;
+	int currZ = z % GAME_MAX_BUFFER_SIZE;
+	int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+	m_totalBuffer[buffIndex].m_buff[cellIndex].w = w;
+}
+
+void GameMap::setVoxelMatSafe(int x, int y, int z, int matIndex)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return;
+	}
+	ensureVoxelBuffer(x, y, z);
+	int buffIDX = x / GAME_MAX_BUFFER_SIZE;
+	int buffIDY = y / GAME_MAX_BUFFER_SIZE;
+	int buffIDZ = z / GAME_MAX_BUFFER_SIZE;
+	int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * mapBufferSize_Z + buffIDZ;
+	int currX = x % GAME_MAX_BUFFER_SIZE;
+	int currY = y % GAME_MAX_BUFFER_SIZE;
+	int currZ = z % GAME_MAX_BUFFER_SIZE;
+	int cellIndex = currX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + currY * GAME_MAX_BUFFER_SIZE + currZ;
+	m_totalBuffer[buffIndex].m_buff[cellIndex].setMat(matIndex, 0, 0, vec3(1, 0, 0));
+}
+
 GameMapBuffer::GameMapBuffer()
 {
     m_buff = nullptr;

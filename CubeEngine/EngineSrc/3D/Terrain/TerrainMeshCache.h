@@ -31,6 +31,7 @@ public:
 	bool storeReady(const TerrainMeshRequest& request, std::unique_ptr<Mesh> mesh);
 	bool markFailed(const TerrainMeshRequest& request);
 	void invalidate(const TerrainNodeKey& key);
+	void invalidateInBounds(const TerrainEditBounds& bounds, const TerrainOctreeConfig& config);
 	void touchRenderSet(const TerrainRenderSet& renderSet, int frameIndex);
 	void evictUnused(int currentFrame, int keepAliveFrames);
 	void clear();

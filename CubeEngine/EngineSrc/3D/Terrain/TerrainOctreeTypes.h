@@ -86,6 +86,12 @@ struct TerrainOctreeConfig
 	TerrainRegion regionForKey(const TerrainNodeKey& key) const;
 };
 
+struct TerrainEditBounds
+{
+	TerrainInt3 voxelMin;
+	TerrainInt3 voxelMaxExclusive;
+};
+
 bool terrainIsPowerOfTwo(int value);
 int terrainNextPowerOfTwo(int value);
 int terrainLog2(int value);

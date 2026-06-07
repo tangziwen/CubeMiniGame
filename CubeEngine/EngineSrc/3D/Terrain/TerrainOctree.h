@@ -23,6 +23,7 @@ public:
 	TerrainOctreeNode* findNode(const TerrainNodeKey& key) const;
 	TerrainOctreeNode* ensureNode(const TerrainNodeKey& key);
 	bool markDirty(const TerrainNodeKey& key);
+	int markDirtyInBounds(const TerrainEditBounds& bounds);
 
 	const TerrainOctreeConfig& config() const;
 	const TerrainRenderSet& renderSet() const;
@@ -32,6 +33,7 @@ public:
 
 private:
 	void traverse(TerrainOctreeNode* node, const TerrainLodContext& context);
+	void markDirtyInBoundsRecursive(TerrainOctreeNode* node, const TerrainEditBounds& bounds, int& count);
 
 	TerrainOctreeConfig m_config;
 	std::unique_ptr<TerrainOctreeNode> m_root;

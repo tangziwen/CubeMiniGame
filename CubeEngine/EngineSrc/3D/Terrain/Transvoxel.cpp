@@ -1070,6 +1070,13 @@ vec3 interpolate(vec3 p1, float v1, vec3 p2, float v2) {
 void TransVoxel::generateSurfaceNets(vec3 basePoint, Mesh* mesh, Mesh* transitionMesh, int VOXEL_SIZE, voxelInfo* srcData, float minValue, int lodLevel)
 {
 	(void)transitionMesh;
-	SurfaceNets::shared()->generate(basePoint, mesh, VOXEL_SIZE, srcData, minValue, lodLevel);
+	(void)minValue;
+	SurfaceNetsGenerateConfig config;
+	config.voxelSize = VOXEL_SIZE;
+	config.cellCount = MAX_BLOCK >> lodLevel;
+	config.minPadding = MIN_PADDING;
+	config.cellWorldSize = static_cast<float>(1 << lodLevel) * BLOCK_SIZE;
+	config.isoLevel = 128;
+	SurfaceNets::shared()->generate(basePoint, mesh, srcData, config);
 }
 } // namespace tzw
