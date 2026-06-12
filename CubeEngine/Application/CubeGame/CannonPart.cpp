@@ -121,7 +121,7 @@ int CannonPart::getAttachmentCount()
 void CannonPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"¼ÓÅ© %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"åŠ å†œ %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -134,18 +134,18 @@ void CannonPart::drawInspect()
 {
 	drawInspectNameEdit();
 	float force = getFiringVelocity();
-	if(ImGui::InputFloat(TRC(u8"Í¶ÉäÎï³õËÙ¶È"), &force))
+	if(ImGui::InputFloat(TRC(u8"æŠ•å°„ç‰©åˆé€Ÿåº¦"), &force))
 	{
 		setFiringVelocity(force);
 	}
 	float recoil = getRecoil();
-	if(ImGui::InputFloat(TRC(u8"ºó×øÁ¦"), &recoil))
+	if(ImGui::InputFloat(TRC(u8"åååŠ›"), &recoil))
 	{
 		setRecoil(recoil);
 	}
-	if(ImGui::RadioButton(TRC(u8"Å×ÉäÎï"),m_bulletMode == 0)) m_bulletMode = 0;
-	if(ImGui::RadioButton(TRC(u8"¼¤¹â"),m_bulletMode == 1)) m_bulletMode = 1;
-	if(ImGui::RadioButton(TRC(u8"Âö³å¼¤¹â"),m_bulletMode == 2)) m_bulletMode = 2;
+	if(ImGui::RadioButton(TRC(u8"æŠ›å°„ç‰©"),m_bulletMode == 0)) m_bulletMode = 0;
+	if(ImGui::RadioButton(TRC(u8"æ¿€å…‰"),m_bulletMode == 1)) m_bulletMode = 1;
+	if(ImGui::RadioButton(TRC(u8"è„‰å†²æ¿€å…‰"),m_bulletMode == 2)) m_bulletMode = 2;
 	
 }
 

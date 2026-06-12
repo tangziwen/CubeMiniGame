@@ -85,7 +85,7 @@ namespace tzw
 					ImGui::NewLine();
 					auto col3 = GameWorld::shared()->getPlayer()->getPaintGun()->color;
 					auto imCol4 = ImVec4(col3.x, col3.y, col3.z, 1.0f);
-					ImGui::TextUnformatted(TRC(u8"当前颜色:"));
+					ImGui::TextUnformatted(TRC(u8"褰撳墠棰滆壊:"));
 					ImGui::ColorEdit3("Current Color", (float *)&imCol4, ImGuiColorEditFlags_NoAlpha | ImGuiColorEditFlags_NoOptions | ImGuiColorEditFlags_NoInputs);
 					GameWorld::shared()->getPlayer()->getPaintGun()->color = vec3(imCol4.x, imCol4.y, imCol4.z);
 
@@ -94,8 +94,8 @@ namespace tzw
 				if(ImGui::TreeNode("Surface Setting"))
 				{
 					auto p = GameWorld::shared()->getPlayer()->getPaintGun();
-					//表面材质
-					ImGui::TextUnformatted(TRC(u8"表面材质"));
+					//琛ㄩ潰鏉愯川
+					ImGui::TextUnformatted(TRC(u8"琛ㄩ潰鏉愯川"));
 					auto size = PartSurfaceMgr::shared()->getItemAmount();
 					if(ImGui::RadioButton("Enable Surface Edit", p->m_enableSurfaceChanged))
 					{
@@ -172,8 +172,8 @@ namespace tzw
 			}
 	        if (ImGui::BeginTabItem(TRC(u8"Terrain Surface"), 0, ImGuiTabItemFlags_None))
 			{
-				//表面材质
-				ImGui::TextUnformatted(TRC(u8"地形材质选择"));
+				//琛ㄩ潰鏉愯川
+				ImGui::TextUnformatted(TRC(u8"鍦板舰鏉愯川閫夋嫨"));
 				auto size = PartSurfaceMgr::shared()->getItemAmount();
 				for(int i = 0; i < 16; i++)
 				{

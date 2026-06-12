@@ -1,5 +1,5 @@
 #include "TerrainOctree.h"
-#include "Transvoxel.h"
+#include "CubeGame/GameConfig.h"
 
 #include <algorithm>
 

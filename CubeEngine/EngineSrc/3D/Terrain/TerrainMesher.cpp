@@ -1,7 +1,6 @@
 #include "TerrainMesher.h"
 
 #include "SurfaceNets.h"
-#include "CubeGame/GameConfig.h"
 
 namespace tzw {
 
@@ -16,8 +15,7 @@ TerrainMeshBuildResult TerrainMesher::build(const TerrainMeshRequest& request,
 	if (!request.isValid() || !sampleBuffer.isValid()
 		|| sampleBuffer.voxelSize != request.voxelSize
 		|| sampleBuffer.sampleStride != request.sampleStride
-		|| sampleBuffer.meshCellCount != request.meshCellCount
-		|| request.meshCellCount != MAX_BLOCK)
+		|| sampleBuffer.meshCellCount != request.meshCellCount)
 	{
 		result.state = TerrainMeshState::Failed;
 		return result;

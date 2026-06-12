@@ -6,8 +6,8 @@ namespace tzw
 {
 	VectorNode::VectorNode()
 	{
-		name =TR(u8"ÏòÁ¿");
-		m_composite = addIn(TR(u8"¾ÛºÏ"));
+		name =TR(u8"å‘é‡");
+		m_composite = addIn(TR(u8"èšåˆ"));
 		m_out = addOut("Result");
 	}
 

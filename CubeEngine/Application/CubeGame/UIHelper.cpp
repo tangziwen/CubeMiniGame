@@ -1,12 +1,14 @@
 #include "BuildingSystem.h"
 #include "Base/GuidMgr.h"
-#include "Chunk.h"
 #include "Utility/file/Tfile.h"
 #include "rapidjson/filewritestream.h"
 #include <algorithm>
 #include <utility>
 
 #include "UIHelper.h"
+#include "Engine/Engine.h"
+#include "Scene/SceneMgr.h"
+#include "2D/LabelNew.h"
 #include "Action/MoveBy.h"
 #include "Action/ActionSequence.h"
 #include "Action/ActionRemoveMySelf.h"

@@ -1,10 +1,8 @@
 #include "GameMap.h"
-#include "Chunk.h"
 #include "GameConfig.h"
 
 #include "FastNoise/FastNoise.h"
 #include <algorithm>
-#include "3D/Terrain/Transvoxel.h"
 #include "CropSystem.h"
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
@@ -95,43 +93,6 @@ void voxelInfo::setMat(char mat1, char mat2, char mat3, vec3 blendFactor)
 	SET_LOW_FOUR_BIT( matInfo.matBlendFactor, std::clamp(static_cast<int>(blendFactor.y * 15.f), 0 , 15));
 }
 
-ChunkInfo::ChunkInfo(int theX, int theY, int theZ):isLoaded(false),
-                                                   mcPoints(),x(theX),y(theY),z(theZ),isEdit(false)
-{
-}
-
-void ChunkInfo::loadChunk(FILE* f)
-{
-	initData();
-	fread(mcPoints,sizeof(voxelInfo)* (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1),1,f);
-	isLoaded = true;
-	isEdit = true;
-}
-
-void ChunkInfo::dumpChunk(FILE* f)
-{
-	int indexX = x;
-	int indexY = y;
-	int indexZ = z;
-	fwrite(&indexX, sizeof(int), 1, f);
-	fwrite(&indexY, sizeof(int), 1, f);
-	fwrite(&indexZ, sizeof(int), 1, f);
-
-	fwrite(mcPoints, sizeof(voxelInfo) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1), 1, f);
-}
-
-void ChunkInfo::initData()
-{
-	// mcPoints = new voxelInfo[(MAX_BLOCK + 1) * (MAX_BLOCK + 1) * (MAX_BLOCK + 1)];
-
-	for(int i = 0; i < 3; i++)
-	{
-		mcPoints[i] = new voxelInfo[((MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING) * ((MAX_BLOCK>>i) + MIN_PADDING + MAX_PADDING)];
-		
-	}
-}
-
-
 GameMap::GameMap()
   : x_offset(0)
   , y_offset(0)
@@ -177,7 +138,7 @@ GameMap::GameMap()
 	terrainType.SetNoiseType(FastNoise::PerlinFractal);
 
 	hillSelector.SetFrequency(0.005);
-	
+
 	waterMud.SetFrequency(0.5);
 	grassRock.SetFrequency(0.1);
 	grassRock.SetSeed(200);
@@ -194,7 +155,6 @@ void GameMap::init(float ratio, int width, int depth, int height)
 	y_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 	z_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
-	m_chunkInfo = new ChunkInfo(0, 0, 0);
 	mapBufferSize_X = ceilDiv(GAME_MAP_WIDTH_VOXELS, GAME_MAX_BUFFER_SIZE);
 	mapBufferSize_Y = ceilDiv(GAME_MAP_HEIGHT_VOXELS, GAME_MAX_BUFFER_SIZE);
 	mapBufferSize_Z = ceilDiv(GAME_MAP_DEPTH_VOXELS, GAME_MAX_BUFFER_SIZE);
@@ -256,34 +216,6 @@ GameMap::getNoiseValue(float x, float y, float z)
 	auto finalMountainTerrain = edgeFallOffSelect(0.5, 100, 0.2, mountainTerrain, highHillTerrain, hillSelector.GetNoise(x_offset + x, y_offset + y, z_offset + z));
 	double value = edgeFallOffSelect(0.25, 1.0, 0.27, finalFlatTerrain, finalMountainTerrain, terrainType.GetNoise(x_offset + x, y_offset + y, z_offset + z));//
 	return m_minHeight + value;	
-}
-
-bool
-GameMap::isBlock(Chunk* chunk, int x, int y, int z)
-{
-  switch (m_mapType) {
-    case MapType::Noise: {
-      vec3 worldPos = chunk->getGridPos(x, y, z);
-      float height = getNoiseValue(worldPos.x, worldPos.y, worldPos.z);
-      if (worldPos.y <= height) {
-        return true;
-      } else {
-
-        return false;
-      }
-    }
-    case MapType::Plain: {
-      vec3 worldPos = chunk->getGridPos(x, y, z);
-      float height = maxHeight();
-      if (worldPos.y <= height) {
-        return true;
-      } else {
-        return false;
-      }
-    }
-    default:
-      return false;
-  }
 }
 
 bool
@@ -513,10 +445,6 @@ GameMap::minHeight()
   return m_minHeight;
 }
 
-ChunkInfo * GameMap::getChunkInfo(int x, int y, int z)
-{
-	return m_chunkInfo;
-}
   static double LinearInterp (double n0, double n1, double a)
   {
     return ((1.0 - a) * n0) + (a * n1);
@@ -596,33 +524,6 @@ vec2 GameMap::getCenterOfMap()
 	//float x = (mapBufferSize_X * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
 	//float z = (mapBufferSize_Z * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
 	return vec2(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE);
-}
-
-void GameMap::fetchChunkLodBuffer(int chunkX, int chunkY, int chunkZ, ChunkLodBuffer& outBuffer)
-{
-	const int offset = MIN_PADDING;
-	for (int lod = 0; lod < 3; ++lod)
-	{
-		const int stride = 1 << lod;
-		const int blockRow = (MAX_BLOCK >> lod) + MIN_PADDING + MAX_PADDING;
-		outBuffer.voxelSize[lod] = blockRow;
-		outBuffer.mcPoints[lod].resize(blockRow * blockRow * blockRow);
-
-		for (int i = 0; i < blockRow; ++i)
-		{
-			for (int k = 0; k < blockRow; ++k)
-			{
-				for (int j = 0; j < blockRow; ++j)
-				{
-					const int globalX = chunkX * MAX_BLOCK + (i - offset) * stride + LOD_SHIFT;
-					const int globalY = chunkY * MAX_BLOCK + (j - offset) * stride + LOD_SHIFT;
-					const int globalZ = chunkZ * MAX_BLOCK + (k - offset) * stride + LOD_SHIFT;
-					const int index = i * blockRow * blockRow + j * blockRow + k;
-					outBuffer.mcPoints[lod][index] = sampleVoxel(globalX, globalY, globalZ);
-				}
-			}
-		}
-	}
 }
 
 void GameMap::saveTerrain(std::string filePath)

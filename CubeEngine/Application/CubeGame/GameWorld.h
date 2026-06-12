@@ -4,11 +4,9 @@
 #include <filesystem>
 
 #include "EngineSrc/CubeEngine.h"
-#include "./Chunk.h"
 #include "CubePlayer.h"
 #include "GameUISystem.h"
 #include "GameConfig.h"
-#include <set>
 #include <memory>
 #include "EngineSrc/3D/Terrain/TerrainRuntime.h"
 namespace tzw {
@@ -38,12 +36,9 @@ public:
 	void createWorldFromFile(Scene* scene, int blockWitdh, int depth, int height, float ratio, std::string filePath);
     vec3 worldToGrid(vec3 world);
     vec3 gridToChunk(vec3 grid);
-    Chunk * getChunk(int x,int y,int z);
     CubePlayer *getPlayer() const;
     void setPlayer(CubePlayer *player);
-    Chunk * getOrCreateChunk(int x,int y, int z);
 	void onFrameUpdate(float delta) override;
-    Chunk * createChunk(int x,int y,int z);
     void startGame(WorldInfo worldInfo);
 	void loadGame(std::string filePath);
 	void saveGame(std::string filePath);
@@ -56,10 +51,8 @@ public:
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
 	TerrainEditSystem* getTerrainEditSystem() const;
-	bool isUsingTerrainOctree() const;
-	void loadChunksAroundPlayer();
 	void init();
-	virtual ~GameWorld();
+    virtual ~GameWorld();
 	void savePlayerInfo();
 	void loadPlayerInfo();
 private:
@@ -67,20 +60,15 @@ private:
     Node * m_mainRoot;
     int m_currentState;
     int m_width, m_depth, m_height;
-    Chunk * m_chunkArray[CUBE_MAP_SIZE][16][CUBE_MAP_SIZE];
     Scene  * m_scene;
     CubePlayer * m_player;
-    std::vector<Chunk*> m_chunkList;
     static GameWorld *m_instance;
     GameWorld();
-    std::set<Chunk*> m_activedChunkList;
     GameUISystem * m_mainMenu;
 	void prepare();
-	void initChunk();
 	WorldInfo m_currWorldInfo;
 
 	std::unique_ptr<TerrainRuntime> m_terrainRuntime;
-	bool m_useTerrainOctree = true;
 };
 
 } // namespace tzw

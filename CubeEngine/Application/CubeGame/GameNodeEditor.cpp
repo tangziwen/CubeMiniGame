@@ -290,9 +290,9 @@ void GameNodeEditor::removeNode(GraphNode* node)
 			}
 
 			newNode->load(node);
-			//È·±£ÔÚ±à¼­Æ÷Àï´´½¨¹ı,·ñÔògetNodePosition»áµÃµ½Float_MaxºÜ¿Óµù
+			//ç¡®ä¿åœ¨ç¼–è¾‘å™¨é‡Œåˆ›å»ºè¿‡,å¦åˆ™getNodePositionä¼šå¾—åˆ°Float_Maxå¾ˆå‘çˆ¹
 			reinterpret_cast<ax::NodeEditor::Detail::EditorContext*>(m_context)->GetNode(newNode->m_nodeID);
-			//ÉèÖÃºÃÎ»ÖÃ
+			//è®¾ç½®å¥½ä½ç½®
 			ed::SetNodePosition(newNode->m_nodeID, ImVec2(newNode->m_origin.x, newNode->m_origin.y));
 		}
 		//read link
@@ -334,9 +334,9 @@ void GameNodeEditor::removeNode(GraphNode* node)
 
 		ImGui::BeginHorizontal("Style Editor", ImVec2(paneWidth, 0));
 	    ImGui::Spring(0.0f, 0.0f);
-	    if (ImGui::Button(TRC(u8"µ÷ÕûÊÓÍ¼")))
+	    if (ImGui::Button(TRC(u8"è°ƒæ•´è§†å›¾")))
 	        ed::NavigateToContent();
-		if(ImGui::Button(TRC(u8"ÍË³ö")))
+		if(ImGui::Button(TRC(u8"é€€å‡º")))
 			(*g_isOpen) = false;
 	    ImGui::Spring(0.0f);
 	    ImGui::Spring();
@@ -381,7 +381,7 @@ void GameNodeEditor::removeNode(GraphNode* node)
 	    int restoreIconWidth  = s_RestoreIcon->getSize().x;//Application_GetTextureWidth(s_RestoreIcon);
 	    int restoreIconHeight = s_RestoreIcon->getSize().y;//Application_GetTextureWidth(s_RestoreIcon);
 		
-	   if(ImGui::CollapsingHeader(TRC(u8"½ÚµãÁĞ±í")))
+	   if(ImGui::CollapsingHeader(TRC(u8"èŠ‚ç‚¹åˆ—è¡¨")))
 	   {
 			for (auto& node : m_gameNodes)
 		    {
@@ -438,16 +438,16 @@ void GameNodeEditor::removeNode(GraphNode* node)
 	        ImGui::GetCursorScreenPos() + ImVec2(paneWidth, ImGui::GetTextLineHeight()),
 	        ImColor(ImGui::GetStyle().Colors[ImGuiCol_HeaderActive]), ImGui::GetTextLineHeight() * 0.25f);
 	    ImGui::Spacing(); ImGui::SameLine();
-	    ImGui::TextUnformatted(TRC(u8"Ñ¡ÖĞ"));
+	    ImGui::TextUnformatted(TRC(u8"é€‰ä¸­"));
 
 	    ImGui::BeginHorizontal("Selection Stats", ImVec2(paneWidth, 0));
 	    ImGui::Spring();
-	    if (ImGui::Button(TRC(u8"È«²¿È¡ÏûÑ¡ÖĞ")))
+	    if (ImGui::Button(TRC(u8"å…¨éƒ¨å–æ¶ˆé€‰ä¸­")))
 	        ed::ClearSelection();
 	    ImGui::EndHorizontal();
 	    ImGui::Indent();
-	    for (int i = 0; i < nodeCount; ++i) ImGui::Text(TRC(u8"½Úµã %s"), findNode(selectedNodes[i].Get())->name.c_str());
-	    for (int i = 0; i < linkCount; ++i) ImGui::Text(TRC(u8"Á¬½Ó (%p)"), selectedLinks[i].AsPointer());
+	    for (int i = 0; i < nodeCount; ++i) ImGui::Text(TRC(u8"èŠ‚ç‚¹ %s"), findNode(selectedNodes[i].Get())->name.c_str());
+	    for (int i = 0; i < linkCount; ++i) ImGui::Text(TRC(u8"è¿æ¥ (%p)"), selectedLinks[i].AsPointer());
 	    ImGui::Unindent();
 
 	    if (ed::HasSelectionChanged())
@@ -709,10 +709,10 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 		ImGui::SetNextWindowSize(ImVec2(m_initW, m_initH), ImGuiCond_Once);
 		ImGui::SetNextWindowPos(ImVec2(screenSize.x/ 2.0f - m_initW / 2.0f, screenSize.y / 2.0f - m_initH / 2.0f), ImGuiCond_Once);
 		ImGuiIO& io = ImGui::GetIO();
-		//ImGui::Begin(u8"½Úµã±à¼­Æ÷", isOpen,             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
+		//ImGui::Begin(u8"èŠ‚ç‚¹ç¼–è¾‘å™¨", isOpen,             ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse);
         ImGui::SetNextWindowPos(ImVec2(0, 0));
         ImGui::SetNextWindowSize(io.DisplaySize);
-        ImGui::Begin(TRC(u8"½Úµã±à¼­Æ÷"), isOpen,
+        ImGui::Begin(TRC(u8"èŠ‚ç‚¹ç¼–è¾‘å™¨"), isOpen,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoScrollWithMouse | ImGuiWindowFlags_NoSavedSettings );
 		ed::SetCurrentEditor(m_context);
@@ -756,11 +756,11 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 				builder.Input(attr->gID);
 				drawPinIcon(attr, true, int(1.0 * 255));
 				ImGui::TextUnformatted(attr->m_name.c_str());
-				//¿ÉÄÜÔÊĞí°üº¬Ä¬ÈÏÖµ£¬¸øÓëÄ¬ÈÏÖµÊäÈë¿ò
+				//å¯èƒ½å…è®¸åŒ…å«é»˜è®¤å€¼ï¼Œç»™ä¸é»˜è®¤å€¼è¾“å…¥æ¡†
 				if(attr->acceptValueType != NodeAttr::AcceptValueType::ANY)
 				{
 					auto input = findAttrLinksFromAttr(attr);
-					bool isDisable = (input != nullptr);//ÅĞ¶ÏÊÇ·ñÓĞÈËÁ¬¹ıÀ´ÁË£¬ÓĞÈËÁ¬ÁË¾Í»Ò»¯ÏÔÊ¾²¢½ûÓÃ
+					bool isDisable = (input != nullptr);//åˆ¤æ–­æ˜¯å¦æœ‰äººè¿è¿‡æ¥äº†ï¼Œæœ‰äººè¿äº†å°±ç°åŒ–æ˜¾ç¤ºå¹¶ç¦ç”¨
 				    if (isDisable)
 				    {
 				        ImGui::PushItemFlag(ImGuiItemFlags_Disabled, true);
@@ -772,7 +772,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 						{
 							int value = attr->m_localAttrValue.getInt();
                         	ImGui::PushItemWidth(80);
-							if(ImGui::InputInt(u8"Ä¬ÈÏÖµ", &value))
+							if(ImGui::InputInt(u8"é»˜è®¤å€¼", &value))
 							{
 								attr->m_localAttrValue.setInt(value);
 							}
@@ -783,7 +783,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 						{
 							float value = attr->m_localAttrValue.getFloat();
                         	ImGui::PushItemWidth(80);
-							if(ImGui::InputFloat(u8"Ä¬ÈÏÖµ", &value))
+							if(ImGui::InputFloat(u8"é»˜è®¤å€¼", &value))
 							{
 								attr->m_localAttrValue.setFloat(value);
 							}
@@ -795,7 +795,7 @@ void GameNodeEditor::newNodeEditorDraw(bool* isOpen)
 							char a[128] = "";
 							strcpy(a, attr->m_localAttrValue.getStr().c_str());
 							ImGui::PushItemWidth(80);
-							bool isInputName = ImGui::InputText(TRC(u8"Ãû³Æ"),a,128);
+							bool isInputName = ImGui::InputText(TRC(u8"åç§°"),a,128);
 							ImGui::PopItemWidth();
 							if(isInputName)
 							{

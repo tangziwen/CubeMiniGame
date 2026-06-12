@@ -509,7 +509,7 @@ namespace tzw
 		ImGui::Text("Lv:%d ETM: %d", hero->getLevel(), (int)std::ceil(hero->getEstimateLevelUpMonth()));
 		ImGui::SameLine();
 		const PTMFiveElement & fe = hero->getFiveElement();
-		ImGui::Text(u8"ÄÜÁ¦:");
+		ImGui::Text(u8"èƒ½åŠ›:");
 		//, fe.ElementMetal, fe.ElementWood, fe.ElementWater, fe.ElementFire, fe.ElementEarth);
 		ImGui::SameLine();ImGui::TextColored(ImVec4(1.0f, 0.84f, 0.f, 1.f), "%d", fe.ElementMetal);
 		ImGui::SameLine();ImGui::TextColored(ImVec4(0.1f, 0.9f, 0.1f, 1.f), "%d", fe.ElementWood);
@@ -525,30 +525,30 @@ namespace tzw
 			PTMHero * hero = m_currInspectHero;
 
 
-			std::string role = u8"ÎÞÖ°Î»";
+			std::string role = u8"æ— èŒä½";
 			switch(hero->getCurrRole())
 			{
 			case PTMHeroRole::Idle:
 				break;
 			case PTMHeroRole::Keeper:
-				role = hero->getTownOfKeeper()->getName() + u8"³ÇÊØ";
+				role = hero->getTownOfKeeper()->getName() + u8"åŸŽå®ˆ";
 				break;
 			case PTMHeroRole::OnDuty:
-				role = hero->getTownOfOnDuty()->getName() + u8"ÆÕÍ¨¾ÍÖ°";
+				role = hero->getTownOfOnDuty()->getName() + u8"æ™®é€šå°±èŒ";
 				break;
 			case PTMHeroRole::Admin:
-				role = u8"ÐÐÕþ";
+				role = u8"è¡Œæ”¿";
 				break;
 			case PTMHeroRole::Eco:
-				role = u8"ÃñÉú";
+				role = u8"æ°‘ç”Ÿ";
 				break;
 			case PTMHeroRole::Mil:
-				role = u8"À©ÕÅ";
+				role = u8"æ‰©å¼ ";
 				break;
 			}
-			ImGui::Text(u8" Ö°Î»:%s", role.c_str());
+			ImGui::Text(u8" èŒä½:%s", role.c_str());
 			const PTMFiveElement & fe = hero->getFiveElement();
-			ImGui::Text(u8"ÄÜÁ¦:");
+			ImGui::Text(u8"èƒ½åŠ›:");
 			//, fe.ElementMetal, fe.ElementWood, fe.ElementWater, fe.ElementFire, fe.ElementEarth);
 			ImGui::SameLine();ImGui::TextColored(ImVec4(1.0f, 0.84f, 0.f, 1.f), "%d", fe.ElementMetal);
 			ImGui::SameLine();ImGui::TextColored(ImVec4(0.1f, 0.9f, 0.1f, 1.f), "%d", fe.ElementWood);
@@ -558,7 +558,7 @@ namespace tzw
 
 
 			//central
-			ImGui::Text(u8"²¿ÃÅµ÷¶¯");
+			ImGui::Text(u8"éƒ¨é—¨è°ƒåŠ¨");
 			if(ImGui::Button("Farming"))
 			{
 				hero->getCountry()->addHeroToDepartment(NATION_DEPARTMENT_FARMING, hero);
@@ -587,7 +587,7 @@ namespace tzw
 	{
 		BEGIN_INSPECT(m_currInspectArmy, "Army Detail")
 			auto & heroList = m_currInspectArmy->getHeroList();
-			ImGui::Text(u8"%s ²¿", heroList[0]->getName().c_str());
+			ImGui::Text(u8"%s éƒ¨", heroList[0]->getName().c_str());
 			if(ImGui::SmallButton("+"))
 			{
 				setInspectHeroList(PTMWorld::shared()->getPlayerController()->getControlledNation(), 

@@ -12,7 +12,6 @@
 #include "Math/vec4.h"
 #include "Mesh/VertexData.h"
 namespace tzw {
-class Chunk;
 
 struct voxelInfo
 {
@@ -27,22 +26,6 @@ struct voxelInfo
 	voxelInfo();
 	void setMat(char mat1, char mat2, char mat3, vec3 blendFactor);
 };
-//each lod have ((MAX_BLOCK >> lodLevel) + MIN_PADDING + MAX_PADDING) ^ 3 data
-//存储得内容是MIN_PADDING|MAX_BLOCK|MAX_PADDING
-struct ChunkInfo
-{
-	ChunkInfo(int x, int y, int z);
-	bool isLoaded;
-	voxelInfo * mcPoints[3];
-	voxelInfo * mcPoints_lod1;
-	void loadChunk(FILE * file);
-	void dumpChunk(FILE * f);
-	void initData();
-	int x;
-	int y;
-	int z;
-	bool isEdit;
-};
 
 struct GameMapBuffer 
 {
@@ -50,12 +33,6 @@ struct GameMapBuffer
 	voxelInfo get(int theX, int theY, int theZ);
 	voxelInfo * m_buff;
 	bool isEdit;
-};
-
-struct ChunkLodBuffer
-{
-	std::array<std::vector<voxelInfo>, 3> mcPoints;
-	std::array<int, 3> voxelSize;
 };
 
 class GameMap
@@ -72,7 +49,6 @@ public:
     float maxHeight() const;
     void setMaxHeight(float maxHeight);
 	double getNoiseValue(float x, float y, float z);
-    bool isBlock(Chunk *chunk, int x, int y, int z);
     bool isSurface(vec3 pos);
 	// Non-materializing read: returns stored voxel if the page exists, otherwise samples procedural terrain.
 	voxelInfo sampleVoxel(int x, int y, int z);
@@ -91,12 +67,10 @@ public:
     void setMapType(const MapType &mapType);
 	void setMinHeight(float minHeight);
 	float minHeight();
-	ChunkInfo * getChunkInfo(int x, int y, int z);
 	float edgeFallOffSelect(float lowBound, float upBound, float edgeVal, float val1, float val2, float selectVal);
 	int getTreeId();
 	int getGrassId();
 	vec2 getCenterOfMap();
-	void fetchChunkLodBuffer(int chunkX, int chunkY, int chunkZ, ChunkLodBuffer& outBuffer);
 	void saveTerrain(std::string filePath);
 	void loadTerrain(std::string filePath);
 	vec3 getMapOffset() const;
@@ -129,7 +103,6 @@ private:
 	int mapBufferSize_Y;
 	int mapBufferSize_Z;
 	GameMapBuffer * m_totalBuffer;
-	ChunkInfo * m_chunkInfo;
 	vec3 m_mapOffset;
 };
 

@@ -7,7 +7,7 @@ namespace tzw
 	{
 		auto screenSize = Engine::shared()->winSize();
 		ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-		ImGui::Begin(TRC(u8"∂¡»° ¿ΩÁ"),isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin(TRC(u8"ËØªÂèñ‰∏ñÁïå"),isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 		ImGui::Text("WorldList:");
 		for(const auto & entry : m_entryList)
 		{

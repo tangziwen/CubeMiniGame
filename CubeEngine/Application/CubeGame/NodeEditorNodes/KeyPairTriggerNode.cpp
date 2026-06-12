@@ -9,9 +9,9 @@ namespace tzw
 {
 	KeyPairTriggerNode::KeyPairTriggerNode():m_isNeedOnSeat(true)
 	{
-		name =TR(u8"¼ü¶ÔÊäÈë´¥·¢Æ÷");
-		m_onSignalChangedAttr = addOutExe(TR(u8"µ±ĞÅºÅ¸Ä±ä"));
-		m_signalAttr = addOut(TR(u8"ĞÅºÅ"));
+		name =TR(u8"é”®å¯¹è¾“å…¥è§¦å‘å™¨");
+		m_onSignalChangedAttr = addOutExe(TR(u8"å½“ä¿¡å·æ”¹å˜"));
+		m_signalAttr = addOut(TR(u8"ä¿¡å·"));
 		m_keyCodeA = TZW_KEY_N;
 		m_keyCodeB = TZW_KEY_M;
 		m_signal = 0;

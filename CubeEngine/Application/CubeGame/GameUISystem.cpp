@@ -328,7 +328,7 @@ void GameUISystem::drawIMGUI()
 		if(getWindowIsShow(WindowType::ABOUT))
 		{
 			bool isOpen = true;
-			if (ImGui::Begin(u8"¹ØÓÚ", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
+			if (ImGui::Begin(u8"å…³äºŽ", &isOpen, ImGuiWindowFlags_AlwaysAutoResize))
 			{
 				ImGui::Text("Cube-Engine By Tzw.\ntzwtangziwen@163.com\nhttps://github.com/tangziwen/Cube-Engine");
 				ImGui::Separator();
@@ -379,29 +379,29 @@ void GameUISystem::drawIMGUI()
 		{
 			auto screenSize = Engine::shared()->winSize();
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-			ImGui::Begin(TRC(u8"ÊÇ·ñ¼ÌÐø?"),nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
-			if(ImGui::Button(TRC(u8"¼ÌÐø"), ImVec2(160, 35)))
+			ImGui::Begin(TRC(u8"æ˜¯å¦ç»§ç»­?"),nullptr, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			if(ImGui::Button(TRC(u8"ç»§ç»­"), ImVec2(160, 35)))
 			{
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
-			if(ImGui::Button(TRC(u8"±£´æÊÀ½ç"), ImVec2(160, 35)))
+			if(ImGui::Button(TRC(u8"ä¿å­˜ä¸–ç•Œ"), ImVec2(160, 35)))
 			{
 				GameWorld::shared()->saveGame("Data/PlayerData/Save/World.json");
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
-			//if(ImGui::Button(TRC(u8"¶ÁÈ¡ÊÀ½ç"), ImVec2(160, 35)))
+			//if(ImGui::Button(TRC(u8"è¯»å–ä¸–ç•Œ"), ImVec2(160, 35)))
 			//{
 			//	GameWorld::shared()->loadGame("World/testWord.json");
 			//	setWindowShow(WindowType::RESUME_MENU, false);
 			//}
-			if(ImGui::Button(TRC(u8"Ñ¡Ïî"), ImVec2(160, 35)))
+			if(ImGui::Button(TRC(u8"é€‰é¡¹"), ImVec2(160, 35)))
 			{
 				m_option.open();
 				setWindowShow(WindowType::OPTION_MENU, true);
 				
 				setWindowShow(WindowType::RESUME_MENU, false);
 			}
-			if(ImGui::Button(TRC(u8"ÍË³ö"), ImVec2(160, 35)))
+			if(ImGui::Button(TRC(u8"é€€å‡º"), ImVec2(160, 35)))
 			{
 				TranslationMgr::shared()->dump();
 				exit(0);
@@ -409,13 +409,13 @@ void GameUISystem::drawIMGUI()
 			ImGui::End();
 		}
 
-		//²¿¼þµÄÊôÐÔÃæ°å
+		//éƒ¨ä»¶çš„å±žæ€§é¢æ¿
 		if(getWindowIsShow(WindowType::ATTRIBUTE_WINDOW))
 		{
 			auto screenSize = Engine::shared()->winSize();
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 			bool isOpen = true;
-			ImGui::Begin(TRC(u8"ÊôÐÔÃæ°å"),&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			ImGui::Begin(TRC(u8"å±žæ€§é¢æ¿"),&isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 			m_curInspectPart->drawInspect();
 			ImGui::End();
 			setWindowShow(WindowType::ATTRIBUTE_WINDOW, isOpen);
@@ -437,7 +437,7 @@ void GameUISystem::drawIMGUI()
 			setWindowShow(WindowType::LOAD_WORLD, isOpen);
 		}
 		//painter
-		//ÅçÆá²¿·Ö
+		//å–·æ¼†éƒ¨åˆ†
 		if(getWindowIsShow(WindowType::PAINTER))
 		{
 			bool isOpen = true;
@@ -446,7 +446,7 @@ void GameUISystem::drawIMGUI()
 		}
 
 
-		//Ñ¡ÏîÃæ°å
+		//é€‰é¡¹é¢æ¿
 		if(getWindowIsShow(WindowType::OPTION_MENU)) 
 		{
 			auto screenSize = Engine::shared()->winSize();
@@ -461,7 +461,7 @@ void GameUISystem::drawIMGUI()
 			auto screenSize = Engine::shared()->winSize();
 			ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Appearing, ImVec2(0.5, 0.5));
 			bool isOpen = true;
-			ImGui::Begin(u8"ÊÀ½çÉèÖÃ",&isOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+			ImGui::Begin(u8"ä¸–ç•Œè®¾ç½®",&isOpen, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 
 			ImGuiTabBarFlags tab_bar_flags = ImGuiTabBarFlags_None;
             if (ImGui::BeginTabBar("MyTabBar", tab_bar_flags)) 

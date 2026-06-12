@@ -7,9 +7,9 @@ namespace tzw
 {
 	EqualNode::EqualNode()
 	{
-		name =TR(u8"µÈÓÚ");
-		m_leftValAttr = addIn(TR(u8"×óÖµ"));
-		m_rightValAttr = addInInt(TR(u8"ÓÒÖµ"), 1);
+		name =TR(u8"ç­‰äºŽ");
+		m_leftValAttr = addIn(TR(u8"å·¦å€¼"));
+		m_rightValAttr = addInInt(TR(u8"å³å€¼"), 1);
 		m_out = addOut("Return");
 	}
 

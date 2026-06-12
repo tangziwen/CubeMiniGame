@@ -104,8 +104,8 @@ namespace tzw
 		if(!(*isOpen)) return;
 		auto ss = Engine::shared()->winSize();
 		ImGui::SetNextWindowPos(ImVec2(ss.x / 2.0, ss.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-		ImGui::Begin(TRC(u8"‘ÿæﬂ‰Ø¿¿∆˜"), isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-		if(ImGui::Button(TRC(u8"«Âø’À˘”–‘ÿæﬂ"))) 
+		ImGui::Begin(TRC(u8"ËΩΩÂÖ∑ÊµèËßàÂô®"), isOpen, ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+		if(ImGui::Button(TRC(u8"Ê∏ÖÁ©∫ÊâÄÊúâËΩΩÂÖ∑"))) 
 		{
 			BuildingSystem::shared()->removeAll();
 		}
@@ -114,7 +114,7 @@ namespace tzw
         {
         	auto flag = ImGuiTabItemFlags_None;
 
-            if (m_loadOpen = ImGui::BeginTabItem(TRC(u8"∂¡»°‘ÿæﬂ"), 0, flag))
+            if (m_loadOpen = ImGui::BeginTabItem(TRC(u8"ËØªÂèñËΩΩÂÖ∑"), 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
 				int i = 0;
@@ -132,7 +132,7 @@ namespace tzw
 				{
 					m_currSelected = inputBuff;
 				}
-				if(ImGui::Button(TRC(u8"∂¡»°"))) 
+				if(ImGui::Button(TRC(u8"ËØªÂèñ"))) 
 				{
 					if(m_loadCallBack)
 					{
@@ -141,12 +141,12 @@ namespace tzw
 					(*isOpen) = false;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(TRC(u8"»°œ˚"))) (*isOpen) = false;
+				if(ImGui::Button(TRC(u8"ÂèñÊ∂à"))) (*isOpen) = false;
 
             	ImGui::EndTabItem();
             }
         	flag = ImGuiTabItemFlags_None;
-            if (m_saveOpen = ImGui::BeginTabItem(TRC(u8"±£¥Ê‘ÿæﬂ"), 0, flag))
+            if (m_saveOpen = ImGui::BeginTabItem(TRC(u8"‰øùÂ≠òËΩΩÂÖ∑"), 0, flag))
             {
 				ImGui::BeginChild('ch', ImVec2(0, 200));
 				int i = 0;
@@ -164,7 +164,7 @@ namespace tzw
 				{
 					m_currSelected = inputBuff;
 				}
-				if(ImGui::Button(TRC(u8"±£¥Ê"))) 
+				if(ImGui::Button(TRC(u8"‰øùÂ≠ò"))) 
 				{
 					if(m_saveCallBack)
 					{
@@ -174,7 +174,7 @@ namespace tzw
 					(*isOpen) = false;
 				}
 				ImGui::SameLine();
-				if(ImGui::Button(TRC(u8"»°œ˚"))) (*isOpen) = false;
+				if(ImGui::Button(TRC(u8"ÂèñÊ∂à"))) (*isOpen) = false;
 
             	ImGui::EndTabItem();
             }

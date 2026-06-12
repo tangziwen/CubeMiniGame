@@ -87,21 +87,14 @@ void GameWorld::createWorld(Scene *scene, int width, int depth, int height, floa
 	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
 	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
 
-	if (m_useTerrainOctree)
-	{
-		int widthVoxels = GAME_MAP_WIDTH_VOXELS;
-		int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
-		int depthVoxels = GAME_MAP_DEPTH_VOXELS;
-		vec3 mapOffset = GameMap::shared()->getMapOffset();
-		TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
-			widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
-		m_terrainRuntime = std::make_unique<TerrainRuntime>();
-		m_terrainRuntime->init(config);
-	}
-	else
-	{
-		initChunk();
-	}
+	int widthVoxels = GAME_MAP_WIDTH_VOXELS;
+	int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
+	int depthVoxels = GAME_MAP_DEPTH_VOXELS;
+	vec3 mapOffset = GameMap::shared()->getMapOffset();
+	TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
+		widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
+	m_terrainRuntime = std::make_unique<TerrainRuntime>();
+	m_terrainRuntime->init(config);
 }
 
 void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int height, float ratio, std::string filePath)
@@ -114,21 +107,14 @@ void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int heig
 	auto worldLocation = getWorldLocation();
 	GameMap::shared()->loadTerrain((worldLocation / "Terrain.bin").string());
 
-	if (m_useTerrainOctree)
-	{
-		int widthVoxels = GAME_MAP_WIDTH_VOXELS;
-		int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
-		int depthVoxels = GAME_MAP_DEPTH_VOXELS;
-		vec3 mapOffset = GameMap::shared()->getMapOffset();
-		TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
-			widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
-		m_terrainRuntime = std::make_unique<TerrainRuntime>();
-		m_terrainRuntime->init(config);
-	}
-	else
-	{
-		initChunk();
-	}
+	int widthVoxels = GAME_MAP_WIDTH_VOXELS;
+	int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
+	int depthVoxels = GAME_MAP_DEPTH_VOXELS;
+	vec3 mapOffset = GameMap::shared()->getMapOffset();
+	TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
+		widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
+	m_terrainRuntime = std::make_unique<TerrainRuntime>();
+	m_terrainRuntime->init(config);
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -151,42 +137,20 @@ void GameWorld::setPlayer(CubePlayer *player)
     m_player = player;
 }
 
-Chunk *GameWorld::getOrCreateChunk(int x, int y, int z)
-{
-    auto chunk = getChunk(x,y,z);
-    if(!chunk)
-    {
-        chunk = createChunk(x,y,z);
-    }
-    return chunk;
-}
-
 void GameWorld::onFrameUpdate(float delta)
 {
 	if (m_currentState != GAME_STATE_RUNNING)
 		return;
 
-	if (m_useTerrainOctree && m_terrainRuntime && m_terrainRuntime->isActive())
+	if (m_terrainRuntime && m_terrainRuntime->isActive())
 	{
 		vec3 playerPos = m_player->getPos();
 		m_terrainRuntime->update(playerPos, m_mainRoot);
-	}
-	else
-	{
-		loadChunksAroundPlayer();
 	}
 
 	BuildingSystem::shared()->update(delta);
 	AssistDrawSystem::shared()->handleDraw(delta);
 	BulletMgr::shared()->handleDraw(delta);
-}
-
-Chunk *GameWorld::createChunk(int x, int y, int z)
-{
-    auto chunkA = new Chunk(x,0,z);
-    m_scene->addNode(chunkA);
-    m_chunkList.push_back(chunkA);
-    return chunkA;
 }
 
 void GameWorld::startGame(WorldInfo worldInfo)
@@ -210,10 +174,6 @@ void GameWorld::startGame(WorldInfo worldInfo)
 		float height = GameMap::shared()->getHeight(startPos);
 		m_player->setPos(vec3(startPos.x, height + 0.5, startPos.y));
 		//m_player->setIsOpenJetPack(true);
-		if (!m_useTerrainOctree)
-		{
-			loadChunksAroundPlayer();
-		}
 	}));
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
@@ -244,10 +204,6 @@ void GameWorld::loadGame(std::string worldName)
 		GameMap::shared()->setMinHeight(3);
 		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "Data/PlayerData/Save/Terrain.bin");
 		loadPlayerInfo();
-		if (!m_useTerrainOctree)
-		{
-			loadChunksAroundPlayer();
-		}
 	}));
 
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([=]()
@@ -336,72 +292,6 @@ bool GameWorld::onKeyRelease(int keyCode)
 	return false;
 }
 
-void GameWorld::loadChunksAroundPlayer()
-{
-	Tmisc::DurationBegin();
-    std::set<Chunk*> m_tempArray = m_activedChunkList;
-	std::vector<Chunk *> m_readyToLoadArray;
-    auto pos = m_player->getPos();
-	auto vPos = GameMap::shared()->worldPosToVoxelPos(pos);
-	auto chunkPos = vPos - vec3(LOD_SHIFT);//chunk Pos 和Voxel pos差一个LOD偏移
-    int posX = (chunkPos.x) / (MAX_BLOCK);
-    int posZ = (chunkPos.z) / (MAX_BLOCK);
-	int range = ceil(150.0f / (MAX_BLOCK * BLOCK_SIZE));
-    for(int i =posX - range;i<=posX + range;i++)
-    {
-        for(int j =0;j< m_height; j++)
-        {
-            for( int k = posZ - range; k <= posZ + range; k++)
-            {
-                if(i < 0 || i >= m_width || j < 0 || j >= m_height || k < 0 || k >= m_depth)
-                    continue;
-                auto targetChunk = m_chunkArray[i][j][k];
-				m_readyToLoadArray.push_back(targetChunk);
-                auto findResult = m_tempArray.find(targetChunk);
-                if(findResult!= m_tempArray.end())
-                {
-                    m_tempArray.erase(findResult);
-                }else
-                {
-                    m_activedChunkList.insert(m_chunkArray[i][j][k]);
-                }
-            }
-        }
-    }
-    for(Chunk* i:m_tempArray)
-    {
-        i->unload();
-    	if(i->getParent())
-    	{
-    		i->removeFromParent();
-    	}
-    }
-	std::sort(m_readyToLoadArray.begin(), m_readyToLoadArray.end(),[&](Chunk * left, Chunk * right)
-	{
-		float distl = left->getPos().distance(m_player->getPos());
-		float distr = right->getPos().distance(m_player->getPos());
-		return distl < distr;
-	}
-	);
-	for(Chunk * i :m_readyToLoadArray)
-	{
-		if(i->getPos().distance(m_player->getPos()) > 50)
-		{
-			i->load(1);	
-		}
-		else
-		{
-			i->load(0);
-		}
-		if(!i->getParent())
-		{
-			m_mainRoot->addChild(i);
-		}
-	}
-	tlog("load size is %d %d",m_readyToLoadArray.size(), m_tempArray.size());
-	tlog("load chunk cost : %d", Tmisc::DurationEnd());
-}
-
 void GameWorld::init()
 {
 
@@ -414,23 +304,10 @@ void GameWorld::init()
 	
 }
 
-Chunk *GameWorld::getChunk(int x, int y, int z)
-{
-    if(x >=0 && x <m_width && z >=0 && z <m_depth && y >=0 && y < m_height)
-    {
-        return m_chunkArray[x][y][z];
-    }
-    else
-    {
-        return nullptr;
-    }
-}
-
 GameWorld::GameWorld()
 {
     EventMgr::shared()->addFixedPiorityListener(this);
 	setIsSwallow(false);
-    memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
     m_currentState = GAME_STATE_SPLASH;
 }
 
@@ -509,22 +386,6 @@ void GameWorld::prepare()
 	}));
 }
 
-void GameWorld::initChunk()
-{
-    for(int i = 0;i< m_width;i++)
-    {
-        for(int j=0;j<m_height;j++)
-        {
-            for(int k = 0; k < m_depth; k++)
-            {
-                auto chunk = new Chunk(i,j,k);
-                m_chunkList.push_back(chunk);
-                m_chunkArray[i][j][k] = chunk;	 
-            }
-        }
-    }
-}
-
 GameUISystem *GameWorld::getMainMenu() const
 {
     return m_mainMenu;
@@ -538,9 +399,6 @@ void GameWorld::unloadGame()
 		m_terrainRuntime.reset();
 	}
     m_mainRoot->purgeAllChildren();
-    m_activedChunkList.clear();
-    m_chunkList.clear();
-	memset(m_chunkArray, 0, 128 * 128 * 16 * sizeof(Chunk *));
 }
 
 int GameWorld::getCurrentState() const
@@ -567,12 +425,5 @@ TerrainEditSystem* GameWorld::getTerrainEditSystem() const
 {
 	return m_terrainRuntime ? m_terrainRuntime->editSystem() : nullptr;
 }
-
-bool GameWorld::isUsingTerrainOctree() const
-{
-	return m_useTerrainOctree && m_terrainRuntime && m_terrainRuntime->isActive();
-}
-
-
 
 } // namespace tzw

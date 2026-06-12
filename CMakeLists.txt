@@ -115,6 +115,9 @@ set(_src_root_path "${CMAKE_CURRENT_SOURCE_DIR}/CubeEngine")
 
 #SIMD
 add_compile_options("/arch:AVX")
+if(MSVC)
+    add_compile_options("/utf-8")
+endif()
 
 
 

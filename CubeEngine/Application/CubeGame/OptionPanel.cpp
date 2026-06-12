@@ -59,15 +59,15 @@ namespace tzw
 	static char inputBuff[128];
 	void OptionPanel::drawIMGUI(bool * isOpen)
 	{
-		ImGui::Begin(TRC(u8"ÉèÖÃÃæ°å"), isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin(TRC(u8"è®¾ç½®é¢æ¿"), isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 		
-		ImGui::TextUnformatted(TRC(u8"ÊÇ·ñÈ«ÆÁ"));
-		if(ImGui::RadioButton(TRC(u8"È«ÆÁ»¯"), m_isFullScreen)) 
+		ImGui::TextUnformatted(TRC(u8"æ˜¯å¦å…¨å±"));
+		if(ImGui::RadioButton(TRC(u8"å…¨å±åŒ–"), m_isFullScreen)) 
 		{
 			m_isFullScreen = true;
 		}
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"´°¿Ú»¯"), !m_isFullScreen))
+		if(ImGui::RadioButton(TRC(u8"çª—å£åŒ–"), !m_isFullScreen))
 		{
 			m_isFullScreen = false;
 		}
@@ -77,14 +77,14 @@ namespace tzw
 			ImGui::TextUnformatted("*");
 		}
 
-		ImGui::TextUnformatted(TRC(u8"·Ö±æÂÊ"));
+		ImGui::TextUnformatted(TRC(u8"åˆ†è¾¨ç‡"));
 		if(m_screenSizeItemCurrent != m_screenSizeEngineCurrent)
 		{
 			ImGui::SameLine();
 			ImGui::TextUnformatted("*");
 		}
 
-        if (ImGui::BeginCombo(TRC(u8"·Ö±æÂÊ"), items[m_screenSizeItemCurrent], 0)) // The second parameter is the label previewed before opening the combo.
+        if (ImGui::BeginCombo(TRC(u8"åˆ†è¾¨ç‡"), items[m_screenSizeItemCurrent], 0)) // The second parameter is the label previewed before opening the combo.
         {
             for (int n = 0; n < IM_ARRAYSIZE(items); n++)
             {
@@ -98,7 +98,7 @@ namespace tzw
         }
 
 
-        if (ImGui::BeginCombo(TRC(u8"ÓïÑÔÉèÖÃ"), items_lang[m_langItemCurrent], 0)) // The second parameter is the label previewed before opening the combo.
+        if (ImGui::BeginCombo(TRC(u8"è¯­è¨€è®¾ç½®"), items_lang[m_langItemCurrent], 0)) // The second parameter is the label previewed before opening the combo.
         {
             for (int n = 0; n < IM_ARRAYSIZE(items_lang); n++)
             {
@@ -113,40 +113,40 @@ namespace tzw
 
 		ImGui::TextUnformatted(TRC(u8"SSAO:"));
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¿ª##SSAO"), m_isOpenSSAO)) m_isOpenSSAO = true;
+		if(ImGui::RadioButton(TRC(u8"å¼€##SSAO"), m_isOpenSSAO)) m_isOpenSSAO = true;
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¹Ø##SSAO"), !m_isOpenSSAO)) m_isOpenSSAO = false;
+		if(ImGui::RadioButton(TRC(u8"å…³##SSAO"), !m_isOpenSSAO)) m_isOpenSSAO = false;
 
 
 		ImGui::TextUnformatted(TRC(u8"Bloom"));
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¿ª##BLOOM"), m_isOpenBloom)) m_isOpenBloom = true;
+		if(ImGui::RadioButton(TRC(u8"å¼€##BLOOM"), m_isOpenBloom)) m_isOpenBloom = true;
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¹Ø##BLOOM"), !m_isOpenBloom)) m_isOpenBloom = false;
+		if(ImGui::RadioButton(TRC(u8"å…³##BLOOM"), !m_isOpenBloom)) m_isOpenBloom = false;
 
 
-		ImGui::TextUnformatted(TRC(u8"ÒõÓ°:"));
+		ImGui::TextUnformatted(TRC(u8"é˜´å½±:"));
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¿ª##SHADOW"), m_isOpenShadow)) m_isOpenShadow = true;
+		if(ImGui::RadioButton(TRC(u8"å¼€##SHADOW"), m_isOpenShadow)) m_isOpenShadow = true;
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¹Ø##SHADOW"), !m_isOpenShadow)) m_isOpenShadow = false;
+		if(ImGui::RadioButton(TRC(u8"å…³##SHADOW"), !m_isOpenShadow)) m_isOpenShadow = false;
 	
-		ImGui::TextUnformatted(TRC(u8"¿¹¾â³İ:"));
+		ImGui::TextUnformatted(TRC(u8"æŠ—é”¯é½¿:"));
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¿ª##AA"), m_isOpenAA)) m_isOpenAA = true;
+		if(ImGui::RadioButton(TRC(u8"å¼€##AA"), m_isOpenAA)) m_isOpenAA = true;
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¹Ø##AA"), !m_isOpenAA)) m_isOpenAA = false;
+		if(ImGui::RadioButton(TRC(u8"å…³##AA"), !m_isOpenAA)) m_isOpenAA = false;
 
 
 
-		ImGui::TextUnformatted(TRC(u8"ÎíĞ§:"));
+		ImGui::TextUnformatted(TRC(u8"é›¾æ•ˆ:"));
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¿ª##FOG"), m_isOpenFog)) m_isOpenFog = true;
+		if(ImGui::RadioButton(TRC(u8"å¼€##FOG"), m_isOpenFog)) m_isOpenFog = true;
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"¹Ø##FOG"), !m_isOpenFog)) m_isOpenFog = false;
+		if(ImGui::RadioButton(TRC(u8"å…³##FOG"), !m_isOpenFog)) m_isOpenFog = false;
 		GraphicsRenderer::shared()->m_isAAEnable = m_isOpenAA;
 
-		if(ImGui::Button(TRC(u8"±£´æÉèÖÃ")))
+		if(ImGui::Button(TRC(u8"ä¿å­˜è®¾ç½®")))
 		{
 			//the cost of changing screenSize is heavy, we need detect if it is really changed
 			if(m_screenSizeEngineCurrent != m_screenSizeItemCurrent || m_isFullScreen != Engine::shared()->isIsFullScreen())
@@ -166,7 +166,7 @@ namespace tzw
 			Engine::shared()->saveConfig();
 		}
 		ImGui::SameLine();
-		if(ImGui::Button(TRC(u8"·µ»Ø")))
+		if(ImGui::Button(TRC(u8"è¿”å›")))
 		{
 			*isOpen = false;
 		}

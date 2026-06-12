@@ -32,7 +32,6 @@
 #include "BulletMgr.h"
 
 #include "3D/Terrain/MarchingCubes.h"
-#include "3D/Terrain/TransVoxel.h"
 #include "AudioSystem/AudioSystem.h"
 #include "FastNoise/FastNoise.h"
 #include "GameUISystem.h"
@@ -61,7 +60,7 @@ namespace tzw
 		g_GetCurrScene()->setDefaultCamera(camera);
 		m_camera = camera;
 		camera->reCache();
-		m_camera->setIsEnableGravity(true);
+		m_camera->setIsEnableGravity(false);
 		m_camera->m_onHitGround = std::bind(&CubePlayer::onHitGround, this);
 		m_currSelectItemIndex = 0;
 		m_currSelectedItem = nullptr;
@@ -71,12 +70,8 @@ namespace tzw
 		mainRoot->addChild(m_orbitcamera);
 
 		auto pos = getPos();
-		oldPosX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-		oldPosZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-		//Sky::shared()->setCamera(m_camera);
-		EventMgr::shared()->addFixedPiorityListener(this);
 
-		m_enableGravity = true;
+		m_enableGravity = false;
 		m_currPointPart = nullptr;
 
 		m_previewItem = new PreviewItem();
@@ -168,10 +163,6 @@ namespace tzw
 			//m_gunModel->setPos(vec3(hipPos.x, hipPos.y + sinf(theTime) * offset, hipPos.z));
 		}
 		m_gunModel->tick(m_camera->getIsMoving() && m_camera->isOnGround(), dt);
-		if (checkIsNeedUpdateChunk())
-		{
-			GameWorld::shared()->loadChunksAroundPlayer();
-		}
 		auto seat = BuildingSystem::shared()->getCurrentControlPart();
 		if(seat && seat->getIsActivate()) 
 		{
@@ -218,19 +209,6 @@ namespace tzw
 		}
 	}
 
-	bool CubePlayer::checkIsNeedUpdateChunk()
-	{
-		auto pos = getPos();
-		int posX = pos.x / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-		int posZ = (-1.0f * pos.z) / ((MAX_BLOCK + 1) * BLOCK_SIZE);
-		if (posX != oldPosX || posZ != oldPosZ)
-		{
-			oldPosX = posX;
-			oldPosZ = posZ;
-			return true;
-		}
-		return false;
-	}
 	static PhysicsRigidBody *wheelFrontLeft = nullptr;
 	static PhysicsRigidBody *wheelFrontRight = nullptr;
 
@@ -463,7 +441,7 @@ namespace tzw
 			case GamePartType::GAME_PART_LIFT:
 				{
 					auto lift = BuildingSystem::shared()->getLift();
-					//Èç¹ûµ±Ç°Ö¸ÏòµÄ·½¿éÓÐÊôÐÔÃæ°å£¬Ò²²»ÏÔÊ¾
+					//å¦‚æžœå½“å‰æŒ‡å‘çš„æ–¹å—æœ‰å±žæ€§é¢æ¿ï¼Œä¹Ÿä¸æ˜¾ç¤º
 					if(m_currPointPart && m_currPointPart !=lift && m_currPointPart->getItem() && m_currPointPart->getItem()->hasAttributePanel())
 					{
 						isNeedSpecialShowBySelected = false;
@@ -475,31 +453,31 @@ namespace tzw
 							isNeedSpecialShowBySelected = true;
 							if(BuildingSystem::shared()->getStoreIslandGroup()) 
 							{
-								label->setString(TR(u8"·ÅÖÃÊÕÄÉ¶ÔÏó"));
+								label->setString(TR(u8"æ”¾ç½®æ”¶çº³å¯¹è±¡"));
 							}
 							else
 							{
 								if(m_currPointPart)
 								{
-									label->setString(TR(u8"ÊÕÄÉ"));
+									label->setString(TR(u8"æ”¶çº³"));
 								}
 								else
 								{
-									label->setString(TR(u8"¶Ô×¼¿ÕµØ·ÅÖÃ£¬¶Ô×¼ÔØ¾ßÊÕÄÉ·ÅÖÃ"));
+									label->setString(TR(u8"å¯¹å‡†ç©ºåœ°æ”¾ç½®ï¼Œå¯¹å‡†è½½å…·æ”¶çº³æ”¾ç½®"));
 								}
 							}
 						}
 						else
 						{
-							if(m_currPointPart && m_currPointPart != lift && !lift->m_effectedIslandGroup)//Èç¹ûÉý½µ»úÉÏÃ»ÓÐ·ÅÖÃÔØ¾ß
+							if(m_currPointPart && m_currPointPart != lift && !lift->m_effectedIslandGroup)//å¦‚æžœå‡é™æœºä¸Šæ²¡æœ‰æ”¾ç½®è½½å…·
 							{
 								isNeedSpecialShowBySelected = true;
-								label->setString(TR(u8"·ÅÖÃµ½Éý½µ»ú"));
+								label->setString(TR(u8"æ”¾ç½®åˆ°å‡é™æœº"));
 							}
-							else if(m_currPointPart && m_currPointPart != lift && m_currPointPart->getVehicle()  == lift->m_effectedIslandGroup)//Èç¹ûÉý½µ»úÉÏÔØ¾ßµÈÓÚ×Ô¼º
+							else if(m_currPointPart && m_currPointPart != lift && m_currPointPart->getVehicle()  == lift->m_effectedIslandGroup)//å¦‚æžœå‡é™æœºä¸Šè½½å…·ç­‰äºŽè‡ªå·±
 							{
 								isNeedSpecialShowBySelected = true;
-								label->setString(TR(u8"·ÅÏÂµ½µØÃæ"));
+								label->setString(TR(u8"æ”¾ä¸‹åˆ°åœ°é¢"));
 							}
 							else
 							{
@@ -512,13 +490,13 @@ namespace tzw
 			break;
 			case GamePartType::SPECIAL_PART_PAINTER:
 				{
-					label->setString(TR(u8"(×ó¼ü) ÅçÆá \n(ÓÒ¼ü) ÅçÍ¿Ãæ°å"));
+					label->setString(TR(u8"(å·¦é”®) å–·æ¼† \n(å³é”®) å–·æ¶‚é¢æ¿"));
 					isNeedSpecialShowBySelected = true;
 				}
 			break;
 			case GamePartType::SPECIAL_PART_DIGGER:
 				{
-					label->setString(TR(u8"(×ó¼ü) ÍÚ¾ò \n(ÓÒ¼ü) Ìî³ä"));
+					label->setString(TR(u8"(å·¦é”®) æŒ–æŽ˜ \n(å³é”®) å¡«å……"));
 					isNeedSpecialShowBySelected = true;
 				}
 			break;
@@ -541,12 +519,12 @@ namespace tzw
 			label->setIsVisible(true);
 			switch(m_currPointPart->getType())
 			{
-			case GamePartType::GAME_PART_LIFT: label->setString(TR(u8"(E) ÔØ¾ßä¯ÀÀÆ÷")); break;
-			case GamePartType::GAME_PART_CONTROL: label->setString(TR(u8"(E) ¼ÝÊ»\n(F) ½Úµã±à¼­Æ÷"));break;
-			case GamePartType::GAME_PART_THRUSTER: label->setString(TR(u8"(E) ÊôÐÔÃæ°å"));break;
-			case GamePartType::GAME_PART_CANNON: label->setString(TR(u8"(E) ÊôÐÔÃæ°å"));break;
-			case GamePartType::GAME_PART_BEARING: label->setString(TR(u8"(E) ÊôÐÔÃæ°å\n(F) µ÷Õû·½Ïò"));break;
-			case GamePartType::GAME_PART_SPRING: label->setString(TR(u8"(E) ÊôÐÔÃæ°å"));break;
+			case GamePartType::GAME_PART_LIFT: label->setString(TR(u8"(E) è½½å…·æµè§ˆå™¨")); break;
+			case GamePartType::GAME_PART_CONTROL: label->setString(TR(u8"(E) é©¾é©¶\n(F) èŠ‚ç‚¹ç¼–è¾‘å™¨"));break;
+			case GamePartType::GAME_PART_THRUSTER: label->setString(TR(u8"(E) å±žæ€§é¢æ¿"));break;
+			case GamePartType::GAME_PART_CANNON: label->setString(TR(u8"(E) å±žæ€§é¢æ¿"));break;
+			case GamePartType::GAME_PART_BEARING: label->setString(TR(u8"(E) å±žæ€§é¢æ¿\n(F) è°ƒæ•´æ–¹å‘"));break;
+			case GamePartType::GAME_PART_SPRING: label->setString(TR(u8"(E) å±žæ€§é¢æ¿"));break;
 			default:
 				label->setIsVisible(false);
 				break;

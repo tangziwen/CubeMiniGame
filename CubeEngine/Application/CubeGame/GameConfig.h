@@ -16,4 +16,8 @@ extern int TERRAIN_MESH_CELL_COUNT;
 
 
 #define TYPE_CHUNK  100
+
+static const int MIN_PADDING = 1;
+static const int MAX_PADDING = 2;
+
 #endif // GAMECONFIG_H

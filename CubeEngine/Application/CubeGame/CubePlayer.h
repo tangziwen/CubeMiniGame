@@ -39,7 +39,6 @@ namespace tzw
 		vec3 getPos();
 		void setPos(vec3 newPos);
 		void onFrameUpdate(float dt) override;
-		bool checkIsNeedUpdateChunk();
 		bool onKeyPress(int keyCode) override;
 		bool onKeyRelease(int keyCode) override;
 		bool onMousePress(int button, vec2 pos) override;
@@ -85,8 +84,6 @@ namespace tzw
 		OrbitCamera * m_orbitcamera;
 		FPSCamera * m_fpvCamera;
 		FPGun* m_gunModel;
-		int oldPosX;
-		int oldPosZ;
 		int m_currSelectItemIndex;
 		bool m_enableGravity;
 		float m_seatAngle = 0.0;

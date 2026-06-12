@@ -8,8 +8,8 @@ namespace tzw
 {
 	PrintNode::PrintNode()
 	{
-		name =TR(u8"´òÓ¡");
-		m_strAttrVal = addInStr(TR(u8"×Ö·û´®"), "let me do that shit");
+		name =TR(u8"æ‰“å°");
+		m_strAttrVal = addInStr(TR(u8"å­—ç¬¦ä¸²"), "let me do that shit");
 	}
 
 	NodeAttrValue PrintNode::execute()

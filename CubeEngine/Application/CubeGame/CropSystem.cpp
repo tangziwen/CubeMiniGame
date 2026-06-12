@@ -1,6 +1,7 @@
 #include "CropSystem.h"
 
 #include "EngineSrc/CubeEngine.h"
+#include "CubeGame/GameMap.h"
 #include "CubeGame/GameWorld.h"
 #include "Game/ConsolePanel.h"
 #include "Event/EventMgr.h"

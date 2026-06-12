@@ -121,10 +121,13 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 		}
 	}
 
-	// 4. Sync drawable set with render set and mesh cache
+	// 4. Finish ready meshes on the render thread before drawables can submit commands.
+	m_meshCache->finishReadyMeshesForRender(renderSet);
+
+	// 5. Sync drawable set with render set and mesh cache
 	m_drawableSet->sync(renderSet, *m_meshCache);
 
-	// 5. Attach new drawables to scene root
+	// 6. Attach new drawables to scene root
 	for (auto& pair : m_drawableSet->drawables())
 	{
 		if (pair.second && !pair.second->getParent())
@@ -133,7 +136,7 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 		}
 	}
 
-	// 6. Evict unused cache entries
+	// 7. Evict unused cache entries
 	m_meshCache->evictUnused(m_frameIndex, 60);
 
 	++m_frameIndex;

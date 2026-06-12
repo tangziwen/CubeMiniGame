@@ -132,7 +132,7 @@ void BearPart::getAngleLimit(bool& isAngleLimit, float& low, float& high) const
 void BearPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"Öá³Ğ %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"è½´æ‰¿ %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -157,9 +157,9 @@ void BearPart::generateName()
 			static_cast<ResNode *>(m_graphNode)->syncName();
 		}
 		//control the bearing turn direction
-		ImGui::Text(TRC(u8"Ğı×ª·½Ïò"));
+		ImGui::Text(TRC(u8"æ—‹è½¬æ–¹å‘"));
 		auto click_left = false, click_right = false;
-		click_left = ImGui::RadioButton(TRC(u8"×ó"), !m_isFlipped);ImGui::SameLine(); click_right = ImGui::RadioButton(TRC(u8"ÓÒ"), m_isFlipped);
+		click_left = ImGui::RadioButton(TRC(u8"å·¦"), !m_isFlipped);ImGui::SameLine(); click_right = ImGui::RadioButton(TRC(u8"å³"), m_isFlipped);
 		
 		if(click_left) 
 		{
@@ -175,26 +175,26 @@ void BearPart::generateName()
 		}
 		
 		auto click_steer = false, click_bear = false;
-		ImGui::Text(TRC(u8"ÊÇ·ñÎª¶æ»ú"));
-		click_steer = ImGui::RadioButton(TRC(u8"¶æ»ú"), getIsSteering());ImGui::SameLine(); click_bear = ImGui::RadioButton(TRC(u8"ÆÕÍ¨Öá³Ğ"), !getIsSteering());
+		ImGui::Text(TRC(u8"æ˜¯å¦ä¸ºèˆµæœº"));
+		click_steer = ImGui::RadioButton(TRC(u8"èˆµæœº"), getIsSteering());ImGui::SameLine(); click_bear = ImGui::RadioButton(TRC(u8"æ™®é€šè½´æ‰¿"), !getIsSteering());
 		
 		if(click_steer || click_bear)
 		{
 			setIsSteering(click_steer);
 		}
-		ImGui::Text(TRC(u8"ÊÇ·ñ¿ªÆô½Ç¶ÈÏŞÖÆ"));
+		ImGui::Text(TRC(u8"æ˜¯å¦å¼€å¯è§’åº¦é™åˆ¶"));
 		bool isCurrAngleLimit;
 		float angle_low;
 		float angle_high;
 		getAngleLimit(isCurrAngleLimit, angle_low, angle_high);
 		auto click_angle_yes = false, click_angle_no = false;
-		click_angle_yes = ImGui::RadioButton(TRC(u8"¿ªÆô"), isCurrAngleLimit);ImGui::SameLine(); click_angle_no = ImGui::RadioButton(TRC(u8"¹Ø±Õ"), !isCurrAngleLimit);
+		click_angle_yes = ImGui::RadioButton(TRC(u8"å¼€å¯"), isCurrAngleLimit);ImGui::SameLine(); click_angle_no = ImGui::RadioButton(TRC(u8"å…³é—­"), !isCurrAngleLimit);
 		if(isCurrAngleLimit)
 		{
 			bool isInput = false;
 			ImGui::PushItemWidth(80);
-			isInput |= ImGui::InputFloat(TRC(u8"×îĞ¡½Ç¶È"), &angle_low);
-			isInput |= ImGui::InputFloat(TRC(u8"×î´ó½Ç¶È"), &angle_high);
+			isInput |= ImGui::InputFloat(TRC(u8"æœ€å°è§’åº¦"), &angle_low);
+			isInput |= ImGui::InputFloat(TRC(u8"æœ€å¤§è§’åº¦"), &angle_high);
 			ImGui::PopItemWidth();
 			if(isInput)
 			{

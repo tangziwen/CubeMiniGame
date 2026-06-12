@@ -33,6 +33,7 @@ public:
 	void invalidate(const TerrainNodeKey& key);
 	void invalidateInBounds(const TerrainEditBounds& bounds, const TerrainOctreeConfig& config);
 	void touchRenderSet(const TerrainRenderSet& renderSet, int frameIndex);
+	int finishReadyMeshesForRender(const TerrainRenderSet& renderSet);
 	void evictUnused(int currentFrame, int keepAliveFrames);
 	void clear();
 	size_t size() const;

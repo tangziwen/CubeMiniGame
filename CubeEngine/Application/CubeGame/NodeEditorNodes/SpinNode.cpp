@@ -6,10 +6,10 @@ namespace tzw
 {
 	SpinNode::SpinNode()
 	{
-		name =TR(u8"Ğı×ª");
-		m_bearingAttr = addIn(TR(u8"Öá³Ğ"));
-		m_signalAttr = addInSignal(TR(u8"·½ÏòĞÅºÅ"), 1);
-		m_rotateSpeedAttr = addInFloat(TR(u8"×ªËÙ"), 10.0f);
+		name =TR(u8"æ—‹è½¬");
+		m_bearingAttr = addIn(TR(u8"è½´æ‰¿"));
+		m_signalAttr = addInSignal(TR(u8"æ–¹å‘ä¿¡å·"), 1);
+		m_rotateSpeedAttr = addInFloat(TR(u8"è½¬é€Ÿ"), 10.0f);
 	}
 
 	NodeAttrValue SpinNode::execute()

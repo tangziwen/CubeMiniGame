@@ -11,9 +11,9 @@ namespace tzw
 	{
 		m_part = part;
 		SwitchNode::syncName();
-		m_onOn =addOutExe(TR(u8"´ò¿ª"));
-		m_onOff = addOutExe(TR(u8"¹Ø±Õ"));
-		m_stateAttr = addOut(TR(u8"×´Ì¬ÐÅºÅ"));
+		m_onOn =addOutExe(TR(u8"æ‰“å¼€"));
+		m_onOff = addOutExe(TR(u8"å…³é—­"));
+		m_stateAttr = addOut(TR(u8"çŠ¶æ€ä¿¡å·"));
 	}
 
 	void SwitchNode::trigger()
@@ -37,7 +37,7 @@ namespace tzw
 	void SwitchNode::syncName()
 	{
 		char formatName[512];
-		sprintf_s(formatName, 512, TRC(u8"¿ª¹Ø %s"),m_part->getName().c_str());
+		sprintf_s(formatName, 512, TRC(u8"å¼€å…³ %s"),m_part->getName().c_str());
 		name = formatName;
 	}
 

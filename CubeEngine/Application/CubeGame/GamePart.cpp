@@ -531,7 +531,7 @@ namespace tzw
 		char a[128] = "";
 		strcpy(a, getName().c_str());
 		ImGui::PushItemWidth(80);
-		bool isInputName = ImGui::InputText(u8"√˚≥∆",a,128);
+		bool isInputName = ImGui::InputText(u8"ÈçöÂ∂á–û",a,128);
 		ImGui::PopItemWidth();
 		if(isInputName)
 		{

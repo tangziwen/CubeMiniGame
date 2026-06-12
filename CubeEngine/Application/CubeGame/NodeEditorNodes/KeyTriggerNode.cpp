@@ -8,15 +8,15 @@ namespace tzw
 {
 	KeyTriggerNode::KeyTriggerNode()
 	{
-		name = TR(u8"°´¼üÊäÈë");
-		m_forwardAttr =addOutExe(TR(u8"Ç°ºó"));
-		m_sideAttr = addOutExe(TR(u8"×óÓÒ"));
-		m_forwardSignalAttr = addOut(TR(u8"Ç°ºóĞÅºÅ"));
-		m_sideSignalAttr = addOut(TR(u8"×óÓÒĞÅºÅ"));
+		name = TR(u8"æŒ‰é”®è¾“å…¥");
+		m_forwardAttr =addOutExe(TR(u8"å‰å"));
+		m_sideAttr = addOutExe(TR(u8"å·¦å³"));
+		m_forwardSignalAttr = addOut(TR(u8"å‰åä¿¡å·"));
+		m_sideSignalAttr = addOut(TR(u8"å·¦å³ä¿¡å·"));
 
-		m_zKeyAttr =addOutExe(TR(u8"Z¼ü"));
-		m_xKeyAttr =addOutExe(TR(u8"X¼ü"));
-		m_cKeyAttr =addOutExe(TR(u8"C¼ü"));
+		m_zKeyAttr =addOutExe(TR(u8"Zé”®"));
+		m_xKeyAttr =addOutExe(TR(u8"Xé”®"));
+		m_cKeyAttr =addOutExe(TR(u8"Cé”®"));
 		m_forward = 0;
 		m_side = 0;
 	}

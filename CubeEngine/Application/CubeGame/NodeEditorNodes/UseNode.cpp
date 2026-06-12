@@ -7,8 +7,8 @@ namespace tzw
 {
 	UseNode::UseNode()
 	{
-		name =u8"使用";
-		m_bearingAttr = addIn(u8"节点");
+		name =u8"浣跨敤";
+		m_bearingAttr = addIn(u8"鑺傜偣");
 	}
 
 	NodeAttrValue UseNode::execute()

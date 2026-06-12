@@ -9,9 +9,9 @@ namespace tzw
 	{
 		m_part = cannon;
 		ButtonPartNode::syncName();
-		m_pressedAttr = addOutExe(TR(u8"°´ÏÂ"));
-		m_releasedAttr = addOutExe(TR(u8"ËÉ¿ª"));
-		m_stateAttr = addOut(TR(u8"×´Ì¬ÐÅºÅ"));
+		m_pressedAttr = addOutExe(TR(u8"æŒ‰ä¸‹"));
+		m_releasedAttr = addOutExe(TR(u8"æ¾å¼€"));
+		m_stateAttr = addOut(TR(u8"çŠ¶æ€ä¿¡å·"));
 	}
 
 	void ButtonPartNode::privateDraw()
@@ -32,7 +32,7 @@ namespace tzw
 	void ButtonPartNode::syncName()
 	{
 		char formatName[512];
-		sprintf_s(formatName, 512, TRC(u8"°´Å¥ %s"),m_part->getName().c_str());
+		sprintf_s(formatName, 512, TRC(u8"æŒ‰é’® %s"),m_part->getName().c_str());
 		name = formatName;
 	}
 

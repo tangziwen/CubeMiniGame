@@ -1,5 +1,5 @@
 #include "TerrainMeshCache.h"
-#include "Transvoxel.h"
+#include "CubeGame/GameConfig.h"
 
 #include <algorithm>
 
@@ -126,6 +126,35 @@ void TerrainMeshCache::touchRenderSet(const TerrainRenderSet& renderSet, int fra
 		}
 		ensure(node->key()).lastTouchedFrame = frameIndex;
 	}
+}
+
+int TerrainMeshCache::finishReadyMeshesForRender(const TerrainRenderSet& renderSet)
+{
+	int finishedCount = 0;
+	for (TerrainOctreeNode* node : renderSet.nodes())
+	{
+		if (!node)
+		{
+			continue;
+		}
+
+		TerrainMeshCacheEntry* entry = find(node->key());
+		if (!entry || entry->state != TerrainMeshState::Ready || !entry->mesh || entry->mesh->isEmpty())
+		{
+			continue;
+		}
+
+		RenderBuffer* indexBuffer = entry->mesh->getIndexBuf();
+		RenderBuffer* arrayBuffer = entry->mesh->getArrayBuf();
+		if (indexBuffer && indexBuffer->bufferId() && arrayBuffer && arrayBuffer->bufferId())
+		{
+			continue;
+		}
+
+		entry->mesh->finish();
+		++finishedCount;
+	}
+	return finishedCount;
 }
 
 void TerrainMeshCache::evictUnused(int currentFrame, int keepAliveFrames)

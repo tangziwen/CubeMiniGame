@@ -1,6 +1,5 @@
 #include "TerrainSampler.h"
 
-#include "Transvoxel.h"
 #include "CubeGame/GameConfig.h"
 
 namespace tzw {
