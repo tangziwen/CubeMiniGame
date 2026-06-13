@@ -1,6 +1,6 @@
 #include "TerrainEditSystem.h"
 
-#include "CubeGame/GameMap.h"
+#include "GameMap.h"
 #include "TerrainOctree.h"
 #include "TerrainMeshCache.h"
 
@@ -90,7 +90,7 @@ TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& o
 	}
 
 	const vec3 mapOffset = m_map->getMapOffset();
-	const float blockSize = BLOCK_SIZE;
+	const float blockSize = m_map->blockSize();
 
 	TerrainEditBounds bounds;
 	if (operation.shape == TerrainEditShape::Box)

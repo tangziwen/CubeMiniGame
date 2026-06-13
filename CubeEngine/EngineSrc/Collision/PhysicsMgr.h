@@ -1,7 +1,7 @@
 #ifndef TZW_PHYSIC_MGR_H
 #define TZW_PHYSIC_MGR_H
 #include "../Engine/EngineDef.h"
-#include "External/Bullet/LinearMath/btAlignedObjectArray.h"
+#include "Bullet/LinearMath/btAlignedObjectArray.h"
 #include "PhysicsRigidBody.h"
 #include "Math/Matrix44.h"
 #include "Math/AABB.h"

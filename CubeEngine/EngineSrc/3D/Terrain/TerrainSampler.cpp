@@ -1,6 +1,6 @@
 #include "TerrainSampler.h"
 
-#include "CubeGame/GameConfig.h"
+#include "GameMapConfig.h"
 
 namespace tzw {
 

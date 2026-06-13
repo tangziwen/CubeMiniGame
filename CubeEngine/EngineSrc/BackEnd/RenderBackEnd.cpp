@@ -1,4 +1,4 @@
-﻿#include "RenderBackEnd.h"
+#include "RenderBackEnd.h"
 #define GLFW_INCLUDE_NONE
 #include "GLFW/glfw3.h"
 #define GLEW_STATIC
@@ -8,7 +8,7 @@
 #include <string.h>
 #include <assert.h>
 #include "Utility/log/Log.h"
-#include "External/SOIL2/SOIL2.h"
+#include "SOIL2/SOIL2.h"
 #include "gl/DeviceTextureGL.h"
 #include "gl/DeviceShaderGL.h"
 #include "gl/DeviceBufferGL.h"

@@ -1,9 +1,8 @@
 #include "GameMap.h"
-#include "GameConfig.h"
 
 #include "FastNoise/FastNoise.h"
 #include <algorithm>
-#include "CropSystem.h"
+#include "3D/Vegetation/FoliageSystem.h"
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
 
@@ -23,8 +22,8 @@ unsigned char proceduralDensityAt(GameMap& map, int sampleX, int sampleY, int sa
 
 	const vec3 mapOffset = map.getMapOffset();
 	auto targetH = map.getHeight(
-		vec2(sampleX * BLOCK_SIZE, sampleZ * BLOCK_SIZE) + vec2(mapOffset.x, mapOffset.z));
-	auto currH = sampleY * BLOCK_SIZE;
+		vec2(sampleX * map.blockSize(), sampleZ * map.blockSize()) + vec2(mapOffset.x, mapOffset.z));
+	auto currH = sampleY * map.blockSize();
 	float delta = std::clamp((currH - targetH) * 0.1f, -1.f, 1.f);
 	return static_cast<unsigned char>((delta * 0.5f + 0.5f) * 255.f);
 }
@@ -101,6 +100,16 @@ GameMap::GameMap()
   , m_ratio(0)
   , m_minHeight(0)
   , m_mapType(MapType::Noise)
+  , m_treeID(0)
+  , m_grassID(0)
+  , mapBufferSize_X(0)
+  , mapBufferSize_Y(0)
+  , mapBufferSize_Z(0)
+  , m_totalBuffer(nullptr)
+  , m_widthVoxels(GAME_MAP_WIDTH_VOXELS)
+  , m_depthVoxels(GAME_MAP_DEPTH_VOXELS)
+  , m_heightVoxels(GAME_MAP_HEIGHT_VOXELS)
+  , m_blockSize(BLOCK_SIZE)
 {
   m_plane = new noise::model::Plane(myModule);
   myModule.SetPersistence(0.001);
@@ -144,20 +153,26 @@ GameMap::GameMap()
 	grassRock.SetSeed(200);
 	grassOrDirt.SetFrequency(0.07);
 	grassOrDirt.SetNoiseType(FastNoise::SimplexFractal);
-	m_mapOffset = vec3(GAME_MAP_WIDTH_VOXELS * BLOCK_SIZE / -2.0f, 0,
-		GAME_MAP_DEPTH_VOXELS * BLOCK_SIZE / -2.0f);
+	m_mapOffset = vec3(m_widthVoxels * m_blockSize / -2.0f, 0,
+		m_depthVoxels * m_blockSize / -2.0f);
 }
 
-void GameMap::init(float ratio, int width, int depth, int height)
+void GameMap::init(const GameMapInitInfo& initInfo)
 {
-	m_ratio = ratio;
+	m_ratio = initInfo.ratio;
+	m_widthVoxels = initInfo.widthVoxels;
+	m_depthVoxels = initInfo.depthVoxels;
+	m_heightVoxels = initInfo.heightVoxels;
+	m_blockSize = initInfo.blockSize;
+	m_mapOffset = vec3(m_widthVoxels * m_blockSize / -2.0f, 0,
+		m_depthVoxels * m_blockSize / -2.0f);
 	x_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 	y_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 	z_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
 
-	mapBufferSize_X = ceilDiv(GAME_MAP_WIDTH_VOXELS, GAME_MAX_BUFFER_SIZE);
-	mapBufferSize_Y = ceilDiv(GAME_MAP_HEIGHT_VOXELS, GAME_MAX_BUFFER_SIZE);
-	mapBufferSize_Z = ceilDiv(GAME_MAP_DEPTH_VOXELS, GAME_MAX_BUFFER_SIZE);
+	mapBufferSize_X = ceilDiv(m_widthVoxels, GAME_MAX_BUFFER_SIZE);
+	mapBufferSize_Y = ceilDiv(m_heightVoxels, GAME_MAX_BUFFER_SIZE);
+	mapBufferSize_Z = ceilDiv(m_depthVoxels, GAME_MAX_BUFFER_SIZE);
 	m_totalBuffer = new GameMapBuffer[(mapBufferSize_X) * (mapBufferSize_Y) * (mapBufferSize_Z)];
 
 
@@ -180,9 +195,17 @@ void GameMap::init(float ratio, int width, int depth, int height)
 		info->init(&lod0, &lod1, &lod2);
 		m_grassID = FoliageSystem::shared()->regVegetation(info);
 	}
+}
 
-	CropSystem::shared()->initFromFile();
-
+void GameMap::init(float ratio, int width, int depth, int height)
+{
+	GameMapInitInfo initInfo;
+	initInfo.ratio = ratio;
+	initInfo.widthVoxels = width * MAX_BLOCK;
+	initInfo.depthVoxels = depth * MAX_BLOCK;
+	initInfo.heightVoxels = height * MAX_BLOCK;
+	initInfo.blockSize = BLOCK_SIZE;
+	init(initInfo);
 }
 
 GameMap*
@@ -192,6 +215,26 @@ GameMap::shared()
     m_instance = new GameMap();
   }
   return m_instance;
+}
+
+int GameMap::widthVoxels() const
+{
+	return m_widthVoxels;
+}
+
+int GameMap::depthVoxels() const
+{
+	return m_depthVoxels;
+}
+
+int GameMap::heightVoxels() const
+{
+	return m_heightVoxels;
+}
+
+float GameMap::blockSize() const
+{
+	return m_blockSize;
 }
 
 float
@@ -279,7 +322,7 @@ voxelInfo GameMap::sampleProceduralVoxel(int x, int y, int z)
 		slope = 1.0 - std::clamp(
 			vec3::DotProduct(gradientVec.normalized(), vec3(0, -1, 0)), 0.0f, 1.0f);
 	}
-	vec3 samplePos(x * BLOCK_SIZE, y * BLOCK_SIZE, z * BLOCK_SIZE);
+	vec3 samplePos(x * m_blockSize, y * m_blockSize, z * m_blockSize);
 	auto matID = getMat(samplePos, slope);
 	result.setMat(matID, 0, 0, vec3(1, 0, 0));
 	return result;
@@ -349,18 +392,18 @@ vec3 GameMap::voxelToBuffWorldPos(int x, int y, int z)
     int buffIDX = (x/GAME_MAX_BUFFER_SIZE);
     int buffIDY = (y/GAME_MAX_BUFFER_SIZE);
     int buffIDZ = (z/GAME_MAX_BUFFER_SIZE);
-    return vec3((buffIDX * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (buffIDY * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE, (buffIDZ * GAME_MAX_BUFFER_SIZE)  * BLOCK_SIZE);
+    return vec3((buffIDX * GAME_MAX_BUFFER_SIZE)  * m_blockSize, (buffIDY * GAME_MAX_BUFFER_SIZE)  * m_blockSize, (buffIDZ * GAME_MAX_BUFFER_SIZE)  * m_blockSize);
 }
 
 vec3 GameMap::voxelToWorldPos(int x, int y, int z)
 {
-	return vec3((x)  * BLOCK_SIZE, (y )  * BLOCK_SIZE, (z)  * BLOCK_SIZE) + m_mapOffset;
+	return vec3((x)  * m_blockSize, (y )  * m_blockSize, (z)  * m_blockSize) + m_mapOffset;
 }
 
 vec3 GameMap::worldPosToVoxelPos(vec3 pos)
 {
 	pos -= m_mapOffset;
-	return vec3(int(pos.x / BLOCK_SIZE), int(pos.y / BLOCK_SIZE),int(pos.z / BLOCK_SIZE));
+	return vec3(int(pos.x / m_blockSize), int(pos.y / m_blockSize),int(pos.z / m_blockSize));
 }
 
 float GameMap::getHeight(vec2 posXZ)
@@ -370,8 +413,8 @@ float GameMap::getHeight(vec2 posXZ)
 
 vec3 GameMap::getNormal(vec2 posXZ)
 {
-	vec2 posZ = vec2(posXZ.x, posXZ.y - BLOCK_SIZE);
-	vec2 posX = vec2(posXZ.x + BLOCK_SIZE, posXZ.y);
+	vec2 posZ = vec2(posXZ.x, posXZ.y - m_blockSize);
+	vec2 posX = vec2(posXZ.x + m_blockSize, posXZ.y);
 
 	vec3 p0 = vec3(posXZ.x, getHeight(posXZ), posXZ.y);
 	vec3 p1 = vec3(posX.x, getHeight(posX), posX.y);
@@ -523,7 +566,7 @@ vec2 GameMap::getCenterOfMap()
 {
 	//float x = (mapBufferSize_X * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
 	//float z = (mapBufferSize_Z * GAME_MAX_BUFFER_SIZE * BLOCK_SIZE) / 2.0f + LOD_SHIFT * BLOCK_SIZE;
-	return vec2(LOD_SHIFT * BLOCK_SIZE, LOD_SHIFT * BLOCK_SIZE);
+	return vec2(LOD_SHIFT * m_blockSize, LOD_SHIFT * m_blockSize);
 }
 
 void GameMap::saveTerrain(std::string filePath)
@@ -599,9 +642,9 @@ vec3 GameMap::getMapOffset() const
 bool GameMap::isVoxelInDomain(int x, int y, int z) const
 {
 	return x >= 0 && y >= 0 && z >= 0
-		&& x < GAME_MAP_WIDTH_VOXELS
-		&& y < GAME_MAP_HEIGHT_VOXELS
-		&& z < GAME_MAP_DEPTH_VOXELS;
+		&& x < m_widthVoxels
+		&& y < m_heightVoxels
+		&& z < m_depthVoxels;
 }
 
 int GameMap::pageIndex(int pageX, int pageY, int pageZ) const

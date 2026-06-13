@@ -4,7 +4,7 @@
 #include "GL/glew.h"
 #include "Utility/log/Log.h"
 #include "Engine/WorkerThreadSystem.h"
-#include "External/SOIL2/SOIL2.h"
+#include "SOIL2/SOIL2.h"
 #include "Utility/file/Tfile.h"
 #include <algorithm>
 namespace tzw

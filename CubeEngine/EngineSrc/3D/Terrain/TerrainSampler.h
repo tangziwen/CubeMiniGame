@@ -1,7 +1,7 @@
 #pragma once
 
 #include "TerrainMeshRequest.h"
-#include "CubeGame/GameMap.h"
+#include "GameMap.h"
 
 #include <vector>
 

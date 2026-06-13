@@ -1,7 +1,6 @@
 #include "SurfaceNets.h"
 
-#include "CubeGame/GameConfig.h"
-#include "CubeGame/GameMap.h"
+#include "GameMap.h"
 #include <algorithm>
 #include <array>
 #include <cmath>

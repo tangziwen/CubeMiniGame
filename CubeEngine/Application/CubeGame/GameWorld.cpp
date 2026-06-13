@@ -1,11 +1,12 @@
 #include "GameWorld.h"
-#include "GameMap.h"
+#include "EngineSrc/3D/Terrain/GameMap.h"
+#include "EngineSrc/3D/Terrain/GameMapConfig.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include "Utility/log/Log.h"
 #include "time.h"
 #include "Utility/misc/Tmisc.h"
 #include <algorithm>
-#include "GameConfig.h"
+#include "CropSystem.h"
 #include <thread>
 #include "Collision/PhysicsMgr.h"
 #include "3D/Primitive/CylinderPrimitive.h"
@@ -77,42 +78,50 @@ GameWorld *GameWorld::shared()
     return m_instance;
 }
 
-void GameWorld::createWorld(Scene *scene, int width, int depth, int height, float ratio)
+void GameWorld::createWorld(Scene *scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio)
 {
     m_scene = scene;
-    m_width = width;
-    m_depth = depth;
-    m_height = height;
-	GameMap::shared()->init(ratio, m_width, m_depth, m_height);
-	float offsetX = -1 * width * MAX_BLOCK * BLOCK_SIZE / 2;
-	float offsetZ =  depth * MAX_BLOCK * BLOCK_SIZE / 2; // notice the signed!
+    m_width = widthVoxels;
+    m_depth = depthVoxels;
+    m_height = heightVoxels;
+	GameMapInitInfo mapInfo;
+	mapInfo.ratio = ratio;
+	mapInfo.widthVoxels = widthVoxels;
+	mapInfo.depthVoxels = depthVoxels;
+	mapInfo.heightVoxels = heightVoxels;
+	mapInfo.blockSize = BLOCK_SIZE;
+	GameMap::shared()->init(mapInfo);
+	CropSystem::shared()->initFromFile();
 
-	int widthVoxels = GAME_MAP_WIDTH_VOXELS;
-	int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
-	int depthVoxels = GAME_MAP_DEPTH_VOXELS;
 	vec3 mapOffset = GameMap::shared()->getMapOffset();
 	TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
-		widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
+		GameMap::shared()->widthVoxels(), GameMap::shared()->heightVoxels(), GameMap::shared()->depthVoxels(),
+		TERRAIN_MESH_CELL_COUNT, GameMap::shared()->blockSize(), mapOffset);
 	m_terrainRuntime = std::make_unique<TerrainRuntime>();
 	m_terrainRuntime->init(config);
 }
 
-void GameWorld::createWorldFromFile(Scene* scene, int width, int depth, int height, float ratio, std::string filePath)
+void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio, std::string filePath)
 {
 	m_scene = scene;
-    m_width = width;
-    m_depth = depth;
-    m_height = height;
-	GameMap::shared()->init(ratio, m_width, m_depth, m_height);
+	m_width = widthVoxels;
+    m_depth = depthVoxels;
+    m_height = heightVoxels;
+	GameMapInitInfo mapInfo;
+	mapInfo.ratio = ratio;
+	mapInfo.widthVoxels = widthVoxels;
+	mapInfo.depthVoxels = depthVoxels;
+	mapInfo.heightVoxels = heightVoxels;
+	mapInfo.blockSize = BLOCK_SIZE;
+	GameMap::shared()->init(mapInfo);
+	CropSystem::shared()->initFromFile();
 	auto worldLocation = getWorldLocation();
 	GameMap::shared()->loadTerrain((worldLocation / "Terrain.bin").string());
 
-	int widthVoxels = GAME_MAP_WIDTH_VOXELS;
-	int heightVoxels = GAME_MAP_HEIGHT_VOXELS;
-	int depthVoxels = GAME_MAP_DEPTH_VOXELS;
 	vec3 mapOffset = GameMap::shared()->getMapOffset();
 	TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
-		widthVoxels, heightVoxels, depthVoxels, TERRAIN_MESH_CELL_COUNT, BLOCK_SIZE, mapOffset);
+		GameMap::shared()->widthVoxels(), GameMap::shared()->heightVoxels(), GameMap::shared()->depthVoxels(),
+		TERRAIN_MESH_CELL_COUNT, GameMap::shared()->blockSize(), mapOffset);
 	m_terrainRuntime = std::make_unique<TerrainRuntime>();
 	m_terrainRuntime->init(config);
 }
@@ -168,7 +177,7 @@ void GameWorld::startGame(WorldInfo worldInfo)
 		GameMap::shared()->setMaxHeight(10);
 		GameMap::shared()->setMinHeight(3);
 		Tmisc::DurationBegin();
-		createWorld(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05);
+		createWorld(g_GetCurrScene(), GAME_MAP_WIDTH_VOXELS, GAME_MAP_DEPTH_VOXELS, GAME_MAP_HEIGHT_VOXELS, 0.05);
 		tlog("init chunk cost : %d", Tmisc::DurationEnd());
 		vec2 startPos = GameMap::shared()->getCenterOfMap();
 		float height = GameMap::shared()->getHeight(startPos);
@@ -202,7 +211,7 @@ void GameWorld::loadGame(std::string worldName)
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
 		GameMap::shared()->setMinHeight(3);
-		createWorldFromFile(g_GetCurrScene(),GAME_MAP_WIDTH, GAME_MAP_DEPTH, GAME_MAP_HEIGHT, 0.05, "Data/PlayerData/Save/Terrain.bin");
+		createWorldFromFile(g_GetCurrScene(), GAME_MAP_WIDTH_VOXELS, GAME_MAP_DEPTH_VOXELS, GAME_MAP_HEIGHT_VOXELS, 0.05, "Data/PlayerData/Save/Terrain.bin");
 		loadPlayerInfo();
 	}));
 

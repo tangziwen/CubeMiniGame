@@ -1,5 +1,5 @@
 #include "TerrainMeshCache.h"
-#include "CubeGame/GameConfig.h"
+#include "GameMapConfig.h"
 
 #include <algorithm>
 

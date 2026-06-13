@@ -1,5 +1,5 @@
-#ifndef GAMECONFIG_H
-#define GAMECONFIG_H
+#ifndef TZW_GAMEMAPCONFIG_H
+#define TZW_GAMEMAPCONFIG_H
 
 
 #define CUBE_MAP_SIZE (256)
@@ -20,4 +20,4 @@ extern int TERRAIN_MESH_CELL_COUNT;
 static const int MIN_PADDING = 1;
 static const int MAX_PADDING = 2;
 
-#endif // GAMECONFIG_H
+#endif // TZW_GAMEMAPCONFIG_H

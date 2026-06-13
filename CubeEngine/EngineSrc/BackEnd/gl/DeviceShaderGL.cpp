@@ -1,5 +1,5 @@
 #include "DeviceShaderGL.h"
-#include <External\GLEW\GL\glew.h>
+#include <GL/glew.h>
 #include <stdio.h>
 #include "BackEnd/RenderBackEnd.h"
 namespace tzw

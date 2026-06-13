@@ -1,7 +1,7 @@
 #include "CubePlayer.h"
 #include "EngineSrc/Scene/SceneMgr.h"
 #include "EngineSrc/3D/Model/Model.h"
-#include "GameConfig.h"
+#include "EngineSrc/3D/Terrain/GameMapConfig.h"
 #include "GameWorld.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include <iostream>

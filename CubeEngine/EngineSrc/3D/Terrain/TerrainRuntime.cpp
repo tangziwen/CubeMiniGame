@@ -11,8 +11,7 @@
 #include "TerrainOctreeNode.h"
 #include "../../Base/Node.h"
 #include "../../Technique/MaterialPool.h"
-#include "CubeGame/GameMap.h"
-#include "CubeGame/GameConfig.h"
+#include "GameMap.h"
 
 namespace tzw {
 

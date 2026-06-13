@@ -4,8 +4,9 @@
 #define LOD_SHIFT 4
 
 #include <array>
+#include <string>
 #include <vector>
-#include "GameConfig.h"
+#include "GameMapConfig.h"
 #include "noise/noise.h"
 #include "noise/noiseutils.h"
 #include "EngineSrc/Math/vec3.h"
@@ -35,6 +36,15 @@ struct GameMapBuffer
 	bool isEdit;
 };
 
+struct GameMapInitInfo
+{
+	float ratio = 0.05f;
+	int widthVoxels = 2048;
+	int depthVoxels = 2048;
+	int heightVoxels = 128;
+	float blockSize = 1.0f;
+};
+
 class GameMap
 {
 public:
@@ -44,8 +54,13 @@ public:
         Plain,
     };
     GameMap();
+    void init(const GameMapInitInfo& initInfo);
     void init(float ratio,int width, int depth, int height);
     static GameMap * shared();
+	int widthVoxels() const;
+	int depthVoxels() const;
+	int heightVoxels() const;
+	float blockSize() const;
     float maxHeight() const;
     void setMaxHeight(float maxHeight);
 	double getNoiseValue(float x, float y, float z);
@@ -104,6 +119,10 @@ private:
 	int mapBufferSize_Z;
 	GameMapBuffer * m_totalBuffer;
 	vec3 m_mapOffset;
+	int m_widthVoxels;
+	int m_depthVoxels;
+	int m_heightVoxels;
+	float m_blockSize;
 };
 
 } // namespace tzw

@@ -1,5 +1,5 @@
 #include "Block.h"
-#include "GameConfig.h"
+#include "EngineSrc/3D/Terrain/GameMapConfig.h"
 #include "Utility/log/Log.h"
 
 namespace tzw

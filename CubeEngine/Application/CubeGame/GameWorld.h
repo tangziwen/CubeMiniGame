@@ -6,7 +6,7 @@
 #include "EngineSrc/CubeEngine.h"
 #include "CubePlayer.h"
 #include "GameUISystem.h"
-#include "GameConfig.h"
+#include "EngineSrc/3D/Terrain/GameMapConfig.h"
 #include <memory>
 #include "EngineSrc/3D/Terrain/TerrainRuntime.h"
 namespace tzw {
@@ -32,8 +32,8 @@ class GameWorld : public EventListener
 {
 public:
     static GameWorld * shared();
-    void createWorld(Scene* scene, int blockWitdh, int depth, int height, float ratio);
-	void createWorldFromFile(Scene* scene, int blockWitdh, int depth, int height, float ratio, std::string filePath);
+    void createWorld(Scene* scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio);
+	void createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio, std::string filePath);
     vec3 worldToGrid(vec3 world);
     vec3 gridToChunk(vec3 grid);
     CubePlayer *getPlayer() const;

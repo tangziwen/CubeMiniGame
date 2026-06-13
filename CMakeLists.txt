@@ -1,166 +1,152 @@
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.12)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
+    set(CMAKE_BUILD_TYPE RelWithDebInfo CACHE STRING "Build type" FORCE)
 endif()
 
-#predefined variables
-set(SOURCES "")
-set(HEADERS "")
-set(RESOURCES "")
-set(FORMS "")
-set(INCLUDEPATH "")
-set(LIBS "")
-set(QMAKE_LFLAGS "")
-set(CMAKE_CXX_STANDARD 17)
-set(PWD "E:/Cube-Engine/CubeEngine")
-#-------------------------------------------------
-#-------------------------------------------------
-#
-#
-# Project created by QtCreator 2015-08-27T16:28:01
-# Project created by QtCreator 2015-08-27T16:28:01
-#
-#
-#-------------------------------------------------
-#-------------------------------------------------
 project(CubeEngine)
-#CONFIG += console
-#CONFIG += console
-set(TEMPLATE app)
-#OpenGL
-#OpenGL
-###Application folder BEGIN###
-include_directories(./CubeEngine)
-include_directories(./CubeEngine/Application)
-###Application folder END###
 
-####External library BEGIN####
-include_directories(./external)
-#FreeType#
-set(LIBS ${LIBS} freetype)
-include_directories(./external/FreeType)
-#GLFW 3.0#
-set(LIBS ${LIBS} glfw3)
-include_directories(./external/GLFW3/include)
-#GLEW #
-set(LIBS ${LIBS} glew32s)
-include_directories(./external/GLEW)
+# ------------------------------------------------------------------------------
+# Third-party include paths.
+# The old CMake used global include_directories(), so every source file inherited
+# these paths. Keep the list explicit and attach it to the targets that compile
+# or expose third-party headers.
+# ------------------------------------------------------------------------------
+set(CUBEENGINE_EXTERNAL_INCLUDE_DIRS
+    # Some bundled third-party sources are customized to include engine headers,
+    # for example NodeEditor includes "2D/imgui.h".
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubeEngine/EngineSrc
+    ${CMAKE_CURRENT_SOURCE_DIR}/external
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/FastNoise
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/FreeType
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/GLFW3/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/GLEW
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/vulkan
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/spirv_cross
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/glslang
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/gli
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/glm
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/rapidjson/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Python/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/pybind11
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/SoLoud/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/box2d
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Lua
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/LuaBridge
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/NodeEditor/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/NodeEditor/Source
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/NodeEditor/BlueprintUtilities/Include
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/noise
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/SOIL2
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/zip
+)
 
-#Vulkan
-set(LIBS ${LIBS} VkLayer_utils)
-set(LIBS ${LIBS} vulkan-1)
-include_directories(./external/vulkan/)
-#spirv cross
-set(LIBS ${LIBS} spirv-cross-c)
-set(LIBS ${LIBS} spirv-cross-core)
-set(LIBS ${LIBS} spirv-cross-cpp)
-set(LIBS ${LIBS} spirv-cross-glsl)
-set(LIBS ${LIBS} spirv-cross-reflect)
-set(LIBS ${LIBS} spirv-cross-util)
-set(LIBS ${LIBS} spirv-cross-c-shared)
-set(LIBS ${LIBS} spirv-cross-hlsl)
-set(LIBS ${LIBS} spirv-cross-msl)
-include_directories(./external/spirv_cross/)
-#glslang
-set(LIBS ${LIBS} glslang)
-include_directories(./external/glslang/)
+# ------------------------------------------------------------------------------
+# External library search paths (kept for the prebuilt libs used by the project)
+# Must be set before defining the executable target.
+# ------------------------------------------------------------------------------
+link_directories(
+    ${CMAKE_CURRENT_SOURCE_DIR}/CubeEngine/libVC
+    ${CMAKE_CURRENT_SOURCE_DIR}/external
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet
+)
 
-#shaderc
-set(LIBS ${LIBS} shaderc_shared)
+# ------------------------------------------------------------------------------
+# External third-party sources (compiled from source, like the old setup)
+# We use GLOB here because these are third-party files we do not maintain.
+# ------------------------------------------------------------------------------
+file(GLOB_RECURSE EXTERNAL_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/*.c
+)
 
-#gli
-include_directories(./external/gli/)
+# Do not blindly compile all Bullet sources: Bullet3OpenCL needs external OpenCL
+# headers. Build the Bullet2 modules used by the engine from source so they stay
+# ABI-compatible with the checked-in Bullet headers.
+list(FILTER EXTERNAL_SOURCES EXCLUDE REGEX "/Bullet/.*")
+file(GLOB_RECURSE BULLET_SOURCES CONFIGURE_DEPENDS
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet/LinearMath/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet/BulletCollision/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet/BulletDynamics/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet/BulletSoftBody/*.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/external/Bullet/BulletInverseDynamics/*.cpp
+)
+list(APPEND EXTERNAL_SOURCES ${BULLET_SOURCES})
 
-add_compile_definitions(WITH_OPENCV2)
+add_library(CubeEngineExternal STATIC ${EXTERNAL_SOURCES})
 
-#rapidJson
-include_directories(./external/rapidjson/include)
+target_compile_features(CubeEngineExternal PUBLIC cxx_std_17)
 
-#python
-include_directories(./external/Python/include)
-set(LIBS ${LIBS} python314)
+target_include_directories(CubeEngineExternal
+    PUBLIC
+        ${CUBEENGINE_EXTERNAL_INCLUDE_DIRS}
+)
 
-#FMOD
-set(LIBS ${LIBS} fmodex_vc)
+target_compile_definitions(CubeEngineExternal
+    PUBLIC
+        GLEW_STATIC
+)
 
-#GL
-set(LIBS ${LIBS} opengl32)
-
-#debugHelp
-set(LIBS ${LIBS} Dbghelp)
-
-#SoLoud
-set(LIBS ${LIBS} soloud_static)
-include_directories(./external/Soloud)
-
-#box2d
-set(LIBS ${LIBS} box2d)
-include_directories(./external/box2d)
-
-#bullets
-#set(LIBS ${LIBS} Bullet3Collision_vs2010_x64_debug Bullet3Common_vs2010_x64_debug Bullet3Dynamics_vs2010_x64_debug Bullet3Geometry_vs2010_x64_debug Bullet3OpenCL_clew_vs2010_x64_debug)
-#set(LIBS ${LIBS} BulletCollision_vs2010_x64_debug BulletDynamics_vs2010_x64_debug BulletInverseDynamics_vs2010_x64_debug BulletInverseDynamicsUtils_vs2010_x64_debug BulletSoftBody_vs2010_x64_debug)
-#set(LIBS ${LIBS} BussIK_vs2010_x64_debug gwen_vs2010_x64_debug LinearMath_vs2010_x64_debug)
-include_directories(./external/Bullet)
-
-
-#misc
-set(LIBS ${LIBS} zlib libpng )
-
-
-####External library END####
-
-set(_src_root_path "${CMAKE_CURRENT_SOURCE_DIR}/CubeEngine")
-
-#SIMD
-add_compile_options("/arch:AVX")
 if(MSVC)
-    add_compile_options("/utf-8")
+    target_compile_options(CubeEngineExternal PRIVATE /utf-8)
 endif()
 
+# ------------------------------------------------------------------------------
+# Engine and Application are built as separate static libraries.
+# Each subdirectory lists its own source files explicitly.
+# ------------------------------------------------------------------------------
+add_subdirectory(CubeEngine/EngineSrc)
+add_subdirectory(CubeEngine/Application)
 
+# ------------------------------------------------------------------------------
+# Main executable
+# ------------------------------------------------------------------------------
+add_executable(${CMAKE_PROJECT_NAME} CubeEngine/main.cpp)
 
-set(LINK_DIR ./CubeEngine/libVC)
-link_directories(${LINK_DIR})
-link_directories(./external)
-link_directories(./external/Bullet)
+target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_17)
 
+target_include_directories(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        ${CMAKE_CURRENT_SOURCE_DIR}/CubeEngine
+)
 
-macro(source_group_by_dir source_files)
-    set(sgbd_cur_dir ${_src_root_path})
-    foreach(sgbd_file ${${source_files}})
-        string(REGEX REPLACE ${sgbd_cur_dir}/\(.*\) \\1 sgbd_fpath ${sgbd_file})
-        string(REGEX REPLACE "\(.*\)/.*" \\1 sgbd_group_name ${sgbd_fpath})
-        string(COMPARE EQUAL ${sgbd_fpath} ${sgbd_group_name} sgbd_nogroup)
-        string(REPLACE "/" "\\" sgbd_group_name ${sgbd_group_name})
-        if(sgbd_nogroup)
-            set(sgbd_group_name "\\")
-        endif(sgbd_nogroup)
-		#message("The Group: " ${sgbd_group_name})
-        source_group(${sgbd_group_name} FILES ${sgbd_file})
-    endforeach(sgbd_file)
-endmacro(source_group_by_dir)
+# ------------------------------------------------------------------------------
+# Link engine + application + external sources; prebuilt libs are linked here
+# ------------------------------------------------------------------------------
+target_link_libraries(${CMAKE_PROJECT_NAME}
+    PRIVATE
+        CubeEngineApp
+        CubeEngineEngine
+        CubeEngineExternal
+        freetype
+        glfw3
+        glew32s
+        vulkan-1
+        spirv-cross-c
+        spirv-cross-core
+        spirv-cross-cpp
+        spirv-cross-glsl
+        spirv-cross-reflect
+        spirv-cross-util
+        spirv-cross-c-shared
+        spirv-cross-hlsl
+        spirv-cross-msl
+        glslang
+        shaderc_shared
+        python314
+        fmodex_vc
+        opengl32
+        Dbghelp
+        soloud_static
+        box2d
+        zlib
+        libpng
+)
 
-#copy res
-#define
-add_definitions(-DB3_USE_CLEW)
-
-file(GLOB_RECURSE project_headers CONFIGURE_DEPENDS ${_src_root_path}/*.h ${_src_root_path}/*.hpp)
-file(GLOB_RECURSE project_cpps CONFIGURE_DEPENDS ${_src_root_path}/*.cpp ${_src_root_path}/*.c)
-
-# Add external directory source files
-file(GLOB_RECURSE external_headers CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/external/*.h ${CMAKE_CURRENT_SOURCE_DIR}/external/*.hpp)
-file(GLOB_RECURSE external_cpps CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/external/*.cpp ${CMAKE_CURRENT_SOURCE_DIR}/external/*.c)
-
-set(all_files ${project_headers} ${project_cpps} ${external_headers} ${external_cpps})
-source_group_by_dir(all_files)
-
-set(CMAKE_INCLUDE_CURRENT_DIR ON)
-include_directories(${CMAKE_BUILD_FILES_DIRECTORY}) # fixes syntax analysis in CLion
-set(EngineSrcDir "./CubeEngine/EngineSrc/")
-INCLUDE_DIRECTORIES(${CMAKE_BUILD_FILES_DIRECTORY} ${EngineSrcDir})
-set(TARGET ${CMAKE_PROJECT_NAME})
-add_executable(${TARGET} ${all_files})
-target_link_libraries(${TARGET} ${QMAKE_LFLAGS})
-target_link_libraries(${TARGET} ${LIBS})
+# ------------------------------------------------------------------------------
+# Compiler options
+# ------------------------------------------------------------------------------
+if(MSVC)
+    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /utf-8)
+endif()

@@ -1,7 +1,7 @@
 #include "TerrainMeshRequest.h"
 
 #include "TerrainOctreeNode.h"
-#include "CubeGame/GameConfig.h"
+#include "GameMapConfig.h"
 
 namespace tzw {
 

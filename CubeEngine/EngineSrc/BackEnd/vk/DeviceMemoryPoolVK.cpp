@@ -2,7 +2,7 @@
 #include "../VkRenderBackEnd.h"
 #include "DeviceMemoryPoolVK.h"
 #define VMA_IMPLEMENTATION
-#include "External/vulkan/vk_mem_alloc.h"
+#include "vulkan/vk_mem_alloc.h"
 namespace tzw
 {
 	static VmaAllocator g_allocator;
