@@ -17,11 +17,6 @@ set(ENGINE_SOURCES
     2D/GUISystem.cpp
     2D/GUITitledFrame.cpp
     2D/GUIWindowMgr.cpp
-    2D/imgui.cpp
-    2D/imgui_demo.cpp
-    2D/imgui_draw.cpp
-    2D/imgui_widgets.cpp
-    2D/imnodes.cpp
     2D/InspectableUI.cpp
     2D/LabelNew.cpp
     2D/NodeEditor.cpp
@@ -255,14 +250,6 @@ set(ENGINE_HEADERS
     2D/GUISystem.h
     2D/GUITitledFrame.h
     2D/GUIWindowMgr.h
-    2D/imconfig.h
-    2D/imgui.h
-    2D/imgui_internal.h
-    2D/imgui_markdown.h
-    2D/imnodes.h
-    2D/imstb_rectpack.h
-    2D/imstb_textedit.h
-    2D/imstb_truetype.h
     2D/InspectableUI.h
     2D/LabelNew.h
     2D/NodeEditor.h
@@ -516,32 +503,61 @@ target_include_directories(CubeEngineEngine
         ${CMAKE_CURRENT_SOURCE_DIR}/../Application
 )
 
-# External headers used by engine implementation and engine headers
-target_include_directories(CubeEngineEngine
-    PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/FreeType
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/GLFW3/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/GLEW
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/vulkan
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/spirv_cross
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/glslang
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/gli
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/rapidjson/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/Python/include
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/Soloud
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/box2d
-        ${CMAKE_CURRENT_SOURCE_DIR}/../../external/Bullet
-)
-
 target_compile_definitions(CubeEngineEngine
     PUBLIC
         B3_USE_CLEW
         WITH_OPENCV2
+        CUBEENGINE_USE_VULKAN=$<BOOL:${CUBEENGINE_USE_VULKAN}>
+        CUBEENGINE_USE_OPENGL=$<BOOL:${CUBEENGINE_USE_OPENGL}>
+        CUBEENGINE_USE_PYTHON_SCRIPTING=$<BOOL:${CUBEENGINE_USE_PYTHON_SCRIPTING}>
+        CUBEENGINE_USE_FMOD=$<BOOL:${CUBEENGINE_USE_FMOD}>
+        CUBEENGINE_USE_SOLOUD=$<BOOL:${CUBEENGINE_USE_SOLOUD}>
 )
 
-# Engine implementation depends on external symbols (SOIL2, Lua, Bullet, etc.)
-target_link_libraries(CubeEngineEngine PUBLIC CubeEngineExternal)
+target_link_libraries(CubeEngineEngine
+    PUBLIC
+        CubeEngineImGui
+        thirdparty_header_only
+        thirdparty_freetype
+        thirdparty_spirv_cross
+        thirdparty_glslang
+        thirdparty_shaderc
+        thirdparty_box2d
+        thirdparty_zlib
+        thirdparty_libpng
+        thirdparty_lua
+        thirdparty_soil2
+        thirdparty_noise
+        thirdparty_zip
+        thirdparty_bullet
+        thirdparty_node_editor
+        thirdparty_dbghelp
+)
+
+if(CUBEENGINE_USE_VULKAN)
+    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_vulkan)
+endif()
+
+if(CUBEENGINE_USE_OPENGL)
+    target_link_libraries(CubeEngineEngine
+        PUBLIC
+            thirdparty_glfw3
+            thirdparty_glew
+            thirdparty_opengl
+    )
+endif()
+
+if(CUBEENGINE_USE_PYTHON_SCRIPTING)
+    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_python)
+endif()
+
+if(CUBEENGINE_USE_FMOD)
+    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_fmod)
+endif()
+
+if(CUBEENGINE_USE_SOLOUD)
+    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_soloud)
+endif()
 
 if(MSVC)
     target_compile_options(CubeEngineEngine PRIVATE /arch:AVX /utf-8)
