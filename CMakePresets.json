@@ -49,7 +49,16 @@
         "strategy": "external"
       },
       "cacheVariables": {
-        "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo"
+        "CMAKE_CONFIGURATION_TYPES": "Debug;RelWithDebInfo",
+        "CMAKE_C_FLAGS": "/DWIN32 /D_WINDOWS /W3",
+        "CMAKE_CXX_FLAGS": "/DWIN32 /D_WINDOWS /W3 /GR /EHsc",
+        "CMAKE_C_FLAGS_DEBUG": "/Zi /Ob0 /Od /RTC1",
+        "CMAKE_CXX_FLAGS_DEBUG": "/Zi /Ob0 /Od /RTC1",
+        "CMAKE_C_FLAGS_RELWITHDEBINFO": "/Zi /O2 /Ob2 /Oi /Ot /DNDEBUG",
+        "CMAKE_CXX_FLAGS_RELWITHDEBINFO": "/Zi /O2 /Ob2 /Oi /Ot /DNDEBUG",
+        "CMAKE_EXE_LINKER_FLAGS_RELWITHDEBINFO": "/debug /INCREMENTAL",
+        "CMAKE_SHARED_LINKER_FLAGS_RELWITHDEBINFO": "/debug /INCREMENTAL",
+        "CMAKE_MODULE_LINKER_FLAGS_RELWITHDEBINFO": "/debug /INCREMENTAL"
       }
     }
   ],

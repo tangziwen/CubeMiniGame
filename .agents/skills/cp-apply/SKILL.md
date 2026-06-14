@@ -1,6 +1,7 @@
 ---
 name: cp-apply
 description: Apply exactly one CodePlan step to the repository, with preflight idempotency checks and progress.md updates. Use when the user asks to execute, apply, continue, or implement a specific step or the next unchecked step.
+disable-model-invocation: true
 ---
 
 # CodePlan Apply
@@ -106,7 +107,22 @@ After completing a step, also infer which source directories may need CodeMap fo
 - map deleted files to their former containing source directories
 - map moved files to both the old and new containing source directories
 - suggest the corresponding CodeMap paths when they can be derived from those directories
-- do not run `cp-sync` automatically unless the user explicitly asks
+
+Then check whether the corresponding CodeMap `index.md` files already exist and whether `cp-sync` should be run. CodeMap is incrementally backfilled, so missing CodeMap files are possible.
+
+Use `cp-sync` for CodeMap updates. Do not hand-edit CodeMap from `cp-apply`; `cp-sync` owns the final decision to write or skip.
+
+Run or recommend `cp-sync` only when the completed step changes stable navigation-level information:
+
+- new feature or new module work
+- file move, feature relocation, module split, or module merge
+- file deletion, module deletion, or feature deletion
+
+Do not update CodeMap for ordinary bug fixes, crash fixes, local correctness fixes, performance tweaks, refactors that do not change module responsibility, or implementation-detail changes inside already-documented files.
+
+If a relevant CodeMap `index.md` is missing, do not create it during `cp-apply` or `cp-sync`. Report the missing path and recommend `cm-full` backfill when the change is navigation-worthy.
+
+When invoking `cp-sync`, follow its rules: inspect affected source files, keep entries directory-level, avoid implementation details, and do not compile.
 
 ## Plan Completion
 
@@ -140,6 +156,5 @@ Summarize:
 - preflight classification
 - files changed
 - progress update
-- possible follow-up `cp-sync` directories or CodeMap paths inferred from the current step
-- whether `cp-sync` was intentionally not run
+- CodeMap action: `cp-sync` updated existing CodeMap, `cp-sync` skipped because the change was not navigation-worthy, or missing CodeMap backfill was recommended
 - verification performed or skipped

@@ -1,6 +1,7 @@
 ---
 name: cp-explore
 description: Explore and clarify a prospective CodePlan before writing design.md. Use when the user has a rough requirement and wants read-only investigation, clarifying questions, constraints discovery, and a compact candidate CodePlan name before running cp-plan.
+disable-model-invocation: true
 ---
 
 # CodePlan Explore

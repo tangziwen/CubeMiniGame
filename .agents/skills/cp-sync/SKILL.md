@@ -1,6 +1,7 @@
 ---
 name: cp-sync
 description: Synchronize CodeMap documentation from a CodePlan step, a completed step, the next step, a specified stepX.md, or a file operation list. Reads the step's 文件操作清单 and updates existing CodeMap index.md files only.
+disable-model-invocation: true
 ---
 
 # CodePlan CodeMap Sync
@@ -12,6 +13,8 @@ Bridge a CodePlan step to the existing CodeMap documents under `Doc/CodeMap/`.
 `cp-sync` does **not** apply code changes. It only updates existing module `index.md` files that correspond to source directories affected by the step's `文件操作清单`.
 
 If a target CodeMap document is missing, report it and stop. Do not create it.
+
+`cp-sync` must also decide whether the completed step is worth writing to CodeMap at all. Existing CodeMap files should stay unchanged for implementation-only work.
 
 ## Required Reads
 
@@ -72,6 +75,29 @@ From each file entry, infer the affected source directory:
 
 Only source directories inside the default coverage roots (`CubeEngine/Application`, `CubeEngine/EngineSrc`) matter unless the user explicitly asks otherwise.
 
+## Sync Worthiness Gate
+
+Before editing CodeMap, classify the step by reading `design.md`, `stepX.md`, `progress.md`, and the affected source files or diffs.
+
+Update existing CodeMap only for navigation-worthy changes:
+
+- new feature or new module work
+- file move, feature relocation, module split, or module merge
+- file deletion, module deletion, or feature deletion
+
+Do not update CodeMap for:
+
+- ordinary bug fixes or crash fixes
+- local correctness fixes
+- performance optimization
+- internal refactors that do not move files or change module boundaries
+- implementation-detail changes inside already-documented files
+- formatting, comments, logging, or diagnostics-only changes
+
+If the step is not navigation-worthy, stop without editing CodeMap and report that `cp-sync` intentionally skipped the update.
+
+If the step is navigation-worthy but the relevant CodeMap `index.md` is missing, report the missing path and recommend `cm-full` backfill. Do not create missing CodeMap from `cp-sync`.
+
 ## Update Scope
 
 For each affected source directory:
@@ -83,7 +109,7 @@ For each affected source directory:
 
 ## Missing CodeMap Behavior
 
-If any target `index.md` does not exist, list every missing path and stop. Do not create missing CodeMap directories or files. The user must confirm creation in a separate turn (handled by the `codemap` skill).
+If any target `index.md` does not exist, list every missing path and stop. Do not create missing CodeMap directories or files. The user must confirm creation in a separate turn (handled by the `cm-full` skill).
 
 ## Git Diff Check
 
@@ -94,8 +120,10 @@ You may use `git diff` only to verify that no affected file was missed by the st
 End with a concise report:
 
 - Source plan and step
+- Sync worthiness classification and reason
 - Source directories mapped from the `文件操作清单`
 - CodeMap files updated
+- CodeMap update skipped, if the step was not navigation-worthy
 - CodeMap files missing (not created)
 - Any issues with the `文件操作清单`
 - Confirmation that no compilation was run

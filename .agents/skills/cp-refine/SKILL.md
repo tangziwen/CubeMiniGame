@@ -1,6 +1,7 @@
 ---
 name: cp-refine
 description: Refine a CodePlan design.md into precise step1.md through stepX.md files and progress.md. Use when the user asks to detail, refine, decompose, split, or prepare a CodePlan for implementation by weaker or cheaper models.
+disable-model-invocation: true
 ---
 
 # CodePlan Refine
@@ -103,6 +104,15 @@ Assume `cp-apply` may be run by a cheaper or weaker model. Therefore every step 
 - describe how to detect already-applied or partially-applied work
 
 Avoid vague directions such as "clean up dependencies" without naming the files and target state.
+
+Use adaptive precision instead of writing every step like a line-by-line transcript:
+
+- For difficult edits, include exact class names, function signatures, field names, enum names, config keys, and current search anchors.
+- For especially fragile edits, include an approximate line number as a secondary hint, but never make the line number the only way to find the code. Pair it with a symbol, nearby heading, or unique text snippet.
+- For lifecycle, ownership, render-pipeline, resource-management, serialization, or cross-module behavior, spell out the expected before/after relationship in more detail.
+- For simple local edits, describe the intended target state and affected symbols without excessive mechanical instructions.
+- Do not treat the lower-capability executor as unable to reason. Give enough precision to avoid guessing, but avoid verbose "click-by-click" or "change this line, then the next line" narration when the surrounding code is straightforward.
+- If a step depends on a subtle invariant, name the invariant explicitly in `需要保持不变的行为` or `禁止顺手做的事`.
 
 ## Progress File
 

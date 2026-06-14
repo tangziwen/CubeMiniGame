@@ -1,6 +1,7 @@
 ---
 name: cp-verify
 description: Verify implementation code against a specific CodePlan step, checking scope, idempotency state, changed files, completion criteria, and progress.md accuracy. Use when the user asks to review applied code, verify step implementation, audit a completed step, or check whether progress should be marked complete.
+disable-model-invocation: true
 ---
 
 # CodePlan Verify
@@ -49,7 +50,19 @@ Prioritize:
 - missing progress or verification notes
 - build/test claims that were not actually run
 
-Report CodeMap issues as findings only. Do not modify CodeMap during verification unless the user explicitly asks to run `codemap` or `cp-sync`.
+## CodeMap Verification
+
+Check whether the applied step should have affected existing CodeMap documents. CodeMap is incremental, so missing mapped `index.md` files are not automatically errors.
+
+Report a CodeMap finding when:
+
+- a navigation-worthy change added a feature/module, moved or relocated files/features/modules, split or merged modules, or deleted files/features/modules, but `cp-sync` was not run and an existing CodeMap stayed stale
+- CodeMap was updated for an ordinary bug fix, local correctness fix, performance tweak, internal refactor without file/module movement, or implementation-detail-only change
+- a relevant CodeMap `index.md` is missing and the change is navigation-worthy; phrase this as a recommendation to run `cm-full` backfill, not as a hard failure
+
+Do not report CodeMap findings for ordinary bug fixes or implementation-only edits when the module navigation remains accurate.
+
+Report CodeMap issues as findings only. Do not modify CodeMap during verification unless the user explicitly asks to run `cm-full`, `cm-light`, or `cp-sync`.
 
 ## Output
 

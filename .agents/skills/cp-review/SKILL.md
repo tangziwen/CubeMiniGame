@@ -1,6 +1,7 @@
 ---
 name: cp-review
 description: Review CodePlan documents, including explored requirements, design.md, progress.md, and step files. Use when the user asks to review a plan, design, refinement, step breakdown, progress state, or readiness before implementation.
+disable-model-invocation: true
 ---
 
 # CodePlan Review
