@@ -66,7 +66,7 @@ static void showSplash2()
 	splashSprite2->setColor(vec4(1, 1, 1, 0));
     g_GetCurrScene()->addNode(splashSprite2);
 }
-
+#pragma optimize("", off)
 void GameEntry::onStart()
 { 
 	g_binding_game_objects();

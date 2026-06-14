@@ -274,25 +274,25 @@ set(APP_HEADERS
     RLGame/RLWorld.h
 )
 
-add_library(CubeEngineApp STATIC
+add_library(CubeGame STATIC
     ${APP_SOURCES}
     ${APP_HEADERS}
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${APP_SOURCES} ${APP_HEADERS})
 
-target_compile_features(CubeEngineApp PUBLIC cxx_std_17)
+target_compile_features(CubeGame PUBLIC cxx_std_17)
 
 # Application code includes headers relative to CubeEngine/ and Application/
-target_include_directories(CubeEngineApp
+target_include_directories(CubeGame
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${CMAKE_CURRENT_SOURCE_DIR}
 )
 
 # Application depends on the engine
-target_link_libraries(CubeEngineApp PUBLIC CubeEngineEngine)
+target_link_libraries(CubeGame PUBLIC CubeEngine)
 
 if(MSVC)
-    target_compile_options(CubeEngineApp PRIVATE /utf-8)
+    target_compile_options(CubeGame PRIVATE /utf-8)
 endif()

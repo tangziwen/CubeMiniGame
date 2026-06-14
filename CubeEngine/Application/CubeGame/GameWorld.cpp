@@ -225,7 +225,7 @@ void GameWorld::loadGame(std::string worldName)
 	WorkerThreadSystem::shared()->pushMainThreadOrder(WorkerJob([&]()
 	{
 		//call Script
-		ScriptPyMgr::shared()->callFunVoid("on_game_start");
+		//ScriptPyMgr::shared()->callFunPyVoid("on_game_start");
 		m_currentState = GAME_STATE_RUNNING;
 	}));
 }

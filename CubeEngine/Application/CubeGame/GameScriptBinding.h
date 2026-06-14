@@ -1,5 +1,6 @@
 #pragma once
-namespace tzw 
+
+namespace tzw
 {
-	void g_binding_game_objects();
+void g_binding_game_objects();
 }

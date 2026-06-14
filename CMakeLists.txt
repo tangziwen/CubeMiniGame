@@ -12,7 +12,9 @@ if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
         Debug Release RelWithDebInfo MinSizeRel)
 endif()
 
-project(CubeEngine)
+project(CubeMiniGame)
+
+set(CUBE_CLIENT_TARGET CubeClient)
 
 option(CUBEENGINE_USE_VULKAN "Build Vulkan backend" ON)
 option(CUBEENGINE_USE_OPENGL "Build OpenGL backend" ON)
@@ -27,6 +29,10 @@ include(cmake/ThirdPartyTargets.cmake)
 # ------------------------------------------------------------------------------
 # Engine and Application are built as separate static libraries.
 # Each subdirectory lists its own source files explicitly.
+# Target names:
+#   CubeEngine - engine static library
+#   CubeGame   - application/game static library
+#   CubeClient - final executable
 # ------------------------------------------------------------------------------
 add_subdirectory(CubeEngine/EngineSrc)
 add_subdirectory(CubeEngine/Application)
@@ -34,13 +40,13 @@ add_subdirectory(CubeEngine/Application)
 # ------------------------------------------------------------------------------
 # Main executable
 # ------------------------------------------------------------------------------
-add_executable(${CMAKE_PROJECT_NAME} CubeEngine/main.cpp)
+add_executable(${CUBE_CLIENT_TARGET} CubeEngine/main.cpp)
 
-set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${CMAKE_PROJECT_NAME})
+set_property(DIRECTORY PROPERTY VS_STARTUP_PROJECT ${CUBE_CLIENT_TARGET})
 
-target_compile_features(${CMAKE_PROJECT_NAME} PRIVATE cxx_std_17)
+target_compile_features(${CUBE_CLIENT_TARGET} PRIVATE cxx_std_17)
 
-target_include_directories(${CMAKE_PROJECT_NAME}
+target_include_directories(${CUBE_CLIENT_TARGET}
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/CubeEngine
 )
@@ -49,14 +55,14 @@ target_include_directories(${CMAKE_PROJECT_NAME}
 # The executable only depends on the application target; engine and third-party
 # dependencies are expressed by their owning targets.
 # ------------------------------------------------------------------------------
-target_link_libraries(${CMAKE_PROJECT_NAME}
+target_link_libraries(${CUBE_CLIENT_TARGET}
     PRIVATE
-        CubeEngineApp
+        CubeGame
 )
 
 # ------------------------------------------------------------------------------
 # Compiler options
 # ------------------------------------------------------------------------------
 if(MSVC)
-    target_compile_options(${CMAKE_PROJECT_NAME} PRIVATE /utf-8)
+    target_compile_options(${CUBE_CLIENT_TARGET} PRIVATE /utf-8)
 endif()

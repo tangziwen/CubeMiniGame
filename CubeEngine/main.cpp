@@ -1,7 +1,6 @@
 #include "EngineSrc/Engine/Engine.h"
 #include "Application/GameEntry.h"
 #include <rapidjson/rapidjson.h>
-#include "Lua/lua.hpp"
 #include <iostream>
 #include <time.h>
 #include <windows.h>

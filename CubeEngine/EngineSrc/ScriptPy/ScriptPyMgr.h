@@ -2,8 +2,6 @@
 #include "Engine/EngineDef.h"
 #include <string>
 
-#include "Lua/lua.hpp"
-#include "LuaBridge/LuaBridge.h"
 #include "Utility/log/Log.h"
 #include "Python.h"
 #include "Base/TypeTraits.h"
@@ -19,14 +17,6 @@ public:
   void doScriptUIUpdate();
   void finalize();
   void raiseInputEvent(EventInfo eventInfo);
-
-  void pushArg() {}
-  template<typename T, class... Types>
-  void pushArg(T t, Types... args)
-  {
-    luabridge::push(g_lua_state, t);
-    pushArg(args...);
-  }
 
   template<typename T>
 	PyObject *  genPyObject(T t)
@@ -75,69 +65,13 @@ public:
   }
 
   template<class... Types>
-  void callFunVoid(const char* functionName, Types... args);
-
-  template<class... Types>
-  bool callFunBool(const char* functionName, Types... args);
-
-  template<class... Types>
-  int callFunInt(const char* functionName, Types... args);
-
-  template<class... Types>
   void callFunPyVoid(const char* module, const char* functionName, Types... args);
   template<class... Types>
   bool callFunPyBool(const char* module, const char* functionName, Types... args);
 
-  std::string runString(std::string theStr);
   void reload();
-  void* getState();
-  void doString(std::string);
 
-private:
-  lua_State* g_lua_state;
 };
-
-template<class... Types>
-void
-ScriptPyMgr::callFunVoid(const char* functionName, Types... args)
-{
-  lua_getglobal(g_lua_state, functionName);
-  size_t size = sizeof...(args);
-  pushArg(args...);
-  if (lua_pcall(g_lua_state, size, 0, 0) != 0) {
-    tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
-  }
-}
-
-template<class... Types>
-bool
-ScriptPyMgr::callFunBool(const char* functionName, Types... args)
-{
-  lua_getglobal(g_lua_state, functionName);
-  size_t size = sizeof...(args);
-  pushArg(args...);
-  if (lua_pcall(g_lua_state, size, 1, 0) != 0) {
-    tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
-  }
-  bool returnVal = lua_toboolean(g_lua_state, -1);
-  lua_pop(g_lua_state, 1);
-  return returnVal;
-}
-
-template<class... Types>
-int
-ScriptPyMgr::callFunInt(const char* functionName, Types... args)
-{
-  lua_getglobal(g_lua_state, functionName);
-  size_t size = sizeof...(args);
-  pushArg(args...);
-  if (lua_pcall(g_lua_state, size, 1, 0) != 0) {
-    tlogError("error : %s\n", lua_tostring(g_lua_state, -1));
-  }
-  int returnVal = lua_tointeger(g_lua_state, -1);
-  lua_pop(g_lua_state, 1);
-  return returnVal;
-}
 
 template<class... Types>
 void
@@ -148,6 +82,11 @@ ScriptPyMgr::callFunPyVoid(const char * moduleStr, const char* functionName, Typ
 	pName = PyUnicode_DecodeFSDefault(moduleStr);
 	pModule = PyImport_Import(pName);
 	Py_DECREF(pName);
+	if (pModule == nullptr)
+	{
+		PyErr_Print();
+		return;
+	}
 	pFunc = PyObject_GetAttrString(pModule, functionName);
 	size_t size = sizeof...(args);
 
@@ -163,12 +102,20 @@ ScriptPyMgr::callFunPyVoid(const char * moduleStr, const char* functionName, Typ
             Py_DECREF(pValue);
         }
         else {
-            Py_DECREF(pFunc);
-            Py_DECREF(pModule);
             PyErr_Print();
             fprintf(stderr,"Call failed\n");
         }
 	}
+	else
+	{
+		if (PyErr_Occurred())
+		{
+			PyErr_Print();
+		}
+		tlogError("Python function %s.%s is not callable\n", moduleStr, functionName);
+	}
+	Py_XDECREF(pFunc);
+	Py_DECREF(pModule);
 }
 
 template<class... Types>
@@ -180,6 +127,11 @@ ScriptPyMgr::callFunPyBool(const char * moduleStr, const char* functionName, Typ
 	pName = PyUnicode_DecodeFSDefault(moduleStr);
 	pModule = PyImport_Import(pName);
 	Py_DECREF(pName);
+	if (pModule == nullptr)
+	{
+		PyErr_Print();
+		return false;
+	}
 	pFunc = PyObject_GetAttrString(pModule, functionName);
 	size_t size = sizeof...(args);
 	float returnVal = false;
@@ -197,12 +149,20 @@ ScriptPyMgr::callFunPyBool(const char * moduleStr, const char* functionName, Typ
             Py_DECREF(pValue);
         }
         else {
-            Py_DECREF(pFunc);
-            Py_DECREF(pModule);
             PyErr_Print();
             fprintf(stderr,"Call failed\n");
         }
 	}
+	else
+	{
+		if (PyErr_Occurred())
+		{
+			PyErr_Print();
+		}
+		tlogError("Python function %s.%s is not callable\n", moduleStr, functionName);
+	}
+	Py_XDECREF(pFunc);
+	Py_DECREF(pModule);
 	return returnVal;
 }
 	

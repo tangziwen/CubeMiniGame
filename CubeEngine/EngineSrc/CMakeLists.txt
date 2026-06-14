@@ -453,7 +453,6 @@ set(ENGINE_HEADERS
     Scene/Scene.h
     Scene/SceneCuller.h
     Scene/SceneMgr.h
-    ScriptPy/ScriptBinding.h
     ScriptPy/ScriptBindMacro.h
     ScriptPy/ScriptPyMgr.h
     ScriptPy/ScriptUI.h
@@ -483,27 +482,27 @@ set(ENGINE_HEADERS
     Utility/string/Tstring.h
 )
 
-add_library(CubeEngineEngine STATIC
+add_library(CubeEngine STATIC
     ${ENGINE_SOURCES}
     ${ENGINE_HEADERS}
 )
 
 source_group(TREE ${CMAKE_CURRENT_SOURCE_DIR} FILES ${ENGINE_SOURCES} ${ENGINE_HEADERS})
 
-target_compile_features(CubeEngineEngine PUBLIC cxx_std_17)
+target_compile_features(CubeEngine PUBLIC cxx_std_17)
 
 # Public because engine headers are included as "EngineSrc/..." / "Engine/..."
 # from both inside the engine and from Application/main.cpp.
 # Application/ remains exposed for older non-terrain EngineSrc files that still
 # include CubeGame headers.
-target_include_directories(CubeEngineEngine
+target_include_directories(CubeEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${CMAKE_CURRENT_SOURCE_DIR}
         ${CMAKE_CURRENT_SOURCE_DIR}/../Application
 )
 
-target_compile_definitions(CubeEngineEngine
+target_compile_definitions(CubeEngine
     PUBLIC
         B3_USE_CLEW
         WITH_OPENCV2
@@ -514,7 +513,7 @@ target_compile_definitions(CubeEngineEngine
         CUBEENGINE_USE_SOLOUD=$<BOOL:${CUBEENGINE_USE_SOLOUD}>
 )
 
-target_link_libraries(CubeEngineEngine
+target_link_libraries(CubeEngine
     PUBLIC
         CubeEngineImGui
         thirdparty_header_only
@@ -525,7 +524,6 @@ target_link_libraries(CubeEngineEngine
         thirdparty_box2d
         thirdparty_zlib
         thirdparty_libpng
-        thirdparty_lua
         thirdparty_soil2
         thirdparty_noise
         thirdparty_zip
@@ -535,11 +533,11 @@ target_link_libraries(CubeEngineEngine
 )
 
 if(CUBEENGINE_USE_VULKAN)
-    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_vulkan)
+    target_link_libraries(CubeEngine PUBLIC thirdparty_vulkan)
 endif()
 
 if(CUBEENGINE_USE_OPENGL)
-    target_link_libraries(CubeEngineEngine
+    target_link_libraries(CubeEngine
         PUBLIC
             thirdparty_glfw3
             thirdparty_glew
@@ -548,17 +546,17 @@ if(CUBEENGINE_USE_OPENGL)
 endif()
 
 if(CUBEENGINE_USE_PYTHON_SCRIPTING)
-    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_python)
+    target_link_libraries(CubeEngine PUBLIC thirdparty_python)
 endif()
 
 if(CUBEENGINE_USE_FMOD)
-    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_fmod)
+    target_link_libraries(CubeEngine PUBLIC thirdparty_fmod)
 endif()
 
 if(CUBEENGINE_USE_SOLOUD)
-    target_link_libraries(CubeEngineEngine PUBLIC thirdparty_soloud)
+    target_link_libraries(CubeEngine PUBLIC thirdparty_soloud)
 endif()
 
 if(MSVC)
-    target_compile_options(CubeEngineEngine PRIVATE /arch:AVX /utf-8)
+    target_compile_options(CubeEngine PRIVATE /arch:AVX /utf-8)
 endif()

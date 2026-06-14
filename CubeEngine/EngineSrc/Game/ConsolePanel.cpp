@@ -181,10 +181,6 @@ namespace tzw {
 		{
 			ScriptPyMgr::shared()->callFunPyVoid("tzw", "tzw_on_gm_command", command_line + 1);
 		}
-		else
-		{
-			ScriptPyMgr::shared()->doString(command_line);
-		}
 	}
 
 	int ConsolePanel::TextEditCallbackStub(ImGuiTextEditCallbackData* data) // In C++11 you are better off using lambdas for this sort of forwarding callbacks
