@@ -63,7 +63,7 @@ The `File Operations` section is a hard requirement:
 
 ## Detail Standard
 
-Assume `cp-apply` may be run by a cheaper or weaker model. Every step must be precise enough to avoid guessing:
+Assume `cp-apply` may be run by a cheaper or weaker model. Each step must be precise enough to avoid guessing:
 
 - Name all files to edit, add, delete, or move.
 - Specify preconditions and expected existing symbols.
@@ -75,11 +75,11 @@ Assume `cp-apply` may be run by a cheaper or weaker model. Every step must be pr
 
 Use adaptive precision:
 
-- For difficult edits, include exact class names, function signatures, field names, enum names, config keys, and current search anchors.
-- For fragile edits, include an approximate line number only as a secondary hint paired with a symbol, nearby heading, or unique text snippet.
+- For difficult edits, include exact symbols, config keys, and search anchors.
+- For fragile edits, use approximate line numbers only as secondary hints paired with symbols or unique text.
 - For lifecycle, ownership, render-pipeline, resource-management, serialization, or cross-module behavior, spell out the before/after relationship.
-- For simple local edits, describe the intended target state and affected symbols without excessive mechanical narration.
-- If a step depends on a subtle invariant, name the invariant explicitly in `Preserved Behavior` or `Out of Scope`.
+- For simple local edits, describe the target state and affected symbols without mechanical narration.
+- Put subtle invariants in `Preserved Behavior` or `Out of Scope`.
 
 ## Preflight State
 
@@ -95,11 +95,11 @@ Use the `File Operations`, `Preconditions`, `Completion Criteria`, and `Idempote
 Minimum checks:
 
 - edited files exist
-- added files do not already exist unless the step says they may
+- added files do not already exist unless allowed
 - deleted files still exist unless already removed by this step
-- moved files are treated as source deletion plus destination addition
-- expected symbols, CMake targets, functions, classes, or includes are present or absent as described by the step
-- `progress.md` checkbox state matches observed repository state
+- moved files are checked as source deletion plus destination addition
+- expected symbols, CMake targets, functions, classes, or includes match the step
+- `progress.md` checkbox state matches repository state
 
 If work appears fully applied but unchecked, do not edit code. Update `progress.md` only if the user asked to reconcile status; otherwise report the mismatch.
 
@@ -126,7 +126,7 @@ None yet.
 - Do not compile or build unless the user explicitly asks.
 ```
 
-After completing a step, update `progress.md`:
+After completing a step, update `progress.md` with the checked status and a concise completion summary:
 
 ```md
 ## Step Status
