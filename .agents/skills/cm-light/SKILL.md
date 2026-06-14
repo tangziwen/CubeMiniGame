@@ -6,6 +6,10 @@ disable-model-invocation: true
 
 # CodeMap Light
 
+## Shared Contract
+
+Before acting, read `../_shared/codemap/core.md`.
+
 ## Purpose
 
 Synchronize existing CodeMap documents from the current conversation's file changes. This is the lightweight companion to `cm-full`.
@@ -19,7 +23,7 @@ Do not refresh directories broadly, backfill missing CodeMaps, or generate a Cod
 Before deciding anything, read:
 
 1. `AGENTS.md`
-2. `Doc/CodeMap/README.md`
+2. `../_shared/codemap/core.md`
 3. the current changed-file list from conversation context and, when useful, `git diff --name-only` or `git status --short`
 4. affected source files that are candidates for CodeMap updates
 5. corresponding existing CodeMap `index.md` files, if present
@@ -72,7 +76,7 @@ If the change is not navigation-worthy, recommend skipping CodeMap and stop.
 
 - Update existing `Doc/CodeMap/.../index.md` files only.
 - Do not create missing CodeMap directories or `index.md` files; recommend `cm-full` backfill instead.
-- Follow `Doc/CodeMap/README.md` mapping and document-shape rules.
+- Follow the shared CodeMap contract's mapping and document-shape rules.
 - Read affected source files before changing file bullets.
 - Reuse child `index.md` files for parent submodule summaries when available.
 - Keep descriptions directory-level and avoid implementation details.

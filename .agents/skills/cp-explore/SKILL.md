@@ -6,6 +6,10 @@ disable-model-invocation: true
 
 # CodePlan Explore
 
+## Shared Contract
+
+Before acting, read `../_shared/codeplan/core.md`.
+
 ## Purpose
 
 Clarify the user's intent before creating or updating a CodePlan. This is the read-only "grill me" phase.

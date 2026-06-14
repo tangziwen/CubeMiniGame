@@ -6,6 +6,13 @@ disable-model-invocation: true
 
 # CodePlan Apply
 
+## Shared Contract
+
+Before acting, read:
+
+1. `../_shared/codeplan/core.md`
+2. `../_shared/codeplan/step-contract.md`
+
 ## Purpose
 
 Implement exactly one `stepX.md` at a time. Run preflight checks first so repeated or partially-applied steps are detected before editing.
@@ -21,50 +28,9 @@ Before editing, read:
 
 Read other step files only when the current step explicitly depends on them.
 
-## Plan Selection
-
-When `CodePlan/` contains multiple plan directories, resolve the target before reading or editing:
-
-- If the user provides a directory name that exactly matches `CodePlan/<Name>`, use it directly.
-- If the user says `latest` or `最新`, select the plan whose `design.md`, `progress.md`, or `step*.md` has the newest modification time.
-- If there is only one plan directory, use it unless the user's request conflicts with it.
-- If multiple plans exist and the target is ambiguous, ask the user to choose. Always include `latest/最新` as one option and explain which plan it currently resolves to.
-
-## Step Selection
-
-- If the user names `stepN`, use that step.
-- Otherwise use the first unchecked item in `progress.md`.
-- If the step is already checked, stop and ask whether to verify, rerun, or choose another step.
-- If every step in `progress.md` is already checked, the plan is fully applied. Stop and explicitly tell the user that all tasks for this CodePlan are complete (`当前 CodePlan 的所有任务已经完成`). Ask for their intent, for example:
-  - Does something look wrong and they want to rerun or verify a specific step?
-  - Do they want to switch to another CodePlan?
-  - Do they want to run whole-plan verification?
-  - Do they want to mark the plan as incomplete and continue editing?
-  - Do not silently proceed or auto-pick another plan.
-
 ## Preflight Idempotency
 
-Before editing, classify the step state as one of:
-
-- `未开始`
-- `部分应用`
-- `已完成`
-- `冲突`
-
-Use the `文件操作清单`, `前置校验`, `完成判定`, and `部分应用/重复应用处理` sections from `stepX.md`.
-
-Minimum checks:
-
-- edited files exist
-- added files do not already exist unless the step says they may
-- deleted files still exist unless already removed by this step
-- moved files are treated as source deletion plus destination addition
-- expected symbols, CMake targets, functions, classes, or includes are present or absent as described by the step
-- `progress.md` checkbox state matches observed repository state
-
-If the work appears fully applied but unchecked, do not edit code. Update `progress.md` only if the user asked you to reconcile status, otherwise report the mismatch.
-
-If the work is partially applied, explain the observed partial state before continuing. Ask for confirmation when continuing could overwrite uncertain user work.
+Use the shared `step-contract.md` preflight state rules before editing.
 
 ## Apply Rules
 
@@ -77,52 +43,7 @@ If the work is partially applied, explain the observed partial state before cont
 
 ## Progress Updates
 
-After completing a step, update `progress.md`:
-
-```md
-## Step 状态
-
-- [x] Step N: <title>
-
-## 已完成摘要
-
-### Step N
-
-完成时间：YYYY-MM-DD
-主要改动：
-- ...
-
-验证状态：
-- 未编译；按项目规则避免自行编译。
-
-遗留问题：
-- ...
-```
-
-Leave the step unchecked if blocked or only partially applied. Record the blocker under `当前阻塞/注意事项`.
-
-After completing a step, also infer which source directories may need CodeMap follow-up from the step's `文件操作清单`:
-
-- map edited and added files to their containing source directories
-- map deleted files to their former containing source directories
-- map moved files to both the old and new containing source directories
-- suggest the corresponding CodeMap paths when they can be derived from those directories
-
-Then check whether the corresponding CodeMap `index.md` files already exist and whether `cp-sync` should be run. CodeMap is incrementally backfilled, so missing CodeMap files are possible.
-
-Use `cp-sync` for CodeMap updates. Do not hand-edit CodeMap from `cp-apply`; `cp-sync` owns the final decision to write or skip.
-
-Run or recommend `cp-sync` only when the completed step changes stable navigation-level information:
-
-- new feature or new module work
-- file move, feature relocation, module split, or module merge
-- file deletion, module deletion, or feature deletion
-
-Do not update CodeMap for ordinary bug fixes, crash fixes, local correctness fixes, performance tweaks, refactors that do not change module responsibility, or implementation-detail changes inside already-documented files.
-
-If a relevant CodeMap `index.md` is missing, do not create it during `cp-apply` or `cp-sync`. Report the missing path and recommend `cm-full` backfill when the change is navigation-worthy.
-
-When invoking `cp-sync`, follow its rules: inspect affected source files, keep entries directory-level, avoid implementation details, and do not compile.
+Use the shared `step-contract.md` progress update shape.
 
 ## Plan Completion
 
@@ -131,8 +52,12 @@ After marking the current step complete, check whether it is the last unchecked 
 If this was the final step:
 
 1. State explicitly in the final response that the entire CodePlan is now complete (`CodePlan/<PlanName> 的所有步骤已完成`).
-2. Ask the user whether they want to run verification for the whole plan (`是否需要对当前 CodePlan 进行校验？`).
-3. Do not start any verification on your own; wait for the user's answer.
+2. Based only on the `File Operations` entries in the plan's `stepX.md` files, tell the user whether the completed plan may need a later `cp-sync` pass.
+3. Treat `cp-sync` as only possibly needed when the step file changes suggest navigation-level changes: new source files or modules, deleted source files or modules, moved files, feature relocation, module split, or module merge.
+4. Do not read existing CodeMap files and do not judge whether CodeMap is stale from `cp-apply`.
+5. Phrase the `cp-sync` note explicitly as a possibility, not a decision, for example: `Based on the step File Operations, this CodePlan may need a later cp-sync pass to update CodeMap.`
+6. Ask the user whether they want to run verification for the whole plan (`是否需要对当前 CodePlan 进行校验？`).
+7. Do not start verification or `cp-sync` on your own; wait for the user's answer.
 
 If this was not the final step, continue normally and do not ask for whole-plan verification.
 
@@ -156,5 +81,5 @@ Summarize:
 - preflight classification
 - files changed
 - progress update
-- CodeMap action: `cp-sync` updated existing CodeMap, `cp-sync` skipped because the change was not navigation-worthy, or missing CodeMap backfill was recommended
+- final-plan `cp-sync` possibility note, only when this step completed the whole progress
 - verification performed or skipped

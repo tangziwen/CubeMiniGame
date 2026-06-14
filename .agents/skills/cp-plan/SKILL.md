@@ -6,20 +6,15 @@ disable-model-invocation: true
 
 # CodePlan Plan
 
+## Shared Contract
+
+Before acting, read `../_shared/codeplan/core.md`.
+
 ## Purpose
 
 Create or update `CodePlan/<PlanName>/design.md`. Capture durable requirements, constraints, current state, target architecture, coarse phases, risks, and validation strategy.
 
 Do not create `stepX.md` files or implement code while planning unless the user explicitly changes the task.
-
-## Plan Selection
-
-When `CodePlan/` contains multiple plan directories, resolve the target before writing:
-
-- If the user provides a directory name that exactly matches `CodePlan/<Name>`, use it directly.
-- If the user says `latest` or `最新`, select the plan whose `design.md`, `progress.md`, or `step*.md` has the newest modification time.
-- If the request clearly creates a new plan and no exact existing name was given, choose a new compact PascalCase name.
-- If the request might update an existing plan and the target is ambiguous, ask the user to choose. Always include `latest/最新` as one option and explain which plan it currently resolves to.
 
 ## Idempotency
 
@@ -31,8 +26,6 @@ Before updating an existing `design.md`:
 2. Ask what the user wants to change, clarify, or extend.
 3. Preserve stable design decisions unless the user explicitly replaces them.
 4. If `step*.md` already exists, warn that updating `design.md` may make the steps stale and should be followed by `cp-refine`.
-
-When the user asks to plan `latest` or `最新`, treat it as updating an existing plan and ask what area should be refined unless the requested edit is already specific.
 
 ## Readiness Gate
 
@@ -55,35 +48,6 @@ If the request is not ready:
 3. Recommend using `cp-explore` when the user needs discovery before planning.
 4. Offer a compact candidate CodePlan name only if enough direction is already visible.
 
-## Scope Gate
-
-A CodePlan should describe a work package roughly equivalent to one programmer's focused 3-day to 1-week task. Before writing `design.md`, estimate the plan size and reject oversized plans.
-
-Estimate scope primarily by expected file count:
-
-- `small`: 1-10 files
-- `medium`: 11-30 files
-- `large`: 31-50 files
-- `too large`: more than 50 files
-
-Then adjust the estimate with a fuzzy change-size judgment:
-
-- `small change`: local functions, a few fields, configuration, or one behavior point
-- `medium change`: several modules, new interfaces, or non-trivial call-chain adjustments
-- `large change`: architecture boundaries, object lifetimes, resource management, render pipeline behavior, or core data structures
-- `too large change`: rewriting a subsystem, replacing a core technology stack, migrating language or graphics API, or broad add/delete/move operations
-
-Line count is only an auxiliary signal. If it cannot be estimated reliably, do not invent an exact number; use the file-count estimate plus the fuzzy change-size category instead.
-
-Do not create or update `design.md` as a single plan if any of these are likely true:
-
-- more than 50 files will be added, edited, deleted, or moved
-- more than 10 refined implementation steps would be needed
-- the work is clearly a `too large change`
-- the work is likely to exceed roughly 1000 changed lines, when that can be reasonably inferred
-
-When the scope gate fails, reply that the requested plan is too large for one CodePlan and propose a concrete split into smaller CodePlans. Prefer splits by stable architecture boundaries, such as investigation, interface isolation, one subsystem migration, compatibility cleanup, and final verification.
-
 ## Workflow
 
 1. Read project instructions, especially `AGENTS.md`.
@@ -91,42 +55,42 @@ When the scope gate fails, reply that the requested plan is too large for one Co
 3. Inspect related existing CodePlan documents for style and continuity.
 4. Gather requirements, constraints, open questions, and relevant repository facts.
 5. Apply the readiness gate and stop if the request is not clarified enough.
-6. Apply the scope gate and stop with split suggestions if the plan is too large.
+6. Apply the shared scope gate from `core.md` and stop with split suggestions if the plan is too large.
 7. Create or update `design.md`.
 8. Keep implementation details at architecture level.
 9. Leave file-by-file execution details for `cp-refine`.
 
 ## Design Shape
 
-Use this shape by default:
+Use this exact English heading shape by default:
 
 ```md
 # <Readable Plan Title>
 
-## 需求
+## Requirements
 
-## 注意事项
+## Notes
 
-## 当前状态
+## Current State
 
-## 核心问题
+## Core Problem
 
-## 目标架构
+## Target Architecture
 
-## 建议总体路线
+## Overall Route
 
-## 阶段划分
+## Phases
 
-## 关键风险
+## Key Risks
 
-## 验证策略
+## Validation Strategy
 
-## 当前验证状态
+## Validation Status
 ```
 
 Coarse architecture-level phases belong in `design.md`. Detailed file operations belong in `stepX.md`.
 
-The last phase in `阶段划分` must always be a validation phase. By default, validation is text-level or static verification: review the design against requirements and non-goals, inspect code symbols and paths, verify planned file scope, and check that later `stepX.md` files stay within the plan. Do not make compilation the default validation method unless the user explicitly asks for it.
+The last phase in `Phases` must always be a validation phase. By default, validation is text-level or static verification: review the design against requirements and non-goals, inspect code symbols and paths, verify planned file scope, and check that later `stepX.md` files stay within the plan. Do not make compilation the default validation method unless the user explicitly asks for it.
 
 ## Context Budget
 
@@ -138,11 +102,4 @@ Write `design.md` so implementation agents only need:
 
 Avoid requiring all step files to understand the overall design.
 
-## Project Conventions
-
-For this repository:
-
-- Use UTF-8 for markdown files.
-- Preserve Chinese wording when it is clearer.
-- Remember this is a single-person C++ engine project and Vulkan is the default renderer.
-- Do not instruct agents to compile unless the user explicitly asks.
+Do not instruct agents to compile unless the user explicitly asks.

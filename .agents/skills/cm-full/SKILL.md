@@ -6,6 +6,10 @@ disable-model-invocation: true
 
 # CodeMap Full
 
+## Shared Contract
+
+Before acting, read `../_shared/codemap/core.md`.
+
 ## Purpose
 
 Maintain `Doc/CodeMap/` as a source-module navigation index.
@@ -27,11 +31,11 @@ Do not compile or build the project.
 Before acting, read:
 
 1. `AGENTS.md`
-2. `Doc/CodeMap/README.md`
+2. `../_shared/codemap/core.md`
 3. the requested source files, directories, diff, or CodePlan step
 4. existing mapped `Doc/CodeMap/.../index.md` files when they exist
 
-If `Doc/CodeMap/README.md` is missing, report it and ask whether to create it before continuing.
+`Doc/CodeMap/README.md` is only a short entry point; do not treat it as the rule authority.
 
 ## Scope
 
@@ -91,7 +95,7 @@ Make clear that confirmation will create subordinate module documents, not just 
 
 ## Description Rules
 
-Follow `Doc/CodeMap/README.md` for path mapping, document shape, file rules, ignored paths, and update policy.
+Follow the shared CodeMap contract for path mapping, document shape, file rules, ignored paths, and update policy.
 
 Additional writing rules:
 
@@ -108,7 +112,7 @@ Accept any of these:
 - source directory path
 - source file list
 - diff or patch
-- CodePlan step `文件操作清单`
+- CodePlan step `File Operations`
 
 Infer affected source directories from the input and map them to `Doc/CodeMap/CM_.../index.md`.
 
