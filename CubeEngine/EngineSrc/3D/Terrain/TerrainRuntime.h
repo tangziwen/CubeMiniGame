@@ -31,6 +31,13 @@ public:
 	TerrainDrawableSet* drawableSet() const;
 	TerrainEditSystem* editSystem() const;
 	bool isActive() const;
+	void setDebugLodVertexColorEnabled(bool enabled);
+	bool isDebugLodVertexColorEnabled() const;
+	void setLodViewerPositionFreezeEnabled(bool enabled);
+	void freezeLodViewerPosition(const vec3& viewerPosition);
+	void unfreezeLodViewerPosition();
+	bool isLodViewerPositionFrozen() const;
+	const vec3& frozenLodViewerPosition() const;
 
 private:
 	std::unique_ptr<TerrainOctree> m_octree;
@@ -40,6 +47,10 @@ private:
 	std::unique_ptr<TerrainDrawableSet> m_drawableSet;
 	std::unique_ptr<TerrainEditSystem> m_editSystem;
 	int m_frameIndex = 0;
+	bool m_debugLodVertexColorEnabled = true;
+	bool m_lodViewerPositionFrozen = false;
+	bool m_hasFrozenLodViewerPosition = false;
+	vec3 m_frozenLodViewerPosition;
 };
 
 } // namespace tzw

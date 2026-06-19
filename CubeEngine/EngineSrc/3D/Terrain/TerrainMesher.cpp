@@ -37,6 +37,8 @@ TerrainMeshBuildResult TerrainMesher::build(const TerrainMeshRequest& request,
 	config.domainSize = request.domainSize;
 	config.mapOffset = request.mapOffset;
 	config.blockSize = request.blockSize;
+	config.debugLodVertexColorEnabled = m_debugLodVertexColorEnabled;
+	config.debugLodPower = request.sampleLodPower;
 
 	SurfaceNets::shared()->generate(basePoint, result.mesh.get(),
 		sampleBuffer.voxels.data(), config);
@@ -49,6 +51,16 @@ TerrainMeshBuildResult TerrainMesher::build(const TerrainMeshRequest& request,
 		result.worldBounds = result.mesh->getAabb();
 	}
 	return result;
+}
+
+void TerrainMesher::setDebugLodVertexColorEnabled(bool enabled)
+{
+	m_debugLodVertexColorEnabled = enabled;
+}
+
+bool TerrainMesher::isDebugLodVertexColorEnabled() const
+{
+	return m_debugLodVertexColorEnabled;
 }
 
 } // namespace tzw

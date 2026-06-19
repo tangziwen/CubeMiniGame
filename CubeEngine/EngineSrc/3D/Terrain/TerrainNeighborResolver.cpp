@@ -2,6 +2,77 @@
 
 namespace tzw {
 
+namespace
+{
+	int component(const TerrainInt3& value, int axis)
+	{
+		switch (axis)
+		{
+		case 0:
+			return value.x;
+		case 1:
+			return value.y;
+		default:
+			return value.z;
+		}
+	}
+
+	bool rangesOverlapHalfOpen(int minA, int maxA, int minB, int maxB)
+	{
+		return minA < maxB && minB < maxA;
+	}
+
+	void faceTangentialAxes(TerrainNeighborFace face, int& tangent0, int& tangent1)
+	{
+		const int axis = static_cast<int>(face) / 2;
+		tangent0 = (axis + 1) % 3;
+		tangent1 = (axis + 2) % 3;
+	}
+
+	uint8_t finerCoverageMaskForFace(const TerrainRegion& selfRegion,
+		const TerrainRegion& finerRegion, TerrainNeighborFace face)
+	{
+		const TerrainInt3 selfMax = selfRegion.cellMaxExclusive();
+		const TerrainInt3 finerMax = finerRegion.cellMaxExclusive();
+		int tangent0 = 0;
+		int tangent1 = 0;
+		faceTangentialAxes(face, tangent0, tangent1);
+
+		const int min0 = component(selfRegion.voxelMin, tangent0);
+		const int max0 = component(selfMax, tangent0);
+		const int mid0 = (min0 + max0) / 2;
+		const int min1 = component(selfRegion.voxelMin, tangent1);
+		const int max1 = component(selfMax, tangent1);
+		const int mid1 = (min1 + max1) / 2;
+
+		const int finerMin0 = component(finerRegion.voxelMin, tangent0);
+		const int finerMax0 = component(finerMax, tangent0);
+		const int finerMin1 = component(finerRegion.voxelMin, tangent1);
+		const int finerMax1 = component(finerMax, tangent1);
+
+		uint8_t mask = 0;
+		for (int half1 = 0; half1 < 2; ++half1)
+		{
+			const int halfMin1 = half1 == 0 ? min1 : mid1;
+			const int halfMax1 = half1 == 0 ? mid1 : max1;
+			if (!rangesOverlapHalfOpen(halfMin1, halfMax1, finerMin1, finerMax1))
+			{
+				continue;
+			}
+			for (int half0 = 0; half0 < 2; ++half0)
+			{
+				const int halfMin0 = half0 == 0 ? min0 : mid0;
+				const int halfMax0 = half0 == 0 ? mid0 : max0;
+				if (rangesOverlapHalfOpen(halfMin0, halfMax0, finerMin0, finerMax0))
+				{
+					mask |= static_cast<uint8_t>(1u << (half0 + half1 * 2));
+				}
+			}
+		}
+		return mask;
+	}
+}
+
 TerrainNeighborRelation TerrainNeighborResolver::findNeighbor(const TerrainOctree& octree,
 	const TerrainRenderSet& renderSet, const TerrainOctreeNode& node,
 	TerrainNeighborFace face) const
@@ -27,6 +98,14 @@ TerrainNeighborRelation TerrainNeighborResolver::findNeighbor(const TerrainOctre
 		relation.levelDelta = finerNeighbors.front().levelDelta;
 		relation.isFiner = true;
 		relation.finerNeighborCount = static_cast<int>(finerNeighbors.size());
+		for (const TerrainNeighborRelation& finerNeighbor : finerNeighbors)
+		{
+			if (finerNeighbor.node)
+			{
+				relation.finerCoverageMask |= finerCoverageMaskForFace(
+					node.region(), finerNeighbor.node->region(), face);
+			}
+		}
 		return relation;
 	}
 

@@ -3,6 +3,7 @@
 #include "TerrainOctree.h"
 
 #include <array>
+#include <cstdint>
 #include <vector>
 
 namespace tzw {
@@ -30,6 +31,7 @@ struct TerrainNeighborRelation
 	bool isFiner = false;
 	bool isBoundary = false;
 	int finerNeighborCount = 0;
+	uint8_t finerCoverageMask = 0;
 };
 
 class TerrainNeighborResolver

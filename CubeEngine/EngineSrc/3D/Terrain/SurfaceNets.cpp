@@ -78,6 +78,25 @@ namespace {
 		return vertex;
 	}
 
+	vec4 debugLodColor(int lodPower)
+	{
+		switch (lodPower)
+		{
+		case 0:
+			return vec4(0, 1, 0, 1);
+		case 1:
+			return vec4(1, 0, 0, 1);
+		case 2:
+			return vec4(0, 0, 1, 1);
+		case 3:
+			return vec4(1, 0, 1, 1);
+		case 4:
+			return vec4(0, 1, 1, 1);
+		default:
+			return vec4(1, 1, 1, 1);
+		}
+	}
+
 	struct DualVertexResult
 	{
 		bool exists = false;
@@ -293,6 +312,153 @@ namespace {
 		return config.seams.faces[faceIndex].mode == TerrainMeshSeamMode::StitchToCoarser;
 	}
 
+	bool edgeTouchesFace(int edgeAxis, const int cell[3], int faceIndex, int minCell, int maxCell)
+	{
+		const FaceInfo face = getFaceInfo(faceIndex);
+		if (edgeAxis == face.axis)
+		{
+			return face.side < 0
+				? cell[face.axis] == minCell - 1
+				: cell[face.axis] == maxCell - 1;
+		}
+		return face.side < 0
+			? cell[face.axis] == minCell
+			: cell[face.axis] == maxCell;
+	}
+
+	bool rangesOverlap(int minA, int maxA, int minB, int maxB)
+	{
+		return minA < maxB && minB < maxA;
+	}
+
+	struct FaceAxisRange
+	{
+		int minValue = 0;
+		int maxValue = 0;
+		bool isPoint = false;
+	};
+
+	void edgeFaceRange(int edgeAxis, const int cell[3], int tangentAxis,
+		FaceAxisRange& range)
+	{
+		if (edgeAxis == tangentAxis)
+		{
+			range.minValue = cell[tangentAxis];
+			range.maxValue = cell[tangentAxis] + 1;
+			range.isPoint = false;
+		}
+		else
+		{
+			range.minValue = cell[tangentAxis];
+			range.maxValue = cell[tangentAxis];
+			range.isPoint = true;
+		}
+	}
+
+	uint8_t halfMaskForRange(const FaceAxisRange& range, int minCell, int maxCell)
+	{
+		const int mid = (minCell + maxCell) / 2;
+		if (range.isPoint)
+		{
+			const int value = std::clamp(range.minValue, minCell, maxCell);
+			if (value == mid)
+			{
+				return 0x3;
+			}
+			return value < mid ? 0x1 : 0x2;
+		}
+
+		int rangeMin = std::max(range.minValue, minCell);
+		int rangeMax = std::min(range.maxValue, maxCell);
+		if (rangeMin >= rangeMax)
+		{
+			const int value = std::clamp(range.minValue, minCell, maxCell);
+			return value < mid ? 0x1 : 0x2;
+		}
+
+		uint8_t mask = 0;
+		if (rangesOverlap(rangeMin, rangeMax, minCell, mid))
+		{
+			mask |= 0x1;
+		}
+		if (rangesOverlap(rangeMin, rangeMax, mid, maxCell))
+		{
+			mask |= 0x2;
+		}
+		return mask;
+	}
+
+	uint8_t edgeCoverageMaskOnFace(int edgeAxis, const int cell[3],
+		int faceIndex, int minCell, int maxCell)
+	{
+		const FaceInfo face = getFaceInfo(faceIndex);
+		FaceAxisRange range0;
+		FaceAxisRange range1;
+		edgeFaceRange(edgeAxis, cell, face.tangential[0], range0);
+		edgeFaceRange(edgeAxis, cell, face.tangential[1], range1);
+		const uint8_t mask0 = halfMaskForRange(range0, minCell, maxCell);
+		const uint8_t mask1 = halfMaskForRange(range1, minCell, maxCell);
+		uint8_t mask = 0;
+		for (int half1 = 0; half1 < 2; ++half1)
+		{
+			if ((mask1 & (1u << half1)) == 0)
+			{
+				continue;
+			}
+			for (int half0 = 0; half0 < 2; ++half0)
+			{
+				if ((mask0 & (1u << half0)) != 0)
+				{
+					mask |= static_cast<uint8_t>(1u << (half0 + half1 * 2));
+				}
+			}
+		}
+		return mask;
+	}
+
+	bool shouldSuppressEdgeForFiner(const SurfaceNetsGenerateConfig& config,
+		int edgeAxis, const int cell[3])
+	{
+		const int minCell = config.minPadding;
+		const int maxCell = minCell + config.cellCount;
+		for (int faceIndex = 0; faceIndex < 6; ++faceIndex)
+		{
+			if (config.seams.faces[faceIndex].mode != TerrainMeshSeamMode::SuppressForFiner)
+			{
+				continue;
+			}
+			if (!edgeTouchesFace(edgeAxis, cell, faceIndex, minCell, maxCell))
+			{
+				continue;
+			}
+			const uint8_t coverageMask = config.seams.faces[faceIndex].finerCoverageMask;
+			const uint8_t edgeMask = edgeCoverageMaskOnFace(edgeAxis, cell, faceIndex, minCell, maxCell);
+			if ((coverageMask & edgeMask) != 0)
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
+	bool isOnStitchFace(const SurfaceNetsGenerateConfig& config, const int cell[3])
+	{
+		const int minCellExt = config.minPadding - 1;
+		const int maxCell = config.minPadding + config.cellCount;
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			if (cell[axis] == minCellExt && isStitchFace(config, axis * 2))
+			{
+				return true;
+			}
+			if (cell[axis] == maxCell && isStitchFace(config, axis * 2 + 1))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	bool shouldGenerateCellVertex(const SurfaceNetsGenerateConfig& config, int x, int y, int z)
 	{
 		const int minCell = config.minPadding;
@@ -305,6 +471,13 @@ namespace {
 			{
 				return false;
 			}
+		}
+		if (isOnStitchFace(config, cell))
+		{
+			return true;
+		}
+		for (int axis = 0; axis < 3; ++axis)
+		{
 			if (cell[axis] == maxCell && !isStitchFace(config, axis * 2 + 1))
 			{
 				return false;
@@ -323,9 +496,7 @@ namespace {
 		{
 			return false;
 		}
-
-		const TerrainMeshSeamMode negativeMode = config.seams.faces[axis * 2].mode;
-		if (cell[axis] == minCellExt && negativeMode == TerrainMeshSeamMode::SuppressForFiner)
+		if (shouldSuppressEdgeForFiner(config, axis, cell))
 		{
 			return false;
 		}
@@ -352,14 +523,13 @@ namespace {
 		return true;
 	}
 
-	void snapStitchedFaceVertices(Mesh* mesh, const SurfaceNetsGenerateConfig& config,
-		std::vector<int>& cellVertexIndex, int faceIndex)
+	void snapStitchedFaceLayer(Mesh* mesh, const SurfaceNetsGenerateConfig& config,
+		std::vector<int>& cellVertexIndex, int faceIndex, int faceLocal)
 	{
 		const FaceInfo face = getFaceInfo(faceIndex);
 		const int minCell = config.minPadding;
 		const int maxCell = minCell + config.cellCount;
 		const int minCellExt = minCell - 1;
-		const int faceLocal = (face.side < 0) ? minCellExt : maxCell;
 		const int voxelSize = config.voxelSize;
 
 		for (int u = minCellExt; u <= maxCell; ++u)
@@ -386,8 +556,29 @@ namespace {
 				mesh->m_vertices[index].m_texCoord = vec2(
 					coarseVertex.worldPosition.x,
 					coarseVertex.worldPosition.z);
-				mesh->m_vertices[index].m_color = vec4(1, 0, 0, 1);
+				if (config.debugLodVertexColorEnabled)
+				{
+					mesh->m_vertices[index].m_color = vec4(1, 1, 0, 1);
+				}
 			}
+		}
+	}
+
+	void snapStitchedFaceVertices(Mesh* mesh, const SurfaceNetsGenerateConfig& config,
+		std::vector<int>& cellVertexIndex, int faceIndex)
+	{
+		const FaceInfo face = getFaceInfo(faceIndex);
+		const int minCell = config.minPadding;
+		const int maxCell = minCell + config.cellCount;
+		if (face.side < 0)
+		{
+			snapStitchedFaceLayer(mesh, config, cellVertexIndex, faceIndex, minCell - 1);
+			snapStitchedFaceLayer(mesh, config, cellVertexIndex, faceIndex, minCell);
+		}
+		else
+		{
+			snapStitchedFaceLayer(mesh, config, cellVertexIndex, faceIndex, maxCell - 1);
+			snapStitchedFaceLayer(mesh, config, cellVertexIndex, faceIndex, maxCell);
 		}
 	}
 
@@ -440,7 +631,12 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, const voxelInfo* srcData,
 					continue;
 				}
 
-				mesh->addVertex(makeVertexData(vertex.worldPosition, vertex.material));
+				VertexData vertexData = makeVertexData(vertex.worldPosition, vertex.material);
+				if (config.debugLodVertexColorEnabled)
+				{
+					vertexData.m_color = debugLodColor(config.debugLodPower);
+				}
+				mesh->addVertex(vertexData);
 				cellVertexIndex[getIndex(x, y, z, voxelSize)] = static_cast<int>(mesh->getVerticesSize()) - 1;
 			}
 		}

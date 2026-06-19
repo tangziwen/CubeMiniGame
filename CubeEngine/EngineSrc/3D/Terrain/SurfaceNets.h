@@ -21,6 +21,9 @@ namespace tzw {
 		TerrainInt3 domainSize;
 		vec3 mapOffset;
 		float blockSize = 1.0f;
+
+		bool debugLodVertexColorEnabled = true;
+		int debugLodPower = 0;
 	};
 
 	class SurfaceNets : public Singleton<SurfaceNets>

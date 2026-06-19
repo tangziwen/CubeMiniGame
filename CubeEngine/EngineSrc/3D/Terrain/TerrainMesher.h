@@ -24,6 +24,11 @@ class TerrainMesher
 public:
 	TerrainMeshBuildResult build(const TerrainMeshRequest& request,
 		const TerrainSampleBuffer& sampleBuffer) const;
+	void setDebugLodVertexColorEnabled(bool enabled);
+	bool isDebugLodVertexColorEnabled() const;
+
+private:
+	bool m_debugLodVertexColorEnabled = true;
 };
 
 } // namespace tzw

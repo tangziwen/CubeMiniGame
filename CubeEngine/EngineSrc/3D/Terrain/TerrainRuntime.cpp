@@ -46,6 +46,7 @@ TerrainMeshSeamSet makeTerrainMeshSeams(const TerrainOctree& octree,
 		else if (relation.isFiner && relation.levelDelta == 1)
 		{
 			face.mode = TerrainMeshSeamMode::SuppressForFiner;
+			face.finerCoverageMask = relation.finerCoverageMask;
 		}
 		else
 		{
@@ -76,6 +77,7 @@ void TerrainRuntime::init(const TerrainOctreeConfig& config)
 	m_meshCache = std::make_unique<TerrainMeshCache>();
 	m_sampler = std::make_unique<TerrainSampler>(config.domainSize);
 	m_mesher = std::make_unique<TerrainMesher>();
+	m_mesher->setDebugLodVertexColorEnabled(m_debugLodVertexColorEnabled);
 	m_drawableSet = std::make_unique<TerrainDrawableSet>();
 	m_editSystem = std::make_unique<TerrainEditSystem>();
 
@@ -95,7 +97,15 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 	}
 
 	// 1. Octree traversal based on viewer position
-	m_octree->update(viewerPosition);
+	if (m_lodViewerPositionFrozen && !m_hasFrozenLodViewerPosition)
+	{
+		m_frozenLodViewerPosition = viewerPosition;
+		m_hasFrozenLodViewerPosition = true;
+	}
+	const vec3& lodViewerPosition = m_lodViewerPositionFrozen
+		? m_frozenLodViewerPosition
+		: viewerPosition;
+	m_octree->update(lodViewerPosition);
 
 	const TerrainRenderSet& renderSet = m_octree->renderSet();
 
@@ -238,6 +248,67 @@ TerrainEditSystem* TerrainRuntime::editSystem() const
 bool TerrainRuntime::isActive() const
 {
 	return m_octree != nullptr && m_octree->isValid();
+}
+
+void TerrainRuntime::setDebugLodVertexColorEnabled(bool enabled)
+{
+	if (m_debugLodVertexColorEnabled == enabled)
+	{
+		return;
+	}
+
+	m_debugLodVertexColorEnabled = enabled;
+	if (m_mesher)
+	{
+		m_mesher->setDebugLodVertexColorEnabled(enabled);
+	}
+	if (m_drawableSet)
+	{
+		m_drawableSet->clear();
+	}
+	if (m_meshCache)
+	{
+		m_meshCache->clear();
+	}
+}
+
+bool TerrainRuntime::isDebugLodVertexColorEnabled() const
+{
+	return m_debugLodVertexColorEnabled;
+}
+
+void TerrainRuntime::setLodViewerPositionFreezeEnabled(bool enabled)
+{
+	if (enabled)
+	{
+		m_lodViewerPositionFrozen = true;
+		m_hasFrozenLodViewerPosition = false;
+		return;
+	}
+	unfreezeLodViewerPosition();
+}
+
+void TerrainRuntime::freezeLodViewerPosition(const vec3& viewerPosition)
+{
+	m_frozenLodViewerPosition = viewerPosition;
+	m_lodViewerPositionFrozen = true;
+	m_hasFrozenLodViewerPosition = true;
+}
+
+void TerrainRuntime::unfreezeLodViewerPosition()
+{
+	m_lodViewerPositionFrozen = false;
+	m_hasFrozenLodViewerPosition = false;
+}
+
+bool TerrainRuntime::isLodViewerPositionFrozen() const
+{
+	return m_lodViewerPositionFrozen;
+}
+
+const vec3& TerrainRuntime::frozenLodViewerPosition() const
+{
+	return m_frozenLodViewerPosition;
 }
 
 } // namespace tzw

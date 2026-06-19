@@ -7,7 +7,9 @@ namespace tzw {
 
 bool TerrainMeshSeamFace::operator==(const TerrainMeshSeamFace& other) const
 {
-	return mode == other.mode && levelDelta == other.levelDelta;
+	return mode == other.mode
+		&& levelDelta == other.levelDelta
+		&& finerCoverageMask == other.finerCoverageMask;
 }
 
 bool TerrainMeshSeamFace::operator!=(const TerrainMeshSeamFace& other) const
@@ -37,6 +39,7 @@ uint32_t TerrainMeshSeamSet::signature() const
 	{
 		sig = sig * 31 + static_cast<uint32_t>(face.mode);
 		sig = sig * 31 + static_cast<uint32_t>(face.levelDelta);
+		sig = sig * 31 + static_cast<uint32_t>(face.finerCoverageMask);
 	}
 	return sig;
 }
