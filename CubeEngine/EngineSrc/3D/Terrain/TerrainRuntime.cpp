@@ -19,6 +19,56 @@ namespace tzw {
 namespace
 {
 
+void faceTangentialAxes(TerrainNeighborFace face, int& tangent0, int& tangent1)
+{
+	const int axis = static_cast<int>(face) / 2;
+	tangent0 = (axis + 1) % 3;
+	tangent1 = (axis + 2) % 3;
+}
+
+TerrainNeighborFace faceForAxisSide(int axis, int side)
+{
+	return static_cast<TerrainNeighborFace>(axis * 2 + (side > 0 ? 1 : 0));
+}
+
+uint8_t stitchPreserveFineBorderBit(int tangentIndex, int side)
+{
+	return static_cast<uint8_t>(1u << (tangentIndex * 2 + (side > 0 ? 1 : 0)));
+}
+
+uint8_t stitchPreserveFineBorderMask(const TerrainOctree& octree,
+	const TerrainRenderSet& renderSet,
+	const std::array<TerrainNeighborRelation, 6>& neighbors,
+	TerrainNeighborResolver& resolver, TerrainNeighborFace stitchFace)
+{
+	uint8_t mask = 0;
+	int tangentAxes[2] = { 0, 0 };
+	faceTangentialAxes(stitchFace, tangentAxes[0], tangentAxes[1]);
+	for (int tangentIndex = 0; tangentIndex < 2; ++tangentIndex)
+	{
+		const int sides[2] = { -1, 1 };
+		for (int side : sides)
+		{
+			const TerrainNeighborFace tangentFace = faceForAxisSide(
+				tangentAxes[tangentIndex], side);
+			const TerrainNeighborRelation& tangentRelation =
+				neighbors[static_cast<int>(tangentFace)];
+			if (!tangentRelation.isSameLevel || !tangentRelation.node)
+			{
+				continue;
+			}
+
+			const TerrainNeighborRelation tangentStitchRelation =
+				resolver.findNeighbor(octree, renderSet, *tangentRelation.node, stitchFace);
+			if (!tangentStitchRelation.isCoarser || tangentStitchRelation.levelDelta != -1)
+			{
+				mask |= stitchPreserveFineBorderBit(tangentIndex, side);
+			}
+		}
+	}
+	return mask;
+}
+
 TerrainMeshSeamSet makeTerrainMeshSeams(const TerrainOctree& octree,
 	const TerrainRenderSet& renderSet, const TerrainOctreeNode& node)
 {
@@ -42,6 +92,9 @@ TerrainMeshSeamSet makeTerrainMeshSeams(const TerrainOctree& octree,
 		else if (relation.isCoarser && relation.levelDelta == -1)
 		{
 			face.mode = TerrainMeshSeamMode::StitchToCoarser;
+			face.stitchPreserveFineBorderMask = stitchPreserveFineBorderMask(
+				octree, renderSet, neighbors, resolver,
+				static_cast<TerrainNeighborFace>(i));
 		}
 		else if (relation.isFiner && relation.levelDelta == 1)
 		{

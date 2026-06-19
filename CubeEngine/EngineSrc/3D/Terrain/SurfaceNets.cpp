@@ -488,6 +488,35 @@ namespace {
 		return false;
 	}
 
+	uint8_t stitchPreserveFineBorderBit(int tangentIndex, int side)
+	{
+		return static_cast<uint8_t>(1u << (tangentIndex * 2 + (side > 0 ? 1 : 0)));
+	}
+
+	bool shouldSnapStitchCell(const SurfaceNetsGenerateConfig& config,
+		int faceIndex, const FaceInfo& face, const int cell[3])
+	{
+		const int minCell = config.minPadding;
+		const int minCellExt = minCell - 1;
+		const int maxCell = minCell + config.cellCount;
+		const uint8_t preserveMask = config.seams.faces[faceIndex].stitchPreserveFineBorderMask;
+		for (int i = 0; i < 2; ++i)
+		{
+			const int tangentAxis = face.tangential[i];
+			if ((cell[tangentAxis] == minCellExt || cell[tangentAxis] == minCell)
+				&& (preserveMask & stitchPreserveFineBorderBit(i, -1)) != 0)
+			{
+				return false;
+			}
+			if ((cell[tangentAxis] == maxCell - 1 || cell[tangentAxis] == maxCell)
+				&& (preserveMask & stitchPreserveFineBorderBit(i, +1)) != 0)
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
 	bool shouldGenerateCellVertex(const SurfaceNetsGenerateConfig& config, int x, int y, int z)
 	{
 		const int minCell = config.minPadding;
@@ -521,18 +550,18 @@ namespace {
 		const int maxCell = minCell + config.cellCount;
 		const int minCellExt = minCell - 1;
 		const int cell[3] = { x, y, z };
-		//if (cell[axis] < minCellExt || cell[axis] > maxCell - 1)
-		//{
-		//	return false;
-		//}
-		//if (shouldSuppressEdgeForFiner(config, axis, cell))
-		//{
-		//	return false;
-		//}
-		//if (cell[axis] == maxCell - 1 && positiveAxisEdgeOwnedByNeighbor(config, axis))
-		//{
-		//	return false;
-		//}
+		if (cell[axis] < minCellExt || cell[axis] > maxCell - 1)
+		{
+			return false;
+		}
+		if (shouldSuppressEdgeForFiner(config, axis, cell))
+		{
+			return false;
+		}
+		if (cell[axis] == maxCell - 1 && positiveAxisEdgeOwnedByNeighbor(config, axis))
+		{
+			return false;
+		}
 		const bool touchesStitchFace = edgeTouchesStitchFace(config, axis, cell);
 
 		for (int tangentAxis = 0; tangentAxis < 3; ++tangentAxis)
@@ -545,12 +574,12 @@ namespace {
 			{
 				return false;
 			}
-			//if (cell[tangentAxis] == maxCell
-			//	&& !isStitchFace(config, tangentAxis * 2 + 1)
-			//	&& !touchesStitchFace)
-			//{
-			//	return false;
-			//}
+			if (cell[tangentAxis] == maxCell
+				&& !isStitchFace(config, tangentAxis * 2 + 1)
+				&& !touchesStitchFace)
+			{
+				return false;
+			}
 		}
 		return true;
 	}
@@ -572,6 +601,10 @@ namespace {
 				localCell[face.axis] = faceLocal;
 				localCell[face.tangential[0]] = u;
 				localCell[face.tangential[1]] = v;
+				if (!shouldSnapStitchCell(config, faceIndex, face, localCell))
+				{
+					continue;
+				}
 				const int index = cellVertexIndex[getIndex(
 					localCell[0], localCell[1], localCell[2], voxelSize)];
 				if (index < 0)

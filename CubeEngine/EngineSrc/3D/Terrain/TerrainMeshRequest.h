@@ -24,6 +24,7 @@ struct TerrainMeshSeamFace
 	TerrainMeshSeamMode mode = TerrainMeshSeamMode::None;
 	int levelDelta = 0;
 	uint8_t finerCoverageMask = 0;
+	uint8_t stitchPreserveFineBorderMask = 0;
 
 	bool operator==(const TerrainMeshSeamFace& other) const;
 	bool operator!=(const TerrainMeshSeamFace& other) const;
