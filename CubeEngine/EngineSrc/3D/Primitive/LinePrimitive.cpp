@@ -2,7 +2,7 @@
 #include "../../Scene/SceneMgr.h"
 namespace tzw {
 
-LinePrimitive::LinePrimitive(vec3 begin, vec3 end)
+LinePrimitive::LinePrimitive(vec3 begin, vec3 end):m_mesh(nullptr)
 {
 	append(begin, end);
 	
@@ -13,6 +13,12 @@ LinePrimitive::LinePrimitive(vec3 begin, vec3 end)
 LinePrimitive::LinePrimitive():m_mesh(nullptr)
 {
 	init();
+}
+
+LinePrimitive::~LinePrimitive()
+{
+	delete m_mesh;
+	m_mesh = nullptr;
 }
 
 void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
@@ -28,6 +34,11 @@ void LinePrimitive::initBuffer()
 	if(!m_mesh)
 	{
 		m_mesh = new Mesh();
+	}
+	else
+	{
+		m_mesh->clearIndices();
+		m_mesh->clearVertices();
 	}
 	int i = 0;
 	for(auto s : m_segList)
@@ -71,6 +82,19 @@ void LinePrimitive::append(vec3 begin, vec3 end, vec3 color)
 	m_segList.push_back(info);
 }
 
+void LinePrimitive::setColor(vec3 color)
+{
+	for(auto& info : m_segList)
+	{
+		info.color = color;
+	}
+	if(m_mesh)
+	{
+		m_mesh->clearIndices();
+		m_mesh->clearVertices();
+	}
+}
+
 void LinePrimitive::clear()
 {
 	if(m_mesh)
@@ -82,7 +106,7 @@ void LinePrimitive::clear()
 	m_segList.clear();
 }
 
-int LinePrimitive::getLineCount()
+int LinePrimitive::getLineCount() const
 {
 	return m_segList.size();
 }

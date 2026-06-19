@@ -147,6 +147,7 @@ set(ENGINE_SOURCES
     Collision/PhysicsMgr.cpp
     Collision/PhysicsRigidBody.cpp
     Collision/PhysicsShape.cpp
+    Engine/DebugPrimitive.cpp
     Engine/AppEntry.cpp
     Engine/DebugSystem.cpp
     Engine/Engine.cpp
@@ -392,6 +393,7 @@ set(ENGINE_HEADERS
     doc/mainpage.h
     doc/res_page.h
     doc/use_scripte.h
+    Engine/DebugPrimitive.h
     Engine/AppEntry.h
     Engine/DebugSystem.h
     Engine/Engine.h

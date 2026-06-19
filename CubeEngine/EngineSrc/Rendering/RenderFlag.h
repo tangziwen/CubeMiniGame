@@ -67,6 +67,14 @@ enum class RenderStage : uint32_t
 	AFTER_DEPTH_CLEAR = 1UL <<3,
 	GUI= 1UL <<4,
 	SHADOW = 1UL <<5,
+	DEBUG_LAYER = 1UL <<6,
+	All = -1
+};
+
+enum class RenderVisualLayer : uint32_t
+{
+	Fill = 1UL <<0,
+	Wireframe = 1UL <<1,
 	All = -1
 };
 

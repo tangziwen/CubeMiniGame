@@ -131,6 +131,7 @@ void TerrainRuntime::init(const TerrainOctreeConfig& config)
 	m_sampler = std::make_unique<TerrainSampler>(config.domainSize);
 	m_mesher = std::make_unique<TerrainMesher>();
 	m_mesher->setDebugLodVertexColorEnabled(m_debugLodVertexColorEnabled);
+	m_mesher->setDebugLodCheckerboardEnabled(m_debugLodCheckerboardEnabled);
 	m_drawableSet = std::make_unique<TerrainDrawableSet>();
 	m_editSystem = std::make_unique<TerrainEditSystem>();
 
@@ -328,6 +329,52 @@ void TerrainRuntime::setDebugLodVertexColorEnabled(bool enabled)
 bool TerrainRuntime::isDebugLodVertexColorEnabled() const
 {
 	return m_debugLodVertexColorEnabled;
+}
+
+void TerrainRuntime::setDebugLodCheckerboardEnabled(bool enabled)
+{
+	if (m_debugLodCheckerboardEnabled == enabled)
+	{
+		return;
+	}
+
+	m_debugLodCheckerboardEnabled = enabled;
+	if (m_mesher)
+	{
+		m_mesher->setDebugLodCheckerboardEnabled(enabled);
+	}
+	if (m_drawableSet)
+	{
+		m_drawableSet->clear();
+	}
+	if (m_meshCache)
+	{
+		m_meshCache->clear();
+	}
+}
+
+bool TerrainRuntime::isDebugLodCheckerboardEnabled() const
+{
+	return m_debugLodCheckerboardEnabled;
+}
+
+void TerrainRuntime::setDebugWireframeEnabled(bool enabled)
+{
+	if (m_debugWireframeEnabled == enabled)
+	{
+		return;
+	}
+
+	m_debugWireframeEnabled = enabled;
+	if (m_drawableSet)
+	{
+		m_drawableSet->setDebugWireframeEnabled(enabled);
+	}
+}
+
+bool TerrainRuntime::isDebugWireframeEnabled() const
+{
+	return m_debugWireframeEnabled;
 }
 
 void TerrainRuntime::setLodViewerPositionFreezeEnabled(bool enabled)

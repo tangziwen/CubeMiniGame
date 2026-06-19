@@ -24,6 +24,11 @@ namespace tzw
 		return m_fullList;
 	}
 
+	const std::vector<RenderCommand>& RenderQueue::getList() const
+	{
+		return m_fullList;
+	}
+
 	void RenderQueue::clearCommands()
 	{
 		m_fullList.clear();
@@ -41,6 +46,19 @@ namespace tzw
 			}
 		}
 	}
+
+	void RenderQueue::dispatchByStageAndVisualLayer(RenderQueue* otherQueue, uint32_t renderStage, uint32_t visualLayerMask)
+	{
+		otherQueue->clearCommands();
+		for(auto& cmd :m_fullList)
+		{
+			if(((uint32_t)(cmd.getRenderState()) & renderStage) && (cmd.getVisualLayerMask() & visualLayerMask))
+			{
+				otherQueue->addRenderCommand(cmd, 0);
+			}
+		}
+	}
+
 	void RenderQueue::generateInstancedDrawCall()
 	{
 		m_instancesBatcher->generateDrawCall(RenderFlag::RenderStage::COMMON, this, 0, 0);

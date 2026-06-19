@@ -38,7 +38,9 @@ TerrainMeshBuildResult TerrainMesher::build(const TerrainMeshRequest& request,
 	config.mapOffset = request.mapOffset;
 	config.blockSize = request.blockSize;
 	config.debugLodVertexColorEnabled = m_debugLodVertexColorEnabled;
+	config.debugLodCheckerboardEnabled = m_debugLodCheckerboardEnabled;
 	config.debugLodPower = request.sampleLodPower;
+	config.checkerboardKey = request.key;
 
 	SurfaceNets::shared()->generate(basePoint, result.mesh.get(),
 		sampleBuffer.voxels.data(), config);
@@ -61,6 +63,16 @@ void TerrainMesher::setDebugLodVertexColorEnabled(bool enabled)
 bool TerrainMesher::isDebugLodVertexColorEnabled() const
 {
 	return m_debugLodVertexColorEnabled;
+}
+
+void TerrainMesher::setDebugLodCheckerboardEnabled(bool enabled)
+{
+	m_debugLodCheckerboardEnabled = enabled;
+}
+
+bool TerrainMesher::isDebugLodCheckerboardEnabled() const
+{
+	return m_debugLodCheckerboardEnabled;
 }
 
 } // namespace tzw

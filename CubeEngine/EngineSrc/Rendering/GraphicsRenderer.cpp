@@ -22,6 +22,7 @@
 #include "Scene/SceneMgr.h"
 #include "Scene/Scene.h"
 #include "Scene/OctreeScene.h"
+#include "Engine/DebugSystem.h"
 #include "Lighting/PointLight.h"
 #include "Scene/SceneCuller.h"
 #include "Utility/file/Tfile.h"
@@ -229,6 +230,13 @@ namespace tzw
         m_transparentStage = backEnd->createRenderStage_imp();
 		m_transparentStage->setName("TransparentPass");
         m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::TRANSPARENT);
+
+        auto debugWireframePass = backEnd->createDeviceRenderpass_imp();
+        debugWireframePass->init({{
+            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
+        m_debugWireframeStage = backEnd->createRenderStage_imp();
+        m_debugWireframeStage->init(debugWireframePass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::DEBUG_LAYER);
+        m_debugWireframeStage->setName("Debug Wireframe Pass");
 
         m_computeTest = backEnd->createRenderStage_imp();
         m_computeTest->initCompute();
@@ -543,6 +551,21 @@ namespace tzw
             m_renderPath->addRenderStage(m_skyStage);
         }
         //------------Sky Pass end---------------
+
+        //------------Debug Wireframe Pass begin---------------
+        {
+            auto debugQueue = DebugSystem::shared()->buildWireframeQueue(renderQueues);
+            if (debugQueue && (!debugQueue->getList().empty() || DebugSystem::shared()->isWireframeOverlayEnabled()))
+            {
+                m_debugWireframeStage->prepare(cmd);
+                m_debugWireframeStage->beginRenderPass();
+                m_debugWireframeStage->draw(debugQueue);
+                m_debugWireframeStage->endRenderPass();
+                m_debugWireframeStage->finish();
+                m_renderPath->addRenderStage(m_debugWireframeStage);
+            }
+        }
+        //------------Debug Wireframe Pass end---------------
 
  
 

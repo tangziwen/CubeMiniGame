@@ -8,7 +8,8 @@ namespace tzw {
 RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
-    m_batchType(batchType)
+    m_batchType(batchType),
+	m_visualLayerMask(static_cast<uint32_t>(RenderFlag::RenderVisualLayer::Fill))
 {
     m_obj = obj;
 	m_renderState = renderStage;
@@ -68,6 +69,26 @@ RenderFlag::RenderStage RenderCommand::getRenderState() const
 void RenderCommand::setRenderState(const RenderFlag::RenderStage renderState)
 {
 	m_renderState = renderState;
+}
+
+uint32_t RenderCommand::getVisualLayerMask() const
+{
+	return m_visualLayerMask;
+}
+
+void RenderCommand::setVisualLayerMask(uint32_t mask)
+{
+	m_visualLayerMask = mask;
+}
+
+void RenderCommand::addVisualLayer(RenderFlag::RenderVisualLayer layer)
+{
+	m_visualLayerMask |= static_cast<uint32_t>(layer);
+}
+
+bool RenderCommand::hasVisualLayer(RenderFlag::RenderVisualLayer layer) const
+{
+	return (m_visualLayerMask & static_cast<uint32_t>(layer)) != 0;
 }
 
 InstancedMesh* RenderCommand::getInstancedMesh() const

@@ -31,6 +31,12 @@ enum class PrimitiveTopology
 	LineList,
 };
 
+enum class RasterFillMode
+{
+	Fill,
+	Wireframe,
+};
+
 
 class Material : public InspectableUI
 {
@@ -88,6 +94,8 @@ public:
 	std::unordered_map<std::string,TechniqueVar> & getVarList();
 	PrimitiveTopology getPrimitiveTopology();
 	void setPrimitiveTopology(PrimitiveTopology newTopology);
+	RasterFillMode getRasterFillMode();
+	void setRasterFillMode(RasterFillMode newMode);
 	ShadingParams * getShadingParams();
 private:
     std::string m_vsPath;
@@ -108,6 +116,7 @@ private:
 	std::string m_fullDescString;
 	RenderFlag::CullMode m_cullMode;
 	PrimitiveTopology m_primitiveTopology;
+	RasterFillMode m_rasterFillMode;
 public:
 	RenderFlag::RenderStage getRenderStage() const;
 	void setRenderStage(const RenderFlag::RenderStage renderStage);

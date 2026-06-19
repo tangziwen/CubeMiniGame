@@ -1,4 +1,17 @@
 ****Tech Demo v2 QOL bit by bit improvement***:
+26.6
+使用SurfaceNet重构整个逻辑，废止TransVoxel
+	使用标准的八叉树管理体素地形，使用均匀密度但是动态尺寸Chunk，而不是固定尺寸包含多个LOD层级的geomipmap(100%)
+	使用vertex stiching而不是晦涩查表的transvoxel算法(100%)
+优化脚手架系统
+	多种调试用primitive的构建，同时保留立即模式和保留模式，方便调试
+	支持WireFrame Overlay，可以单独调试线框
+代码大扫除
+	全面CMAKE项目支持(100%)
+	废弃Lua(100%)
+渲染
+	更加灵活的RenderPass
+	TAA jitter修复
 20.7
 优化方块的渲染，尽可能的使用GPU instancing技术，drawcall显著减少，在建造大型静态建筑物的时帧率更加稳定(100%)
 优化喷涂器，有预制颜色与自定颜色槽可供选择，更加方便喷涂

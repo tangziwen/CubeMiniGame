@@ -50,6 +50,7 @@ public:
     void setCurrentState(const int &currentState);
     Node *getMainRoot() const;
     void setMainRoot(Node *mainRoot);
+	TerrainRuntime* terrainRuntime() const;
 	TerrainEditSystem* getTerrainEditSystem() const;
 	void init();
     virtual ~GameWorld();

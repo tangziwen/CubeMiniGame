@@ -192,7 +192,18 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
 	
     VkPipelineRasterizationStateCreateInfo rastCreateInfo = {};
     rastCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+    switch(mat->getRasterFillMode())
+    {
+    case RasterFillMode::Fill:
+        rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+        break;
+    case RasterFillMode::Wireframe:
+        rastCreateInfo.polygonMode = VK_POLYGON_MODE_LINE;
+        break;
+    default:
+        rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
+        break;
+    }
     if(mat->getIsCullFace()){
         RenderFlag::CullMode cullMode =  mat->getCullMode();
         if(cullMode == RenderFlag::CullMode::Back)
@@ -379,7 +390,7 @@ DeviceRenderItem* DevicePipelineVK::getRenderItem(void* obj)
 
 void DevicePipelineVK::createDescriptorPool()
 {
-    //Ã¿¸öshader±ØÓÐÁ½¸ödescriptorSet´æÔÚµÄÇé¿ö±ØÈ»ÊÇ1±È1£¬ËùÒÔ¼ÓÆðÀ´À´Ô¤¹ÀÒ»¸ö³Ø±ÈÀý
+    //æ¯ä¸ªshaderå¿…æœ‰ä¸¤ä¸ªdescriptorSetå­˜åœ¨çš„æƒ…å†µå¿…ç„¶æ˜¯1æ¯”1ï¼Œæ‰€ä»¥åŠ èµ·æ¥æ¥é¢„ä¼°ä¸€ä¸ªæ± æ¯”ä¾‹
     unsigned uniformBuffCount = 0;
     unsigned textuerCount = 0;
     auto& setInfo = m_shader->getSetInfo();

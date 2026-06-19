@@ -14,8 +14,10 @@ namespace tzw {
 		void addRenderCommand(RenderCommand& command, int level);
 		void addInstancedData(InstanceRendereData & data);
 		std::vector<RenderCommand> & getList();
+		const std::vector<RenderCommand> & getList() const;
 		void clearCommands();
 		void dispatch(RenderQueue * queue, uint32_t renderStage);
+		void dispatchByStageAndVisualLayer(RenderQueue * queue, uint32_t renderStage, uint32_t visualLayerMask);
 		void generateInstancedDrawCall();
 	private:
 		std::vector<RenderCommand> m_fullList;

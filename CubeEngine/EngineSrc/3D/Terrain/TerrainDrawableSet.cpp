@@ -9,6 +9,23 @@ void TerrainDrawableSet::setMaterial(Material* material)
     m_material = material;
 }
 
+void TerrainDrawableSet::setDebugWireframeEnabled(bool enabled)
+{
+    m_debugWireframeEnabled = enabled;
+    for (auto& pair : m_drawables)
+    {
+        if (pair.second)
+        {
+            pair.second->setDebugWireframeEnabled(enabled);
+        }
+    }
+}
+
+bool TerrainDrawableSet::isDebugWireframeEnabled() const
+{
+    return m_debugWireframeEnabled;
+}
+
 void TerrainDrawableSet::sync(const TerrainRenderSet& renderSet, const TerrainMeshCache& meshCache)
 {
     for (TerrainOctreeNode* node : renderSet.nodes())
@@ -36,6 +53,7 @@ void TerrainDrawableSet::sync(const TerrainRenderSet& renderSet, const TerrainMe
         {
             auto drawable = std::make_unique<TerrainDrawableNode>();
             drawable->bind(key, node->region(), mesh, m_material, entry->revision);
+            drawable->setDebugWireframeEnabled(m_debugWireframeEnabled);
             m_drawables.emplace(key, std::move(drawable));
         }
         else
@@ -45,6 +63,7 @@ void TerrainDrawableSet::sync(const TerrainRenderSet& renderSet, const TerrainMe
             {
                 drawable->bind(key, node->region(), mesh, m_material, entry->revision);
             }
+            drawable->setDebugWireframeEnabled(m_debugWireframeEnabled);
         }
     }
 

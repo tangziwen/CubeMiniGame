@@ -91,6 +91,7 @@ void GameWorld::createWorld(Scene *scene, int widthVoxels, int depthVoxels, int 
 		TERRAIN_MESH_CELL_COUNT, GameMap::shared()->blockSize(), mapOffset);
 	m_terrainRuntime = std::make_unique<TerrainRuntime>();
 	m_terrainRuntime->init(config);
+	m_terrainRuntime->setDebugWireframeEnabled(true);
 }
 
 void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio, std::string filePath)
@@ -420,6 +421,11 @@ Node *GameWorld::getMainRoot() const
 void GameWorld::setMainRoot(Node *mainRoot)
 {
     m_mainRoot = mainRoot;
+}
+
+TerrainRuntime* GameWorld::terrainRuntime() const
+{
+	return m_terrainRuntime.get();
 }
 
 TerrainEditSystem* GameWorld::getTerrainEditSystem() const

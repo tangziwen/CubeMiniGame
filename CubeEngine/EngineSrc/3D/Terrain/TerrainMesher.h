@@ -26,9 +26,12 @@ public:
 		const TerrainSampleBuffer& sampleBuffer) const;
 	void setDebugLodVertexColorEnabled(bool enabled);
 	bool isDebugLodVertexColorEnabled() const;
+	void setDebugLodCheckerboardEnabled(bool enabled);
+	bool isDebugLodCheckerboardEnabled() const;
 
 private:
 	bool m_debugLodVertexColorEnabled = true;
+	bool m_debugLodCheckerboardEnabled = true;
 };
 
 } // namespace tzw

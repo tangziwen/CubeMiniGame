@@ -21,6 +21,8 @@ public:
     bool getIsAccpectOcTtree() const override;
     void submitDrawCmd(RenderFlag::RenderStage stage, RenderQueue* queues, int requirementArg) override;
     void setUpTransFormation(TransformationInfo& info) override;
+    void setDebugWireframeEnabled(bool enabled);
+    bool isDebugWireframeEnabled() const;
 
 private:
     TerrainNodeKey m_key;
@@ -29,6 +31,7 @@ private:
     Material* m_material;
     int m_revision;
     bool m_isBound;
+    bool m_debugWireframeEnabled = false;
 };
 
 } // namespace tzw

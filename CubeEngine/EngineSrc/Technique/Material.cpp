@@ -22,7 +22,8 @@ namespace tzw {
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
 	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
-	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),m_primitiveTopology(PrimitiveTopology::TriangleList),m_shadingParams(nullptr)
+	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),
+	m_primitiveTopology(PrimitiveTopology::TriangleList),m_rasterFillMode(RasterFillMode::Fill),m_shadingParams(nullptr)
 {
 }
 
@@ -77,6 +78,22 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 	else
 	{
 		m_cullMode = RenderFlag::CullMode::Back;
+	}
+	if (doc.HasMember("RasterFillMode"))
+	{
+		std::string rasterFillModeStr = doc["RasterFillMode"].GetString();
+		if(rasterFillModeStr == "Wireframe")
+		{
+			m_rasterFillMode = RasterFillMode::Wireframe;
+		}
+		else
+		{
+			m_rasterFillMode = RasterFillMode::Fill;
+		}
+	}
+	else
+	{
+		m_rasterFillMode = RasterFillMode::Fill;
 	}
 
 	if (doc.HasMember("DepthTestEnable"))
@@ -603,6 +620,9 @@ Material *Material::clone()
 	mat->m_factorSrc = m_factorSrc;
 	mat->m_factorDst = m_factorDst;
 	mat->m_cullMode = m_cullMode;
+	mat->m_primitiveTopology = m_primitiveTopology;
+	mat->m_rasterFillMode = m_rasterFillMode;
+	mat->updateFullDescriptionStr();
 	return mat;
 }
 
@@ -734,6 +754,7 @@ RenderFlag::BlendingFactor Material::getFactorSrc() const
 void Material::setFactorSrc(const RenderFlag::BlendingFactor factorSrc)
 {
 	m_factorSrc = factorSrc;
+	updateFullDescriptionStr();
 }
 
 RenderFlag::BlendingFactor Material::getFactorDst() const
@@ -744,6 +765,7 @@ RenderFlag::BlendingFactor Material::getFactorDst() const
 void Material::setFactorDst(const RenderFlag::BlendingFactor factorDst)
 {
 	m_factorDst = factorDst;
+	updateFullDescriptionStr();
 }
 
 bool Material::isIsEnableBlend() const
@@ -801,7 +823,22 @@ uint32_t Material::getMaterialFlag()
 void Material::updateFullDescriptionStr()
 {
 	std::ostringstream ostr;
-	ostr<< getMutationFlag() << m_program->m_vertexShader << m_program->m_fragmentShader << "|" << (int)m_renderStage <<"|" <<(uint32_t)getMaterialFlag();
+	if(m_program)
+	{
+		ostr << "shader:" << m_program->m_vertexShader << "|" << m_program->m_fragmentShader;
+	}
+	else
+	{
+		ostr << "shader:" << m_vsPath << "|" << m_fsPath;
+	}
+	ostr << "|mutation:" << getMutationFlag()
+		<< "|stage:" << static_cast<int>(m_renderStage)
+		<< "|flags:" << static_cast<uint32_t>(getMaterialFlag())
+		<< "|topology:" << static_cast<int>(m_primitiveTopology)
+		<< "|raster:" << static_cast<int>(m_rasterFillMode)
+		<< "|cull:" << static_cast<int>(m_cullMode)
+		<< "|srcBlend:" << static_cast<int>(m_factorSrc)
+		<< "|dstBlend:" << static_cast<int>(m_factorDst);
 	m_fullDescString = ostr.str();
 }
 
@@ -823,6 +860,18 @@ PrimitiveTopology Material::getPrimitiveTopology()
 void Material::setPrimitiveTopology(PrimitiveTopology newTopology)
 {
 	m_primitiveTopology = newTopology;
+	updateFullDescriptionStr();
+}
+
+RasterFillMode Material::getRasterFillMode()
+{
+	return m_rasterFillMode;
+}
+
+void Material::setRasterFillMode(RasterFillMode newMode)
+{
+	m_rasterFillMode = newMode;
+	updateFullDescriptionStr();
 }
 
 RenderFlag::RenderStage Material::getRenderStage() const

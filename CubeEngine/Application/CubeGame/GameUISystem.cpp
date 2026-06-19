@@ -655,6 +655,29 @@ void GameUISystem::drawToolsMenu()
 	{
 		ImGui::Begin("Terrain Inspector", &m_isOpenTerrain);
 		ImGui::Text("Terrain Inspector");
+
+		auto terrainRuntime = GameWorld::shared()->terrainRuntime();
+		if (terrainRuntime)
+		{
+			bool terrainWireframe = terrainRuntime->isDebugWireframeEnabled();
+			if (ImGui::Checkbox("Terrain Wireframe", &terrainWireframe))
+			{
+				terrainRuntime->setDebugWireframeEnabled(terrainWireframe);
+			}
+
+			bool lodVertexColor = terrainRuntime->isDebugLodVertexColorEnabled();
+			if (ImGui::Checkbox("LOD Vertex Color", &lodVertexColor))
+			{
+				terrainRuntime->setDebugLodVertexColorEnabled(lodVertexColor);
+			}
+
+			bool lodCheckerboard = terrainRuntime->isDebugLodCheckerboardEnabled();
+			if (ImGui::Checkbox("LOD Checkerboard Color", &lodCheckerboard))
+			{
+				terrainRuntime->setDebugLodCheckerboardEnabled(lodCheckerboard);
+			}
+		}
+
 		auto bloomComposisit = MaterialPool::shared()->getMatFromTemplate("BloomCompositePass");
 		bloomComposisit->inspect();
 		

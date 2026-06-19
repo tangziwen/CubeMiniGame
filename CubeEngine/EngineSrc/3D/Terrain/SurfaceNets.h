@@ -23,7 +23,9 @@ namespace tzw {
 		float blockSize = 1.0f;
 
 		bool debugLodVertexColorEnabled = true;
+		bool debugLodCheckerboardEnabled = true;
 		int debugLodPower = 0;
+		TerrainNodeKey checkerboardKey;
 	};
 
 	class SurfaceNets : public Singleton<SurfaceNets>

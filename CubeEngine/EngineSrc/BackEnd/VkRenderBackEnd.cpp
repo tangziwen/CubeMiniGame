@@ -1,4 +1,4 @@
-﻿#include "VkRenderBackEnd.h"
+#include "VkRenderBackEnd.h"
 
 #include <assert.h>
 #include <vector>
@@ -565,6 +565,18 @@ VkApplicationInfo appInfo = {};
         devInfo.ppEnabledExtensionNames = pDevExt;
         devInfo.queueCreateInfoCount = 1;
         devInfo.pQueueCreateInfos = &qInfo;
+
+        VkPhysicalDeviceFeatures supportedFeatures = {};
+        vkGetPhysicalDeviceFeatures(GetPhysDevice(), &supportedFeatures);
+        if(!supportedFeatures.fillModeNonSolid)
+        {
+            tlog("[error] Vulkan physical device does not support fillModeNonSolid for wireframe raster mode.");
+            abort();
+        }
+        VkPhysicalDeviceFeatures enabledFeatures = {};
+        enabledFeatures.fillModeNonSolid = VK_TRUE;
+        devInfo.pEnabledFeatures = &enabledFeatures;
+
         VkResult res = vkCreateDevice(GetPhysDevice(), &devInfo, NULL, &m_device);
 
         CHECK_VULKAN_ERROR("vkCreateDevice error %d\n", res);

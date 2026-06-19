@@ -58,6 +58,16 @@ bool TerrainDrawableNode::isBoundTo(const TerrainNodeKey& key, int revision) con
     return m_isBound && m_key == key && m_revision == revision;
 }
 
+void TerrainDrawableNode::setDebugWireframeEnabled(bool enabled)
+{
+    m_debugWireframeEnabled = enabled;
+}
+
+bool TerrainDrawableNode::isDebugWireframeEnabled() const
+{
+    return m_debugWireframeEnabled;
+}
+
 Mesh* TerrainDrawableNode::getMesh()
 {
     return m_mesh;
@@ -96,6 +106,10 @@ void TerrainDrawableNode::submitDrawCmd(RenderFlag::RenderStage stage, RenderQue
     RenderCommand command(m_mesh, m_material, this, stage);
     setUpTransFormation(command.m_transInfo);
     command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
+    if (m_debugWireframeEnabled)
+    {
+        command.addVisualLayer(RenderFlag::RenderVisualLayer::Wireframe);
+    }
     queues->addRenderCommand(command, requirementArg);
 }
 

@@ -3,6 +3,7 @@
 #include "../Interface/DepthPolicy.h"
 #include "../Math/Matrix44.h"
 #include "Mesh/InstanceData.h"
+#include "Rendering/RenderFlag.h"
 #include <vector>
 
 namespace tzw {
@@ -54,6 +55,10 @@ public:
     TransformationInfo m_transInfo;
 	RenderFlag::RenderStage getRenderState() const;
 	void setRenderState(const RenderFlag::RenderStage renderState);
+	uint32_t getVisualLayerMask() const;
+	void setVisualLayerMask(uint32_t mask);
+	void addVisualLayer(RenderFlag::RenderVisualLayer layer);
+	bool hasVisualLayer(RenderFlag::RenderVisualLayer layer) const;
 	RenderBatchType m_batchType;
 	InstancedMesh* getInstancedMesh() const;
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
@@ -64,6 +69,7 @@ public:
 private:
     void *m_obj;
 	RenderFlag::RenderStage m_renderState;
+	uint32_t m_visualLayerMask;
     Mesh * m_mesh;
 	InstancedMesh * m_instancedMesh;
     Material *m_material;

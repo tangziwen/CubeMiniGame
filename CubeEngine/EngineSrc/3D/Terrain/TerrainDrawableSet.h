@@ -14,6 +14,8 @@ class TerrainDrawableSet
 public:
     void setMaterial(Material* material);
     void sync(const TerrainRenderSet& renderSet, const TerrainMeshCache& meshCache);
+    void setDebugWireframeEnabled(bool enabled);
+    bool isDebugWireframeEnabled() const;
     TerrainDrawableNode* find(const TerrainNodeKey& key);
     void releaseMissingNodes(const TerrainRenderSet& renderSet);
     void clear();
@@ -23,6 +25,7 @@ public:
 private:
     std::unordered_map<TerrainNodeKey, std::unique_ptr<TerrainDrawableNode>> m_drawables;
     Material* m_material = nullptr;
+    bool m_debugWireframeEnabled = false;
 };
 
 } // namespace tzw

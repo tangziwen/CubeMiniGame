@@ -33,6 +33,10 @@ public:
 	bool isActive() const;
 	void setDebugLodVertexColorEnabled(bool enabled);
 	bool isDebugLodVertexColorEnabled() const;
+	void setDebugLodCheckerboardEnabled(bool enabled);
+	bool isDebugLodCheckerboardEnabled() const;
+	void setDebugWireframeEnabled(bool enabled);
+	bool isDebugWireframeEnabled() const;
 	void setLodViewerPositionFreezeEnabled(bool enabled);
 	void freezeLodViewerPosition(const vec3& viewerPosition);
 	void unfreezeLodViewerPosition();
@@ -48,6 +52,8 @@ private:
 	std::unique_ptr<TerrainEditSystem> m_editSystem;
 	int m_frameIndex = 0;
 	bool m_debugLodVertexColorEnabled = true;
+	bool m_debugLodCheckerboardEnabled = true;
+	bool m_debugWireframeEnabled = false;
 	bool m_lodViewerPositionFrozen = false;
 	bool m_hasFrozenLodViewerPosition = false;
 	vec3 m_frozenLodViewerPosition;

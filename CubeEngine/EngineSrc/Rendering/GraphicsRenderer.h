@@ -33,6 +33,7 @@ namespace tzw
 		DeviceRenderStage * m_DeferredLightingStage;
 		DeviceRenderStage * m_PointLightingStage;
 		DeviceRenderStage * m_skyStage;
+		DeviceRenderStage * m_debugWireframeStage;
 		DeviceRenderStage * m_SSRStage;
 		DeviceRenderStage * m_HBAOStage;
 		DeviceRenderStage * m_fogStage;
