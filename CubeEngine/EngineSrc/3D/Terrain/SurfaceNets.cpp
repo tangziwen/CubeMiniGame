@@ -4,7 +4,6 @@
 #include <algorithm>
 #include <array>
 #include <cmath>
-#include <map>
 #include <vector>
 
 namespace tzw {
@@ -28,21 +27,6 @@ namespace {
 	const voxelInfo* getVoxel(const voxelInfo* srcData, int voxelSize, int x, int y, int z)
 	{
 		return srcData + getIndex(x, y, z, voxelSize);
-	}
-
-	int axisValue(const TerrainInt3& value, int axis)
-	{
-		switch (axis)
-		{
-		case 0:
-			return value.x;
-		case 1:
-			return value.y;
-		case 2:
-			return value.z;
-		default:
-			return 0;
-		}
 	}
 
 	bool samePosition(const vec3& a, const vec3& b)
@@ -186,57 +170,6 @@ namespace {
 		mesh->addIndex(i2);
 	}
 
-	vec3 estimateDensityGradient(const SurfaceNetsGenerateConfig& config, const vec3& worldPosition)
-	{
-		if (config.blockSize <= 0.0f)
-		{
-			return vec3(0, 0, 0);
-		}
-
-		const vec3 local = (worldPosition - config.mapOffset) / config.blockSize;
-		const int x = static_cast<int>(std::floor(local.x + 0.5f));
-		const int y = static_cast<int>(std::floor(local.y + 0.5f));
-		const int z = static_cast<int>(std::floor(local.z + 0.5f));
-		GameMap* map = GameMap::shared();
-		const float dx = static_cast<float>(map->sampleVoxel(x + 1, y, z).w)
-			- static_cast<float>(map->sampleVoxel(x - 1, y, z).w);
-		const float dy = static_cast<float>(map->sampleVoxel(x, y + 1, z).w)
-			- static_cast<float>(map->sampleVoxel(x, y - 1, z).w);
-		const float dz = static_cast<float>(map->sampleVoxel(x, y, z + 1).w)
-			- static_cast<float>(map->sampleVoxel(x, y, z - 1).w);
-		return vec3(dx, dy, dz);
-	}
-
-	void addTransitionTriangleIfValid(Mesh* mesh, int i0, int i1, int i2,
-		const SurfaceNetsGenerateConfig& config)
-	{
-		if (i0 < 0 || i1 < 0 || i2 < 0)
-		{
-			return;
-		}
-		if (i0 == i1 || i1 == i2 || i0 == i2)
-		{
-			return;
-		}
-		const vec3& p0 = mesh->m_vertices[i0].m_pos;
-		const vec3& p1 = mesh->m_vertices[i1].m_pos;
-		const vec3& p2 = mesh->m_vertices[i2].m_pos;
-		if (samePosition(p0, p1) || samePosition(p1, p2) || samePosition(p0, p2))
-		{
-			return;
-		}
-
-		const vec3 normal = vec3::CrossProduct(p1 - p0, p2 - p0);
-		const vec3 center = (p0 + p1 + p2) / 3.0f;
-		const vec3 gradient = estimateDensityGradient(config, center);
-		if (normal.squaredLength() > 1e-8f && gradient.squaredLength() > 1e-8f
-			&& vec3::DotProduct(normal, gradient) < 0.0f)
-		{
-			std::swap(i1, i2);
-		}
-		addTriangleIfValid(mesh, i0, i1, i2);
-	}
-
 	void addQuad(Mesh* mesh, int c1, int c2, int c3, int c4, bool flipWinding)
 	{
 		if (c1 == -1 || c2 == -1 || c3 == -1 || c4 == -1)
@@ -270,18 +203,6 @@ namespace {
 		info.tangential[0] = (info.axis + 1) % 3;
 		info.tangential[1] = (info.axis + 2) % 3;
 		return info;
-	}
-
-	voxelInfo sampleGlobalVoxelAtLocalCell(const SurfaceNetsGenerateConfig& config, const int localCell[3])
-	{
-		const TerrainInt3 globalCell(
-			config.sampleOrigin.x + localCell[0] * config.sampleStride,
-			config.sampleOrigin.y + localCell[1] * config.sampleStride,
-			config.sampleOrigin.z + localCell[2] * config.sampleStride);
-		return GameMap::shared()->sampleVoxel(
-			globalCell.x,
-			globalCell.y,
-			globalCell.z);
 	}
 
 	DualVertexResult calculateCoarseDualVertexForFineCell(const SurfaceNetsGenerateConfig& config,
@@ -367,128 +288,105 @@ namespace {
 		return result;
 	}
 
-	int addStitchedVertex(Mesh* mesh, const vec3& worldPosition, const voxelInfo& material)
+	bool isStitchFace(const SurfaceNetsGenerateConfig& config, int faceIndex)
 	{
-		mesh->addVertex(makeVertexData(worldPosition, material));
-		return static_cast<int>(mesh->getVerticesSize()) - 1;
+		return config.seams.faces[faceIndex].mode == TerrainMeshSeamMode::StitchToCoarser;
 	}
 
-	void emitTransitionStripForFace(Mesh* mesh, const SurfaceNetsGenerateConfig& config,
+	bool shouldGenerateCellVertex(const SurfaceNetsGenerateConfig& config, int x, int y, int z)
+	{
+		const int minCell = config.minPadding;
+		const int maxCell = minCell + config.cellCount;
+		const int minCellExt = minCell - 1;
+		const int cell[3] = { x, y, z };
+		for (int axis = 0; axis < 3; ++axis)
+		{
+			if (cell[axis] < minCellExt || cell[axis] > maxCell)
+			{
+				return false;
+			}
+			if (cell[axis] == maxCell && !isStitchFace(config, axis * 2 + 1))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	bool shouldEmitSurfaceEdge(const SurfaceNetsGenerateConfig& config, int axis, int x, int y, int z)
+	{
+		const int minCell = config.minPadding;
+		const int maxCell = minCell + config.cellCount;
+		const int minCellExt = minCell - 1;
+		const int cell[3] = { x, y, z };
+		if (cell[axis] < minCellExt || cell[axis] > maxCell - 1)
+		{
+			return false;
+		}
+
+		const TerrainMeshSeamMode negativeMode = config.seams.faces[axis * 2].mode;
+		if (cell[axis] == minCellExt && negativeMode == TerrainMeshSeamMode::SuppressForFiner)
+		{
+			return false;
+		}
+		if (cell[axis] == maxCell - 1 && !isStitchFace(config, axis * 2 + 1))
+		{
+			return false;
+		}
+
+		for (int tangentAxis = 0; tangentAxis < 3; ++tangentAxis)
+		{
+			if (tangentAxis == axis)
+			{
+				continue;
+			}
+			if (cell[tangentAxis] < minCell || cell[tangentAxis] > maxCell)
+			{
+				return false;
+			}
+			if (cell[tangentAxis] == maxCell && !isStitchFace(config, tangentAxis * 2 + 1))
+			{
+				return false;
+			}
+		}
+		return true;
+	}
+
+	void snapStitchedFaceVertices(Mesh* mesh, const SurfaceNetsGenerateConfig& config,
 		std::vector<int>& cellVertexIndex, int faceIndex)
 	{
 		const FaceInfo face = getFaceInfo(faceIndex);
-		const int axis = face.axis;
-		const int side = face.side;
-		const int uAxis = face.tangential[0];
-		const int vAxis = face.tangential[1];
-
 		const int minCell = config.minPadding;
 		const int maxCell = minCell + config.cellCount;
-		// Match the same cell layer that Pass 2 would use for a boundary face.
-		// Negative faces are owned by the halo layer; positive faces use the last
-		// interior layer because the opposite chunk owns the matching negative face.
-		const int faceLocal = (side < 0) ? (minCell - 1) : (maxCell - 1);
-		const int materialLocal = std::clamp(faceLocal, minCell, maxCell - 1);
+		const int minCellExt = minCell - 1;
+		const int faceLocal = (face.side < 0) ? minCellExt : maxCell;
 		const int voxelSize = config.voxelSize;
-		const int s = config.sampleStride;
 
-		// Group face fine cells by coarse cell index in the tangential plane.
-		std::map<std::pair<int, int>, std::vector<std::pair<int, int>>> coarseToFine;
-		for (int u = minCell; u < maxCell; ++u)
+		for (int u = minCellExt; u <= maxCell; ++u)
 		{
-			for (int v = minCell; v < maxCell; ++v)
+			for (int v = minCellExt; v <= maxCell; ++v)
 			{
-				const int cu = static_cast<int>(std::floor(
-					(axisValue(config.sampleOrigin, uAxis) + u * s) / (2.0f * s)));
-				const int cv = static_cast<int>(std::floor(
-					(axisValue(config.sampleOrigin, vAxis) + v * s) / (2.0f * s)));
-				coarseToFine[{cu, cv}].push_back({u, v});
-			}
-		}
-
-		for (const auto& pair : coarseToFine)
-		{
-			const auto& fineCells = pair.second;
-			if (fineCells.empty())
-			{
-				continue;
-			}
-
-			// Use the first fine cell to represent this coarse cell for target calculation.
-			const int representativeU = fineCells.front().first;
-			const int representativeV = fineCells.front().second;
-			int boundaryLocalCell[3] = { 0, 0, 0 };
-			boundaryLocalCell[axis] = faceLocal;
-			boundaryLocalCell[uAxis] = representativeU;
-			boundaryLocalCell[vAxis] = representativeV;
-			const DualVertexResult coarseVertex = calculateCoarseDualVertexForFineCell(
-				config, boundaryLocalCell);
-			if (!coarseVertex.exists)
-			{
-				continue;
-			}
-
-			// Collect interior dual vertices for the fine cells in this coarse cell,
-			// then sort them into cyclic order around the coarse dual vertex.
-			int minU = fineCells.front().first;
-			int maxU = fineCells.front().first;
-			int minV = fineCells.front().second;
-			int maxV = fineCells.front().second;
-			for (const auto& fineCell : fineCells)
-			{
-				minU = std::min(minU, fineCell.first);
-				maxU = std::max(maxU, fineCell.first);
-				minV = std::min(minV, fineCell.second);
-				maxV = std::max(maxV, fineCell.second);
-			}
-
-			std::array<std::pair<int, int>, 4> cyclicOrder = {{
-				{minU, minV},
-				{maxU, minV},
-				{maxU, maxV},
-				{minU, maxV}
-			}};
-
-			std::vector<int> interiorIndices;
-			interiorIndices.reserve(4);
-			for (const auto& coord : cyclicOrder)
-			{
-				int dualLocalCell[3] = { 0, 0, 0 };
-				dualLocalCell[axis] = faceLocal;
-				dualLocalCell[uAxis] = coord.first;
-				dualLocalCell[vAxis] = coord.second;
+				int localCell[3] = { 0, 0, 0 };
+				localCell[face.axis] = faceLocal;
+				localCell[face.tangential[0]] = u;
+				localCell[face.tangential[1]] = v;
 				const int index = cellVertexIndex[getIndex(
-					dualLocalCell[0], dualLocalCell[1], dualLocalCell[2], voxelSize)];
-				if (index >= 0 && std::find(interiorIndices.begin(), interiorIndices.end(), index) == interiorIndices.end())
+					localCell[0], localCell[1], localCell[2], voxelSize)];
+				if (index < 0)
 				{
-					interiorIndices.push_back(index);
+					continue;
 				}
-			}
-
-			if (interiorIndices.size() < 2)
-			{
-				continue;
-			}
-
-			int materialLocalCell[3] = { 0, 0, 0 };
-			materialLocalCell[axis] = materialLocal;
-			materialLocalCell[uAxis] = representativeU;
-			materialLocalCell[vAxis] = representativeV;
-			const voxelInfo material = sampleGlobalVoxelAtLocalCell(config, materialLocalCell);
-			const int boundaryIndex = addStitchedVertex(mesh, coarseVertex.worldPosition, material);
-			if (interiorIndices.size() == 2)
-			{
-				addTransitionTriangleIfValid(mesh, interiorIndices[0], boundaryIndex, interiorIndices[1], config);
-				continue;
-			}
-
-			// Emit fan triangles and orient them against the local density gradient
-			// so terrain back-face culling does not hide generated transition strips.
-			for (size_t i = 0; i < interiorIndices.size(); ++i)
-			{
-				const int prev = interiorIndices[i];
-				const int cur = interiorIndices[(i + 1) % interiorIndices.size()];
-				addTransitionTriangleIfValid(mesh, prev, boundaryIndex, cur, config);
+				const DualVertexResult coarseVertex = calculateCoarseDualVertexForFineCell(
+					config, localCell);
+				if (!coarseVertex.exists)
+				{
+					continue;
+				}
+				mesh->m_vertices[index].m_pos = coarseVertex.worldPosition;
+				mesh->m_vertices[index].m_texCoord = vec2(
+					coarseVertex.worldPosition.x,
+					coarseVertex.worldPosition.z);
+				mesh->m_vertices[index].m_color = vec4(1, 0, 0, 1);
 			}
 		}
 	}
@@ -515,7 +413,7 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, const voxelInfo* srcData,
 	const float cellWorldSize = config.cellWorldSize;
 	const unsigned char isoLevel = config.isoLevel;
 	if (voxelSize <= 0 || cellCount <= 0 || minCell <= 0 || cellWorldSize <= 0.0f
-		|| minCellExt < 0 || maxCell >= voxelSize)
+		|| minCellExt < 0 || maxCell + 1 >= voxelSize)
 	{
 		return;
 	}
@@ -523,14 +421,18 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, const voxelInfo* srcData,
 
 	// ---- Pass 1: dual vertex generation ------------------------------------
 	// Negative-side halo cells are generated so this chunk can own the seam
-	// on its -X/-Y/-Z boundaries. Positive-side boundary faces are skipped in
-	// Pass 2, so adjacent chunks do not emit the same boundary twice.
-	for (int z = minCellExt; z < maxCell; ++z)
+	// on its -X/-Y/-Z boundaries. Positive-side halo cells are generated only
+	// for fine-to-coarse stitch faces, where this fine chunk owns the transition.
+	for (int z = minCellExt; z <= maxCell; ++z)
 	{
-		for (int y = minCellExt; y < maxCell; ++y)
+		for (int y = minCellExt; y <= maxCell; ++y)
 		{
-			for (int x = minCellExt; x < maxCell; ++x)
+			for (int x = minCellExt; x <= maxCell; ++x)
 			{
+				if (!shouldGenerateCellVertex(config, x, y, z))
+				{
+					continue;
+				}
 				const DualVertexResult vertex = calculateDualVertex(
 					basePoint, srcData, voxelSize, minCell, cellWorldSize, isoLevel, x, y, z);
 				if (!vertex.exists)
@@ -544,6 +446,14 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, const voxelInfo* srcData,
 		}
 	}
 
+	for (int face = 0; face < 6; ++face)
+	{
+		if (isStitchFace(config, face))
+		{
+			snapStitchedFaceVertices(mesh, config, cellVertexIndex, face);
+		}
+	}
+
 	// ---- Pass 2: triangle generation ---------------------------------------
 	for (int z = minCellExt; z <= maxCell; ++z)
 	{
@@ -554,85 +464,45 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, const voxelInfo* srcData,
 				const unsigned char valSelf = getValue(srcData, voxelSize, x, y, z);
 				const bool selfIn = valSelf < isoLevel;
 
-				if (x + 1 < voxelSize && y >= minCell && z >= minCell
-					&& x != maxCell - 1)
+				if (x + 1 < voxelSize && shouldEmitSurfaceEdge(config, 0, x, y, z))
 				{
 					const unsigned char valX = getValue(srcData, voxelSize, x + 1, y, z);
 					if (selfIn != (valX < isoLevel))
 					{
-						// NegativeX boundary quads are emitted at x == minCell - 1.
-						// Suppress them when the finer neighbor owns LOD transition geometry
-						// or when this node must not overlap a finer neighbor's strip.
-						const bool isNegativeBoundary = (x == minCell - 1);
-						const TerrainMeshSeamMode mode = config.seams.faces[0].mode;
-						const bool suppress = isNegativeBoundary
-							&& (mode == TerrainMeshSeamMode::StitchToCoarser
-								|| mode == TerrainMeshSeamMode::SuppressForFiner);
-						if (!suppress)
-						{
-							const int c1 = cellVertexIndex[getIndex(x, y - 1, z - 1, voxelSize)];
-							const int c2 = cellVertexIndex[getIndex(x, y, z - 1, voxelSize)];
-							const int c3 = cellVertexIndex[getIndex(x, y, z, voxelSize)];
-							const int c4 = cellVertexIndex[getIndex(x, y - 1, z, voxelSize)];
-							addQuad(mesh, c1, c2, c3, c4, !selfIn);
-						}
+						const int c1 = cellVertexIndex[getIndex(x, y - 1, z - 1, voxelSize)];
+						const int c2 = cellVertexIndex[getIndex(x, y, z - 1, voxelSize)];
+						const int c3 = cellVertexIndex[getIndex(x, y, z, voxelSize)];
+						const int c4 = cellVertexIndex[getIndex(x, y - 1, z, voxelSize)];
+						addQuad(mesh, c1, c2, c3, c4, !selfIn);
 					}
 				}
 
-				if (y + 1 < voxelSize && x >= minCell && z >= minCell
-					&& y != maxCell - 1)
+				if (y + 1 < voxelSize && shouldEmitSurfaceEdge(config, 1, x, y, z))
 				{
 					const unsigned char valY = getValue(srcData, voxelSize, x, y + 1, z);
 					if (selfIn != (valY < isoLevel))
 					{
-						const bool isNegativeBoundary = (y == minCell - 1);
-						const TerrainMeshSeamMode mode = config.seams.faces[2].mode;
-						const bool suppress = isNegativeBoundary
-							&& (mode == TerrainMeshSeamMode::StitchToCoarser
-								|| mode == TerrainMeshSeamMode::SuppressForFiner);
-						if (!suppress)
-						{
-							const int c1 = cellVertexIndex[getIndex(x - 1, y, z - 1, voxelSize)];
-							const int c2 = cellVertexIndex[getIndex(x, y, z - 1, voxelSize)];
-							const int c3 = cellVertexIndex[getIndex(x, y, z, voxelSize)];
-							const int c4 = cellVertexIndex[getIndex(x - 1, y, z, voxelSize)];
-							addQuad(mesh, c1, c2, c3, c4, selfIn);
-						}
+						const int c1 = cellVertexIndex[getIndex(x - 1, y, z - 1, voxelSize)];
+						const int c2 = cellVertexIndex[getIndex(x, y, z - 1, voxelSize)];
+						const int c3 = cellVertexIndex[getIndex(x, y, z, voxelSize)];
+						const int c4 = cellVertexIndex[getIndex(x - 1, y, z, voxelSize)];
+						addQuad(mesh, c1, c2, c3, c4, selfIn);
 					}
 				}
 
-				if (z + 1 < voxelSize && x >= minCell && y >= minCell
-					&& z != maxCell - 1)
+				if (z + 1 < voxelSize && shouldEmitSurfaceEdge(config, 2, x, y, z))
 				{
 					const unsigned char valZ = getValue(srcData, voxelSize, x, y, z + 1);
 					if (selfIn != (valZ < isoLevel))
 					{
-						const bool isNegativeBoundary = (z == minCell - 1);
-						const TerrainMeshSeamMode mode = config.seams.faces[4].mode;
-						const bool suppress = isNegativeBoundary
-							&& (mode == TerrainMeshSeamMode::StitchToCoarser
-								|| mode == TerrainMeshSeamMode::SuppressForFiner);
-						if (!suppress)
-						{
-							const int c1 = cellVertexIndex[getIndex(x - 1, y - 1, z, voxelSize)];
-							const int c2 = cellVertexIndex[getIndex(x, y - 1, z, voxelSize)];
-							const int c3 = cellVertexIndex[getIndex(x, y, z, voxelSize)];
-							const int c4 = cellVertexIndex[getIndex(x - 1, y, z, voxelSize)];
-							addQuad(mesh, c1, c2, c3, c4, !selfIn);
-						}
+						const int c1 = cellVertexIndex[getIndex(x - 1, y - 1, z, voxelSize)];
+						const int c2 = cellVertexIndex[getIndex(x, y - 1, z, voxelSize)];
+						const int c3 = cellVertexIndex[getIndex(x, y, z, voxelSize)];
+						const int c4 = cellVertexIndex[getIndex(x - 1, y, z, voxelSize)];
+						addQuad(mesh, c1, c2, c3, c4, !selfIn);
 					}
 				}
 			}
-		}
-	}
-
-	// ---- Pass 3: LOD transition strips -------------------------------------
-	// Emit fine-side transition strips for faces adjacent to a coarser neighbor.
-	for (int face = 0; face < 6; ++face)
-	{
-		if (config.seams.faces[face].mode == TerrainMeshSeamMode::StitchToCoarser)
-		{
-			emitTransitionStripForFace(mesh, config, cellVertexIndex, face);
 		}
 	}
 
