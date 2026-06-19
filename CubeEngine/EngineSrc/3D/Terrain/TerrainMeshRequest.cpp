@@ -5,6 +5,52 @@
 
 namespace tzw {
 
+bool TerrainMeshSeamFace::operator==(const TerrainMeshSeamFace& other) const
+{
+	return mode == other.mode && levelDelta == other.levelDelta;
+}
+
+bool TerrainMeshSeamFace::operator!=(const TerrainMeshSeamFace& other) const
+{
+	return !(*this == other);
+}
+
+bool TerrainMeshSeamSet::operator==(const TerrainMeshSeamSet& other) const
+{
+	for (size_t i = 0; i < faces.size(); ++i)
+	{
+		if (faces[i] != other.faces[i])
+			return false;
+	}
+	return true;
+}
+
+bool TerrainMeshSeamSet::operator!=(const TerrainMeshSeamSet& other) const
+{
+	return !(*this == other);
+}
+
+uint32_t TerrainMeshSeamSet::signature() const
+{
+	uint32_t sig = 0;
+	for (const auto& face : faces)
+	{
+		sig = sig * 31 + static_cast<uint32_t>(face.mode);
+		sig = sig * 31 + static_cast<uint32_t>(face.levelDelta);
+	}
+	return sig;
+}
+
+bool TerrainMeshSeamSet::hasTransition() const
+{
+	for (const auto& face : faces)
+	{
+		if (face.mode == TerrainMeshSeamMode::StitchToCoarser)
+			return true;
+	}
+	return false;
+}
+
 bool TerrainMeshRequest::isValid() const
 {
 	return region.cellSize > 0
@@ -13,12 +59,23 @@ bool TerrainMeshRequest::isValid() const
 		&& sampleLodPower >= 0
 		&& voxelSize > 0
 		&& blockSize > 0.0f
+		&& domainSize.x > 0
+		&& domainSize.y > 0
+		&& domainSize.z > 0
+		&& seamSignature == seams.signature()
 		&& region.sampleStride(meshCellCount) == sampleStride
 		&& region.sampleLodPower(meshCellCount) == sampleLodPower;
 }
 
 TerrainMeshRequest makeTerrainMeshRequest(const TerrainOctreeNode& node,
 	const TerrainOctreeConfig& config, int revision)
+{
+	return makeTerrainMeshRequest(node, config, revision, TerrainMeshSeamSet());
+}
+
+TerrainMeshRequest makeTerrainMeshRequest(const TerrainOctreeNode& node,
+	const TerrainOctreeConfig& config, int revision,
+	const TerrainMeshSeamSet& seams)
 {
 	TerrainMeshRequest request;
 	if (!config.isValid())
@@ -35,6 +92,9 @@ TerrainMeshRequest makeTerrainMeshRequest(const TerrainOctreeNode& node,
 	request.mapOffset = config.mapOffset;
 	request.blockSize = config.blockSize;
 	request.revision = revision;
+	request.domainSize = config.domainSize;
+	request.seams = seams;
+	request.seamSignature = request.seams.signature();
 	return request;
 }
 

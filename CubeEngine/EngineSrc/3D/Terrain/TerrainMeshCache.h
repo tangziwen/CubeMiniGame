@@ -27,6 +27,10 @@ public:
 	TerrainMeshCacheEntry& ensure(const TerrainNodeKey& key);
 
 	TerrainMeshRequest makeRequest(const TerrainOctreeNode& node, const TerrainOctreeConfig& config);
+	TerrainMeshRequest makeRequest(const TerrainOctreeNode& node, const TerrainOctreeConfig& config,
+		const TerrainMeshSeamSet& seams);
+	bool hasFreshReadyMesh(const TerrainNodeKey& key, const TerrainMeshSeamSet& seams) const;
+	bool hasMatchingRequest(const TerrainNodeKey& key, const TerrainMeshSeamSet& seams) const;
 	void markRequested(const TerrainMeshRequest& request);
 	bool storeReady(const TerrainMeshRequest& request, std::unique_ptr<Mesh> mesh);
 	bool markFailed(const TerrainMeshRequest& request);

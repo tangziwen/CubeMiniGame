@@ -2,6 +2,7 @@
 
 #include "../../Engine/EngineDef.h"
 #include "../../Mesh/Mesh.h"
+#include "TerrainMeshRequest.h"
 
 namespace tzw {
 	struct voxelInfo;
@@ -13,6 +14,13 @@ namespace tzw {
 		int minPadding = 0;
 		float cellWorldSize = 1.0f;
 		unsigned char isoLevel = 128;
+
+		TerrainMeshSeamSet seams;
+		TerrainInt3 sampleOrigin;
+		int sampleStride = 0;
+		TerrainInt3 domainSize;
+		vec3 mapOffset;
+		float blockSize = 1.0f;
 	};
 
 	class SurfaceNets : public Singleton<SurfaceNets>

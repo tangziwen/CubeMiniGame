@@ -35,6 +35,10 @@ private:
 	void traverse(TerrainOctreeNode* node, const TerrainLodContext& context);
 	void markDirtyInBoundsRecursive(TerrainOctreeNode* node, const TerrainEditBounds& bounds, int& count);
 
+	bool balanceRenderSet();
+	TerrainOctreeNode* findFirstUnbalancedRenderNode() const;
+	bool replaceRenderNodeWithChildren(TerrainOctreeNode* node);
+
 	TerrainOctreeConfig m_config;
 	std::unique_ptr<TerrainOctreeNode> m_root;
 	TerrainLodSelector m_lodSelector;

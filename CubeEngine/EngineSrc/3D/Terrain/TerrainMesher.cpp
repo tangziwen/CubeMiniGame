@@ -31,6 +31,13 @@ TerrainMeshBuildResult TerrainMesher::build(const TerrainMeshRequest& request,
 	config.cellWorldSize = request.sampleStride * request.blockSize;
 	config.isoLevel = 128;
 
+	config.seams = request.seams;
+	config.sampleOrigin = sampleBuffer.sampleOrigin;
+	config.sampleStride = request.sampleStride;
+	config.domainSize = request.domainSize;
+	config.mapOffset = request.mapOffset;
+	config.blockSize = request.blockSize;
+
 	SurfaceNets::shared()->generate(basePoint, result.mesh.get(),
 		sampleBuffer.voxels.data(), config);
 

@@ -20,6 +20,25 @@ bool TerrainRenderSet::addNode(TerrainOctreeNode* node)
 	return true;
 }
 
+bool TerrainRenderSet::removeNode(const TerrainNodeKey& key)
+{
+	if (m_keys.find(key) == m_keys.end())
+	{
+		return false;
+	}
+
+	m_keys.erase(key);
+	for (auto it = m_nodes.begin(); it != m_nodes.end(); ++it)
+	{
+		if (*it && (*it)->key() == key)
+		{
+			m_nodes.erase(it);
+			return true;
+		}
+	}
+	return false;
+}
+
 TerrainOctreeNode* TerrainRenderSet::findNode(const TerrainNodeKey& key) const
 {
 	for (TerrainOctreeNode* node : m_nodes)

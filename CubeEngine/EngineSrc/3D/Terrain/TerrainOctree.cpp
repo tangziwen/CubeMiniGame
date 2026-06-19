@@ -1,5 +1,6 @@
 #include "TerrainOctree.h"
 #include "GameMapConfig.h"
+#include "TerrainNeighborResolver.h"
 
 #include <algorithm>
 
@@ -42,6 +43,7 @@ void TerrainOctree::update(const TerrainLodContext& context)
 		return;
 	}
 	traverse(m_root.get(), context);
+	balanceRenderSet();
 }
 
 void TerrainOctree::update(const vec3& viewerPosition)
@@ -216,6 +218,75 @@ void TerrainOctree::traverse(TerrainOctreeNode* node, const TerrainLodContext& c
 	}
 
 	m_renderSet.addNode(node);
+}
+
+bool TerrainOctree::balanceRenderSet()
+{
+	const int maxIterations = 64 + m_config.maxDepth * 64;
+	for (int i = 0; i < maxIterations; ++i)
+	{
+		TerrainOctreeNode* node = findFirstUnbalancedRenderNode();
+		if (!node)
+		{
+			return true;
+		}
+
+		if (!replaceRenderNodeWithChildren(node))
+		{
+			return false;
+		}
+	}
+	return false;
+}
+
+TerrainOctreeNode* TerrainOctree::findFirstUnbalancedRenderNode() const
+{
+	TerrainNeighborResolver resolver;
+	for (TerrainOctreeNode* node : m_renderSet.nodes())
+	{
+		if (!node)
+		{
+			continue;
+		}
+
+		const auto neighbors = resolver.findNeighbors(*this, m_renderSet, *node);
+		for (const auto& relation : neighbors)
+		{
+			if (!relation.exists || relation.isBoundary)
+			{
+				continue;
+			}
+
+			if (relation.isCoarser && -relation.levelDelta > 1)
+			{
+				return relation.node;
+			}
+
+			if (relation.isFiner && relation.levelDelta > 1)
+			{
+				return node;
+			}
+		}
+	}
+	return nullptr;
+}
+
+bool TerrainOctree::replaceRenderNodeWithChildren(TerrainOctreeNode* node)
+{
+	if (!node || !node->subdivide(m_config))
+	{
+		return false;
+	}
+
+	m_renderSet.removeNode(node->key());
+	for (int i = 0; i < 8; ++i)
+	{
+		if (TerrainOctreeNode* child = node->child(i))
+		{
+			m_renderSet.addNode(child);
+		}
+	}
+	return true;
 }
 
 } // namespace tzw

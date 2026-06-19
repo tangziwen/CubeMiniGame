@@ -25,8 +25,29 @@ TerrainMeshCacheEntry& TerrainMeshCache::ensure(const TerrainNodeKey& key)
 TerrainMeshRequest TerrainMeshCache::makeRequest(const TerrainOctreeNode& node,
 	const TerrainOctreeConfig& config)
 {
+	return makeRequest(node, config, TerrainMeshSeamSet());
+}
+
+TerrainMeshRequest TerrainMeshCache::makeRequest(const TerrainOctreeNode& node,
+	const TerrainOctreeConfig& config, const TerrainMeshSeamSet& seams)
+{
 	TerrainMeshCacheEntry& entry = ensure(node.key());
-	return makeTerrainMeshRequest(node, config, entry.revision + 1);
+	return makeTerrainMeshRequest(node, config, entry.revision + 1, seams);
+}
+
+bool TerrainMeshCache::hasFreshReadyMesh(const TerrainNodeKey& key,
+	const TerrainMeshSeamSet& seams) const
+{
+	const TerrainMeshCacheEntry* entry = find(key);
+	return entry && entry->state == TerrainMeshState::Ready
+		&& entry->request.seamSignature == seams.signature();
+}
+
+bool TerrainMeshCache::hasMatchingRequest(const TerrainNodeKey& key,
+	const TerrainMeshSeamSet& seams) const
+{
+	const TerrainMeshCacheEntry* entry = find(key);
+	return entry && entry->request.seamSignature == seams.signature();
 }
 
 void TerrainMeshCache::markRequested(const TerrainMeshRequest& request)

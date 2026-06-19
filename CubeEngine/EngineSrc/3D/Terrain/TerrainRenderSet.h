@@ -14,6 +14,7 @@ public:
 
 	void clear();
 	bool addNode(TerrainOctreeNode* node);
+	bool removeNode(const TerrainNodeKey& key);
 	TerrainOctreeNode* findNode(const TerrainNodeKey& key) const;
 	bool contains(const TerrainNodeKey& key) const;
 	bool conflictsWith(const TerrainNodeKey& key) const;

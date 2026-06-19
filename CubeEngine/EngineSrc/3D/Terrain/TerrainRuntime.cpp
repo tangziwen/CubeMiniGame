@@ -9,11 +9,53 @@
 #include "TerrainOctreeTypes.h"
 #include "TerrainRenderSet.h"
 #include "TerrainOctreeNode.h"
+#include "TerrainNeighborResolver.h"
 #include "../../Base/Node.h"
 #include "../../Technique/MaterialPool.h"
 #include "GameMap.h"
 
 namespace tzw {
+
+namespace
+{
+
+TerrainMeshSeamSet makeTerrainMeshSeams(const TerrainOctree& octree,
+	const TerrainRenderSet& renderSet, const TerrainOctreeNode& node)
+{
+	TerrainMeshSeamSet seams;
+	TerrainNeighborResolver resolver;
+	const auto neighbors = resolver.findNeighbors(octree, renderSet, node);
+	for (size_t i = 0; i < neighbors.size(); ++i)
+	{
+		const auto& relation = neighbors[i];
+		TerrainMeshSeamFace& face = seams.faces[i];
+		face.levelDelta = relation.levelDelta;
+
+		if (relation.isBoundary || !relation.exists)
+		{
+			face.mode = TerrainMeshSeamMode::Boundary;
+		}
+		else if (relation.isSameLevel)
+		{
+			face.mode = TerrainMeshSeamMode::SameLevel;
+		}
+		else if (relation.isCoarser && relation.levelDelta == -1)
+		{
+			face.mode = TerrainMeshSeamMode::StitchToCoarser;
+		}
+		else if (relation.isFiner && relation.levelDelta == 1)
+		{
+			face.mode = TerrainMeshSeamMode::SuppressForFiner;
+		}
+		else
+		{
+			face.mode = TerrainMeshSeamMode::Invalid;
+		}
+	}
+	return seams;
+}
+
+} // namespace
 
 TerrainRuntime::TerrainRuntime()
 {
@@ -73,6 +115,9 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 		const TerrainNodeKey& key = node->key();
 		const TerrainMeshCacheEntry* entry = m_meshCache->find(key);
 
+		// Compute current seam set before deciding if a rebuild is needed.
+		TerrainMeshSeamSet seams = makeTerrainMeshSeams(*m_octree, renderSet, *node);
+
 		bool needRequest = false;
 		if (!entry)
 		{
@@ -86,6 +131,11 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 		{
 			needRequest = true;
 		}
+		else if ((entry->state == TerrainMeshState::Ready || entry->state == TerrainMeshState::Failed)
+			&& entry->request.seamSignature != seams.signature())
+		{
+			needRequest = true;
+		}
 
 		if (needRequest)
 		{
@@ -93,7 +143,7 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 			{
 				continue;
 			}
-			TerrainMeshRequest request = m_meshCache->makeRequest(*node, m_octree->config());
+			TerrainMeshRequest request = m_meshCache->makeRequest(*node, m_octree->config(), seams);
 			m_meshCache->markRequested(request);
 
 			// First version: synchronous generation
