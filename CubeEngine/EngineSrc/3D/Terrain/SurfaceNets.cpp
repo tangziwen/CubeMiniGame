@@ -423,6 +423,11 @@ namespace {
 		const int maxCell = minCell + config.cellCount;
 		for (int faceIndex = 0; faceIndex < 6; ++faceIndex)
 		{
+			const FaceInfo face = getFaceInfo(faceIndex);
+			if (edgeAxis == face.axis)
+			{
+				continue;
+			}
 			if (config.seams.faces[faceIndex].mode != TerrainMeshSeamMode::SuppressForFiner)
 			{
 				continue;
@@ -439,6 +444,11 @@ namespace {
 			}
 		}
 		return false;
+	}
+
+	bool positiveAxisEdgeOwnedByNeighbor(const SurfaceNetsGenerateConfig& config, int axis)
+	{
+		return config.seams.faces[axis * 2 + 1].mode == TerrainMeshSeamMode::SameLevel;
 	}
 
 	bool edgeTouchesStitchFace(const SurfaceNetsGenerateConfig& config,
@@ -511,18 +521,18 @@ namespace {
 		const int maxCell = minCell + config.cellCount;
 		const int minCellExt = minCell - 1;
 		const int cell[3] = { x, y, z };
-		if (cell[axis] < minCellExt || cell[axis] > maxCell - 1)
-		{
-			return false;
-		}
-		if (shouldSuppressEdgeForFiner(config, axis, cell))
-		{
-			return false;
-		}
-		if (cell[axis] == maxCell - 1 && !isStitchFace(config, axis * 2 + 1))
-		{
-			return false;
-		}
+		//if (cell[axis] < minCellExt || cell[axis] > maxCell - 1)
+		//{
+		//	return false;
+		//}
+		//if (shouldSuppressEdgeForFiner(config, axis, cell))
+		//{
+		//	return false;
+		//}
+		//if (cell[axis] == maxCell - 1 && positiveAxisEdgeOwnedByNeighbor(config, axis))
+		//{
+		//	return false;
+		//}
 		const bool touchesStitchFace = edgeTouchesStitchFace(config, axis, cell);
 
 		for (int tangentAxis = 0; tangentAxis < 3; ++tangentAxis)
@@ -535,12 +545,12 @@ namespace {
 			{
 				return false;
 			}
-			if (cell[tangentAxis] == maxCell
-				&& !isStitchFace(config, tangentAxis * 2 + 1)
-				&& !touchesStitchFace)
-			{
-				return false;
-			}
+			//if (cell[tangentAxis] == maxCell
+			//	&& !isStitchFace(config, tangentAxis * 2 + 1)
+			//	&& !touchesStitchFace)
+			//{
+			//	return false;
+			//}
 		}
 		return true;
 	}
