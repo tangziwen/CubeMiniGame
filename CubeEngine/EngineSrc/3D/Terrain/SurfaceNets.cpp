@@ -441,6 +441,25 @@ namespace {
 		return false;
 	}
 
+	bool edgeTouchesStitchFace(const SurfaceNetsGenerateConfig& config,
+		int edgeAxis, const int cell[3])
+	{
+		const int minCell = config.minPadding;
+		const int maxCell = minCell + config.cellCount;
+		for (int faceIndex = 0; faceIndex < 6; ++faceIndex)
+		{
+			if (!isStitchFace(config, faceIndex))
+			{
+				continue;
+			}
+			if (edgeTouchesFace(edgeAxis, cell, faceIndex, minCell, maxCell))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	bool isOnStitchFace(const SurfaceNetsGenerateConfig& config, const int cell[3])
 	{
 		const int minCellExt = config.minPadding - 1;
@@ -504,6 +523,7 @@ namespace {
 		{
 			return false;
 		}
+		const bool touchesStitchFace = edgeTouchesStitchFace(config, axis, cell);
 
 		for (int tangentAxis = 0; tangentAxis < 3; ++tangentAxis)
 		{
@@ -515,7 +535,9 @@ namespace {
 			{
 				return false;
 			}
-			if (cell[tangentAxis] == maxCell && !isStitchFace(config, tangentAxis * 2 + 1))
+			if (cell[tangentAxis] == maxCell
+				&& !isStitchFace(config, tangentAxis * 2 + 1)
+				&& !touchesStitchFace)
 			{
 				return false;
 			}
