@@ -461,7 +461,7 @@ set(ENGINE_HEADERS
     ScriptPy/ScriptUI.h
     Shader/ShaderMgr.h
     Shader/ShaderProgram.h
-    Technique/Material.h
+    Technique/MaterialInstance.h
     Technique/MaterialPool.h
     Technique/MaterialTemplate.h
     Technique/ShadingParams.h

@@ -12,7 +12,7 @@ namespace tzw
         vec2 winSize = Engine::shared()->winSize();
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
-	    Material * matTSAA = new Material();
+	    MaterialInstance * matTSAA = new MaterialInstance();
 	    matTSAA->loadFromTemplate("TSAA");
 
 

@@ -198,11 +198,15 @@ std::string resolvePathInFolder(const std::string& filePath, const std::string& 
     return filePath;
 }
 
-void loadTextureMap(ShadingParams& params, std::unordered_map<std::string, unsigned int>& texSlotMap, rapidjson::Value& tex, std::string envFolder)
+void loadTextureMapSlot(std::unordered_map<std::string, unsigned int>& texSlotMap, rapidjson::Value& tex)
 {
     std::string name = tex[0].GetString();
     texSlotMap[name] = tex[1].GetInt();
+}
 
+void loadDefaultTextureMapParam(ShadingParams& params, rapidjson::Value& tex, std::string envFolder)
+{
+    std::string name = tex[0].GetString();
     if(tex.Size() > 2 && strlen(tex[2].GetString()))
     {
         auto texturePath = resolvePathInFolder(tex[2].GetString(), envFolder);
@@ -232,6 +236,12 @@ void loadTextureMap(ShadingParams& params, std::unordered_map<std::string, unsig
             params.setTex(name, nullptr);
         }
     }
+}
+
+void loadDefaultTextureMap(ShadingParams& params, std::unordered_map<std::string, unsigned int>& texSlotMap, rapidjson::Value& tex, std::string envFolder)
+{
+    loadTextureMapSlot(texSlotMap, tex);
+    loadDefaultTextureMapParam(params, tex, envFolder);
 }
 
 std::unordered_map<std::string, MaterialTemplate*>& getTemplateCache()
@@ -370,7 +380,7 @@ void MaterialTemplate::loadFromJson(rapidjson::Value& doc, std::string envFolder
         auto& texMap = materialInfo["maps"];
         for(unsigned int i = 0; i < texMap.Size(); i++)
         {
-            loadTextureMap(m_shadingParams, m_texSlotMap, texMap[i], envFolder);
+            loadDefaultTextureMap(m_shadingParams, m_texSlotMap, texMap[i], envFolder);
         }
     }
 

@@ -68,9 +68,9 @@ namespace tzw
         m_gPassStage->setName("GBufferPass");
         m_gPassStage->init(gBufferRenderPass, gBuffer, (uint32_t)RenderFlag::RenderStage::COMMON);
 
-        m_shadowMat = new Material();
+        m_shadowMat = new MaterialInstance();
         m_shadowMat->loadFromTemplate("Shadow");
-        m_shadowInstancedMat = new Material();
+        m_shadowInstancedMat = new MaterialInstance();
         m_shadowInstancedMat->loadFromTemplate("ShadowInstance");
 
         for(int i = 0; i < 3; i ++)
@@ -94,12 +94,12 @@ namespace tzw
         m_DeferredLightingStage = backEnd->createRenderStage_imp();
         m_DeferredLightingStage->init(deferredLightingPass, deferredLightingBuffer);
         m_DeferredLightingStage->setName("Deferred Sun Lighting Stage");
-        Material * mat = new Material();
+        MaterialInstance* mat = new MaterialInstance();
         mat->loadFromTemplate("DirectLight");
         m_DeferredLightingStage->createSinglePipeline(mat);
 
         //point light
-        Material * pointLightMat = new Material();
+        MaterialInstance * pointLightMat = new MaterialInstance();
         pointLightMat->loadFromTemplate("PointLight");
         auto pointLightPass = backEnd->createDeviceRenderpass_imp();
         pointLightPass->init({
@@ -127,13 +127,13 @@ namespace tzw
         m_skyStage->init(skyPass, m_DeferredLightingStage->getFrameBuffer());
         m_skyStage->setName("Sky Stage");
 
-        Material * matSkyPass = new Material();
+        MaterialInstance * matSkyPass = new MaterialInstance();
         matSkyPass->loadFromTemplate("Sky");
         m_skyStage->createSinglePipeline(matSkyPass);
 
 
 
-	    Material * matHBAO = new Material();
+	    MaterialInstance * matHBAO = new MaterialInstance();
 	    matHBAO->loadFromTemplate("HBAO");
 		static Texture * jitterTex = nullptr;
 		if(!jitterTex)
@@ -183,7 +183,7 @@ namespace tzw
 		m_sceneCopyTex = new DeviceTextureVK();
 		m_sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 		
-	    Material * matSSR = new Material();
+	    MaterialInstance * matSSR = new MaterialInstance();
 	    matSSR->loadFromTemplate("SSR");
 	    MaterialPool::shared()->addMaterial("SSR", matSSR);
         auto SSRPass = backEnd->createDeviceRenderpass_imp();
@@ -197,7 +197,7 @@ namespace tzw
 
 
 		
-	    Material * matFog = new Material();
+	    MaterialInstance * matFog = new MaterialInstance();
 	    matFog->loadFromTemplate("GlobalFog");
 	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
         auto fogPass = backEnd->createDeviceRenderpass_imp();
@@ -214,7 +214,7 @@ namespace tzw
         auto FXAAPass = backEnd->createDeviceRenderpass_imp();
         FXAAPass->init({{
             ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-	    Material * matFXAA = new Material();
+	    MaterialInstance * matFXAA = new MaterialInstance();
 	    matFXAA->loadFromTemplate("FXAA");
         auto fxAABuffer = backEnd->createFrameBuffer_imp();
         fxAABuffer->init(size.x, size.y, FXAAPass);
@@ -251,7 +251,7 @@ namespace tzw
         computeShader->finish();
         m_computeTest->createSingleComputePipeline(computeShader);
 
-        Material * matTextureToScreen = new Material();
+        MaterialInstance * matTextureToScreen = new MaterialInstance();
         matTextureToScreen->loadFromTemplate("TextureToScreen");
 
         for(int i = 0 ; i < 2; i++)
@@ -298,7 +298,7 @@ namespace tzw
         m_imguiVertex->setAlignment(1024);
         m_imguiVertex->allocateEmpty(1024);
 
-        m_imguiMat = new Material();
+        m_imguiMat = new MaterialInstance();
         m_imguiMat->loadFromTemplate("IMGUI");
 
 

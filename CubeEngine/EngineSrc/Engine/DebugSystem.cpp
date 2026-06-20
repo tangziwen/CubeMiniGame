@@ -4,7 +4,7 @@
 #include "2D/LabelNew.h"
 #include "3D/Primitive/LinePrimitive.h"
 #include "Rendering/RenderQueues.h"
-#include "Technique/Material.h"
+#include "Technique/MaterialInstance.h"
 #include <algorithm>
 #include <cmath>
 
@@ -313,7 +313,7 @@ RenderQueue* DebugSystem::buildWireframeQueue(const RenderQueue* sourceQueue)
 		return m_wireframeQueue.get();
 	}
 
-	Material* wireframeMaterial = getDebugWireframeMaterial();
+	MaterialInstance* wireframeMaterial = getDebugWireframeMaterial();
 	for(auto& command : sourceQueue->getList())
 	{
 		if(!command.hasRenderStage(RenderFlag::RenderStage::DEBUG_LAYER))
@@ -514,11 +514,11 @@ void DebugSystem::removeDestroyRequestedPrimitives()
 		}), m_retainedPrimitives.end());
 }
 
-Material* DebugSystem::getDebugWireframeMaterial()
+MaterialInstance* DebugSystem::getDebugWireframeMaterial()
 {
 	if(!m_debugWireframeMaterial)
 	{
-		m_debugWireframeMaterial = Material::createFromTemplate("Color");
+		m_debugWireframeMaterial = MaterialInstance::createFromTemplate("Color");
 		auto materialTemplate = m_debugWireframeMaterial->ensureUniqueMaterialTemplate();
 		materialTemplate->setRenderStage(RenderFlag::RenderStage::DEBUG_LAYER);
 		materialTemplate->setPrimitiveTopology(PrimitiveTopology::TriangleList);

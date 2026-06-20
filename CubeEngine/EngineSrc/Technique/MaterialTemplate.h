@@ -55,7 +55,7 @@ public:
     void reload();
 
 private:
-    friend class Material;
+    friend class MaterialInstance;
 
     void updateFullDescriptionStr();
 
