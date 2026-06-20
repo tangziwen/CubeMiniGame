@@ -8,7 +8,7 @@
 #include "BackEnd/vk/DeviceBufferVK.h"
 #include "Mesh/InstancedMesh.h"
 #include "DeviceMaterialVK.h"
-#include "Technique/Material.h"
+#include "Technique/MaterialInstance.h"
 namespace tzw
 {
 	DeviceRenderStageVK::DeviceRenderStageVK()
@@ -32,7 +32,7 @@ namespace tzw
         {
 
             //if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
-            Material * mat = a.getMat();
+            MaterialInstance * mat = a.getMat();
             auto materialTemplate = mat->getMaterialTemplate();
 
             //std::string & matStr = mat->getFullDescriptionStr();

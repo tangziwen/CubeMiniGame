@@ -4,7 +4,7 @@
 
 namespace tzw
 {
-class Material;
+class MaterialInstance;
 class ShadingParams;
 class DeviceDescriptor;
 class DeviceShaderCollection;
@@ -14,10 +14,10 @@ public:
 	virtual DeviceDescriptor * getMaterialDescriptorSet() = 0;
 	virtual void updateUniform() = 0;
 	virtual void initCompute(DeviceShaderCollection * shader) = 0;
-	virtual void init(Material* material) = 0;
+	virtual void init(MaterialInstance* material) = 0;
 	virtual void updateUniformSingle(std::string name, void * buff, size_t size) =0;
 	virtual void updateMaterialDescriptorSet() = 0;
-	Material * getMat()
+	MaterialInstance * getMat()
 	{
 		return m_mat;
 	}
@@ -27,7 +27,7 @@ public:
 	}
 	void setShadingParams(ShadingParams * params){ m_shadingParams = params;}
 protected:
-	Material * m_mat = nullptr;
+	MaterialInstance * m_mat = nullptr;
 	ShadingParams * m_shadingParams = nullptr;
 };
 

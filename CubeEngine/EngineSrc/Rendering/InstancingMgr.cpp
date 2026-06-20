@@ -52,7 +52,7 @@ namespace tzw
 		{
 			auto mesh_to_instance = mat_to_mesh->second.find(data.material);
 			
-			if(mesh_to_instance != mat_to_mesh->second.end())// already have this Material
+			if(mesh_to_instance != mat_to_mesh->second.end())// already have this MaterialInstance
 			{
 				auto instancedMesh = mesh_to_instance->second.find(data.m_mesh);
 				if(instancedMesh != mesh_to_instance->second.end()) //have this material and mesh
@@ -183,7 +183,7 @@ namespace tzw
 	void InstancingMgr::generateSingleCommand(RenderFlag::RenderStage requirementType, std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
 	{
 		std::unordered_map<Mesh *,InstancedMesh * > tmpMeshList;
-		std::unordered_map<Mesh *,Material * > tmpMatList;
+		std::unordered_map<Mesh *,MaterialInstance * > tmpMatList;
 		for(auto data : dataList)
 		{
 			if(tmpMeshList.find(data.m_mesh) == tmpMeshList.end())

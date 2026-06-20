@@ -18,7 +18,7 @@
 #include "vk/DeviceShaderCollectionVK.h"
 #include "vk/DeviceBufferVK.h"
 #include "vk/DeviceRenderPassVK.h"
-#include "Technique/Material.h"
+#include "Technique/MaterialInstance.h"
 
 
 
@@ -174,7 +174,7 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
         m_renderPath = new RenderPath();
         m_imageIndex = 0;
 	}
-    void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, Material* mat, size_t m_offset, size_t bufferRange)
+    void VKRenderBackEnd::updateItemDescriptor(VkDescriptorSet itemDescSet, MaterialInstance* mat, size_t m_offset, size_t bufferRange)
     {
         auto shader = static_cast<DeviceShaderCollectionVK * >(mat->getProgram()->getDeviceShader());
         auto theList = shader->getSetInfo()[1];
@@ -1218,7 +1218,7 @@ void VKRenderBackEnd::clearCommandBuffer()
     }
 }
 
-std::unordered_map<Material*, DevicePipelineVK*>& VKRenderBackEnd::getPipelinePool()
+std::unordered_map<MaterialInstance*, DevicePipelineVK*>& VKRenderBackEnd::getPipelinePool()
 {
     return m_matPipelinePool;
 }

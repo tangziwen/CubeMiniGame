@@ -1,11 +1,11 @@
 #include "RenderCommand.h"
-#include "../Technique/Material.h"
+#include "../Technique/MaterialInstance.h"
 
 #include "../Mesh/InstancedMesh.h"
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
-RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
+RenderCommand::RenderCommand(Mesh *mesh, MaterialInstance *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
     m_batchType(batchType)
@@ -94,11 +94,11 @@ void RenderCommand::setInstancedMesh(InstancedMesh* const instancedMesh)
 {
 	m_instancedMesh = instancedMesh;
 }
-Material* RenderCommand::getMat()
+MaterialInstance* RenderCommand::getMat()
 {
     return m_material;
 }
-void RenderCommand::setMat(Material* newMat)
+void RenderCommand::setMat(MaterialInstance* newMat)
 {
     m_material = newMat;
 }

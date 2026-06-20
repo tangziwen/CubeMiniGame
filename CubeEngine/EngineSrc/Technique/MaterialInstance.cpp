@@ -1,4 +1,4 @@
-#include "Material.h"
+#include "MaterialInstance.h"
 #include "MaterialTemplate.h"
 #include <utility>
 #include <stdlib.h>
@@ -32,7 +32,7 @@ std::string resolvePathInFolder(const std::string& filePath, const std::string& 
 	return filePath;
 }
 
-void applyAttributeOverride(Material * material, rapidjson::Value& attribute)
+void applyAttributeOverride(MaterialInstance * material, rapidjson::Value& attribute)
 {
 	if(!attribute.HasMember("name") || !attribute.HasMember("type"))
 	{
@@ -80,18 +80,18 @@ void applyAttributeOverride(Material * material, rapidjson::Value& attribute)
 
 }
 
-Material::Material(): m_materialTemplate(nullptr),m_isMaterialTemplateUnique(false),m_shadingParams(nullptr)
+MaterialInstance::MaterialInstance(): m_materialTemplate(nullptr),m_isMaterialTemplateUnique(false),m_shadingParams(nullptr)
 {
 }
 
-void Material::loadFromTemplate(std::string name)
+void MaterialInstance::loadFromTemplate(std::string name)
 {
-	//tlog("load Material %s\n", name.c_str());
+	//tlog("load MaterialInstance %s\n", name.c_str());
 	applyTemplate(MaterialTemplate::getFromTemplate(name));
-	//tlog("load Material finished %s\n", name.c_str());
+	//tlog("load MaterialInstance finished %s\n", name.c_str());
 }
 
-void Material::loadFromFile(std::string filePath)
+void MaterialInstance::loadFromFile(std::string filePath)
 {
 	rapidjson::Document doc;
 	auto data = Tfile::shared()->getData(filePath, true);
@@ -102,7 +102,7 @@ void Material::loadFromFile(std::string filePath)
 		abort();
 	}
 	std::string envFolder = Tfile::shared()->getFolder(filePath);
-	if(doc.HasMember("Material"))
+	if(doc.HasMember("MaterialInstance"))
 	{
 		loadFromInstanceJson(doc, envFolder);
 	}
@@ -112,9 +112,9 @@ void Material::loadFromFile(std::string filePath)
 	}
 }
 
-void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
+void MaterialInstance::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 {
-	if(doc.HasMember("Material"))
+	if(doc.HasMember("MaterialInstance"))
 	{
 		loadFromInstanceJson(doc, envFolder);
 		return;
@@ -125,7 +125,7 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 	applyTemplate(materialTemplate);
 }
 
-void Material::applyTemplate(MaterialTemplate * materialTemplate)
+void MaterialInstance::applyTemplate(MaterialTemplate * materialTemplate)
 {
 	if(!materialTemplate)
 	{
@@ -144,9 +144,9 @@ void Material::applyTemplate(MaterialTemplate * materialTemplate)
 	m_shadingParams->copyFrom(materialTemplate->m_shadingParams);
 }
 
-void Material::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder)
+void MaterialInstance::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder)
 {
-	std::string materialPath = resolvePathInFolder(doc["Material"].GetString(), envFolder);
+	std::string materialPath = resolvePathInFolder(doc["MaterialInstance"].GetString(), envFolder);
 	applyTemplate(MaterialTemplate::getFromFile(materialPath));
 	if(doc.HasMember("overrides"))
 	{
@@ -154,7 +154,7 @@ void Material::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder
 	}
 }
 
-void Material::applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder)
+void MaterialInstance::applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder)
 {
 	if(overrides.HasMember("attributes"))
 	{
@@ -195,23 +195,23 @@ void Material::applyInstanceOverrides(rapidjson::Value& overrides, std::string e
 
 }
 
-Material *Material::createFromTemplate(std::string name)
+MaterialInstance *MaterialInstance::createFromTemplate(std::string name)
 {
-	auto mat = new Material();
+	auto mat = new MaterialInstance();
 	mat->loadFromTemplate(name);
 	return mat;
 }
 
-Material * Material::createFromFile(std::string matPath)
+MaterialInstance * MaterialInstance::createFromFile(std::string matPath)
 {
-	auto mat = new Material();
+	auto mat = new MaterialInstance();
 	mat->loadFromFile(matPath);
 	return mat;
 }
 
-Material* Material::createFromJson(rapidjson::Value& obj, std::string envFolder)
+MaterialInstance* MaterialInstance::createFromJson(rapidjson::Value& obj, std::string envFolder)
 {
-	auto mat = new Material();
+	auto mat = new MaterialInstance();
 	mat->loadFromJson(obj, envFolder);
 	return mat;
 }
@@ -222,7 +222,7 @@ Material* Material::createFromJson(rapidjson::Value& obj, std::string envFolder)
  * @param value 值
  * @note Technique会自动缓存这些变量，只要Technique还在生存周期内，这些值都会不断的提交到shader
  */
-void Material::setVar(std::string name, const Matrix44 & value)
+void MaterialInstance::setVar(std::string name, const Matrix44 & value)
 {
 	m_shadingParams->setVar(name, value);
 }
@@ -233,7 +233,7 @@ void Material::setVar(std::string name, const Matrix44 & value)
  * @param value 值
  * @note Technique会自动缓存这些变量，只要Technique还在生存周期内，这些值都会不断的提交到shader
  */
-void Material::setVar(std::string name, const float &value)
+void MaterialInstance::setVar(std::string name, const float &value)
 {
 	m_shadingParams->setVar(name, value);
 }
@@ -244,12 +244,12 @@ void Material::setVar(std::string name, const float &value)
  * @param value 值
  * @note Technique会自动缓存这些变量，只要Technique还在生存周期内，这些值都会不断的提交到shader
  */
-void Material::setVar(std::string name, const int &value)
+void MaterialInstance::setVar(std::string name, const int &value)
 {
 	m_shadingParams->setVar(name, value);
 }
 
- void Material::setVar(std::string name, const vec2 & value)
+ void MaterialInstance::setVar(std::string name, const vec2 & value)
  {
 	 m_shadingParams->setVar(name, value);
  }
@@ -260,7 +260,7 @@ void Material::setVar(std::string name, const int &value)
  * @param value 值
  * @note Technique会自动缓存这些变量，只要Technique还在生存周期内，这些值都会不断的提交到shader
  */
-void Material::setVar(std::string name, const vec3 &value)
+void MaterialInstance::setVar(std::string name, const vec3 &value)
 {
 	m_shadingParams->setVar(name, value);
 }
@@ -271,12 +271,12 @@ void Material::setVar(std::string name, const vec3 &value)
  * @param value 值
  * @note Technique会自动缓存这些变量，只要Technique还在生存周期内，这些值都会不断的提交到shader
  */
-void Material::setVar(std::string name, const vec4 & value)
+void MaterialInstance::setVar(std::string name, const vec4 & value)
 {
 	m_shadingParams->setVar(name, value);
 }
 
-void Material::setVar(std::string name, const TechniqueVar &value)
+void MaterialInstance::setVar(std::string name, const TechniqueVar &value)
 {
 	m_shadingParams->setVar(name, value);
 }
@@ -290,13 +290,13 @@ void Material::setVar(std::string name, const TechniqueVar &value)
  * 其次要指定其在shader里采样器的名字——通过参数name，最后还要知道当前纹理需要占用显卡的第几个纹理单元（也是采样器对象的值）——通过参数id，通常来说，默认情况下
  * Opengl会打开第一个纹理单元，因此该函数的id参数的默认值0
  */
-void Material::setTex(std::string name, Texture *texture, int id)
+void MaterialInstance::setTex(std::string name, Texture *texture, int id)
 {
 	m_shadingParams->setTex(name, texture, id);
 
 }
 
-Texture* Material::getTex(std::string name)
+Texture* MaterialInstance::getTex(std::string name)
 {
 	return m_shadingParams->getTex(name);
 }
@@ -305,7 +305,7 @@ Texture* Material::getTex(std::string name)
  * @brief Technique::use 使用当前technique所维护的shader进行渲染，并将technique维护的所有值提交到
  * shader端
  */
-void Material::use(ShaderProgram * extraProgram)
+void MaterialInstance::use(ShaderProgram * extraProgram)
 {
 	ShaderProgram * program = getProgram();
 	if (extraProgram)
@@ -381,21 +381,21 @@ void Material::use(ShaderProgram * extraProgram)
 }
 
 
-unsigned int Material::getMapSlot(std::string mapName)
+unsigned int MaterialInstance::getMapSlot(std::string mapName)
 {
 	return m_materialTemplate->getMapSlot(mapName);
 }
 
 
-ShaderProgram *Material::getProgram() const
+ShaderProgram *MaterialInstance::getProgram() const
 {
 	return m_materialTemplate->getProgram();
 }
 
 
-Material *Material::clone()
+MaterialInstance *MaterialInstance::clone()
 {
-	auto mat = new Material();
+	auto mat = new MaterialInstance();
 	mat->m_materialTemplate = m_materialTemplate;
 	mat->m_isMaterialTemplateUnique = false;
 	mat->m_shadingParams = new ShadingParams();
@@ -407,27 +407,27 @@ Material *Material::clone()
 	return mat;
 }
 
-void Material::reload()
+void MaterialInstance::reload()
 {
 	m_materialTemplate->reload();
 }
 
-bool Material::getIsCullFace()
+bool MaterialInstance::getIsCullFace()
 {
 	return m_materialTemplate->getIsCullFace();
 }
 
-RenderFlag::CullMode Material::getCullMode()
+RenderFlag::CullMode MaterialInstance::getCullMode()
 {
 	return m_materialTemplate->getCullMode();
 }
 
-TechniqueVar * Material::get(std::string name)
+TechniqueVar * MaterialInstance::get(std::string name)
 {
 	return m_shadingParams->getVar(name);
 }
 
-void Material::inspect()
+void MaterialInstance::inspect()
 {
 	for(auto &iter:m_shadingParams->getVarList())
 	{
@@ -450,14 +450,14 @@ void Material::inspect()
 	}
 }
 
-void Material::inspectIMGUI(std::string name, float min, float max, const char * fmt /*= "%.2f"*/)
+void MaterialInstance::inspectIMGUI(std::string name, float min, float max, const char * fmt /*= "%.2f"*/)
 {
 	float uvSize = get(name)->data.rawData.f;
 	ImGui::SliderFloat(name.c_str(), &uvSize, min, max, fmt);
 	setVar(name, uvSize);
 }
 
-void Material::inspectIMGUI_Color(std::string name)
+void MaterialInstance::inspectIMGUI_Color(std::string name)
 {
 	auto src = get(name)->data.rawData.v3;
 	static ImVec4 color = ImVec4(src.x, src.y, src.z, 1.0);
@@ -471,7 +471,7 @@ void Material::inspectIMGUI_Color(std::string name)
 	setVar(name, vec3(color.x, color.y, color.z));
 }
 
-void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string name, ShaderProgram * program)
+void MaterialInstance::handleSemanticValuePassing(TechniqueVar * val, const std::string name, ShaderProgram * program)
 {
 	switch(val->semantic)
 	{
@@ -514,67 +514,67 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 	}
 }
 
-RenderFlag::BlendingFactor Material::getFactorSrc() const
+RenderFlag::BlendingFactor MaterialInstance::getFactorSrc() const
 {
 	return m_materialTemplate->getFactorSrc();
 }
 
-RenderFlag::BlendingFactor Material::getFactorDst() const
+RenderFlag::BlendingFactor MaterialInstance::getFactorDst() const
 {
 	return m_materialTemplate->getFactorDst();
 }
 
-bool Material::isIsEnableBlend() const
+bool MaterialInstance::isIsEnableBlend() const
 {
 	return m_materialTemplate->isIsEnableBlend();
 }
 
-uint32_t Material::getMutationFlag()
+uint32_t MaterialInstance::getMutationFlag()
 {
 	return m_materialTemplate->getMutationFlag();
 }
 
-uint32_t Material::getMaterialFlag()
+uint32_t MaterialInstance::getMaterialFlag()
 {
 	return m_materialTemplate->getMaterialFlag();
 }
 
-const std::string& Material::getFullDescriptionStr()
+const std::string& MaterialInstance::getFullDescriptionStr()
 {
 	return m_materialTemplate->getFullDescriptionStr();
 }
 
-std::unordered_map<std::string, TechniqueVar>& Material::getVarList()
+std::unordered_map<std::string, TechniqueVar>& MaterialInstance::getVarList()
 {
 	return m_shadingParams->getVarList();
 }
 
-PrimitiveTopology Material::getPrimitiveTopology()
+PrimitiveTopology MaterialInstance::getPrimitiveTopology()
 {
 	return m_materialTemplate->getPrimitiveTopology();
 }
 
-RasterFillMode Material::getRasterFillMode()
+RasterFillMode MaterialInstance::getRasterFillMode()
 {
 	return m_materialTemplate->getRasterFillMode();
 }
 
-RenderFlag::RenderStage Material::getRenderStage() const
+RenderFlag::RenderStage MaterialInstance::getRenderStage() const
 {
 	return m_materialTemplate->getRenderStage();
 }
 
-bool Material::isIsDepthTestEnable() const
+bool MaterialInstance::isIsDepthTestEnable() const
 {
 	return m_materialTemplate->isIsDepthTestEnable();
 }
 
-bool Material::isIsDepthWriteEnable() const
+bool MaterialInstance::isIsDepthWriteEnable() const
 {
 	return m_materialTemplate->isIsDepthWriteEnable();
 }
 
-bool Material::isEnableInstanced()
+bool MaterialInstance::isEnableInstanced()
 {
 	return m_materialTemplate->isEnableInstanced();
 }
@@ -584,27 +584,27 @@ bool Material::isEnableInstanced()
  * @param name 变量的名称
  * @return 存在返回true，反之false
  */
-bool Material::isExist(std::string name)
+bool MaterialInstance::isExist(std::string name)
 {
 	return m_shadingParams->isVarExist(name);
 }
 
-ShadingParams * Material::getShadingParams()
+ShadingParams * MaterialInstance::getShadingParams()
 {
 	return m_shadingParams;
 }
 
-MaterialTemplate * Material::getMaterialTemplate()
+MaterialTemplate * MaterialInstance::getMaterialTemplate()
 {
 	return m_materialTemplate;
 }
 
-const MaterialTemplate * Material::getMaterialTemplate() const
+const MaterialTemplate * MaterialInstance::getMaterialTemplate() const
 {
 	return m_materialTemplate;
 }
 
-MaterialTemplate * Material::ensureUniqueMaterialTemplate()
+MaterialTemplate * MaterialInstance::ensureUniqueMaterialTemplate()
 {
 	if(!m_isMaterialTemplateUnique)
 	{

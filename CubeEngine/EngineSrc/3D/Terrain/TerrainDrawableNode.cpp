@@ -1,6 +1,6 @@
 #include "TerrainDrawableNode.h"
 #include "../../Mesh/Mesh.h"
-#include "../../Technique/Material.h"
+#include "../../Technique/MaterialInstance.h"
 #include "../../Rendering/RenderCommand.h"
 #include "../../Rendering/RenderQueues.h"
 #include "../../Base/Camera.h"
@@ -18,7 +18,7 @@ TerrainDrawableNode::TerrainDrawableNode()
 }
 
 void TerrainDrawableNode::bind(const TerrainNodeKey& key, const TerrainRegion& region,
-    Mesh* mesh, Material* material, int revision)
+    Mesh* mesh, MaterialInstance* material, int revision)
 {
     m_key = key;
     m_region = region;

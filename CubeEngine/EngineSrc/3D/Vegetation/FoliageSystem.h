@@ -33,7 +33,7 @@ namespace tzw {
 		Model * m_model;
 		Mesh * m_quadMesh;
 		std::vector<InstancedMesh *> m_instancedMeshList;
-		Material * m_quadMat;
+		MaterialInstance * m_quadMat;
 		size_t m_totalCount;
 		VegetationType m_type;
 		VegetationBatInfo m_info;
@@ -80,8 +80,8 @@ namespace tzw {
 	  unsigned int getTypeId() override;
 	  Mesh* m_mesh{};
 		Mesh* m_leafMesh{};
-		Material * m_barkMat;
-		Material * m_leafMat;
+		MaterialInstance * m_barkMat;
+		MaterialInstance * m_leafMat;
 	  void pushCommand(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg);
 	  bool m_isFinish;
 

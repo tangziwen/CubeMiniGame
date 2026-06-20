@@ -35,12 +35,12 @@ void Drawable::reCache()
     Node::reCache();
 }
 
-Material *Drawable::getMaterial() const
+MaterialInstance *Drawable::getMaterial() const
 {
     return m_material;
 }
 
-void Drawable::setMaterial(Material *technique)
+void Drawable::setMaterial(MaterialInstance *technique)
 {
     m_material = technique;
 }

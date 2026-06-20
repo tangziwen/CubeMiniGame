@@ -9,12 +9,12 @@
 #include "GamePart.h"
 #include "BearPart.h"
 #include "GamePartRenderNode.h"
-static tzw::Material * g_material;
+static tzw::MaterialInstance * g_material;
 namespace tzw
 {
 GamePartRenderMgr::GamePartRenderMgr()
 {
-	g_material = Material::createFromTemplate("ModelSTD");
+	g_material = MaterialInstance::createFromTemplate("ModelSTD");
 	g_material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 	g_material->reload();
 	m_previewMat = nullptr;
@@ -36,7 +36,7 @@ void GamePartRenderMgr::getRenderInfo(bool isInstancing, GamePartRenderNode * pa
 		auto meshList = model->getMeshList();
 		for(auto mesh : meshList)
 		{
-			Material * material = nullptr;
+			MaterialInstance * material = nullptr;
 			auto matListIter = m_modelToMatList[model].find(getStateAndRenderModeStr(part));
 			if(matListIter!= m_modelToMatList[model].end())
 			{
@@ -134,9 +134,9 @@ Mesh * GamePartRenderMgr::findOrCreateSingleMesh(VisualInfo visualInfo)
 	}
 	return nullptr;
 }
-Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePartRenderNode * part, PartSurface* surface)
+MaterialInstance* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePartRenderNode * part, PartSurface* surface)
 {
-	std::unordered_map<std::string, Material *> * targetMap = nullptr;
+	std::unordered_map<std::string, MaterialInstance *> * targetMap = nullptr;
 	if(isInsatnce)
 	{
 		targetMap = &m_materialMap;
@@ -151,10 +151,10 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 	GamePartModelMatList newMatList;
 	if(targetMap->find(surfaceStr) == targetMap->end())
 	{
-		Material * mat;
+		MaterialInstance * mat;
 		if(state == "Preview")
 		{
-			mat = Material::createFromTemplate("ModelRimLight");
+			mat = MaterialInstance::createFromTemplate("ModelRimLight");
 			newMatList.m_matList.emplace_back(mat);
 			auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 			mat->setTex("DiffuseMap", texture);
@@ -174,7 +174,7 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 
 			if(!surface->getIsTransparent())
 			{
-				mat = Material::createFromTemplate("ModelPBR");
+				mat = MaterialInstance::createFromTemplate("ModelPBR");
 				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 				mat->reload();
 				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
@@ -193,7 +193,7 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 			}
 			else
 			{
-				mat = Material::createFromTemplate("ModelTransparent");
+				mat = MaterialInstance::createFromTemplate("ModelTransparent");
 				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 				mat->reload();
 				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
@@ -213,7 +213,7 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 		return (*targetMap)[surfaceStr];
 	}
 }
-Material* GamePartRenderMgr::findOrCreateMaterialTransparent(VisualInfo visualInfo, PartSurface* surface)
+MaterialInstance* GamePartRenderMgr::findOrCreateMaterialTransparent(VisualInfo visualInfo, PartSurface* surface)
 {
 	return nullptr;
 }
@@ -314,7 +314,7 @@ GamePartModelMatList& GamePartRenderMgr::createModelMatList(Model* model, GamePa
 	GamePartModelMatList newMatList;
 	if(state == "Preview")
 	{
-		newMatList.m_matList.emplace_back(Material::createFromTemplate("ModelRimLight"));
+		newMatList.m_matList.emplace_back(MaterialInstance::createFromTemplate("ModelRimLight"));
 	}
 	else if(state == "isFlipped")//bearing
 	{

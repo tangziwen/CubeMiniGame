@@ -35,7 +35,7 @@ Sprite::~Sprite()
 void Sprite::initWithTexture(std::string texturePath)
 {
     //MaterialPool::shared()->getMaterialByName(getSpriteManggledName())
-	//m_material = new Material();
+	//m_material = new MaterialInstance();
     m_mesh = new tzw::Mesh();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
@@ -53,7 +53,7 @@ void Sprite::initWithTexture(std::string texturePath)
 
 void Sprite::initWithTexture(Texture *texture)
 {
-	//m_material = new Material();
+	//m_material = new MaterialInstance();
     m_mesh = new tzw::Mesh();
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
@@ -70,7 +70,7 @@ void Sprite::initWithTexture(Texture *texture)
 
 void Sprite::initWithColor(vec4 color,vec2 contentSize)
 {
-	m_material = new Material();
+	m_material = new MaterialInstance();
     m_mesh = new tzw::Mesh();
     setUpTechnique();
     m_mesh->addIndex(0);
@@ -173,7 +173,7 @@ void Sprite::setUpTechnique()
     m_material = MaterialPool::shared()->getMaterialByName(getSpriteManggledName());
     if (!m_material)
     {
-        m_material = new Material();
+        m_material = new MaterialInstance();
         if(m_texture)
         {
             m_material->loadFromTemplate("Sprite");
@@ -181,7 +181,7 @@ void Sprite::setUpTechnique()
         }else
         {
             m_material->loadFromTemplate("SpriteColor");
-            m_material = Material::createFromTemplate("SpriteColor");
+            m_material = MaterialInstance::createFromTemplate("SpriteColor");
         }
         m_material->setVar("color",m_color);
 

@@ -1,7 +1,7 @@
 #include <cstdint>
 #include "gli/gli.hpp"
 #include "DeviceMaterialVK.h"
-#include "Technique/Material.h"
+#include "Technique/MaterialInstance.h"
 #include "DeviceShaderCollectionVK.h"
 #include "../VkRenderBackEnd.h"
 #include "Engine/Engine.h"
@@ -15,7 +15,7 @@ namespace tzw
 
 	}
 
-    void DeviceMaterialVK::init(Material* material)
+    void DeviceMaterialVK::init(MaterialInstance* material)
     {
 		m_mat = material;
         m_shadingParams = material->getShadingParams();

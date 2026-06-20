@@ -15,22 +15,22 @@ public:
 	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg) override;
 	Mesh * getMesh(int id) override;
 	Mesh * getMesh() override;
-	Material * getMat(int index);
-	Material * getMaterial() const override;
-	void setMaterial(Material * mat) override;
+	MaterialInstance * getMat(int index);
+	MaterialInstance * getMaterial() const override;
+	void setMaterial(MaterialInstance * mat) override;
 	void setColor(vec4 color) override;
 	std::vector<Mesh * > getMeshList();
 	void setMeshList(std::vector<Mesh * > newMeshList);
 	int addExtraMeshList(std::vector<Mesh * >newMeshList);
 	int getMeshCount() override;
 	int getMatCount();
-	void setMeshToMatMap(Mesh * mesh, Material * mat);
+	void setMeshToMatMap(Mesh * mesh, MaterialInstance * mat);
 private:
     std::vector<Mesh *> m_meshList;
-    std::vector<Material * >m_effectList;
+    std::vector<MaterialInstance * >m_effectList;
 	std::vector<std::vector<Mesh *>> m_extraMeshList;
 	int m_currPose;
-	std::map<Mesh *, Material *> m_meshToMat;
+	std::map<Mesh *, MaterialInstance *> m_meshToMat;
 	std::string filePath;
 public:
 	int getCurrPose() const;

@@ -131,9 +131,9 @@ public:
 	void beginGeneralCommandBuffer();
 	void endGeneralCommandBuffer();
     void clearCommandBuffer();
-    std::unordered_map<Material *, DevicePipelineVK *> & getPipelinePool();
+    std::unordered_map<MaterialInstance *, DevicePipelineVK *> & getPipelinePool();
     void getStageAndAcessMaskFromLayOut(VkImageLayout layout, VkPipelineStageFlags & stage, VkAccessFlags & access);
-    void updateItemDescriptor(VkDescriptorSet itemDescSet, Material * mat, size_t m_offset, size_t bufferRange);
+    void updateItemDescriptor(VkDescriptorSet itemDescSet, MaterialInstance * mat, size_t m_offset, size_t bufferRange);
     void blitTexture(VkCommandBuffer command, DeviceTextureVK * srdTex, DeviceTextureVK * dstTex, vec2 size, VkImageLayout srcLayout, VkImageLayout dstLayout);
     DeviceFrameBufferVK * createSwapChainFrameBuffer(int index);
     int getCurrSwapIndex();
@@ -244,15 +244,15 @@ private:
     //imgui
     DeviceBufferVK *m_imguiIndex;
     DeviceBufferVK *m_imguiVertex;
-    Material * m_imguiMat;
-    Material * m_shadowMat;
-    Material * m_shadowInstancedMat;
+    MaterialInstance * m_imguiMat;
+    MaterialInstance * m_shadowMat;
+    MaterialInstance * m_shadowInstancedMat;
     DevicePipelineVK * m_imguiPipeline;
     VkDescriptorSet m_imguiDescriptorSet;
     DeviceBufferVK * m_imguiUniformBuffer;
     //renderer
-    std::unordered_map<Material *, DevicePipelineVK *>m_matPipelinePool;
-    std::unordered_map<Material *, DevicePipelineVK *>m_thumbNailPipelinePool;
+    std::unordered_map<MaterialInstance *, DevicePipelineVK *>m_matPipelinePool;
+    std::unordered_map<MaterialInstance *, DevicePipelineVK *>m_thumbNailPipelinePool;
 
     DeviceItemBufferPoolVK * m_itemBufferPool;
     DeviceMemoryPoolVK * m_memoryPool;

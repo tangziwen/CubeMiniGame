@@ -25,7 +25,7 @@ namespace tzw {
 		auto mat = MaterialPool::shared()->getMaterialByName(uniqueName);
 
 		if (!mat) {
-			mat = Material::createFromTemplate("Particle");
+			mat = MaterialInstance::createFromTemplate("Particle");
 
 			auto tex = TextureMgr::shared()->getByPath("Texture/glow.png");
 
@@ -246,7 +246,7 @@ namespace tzw {
 		auto mat = MaterialPool::shared()->getMaterialByName(uniqueName);
 		//auto mat = getMaterial();
 		if (!mat) {
-			mat = Material::createFromTemplate("Particle");
+			mat = MaterialInstance::createFromTemplate("Particle");
 			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
@@ -304,7 +304,7 @@ namespace tzw {
 			break;
 		case BillboardPolicy::Y_FIXED:
 		{
-			auto mat = Material::createFromTemplate("ParticleFixedY");
+			auto mat = MaterialInstance::createFromTemplate("ParticleFixedY");
 			mat->setTex("DiffuseMap", getMaterial()->getTex("DiffuseMap"));
 			setMaterial(mat);
 		}

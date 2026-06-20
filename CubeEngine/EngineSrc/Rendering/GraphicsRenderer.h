@@ -11,7 +11,7 @@ namespace tzw
 	class DevicePipelineVK;
 	class DeviceBufferVK;
 	class DeviceRenderStageVK;
-	class Material;
+	class MaterialInstance;
 	class RenderPath;
 	class DeviceTextureVK;
 	class GraphicsRenderer:public Singleton<GraphicsRenderer>
@@ -51,9 +51,9 @@ namespace tzw
 		void initImguiStuff();
 		VkDescriptorSet m_imguiDescriptorSet;
 		DeviceBufferVK * m_imguiUniformBuffer;
-		Material * m_imguiMat;
-		Material * m_shadowMat;
-		Material * m_shadowInstancedMat;
+		MaterialInstance * m_imguiMat;
+		MaterialInstance * m_shadowMat;
+		MaterialInstance * m_shadowInstancedMat;
 		RenderPath * m_renderPath;
 		DeviceTextureVK * m_imguiTextureFont;
 		DeviceTextureVK * m_sceneCopyTex;

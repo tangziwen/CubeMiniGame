@@ -20,7 +20,7 @@
 #include "EngineSrc/Scene/Scene.h"
 #include "EngineSrc/Scene/SceneMgr.h"
 
-#include "EngineSrc/Technique/Material.h"
+#include "EngineSrc/Technique/MaterialInstance.h"
 #include "EngineSrc/Technique/TechniqueVar.h"
 
 #include "EngineSrc/Texture/Texture.h"

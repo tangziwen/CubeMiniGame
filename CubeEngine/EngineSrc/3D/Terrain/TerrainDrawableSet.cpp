@@ -4,7 +4,7 @@
 
 namespace tzw {
 
-void TerrainDrawableSet::setMaterial(Material* material)
+void TerrainDrawableSet::setMaterial(MaterialInstance* material)
 {
     m_material = material;
 }

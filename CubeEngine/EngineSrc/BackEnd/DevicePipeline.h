@@ -8,7 +8,7 @@
 #include "vulkan/vulkan.h"
 namespace tzw
 {
-class Material;
+class MaterialInstance;
 class ShadingParams;
 class DeviceRenderPass;
 class DeviceDescriptor;
@@ -40,7 +40,7 @@ public:
 	}
 	
 	virtual void initCompute(DeviceShaderCollection * computeShader) = 0;
-	virtual void init(vec2 viewPortSize, Material * mat, DeviceRenderPass* targetRenderPass
+	virtual void init(vec2 viewPortSize, MaterialInstance * mat, DeviceRenderPass* targetRenderPass
 	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) = 0;
 	virtual void resetItemWiseDescritporSet() = 0;
 	virtual DeviceDescriptor * giveItemWiseDescriptorSet() = 0;
@@ -48,7 +48,7 @@ public:
 	{
 		m_dynamicState = state;
 	}
-	Material * getMat()
+	MaterialInstance * getMat()
 	{
 		return m_mat;
 	}
@@ -59,7 +59,7 @@ public:
 	void setShadingParams(ShadingParams * params){ m_shadingParams = params;}
 protected:
 	uint32_t m_dynamicState = 0;
-	Material * m_mat = nullptr;
+	MaterialInstance * m_mat = nullptr;
 	ShadingParams * m_shadingParams = nullptr;
 
 };

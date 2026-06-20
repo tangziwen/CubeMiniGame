@@ -1,5 +1,5 @@
 #include "DevicePipelineVK.h"
-#include "Technique/Material.h"
+#include "Technique/MaterialInstance.h"
 #include "DeviceShaderCollectionVK.h"
 #include "Mesh/VertexData.h"
 #include "Engine/Engine.h"
@@ -53,7 +53,7 @@ void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
     printf("Compute pipeline created\n");
 }
 
-void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
+void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
 {
 
     m_totalItemWiseDesSet = 0;

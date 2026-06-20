@@ -9,7 +9,7 @@ namespace tzw
 {
 class DebugPrimitive;
 class LinePrimitive;
-class Material;
+class MaterialInstance;
 class RenderQueue;
 class DebugSystem : public Singleton<DebugSystem>
 {
@@ -59,12 +59,12 @@ public:
 private:
 	DebugPrimitive* createRetainedPrimitive(vec3 defaultColor);
 	void removeDestroyRequestedPrimitives();
-	Material* getDebugWireframeMaterial();
+	MaterialInstance* getDebugWireframeMaterial();
 
 	std::unique_ptr<LinePrimitive> m_immediateLine;
 	std::vector<std::unique_ptr<DebugPrimitive>> m_retainedPrimitives;
 	std::unique_ptr<RenderQueue> m_wireframeQueue;
-	Material* m_debugWireframeMaterial;
+	MaterialInstance* m_debugWireframeMaterial;
 	bool m_wireframeOverlayEnabled;
 	bool m_wireframeOverlayDepthTestEnabled;
 	vec3 m_wireframeOverlayColor;

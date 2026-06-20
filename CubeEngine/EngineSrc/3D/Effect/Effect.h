@@ -5,7 +5,7 @@
 #include "EngineSrc/Technique/TechniqueVar.h"
 namespace tzw {
 class Drawable;
-class Material;
+class MaterialInstance;
 class Effect
 {
 public:

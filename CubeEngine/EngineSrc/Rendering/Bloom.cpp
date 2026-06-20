@@ -98,7 +98,7 @@ namespace tzw
         m_bloomCompositeStage = backEnd->createRenderStage_imp();
         m_bloomCompositeStage->init(compositePass, frameBuffer);
         m_bloomCompositeStage->setName("Bloom Composite");
-	    Material * matFog = new Material();
+	    MaterialInstance * matFog = new MaterialInstance();
 	    matFog->loadFromTemplate("BloomCompositePass");
 	    MaterialPool::shared()->addMaterial("BloomCompositePass", matFog);
         m_bloomCompositeStage->createSinglePipeline(matFog);

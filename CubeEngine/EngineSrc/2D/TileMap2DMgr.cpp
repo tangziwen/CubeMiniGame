@@ -18,7 +18,7 @@ namespace tzw {
 		{
 			m_totalTypes ++;//inc for type id
 
-			auto material = new Material();
+			auto material = new MaterialInstance();
 			material->loadFromTemplate("TileMap2D");
 			auto texture = TextureMgr::shared()->getByPath(filePath);
 			material->setTex("SpriteTexture", texture);

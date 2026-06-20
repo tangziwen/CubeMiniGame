@@ -40,7 +40,7 @@ public:
 	virtual void onUpdate(float dt);
 	void AddOnVehicle(Vehicle * vehicle) override;
 private:
-	Material * m_xrayMat;
+	MaterialInstance * m_xrayMat;
 	bool m_isSteering;
 	bool m_isAngleLimit;
 	float m_angleLimitLow;

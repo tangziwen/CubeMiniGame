@@ -11,7 +11,7 @@ public:
     TerrainDrawableNode();
 
     void bind(const TerrainNodeKey& key, const TerrainRegion& region,
-        Mesh* mesh, Material* material, int revision);
+        Mesh* mesh, MaterialInstance* material, int revision);
     void unbind();
     bool isBoundTo(const TerrainNodeKey& key, int revision) const;
 
@@ -28,7 +28,7 @@ private:
     TerrainNodeKey m_key;
     TerrainRegion m_region;
     Mesh* m_mesh;
-    Material* m_material;
+    MaterialInstance* m_material;
     int m_revision;
     bool m_isBound;
     bool m_debugWireframeEnabled = false;

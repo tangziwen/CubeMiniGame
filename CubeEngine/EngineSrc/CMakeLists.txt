@@ -211,7 +211,7 @@ set(ENGINE_SOURCES
     ScriptPy/ScriptUI.cpp
     Shader/ShaderMgr.cpp
     Shader/ShaderProgram.cpp
-    Technique/Material.cpp
+    "Technique/MaterialInstance.cpp"
     Technique/MaterialPool.cpp
     Technique/MaterialTemplate.cpp
     Technique/ShadingParams.cpp

@@ -64,14 +64,14 @@ namespace tzw
 		{
 			auto lift = new LiftPart();
 			m_previewPart = lift;
-			auto m_material = Material::createFromTemplate("ModelRimLight");
+			auto m_material = MaterialInstance::createFromTemplate("ModelRimLight");
 			m_material->ensureUniqueMaterialTemplate()->setIsEnableBlend(true);
 			lift->setMaterial(m_material);
 			//m_previewGamePart->setPos(wherePos);
 		}
 		else if(item->m_name == "Digger")
 		{
-			auto m_material = Material::createFromTemplate("ModelRimLight");
+			auto m_material = MaterialInstance::createFromTemplate("ModelRimLight");
 			m_material->ensureUniqueMaterialTemplate()->setIsEnableBlend(true);
 			m_sphere = new SpherePrimitive(1.0, 25);
 			g_GetCurrScene()->addNode(m_sphere);
@@ -86,7 +86,7 @@ namespace tzw
 			renderNode->setState("Preview");
 			m_previewIsland->insert(gamePart);
 			m_previewPart = gamePart;
-			auto m_material = Material::createFromTemplate("ModelRimLight");
+			auto m_material = MaterialInstance::createFromTemplate("ModelRimLight");
 			m_previewPart->getNode()->setMaterial(m_material);
 			tlog("create preview part");
         }

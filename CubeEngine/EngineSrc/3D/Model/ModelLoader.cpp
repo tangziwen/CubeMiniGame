@@ -64,7 +64,7 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 		for(size_t matI = 0; matI != matList.Size(); matI++)
 		{
 			auto & matNode = matList[matI];
-			auto mat = Material::createFromJson(matNode, folder);
+			auto mat = MaterialInstance::createFromJson(matNode, folder);
 			model->m_effectList.push_back(mat);
 		}
 	}
@@ -74,19 +74,19 @@ void ModelLoader::loadModel(Model *model, std::string filePath, bool useCache)
 		{
 			auto & materialData = materialList[i];
 			// reuse material // there is a problem
-			Material* mat = nullptr;//matPool->getMaterialByName(mangleedName);
+			MaterialInstance* mat = nullptr;//matPool->getMaterialByName(mangleedName);
 			//if (!mat)
 			//{
-			//	mat = new Material();
+			//	mat = new MaterialInstance();
 			//	matPool->addMaterial(mangleedName,mat);
 			//}
 
 			if(materialData.HasMember("effectType"))
 			{
-				mat = Material::createFromTemplate(materialData["effectType"].GetString());
+				mat = MaterialInstance::createFromTemplate(materialData["effectType"].GetString());
 			}else
 			{
-				mat = Material::createFromTemplate("ModelPBR");
+				mat = MaterialInstance::createFromTemplate("ModelPBR");
 			}
 			auto thestr = materialData["diffuseMap"].GetString();
 			if (strcmp(thestr, "") != 0)

@@ -24,8 +24,8 @@ class GamePartRenderNode : public Drawable3D
 		void setPartSurface(PartSurface* const partSurface);
 		RenderMode getRenderMode();
 		void setRenderMode(RenderMode mode);
-		void setSpecifiedMat(Material * mat);
-		Material * getSpecifiedMat();
+		void setSpecifiedMat(MaterialInstance * mat);
+		MaterialInstance * getSpecifiedMat();
 		GamePart * getPartParent();
 		void forceUpdate();
 		std::string getState();
@@ -42,7 +42,7 @@ class GamePartRenderNode : public Drawable3D
 		PartSurface* m_partSurface{};
 		vec4 m_color;
 		bool m_isNeedUpdateRenderInfo;
-		Material * m_specifiedMat{};
+		MaterialInstance * m_specifiedMat{};
 		GamePart * m_partParent;
 		bool m_isHovering;
 		

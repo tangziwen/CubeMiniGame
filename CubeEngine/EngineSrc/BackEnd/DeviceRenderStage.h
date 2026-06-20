@@ -32,7 +32,7 @@ public:
 	virtual void dispatch(unsigned int x, unsigned int y, unsigned int z) = 0;
 	virtual void beginCompute() = 0;
 	virtual void endCompute() = 0;
-	void createSinglePipeline(Material * material);
+	void createSinglePipeline(MaterialInstance * material);
 	void createSingleComputePipeline(DeviceShaderCollection * shaderCollection);
 	DevicePipeline * getSinglePipeline();
 	DeviceMaterial * getSolorDeviceMaterial();
@@ -59,8 +59,8 @@ protected:
 	DeviceFrameBuffer * m_frameBuffer;
 	DevicePipeline * m_singlePipeline;
 	DeviceMaterial * m_soloMaterial;
-	std::unordered_map<Material *, DevicePipeline *>m_matPipelinePool;
-	std::unordered_map<Material *, DeviceMaterial *>m_deviceMaterialPool;
+	std::unordered_map<MaterialInstance *, DevicePipeline *>m_matPipelinePool;
+	std::unordered_map<MaterialInstance *, DeviceMaterial *>m_deviceMaterialPool;
 	std::unordered_map<std::string, DevicePipeline *>m_pipelinePool;
 	std::unordered_set<DeviceMaterial *> m_activeMatList;
     static DeviceBuffer * m_quadVertexBuffer;

@@ -59,7 +59,7 @@ namespace tzw
 
 	}
 
-    void DeviceRenderStage::createSinglePipeline(Material* material)
+    void DeviceRenderStage::createSinglePipeline(MaterialInstance* material)
     {
         DeviceVertexInput vertexDataInput;
         vertexDataInput.stride = sizeof(VertexData);

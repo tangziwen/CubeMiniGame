@@ -13,7 +13,7 @@ Grass::Grass(std::string filePath)
 	if (!mat)
 	{
 
-		mat = Material::createFromTemplate("Grass");
+		mat = MaterialInstance::createFromTemplate("Grass");
 		 
 		auto tex = TextureMgr::shared()->getByPath(filePath);
 		 

@@ -12,7 +12,7 @@ namespace tzw {
 class TerrainDrawableSet
 {
 public:
-    void setMaterial(Material* material);
+    void setMaterial(MaterialInstance* material);
     void sync(const TerrainRenderSet& renderSet, const TerrainMeshCache& meshCache);
     void setDebugWireframeEnabled(bool enabled);
     bool isDebugWireframeEnabled() const;
@@ -24,7 +24,7 @@ public:
 
 private:
     std::unordered_map<TerrainNodeKey, std::unique_ptr<TerrainDrawableNode>> m_drawables;
-    Material* m_material = nullptr;
+    MaterialInstance* m_material = nullptr;
     bool m_debugWireframeEnabled = false;
 };
 

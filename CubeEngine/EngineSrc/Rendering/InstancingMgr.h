@@ -8,14 +8,14 @@ namespace tzw
 {
 class Mesh;
 class InstancedMesh;
-class Material;
+class MaterialInstance;
 #define MAX_INSTANCE_INDEX 2
 
 #define SHADOW_PASS_INSTANCE 0
 #define COMMON_PASS_INSTANCE 1
 #define MAX_BATCHING_COUNT 16
 typedef std::unordered_map<Mesh *, InstancedMesh*[MAX_BATCHING_COUNT]> innerMeshMap;
-typedef std::unordered_map<Material *, innerMeshMap> innerMatMap;
+typedef std::unordered_map<MaterialInstance *, innerMeshMap> innerMatMap;
 
 /*
 Instancing Polyciy

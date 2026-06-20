@@ -119,7 +119,7 @@ namespace tzw {
 			InstancingMgr::shared()->generateSingleCommand(RenderFlag::RenderStage::COMMON, theList, cmdList);
 			for(auto & command : cmdList)
 			{
-				Material * mat = new Material();
+				MaterialInstance * mat = new MaterialInstance();
 				mat->loadFromTemplate("ThumbNail");
 				auto materialTemplate = mat->ensureUniqueMaterialTemplate();
 				materialTemplate->setCullMode(RenderFlag::CullMode::Front);

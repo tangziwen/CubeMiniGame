@@ -22,7 +22,7 @@ protected:
     void initMesh();
 	virtual void checkCollide(ColliderEllipsoid * package);
     Mesh * m_mesh;
-	Material * m_topBottomMaterial;
+	MaterialInstance * m_topBottomMaterial;
     float m_radiusTop, m_radiusBottom, m_height;
 	vec3 getSegPos(float theta, int side);
 };

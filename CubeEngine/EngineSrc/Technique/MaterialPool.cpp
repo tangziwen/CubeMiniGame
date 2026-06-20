@@ -7,7 +7,7 @@ MaterialPool::MaterialPool()
 
 }
 
-Material *MaterialPool::getMaterialByName(std::string name)
+MaterialInstance *MaterialPool::getMaterialByName(std::string name)
 {
     auto result = m_materialMap.find(name);
     if(result != m_materialMap.end())
@@ -17,7 +17,7 @@ Material *MaterialPool::getMaterialByName(std::string name)
     return nullptr;
 }
 
-void MaterialPool::addMaterial(std::string materialName, Material *mat)
+void MaterialPool::addMaterial(std::string materialName, MaterialInstance *mat)
 {
     m_materialMap[materialName] = mat;
 }
@@ -42,24 +42,24 @@ std::string MaterialPool::getModelMangleedName(std::string modelName)
     return std::string("model_") + modelName;
 }
 
-Material * MaterialPool::getMatFromTemplate(std::string effectName)
+MaterialInstance * MaterialPool::getMatFromTemplate(std::string effectName)
 {
 	auto mat = getMaterialByName(effectName);
 	if (!mat)
 	{
-		mat = Material::createFromTemplate(effectName);
+		mat = MaterialInstance::createFromTemplate(effectName);
 		addMaterial(effectName, mat);
 	}
 	return mat;
 }
 
-Material* MaterialPool::getMatFromTemplateWithUniqueName(std::string effectName, std::string uniqueName)
+MaterialInstance* MaterialPool::getMatFromTemplateWithUniqueName(std::string effectName, std::string uniqueName)
 {
 	std::string totalName = uniqueName + effectName;
 	auto mat = getMaterialByName(totalName);
 	if (!mat)
 	{
-		mat = Material::createFromTemplate(effectName);
+		mat = MaterialInstance::createFromTemplate(effectName);
 		addMaterial(totalName, mat);
 	}
 	return mat;

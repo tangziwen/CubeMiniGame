@@ -10,7 +10,7 @@ namespace tzw
         vec2 winSize = Engine::shared()->winSize();
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
-	    Material * matSSGI = new Material();
+	    MaterialInstance * matSSGI = new MaterialInstance();
 	    matSSGI->loadFromTemplate("SSGI");
 
 

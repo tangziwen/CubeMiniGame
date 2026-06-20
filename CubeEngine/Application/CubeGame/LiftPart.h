@@ -24,7 +24,7 @@ namespace tzw
 		void highLight() override;
 		void unhighLight() override;
 		void setIsVisible(bool isVisible);
-		void setMaterial(Material * mat);
+		void setMaterial(MaterialInstance * mat);
 	public:
 		float m_liftHeight;
 		GamePartType getType() override;

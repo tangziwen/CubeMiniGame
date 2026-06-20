@@ -113,7 +113,7 @@ int LinePrimitive::getLineCount() const
 
 void LinePrimitive::init()
 {
-	m_material = Material::createFromTemplate("Color");
+	m_material = MaterialInstance::createFromTemplate("Color");
 	auto materialTemplate = m_material->ensureUniqueMaterialTemplate();
 	materialTemplate->setIsDepthTestEnable(false);
 	materialTemplate->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);

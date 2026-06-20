@@ -5,26 +5,15 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "CubeEngine Debug",
+            "name": "CubeClient.exe (RelWithDebInfo\\CubeClient.exe)",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "build/CubeEngine.exe",
+            "program": "${workspaceFolder}/build/windows-msvc/RelWithDebInfo/CubeClient.exe",
             "args": [],
             "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
+            "cwd": "${workspaceRoot}",
             "environment": [],
             "console": "integratedTerminal"
-        },
-        {
-            "name": "CubeEngine Debug (External Console)",
-            "type": "cppvsdbg",
-            "request": "launch",
-            "program": "build/CubeEngine.exe",
-            "args": [],
-            "stopAtEntry": false,
-            "cwd": "${workspaceFolder}",
-            "environment": [],
-            "console": "externalTerminal"
         }
     ]
 }

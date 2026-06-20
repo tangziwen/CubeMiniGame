@@ -24,7 +24,7 @@ struct SpriteInstanceInfo
 
 struct SpriteTypeInfo
 {
-	Material * material = nullptr;
+	MaterialInstance * material = nullptr;
 	//InstancedMesh * instancedMesh = nullptr;
 	std::array<InstancedMesh *, SpriteInstanceTotalLayer> m_instances;
 };

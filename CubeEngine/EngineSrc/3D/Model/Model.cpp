@@ -39,7 +39,7 @@ void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queue
 		{
 		    for(auto mesh : m_meshList)
 		    {
-		    	Material* mat = nullptr;
+		    	MaterialInstance* mat = nullptr;
 				if(mesh->getMatIndex() > m_effectList.size() - 1)
 				{
 					mat= m_effectList[0];
@@ -79,17 +79,17 @@ Mesh* Model::getMesh()
 	return m_meshList[0];
 }
 
-Material* Model::getMat(int index)
+MaterialInstance* Model::getMat(int index)
 {
 	return m_effectList[index];
 }
 
-Material* Model::getMaterial() const
+MaterialInstance* Model::getMaterial() const
 {
 	return m_effectList[0];
 }
 
-void Model::setMaterial(Material* mat)
+void Model::setMaterial(MaterialInstance* mat)
 {
 	m_effectList[0] = mat;
 }
@@ -126,7 +126,7 @@ int Model::getMatCount()
 	return m_effectList.size();
 }
 
-void Model::setMeshToMatMap(Mesh* mesh, Material* mat)
+void Model::setMeshToMatMap(Mesh* mesh, MaterialInstance* mat)
 {
 	m_meshToMat[mesh] = mat;
 }

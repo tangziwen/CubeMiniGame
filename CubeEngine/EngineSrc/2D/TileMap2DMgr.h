@@ -18,7 +18,7 @@ struct Tile2D
 
 struct TileTypeInfo
 {
-	Material * material = nullptr;
+	MaterialInstance * material = nullptr;
 	InstancedMesh * instancedMesh = nullptr;
 };
 

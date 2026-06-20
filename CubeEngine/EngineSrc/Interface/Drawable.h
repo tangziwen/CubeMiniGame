@@ -3,7 +3,7 @@
 
 #include "../Base/Node.h"
 #include "../Base/Camera.h"
-#include "../Technique/Material.h"
+#include "../Technique/MaterialInstance.h"
 #include "../3D/Effect/Effect.h"
 #include "../Rendering/RenderCommand.h"
 namespace tzw {
@@ -15,8 +15,8 @@ public:
     void setCamera(Camera *camera);
     virtual Node::NodeType getNodeType();
     virtual void reCache();
-	virtual Material *getMaterial() const;
-	virtual void setMaterial(Material *technique);
+	virtual MaterialInstance *getMaterial() const;
+	virtual void setMaterial(MaterialInstance *technique);
     virtual void setUpTransFormation(TransformationInfo & info);
 	virtual void setUpCommand(RenderCommand & command);
 	virtual void setColor(vec4 newColor);
@@ -25,7 +25,7 @@ public:
 	virtual void setOverLayColor(vec4 newColor);
 	virtual vec4 getOverLayColor();
 protected:
-    Material * m_material;
+    MaterialInstance * m_material;
     Camera * m_camera;
 	vec4 m_color;
 	vec4 m_overLayColor = {1, 1, 1, 0.0};

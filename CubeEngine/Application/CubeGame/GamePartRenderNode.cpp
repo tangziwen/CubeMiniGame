@@ -104,11 +104,11 @@ namespace tzw
 		updateRenderMode();
 		m_isNeedUpdateRenderInfo = true;
 	}
-	void GamePartRenderNode::setSpecifiedMat(Material* mat)
+	void GamePartRenderNode::setSpecifiedMat(MaterialInstance* mat)
 	{
 		m_specifiedMat = mat;
 	}
-	Material* GamePartRenderNode::getSpecifiedMat()
+	MaterialInstance* GamePartRenderNode::getSpecifiedMat()
 	{
 		return m_specifiedMat;
 	}

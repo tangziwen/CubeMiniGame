@@ -19,16 +19,16 @@ class Node;
 class Drawable;
 
 
-class Material : public InspectableUI
+class MaterialInstance : public InspectableUI
 {
 public:
-    Material ();
+    MaterialInstance ();
 	void loadFromTemplate(std::string name);
 	void loadFromFile(std::string filePath);
 	void loadFromJson(rapidjson::Value & obj, std::string envFolder);
-    static Material * createFromTemplate(std::string name);
-	static Material * createFromFile(std::string matPath);
-	static Material * createFromJson(rapidjson::Value & obj, std::string envFolder);
+    static MaterialInstance * createFromTemplate(std::string name);
+	static MaterialInstance * createFromFile(std::string matPath);
+	static MaterialInstance * createFromJson(rapidjson::Value & obj, std::string envFolder);
     void setVar(std::string name, const Matrix44 &value);
     void setVar(std::string name,const float& value);
     void setVar(std::string name,const int& value);
@@ -42,7 +42,7 @@ public:
 	unsigned int getMapSlot(std::string mapName);
 	ShaderProgram *getProgram() const;
 	bool isExist(std::string name);
-    Material * clone();
+    MaterialInstance * clone();
 	void reload();
 
 	bool getIsCullFace();

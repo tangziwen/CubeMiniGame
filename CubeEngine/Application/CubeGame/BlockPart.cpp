@@ -13,7 +13,7 @@ BlockPart::BlockPart()
 {
 	m_node = new CubePrimitive(blockSize, blockSize, blockSize, false);
 
-    auto m_material = Material::createFromTemplate("ModelPBR");
+    auto m_material = MaterialInstance::createFromTemplate("ModelPBR");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
 	m_material->setTex("DiffuseMap", texture);
 

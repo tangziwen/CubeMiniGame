@@ -66,7 +66,7 @@ void LiftPart::setIsVisible(bool isVisible)
 	m_pipePart->setIsVisible(isVisible);
 }
 
-void LiftPart::setMaterial(Material* mat)
+void LiftPart::setMaterial(MaterialInstance* mat)
 {
 	m_plaftormPart->setMaterial(mat);
 	m_basePart->setMaterial(mat);

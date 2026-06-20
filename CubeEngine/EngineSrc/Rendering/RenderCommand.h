@@ -8,12 +8,12 @@
 
 namespace tzw {
 class Mesh;
-class Material;
+class MaterialInstance;
 class InstancedMesh;
 struct InstanceRendereData
 {
 	InstanceData data;
-    Material * material;
+    MaterialInstance * material;
     Mesh * m_mesh;
 };
 struct TransformationInfo{
@@ -39,7 +39,7 @@ public:
         Single,
 		Instanced,
     };
-    RenderCommand(Mesh * mesh,Material * material, void * obj, RenderFlag::RenderStage renderStage, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
+    RenderCommand(Mesh * mesh,MaterialInstance * material, void * obj, RenderFlag::RenderStage renderStage, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
     void render();
 
     RenderBatchType batchType() const;
@@ -61,8 +61,8 @@ public:
 	RenderBatchType m_batchType;
 	InstancedMesh* getInstancedMesh() const;
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
-    Material * getMat();
-    void setMat(Material * newMat);
+    MaterialInstance * getMat();
+    void setMat(MaterialInstance * newMat);
     Mesh * getMesh();
     void * getDrawableObj();
 private:
@@ -70,7 +70,7 @@ private:
 	uint32_t m_renderStageMask;
     Mesh * m_mesh;
 	InstancedMesh * m_instancedMesh;
-    Material *m_material;
+    MaterialInstance *m_material;
     PrimitiveType m_primitiveType;
     unsigned int m_Zorder;
     DepthPolicy m_depthTestPolicy;

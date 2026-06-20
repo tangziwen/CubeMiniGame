@@ -12,7 +12,7 @@ namespace tzw{
 		Sky();
 		bool isEnable() const;
 		void setIsEnable(bool val);
-		Material *getMaterial() const;
+		MaterialInstance *getMaterial() const;
 		virtual void setUpTransFormation(TransformationInfo & info);
 		Mesh * getMesh();
 		void prepare();
@@ -21,7 +21,7 @@ namespace tzw{
 	private:
 		float m_weather;
 		Mesh * m_mesh;
-		Material * m_skyBoxTechnique;
+		MaterialInstance * m_skyBoxTechnique;
 		Texture * m_cloudTexture;
 		bool m_isEnable;
 		Texture * tintTex;
