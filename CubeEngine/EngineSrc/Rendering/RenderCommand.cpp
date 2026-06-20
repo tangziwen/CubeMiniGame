@@ -8,11 +8,10 @@ namespace tzw {
 RenderCommand::RenderCommand(Mesh *mesh, Material *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
-    m_batchType(batchType),
-	m_visualLayerMask(static_cast<uint32_t>(RenderFlag::RenderVisualLayer::Fill))
+    m_batchType(batchType)
 {
     m_obj = obj;
-	m_renderState = renderStage;
+	m_renderStageMask = static_cast<uint32_t>(renderStage);
 }
 
 void RenderCommand::render()
@@ -61,34 +60,29 @@ void RenderCommand::setDepthTestPolicy(const DepthPolicy &depthTestPolicy)
     m_depthTestPolicy = depthTestPolicy;
 }
 
-RenderFlag::RenderStage RenderCommand::getRenderState() const
+uint32_t RenderCommand::getRenderStageMask() const
 {
-	return m_renderState;
+	return m_renderStageMask;
 }
 
-void RenderCommand::setRenderState(const RenderFlag::RenderStage renderState)
+void RenderCommand::setRenderStageMask(uint32_t renderStageMask)
 {
-	m_renderState = renderState;
+	m_renderStageMask = renderStageMask;
 }
 
-uint32_t RenderCommand::getVisualLayerMask() const
+void RenderCommand::addRenderStage(RenderFlag::RenderStage renderStage)
 {
-	return m_visualLayerMask;
+	m_renderStageMask |= static_cast<uint32_t>(renderStage);
 }
 
-void RenderCommand::setVisualLayerMask(uint32_t mask)
+void RenderCommand::removeRenderStage(RenderFlag::RenderStage renderStage)
 {
-	m_visualLayerMask = mask;
+	m_renderStageMask &= ~static_cast<uint32_t>(renderStage);
 }
 
-void RenderCommand::addVisualLayer(RenderFlag::RenderVisualLayer layer)
+bool RenderCommand::hasRenderStage(RenderFlag::RenderStage renderStage) const
 {
-	m_visualLayerMask |= static_cast<uint32_t>(layer);
-}
-
-bool RenderCommand::hasVisualLayer(RenderFlag::RenderVisualLayer layer) const
-{
-	return (m_visualLayerMask & static_cast<uint32_t>(layer)) != 0;
+	return (m_renderStageMask & static_cast<uint32_t>(renderStage)) != 0;
 }
 
 InstancedMesh* RenderCommand::getInstancedMesh() const

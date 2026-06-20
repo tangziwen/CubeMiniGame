@@ -198,7 +198,9 @@ void DevicePipelineVK::init(vec2 viewPortSize, Material* mat, DeviceRenderPass* 
         rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
         break;
     case RasterFillMode::Wireframe:
-        rastCreateInfo.polygonMode = VK_POLYGON_MODE_LINE;
+        rastCreateInfo.polygonMode = VKRenderBackEnd::shared()->isWireframeRasterModeSupported()
+            ? VK_POLYGON_MODE_LINE
+            : VK_POLYGON_MODE_FILL;
         break;
     default:
         rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;

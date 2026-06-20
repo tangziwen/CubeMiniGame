@@ -140,6 +140,7 @@ public:
     DeviceRenderPassVK* getScreenRenderPass();
     void beginDebugRegion(VkCommandBuffer cmd, const char * labelStr);
     void endDebugRegion(VkCommandBuffer cmd);
+    bool isWireframeRasterModeSupported() const;
 
     void setIsEnableValidation(bool newVal) {m_isEnableValidation = newVal;};
 private:
@@ -264,6 +265,7 @@ private:
     std::vector<DeviceTextureVK *> m_screenTexs;
     DeviceTextureVK * m_screenDepth;
     bool m_isEnableValidation = false;
+    bool m_isWireframeRasterModeSupported = false;
 };
 
 } // namespace tzw

@@ -40,19 +40,7 @@ namespace tzw
 		otherQueue->clearCommands();
 		for(auto& cmd :m_fullList)
 		{
-			if((uint32_t)(cmd.getRenderState()) & renderStage)
-			{
-				otherQueue->addRenderCommand(cmd, 0);
-			}
-		}
-	}
-
-	void RenderQueue::dispatchByStageAndVisualLayer(RenderQueue* otherQueue, uint32_t renderStage, uint32_t visualLayerMask)
-	{
-		otherQueue->clearCommands();
-		for(auto& cmd :m_fullList)
-		{
-			if(((uint32_t)(cmd.getRenderState()) & renderStage) && (cmd.getVisualLayerMask() & visualLayerMask))
+			if(cmd.getRenderStageMask() & renderStage)
 			{
 				otherQueue->addRenderCommand(cmd, 0);
 			}

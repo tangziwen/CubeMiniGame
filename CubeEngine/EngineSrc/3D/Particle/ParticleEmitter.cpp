@@ -167,9 +167,8 @@ namespace tzw {
 		if (m_instancedMesh->getInstanceSize() > 0) {
 			reCache();
 			RenderCommand command(
-				m_mesh, getMaterial(), this, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				m_mesh, getMaterial(), this, RenderFlag::RenderStage::TRANSPARENT, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			setUpTransFormation(command.m_transInfo);
-			command.setRenderState(RenderFlag::RenderStage::TRANSPARENT);
 			command.setInstancedMesh(m_instancedMesh);
 			queues->addRenderCommand(command, requirementArg);
 			setUpTransFormation(command.m_transInfo);

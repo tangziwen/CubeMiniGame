@@ -108,7 +108,7 @@ void TerrainDrawableNode::submitDrawCmd(RenderFlag::RenderStage stage, RenderQue
     command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
     if (m_debugWireframeEnabled)
     {
-        command.addVisualLayer(RenderFlag::RenderVisualLayer::Wireframe);
+        command.addRenderStage(RenderFlag::RenderStage::DEBUG_LAYER);
     }
     queues->addRenderCommand(command, requirementArg);
 }

@@ -226,7 +226,7 @@ DebugSystem::DebugSystem()
 	:m_immediateLine(new LinePrimitive()),
 	m_wireframeQueue(new RenderQueue()),
 	m_debugWireframeMaterial(nullptr),
-	m_wireframeOverlayEnabled(false),
+	m_wireframeOverlayEnabled(true),
 	m_wireframeOverlayDepthTestEnabled(true),
 	m_wireframeOverlayColor(1, 1, 1)
 {
@@ -308,7 +308,7 @@ vec3 DebugSystem::getWireframeOverlayColor() const
 RenderQueue* DebugSystem::buildWireframeQueue(const RenderQueue* sourceQueue)
 {
 	m_wireframeQueue->clearCommands();
-	if(!sourceQueue || !m_wireframeOverlayEnabled)
+	if(!sourceQueue)
 	{
 		return m_wireframeQueue.get();
 	}
@@ -316,14 +316,13 @@ RenderQueue* DebugSystem::buildWireframeQueue(const RenderQueue* sourceQueue)
 	Material* wireframeMaterial = getDebugWireframeMaterial();
 	for(auto& command : sourceQueue->getList())
 	{
-		if(!command.hasVisualLayer(RenderFlag::RenderVisualLayer::Wireframe))
+		if(!command.hasRenderStage(RenderFlag::RenderStage::DEBUG_LAYER))
 		{
 			continue;
 		}
 		RenderCommand overlayCommand = command;
 		overlayCommand.setMat(wireframeMaterial);
-		overlayCommand.setRenderState(RenderFlag::RenderStage::DEBUG_LAYER);
-		overlayCommand.setVisualLayerMask(static_cast<uint32_t>(RenderFlag::RenderVisualLayer::Wireframe));
+		overlayCommand.setRenderStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::DEBUG_LAYER));
 		m_wireframeQueue->addRenderCommand(overlayCommand, 0);
 	}
 	return m_wireframeQueue.get();

@@ -72,7 +72,7 @@ namespace tzw
 				setUpCommand(command);
 				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{
-					command.setRenderState(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR);
+					command.setRenderStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR));
 				}
 				queues->addRenderCommand(command, requirementArg);
 			}

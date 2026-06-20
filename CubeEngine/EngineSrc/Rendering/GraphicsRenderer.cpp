@@ -237,6 +237,10 @@ namespace tzw
         m_debugWireframeStage = backEnd->createRenderStage_imp();
         m_debugWireframeStage->init(debugWireframePass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::DEBUG_LAYER);
         m_debugWireframeStage->setName("Debug Wireframe Pass");
+        if(!backEnd->isWireframeRasterModeSupported())
+        {
+            DebugSystem::shared()->setWireframeOverlayEnabled(false);
+        }
 
         m_computeTest = backEnd->createRenderStage_imp();
         m_computeTest->initCompute();
@@ -554,15 +558,18 @@ namespace tzw
 
         //------------Debug Wireframe Pass begin---------------
         {
-            auto debugQueue = DebugSystem::shared()->buildWireframeQueue(renderQueues);
-            if (debugQueue && (!debugQueue->getList().empty() || DebugSystem::shared()->isWireframeOverlayEnabled()))
+            if (DebugSystem::shared()->isWireframeOverlayEnabled())
             {
-                m_debugWireframeStage->prepare(cmd);
-                m_debugWireframeStage->beginRenderPass();
-                m_debugWireframeStage->draw(debugQueue);
-                m_debugWireframeStage->endRenderPass();
-                m_debugWireframeStage->finish();
-                m_renderPath->addRenderStage(m_debugWireframeStage);
+                auto debugQueue = DebugSystem::shared()->buildWireframeQueue(renderQueues);
+                if (debugQueue && !debugQueue->getList().empty())
+                {
+                    m_debugWireframeStage->prepare(cmd);
+                    m_debugWireframeStage->beginRenderPass();
+                    m_debugWireframeStage->draw(debugQueue);
+                    m_debugWireframeStage->endRenderPass();
+                    m_debugWireframeStage->finish();
+                    m_renderPath->addRenderStage(m_debugWireframeStage);
+                }
             }
         }
         //------------Debug Wireframe Pass end---------------

@@ -23,7 +23,7 @@ LinePrimitive::~LinePrimitive()
 
 void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material,this,RenderFlag::RenderStage::TRANSPARENT);
+	RenderCommand command(m_mesh,m_material,this,stageType);
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
     queues->addRenderCommand(command, requirementArg);

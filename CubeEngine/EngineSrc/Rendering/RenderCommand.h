@@ -50,15 +50,14 @@ public:
     PrimitiveType primitiveType() const;
     void setPrimitiveType(const PrimitiveType &primitiveType);
 
-    DepthPolicy depthTestPolicy() const;
-    void setDepthTestPolicy(const DepthPolicy &depthTestPolicy);
-    TransformationInfo m_transInfo;
-	RenderFlag::RenderStage getRenderState() const;
-	void setRenderState(const RenderFlag::RenderStage renderState);
-	uint32_t getVisualLayerMask() const;
-	void setVisualLayerMask(uint32_t mask);
-	void addVisualLayer(RenderFlag::RenderVisualLayer layer);
-	bool hasVisualLayer(RenderFlag::RenderVisualLayer layer) const;
+	DepthPolicy depthTestPolicy() const;
+	void setDepthTestPolicy(const DepthPolicy &depthTestPolicy);
+	TransformationInfo m_transInfo;
+	uint32_t getRenderStageMask() const;
+	void setRenderStageMask(uint32_t renderStageMask);
+	void addRenderStage(RenderFlag::RenderStage renderStage);
+	void removeRenderStage(RenderFlag::RenderStage renderStage);
+	bool hasRenderStage(RenderFlag::RenderStage renderStage) const;
 	RenderBatchType m_batchType;
 	InstancedMesh* getInstancedMesh() const;
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
@@ -68,8 +67,7 @@ public:
     void * getDrawableObj();
 private:
     void *m_obj;
-	RenderFlag::RenderStage m_renderState;
-	uint32_t m_visualLayerMask;
+	uint32_t m_renderStageMask;
     Mesh * m_mesh;
 	InstancedMesh * m_instancedMesh;
     Material *m_material;

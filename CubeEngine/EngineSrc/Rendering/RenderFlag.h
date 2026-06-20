@@ -71,13 +71,6 @@ enum class RenderStage : uint32_t
 	All = -1
 };
 
-enum class RenderVisualLayer : uint32_t
-{
-	Fill = 1UL <<0,
-	Wireframe = 1UL <<1,
-	All = -1
-};
-
 enum class BufferStorageType
 {
 	STATIC_DRAW,

@@ -568,13 +568,13 @@ VkApplicationInfo appInfo = {};
 
         VkPhysicalDeviceFeatures supportedFeatures = {};
         vkGetPhysicalDeviceFeatures(GetPhysDevice(), &supportedFeatures);
+        m_isWireframeRasterModeSupported = supportedFeatures.fillModeNonSolid == VK_TRUE;
         if(!supportedFeatures.fillModeNonSolid)
         {
-            tlog("[error] Vulkan physical device does not support fillModeNonSolid for wireframe raster mode.");
-            abort();
+            tlog("[warning] Vulkan physical device does not support fillModeNonSolid. Wireframe raster mode is disabled.");
         }
         VkPhysicalDeviceFeatures enabledFeatures = {};
-        enabledFeatures.fillModeNonSolid = VK_TRUE;
+        enabledFeatures.fillModeNonSolid = m_isWireframeRasterModeSupported ? VK_TRUE : VK_FALSE;
         devInfo.pEnabledFeatures = &enabledFeatures;
 
         VkResult res = vkCreateDevice(GetPhysDevice(), &devInfo, NULL, &m_device);
@@ -582,6 +582,11 @@ VkApplicationInfo appInfo = {};
         CHECK_VULKAN_ERROR("vkCreateDevice error %d\n", res);
    
         printf("Device created\n");
+    }
+
+    bool VKRenderBackEnd::isWireframeRasterModeSupported() const
+    {
+        return m_isWireframeRasterModeSupported;
     }
     void VKRenderBackEnd::createSwapChain()
     {

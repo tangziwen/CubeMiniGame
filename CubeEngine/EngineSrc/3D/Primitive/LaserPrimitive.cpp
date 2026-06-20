@@ -53,9 +53,8 @@ LaserPrimitive::LaserPrimitive(vec3 begin, vec3 end, float width, bool isOriginI
 
 void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material, this, stageType);
+	RenderCommand command(m_mesh,m_material, this, RenderFlag::RenderStage::TRANSPARENT);
     setUpTransFormation(command.m_transInfo);
-	command.setRenderState(RenderFlag::RenderStage::TRANSPARENT);
 	//command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
 	 queues->addRenderCommand(command, requirementArg);
 }
