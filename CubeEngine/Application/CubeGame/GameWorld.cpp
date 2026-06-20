@@ -20,6 +20,7 @@
 #include "Engine/WorkerThreadSystem.h"
 #include "Shader/ShaderMgr.h"
 #include <filesystem>
+#include "LoadingUI.h"
 #include "EngineSrc/3D/Terrain/TerrainRuntime.h"
 #include "EngineSrc/3D/Terrain/TerrainOctreeTypes.h"
 #include "EngineSrc/3D/Terrain/TerrainEditSystem.h"
@@ -302,6 +303,8 @@ void GameWorld::init()
 	m_mainMenu->hide();
     m_mainRoot = new Node();
 	g_GetCurrScene()->addNode(m_mainRoot);
+	WorkerThreadSystem::shared()->setLoadingTipsSetter(
+		[](const std::string& tips) { LoadingUI::shared()->setTipsInfo(tips); });
 	ScriptPyMgr::shared()->callFunPyVoid("tzw","tzw_on_game_ready");
 	
 }

@@ -53,6 +53,9 @@ public:
     void setIsMoving(bool isMoving);
 	bool isOnGround() const;
 
+    static void setInputBlocked(bool blocked);
+    static bool isInputBlocked();
+
 	vec3 getTotalSpeed();
 	void pausePhysics();
 	void resumePhysics();
@@ -84,6 +87,7 @@ private:
 	float m_capsuleHigh;
 	bool m_isOpenPhysics;
 	void onHitGroundImp();
+	static bool s_inputBlocked;
 public:
 	bool isIsOpenPhysics() const;
 	void setIsOpenPhysics(const bool isOpenPhysics);

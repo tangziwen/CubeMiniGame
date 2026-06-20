@@ -8,11 +8,12 @@
 #include "EngineSrc/Math/t_Sphere.h"
 #include "EngineSrc/Math/Plane.h"
 #include <cmath>
-#include "CubeGame/GameUISystem.h"
 #include <algorithm>
 namespace tzw {
 
 const float HeightThreadHold = 0.01;
+bool OrbitCamera::s_inputBlocked = false;
+
 OrbitCamera::OrbitCamera()
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(6,5,6)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true)
@@ -39,7 +40,7 @@ OrbitCamera *OrbitCamera::create(Camera *cloneObj)
 
 bool OrbitCamera::onKeyPress(int keyCode)
 {
-	if (GameUISystem::shared()->isAnyShow())
+	if (isInputBlocked())
 		return false;
     switch(keyCode)
     {
@@ -87,7 +88,7 @@ bool OrbitCamera::onKeyPress(int keyCode)
 
 bool OrbitCamera::onKeyRelease(int keyCode)
 {
-	if (GameUISystem::shared()->isAnyShow())
+	if (isInputBlocked())
 		return false;
     switch(keyCode)
     {
@@ -157,7 +158,7 @@ bool OrbitCamera::onMouseMove(vec2 pos)
     }
    
 
-    if (!GameUISystem::shared()->isAnyShow())
+    if (!isInputBlocked())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)
@@ -516,6 +517,16 @@ void OrbitCamera::zoom(float dist)
 {
 	m_dist += dist;
 	m_dist = std::max(std::min(m_dist, 20.0f), 1.5f);
+}
+
+void OrbitCamera::setInputBlocked(bool blocked)
+{
+	s_inputBlocked = blocked;
+}
+
+bool OrbitCamera::isInputBlocked()
+{
+	return s_inputBlocked;
 }
 } // namespace tzw
 

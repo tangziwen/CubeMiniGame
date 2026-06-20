@@ -495,13 +495,10 @@ target_compile_features(CubeEngine PUBLIC cxx_std_17)
 
 # Public because engine headers are included as "EngineSrc/..." / "Engine/..."
 # from both inside the engine and from Application/main.cpp.
-# Application/ remains exposed for older non-terrain EngineSrc files that still
-# include CubeGame headers.
 target_include_directories(CubeEngine
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}/..
         ${CMAKE_CURRENT_SOURCE_DIR}
-        ${CMAKE_CURRENT_SOURCE_DIR}/../Application
 )
 
 target_compile_definitions(CubeEngine

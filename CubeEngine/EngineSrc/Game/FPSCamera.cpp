@@ -8,7 +8,6 @@
 #include "EngineSrc/Math/t_Sphere.h"
 #include "EngineSrc/Math/Plane.h"
 #include <cmath>
-#include "CubeGame/GameUISystem.h"
 #include <algorithm>
 #include "BulletDynamics/Character/btKinematicCharacterController.h"
 #include "Collision/PhysicsMgr.h"
@@ -21,6 +20,8 @@ namespace tzw {
 
 
 const float HeightThreadHold = 0.01;
+bool FPSCamera::s_inputBlocked = false;
+
 FPSCamera::FPSCamera(bool isOpenPhysics)
     :collideCheck(nullptr),m_maxFallSpeed(6),m_distToside(0.25), m_isEnableGravity(true),m_speed(vec3(3.5f,0.0f,3.5f)),m_rotateSpeed(vec3(0.1,0.1,0.1)),m_forward(0)
     ,m_slide(0),m_up(0),m_isFirstLoop(true),m_isOpenPhysics(isOpenPhysics)
@@ -76,7 +77,7 @@ FPSCamera *FPSCamera::create(Camera *cloneObj, bool isOpenPhysics)
 
 bool FPSCamera::onKeyPress(int keyCode)
 {
-	if (GameUISystem::shared()->isAnyShow())
+	if (isInputBlocked())
 		return false;
     switch(keyCode)
     {
@@ -129,7 +130,7 @@ bool FPSCamera::onKeyPress(int keyCode)
 
 bool FPSCamera::onKeyRelease(int keyCode)
 {
-	if (GameUISystem::shared()->isAnyShow())
+	if (isInputBlocked())
 		return false;
     switch(keyCode)
     {
@@ -199,7 +200,7 @@ bool FPSCamera::onMouseMove(vec2 pos)
         m_isFirstLoop = false;
     }
 
-    if (!GameUISystem::shared()->isAnyShow())
+    if (!isInputBlocked())
     {
         auto mouseForce = newPosition - m_oldPosition;
         if(std::abs(mouseForce.x)<2)
@@ -424,6 +425,16 @@ void FPSCamera::setIsMoving(bool isMoving)
 bool FPSCamera::isOnGround() const
 {
 	return m_character->onGround();
+}
+
+void FPSCamera::setInputBlocked(bool blocked)
+{
+	s_inputBlocked = blocked;
+}
+
+bool FPSCamera::isInputBlocked()
+{
+	return s_inputBlocked;
 }
 } // namespace tzw
 

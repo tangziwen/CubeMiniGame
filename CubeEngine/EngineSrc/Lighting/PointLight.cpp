@@ -2,7 +2,6 @@
 #include <math.h>
 
 
-#include "CubeGame/Attachment.h"
 #include "Utility/math/TbaseMath.h"
 
 namespace tzw {

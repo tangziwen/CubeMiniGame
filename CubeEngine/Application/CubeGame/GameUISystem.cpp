@@ -2,6 +2,8 @@
 
 #include "EngineSrc/CubeEngine.h"
 #include "CubeGame/GameWorld.h"
+#include "EngineSrc/Game/FPSCamera.h"
+#include "EngineSrc/Game/OrbitCamera.h"
 #include "Game/ConsolePanel.h"
 #include "Event/EventMgr.h"
 #include "Technique/MaterialPool.h"
@@ -168,6 +170,9 @@ void GameUISystem::toggle()
 
 void GameUISystem::drawIMGUI()
 {
+	bool isBlocked = isAnyShow();
+	FPSCamera::setInputBlocked(isBlocked);
+	OrbitCamera::setInputBlocked(isBlocked);
 
 	if(GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
 	{

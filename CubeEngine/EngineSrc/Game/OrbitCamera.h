@@ -53,6 +53,9 @@ public:
 	void zoom(float dist);
 	float getDefaultDist() const;
 	void setDefaultDist(const float defaultDist);
+
+    static void setInputBlocked(bool blocked);
+    static bool isInputBlocked();
 private:
     void init(Camera * cloneObj);
     void collideAndSlide(vec3 vel, vec3 gravity);
@@ -83,6 +86,7 @@ private:
 	float m_dist;
 	float m_defaultDist;
 	Node * m_focusNode;
+	static bool s_inputBlocked;
 };
 
 } // namespace tzw

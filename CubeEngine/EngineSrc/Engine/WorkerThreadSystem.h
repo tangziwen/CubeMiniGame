@@ -27,6 +27,7 @@ namespace tzw{
 		void pushMainThreadOrder(WorkerJob order);
 		void pushMainThreadOrderWithLoading(std::string tipsInfo, WorkerJob order);
 		void init();
+		void setLoadingTipsSetter(std::function<void(const std::string&)> setter);
 		void workderUpdate();
 		void mainThreadUpdate();
 	private:
@@ -38,6 +39,7 @@ namespace tzw{
 		std::thread * m_thread;
 		std::mutex m_mutex;
 		std::condition_variable m_cond_var;
+		std::function<void(const std::string&)> m_loadingTipsSetter;
 	};
 }
 

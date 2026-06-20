@@ -1,7 +1,6 @@
 #include "WorkerThreadSystem.h"
 #include <thread>
 #include <mutex>
-#include "CubeGame/LoadingUI.h"
 namespace tzw
 {
 	WorkerJob::WorkerJob(VoidJob work, VoidJob finish):m_work(work),m_onFinished(finish)
@@ -48,8 +47,17 @@ namespace tzw
 
 	void WorkerThreadSystem::pushMainThreadOrderWithLoading(std::string tipsInfo, WorkerJob order)
 	{
-        pushMainThreadOrder(WorkerJob([tipsInfo] {LoadingUI::shared()->setTipsInfo(tipsInfo);}));
+        if (m_loadingTipsSetter)
+        {
+            auto setter = m_loadingTipsSetter;
+            pushMainThreadOrder(WorkerJob([tipsInfo, setter] { setter(tipsInfo); }));
+        }
 		pushMainThreadOrder(order);
+	}
+
+	void WorkerThreadSystem::setLoadingTipsSetter(std::function<void(const std::string&)> setter)
+	{
+		m_loadingTipsSetter = setter;
 	}
 
 	void WorkerThreadSystem::init()
