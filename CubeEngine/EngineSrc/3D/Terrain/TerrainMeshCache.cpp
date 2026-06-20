@@ -137,7 +137,7 @@ void TerrainMeshCache::invalidateInBounds(const TerrainEditBounds& bounds, const
 	}
 }
 
-void TerrainMeshCache::touchRenderSet(const TerrainRenderSet& renderSet, int frameIndex)
+void TerrainMeshCache::touchRenderSet(const TerrainRenderSet& renderSet, float currentTimeSeconds)
 {
 	for (TerrainOctreeNode* node : renderSet.nodes())
 	{
@@ -145,7 +145,7 @@ void TerrainMeshCache::touchRenderSet(const TerrainRenderSet& renderSet, int fra
 		{
 			continue;
 		}
-		ensure(node->key()).lastTouchedFrame = frameIndex;
+		ensure(node->key()).lastTouchedTimeSeconds = currentTimeSeconds;
 	}
 }
 
@@ -178,14 +178,27 @@ int TerrainMeshCache::finishReadyMeshesForRender(const TerrainRenderSet& renderS
 	return finishedCount;
 }
 
-void TerrainMeshCache::evictUnused(int currentFrame, int keepAliveFrames)
+void TerrainMeshCache::evictUnused(const TerrainRenderSet& renderSet, const TerrainOctreeConfig& config,
+	const vec3& viewerPosition, float currentTimeSeconds,
+	float unloadDistance, float keepAliveSeconds)
 {
+	if (!config.isValid() || unloadDistance <= 0.0f)
+	{
+		return;
+	}
+
+	const float unloadDistanceSq = unloadDistance * unloadDistance;
 	for (auto iter = m_entries.begin(); iter != m_entries.end();)
 	{
+		const TerrainNodeKey& key = iter->first;
 		const TerrainMeshCacheEntry& entry = iter->second;
+		const TerrainRegion region = config.regionForKey(key);
+		const AABB worldBounds = region.worldAABB(config.mapOffset, config.blockSize);
 		const bool canEvict = entry.state != TerrainMeshState::Requested
-			&& entry.lastTouchedFrame >= 0
-			&& currentFrame - entry.lastTouchedFrame > keepAliveFrames;
+			&& !renderSet.contains(key)
+			&& entry.lastTouchedTimeSeconds >= 0.0f
+			&& currentTimeSeconds - entry.lastTouchedTimeSeconds > keepAliveSeconds
+			&& worldBounds.distanceSquaredToPoint(viewerPosition) > unloadDistanceSq;
 		if (canEvict)
 		{
 			iter = m_entries.erase(iter);

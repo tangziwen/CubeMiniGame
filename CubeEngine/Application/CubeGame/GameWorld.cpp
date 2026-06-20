@@ -148,7 +148,7 @@ void GameWorld::onFrameUpdate(float delta)
 	if (m_terrainRuntime && m_terrainRuntime->isActive())
 	{
 		vec3 playerPos = m_player->getPos();
-		m_terrainRuntime->update(playerPos, m_mainRoot);
+		m_terrainRuntime->update(playerPos, m_mainRoot, delta);
 	}
 
 	BuildingSystem::shared()->update(delta);

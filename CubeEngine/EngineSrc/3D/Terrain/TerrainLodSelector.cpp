@@ -12,6 +12,16 @@ TerrainLodDecision TerrainLodSelector::select(const TerrainOctreeNode& node, con
 		return TerrainLodDecision::DelayLoad;
 	}
 
+	if (context.maxViewDistance > 0.0f)
+	{
+		const AABB worldBounds = node.region().worldAABB(config.mapOffset, config.blockSize);
+		const float maxViewDistanceSq = context.maxViewDistance * context.maxViewDistance;
+		if (worldBounds.distanceSquaredToPoint(context.viewerPosition) > maxViewDistanceSq)
+		{
+			return TerrainLodDecision::DelayLoad;
+		}
+	}
+
 	const int maxDepth = context.maxDepthOverride >= 0
 		? std::min(context.maxDepthOverride, config.maxDepth)
 		: config.maxDepth;

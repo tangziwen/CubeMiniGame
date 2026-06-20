@@ -14,6 +14,9 @@
 #include "../../Technique/MaterialPool.h"
 #include "GameMap.h"
 
+#include <algorithm>
+#include <vector>
+
 namespace tzw {
 
 namespace
@@ -109,6 +112,14 @@ TerrainMeshSeamSet makeTerrainMeshSeams(const TerrainOctree& octree,
 	return seams;
 }
 
+struct TerrainMeshBuildCandidate
+{
+	TerrainOctreeNode* node = nullptr;
+	TerrainMeshSeamSet seams;
+	float distanceSq = 0.0f;
+	int sampleLodPower = 0;
+};
+
 } // namespace
 
 TerrainRuntime::TerrainRuntime()
@@ -140,15 +151,17 @@ void TerrainRuntime::init(const TerrainOctreeConfig& config)
 	auto material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
 	m_drawableSet->setMaterial(material);
 
-	m_frameIndex = 0;
+	m_runtimeSeconds = 0.0f;
 }
 
-void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
+void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot, float deltaSeconds)
 {
 	if (!m_octree || !m_octree->isValid() || !sceneRoot)
 	{
 		return;
 	}
+
+	m_runtimeSeconds += std::max(deltaSeconds, 0.0f);
 
 	// 1. Octree traversal based on viewer position
 	if (m_lodViewerPositionFrozen && !m_hasFrozenLodViewerPosition)
@@ -159,16 +172,18 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 	const vec3& lodViewerPosition = m_lodViewerPositionFrozen
 		? m_frozenLodViewerPosition
 		: viewerPosition;
-	m_octree->update(lodViewerPosition);
+	TerrainLodContext lodContext;
+	lodContext.viewerPosition = lodViewerPosition;
+	lodContext.maxViewDistance = m_viewDistance;
+	m_octree->update(lodContext);
 
 	const TerrainRenderSet& renderSet = m_octree->renderSet();
 
 	// 2. Touch current render set in mesh cache
-	m_meshCache->touchRenderSet(renderSet, m_frameIndex);
+	m_meshCache->touchRenderSet(renderSet, m_runtimeSeconds);
 
-	// 3. Generate mesh for nodes that lack a ready mesh
-	const int maxSyncMeshBuildsPerFrame = 2;
-	int syncMeshBuildsThisFrame = 0;
+	// 3. Collect and sort mesh generation candidates before spending the per-frame build budget.
+	std::vector<TerrainMeshBuildCandidate> buildCandidates;
 	for (TerrainOctreeNode* node : renderSet.nodes())
 	{
 		if (!node)
@@ -203,35 +218,73 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 
 		if (needRequest)
 		{
-			if (syncMeshBuildsThisFrame >= maxSyncMeshBuildsPerFrame)
-			{
-				continue;
-			}
-			TerrainMeshRequest request = m_meshCache->makeRequest(*node, m_octree->config(), seams);
-			m_meshCache->markRequested(request);
+			const AABB worldBounds = node->region().worldAABB(
+				m_octree->config().mapOffset, m_octree->config().blockSize);
+			TerrainMeshBuildCandidate candidate;
+			candidate.node = node;
+			candidate.seams = seams;
+			candidate.distanceSq = worldBounds.distanceSquaredToPoint(viewerPosition);
+			candidate.sampleLodPower = node->region().sampleLodPower(m_octree->config().meshCellCount);
+			buildCandidates.push_back(candidate);
+		}
+	}
 
-			// First version: synchronous generation
-			TerrainSampleBuffer sampleBuffer;
-			if (m_sampler->sample(request, sampleBuffer))
+	std::sort(buildCandidates.begin(), buildCandidates.end(),
+		[](const TerrainMeshBuildCandidate& left, const TerrainMeshBuildCandidate& right)
+	{
+		if (left.distanceSq != right.distanceSq)
+		{
+			return left.distanceSq < right.distanceSq;
+		}
+		if (left.sampleLodPower != right.sampleLodPower)
+		{
+			return left.sampleLodPower < right.sampleLodPower;
+		}
+		if (left.node && right.node && left.node->key().level != right.node->key().level)
+		{
+			return left.node->key().level > right.node->key().level;
+		}
+		if (left.node && right.node)
+		{
+			return left.node->key() < right.node->key();
+		}
+		return left.node != nullptr;
+	});
+
+	const int maxSyncMeshBuildsPerFrame = 2;
+	int syncMeshBuildsThisFrame = 0;
+	for (const TerrainMeshBuildCandidate& candidate : buildCandidates)
+	{
+		if (!candidate.node || syncMeshBuildsThisFrame >= maxSyncMeshBuildsPerFrame)
+		{
+			break;
+		}
+
+		TerrainMeshRequest request = m_meshCache->makeRequest(
+			*candidate.node, m_octree->config(), candidate.seams);
+		m_meshCache->markRequested(request);
+
+		// First version: synchronous generation
+		TerrainSampleBuffer sampleBuffer;
+		if (m_sampler->sample(request, sampleBuffer))
+		{
+			TerrainMeshBuildResult result = m_mesher->build(request, sampleBuffer);
+			if (result.state == TerrainMeshState::Ready)
 			{
-				TerrainMeshBuildResult result = m_mesher->build(request, sampleBuffer);
-				if (result.state == TerrainMeshState::Ready)
-				{
-					m_meshCache->storeReady(request, std::move(result.mesh));
-				}
-				else
-				{
-					m_meshCache->markFailed(request);
-				}
+				m_meshCache->storeReady(request, std::move(result.mesh));
 			}
 			else
 			{
 				m_meshCache->markFailed(request);
 			}
-
-			node->setDirty(false);
-			++syncMeshBuildsThisFrame;
 		}
+		else
+		{
+			m_meshCache->markFailed(request);
+		}
+
+		candidate.node->setDirty(false);
+		++syncMeshBuildsThisFrame;
 	}
 
 	// 4. Finish ready meshes on the render thread before drawables can submit commands.
@@ -250,9 +303,8 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot)
 	}
 
 	// 7. Evict unused cache entries
-	m_meshCache->evictUnused(m_frameIndex, 60);
-
-	++m_frameIndex;
+	m_meshCache->evictUnused(renderSet, m_octree->config(), viewerPosition, m_runtimeSeconds,
+		m_viewDistance + m_cacheUnloadMargin, m_cacheKeepAliveSeconds);
 }
 
 void TerrainRuntime::clear()
@@ -266,7 +318,7 @@ void TerrainRuntime::clear()
 		m_meshCache->clear();
 	}
 	m_octree.reset();
-	m_frameIndex = 0;
+	m_runtimeSeconds = 0.0f;
 }
 
 TerrainOctree* TerrainRuntime::octree() const
@@ -409,6 +461,36 @@ bool TerrainRuntime::isLodViewerPositionFrozen() const
 const vec3& TerrainRuntime::frozenLodViewerPosition() const
 {
 	return m_frozenLodViewerPosition;
+}
+
+void TerrainRuntime::setViewDistance(float distance)
+{
+	m_viewDistance = distance;
+}
+
+float TerrainRuntime::viewDistance() const
+{
+	return m_viewDistance;
+}
+
+void TerrainRuntime::setCacheUnloadMargin(float margin)
+{
+	m_cacheUnloadMargin = std::max(margin, 0.0f);
+}
+
+float TerrainRuntime::cacheUnloadMargin() const
+{
+	return m_cacheUnloadMargin;
+}
+
+void TerrainRuntime::setCacheKeepAliveSeconds(float seconds)
+{
+	m_cacheKeepAliveSeconds = std::max(seconds, 0.0f);
+}
+
+float TerrainRuntime::cacheKeepAliveSeconds() const
+{
+	return m_cacheKeepAliveSeconds;
 }
 
 } // namespace tzw

@@ -148,6 +148,8 @@ public:
             return false;
         }
     }
+    float distanceSquaredToPoint(const vec3& point) const;
+    float distanceToPoint(const vec3& point) const;
     void setMax(const vec3& max)
     {
         m_max = max;

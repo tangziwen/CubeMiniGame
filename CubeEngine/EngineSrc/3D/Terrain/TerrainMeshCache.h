@@ -15,7 +15,7 @@ struct TerrainMeshCacheEntry
 	TerrainMeshState state = TerrainMeshState::Empty;
 	TerrainMeshRequest request;
 	std::unique_ptr<Mesh> mesh;
-	int lastTouchedFrame = -1;
+	float lastTouchedTimeSeconds = -1.0f;
 	int revision = 0;
 };
 
@@ -36,9 +36,11 @@ public:
 	bool markFailed(const TerrainMeshRequest& request);
 	void invalidate(const TerrainNodeKey& key);
 	void invalidateInBounds(const TerrainEditBounds& bounds, const TerrainOctreeConfig& config);
-	void touchRenderSet(const TerrainRenderSet& renderSet, int frameIndex);
+	void touchRenderSet(const TerrainRenderSet& renderSet, float currentTimeSeconds);
 	int finishReadyMeshesForRender(const TerrainRenderSet& renderSet);
-	void evictUnused(int currentFrame, int keepAliveFrames);
+	void evictUnused(const TerrainRenderSet& renderSet, const TerrainOctreeConfig& config,
+		const vec3& viewerPosition, float currentTimeSeconds,
+		float unloadDistance, float keepAliveSeconds);
 	void clear();
 	size_t size() const;
 

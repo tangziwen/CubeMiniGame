@@ -21,7 +21,7 @@ public:
 	~TerrainRuntime();
 
 	void init(const TerrainOctreeConfig& config);
-	void update(const vec3& viewerPosition, Node* sceneRoot);
+	void update(const vec3& viewerPosition, Node* sceneRoot, float deltaSeconds);
 	void clear();
 
 	TerrainOctree* octree() const;
@@ -42,6 +42,12 @@ public:
 	void unfreezeLodViewerPosition();
 	bool isLodViewerPositionFrozen() const;
 	const vec3& frozenLodViewerPosition() const;
+	void setViewDistance(float distance);
+	float viewDistance() const;
+	void setCacheUnloadMargin(float margin);
+	float cacheUnloadMargin() const;
+	void setCacheKeepAliveSeconds(float seconds);
+	float cacheKeepAliveSeconds() const;
 
 private:
 	std::unique_ptr<TerrainOctree> m_octree;
@@ -50,7 +56,10 @@ private:
 	std::unique_ptr<TerrainMesher> m_mesher;
 	std::unique_ptr<TerrainDrawableSet> m_drawableSet;
 	std::unique_ptr<TerrainEditSystem> m_editSystem;
-	int m_frameIndex = 0;
+	float m_runtimeSeconds = 0.0f;
+	float m_viewDistance = 200.0f;
+	float m_cacheUnloadMargin = 50.0f;
+	float m_cacheKeepAliveSeconds = 5.0f;
 	bool m_debugLodVertexColorEnabled = true;
 	bool m_debugLodCheckerboardEnabled = true;
 	bool m_debugWireframeEnabled = false;

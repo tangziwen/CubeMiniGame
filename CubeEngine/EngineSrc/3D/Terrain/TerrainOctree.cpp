@@ -43,7 +43,7 @@ void TerrainOctree::update(const TerrainLodContext& context)
 		return;
 	}
 	traverse(m_root.get(), context);
-	balanceRenderSet();
+	balanceRenderSet(context);
 }
 
 void TerrainOctree::update(const vec3& viewerPosition)
@@ -220,7 +220,7 @@ void TerrainOctree::traverse(TerrainOctreeNode* node, const TerrainLodContext& c
 	m_renderSet.addNode(node);
 }
 
-bool TerrainOctree::balanceRenderSet()
+bool TerrainOctree::balanceRenderSet(const TerrainLodContext& context)
 {
 	const int maxIterations = 64 + m_config.maxDepth * 64;
 	for (int i = 0; i < maxIterations; ++i)
@@ -231,7 +231,7 @@ bool TerrainOctree::balanceRenderSet()
 			return true;
 		}
 
-		if (!replaceRenderNodeWithChildren(node))
+		if (!replaceRenderNodeWithChildren(node, context))
 		{
 			return false;
 		}
@@ -271,7 +271,7 @@ TerrainOctreeNode* TerrainOctree::findFirstUnbalancedRenderNode() const
 	return nullptr;
 }
 
-bool TerrainOctree::replaceRenderNodeWithChildren(TerrainOctreeNode* node)
+bool TerrainOctree::replaceRenderNodeWithChildren(TerrainOctreeNode* node, const TerrainLodContext& context)
 {
 	if (!node || !node->subdivide(m_config))
 	{
@@ -279,14 +279,19 @@ bool TerrainOctree::replaceRenderNodeWithChildren(TerrainOctreeNode* node)
 	}
 
 	m_renderSet.removeNode(node->key());
+	bool addedChild = false;
 	for (int i = 0; i < 8; ++i)
 	{
 		if (TerrainOctreeNode* child = node->child(i))
 		{
-			m_renderSet.addNode(child);
+			if (m_lodSelector.select(*child, m_config, context) != TerrainLodDecision::DelayLoad)
+			{
+				m_renderSet.addNode(child);
+				addedChild = true;
+			}
 		}
 	}
-	return true;
+	return addedChild;
 }
 
 } // namespace tzw

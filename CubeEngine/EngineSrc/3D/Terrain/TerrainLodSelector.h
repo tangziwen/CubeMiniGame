@@ -16,6 +16,7 @@ struct TerrainLodContext
 {
 	vec3 viewerPosition;
 	float splitDistanceScale = 2.5f;
+	float maxViewDistance = -1.0f;
 	int maxDepthOverride = -1;
 	bool forceLeaf = false;
 };
