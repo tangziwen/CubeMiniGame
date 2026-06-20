@@ -223,7 +223,7 @@ void TerrainRuntime::update(const vec3& viewerPosition, Node* sceneRoot, float d
 			TerrainMeshBuildCandidate candidate;
 			candidate.node = node;
 			candidate.seams = seams;
-			candidate.distanceSq = worldBounds.distanceSquaredToPoint(viewerPosition);
+			candidate.distanceSq = worldBounds.distanceSquaredToPointXZ(viewerPosition);
 			candidate.sampleLodPower = node->region().sampleLodPower(m_octree->config().meshCellCount);
 			buildCandidates.push_back(candidate);
 		}

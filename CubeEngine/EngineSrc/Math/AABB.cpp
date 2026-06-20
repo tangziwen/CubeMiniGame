@@ -122,6 +122,20 @@ float AABB::distanceToPoint(const vec3& point) const
     return sqrtf(distanceSquaredToPoint(point));
 }
 
+float AABB::distanceSquaredToPointXZ(const vec3& point) const
+{
+    const float clampedX = std::max(m_min.x, std::min(point.x, m_max.x));
+    const float clampedZ = std::max(m_min.z, std::min(point.z, m_max.z));
+    const float dx = point.x - clampedX;
+    const float dz = point.z - clampedZ;
+    return dx * dx + dz * dz;
+}
+
+float AABB::distanceToPointXZ(const vec3& point) const
+{
+    return sqrtf(distanceSquaredToPointXZ(point));
+}
+
 } // namespace tzw
 
 

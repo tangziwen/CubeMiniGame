@@ -198,7 +198,7 @@ void TerrainMeshCache::evictUnused(const TerrainRenderSet& renderSet, const Terr
 			&& !renderSet.contains(key)
 			&& entry.lastTouchedTimeSeconds >= 0.0f
 			&& currentTimeSeconds - entry.lastTouchedTimeSeconds > keepAliveSeconds
-			&& worldBounds.distanceSquaredToPoint(viewerPosition) > unloadDistanceSq;
+			&& worldBounds.distanceSquaredToPointXZ(viewerPosition) > unloadDistanceSq;
 		if (canEvict)
 		{
 			iter = m_entries.erase(iter);

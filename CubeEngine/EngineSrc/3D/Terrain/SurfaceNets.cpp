@@ -75,21 +75,19 @@ namespace {
 
 	vec4 debugLodColor(int lodPower)
 	{
-		switch (lodPower)
+		static const vec4 colors[] =
 		{
-		case 0:
-			return vec4(0, 1, 0, 1);
-		case 1:
-			return vec4(1, 0, 0, 1);
-		case 2:
-			return vec4(0, 0, 1, 1);
-		case 3:
-			return vec4(1, 0, 1, 1);
-		case 4:
-			return vec4(0, 1, 1, 1);
-		default:
-			return vec4(1, 1, 1, 1);
-		}
+			vec4(0, 1, 0, 1),
+			vec4(1, 0, 0, 1),
+			vec4(0, 0, 1, 1),
+			vec4(1, 0, 1, 1),
+			vec4(0, 1, 1, 1),
+			vec4(1, 0.6f, 0, 1),
+			vec4(0.5f, 1, 0, 1),
+			vec4(0.4f, 0.4f, 1, 1),
+		};
+		const int colorCount = sizeof(colors) / sizeof(colors[0]);
+		return colors[std::max(lodPower, 0) % colorCount];
 	}
 
 	vec4 applyLodCheckerboard(const vec4& color, const SurfaceNetsGenerateConfig& config)

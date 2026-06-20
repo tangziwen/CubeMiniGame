@@ -16,7 +16,7 @@ TerrainLodDecision TerrainLodSelector::select(const TerrainOctreeNode& node, con
 	{
 		const AABB worldBounds = node.region().worldAABB(config.mapOffset, config.blockSize);
 		const float maxViewDistanceSq = context.maxViewDistance * context.maxViewDistance;
-		if (worldBounds.distanceSquaredToPoint(context.viewerPosition) > maxViewDistanceSq)
+		if (worldBounds.distanceSquaredToPointXZ(context.viewerPosition) > maxViewDistanceSq)
 		{
 			return TerrainLodDecision::DelayLoad;
 		}
