@@ -229,7 +229,7 @@ void RLHero::onTick(float dt)
 		{
 			m_sprite->overLayColor = vec4(255 / 255.f, 138.f / 255.f, 54.f / 255, 1.0);
 
-			//µØ∑¥
+			//ÂºπÂèç
 			vec2 minV = getPosition() - vec2(32, 32);
 			vec2 maxV = getPosition() + vec2(32, 32);
 			std::vector<Collider2D*> colliderList;

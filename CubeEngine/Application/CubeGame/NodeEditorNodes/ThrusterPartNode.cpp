@@ -27,7 +27,7 @@ namespace tzw
 	void ThrusterPartNode::syncName()
 	{
 		char formatName[512];
-		sprintf_s(formatName, 512, TRC(u8"ÍÆ½øÆ÷ %s"),m_part->getName().c_str());
+		sprintf_s(formatName, 512, TRC(u8"æŽ¨è¿›å™¨ %s"),m_part->getName().c_str());
 		name = formatName;
 	}
 

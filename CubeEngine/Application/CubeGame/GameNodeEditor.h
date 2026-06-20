@@ -19,7 +19,7 @@ class GameNodeEditor : public IMGUIObject, public EventListener
 {
 public:
 	GameNodeEditor();
-	// Í¨¹ý IMGUIObject ¼Ì³Ð
+	// é€šè¿‡ IMGUIObject ç»§æ‰¿
 	void drawIMGUI(bool * isOpen);
 
 	void addNode(GraphNode * newNode);

@@ -6,7 +6,7 @@ namespace tzw
 	{
 		auto screenSize = Engine::shared()->winSize();
 		ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
-		ImGui::Begin(TRC(u8"创建世界设定"),isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
+		ImGui::Begin(TRC(u8"鍒涘缓涓栫晫璁惧畾"),isOpen, ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse);
 		if(ImGui::InputText("World Name",m_worldInfo.m_gameName, 64))
 		{
 		}

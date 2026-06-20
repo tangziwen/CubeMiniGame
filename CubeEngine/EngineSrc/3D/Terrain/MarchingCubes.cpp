@@ -1,4 +1,4 @@
-﻿#include "MarchingCubes.h"
+#include "MarchingCubes.h"
 
 #include "MCTable.h"
 #include "GameMap.h"

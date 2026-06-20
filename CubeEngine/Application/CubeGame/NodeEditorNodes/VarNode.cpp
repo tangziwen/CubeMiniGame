@@ -6,7 +6,7 @@ namespace tzw
 {
 	VarNode::VarNode()
 	{
-		name =TR(u8"±äÁ¿");
+		name =TR(u8"å˜é‡");
 		m_attr = addOut(TR(u8"Self"));
 		m_attr->m_localAttrValue.setInt(0);
 		m_varName = "emptyFuckVar";
@@ -18,7 +18,7 @@ namespace tzw
 		ImGui::PushItemWidth(80);
 		char a[128] = "";
 		strcpy(a, m_varName.c_str());
-		bool isInputName = ImGui::InputText(TRC(u8"±äÁ¿Ãû"),a,128);
+		bool isInputName = ImGui::InputText(TRC(u8"å˜é‡å"),a,128);
 		bool isInput = ImGui::InputInt("",&intValue);
 		ImGui::PopItemWidth();
 		if(isInput)

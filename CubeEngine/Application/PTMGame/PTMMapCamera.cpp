@@ -59,7 +59,7 @@ namespace tzw
 	void PTMMapCamera::onFrameUpdate(float dt)
 	{
 		vec2 currPos = m_mapRootNode->getPos2D();
-		if(m_slide != 0 || m_forward != 0)//如果完全没变动不设置位置，避免设了个相同的位置导致大量子Node重新缓存
+		if(m_slide != 0 || m_forward != 0)//濡傛灉瀹屽叏娌″彉鍔ㄤ笉璁剧疆浣嶇疆锛岄伩鍏嶈浜嗕釜鐩稿悓鐨勪綅缃鑷村ぇ閲忓瓙Node閲嶆柊缂撳瓨
 		{
 			m_mapRootNode->setPos2D(currPos.x + m_slide * -100.f * dt, currPos.y + m_forward * -100.f * dt);
 		}
@@ -69,7 +69,7 @@ namespace tzw
 	{
 		if(button == TZW_MOUSE_BUTTON_LEFT)
 		{
-			//点到空的地方
+			//鐐瑰埌绌虹殑鍦版柟
 			PTMEventArgPack arg;
 			PTMEventMgr::shared()->notify(PTMEventType::PLAYER_DESELECT_ALL_ARMIES, arg);
 		}
@@ -80,7 +80,7 @@ namespace tzw
 			int x = (int)posInMap.x / 32;
 			int y = (int)posInMap.y / 32;
 			PTMTile * tile = PTMWorld::shared()->getTile(x, y);
-			//点到空的地方
+			//鐐瑰埌绌虹殑鍦版柟
 			PTMEventArgPack arg;
 			arg.m_params["obj"] = tile;
 			PTMEventMgr::shared()->notify(PTMEventType::CAMERA_RIGHT_CLICK_ON_TILE, arg);

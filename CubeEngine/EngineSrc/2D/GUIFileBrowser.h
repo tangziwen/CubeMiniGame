@@ -13,7 +13,7 @@ namespace tzw
 	class GUIFileBrowser : public IMGUIObject
 	{
 	public:
-		// Í¨¹ý IMGUIObject ¼Ì³Ð
+		// é€šè¿‡ IMGUIObject ç»§æ‰¿
 		void drawIMGUI() override;
 		GUIFileBrowser();
 		void refreshDir(std::string dir);

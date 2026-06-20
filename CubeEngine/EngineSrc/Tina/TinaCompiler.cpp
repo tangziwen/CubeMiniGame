@@ -124,7 +124,7 @@ OperandLocation TinaCompiler::getLeafAddr(TinaASTNode* ast_node, TinaProgram & p
 }
 
 
-//Eval R vaule for expr£¬ it will generate a temp var
+//Eval R vaule for exprï¼Œ it will generate a temp var
 OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 {
 	OperandLocation noUsedLocation;
@@ -209,13 +209,13 @@ OperandLocation TinaCompiler::evalR(TinaASTNode* ast_node, TinaProgram& program)
 		int jneJmpCmdIndex = program.cmdList.size() - 1;
 		auto loopBody = evalR(ast_node->m_children[1], program);
 		program.cmdList.push_back(ILCmd(ILCommandType::JMP, OperandLocation(OperandLocation::locationType::IMEEDIATE, firstAddr)));//jump back.
-		program.cmdList[jneJmpCmdIndex].m_B.m_addr = program.cmdList.size();//»ØÌî²»Âú×ãWhileÌø³ö
-		for(auto index :m_breakList)//»ØÌîBreak
+		program.cmdList[jneJmpCmdIndex].m_B.m_addr = program.cmdList.size();//å›å¡«ä¸æ»¡è¶³Whileè·³å‡º
+		for(auto index :m_breakList)//å›å¡«Break
 		{
 			program.cmdList[index].m_A.m_addr = program.cmdList.size();
 		}
 		m_breakList.clear();
-		for(auto index :m_continueList)//»ØÌîcontinue
+		for(auto index :m_continueList)//å›å¡«continue
 		{
 			program.cmdList[index].m_A.m_addr = firstAddr;
 		}

@@ -37,7 +37,7 @@ ControlPart::ControlPart(std::string itemName):
 void ControlPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"◊˘Œª %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"Â∫ß‰Ωç %s"),genShortName().c_str());
 	setName(formatName);
 }
 

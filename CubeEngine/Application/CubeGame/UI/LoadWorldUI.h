@@ -8,7 +8,7 @@ namespace tzw
 	class LoadWorldUI : public IMGUIObject
 	{
 	public:
-		// Í¨¹ý IMGUIObject ¼Ì³Ð
+		// é€šè¿‡ IMGUIObject ç»§æ‰¿
 		void drawIMGUI(bool * isOpen) override;
 		LoadWorldUI();
 		std::function<void (std::string)> m_onCreate;

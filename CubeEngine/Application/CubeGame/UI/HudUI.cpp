@@ -41,7 +41,7 @@ namespace tzw
 		else
 		{
 			ImGui::Text("Block Rotate");
-			//ImGui::Text(CubeEngine.TR("当前旋转角度")+ str(GameState.g_blockRotate));
+			//ImGui::Text(CubeEngine.TR("褰撳墠鏃嬭浆瑙掑害")+ str(GameState.g_blockRotate));
 		}
 		ImGui::End();
 

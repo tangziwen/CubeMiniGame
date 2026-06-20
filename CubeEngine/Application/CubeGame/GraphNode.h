@@ -65,7 +65,7 @@ struct NodeAttr
 		RETURN_VALUE,
 		DATA_WITH_DEFAULT_VALUE,
 	};
-	enum class AcceptValueType //¿É½ÓÊÜµÄvalueType, intºÍfloatÀàĞÍÔÊĞíÊ¹ÓÃÄ¬ÈÏÖµ
+	enum class AcceptValueType //å¯æ¥å—çš„valueType, intå’Œfloatç±»å‹å…è®¸ä½¿ç”¨é»˜è®¤å€¼
 	{
 		ANY,
 		INT,

@@ -34,7 +34,7 @@ namespace tzw
 	void ControlPartNode::syncName()
 	{
 		char formatName[512];
-		sprintf_s(formatName, 512, u8"×ùÎ» %s",m_part->getName().c_str());
+		sprintf_s(formatName, 512, u8"åº§ä½ %s",m_part->getName().c_str());
 		name = formatName;
 	}
 

@@ -7,7 +7,7 @@ namespace tzw
 	class OptionPanel : public IMGUIObject
 	{
 	public:
-		// Í¨¹ý IMGUIObject ¼Ì³Ð
+		// é€šè¿‡ IMGUIObject ç»§æ‰¿
 		void drawIMGUI(bool * isOpen) override;
 		OptionPanel();
 		void open();

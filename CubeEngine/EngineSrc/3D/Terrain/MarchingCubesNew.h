@@ -9,9 +9,9 @@ namespace tzw
 	* @brief The surface class convertes a tile::accessor to an iso-surface. Call this class by one thread at a time.
 	* Uses marching cubes and transvoxel for surface-generation.
 	* http://www.terathon.com/voxels/
-	* To understand this class and algos please read Eric Lengyel¡¯s Dissertation: http://www.terathon.com/lengyel/Lengyel-VoxelTerrain.pdf .
+	* To understand this class and algos please read Eric Lengyelâ€™s Dissertation: http://www.terathon.com/lengyel/Lengyel-VoxelTerrain.pdf .
 	* If you got a custom voxel, that effects the resulting surface derive this class and reimplement vertexGotCreated() and vertexGotCreatedLod().
-	* Private methods are undocumentated because they simply implement the code described in Eric Lengyel¡¯s Dissertation.
+	* Private methods are undocumentated because they simply implement the code described in Eric Lengyelâ€™s Dissertation.
 	*/
 	class surface
 	{
@@ -27,7 +27,7 @@ namespace tzw
 		* @brief calculateSurface calculates the iso surface.
 		* @param voxel Contains the voxel needed for the surface calculation.
 		* @param voxelSize voxel-scale.
-		* @param calculateNormalCorrection check chapter 3.3 in Eric Lengyel¡¯s Dissertation.
+		* @param calculateNormalCorrection check chapter 3.3 in Eric Lengyelâ€™s Dissertation.
 		* @param lod Lod index starting with 0.
 		*/
 		void calculateSurface(const vec4 * srcData, const float &voxelSize = 1., const bool& calculateNormalCorrection = true, const int &lod = 0)

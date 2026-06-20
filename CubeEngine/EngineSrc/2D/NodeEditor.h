@@ -6,7 +6,7 @@ namespace tzw
 	class NodeEditor : public IMGUIObject
 	{
 	public:
-		// Í¨¹ý IMGUIObject ¼Ì³Ð
+		// é€šè¿‡ IMGUIObject ç»§æ‰¿
 		void drawIMGUI() override;
 
 	};

@@ -28,7 +28,7 @@ namespace tzw
 	void CannonPartNode::syncName()
 	{
 		char formatName[512];
-		sprintf_s(formatName, 512, TRC(u8"ÅÚÍ² %s"),m_part->getName().c_str());
+		sprintf_s(formatName, 512, TRC(u8"ç‚®ç­’ %s"),m_part->getName().c_str());
 		name = formatName;
 	}
 

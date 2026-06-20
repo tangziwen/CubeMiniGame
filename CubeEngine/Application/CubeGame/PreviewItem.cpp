@@ -1,4 +1,4 @@
-﻿#include "PreviewItem.h"
+#include "PreviewItem.h"
 #include "CubeGame/PartSurfaceMgr.h"
 #include "Texture/TextureMgr.h"
 #include "GamePart.h"

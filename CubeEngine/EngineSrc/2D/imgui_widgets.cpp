@@ -6023,7 +6023,7 @@ bool ImGui::BeginMenu(const char* label, bool enabled, float height)
     // e.g. Menus tend to overlap each other horizontally to amplify relative Z-ordering.
     ImVec2 popup_pos, pos = window->DC.CursorPos;
     //if (window->DC.LayoutType == ImGuiLayoutType_Horizontal)
-	if (window->DC.CurrentLayout && window->DC.CurrentLayout->Type == ImGuiLayoutType_Horizontal || (!window->DC.CurrentLayout && window->DC.LayoutType == ImGuiLayoutType_Horizontal))//修复BeginHorizon不生效的问题
+	if (window->DC.CurrentLayout && window->DC.CurrentLayout->Type == ImGuiLayoutType_Horizontal || (!window->DC.CurrentLayout && window->DC.LayoutType == ImGuiLayoutType_Horizontal))//淇BeginHorizon涓嶇敓鏁堢殑闂
     {
         // Menu inside an horizontal menu bar
         // Selectable extend their highlight by half ItemSpacing in each direction.
@@ -6055,7 +6055,7 @@ bool ImGui::BeginMenu(const char* label, bool enabled, float height)
     bool want_open = false;
     bool want_close = false;
     //if (window->DC.LayoutType == ImGuiLayoutType_Vertical) // (window->Flags & (ImGuiWindowFlags_Popup|ImGuiWindowFlags_ChildMenu))
-	if (window->DC.CurrentLayout && window->DC.CurrentLayout->Type == ImGuiLayoutType_Vertical || (!window->DC.CurrentLayout && window->DC.LayoutType == ImGuiLayoutType_Vertical))//修复BeginHorizon不生效的问题
+	if (window->DC.CurrentLayout && window->DC.CurrentLayout->Type == ImGuiLayoutType_Vertical || (!window->DC.CurrentLayout && window->DC.LayoutType == ImGuiLayoutType_Vertical))//淇BeginHorizon涓嶇敓鏁堢殑闂
     {
         // Close menu when not hovering it anymore unless we are moving roughly in the direction of the menu
         // Implement http://bjk5.com/post/44698559168/breaking-down-amazons-mega-dropdown to avoid using timers, so menus feels more reactive.

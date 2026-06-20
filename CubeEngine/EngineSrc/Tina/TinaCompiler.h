@@ -102,7 +102,7 @@ private:
 	unsigned char m_registerIndex = 0;
 	
 	std::unordered_map<std::string, int> m_envSymbolMap;
-	//³£Á¿Ã»ÓĞÃû×Ö£¬Ö±½Ó·ÅÖµ
+	//å¸¸é‡æ²¡æœ‰åå­—ï¼Œç›´æ¥æ”¾å€¼
 	std::unordered_map<std::string, int> m_constMap;
 	TinaFunctionInfo * m_currParsingFunc = nullptr;
 	OperandLocation getLeafAddr(TinaASTNode * node, TinaProgram & program);

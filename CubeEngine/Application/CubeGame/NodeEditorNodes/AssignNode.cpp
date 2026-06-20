@@ -7,9 +7,9 @@ namespace tzw
 {
 	AssignNode::AssignNode()
 	{
-		name =TR(u8"��ֵ");
-		m_leftValAttr = addIn(TR(u8"��ֵ"));
-		m_rightValAttr = addIn(TR(u8"��ֵ"));
+		name =TR(u8"赋值");
+		m_leftValAttr = addIn(TR(u8"左值"));
+		m_rightValAttr = addIn(TR(u8"右值"));
 	}
 
 	NodeAttrValue AssignNode::execute()

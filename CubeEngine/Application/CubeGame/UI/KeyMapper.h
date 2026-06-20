@@ -7,7 +7,7 @@ namespace tzw
 	class KeyMapper : public IMGUIObject, public Singleton<KeyMapper>, EventListener
 	{
 	public:
-		// Í¨¹ý IMGUIObject ¼Ì³Ð
+		// é€šè¿‡ IMGUIObject ç»§æ‰¿
 		void drawIMGUI(bool * isOpen) override;
 		KeyMapper();
 		void open(std::function<void(int)> keyChangeCallBack);

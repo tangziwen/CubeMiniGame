@@ -8,7 +8,7 @@ namespace tzw
 	class InventoryUI : public IMGUIObject
 	{
 	public:
-		// Í¨¹ý IMGUIObject ¼Ì³Ð
+		// é€šè¿‡ IMGUIObject ç»§æ‰¿
 		void drawIMGUI(bool * isOpen) override;
 		InventoryUI();
 		std::function<void (std::string)> m_onCreate;

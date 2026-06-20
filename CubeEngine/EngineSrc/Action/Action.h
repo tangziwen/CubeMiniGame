@@ -1,4 +1,4 @@
-﻿#ifndef TZW_ACTION_H
+#ifndef TZW_ACTION_H
 #define TZW_ACTION_H
 
 

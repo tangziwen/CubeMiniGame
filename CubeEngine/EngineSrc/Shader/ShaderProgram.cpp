@@ -15,12 +15,12 @@ namespace tzw {
 
 static int BitCount(uint32_t n)
 {
-    unsigned int c =0 ; // ¼ÆÊıÆ÷
+    unsigned int c =0 ; // è®¡æ•°å™¨
     while (n >0)
     {
-        if((n &1) ==1) // µ±Ç°Î»ÊÇ1
-            ++c ; // ¼ÆÊıÆ÷¼Ó1
-        n >>=1 ; // ÒÆÎ»
+        if((n &1) ==1) // å½“å‰ä½æ˜¯1
+            ++c ; // è®¡æ•°å™¨åŠ 1
+        n >>=1 ; // ç§»ä½
     }
     return c ;
 }

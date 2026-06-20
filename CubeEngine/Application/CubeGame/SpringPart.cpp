@@ -158,7 +158,7 @@ void SpringPart::setDamping(float damping)
 void SpringPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"µ¯»É %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"å¼¹ç°§ %s"),genShortName().c_str());
 	setName(formatName);
 }
 
@@ -184,12 +184,12 @@ void SpringPart::drawInspect()
 	stiffness = getStiffness();
 	damping = getDamping();
 	bool isInputStiffness = false, isInputDamping = false;
-	isInputStiffness = ImGui::InputFloat(TRC(u8"¾¢¶ÈÏµÊý"), &stiffness);
+	isInputStiffness = ImGui::InputFloat(TRC(u8"åŠ²åº¦ç³»æ•°"), &stiffness);
 	if(isInputStiffness)
 	{
 		setStiffness(stiffness);
 	}
-	isInputDamping = ImGui::InputFloat(TRC(u8"×èÄá"), &damping);
+	isInputDamping = ImGui::InputFloat(TRC(u8"é˜»å°¼"), &damping);
 	if(isInputDamping)
 	{
 		setStiffness(damping);

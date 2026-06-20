@@ -114,7 +114,7 @@ namespace tzw
 		m_localAttrValue = NodeAttrValue();
 		acceptValueType = AcceptValueType::ANY;
 	}
-	//ÇóÓÒÖµ
+	//æ±‚å³å€¼
 	NodeAttrValue NodeAttr::eval()
 	{
 		auto nodeEditor = m_parent->getNodeEditor();

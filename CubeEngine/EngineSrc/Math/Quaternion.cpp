@@ -35,7 +35,7 @@ void Quaternion::fromRotationMatrix(Matrix44 *mat)
         y = (zaxis.x - xaxis.z) * s;
         z = (xaxis.y - yaxis.x) * s;
     }
-    else //¶Ô½ÇÊÇ¸ºµÄ
+    else //å¯¹è§’æ˜¯è´Ÿçš„
     {
         // Note: since xaxis, yaxis, and zaxis are normalized, 
         // we will never divide by zero in the code below.

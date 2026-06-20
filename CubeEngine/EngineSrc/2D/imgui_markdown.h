@@ -53,14 +53,14 @@ Headers:
 
 Indents: 
 On a new line, at the start of the line, add two spaces per indent.
-··Indent level 1
-····Indent level 2
+è´©Indent level 1
+è´©è´©Indent level 2
 
 Unordered lists: 
 On a new line, at the start of the line, add two spaces, an asterisks and a space. 
 For nested lists, add two additional spaces in front of the asterisk per list level increment.
-··*·Unordered List level 1
-····*·Unordered List level 2
+è´©*ç¨¶nordered List level 1
+è´©è´©*ç¨¶nordered List level 2
 
 Links:
 [link description](https://...)

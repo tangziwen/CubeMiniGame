@@ -1,4 +1,4 @@
-﻿#include "GamePartRenderMgr.h"
+#include "GamePartRenderMgr.h"
 
 
 #include "PartSurface.h"

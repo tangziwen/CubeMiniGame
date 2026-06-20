@@ -160,7 +160,7 @@ int ThrusterPart::getAttachmentCount()
 void ThrusterPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, u8"ÍÆ½øÆ÷ %s",genShortName().c_str());
+	sprintf_s(formatName, 512, u8"æŽ¨è¿›å™¨ %s",genShortName().c_str());
 	setName(formatName);
 }
 
@@ -215,7 +215,7 @@ void ThrusterPart::drawInspect()
 		static_cast<ResNode *>(m_graphNode)->syncName();
 	}
 	float force = getThrusterForce();
-	if(ImGui::InputFloat(TRC(u8"ÍÆÁ¦"), &force))
+	if(ImGui::InputFloat(TRC(u8"æŽ¨åŠ›"), &force))
 	{
 		setThrusterForce(force);
 	}

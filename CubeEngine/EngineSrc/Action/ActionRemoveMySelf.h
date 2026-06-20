@@ -1,4 +1,4 @@
-﻿#pragma once
+#pragma once
 #include "Action.h"
 namespace tzw {
 class Node;

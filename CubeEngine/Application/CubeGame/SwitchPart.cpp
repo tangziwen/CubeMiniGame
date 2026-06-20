@@ -33,7 +33,7 @@ SwitchPart::~SwitchPart()
 void SwitchPart::generateName()
 {
 	char formatName[512];
-	sprintf_s(formatName, 512, TRC(u8"¿ª¹Ø %s"),genShortName().c_str());
+	sprintf_s(formatName, 512, TRC(u8"å¼€å…³ %s"),genShortName().c_str());
 	setName(formatName);
 }
 

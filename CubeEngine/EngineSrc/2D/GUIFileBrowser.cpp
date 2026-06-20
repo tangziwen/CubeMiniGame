@@ -122,7 +122,7 @@ namespace tzw
 			}
 		}
 		ImGui::SameLine();
-		if(ImGui::Button(u8"È¡Ïû")) m_isOpen = false;
+		if(ImGui::Button(u8"å–æ¶ˆ")) m_isOpen = false;
 		ImGui::End();
 	}
 }

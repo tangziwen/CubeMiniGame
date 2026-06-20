@@ -54,7 +54,7 @@ namespace tzw
 		void init();
 		void loadRaces();
 		void loadJobs();
-		void createAPop(PTMPop * pop, int jobType);//pop的数量可能会非常的多，这里只加工和初始化，本身不负责分配
+		void createAPop(PTMPop * pop, int jobType);//pop鐨勬暟閲忓彲鑳戒細闈炲父鐨勫锛岃繖閲屽彧鍔犲伐鍜屽垵濮嬪寲锛屾湰韬笉璐熻矗鍒嗛厤
 	private:
 		std::vector<PTMPopRaceType> m_races;
 		std::vector<PTMPopJobType> m_jobs;

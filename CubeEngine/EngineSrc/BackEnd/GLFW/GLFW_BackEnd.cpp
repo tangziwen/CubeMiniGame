@@ -1,4 +1,4 @@
-﻿
+
 #include "GLFW_BackEnd.h"
 #include "../../Scene/SceneMgr.h"
 #include "../RenderBackEnd.h"
