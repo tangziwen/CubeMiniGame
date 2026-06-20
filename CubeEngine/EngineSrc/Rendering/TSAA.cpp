@@ -52,29 +52,34 @@ namespace tzw
 	}
     void TSAA::preTick()
     {
-        //last frame
         m_index = (m_index + 1) % 16;
+        // Restore the unjittered camera before capturing the previous-frame VP.
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
         m_lastViewProj = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
 
-        //new frame
-        float jitterOffset = 1.0;
-        //jitter the projection
-        m_offset = vec2((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
+        // Generate current-frame jitter in pixels and apply it for scene rendering.
+        m_offset = vec2((TemporalHalton(m_index + 1, 2) - 0.5f) * m_jitterScalePixels, (TemporalHalton(m_index + 1, 3) - 0.5f) * m_jitterScalePixels);
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(m_offset.x, m_offset.y);
     }
     DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
-        // Resolve in the unjittered camera space so depth reprojection matches TU_LastVP.
+        // GraphicsRenderer runs TSAA after fog and before TextureToScreen. Current scene color
+        // is sampled in jittered render space; reprojection uses unjittered camera space and TU_LastVP.
+        // Reset before material uniforms update so TU_viewProjectInverted describes current resolve space.
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
         vec2 winSize = Engine::shared()->winSize();
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_jitterUV", vec2(m_offset.x / winSize.x, m_offset.y / winSize.y));
+        vec2 jitterUV = vec2(m_offset.x / winSize.x, m_offset.y / winSize.y);
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_jitterUV", jitterUV);
         m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  m_lastViewProj);
-        
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_TSAAResolveParams", m_resolveParams);
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_TSAARejectionParams", m_rejectionParams);
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_TSAADebugMode", m_debugMode);
+
         m_tsaaStage->prepare(cmd);
         m_tsaaStage->beginRenderPass(m_bufferA);
         m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
         m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
+        // Depth is the GBuffer depth supplied by GraphicsRenderer, not the deferred lighting/fog depth.
         m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, Depth);
         m_tsaaStage->bindSinglePipelineDescriptor();
         m_tsaaStage->drawScreenQuad();
