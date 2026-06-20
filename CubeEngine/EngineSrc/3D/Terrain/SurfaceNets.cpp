@@ -24,11 +24,6 @@ namespace {
 		return srcData[getIndex(x, y, z, voxelSize)].w;
 	}
 
-	const voxelInfo* getVoxel(const voxelInfo* srcData, int voxelSize, int x, int y, int z)
-	{
-		return srcData + getIndex(x, y, z, voxelSize);
-	}
-
 	bool samePosition(const vec3& a, const vec3& b)
 	{
 		return (a - b).squaredLength() <= 1e-8f;
@@ -117,7 +112,8 @@ namespace {
 	};
 
 	DualVertexResult calculateDualVertex(vec3 basePoint, const voxelInfo* srcData, int voxelSize,
-		int minCell, float cellWorldSize, unsigned char isoLevel, int x, int y, int z)
+		int minCell, float cellWorldSize, unsigned char isoLevel,
+		const SurfaceNetsGenerateConfig& config, int x, int y, int z)
 	{
 		DualVertexResult result;
 
@@ -172,11 +168,14 @@ namespace {
 		const int matX = std::clamp(static_cast<int>(center.x), 0, voxelSize - 1);
 		const int matY = std::clamp(static_cast<int>(center.y), 0, voxelSize - 1);
 		const int matZ = std::clamp(static_cast<int>(center.z), 0, voxelSize - 1);
+		const TerrainInt3 materialSample = config.sampleOrigin
+			+ TerrainInt3(matX, matY, matZ) * config.sampleStride;
 
 		result.exists = true;
 		result.localCenter = center;
 		result.worldPosition = finalPosition;
-		result.material = *getVoxel(srcData, voxelSize, matX, matY, matZ);
+		result.material = GameMap::shared()->sampleVoxel(
+			materialSample.x, materialSample.y, materialSample.z);
 		return result;
 	}
 
@@ -267,10 +266,10 @@ namespace {
 		GameMap* map = GameMap::shared();
 		auto sampleCoarseCorner = [&](int dx, int dy, int dz) -> unsigned char
 		{
-			return map->sampleVoxel(
+			return map->sampleVoxelDensity(
 				coarseOrigin[0] + dx * 2 * s,
 				coarseOrigin[1] + dy * 2 * s,
-				coarseOrigin[2] + dz * 2 * s).w;
+				coarseOrigin[2] + dz * 2 * s);
 		};
 
 		int insideCount = 0;
@@ -733,7 +732,8 @@ void SurfaceNets::generate(vec3 basePoint, Mesh* mesh, const voxelInfo* srcData,
 					continue;
 				}
 				const DualVertexResult vertex = calculateDualVertex(
-					basePoint, srcData, voxelSize, minCell, cellWorldSize, isoLevel, x, y, z);
+					basePoint, srcData, voxelSize, minCell, cellWorldSize, isoLevel,
+					config, x, y, z);
 				if (!vertex.exists)
 				{
 					continue;

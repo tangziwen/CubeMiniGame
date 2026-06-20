@@ -33,6 +33,8 @@ struct GameMapBuffer
 	GameMapBuffer();
 	voxelInfo get(int theX, int theY, int theZ);
 	voxelInfo * m_buff;
+	unsigned char* m_densityReady;
+	unsigned char* m_matReady;
 	bool isEdit;
 };
 
@@ -65,8 +67,9 @@ public:
     void setMaxHeight(float maxHeight);
 	double getNoiseValue(float x, float y, float z);
     bool isSurface(vec3 pos);
-	// Non-materializing read: returns stored voxel if the page exists, otherwise samples procedural terrain.
+	// Lazy read: allocates the owning page and initializes requested procedural columns on demand.
 	voxelInfo sampleVoxel(int x, int y, int z);
+	unsigned char sampleVoxelDensity(int x, int y, int z);
 	voxelInfo sampleProceduralVoxel(int x, int y, int z);
     unsigned char getDensity(vec3 pos);
 	unsigned char getVoxelW(int x, int y, int z);
@@ -101,6 +104,11 @@ private:
 	int pageIndexForVoxel(int x, int y, int z) const;
 	int localIndexInPage(int x, int y, int z) const;
 	bool isPageAllocated(int pageIndex) const;
+	unsigned char sampleProceduralDensity(int x, int y, int z);
+	void ensureVoxelDensity(int x, int y, int z);
+	void ensureVoxelMaterial(int x, int y, int z);
+	void ensurePageDensityComplete(int pageIndex);
+	void setVoxelMaterialReady(int x, int y, int z, bool isReady);
 	voxelInfo makeOutsideVoxel() const;
 	void generateVoxelPage(size_t buffID_x, size_t buffID_y, size_t buffID_z);
     float x_offset,y_offset,z_offset;

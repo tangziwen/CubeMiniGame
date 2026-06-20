@@ -85,9 +85,12 @@ bool TerrainSampler::sample(GameMap* map, const TerrainMeshRequest& request,
 				const TerrainInt3 globalSample = outBuffer.sampleOrigin
 					+ TerrainInt3(x, y, z) * request.sampleStride;
 				const int index = outBuffer.index(x, y, z);
-				outBuffer.voxels[index] = isInDomain(globalSample)
-					? map->sampleVoxel(globalSample.x, globalSample.y, globalSample.z)
-					: makeEmptyVoxel();
+				voxelInfo voxel = makeEmptyVoxel();
+				if (isInDomain(globalSample))
+				{
+					voxel.w = map->sampleVoxelDensity(globalSample.x, globalSample.y, globalSample.z);
+				}
+				outBuffer.voxels[index] = voxel;
 			}
 		}
 	}

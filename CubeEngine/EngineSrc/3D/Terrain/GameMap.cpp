@@ -293,12 +293,44 @@ voxelInfo GameMap::sampleVoxel(int x, int y, int z)
 	}
 
 	const int buffIndex = pageIndexForVoxel(x, y, z);
+	if (!isPageAllocated(buffIndex))
+	{
+		generateVoxelPage(
+			static_cast<size_t>(x / GAME_MAX_BUFFER_SIZE),
+			static_cast<size_t>(y / GAME_MAX_BUFFER_SIZE),
+			static_cast<size_t>(z / GAME_MAX_BUFFER_SIZE));
+	}
 	if (isPageAllocated(buffIndex))
 	{
+		ensureVoxelDensity(x, y, z);
+		ensureVoxelMaterial(x, y, z);
 		return m_totalBuffer[buffIndex].m_buff[localIndexInPage(x, y, z)];
 	}
-
 	return sampleProceduralVoxel(x, y, z);
+}
+
+unsigned char GameMap::sampleVoxelDensity(int x, int y, int z)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return 255;
+	}
+
+	const int buffIndex = pageIndexForVoxel(x, y, z);
+	if (!isPageAllocated(buffIndex))
+	{
+		generateVoxelPage(
+			static_cast<size_t>(x / GAME_MAX_BUFFER_SIZE),
+			static_cast<size_t>(y / GAME_MAX_BUFFER_SIZE),
+			static_cast<size_t>(z / GAME_MAX_BUFFER_SIZE));
+	}
+
+	if (isPageAllocated(buffIndex))
+	{
+		ensureVoxelDensity(x, y, z);
+		return m_totalBuffer[buffIndex].m_buff[localIndexInPage(x, y, z)].w;
+	}
+	return sampleProceduralDensity(x, y, z);
 }
 
 voxelInfo GameMap::sampleProceduralVoxel(int x, int y, int z)
@@ -308,13 +340,13 @@ voxelInfo GameMap::sampleProceduralVoxel(int x, int y, int z)
 		return makeOutsideVoxel();
 	}
 	voxelInfo result;
-	result.w = proceduralDensityAt(*this, x, y, z);
-	auto x1 = proceduralDensityAt(*this, x - 1, y, z);
-	auto x2 = proceduralDensityAt(*this, x + 1, y, z);
-	auto y1 = proceduralDensityAt(*this, x, y - 1, z);
-	auto y2 = proceduralDensityAt(*this, x, y + 1, z);
-	auto z1 = proceduralDensityAt(*this, x, y, z - 1);
-	auto z2 = proceduralDensityAt(*this, x, y, z + 1);
+	result.w = sampleProceduralDensity(x, y, z);
+	auto x1 = sampleProceduralDensity(x - 1, y, z);
+	auto x2 = sampleProceduralDensity(x + 1, y, z);
+	auto y1 = sampleProceduralDensity(x, y - 1, z);
+	auto y2 = sampleProceduralDensity(x, y + 1, z);
+	auto z1 = sampleProceduralDensity(x, y, z - 1);
+	auto z2 = sampleProceduralDensity(x, y, z + 1);
 	auto gradientVec = vec3(x1 - x2, y1 - y2, z1 - z2);
 	float slope = 0.0f;
 	if (gradientVec.length() > 0.0001f)
@@ -368,7 +400,7 @@ unsigned char GameMap::getDensity(vec3 pos)
 
 unsigned char GameMap::getVoxelW(int x, int y, int z)
 {
-	return sampleVoxel(x, y, z).w;
+	return sampleVoxelDensity(x, y, z);
 }
 
 voxelInfo*
@@ -579,6 +611,7 @@ void GameMap::saveTerrain(std::string filePath)
 		auto buff = m_totalBuffer[i].m_buff;
 		if(buff && m_totalBuffer[i].isEdit)
 		{
+			ensurePageDensityComplete(static_cast<int>(i));
 			fwrite(&i, sizeof(size_t), 1, terrainFile);
 			fwrite(buff, sizeof(voxelInfo) * GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE, 1, terrainFile);
 			writeCount += 1;
@@ -604,6 +637,12 @@ void GameMap::loadTerrain(std::string filePath)
 		fread(&index,sizeof(size_t),1,terrainFile);
 		fread(buff, sizeof(voxelInfo) * GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE,1 , terrainFile);
 		m_totalBuffer[index].m_buff = buff;
+		m_totalBuffer[index].m_densityReady = new unsigned char[GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE];
+		std::fill(m_totalBuffer[index].m_densityReady,
+			m_totalBuffer[index].m_densityReady + GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE, 1);
+		m_totalBuffer[index].m_matReady = new unsigned char[GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE];
+		std::fill(m_totalBuffer[index].m_matReady,
+			m_totalBuffer[index].m_matReady + GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE, 1);
 		m_totalBuffer[index].isEdit = true;
 		loadCount++;
 	}
@@ -617,21 +656,14 @@ void GameMap::generateVoxelPage(size_t buffIDX, size_t buffIDY, size_t buffIDZ)
 	{
 		return;
 	}
-	m_totalBuffer[buffIndex].m_buff = new voxelInfo[GAME_MAX_BUFFER_SIZE* GAME_MAX_BUFFER_SIZE *GAME_MAX_BUFFER_SIZE];
-	for (int i = 0; i < GAME_MAX_BUFFER_SIZE; i++)
-	{
-		for (int k = 0; k < GAME_MAX_BUFFER_SIZE; k++)
-		{
-			for (int j = 0; j < GAME_MAX_BUFFER_SIZE;j++) // Y in the most inner loop, cache friendly
-			{
-				int cellIndex = i * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE + j * GAME_MAX_BUFFER_SIZE + k;
-				const int globalX = static_cast<int>(buffIDX * GAME_MAX_BUFFER_SIZE + i);
-				const int globalY = static_cast<int>(buffIDY * GAME_MAX_BUFFER_SIZE + j);
-				const int globalZ = static_cast<int>(buffIDZ * GAME_MAX_BUFFER_SIZE + k);
-				m_totalBuffer[buffIndex].m_buff[cellIndex] = sampleProceduralVoxel(globalX, globalY, globalZ);
-			}
-		}
-	}
+	voxelInfo* buff = new voxelInfo[GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE];
+	unsigned char* densityReady = new unsigned char[GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE];
+	unsigned char* matReady = new unsigned char[GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE];
+	std::fill(densityReady, densityReady + GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE, 0);
+	std::fill(matReady, matReady + GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE, 0);
+	m_totalBuffer[buffIndex].m_buff = buff;
+	m_totalBuffer[buffIndex].m_densityReady = densityReady;
+	m_totalBuffer[buffIndex].m_matReady = matReady;
 }
 
 vec3 GameMap::getMapOffset() const
@@ -670,6 +702,163 @@ bool GameMap::isPageAllocated(int thePageIndex) const
 	return thePageIndex >= 0
 		&& thePageIndex < mapBufferSize_X * mapBufferSize_Y * mapBufferSize_Z
 		&& m_totalBuffer[thePageIndex].m_buff;
+}
+
+unsigned char GameMap::sampleProceduralDensity(int x, int y, int z)
+{
+	return proceduralDensityAt(*this, x, y, z);
+}
+
+void GameMap::ensureVoxelDensity(int x, int y, int z)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return;
+	}
+
+	const int buffIndex = pageIndexForVoxel(x, y, z);
+	if (!isPageAllocated(buffIndex))
+	{
+		generateVoxelPage(
+			static_cast<size_t>(x / GAME_MAX_BUFFER_SIZE),
+			static_cast<size_t>(y / GAME_MAX_BUFFER_SIZE),
+			static_cast<size_t>(z / GAME_MAX_BUFFER_SIZE));
+	}
+	if (!isPageAllocated(buffIndex))
+	{
+		return;
+	}
+
+	const int index = localIndexInPage(x, y, z);
+	GameMapBuffer& buffer = m_totalBuffer[buffIndex];
+	if (buffer.m_densityReady && buffer.m_densityReady[index])
+	{
+		return;
+	}
+
+	const int localX = x % GAME_MAX_BUFFER_SIZE;
+	const int localZ = z % GAME_MAX_BUFFER_SIZE;
+	const int pageY = (y / GAME_MAX_BUFFER_SIZE) * GAME_MAX_BUFFER_SIZE;
+	const vec3 mapOffset = getMapOffset();
+	const float targetH = getHeight(
+		vec2(x * m_blockSize, z * m_blockSize) + vec2(mapOffset.x, mapOffset.z));
+	for (int localY = 0; localY < GAME_MAX_BUFFER_SIZE; ++localY)
+	{
+		const int globalY = pageY + localY;
+		const int columnIndex = localX * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE
+			+ localY * GAME_MAX_BUFFER_SIZE + localZ;
+		buffer.m_buff[columnIndex] = makeOutsideVoxel();
+		if (globalY < m_heightVoxels)
+		{
+			const float currH = globalY * m_blockSize;
+			const float delta = std::clamp((currH - targetH) * 0.1f, -1.f, 1.f);
+			buffer.m_buff[columnIndex].w = static_cast<unsigned char>((delta * 0.5f + 0.5f) * 255.f);
+		}
+		if (buffer.m_densityReady)
+		{
+			buffer.m_densityReady[columnIndex] = 1;
+		}
+		if (buffer.m_matReady)
+		{
+			buffer.m_matReady[columnIndex] = 0;
+		}
+	}
+}
+
+void GameMap::ensureVoxelMaterial(int x, int y, int z)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return;
+	}
+
+	const int buffIndex = pageIndexForVoxel(x, y, z);
+	if (!isPageAllocated(buffIndex))
+	{
+		return;
+	}
+	ensureVoxelDensity(x, y, z);
+
+	const int index = localIndexInPage(x, y, z);
+	GameMapBuffer& buffer = m_totalBuffer[buffIndex];
+	if (buffer.m_matReady && buffer.m_matReady[index])
+	{
+		return;
+	}
+
+	auto x1 = sampleVoxelDensity(x - 1, y, z);
+	auto x2 = sampleVoxelDensity(x + 1, y, z);
+	auto y1 = sampleVoxelDensity(x, y - 1, z);
+	auto y2 = sampleVoxelDensity(x, y + 1, z);
+	auto z1 = sampleVoxelDensity(x, y, z - 1);
+	auto z2 = sampleVoxelDensity(x, y, z + 1);
+	auto gradientVec = vec3(x1 - x2, y1 - y2, z1 - z2);
+	float slope = 0.0f;
+	if (gradientVec.length() > 0.0001f)
+	{
+		slope = 1.0 - std::clamp(
+			vec3::DotProduct(gradientVec.normalized(), vec3(0, -1, 0)), 0.0f, 1.0f);
+	}
+	vec3 samplePos(x * m_blockSize, y * m_blockSize, z * m_blockSize);
+	auto matID = getMat(samplePos, slope);
+	buffer.m_buff[index].setMat(matID, 0, 0, vec3(1, 0, 0));
+	if (buffer.m_matReady)
+	{
+		buffer.m_matReady[index] = 1;
+	}
+}
+
+void GameMap::ensurePageDensityComplete(int pageIndexValue)
+{
+	if (!isPageAllocated(pageIndexValue))
+	{
+		return;
+	}
+
+	const int pageX = pageIndexValue / (mapBufferSize_Z * mapBufferSize_Y);
+	const int rest = pageIndexValue % (mapBufferSize_Z * mapBufferSize_Y);
+	const int pageY = rest / mapBufferSize_Z;
+	const int pageZ = rest % mapBufferSize_Z;
+	for (int x = 0; x < GAME_MAX_BUFFER_SIZE; ++x)
+	{
+		for (int z = 0; z < GAME_MAX_BUFFER_SIZE; ++z)
+		{
+			for (int y = 0; y < GAME_MAX_BUFFER_SIZE; ++y)
+			{
+				const int globalX = pageX * GAME_MAX_BUFFER_SIZE + x;
+				const int globalY = pageY * GAME_MAX_BUFFER_SIZE + y;
+				const int globalZ = pageZ * GAME_MAX_BUFFER_SIZE + z;
+				if (isVoxelInDomain(globalX, globalY, globalZ))
+				{
+					ensureVoxelDensity(globalX, globalY, globalZ);
+					continue;
+				}
+
+				const int index = x * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE
+					+ y * GAME_MAX_BUFFER_SIZE + z;
+				GameMapBuffer& buffer = m_totalBuffer[pageIndexValue];
+				buffer.m_buff[index] = makeOutsideVoxel();
+				if (buffer.m_densityReady)
+				{
+					buffer.m_densityReady[index] = 1;
+				}
+			}
+		}
+	}
+}
+
+void GameMap::setVoxelMaterialReady(int x, int y, int z, bool isReady)
+{
+	if (!isVoxelInDomain(x, y, z))
+	{
+		return;
+	}
+	const int buffIndex = pageIndexForVoxel(x, y, z);
+	if (!isPageAllocated(buffIndex) || !m_totalBuffer[buffIndex].m_matReady)
+	{
+		return;
+	}
+	m_totalBuffer[buffIndex].m_matReady[localIndexInPage(x, y, z)] = isReady ? 1 : 0;
 }
 
 voxelInfo GameMap::makeOutsideVoxel() const
@@ -714,6 +903,7 @@ voxelInfo* GameMap::ensureVoxelForWrite(int x, int y, int z)
 		return nullptr;
 	}
 	const int buffIndex = pageIndexForVoxel(x, y, z);
+	ensureVoxelDensity(x, y, z);
 	return &m_totalBuffer[buffIndex].m_buff[localIndexInPage(x, y, z)];
 }
 
@@ -725,6 +915,13 @@ bool GameMap::writeVoxelDensity(int x, int y, int z, unsigned char w)
 		return false;
 	}
 	voxel->w = w;
+	setVoxelMaterialReady(x, y, z, false);
+	setVoxelMaterialReady(x - 1, y, z, false);
+	setVoxelMaterialReady(x + 1, y, z, false);
+	setVoxelMaterialReady(x, y - 1, z, false);
+	setVoxelMaterialReady(x, y + 1, z, false);
+	setVoxelMaterialReady(x, y, z - 1, false);
+	setVoxelMaterialReady(x, y, z + 1, false);
 	m_totalBuffer[pageIndexForVoxel(x, y, z)].isEdit = true;
 	return true;
 }
@@ -737,6 +934,7 @@ bool GameMap::writeVoxelMaterial(int x, int y, int z, int matIndex)
 		return false;
 	}
 	voxel->setMat(matIndex, 0, 0, vec3(1, 0, 0));
+	setVoxelMaterialReady(x, y, z, true);
 	m_totalBuffer[pageIndexForVoxel(x, y, z)].isEdit = true;
 	return true;
 }
@@ -744,6 +942,8 @@ bool GameMap::writeVoxelMaterial(int x, int y, int z, int matIndex)
 GameMapBuffer::GameMapBuffer()
 {
     m_buff = nullptr;
+	m_densityReady = nullptr;
+	m_matReady = nullptr;
 	isEdit = false;
 }
 

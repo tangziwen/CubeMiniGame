@@ -2,6 +2,7 @@
 
 #include "TerrainOctreeNode.h"
 
+#include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
@@ -25,6 +26,7 @@ public:
 private:
 	NodeList m_nodes;
 	std::unordered_set<TerrainNodeKey> m_keys;
+	std::unordered_map<TerrainNodeKey, TerrainOctreeNode*> m_nodeByKey;
 };
 
 } // namespace tzw
