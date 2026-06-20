@@ -47,7 +47,7 @@ void Sprite::initWithTexture(std::string texturePath)
     Drawable2D::setContentSize(m_texture->getSize());
     setRenderRect(m_contentSize, m_lb, m_rt, m_color);
     setUpTechnique();
-    m_material->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::GUI);
 
 }
 

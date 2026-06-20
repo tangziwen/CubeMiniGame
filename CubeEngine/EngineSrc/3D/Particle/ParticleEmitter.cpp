@@ -273,14 +273,15 @@ namespace tzw {
 		ParticleEmitter::setBlendState(int state)
 	{
 		auto mat = getMaterial();
+		auto materialTemplate = mat->ensureUniqueMaterialTemplate();
 		switch (state) {
 		case 0:
-			mat->setFactorDst(RenderFlag::BlendingFactor::One);
-			mat->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
+			materialTemplate->setFactorDst(RenderFlag::BlendingFactor::One);
+			materialTemplate->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
 			break;
 		case 1:
-			mat->setFactorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha);
-			mat->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
+			materialTemplate->setFactorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha);
+			materialTemplate->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
 			break;
 		}
 	}

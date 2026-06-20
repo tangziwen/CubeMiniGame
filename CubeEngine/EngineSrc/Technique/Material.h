@@ -10,33 +10,13 @@
 #include "2D/InspectableUI.h"
 #include "rapidjson/document.h"
 #include "Rendering/RenderFlag.h"
+#include "MaterialState.h"
+#include "MaterialTemplate.h"
 #include "ShadingParams.h"
 namespace tzw {
 class StdMaterial;
 class Node;
 class Drawable;
-class MaterialTemplate;
-
-enum MaterialFlag
-{
-	MaterialFlag_isCullFace = 1 << 1,
-    MaterialFlag_isInstanced = 1 << 2,
-	MaterialFlag_isBlend = 1 << 3,
-	MaterialFlag_isDepthWrite = 1 << 4,
-	MaterialFlag_isDepthTest = 1 << 5,
-	Shader_option_End = 1 << 31,
-};
-enum class PrimitiveTopology
-{
-	TriangleList,
-	LineList,
-};
-
-enum class RasterFillMode
-{
-	Fill,
-	Wireframe,
-};
 
 
 class Material : public InspectableUI
@@ -57,7 +37,7 @@ public:
     void setVar(std::string name, const vec4 &value);
     void setVar(std::string name, const TechniqueVar & value);
     void setTex(std::string name,Texture * texture,int id = 0);
-	Texture * getTex(std::string name);
+    Texture * getTex(std::string name);
     void use(ShaderProgram * extraProgram = nullptr);
 	unsigned int getMapSlot(std::string mapName);
 	ShaderProgram *getProgram() const;
@@ -66,10 +46,7 @@ public:
 	void reload();
 
 	bool getIsCullFace();
-
-	void setIsCullFace(bool newVal);
 	RenderFlag::CullMode getCullMode();
-	void setCullMode(RenderFlag::CullMode newCullMode);
 	TechniqueVar * get(std::string);
 
 	void inspect() override;
@@ -77,54 +54,32 @@ public:
 	void inspectIMGUI_Color(std::string name);
 	void handleSemanticValuePassing(TechniqueVar * val, std::string name, ShaderProgram * program);
 	bool isIsDepthTestEnable() const;
-	void setIsDepthTestEnable(const bool isDepthTestEnable);
 	bool isIsDepthWriteEnable() const;
-	void setIsDepthWriteEnable(const bool isDepthWriteEnable);
-	void setIsEnableInstanced(const bool isEnableInstanced);
 	bool isEnableInstanced();
 	RenderFlag::BlendingFactor getFactorSrc() const;
-	void setFactorSrc(const RenderFlag::BlendingFactor factorSrc);
 	RenderFlag::BlendingFactor getFactorDst() const;
-	void setFactorDst(const RenderFlag::BlendingFactor factorDst);
 	bool isIsEnableBlend() const;
-	void setIsEnableBlend(const bool isEnableBlend);
 	uint32_t getMutationFlag();
 	uint32_t getMaterialFlag();
-	void updateFullDescriptionStr();
 	const std::string& getFullDescriptionStr();
 	std::unordered_map<std::string,TechniqueVar> & getVarList();
 	PrimitiveTopology getPrimitiveTopology();
-	void setPrimitiveTopology(PrimitiveTopology newTopology);
 	RasterFillMode getRasterFillMode();
-	void setRasterFillMode(RasterFillMode newMode);
 	ShadingParams * getShadingParams();
+	MaterialTemplate * getMaterialTemplate();
+	const MaterialTemplate * getMaterialTemplate() const;
+	MaterialTemplate * ensureUniqueMaterialTemplate();
 private:
 	void applyTemplate(MaterialTemplate * materialTemplate);
 	void applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder);
 	void loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder);
-    std::string m_vsPath;
-    std::string m_fsPath;
 	MaterialTemplate * m_materialTemplate;
-	bool m_isEnableInstanced;
+	bool m_isMaterialTemplateUnique;
 	ShadingParams * m_shadingParams;
-	RenderFlag::BlendingFactor m_factorSrc;
-	RenderFlag::BlendingFactor m_factorDst;
-	bool m_isCullFace;
-	bool m_isDepthTestEnable;
-	bool m_isDepthWriteEnable;
-	bool m_isEnableBlend;
 	// bool m_isEnableAlphaTest;
 	std::string m_name;
-	std::unordered_map<std::string, unsigned int> m_texSlotMap;
-	ShaderProgram * m_program;
-	RenderFlag::RenderStage m_renderStage;
-	std::string m_fullDescString;
-	RenderFlag::CullMode m_cullMode;
-	PrimitiveTopology m_primitiveTopology;
-	RasterFillMode m_rasterFillMode;
 public:
 	RenderFlag::RenderStage getRenderStage() const;
-	void setRenderStage(const RenderFlag::RenderStage renderStage);
 };
 
 } // namespace tzw

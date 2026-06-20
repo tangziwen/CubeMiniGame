@@ -45,7 +45,7 @@ namespace tzw
 	{
 		int renderTypeID = getInstancedIndexFromRenderType(stage);
 		uint32_t stageID = static_cast<uint32_t>(stage);
-		stageID = (uint32_t)data.material->getRenderStage();
+		stageID = static_cast<uint32_t>(data.material->getMaterialTemplate()->getRenderStage());
 		auto mat_to_mesh = m_map.find(stageID);
 		InstancedMesh * instacing = nullptr;
 		if(mat_to_mesh != m_map.end())//already have this stage

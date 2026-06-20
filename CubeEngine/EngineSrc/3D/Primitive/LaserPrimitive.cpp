@@ -113,12 +113,13 @@ void LaserPrimitive::init()
 {
 	m_material = MaterialPool::shared()->getMatFromTemplateWithUniqueName("Laser", "Bullet");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/laser.png");
-	m_material->setFactorDst(RenderFlag::BlendingFactor::One);
-	m_material->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
+	auto materialTemplate = m_material->ensureUniqueMaterialTemplate();
+	materialTemplate->setFactorDst(RenderFlag::BlendingFactor::One);
+	materialTemplate->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
 	m_material->setTex("DiffuseMap", texture);
-	m_material->setIsCullFace(false);
-	m_material->setIsEnableBlend(true);
-	m_material->setIsDepthWriteEnable(false);
+	materialTemplate->setIsCullFace(false);
+	materialTemplate->setIsEnableBlend(true);
+	materialTemplate->setIsDepthWriteEnable(false);
 	setMaterial(m_material);
 	setCamera(g_GetCurrScene()->defaultCamera());
 }

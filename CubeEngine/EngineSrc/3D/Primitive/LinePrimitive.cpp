@@ -114,9 +114,10 @@ int LinePrimitive::getLineCount() const
 void LinePrimitive::init()
 {
 	m_material = Material::createFromTemplate("Color");
-	m_material->setIsDepthTestEnable(false);
-	m_material->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
-	m_material->setPrimitiveTopology(PrimitiveTopology::LineList);
+	auto materialTemplate = m_material->ensureUniqueMaterialTemplate();
+	materialTemplate->setIsDepthTestEnable(false);
+	materialTemplate->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+	materialTemplate->setPrimitiveTopology(PrimitiveTopology::LineList);
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 } // namespace tzw

@@ -80,11 +80,7 @@ void applyAttributeOverride(Material * material, rapidjson::Value& attribute)
 
 }
 
-Material::Material(): m_isCullFace(false), m_program(nullptr),
-	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
-	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
-	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),
-	m_primitiveTopology(PrimitiveTopology::TriangleList),m_rasterFillMode(RasterFillMode::Fill),m_materialTemplate(nullptr),m_shadingParams(nullptr)
+Material::Material(): m_materialTemplate(nullptr),m_isMaterialTemplateUnique(false),m_shadingParams(nullptr)
 {
 }
 
@@ -138,29 +134,14 @@ void Material::applyTemplate(MaterialTemplate * materialTemplate)
 	}
 
 	m_materialTemplate = materialTemplate;
+	m_isMaterialTemplateUnique = false;
 	m_name = materialTemplate->m_name;
-	m_vsPath = materialTemplate->m_vsPath;
-	m_fsPath = materialTemplate->m_fsPath;
-	m_isEnableInstanced = materialTemplate->m_isEnableInstanced;
-	m_factorSrc = materialTemplate->m_factorSrc;
-	m_factorDst = materialTemplate->m_factorDst;
-	m_isCullFace = materialTemplate->m_isCullFace;
-	m_isDepthTestEnable = materialTemplate->m_isDepthTestEnable;
-	m_isDepthWriteEnable = materialTemplate->m_isDepthWriteEnable;
-	m_isEnableBlend = materialTemplate->m_isEnableBlend;
-	m_texSlotMap = materialTemplate->m_texSlotMap;
-	m_program = materialTemplate->m_program;
-	m_renderStage = materialTemplate->m_renderStage;
-	m_cullMode = materialTemplate->m_cullMode;
-	m_primitiveTopology = materialTemplate->m_primitiveTopology;
-	m_rasterFillMode = materialTemplate->m_rasterFillMode;
 
 	if(!m_shadingParams)
 	{
 		m_shadingParams = new ShadingParams();
 	}
 	m_shadingParams->copyFrom(materialTemplate->m_shadingParams);
-	updateFullDescriptionStr();
 }
 
 void Material::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder)
@@ -171,7 +152,6 @@ void Material::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder
 	{
 		applyInstanceOverrides(doc["overrides"], envFolder);
 	}
-	updateFullDescriptionStr();
 }
 
 void Material::applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder)
@@ -199,7 +179,7 @@ void Material::applyInstanceOverrides(rapidjson::Value& overrides, std::string e
 			}
 			else if(tex[1].IsInt())
 			{
-				m_texSlotMap[name] = tex[1].GetInt();
+				ensureUniqueMaterialTemplate()->m_texSlotMap[name] = tex[1].GetInt();
 				if(tex.Size() > 2 && tex[2].IsString())
 				{
 					texturePath = tex[2].GetString();
@@ -327,7 +307,7 @@ Texture* Material::getTex(std::string name)
  */
 void Material::use(ShaderProgram * extraProgram)
 {
-	ShaderProgram * program = m_program;
+	ShaderProgram * program = getProgram();
 	if (extraProgram)
 	{
 		program = extraProgram;
@@ -403,13 +383,13 @@ void Material::use(ShaderProgram * extraProgram)
 
 unsigned int Material::getMapSlot(std::string mapName)
 {
-	return m_texSlotMap[mapName];
+	return m_materialTemplate->getMapSlot(mapName);
 }
 
 
 ShaderProgram *Material::getProgram() const
 {
-	return m_program;
+	return m_materialTemplate->getProgram();
 }
 
 
@@ -417,57 +397,29 @@ Material *Material::clone()
 {
 	auto mat = new Material();
 	mat->m_materialTemplate = m_materialTemplate;
+	mat->m_isMaterialTemplateUnique = false;
 	mat->m_shadingParams = new ShadingParams();
 	if(m_shadingParams)
 	{
 		mat->m_shadingParams->copyFrom(*m_shadingParams);
 	}
-	mat->m_isEnableInstanced = m_isEnableInstanced;
-	mat->m_isCullFace = m_isCullFace;
-	mat->m_isDepthTestEnable = m_isDepthTestEnable;
-	mat->m_isDepthWriteEnable = m_isDepthWriteEnable;
-	mat->m_isEnableBlend = m_isEnableBlend;
-	mat->m_renderStage = m_renderStage;
-	mat->m_program = m_program;
 	mat->m_name = m_name;
-	mat->m_texSlotMap = m_texSlotMap;
-	mat->m_vsPath = m_vsPath;
-	mat->m_fsPath = m_fsPath;
-	mat->m_factorSrc = m_factorSrc;
-	mat->m_factorDst = m_factorDst;
-	mat->m_cullMode = m_cullMode;
-	mat->m_primitiveTopology = m_primitiveTopology;
-	mat->m_rasterFillMode = m_rasterFillMode;
-	mat->updateFullDescriptionStr();
 	return mat;
 }
 
 void Material::reload()
 {
-	m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
-	updateFullDescriptionStr();
+	m_materialTemplate->reload();
 }
 
 bool Material::getIsCullFace()
 {
-	return m_isCullFace;
-}
-
-void Material::setIsCullFace(bool newVal)
-{
-	m_isCullFace = newVal;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getIsCullFace();
 }
 
 RenderFlag::CullMode Material::getCullMode()
 {
-	return m_cullMode;
-}
-
-void Material::setCullMode(RenderFlag::CullMode newCullMode)
-{
-	m_cullMode = newCullMode;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getCullMode();
 }
 
 TechniqueVar * Material::get(std::string name)
@@ -564,103 +516,32 @@ void Material::handleSemanticValuePassing(TechniqueVar * val, const std::string 
 
 RenderFlag::BlendingFactor Material::getFactorSrc() const
 {
-	return m_factorSrc;
-}
-
-void Material::setFactorSrc(const RenderFlag::BlendingFactor factorSrc)
-{
-	m_factorSrc = factorSrc;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getFactorSrc();
 }
 
 RenderFlag::BlendingFactor Material::getFactorDst() const
 {
-	return m_factorDst;
-}
-
-void Material::setFactorDst(const RenderFlag::BlendingFactor factorDst)
-{
-	m_factorDst = factorDst;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getFactorDst();
 }
 
 bool Material::isIsEnableBlend() const
 {
-	return m_isEnableBlend;
-}
-
-void Material::setIsEnableBlend(const bool isEnableBlend)
-{
-	m_isEnableBlend = isEnableBlend;
-	updateFullDescriptionStr();
+	return m_materialTemplate->isIsEnableBlend();
 }
 
 uint32_t Material::getMutationFlag()
 {
-	uint32_t flag = 0 ;
-	if(m_isEnableInstanced)
-	{
-		flag |= (uint32_t)ShaderOption::EnableInstanced;
-	}
-
-	if(!m_isCullFace)
-	{
-		flag |= (uint32_t)ShaderOption::EnableDoubleSide;
-	}
-	return flag;
+	return m_materialTemplate->getMutationFlag();
 }
 
 uint32_t Material::getMaterialFlag()
 {
-	uint32_t flag = 0 ;
-	if(m_isCullFace)
-	{
-		flag |= MaterialFlag_isCullFace;
-	}
-	if(m_isEnableInstanced)
-	{
-		flag |= MaterialFlag_isInstanced;
-	}
-	if(m_isEnableBlend)
-	{
-		flag |= MaterialFlag_isBlend;
-	}
-	if(m_isDepthWriteEnable)
-	{
-		flag |= MaterialFlag_isDepthWrite;
-	}
-	if(m_isDepthTestEnable)
-	{
-		flag |= MaterialFlag_isDepthTest;
-	}
-	return flag;
-}
-
-void Material::updateFullDescriptionStr()
-{
-	std::ostringstream ostr;
-	if(m_program)
-	{
-		ostr << "shader:" << m_program->m_vertexShader << "|" << m_program->m_fragmentShader;
-	}
-	else
-	{
-		ostr << "shader:" << m_vsPath << "|" << m_fsPath;
-	}
-	ostr << "|mutation:" << getMutationFlag()
-		<< "|stage:" << static_cast<int>(m_renderStage)
-		<< "|flags:" << static_cast<uint32_t>(getMaterialFlag())
-		<< "|topology:" << static_cast<int>(m_primitiveTopology)
-		<< "|raster:" << static_cast<int>(m_rasterFillMode)
-		<< "|cull:" << static_cast<int>(m_cullMode)
-		<< "|srcBlend:" << static_cast<int>(m_factorSrc)
-		<< "|dstBlend:" << static_cast<int>(m_factorDst);
-	m_fullDescString = ostr.str();
+	return m_materialTemplate->getMaterialFlag();
 }
 
 const std::string& Material::getFullDescriptionStr()
 {
-	return m_fullDescString;
+	return m_materialTemplate->getFullDescriptionStr();
 }
 
 std::unordered_map<std::string, TechniqueVar>& Material::getVarList()
@@ -670,68 +551,32 @@ std::unordered_map<std::string, TechniqueVar>& Material::getVarList()
 
 PrimitiveTopology Material::getPrimitiveTopology()
 {
-	return m_primitiveTopology;
-}
-
-void Material::setPrimitiveTopology(PrimitiveTopology newTopology)
-{
-	m_primitiveTopology = newTopology;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getPrimitiveTopology();
 }
 
 RasterFillMode Material::getRasterFillMode()
 {
-	return m_rasterFillMode;
-}
-
-void Material::setRasterFillMode(RasterFillMode newMode)
-{
-	m_rasterFillMode = newMode;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getRasterFillMode();
 }
 
 RenderFlag::RenderStage Material::getRenderStage() const
 {
-	return m_renderStage;
-}
-
-void Material::setRenderStage(const RenderFlag::RenderStage renderStage)
-{
-	m_renderStage = renderStage;
-	updateFullDescriptionStr();
+	return m_materialTemplate->getRenderStage();
 }
 
 bool Material::isIsDepthTestEnable() const
 {
-	return m_isDepthTestEnable;
-}
-
-void Material::setIsDepthTestEnable(const bool isDepthTestEnable)
-{
-	m_isDepthTestEnable = isDepthTestEnable;
-	updateFullDescriptionStr();
+	return m_materialTemplate->isIsDepthTestEnable();
 }
 
 bool Material::isIsDepthWriteEnable() const
 {
-	return m_isDepthWriteEnable;
-}
-
-void Material::setIsDepthWriteEnable(const bool isDepthWriteEnable)
-{
-	m_isDepthWriteEnable = isDepthWriteEnable;
-	updateFullDescriptionStr();
-}
-
-void Material::setIsEnableInstanced(const bool isEnableInstanced)
-{
-	m_isEnableInstanced = isEnableInstanced;
-	updateFullDescriptionStr();
+	return m_materialTemplate->isIsDepthWriteEnable();
 }
 
 bool Material::isEnableInstanced()
 {
-	return m_isEnableInstanced;
+	return m_materialTemplate->isEnableInstanced();
 }
 
 /**
@@ -747,6 +592,26 @@ bool Material::isExist(std::string name)
 ShadingParams * Material::getShadingParams()
 {
 	return m_shadingParams;
+}
+
+MaterialTemplate * Material::getMaterialTemplate()
+{
+	return m_materialTemplate;
+}
+
+const MaterialTemplate * Material::getMaterialTemplate() const
+{
+	return m_materialTemplate;
+}
+
+MaterialTemplate * Material::ensureUniqueMaterialTemplate()
+{
+	if(!m_isMaterialTemplateUnique)
+	{
+		m_materialTemplate = new MaterialTemplate(*m_materialTemplate);
+		m_isMaterialTemplateUnique = true;
+	}
+	return m_materialTemplate;
 }
 
 } // namespace tzw

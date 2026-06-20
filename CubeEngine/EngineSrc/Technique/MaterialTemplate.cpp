@@ -5,6 +5,7 @@
 #include "Utility/file/Tfile.h"
 #include "Utility/log/Log.h"
 #include <cstring>
+#include <sstream>
 #include <unordered_map>
 
 namespace tzw
@@ -325,6 +326,7 @@ void MaterialTemplate::loadFromJson(rapidjson::Value& doc, std::string envFolder
 
     if(!doc.HasMember("property"))
     {
+        updateFullDescriptionStr();
         return;
     }
 
@@ -346,6 +348,8 @@ void MaterialTemplate::loadFromJson(rapidjson::Value& doc, std::string envFolder
             loadTextureMap(m_shadingParams, m_texSlotMap, texMap[i], envFolder);
         }
     }
+
+    updateFullDescriptionStr();
 }
 
 MaterialTemplate * MaterialTemplate::getFromTemplate(std::string name)
@@ -366,6 +370,227 @@ MaterialTemplate * MaterialTemplate::getFromFile(std::string filePath)
     materialTemplate->loadFromFile(filePath);
     cache[filePath] = materialTemplate;
     return materialTemplate;
+}
+
+ShaderProgram * MaterialTemplate::getProgram() const
+{
+    return m_program;
+}
+
+unsigned int MaterialTemplate::getMapSlot(std::string mapName)
+{
+    return m_texSlotMap[mapName];
+}
+
+bool MaterialTemplate::getIsCullFace() const
+{
+    return m_isCullFace;
+}
+
+void MaterialTemplate::setIsCullFace(bool newVal)
+{
+    if(m_isCullFace == newVal)
+    {
+        return;
+    }
+    m_isCullFace = newVal;
+    reload();
+}
+
+RenderFlag::CullMode MaterialTemplate::getCullMode() const
+{
+    return m_cullMode;
+}
+
+void MaterialTemplate::setCullMode(RenderFlag::CullMode newCullMode)
+{
+    m_cullMode = newCullMode;
+    updateFullDescriptionStr();
+}
+
+bool MaterialTemplate::isIsDepthTestEnable() const
+{
+    return m_isDepthTestEnable;
+}
+
+void MaterialTemplate::setIsDepthTestEnable(bool isDepthTestEnable)
+{
+    m_isDepthTestEnable = isDepthTestEnable;
+    updateFullDescriptionStr();
+}
+
+bool MaterialTemplate::isIsDepthWriteEnable() const
+{
+    return m_isDepthWriteEnable;
+}
+
+void MaterialTemplate::setIsDepthWriteEnable(bool isDepthWriteEnable)
+{
+    m_isDepthWriteEnable = isDepthWriteEnable;
+    updateFullDescriptionStr();
+}
+
+bool MaterialTemplate::isEnableInstanced() const
+{
+    return m_isEnableInstanced;
+}
+
+void MaterialTemplate::setIsEnableInstanced(bool isEnableInstanced)
+{
+    if(m_isEnableInstanced == isEnableInstanced)
+    {
+        return;
+    }
+    m_isEnableInstanced = isEnableInstanced;
+    reload();
+}
+
+RenderFlag::BlendingFactor MaterialTemplate::getFactorSrc() const
+{
+    return m_factorSrc;
+}
+
+void MaterialTemplate::setFactorSrc(RenderFlag::BlendingFactor factorSrc)
+{
+    m_factorSrc = factorSrc;
+    updateFullDescriptionStr();
+}
+
+RenderFlag::BlendingFactor MaterialTemplate::getFactorDst() const
+{
+    return m_factorDst;
+}
+
+void MaterialTemplate::setFactorDst(RenderFlag::BlendingFactor factorDst)
+{
+    m_factorDst = factorDst;
+    updateFullDescriptionStr();
+}
+
+bool MaterialTemplate::isIsEnableBlend() const
+{
+    return m_isEnableBlend;
+}
+
+void MaterialTemplate::setIsEnableBlend(bool isEnableBlend)
+{
+    m_isEnableBlend = isEnableBlend;
+    updateFullDescriptionStr();
+}
+
+PrimitiveTopology MaterialTemplate::getPrimitiveTopology() const
+{
+    return m_primitiveTopology;
+}
+
+void MaterialTemplate::setPrimitiveTopology(PrimitiveTopology newTopology)
+{
+    m_primitiveTopology = newTopology;
+    updateFullDescriptionStr();
+}
+
+RasterFillMode MaterialTemplate::getRasterFillMode() const
+{
+    return m_rasterFillMode;
+}
+
+void MaterialTemplate::setRasterFillMode(RasterFillMode newMode)
+{
+    m_rasterFillMode = newMode;
+    updateFullDescriptionStr();
+}
+
+RenderFlag::RenderStage MaterialTemplate::getRenderStage() const
+{
+    return m_renderStage;
+}
+
+void MaterialTemplate::setRenderStage(RenderFlag::RenderStage renderStage)
+{
+    m_renderStage = renderStage;
+    updateFullDescriptionStr();
+}
+
+uint32_t MaterialTemplate::getMutationFlag() const
+{
+    uint32_t flag = 0;
+    if(m_isEnableInstanced)
+    {
+        flag |= static_cast<uint32_t>(ShaderOption::EnableInstanced);
+    }
+
+    if(!m_isCullFace)
+    {
+        flag |= static_cast<uint32_t>(ShaderOption::EnableDoubleSide);
+    }
+    return flag;
+}
+
+uint32_t MaterialTemplate::getMaterialFlag() const
+{
+    uint32_t flag = 0;
+    if(m_isCullFace)
+    {
+        flag |= MaterialFlag_isCullFace;
+    }
+    if(m_isEnableInstanced)
+    {
+        flag |= MaterialFlag_isInstanced;
+    }
+    if(m_isEnableBlend)
+    {
+        flag |= MaterialFlag_isBlend;
+    }
+    if(m_isDepthWriteEnable)
+    {
+        flag |= MaterialFlag_isDepthWrite;
+    }
+    if(m_isDepthTestEnable)
+    {
+        flag |= MaterialFlag_isDepthTest;
+    }
+    return flag;
+}
+
+const std::string& MaterialTemplate::getFullDescriptionStr() const
+{
+    return m_fullDescString;
+}
+
+void MaterialTemplate::reload()
+{
+    if(!m_vsPath.empty() && !m_fsPath.empty())
+    {
+        m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
+        if(!m_program)
+        {
+            tlog("[error] bad program!!!");
+            abort();
+        }
+    }
+    updateFullDescriptionStr();
+}
+
+void MaterialTemplate::updateFullDescriptionStr()
+{
+    std::ostringstream ostr;
+    if(m_program)
+    {
+        ostr << "shader:" << m_program->m_vertexShader << "|" << m_program->m_fragmentShader;
+    }
+    else
+    {
+        ostr << "shader:" << m_vsPath << "|" << m_fsPath;
+    }
+    ostr << "|mutation:" << getMutationFlag()
+        << "|stage:" << static_cast<int>(m_renderStage)
+        << "|flags:" << static_cast<uint32_t>(getMaterialFlag())
+        << "|topology:" << static_cast<int>(m_primitiveTopology)
+        << "|raster:" << static_cast<int>(m_rasterFillMode)
+        << "|cull:" << static_cast<int>(m_cullMode)
+        << "|srcBlend:" << static_cast<int>(m_factorSrc)
+        << "|dstBlend:" << static_cast<int>(m_factorDst);
+    m_fullDescString = ostr.str();
 }
 
 } // namespace tzw

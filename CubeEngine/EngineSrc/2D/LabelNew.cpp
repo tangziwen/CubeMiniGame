@@ -12,7 +12,7 @@ LabelNew::LabelNew():
 	m_material = new Material();
     m_material = Material::createFromTemplate("Text");
     m_material->setVar("color",getColor());
-    m_material->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::GUI);
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 

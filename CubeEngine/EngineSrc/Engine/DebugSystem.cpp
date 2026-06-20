@@ -282,7 +282,7 @@ void DebugSystem::setWireframeOverlayDepthTestEnabled(bool enabled)
 	m_wireframeOverlayDepthTestEnabled = enabled;
 	if(m_debugWireframeMaterial)
 	{
-		m_debugWireframeMaterial->setIsDepthTestEnable(m_wireframeOverlayDepthTestEnabled);
+		m_debugWireframeMaterial->ensureUniqueMaterialTemplate()->setIsDepthTestEnable(m_wireframeOverlayDepthTestEnabled);
 	}
 }
 
@@ -519,11 +519,12 @@ Material* DebugSystem::getDebugWireframeMaterial()
 	if(!m_debugWireframeMaterial)
 	{
 		m_debugWireframeMaterial = Material::createFromTemplate("Color");
-		m_debugWireframeMaterial->setRenderStage(RenderFlag::RenderStage::DEBUG_LAYER);
-		m_debugWireframeMaterial->setPrimitiveTopology(PrimitiveTopology::TriangleList);
-		m_debugWireframeMaterial->setRasterFillMode(RasterFillMode::Wireframe);
-		m_debugWireframeMaterial->setIsDepthTestEnable(m_wireframeOverlayDepthTestEnabled);
-		m_debugWireframeMaterial->setIsDepthWriteEnable(false);
+		auto materialTemplate = m_debugWireframeMaterial->ensureUniqueMaterialTemplate();
+		materialTemplate->setRenderStage(RenderFlag::RenderStage::DEBUG_LAYER);
+		materialTemplate->setPrimitiveTopology(PrimitiveTopology::TriangleList);
+		materialTemplate->setRasterFillMode(RasterFillMode::Wireframe);
+		materialTemplate->setIsDepthTestEnable(m_wireframeOverlayDepthTestEnabled);
+		materialTemplate->setIsDepthWriteEnable(false);
 		m_debugWireframeMaterial->setVar("TU_color", vec4(m_wireframeOverlayColor, 1.0f));
 	}
 	return m_debugWireframeMaterial;

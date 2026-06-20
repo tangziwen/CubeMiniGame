@@ -1,4 +1,4 @@
-#include "GamePartRenderMgr.h"
+ï»¿#include "GamePartRenderMgr.h"
 
 
 #include "PartSurface.h"
@@ -15,7 +15,7 @@ namespace tzw
 GamePartRenderMgr::GamePartRenderMgr()
 {
 	g_material = Material::createFromTemplate("ModelSTD");
-	g_material->setIsEnableInstanced(true);
+	g_material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 	g_material->reload();
 	m_previewMat = nullptr;
 }
@@ -167,7 +167,7 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 
 			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
 			mat->setTex("NormalMap", normalMapTexture);
-			mat->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+			mat->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 		}
 		else
 		{
@@ -175,7 +175,7 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 			if(!surface->getIsTransparent())
 			{
 				mat = Material::createFromTemplate("ModelPBR");
-				mat->setIsEnableInstanced(true);
+				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 				mat->reload();
 				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 				mat->setTex("DiffuseMap", texture);
@@ -194,13 +194,13 @@ Material* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce, GamePar
 			else
 			{
 				mat = Material::createFromTemplate("ModelTransparent");
-				mat->setIsEnableInstanced(true);
+				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 				mat->reload();
 				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 				mat->setTex("SpriteTexture", texture);
 
 				newMatList.m_matList.emplace_back(mat);
-				mat->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+				mat->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 			}
 		}//default;
 
@@ -279,7 +279,7 @@ Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 				material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
 				material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
 				material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
-				material->setIsEnableInstanced(true);
+				material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 				material->reload();
 				empty["default"].m_matList.emplace_back(material);
 			}
@@ -290,7 +290,7 @@ Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 			material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
 			material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
 			material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
-			material->setIsEnableInstanced(true);
+			material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 			material->reload();
 			empty["default"].m_matList.emplace_back(material);
 		}
@@ -306,7 +306,7 @@ Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 	return (*targetMap)[visualInfo.filePath];
 }
 
-//¸ù¾ÝStatus»¹ÓÐRenderMode¿½±´¹¹Ôì³öÐÂµÄ²ÄÖÊ
+//æ ¹æ®Statusè¿˜æœ‰RenderModeæ‹·è´æž„é€ å‡ºæ–°çš„æè´¨
 GamePartModelMatList& GamePartRenderMgr::createModelMatList(Model* model, GamePartRenderNode * part)
 {
 	std::string state = part->getState();
@@ -353,15 +353,15 @@ void GamePartRenderMgr::processMatList(GamePartRenderNode* part, GamePartModelMa
 		switch(part->getRenderMode())
 		{
 		case GamePartRenderNode::RenderMode::COMMON:
-			mat->setIsEnableInstanced(true);
+			mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 			mat->reload();
 			break;
 		case GamePartRenderNode::RenderMode::NO_INSTANCING:
-			mat->setIsEnableInstanced(false);
+			mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(false);
 			mat->reload();
 			break;
 		case GamePartRenderNode::RenderMode::AFTER_DEPTH:
-			mat->setIsEnableInstanced(false);
+			mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(false);
 			mat->reload();
 			break;
 		}

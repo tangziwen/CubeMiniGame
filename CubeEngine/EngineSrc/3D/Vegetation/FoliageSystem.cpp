@@ -107,7 +107,7 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			for(auto i = 0; i < treeModel->getMatCount(); i ++)
 			{
 				auto mat = treeModel->getMat(i);
-				mat->setIsEnableInstanced(true);
+				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
 				mat->reload();
 			}
 			for(auto i = 0; i < m_model->getMeshCount(); i++)
