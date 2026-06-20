@@ -54,6 +54,8 @@ public:
 	TerrainEditResult deformBox(vec3 centerWorld, vec3 halfExtentsWorld, float value);
 	TerrainEditResult paintSphere(vec3 centerWorld, float radiusWorld, int materialIndex);
 
+	bool raycast(const vec3& origin, const vec3& dir, float maxDist, vec3& outHit) const;
+
 	int currentRevision() const;
 
 private:

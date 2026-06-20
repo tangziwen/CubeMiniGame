@@ -1,4 +1,7 @@
 #include "BuildingSystem.h"
+#include "Engine/Engine.h"
+#include "Base/Camera.h"
+#include "Scene/Scene.h"
 #include "3D/Primitive/CubePrimitive.h"
 #include "3D/Primitive/CylinderPrimitive.h"
 #include "Base/GuidMgr.h"
@@ -12,6 +15,7 @@
 #include "rapidjson/filewritestream.h"
 #include "rapidjson/prettywriter.h"
 #include <algorithm>
+#include <cmath>
 
 #include "AudioSystem/AudioSystem.h"
 #include "GameUISystem.h"
@@ -51,6 +55,36 @@ namespace tzw
 				}
 			}
 		}
+	}
+
+	struct PlacementRay
+	{
+		vec3 pos;
+		vec3 dir;
+		float dist;
+	};
+
+	PlacementRay getPlacementRay(PlacementMode mode)
+	{
+		PlacementRay ray;
+		if (mode == PlacementMode::CursorBased)
+		{
+			vec2 mousePos = Engine::shared()->getMousePos();
+			Camera* cam = g_GetCurrScene()->defaultCamera();
+			vec3 nearPt = cam->unproject(vec3(mousePos.x, mousePos.y, 0.0f));
+			vec3 farPt = cam->unproject(vec3(mousePos.x, mousePos.y, 1.0f));
+			ray.pos = cam->getPos();
+			ray.dir = (farPt - nearPt).normalized();
+			ray.dist = 10000.0f;
+		}
+		else
+		{
+			auto player = GameWorld::shared()->getPlayer();
+			ray.pos = player->getPos();
+			ray.dir = player->getForward();
+			ray.dist = 10.0f;
+		}
+		return ray;
 	}
 
 	BuildingSystem::BuildingSystem():m_controlPart(nullptr), m_liftPart(nullptr), m_baseIndex(0),m_isInXRayMode(false),m_storeIslandGroup(nullptr),m_staticVehicle(nullptr)
@@ -194,55 +228,56 @@ namespace tzw
 								float value,
 								float range)
 	{
-		std::vector<Drawable3D*> list;
-		AABB aabb;
-		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
-		keepTerrainDrawablesOnly(list);
-		if (!list.empty())
+		vec3 hitPoint = hitTerrain(pos, dir, dist);
+		if (hitPoint.x < -999990.0f)
+			return;
+		if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
 		{
-			Drawable3DGroup group(&list[0], list.size());
-			Ray ray(pos, dir);
-			vec3 hitPoint;
-			Drawable3D* hitDrawable = group.hitByRay(ray, hitPoint);
-			if (dynamic_cast<TerrainDrawableNode*>(hitDrawable))
-			{
-				if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
-				{
-					AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::DIGGING);
-					editSystem->deformSphere(hitPoint, range, value);
-				}
-			}
+			AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::DIGGING);
+			editSystem->deformSphere(hitPoint, range, value);
+		}
+	}
+
+	void
+	BuildingSystem::terrainFormBox(vec3 pos,
+								 vec3 dir,
+								 float dist,
+								 float value,
+								 vec3 halfExtents)
+	{
+		vec3 hitPoint = hitTerrain(pos, dir, dist);
+		if (hitPoint.x < -999990.0f)
+			return;
+		if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
+		{
+			AudioSystem::shared()->playOneShotSound(AudioSystem::DefaultOneShotSound::DIGGING);
+			editSystem->deformBox(hitPoint, halfExtents, value);
 		}
 	}
 
 	void BuildingSystem::terrainPaint(vec3 pos, vec3 dir, float dist, int matIndex, float range)
 	{
-		std::vector<Drawable3D*> list;
-		AABB aabb;
-		aabb.update(vec3(pos.x - 10, pos.y - 10, pos.z - 10));
-		aabb.update(vec3(pos.x + 10, pos.y + 10, pos.z + 10));
-		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
-		keepTerrainDrawablesOnly(list);
-		if (!list.empty())
+		vec3 hitPoint = hitTerrain(pos, dir, dist);
+		if (hitPoint.x < -999990.0f)
+			return;
+		if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
 		{
-			Drawable3DGroup group(&list[0], list.size());
-			Ray ray(pos, dir);
-			vec3 hitPoint;
-			Drawable3D* hitDrawable = group.hitByRay(ray, hitPoint);
-			if (dynamic_cast<TerrainDrawableNode*>(hitDrawable))
-			{
-				if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
-				{
-					editSystem->paintSphere(hitPoint, range, matIndex);
-				}
-			}
+			editSystem->paintSphere(hitPoint, range, matIndex);
 		}
 	}
 
 	vec3 BuildingSystem::hitTerrain(vec3 pos, vec3 dir, float dist)
 	{
+		vec3 nDir = dir.normalized();
+		if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
+		{
+			vec3 hitPoint;
+			if (editSystem->raycast(pos, nDir, dist, hitPoint))
+			{
+				return hitPoint;
+			}
+		}
+
 		std::vector<Drawable3D*> list;
 		AABB aabb;
 		aabb.update(vec3(pos.x - dist, pos.y - dist, pos.z - dist));
@@ -252,7 +287,7 @@ namespace tzw
 		if (!list.empty())
 		{
 			Drawable3DGroup group(&list[0], list.size());
-			Ray ray(pos, dir);
+			Ray ray(pos, nDir);
 			vec3 hitPoint;
 			if (group.hitByRay(ray, hitPoint))
 			{
@@ -260,6 +295,54 @@ namespace tzw
 			}
 		}
 		return vec3(-999999, -999999, -999999);
+	}
+
+	vec3 BuildingSystem::hitTerrain(PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		return hitTerrain(ray.pos, ray.dir, ray.dist);
+	}
+
+	void BuildingSystem::terrainForm(float value, float range, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainForm(ray.pos, ray.dir, ray.dist, value, range);
+	}
+
+	void BuildingSystem::terrainFormBox(float value, vec3 halfExtents, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainFormBox(ray.pos, ray.dir, ray.dist, value, halfExtents);
+	}
+
+	void BuildingSystem::terrainPaint(int matIndex, float range, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainPaint(ray.pos, ray.dir, ray.dist, matIndex, range);
+	}
+
+	void BuildingSystem::terrainCarveSphere(float radius, float strength, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainForm(ray.pos, ray.dir, ray.dist, std::abs(strength), radius);
+	}
+
+	void BuildingSystem::terrainRaiseSphere(float radius, float strength, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainForm(ray.pos, ray.dir, ray.dist, -std::abs(strength), radius);
+	}
+
+	void BuildingSystem::terrainCarveBox(vec3 halfExtents, float strength, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainFormBox(ray.pos, ray.dir, ray.dist, std::abs(strength), halfExtents);
+	}
+
+	void BuildingSystem::terrainRaiseBox(vec3 halfExtents, float strength, PlacementMode mode)
+	{
+		auto ray = getPlacementRay(mode);
+		terrainFormBox(ray.pos, ray.dir, ray.dist, -std::abs(strength), halfExtents);
 	}
 
 	void

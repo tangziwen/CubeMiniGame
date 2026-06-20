@@ -15,6 +15,18 @@ namespace tzw
 class LabelNew;
 class PhysicsHingeConstraint;
 
+enum class PlacementMode
+{
+    CameraCenterBased,  // 从玩家相机位置 + 前向向量发出射线（旧模式兼容）
+    CursorBased,        // 从相机经过当前鼠标/光标位置发出射线（默认）
+};
+
+enum class TerrainEditAction
+{
+    Carve,  // 减少 density（雕刻/挖去）
+    Raise,  // 增加 density（抬升/建造）
+};
+
 class BuildingSystem :public Singleton<BuildingSystem>
 {
 public:
@@ -37,8 +49,22 @@ public:
 	void attachGamePartToConstraint(GamePart * part, Attachment * attach, float degree);
 	void attachGamePart(GamePart * part, Attachment * attach, float degree, int index);
 	void terrainForm(vec3 pos, vec3 dir, float dist, float value, float range);
+	void terrainFormBox(vec3 pos, vec3 dir, float dist, float value, vec3 halfExtents);
 	void terrainPaint(vec3 pos, vec3 dir, float dist, int matIndex, float range);
 	vec3 hitTerrain(vec3 pos, vec3 dir, float dist);
+
+    // 以 PlacementMode 为主导的新接口，默认 CursorBased
+    void terrainForm(float value, float range, PlacementMode mode = PlacementMode::CursorBased);
+    void terrainFormBox(float value, vec3 halfExtents, PlacementMode mode = PlacementMode::CursorBased);
+    void terrainPaint(int matIndex, float range, PlacementMode mode = PlacementMode::CursorBased);
+    vec3 hitTerrain(PlacementMode mode = PlacementMode::CursorBased);
+
+    // 明确区分雕刻/抬升的对偶接口，strength 取值 0~1
+    void terrainCarveSphere(float radius, float strength, PlacementMode mode = PlacementMode::CursorBased);
+    void terrainRaiseSphere(float radius, float strength, PlacementMode mode = PlacementMode::CursorBased);
+    void terrainCarveBox(vec3 halfExtents, float strength, PlacementMode mode = PlacementMode::CursorBased);
+    void terrainRaiseBox(vec3 halfExtents, float strength, PlacementMode mode = PlacementMode::CursorBased);
+
 	void placeLiftPart(vec3 wherePos);
 	void setCurrentControlPart(GamePart * controlPart);
 	int getGamePartTypeInt(GamePart *);

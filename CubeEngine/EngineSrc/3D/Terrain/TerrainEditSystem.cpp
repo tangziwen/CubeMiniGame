@@ -72,6 +72,52 @@ TerrainEditResult TerrainEditSystem::paintSphere(vec3 centerWorld, float radiusW
 	return apply(op);
 }
 
+bool TerrainEditSystem::raycast(const vec3& origin, const vec3& dir, float maxDist, vec3& outHit) const
+{
+	if (!m_map)
+		return false;
+
+	vec3 nDir = dir;
+	nDir.normalize();
+	const vec3 mapOffset = m_map->getMapOffset();
+	const float blockSize = m_map->blockSize();
+	const float step = blockSize * 0.5f;
+	const float iso = 128.0f;
+	const float outsideDensity = 255.0f;
+
+	float prevDensity = -1.0f;
+	vec3 prevPos = origin;
+
+	for (float d = 0.0f; d <= maxDist; d += step)
+	{
+		vec3 p = origin + nDir * d;
+		int x = static_cast<int>(std::floor((p.x - mapOffset.x) / blockSize));
+		int y = static_cast<int>(std::floor((p.y - mapOffset.y) / blockSize));
+		int z = static_cast<int>(std::floor((p.z - mapOffset.z) / blockSize));
+
+		if (!m_map->isVoxelInDomain(x, y, z))
+		{
+			prevDensity = outsideDensity;
+			prevPos = p;
+			continue;
+		}
+
+		float density = static_cast<float>(m_map->sampleVoxelDensity(x, y, z));
+
+		if (prevDensity >= iso && density < iso)
+		{
+			float t = (iso - prevDensity) / (density - prevDensity + 0.0001f);
+			outHit = prevPos + (p - prevPos) * t;
+			return true;
+		}
+
+		prevDensity = density;
+		prevPos = p;
+	}
+
+	return false;
+}
+
 TerrainEditResult TerrainEditSystem::applyInternal(const TerrainEditOperation& operation)
 {
 	TerrainEditResult result;

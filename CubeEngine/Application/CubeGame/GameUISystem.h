@@ -17,6 +17,7 @@ class NewWorldSettingUI;
 class LoadWorldUI;
 class InventoryUI;
 class HudUI;
+class EditorPanel;
 enum class WindowType
 {
 	INVENTORY,
@@ -69,7 +70,9 @@ public:
 	void setIsNeedShowCrossHair(bool isNeedShow);
 private:
 	bool m_isVisible = true;
+	bool m_preAnyShow = false;
 	void drawToolsMenu();
+	void refreshCursorAndCrosshair();
 	void ShowExampleAppLog(bool* p_open);
 	void ShowExampleAppConsole(bool* p_open);
 	void drawInventory();
@@ -78,7 +81,6 @@ private:
 	bool m_isShowConsole;
 	bool m_isOpenTerrain;
 	bool m_isOpenRenderEditor;
-	bool m_preIsNeedShow;
 	bool m_isOpenPlayerOverLay;
 	bool m_isNeedShowCrossHair {true};
 	DebugInfoPanel m_debugInfoPanel;
@@ -88,6 +90,7 @@ private:
 	PainterUI * m_painterUI;
 	InventoryUI * m_inventoryUI;
 	HudUI * m_hud;
+	EditorPanel * m_editorPanel;
 	Sprite * m_crossHair;
 	LabelNew * m_crossHairTipsInfo;
 	GamePart * m_curInspectPart;

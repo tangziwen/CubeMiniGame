@@ -24,6 +24,7 @@ set(APP_SOURCES
     CubeGame/GameNodeEditor.cpp
     CubeGame/GamePart.cpp
     CubeGame/GamePartRenderMgr.cpp
+    CubeGame/GameState.cpp
     CubeGame/GamePartRenderNode.cpp
     CubeGame/GameScriptBinding.cpp
     CubeGame/GameUISystem.cpp
@@ -72,6 +73,7 @@ set(APP_SOURCES
     CubeGame/SwitchPart.cpp
     CubeGame/ThrusterPart.cpp
     CubeGame/TriggerNode.cpp
+    CubeGame/UI/EditorPanel.cpp
     CubeGame/UI/HudUI.cpp
     CubeGame/UI/InventoryUI.cpp
     CubeGame/UI/KeyMapper.cpp
@@ -148,6 +150,7 @@ set(APP_HEADERS
     CubeGame/ButtonPart.h
     CubeGame/CannonPart.h
     CubeGame/ControlPart.h
+    CubeGame/GameState.h
     CubeGame/CropSystem.h
     CubeGame/CubePlayer.h
     CubeGame/CylinderPart.h
@@ -207,6 +210,7 @@ set(APP_HEADERS
     CubeGame/SwitchPart.h
     CubeGame/ThrusterPart.h
     CubeGame/TriggerNode.h
+    CubeGame/UI/EditorPanel.h
     CubeGame/UI/HudUI.h
     CubeGame/UI/InventoryUI.h
     CubeGame/UI/KeyMapper.h

@@ -3,6 +3,7 @@
 #include "EngineSrc/3D/Model/Model.h"
 #include "EngineSrc/3D/Terrain/GameMapConfig.h"
 #include "GameWorld.h"
+#include "GameState.h"
 #include "EngineSrc/Event/EventMgr.h"
 #include <iostream>
 #include "3D/Primitive/CubePrimitive.h"
@@ -54,6 +55,7 @@ namespace tzw
 		m_paintGun->m_surface = PartSurfaceMgr::shared()->getItem("foam grip");
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		GUISystem::shared()->addObject(this);
+		EventMgr::shared()->addFixedPiorityListener(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), true);
 		camera->setCamPos(vec3(5, 20.0, -5));
 		mainRoot->addChild(camera);
@@ -254,7 +256,7 @@ namespace tzw
         case TZW_KEY_TAB:
 			{
         		if(!GUISystem::shared()->isUiCapturingInput())
-				GameUISystem::shared()->openMainMenu();
+				GameState::shared()->togglePlayerMode();
             }
 			break;
         case TZW_KEY_X:

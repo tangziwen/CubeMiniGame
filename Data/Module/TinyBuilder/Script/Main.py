@@ -166,6 +166,7 @@ def formatV3(v):
 	return "%.2f*%.2f*%.2f"%(v.x, v.y, v.z)
 
 def onDrawWindow(windowType):
+	return
 	isOpen = ImGui.Begin(CubeEngine.TR("资产浏览器"), 0)
 	i = 0
 	itemSize = 80

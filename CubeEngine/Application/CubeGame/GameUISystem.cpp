@@ -39,6 +39,7 @@
 #include "2D/imgui_markdown.h"
 #include "Utility/file/Tfile.h"
 #include "LoadingUI.h"
+#include "GameState.h"
 #include "Action/ActionCalFunc.h"
 #include "Base/TimerMgr.h"
 #include "Engine/WorkerThreadSystem.h"
@@ -49,6 +50,7 @@
 #include "UI/PainterUI.h"
 #include "UI/InventoryUI.h"
 #include "UI/HudUI.h"
+#include "UI/EditorPanel.h"
 
 
 namespace tzw {
@@ -69,7 +71,7 @@ GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
                               m_isOpenTerrain(false), m_isOpenRenderEditor(false),
                               m_fileBrowser(nullptr), m_NewWorldSettingUI(nullptr), m_loadWorldUI(nullptr),
                               m_painterUI(nullptr),
-                              m_crossHair(nullptr), m_preIsNeedShow(false), m_isVisible(false),
+                              m_crossHair(nullptr), m_isVisible(false), m_preAnyShow(false),
                               m_crossHairTipsInfo(nullptr), m_curInspectPart(nullptr), m_currControlPart(nullptr),
                               m_isOpenPlayerOverLay(true)
 
@@ -123,6 +125,11 @@ void GameUISystem::init()
 	m_painterUI = new PainterUI();
 	m_inventoryUI = new InventoryUI();
 	m_hud = new HudUI();
+	m_editorPanel = new EditorPanel();
+	GameState::shared()->onPlayerModeChanged = [this](PlayerMode mode)
+	{
+		refreshCursorAndCrosshair();
+	};
 	m_fileBrowser->m_saveCallBack = [&](std::string fileName)
 	{
 		BuildingSystem::shared()->dumpVehicle(fileName);
@@ -173,6 +180,10 @@ void GameUISystem::drawIMGUI()
 	bool isBlocked = isAnyShow();
 	FPSCamera::setInputBlocked(isBlocked);
 	OrbitCamera::setInputBlocked(isBlocked);
+	if(GameWorld::shared()->getCurrentState() != GAME_STATE_MAIN_MENU && m_preAnyShow != isBlocked)
+	{
+		refreshCursorAndCrosshair();
+	}
 
 	if(GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
 	{
@@ -180,8 +191,15 @@ void GameUISystem::drawIMGUI()
 	}else
 	{
 
-		//Hud
-		m_hud->drawIMGUI(nullptr);
+		//Hud / EditorPanel
+		if(GameState::shared()->getPlayerMode() == PlayerMode::Editor)
+		{
+			m_editorPanel->drawIMGUI(nullptr);
+		}
+		else
+		{
+			m_hud->drawIMGUI(nullptr);
+		}
 	//KeyMapper
 		{
 			if(KeyMapper::shared()->isOpen())
@@ -189,59 +207,14 @@ void GameUISystem::drawIMGUI()
 				KeyMapper::shared()->drawIMGUI(nullptr);
 			}
 		}
-	
-	auto currIsNeedShow = isVisible() || isNeedShowWindow();
-	if(m_preIsNeedShow != currIsNeedShow)
-	{
-		if(GameWorld::shared()->getCurrentState() != GAME_STATE_MAIN_MENU)
-		{
-			if(currIsNeedShow)
-			{
-				Engine::shared()->setUnlimitedCursor(false);
-				if(m_crossHair)
-				{
-					m_crossHair->setIsVisible(false);
-				}
-			}
-			else
-			{
-				Engine::shared()->setUnlimitedCursor(true);
-				if(m_crossHair)
-				{
-					m_crossHair->setIsVisible(m_isNeedShowCrossHair? true: false);
-				}
-			}
-		}
-		m_preIsNeedShow = currIsNeedShow;
-	}
-	else
-	{
-		if(GameWorld::shared()->getCurrentState() != GAME_STATE_MAIN_MENU)
-		{
-			if(currIsNeedShow)
-			{
-				if(m_crossHair)
-				{
-					m_crossHair->setIsVisible(false);
-				}
-			}
-			else
-			{
-				if(m_crossHair)
-				{
-					m_crossHair->setIsVisible(m_isNeedShowCrossHair? true: false);
-				}
-			}
-		}
-	}
 	}
 
 
-	if (isNeedShowWindow())
+	if (isNeedShowWindow() || GameState::shared()->getPlayerMode() == PlayerMode::Editor)
 	{
 		bool isOpenAbout = false;
 		bool isOpenHelp = false;
-		if(getWindowIsShow(WindowType::MainMenu))
+		if(GameState::shared()->getPlayerMode() == PlayerMode::Editor)
 		{
 			auto io = ImGui::GetIO();
 			auto style = ImGui::GetStyle();
@@ -646,7 +619,7 @@ bool GameUISystem::isNeedShowWindow()
 
 bool GameUISystem::isAnyShow()
 {
-	return isVisible() || isNeedShowWindow();
+	return isVisible() || isNeedShowWindow() || GameState::shared()->getPlayerMode() == PlayerMode::Editor;
 }
 
 void GameUISystem::setIsFileBroswerOpen(bool isOpen)
@@ -798,6 +771,19 @@ void GameUISystem::closeCurrentWindow()
 	}
 }
 
+void GameUISystem::refreshCursorAndCrosshair()
+{
+	if (GameWorld::shared()->getCurrentState() == GAME_STATE_MAIN_MENU)
+		return;
+	bool anyShow = isAnyShow();
+	Engine::shared()->setUnlimitedCursor(!anyShow);
+	if (m_crossHair)
+	{
+		m_crossHair->setIsVisible(!anyShow && m_isNeedShowCrossHair);
+	}
+	m_preAnyShow = anyShow;
+}
+
 void GameUISystem::setWindowShow(WindowType type, bool isShow)
 {
 	if(isShow)
@@ -882,7 +868,7 @@ void GameUISystem::drawEntryInterFace()
 
 void GameUISystem::openMainMenu()
 {
-	setWindowShow(WindowType::MainMenu, !GameUISystem::shared()->getWindowIsShow(WindowType::MainMenu));
+	GameState::shared()->togglePlayerMode();
 }
 
 void GameUISystem::setIsNeedShowCrossHair(bool isNeedShow)
