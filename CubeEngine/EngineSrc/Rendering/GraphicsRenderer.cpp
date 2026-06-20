@@ -369,7 +369,14 @@ namespace tzw
     }
     void GraphicsRenderer::preTick()
     {
-        m_tsaa.preTick();
+        if(m_isAAEnable)
+        {
+            m_tsaa.preTick();
+        }
+        else if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+        {
+            g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
+        }
         m_ssgi.preTick();
     }
 	void GraphicsRenderer::render()

@@ -11,6 +11,7 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 	float fog_height_max;
 	vec3 fog_color;
 	vec2 TU_winSize;
+	vec2 TU_jitterUV;
 	vec3 TU_camPos;
 	mat4 TU_viewProjectInverted;
 	mat4 TU_LastVP;
@@ -24,10 +25,10 @@ layout(set = 0, binding = 3) uniform sampler2D RT_depth;
 
 
 
-vec4 getWorldPosFromDepth(float depthValue)
+vec4 getWorldPosFromDepth(float depthValue, vec2 uv)
 {
   vec4 clipSpaceLocation;
-  clipSpaceLocation.xy = v_texcoord * 2.0 - 1.0;
+  clipSpaceLocation.xy = uv * 2.0 - 1.0;
   clipSpaceLocation.z = depthValue;
   clipSpaceLocation.w = 1.0;
   vec4 homogenousLocation = t_shaderUnifom.TU_viewProjectInverted * clipSpaceLocation;
@@ -72,39 +73,50 @@ void main()
 {
 	vec2 tc = getScreenCoord();
 	vec2 one_over_size = vec2(1.0) / t_shaderUnifom.TU_winSize;
-	vec4 currScene = texture(RT_CurrScene, tc);
-	vec4 c0 = texture(RT_CurrScene, tc + vec2(one_over_size.x, 0));
-	vec4 c1 = texture(RT_CurrScene, tc + vec2(-one_over_size.x, 0));
-	vec4 c2 = texture(RT_CurrScene, tc + vec2(0, one_over_size.y));
-	vec4 c3 = texture(RT_CurrScene, tc + vec2(0, -one_over_size.y));
-	vec4 c4 = currScene;
-	
-	c0.rgb = RGB2YCoCg(c0.rgb);
-	c1.rgb = RGB2YCoCg(c1.rgb);
-	c2.rgb = RGB2YCoCg(c2.rgb);
-	c3.rgb = RGB2YCoCg(c3.rgb);
-	c4.rgb = RGB2YCoCg(c4.rgb);
-			
-	vec4 cMin = min(min(min(c0,c1), min(c2,c3)), c4);
-	vec4 cMax = max(max(max(c0,c1), max(c2,c3)), c4);
+	vec2 currTC = clamp(tc + t_shaderUnifom.TU_jitterUV, vec2(0.0), vec2(1.0));
+	vec4 currScene = texture(RT_CurrScene, currTC);
+	vec3 currSceneYCoCg = RGB2YCoCg(currScene.rgb);
+	vec3 cMin = currSceneYCoCg;
+	vec3 cMax = currSceneYCoCg;
+	for(int y = -1; y <= 1; y++)
+	{
+		for(int x = -1; x <= 1; x++)
+		{
+			vec2 sampleTC = clamp(currTC + vec2(float(x), float(y)) * one_over_size, vec2(0.0), vec2(1.0));
+			vec3 sampleYCoCg = RGB2YCoCg(texture(RT_CurrScene, sampleTC).rgb);
+			cMin = min(cMin, sampleYCoCg);
+			cMax = max(cMax, sampleYCoCg);
+		}
+	}
 
-	float depth = texture(RT_depth, getScreenCoord()).r;
-	vec3 worldPos = getWorldPosFromDepth(depth).xyz;
+	float depth = texture(RT_depth, currTC).r;
+	if(depth >= 1.0)
+	{
+		out_Color = vec4(currScene.xyz, 1.0);
+		return;
+	}
+
+	vec3 worldPos = getWorldPosFromDepth(depth, tc).xyz;
 	vec2 lastUV;
 	vec4 lastNDC = t_shaderUnifom.TU_LastVP * vec4(worldPos, 1.0);
+	if(lastNDC.w <= 0.0)
+	{
+		out_Color = vec4(currScene.xyz, 1.0);
+		return;
+	}
 	lastNDC /= lastNDC.w;
 	
 	lastUV = vec2(lastNDC.x * 0.5 + 0.5, lastNDC.y * 0.5 + 0.5);
-	vec4 oldTaa = texture(RT_oldTAA, lastUV);
 	if(lastUV.x < 0.0 || lastUV.x > 1.0 || lastUV.y < 0.0 || lastUV.y > 1.0)
 	{
 		out_Color = vec4((currScene.xyz ), 1.0);
 	}
 	else
 	{
+		vec4 oldTaa = texture(RT_oldTAA, lastUV);
 		//oldTaa.rgb = clamp(oldTaa.rgb, cMin.rgb, cMax.rgb);
 		oldTaa.rgb = RGB2YCoCg(oldTaa.rgb);
-		oldTaa.rgb = clamp(oldTaa.rgb, cMin.rgb, cMax.rgb);
+		oldTaa.rgb = clamp(oldTaa.rgb, cMin, cMax);
 		oldTaa.rgb = YCoCg2RGB(oldTaa.rgb);
 		out_Color = vec4((oldTaa.xyz * 0.90 + currScene.xyz * 0.1), 1.0);
 	}

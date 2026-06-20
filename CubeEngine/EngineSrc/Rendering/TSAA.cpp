@@ -30,7 +30,7 @@ namespace tzw
         m_bufferB->init(winSize.x, winSize.y, TSAAPass);
 
         auto tex = (DeviceTextureVK *)m_bufferB->getTextureList()[0];
-		backEnd->transitionImageLayout(tex->getImage(), backEnd->getFormat(ImageFormat::D24_S8) , VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+		backEnd->transitionImageLayout(tex->getImage(), backEnd->getFormat(ImageFormat::R16G16B16A16) , VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
         m_tsaaStage->init(TSAAPass, m_bufferA);
         m_tsaaStage->setName("TSAA Stage");
@@ -65,10 +65,10 @@ namespace tzw
     }
     DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
-        
-        //reset jitter
+        // Resolve in the unjittered camera space so depth reprojection matches TU_LastVP.
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
-        auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
+        vec2 winSize = Engine::shared()->winSize();
+        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_jitterUV", vec2(m_offset.x / winSize.x, m_offset.y / winSize.y));
         m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  m_lastViewProj);
         
         m_tsaaStage->prepare(cmd);
@@ -87,6 +87,6 @@ namespace tzw
 
     DeviceFrameBuffer * TSAA::getOutput()
     {
-        return m_bufferA;
+        return m_bufferB;
     }
 }
