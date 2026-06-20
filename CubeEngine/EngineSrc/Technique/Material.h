@@ -15,6 +15,7 @@ namespace tzw {
 class StdMaterial;
 class Node;
 class Drawable;
+class MaterialTemplate;
 
 enum MaterialFlag
 {
@@ -98,8 +99,12 @@ public:
 	void setRasterFillMode(RasterFillMode newMode);
 	ShadingParams * getShadingParams();
 private:
+	void applyTemplate(MaterialTemplate * materialTemplate);
+	void applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder);
+	void loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder);
     std::string m_vsPath;
     std::string m_fsPath;
+	MaterialTemplate * m_materialTemplate;
 	bool m_isEnableInstanced;
 	ShadingParams * m_shadingParams;
 	RenderFlag::BlendingFactor m_factorSrc;

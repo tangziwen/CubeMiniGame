@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <unordered_map>
 #include "../Shader/ShaderProgram.h"
 #include "TechniqueVar.h"
 #include "../Math/Matrix44.h"
@@ -26,6 +27,11 @@ public:
     TechniqueVar * getVar(std::string);
     std::unordered_map<std::string,TechniqueVar> & getVarList();
     bool isVarExist(std::string name);
+    void copyFrom(const ShadingParams& other)
+    {
+        m_varList = other.m_varList;
+        m_texSlotMap = other.m_texSlotMap;
+    }
 protected:
     std::unordered_map<std::string,TechniqueVar> m_varList;
     std::unordered_map<std::string, unsigned int> m_texSlotMap;

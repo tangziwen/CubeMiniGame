@@ -213,6 +213,7 @@ set(ENGINE_SOURCES
     Shader/ShaderProgram.cpp
     Technique/Material.cpp
     Technique/MaterialPool.cpp
+    Technique/MaterialTemplate.cpp
     Technique/ShadingParams.cpp
     Technique/TechniqueVar.cpp
     Texture/Texture.cpp
@@ -462,6 +463,7 @@ set(ENGINE_HEADERS
     Shader/ShaderProgram.h
     Technique/Material.h
     Technique/MaterialPool.h
+    Technique/MaterialTemplate.h
     Technique/ShadingParams.h
     Technique/TechniqueVar.h
     Texture/Texture.h

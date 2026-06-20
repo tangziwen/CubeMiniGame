@@ -92,7 +92,7 @@ void ShadingParams::setVar(std::string name, const vec3 &value)
 	auto result = m_varList.find(name);
 	if(result != m_varList.end())
 	{
-		auto var =  result->second;
+		auto& var =  result->second;
 		var.setV3(value);
 	}else
 	{

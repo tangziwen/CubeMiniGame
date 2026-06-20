@@ -1,4 +1,5 @@
 #include "Material.h"
+#include "MaterialTemplate.h"
 #include <utility>
 #include <stdlib.h>
 #include "../Shader/ShaderMgr.h"
@@ -18,20 +19,79 @@
 #include <sstream> 
 
 namespace tzw {
+namespace
+{
+
+std::string resolvePathInFolder(const std::string& filePath, const std::string& envFolder)
+{
+	auto filePathInFolder = Tfile::shared()->toAbsFilePath(filePath, envFolder);
+	if(Tfile::shared()->isExist(filePathInFolder))
+	{
+		return filePathInFolder;
+	}
+	return filePath;
+}
+
+void applyAttributeOverride(Material * material, rapidjson::Value& attribute)
+{
+	if(!attribute.HasMember("name") || !attribute.HasMember("type"))
+	{
+		return;
+	}
+
+	std::string name = attribute["name"].GetString();
+	std::string typeStr = attribute["type"].GetString();
+	rapidjson::Value * val = nullptr;
+	if(attribute.HasMember("value"))
+	{
+		val = &attribute["value"];
+	}
+	else if(attribute.HasMember("default"))
+	{
+		val = &attribute["default"];
+	}
+
+	if(!val)
+	{
+		return;
+	}
+
+	if(typeStr == "int")
+	{
+		material->setVar(name, val->GetInt());
+	}
+	else if(typeStr == "float")
+	{
+		material->setVar(name, static_cast<float>(val->GetDouble()));
+	}
+	else if(typeStr == "vec2")
+	{
+		material->setVar(name, vec2((*val)[0].GetDouble(), (*val)[1].GetDouble()));
+	}
+	else if(typeStr == "vec3")
+	{
+		material->setVar(name, vec3((*val)[0].GetDouble(), (*val)[1].GetDouble(), (*val)[2].GetDouble()));
+	}
+	else if(typeStr == "vec4")
+	{
+		material->setVar(name, vec4((*val)[0].GetDouble(), (*val)[1].GetDouble(), (*val)[2].GetDouble(), (*val)[3].GetDouble()));
+	}
+}
+
+}
 
 Material::Material(): m_isCullFace(false), m_program(nullptr),
 	m_factorSrc(RenderFlag::BlendingFactor::SrcAlpha),m_factorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha),
 	m_isDepthTestEnable(true), m_isDepthWriteEnable(true), m_isEnableBlend(false),
 	m_renderStage(RenderFlag::RenderStage::COMMON),m_isEnableInstanced(false),m_cullMode(RenderFlag::CullMode::Back),
-	m_primitiveTopology(PrimitiveTopology::TriangleList),m_rasterFillMode(RasterFillMode::Fill),m_shadingParams(nullptr)
+	m_primitiveTopology(PrimitiveTopology::TriangleList),m_rasterFillMode(RasterFillMode::Fill),m_materialTemplate(nullptr),m_shadingParams(nullptr)
 {
 }
 
 void Material::loadFromTemplate(std::string name)
 {
 	//tlog("load Material %s\n", name.c_str());
-	loadFromFile(std::string("MatTemplate/") + name + ".mat");
-	updateFullDescriptionStr();
+	applyTemplate(MaterialTemplate::getFromTemplate(name));
 	//tlog("load Material finished %s\n", name.c_str());
 }
 
@@ -45,364 +105,114 @@ void Material::loadFromFile(std::string filePath)
 		tlog("[error] get json data err! %s %d offset %d", filePath.c_str(), doc.GetParseError(), doc.GetErrorOffset());
 		abort();
 	}
-	loadFromJson(doc, Tfile::shared()->getFolder(filePath));
+	std::string envFolder = Tfile::shared()->getFolder(filePath);
+	if(doc.HasMember("Material"))
+	{
+		loadFromInstanceJson(doc, envFolder);
+	}
+	else
+	{
+		applyTemplate(MaterialTemplate::getFromFile(filePath));
+	}
 }
 
 void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 {
-	if (doc.HasMember("name"))
+	if(doc.HasMember("Material"))
 	{
-		m_name = doc["name"].GetString();
+		loadFromInstanceJson(doc, envFolder);
+		return;
 	}
 
-	if (doc.HasMember("cullFace"))
+	auto materialTemplate = new MaterialTemplate();
+	materialTemplate->loadFromJson(doc, envFolder);
+	applyTemplate(materialTemplate);
+}
+
+void Material::applyTemplate(MaterialTemplate * materialTemplate)
+{
+	if(!materialTemplate)
 	{
-		m_isCullFace = doc["cullFace"].GetBool();
-	}
-	else
-	{
-		m_isCullFace = true;
-	}
-	if (doc.HasMember("CullMode"))
-	{
-		std::string cullModeStr = doc["CullMode"].GetString();
-		if(cullModeStr == "front")
-		{
-			m_cullMode = RenderFlag::CullMode::Front;
-		}
-		else if(cullModeStr == "back")
-		{
-			m_cullMode = RenderFlag::CullMode::Back;
-		}
-	}
-	else
-	{
-		m_cullMode = RenderFlag::CullMode::Back;
-	}
-	if (doc.HasMember("RasterFillMode"))
-	{
-		std::string rasterFillModeStr = doc["RasterFillMode"].GetString();
-		if(rasterFillModeStr == "Wireframe")
-		{
-			m_rasterFillMode = RasterFillMode::Wireframe;
-		}
-		else
-		{
-			m_rasterFillMode = RasterFillMode::Fill;
-		}
-	}
-	else
-	{
-		m_rasterFillMode = RasterFillMode::Fill;
+		tlog("[error] bad material template!!!");
+		abort();
 	}
 
-	if (doc.HasMember("DepthTestEnable"))
-	{
-		m_isDepthTestEnable = doc["DepthTestEnable"].GetBool();
-	}
-	else
-	{
-		m_isDepthTestEnable = true;
-	}
+	m_materialTemplate = materialTemplate;
+	m_name = materialTemplate->m_name;
+	m_vsPath = materialTemplate->m_vsPath;
+	m_fsPath = materialTemplate->m_fsPath;
+	m_isEnableInstanced = materialTemplate->m_isEnableInstanced;
+	m_factorSrc = materialTemplate->m_factorSrc;
+	m_factorDst = materialTemplate->m_factorDst;
+	m_isCullFace = materialTemplate->m_isCullFace;
+	m_isDepthTestEnable = materialTemplate->m_isDepthTestEnable;
+	m_isDepthWriteEnable = materialTemplate->m_isDepthWriteEnable;
+	m_isEnableBlend = materialTemplate->m_isEnableBlend;
+	m_texSlotMap = materialTemplate->m_texSlotMap;
+	m_program = materialTemplate->m_program;
+	m_renderStage = materialTemplate->m_renderStage;
+	m_cullMode = materialTemplate->m_cullMode;
+	m_primitiveTopology = materialTemplate->m_primitiveTopology;
+	m_rasterFillMode = materialTemplate->m_rasterFillMode;
 
-	if (doc.HasMember("DepthWriteEnable"))
+	if(!m_shadingParams)
 	{
-		m_isDepthWriteEnable = doc["DepthWriteEnable"].GetBool();
+		m_shadingParams = new ShadingParams();
 	}
-	else
-	{
-		m_isDepthWriteEnable = true;
-	}
-	if (doc.HasMember("BlendEnable"))
-	{
-		m_isEnableBlend = doc["BlendEnable"].GetBool();
-	}
-	else
-	{
-		m_isEnableBlend = false;
-	}
-	if (doc.HasMember("EnableInstanced"))
-	{
-		m_isEnableInstanced = doc["EnableInstanced"].GetBool();
-	}
-	else
-	{
-		m_isEnableInstanced = false;
-	}
-	if (doc.HasMember("SrcBlendFactor"))
-	{
-		std::string theStr = doc["SrcBlendFactor"].GetString();
-		if(theStr == "One")
-		{
-			m_factorSrc = RenderFlag::BlendingFactor::One;
-		}
-		else if(theStr == "Zero")
-		{
-			m_factorSrc = RenderFlag::BlendingFactor::Zero;
-		}
-		else if(theStr == "SrcAlpha")
-		{
-			m_factorSrc = RenderFlag::BlendingFactor::SrcAlpha;
-		}
-		else if(theStr == "OneMinusSrcAlpha")
-		{
-			m_factorSrc = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
-		}
-		else if(theStr == "ConstantAlpha")
-		{
-			m_factorSrc = RenderFlag::BlendingFactor::ConstantAlpha;
-		}
-	}
-	else
-	{
-		m_factorSrc = RenderFlag::BlendingFactor::SrcAlpha;
-	}
+	m_shadingParams->copyFrom(materialTemplate->m_shadingParams);
+	updateFullDescriptionStr();
+}
 
-	if (doc.HasMember("RenderStage"))
+void Material::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder)
+{
+	std::string materialPath = resolvePathInFolder(doc["Material"].GetString(), envFolder);
+	applyTemplate(MaterialTemplate::getFromFile(materialPath));
+	if(doc.HasMember("overrides"))
 	{
-		std::string theStr = doc["RenderStage"].GetString();
-		if(theStr == "COMMON")
-		{
-			m_renderStage = RenderFlag::RenderStage::COMMON;
-		}
-		else if(theStr == "TRANSPARENT")
-		{
-			m_renderStage = RenderFlag::RenderStage::TRANSPARENT;
-		}
-		else if(theStr == "AFTER_DEPTH_CLEAR")
-		{
-			m_renderStage = RenderFlag::RenderStage::AFTER_DEPTH_CLEAR;
-		}
-    }
-	if (doc.HasMember("DstBlendFactor"))
-	{
-		std::string theStr = doc["DstBlendFactor"].GetString();
-		if(theStr == "One")
-		{
-			m_factorDst = RenderFlag::BlendingFactor::One;
-		}
-		else if(theStr == "Zero")
-		{
-			m_factorDst = RenderFlag::BlendingFactor::Zero;
-		}
-		else if(theStr == "SrcAlpha")
-		{
-			m_factorDst = RenderFlag::BlendingFactor::SrcAlpha;
-		}
-		else if(theStr == "OneMinusSrcAlpha")
-		{
-			m_factorDst = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
-		}
-		else if(theStr == "ConstantAlpha")
-		{
-			m_factorDst = RenderFlag::BlendingFactor::ConstantAlpha;
-		}
+		applyInstanceOverrides(doc["overrides"], envFolder);
 	}
-	else
-	{
-		m_factorDst = RenderFlag::BlendingFactor::OneMinusSrcAlpha;
-	}
+	updateFullDescriptionStr();
+}
 
-	if (doc.HasMember("shaders"))
+void Material::applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder)
+{
+	if(overrides.HasMember("attributes"))
 	{
-		auto& shaders = doc["shaders"];
-		m_vsPath = shaders["vs"].GetString();
-		m_fsPath = shaders["fs"].GetString();
-		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::Vulkan_Device)
+		auto& attributes = overrides["attributes"];
+		for(unsigned int i = 0; i < attributes.Size(); i++)
 		{
-			m_vsPath = "Vulkan" + m_vsPath;
-			m_fsPath = "Vulkan" + m_fsPath;
-		}
-		m_program = ShaderMgr::shared()->getByPath(getMutationFlag(), m_vsPath, m_fsPath);
-		if (!m_program)
-		{
-			tlog("[error] bad program!!!");
-			abort();
-		}
-	}
-	m_shadingParams = new ShadingParams();
-	auto& MaterialInfo = doc["property"];
-	if (MaterialInfo.HasMember("attributes"))
-	{
-		auto& attributes = MaterialInfo["attributes"];
-		for (unsigned int i = 0; i < attributes.Size(); i++)
-		{
-			auto& attribute = attributes[i];
-
-			auto theName = attribute["name"].GetString();
-			bool hasDefaultVal = true;
-			rapidjson::GenericValue<rapidjson::UTF8<>> val;
-			if(attribute.HasMember("default"))
-			{
-				val = attribute["default"];
-				if (val.IsArray() && val.Size() <= 0)
-					hasDefaultVal = false;
-			}else
-			{
-				hasDefaultVal = false;
-			}
-			
-			std::string typeStr = attribute["type"].GetString();
-			TechniqueVar var;
-			if (typeStr == "int")
-			{
-				if(hasDefaultVal) 
-				{
-					var.setI(val.GetInt());
-				}
-				if(attribute.HasMember("ui_info"))
-				{
-					auto&uiInfo = attribute["ui_info"];
-					if(uiInfo.HasMember("range"))
-					{
-						var.data.i_min = uiInfo["range"][0].GetInt();
-						var.data.i_max = uiInfo["range"][1].GetInt();
-					}
-				}
-			}
-			else if (typeStr == "float")
-			{
-
-				if(hasDefaultVal) 
-				{
-					var.setF(val.GetDouble());
-                }
-				if(attribute.HasMember("ui_info"))
-				{
-					auto&uiInfo = attribute["ui_info"];
-					if(uiInfo.HasMember("range"))
-					{
-						var.data.f_min = uiInfo["range"][0].GetDouble();
-						var.data.f_max = uiInfo["range"][1].GetDouble();
-					}
-				}
-			}
-			else if (typeStr == "vec2")
-			{
-				if(hasDefaultVal)
-				{
-					var.setV2(vec2(val[0].GetDouble(), val[1].GetDouble()));
-				}
-			}
-			else if (typeStr == "vec3")
-			{
-				if(hasDefaultVal) 
-				{
-					var.setV3(vec3(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble()));
-				}
-			}
-			else if (typeStr == "vec4")
-			{
-				if(hasDefaultVal) 
-				{
-					var.setV4(vec4(val[0].GetDouble(), val[1].GetDouble(), val[2].GetDouble(), val[3].GetDouble()));
-				}
-			}
-			//semantics
-			else if(typeStr.find("semantic_") == 0)
-			{
-				if(typeStr == "semantic_WinSize")
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::WIN_SIZE);
-				}
-				else if(typeStr == "semantic_Model")
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::Model);
-				}
-				else if(typeStr =="semantic_ViewProjectInverted") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::InvertedViewProj);
-				}
-				else if(typeStr =="semantic_CameraPos") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::CamPos);
-				}
-				else if(typeStr =="semantic_CameraDir") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::CamDir);
-				}
-				else if(typeStr =="semantic_WinSize") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::WIN_SIZE);
-				}
-				else if(typeStr =="semantic_SunDirection") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::SunDirection);
-				}
-				else if(typeStr =="semantic_SunColor") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::SunColor);
-				}
-				else if(typeStr =="semantic_CamInfo") 
-				{
-					var.setAsSemantic(TechniqueVar::SemanticType::CamInfo);
-				}
-			}
-			m_shadingParams->setVar(theName, var);
-			//m_varList[theName] = var;
+			applyAttributeOverride(this, attributes[i]);
 		}
 	}
 
-	if (MaterialInfo.HasMember("maps"))
+	if(overrides.HasMember("maps"))
 	{
-		auto& texMap = MaterialInfo["maps"];
-		for (unsigned int i = 0; i < texMap.Size(); i++)
+		auto& texMap = overrides["maps"];
+		for(unsigned int i = 0; i < texMap.Size(); i++)
 		{
 			auto& tex = texMap[i];
 			std::string name = tex[0].GetString();
-			m_texSlotMap[name] = tex[1].GetInt();
-
-			if(tex.Size() > 2 && strlen(tex[2].GetString()))
+			std::string texturePath;
+			if(tex[1].IsString())
 			{
-				auto filePathInfolder = Tfile::shared()->toAbsFilePath(tex[2].GetString(), envFolder);
-				Texture * t;
-				bool isNeedMipMap = true;
-				if(Tfile::shared()->isExist(filePathInfolder))
-				{
-					if(filePathInfolder.find("terrain_atlas_roughness") != std::string::npos)
-					{
-						tlog("shit b");
-					}
-					t = TextureMgr::shared()->getByPath(filePathInfolder, isNeedMipMap);
-					
-				}
-				else
-				{
-					std::string path = tex[2].GetString();
-					if(path.find("terrain_atlas_roughness") != std::string::npos)
-					{
-						tlog("shit a");
-					}
-					t = TextureMgr::shared()->getByPath(tex[2].GetString(), isNeedMipMap);
-				}
-				setTex(name, t);
-				//t->setWarp(RenderFlag::WarpAddress::Clamp);
-			}else
+				texturePath = tex[1].GetString();
+			}
+			else if(tex[1].IsInt())
 			{
-				if(name == "DiffuseMap")
+				m_texSlotMap[name] = tex[1].GetInt();
+				if(tex.Size() > 2 && tex[2].IsString())
 				{
-					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png", true));
+					texturePath = tex[2].GetString();
 				}
-				else if(name == "MetallicMap")
-				{
-					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultMetallic.png", true));
-				}
-				else if(name == "RoughnessMap")
-				{
-					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultRoughnessMap.png", true));
-				}
-				else if(name == "NormalMap")
-				{
-					setTex(name, TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultNormalMap.png", true));
-				}
-				else
-				{
-					setTex(name, nullptr);
-				}
-				
+			}
+			if(!texturePath.empty())
+			{
+				texturePath = resolvePathInFolder(texturePath, envFolder);
+				setTex(name, TextureMgr::shared()->getByPath(texturePath, true));
 			}
 		}
 	}
+
 }
 
 Material *Material::createFromTemplate(std::string name)
@@ -606,7 +416,12 @@ ShaderProgram *Material::getProgram() const
 Material *Material::clone()
 {
 	auto mat = new Material();
-	mat->m_shadingParams = m_shadingParams;
+	mat->m_materialTemplate = m_materialTemplate;
+	mat->m_shadingParams = new ShadingParams();
+	if(m_shadingParams)
+	{
+		mat->m_shadingParams->copyFrom(*m_shadingParams);
+	}
 	mat->m_isEnableInstanced = m_isEnableInstanced;
 	mat->m_isCullFace = m_isCullFace;
 	mat->m_isDepthTestEnable = m_isDepthTestEnable;
@@ -614,6 +429,7 @@ Material *Material::clone()
 	mat->m_isEnableBlend = m_isEnableBlend;
 	mat->m_renderStage = m_renderStage;
 	mat->m_program = m_program;
+	mat->m_name = m_name;
 	mat->m_texSlotMap = m_texSlotMap;
 	mat->m_vsPath = m_vsPath;
 	mat->m_fsPath = m_fsPath;
