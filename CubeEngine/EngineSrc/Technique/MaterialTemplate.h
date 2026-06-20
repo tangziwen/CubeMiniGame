@@ -18,6 +18,7 @@ class MaterialTemplate
 public:
     MaterialTemplate();
     MaterialTemplate(const MaterialTemplate& other) = default;
+    MaterialTemplate * clone() const;
     void loadFromFile(std::string filePath);
     void loadFromJson(rapidjson::Value& doc, std::string envFolder);
 

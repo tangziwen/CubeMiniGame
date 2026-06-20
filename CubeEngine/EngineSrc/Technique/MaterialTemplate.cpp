@@ -258,6 +258,31 @@ MaterialTemplate::MaterialTemplate()
 {
 }
 
+MaterialTemplate * MaterialTemplate::clone() const
+{
+    auto materialTemplate = new MaterialTemplate();
+    materialTemplate->m_sourcePath = m_sourcePath;
+    materialTemplate->m_name = m_name;
+    materialTemplate->m_vsPath = m_vsPath;
+    materialTemplate->m_fsPath = m_fsPath;
+    materialTemplate->m_isEnableInstanced = m_isEnableInstanced;
+    materialTemplate->m_shadingParams.copyFrom(m_shadingParams);
+    materialTemplate->m_factorSrc = m_factorSrc;
+    materialTemplate->m_factorDst = m_factorDst;
+    materialTemplate->m_isCullFace = m_isCullFace;
+    materialTemplate->m_isDepthTestEnable = m_isDepthTestEnable;
+    materialTemplate->m_isDepthWriteEnable = m_isDepthWriteEnable;
+    materialTemplate->m_isEnableBlend = m_isEnableBlend;
+    materialTemplate->m_texSlotMap = m_texSlotMap;
+    materialTemplate->m_program = m_program;
+    materialTemplate->m_renderStage = m_renderStage;
+    materialTemplate->m_cullMode = m_cullMode;
+    materialTemplate->m_primitiveTopology = m_primitiveTopology;
+    materialTemplate->m_rasterFillMode = m_rasterFillMode;
+    materialTemplate->m_fullDescString = m_fullDescString;
+    return materialTemplate;
+}
+
 void MaterialTemplate::loadFromFile(std::string filePath)
 {
     rapidjson::Document doc;

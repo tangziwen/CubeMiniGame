@@ -608,7 +608,7 @@ MaterialTemplate * Material::ensureUniqueMaterialTemplate()
 {
 	if(!m_isMaterialTemplateUnique)
 	{
-		m_materialTemplate = new MaterialTemplate(*m_materialTemplate);
+		m_materialTemplate = m_materialTemplate->clone();
 		m_isMaterialTemplateUnique = true;
 	}
 	return m_materialTemplate;
