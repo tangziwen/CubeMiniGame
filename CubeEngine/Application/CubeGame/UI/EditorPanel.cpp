@@ -9,9 +9,9 @@
 namespace tzw
 {
 
-	void EditorPanel::drawToolButton(const char* label, ToolMode mode, float width)
+	void EditorPanel::drawToolButton(const char* label, EditorState state, float width)
 	{
-		bool isSelected = m_toolMode == mode;
+		bool isSelected = m_editorState == state;
 		if (isSelected)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
@@ -27,15 +27,15 @@ namespace tzw
 
 		if (ImGui::Selectable(label, isSelected, ImGuiSelectableFlags_None, ImVec2(width, 32.0f)))
 		{
-			m_toolMode = mode;
+			setEditorState(state);
 		}
 
 		ImGui::PopStyleColor(3);
 	}
 
-	void EditorPanel::drawRailToolButton(const char* label, RailBuildMode mode, float width)
+	void EditorPanel::drawRailToolButton(const char* label, EditorState state, float width)
 	{
-		bool isSelected = m_railBuildMode == mode;
+		bool isSelected = m_editorState == state;
 		if (isSelected)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
@@ -51,11 +51,7 @@ namespace tzw
 
 		if (ImGui::Selectable(label, isSelected, ImGuiSelectableFlags_None, ImVec2(width, 32.0f)))
 		{
-			m_railBuildMode = mode;
-			if (RailSystem* railSystem = GameWorld::shared()->railSystem())
-			{
-				railSystem->setBuildMode(mode);
-			}
+			setEditorState(state);
 		}
 
 		ImGui::PopStyleColor(3);
@@ -109,32 +105,174 @@ namespace tzw
 		ImGui::End();
 	}
 
+	void EditorPanel::setEditorState(EditorState state)
+	{
+		if (m_editorState == state)
+		{
+			return;
+		}
+
+		m_editorState = state;
+		if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+		{
+			railSystem->cancelTrackEdit();
+			switch (m_editorState)
+			{
+			case EditorState::LineAddNode:
+				if (railSystem->lineManager().selectedLineId() != InvalidRailLineId)
+				{
+					railSystem->setLinePreview(railSystem->lineManager().selectedLineId());
+				}
+				break;
+			case EditorState::LineRemoveNode:
+				if (railSystem->lineManager().selectedLineId() != InvalidRailLineId)
+				{
+					railSystem->setLinePreview(railSystem->lineManager().selectedLineId());
+				}
+				break;
+			default:
+				if (isTerrainState())
+				{
+					railSystem->clearLinePreview();
+				}
+				break;
+			}
+		}
+	}
+
+	bool EditorPanel::isLineNodeEditState() const
+	{
+		return m_editorState == EditorState::LineAddNode || m_editorState == EditorState::LineRemoveNode;
+	}
+
+	bool EditorPanel::isTerrainState() const
+	{
+		return m_editorState == EditorState::CarveSphere
+			|| m_editorState == EditorState::RaiseSphere
+			|| m_editorState == EditorState::CarveBox
+			|| m_editorState == EditorState::RaiseBox
+			|| m_editorState == EditorState::PaintSphere;
+	}
+
+	bool EditorPanel::isRailTrackState() const
+	{
+		return m_editorState == EditorState::TrackAdd || m_editorState == EditorState::TrackDelete;
+	}
+
 	void EditorPanel::drawParameterPanel()
 	{
-		if (m_activeTab != 0)
+		if (isLineNodeEditState())
+		{
+			drawLineEditParameterPanel(GameWorld::shared()->railSystem());
+			return;
+		}
+
+		if (isRailTrackState())
+		{
+			if (m_editorState == EditorState::TrackAdd)
+			{
+				ImGui::TextUnformatted(u8"轨道建造");
+				ImGui::TextWrapped(u8"左键选择起点和终点，右键取消当前起点。");
+			}
+			else
+			{
+				ImGui::TextUnformatted(u8"轨道删除");
+				ImGui::TextWrapped(u8"左键点击已有轨道段删除。");
+			}
+			return;
+		}
+
+		if (!isTerrainState())
 		{
 			ImGui::TextUnformatted(u8"当前分类无参数");
 			return;
 		}
 
-		switch (m_toolMode)
+		switch (m_editorState)
 		{
-		case ToolMode::CarveSphere:
-		case ToolMode::RaiseSphere:
+		case EditorState::CarveSphere:
+		case EditorState::RaiseSphere:
 			ImGui::SliderFloat("Radius", &m_radius, 0.1f, 10.0f, "%.1f");
 			ImGui::SliderFloat("Strength", &m_strength, 0.0f, 1.0f, "%.2f");
 			break;
-		case ToolMode::CarveBox:
-		case ToolMode::RaiseBox:
+		case EditorState::CarveBox:
+		case EditorState::RaiseBox:
 			ImGui::SliderFloat("Strength", &m_strength, 0.0f, 1.0f, "%.2f");
 			ImGui::SliderFloat("Half X", &m_boxHalfX, 0.1f, 10.0f, "%.1f");
 			ImGui::SliderFloat("Half Y", &m_boxHalfY, 0.1f, 10.0f, "%.1f");
 			ImGui::SliderFloat("Half Z", &m_boxHalfZ, 0.1f, 10.0f, "%.1f");
 			break;
-		case ToolMode::PaintSphere:
+		case EditorState::PaintSphere:
 			ImGui::SliderFloat("Radius", &m_radius, 0.1f, 10.0f, "%.1f");
 			ImGui::SliderInt("Material", &m_materialIndex, 0, 255);
 			break;
+		default:
+			break;
+		}
+	}
+
+	void EditorPanel::drawLineEditParameterPanel(RailSystem* railSystem)
+	{
+		if (!railSystem)
+		{
+			ImGui::TextUnformatted(u8"RailSystem unavailable");
+			return;
+		}
+
+		RailLineManager& lineManager = railSystem->lineManager();
+		RailLine* selectedLine = lineManager.line(lineManager.selectedLineId());
+		if (!selectedLine)
+		{
+			ImGui::TextUnformatted(u8"先选择线路");
+			if (ImGui::Button(u8"退出线路编辑"))
+			{
+				setEditorState(EditorState::TrackAdd);
+			}
+			return;
+		}
+
+		ImGui::Text("%s", selectedLine->name.c_str());
+		if (ImGui::RadioButton(u8"添加节点", m_editorState == EditorState::LineAddNode))
+		{
+			setEditorState(EditorState::LineAddNode);
+		}
+		ImGui::SameLine();
+		if (ImGui::RadioButton(u8"删除节点", m_editorState == EditorState::LineRemoveNode))
+		{
+			setEditorState(EditorState::LineRemoveNode);
+		}
+		if (ImGui::Button(u8"退出线路编辑"))
+		{
+			setEditorState(EditorState::TrackAdd);
+			return;
+		}
+
+		ImGui::Separator();
+		if (selectedLine->controlNodes.empty())
+		{
+			ImGui::TextUnformatted(u8"当前线路没有节点");
+			return;
+		}
+
+		ImGui::TextUnformatted(u8"线路节点");
+		for (int i = 0; i < static_cast<int>(selectedLine->controlNodes.size()); ++i)
+		{
+			char label[64];
+			snprintf(label, sizeof(label), "Node %d", selectedLine->controlNodes[i]);
+			ImGui::Text("%s", label);
+			ImGui::SameLine();
+
+			char buttonId[64];
+			snprintf(buttonId, sizeof(buttonId), u8"删除##lineNodeRemove%d", i);
+			if (ImGui::SmallButton(buttonId))
+			{
+				if (lineManager.removeControlNodeAt(selectedLine->id, i, railSystem->network()))
+				{
+					railSystem->setLinePreview(selectedLine->id);
+					railSystem->trainManager().refreshAfterLineRebuild(lineManager);
+				}
+				break;
+			}
 		}
 	}
 
@@ -164,18 +302,30 @@ namespace tzw
 		{
 			if (ImGui::BeginTabItem(u8"地形"))
 			{
+				if (m_activeTab != 0 && !isTerrainState())
+				{
+					setEditorState(EditorState::CarveSphere);
+				}
 				m_activeTab = 0;
 				drawTerrainTab();
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(u8"火车"))
 			{
+				if (m_activeTab != 1 && !isRailTrackState() && !isLineNodeEditState())
+				{
+					setEditorState(EditorState::TrackAdd);
+				}
 				m_activeTab = 1;
 				drawTrainTab();
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(u8"摆放物"))
 			{
+				if (m_activeTab != 2)
+				{
+					setEditorState(EditorState::None);
+				}
 				m_activeTab = 2;
 				if (RailSystem* railSystem = GameWorld::shared()->railSystem())
 				{
@@ -186,6 +336,10 @@ namespace tzw
 			}
 			if (ImGui::BeginTabItem(u8"植被"))
 			{
+				if (m_activeTab != 3)
+				{
+					setEditorState(EditorState::None);
+				}
 				m_activeTab = 3;
 				if (RailSystem* railSystem = GameWorld::shared()->railSystem())
 				{
@@ -200,15 +354,84 @@ namespace tzw
 
 		ImGui::End();
 
-		if (m_activeTab != 1)
+		drawRailFloatingWindows();
+		handleEditorWorldInput();
+	}
+
+	void EditorPanel::handleEditorWorldInput()
+	{
+		RailSystem* railSystem = GameWorld::shared()->railSystem();
+		if (railSystem)
 		{
-			if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+			switch (m_editorState)
 			{
-				railSystem->lineManager().setAddModeLineId(InvalidRailLineId);
+			case EditorState::TrackAdd:
+				railSystem->syncTrackAddVisuals(PlacementMode::CursorBased);
+				break;
+			case EditorState::TrackDelete:
+				railSystem->syncTrackDeleteVisuals();
+				break;
+			case EditorState::LineAddNode:
+				railSystem->syncLineAddNodeVisuals();
+				break;
+			case EditorState::LineRemoveNode:
+				railSystem->syncLineRemoveNodeVisuals();
+				break;
+			default:
+				railSystem->hideEditorVisuals();
+				break;
 			}
 		}
 
-		drawRailFloatingWindows();
+		if (ImGui::GetIO().WantCaptureMouse)
+		{
+			return;
+		}
+
+		if (ImGui::IsMouseClicked(0))
+		{
+			switch (m_editorState)
+			{
+			case EditorState::CarveSphere:
+			case EditorState::RaiseSphere:
+			case EditorState::CarveBox:
+			case EditorState::RaiseBox:
+			case EditorState::PaintSphere:
+				applyTerrainEdit();
+				break;
+			case EditorState::TrackAdd:
+				if (railSystem)
+				{
+					railSystem->handleTrackAddPrimaryClick(PlacementMode::CursorBased);
+				}
+				break;
+			case EditorState::TrackDelete:
+				if (railSystem)
+				{
+					railSystem->handleTrackDeletePrimaryClick(PlacementMode::CursorBased);
+				}
+				break;
+			case EditorState::LineAddNode:
+				if (railSystem)
+				{
+					railSystem->addPickedNodeToSelectedLine(PlacementMode::CursorBased);
+				}
+				break;
+			case EditorState::LineRemoveNode:
+				if (railSystem)
+				{
+					railSystem->removePickedNodeFromSelectedLine(PlacementMode::CursorBased);
+				}
+				break;
+			default:
+				break;
+			}
+		}
+
+		if (ImGui::IsMouseClicked(1) && railSystem && isRailTrackState())
+		{
+			railSystem->cancelTrackEdit();
+		}
 	}
 
 	void EditorPanel::drawTerrainTab()
@@ -222,21 +445,15 @@ namespace tzw
 		ImGui::Separator();
 
 		float buttonWidth = 95.0f;
-		drawToolButton("Carve Sphere", ToolMode::CarveSphere, buttonWidth);
+		drawToolButton("Carve Sphere", EditorState::CarveSphere, buttonWidth);
 		ImGui::SameLine();
-		drawToolButton("Raise Sphere", ToolMode::RaiseSphere, buttonWidth);
+		drawToolButton("Raise Sphere", EditorState::RaiseSphere, buttonWidth);
 		ImGui::SameLine();
-		drawToolButton("Paint Sphere", ToolMode::PaintSphere, buttonWidth);
+		drawToolButton("Paint Sphere", EditorState::PaintSphere, buttonWidth);
 
-		drawToolButton("Carve Box", ToolMode::CarveBox, buttonWidth);
+		drawToolButton("Carve Box", EditorState::CarveBox, buttonWidth);
 		ImGui::SameLine();
-		drawToolButton("Raise Box", ToolMode::RaiseBox, buttonWidth);
-
-		// 鼠标未悬停在任何 ImGui 窗口上时点击，触发地形编辑
-		if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse)
-		{
-			applyTerrainEdit();
-		}
+		drawToolButton("Raise Box", EditorState::RaiseBox, buttonWidth);
 	}
 
 	void EditorPanel::drawTrainTab()
@@ -267,30 +484,9 @@ namespace tzw
 		}
 
 		float buttonWidth = 95.0f;
-		drawRailToolButton(u8"增加铁轨", RailBuildMode::Add, buttonWidth);
+		drawRailToolButton(u8"增加铁轨", EditorState::TrackAdd, buttonWidth);
 		ImGui::SameLine();
-		drawRailToolButton(u8"删除铁轨", RailBuildMode::Delete, buttonWidth);
-
-		if (railSystem)
-		{
-			railSystem->setBuildMode(m_railBuildMode);
-		}
-
-		if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse)
-		{
-			if (railSystem)
-			{
-				railSystem->handlePrimaryClick(PlacementMode::CursorBased);
-			}
-		}
-
-		if (ImGui::IsMouseClicked(1) && !ImGui::GetIO().WantCaptureMouse)
-		{
-			if (railSystem)
-			{
-				railSystem->handleSecondaryClick();
-			}
-		}
+		drawRailToolButton(u8"删除铁轨", EditorState::TrackDelete, buttonWidth);
 	}
 
 	void EditorPanel::drawRailFloatingWindows()
@@ -307,7 +503,10 @@ namespace tzw
 		else if (RailSystem* railSystem = GameWorld::shared()->railSystem())
 		{
 			railSystem->clearLinePreview();
-			railSystem->lineManager().setAddModeLineId(InvalidRailLineId);
+			if (isLineNodeEditState())
+			{
+				setEditorState(EditorState::TrackAdd);
+			}
 		}
 
 		if (m_trainWindowOpen)
@@ -330,8 +529,6 @@ namespace tzw
 			return;
 		}
 
-		railSystem->setBuildMode(RailBuildMode::None);
-
 		RailLineManager& lineManager = railSystem->lineManager();
 		if (ImGui::Button(u8"创建线路"))
 		{
@@ -340,7 +537,11 @@ namespace tzw
 			railSystem->setLinePreview(lineId);
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(u8"删除线路"))
+		if (isLineNodeEditState())
+		{
+			ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.45f);
+		}
+		if (ImGui::Button(u8"删除线路") && !isLineNodeEditState())
 		{
 			const RailLineId lineId = lineManager.selectedLineId();
 			if (lineId != InvalidRailLineId && lineManager.deleteLine(lineId))
@@ -353,11 +554,18 @@ namespace tzw
 				}
 			}
 		}
+		if (isLineNodeEditState())
+		{
+			ImGui::PopStyleVar();
+		}
 		ImGui::SameLine();
 		if (ImGui::Button(u8"取消预览"))
 		{
 			lineManager.setSelectedLineId(InvalidRailLineId);
-			lineManager.setAddModeLineId(InvalidRailLineId);
+			if (isLineNodeEditState())
+			{
+				setEditorState(EditorState::TrackAdd);
+			}
 			railSystem->clearLinePreview();
 		}
 
@@ -369,7 +577,6 @@ namespace tzw
 		for (const RailLine& line : lineManager.lines())
 		{
 			const bool isSelected = line.id == lineManager.selectedLineId();
-			const bool isAddMode = line.id == lineManager.addModeLineId();
 			if (!line.isUsable)
 			{
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
@@ -377,23 +584,15 @@ namespace tzw
 			if (ImGui::Selectable((line.name + "##line").c_str(), isSelected, ImGuiSelectableFlags_None, ImVec2(90.0f, 0.0f)))
 			{
 				lineManager.setSelectedLineId(line.id);
-				lineManager.setAddModeLineId(InvalidRailLineId);
 				railSystem->setLinePreview(line.id);
 			}
 			if (isSelected)
 			{
 				ImGui::SameLine();
-				const char* buttonText = isAddMode ? u8"完成##addToggle" : u8"添加##addToggle";
-				if (ImGui::SmallButton(buttonText))
+				if (ImGui::SmallButton(u8"编辑##lineEdit"))
 				{
-					if (isAddMode)
-					{
-						lineManager.setAddModeLineId(InvalidRailLineId);
-					}
-					else
-					{
-						lineManager.setAddModeLineId(line.id);
-					}
+					setEditorState(EditorState::LineAddNode);
+					railSystem->setLinePreview(line.id);
 				}
 			}
 			if (!line.isUsable)
@@ -426,27 +625,11 @@ namespace tzw
 			{
 				char label[64];
 				snprintf(label, sizeof(label), "Node %d##lineNode%d", selectedLine->controlNodes[i], i);
-				if (ImGui::SmallButton(label))
-				{
-					if (lineManager.removeControlNodeAt(selectedLine->id, i, railSystem->network()))
-					{
-						railSystem->setLinePreview(selectedLine->id);
-						railSystem->trainManager().refreshAfterLineRebuild(lineManager);
-					}
-					break;
-				}
+				ImGui::TextUnformatted(label);
 				ImGui::SameLine();
 			}
 		}
 		ImGui::Columns(1, "RailLineColumns", false);
-
-		if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse)
-		{
-			if (lineManager.addModeLineId() == lineManager.selectedLineId() && lineManager.addModeLineId() != InvalidRailLineId)
-			{
-				railSystem->addPickedNodeToSelectedLine(PlacementMode::CursorBased);
-			}
-		}
 	}
 
 	void EditorPanel::drawRailTrainPanel()
@@ -457,9 +640,6 @@ namespace tzw
 			ImGui::TextUnformatted(u8"RailSystem unavailable");
 			return;
 		}
-
-		railSystem->setBuildMode(RailBuildMode::None);
-		railSystem->clearLinePreview();
 
 		if (ImGui::Button(u8"创建列车"))
 		{
@@ -541,22 +721,24 @@ namespace tzw
 		if (!player)
 			return;
 
-		switch (m_toolMode)
+		switch (m_editorState)
 		{
-		case ToolMode::CarveSphere:
+		case EditorState::CarveSphere:
 			BuildingSystem::shared()->terrainCarveSphere(m_radius, m_strength, PlacementMode::CursorBased);
 			break;
-		case ToolMode::RaiseSphere:
+		case EditorState::RaiseSphere:
 			BuildingSystem::shared()->terrainRaiseSphere(m_radius, m_strength, PlacementMode::CursorBased);
 			break;
-		case ToolMode::CarveBox:
+		case EditorState::CarveBox:
 			BuildingSystem::shared()->terrainCarveBox(vec3(m_boxHalfX, m_boxHalfY, m_boxHalfZ), m_strength, PlacementMode::CursorBased);
 			break;
-		case ToolMode::RaiseBox:
+		case EditorState::RaiseBox:
 			BuildingSystem::shared()->terrainRaiseBox(vec3(m_boxHalfX, m_boxHalfY, m_boxHalfZ), m_strength, PlacementMode::CursorBased);
 			break;
-		case ToolMode::PaintSphere:
+		case EditorState::PaintSphere:
 			BuildingSystem::shared()->terrainPaint(m_materialIndex, m_radius, PlacementMode::CursorBased);
+			break;
+		default:
 			break;
 		}
 	}

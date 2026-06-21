@@ -30,6 +30,7 @@ class RailTrackMesh
 {
 public:
 	void build(const RailNetwork& network, const RailConfig& config, RailTrackVisualData& outData) const;
+	void appendSegmentVisual(const RailSegment& segment, const RailConfig& config, RailTrackVisualData& outData) const;
 };
 
 } // namespace tzw

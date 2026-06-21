@@ -42,6 +42,7 @@ public:
 	void handleSecondaryClick();
 	RailNodeId pendingNodeId() const;
 	bool pendingAnchorPosition(vec3& outPosition) const;
+	bool buildPreviewSegment(PlacementMode placementMode, RailSegment& outSegment) const;
 
 private:
 	RailBuildAnchor pickAnchor(PlacementMode placementMode) const;

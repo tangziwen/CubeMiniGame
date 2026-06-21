@@ -26,10 +26,9 @@ public:
 	void update(Node* sceneRoot, float deltaSeconds);
 	void clear();
 
-	void setBuildMode(RailBuildMode mode);
-	RailBuildMode buildMode() const;
-	bool handlePrimaryClick(PlacementMode placementMode);
-	void handleSecondaryClick();
+	bool handleTrackAddPrimaryClick(PlacementMode placementMode);
+	bool handleTrackDeletePrimaryClick(PlacementMode placementMode);
+	void cancelTrackEdit();
 
 	RailNetwork& network();
 	const RailNetwork& network() const;
@@ -38,13 +37,22 @@ public:
 	RailTrainManager& trainManager();
 	const RailTrainManager& trainManager() const;
 	bool addPickedNodeToSelectedLine(PlacementMode placementMode);
+	bool removePickedNodeFromSelectedLine(PlacementMode placementMode);
+	void syncTrackAddVisuals(PlacementMode placementMode);
+	void syncTrackDeleteVisuals();
+	void syncLineAddNodeVisuals();
+	void syncLineRemoveNodeVisuals();
+	void hideEditorVisuals();
 	void setLinePreview(RailLineId lineId);
 	void clearLinePreview();
 
 private:
 	void rebuildAllRailLines();
 	void markVisualDirty();
+	bool handleTrackPrimaryClick(PlacementMode placementMode);
 	void syncVisuals(Node* sceneRoot);
+	void syncNodeVisuals(bool showNodes, bool lineAddMode, bool lineRemoveMode);
+	void syncTrackPreview(PlacementMode placementMode, bool showTrackPreview);
 	void ensureVisualRoot(Node* sceneRoot);
 	void clearVisuals();
 
@@ -61,7 +69,9 @@ private:
 	LinePrimitive* m_lineVisual = nullptr;
 	std::vector<CubePrimitive*> m_sleeperVisuals;
 	std::vector<CubePrimitive*> m_nodeVisuals;
+	std::vector<CubePrimitive*> m_trackPreviewSleeperVisuals;
 	CubePrimitive* m_pendingAnchorVisual = nullptr;
+	LinePrimitive* m_trackPreviewVisual = nullptr;
 	RailLineId m_previewLineId = InvalidRailLineId;
 	bool m_visualDirty = true;
 };

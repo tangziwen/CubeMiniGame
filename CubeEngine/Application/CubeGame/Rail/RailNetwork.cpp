@@ -395,7 +395,7 @@ vec3 RailNetwork::preferredDirectionForNewSegment(RailNodeId nodeId, const vec3&
 
 vec3 RailNetwork::makeTangentVector(const vec3& direction, float length) const
 {
-	return safeNormalized(direction, vec3(1.0f, 0.0f, 0.0f)) * std::max(length * 0.5f, 0.05f);
+	return safeNormalized(direction, vec3(1.0f, 0.0f, 0.0f)) * std::max(length * 0.7f, 0.05f);
 }
 
 } // namespace tzw

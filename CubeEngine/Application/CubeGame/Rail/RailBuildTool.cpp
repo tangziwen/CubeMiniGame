@@ -6,6 +6,49 @@
 
 namespace tzw {
 
+namespace
+{
+vec3 directionForPreviewAnchor(const RailNetwork* network, const RailBuildAnchor& anchor, const vec3& chordDirection)
+{
+	if (!network)
+	{
+		return chordDirection;
+	}
+
+	if (anchor.type == RailBuildAnchorType::Node)
+	{
+		const RailNode* node = network->node(anchor.nodeId);
+		if (node)
+		{
+			const vec3 preferred = safeNormalized(node->preferredTangent, chordDirection);
+			if (vec3::DotProduct(preferred, chordDirection) > 0.15f)
+			{
+				return preferred;
+			}
+		}
+	}
+	else if (anchor.type == RailBuildAnchorType::Segment)
+	{
+		const RailSegment* segment = network->segment(anchor.segmentId);
+		if (segment)
+		{
+			const vec3 tangent = safeNormalized(segment->tangentByDistance(anchor.distanceOnSegment), chordDirection);
+			if (vec3::DotProduct(tangent, chordDirection) > 0.15f)
+			{
+				return tangent;
+			}
+		}
+	}
+
+	return chordDirection;
+}
+
+vec3 previewTangentVector(const vec3& direction, float length)
+{
+	return safeNormalized(direction, vec3(1.0f, 0.0f, 0.0f)) * std::max(length * 0.7f, 0.05f);
+}
+}
+
 void RailBuildTool::bind(RailNetwork* network, const RailConfig* config)
 {
 	m_network = network;
@@ -50,6 +93,55 @@ bool RailBuildTool::pendingAnchorPosition(vec3& outPosition) const
 	}
 	outPosition = m_pendingAnchor.position;
 	return true;
+}
+
+bool RailBuildTool::buildPreviewSegment(PlacementMode placementMode, RailSegment& outSegment) const
+{
+	outSegment = RailSegment();
+	if (!m_network || !m_config || m_mode != RailBuildMode::Add || !hasPendingAnchor())
+	{
+		return false;
+	}
+
+	RailBuildAnchor endAnchor = pickAnchor(placementMode);
+	if (endAnchor.type == RailBuildAnchorType::None)
+	{
+		return false;
+	}
+
+	if (m_pendingAnchor.type == RailBuildAnchorType::Segment
+		&& endAnchor.type == RailBuildAnchorType::Segment
+		&& m_pendingAnchor.segmentId == endAnchor.segmentId)
+	{
+		return false;
+	}
+
+	const float anchorDistance = m_pendingAnchor.position.distance(endAnchor.position);
+	if (anchorDistance < m_config->minSegmentLength || anchorDistance > m_config->maxSegmentLength)
+	{
+		return false;
+	}
+
+	const vec3 anchorDelta = endAnchor.position - m_pendingAnchor.position;
+	const float horizontalDistance = std::sqrt(anchorDelta.x * anchorDelta.x + anchorDelta.z * anchorDelta.z);
+	if (horizontalDistance > 0.0001f && std::fabs(anchorDelta.y) / horizontalDistance > m_config->maxSlope)
+	{
+		return false;
+	}
+
+	if (!canResolveAnchorToNode(m_pendingAnchor) || !canResolveAnchorToNode(endAnchor))
+	{
+		return false;
+	}
+
+	const vec3 chordDirection = anchorDelta / anchorDistance;
+	const vec3 startDirection = directionForPreviewAnchor(m_network, m_pendingAnchor, chordDirection);
+	const vec3 endDirection = directionForPreviewAnchor(m_network, endAnchor, chordDirection);
+	outSegment.startTangent = previewTangentVector(startDirection, anchorDistance);
+	outSegment.endTangent = previewTangentVector(endDirection, anchorDistance);
+	outSegment.spline.configure(m_pendingAnchor.position, endAnchor.position, outSegment.startTangent, outSegment.endTangent);
+	outSegment.cachedLength = outSegment.spline.length();
+	return outSegment.cachedLength > 0.0001f;
 }
 
 void RailBuildTool::clearPending()

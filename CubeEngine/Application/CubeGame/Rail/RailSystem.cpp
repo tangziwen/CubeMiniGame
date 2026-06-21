@@ -60,17 +60,7 @@ void RailSystem::clear()
 	m_visualDirty = true;
 }
 
-void RailSystem::setBuildMode(RailBuildMode mode)
-{
-	m_buildTool.setMode(mode);
-}
-
-RailBuildMode RailSystem::buildMode() const
-{
-	return m_buildTool.mode();
-}
-
-bool RailSystem::handlePrimaryClick(PlacementMode placementMode)
+bool RailSystem::handleTrackPrimaryClick(PlacementMode placementMode)
 {
 	const bool changed = m_buildTool.handlePrimaryClick(placementMode);
 	markVisualDirty();
@@ -81,7 +71,19 @@ bool RailSystem::handlePrimaryClick(PlacementMode placementMode)
 	return changed;
 }
 
-void RailSystem::handleSecondaryClick()
+bool RailSystem::handleTrackAddPrimaryClick(PlacementMode placementMode)
+{
+	m_buildTool.setMode(RailBuildMode::Add);
+	return handleTrackPrimaryClick(placementMode);
+}
+
+bool RailSystem::handleTrackDeletePrimaryClick(PlacementMode placementMode)
+{
+	m_buildTool.setMode(RailBuildMode::Delete);
+	return handleTrackPrimaryClick(placementMode);
+}
+
+void RailSystem::cancelTrackEdit()
 {
 	m_buildTool.handleSecondaryClick();
 	markVisualDirty();
@@ -141,19 +143,70 @@ bool RailSystem::addPickedNodeToSelectedLine(PlacementMode placementMode)
 	{
 		m_previewLineId = m_lineManager.selectedLineId();
 		m_trainManager.refreshAfterLineRebuild(m_lineManager);
+		markVisualDirty();
 	}
 	return changed;
 }
 
+bool RailSystem::removePickedNodeFromSelectedLine(PlacementMode placementMode)
+{
+	const RailLineId selectedLineId = m_lineManager.selectedLineId();
+	RailLine* selectedLine = m_lineManager.line(selectedLineId);
+	if (!selectedLine)
+	{
+		return false;
+	}
+
+	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
+	{
+		return false;
+	}
+
+	RailNodePick nodePick = m_network.findNearestNode(terrainHit, m_config.nodePickRadius);
+	if (nodePick.nodeId == InvalidRailNodeId)
+	{
+		return false;
+	}
+
+	for (int i = 0; i < static_cast<int>(selectedLine->controlNodes.size()); ++i)
+	{
+		if (selectedLine->controlNodes[i] != nodePick.nodeId)
+		{
+			continue;
+		}
+
+		const bool changed = m_lineManager.removeControlNodeAt(selectedLineId, i, m_network);
+		if (changed)
+		{
+			m_previewLineId = selectedLineId;
+			m_trainManager.refreshAfterLineRebuild(m_lineManager);
+			markVisualDirty();
+		}
+		return changed;
+	}
+	return false;
+}
+
 void RailSystem::setLinePreview(RailLineId lineId)
 {
+	if (m_previewLineId == lineId)
+	{
+		return;
+	}
 	m_previewLineId = lineId;
+	markVisualDirty();
 }
 
 void RailSystem::clearLinePreview()
 {
+	if (m_previewLineId == InvalidRailLineId)
+	{
+		return;
+	}
 	m_previewLineId = InvalidRailLineId;
 	m_linePreviewVisual.clear();
+	markVisualDirty();
 }
 
 void RailSystem::rebuildAllRailLines()
@@ -191,7 +244,7 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 
 	while (m_sleeperVisuals.size() < visualData.sleepers.size())
 	{
-		auto sleeper = new CubePrimitive(0.9f, 0.16f, 0.08f, true);
+		auto sleeper = new CubePrimitive(1.25f, 0.2f, 0.12f, true);
 		sleeper->setIsAccpectOcTtree(false);
 		sleeper->setIsHitable(false);
 		sleeper->setColor(vec4::fromRGB(120, 84, 48));
@@ -214,12 +267,65 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 		}
 	}
 
+	for (CubePrimitive* nodeCube : m_nodeVisuals)
+	{
+		if (nodeCube)
+		{
+			nodeCube->setIsVisible(false);
+		}
+	}
+
+	if (m_pendingAnchorVisual)
+	{
+		m_pendingAnchorVisual->setIsVisible(false);
+	}
+
+	m_visualDirty = false;
+}
+
+void RailSystem::syncTrackAddVisuals(PlacementMode placementMode)
+{
+	syncNodeVisuals(true, false, false);
+	syncTrackPreview(placementMode, true);
+}
+
+void RailSystem::syncTrackDeleteVisuals()
+{
+	syncNodeVisuals(true, false, false);
+	syncTrackPreview(PlacementMode::CursorBased, false);
+}
+
+void RailSystem::syncLineAddNodeVisuals()
+{
+	syncNodeVisuals(true, true, false);
+	syncTrackPreview(PlacementMode::CursorBased, false);
+}
+
+void RailSystem::syncLineRemoveNodeVisuals()
+{
+	syncNodeVisuals(true, false, true);
+	syncTrackPreview(PlacementMode::CursorBased, false);
+}
+
+void RailSystem::hideEditorVisuals()
+{
+	syncNodeVisuals(false, false, false);
+	syncTrackPreview(PlacementMode::CursorBased, false);
+}
+
+void RailSystem::syncNodeVisuals(bool showNodes, bool lineAddMode, bool lineRemoveMode)
+{
+	if (!m_visualRoot)
+	{
+		return;
+	}
+
 	std::vector<RailNodeVisual> nodeVisualData;
 	m_nodeMesh.build(m_network, m_config, nodeVisualData);
 
 	while (m_nodeVisuals.size() < nodeVisualData.size())
 	{
-		auto nodeCube = new CubePrimitive(0.2f, 0.2f, 0.2f, true);
+		auto nodeCube = new CubePrimitive(0.4f, 0.4f, 0.4f, true);
 		nodeCube->setIsAccpectOcTtree(false);
 		nodeCube->setIsHitable(false);
 		m_visualRoot->addChild(nodeCube, false);
@@ -228,12 +334,8 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 
 	const RailNodeId pendingId = m_buildTool.pendingNodeId();
 	const RailLineId selectedLineId = m_lineManager.selectedLineId();
-	const RailLineId addModeLineId = m_lineManager.addModeLineId();
-	const bool addModeActive = addModeLineId != InvalidRailLineId && addModeLineId == selectedLineId;
-	const bool hasSelectedLine = selectedLineId != InvalidRailLineId;
-
 	std::unordered_set<RailNodeId> selectedLineNodes;
-	if (hasSelectedLine)
+	if (selectedLineId != InvalidRailLineId)
 	{
 		const RailLine* selectedLine = m_lineManager.line(selectedLineId);
 		if (selectedLine)
@@ -245,46 +347,39 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 	for (size_t i = 0; i < m_nodeVisuals.size(); ++i)
 	{
 		CubePrimitive* nodeCube = m_nodeVisuals[i];
-		if (i < nodeVisualData.size())
+		if (i >= nodeVisualData.size() || !showNodes)
 		{
-			nodeCube->setIsVisible(true);
-			nodeCube->setPos(nodeVisualData[i].position);
-			nodeCube->setScale(vec3(1.0f, 1.0f, 1.0f));
-			const RailNodeId nodeId = nodeVisualData[i].nodeId;
-			if (nodeId == pendingId)
-			{
-				nodeCube->setColor(vec4::fromRGB(80, 220, 80));
-			}
-			else if (selectedLineNodes.find(nodeId) != selectedLineNodes.end())
-			{
-				nodeCube->setColor(vec4::fromRGB(80, 180, 220));
-			}
-			else if (addModeActive)
-			{
-				const RailNode* node = m_network.node(nodeId);
-				if (node && node->isConnectable)
-				{
-					nodeCube->setColor(vec4::fromRGB(80, 220, 80));
-				}
-				else
-				{
-					nodeCube->setColor(vec4::fromRGB(220, 180, 40));
-				}
-			}
-			else
-			{
-				nodeCube->setColor(vec4::fromRGB(220, 180, 40));
-			}
+			nodeCube->setIsVisible(false);
+			continue;
+		}
+
+		nodeCube->setIsVisible(true);
+		nodeCube->setPos(nodeVisualData[i].position);
+		nodeCube->setScale(vec3(1.0f, 1.0f, 1.0f));
+
+		const RailNodeId nodeId = nodeVisualData[i].nodeId;
+		if (nodeId == pendingId)
+		{
+			nodeCube->setColor(vec4::fromRGB(80, 220, 80));
+		}
+		else if (selectedLineNodes.find(nodeId) != selectedLineNodes.end())
+		{
+			nodeCube->setColor(lineRemoveMode ? vec4::fromRGB(240, 80, 80) : vec4::fromRGB(80, 180, 220));
+		}
+		else if (lineAddMode)
+		{
+			const RailNode* node = m_network.node(nodeId);
+			nodeCube->setColor((node && node->isConnectable) ? vec4::fromRGB(80, 220, 80) : vec4::fromRGB(220, 180, 40));
 		}
 		else
 		{
-			nodeCube->setIsVisible(false);
+			nodeCube->setColor(vec4::fromRGB(220, 180, 40));
 		}
 	}
 
 	if (!m_pendingAnchorVisual)
 	{
-		m_pendingAnchorVisual = new CubePrimitive(0.22f, 0.22f, 0.22f, true);
+		m_pendingAnchorVisual = new CubePrimitive(0.44f, 0.44f, 0.44f, true);
 		m_pendingAnchorVisual->setIsAccpectOcTtree(false);
 		m_pendingAnchorVisual->setIsHitable(false);
 		m_pendingAnchorVisual->setColor(vec4::fromRGB(80, 220, 80));
@@ -292,7 +387,9 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 	}
 
 	vec3 pendingPosition;
-	if (pendingId == InvalidRailNodeId && m_buildTool.pendingAnchorPosition(pendingPosition))
+	if (showNodes
+		&& m_buildTool.pendingNodeId() == InvalidRailNodeId
+		&& m_buildTool.pendingAnchorPosition(pendingPosition))
 	{
 		m_pendingAnchorVisual->setIsVisible(true);
 		m_pendingAnchorVisual->setPos(pendingPosition + vec3(0.0f, 0.12f, 0.0f));
@@ -301,8 +398,89 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 	{
 		m_pendingAnchorVisual->setIsVisible(false);
 	}
+}
 
-	m_visualDirty = false;
+void RailSystem::syncTrackPreview(PlacementMode placementMode, bool showTrackPreview)
+{
+	if (!m_visualRoot)
+	{
+		return;
+	}
+	if (!m_trackPreviewVisual)
+	{
+		m_trackPreviewVisual = new LinePrimitive();
+		m_trackPreviewVisual->setIsAccpectOcTtree(false);
+		m_trackPreviewVisual->setIsHitable(false);
+		m_visualRoot->addChild(m_trackPreviewVisual, false);
+	}
+
+	m_trackPreviewVisual->clear();
+	if (!showTrackPreview)
+	{
+		m_trackPreviewVisual->setIsVisible(false);
+		for (CubePrimitive* sleeper : m_trackPreviewSleeperVisuals)
+		{
+			if (sleeper)
+			{
+				sleeper->setIsVisible(false);
+			}
+		}
+		return;
+	}
+
+	RailSegment previewSegment;
+	if (!m_buildTool.buildPreviewSegment(placementMode, previewSegment))
+	{
+		m_trackPreviewVisual->setIsVisible(false);
+		for (CubePrimitive* sleeper : m_trackPreviewSleeperVisuals)
+		{
+			if (sleeper)
+			{
+				sleeper->setIsVisible(false);
+			}
+		}
+		return;
+	}
+
+	RailTrackVisualData previewData;
+	m_trackMesh.appendSegmentVisual(previewSegment, m_config, previewData);
+	for (const RailLineVisual& line : previewData.lines)
+	{
+		m_trackPreviewVisual->append(line.start + vec3(0.0f, 0.08f, 0.0f), line.end + vec3(0.0f, 0.08f, 0.0f),
+			vec3(0.15f, 0.95f, 0.35f));
+	}
+
+	const bool hasLines = m_trackPreviewVisual->getLineCount() > 0;
+	m_trackPreviewVisual->setIsVisible(hasLines);
+	if (hasLines)
+	{
+		m_trackPreviewVisual->initBuffer();
+	}
+
+	while (m_trackPreviewSleeperVisuals.size() < previewData.sleepers.size())
+	{
+		auto sleeper = new CubePrimitive(1.25f, 0.2f, 0.12f, true);
+		sleeper->setIsAccpectOcTtree(false);
+		sleeper->setIsHitable(false);
+		sleeper->setColor(vec4(0.15f, 0.95f, 0.35f, 1.0f));
+		m_visualRoot->addChild(sleeper, false);
+		m_trackPreviewSleeperVisuals.push_back(sleeper);
+	}
+
+	for (size_t i = 0; i < m_trackPreviewSleeperVisuals.size(); ++i)
+	{
+		CubePrimitive* sleeper = m_trackPreviewSleeperVisuals[i];
+		if (i < previewData.sleepers.size())
+		{
+			sleeper->setIsVisible(true);
+			sleeper->setPos(previewData.sleepers[i].position + vec3(0.0f, 0.08f, 0.0f));
+			sleeper->setRotateQ(previewData.sleepers[i].rotation);
+		}
+		else
+		{
+			sleeper->setIsVisible(false);
+		}
+	}
 }
 
 void RailSystem::ensureVisualRoot(Node* sceneRoot)
@@ -335,7 +513,9 @@ void RailSystem::clearVisuals()
 	m_lineVisual = nullptr;
 	m_sleeperVisuals.clear();
 	m_nodeVisuals.clear();
+	m_trackPreviewSleeperVisuals.clear();
 	m_pendingAnchorVisual = nullptr;
+	m_trackPreviewVisual = nullptr;
 	if (m_visualRoot)
 	{
 		if (m_visualRoot->getParent())
