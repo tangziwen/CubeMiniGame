@@ -1,11 +1,20 @@
 #include "RailSystem.h"
 
+#include "CubeGame/BuildingSystem.h"
 #include "EngineSrc/3D/Primitive/CubePrimitive.h"
 #include "EngineSrc/3D/Primitive/LinePrimitive.h"
 #include "EngineSrc/Base/Node.h"
 #include "EngineSrc/Math/vec4.h"
 
 namespace tzw {
+
+namespace
+{
+bool isValidHitPoint(const vec3& point)
+{
+	return point.x > -999990.0f;
+}
+}
 
 RailSystem::RailSystem()
 {
@@ -23,7 +32,7 @@ void RailSystem::init()
 	m_visualDirty = true;
 }
 
-void RailSystem::update(Node* sceneRoot, float)
+void RailSystem::update(Node* sceneRoot, float deltaSeconds)
 {
 	if (!sceneRoot)
 	{
@@ -35,12 +44,24 @@ void RailSystem::update(Node* sceneRoot, float)
 	{
 		syncVisuals(sceneRoot);
 	}
+	m_trainManager.update(deltaSeconds, m_lineManager);
+	m_trainManager.updateWorldPoses(m_network, m_lineManager);
+	m_trainVisuals.sync(sceneRoot, m_network, m_lineManager, m_trainManager);
+	if (m_previewLineId != InvalidRailLineId)
+	{
+		m_linePreviewVisual.show(sceneRoot, m_network, m_lineManager.line(m_previewLineId));
+	}
 }
 
 void RailSystem::clear()
 {
 	m_buildTool.clearPending();
 	m_network.clear();
+	m_lineManager.clear();
+	m_trainManager.clear();
+	m_trainVisuals.clear();
+	m_linePreviewVisual.clear();
+	m_previewLineId = InvalidRailLineId;
 	clearVisuals();
 	m_visualDirty = true;
 }
@@ -59,6 +80,10 @@ bool RailSystem::handlePrimaryClick(PlacementMode placementMode)
 {
 	const bool changed = m_buildTool.handlePrimaryClick(placementMode);
 	markVisualDirty();
+	if (changed)
+	{
+		rebuildAllRailLines();
+	}
 	return changed;
 }
 
@@ -76,6 +101,71 @@ RailNetwork& RailSystem::network()
 const RailNetwork& RailSystem::network() const
 {
 	return m_network;
+}
+
+RailLineManager& RailSystem::lineManager()
+{
+	return m_lineManager;
+}
+
+const RailLineManager& RailSystem::lineManager() const
+{
+	return m_lineManager;
+}
+
+RailTrainManager& RailSystem::trainManager()
+{
+	return m_trainManager;
+}
+
+const RailTrainManager& RailSystem::trainManager() const
+{
+	return m_trainManager;
+}
+
+bool RailSystem::addPickedNodeToSelectedLine(PlacementMode placementMode)
+{
+	if (m_lineManager.selectedLineId() == InvalidRailLineId)
+	{
+		return false;
+	}
+
+	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
+	if (!isValidHitPoint(terrainHit))
+	{
+		return false;
+	}
+
+	RailNodePick nodePick = m_network.findNearestNode(terrainHit, m_config.nodePickRadius);
+	if (nodePick.nodeId == InvalidRailNodeId)
+	{
+		return false;
+	}
+
+	const bool changed = m_lineManager.addControlNode(m_lineManager.selectedLineId(), nodePick.nodeId, m_network);
+	if (changed)
+	{
+		m_previewLineId = m_lineManager.selectedLineId();
+		m_trainManager.refreshAfterLineRebuild(m_lineManager);
+	}
+	return changed;
+}
+
+void RailSystem::setLinePreview(RailLineId lineId)
+{
+	m_previewLineId = lineId;
+}
+
+void RailSystem::clearLinePreview()
+{
+	m_previewLineId = InvalidRailLineId;
+	m_linePreviewVisual.clear();
+}
+
+void RailSystem::rebuildAllRailLines()
+{
+	m_lineManager.rebuildAll(m_network);
+	m_trainManager.refreshAfterLineRebuild(m_lineManager);
 }
 
 void RailSystem::markVisualDirty()
@@ -166,6 +256,26 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 		}
 	}
 
+	if (!m_pendingAnchorVisual)
+	{
+		m_pendingAnchorVisual = new CubePrimitive(0.22f, 0.22f, 0.22f, true);
+		m_pendingAnchorVisual->setIsAccpectOcTtree(false);
+		m_pendingAnchorVisual->setIsHitable(false);
+		m_pendingAnchorVisual->setColor(vec4::fromRGB(80, 220, 80));
+		m_visualRoot->addChild(m_pendingAnchorVisual, false);
+	}
+
+	vec3 pendingPosition;
+	if (pendingId == InvalidRailNodeId && m_buildTool.pendingAnchorPosition(pendingPosition))
+	{
+		m_pendingAnchorVisual->setIsVisible(true);
+		m_pendingAnchorVisual->setPos(pendingPosition + vec3(0.0f, 0.12f, 0.0f));
+	}
+	else
+	{
+		m_pendingAnchorVisual->setIsVisible(false);
+	}
+
 	m_visualDirty = false;
 }
 
@@ -199,6 +309,7 @@ void RailSystem::clearVisuals()
 	m_lineVisual = nullptr;
 	m_sleeperVisuals.clear();
 	m_nodeVisuals.clear();
+	m_pendingAnchorVisual = nullptr;
 	if (m_visualRoot)
 	{
 		if (m_visualRoot->getParent())

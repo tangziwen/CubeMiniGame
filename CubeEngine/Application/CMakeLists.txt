@@ -70,10 +70,14 @@ set(APP_SOURCES
     CubeGame/ProjectileBullet.cpp
     CubeGame/ResNode.cpp
     CubeGame/Rail/RailBuildTool.cpp
+    CubeGame/Rail/RailLine.cpp
+    CubeGame/Rail/RailLinePreviewVisual.cpp
     CubeGame/Rail/RailNetwork.cpp
     CubeGame/Rail/RailNodeMesh.cpp
     CubeGame/Rail/RailSpline.cpp
     CubeGame/Rail/RailSystem.cpp
+    CubeGame/Rail/RailTrain.cpp
+    CubeGame/Rail/RailTrainVisual.cpp
     CubeGame/Rail/RailTrackMesh.cpp
     CubeGame/SpringPart.cpp
     CubeGame/SwitchPart.cpp
@@ -213,10 +217,14 @@ set(APP_HEADERS
     CubeGame/ProjectileBullet.h
     CubeGame/ResNode.h
     CubeGame/Rail/RailBuildTool.h
+    CubeGame/Rail/RailLine.h
+    CubeGame/Rail/RailLinePreviewVisual.h
     CubeGame/Rail/RailNetwork.h
     CubeGame/Rail/RailNodeMesh.h
     CubeGame/Rail/RailSpline.h
     CubeGame/Rail/RailSystem.h
+    CubeGame/Rail/RailTrain.h
+    CubeGame/Rail/RailTrainVisual.h
     CubeGame/Rail/RailTrackMesh.h
     CubeGame/SpringPart.h
     CubeGame/SwitchPart.h

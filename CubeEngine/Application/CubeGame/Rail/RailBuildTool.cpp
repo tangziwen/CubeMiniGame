@@ -38,21 +38,31 @@ RailBuildMode RailBuildTool::mode() const
 
 bool RailBuildTool::hasPendingAnchor() const
 {
-	return m_pendingAnchor.type != AnchorType::None;
+	return m_pendingAnchor.type != RailBuildAnchorType::None;
 }
 
 RailNodeId RailBuildTool::pendingNodeId() const
 {
-	if (m_pendingAnchor.type == AnchorType::Node)
+	if (m_pendingAnchor.type == RailBuildAnchorType::Node)
 	{
 		return m_pendingAnchor.nodeId;
 	}
 	return InvalidRailNodeId;
 }
 
+bool RailBuildTool::pendingAnchorPosition(vec3& outPosition) const
+{
+	if (!hasPendingAnchor())
+	{
+		return false;
+	}
+	outPosition = m_pendingAnchor.position;
+	return true;
+}
+
 void RailBuildTool::clearPending()
 {
-	m_pendingAnchor = Anchor();
+	m_pendingAnchor = RailBuildAnchor();
 }
 
 bool RailBuildTool::handlePrimaryClick(PlacementMode placementMode)
@@ -62,18 +72,18 @@ bool RailBuildTool::handlePrimaryClick(PlacementMode placementMode)
 		return false;
 	}
 
-	Anchor anchor = pickAnchor(placementMode);
-	if (anchor.type == AnchorType::None)
+	RailBuildAnchor anchor = pickAnchor(placementMode);
+	if (anchor.type == RailBuildAnchorType::None)
 	{
 		return false;
 	}
 
 	if (m_mode == RailBuildMode::Delete)
 	{
-		if (anchor.type == AnchorType::Segment)
+		if (anchor.type == RailBuildAnchorType::Segment)
 		{
 			clearPending();
-			return m_network->deleteSegment(anchor.segmentId);
+			return m_network->deleteSegment(anchor.segmentId); 
 		}
 		return false;
 	}
@@ -85,17 +95,11 @@ bool RailBuildTool::handlePrimaryClick(PlacementMode placementMode)
 
 	if (hasPendingAnchor())
 	{
-		if (anchor.type == AnchorType::Segment)
-		{
-			m_pendingAnchor = anchor;
-			return false;
-		}
-
 		RailNodeId endNodeId = InvalidRailNodeId;
 		const bool didCommit = commitAdd(m_pendingAnchor, anchor, &endNodeId);
 		if (didCommit && endNodeId != InvalidRailNodeId)
 		{
-			m_pendingAnchor.type = AnchorType::Node;
+			m_pendingAnchor.type = RailBuildAnchorType::Node;
 			m_pendingAnchor.nodeId = endNodeId;
 			m_pendingAnchor.segmentId = InvalidRailSegmentId;
 			m_pendingAnchor.distanceOnSegment = 0.0f;
@@ -105,25 +109,12 @@ bool RailBuildTool::handlePrimaryClick(PlacementMode placementMode)
 		return didCommit;
 	}
 
-	if (anchor.type == AnchorType::Node)
+	if (!canResolveAnchorToNode(anchor))
 	{
-		m_pendingAnchor = anchor;
 		return false;
 	}
 
-	RailNodeId nodeId = InvalidRailNodeId;
-	if (!resolveAnchorToNode(anchor, nodeId) || nodeId == InvalidRailNodeId)
-	{
-		m_network->deleteIsolatedOrdinaryNodes();
-		return false;
-	}
-
-	m_pendingAnchor.type = AnchorType::Node;
-	m_pendingAnchor.nodeId = nodeId;
-	m_pendingAnchor.segmentId = InvalidRailSegmentId;
-	m_pendingAnchor.distanceOnSegment = 0.0f;
-	const RailNode* railNode = m_network->node(nodeId);
-	m_pendingAnchor.position = railNode ? railNode->position : anchor.position;
+	m_pendingAnchor = anchor;
 	return false;
 }
 
@@ -135,9 +126,9 @@ void RailBuildTool::handleSecondaryClick()
 	}
 }
 
-RailBuildTool::Anchor RailBuildTool::pickAnchor(PlacementMode placementMode) const
+RailBuildAnchor RailBuildTool::pickAnchor(PlacementMode placementMode) const
 {
-	Anchor result;
+	RailBuildAnchor result;
 	if (!m_network || !m_config)
 	{
 		return result;
@@ -154,7 +145,7 @@ RailBuildTool::Anchor RailBuildTool::pickAnchor(PlacementMode placementMode) con
 		RailNodePick nodePick = m_network->findNearestNode(terrainHit, m_config->nodePickRadius);
 		if (nodePick.nodeId != InvalidRailNodeId)
 		{
-			result.type = AnchorType::Node;
+			result.type = RailBuildAnchorType::Node;
 			result.nodeId = nodePick.nodeId;
 			const RailNode* railNode = m_network->node(nodePick.nodeId);
 			result.position = railNode ? railNode->position : terrainHit;
@@ -165,7 +156,7 @@ RailBuildTool::Anchor RailBuildTool::pickAnchor(PlacementMode placementMode) con
 	RailSegmentPick segmentPick = m_network->findNearestSegment(terrainHit, m_config->segmentPickRadius);
 	if (segmentPick.segmentId != InvalidRailSegmentId)
 	{
-		result.type = AnchorType::Segment;
+		result.type = RailBuildAnchorType::Segment;
 		result.segmentId = segmentPick.segmentId;
 		result.distanceOnSegment = segmentPick.distanceOnSegment;
 		result.position = segmentPick.position;
@@ -177,20 +168,20 @@ RailBuildTool::Anchor RailBuildTool::pickAnchor(PlacementMode placementMode) con
 		return result;
 	}
 
-	result.type = AnchorType::Terrain;
+	result.type = RailBuildAnchorType::Terrain;
 	result.position = terrainHit;
 	return result;
 }
 
-bool RailBuildTool::commitAdd(const Anchor& startAnchor, const Anchor& endAnchor, RailNodeId* outEndNode)
+bool RailBuildTool::commitAdd(const RailBuildAnchor& startAnchor, const RailBuildAnchor& endAnchor, RailNodeId* outEndNode)
 {
 	if (outEndNode)
 	{
 		*outEndNode = InvalidRailNodeId;
 	}
 
-	if (startAnchor.type == AnchorType::Segment
-		&& endAnchor.type == AnchorType::Segment
+	if (startAnchor.type == RailBuildAnchorType::Segment
+		&& endAnchor.type == RailBuildAnchorType::Segment
 		&& startAnchor.segmentId == endAnchor.segmentId)
 	{
 		return false;
@@ -205,6 +196,11 @@ bool RailBuildTool::commitAdd(const Anchor& startAnchor, const Anchor& endAnchor
 	const vec3 anchorDelta = endAnchor.position - startAnchor.position;
 	const float horizontalDistance = std::sqrt(anchorDelta.x * anchorDelta.x + anchorDelta.z * anchorDelta.z);
 	if (horizontalDistance > 0.0001f && std::fabs(anchorDelta.y) / horizontalDistance > m_config->maxSlope)
+	{
+		return false;
+	}
+
+	if (!canResolveAnchorToNode(startAnchor) || !canResolveAnchorToNode(endAnchor))
 	{
 		return false;
 	}
@@ -237,18 +233,47 @@ bool RailBuildTool::commitAdd(const Anchor& startAnchor, const Anchor& endAnchor
 	return true;
 }
 
-bool RailBuildTool::resolveAnchorToNode(const Anchor& anchor, RailNodeId& outNodeId)
+bool RailBuildTool::canResolveAnchorToNode(const RailBuildAnchor& anchor) const
+{
+	if (!m_network)
+	{
+		return false;
+	}
+
+	switch (anchor.type)
+	{
+	case RailBuildAnchorType::Node:
+		return m_network->node(anchor.nodeId) != nullptr;
+	case RailBuildAnchorType::Terrain:
+		return isValidHitPoint(anchor.position);
+	case RailBuildAnchorType::Segment:
+		{
+			const RailSegment* segment = m_network->segment(anchor.segmentId);
+			if (!segment || segment->cachedLength <= 0.0001f)
+			{
+				return false;
+			}
+			return anchor.distanceOnSegment > 0.05f
+				&& anchor.distanceOnSegment < segment->cachedLength - 0.05f;
+		}
+	default:
+		break;
+	}
+	return false;
+}
+
+bool RailBuildTool::resolveAnchorToNode(const RailBuildAnchor& anchor, RailNodeId& outNodeId)
 {
 	outNodeId = InvalidRailNodeId;
 	switch (anchor.type)
 	{
-	case AnchorType::Node:
+	case RailBuildAnchorType::Node:
 		outNodeId = anchor.nodeId;
 		return outNodeId != InvalidRailNodeId;
-	case AnchorType::Terrain:
+	case RailBuildAnchorType::Terrain:
 		outNodeId = m_network->createNode(anchor.position);
 		return outNodeId != InvalidRailNodeId;
-	case AnchorType::Segment:
+	case RailBuildAnchorType::Segment:
 		{
 			RailSplitResult splitResult;
 			if (!m_network->splitSegment(anchor.segmentId, anchor.distanceOnSegment, splitResult))

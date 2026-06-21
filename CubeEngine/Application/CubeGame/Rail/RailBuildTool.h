@@ -13,6 +13,23 @@ enum class RailBuildMode
 	Delete,
 };
 
+enum class RailBuildAnchorType
+{
+	None,
+	Node,
+	Segment,
+	Terrain,
+};
+
+struct RailBuildAnchor
+{
+	RailBuildAnchorType type = RailBuildAnchorType::None;
+	RailNodeId nodeId = InvalidRailNodeId;
+	RailSegmentId segmentId = InvalidRailSegmentId;
+	float distanceOnSegment = 0.0f;
+	vec3 position;
+};
+
 class RailBuildTool
 {
 public:
@@ -24,33 +41,18 @@ public:
 	bool handlePrimaryClick(PlacementMode placementMode);
 	void handleSecondaryClick();
 	RailNodeId pendingNodeId() const;
+	bool pendingAnchorPosition(vec3& outPosition) const;
 
 private:
-	enum class AnchorType
-	{
-		None,
-		Node,
-		Segment,
-		Terrain,
-	};
-
-	struct Anchor
-	{
-		AnchorType type = AnchorType::None;
-		RailNodeId nodeId = InvalidRailNodeId;
-		RailSegmentId segmentId = InvalidRailSegmentId;
-		float distanceOnSegment = 0.0f;
-		vec3 position;
-	};
-
-	Anchor pickAnchor(PlacementMode placementMode) const;
-	bool commitAdd(const Anchor& startAnchor, const Anchor& endAnchor, RailNodeId* outEndNode = nullptr);
-	bool resolveAnchorToNode(const Anchor& anchor, RailNodeId& outNodeId);
+	RailBuildAnchor pickAnchor(PlacementMode placementMode) const;
+	bool commitAdd(const RailBuildAnchor& startAnchor, const RailBuildAnchor& endAnchor, RailNodeId* outEndNode = nullptr);
+	bool canResolveAnchorToNode(const RailBuildAnchor& anchor) const;
+	bool resolveAnchorToNode(const RailBuildAnchor& anchor, RailNodeId& outNodeId);
 
 	RailNetwork* m_network = nullptr;
 	const RailConfig* m_config = nullptr;
 	RailBuildMode m_mode = RailBuildMode::None;
-	Anchor m_pendingAnchor;
+	RailBuildAnchor m_pendingAnchor;
 };
 
 } // namespace tzw

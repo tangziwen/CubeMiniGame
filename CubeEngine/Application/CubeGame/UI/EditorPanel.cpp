@@ -3,6 +3,9 @@
 #include "CubeGame/Rail/RailSystem.h"
 #include "EngineSrc/Game/EditorCamera.h"
 #include "2D/GUISystem.h"
+
+#include <cstdio>
+#include <string>
 namespace tzw
 {
 
@@ -174,12 +177,20 @@ namespace tzw
 			if (ImGui::BeginTabItem(u8"摆放物"))
 			{
 				m_activeTab = 2;
+				if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+				{
+					railSystem->clearLinePreview();
+				}
 				ImGui::TextUnformatted(u8"摆放物编辑功能占位");
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(u8"植被"))
 			{
 				m_activeTab = 3;
+				if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+				{
+					railSystem->clearLinePreview();
+				}
 				ImGui::TextUnformatted(u8"植被编辑功能占位");
 				ImGui::EndTabItem();
 			}
@@ -188,10 +199,17 @@ namespace tzw
 		ImGui::EndChild();
 
 		ImGui::End();
+
+		drawRailFloatingWindows();
 	}
 
 	void EditorPanel::drawTerrainTab()
 	{
+		if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+		{
+			railSystem->clearLinePreview();
+		}
+
 		ImGui::Text("Terrain Tool");
 		ImGui::Separator();
 
@@ -215,15 +233,36 @@ namespace tzw
 
 	void EditorPanel::drawTrainTab()
 	{
-		ImGui::Text(u8"Rail Tool");
+		ImGui::Text(u8"Train Tool");
 		ImGui::Separator();
+
+		drawRailTrackPanel();
+
+		ImGui::Separator();
+		if (ImGui::Button(u8"线路面板", ImVec2(95.0f, 28.0f)))
+		{
+			m_lineWindowOpen = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"车辆面板", ImVec2(95.0f, 28.0f)))
+		{
+			m_trainWindowOpen = true;
+		}
+	}
+
+	void EditorPanel::drawRailTrackPanel()
+	{
+		RailSystem* railSystem = GameWorld::shared()->railSystem();
+		if (railSystem && !m_lineWindowOpen)
+		{
+			railSystem->clearLinePreview();
+		}
 
 		float buttonWidth = 95.0f;
 		drawRailToolButton(u8"增加铁轨", RailBuildMode::Add, buttonWidth);
 		ImGui::SameLine();
 		drawRailToolButton(u8"删除铁轨", RailBuildMode::Delete, buttonWidth);
 
-		RailSystem* railSystem = GameWorld::shared()->railSystem();
 		if (railSystem)
 		{
 			railSystem->setBuildMode(m_railBuildMode);
@@ -243,6 +282,225 @@ namespace tzw
 			{
 				railSystem->handleSecondaryClick();
 			}
+		}
+	}
+
+	void EditorPanel::drawRailFloatingWindows()
+	{
+		if (m_lineWindowOpen)
+		{
+			ImGui::SetNextWindowSize(ImVec2(520.0f, 300.0f), ImGuiCond_FirstUseEver);
+			if (ImGui::Begin(u8"线路面板", &m_lineWindowOpen, ImGuiWindowFlags_None))
+			{
+				drawRailLinePanel();
+			}
+			ImGui::End();
+		}
+		else if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+		{
+			railSystem->clearLinePreview();
+		}
+
+		if (m_trainWindowOpen)
+		{
+			ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);
+			if (ImGui::Begin(u8"车辆面板", &m_trainWindowOpen, ImGuiWindowFlags_None))
+			{
+				drawRailTrainPanel();
+			}
+			ImGui::End();
+		}
+	}
+
+	void EditorPanel::drawRailLinePanel()
+	{
+		RailSystem* railSystem = GameWorld::shared()->railSystem();
+		if (!railSystem)
+		{
+			ImGui::TextUnformatted(u8"RailSystem unavailable");
+			return;
+		}
+
+		railSystem->setBuildMode(RailBuildMode::None);
+
+		RailLineManager& lineManager = railSystem->lineManager();
+		if (ImGui::Button(u8"创建线路"))
+		{
+			const RailLineId lineId = lineManager.createLine();
+			lineManager.setSelectedLineId(lineId);
+			railSystem->setLinePreview(lineId);
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"删除线路"))
+		{
+			const RailLineId lineId = lineManager.selectedLineId();
+			if (lineId != InvalidRailLineId && lineManager.deleteLine(lineId))
+			{
+				railSystem->trainManager().clearLineAssignment(lineId);
+				railSystem->clearLinePreview();
+				if (lineManager.selectedLineId() != InvalidRailLineId)
+				{
+					railSystem->setLinePreview(lineManager.selectedLineId());
+				}
+			}
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"取消预览"))
+		{
+			lineManager.setSelectedLineId(InvalidRailLineId);
+			railSystem->clearLinePreview();
+		}
+
+		ImGui::Separator();
+		ImGui::Columns(2, "RailLineColumns", true);
+		ImGui::SetColumnWidth(0, 160.0f);
+		ImGui::TextUnformatted(u8"线路");
+		ImGui::Separator();
+		for (const RailLine& line : lineManager.lines())
+		{
+			const bool isSelected = line.id == lineManager.selectedLineId();
+			if (!line.isUsable)
+			{
+				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
+			}
+			if (ImGui::Selectable((line.name + "##line").c_str(), isSelected))
+			{
+				lineManager.setSelectedLineId(line.id);
+				railSystem->setLinePreview(line.id);
+			}
+			if (!line.isUsable)
+			{
+				ImGui::PopStyleColor();
+			}
+		}
+
+		ImGui::NextColumn();
+		ImGui::TextUnformatted(u8"详情");
+		ImGui::Separator();
+		RailLine* selectedLine = lineManager.line(lineManager.selectedLineId());
+		if (!selectedLine)
+		{
+			ImGui::TextUnformatted(u8"先创建或选择一条线路");
+		}
+		else
+		{
+			ImGui::Text("%s", selectedLine->name.c_str());
+			if (selectedLine->isUsable)
+			{
+				ImGui::Text(u8"可用 %.1fm", selectedLine->totalLength);
+			}
+			else
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.25f, 0.25f, 1.0f), "%s", selectedLine->invalidReason.c_str());
+			}
+
+			for (int i = 0; i < static_cast<int>(selectedLine->controlNodes.size()); ++i)
+			{
+				char label[64];
+				snprintf(label, sizeof(label), "Node %d##lineNode%d", selectedLine->controlNodes[i], i);
+				if (ImGui::SmallButton(label))
+				{
+					if (lineManager.removeControlNodeAt(selectedLine->id, i, railSystem->network()))
+					{
+						railSystem->setLinePreview(selectedLine->id);
+						railSystem->trainManager().refreshAfterLineRebuild(lineManager);
+					}
+					break;
+				}
+				ImGui::SameLine();
+			}
+		}
+		ImGui::Columns(1, "RailLineColumns", false);
+
+		if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse)
+		{
+			railSystem->addPickedNodeToSelectedLine(PlacementMode::CursorBased);
+		}
+	}
+
+	void EditorPanel::drawRailTrainPanel()
+	{
+		RailSystem* railSystem = GameWorld::shared()->railSystem();
+		if (!railSystem)
+		{
+			ImGui::TextUnformatted(u8"RailSystem unavailable");
+			return;
+		}
+
+		railSystem->setBuildMode(RailBuildMode::None);
+		railSystem->clearLinePreview();
+
+		if (ImGui::Button(u8"创建列车"))
+		{
+			ImGui::OpenPopup("CreateRailTrainPopup");
+		}
+		if (ImGui::BeginPopup("CreateRailTrainPopup"))
+		{
+			ImGui::SliderInt(u8"车厢数量", &m_newTrainCarriageCount, 0, 12);
+			if (ImGui::Button(u8"创建"))
+			{
+				railSystem->trainManager().createTrain(m_newTrainCarriageCount);
+				ImGui::CloseCurrentPopup();
+			}
+			ImGui::EndPopup();
+		}
+
+		RailTrainId trainToDelete = InvalidRailTrainId;
+		for (const RailTrain& train : railSystem->trainManager().trains())
+		{
+			ImGui::Separator();
+			ImGui::Text("%s", train.name.c_str());
+			ImGui::SameLine();
+			ImGui::Text(u8"车厢 %d", train.carriageCount);
+			ImGui::SameLine();
+			std::string deleteButtonId = std::string(u8"删除##train") + std::to_string(train.id);
+			if (ImGui::SmallButton(deleteButtonId.c_str()))
+			{
+				trainToDelete = train.id;
+			}
+
+			const RailLine* currentLine = railSystem->lineManager().line(train.lineId);
+			const char* preview = currentLine ? currentLine->name.c_str() : u8"未分配";
+			if (!currentLine)
+			{
+				if (train.pose.valid)
+				{
+					ImGui::TextUnformatted(u8"未分配线路，列车停在当前位置");
+				}
+				else
+				{
+					ImGui::TextUnformatted(u8"未分配线路，暂不显示在世界中");
+				}
+			}
+			else if (!currentLine->isUsable)
+			{
+				ImGui::TextColored(ImVec4(1.0f, 0.25f, 0.25f, 1.0f), u8"线路不可用，列车停在最后有效位置");
+			}
+			std::string comboId = std::string(u8"线路##trainLine") + std::to_string(train.id);
+			if (ImGui::BeginCombo(comboId.c_str(), preview))
+			{
+				for (const RailLine& line : railSystem->lineManager().lines())
+				{
+					if (!line.isUsable)
+					{
+						continue;
+					}
+					const bool isSelected = train.lineId == line.id;
+					if (ImGui::Selectable(line.name.c_str(), isSelected))
+					{
+						railSystem->trainManager().assignLine(train.id, line.id, railSystem->lineManager());
+					}
+					if (isSelected)
+					{
+						ImGui::SetItemDefaultFocus();
+					}
+				}
+				ImGui::EndCombo();
+			}
+		}
+		if (trainToDelete != InvalidRailTrainId)
+		{
+			railSystem->trainManager().deleteTrain(trainToDelete);
 		}
 	}
 

@@ -1,7 +1,11 @@
 #pragma once
 
 #include "RailBuildTool.h"
+#include "RailLine.h"
+#include "RailLinePreviewVisual.h"
 #include "RailNodeMesh.h"
+#include "RailTrain.h"
+#include "RailTrainVisual.h"
 #include "RailTrackMesh.h"
 
 #include <vector>
@@ -29,8 +33,16 @@ public:
 
 	RailNetwork& network();
 	const RailNetwork& network() const;
+	RailLineManager& lineManager();
+	const RailLineManager& lineManager() const;
+	RailTrainManager& trainManager();
+	const RailTrainManager& trainManager() const;
+	bool addPickedNodeToSelectedLine(PlacementMode placementMode);
+	void setLinePreview(RailLineId lineId);
+	void clearLinePreview();
 
 private:
+	void rebuildAllRailLines();
 	void markVisualDirty();
 	void syncVisuals(Node* sceneRoot);
 	void ensureVisualRoot(Node* sceneRoot);
@@ -39,12 +51,18 @@ private:
 	RailConfig m_config;
 	RailNetwork m_network;
 	RailBuildTool m_buildTool;
+	RailLineManager m_lineManager;
+	RailTrainManager m_trainManager;
+	RailTrainVisualSet m_trainVisuals;
+	RailLinePreviewVisual m_linePreviewVisual;
 	RailTrackMesh m_trackMesh;
 	RailNodeMesh m_nodeMesh;
 	Node* m_visualRoot = nullptr;
 	LinePrimitive* m_lineVisual = nullptr;
 	std::vector<CubePrimitive*> m_sleeperVisuals;
 	std::vector<CubePrimitive*> m_nodeVisuals;
+	CubePrimitive* m_pendingAnchorVisual = nullptr;
+	RailLineId m_previewLineId = InvalidRailLineId;
 	bool m_visualDirty = true;
 };
 
