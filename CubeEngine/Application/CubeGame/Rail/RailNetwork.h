@@ -90,6 +90,7 @@ public:
 	const RailNode* node(RailNodeId nodeId) const;
 	RailSegment* segment(RailSegmentId segmentId);
 	const RailSegment* segment(RailSegmentId segmentId) const;
+	const std::unordered_map<RailNodeId, std::unique_ptr<RailNode>>& nodes() const;
 	const std::unordered_map<RailSegmentId, RailSegment>& segments() const;
 
 	RailNodePick findNearestNode(const vec3& point, float maxDistance) const;

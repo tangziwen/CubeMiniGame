@@ -58,11 +58,14 @@ RailBuildMode RailSystem::buildMode() const
 bool RailSystem::handlePrimaryClick(PlacementMode placementMode)
 {
 	const bool changed = m_buildTool.handlePrimaryClick(placementMode);
-	if (changed)
-	{
-		markVisualDirty();
-	}
+	markVisualDirty();
 	return changed;
+}
+
+void RailSystem::handleSecondaryClick()
+{
+	m_buildTool.handleSecondaryClick();
+	markVisualDirty();
 }
 
 RailNetwork& RailSystem::network()
@@ -127,6 +130,42 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 		}
 	}
 
+	std::vector<RailNodeVisual> nodeVisualData;
+	m_nodeMesh.build(m_network, m_config, nodeVisualData);
+
+	while (m_nodeVisuals.size() < nodeVisualData.size())
+	{
+		auto nodeCube = new CubePrimitive(0.2f, 0.2f, 0.2f, true);
+		nodeCube->setIsAccpectOcTtree(false);
+		nodeCube->setIsHitable(false);
+		m_visualRoot->addChild(nodeCube, false);
+		m_nodeVisuals.push_back(nodeCube);
+	}
+
+	const RailNodeId pendingId = m_buildTool.pendingNodeId();
+	for (size_t i = 0; i < m_nodeVisuals.size(); ++i)
+	{
+		CubePrimitive* nodeCube = m_nodeVisuals[i];
+		if (i < nodeVisualData.size())
+		{
+			nodeCube->setIsVisible(true);
+			nodeCube->setPos(nodeVisualData[i].position);
+			nodeCube->setScale(vec3(1.0f, 1.0f, 1.0f));
+			if (nodeVisualData[i].nodeId == pendingId)
+			{
+				nodeCube->setColor(vec4::fromRGB(80, 220, 80));
+			}
+			else
+			{
+				nodeCube->setColor(vec4::fromRGB(220, 180, 40));
+			}
+		}
+		else
+		{
+			nodeCube->setIsVisible(false);
+		}
+	}
+
 	m_visualDirty = false;
 }
 
@@ -159,6 +198,7 @@ void RailSystem::clearVisuals()
 {
 	m_lineVisual = nullptr;
 	m_sleeperVisuals.clear();
+	m_nodeVisuals.clear();
 	if (m_visualRoot)
 	{
 		if (m_visualRoot->getParent())

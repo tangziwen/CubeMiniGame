@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RailBuildTool.h"
+#include "RailNodeMesh.h"
 #include "RailTrackMesh.h"
 
 #include <vector>
@@ -24,6 +25,7 @@ public:
 	void setBuildMode(RailBuildMode mode);
 	RailBuildMode buildMode() const;
 	bool handlePrimaryClick(PlacementMode placementMode);
+	void handleSecondaryClick();
 
 	RailNetwork& network();
 	const RailNetwork& network() const;
@@ -38,9 +40,11 @@ private:
 	RailNetwork m_network;
 	RailBuildTool m_buildTool;
 	RailTrackMesh m_trackMesh;
+	RailNodeMesh m_nodeMesh;
 	Node* m_visualRoot = nullptr;
 	LinePrimitive* m_lineVisual = nullptr;
 	std::vector<CubePrimitive*> m_sleeperVisuals;
+	std::vector<CubePrimitive*> m_nodeVisuals;
 	bool m_visualDirty = true;
 };
 

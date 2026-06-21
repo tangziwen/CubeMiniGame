@@ -236,6 +236,14 @@ namespace tzw
 				railSystem->handlePrimaryClick(PlacementMode::CursorBased);
 			}
 		}
+
+		if (ImGui::IsMouseClicked(1) && !ImGui::GetIO().WantCaptureMouse)
+		{
+			if (railSystem)
+			{
+				railSystem->handleSecondaryClick();
+			}
+		}
 	}
 
 	void EditorPanel::applyTerrainEdit()

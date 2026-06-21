@@ -71,6 +71,7 @@ set(APP_SOURCES
     CubeGame/ResNode.cpp
     CubeGame/Rail/RailBuildTool.cpp
     CubeGame/Rail/RailNetwork.cpp
+    CubeGame/Rail/RailNodeMesh.cpp
     CubeGame/Rail/RailSpline.cpp
     CubeGame/Rail/RailSystem.cpp
     CubeGame/Rail/RailTrackMesh.cpp
@@ -213,6 +214,7 @@ set(APP_HEADERS
     CubeGame/ResNode.h
     CubeGame/Rail/RailBuildTool.h
     CubeGame/Rail/RailNetwork.h
+    CubeGame/Rail/RailNodeMesh.h
     CubeGame/Rail/RailSpline.h
     CubeGame/Rail/RailSystem.h
     CubeGame/Rail/RailTrackMesh.h

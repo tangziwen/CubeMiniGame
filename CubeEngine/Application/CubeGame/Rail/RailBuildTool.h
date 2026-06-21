@@ -22,6 +22,8 @@ public:
 	bool hasPendingAnchor() const;
 	void clearPending();
 	bool handlePrimaryClick(PlacementMode placementMode);
+	void handleSecondaryClick();
+	RailNodeId pendingNodeId() const;
 
 private:
 	enum class AnchorType
@@ -42,7 +44,7 @@ private:
 	};
 
 	Anchor pickAnchor(PlacementMode placementMode) const;
-	bool commitAdd(const Anchor& startAnchor, const Anchor& endAnchor);
+	bool commitAdd(const Anchor& startAnchor, const Anchor& endAnchor, RailNodeId* outEndNode = nullptr);
 	bool resolveAnchorToNode(const Anchor& anchor, RailNodeId& outNodeId);
 
 	RailNetwork* m_network = nullptr;

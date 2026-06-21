@@ -169,6 +169,11 @@ const RailSegment* RailNetwork::segment(RailSegmentId segmentId) const
 	return iter == m_segments.end() ? nullptr : &iter->second;
 }
 
+const std::unordered_map<RailNodeId, std::unique_ptr<RailNode>>& RailNetwork::nodes() const
+{
+	return m_nodes;
+}
+
 const std::unordered_map<RailSegmentId, RailSegment>& RailNetwork::segments() const
 {
 	return m_segments;

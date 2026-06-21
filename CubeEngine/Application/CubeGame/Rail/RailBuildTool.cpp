@@ -41,6 +41,15 @@ bool RailBuildTool::hasPendingAnchor() const
 	return m_pendingAnchor.type != AnchorType::None;
 }
 
+RailNodeId RailBuildTool::pendingNodeId() const
+{
+	if (m_pendingAnchor.type == AnchorType::Node)
+	{
+		return m_pendingAnchor.nodeId;
+	}
+	return InvalidRailNodeId;
+}
+
 void RailBuildTool::clearPending()
 {
 	m_pendingAnchor = Anchor();
@@ -74,15 +83,56 @@ bool RailBuildTool::handlePrimaryClick(PlacementMode placementMode)
 		return false;
 	}
 
-	if (!hasPendingAnchor())
+	if (hasPendingAnchor())
+	{
+		if (anchor.type == AnchorType::Segment)
+		{
+			m_pendingAnchor = anchor;
+			return false;
+		}
+
+		RailNodeId endNodeId = InvalidRailNodeId;
+		const bool didCommit = commitAdd(m_pendingAnchor, anchor, &endNodeId);
+		if (didCommit && endNodeId != InvalidRailNodeId)
+		{
+			m_pendingAnchor.type = AnchorType::Node;
+			m_pendingAnchor.nodeId = endNodeId;
+			m_pendingAnchor.segmentId = InvalidRailSegmentId;
+			m_pendingAnchor.distanceOnSegment = 0.0f;
+			const RailNode* railNode = m_network->node(endNodeId);
+			m_pendingAnchor.position = railNode ? railNode->position : anchor.position;
+		}
+		return didCommit;
+	}
+
+	if (anchor.type == AnchorType::Node)
 	{
 		m_pendingAnchor = anchor;
 		return false;
 	}
 
-	const bool didCommit = commitAdd(m_pendingAnchor, anchor);
-	clearPending();
-	return didCommit;
+	RailNodeId nodeId = InvalidRailNodeId;
+	if (!resolveAnchorToNode(anchor, nodeId) || nodeId == InvalidRailNodeId)
+	{
+		m_network->deleteIsolatedOrdinaryNodes();
+		return false;
+	}
+
+	m_pendingAnchor.type = AnchorType::Node;
+	m_pendingAnchor.nodeId = nodeId;
+	m_pendingAnchor.segmentId = InvalidRailSegmentId;
+	m_pendingAnchor.distanceOnSegment = 0.0f;
+	const RailNode* railNode = m_network->node(nodeId);
+	m_pendingAnchor.position = railNode ? railNode->position : anchor.position;
+	return false;
+}
+
+void RailBuildTool::handleSecondaryClick()
+{
+	if (m_mode == RailBuildMode::Add || m_mode == RailBuildMode::Delete)
+	{
+		clearPending();
+	}
 }
 
 RailBuildTool::Anchor RailBuildTool::pickAnchor(PlacementMode placementMode) const
@@ -132,8 +182,13 @@ RailBuildTool::Anchor RailBuildTool::pickAnchor(PlacementMode placementMode) con
 	return result;
 }
 
-bool RailBuildTool::commitAdd(const Anchor& startAnchor, const Anchor& endAnchor)
+bool RailBuildTool::commitAdd(const Anchor& startAnchor, const Anchor& endAnchor, RailNodeId* outEndNode)
 {
+	if (outEndNode)
+	{
+		*outEndNode = InvalidRailNodeId;
+	}
+
 	if (startAnchor.type == AnchorType::Segment
 		&& endAnchor.type == AnchorType::Segment
 		&& startAnchor.segmentId == endAnchor.segmentId)
@@ -173,6 +228,11 @@ bool RailBuildTool::commitAdd(const Anchor& startAnchor, const Anchor& endAnchor
 	{
 		m_network->deleteIsolatedOrdinaryNodes();
 		return false;
+	}
+
+	if (outEndNode)
+	{
+		*outEndNode = endNode;
 	}
 	return true;
 }

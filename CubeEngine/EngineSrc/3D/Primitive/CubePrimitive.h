@@ -11,6 +11,7 @@ public:
 	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg) override;
     bool intersectBySphere(const t_Sphere &sphere, std::vector<vec3> &hitPoint);
 	virtual void setColor(vec4 color);
+	virtual void setColor(vec3 color);
 	virtual bool isHit(Ray ray);
 	Mesh * getMesh() override;
 	Mesh * getMesh(int index) override;

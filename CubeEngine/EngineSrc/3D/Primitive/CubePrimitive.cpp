@@ -80,6 +80,11 @@ void CubePrimitive::setColor(vec4 color)
 	initMesh();
 }
 
+void CubePrimitive::setColor(vec3 color)
+{
+	setColor(vec4(color, 1.0f));
+}
+
 bool CubePrimitive::isHit(Ray ray)
 {
 	auto invertedMat = getTransform().inverted();
