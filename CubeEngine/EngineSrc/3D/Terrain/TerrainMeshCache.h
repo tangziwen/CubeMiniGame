@@ -17,6 +17,7 @@ struct TerrainMeshCacheEntry
 	std::unique_ptr<Mesh> mesh;
 	float lastTouchedTimeSeconds = -1.0f;
 	int revision = 0;
+	int meshRevision = 0;
 };
 
 class TerrainMeshCache

@@ -10,6 +10,56 @@
 
 namespace tzw {
 
+namespace
+{
+	constexpr float kIsoLevel = 128.0f;
+	constexpr float kOutsideDensity = 255.0f;
+
+	float lerpDensity(float a, float b, float t)
+	{
+		return a + (b - a) * t;
+	}
+
+	float sampleDensityOrOutside(GameMap* map, int x, int y, int z)
+	{
+		if (!map || !map->isVoxelInDomain(x, y, z))
+		{
+			return kOutsideDensity;
+		}
+		return static_cast<float>(map->sampleVoxelDensity(x, y, z));
+	}
+
+	float sampleDensityTrilinear(GameMap* map, const vec3& voxelPos)
+	{
+		const int x0 = static_cast<int>(std::floor(voxelPos.x));
+		const int y0 = static_cast<int>(std::floor(voxelPos.y));
+		const int z0 = static_cast<int>(std::floor(voxelPos.z));
+		const int x1 = x0 + 1;
+		const int y1 = y0 + 1;
+		const int z1 = z0 + 1;
+		const float tx = voxelPos.x - static_cast<float>(x0);
+		const float ty = voxelPos.y - static_cast<float>(y0);
+		const float tz = voxelPos.z - static_cast<float>(z0);
+
+		const float c000 = sampleDensityOrOutside(map, x0, y0, z0);
+		const float c100 = sampleDensityOrOutside(map, x1, y0, z0);
+		const float c010 = sampleDensityOrOutside(map, x0, y1, z0);
+		const float c110 = sampleDensityOrOutside(map, x1, y1, z0);
+		const float c001 = sampleDensityOrOutside(map, x0, y0, z1);
+		const float c101 = sampleDensityOrOutside(map, x1, y0, z1);
+		const float c011 = sampleDensityOrOutside(map, x0, y1, z1);
+		const float c111 = sampleDensityOrOutside(map, x1, y1, z1);
+
+		const float c00 = lerpDensity(c000, c100, tx);
+		const float c10 = lerpDensity(c010, c110, tx);
+		const float c01 = lerpDensity(c001, c101, tx);
+		const float c11 = lerpDensity(c011, c111, tx);
+		const float c0 = lerpDensity(c00, c10, ty);
+		const float c1 = lerpDensity(c01, c11, ty);
+		return lerpDensity(c0, c1, tz);
+	}
+}
+
 TerrainEditSystem::TerrainEditSystem()
 	: m_revision(0)
 {
@@ -78,41 +128,51 @@ bool TerrainEditSystem::raycast(const vec3& origin, const vec3& dir, float maxDi
 		return false;
 
 	vec3 nDir = dir;
+	if (nDir.squaredLength() <= 0.000001f || maxDist <= 0.0f)
+	{
+		return false;
+	}
 	nDir.normalize();
 	const vec3 mapOffset = m_map->getMapOffset();
 	const float blockSize = m_map->blockSize();
-	const float step = blockSize * 0.5f;
-	const float iso = 128.0f;
-	const float outsideDensity = 255.0f;
-
-	float prevDensity = -1.0f;
-	vec3 prevPos = origin;
-
-	for (float d = 0.0f; d <= maxDist; d += step)
+	const float step = std::max(blockSize * 0.25f, 0.01f);
+	auto sampleWorldDensity = [this, &mapOffset, blockSize](const vec3& worldPos)
 	{
-		vec3 p = origin + nDir * d;
-		int x = static_cast<int>(std::floor((p.x - mapOffset.x) / blockSize));
-		int y = static_cast<int>(std::floor((p.y - mapOffset.y) / blockSize));
-		int z = static_cast<int>(std::floor((p.z - mapOffset.z) / blockSize));
+		const vec3 voxelPos = (worldPos - mapOffset) / blockSize;
+		return sampleDensityTrilinear(m_map, voxelPos);
+	};
 
-		if (!m_map->isVoxelInDomain(x, y, z))
+	float prevDist = 0.0f;
+	float prevDensity = sampleWorldDensity(origin);
+	for (float currDist = step; currDist <= maxDist; currDist += step)
+	{
+		const vec3 currPos = origin + nDir * currDist;
+		const float currDensity = sampleWorldDensity(currPos);
+		if ((prevDensity >= kIsoLevel && currDensity < kIsoLevel)
+			|| (prevDensity < kIsoLevel && currDensity >= kIsoLevel))
 		{
-			prevDensity = outsideDensity;
-			prevPos = p;
-			continue;
-		}
-
-		float density = static_cast<float>(m_map->sampleVoxelDensity(x, y, z));
-
-		if (prevDensity >= iso && density < iso)
-		{
-			float t = (iso - prevDensity) / (density - prevDensity + 0.0001f);
-			outHit = prevPos + (p - prevPos) * t;
+			float low = prevDist;
+			float high = currDist;
+			for (int i = 0; i < 8; ++i)
+			{
+				const float mid = (low + high) * 0.5f;
+				const float midDensity = sampleWorldDensity(origin + nDir * mid);
+				if ((prevDensity >= kIsoLevel && midDensity >= kIsoLevel)
+					|| (prevDensity < kIsoLevel && midDensity < kIsoLevel))
+				{
+					low = mid;
+				}
+				else
+				{
+					high = mid;
+				}
+			}
+			outHit = origin + nDir * ((low + high) * 0.5f);
 			return true;
 		}
 
-		prevDensity = density;
-		prevPos = p;
+		prevDist = currDist;
+		prevDensity = currDensity;
 	}
 
 	return false;

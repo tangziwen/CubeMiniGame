@@ -1,4 +1,6 @@
 #include "CubePlayer.h"
+#include "EngineSrc/Base/Camera.h"
+#include "EngineSrc/Game/EditorCamera.h"
 #include "EngineSrc/Scene/SceneMgr.h"
 #include "EngineSrc/3D/Model/Model.h"
 #include "EngineSrc/3D/Terrain/GameMapConfig.h"
@@ -69,7 +71,11 @@ namespace tzw
 
 		m_orbitcamera = OrbitCamera::create(g_GetCurrScene()->defaultCamera());
 		m_fpvCamera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), false);
+		m_editorCamera = EditorCamera::create(g_GetCurrScene()->defaultCamera());
 		mainRoot->addChild(m_orbitcamera);
+		mainRoot->addChild(m_editorCamera);
+		GameState::shared()->addPlayerModeChangedListener(
+			std::bind(&CubePlayer::onPlayerModeChanged, this, std::placeholders::_1));
 
 		auto pos = getPos();
 
@@ -114,19 +120,54 @@ namespace tzw
 		m_camera = camera;
 	}
 
+	Camera* CubePlayer::activeViewCamera() const
+	{
+		Camera* defaultCamera = g_GetCurrScene()->defaultCamera();
+		return defaultCamera ? defaultCamera : m_camera;
+	}
+
+	void CubePlayer::onPlayerModeChanged(PlayerMode mode)
+	{
+		if (!m_editorCamera || !m_camera)
+			return;
+
+		if (mode == PlayerMode::Editor)
+		{
+			m_editorCamera->setPos(m_camera->getPos());
+			m_editorCamera->setRotateQ(m_camera->getRotateQ());
+			m_editorCamera->reCache();
+			m_camera->setEnableFPSFeature(false);
+			g_GetCurrScene()->setDefaultCamera(m_editorCamera);
+		}
+		else if (g_GetCurrScene()->defaultCamera() == m_editorCamera)
+		{
+			m_camera->setCamPos(m_editorCamera->getPos());
+			m_camera->setRotateQ(m_editorCamera->getRotateQ());
+			m_camera->reCache();
+			m_camera->setEnableFPSFeature(true);
+			g_GetCurrScene()->setDefaultCamera(m_camera);
+		}
+	}
+
 	vec3 CubePlayer::getPos()
 	{
-		return m_camera->getPos();
+		return activeViewCamera()->getPos();
 	}
 
 	void CubePlayer::setPos(vec3 newPos)
 	{
 		m_camera->setCamPos(newPos);
+		if (m_editorCamera)
+		{
+			m_editorCamera->setPos(newPos);
+		}
 	}
 
 	void CubePlayer::onFrameUpdate(float dt)
 	{
-		AudioSystem::shared()->setListenerParam(getPos(),m_camera->getForward(), vec3(0,1, 0));
+		AudioSystem::shared()->setListenerParam(getPos(), getForward(), vec3(0,1, 0));
+		if (GameState::shared()->getPlayerMode() == PlayerMode::Editor)
+			return;
 		static float theTime = 0.0f;
 		static float stepLoopTime = 0.0f;
 		//vec3 oldPos = m_gunModel->getPos();
@@ -339,7 +380,8 @@ namespace tzw
 
 	vec3 CubePlayer::getForward() const
 	{
-		return m_camera->getForward();
+		Camera* camera = activeViewCamera();
+		return camera ? camera->getForward() : m_camera->getForward();
 	}
 
 	void CubePlayer::handleSitDown()

@@ -2,6 +2,7 @@
 
 #include "EngineSrc/CubeEngine.h"
 #include "CubeGame/GameWorld.h"
+#include "EngineSrc/Game/EditorCamera.h"
 #include "EngineSrc/Game/FPSCamera.h"
 #include "EngineSrc/Game/OrbitCamera.h"
 #include "Game/ConsolePanel.h"
@@ -180,6 +181,15 @@ void GameUISystem::drawIMGUI()
 	bool isBlocked = isAnyShow();
 	FPSCamera::setInputBlocked(isBlocked);
 	OrbitCamera::setInputBlocked(isBlocked);
+	const ImGuiIO& io = ImGui::GetIO();
+	const bool editorKeyboardBlocked = io.WantTextInput || io.WantCaptureKeyboard;
+	const bool editorMouseBlocked = io.WantCaptureMouse;
+	EditorCamera::setInputBlocked(GameState::shared()->getPlayerMode() == PlayerMode::Editor
+		? editorKeyboardBlocked
+		: isBlocked);
+	EditorCamera::setMouseInputBlocked(GameState::shared()->getPlayerMode() == PlayerMode::Editor
+		? editorMouseBlocked
+		: isBlocked);
 	if(GameWorld::shared()->getCurrentState() != GAME_STATE_MAIN_MENU && m_preAnyShow != isBlocked)
 	{
 		refreshCursorAndCrosshair();

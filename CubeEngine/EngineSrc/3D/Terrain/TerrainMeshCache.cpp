@@ -69,6 +69,7 @@ bool TerrainMeshCache::storeReady(const TerrainMeshRequest& request, std::unique
 	entry->state = TerrainMeshState::Ready;
 	entry->request = request;
 	entry->mesh = std::move(mesh);
+	entry->meshRevision = request.revision;
 	return true;
 }
 
@@ -80,9 +81,8 @@ bool TerrainMeshCache::markFailed(const TerrainMeshRequest& request)
 		return false;
 	}
 
-	entry->state = TerrainMeshState::Failed;
+	entry->state = TerrainMeshState::Empty;
 	entry->request = request;
-	entry->mesh.reset();
 	return true;
 }
 
@@ -90,7 +90,6 @@ void TerrainMeshCache::invalidate(const TerrainNodeKey& key)
 {
 	TerrainMeshCacheEntry& entry = ensure(key);
 	entry.state = TerrainMeshState::Empty;
-	entry.mesh.reset();
 	++entry.revision;
 	entry.request.revision = entry.revision;
 }
@@ -131,7 +130,6 @@ void TerrainMeshCache::invalidateInBounds(const TerrainEditBounds& bounds, const
 		}
 
 		entry.state = TerrainMeshState::Empty;
-		entry.mesh.reset();
 		++entry.revision;
 		entry.request.revision = entry.revision;
 	}

@@ -52,16 +52,16 @@ void TerrainDrawableSet::sync(const TerrainRenderSet& renderSet, const TerrainMe
         if (iter == m_drawables.end())
         {
             auto drawable = std::make_unique<TerrainDrawableNode>();
-            drawable->bind(key, node->region(), mesh, m_material, entry->revision);
+            drawable->bind(key, node->region(), mesh, m_material, entry->meshRevision);
             drawable->setDebugWireframeEnabled(m_debugWireframeEnabled);
             m_drawables.emplace(key, std::move(drawable));
         }
         else
         {
             TerrainDrawableNode* drawable = iter->second.get();
-            if (!drawable->isBoundTo(key, entry->revision))
+            if (!drawable->isBoundTo(key, entry->meshRevision))
             {
-                drawable->bind(key, node->region(), mesh, m_material, entry->revision);
+                drawable->bind(key, node->region(), mesh, m_material, entry->meshRevision);
             }
             drawable->setDebugWireframeEnabled(m_debugWireframeEnabled);
         }
@@ -75,9 +75,9 @@ void TerrainDrawableSet::sync(const TerrainRenderSet& renderSet, const TerrainMe
 		const bool isInRenderSet = renderSet.contains(key);
 		const TerrainMeshCacheEntry* entry = meshCache.find(key);
 		bool keep = false;
-		if (isInRenderSet && entry && entry->state == TerrainMeshState::Ready && entry->mesh && !entry->mesh->isEmpty())
+		if (isInRenderSet && entry && entry->mesh && !entry->mesh->isEmpty())
 		{
-			if (drawable->isBoundTo(key, entry->revision))
+			if (drawable->isBoundTo(key, entry->meshRevision))
 			{
 				keep = true;
 			}

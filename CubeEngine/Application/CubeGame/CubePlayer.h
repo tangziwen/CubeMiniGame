@@ -13,11 +13,14 @@ namespace tzw
 {
 	struct Attachment;
 	struct GameItem;
+	class Camera;
+	class EditorCamera;
 	class GamePart;
 	class PartSurface;
 	class Audio;
 	class AudioEvent;
 	class FPGun;
+	enum class PlayerMode;
 	class CubePlayer : public EventListener, public IMGUIObject
 	{
 	public:
@@ -75,12 +78,15 @@ namespace tzw
 		void setRotateQ(const vec4 &rotateQInV4);
 		FPGun * getGun();
 	private:
+		Camera* activeViewCamera() const;
+		void onPlayerModeChanged(PlayerMode mode);
 		void onHitGround();
 		void handleSitDown();
 		PreviewItem * m_previewItem;
 		std::vector<GameItem * > m_itemSlots;
 		Mode m_currMode;
 		FPSCamera* m_camera;
+		EditorCamera* m_editorCamera;
 		OrbitCamera * m_orbitcamera;
 		FPSCamera * m_fpvCamera;
 		FPGun* m_gunModel;

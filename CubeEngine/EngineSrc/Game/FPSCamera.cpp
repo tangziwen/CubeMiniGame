@@ -373,6 +373,13 @@ bool FPSCamera::getEnableFPSFeature() const
 void FPSCamera::setEnableFPSFeature(bool enableFPSFeature)
 {
     m_enableFPSFeature = enableFPSFeature;
+	if (!m_enableFPSFeature)
+	{
+		m_forward = 0;
+		m_slide = 0;
+		m_up = 0;
+		m_isMoving = false;
+	}
 }
 
 void FPSCamera::lookAt(vec3 pos)

@@ -161,6 +161,7 @@ set(ENGINE_SOURCES
     Font/GlyphData.cpp
     Game/ConsolePanel.cpp
     Game/DebugInfoPanel.cpp
+    Game/EditorCamera.cpp
     Game/FPSCamera.cpp
     Game/GameCamera.cpp
     Game/OrbitCamera.cpp
@@ -409,6 +410,7 @@ set(ENGINE_HEADERS
     Game/ConsolePanel.h
     Game/CubePlaceHolder.h
     Game/DebugInfoPanel.h
+    Game/EditorCamera.h
     Game/FPSCamera.h
     Game/GameCamera.h
     Game/OrbitCamera.h
