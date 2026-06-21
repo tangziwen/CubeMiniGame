@@ -6,15 +6,9 @@
 #include "EngineSrc/Base/Node.h"
 #include "EngineSrc/Math/vec4.h"
 
-namespace tzw {
+#include <unordered_set>
 
-namespace
-{
-bool isValidHitPoint(const vec3& point)
-{
-	return point.x > -999990.0f;
-}
-}
+namespace tzw {
 
 RailSystem::RailSystem()
 {
@@ -131,7 +125,7 @@ bool RailSystem::addPickedNodeToSelectedLine(PlacementMode placementMode)
 	}
 
 	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
-	if (!isValidHitPoint(terrainHit))
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
 	{
 		return false;
 	}
@@ -233,6 +227,21 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 	}
 
 	const RailNodeId pendingId = m_buildTool.pendingNodeId();
+	const RailLineId selectedLineId = m_lineManager.selectedLineId();
+	const RailLineId addModeLineId = m_lineManager.addModeLineId();
+	const bool addModeActive = addModeLineId != InvalidRailLineId && addModeLineId == selectedLineId;
+	const bool hasSelectedLine = selectedLineId != InvalidRailLineId;
+
+	std::unordered_set<RailNodeId> selectedLineNodes;
+	if (hasSelectedLine)
+	{
+		const RailLine* selectedLine = m_lineManager.line(selectedLineId);
+		if (selectedLine)
+		{
+			selectedLineNodes.insert(selectedLine->controlNodes.begin(), selectedLine->controlNodes.end());
+		}
+	}
+
 	for (size_t i = 0; i < m_nodeVisuals.size(); ++i)
 	{
 		CubePrimitive* nodeCube = m_nodeVisuals[i];
@@ -241,9 +250,26 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 			nodeCube->setIsVisible(true);
 			nodeCube->setPos(nodeVisualData[i].position);
 			nodeCube->setScale(vec3(1.0f, 1.0f, 1.0f));
-			if (nodeVisualData[i].nodeId == pendingId)
+			const RailNodeId nodeId = nodeVisualData[i].nodeId;
+			if (nodeId == pendingId)
 			{
 				nodeCube->setColor(vec4::fromRGB(80, 220, 80));
+			}
+			else if (selectedLineNodes.find(nodeId) != selectedLineNodes.end())
+			{
+				nodeCube->setColor(vec4::fromRGB(80, 180, 220));
+			}
+			else if (addModeActive)
+			{
+				const RailNode* node = m_network.node(nodeId);
+				if (node && node->isConnectable)
+				{
+					nodeCube->setColor(vec4::fromRGB(80, 220, 80));
+				}
+				else
+				{
+					nodeCube->setColor(vec4::fromRGB(220, 180, 40));
+				}
 			}
 			else
 			{

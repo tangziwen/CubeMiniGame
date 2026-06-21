@@ -414,6 +414,16 @@ public:
     std::string getStr();
 };
 
+inline vec3 safeNormalized(const vec3& value, const vec3& fallback)
+{
+    const float length = value.length();
+    if (length <= 0.0001f)
+    {
+        return fallback;
+    }
+    return value / length;
+}
+
 } // namespace tzw
 
 #endif // TZW_VEC3_H

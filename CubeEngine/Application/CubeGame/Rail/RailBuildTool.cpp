@@ -6,14 +6,6 @@
 
 namespace tzw {
 
-namespace
-{
-bool isValidHitPoint(const vec3& point)
-{
-	return point.x > -999990.0f;
-}
-}
-
 void RailBuildTool::bind(RailNetwork* network, const RailConfig* config)
 {
 	m_network = network;
@@ -135,7 +127,7 @@ RailBuildAnchor RailBuildTool::pickAnchor(PlacementMode placementMode) const
 	}
 
 	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
-	if (!isValidHitPoint(terrainHit))
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
 	{
 		return result;
 	}
@@ -245,7 +237,7 @@ bool RailBuildTool::canResolveAnchorToNode(const RailBuildAnchor& anchor) const
 	case RailBuildAnchorType::Node:
 		return m_network->node(anchor.nodeId) != nullptr;
 	case RailBuildAnchorType::Terrain:
-		return isValidHitPoint(anchor.position);
+		return BuildingSystem::isValidHitPoint(anchor.position);
 	case RailBuildAnchorType::Segment:
 		{
 			const RailSegment* segment = m_network->segment(anchor.segmentId);

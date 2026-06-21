@@ -200,6 +200,14 @@ namespace tzw
 
 		ImGui::End();
 
+		if (m_activeTab != 1)
+		{
+			if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+			{
+				railSystem->lineManager().setAddModeLineId(InvalidRailLineId);
+			}
+		}
+
 		drawRailFloatingWindows();
 	}
 
@@ -299,6 +307,7 @@ namespace tzw
 		else if (RailSystem* railSystem = GameWorld::shared()->railSystem())
 		{
 			railSystem->clearLinePreview();
+			railSystem->lineManager().setAddModeLineId(InvalidRailLineId);
 		}
 
 		if (m_trainWindowOpen)
@@ -348,6 +357,7 @@ namespace tzw
 		if (ImGui::Button(u8"取消预览"))
 		{
 			lineManager.setSelectedLineId(InvalidRailLineId);
+			lineManager.setAddModeLineId(InvalidRailLineId);
 			railSystem->clearLinePreview();
 		}
 
@@ -359,14 +369,32 @@ namespace tzw
 		for (const RailLine& line : lineManager.lines())
 		{
 			const bool isSelected = line.id == lineManager.selectedLineId();
+			const bool isAddMode = line.id == lineManager.addModeLineId();
 			if (!line.isUsable)
 			{
 				ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
 			}
-			if (ImGui::Selectable((line.name + "##line").c_str(), isSelected))
+			if (ImGui::Selectable((line.name + "##line").c_str(), isSelected, ImGuiSelectableFlags_None, ImVec2(90.0f, 0.0f)))
 			{
 				lineManager.setSelectedLineId(line.id);
+				lineManager.setAddModeLineId(InvalidRailLineId);
 				railSystem->setLinePreview(line.id);
+			}
+			if (isSelected)
+			{
+				ImGui::SameLine();
+				const char* buttonText = isAddMode ? u8"完成##addToggle" : u8"添加##addToggle";
+				if (ImGui::SmallButton(buttonText))
+				{
+					if (isAddMode)
+					{
+						lineManager.setAddModeLineId(InvalidRailLineId);
+					}
+					else
+					{
+						lineManager.setAddModeLineId(line.id);
+					}
+				}
 			}
 			if (!line.isUsable)
 			{
@@ -414,7 +442,10 @@ namespace tzw
 
 		if (ImGui::IsMouseClicked(0) && !ImGui::GetIO().WantCaptureMouse)
 		{
-			railSystem->addPickedNodeToSelectedLine(PlacementMode::CursorBased);
+			if (lineManager.addModeLineId() == lineManager.selectedLineId() && lineManager.addModeLineId() != InvalidRailLineId)
+			{
+				railSystem->addPickedNodeToSelectedLine(PlacementMode::CursorBased);
+			}
 		}
 	}
 

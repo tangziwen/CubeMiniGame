@@ -78,6 +78,8 @@ public:
 
 	void setSelectedLineId(RailLineId lineId);
 	RailLineId selectedLineId() const;
+	void setAddModeLineId(RailLineId lineId);
+	RailLineId addModeLineId() const;
 
 	RailLineSample sampleLine(const RailNetwork& network, const RailLine& line, float distance) const;
 
@@ -85,6 +87,7 @@ private:
 	std::vector<RailLine> m_lines;
 	RailLinePathfinder m_pathfinder;
 	RailLineId m_selectedLineId = InvalidRailLineId;
+	RailLineId m_addModeLineId = InvalidRailLineId;
 	RailLineId m_nextLineId = 1;
 };
 

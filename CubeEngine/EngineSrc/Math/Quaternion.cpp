@@ -170,6 +170,14 @@ void Quaternion::fromAxises(vec3 xaxis, vec3 yaxis, vec3 zaxis)
     }
 }
 
+void Quaternion::fromDirection(const vec3& forward, const vec3& up)
+{
+    vec3 z = safeNormalized(forward, vec3(0.0f, 0.0f, -1.0f));
+    vec3 x = safeNormalized(vec3::CrossProduct(up, z), vec3(1.0f, 0.0f, 0.0f));
+    vec3 y = vec3::CrossProduct(z, x);
+    fromAxises(x, y, z);
+}
+
 void Quaternion::normalize()
 {
     float len = sqrtf(x * x + y * y + z * z + w * w);

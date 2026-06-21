@@ -18,6 +18,7 @@ public:
     void fromAxisAngle(vec3 axis, float angle);
     void toEulserAngel(float * resultX, float * resultY, float * resultZ) const;
     void fromAxises(vec3 X_Axis, vec3 Y_Axis, vec3 zaxis);
+    void fromDirection(const vec3& forward, const vec3& up = vec3(0.0f, 1.0f, 0.0f));
     void normalize();
 	void identity();
     static Quaternion slerp(Quaternion start,Quaternion end,float dt);

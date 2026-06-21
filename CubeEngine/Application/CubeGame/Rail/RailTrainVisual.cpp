@@ -11,27 +11,6 @@ namespace tzw {
 
 namespace
 {
-vec3 safeNormalized(const vec3& value, const vec3& fallback)
-{
-	const float length = value.length();
-	if (length <= 0.0001f)
-	{
-		return fallback;
-	}
-	return value / length;
-}
-
-Quaternion rotationForTangent(const vec3& tangent)
-{
-	const vec3 forward = safeNormalized(vec3(tangent.x, 0.0f, tangent.z), vec3(0.0f, 0.0f, -1.0f));
-	const vec3 up(0.0f, 1.0f, 0.0f);
-	const vec3 right = safeNormalized(vec3::CrossProduct(up, forward), vec3(1.0f, 0.0f, 0.0f));
-	Quaternion rotation;
-	rotation.fromAxises(right, up, forward);
-	rotation.normalize();
-	return rotation;
-}
-
 bool containsTrain(const RailTrainManager& trainManager, RailTrainId trainId)
 {
 	for (const RailTrain& train : trainManager.trains())
@@ -80,7 +59,9 @@ void RailTrainVisualSet::sync(Node* sceneRoot, const RailNetwork& network, const
 
 			car->setIsVisible(true);
 			car->setPos(train.carPoses[i].position + vec3(0.0f, 0.35f, 0.0f));
-			car->setRotateQ(rotationForTangent(train.carPoses[i].tangent));
+			Quaternion rotation;
+			rotation.fromDirection(vec3(train.carPoses[i].tangent.x, 0.0f, train.carPoses[i].tangent.z));
+			car->setRotateQ(rotation);
 		}
 		for (size_t i = carCount; i < visual.cars.size(); ++i)
 		{

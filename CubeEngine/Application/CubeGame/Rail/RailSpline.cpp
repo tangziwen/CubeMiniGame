@@ -18,16 +18,6 @@ float clampDistance(float value, float maxValue)
 	return std::max(0.0f, std::min(maxValue, value));
 }
 
-vec3 safeNormalized(const vec3& value, const vec3& fallback)
-{
-	const float length = value.length();
-	if (length <= 0.0001f)
-	{
-		return fallback;
-	}
-	return value / length;
-}
-
 float distancePointToSegment(const vec3& point, const vec3& start, const vec3& end, float& outT)
 {
 	const vec3 segment = end - start;

@@ -297,6 +297,11 @@ namespace tzw
 		return vec3(-999999, -999999, -999999);
 	}
 
+	bool BuildingSystem::isValidHitPoint(const vec3& point)
+	{
+		return point.x > -999990.0f;
+	}
+
 	vec3 BuildingSystem::hitTerrain(PlacementMode mode)
 	{
 		auto ray = getPlacementRay(mode);

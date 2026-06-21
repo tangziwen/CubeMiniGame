@@ -210,6 +210,10 @@ bool RailLineManager::deleteLine(RailLineId lineId)
 	{
 		m_selectedLineId = m_lines.empty() ? InvalidRailLineId : m_lines.front().id;
 	}
+	if (m_addModeLineId == lineId)
+	{
+		m_addModeLineId = InvalidRailLineId;
+	}
 	return true;
 }
 
@@ -274,6 +278,7 @@ void RailLineManager::clear()
 {
 	m_lines.clear();
 	m_selectedLineId = InvalidRailLineId;
+	m_addModeLineId = InvalidRailLineId;
 	m_nextLineId = 1;
 }
 
@@ -314,6 +319,16 @@ void RailLineManager::setSelectedLineId(RailLineId lineId)
 RailLineId RailLineManager::selectedLineId() const
 {
 	return m_selectedLineId;
+}
+
+void RailLineManager::setAddModeLineId(RailLineId lineId)
+{
+	m_addModeLineId = lineId;
+}
+
+RailLineId RailLineManager::addModeLineId() const
+{
+	return m_addModeLineId;
 }
 
 RailLineSample RailLineManager::sampleLine(const RailNetwork& network, const RailLine& line, float distance) const

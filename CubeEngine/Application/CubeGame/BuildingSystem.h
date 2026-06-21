@@ -30,6 +30,8 @@ enum class TerrainEditAction
 class BuildingSystem :public Singleton<BuildingSystem>
 {
 public:
+	static bool isValidHitPoint(const vec3& point);
+
 	BuildingSystem();
 	void flipBearingByHit(vec3 pos, vec3 dir, float dist);
 	void flipBearing(GamePart * gamePart);
