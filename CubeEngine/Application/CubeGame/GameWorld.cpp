@@ -24,6 +24,7 @@
 #include "EngineSrc/3D/Terrain/TerrainRuntime.h"
 #include "EngineSrc/3D/Terrain/TerrainOctreeTypes.h"
 #include "EngineSrc/3D/Terrain/TerrainEditSystem.h"
+#include "Rail/RailSystem.h"
 
 #include "Utility/file/JsonUtility.h"
 
@@ -93,6 +94,8 @@ void GameWorld::createWorld(Scene *scene, int widthVoxels, int depthVoxels, int 
 	m_terrainRuntime = std::make_unique<TerrainRuntime>();
 	m_terrainRuntime->init(config);
 	m_terrainRuntime->setDebugWireframeEnabled(false);
+	m_railSystem = std::make_unique<RailSystem>();
+	m_railSystem->init();
 }
 
 void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio, std::string filePath)
@@ -118,6 +121,8 @@ void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxe
 		TERRAIN_MESH_CELL_COUNT, GameMap::shared()->blockSize(), mapOffset);
 	m_terrainRuntime = std::make_unique<TerrainRuntime>();
 	m_terrainRuntime->init(config);
+	m_railSystem = std::make_unique<RailSystem>();
+	m_railSystem->init();
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -149,6 +154,10 @@ void GameWorld::onFrameUpdate(float delta)
 	{
 		vec3 playerPos = m_player->getPos();
 		m_terrainRuntime->update(playerPos, m_mainRoot, delta);
+	}
+	if (m_railSystem)
+	{
+		m_railSystem->update(m_mainRoot, delta);
 	}
 
 	BuildingSystem::shared()->update(delta);
@@ -403,6 +412,11 @@ void GameWorld::unloadGame()
 		m_terrainRuntime->clear();
 		m_terrainRuntime.reset();
 	}
+	if (m_railSystem)
+	{
+		m_railSystem->clear();
+		m_railSystem.reset();
+	}
     m_mainRoot->purgeAllChildren();
 }
 
@@ -434,6 +448,11 @@ TerrainRuntime* GameWorld::terrainRuntime() const
 TerrainEditSystem* GameWorld::getTerrainEditSystem() const
 {
 	return m_terrainRuntime ? m_terrainRuntime->editSystem() : nullptr;
+}
+
+RailSystem* GameWorld::railSystem() const
+{
+	return m_railSystem.get();
 }
 
 } // namespace tzw

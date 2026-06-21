@@ -4,6 +4,7 @@
 #include "EngineSrc/Scene/SceneMgr.h"
 #include "EngineSrc/3D/Model/Model.h"
 #include "EngineSrc/3D/Terrain/GameMapConfig.h"
+#include "EngineSrc/3D/Terrain/TerrainEditSystem.h"
 #include "GameWorld.h"
 #include "GameState.h"
 #include "EngineSrc/Event/EventMgr.h"
@@ -115,6 +116,11 @@ namespace tzw
 		return m_camera;
 	}
 
+	EditorCamera* CubePlayer::editorCamera() const
+	{
+		return m_editorCamera;
+	}
+
 	void CubePlayer::setCamera(FPSCamera* camera)
 	{
 		m_camera = camera;
@@ -133,8 +139,27 @@ namespace tzw
 
 		if (mode == PlayerMode::Editor)
 		{
+			const vec3 fpsCameraPos = m_camera->getPos();
+			vec3 terrainFocus;
+			bool hasTerrainFocus = false;
+			if (TerrainEditSystem* editSystem = GameWorld::shared()->getTerrainEditSystem())
+			{
+				hasTerrainFocus = editSystem->raycast(
+					fpsCameraPos,
+					vec3(0.0f, -1.0f, 0.0f),
+					10000.0f,
+					terrainFocus);
+			}
 			m_editorCamera->setPos(m_camera->getPos());
 			m_editorCamera->setRotateQ(m_camera->getRotateQ());
+			if (hasTerrainFocus)
+			{
+				m_editorCamera->setCityBuilderFocus(terrainFocus);
+			}
+			else
+			{
+				m_editorCamera->clearCityBuilderFocus();
+			}
 			m_editorCamera->reCache();
 			m_camera->setEnableFPSFeature(false);
 			g_GetCurrScene()->setDefaultCamera(m_editorCamera);
@@ -307,7 +332,8 @@ namespace tzw
 			break;
 		case TZW_KEY_T:
 			{
-				if(!GUISystem::shared()->isUiCapturingInput())
+				if(GameState::shared()->getPlayerMode() == PlayerMode::Gameplay
+					&& !GUISystem::shared()->isUiCapturingInput())
 				{
 					auto toggleXray = !BuildingSystem::shared()->isIsInXRayMode();
 					BuildingSystem::shared()->setIsInXRayMode(toggleXray);
@@ -692,8 +718,12 @@ namespace tzw
 
 	bool CubePlayer::onScroll(vec2 offset)
 	{
-		m_orbitcamera->zoom(-1.f * offset.getY() * 0.25);
-		return true;
+		if (g_GetCurrScene()->defaultCamera() == m_orbitcamera)
+		{
+			m_orbitcamera->zoom(-1.f * offset.getY() * 0.25);
+			return true;
+		}
+		return false;
 	}
 
 	GameItem* CubePlayer::getCurSelectedItem()

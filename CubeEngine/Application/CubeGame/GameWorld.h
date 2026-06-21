@@ -12,6 +12,7 @@
 namespace tzw {
 
 class TerrainEditSystem;
+class RailSystem;
 
 #define GAME_STATE_MAIN_MENU 0
 #define GAME_STATE_RUNNING 1
@@ -52,6 +53,7 @@ public:
     void setMainRoot(Node *mainRoot);
 	TerrainRuntime* terrainRuntime() const;
 	TerrainEditSystem* getTerrainEditSystem() const;
+	RailSystem* railSystem() const;
 	void init();
     virtual ~GameWorld();
 	void savePlayerInfo();
@@ -70,6 +72,7 @@ private:
 	WorldInfo m_currWorldInfo;
 
 	std::unique_ptr<TerrainRuntime> m_terrainRuntime;
+	std::unique_ptr<RailSystem> m_railSystem;
 };
 
 } // namespace tzw

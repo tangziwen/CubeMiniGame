@@ -38,6 +38,7 @@ namespace tzw
 		};
 		explicit CubePlayer(Node* mainRoot);
 		FPSCamera* camera() const;
+		EditorCamera* editorCamera() const;
 		void setCamera(FPSCamera* camera);
 		vec3 getPos();
 		void setPos(vec3 newPos);
