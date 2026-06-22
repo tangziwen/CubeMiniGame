@@ -74,6 +74,7 @@ set(APP_SOURCES
     CubeGame/Rail/RailLinePreviewVisual.cpp
     CubeGame/Rail/RailNetwork.cpp
     CubeGame/Rail/RailNodeMesh.cpp
+    CubeGame/Rail/RailPoint.cpp
     CubeGame/Rail/RailSpline.cpp
     CubeGame/Rail/RailSystem.cpp
     CubeGame/Rail/RailTrain.cpp
@@ -221,6 +222,7 @@ set(APP_HEADERS
     CubeGame/Rail/RailLinePreviewVisual.h
     CubeGame/Rail/RailNetwork.h
     CubeGame/Rail/RailNodeMesh.h
+    CubeGame/Rail/RailPoint.h
     CubeGame/Rail/RailSpline.h
     CubeGame/Rail/RailSystem.h
     CubeGame/Rail/RailTrain.h

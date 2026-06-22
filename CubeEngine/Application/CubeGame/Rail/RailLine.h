@@ -1,6 +1,6 @@
 #pragma once
 
-#include "RailNetwork.h"
+#include "RailPoint.h"
 
 #include <string>
 #include <unordered_map>
@@ -20,6 +20,8 @@ struct RailLinePathStep
 	bool reversed = false;
 	float length = 0.0f;
 	float startDistance = 0.0f;
+	float segmentStartDistance = 0.0f;
+	float segmentEndDistance = 0.0f;
 };
 
 struct RailLineSample
@@ -29,12 +31,27 @@ struct RailLineSample
 	vec3 tangent = vec3(1.0f, 0.0f, 0.0f);
 };
 
+enum class RailLineControlPointKind
+{
+	Station,
+	RoutePoint,
+};
+
+struct RailLineControlPoint
+{
+	RailLineControlPointKind kind = RailLineControlPointKind::Station;
+	RailStationId stationId = InvalidRailStationId;
+	RailRoutePointId routePointId = InvalidRailRoutePointId;
+	bool isResolved = false;
+	float distanceOnLine = 0.0f;
+};
+
 class RailLine
 {
 public:
 	RailLineId id = InvalidRailLineId;
 	std::string name;
-	std::vector<RailNodeId> controlNodes;
+	std::vector<RailLineControlPoint> controlPoints;
 	std::vector<RailLinePathStep> pathSteps;
 	bool isLoop = false;
 	bool isUsable = false;
@@ -45,7 +62,9 @@ public:
 class RailLinePathfinder
 {
 public:
-	bool rebuildLine(const RailNetwork& network, RailLine& line) const;
+	bool rebuildLine(const RailNetwork& network, const RailAnchorManager& anchorManager,
+		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager,
+		RailLine& line) const;
 
 private:
 	struct AdjacentSegment
@@ -56,9 +75,15 @@ private:
 		bool reversed = false;
 	};
 
-	bool buildPathBetween(const RailNetwork& network, RailNodeId startNode, RailNodeId endNode,
+	bool buildPathBetween(const RailNetwork& network, const RailAnchorManager& anchorManager,
+		RailAnchorId startAnchorId, RailAnchorId endAnchorId,
 		std::vector<RailLinePathStep>& outSteps, float& pathStartDistance) const;
+	bool buildNodePath(const RailNetwork& network, RailNodeId startNode, RailNodeId endNode,
+		std::vector<RailLinePathStep>& outSteps) const;
 	std::unordered_map<RailNodeId, std::vector<AdjacentSegment>> buildAdjacency(const RailNetwork& network) const;
+	bool resolveControlPoint(const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
+		const RailRoutePointManager& routePointManager, const RailLineControlPoint& controlPoint,
+		RailAnchorId& outAnchorId, std::string& outInvalidReason) const;
 };
 
 class RailLineManager
@@ -66,10 +91,16 @@ class RailLineManager
 public:
 	RailLineId createLine();
 	bool deleteLine(RailLineId lineId);
-	bool addControlNode(RailLineId lineId, RailNodeId nodeId, const RailNetwork& network);
-	bool removeControlNodeAt(RailLineId lineId, int index, const RailNetwork& network);
-	void rebuildAll(const RailNetwork& network);
-	bool rebuildLine(RailLineId lineId, const RailNetwork& network);
+	bool addControlPoint(RailLineId lineId, const RailLineControlPoint& controlPoint,
+		const RailNetwork& network, const RailAnchorManager& anchorManager,
+		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager);
+	bool removeControlPointAt(RailLineId lineId, int index, const RailNetwork& network,
+		const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
+		const RailRoutePointManager& routePointManager);
+	void rebuildAll(const RailNetwork& network, const RailAnchorManager& anchorManager,
+		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager);
+	bool rebuildLine(RailLineId lineId, const RailNetwork& network, const RailAnchorManager& anchorManager,
+		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager);
 	void clear();
 
 	RailLine* line(RailLineId lineId);

@@ -6,9 +6,22 @@
 #include "EngineSrc/Base/Node.h"
 #include "EngineSrc/Math/vec4.h"
 
-#include <unordered_set>
+#include <algorithm>
 
 namespace tzw {
+
+namespace
+{
+float stationPickRadius(const RailConfig& config)
+{
+	return std::max(config.nodePickRadius * 2.0f, 1.75f);
+}
+
+float routePointPickRadius(const RailConfig& config)
+{
+	return std::max(config.nodePickRadius * 1.5f, 1.25f);
+}
+}
 
 RailSystem::RailSystem()
 {
@@ -38,7 +51,9 @@ void RailSystem::update(Node* sceneRoot, float deltaSeconds)
 	{
 		syncVisuals(sceneRoot);
 	}
-	m_trainManager.update(deltaSeconds, m_lineManager);
+	syncStationVisuals(true, false, false);
+	syncRoutePointVisuals(true, false, false);
+	m_trainManager.update(deltaSeconds, m_lineManager, m_stationManager);
 	m_trainManager.updateWorldPoses(m_network, m_lineManager);
 	m_trainVisuals.sync(sceneRoot, m_network, m_lineManager, m_trainManager);
 	if (m_previewLineId != InvalidRailLineId)
@@ -51,6 +66,9 @@ void RailSystem::clear()
 {
 	m_buildTool.clearPending();
 	m_network.clear();
+	m_stationManager.clear(m_anchorManager);
+	m_routePointManager.clear(m_anchorManager);
+	m_anchorManager.clear();
 	m_lineManager.clear();
 	m_trainManager.clear();
 	m_trainVisuals.clear();
@@ -119,73 +137,179 @@ const RailTrainManager& RailSystem::trainManager() const
 	return m_trainManager;
 }
 
-bool RailSystem::addPickedNodeToSelectedLine(PlacementMode placementMode)
+RailAnchorManager& RailSystem::anchorManager()
 {
-	if (m_lineManager.selectedLineId() == InvalidRailLineId)
+	return m_anchorManager;
+}
+
+const RailAnchorManager& RailSystem::anchorManager() const
+{
+	return m_anchorManager;
+}
+
+RailStationManager& RailSystem::stationManager()
+{
+	return m_stationManager;
+}
+
+const RailStationManager& RailSystem::stationManager() const
+{
+	return m_stationManager;
+}
+
+RailRoutePointManager& RailSystem::routePointManager()
+{
+	return m_routePointManager;
+}
+
+const RailRoutePointManager& RailSystem::routePointManager() const
+{
+	return m_routePointManager;
+}
+
+bool RailSystem::handleStationAddPrimaryClick(PlacementMode placementMode)
+{
+	RailAnchorId anchorId = InvalidRailAnchorId;
+	if (!createAnchorAtHit(placementMode, anchorId))
 	{
 		return false;
 	}
+	m_stationManager.createStation(anchorId);
+	rebuildAllRailLines();
+	markVisualDirty();
+	return true;
+}
 
+bool RailSystem::handleStationDeletePrimaryClick(PlacementMode placementMode)
+{
 	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
 	if (!BuildingSystem::isValidHitPoint(terrainHit))
 	{
 		return false;
 	}
 
-	RailNodePick nodePick = m_network.findNearestNode(terrainHit, m_config.nodePickRadius);
-	if (nodePick.nodeId == InvalidRailNodeId)
+	const RailStationId stationId = m_stationManager.findNearestStation(
+		m_network, m_anchorManager, terrainHit, stationPickRadius(m_config));
+	if (stationId == InvalidRailStationId)
 	{
 		return false;
 	}
 
-	const bool changed = m_lineManager.addControlNode(m_lineManager.selectedLineId(), nodePick.nodeId, m_network);
+	const bool changed = m_stationManager.deleteStation(stationId, m_anchorManager);
 	if (changed)
 	{
-		m_previewLineId = m_lineManager.selectedLineId();
-		m_trainManager.refreshAfterLineRebuild(m_lineManager);
+		rebuildAllRailLines();
 		markVisualDirty();
 	}
 	return changed;
 }
 
-bool RailSystem::removePickedNodeFromSelectedLine(PlacementMode placementMode)
+bool RailSystem::handleRoutePointAddPrimaryClick(PlacementMode placementMode)
 {
-	const RailLineId selectedLineId = m_lineManager.selectedLineId();
-	RailLine* selectedLine = m_lineManager.line(selectedLineId);
-	if (!selectedLine)
+	RailAnchorId anchorId = InvalidRailAnchorId;
+	if (!createAnchorAtHit(placementMode, anchorId))
 	{
 		return false;
 	}
+	m_routePointManager.createRoutePoint(anchorId);
+	rebuildAllRailLines();
+	markVisualDirty();
+	return true;
+}
 
+bool RailSystem::handleRoutePointDeletePrimaryClick(PlacementMode placementMode)
+{
 	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
 	if (!BuildingSystem::isValidHitPoint(terrainHit))
 	{
 		return false;
 	}
 
-	RailNodePick nodePick = m_network.findNearestNode(terrainHit, m_config.nodePickRadius);
-	if (nodePick.nodeId == InvalidRailNodeId)
+	const RailRoutePointId routePointId = m_routePointManager.findNearestRoutePoint(
+		m_network, m_anchorManager, terrainHit, routePointPickRadius(m_config));
+	if (routePointId == InvalidRailRoutePointId)
 	{
 		return false;
 	}
 
-	for (int i = 0; i < static_cast<int>(selectedLine->controlNodes.size()); ++i)
+	const bool changed = m_routePointManager.deleteRoutePoint(routePointId, m_anchorManager);
+	if (changed)
 	{
-		if (selectedLine->controlNodes[i] != nodePick.nodeId)
-		{
-			continue;
-		}
-
-		const bool changed = m_lineManager.removeControlNodeAt(selectedLineId, i, m_network);
-		if (changed)
-		{
-			m_previewLineId = selectedLineId;
-			m_trainManager.refreshAfterLineRebuild(m_lineManager);
-			markVisualDirty();
-		}
-		return changed;
+		rebuildAllRailLines();
+		markVisualDirty();
 	}
-	return false;
+	return changed;
+}
+
+bool RailSystem::addStationToSelectedLine(RailStationId stationId)
+{
+	if (!m_stationManager.station(stationId))
+	{
+		return false;
+	}
+
+	RailLineControlPoint controlPoint;
+	controlPoint.kind = RailLineControlPointKind::Station;
+	controlPoint.stationId = stationId;
+	return addControlPointToSelectedLine(controlPoint);
+}
+
+bool RailSystem::addRoutePointToSelectedLine(RailRoutePointId routePointId)
+{
+	if (!m_routePointManager.routePoint(routePointId))
+	{
+		return false;
+	}
+
+	RailLineControlPoint controlPoint;
+	controlPoint.kind = RailLineControlPointKind::RoutePoint;
+	controlPoint.routePointId = routePointId;
+	return addControlPointToSelectedLine(controlPoint);
+}
+
+bool RailSystem::addPickedControlPointToSelectedLine(PlacementMode placementMode)
+{
+	if (addPickedStationToSelectedLine(placementMode))
+	{
+		return true;
+	}
+	return addPickedRoutePointToSelectedLine(placementMode);
+}
+
+bool RailSystem::addPickedStationToSelectedLine(PlacementMode placementMode)
+{
+	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
+	{
+		return false;
+	}
+
+	const RailStationId stationId = m_stationManager.findNearestStation(
+		m_network, m_anchorManager, terrainHit, stationPickRadius(m_config));
+	if (stationId == InvalidRailStationId)
+	{
+		return false;
+	}
+
+	return addStationToSelectedLine(stationId);
+}
+
+bool RailSystem::addPickedRoutePointToSelectedLine(PlacementMode placementMode)
+{
+	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
+	{
+		return false;
+	}
+
+	const RailRoutePointId routePointId = m_routePointManager.findNearestRoutePoint(
+		m_network, m_anchorManager, terrainHit, routePointPickRadius(m_config));
+	if (routePointId == InvalidRailRoutePointId)
+	{
+		return false;
+	}
+
+	return addRoutePointToSelectedLine(routePointId);
 }
 
 void RailSystem::setLinePreview(RailLineId lineId)
@@ -211,7 +335,7 @@ void RailSystem::clearLinePreview()
 
 void RailSystem::rebuildAllRailLines()
 {
-	m_lineManager.rebuildAll(m_network);
+	m_lineManager.rebuildAll(m_network, m_anchorManager, m_stationManager, m_routePointManager);
 	m_trainManager.refreshAfterLineRebuild(m_lineManager);
 }
 
@@ -274,6 +398,20 @@ void RailSystem::syncVisuals(Node* sceneRoot)
 			nodeCube->setIsVisible(false);
 		}
 	}
+	for (CubePrimitive* stationCube : m_stationVisuals)
+	{
+		if (stationCube)
+		{
+			stationCube->setIsVisible(false);
+		}
+	}
+	for (CubePrimitive* routePointCube : m_routePointVisuals)
+	{
+		if (routePointCube)
+		{
+			routePointCube->setIsVisible(false);
+		}
+	}
 
 	if (m_pendingAnchorVisual)
 	{
@@ -295,26 +433,121 @@ void RailSystem::syncTrackDeleteVisuals()
 	syncTrackPreview(PlacementMode::CursorBased, false);
 }
 
-void RailSystem::syncLineAddNodeVisuals()
+void RailSystem::syncStationVisuals(bool showStations, bool deleteMode, bool linePickMode)
 {
-	syncNodeVisuals(true, true, false);
-	syncTrackPreview(PlacementMode::CursorBased, false);
+	if (!m_visualRoot)
+	{
+		return;
+	}
+
+	while (m_stationVisuals.size() < m_stationManager.stations().size())
+	{
+		auto stationCube = new CubePrimitive(0.65f, 0.22f, 0.65f, true);
+		stationCube->setIsAccpectOcTtree(false);
+		stationCube->setIsHitable(false);
+		m_visualRoot->addChild(stationCube, false);
+		m_stationVisuals.push_back(stationCube);
+	}
+
+	for (size_t i = 0; i < m_stationVisuals.size(); ++i)
+	{
+		CubePrimitive* stationCube = m_stationVisuals[i];
+		if (i >= m_stationManager.stations().size() || !showStations)
+		{
+			stationCube->setIsVisible(false);
+			continue;
+		}
+
+		const RailStation& station = m_stationManager.stations()[i];
+		RailAnchorSample sample = m_anchorManager.sampleAnchor(m_network, m_stationManager.anchorForStation(station.id));
+		if (!sample.valid)
+		{
+			stationCube->setIsVisible(false);
+			continue;
+		}
+
+		stationCube->setIsVisible(true);
+		stationCube->setPos(sample.position + vec3(0.0f, 0.28f, 0.0f));
+		stationCube->setScale(vec3(1.0f, 1.0f, 1.0f));
+		if (deleteMode)
+		{
+			stationCube->setColor(vec4::fromRGB(240, 80, 80));
+		}
+		else if (linePickMode)
+		{
+			stationCube->setColor(vec4::fromRGB(80, 190, 240));
+		}
+		else
+		{
+			stationCube->setColor(vec4::fromRGB(240, 210, 70));
+		}
+	}
+
 }
 
-void RailSystem::syncLineRemoveNodeVisuals()
+void RailSystem::syncRoutePointVisuals(bool showRoutePoints, bool deleteMode, bool linePickMode)
 {
-	syncNodeVisuals(true, false, true);
-	syncTrackPreview(PlacementMode::CursorBased, false);
+	if (!m_visualRoot)
+	{
+		return;
+	}
+
+	while (m_routePointVisuals.size() < m_routePointManager.routePoints().size())
+	{
+		auto routePointCube = new CubePrimitive(0.34f, 0.34f, 0.34f, true);
+		routePointCube->setIsAccpectOcTtree(false);
+		routePointCube->setIsHitable(false);
+		m_visualRoot->addChild(routePointCube, false);
+		m_routePointVisuals.push_back(routePointCube);
+	}
+
+	for (size_t i = 0; i < m_routePointVisuals.size(); ++i)
+	{
+		CubePrimitive* routePointCube = m_routePointVisuals[i];
+		if (i >= m_routePointManager.routePoints().size() || !showRoutePoints)
+		{
+			routePointCube->setIsVisible(false);
+			continue;
+		}
+
+		const RailRoutePoint& routePoint = m_routePointManager.routePoints()[i];
+		RailAnchorSample sample = m_anchorManager.sampleAnchor(m_network, routePoint.anchorId);
+		if (!sample.valid)
+		{
+			routePointCube->setIsVisible(false);
+			continue;
+		}
+
+		routePointCube->setIsVisible(true);
+		routePointCube->setPos(sample.position + vec3(0.0f, 0.26f, 0.0f));
+		routePointCube->setScale(vec3(1.0f, 1.0f, 1.0f));
+		if (deleteMode)
+		{
+			routePointCube->setColor(vec4::fromRGB(240, 80, 80));
+		}
+		else if (linePickMode)
+		{
+			routePointCube->setColor(vec4::fromRGB(80, 220, 120));
+		}
+		else
+		{
+			routePointCube->setColor(vec4::fromRGB(180, 120, 240));
+		}
+	}
+
 }
 
 void RailSystem::hideEditorVisuals()
 {
 	syncNodeVisuals(false, false, false);
+	syncStationVisuals(true, false, false);
+	syncRoutePointVisuals(true, false, false);
 	syncTrackPreview(PlacementMode::CursorBased, false);
 }
 
 void RailSystem::syncNodeVisuals(bool showNodes, bool lineAddMode, bool lineRemoveMode)
 {
+	(void)lineRemoveMode;
 	if (!m_visualRoot)
 	{
 		return;
@@ -333,17 +566,6 @@ void RailSystem::syncNodeVisuals(bool showNodes, bool lineAddMode, bool lineRemo
 	}
 
 	const RailNodeId pendingId = m_buildTool.pendingNodeId();
-	const RailLineId selectedLineId = m_lineManager.selectedLineId();
-	std::unordered_set<RailNodeId> selectedLineNodes;
-	if (selectedLineId != InvalidRailLineId)
-	{
-		const RailLine* selectedLine = m_lineManager.line(selectedLineId);
-		if (selectedLine)
-		{
-			selectedLineNodes.insert(selectedLine->controlNodes.begin(), selectedLine->controlNodes.end());
-		}
-	}
-
 	for (size_t i = 0; i < m_nodeVisuals.size(); ++i)
 	{
 		CubePrimitive* nodeCube = m_nodeVisuals[i];
@@ -361,10 +583,6 @@ void RailSystem::syncNodeVisuals(bool showNodes, bool lineAddMode, bool lineRemo
 		if (nodeId == pendingId)
 		{
 			nodeCube->setColor(vec4::fromRGB(80, 220, 80));
-		}
-		else if (selectedLineNodes.find(nodeId) != selectedLineNodes.end())
-		{
-			nodeCube->setColor(lineRemoveMode ? vec4::fromRGB(240, 80, 80) : vec4::fromRGB(80, 180, 220));
 		}
 		else if (lineAddMode)
 		{
@@ -483,6 +701,44 @@ void RailSystem::syncTrackPreview(PlacementMode placementMode, bool showTrackPre
 	}
 }
 
+bool RailSystem::createAnchorAtHit(PlacementMode placementMode, RailAnchorId& outAnchorId)
+{
+	outAnchorId = InvalidRailAnchorId;
+	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
+	{
+		return false;
+	}
+
+	RailTrackLocation location;
+	if (!m_anchorManager.pickLocationOnTrack(m_network, terrainHit, m_config.segmentPickRadius, location))
+	{
+		return false;
+	}
+
+	outAnchorId = m_anchorManager.createAnchor(location);
+	return outAnchorId != InvalidRailAnchorId;
+}
+
+bool RailSystem::addControlPointToSelectedLine(const RailLineControlPoint& controlPoint)
+{
+	const RailLineId selectedLineId = m_lineManager.selectedLineId();
+	if (selectedLineId == InvalidRailLineId)
+	{
+		return false;
+	}
+
+	const bool changed = m_lineManager.addControlPoint(selectedLineId, controlPoint, m_network,
+		m_anchorManager, m_stationManager, m_routePointManager);
+	if (changed)
+	{
+		m_previewLineId = selectedLineId;
+		m_trainManager.refreshAfterLineRebuild(m_lineManager);
+		markVisualDirty();
+	}
+	return changed;
+}
+
 void RailSystem::ensureVisualRoot(Node* sceneRoot)
 {
 	if (!sceneRoot)
@@ -513,6 +769,8 @@ void RailSystem::clearVisuals()
 	m_lineVisual = nullptr;
 	m_sleeperVisuals.clear();
 	m_nodeVisuals.clear();
+	m_stationVisuals.clear();
+	m_routePointVisuals.clear();
 	m_trackPreviewSleeperVisuals.clear();
 	m_pendingAnchorVisual = nullptr;
 	m_trackPreviewVisual = nullptr;

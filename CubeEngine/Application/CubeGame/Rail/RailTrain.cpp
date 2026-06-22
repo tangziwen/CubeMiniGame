@@ -1,12 +1,17 @@
 #include "RailTrain.h"
 
 #include <algorithm>
+#include <cmath>
+#include <limits>
 
 namespace tzw {
 
 namespace
 {
 constexpr float TrainCarSpacing = 1.25f;
+constexpr float StationDwellSeconds = 5.0f;
+constexpr float StopTriggerEpsilon = 0.02f;
+constexpr float StopCooldownDistance = 0.25f;
 }
 
 RailTrainId RailTrainManager::createTrain(int carriageCount)
@@ -47,6 +52,14 @@ bool RailTrainManager::assignLine(RailTrainId trainId, RailLineId lineId, const 
 	targetTrain->headDistance = 0.0f;
 	targetTrain->direction = 1;
 	targetTrain->active = true;
+	targetTrain->isManuallyStopped = false;
+	targetTrain->isDwelling = false;
+	targetTrain->dwellRemainingSeconds = 0.0f;
+	targetTrain->dwellingStationId = InvalidRailStationId;
+	targetTrain->dwellingPlatformId = InvalidRailPlatformId;
+	targetTrain->lastStoppedStationId = InvalidRailStationId;
+	targetTrain->lastStoppedPlatformId = InvalidRailPlatformId;
+	targetTrain->lastStopDistance = -1.0f;
 	return true;
 }
 
@@ -61,14 +74,17 @@ void RailTrainManager::clearLineAssignment(RailLineId lineId)
 		targetTrain.lineId = InvalidRailLineId;
 		targetTrain.placementMode = targetTrain.pose.valid ? RailTrainPlacementMode::Detached : RailTrainPlacementMode::Unplaced;
 		targetTrain.active = false;
+		targetTrain.isManuallyStopped = false;
+		targetTrain.isDwelling = false;
 	}
 }
 
-void RailTrainManager::update(float deltaSeconds, const RailLineManager& lineManager)
+void RailTrainManager::update(float deltaSeconds, const RailLineManager& lineManager,
+	const RailStationManager& stationManager)
 {
 	for (RailTrain& targetTrain : m_trains)
 	{
-		if (!targetTrain.active || targetTrain.lineId == InvalidRailLineId)
+		if (targetTrain.lineId == InvalidRailLineId)
 		{
 			continue;
 		}
@@ -77,30 +93,72 @@ void RailTrainManager::update(float deltaSeconds, const RailLineManager& lineMan
 		if (!targetLine || !targetLine->isUsable || targetLine->totalLength <= 0.0001f)
 		{
 			targetTrain.active = false;
+			targetTrain.isDwelling = false;
 			continue;
 		}
 
-		targetTrain.headDistance += targetTrain.speed * deltaSeconds * static_cast<float>(targetTrain.direction);
+		if (targetTrain.isManuallyStopped)
+		{
+			continue;
+		}
+
+		if (targetTrain.isDwelling)
+		{
+			targetTrain.dwellRemainingSeconds -= deltaSeconds;
+			if (targetTrain.dwellRemainingSeconds <= 0.0f)
+			{
+				finishDwelling(targetTrain);
+			}
+			continue;
+		}
+
+		if (!targetTrain.active)
+		{
+			continue;
+		}
+
+		if (targetTrain.lastStoppedStationId != InvalidRailStationId
+			&& std::fabs(targetTrain.headDistance - targetTrain.lastStopDistance) > StopCooldownDistance)
+		{
+			targetTrain.lastStoppedStationId = InvalidRailStationId;
+			targetTrain.lastStoppedPlatformId = InvalidRailPlatformId;
+			targetTrain.lastStopDistance = -1.0f;
+		}
+
+		const float oldDistance = targetTrain.headDistance;
+		float newDistance = targetTrain.headDistance + targetTrain.speed * deltaSeconds * static_cast<float>(targetTrain.direction);
 		if (targetLine->isLoop)
 		{
-			while (targetTrain.headDistance < 0.0f)
+			while (newDistance < 0.0f)
 			{
-				targetTrain.headDistance += targetLine->totalLength;
+				newDistance += targetLine->totalLength;
 			}
-			while (targetTrain.headDistance > targetLine->totalLength)
+			while (newDistance > targetLine->totalLength)
 			{
-				targetTrain.headDistance -= targetLine->totalLength;
+				newDistance -= targetLine->totalLength;
 			}
 		}
-		else if (targetTrain.headDistance > targetLine->totalLength)
+		else if (newDistance > targetLine->totalLength)
 		{
-			targetTrain.headDistance = targetLine->totalLength;
+			newDistance = targetLine->totalLength;
 			targetTrain.direction = -1;
 		}
-		else if (targetTrain.headDistance < 0.0f)
+		else if (newDistance < 0.0f)
 		{
-			targetTrain.headDistance = 0.0f;
+			newDistance = 0.0f;
 			targetTrain.direction = 1;
+		}
+
+		StationStopCandidate stop = findNextStationStop(targetTrain, *targetLine, stationManager,
+			oldDistance, newDistance);
+		if (stop.valid)
+		{
+			targetTrain.headDistance = stop.distanceOnLine;
+			startDwelling(targetTrain, stop);
+		}
+		else
+		{
+			targetTrain.headDistance = newDistance;
 		}
 	}
 }
@@ -176,6 +234,7 @@ void RailTrainManager::refreshAfterLineRebuild(const RailLineManager& lineManage
 		if (!targetLine || !targetLine->isUsable)
 		{
 			targetTrain.active = false;
+			targetTrain.isDwelling = false;
 			continue;
 		}
 		clampTrainToLine(targetTrain, *targetLine);
@@ -217,15 +276,185 @@ const std::vector<RailTrain>& RailTrainManager::trains() const
 	return m_trains;
 }
 
+bool RailTrainManager::setTrainRunning(RailTrainId trainId, bool isRunning)
+{
+	RailTrain* targetTrain = train(trainId);
+	if (!targetTrain)
+	{
+		return false;
+	}
+
+	targetTrain->isManuallyStopped = !isRunning;
+	return true;
+}
+
+bool RailTrainManager::toggleTrainRunning(RailTrainId trainId)
+{
+	RailTrain* targetTrain = train(trainId);
+	if (!targetTrain)
+	{
+		return false;
+	}
+
+	targetTrain->isManuallyStopped = !targetTrain->isManuallyStopped;
+	return true;
+}
+
+void RailTrainManager::addTrainArrivedListener(std::function<void(const RailTrainEvent&)> listener)
+{
+	m_trainArrivedListeners.push_back(listener);
+}
+
+void RailTrainManager::addTrainDepartedListener(std::function<void(const RailTrainEvent&)> listener)
+{
+	m_trainDepartedListeners.push_back(listener);
+}
+
 void RailTrainManager::clampTrainToLine(RailTrain& train, const RailLine& line)
 {
 	if (line.totalLength <= 0.0001f)
 	{
 		train.headDistance = 0.0f;
 		train.active = false;
+		train.isDwelling = false;
 		return;
 	}
 	train.headDistance = std::max(0.0f, std::min(train.headDistance, line.totalLength));
+}
+
+RailTrainManager::StationStopCandidate RailTrainManager::findNextStationStop(const RailTrain& train,
+	const RailLine& line, const RailStationManager& stationManager, float oldDistance, float newDistance) const
+{
+	StationStopCandidate result;
+	float bestTravelDistance = std::numeric_limits<float>::max();
+	for (const RailLineControlPoint& controlPoint : line.controlPoints)
+	{
+		if (controlPoint.kind != RailLineControlPointKind::Station || !controlPoint.isResolved)
+		{
+			continue;
+		}
+
+		const RailPlatform* platform = stationManager.firstPlatform(controlPoint.stationId);
+		if (!platform)
+		{
+			continue;
+		}
+
+		if (train.lastStoppedStationId == controlPoint.stationId
+			&& train.lastStoppedPlatformId == platform->id
+			&& std::fabs(oldDistance - controlPoint.distanceOnLine) <= StopCooldownDistance)
+		{
+			continue;
+		}
+
+		float travelDistance = std::numeric_limits<float>::max();
+		if (line.isLoop)
+		{
+			if (train.direction >= 0)
+			{
+				travelDistance = controlPoint.distanceOnLine - oldDistance;
+				if (travelDistance <= StopTriggerEpsilon)
+				{
+					travelDistance += line.totalLength;
+				}
+			}
+			else
+			{
+				travelDistance = oldDistance - controlPoint.distanceOnLine;
+				if (travelDistance <= StopTriggerEpsilon)
+				{
+					travelDistance += line.totalLength;
+				}
+			}
+			const float movedDistance = train.direction >= 0 ? newDistance - oldDistance : oldDistance - newDistance;
+			const float wrappedMovedDistance = movedDistance >= 0.0f ? movedDistance : movedDistance + line.totalLength;
+			if (travelDistance > wrappedMovedDistance + StopTriggerEpsilon)
+			{
+				continue;
+			}
+		}
+		else if (train.direction >= 0)
+		{
+			if (controlPoint.distanceOnLine <= oldDistance + StopTriggerEpsilon
+				|| controlPoint.distanceOnLine > newDistance + StopTriggerEpsilon)
+			{
+				continue;
+			}
+			travelDistance = controlPoint.distanceOnLine - oldDistance;
+		}
+		else
+		{
+			if (controlPoint.distanceOnLine >= oldDistance - StopTriggerEpsilon
+				|| controlPoint.distanceOnLine < newDistance - StopTriggerEpsilon)
+			{
+				continue;
+			}
+			travelDistance = oldDistance - controlPoint.distanceOnLine;
+		}
+
+		if (travelDistance < bestTravelDistance)
+		{
+			bestTravelDistance = travelDistance;
+			result.valid = true;
+			result.stationId = controlPoint.stationId;
+			result.platformId = platform->id;
+			result.distanceOnLine = controlPoint.distanceOnLine;
+		}
+	}
+	return result;
+}
+
+void RailTrainManager::startDwelling(RailTrain& train, const StationStopCandidate& stop)
+{
+	train.isDwelling = true;
+	train.dwellRemainingSeconds = StationDwellSeconds;
+	train.dwellingStationId = stop.stationId;
+	train.dwellingPlatformId = stop.platformId;
+	train.lastStoppedStationId = stop.stationId;
+	train.lastStoppedPlatformId = stop.platformId;
+	train.lastStopDistance = stop.distanceOnLine;
+	notifyArrived(train);
+}
+
+void RailTrainManager::finishDwelling(RailTrain& train)
+{
+	notifyDeparted(train);
+	train.isDwelling = false;
+	train.dwellRemainingSeconds = 0.0f;
+	train.dwellingStationId = InvalidRailStationId;
+	train.dwellingPlatformId = InvalidRailPlatformId;
+}
+
+void RailTrainManager::notifyArrived(const RailTrain& train)
+{
+	RailTrainEvent eventInfo;
+	eventInfo.trainId = train.id;
+	eventInfo.lineId = train.lineId;
+	eventInfo.stationId = train.dwellingStationId;
+	eventInfo.platformId = train.dwellingPlatformId;
+	for (auto& listener : m_trainArrivedListeners)
+	{
+		if (listener)
+		{
+			listener(eventInfo);
+		}
+	}
+}
+
+void RailTrainManager::notifyDeparted(const RailTrain& train)
+{
+	RailTrainEvent eventInfo;
+	eventInfo.trainId = train.id;
+	eventInfo.lineId = train.lineId;
+	eventInfo.stationId = train.dwellingStationId;
+	eventInfo.platformId = train.dwellingPlatformId;
+	for (auto& listener : m_trainDepartedListeners)
+	{
+		if (listener)
+		{
+			listener(eventInfo);
+		}
+	}
 }
 
 } // namespace tzw

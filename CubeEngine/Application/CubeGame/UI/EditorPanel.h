@@ -20,8 +20,12 @@ namespace tzw
 			PaintSphere,
 			TrackAdd,
 			TrackDelete,
-			LineAddNode,
-			LineRemoveNode,
+			StationAdd,
+			StationDelete,
+			RoutePointAdd,
+			RoutePointDelete,
+			LineAddControlPoint,
+			LineRemoveControlPoint,
 		};
 
 		void drawIMGUI(bool * isOpen) override;
@@ -41,14 +45,17 @@ namespace tzw
 		void drawToolButton(const char* label, EditorState state, float width);
 		void drawRailToolButton(const char* label, EditorState state, float width);
 		void drawParameterPanel();
+		void drawParameterWindow(vec2 screenSize);
 		void drawLineEditParameterPanel(RailSystem* railSystem);
 		void handleEditorWorldInput();
 		void setEditorState(EditorState state);
-		bool isLineNodeEditState() const;
+		bool isLineControlEditState() const;
 		bool isTerrainState() const;
 		bool isRailTrackState() const;
+		bool isStationEditState() const;
+		bool isRoutePointEditState() const;
 
-		EditorState m_editorState = EditorState::CarveSphere;
+		EditorState m_editorState = EditorState::None;
 		bool m_lineWindowOpen = false;
 		bool m_trainWindowOpen = false;
 		int m_activeTab = 0;

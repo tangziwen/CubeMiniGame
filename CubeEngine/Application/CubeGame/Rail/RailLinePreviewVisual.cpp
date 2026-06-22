@@ -13,7 +13,6 @@ namespace
 constexpr float PreviewSampleSpacing = 0.75f;
 const vec3 PreviewOffset(0.0f, 0.16f, 0.0f);
 const vec3 ValidLineColor(0.1f, 0.85f, 0.25f);
-const vec3 InvalidLineColor(1.0f, 0.15f, 0.15f);
 }
 
 RailLinePreviewVisual::~RailLinePreviewVisual()
@@ -46,29 +45,18 @@ void RailLinePreviewVisual::show(Node* sceneRoot, const RailNetwork& network, co
 			}
 
 			const int lineSteps = std::max(1, static_cast<int>(std::ceil(step.length / PreviewSampleSpacing)));
-			float prevDistance = step.reversed ? step.length : 0.0f;
+			float prevDistance = step.segmentStartDistance;
 			vec3 prev = segment->positionByDistance(prevDistance);
 			for (int i = 1; i <= lineSteps; ++i)
 			{
 				const float local = step.length * (static_cast<float>(i) / static_cast<float>(lineSteps));
-				const float distance = step.reversed ? step.length - local : local;
+				const float ratio = step.length <= 0.0001f ? 0.0f : local / step.length;
+				const float distance = step.segmentStartDistance
+					+ (step.segmentEndDistance - step.segmentStartDistance) * ratio;
 				const vec3 curr = segment->positionByDistance(distance);
 				m_lineVisual->append(prev + PreviewOffset, curr + PreviewOffset, ValidLineColor);
 				prev = curr;
 			}
-		}
-	}
-	else
-	{
-		for (size_t i = 1; i < line->controlNodes.size(); ++i)
-		{
-			const RailNode* start = network.node(line->controlNodes[i - 1]);
-			const RailNode* end = network.node(line->controlNodes[i]);
-			if (!start || !end)
-			{
-				continue;
-			}
-			m_lineVisual->append(start->position + PreviewOffset, end->position + PreviewOffset, InvalidLineColor);
 		}
 	}
 
