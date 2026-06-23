@@ -206,13 +206,22 @@ namespace tzw
 
 	bool GUISystem::onMouseRelease(int button, vec2 pos)
 	{
-		return false;
+		(void)button;
+		(void)pos;
+		return ImGui::GetIO().WantCaptureMouse;
 	}
 
 	bool GUISystem::onMousePress(int button, vec2 pos)
 	{
+		(void)pos;
 		g_MouseJustPressed[button] = true;
-		return false;
+		return ImGui::GetIO().WantCaptureMouse;
+	}
+
+	bool GUISystem::onMouseMove(vec2 pos)
+	{
+		(void)pos;
+		return ImGui::GetIO().WantCaptureMouse;
 	}
 
 	void GUISystem::addObject(IMGUIObject * obj)
@@ -225,7 +234,7 @@ namespace tzw
 		ImGuiIO& io = ImGui::GetIO();
 		if (c > 0 && c < 0x10000)
 			io.AddInputCharacter(static_cast<unsigned short>(c));
-		return false;
+		return io.WantTextInput || io.WantCaptureKeyboard;
 	}
 
 	bool GUISystem::onScroll(vec2 offset)
@@ -233,7 +242,7 @@ namespace tzw
 	    ImGuiIO& io = ImGui::GetIO();
 	    io.MouseWheelH += offset.x;
 	    io.MouseWheel += offset.y;
-		return false;
+		return io.WantCaptureMouse;
 	}
 
 	void GUISystem::renderIMGUI()
@@ -284,7 +293,7 @@ namespace tzw
 	
 	void GUISystem::initGUI()
 	{
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->setCaptureListener(this);
 		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
 		{
 			g_imguiShader = ShaderMgr::shared()->getByPath(0, "Shaders/IMGUI_v.glsl", "Shaders/IMGUI_f.glsl");
@@ -367,7 +376,7 @@ namespace tzw
 		io.KeyShift = io.KeysDown[TZW_KEY_LEFT_SHIFT] || io.KeysDown[TZW_KEY_RIGHT_SHIFT];
 		io.KeyAlt = io.KeysDown[TZW_KEY_LEFT_ALT] || io.KeysDown[TZW_KEY_RIGHT_ALT];
 		io.KeySuper = io.KeysDown[TZW_KEY_LEFT_SUPER] || io.KeysDown[TZW_KEY_RIGHT_SUPER];
-		return false;
+		return io.WantCaptureKeyboard || io.WantTextInput;
 	}
 
 	bool GUISystem::onKeyRelease(int keyCode)
@@ -379,7 +388,7 @@ namespace tzw
 		io.KeyShift = io.KeysDown[TZW_KEY_LEFT_SHIFT] || io.KeysDown[TZW_KEY_RIGHT_SHIFT];
 		io.KeyAlt = io.KeysDown[TZW_KEY_LEFT_ALT] || io.KeysDown[TZW_KEY_RIGHT_ALT];
 		io.KeySuper = io.KeysDown[TZW_KEY_LEFT_SUPER] || io.KeysDown[TZW_KEY_RIGHT_SUPER];
-		return false;
+		return io.WantCaptureKeyboard || io.WantTextInput;
 	}
 
 	void GUISystem::NewFrame()

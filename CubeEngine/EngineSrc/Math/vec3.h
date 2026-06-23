@@ -406,10 +406,10 @@ public:
 #endif
     }
 	static vec3 fromRGB(int R, int G, int B);
-	vec2 xy();
-	vec2 xz();
-	vec2 yz();
-	vec3 xzy();
+	vec2 xy() const;
+	vec2 xz() const;
+	vec2 yz() const;
+	vec3 xzy() const;
 
     std::string getStr();
 };

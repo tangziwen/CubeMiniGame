@@ -41,22 +41,22 @@ vec3 vec3::fromRGB(int R, int G, int B)
 	return vec3(R / 255.0, G / 255.0, B / 255.0);
 }
 
-vec2 vec3::xy()
+vec2 vec3::xy() const
 {
 	return vec2(x, y);
 }
 
-vec2 vec3::xz()
+vec2 vec3::xz() const
 {
 	return vec2(x, z);
 }
 
-vec2 vec3::yz()
+vec2 vec3::yz() const
 {
 	return vec2(y, z);
 }
 
-vec3 vec3::xzy()
+vec3 vec3::xzy() const
 {
 	return vec3(x, z, y);
 }

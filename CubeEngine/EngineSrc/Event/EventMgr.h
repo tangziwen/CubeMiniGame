@@ -21,10 +21,12 @@ class EventListener;
 class EventMgr:public Singleton<EventMgr>
 {
 public:
+	EventMgr();
     void addListener(EventListener * listener);
     void addListener(EventListener * listener, Node * node);
     void addFixedPiorityListener(EventListener * event);
     void addNodePiorityListener(Node * node,EventListener * event);
+	void setCaptureListener(EventListener* event);
 
     void handleKeyPress(int keyCode);
     void handleKeyRelease(int keyCode);
@@ -39,6 +41,7 @@ public:
     void sortFixedListener();
 	void sortNodePiorityListener();
 	void notifyListenerChange();
+	bool isMouseButtonConsumed(int button) const;
 private:
     void visitNode(Node * node);
     void applyKeyPress(EventInfo & info);
@@ -48,12 +51,22 @@ private:
     void applyMouseRelease(EventInfo & info);
     void applyMouseMove(EventInfo & info);
 	void applyScroll(EventInfo & info);
+	bool dispatchCaptureKeyPress(EventInfo& info);
+	bool dispatchCaptureKeyRelease(EventInfo& info);
+	bool dispatchCaptureKeyCharInput(EventInfo& info);
+	bool dispatchCaptureMousePress(EventInfo& info);
+	bool dispatchCaptureMouseRelease(EventInfo& info);
+	bool dispatchCaptureMouseMove(EventInfo& info);
+	bool dispatchCaptureScroll(EventInfo& info);
+	void markMouseButtonConsumed(int button);
 private:
     std::vector<EventListener *>m_list;
     std::deque<EventListener *>m_NodePioritylist;
     std::deque<EventInfo>m_eventDeque;
     std::unordered_map<Node *, EventListener *> m_nodeListenerMap;
-	bool m_isNeedSortNodeListener;
+	EventListener* m_captureListener = nullptr;
+	bool m_mouseButtonConsumed[3] = { false, false, false };
+	bool m_isNeedSortNodeListener = true;
 	virtual ~EventMgr();
 };
 

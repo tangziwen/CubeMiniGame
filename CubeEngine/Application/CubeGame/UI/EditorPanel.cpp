@@ -3,6 +3,7 @@
 #include "CubeGame/Rail/RailSystem.h"
 #include "EngineSrc/Game/EditorCamera.h"
 #include "2D/GUISystem.h"
+#include "Event/EventMgr.h"
 
 #include <cstdio>
 #include <string>
@@ -160,28 +161,26 @@ namespace tzw
 				railSystem->syncTrackDeleteVisuals();
 				break;
 			case EditorState::StationAdd:
-				railSystem->syncStationVisuals(true, false, false);
+				railSystem->hideEditorVisuals();
 				break;
 			case EditorState::StationDelete:
-				railSystem->syncStationVisuals(true, true, false);
+				railSystem->showStationEditorVisuals(true);
 				break;
 			case EditorState::RoutePointAdd:
-				railSystem->syncRoutePointVisuals(true, false, false);
+				railSystem->hideEditorVisuals();
 				break;
 			case EditorState::RoutePointDelete:
-				railSystem->syncRoutePointVisuals(true, true, false);
+				railSystem->showRoutePointEditorVisuals(true);
 				break;
 			case EditorState::LineAddControlPoint:
-				railSystem->syncStationVisuals(true, false, true);
-				railSystem->syncRoutePointVisuals(true, false, true);
+				railSystem->showLineAddControlBillboards();
 				if (railSystem->lineManager().selectedLineId() != InvalidRailLineId)
 				{
 					railSystem->setLinePreview(railSystem->lineManager().selectedLineId());
 				}
 				break;
 			case EditorState::LineRemoveControlPoint:
-				railSystem->syncStationVisuals(true, false, true);
-				railSystem->syncRoutePointVisuals(true, false, true);
+				railSystem->showLineRemoveControlBillboards();
 				if (railSystem->lineManager().selectedLineId() != InvalidRailLineId)
 				{
 					railSystem->setLinePreview(railSystem->lineManager().selectedLineId());
@@ -479,24 +478,22 @@ namespace tzw
 				railSystem->syncTrackDeleteVisuals();
 				break;
 			case EditorState::StationAdd:
-				railSystem->syncStationVisuals(true, false, false);
+				railSystem->hideEditorVisuals();
 				break;
 			case EditorState::StationDelete:
-				railSystem->syncStationVisuals(true, true, false);
+				railSystem->showStationEditorVisuals(true);
 				break;
 			case EditorState::RoutePointAdd:
-				railSystem->syncRoutePointVisuals(true, false, false);
+				railSystem->hideEditorVisuals();
 				break;
 			case EditorState::RoutePointDelete:
-				railSystem->syncRoutePointVisuals(true, true, false);
+				railSystem->showRoutePointEditorVisuals(true);
 				break;
 			case EditorState::LineAddControlPoint:
-				railSystem->syncStationVisuals(true, false, true);
-				railSystem->syncRoutePointVisuals(true, false, true);
+				railSystem->showLineAddControlBillboards();
 				break;
 			case EditorState::LineRemoveControlPoint:
-				railSystem->syncStationVisuals(true, false, true);
-				railSystem->syncRoutePointVisuals(true, false, true);
+				railSystem->showLineRemoveControlBillboards();
 				break;
 			default:
 				railSystem->hideEditorVisuals();
@@ -505,6 +502,11 @@ namespace tzw
 		}
 
 		if (ImGui::GetIO().WantCaptureMouse)
+		{
+			return;
+		}
+
+		if (EventMgr::shared()->isMouseButtonConsumed(0))
 		{
 			return;
 		}
@@ -637,15 +639,6 @@ namespace tzw
 			}
 			ImGui::End();
 		}
-		else if (RailSystem* railSystem = GameWorld::shared()->railSystem())
-		{
-			railSystem->clearLinePreview();
-			if (isLineControlEditState())
-			{
-				setEditorState(EditorState::None);
-			}
-		}
-
 		if (m_trainWindowOpen)
 		{
 			ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);

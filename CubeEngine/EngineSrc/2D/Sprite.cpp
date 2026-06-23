@@ -253,6 +253,7 @@ void Sprite::setTouchEnable(bool isEnable)
         {
             EventMgr::shared()->removeNodeEventListener(this);
         }
+        m_isTouchEnable = isEnable;
     }
 }
 
@@ -296,4 +297,3 @@ void Sprite::setOnBtnClicked(const std::function<void(Sprite*)>& onBtnClicked)
     m_onBtnClicked = onBtnClicked;
 }
 } // namespace tzw
-

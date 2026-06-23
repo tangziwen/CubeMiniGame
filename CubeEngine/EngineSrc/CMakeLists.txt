@@ -25,6 +25,8 @@ set(ENGINE_SOURCES
     2D/SpriteInstanceMgr.cpp
     2D/TableView.cpp
     2D/TileMap2DMgr.cpp
+    2D/WorldBillboardSprite.cpp
+    2D/WorldGuiProjector.cpp
     3D/Effect/Effect.cpp
     3D/Effect/EffectMgr.cpp
     3D/Model/Model.cpp
@@ -264,6 +266,8 @@ set(ENGINE_HEADERS
     2D/stb_truetype.h
     2D/TableView.h
     2D/TileMap2DMgr.h
+    2D/WorldBillboardSprite.h
+    2D/WorldGuiProjector.h
     3D/Effect/Effect.h
     3D/Effect/EffectMgr.h
     3D/Model/Model.h

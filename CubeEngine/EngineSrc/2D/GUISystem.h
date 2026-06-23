@@ -33,6 +33,7 @@ namespace tzw
 		bool ImGui_ImplGlfwGL2_CreateDeviceObjects();
 		bool onMouseRelease(int button, vec2 pos) override;
 		bool onMousePress(int button, vec2 pos) override;
+		bool onMouseMove(vec2 pos) override;
 		void addObject(IMGUIObject * obj);
 		bool onCharInput(unsigned int theChar) override;
 		bool onScroll(vec2 offset) override;

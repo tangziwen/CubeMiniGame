@@ -1,19 +1,13 @@
 #pragma once
 
 #include "RailBuildTool.h"
+#include "RailEditorVisualSystem.h"
 #include "RailLine.h"
-#include "RailLinePreviewVisual.h"
-#include "RailNodeMesh.h"
+#include "RailPersistentVisualSystem.h"
 #include "RailTrain.h"
-#include "RailTrainVisual.h"
-#include "RailTrackMesh.h"
-
-#include <vector>
 
 namespace tzw {
 
-class CubePrimitive;
-class LinePrimitive;
 class Node;
 
 class RailSystem
@@ -53,8 +47,10 @@ public:
 	bool addPickedRoutePointToSelectedLine(PlacementMode placementMode);
 	void syncTrackAddVisuals(PlacementMode placementMode);
 	void syncTrackDeleteVisuals();
-	void syncStationVisuals(bool showStations, bool deleteMode, bool linePickMode);
-	void syncRoutePointVisuals(bool showRoutePoints, bool deleteMode, bool linePickMode);
+	void showStationEditorVisuals(bool deleteMode);
+	void showRoutePointEditorVisuals(bool deleteMode);
+	void showLineAddControlBillboards();
+	void showLineRemoveControlBillboards();
 	void hideEditorVisuals();
 	void setLinePreview(RailLineId lineId);
 	void clearLinePreview();
@@ -63,13 +59,8 @@ private:
 	void rebuildAllRailLines();
 	void markVisualDirty();
 	bool handleTrackPrimaryClick(PlacementMode placementMode);
-	void syncVisuals(Node* sceneRoot);
-	void syncNodeVisuals(bool showNodes, bool lineAddMode, bool lineRemoveMode);
-	void syncTrackPreview(PlacementMode placementMode, bool showTrackPreview);
 	bool createAnchorAtHit(PlacementMode placementMode, RailAnchorId& outAnchorId);
 	bool addControlPointToSelectedLine(const RailLineControlPoint& controlPoint);
-	void ensureVisualRoot(Node* sceneRoot);
-	void clearVisuals();
 
 	RailConfig m_config;
 	RailNetwork m_network;
@@ -79,21 +70,9 @@ private:
 	RailRoutePointManager m_routePointManager;
 	RailLineManager m_lineManager;
 	RailTrainManager m_trainManager;
-	RailTrainVisualSet m_trainVisuals;
-	RailLinePreviewVisual m_linePreviewVisual;
-	RailTrackMesh m_trackMesh;
-	RailNodeMesh m_nodeMesh;
-	Node* m_visualRoot = nullptr;
-	LinePrimitive* m_lineVisual = nullptr;
-	std::vector<CubePrimitive*> m_sleeperVisuals;
-	std::vector<CubePrimitive*> m_nodeVisuals;
-	std::vector<CubePrimitive*> m_stationVisuals;
-	std::vector<CubePrimitive*> m_routePointVisuals;
-	std::vector<CubePrimitive*> m_trackPreviewSleeperVisuals;
-	CubePrimitive* m_pendingAnchorVisual = nullptr;
-	LinePrimitive* m_trackPreviewVisual = nullptr;
+	RailPersistentVisualSystem m_persistentVisuals;
+	RailEditorVisualSystem m_editorVisuals;
 	RailLineId m_previewLineId = InvalidRailLineId;
-	bool m_visualDirty = true;
 };
 
 } // namespace tzw
