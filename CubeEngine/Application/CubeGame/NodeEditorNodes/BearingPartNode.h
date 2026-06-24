@@ -1,5 +1,5 @@
 #pragma once
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "CubeGame/ResNode.h"
 namespace tzw {
 class BearPart;

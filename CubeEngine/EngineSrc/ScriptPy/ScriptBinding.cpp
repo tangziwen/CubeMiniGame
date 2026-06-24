@@ -9,7 +9,7 @@
 #include "2D/imgui_internal.h"
 #include "2D/imnodes.h"
 #include "Base/TranslationMgr.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 
 // #define BIND_BEGIN_CLASS_PY(className) pybind11::class_<className>(m, #className)
 // #define BIND_PROP_PY(className, FUNC) .def_readwrite(#FUNC, &className## ::##FUNC)
@@ -204,12 +204,12 @@ namespace tzw
 			BIND_PROP_PY(EventInfo, offset);
 		
 
-		BIND_BEGIN_CLASS_PY(GUISystem)
-		BIND_SINGLETON_PY(GUISystem)
-		BIND_FUNC_PY(GUISystem, isUiCapturingInput)
-		BIND_FUNC_PY(GUISystem, imguiUseNormalFont)
-		BIND_FUNC_PY(GUISystem, imguiUseSmallFont)
-		BIND_FUNC_PY(GUISystem, imguiUseLargeFont);
+		BIND_BEGIN_CLASS_PY(IMGUISystem)
+		BIND_SINGLETON_PY(IMGUISystem)
+		BIND_FUNC_PY(IMGUISystem, isUiCapturingInput)
+		BIND_FUNC_PY(IMGUISystem, imguiUseNormalFont)
+		BIND_FUNC_PY(IMGUISystem, imguiUseSmallFont)
+		BIND_FUNC_PY(IMGUISystem, imguiUseLargeFont);
 
 		
 		BIND_MODULE_CUSTOM_FUNC_PY("g_GetCurrScene", &g_GetCurrScene);

@@ -1,5 +1,5 @@
 #include "InspectableUI.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 namespace tzw
 {
 	std::string InspectableUI::getTitle()

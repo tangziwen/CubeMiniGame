@@ -7,7 +7,7 @@
 #include <strstream>
 #include <iostream>
 #include "../ScriptPy/ScriptPyMgr.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 
 namespace tzw {
 	ConsolePanel::ConsolePanel()
@@ -130,7 +130,7 @@ namespace tzw {
 			if (strstr(item, "[error]")) col = ImColor(1.0f, 0.4f, 0.4f, 1.0f);
 			else if (strncmp(item, "# ", 2) == 0) col = ImColor(1.0f, 0.78f, 0.58f, 1.0f);
 			ImGui::PushStyleColor(ImGuiCol_Text, col);
-			GUISystem::shared()->imguiUseSmallFont();
+			IMGUISystem::shared()->imguiUseSmallFont();
 			ImGui::TextUnformatted(item);
 			ImGui::PopFont();
 			ImGui::PopStyleColor();

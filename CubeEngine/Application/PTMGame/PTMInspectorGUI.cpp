@@ -116,7 +116,7 @@ namespace tzw
 
 	void PTMInspectorGUI::init()
 	{
-		GUISystem::shared()->addObject(this);
+		IMGUISystem::shared()->addObject(this);
 	}
 
 	void PTMInspectorGUI::drawIMGUI()
@@ -434,13 +434,13 @@ namespace tzw
 						{
 							ImVec2 sizeMin = ImGui::GetItemRectMin();
 							ImVec2 sizeMax = ImGui::GetItemRectMax();
-							GUISystem::shared()->imgui_drawFrame(sizeMin, sizeMax, 3.0, ImVec4(0.f, 1.f, 0.f, 1.f));
+							IMGUISystem::shared()->imgui_drawFrame(sizeMin, sizeMax, 3.0, ImVec4(0.f, 1.f, 0.f, 1.f));
 						}
 						else if(i == techState->getCurrentFocusLevel() && perkID == techState->getCurrentFocusIndex())
 						{
 							ImVec2 sizeMin = ImGui::GetItemRectMin();
 							ImVec2 sizeMax = ImGui::GetItemRectMax();
-							GUISystem::shared()->imgui_drawFrame(sizeMin, sizeMax, 3.0, ImVec4(1.f, 1.f, 0.f, 1.f));
+							IMGUISystem::shared()->imgui_drawFrame(sizeMin, sizeMax, 3.0, ImVec4(1.f, 1.f, 0.f, 1.f));
 						}
 						ImGui::EndGroup();
 						ImGui::SameLine();

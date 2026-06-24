@@ -29,7 +29,7 @@
 #include "glslang/public/ShaderLang.h"
 #include "Mesh/Mesh.h"
 #include "Mesh/InstancedMesh.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "Texture/TextureMgr.h"
 #include "Utility/log/Log.h"
 

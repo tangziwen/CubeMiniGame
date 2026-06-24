@@ -21,11 +21,11 @@ namespace tzw
 		}
 	};
 
-	class GUISystem: public EventListener, public Singleton<GUISystem>
+	class IMGUISystem: public EventListener, public Singleton<IMGUISystem>
 	{
 	public:
 		void NewFrame();
-		GUISystem();
+		IMGUISystem();
 		void renderData();
 		void initGUI();
 		bool onKeyPress(int keyCode) override;

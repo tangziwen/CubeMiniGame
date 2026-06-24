@@ -273,7 +273,7 @@ def drawHud():
 		if v.target == None :
 			indexText = str(k + 1)
 			posX = ImGui.GetCursorPosX()
-			CubeEngine.GUISystem.shared().imguiUseLargeFont()
+			CubeEngine.IMGUISystem.shared().imguiUseLargeFont()
 			textSize = ImGui.CalcTextSize(indexText, None, True, 0);
 			ImGui.SetCursorPosX(posX + itemSize / 2.0 - textSize.x / 2.0)
 			ImGui.Text(indexText);
@@ -296,7 +296,7 @@ def drawHud():
 			item = getItemFromSpecifiedSlotIndex(k)
 			indexText = str(k + 1)
 			posX = ImGui.GetCursorPosX()
-			CubeEngine.GUISystem.shared().imguiUseLargeFont()
+			CubeEngine.IMGUISystem.shared().imguiUseLargeFont()
 			textSize = ImGui.CalcTextSize(indexText, None, True, 0);
 			ImGui.SetCursorPosX(posX + itemSize / 2.0 - textSize.x / 2.0)
 			ImGui.Text(indexText)
@@ -375,7 +375,7 @@ def onKeyPress(input_event):
 def onKeyRelease(input_event):
 	player = Game.GameWorld.shared().getPlayer()
 	isKeyPress = False
-	if CubeEngine.GUISystem.shared().isUiCapturingInput() :
+	if CubeEngine.IMGUISystem.shared().isUiCapturingInput() :
 		return
 	if input_event.keycode == KeyConfig.TZW_KEY_1 :
 		GameState.m_currIndex = 0

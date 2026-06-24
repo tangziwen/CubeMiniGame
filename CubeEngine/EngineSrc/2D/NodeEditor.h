@@ -1,5 +1,5 @@
 #pragma once
-#include "GUISystem.h"
+#include "IMGUISystem.h"
 namespace tzw
 {
 	

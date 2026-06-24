@@ -4,7 +4,7 @@
 #include "EngineSrc/Event/Event.h"
 #include "PTMILogicTickable.h"
 #include "PTMPawn.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "PTMCurrencyEnum.h"
 namespace tzw
 {

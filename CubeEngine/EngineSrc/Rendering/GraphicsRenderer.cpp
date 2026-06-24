@@ -12,7 +12,7 @@
 
 #include "Technique/MaterialPool.h"
 #include "3D/ShadowMap/ShadowMap.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "BackEnd/vk/DeviceBufferVK.h"
 #include "BackEnd/VkRenderBackEnd.h"
 #include <EngineSrc\Scene\SceneMgr.h>
@@ -741,9 +741,9 @@ namespace tzw
             initImguiStuff();
         }
         //IMGUI
-        GUISystem::shared()->renderIMGUI();
+        IMGUISystem::shared()->renderIMGUI();
 
-        auto draw_data = GUISystem::shared()->getDrawData();
+        auto draw_data = IMGUISystem::shared()->getDrawData();
         int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
         int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
         // Will project scissor/clipping rectangles into framebuffer space

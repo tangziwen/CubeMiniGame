@@ -57,7 +57,7 @@ namespace tzw
 		m_paintGun->color = vec3(1, 1, 1);
 		m_paintGun->m_surface = PartSurfaceMgr::shared()->getItem("foam grip");
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
-		GUISystem::shared()->addObject(this);
+		IMGUISystem::shared()->addObject(this);
 		EventMgr::shared()->addFixedPiorityListener(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), true);
 		camera->setCamPos(vec3(5, 20.0, -5));
@@ -321,7 +321,7 @@ namespace tzw
 			break;
         case TZW_KEY_TAB:
 			{
-        		if(!GUISystem::shared()->isUiCapturingInput())
+        		if(!IMGUISystem::shared()->isUiCapturingInput())
 				GameState::shared()->togglePlayerMode();
             }
 			break;
@@ -333,7 +333,7 @@ namespace tzw
 		case TZW_KEY_T:
 			{
 				if(GameState::shared()->getPlayerMode() == PlayerMode::Gameplay
-					&& !GUISystem::shared()->isUiCapturingInput())
+					&& !IMGUISystem::shared()->isUiCapturingInput())
 				{
 					auto toggleXray = !BuildingSystem::shared()->isIsInXRayMode();
 					BuildingSystem::shared()->setIsInXRayMode(toggleXray);

@@ -2,7 +2,7 @@
 #include "Island.h"
 #include "BearPart.h"
 #include "GamePartRenderNode.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "GameItemMgr.h"
 #include "Texture/TextureMgr.h"
 #include "3D/Primitive/CubePrimitive.h"

@@ -1,5 +1,5 @@
 #pragma once
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "CubeGame/GraphNode.h"
 namespace tzw {
 struct VarNode : public GraphNode

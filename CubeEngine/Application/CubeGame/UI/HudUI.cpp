@@ -1,6 +1,6 @@
 #include "HudUI.h"
 #include "CubeGame/BuildingSystem.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 namespace tzw
 {
 

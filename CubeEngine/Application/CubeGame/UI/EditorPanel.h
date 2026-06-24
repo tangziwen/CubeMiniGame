@@ -1,7 +1,7 @@
 #pragma once
 #include "CubeGame/GameWorld.h"
 #include "CubeGame/Rail/RailLine.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include <functional>
 namespace tzw
 {

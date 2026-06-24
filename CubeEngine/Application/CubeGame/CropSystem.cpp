@@ -10,7 +10,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
 #include "BuildingSystem.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "../../EngineSrc/2D/imnodes.h"
 #include "ScriptPy/ScriptPyMgr.h"
 #include "rapidjson/filewritestream.h"

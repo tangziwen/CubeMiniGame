@@ -1,6 +1,6 @@
 #pragma once
 #include "CubeGame/GameWorld.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include <functional>
 
 namespace tzw

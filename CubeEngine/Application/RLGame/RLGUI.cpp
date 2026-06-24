@@ -17,7 +17,7 @@ RLGUI::RLGUI()
 
 void RLGUI::init()
 {
-	GUISystem::shared()->addObject(this);
+	IMGUISystem::shared()->addObject(this);
 	//m_centerTips = LabelNew::create("HEHEHE");
 	//m_centerTips->setLocalPiority(999);
 	//vec2 size = Engine::shared()->winSize();
@@ -61,7 +61,7 @@ void RLGUI::drawIMGUI()
 void RLGUI::drawMainMenu()
 {
 	
-	GUISystem::shared()->imguiUseLargeFont();
+	IMGUISystem::shared()->imguiUseLargeFont();
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("RL Shooter",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
@@ -219,7 +219,7 @@ void RLGUI::drawInGame()
 
 void RLGUI::drawAfterMath()
 {
-	GUISystem::shared()->imguiUseLargeFont();
+	IMGUISystem::shared()->imguiUseLargeFont();
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("RL Shooter",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
@@ -243,7 +243,7 @@ void RLGUI::drawAfterMath()
 
 void RLGUI::drawWin()
 {
-	GUISystem::shared()->imguiUseLargeFont();
+	IMGUISystem::shared()->imguiUseLargeFont();
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("Congrats!!!",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
@@ -267,7 +267,7 @@ void RLGUI::drawWin()
 
 void RLGUI::drawPause()
 {
-	GUISystem::shared()->imguiUseLargeFont();
+	IMGUISystem::shared()->imguiUseLargeFont();
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("Pause Windows",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))

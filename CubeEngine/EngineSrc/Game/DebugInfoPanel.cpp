@@ -4,7 +4,7 @@
 #include "../Engine/EngineDef.h"
 #include "Scene/SceneMgr.h"
 
-#include "2d/GUISystem.h"
+#include "2d/IMGUISystem.h"
 #include "BackEnd/RenderBackEnd.h"
 #define PANEL_WIDTH 220
 #define PANEL_HEIGHT 180
@@ -42,7 +42,7 @@ DebugInfoPanel::DebugInfoPanel()
 	renderUpdateTime = 0;
 	verticesCount = 0;
 	sceneCurrNodes = 0;
-	//GUISystem::shared()->addObject(this);
+	//IMGUISystem::shared()->addObject(this);
 
 }
 

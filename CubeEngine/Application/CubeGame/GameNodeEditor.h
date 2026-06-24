@@ -1,5 +1,5 @@
 #pragma once
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "GraphNode.h"
 #include "rapidjson/document.h"
 #include "Base/GuidObj.h"

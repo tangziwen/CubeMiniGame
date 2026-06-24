@@ -14,7 +14,7 @@ set(ENGINE_SOURCES
     2D/GUIRadioFrame.cpp
     2D/GUIStyle.cpp
     2D/GUIStyleMgr.cpp
-    2D/GUISystem.cpp
+    2D/IMGUISystem.cpp
     2D/GUITitledFrame.cpp
     2D/GUIWindowMgr.cpp
     2D/InspectableUI.cpp
@@ -252,7 +252,7 @@ set(ENGINE_HEADERS
     2D/GUIRadioFrame.h
     2D/GUIStyle.h
     2D/GUIStyleMgr.h
-    2D/GUISystem.h
+    2D/IMGUISystem.h
     2D/GUITitledFrame.h
     2D/GUIWindowMgr.h
     2D/InspectableUI.h

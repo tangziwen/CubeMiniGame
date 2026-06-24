@@ -11,7 +11,7 @@
 #include <rapidjson/document.h>
 #include "Utility/log/Log.h"
 #include "EngineSrc/Shader/ShaderMgr.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "Texture/TextureMgr.h"
 #include "Utility/file/Tfile.h"
 #include "Engine/Engine.h"

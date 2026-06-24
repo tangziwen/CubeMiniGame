@@ -3,7 +3,7 @@
 
 #include "Game/FPSCamera.h"
 #include "EngineSrc/3D/Model/Model.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "Game/OrbitCamera.h"
 #include "Island.h"
 #include "PaintGun.h"

@@ -9,7 +9,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
 #include "BuildingSystem.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "../../EngineSrc/2D/imnodes.h"
 #include "ScriptPy/ScriptPyMgr.h"
 #include "rapidjson/filewritestream.h"
@@ -51,7 +51,7 @@ namespace tzw {
 
 	LoadingUI::LoadingUI():m_tipsInfo("now Loading")
 	{
-		GUISystem::shared()->addObject(this);
+		IMGUISystem::shared()->addObject(this);
 		hide();
 	}
 
@@ -70,7 +70,7 @@ namespace tzw {
 		auto io = ImGui::GetIO();
 		if(m_isVisible)
 		{
-			GUISystem::shared()->imguiUseLargeFont();
+			IMGUISystem::shared()->imguiUseLargeFont();
 			ImGui::SetNextWindowPos(ImVec2(0.0f, 0.0f));
 			ImGui::SetNextWindowSize(ImVec2(io.DisplaySize.x, io.DisplaySize.y));
 			ImGui::SetNextWindowBgAlpha(1.0f);
@@ -83,7 +83,7 @@ namespace tzw {
 			auto loadCaption = "Loading...";
 			auto captionTextSize= ImGui::CalcTextSize(loadCaption);
 			ImGui::SetCursorScreenPos(ImVec2(io.DisplaySize.x / 2.0 - captionTextSize.x / 2.0f, io.DisplaySize.y/2.0 - captionTextSize.y - 5));
-			GUISystem::shared()->imguiUseLargeFont();
+			IMGUISystem::shared()->imguiUseLargeFont();
 			ImGui::TextUnformatted(loadCaption);
 			ImGui::PopFont();
 			auto texSize = ImGui::CalcTextSize(m_tipsInfo.c_str());

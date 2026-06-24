@@ -1,4 +1,4 @@
-#include "GUISystem.h"
+#include "IMGUISystem.h"
 #include "imgui.h"
 #include "imgui_internal.h"
 #define IMGUI_DEFINE_MATH_OPERATORS
@@ -138,11 +138,11 @@ namespace tzw
 	
 	
 	}
-	GUISystem::GUISystem()
+	IMGUISystem::IMGUISystem()
 	{
 		
 	}
-	void GUISystem::renderData()
+	void IMGUISystem::renderData()
 	{
 		if (!m_isInit) return;
 		ImGui::PushFont(m_fontNormal);
@@ -161,7 +161,7 @@ namespace tzw
 		
 	}
 
-	bool GUISystem::ImGui_ImplGlfwGL2_CreateDeviceObjects()
+	bool IMGUISystem::ImGui_ImplGlfwGL2_CreateDeviceObjects()
 	{
 
 		// Build texture atlas
@@ -204,32 +204,32 @@ namespace tzw
 	}
 
 
-	bool GUISystem::onMouseRelease(int button, vec2 pos)
+	bool IMGUISystem::onMouseRelease(int button, vec2 pos)
 	{
 		(void)button;
 		(void)pos;
 		return ImGui::GetIO().WantCaptureMouse;
 	}
 
-	bool GUISystem::onMousePress(int button, vec2 pos)
+	bool IMGUISystem::onMousePress(int button, vec2 pos)
 	{
 		(void)pos;
 		g_MouseJustPressed[button] = true;
 		return ImGui::GetIO().WantCaptureMouse;
 	}
 
-	bool GUISystem::onMouseMove(vec2 pos)
+	bool IMGUISystem::onMouseMove(vec2 pos)
 	{
 		(void)pos;
 		return ImGui::GetIO().WantCaptureMouse;
 	}
 
-	void GUISystem::addObject(IMGUIObject * obj)
+	void IMGUISystem::addObject(IMGUIObject * obj)
 	{
 		m_objList.push_back(obj);
 	}
 
-	bool GUISystem::onCharInput(unsigned int c)
+	bool IMGUISystem::onCharInput(unsigned int c)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		if (c > 0 && c < 0x10000)
@@ -237,7 +237,7 @@ namespace tzw
 		return io.WantTextInput || io.WantCaptureKeyboard;
 	}
 
-	bool GUISystem::onScroll(vec2 offset)
+	bool IMGUISystem::onScroll(vec2 offset)
 	{
 	    ImGuiIO& io = ImGui::GetIO();
 	    io.MouseWheelH += offset.x;
@@ -245,39 +245,38 @@ namespace tzw
 		return io.WantCaptureMouse;
 	}
 
-	void GUISystem::renderIMGUI()
+	void IMGUISystem::renderIMGUI()
 	{
 		auto& io = ImGui::GetIO();
 		io.DeltaTime = Engine::shared()->deltaTime();
-		
+
 		NewFrame();
-		
+
 		renderData();
-		
 	}
 
-	bool GUISystem::isUiCapturingInput()
+	bool IMGUISystem::isUiCapturingInput()
 	{
 		auto& io = ImGui::GetIO();
 		return io.WantTextInput;
 	}
 
-	void GUISystem::imguiUseSmallFont()
+	void IMGUISystem::imguiUseSmallFont()
 	{
 		ImGui::PushFont(m_fontSmall);
 	}
 
-	void GUISystem::imguiUseNormalFont()
+	void IMGUISystem::imguiUseNormalFont()
 	{
 		ImGui::PushFont(m_fontNormal);
 	}
 
-	void GUISystem::imguiUseLargeFont()
+	void IMGUISystem::imguiUseLargeFont()
 	{
 		ImGui::PushFont(m_fontLarge);
 	}
 
-	void GUISystem::imgui_drawFrame(ImVec2 min, ImVec2 max, float size, ImVec4 color)
+	void IMGUISystem::imgui_drawFrame(ImVec2 min, ImVec2 max, float size, ImVec4 color)
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_FrameBorderSize, size);
 		ImGui::PushStyleColor(ImGuiCol_Border, color);
@@ -286,12 +285,12 @@ namespace tzw
 		ImGui::PopStyleColor(1);
 	}
 
-	ImDrawData* GUISystem::getDrawData()
+	ImDrawData* IMGUISystem::getDrawData()
 	{
 		return ImGui::GetDrawData();
 	}
 	
-	void GUISystem::initGUI()
+	void IMGUISystem::initGUI()
 	{
 		EventMgr::shared()->setCaptureListener(this);
 		if(Engine::shared()->getRenderDeviceType() == RenderDeviceType::OpenGl_Device)
@@ -367,7 +366,7 @@ namespace tzw
 		m_isInit = true;
 	}
 
-	bool GUISystem::onKeyPress(int keyCode)
+	bool IMGUISystem::onKeyPress(int keyCode)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[keyCode] = true;
@@ -379,7 +378,7 @@ namespace tzw
 		return io.WantCaptureKeyboard || io.WantTextInput;
 	}
 
-	bool GUISystem::onKeyRelease(int keyCode)
+	bool IMGUISystem::onKeyRelease(int keyCode)
 	{
 		ImGuiIO& io = ImGui::GetIO();
 		io.KeysDown[keyCode] = false;
@@ -391,7 +390,7 @@ namespace tzw
 		return io.WantCaptureKeyboard || io.WantTextInput;
 	}
 
-	void GUISystem::NewFrame()
+	void IMGUISystem::NewFrame()
 	{
 		if (!m_isInit) return;
 		if(!EngineDef::isUseVulkan)

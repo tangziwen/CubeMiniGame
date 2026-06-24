@@ -2,7 +2,7 @@
 #include "CubeGame/BuildingSystem.h"
 #include "CubeGame/Rail/RailSystem.h"
 #include "EngineSrc/Game/EditorCamera.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "Event/EventMgr.h"
 
 #include <cstdio>
@@ -499,11 +499,6 @@ namespace tzw
 				railSystem->hideEditorVisuals();
 				break;
 			}
-		}
-
-		if (ImGui::GetIO().WantCaptureMouse)
-		{
-			return;
 		}
 
 		if (EventMgr::shared()->isMouseButtonConsumed(0))

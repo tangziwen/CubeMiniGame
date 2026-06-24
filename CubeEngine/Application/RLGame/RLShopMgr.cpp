@@ -1,7 +1,7 @@
 #include "RLShopMgr.h"
 #include "RLPerk.h"
 #include "RLWorld.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "Engine/Engine.h"
 #include "RLPlayerState.h"
 #include "RLDirector.h"

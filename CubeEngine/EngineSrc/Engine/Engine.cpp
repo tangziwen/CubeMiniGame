@@ -10,7 +10,7 @@
 #include "AudioSystem/AudioSystem.h"
 #include <windows.h>
 #include "ScriptPy/ScriptPyMgr.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include <rapidjson/rapidjson.h>
 #define CLOCKS_TO_MS(c) int((c * 1.0f)/CLOCKS_PER_SEC * 1000 + 0.5f)
 #include "Collision/PhysicsMgr.h"
@@ -285,7 +285,7 @@ void Engine::onStart()
     Engine::shared()->initSingletons();
     Engine::shared()->delegate()->onStart();
 	ScriptPyMgr::shared()->doScriptInit();
-	GUISystem::shared()->initGUI();
+	IMGUISystem::shared()->initGUI();
 	AudioSystem::shared()->init();
 	uuid4_init();
 	//WorkerThreadSystem::shared()->init();

@@ -15,7 +15,7 @@ namespace tzw
 		auto screenSize = Engine::shared()->winSize();
 		ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 		ImGui::Begin("KeyMapper",0,ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoDecoration);
-		GUISystem::shared()->imguiUseLargeFont();
+		IMGUISystem::shared()->imguiUseLargeFont();
 		ImGui::Text("Please Press Any Key To Bind");
 		ImGui::PopFont();
 		ImGui::End();

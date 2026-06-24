@@ -1,6 +1,6 @@
 #ifndef TZW_MAINMENU_H
 #define TZW_MAINMENU_H
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "Game/DebugInfoPanel.h"
 #include "Event/Event.h"
 #include "Engine/EngineDef.h"

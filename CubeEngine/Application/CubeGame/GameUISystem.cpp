@@ -12,7 +12,7 @@
 #include "Collision/PhysicsMgr.h"
 #include "Utility/math/TbaseMath.h"
 #include "BuildingSystem.h"
-#include "2D/GUISystem.h"
+#include "2D/IMGUISystem.h"
 #include "../../EngineSrc/2D/imnodes.h"
 #include "ScriptPy/ScriptPyMgr.h"
 #include "rapidjson/filewritestream.h"
@@ -89,7 +89,7 @@ GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 void GameUISystem::init()
 {
 	EventMgr::shared()->addFixedPiorityListener(this);
-	GUISystem::shared()->addObject(this);
+	IMGUISystem::shared()->addObject(this);
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
 	m_fileBrowser = new VehicleBroswer();
@@ -236,7 +236,7 @@ void GameUISystem::drawIMGUI()
 			ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoDecoration |ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoSavedSettings; //| ImGuiWindowFlags_MenuBar;
 			ImGui::Begin("MenuBar",nullptr, window_flags);
 			ImGui::PopStyleVar(2);
-			GUISystem::shared()->imguiUseSmallFont();
+			IMGUISystem::shared()->imguiUseSmallFont();
 			ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
 			float IconSize = 32.0f;
 			ImVec2 homeDropDownPos;
@@ -826,7 +826,7 @@ void GameUISystem::setPainterShow(bool isShow)
 
 void GameUISystem::drawEntryInterFace()
 {
-	GUISystem::shared()->imguiUseLargeFont();
+	IMGUISystem::shared()->imguiUseLargeFont();
 	auto screenSize = Engine::shared()->winSize();
 	ImGui::SetNextWindowPos(ImVec2(screenSize.x / 2.0, screenSize.y / 2.0), ImGuiCond_Always, ImVec2(0.5, 0.5));
 	if (ImGui::Begin("CubeEngine",0, ImGuiWindowFlags_NoMove| ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoCollapse))
