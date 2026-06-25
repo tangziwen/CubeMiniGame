@@ -1,7 +1,6 @@
 #include "WorldBillboardSprite.h"
 
 #include "WorldGuiProjector.h"
-
 namespace tzw {
 
 WorldBillboardSprite::WorldBillboardSprite()
@@ -33,18 +32,31 @@ void WorldBillboardSprite::setScreenOffset(const vec2& screenOffset)
 	m_screenOffset = screenOffset;
 }
 
-void WorldBillboardSprite::setVisibleByOwner(bool isVisible)
+void WorldBillboardSprite::setOwnerVisible(bool isVisible)
 {
 	m_ownerVisible = isVisible;
 	if (!m_ownerVisible)
 	{
+		m_projectedVisible = false;
+		m_isTouched = false;
+		m_onBtnClicked = nullptr;
 		Sprite::setIsVisible(false);
 	}
 }
 
+bool WorldBillboardSprite::isOwnerVisible() const
+{
+	return m_ownerVisible;
+}
+
+bool WorldBillboardSprite::isProjectedVisible() const
+{
+	return m_projectedVisible;
+}
+
 bool WorldBillboardSprite::containsScreenPoint(vec2 pos)
 {
-	if (!m_ownerVisible || !getIsVisible())
+	if (!m_ownerVisible || !m_projectedVisible || !getTouchEnable())
 	{
 		return false;
 	}
@@ -61,6 +73,7 @@ void WorldBillboardSprite::logicUpdate(float)
 {
 	if (!m_ownerVisible)
 	{
+		m_projectedVisible = false;
 		Sprite::setIsVisible(false);
 		return;
 	}
@@ -68,10 +81,13 @@ void WorldBillboardSprite::logicUpdate(float)
 	vec2 guiPos;
 	if (!WorldGuiProjector::project(m_worldAnchor, guiPos))
 	{
+		m_projectedVisible = false;
+		m_isTouched = false;
 		Sprite::setIsVisible(false);
 		return;
 	}
 
+	m_projectedVisible = true;
 	setPos2D(guiPos + m_screenOffset);
 	Sprite::setIsVisible(true);
 }
@@ -89,13 +105,13 @@ bool WorldBillboardSprite::onMousePress(int, vec2 pos)
 
 bool WorldBillboardSprite::onMouseRelease(int, vec2 pos)
 {
-	if (!m_ownerVisible || !getIsVisible())
+	if (!containsScreenPoint(pos))
 	{
 		m_isTouched = false;
 		return false;
 	}
 
-	if (m_isTouched && containsScreenPoint(pos))
+	if (m_isTouched)
 	{
 		if (m_onBtnClicked)
 		{

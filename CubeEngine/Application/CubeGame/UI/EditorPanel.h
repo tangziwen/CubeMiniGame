@@ -2,12 +2,13 @@
 #include "CubeGame/GameWorld.h"
 #include "CubeGame/Rail/RailLine.h"
 #include "2D/IMGUISystem.h"
+#include "Event/Event.h"
 #include <functional>
 namespace tzw
 {
 	class RailSystem;
 
-	class EditorPanel : public IMGUIObject
+	class EditorPanel : public IMGUIObject, public EventListener
 	{
 	public:
 		enum class EditorState
@@ -29,6 +30,8 @@ namespace tzw
 		};
 
 		void drawIMGUI(bool * isOpen) override;
+		void onFrameUpdate(float delta) override;
+		bool onMousePress(int button, vec2 pos) override;
 		EditorPanel();
 		std::function<void (std::string)> m_onCreate;
 		void prepare();
@@ -47,7 +50,9 @@ namespace tzw
 		void drawParameterPanel();
 		void drawParameterWindow(vec2 screenSize);
 		void drawLineEditParameterPanel(RailSystem* railSystem);
-		void handleEditorWorldInput();
+		void syncEditorWorldVisuals();
+		bool handleEditorPrimaryClick();
+		bool handleEditorSecondaryClick();
 		void setEditorState(EditorState state);
 		bool isLineControlEditState() const;
 		bool isTerrainState() const;
@@ -56,6 +61,7 @@ namespace tzw
 		bool isRoutePointEditState() const;
 
 		EditorState m_editorState = EditorState::None;
+		EditorState m_syncedEditorState = EditorState::None;
 		bool m_lineWindowOpen = false;
 		bool m_trainWindowOpen = false;
 		int m_activeTab = 0;

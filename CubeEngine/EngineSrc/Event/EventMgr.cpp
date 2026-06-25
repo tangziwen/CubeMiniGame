@@ -4,7 +4,6 @@
 #include "../Scene/SceneMgr.h"
 #include "../Base/Node.h"
 #include "ScriptPy/ScriptPyMgr.h"
-
 #define EVENT_TYPE_K_RELEASE 0
 #define EVENT_TYPE_K_PRESS 1
 #define EVENT_TYPE_M_RELEASE 2
@@ -13,6 +12,24 @@
 #define EVENT_TYPE_K_CHAR_INPUT 5
 #define EVENT_TYPE_M_SCROLL 6
 namespace tzw {
+
+namespace
+{
+bool isKeyEvent(int eventType)
+{
+	return eventType == EVENT_TYPE_K_PRESS
+		|| eventType == EVENT_TYPE_K_RELEASE
+		|| eventType == EVENT_TYPE_K_CHAR_INPUT;
+}
+
+bool isPointerEvent(int eventType)
+{
+	return eventType == EVENT_TYPE_M_MOVE
+		|| eventType == EVENT_TYPE_M_SCROLL
+		|| eventType == EVENT_TYPE_M_PRESS
+		|| eventType == EVENT_TYPE_M_RELEASE;
+}
+}
 
 EventMgr::EventMgr()
 	: m_isNeedSortNodeListener(true)
@@ -142,69 +159,132 @@ void EventMgr::handleScroll(vec2 offset)
 
 void EventMgr::apply(float delta)
 {
+	beginFrame();
+	dispatchQueuedKeyEvents();
+	dispatchQueuedPointerEvents();
+	updateFrameListeners(delta);
+}
+
+void EventMgr::beginFrame()
+{
 	for (bool& consumed : m_mouseButtonConsumed)
 	{
 		consumed = false;
 	}
+}
+
+void EventMgr::dispatchQueuedKeyEvents()
+{
 	if(m_isNeedSortNodeListener)
 	{
 		m_isNeedSortNodeListener = false;
 		sortNodePiorityListener();
 	}
 
-   while(!m_eventDeque.empty())
-   {
-       EventInfo info = m_eventDeque.front();
-       switch(info.type)
-       {
-       case EVENT_TYPE_K_PRESS:
-       {
+	std::deque<EventInfo> pendingPointerEvents;
+	while(!m_eventDeque.empty())
+	{
+		EventInfo info = m_eventDeque.front();
+		m_eventDeque.pop_front();
+		if (!isKeyEvent(info.type))
+		{
+			pendingPointerEvents.push_back(info);
+			continue;
+		}
+
+		switch(info.type)
+		{
+		case EVENT_TYPE_K_PRESS:
+		{
 			applyKeyPress(info);
 			ScriptPyMgr::shared()->raiseInputEvent(info);
-       }
-           break;
-       case EVENT_TYPE_K_RELEASE:
-       {
+		}
+			break;
+		case EVENT_TYPE_K_RELEASE:
+		{
 			applyKeyRelease(info);
 			ScriptPyMgr::shared()->raiseInputEvent(info);
-       }
-           break;
-       case EVENT_TYPE_M_MOVE:
-       {
+		}
+			break;
+		case EVENT_TYPE_K_CHAR_INPUT:
+		{
+			applyKeyCharInput(info);
+		}
+			break;
+		default:
+			break;
+		}
+	}
+	m_eventDeque.swap(pendingPointerEvents);
+}
+
+void EventMgr::updateFrameListeners(float delta)
+{
+	for(size_t i =0;i<m_list.size();i++)
+	{
+		EventListener * event = m_list[i];
+		event->onFrameUpdate(delta);
+	}
+}
+
+void EventMgr::dispatchQueuedPointerEvents()
+{
+	bool hasPointerEvent = false;
+	for (const EventInfo& info : m_eventDeque)
+	{
+		if (isPointerEvent(info.type))
+		{
+			hasPointerEvent = true;
+			break;
+		}
+	}
+	if (hasPointerEvent)
+	{
+		m_isNeedSortNodeListener = false;
+		sortNodePiorityListener();
+	}
+
+	std::deque<EventInfo> pendingKeyEvents;
+	while(!m_eventDeque.empty())
+	{
+		EventInfo info = m_eventDeque.front();
+		m_eventDeque.pop_front();
+		if (!isPointerEvent(info.type))
+		{
+			pendingKeyEvents.push_back(info);
+			continue;
+		}
+
+		switch(info.type)
+		{
+		case EVENT_TYPE_M_MOVE:
+		{
 			applyMouseMove(info);
-       }
-           break;
-       case EVENT_TYPE_M_SCROLL:
-       {
+		}
+			break;
+		case EVENT_TYPE_M_SCROLL:
+		{
 			applyScroll(info);
        		ScriptPyMgr::shared()->raiseInputEvent(info);
-       }
-           break;
-       case EVENT_TYPE_M_PRESS:
-       {
+		}
+			break;
+		case EVENT_TYPE_M_PRESS:
+		{
 			applyMousePress(info);
 			ScriptPyMgr::shared()->raiseInputEvent(info);
-       }
-           break;
-       case EVENT_TYPE_M_RELEASE:
-       {
+		}
+			break;
+		case EVENT_TYPE_M_RELEASE:
+		{
 			applyMouseRelease(info);
 			ScriptPyMgr::shared()->raiseInputEvent(info);
-       }
-           break;
-       case EVENT_TYPE_K_CHAR_INPUT:
-       {
-           applyKeyCharInput(info);
-       }
-       default: ;
-       }
-       m_eventDeque.pop_front();
-   }
-    for(size_t i =0;i<m_list.size();i++)
-    {
-        EventListener * event = m_list[i];
-        event->onFrameUpdate(delta);
-    }
+		}
+			break;
+		default:
+			break;
+		}
+	}
+	m_eventDeque.swap(pendingKeyEvents);
 }
 
 void EventMgr::visitNode(Node *node)

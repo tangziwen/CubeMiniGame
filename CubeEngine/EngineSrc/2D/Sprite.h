@@ -40,6 +40,7 @@ public:
 	bool onMousePress(int button,vec2 pos) override;
 	bool onMouseMove(vec2 pos) override;
     void setTouchEnable(bool m_isEnable);
+	bool getTouchEnable() const;
     std::string getSpriteManggledName();
     bool isInTheRect(vec2 touchPos);
     void setOnBtnClicked(const std::function<void (Sprite *)> &onBtnClicked);

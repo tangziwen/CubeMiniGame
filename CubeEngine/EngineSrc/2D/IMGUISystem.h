@@ -37,6 +37,11 @@ namespace tzw
 		void addObject(IMGUIObject * obj);
 		bool onCharInput(unsigned int theChar) override;
 		bool onScroll(vec2 offset) override;
+		void feedKeyPress(int keyCode);
+		void feedKeyRelease(int keyCode);
+		void feedCharInput(unsigned int theChar);
+		void feedMousePress(int button);
+		void feedScroll(vec2 offset);
 		void renderIMGUI();
 
 		bool isUiCapturingInput();
@@ -48,6 +53,7 @@ namespace tzw
 	protected:
 		std::vector<IMGUIObject *> m_objList;
 		bool m_isInit = false;
+		bool m_frameStarted = false;
 		unsigned int tick = 0;
 		ImFont * m_fontNormal;
 		ImFont * m_fontLarge;

@@ -263,9 +263,13 @@ void Engine::update(float delta)
 	PhysicsMgr::shared()->stepSimulation(delta);
 	TimerMgr::shared()->handle(delta);
 	WorkerThreadSystem::shared()->mainThreadUpdate();
-	EventMgr::shared()->apply(delta);
+	IMGUISystem::shared()->NewFrame();
+	EventMgr::shared()->beginFrame();
+	EventMgr::shared()->dispatchQueuedKeyEvents();
+	EventMgr::shared()->updateFrameListeners(delta);
     shared()->delegate()->onUpdate(delta);
     SceneMgr::shared()->doVisit();
+	EventMgr::shared()->dispatchQueuedPointerEvents();
 	
 	AudioSystem::shared()->update();
 	Counter applyRenderBefore = Counter::now();

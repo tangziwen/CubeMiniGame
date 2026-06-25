@@ -5,24 +5,29 @@
 #include "RenderBackEnd.h"
 #include "VkRenderBackEnd.h"
 #include "Rendering/GraphicsRenderer.h"
+#include "2D/IMGUISystem.h"
 namespace tzw {
 void AbstractDevice::keyPressEvent(int theCode)
 {
+	IMGUISystem::shared()->feedKeyPress(theCode);
     EventMgr::shared()->handleKeyPress(theCode);
 }
 
 void AbstractDevice::keyReleaseEvent(int theCode)
 {
+	IMGUISystem::shared()->feedKeyRelease(theCode);
     EventMgr::shared()->handleKeyRelease(theCode);
 }
 
 void AbstractDevice::charInputEvent(unsigned int theCode)
 {
+	IMGUISystem::shared()->feedCharInput(theCode);
     EventMgr::shared()->handleCharInput(theCode);
 }
 
 void AbstractDevice::mousePressEvent(int buttonCode,vec2 pos)
 {
+	IMGUISystem::shared()->feedMousePress(buttonCode);
     auto height = Engine::shared()->windowHeight();
     EventMgr::shared()->handleMousePress(buttonCode,vec2(pos.x,height - pos.y));
 }
@@ -41,6 +46,7 @@ void AbstractDevice::mouseMoveEvent(vec2 pos)
 
 void AbstractDevice::scrollEvent(float x, float y)
 {
+	IMGUISystem::shared()->feedScroll(vec2(x, y));
 	EventMgr::shared()->handleScroll(vec2(x, y));
 }
 

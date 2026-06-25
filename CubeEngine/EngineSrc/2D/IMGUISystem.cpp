@@ -213,8 +213,8 @@ namespace tzw
 
 	bool IMGUISystem::onMousePress(int button, vec2 pos)
 	{
+		(void)button;
 		(void)pos;
-		g_MouseJustPressed[button] = true;
 		return ImGui::GetIO().WantCaptureMouse;
 	}
 
@@ -231,28 +231,80 @@ namespace tzw
 
 	bool IMGUISystem::onCharInput(unsigned int c)
 	{
+		(void)c;
 		ImGuiIO& io = ImGui::GetIO();
-		if (c > 0 && c < 0x10000)
-			io.AddInputCharacter(static_cast<unsigned short>(c));
 		return io.WantTextInput || io.WantCaptureKeyboard;
 	}
 
 	bool IMGUISystem::onScroll(vec2 offset)
 	{
-	    ImGuiIO& io = ImGui::GetIO();
-	    io.MouseWheelH += offset.x;
-	    io.MouseWheel += offset.y;
+		(void)offset;
+		ImGuiIO& io = ImGui::GetIO();
 		return io.WantCaptureMouse;
+	}
+
+	void IMGUISystem::feedKeyPress(int keyCode)
+	{
+		if (!m_isInit) return;
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[keyCode] = true;
+
+		io.KeyCtrl = io.KeysDown[TZW_KEY_LEFT_CONTROL] || io.KeysDown[TZW_KEY_RIGHT_CONTROL];
+		io.KeyShift = io.KeysDown[TZW_KEY_LEFT_SHIFT] || io.KeysDown[TZW_KEY_RIGHT_SHIFT];
+		io.KeyAlt = io.KeysDown[TZW_KEY_LEFT_ALT] || io.KeysDown[TZW_KEY_RIGHT_ALT];
+		io.KeySuper = io.KeysDown[TZW_KEY_LEFT_SUPER] || io.KeysDown[TZW_KEY_RIGHT_SUPER];
+	}
+
+	void IMGUISystem::feedKeyRelease(int keyCode)
+	{
+		if (!m_isInit) return;
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[keyCode] = false;
+
+		io.KeyCtrl = io.KeysDown[TZW_KEY_LEFT_CONTROL] || io.KeysDown[TZW_KEY_RIGHT_CONTROL];
+		io.KeyShift = io.KeysDown[TZW_KEY_LEFT_SHIFT] || io.KeysDown[TZW_KEY_RIGHT_SHIFT];
+		io.KeyAlt = io.KeysDown[TZW_KEY_LEFT_ALT] || io.KeysDown[TZW_KEY_RIGHT_ALT];
+		io.KeySuper = io.KeysDown[TZW_KEY_LEFT_SUPER] || io.KeysDown[TZW_KEY_RIGHT_SUPER];
+	}
+
+	void IMGUISystem::feedCharInput(unsigned int c)
+	{
+		if (!m_isInit) return;
+		ImGuiIO& io = ImGui::GetIO();
+		if (c > 0 && c < 0x10000)
+			io.AddInputCharacter(static_cast<unsigned short>(c));
+	}
+
+	void IMGUISystem::feedMousePress(int button)
+	{
+		if (!m_isInit) return;
+		if (button >= 0 && button < 3)
+		{
+			g_MouseJustPressed[button] = true;
+		}
+	}
+
+	void IMGUISystem::feedScroll(vec2 offset)
+	{
+		if (!m_isInit) return;
+		ImGuiIO& io = ImGui::GetIO();
+		io.MouseWheelH += offset.x;
+		io.MouseWheel += offset.y;
 	}
 
 	void IMGUISystem::renderIMGUI()
 	{
-		auto& io = ImGui::GetIO();
-		io.DeltaTime = Engine::shared()->deltaTime();
-
-		NewFrame();
+		if (!m_frameStarted)
+		{
+			NewFrame();
+		}
+		if (!m_frameStarted)
+		{
+			return;
+		}
 
 		renderData();
+		m_frameStarted = false;
 	}
 
 	bool IMGUISystem::isUiCapturingInput()
@@ -368,31 +420,24 @@ namespace tzw
 
 	bool IMGUISystem::onKeyPress(int keyCode)
 	{
+		(void)keyCode;
 		ImGuiIO& io = ImGui::GetIO();
-		io.KeysDown[keyCode] = true;
-
-		io.KeyCtrl = io.KeysDown[TZW_KEY_LEFT_CONTROL] || io.KeysDown[TZW_KEY_RIGHT_CONTROL];
-		io.KeyShift = io.KeysDown[TZW_KEY_LEFT_SHIFT] || io.KeysDown[TZW_KEY_RIGHT_SHIFT];
-		io.KeyAlt = io.KeysDown[TZW_KEY_LEFT_ALT] || io.KeysDown[TZW_KEY_RIGHT_ALT];
-		io.KeySuper = io.KeysDown[TZW_KEY_LEFT_SUPER] || io.KeysDown[TZW_KEY_RIGHT_SUPER];
 		return io.WantCaptureKeyboard || io.WantTextInput;
 	}
 
 	bool IMGUISystem::onKeyRelease(int keyCode)
 	{
+		(void)keyCode;
 		ImGuiIO& io = ImGui::GetIO();
-		io.KeysDown[keyCode] = false;
-
-		io.KeyCtrl = io.KeysDown[TZW_KEY_LEFT_CONTROL] || io.KeysDown[TZW_KEY_RIGHT_CONTROL];
-		io.KeyShift = io.KeysDown[TZW_KEY_LEFT_SHIFT] || io.KeysDown[TZW_KEY_RIGHT_SHIFT];
-		io.KeyAlt = io.KeysDown[TZW_KEY_LEFT_ALT] || io.KeysDown[TZW_KEY_RIGHT_ALT];
-		io.KeySuper = io.KeysDown[TZW_KEY_LEFT_SUPER] || io.KeysDown[TZW_KEY_RIGHT_SUPER];
 		return io.WantCaptureKeyboard || io.WantTextInput;
 	}
 
 	void IMGUISystem::NewFrame()
 	{
 		if (!m_isInit) return;
+		if (m_frameStarted) return;
+		if (!ImGui::GetCurrentContext()) return;
+
 		if(!EngineDef::isUseVulkan)
 		{
 			if (!g_FontTexture)
@@ -403,6 +448,12 @@ namespace tzw
 		}
 
 		auto& io = ImGui::GetIO();
+		if (io.Fonts->Fonts.Size <= 0 || !io.Fonts->Fonts[0]->IsLoaded())
+		{
+			return;
+		}
+
+		io.DeltaTime = Engine::shared()->deltaTime() > 0.0f ? Engine::shared()->deltaTime() : 1.0f / 60.0f;
 		auto h = Engine::shared()->windowHeight();
 		auto w = Engine::shared()->windowWidth();
 
@@ -418,6 +469,7 @@ namespace tzw
 		    g_MouseJustPressed[i] = false;
 		}
 		ImGui::NewFrame();
+		m_frameStarted = true;
 	}
 
 }

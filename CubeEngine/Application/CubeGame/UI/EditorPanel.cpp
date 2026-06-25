@@ -1,5 +1,6 @@
 #include "EditorPanel.h"
 #include "CubeGame/BuildingSystem.h"
+#include "CubeGame/GameState.h"
 #include "CubeGame/Rail/RailSystem.h"
 #include "EngineSrc/Game/EditorCamera.h"
 #include "2D/IMGUISystem.h"
@@ -147,50 +148,6 @@ namespace tzw
 		}
 
 		m_editorState = state;
-		if (RailSystem* railSystem = GameWorld::shared()->railSystem())
-		{
-			railSystem->cancelTrackEdit();
-			railSystem->hideEditorVisuals();
-
-			switch (m_editorState)
-			{
-			case EditorState::TrackAdd:
-				railSystem->syncTrackAddVisuals(PlacementMode::CursorBased);
-				break;
-			case EditorState::TrackDelete:
-				railSystem->syncTrackDeleteVisuals();
-				break;
-			case EditorState::StationAdd:
-				railSystem->hideEditorVisuals();
-				break;
-			case EditorState::StationDelete:
-				railSystem->showStationEditorVisuals(true);
-				break;
-			case EditorState::RoutePointAdd:
-				railSystem->hideEditorVisuals();
-				break;
-			case EditorState::RoutePointDelete:
-				railSystem->showRoutePointEditorVisuals(true);
-				break;
-			case EditorState::LineAddControlPoint:
-				railSystem->showLineAddControlBillboards();
-				if (railSystem->lineManager().selectedLineId() != InvalidRailLineId)
-				{
-					railSystem->setLinePreview(railSystem->lineManager().selectedLineId());
-				}
-				break;
-			case EditorState::LineRemoveControlPoint:
-				railSystem->showLineRemoveControlBillboards();
-				if (railSystem->lineManager().selectedLineId() != InvalidRailLineId)
-				{
-					railSystem->setLinePreview(railSystem->lineManager().selectedLineId());
-				}
-				break;
-			default:
-				railSystem->clearLinePreview();
-				break;
-			}
-		}
 	}
 
 	bool EditorPanel::isLineControlEditState() const
@@ -461,14 +418,46 @@ namespace tzw
 		ImGui::End();
 
 		drawRailFloatingWindows();
-		handleEditorWorldInput();
 	}
 
-	void EditorPanel::handleEditorWorldInput()
+	void EditorPanel::onFrameUpdate(float)
+	{
+		if (GameState::shared()->getPlayerMode() == PlayerMode::Editor)
+		{
+			syncEditorWorldVisuals();
+			return;
+		}
+
+		if (RailSystem* railSystem = GameWorld::shared()->railSystem())
+		{
+			railSystem->hideEditorVisuals();
+		}
+	}
+
+	void EditorPanel::syncEditorWorldVisuals()
 	{
 		RailSystem* railSystem = GameWorld::shared()->railSystem();
 		if (railSystem)
 		{
+			if (m_syncedEditorState != m_editorState)
+			{
+				railSystem->cancelTrackEdit();
+				railSystem->hideEditorVisuals();
+				if (isLineControlEditState())
+				{
+					const RailLineId selectedLineId = railSystem->lineManager().selectedLineId();
+					if (selectedLineId != InvalidRailLineId)
+					{
+						railSystem->setLinePreview(selectedLineId);
+					}
+				}
+				else
+				{
+					railSystem->clearLinePreview();
+				}
+				m_syncedEditorState = m_editorState;
+			}
+
 			switch (m_editorState)
 			{
 			case EditorState::TrackAdd:
@@ -501,73 +490,95 @@ namespace tzw
 			}
 		}
 
-		if (EventMgr::shared()->isMouseButtonConsumed(0))
-		{
-			return;
-		}
+	}
 
-		if (ImGui::IsMouseClicked(0))
+	bool EditorPanel::onMousePress(int button, vec2 pos)
+	{
+		(void)pos;
+		if (GameState::shared()->getPlayerMode() != PlayerMode::Editor)
 		{
-			switch (m_editorState)
+			return false;
+		}
+		if (button == TZW_MOUSE_BUTTON_LEFT)
+		{
+			return handleEditorPrimaryClick();
+		}
+		if (button == TZW_MOUSE_BUTTON_RIGHT)
+		{
+			return handleEditorSecondaryClick();
+		}
+		return false;
+	}
+
+	bool EditorPanel::handleEditorPrimaryClick()
+	{
+		RailSystem* railSystem = GameWorld::shared()->railSystem();
+		switch (m_editorState)
+		{
+		case EditorState::CarveSphere:
+		case EditorState::RaiseSphere:
+		case EditorState::CarveBox:
+		case EditorState::RaiseBox:
+		case EditorState::PaintSphere:
+			applyTerrainEdit();
+			return true;
+		case EditorState::TrackAdd:
+			if (railSystem)
 			{
-			case EditorState::CarveSphere:
-			case EditorState::RaiseSphere:
-			case EditorState::CarveBox:
-			case EditorState::RaiseBox:
-			case EditorState::PaintSphere:
-				applyTerrainEdit();
-				break;
-			case EditorState::TrackAdd:
-				if (railSystem)
-				{
-					railSystem->handleTrackAddPrimaryClick(PlacementMode::CursorBased);
-				}
-				break;
-			case EditorState::TrackDelete:
-				if (railSystem)
-				{
-					railSystem->handleTrackDeletePrimaryClick(PlacementMode::CursorBased);
-				}
-				break;
-			case EditorState::StationAdd:
-				if (railSystem)
-				{
-					railSystem->handleStationAddPrimaryClick(PlacementMode::CursorBased);
-				}
-				break;
-			case EditorState::StationDelete:
-				if (railSystem)
-				{
-					railSystem->handleStationDeletePrimaryClick(PlacementMode::CursorBased);
-				}
-				break;
-			case EditorState::RoutePointAdd:
-				if (railSystem)
-				{
-					railSystem->handleRoutePointAddPrimaryClick(PlacementMode::CursorBased);
-				}
-				break;
-			case EditorState::RoutePointDelete:
-				if (railSystem)
-				{
-					railSystem->handleRoutePointDeletePrimaryClick(PlacementMode::CursorBased);
-				}
-				break;
-			case EditorState::LineAddControlPoint:
-				if (railSystem)
-				{
-					railSystem->addPickedControlPointToSelectedLine(PlacementMode::CursorBased);
-				}
-				break;
-			default:
-				break;
+				railSystem->handleTrackAddPrimaryClick(PlacementMode::CursorBased);
 			}
+			return true;
+		case EditorState::TrackDelete:
+			if (railSystem)
+			{
+				railSystem->handleTrackDeletePrimaryClick(PlacementMode::CursorBased);
+			}
+			return true;
+		case EditorState::StationAdd:
+			if (railSystem)
+			{
+				railSystem->handleStationAddPrimaryClick(PlacementMode::CursorBased);
+			}
+			return true;
+		case EditorState::StationDelete:
+			if (railSystem)
+			{
+				railSystem->handleStationDeletePrimaryClick(PlacementMode::CursorBased);
+			}
+			return true;
+		case EditorState::RoutePointAdd:
+			if (railSystem)
+			{
+				railSystem->handleRoutePointAddPrimaryClick(PlacementMode::CursorBased);
+			}
+			return true;
+		case EditorState::RoutePointDelete:
+			if (railSystem)
+			{
+				railSystem->handleRoutePointDeletePrimaryClick(PlacementMode::CursorBased);
+			}
+			return true;
+		case EditorState::LineAddControlPoint:
+			if (railSystem)
+			{
+				railSystem->addPickedControlPointToSelectedLine(PlacementMode::CursorBased);
+			}
+			return true;
+		default:
+			break;
 		}
+		return false;
+	}
 
-		if (ImGui::IsMouseClicked(1) && railSystem && isRailTrackState())
+	bool EditorPanel::handleEditorSecondaryClick()
+	{
+		RailSystem* railSystem = GameWorld::shared()->railSystem();
+		if (railSystem && isRailTrackState())
 		{
 			railSystem->cancelTrackEdit();
+			return true;
 		}
+		return false;
 	}
 
 	void EditorPanel::drawTerrainTab()
@@ -912,6 +923,8 @@ namespace tzw
 
 	EditorPanel::EditorPanel():m_onCreate(nullptr)
 	{
+		setFixedPiority(100);
+		EventMgr::shared()->addFixedPiorityListener(this);
 	}
 
 	void EditorPanel::prepare()

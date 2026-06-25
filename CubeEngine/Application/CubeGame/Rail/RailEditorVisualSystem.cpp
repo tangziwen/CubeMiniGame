@@ -39,6 +39,11 @@ RailStationId RailStationDeleteBillboard::stationId() const
 	return m_stationId;
 }
 
+void RailStationDeleteBillboard::beginSync()
+{
+	m_isUsedThisFrame = false;
+}
+
 void RailStationDeleteBillboard::sync(Node* visualRoot, const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
 	const RailStation& station, const std::function<void(RailStationId)>& onClicked)
@@ -52,6 +57,7 @@ void RailStationDeleteBillboard::sync(Node* visualRoot, const RailNetwork& netwo
 		return;
 	}
 
+	m_isUsedThisFrame = true;
 	m_sprite->setWorldAnchor(sample.position + vec3(0.0f, 0.95f, 0.0f));
 	m_sprite->setColor(vec4::fromRGB(240, 80, 80));
 	m_sprite->setOnBtnClicked([stationId = station.id, onClicked](Sprite*)
@@ -61,16 +67,22 @@ void RailStationDeleteBillboard::sync(Node* visualRoot, const RailNetwork& netwo
 			onClicked(stationId);
 		}
 	});
-	m_sprite->setVisibleByOwner(true);
+	m_sprite->setOwnerVisible(true);
 }
 
 void RailStationDeleteBillboard::hide()
 {
+	m_isUsedThisFrame = false;
 	if (m_sprite)
 	{
 		m_sprite->setOnBtnClicked(nullptr);
-		m_sprite->setVisibleByOwner(false);
+		m_sprite->setOwnerVisible(false);
 	}
+}
+
+bool RailStationDeleteBillboard::isUsedThisFrame() const
+{
+	return m_isUsedThisFrame;
 }
 
 void RailStationDeleteBillboard::ensureSprite(Node* visualRoot)
@@ -91,6 +103,11 @@ RailRoutePointId RailRoutePointDeleteBillboard::routePointId() const
 	return m_routePointId;
 }
 
+void RailRoutePointDeleteBillboard::beginSync()
+{
+	m_isUsedThisFrame = false;
+}
+
 void RailRoutePointDeleteBillboard::sync(Node* visualRoot, const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailRoutePoint& routePoint,
 	const std::function<void(RailRoutePointId)>& onClicked)
@@ -103,6 +120,7 @@ void RailRoutePointDeleteBillboard::sync(Node* visualRoot, const RailNetwork& ne
 		return;
 	}
 
+	m_isUsedThisFrame = true;
 	m_sprite->setWorldAnchor(sample.position + vec3(0.0f, 0.82f, 0.0f));
 	m_sprite->setColor(vec4::fromRGB(240, 80, 80));
 	m_sprite->setOnBtnClicked([routePointId = routePoint.id, onClicked](Sprite*)
@@ -112,16 +130,22 @@ void RailRoutePointDeleteBillboard::sync(Node* visualRoot, const RailNetwork& ne
 			onClicked(routePointId);
 		}
 	});
-	m_sprite->setVisibleByOwner(true);
+	m_sprite->setOwnerVisible(true);
 }
 
 void RailRoutePointDeleteBillboard::hide()
 {
+	m_isUsedThisFrame = false;
 	if (m_sprite)
 	{
 		m_sprite->setOnBtnClicked(nullptr);
-		m_sprite->setVisibleByOwner(false);
+		m_sprite->setOwnerVisible(false);
 	}
+}
+
+bool RailRoutePointDeleteBillboard::isUsedThisFrame() const
+{
+	return m_isUsedThisFrame;
 }
 
 void RailRoutePointDeleteBillboard::ensureSprite(Node* visualRoot)
@@ -142,6 +166,11 @@ RailStationId RailLineAddStationBillboard::stationId() const
 	return m_stationId;
 }
 
+void RailLineAddStationBillboard::beginSync()
+{
+	m_isUsedThisFrame = false;
+}
+
 void RailLineAddStationBillboard::sync(Node* visualRoot, const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
 	const RailStation& station, const std::function<void(RailStationId)>& onClicked)
@@ -155,6 +184,7 @@ void RailLineAddStationBillboard::sync(Node* visualRoot, const RailNetwork& netw
 		return;
 	}
 
+	m_isUsedThisFrame = true;
 	m_sprite->setWorldAnchor(sample.position + vec3(0.0f, 1.05f, 0.0f));
 	m_sprite->setColor(vec4::fromRGB(80, 190, 240));
 	m_sprite->setOnBtnClicked([stationId = station.id, onClicked](Sprite*)
@@ -164,16 +194,22 @@ void RailLineAddStationBillboard::sync(Node* visualRoot, const RailNetwork& netw
 			onClicked(stationId);
 		}
 	});
-	m_sprite->setVisibleByOwner(true);
+	m_sprite->setOwnerVisible(true);
 }
 
 void RailLineAddStationBillboard::hide()
 {
+	m_isUsedThisFrame = false;
 	if (m_sprite)
 	{
 		m_sprite->setOnBtnClicked(nullptr);
-		m_sprite->setVisibleByOwner(false);
+		m_sprite->setOwnerVisible(false);
 	}
+}
+
+bool RailLineAddStationBillboard::isUsedThisFrame() const
+{
+	return m_isUsedThisFrame;
 }
 
 void RailLineAddStationBillboard::ensureSprite(Node* visualRoot)
@@ -194,6 +230,11 @@ RailRoutePointId RailLineAddRoutePointBillboard::routePointId() const
 	return m_routePointId;
 }
 
+void RailLineAddRoutePointBillboard::beginSync()
+{
+	m_isUsedThisFrame = false;
+}
+
 void RailLineAddRoutePointBillboard::sync(Node* visualRoot, const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailRoutePoint& routePoint,
 	const std::function<void(RailRoutePointId)>& onClicked)
@@ -206,6 +247,7 @@ void RailLineAddRoutePointBillboard::sync(Node* visualRoot, const RailNetwork& n
 		return;
 	}
 
+	m_isUsedThisFrame = true;
 	m_sprite->setWorldAnchor(sample.position + vec3(0.0f, 0.92f, 0.0f));
 	m_sprite->setColor(vec4::fromRGB(80, 220, 120));
 	m_sprite->setOnBtnClicked([routePointId = routePoint.id, onClicked](Sprite*)
@@ -215,16 +257,22 @@ void RailLineAddRoutePointBillboard::sync(Node* visualRoot, const RailNetwork& n
 			onClicked(routePointId);
 		}
 	});
-	m_sprite->setVisibleByOwner(true);
+	m_sprite->setOwnerVisible(true);
 }
 
 void RailLineAddRoutePointBillboard::hide()
 {
+	m_isUsedThisFrame = false;
 	if (m_sprite)
 	{
 		m_sprite->setOnBtnClicked(nullptr);
-		m_sprite->setVisibleByOwner(false);
+		m_sprite->setOwnerVisible(false);
 	}
+}
+
+bool RailLineAddRoutePointBillboard::isUsedThisFrame() const
+{
+	return m_isUsedThisFrame;
 }
 
 void RailLineAddRoutePointBillboard::ensureSprite(Node* visualRoot)
@@ -248,6 +296,7 @@ void RailLineRemoveControlPointBillboard::sync(Node* visualRoot, int controlPoin
 		return;
 	}
 
+	m_isUsedThisFrame = true;
 	m_sprite->setWorldAnchor(position + vec3(0.0f, 1.12f, 0.0f));
 	m_sprite->setColor(vec4::fromRGB(240, 120, 60));
 	m_sprite->setOnBtnClicked([controlPointIndex, onClicked](Sprite*)
@@ -257,16 +306,27 @@ void RailLineRemoveControlPointBillboard::sync(Node* visualRoot, int controlPoin
 			onClicked(controlPointIndex);
 		}
 	});
-	m_sprite->setVisibleByOwner(true);
+	m_sprite->setOwnerVisible(true);
 }
 
 void RailLineRemoveControlPointBillboard::hide()
 {
+	m_isUsedThisFrame = false;
 	if (m_sprite)
 	{
 		m_sprite->setOnBtnClicked(nullptr);
-		m_sprite->setVisibleByOwner(false);
+		m_sprite->setOwnerVisible(false);
 	}
+}
+
+void RailLineRemoveControlPointBillboard::beginSync()
+{
+	m_isUsedThisFrame = false;
+}
+
+bool RailLineRemoveControlPointBillboard::isUsedThisFrame() const
+{
+	return m_isUsedThisFrame;
 }
 
 void RailLineRemoveControlPointBillboard::ensureSprite(Node* visualRoot)
@@ -360,18 +420,20 @@ void RailEditorVisualSystem::showStationBillboards(const RailNetwork& network,
 	}
 	hideNodeVisuals();
 	hideTrackPreview();
-	hideBillboards();
+	hideRoutePointDeleteBillboards();
+	hideLineAddBillboards();
+	hideLineRemoveControlPointBillboards();
+	beginStationDeleteBillboardSync();
 
-	if (!deleteMode)
+	if (deleteMode)
 	{
-		return;
+		for (const RailStation& station : stationManager.stations())
+		{
+			ensureStationDeleteBillboard(station.id).sync(m_visualRoot, network, anchorManager,
+				stationManager, station, onClicked);
+		}
 	}
 
-	for (const RailStation& station : stationManager.stations())
-	{
-		ensureStationDeleteBillboard(station.id).sync(m_visualRoot, network, anchorManager,
-			stationManager, station, onClicked);
-	}
 	hideUnusedStationDeleteBillboards(stationManager);
 }
 
@@ -385,18 +447,20 @@ void RailEditorVisualSystem::showRoutePointBillboards(const RailNetwork& network
 	}
 	hideNodeVisuals();
 	hideTrackPreview();
-	hideBillboards();
+	hideStationDeleteBillboards();
+	hideLineAddBillboards();
+	hideLineRemoveControlPointBillboards();
+	beginRoutePointDeleteBillboardSync();
 
-	if (!deleteMode)
+	if (deleteMode)
 	{
-		return;
+		for (const RailRoutePoint& routePoint : routePointManager.routePoints())
+		{
+			ensureRoutePointDeleteBillboard(routePoint.id).sync(m_visualRoot, network, anchorManager,
+				routePoint, onClicked);
+		}
 	}
 
-	for (const RailRoutePoint& routePoint : routePointManager.routePoints())
-	{
-		ensureRoutePointDeleteBillboard(routePoint.id).sync(m_visualRoot, network, anchorManager,
-			routePoint, onClicked);
-	}
 	hideUnusedRoutePointDeleteBillboards(routePointManager);
 }
 
@@ -412,7 +476,10 @@ void RailEditorVisualSystem::showLineAddControlBillboards(const RailNetwork& net
 	}
 	hideNodeVisuals();
 	hideTrackPreview();
-	hideBillboards();
+	hideStationDeleteBillboards();
+	hideRoutePointDeleteBillboards();
+	hideLineRemoveControlPointBillboards();
+	beginLineAddBillboardSync();
 
 	for (const RailStation& station : stationManager.stations())
 	{
@@ -438,7 +505,10 @@ void RailEditorVisualSystem::showLineRemoveControlBillboards(const RailNetwork& 
 	}
 	hideNodeVisuals();
 	hideTrackPreview();
-	hideBillboards();
+	hideStationDeleteBillboards();
+	hideRoutePointDeleteBillboards();
+	hideLineAddBillboards();
+	beginLineRemoveBillboardSync();
 
 	const int controlPointCount = line ? static_cast<int>(line->controlPoints.size()) : 0;
 	while (static_cast<int>(m_lineRemoveControlPointBillboards.size()) < controlPointCount)
@@ -458,6 +528,7 @@ void RailEditorVisualSystem::showLineRemoveControlBillboards(const RailNetwork& 
 			m_lineRemoveControlPointBillboards[i].hide();
 		}
 	}
+	hideUnusedLineRemoveControlPointBillboards();
 }
 
 void RailEditorVisualSystem::hideInteractionVisuals()
@@ -730,16 +801,68 @@ RailLineAddRoutePointBillboard& RailEditorVisualSystem::ensureLineAddRoutePointB
 	return m_lineAddRoutePointBillboards.back();
 }
 
+void RailEditorVisualSystem::beginStationDeleteBillboardSync()
+{
+	for (RailStationDeleteBillboard& billboard : m_stationDeleteBillboards)
+	{
+		billboard.beginSync();
+	}
+}
+
+void RailEditorVisualSystem::beginRoutePointDeleteBillboardSync()
+{
+	for (RailRoutePointDeleteBillboard& billboard : m_routePointDeleteBillboards)
+	{
+		billboard.beginSync();
+	}
+}
+
+void RailEditorVisualSystem::beginLineAddBillboardSync()
+{
+	for (RailLineAddStationBillboard& billboard : m_lineAddStationBillboards)
+	{
+		billboard.beginSync();
+	}
+	for (RailLineAddRoutePointBillboard& billboard : m_lineAddRoutePointBillboards)
+	{
+		billboard.beginSync();
+	}
+}
+
+void RailEditorVisualSystem::beginLineRemoveBillboardSync()
+{
+	for (RailLineRemoveControlPointBillboard& billboard : m_lineRemoveControlPointBillboards)
+	{
+		billboard.beginSync();
+	}
+}
+
 void RailEditorVisualSystem::hideBillboards()
+{
+	hideStationDeleteBillboards();
+	hideRoutePointDeleteBillboards();
+	hideLineAddBillboards();
+	hideLineRemoveControlPointBillboards();
+}
+
+void RailEditorVisualSystem::hideStationDeleteBillboards()
 {
 	for (RailStationDeleteBillboard& billboard : m_stationDeleteBillboards)
 	{
 		billboard.hide();
 	}
+}
+
+void RailEditorVisualSystem::hideRoutePointDeleteBillboards()
+{
 	for (RailRoutePointDeleteBillboard& billboard : m_routePointDeleteBillboards)
 	{
 		billboard.hide();
 	}
+}
+
+void RailEditorVisualSystem::hideLineAddBillboards()
+{
 	for (RailLineAddStationBillboard& billboard : m_lineAddStationBillboards)
 	{
 		billboard.hide();
@@ -748,6 +871,10 @@ void RailEditorVisualSystem::hideBillboards()
 	{
 		billboard.hide();
 	}
+}
+
+void RailEditorVisualSystem::hideLineRemoveControlPointBillboards()
+{
 	for (RailLineRemoveControlPointBillboard& billboard : m_lineRemoveControlPointBillboards)
 	{
 		billboard.hide();
@@ -758,7 +885,7 @@ void RailEditorVisualSystem::hideUnusedStationDeleteBillboards(const RailStation
 {
 	for (RailStationDeleteBillboard& billboard : m_stationDeleteBillboards)
 	{
-		if (!stationExists(stationManager, billboard.stationId()))
+		if (!billboard.isUsedThisFrame() || !stationExists(stationManager, billboard.stationId()))
 		{
 			billboard.hide();
 		}
@@ -769,7 +896,7 @@ void RailEditorVisualSystem::hideUnusedRoutePointDeleteBillboards(const RailRout
 {
 	for (RailRoutePointDeleteBillboard& billboard : m_routePointDeleteBillboards)
 	{
-		if (!routePointExists(routePointManager, billboard.routePointId()))
+		if (!billboard.isUsedThisFrame() || !routePointExists(routePointManager, billboard.routePointId()))
 		{
 			billboard.hide();
 		}
@@ -781,14 +908,25 @@ void RailEditorVisualSystem::hideUnusedLineAddBillboards(const RailStationManage
 {
 	for (RailLineAddStationBillboard& billboard : m_lineAddStationBillboards)
 	{
-		if (!stationExists(stationManager, billboard.stationId()))
+		if (!billboard.isUsedThisFrame() || !stationExists(stationManager, billboard.stationId()))
 		{
 			billboard.hide();
 		}
 	}
 	for (RailLineAddRoutePointBillboard& billboard : m_lineAddRoutePointBillboards)
 	{
-		if (!routePointExists(routePointManager, billboard.routePointId()))
+		if (!billboard.isUsedThisFrame() || !routePointExists(routePointManager, billboard.routePointId()))
+		{
+			billboard.hide();
+		}
+	}
+}
+
+void RailEditorVisualSystem::hideUnusedLineRemoveControlPointBillboards()
+{
+	for (RailLineRemoveControlPointBillboard& billboard : m_lineRemoveControlPointBillboards)
+	{
+		if (!billboard.isUsedThisFrame())
 		{
 			billboard.hide();
 		}

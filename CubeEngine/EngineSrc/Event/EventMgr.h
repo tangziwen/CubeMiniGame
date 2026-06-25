@@ -36,6 +36,10 @@ public:
     void handleMouseMove(vec2 pos);
 	void handleScroll(vec2 offset);
     void apply(float delta);
+	void beginFrame();
+	void dispatchQueuedKeyEvents();
+	void updateFrameListeners(float delta);
+	void dispatchQueuedPointerEvents();
     void removeEventListener(EventListener * event);
     void removeNodeEventListener(Node * node);
     void sortFixedListener();

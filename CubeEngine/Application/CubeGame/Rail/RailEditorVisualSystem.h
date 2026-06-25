@@ -24,16 +24,19 @@ public:
 	explicit RailStationDeleteBillboard(RailStationId stationId);
 
 	RailStationId stationId() const;
+	void beginSync();
 	void sync(Node* visualRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailStation& station,
 		const std::function<void(RailStationId)>& onClicked);
 	void hide();
+	bool isUsedThisFrame() const;
 
 private:
 	void ensureSprite(Node* visualRoot);
 
 	RailStationId m_stationId = InvalidRailStationId;
 	WorldBillboardSprite* m_sprite = nullptr;
+	bool m_isUsedThisFrame = false;
 };
 
 class RailRoutePointDeleteBillboard
@@ -42,15 +45,18 @@ public:
 	explicit RailRoutePointDeleteBillboard(RailRoutePointId routePointId);
 
 	RailRoutePointId routePointId() const;
+	void beginSync();
 	void sync(Node* visualRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailRoutePoint& routePoint, const std::function<void(RailRoutePointId)>& onClicked);
 	void hide();
+	bool isUsedThisFrame() const;
 
 private:
 	void ensureSprite(Node* visualRoot);
 
 	RailRoutePointId m_routePointId = InvalidRailRoutePointId;
 	WorldBillboardSprite* m_sprite = nullptr;
+	bool m_isUsedThisFrame = false;
 };
 
 class RailLineAddStationBillboard
@@ -59,16 +65,19 @@ public:
 	explicit RailLineAddStationBillboard(RailStationId stationId);
 
 	RailStationId stationId() const;
+	void beginSync();
 	void sync(Node* visualRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailStation& station,
 		const std::function<void(RailStationId)>& onClicked);
 	void hide();
+	bool isUsedThisFrame() const;
 
 private:
 	void ensureSprite(Node* visualRoot);
 
 	RailStationId m_stationId = InvalidRailStationId;
 	WorldBillboardSprite* m_sprite = nullptr;
+	bool m_isUsedThisFrame = false;
 };
 
 class RailLineAddRoutePointBillboard
@@ -77,25 +86,30 @@ public:
 	explicit RailLineAddRoutePointBillboard(RailRoutePointId routePointId);
 
 	RailRoutePointId routePointId() const;
+	void beginSync();
 	void sync(Node* visualRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailRoutePoint& routePoint, const std::function<void(RailRoutePointId)>& onClicked);
 	void hide();
+	bool isUsedThisFrame() const;
 
 private:
 	void ensureSprite(Node* visualRoot);
 
 	RailRoutePointId m_routePointId = InvalidRailRoutePointId;
 	WorldBillboardSprite* m_sprite = nullptr;
+	bool m_isUsedThisFrame = false;
 };
 
 class RailLineRemoveControlPointBillboard
 {
 public:
+	void beginSync();
 	void sync(Node* visualRoot, int controlPointIndex, const RailLineControlPoint& controlPoint,
 		const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager,
 		const std::function<void(int)>& onClicked);
 	void hide();
+	bool isUsedThisFrame() const;
 
 private:
 	void ensureSprite(Node* visualRoot);
@@ -104,6 +118,7 @@ private:
 		const RailRoutePointManager& routePointManager, vec3& outPosition) const;
 
 	WorldBillboardSprite* m_sprite = nullptr;
+	bool m_isUsedThisFrame = false;
 };
 
 class RailEditorVisualSystem
@@ -145,11 +160,20 @@ private:
 	RailRoutePointDeleteBillboard& ensureRoutePointDeleteBillboard(RailRoutePointId routePointId);
 	RailLineAddStationBillboard& ensureLineAddStationBillboard(RailStationId stationId);
 	RailLineAddRoutePointBillboard& ensureLineAddRoutePointBillboard(RailRoutePointId routePointId);
+	void beginStationDeleteBillboardSync();
+	void beginRoutePointDeleteBillboardSync();
+	void beginLineAddBillboardSync();
+	void beginLineRemoveBillboardSync();
 	void hideBillboards();
+	void hideStationDeleteBillboards();
+	void hideRoutePointDeleteBillboards();
+	void hideLineAddBillboards();
+	void hideLineRemoveControlPointBillboards();
 	void hideUnusedStationDeleteBillboards(const RailStationManager& stationManager);
 	void hideUnusedRoutePointDeleteBillboards(const RailRoutePointManager& routePointManager);
 	void hideUnusedLineAddBillboards(const RailStationManager& stationManager,
 		const RailRoutePointManager& routePointManager);
+	void hideUnusedLineRemoveControlPointBillboards();
 
 	RailNodeMesh m_nodeMesh;
 	RailTrackMesh m_trackMesh;

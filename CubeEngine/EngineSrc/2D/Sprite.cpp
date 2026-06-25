@@ -257,6 +257,11 @@ void Sprite::setTouchEnable(bool isEnable)
     }
 }
 
+bool Sprite::getTouchEnable() const
+{
+	return m_isTouchEnable;
+}
+
 
 std::string Sprite::getSpriteManggledName()
 {
