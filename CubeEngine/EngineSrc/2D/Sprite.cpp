@@ -29,7 +29,10 @@ Sprite *Sprite::createWithColor(vec4 color,vec2 contentSize)
 
 Sprite::~Sprite()
 {
-    removeFromParent();
+    if (getParent())
+    {
+        removeFromParent();
+    }
 }
 
 void Sprite::initWithTexture(std::string texturePath)

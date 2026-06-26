@@ -19,8 +19,10 @@ set(ENGINE_SOURCES
     2D/GUIWindowMgr.cpp
     2D/InspectableUI.cpp
     2D/LabelNew.cpp
+    2D/NotificationSystem.cpp
     2D/NodeEditor.cpp
     2D/QuadTree2D.cpp
+    2D/RetainedUISystem.cpp
     2D/Sprite.cpp
     2D/SpriteInstanceMgr.cpp
     2D/TableView.cpp
@@ -257,8 +259,10 @@ set(ENGINE_HEADERS
     2D/GUIWindowMgr.h
     2D/InspectableUI.h
     2D/LabelNew.h
+    2D/NotificationSystem.h
     2D/NodeEditor.h
     2D/QuadTree2D.h
+    2D/RetainedUISystem.h
     2D/Sprite.h
     2D/SpriteInstanceMgr.h
     2D/stb_rect_pack.h

@@ -169,16 +169,16 @@ const RailRoutePointManager& RailSystem::routePointManager() const
 	return m_routePointManager;
 }
 
-bool RailSystem::handleStationAddPrimaryClick(PlacementMode placementMode)
+RailEditResult RailSystem::handleStationAddPrimaryClick(PlacementMode placementMode)
 {
 	RailAnchorId anchorId = InvalidRailAnchorId;
 	if (!createAnchorAtHit(placementMode, anchorId))
 	{
-		return false;
+		return RailEditResult::InvalidOperation;
 	}
 	m_stationManager.createStation(anchorId);
 	rebuildAllRailLines();
-	return true;
+	return RailEditResult::Success;
 }
 
 bool RailSystem::handleStationDeletePrimaryClick(PlacementMode placementMode)
@@ -204,16 +204,16 @@ bool RailSystem::handleStationDeletePrimaryClick(PlacementMode placementMode)
 	return changed;
 }
 
-bool RailSystem::handleRoutePointAddPrimaryClick(PlacementMode placementMode)
+RailEditResult RailSystem::handleRoutePointAddPrimaryClick(PlacementMode placementMode)
 {
 	RailAnchorId anchorId = InvalidRailAnchorId;
 	if (!createAnchorAtHit(placementMode, anchorId))
 	{
-		return false;
+		return RailEditResult::InvalidOperation;
 	}
 	m_routePointManager.createRoutePoint(anchorId);
 	rebuildAllRailLines();
-	return true;
+	return RailEditResult::Success;
 }
 
 bool RailSystem::handleRoutePointDeletePrimaryClick(PlacementMode placementMode)
@@ -265,13 +265,17 @@ bool RailSystem::addRoutePointToSelectedLine(RailRoutePointId routePointId)
 	return addControlPointToSelectedLine(controlPoint);
 }
 
-bool RailSystem::addPickedControlPointToSelectedLine(PlacementMode placementMode)
+RailEditResult RailSystem::addPickedControlPointToSelectedLine(PlacementMode placementMode)
 {
 	if (addPickedStationToSelectedLine(placementMode))
 	{
-		return true;
+		return RailEditResult::Success;
 	}
-	return addPickedRoutePointToSelectedLine(placementMode);
+	if (addPickedRoutePointToSelectedLine(placementMode))
+	{
+		return RailEditResult::Success;
+	}
+	return RailEditResult::InvalidOperation;
 }
 
 bool RailSystem::addPickedStationToSelectedLine(PlacementMode placementMode)

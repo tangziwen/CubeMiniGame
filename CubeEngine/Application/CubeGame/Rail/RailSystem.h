@@ -10,6 +10,12 @@ namespace tzw {
 
 class Node;
 
+enum class RailEditResult
+{
+	Success,
+	InvalidOperation,
+};
+
 class RailSystem
 {
 public:
@@ -36,13 +42,13 @@ public:
 	const RailStationManager& stationManager() const;
 	RailRoutePointManager& routePointManager();
 	const RailRoutePointManager& routePointManager() const;
-	bool handleStationAddPrimaryClick(PlacementMode placementMode);
+	RailEditResult handleStationAddPrimaryClick(PlacementMode placementMode);
 	bool handleStationDeletePrimaryClick(PlacementMode placementMode);
-	bool handleRoutePointAddPrimaryClick(PlacementMode placementMode);
+	RailEditResult handleRoutePointAddPrimaryClick(PlacementMode placementMode);
 	bool handleRoutePointDeletePrimaryClick(PlacementMode placementMode);
 	bool addStationToSelectedLine(RailStationId stationId);
 	bool addRoutePointToSelectedLine(RailRoutePointId routePointId);
-	bool addPickedControlPointToSelectedLine(PlacementMode placementMode);
+	RailEditResult addPickedControlPointToSelectedLine(PlacementMode placementMode);
 	bool addPickedStationToSelectedLine(PlacementMode placementMode);
 	bool addPickedRoutePointToSelectedLine(PlacementMode placementMode);
 	void syncTrackAddVisuals(PlacementMode placementMode);

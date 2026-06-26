@@ -4,6 +4,7 @@
 #include "CubeGame/Rail/RailSystem.h"
 #include "EngineSrc/Game/EditorCamera.h"
 #include "2D/IMGUISystem.h"
+#include "2D/NotificationSystem.h"
 #include "Event/EventMgr.h"
 
 #include <cstdio>
@@ -27,6 +28,14 @@ namespace tzw
 
 			const RailRoutePoint* routePoint = railSystem->routePointManager().routePoint(controlPoint.routePointId);
 			return routePoint ? routePoint->name : "Missing Route Point";
+		}
+
+		void notifyRailEditResult(RailEditResult result)
+		{
+			if (result != RailEditResult::Success)
+			{
+				NotificationSystem::shared()->push("invalid operation", NotificationLevel::Warning);
+			}
 		}
 	}
 
@@ -273,14 +282,15 @@ namespace tzw
 	void EditorPanel::drawParameterWindow(vec2 screenSize)
 	{
 		ImGui::SetNextWindowPos(
-			ImVec2(15.0f, screenSize.y - 80.0f),
+			ImVec2(15.0f, screenSize.y - 96.0f),
 			ImGuiCond_Always,
 			ImVec2(0.0f, 1.0f));
-		ImGui::SetNextWindowSize(ImVec2(220.0f, 180.0f), ImGuiCond_Always);
+		ImGui::SetNextWindowSize(ImVec2(300.0f, 260.0f), ImGuiCond_Always);
 		ImGui::Begin("EditorParameter", nullptr,
-			ImGuiWindowFlags_NoDecoration
+			ImGuiWindowFlags_NoTitleBar
+			| ImGuiWindowFlags_NoResize
+			| ImGuiWindowFlags_NoCollapse
 			| ImGuiWindowFlags_NoMove
-			| ImGuiWindowFlags_NoScrollbar
 			| ImGuiWindowFlags_NoSavedSettings);
 		drawParameterPanel();
 		ImGui::End();
@@ -537,7 +547,7 @@ namespace tzw
 		case EditorState::StationAdd:
 			if (railSystem)
 			{
-				railSystem->handleStationAddPrimaryClick(PlacementMode::CursorBased);
+				notifyRailEditResult(railSystem->handleStationAddPrimaryClick(PlacementMode::CursorBased));
 			}
 			return true;
 		case EditorState::StationDelete:
@@ -549,7 +559,7 @@ namespace tzw
 		case EditorState::RoutePointAdd:
 			if (railSystem)
 			{
-				railSystem->handleRoutePointAddPrimaryClick(PlacementMode::CursorBased);
+				notifyRailEditResult(railSystem->handleRoutePointAddPrimaryClick(PlacementMode::CursorBased));
 			}
 			return true;
 		case EditorState::RoutePointDelete:
@@ -561,7 +571,7 @@ namespace tzw
 		case EditorState::LineAddControlPoint:
 			if (railSystem)
 			{
-				railSystem->addPickedControlPointToSelectedLine(PlacementMode::CursorBased);
+				notifyRailEditResult(railSystem->addPickedControlPointToSelectedLine(PlacementMode::CursorBased));
 			}
 			return true;
 		default:
