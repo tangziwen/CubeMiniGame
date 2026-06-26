@@ -120,15 +120,15 @@ namespace tzw {
 			for(auto & command : cmdList)
 			{
 				MaterialInstance * mat = new MaterialInstance();
-				mat->loadFromTemplate("ThumbNail");
-				auto materialTemplate = mat->ensureUniqueMaterialTemplate();
-				materialTemplate->setCullMode(RenderFlag::CullMode::Front);
+				mat->loadFromMaterial("ThumbNail");
+				auto material = mat->ensureUniqueMaterial();
+				material->setCullMode(RenderFlag::CullMode::Front);
 				auto varList = command.getMat()->getVarList();
 				mat->setVar("DiffuseMap", varList["DiffuseMap"]);
 				mat->setVar("MetallicMap", varList["MetallicMap"]);
 				mat->setVar("RoughnessMap", varList["RoughnessMap"]);
 				mat->setVar("NormalMap", varList["NormalMap"]);
-				materialTemplate->setIsEnableInstanced(command.getMat()->isEnableInstanced());
+				material->setIsEnableInstanced(command.getMat()->isEnableInstanced());
 				mat->reload();
 				command.setMat(mat);
 				command.m_transInfo.m_projectMatrix = p;

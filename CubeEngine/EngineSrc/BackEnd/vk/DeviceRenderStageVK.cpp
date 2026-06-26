@@ -33,7 +33,7 @@ namespace tzw
 
             //if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
             MaterialInstance * mat = a.getMat();
-            auto materialTemplate = mat->getMaterialTemplate();
+            auto material = mat->getMaterial();
 
             //std::string & matStr = mat->getFullDescriptionStr();
             DevicePipelineVK * currPipeLine = nullptr;
@@ -51,7 +51,7 @@ namespace tzw
                 currDeviceMat = static_cast<DeviceMaterialVK *>(deviceMatIter->second);
             }
 
-            auto iter = m_pipelinePool.find(materialTemplate->getFullDescriptionStr());
+            auto iter = m_pipelinePool.find(material->getFullDescriptionStr());
             if(iter == m_pipelinePool.end())
             {
                 DeviceVertexInput vertexInput;
@@ -88,7 +88,7 @@ namespace tzw
                     currPipeLine = new DevicePipelineVK();
                     currPipeLine->init(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
                 }
-                m_pipelinePool[materialTemplate->getFullDescriptionStr()] = currPipeLine;
+                m_pipelinePool[material->getFullDescriptionStr()] = currPipeLine;
             }
             else
             {

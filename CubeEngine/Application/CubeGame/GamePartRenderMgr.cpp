@@ -14,8 +14,8 @@ namespace tzw
 {
 GamePartRenderMgr::GamePartRenderMgr()
 {
-	g_material = MaterialInstance::createFromTemplate("ModelSTD");
-	g_material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+	g_material = MaterialInstance::createFromMaterial("ModelSTD");
+	g_material->ensureUniqueMaterial()->setIsEnableInstanced(true);
 	g_material->reload();
 	m_previewMat = nullptr;
 }
@@ -154,7 +154,7 @@ MaterialInstance* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce,
 		MaterialInstance * mat;
 		if(state == "Preview")
 		{
-			mat = MaterialInstance::createFromTemplate("ModelRimLight");
+			mat = MaterialInstance::createFromMaterial("ModelRimLight");
 			newMatList.m_matList.emplace_back(mat);
 			auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 			mat->setTex("DiffuseMap", texture);
@@ -167,15 +167,15 @@ MaterialInstance* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce,
 
 			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
 			mat->setTex("NormalMap", normalMapTexture);
-			mat->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+			mat->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 		}
 		else
 		{
 
 			if(!surface->getIsTransparent())
 			{
-				mat = MaterialInstance::createFromTemplate("ModelPBR");
-				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+				mat = MaterialInstance::createFromMaterial("ModelPBR");
+				mat->ensureUniqueMaterial()->setIsEnableInstanced(true);
 				mat->reload();
 				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 				mat->setTex("DiffuseMap", texture);
@@ -193,14 +193,14 @@ MaterialInstance* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce,
 			}
 			else
 			{
-				mat = MaterialInstance::createFromTemplate("ModelTransparent");
-				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+				mat = MaterialInstance::createFromMaterial("ModelTransparent");
+				mat->ensureUniqueMaterial()->setIsEnableInstanced(true);
 				mat->reload();
 				auto texture =  TextureMgr::shared()->getByPath(surface->getDiffusePath());
 				mat->setTex("SpriteTexture", texture);
 
 				newMatList.m_matList.emplace_back(mat);
-				mat->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+				mat->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 			}
 		}//default;
 
@@ -279,7 +279,7 @@ Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 				material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
 				material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
 				material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
-				material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+				material->ensureUniqueMaterial()->setIsEnableInstanced(true);
 				material->reload();
 				empty["default"].m_matList.emplace_back(material);
 			}
@@ -290,7 +290,7 @@ Model* GamePartRenderMgr::getModel(bool isInsatnce, VisualInfo visualInfo)
 			material->setTex("RoughnessMap", TextureMgr::shared()->getByPath(visualInfo.roughnessPath, true));
 			material->setTex("MetallicMap", TextureMgr::shared()->getByPath(visualInfo.metallicPath, true));
 			material->setTex("NormalMap", TextureMgr::shared()->getByPath(visualInfo.normalMapPath, true));
-			material->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+			material->ensureUniqueMaterial()->setIsEnableInstanced(true);
 			material->reload();
 			empty["default"].m_matList.emplace_back(material);
 		}
@@ -314,7 +314,7 @@ GamePartModelMatList& GamePartRenderMgr::createModelMatList(Model* model, GamePa
 	GamePartModelMatList newMatList;
 	if(state == "Preview")
 	{
-		newMatList.m_matList.emplace_back(MaterialInstance::createFromTemplate("ModelRimLight"));
+		newMatList.m_matList.emplace_back(MaterialInstance::createFromMaterial("ModelRimLight"));
 	}
 	else if(state == "isFlipped")//bearing
 	{
@@ -353,15 +353,15 @@ void GamePartRenderMgr::processMatList(GamePartRenderNode* part, GamePartModelMa
 		switch(part->getRenderMode())
 		{
 		case GamePartRenderNode::RenderMode::COMMON:
-			mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+			mat->ensureUniqueMaterial()->setIsEnableInstanced(true);
 			mat->reload();
 			break;
 		case GamePartRenderNode::RenderMode::NO_INSTANCING:
-			mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(false);
+			mat->ensureUniqueMaterial()->setIsEnableInstanced(false);
 			mat->reload();
 			break;
 		case GamePartRenderNode::RenderMode::AFTER_DEPTH:
-			mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(false);
+			mat->ensureUniqueMaterial()->setIsEnableInstanced(false);
 			mat->reload();
 			break;
 		}

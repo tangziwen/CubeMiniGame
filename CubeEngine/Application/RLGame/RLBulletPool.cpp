@@ -14,7 +14,7 @@ int EnemyBulletType = 0;
 void RLBulletPool::initSpriteList(Node * node)
 {
 	m_spriteMgr = new SpriteInstanceMgr();
-	m_spriteMgr->setLocalPiority(3);
+	m_spriteMgr->setLocalPriority(3);
 	node->addChild(m_spriteMgr);
 	defaultBulletType = m_spriteMgr->addTileType("RL/Bullet.png");
 	EnemyBulletType = m_spriteMgr->addTileType("RL/EnemyBullet.png");

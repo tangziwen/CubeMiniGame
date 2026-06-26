@@ -11,7 +11,7 @@ namespace tzw
 	constexpr int CAMERA_PADDING_Y = 240.f;
 	RLPlayerController::RLPlayerController()
 	{
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->addStandaloneEventListener(this);
 		
 		
 	}

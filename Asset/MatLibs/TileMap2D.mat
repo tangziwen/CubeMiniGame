@@ -1,11 +1,13 @@
 {
 	"shaders":{
-		"vs" : "Shaders/GUIColor_v.glsl",
-		"fs" : "Shaders/GUIColor_f.glsl"
+		"vs" : "Shaders/TileMap2D_v.glsl",
+		"fs" : "Shaders/TileMap2D_f.glsl"
 	},
-	"name" : "Color",
+	"name" : "TileMap2D",
 	"BlendEnable" : true,
 	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
+	"EnableInstanced" : true,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}

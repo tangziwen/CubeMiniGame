@@ -58,7 +58,7 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			theMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
 			theMesh->finish();
 			m_quadMesh = theMesh;
-			m_quadMat = MaterialInstance::createFromTemplate("Grass");
+			m_quadMat = MaterialInstance::createFromMaterial("Grass");
 			auto tex = TextureMgr::shared()->getByPath(filePath);
 			 
 			tex->genMipMap();
@@ -89,7 +89,7 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			theMesh->addIndices(indices,sizeof(indices)/sizeof(unsigned short));
 			theMesh->finish();
 			m_quadMesh = theMesh;
-			m_quadMat = MaterialInstance::createFromTemplate("BillBoardInstance");
+			m_quadMat = MaterialInstance::createFromMaterial("BillBoardInstance");
 			auto tex = TextureMgr::shared()->getByPath(filePath);
 			 
 			tex->genMipMap();
@@ -107,7 +107,7 @@ VegetationBatch::VegetationBatch(const VegetationBatInfo * info)
 			for(auto i = 0; i < treeModel->getMatCount(); i ++)
 			{
 				auto mat = treeModel->getMat(i);
-				mat->ensureUniqueMaterialTemplate()->setIsEnableInstanced(true);
+				mat->ensureUniqueMaterial()->setIsEnableInstanced(true);
 				mat->reload();
 			}
 			for(auto i = 0; i < m_model->getMeshCount(); i++)
@@ -386,13 +386,13 @@ FoliageSystem::FoliageSystem()
 	m_isFinish = false;
 	std::string materialName = "FoliageSystem";
 
-	m_barkMat = MaterialInstance::createFromTemplate("ModelInstance");
+	m_barkMat = MaterialInstance::createFromMaterial("ModelInstance");
 	auto tex = TextureMgr::shared()->getByPath("Models/tree/bark.jpg");
 	tex->genMipMap();
 	m_barkMat->setTex("DiffuseMap", tex);
 
 	
-	m_leafMat = MaterialInstance::createFromTemplate("Tree");
+	m_leafMat = MaterialInstance::createFromMaterial("Tree");
 	auto leafTex = TextureMgr::shared()->getByPath("Models/tree/twig.png", true);
 	m_leafMat->setTex("DiffuseMap", leafTex);
 

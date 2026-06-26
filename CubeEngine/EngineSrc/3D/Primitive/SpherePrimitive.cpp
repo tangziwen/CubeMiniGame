@@ -11,7 +11,7 @@ namespace tzw
 	{
 		m_radius = radius;
 		m_resolution = resolution;
-		m_material = MaterialInstance::createFromTemplate("ModelStd");
+		m_material = MaterialInstance::createFromMaterial("ModelStd");
 		auto texture =  TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 		m_material->setTex("DiffuseMap", texture);
 		initMesh();

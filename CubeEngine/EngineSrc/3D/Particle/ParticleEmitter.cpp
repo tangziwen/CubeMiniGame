@@ -25,7 +25,7 @@ namespace tzw {
 		auto mat = MaterialPool::shared()->getMaterialByName(uniqueName);
 
 		if (!mat) {
-			mat = MaterialInstance::createFromTemplate("Particle");
+			mat = MaterialInstance::createFromMaterial("Particle");
 
 			auto tex = TextureMgr::shared()->getByPath("Texture/glow.png");
 
@@ -246,7 +246,7 @@ namespace tzw {
 		auto mat = MaterialPool::shared()->getMaterialByName(uniqueName);
 		//auto mat = getMaterial();
 		if (!mat) {
-			mat = MaterialInstance::createFromTemplate("Particle");
+			mat = MaterialInstance::createFromMaterial("Particle");
 			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
@@ -273,15 +273,15 @@ namespace tzw {
 		ParticleEmitter::setBlendState(int state)
 	{
 		auto mat = getMaterial();
-		auto materialTemplate = mat->ensureUniqueMaterialTemplate();
+		auto material = mat->ensureUniqueMaterial();
 		switch (state) {
 		case 0:
-			materialTemplate->setFactorDst(RenderFlag::BlendingFactor::One);
-			materialTemplate->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
+			material->setFactorDst(RenderFlag::BlendingFactor::One);
+			material->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
 			break;
 		case 1:
-			materialTemplate->setFactorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha);
-			materialTemplate->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
+			material->setFactorDst(RenderFlag::BlendingFactor::OneMinusSrcAlpha);
+			material->setFactorSrc(RenderFlag::BlendingFactor::SrcAlpha);
 			break;
 		}
 	}
@@ -304,7 +304,7 @@ namespace tzw {
 			break;
 		case BillboardPolicy::Y_FIXED:
 		{
-			auto mat = MaterialInstance::createFromTemplate("ParticleFixedY");
+			auto mat = MaterialInstance::createFromMaterial("ParticleFixedY");
 			mat->setTex("DiffuseMap", getMaterial()->getTex("DiffuseMap"));
 			setMaterial(mat);
 		}

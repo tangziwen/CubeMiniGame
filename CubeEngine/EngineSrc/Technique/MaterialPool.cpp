@@ -42,24 +42,24 @@ std::string MaterialPool::getModelMangleedName(std::string modelName)
     return std::string("model_") + modelName;
 }
 
-MaterialInstance * MaterialPool::getMatFromTemplate(std::string effectName)
+MaterialInstance * MaterialPool::getMaterialInstanceFromMaterial(std::string effectName)
 {
 	auto mat = getMaterialByName(effectName);
 	if (!mat)
 	{
-		mat = MaterialInstance::createFromTemplate(effectName);
+		mat = MaterialInstance::createFromMaterial(effectName);
 		addMaterial(effectName, mat);
 	}
 	return mat;
 }
 
-MaterialInstance* MaterialPool::getMatFromTemplateWithUniqueName(std::string effectName, std::string uniqueName)
+MaterialInstance* MaterialPool::getMaterialInstanceFromMaterialWithUniqueName(std::string effectName, std::string uniqueName)
 {
 	std::string totalName = uniqueName + effectName;
 	auto mat = getMaterialByName(totalName);
 	if (!mat)
 	{
-		mat = MaterialInstance::createFromTemplate(effectName);
+		mat = MaterialInstance::createFromMaterial(effectName);
 		addMaterial(totalName, mat);
 	}
 	return mat;

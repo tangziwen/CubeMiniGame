@@ -964,8 +964,8 @@ namespace tzw
 
 	EditorPanel::EditorPanel():m_onCreate(nullptr)
 	{
-		setFixedPiority(100);
-		EventMgr::shared()->addFixedPiorityListener(this);
+		setStandaloneEventPriority(100);
+		EventMgr::shared()->addStandaloneEventListener(this);
 	}
 
 	void EditorPanel::prepare()

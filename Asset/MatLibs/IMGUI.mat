@@ -6,6 +6,7 @@
 	"name" : "Sprite",
 	"BlendEnable" : true,
 	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
 	"cullFace" : false,
 	"property" : {
 		"attributes" : [

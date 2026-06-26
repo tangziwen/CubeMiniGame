@@ -73,7 +73,7 @@ enum class PinType
 	    s_HeaderBackground = TextureMgr::shared()->getByPath("UITexture/NodeEditor/BlueprintBackground.png");
 	    s_SaveIcon         = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_save_white_24dp.png");
 	    s_RestoreIcon      = TextureMgr::shared()->getByPath("UITexture/NodeEditor/ic_restore_white_24dp.png");
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->addStandaloneEventListener(this);
 	}
 
 	void GameNodeEditor::drawIMGUI(bool * isOpen)

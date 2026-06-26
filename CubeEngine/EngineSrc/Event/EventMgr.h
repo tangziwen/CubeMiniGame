@@ -24,8 +24,8 @@ public:
 	EventMgr();
     void addListener(EventListener * listener);
     void addListener(EventListener * listener, Node * node);
-    void addFixedPiorityListener(EventListener * event);
-    void addNodePiorityListener(Node * node,EventListener * event);
+    void addStandaloneEventListener(EventListener * event);
+    void addNodeEventPriorityListener(Node * node,EventListener * event);
 	void setCaptureListener(EventListener* event);
 
     void handleKeyPress(int keyCode);
@@ -42,8 +42,8 @@ public:
 	void dispatchQueuedPointerEvents();
     void removeEventListener(EventListener * event);
     void removeNodeEventListener(Node * node);
-    void sortFixedListener();
-	void sortNodePiorityListener();
+    void sortStandaloneEventListeners();
+	void sortNodeEventPriorityListeners();
 	void notifyListenerChange();
 	bool isMouseButtonConsumed(int button) const;
 private:
@@ -64,8 +64,8 @@ private:
 	bool dispatchCaptureScroll(EventInfo& info);
 	void markMouseButtonConsumed(int button);
 private:
-    std::vector<EventListener *>m_list;
-    std::deque<EventListener *>m_NodePioritylist;
+    std::vector<EventListener *>m_standaloneEventListeners;
+    std::deque<EventListener *>m_nodeEventPriorityListeners;
     std::deque<EventInfo>m_eventDeque;
     std::unordered_map<Node *, EventListener *> m_nodeListenerMap;
 	EventListener* m_captureListener = nullptr;

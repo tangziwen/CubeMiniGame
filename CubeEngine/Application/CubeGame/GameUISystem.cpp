@@ -88,7 +88,7 @@ GameUISystem::GameUISystem(): m_isShowProfiler(false), m_isShowConsole(false),
 	Texture * packageIcon = nullptr;
 void GameUISystem::init()
 {
-	EventMgr::shared()->addFixedPiorityListener(this);
+	EventMgr::shared()->addStandaloneEventListener(this);
 	IMGUISystem::shared()->addObject(this);
 	m_isShowProfiler = false;
 	m_isShowConsole = false;
@@ -666,10 +666,10 @@ void GameUISystem::drawToolsMenu()
 			}
 		}
 
-		auto bloomComposisit = MaterialPool::shared()->getMatFromTemplate("BloomCompositePass");
+		auto bloomComposisit = MaterialPool::shared()->getMaterialInstanceFromMaterial("BloomCompositePass");
 		bloomComposisit->inspect();
 		
-		auto terrainMat = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
+		auto terrainMat = MaterialPool::shared()->getMaterialInstanceFromMaterial("VoxelTerrain");
 		terrainMat->inspect();
 
 		auto ambient = g_GetCurrScene()->getAmbient();

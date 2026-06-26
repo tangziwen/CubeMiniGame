@@ -13,7 +13,7 @@ namespace tzw
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
 	    MaterialInstance * matTSAA = new MaterialInstance();
-	    matTSAA->loadFromTemplate("TSAA");
+	    matTSAA->loadFromMaterial("TSAA");
 
 
 	    MaterialPool::shared()->addMaterial("TSAA", matTSAA);

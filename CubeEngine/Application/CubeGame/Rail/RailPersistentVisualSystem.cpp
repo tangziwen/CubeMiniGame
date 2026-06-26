@@ -1,6 +1,7 @@
 #include "RailPersistentVisualSystem.h"
 
 #include "EngineSrc/3D/Primitive/CubePrimitive.h"
+#include "EngineSrc/2D/RetainedUISystem.h"
 #include "EngineSrc/3D/Primitive/LinePrimitive.h"
 #include "EngineSrc/Base/Node.h"
 #include "EngineSrc/Math/vec4.h"
@@ -11,6 +12,9 @@ namespace
 {
 constexpr int PersistentTrackVisualRootPriority = 10;
 constexpr int PersistentPointVisualRootPriority = 20;
+const char* PersistentUiLayerName = "default";
+const char* PersistentUiRootName = "RailPersistentVisualRoot";
+constexpr int PersistentUiLayerPriority = 0;
 }
 
 RailStationVisual::RailStationVisual(RailStationId stationId)
@@ -23,7 +27,7 @@ RailStationId RailStationVisual::stationId() const
 	return m_stationId;
 }
 
-void RailStationVisual::sync(Node* visualRoot, const RailNetwork& network,
+void RailStationVisual::sync(Node* visualRoot, Node* uiRoot, const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailStationManager& stationManager, const RailStation& station)
 {
 	ensureMarker(visualRoot);
@@ -40,7 +44,7 @@ void RailStationVisual::sync(Node* visualRoot, const RailNetwork& network,
 	}
 	m_marker->setIsVisible(true);
 	m_marker->setPos(sample.position + vec3(0.0f, 0.34f, 0.0f));
-	m_nameBillboard.sync(visualRoot, sample.position + vec3(0.0f, 1.05f, 0.0f), station.name,
+	m_nameBillboard.sync(uiRoot, sample.position + vec3(0.0f, 1.05f, 0.0f), station.name,
 		vec4::fromRGB(80, 70, 35, 225));
 }
 
@@ -76,7 +80,7 @@ RailRoutePointId RailRoutePointVisual::routePointId() const
 	return m_routePointId;
 }
 
-void RailRoutePointVisual::sync(Node* visualRoot, const RailNetwork& network,
+void RailRoutePointVisual::sync(Node* visualRoot, Node* uiRoot, const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailRoutePoint& routePoint)
 {
 	ensureMarker(visualRoot);
@@ -93,7 +97,7 @@ void RailRoutePointVisual::sync(Node* visualRoot, const RailNetwork& network,
 	}
 	m_marker->setIsVisible(true);
 	m_marker->setPos(sample.position + vec3(0.0f, 0.28f, 0.0f));
-	m_nameBillboard.sync(visualRoot, sample.position + vec3(0.0f, 0.88f, 0.0f), routePoint.name,
+	m_nameBillboard.sync(uiRoot, sample.position + vec3(0.0f, 0.88f, 0.0f), routePoint.name,
 		vec4::fromRGB(55, 45, 75, 225));
 }
 
@@ -192,11 +196,11 @@ void RailTrackVisualSet::ensureVisualRoot(Node* sceneRoot)
 	{
 		m_visualRoot = new Node();
 		m_visualRoot->setName("RailPersistentTrackVisualRoot");
-		m_visualRoot->setLocalPiority(PersistentTrackVisualRootPriority);
+		m_visualRoot->setLocalPriority(PersistentTrackVisualRootPriority);
 	}
 	if (!m_visualRoot->getParent())
 	{
-		sceneRoot->addChild(m_visualRoot, false);
+		sceneRoot->addChild(m_visualRoot);
 	}
 	if (!m_lineVisual)
 	{
@@ -215,18 +219,19 @@ void RailPointVisualSet::sync(Node* sceneRoot, const RailNetwork& network, const
 		return;
 	}
 	ensureVisualRoot(sceneRoot);
+	ensureUiRoot();
 	hideUnused(stationManager, routePointManager);
 
 	for (const RailStation& station : stationManager.stations())
 	{
 		RailStationVisual& visual = ensureStationVisual(station.id);
-		visual.sync(m_visualRoot, network, anchorManager, stationManager, station);
+		visual.sync(m_visualRoot, m_uiRoot, network, anchorManager, stationManager, station);
 	}
 
 	for (const RailRoutePoint& routePoint : routePointManager.routePoints())
 	{
 		RailRoutePointVisual& visual = ensureRoutePointVisual(routePoint.id);
-		visual.sync(m_visualRoot, network, anchorManager, routePoint);
+		visual.sync(m_visualRoot, m_uiRoot, network, anchorManager, routePoint);
 	}
 }
 
@@ -243,6 +248,15 @@ void RailPointVisualSet::clear()
 		delete m_visualRoot;
 		m_visualRoot = nullptr;
 	}
+	if (m_uiRoot)
+	{
+		if (m_uiRoot->getParent())
+		{
+			m_uiRoot->removeFromParent();
+		}
+		delete m_uiRoot;
+		m_uiRoot = nullptr;
+	}
 }
 
 void RailPointVisualSet::ensureVisualRoot(Node* sceneRoot)
@@ -251,11 +265,24 @@ void RailPointVisualSet::ensureVisualRoot(Node* sceneRoot)
 	{
 		m_visualRoot = new Node();
 		m_visualRoot->setName("RailPersistentPointVisualRoot");
-		m_visualRoot->setLocalPiority(PersistentPointVisualRootPriority);
+		m_visualRoot->setLocalPriority(PersistentPointVisualRootPriority);
 	}
 	if (!m_visualRoot->getParent())
 	{
-		sceneRoot->addChild(m_visualRoot, false);
+		sceneRoot->addChild(m_visualRoot);
+	}
+}
+
+void RailPointVisualSet::ensureUiRoot()
+{
+	if (!m_uiRoot)
+	{
+		m_uiRoot = new Node();
+		m_uiRoot->setName(PersistentUiRootName);
+	}
+	if (!m_uiRoot->getParent())
+	{
+		RetainedUISystem::shared()->addToLayer(PersistentUiLayerName, PersistentUiLayerPriority, m_uiRoot);
 	}
 }
 

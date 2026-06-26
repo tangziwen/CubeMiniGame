@@ -16,7 +16,7 @@ CubePrimitive::CubePrimitive(float width, float depth, float height, bool isNeed
 	m_color = vec4::fromRGB(255,255,255);
 	if(isNeedPreGenerateMat)
 	{
-	    m_material = MaterialInstance::createFromTemplate("ModelSTD");
+	    m_material = MaterialInstance::createFromMaterial("ModelSTD");
 		auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png");
 		m_material->setTex("DiffuseMap", texture);
 	}

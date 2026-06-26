@@ -90,7 +90,7 @@ namespace tzw
 		}
 		loadOwnerShips();
 
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->addStandaloneEventListener(this);
 
 		PTMGameTimeMgr::shared()->setStartDate(207,11,1);
 		PTMGameTimeMgr::shared()->setOnDayTickCallback(

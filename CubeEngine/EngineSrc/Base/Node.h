@@ -79,8 +79,8 @@ public:
 	vec3 getLocalForward();
 	vec3 getUp();
 	vec3 getLocalUp();
-	int getLocalPiority() const;
-	void setLocalPiority(int zOrder);
+	int getLocalPriority() const;
+	void setLocalPriority(int zOrder);
 	void sortChildren();
 	Scene *getScene() const;
 	void setScene(Scene *scene);
@@ -88,8 +88,8 @@ public:
 	virtual void setRotateQ(const Quaternion &rotateQ);
 	virtual void setRotateQ(const vec4 &rotateQInV4);
 	virtual void onTransformChanged();
-	unsigned int getGlobalPiority() const;
-	void setGlobalPiority(unsigned int globalPiority);
+	unsigned int getNodeEventPriority() const;
+	void setNodeEventPriority(unsigned int nodeEventPriority);
 	size_t getChildrenAmount();
 	unsigned int getTag() const;
 	void setTag(unsigned int tag);
@@ -105,8 +105,8 @@ protected:
 	vec3 m_pos;
 	bool m_needToUpdate;
 	Matrix44 m_worldTransformCache;
-	int m_localPiority;
-	unsigned int m_globalPiority;
+	int m_localPriority;
+	unsigned int m_nodeEventPriority;
 	bool m_isAccpectOCTtree;
 	std::string m_name;
 	Node * m_parent;

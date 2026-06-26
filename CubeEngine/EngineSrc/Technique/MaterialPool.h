@@ -16,8 +16,8 @@ public:
     Mesh * getMeshByName(std::string name);
     void addMesh(std::string materialName, Mesh * mat);
     std::string getModelMangleedName(std::string modelName);
-	MaterialInstance * getMatFromTemplate(std::string effectName);
-	MaterialInstance * getMatFromTemplateWithUniqueName(std::string effectName, std::string uniqueName);
+	MaterialInstance * getMaterialInstanceFromMaterial(std::string effectName);
+	MaterialInstance * getMaterialInstanceFromMaterialWithUniqueName(std::string effectName, std::string uniqueName);
 private:
     std::map<std::string, MaterialInstance *> m_materialMap;
 	std::map<std::string, Mesh *> m_modelMap;

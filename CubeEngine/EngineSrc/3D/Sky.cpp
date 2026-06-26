@@ -9,7 +9,7 @@ namespace tzw
 	Sky::Sky()
 	{
 		m_isEnable = true;
-		m_skyBoxTechnique = MaterialInstance::createFromTemplate("Sky");
+		m_skyBoxTechnique = MaterialInstance::createFromMaterial("Sky");
 		auto sphere = SpherePrimitive(1.0f, 24);
 		m_mesh = sphere.getMesh();
 		setCamera(g_GetCurrScene()->defaultCamera());

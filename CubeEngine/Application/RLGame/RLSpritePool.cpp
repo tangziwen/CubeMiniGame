@@ -8,7 +8,7 @@ namespace tzw
 	void RLSpritePool::init(Node * node)
 	{
 		m_mgr = new SpriteInstanceMgr();
-		m_mgr->setLocalPiority(2);
+		m_mgr->setLocalPriority(2);
 		node->addChild(m_mgr);
 	}
 	SpriteInstanceMgr* RLSpritePool::get()

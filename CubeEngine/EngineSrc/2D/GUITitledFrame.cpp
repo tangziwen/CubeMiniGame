@@ -33,7 +33,7 @@ GUIWindow::GUIWindow()
 {
     m_label = nullptr;
     m_isDraging = false;
-    EventMgr::shared()->addNodePiorityListener(this,this);
+    EventMgr::shared()->addNodeEventPriorityListener(this,this);
     setIsSwallow(true);
     m_isDragable = true;
 }

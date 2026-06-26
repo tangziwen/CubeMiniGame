@@ -29,7 +29,7 @@ namespace tzw
 		{
 			m_townSprite = Sprite::create("PTM/town.png");
 			m_townSprite->setPos2D(m_parent->m_placedTile->getCanvasPos());
-			m_townSprite->setLocalPiority(1);
+			m_townSprite->setLocalPriority(1);
 			PTMWorld::shared()->getMapRootNode()->addChild(m_townSprite);
 			m_townSprite->setTouchEnable(true);
 			m_townSprite->setOnBtnClicked(
@@ -58,7 +58,7 @@ namespace tzw
 		{
 			m_label = LabelNew::create(m_parent->m_name);
 			vec2 cs = m_label->getContentSize();
-			m_label->setLocalPiority(1);
+			m_label->setLocalPriority(1);
 			m_townSprite->addChild(m_label);
 			m_label->setPos2D(0, - cs.y/2.0 -8);
 		}
@@ -66,7 +66,7 @@ namespace tzw
 		{
 			m_grassion = LabelNew::create("100%");
 			vec2 cs = m_label->getContentSize();
-			m_grassion->setLocalPiority(2);
+			m_grassion->setLocalPriority(2);
 			m_townSprite->addChild(m_grassion);
 		}
 		std::stringstream ss;

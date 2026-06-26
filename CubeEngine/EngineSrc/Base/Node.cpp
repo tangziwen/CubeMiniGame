@@ -19,8 +19,8 @@ Node::Node()
 	  m_rotateQ(Quaternion(0.0f, 0.0f, 0.0f, 1.0f)),
 	  m_pos(vec3()),
 	  m_needToUpdate(true),
-	  m_localPiority(0),
-	  m_globalPiority(0),
+	  m_localPriority(0),
+	  m_nodeEventPriority(0),
 	  m_isAccpectOCTtree(true),
 	  m_name("default"),
 	  m_parent(nullptr), m_tag(0),
@@ -220,7 +220,7 @@ void Node::addChild(Node *node, bool isNeedSort)
         node->setNeedToUpdate(true);
 
 		//for performance issuse, the Zorder < -99 no need to sort, just insert away.
-		if (node->getLocalPiority() < -99 || !isNeedSort)
+		if (node->getLocalPriority() < -99 || !isNeedSort)
 		{
 			m_children.push_front(node);
 		}
@@ -365,14 +365,14 @@ void Node::removeAllChildrenR()
     delete this;
 }
 
-unsigned int Node::getGlobalPiority() const
+unsigned int Node::getNodeEventPriority() const
 {
-    return m_globalPiority;
+    return m_nodeEventPriority;
 }
 
-void Node::setGlobalPiority(unsigned int globalPiority)
+void Node::setNodeEventPriority(unsigned int nodeEventPriority)
 {
-    m_globalPiority = globalPiority;
+    m_nodeEventPriority = nodeEventPriority;
 	EventMgr::shared()->notifyListenerChange();
 	//Renderer::shared()->notifySortGui();
 }
@@ -500,14 +500,14 @@ vec3 Node::getLocalUp()
     return vec3( m[4], m[5], m[6]);
 }
 
-int Node::getLocalPiority() const
+int Node::getLocalPriority() const
 {
-    return m_localPiority;
+    return m_localPriority;
 }
 
-void Node::setLocalPiority(int zOrder)
+void Node::setLocalPriority(int zOrder)
 {
-    m_localPiority = zOrder;
+    m_localPriority = zOrder;
     if (m_parent)
     {
         m_parent->sortChildren();
@@ -518,7 +518,7 @@ void Node::setLocalPiority(int zOrder)
 
 static bool NodeSort(const Node *a,const Node *b)
 {
-    return a->getLocalPiority() < b->getLocalPiority();
+    return a->getLocalPriority() < b->getLocalPriority();
 }
 
 void Node::sortChildren()

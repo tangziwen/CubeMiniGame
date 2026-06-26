@@ -148,7 +148,7 @@ void TerrainRuntime::init(const TerrainOctreeConfig& config)
 
 	m_editSystem->bind(GameMap::shared(), m_octree.get(), m_meshCache.get());
 
-	auto material = MaterialPool::shared()->getMatFromTemplate("VoxelTerrain");
+	auto material = MaterialPool::shared()->getMaterialInstanceFromMaterial("VoxelTerrain");
 	m_drawableSet->setMaterial(material);
 
 	m_runtimeSeconds = 0.0f;

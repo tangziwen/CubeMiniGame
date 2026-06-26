@@ -13,8 +13,6 @@ namespace
 constexpr float NameBillboardPaddingX = 8.0f;
 constexpr float NameBillboardMinWidth = 76.0f;
 constexpr float NameBillboardHeight = 24.0f;
-constexpr unsigned int NameBillboardBackgroundPriority = 20;
-constexpr unsigned int NameBillboardLabelPriority = 21;
 }
 
 void RailPointNameBillboard::sync(Node* visualRoot, const vec3& worldAnchor, const std::string& text,
@@ -56,12 +54,10 @@ void RailPointNameBillboard::ensureView(Node* visualRoot)
 	m_background->setScreenOffset(vec2(0.0f, 0.0f));
 	m_background->setTouchEnable(false);
 	m_background->setIsSwallow(false);
-	m_background->setGlobalPiority(NameBillboardBackgroundPriority);
-	visualRoot->addChild(m_background, false);
+	visualRoot->addChild(m_background);
 
 	m_label = LabelNew::create("");
-	m_label->setGlobalPiority(NameBillboardLabelPriority);
-	m_background->addChild(m_label, false);
+	m_background->addChild(m_label);
 }
 
 void RailPointNameBillboard::refreshText(const std::string& text)

@@ -19,7 +19,7 @@ namespace tzw
     {
 		m_mat = material;
         m_shadingParams = material->getShadingParams();
-        DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(material->getMaterialTemplate()->getProgram()->getDeviceShader());
+        DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(material->getMaterial()->getProgram()->getDeviceShader());
         m_shader = shader;
 
         //create material descriptor pool

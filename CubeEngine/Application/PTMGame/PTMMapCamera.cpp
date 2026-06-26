@@ -11,7 +11,7 @@ namespace tzw
 	PTMMapCamera::PTMMapCamera(Node * mapRootNode)
 		:m_mapRootNode(mapRootNode),m_forward(0),m_slide(0)
 	{
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->addStandaloneEventListener(this);
 	}
 
 	bool PTMMapCamera::onKeyPress(int keyCode)
@@ -157,7 +157,7 @@ namespace tzw
 
 	void PTMMapCamera::init()
 	{
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->addStandaloneEventListener(this);
 	}
 
 }

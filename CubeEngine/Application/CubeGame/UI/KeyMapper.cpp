@@ -24,8 +24,8 @@ namespace tzw
 	KeyMapper::KeyMapper():m_isOpen(false), m_changeCB(nullptr)
 	{
 		setIsSwallow(true);
-		setFixedPiority(9999);
-		EventMgr::shared()->addFixedPiorityListener(this);
+		setStandaloneEventPriority(9999);
+		EventMgr::shared()->addStandaloneEventListener(this);
 	}
 
 	void KeyMapper::open(std::function<void(int)> keyChangeCallBack)

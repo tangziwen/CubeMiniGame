@@ -1,11 +1,12 @@
 {
 	"shaders":{
-		"vs" : "Shaders/SpriteTexture_v.glsl",
-		"fs" : "Shaders/Text_f.glsl"
+		"vs" : "Shaders/GUIColor_v.glsl",
+		"fs" : "Shaders/GUIColor_f.glsl"
 	},
-	"name" : "Sprite",
+	"name" : "Color",
 	"BlendEnable" : true,
 	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}

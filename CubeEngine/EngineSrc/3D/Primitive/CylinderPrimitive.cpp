@@ -16,11 +16,11 @@ CylinderPrimitive::CylinderPrimitive(float radiusTop, float radiusBottom, float 
 	m_color = vec4::fromRGB(255,255,255);
 
 
-    m_material = MaterialInstance::createFromTemplate("ModelStd");
+    m_material = MaterialInstance::createFromMaterial("ModelStd");
 	auto texture =  TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 	m_material->setTex("DiffuseMap", texture);
 
-	m_topBottomMaterial = MaterialInstance::createFromTemplate("ModelStd");
+	m_topBottomMaterial = MaterialInstance::createFromMaterial("ModelStd");
 	auto arrowTexture = TextureMgr::shared()->getByPath("Texture/BuiltInTexture/defaultBaseColor.png");
 	m_topBottomMaterial->setTex("DiffuseMap", arrowTexture);
 

@@ -320,7 +320,7 @@ void GameWorld::init()
 
 GameWorld::GameWorld()
 {
-    EventMgr::shared()->addFixedPiorityListener(this);
+    EventMgr::shared()->addStandaloneEventListener(this);
 	setIsSwallow(false);
     m_currentState = GAME_STATE_SPLASH;
 }

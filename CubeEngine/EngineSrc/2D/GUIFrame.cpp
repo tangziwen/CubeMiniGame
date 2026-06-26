@@ -8,7 +8,7 @@ GUIFrame::GUIFrame()
 {
     m_contentSize = vec2(100,100);
     m_mesh = new Mesh();
-	m_material = MaterialPool::shared()->getMatFromTemplate("GUIColor");
+	m_material = MaterialPool::shared()->getMaterialInstanceFromMaterial("GUIColor");
 	m_color = GUIStyleMgr::shared()->defaultPalette()->backGroundColor;
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
@@ -60,7 +60,7 @@ void GUIFrame::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * qu
 {
     RenderCommand command(m_mesh, m_material, this, RenderFlag::RenderStage::GUI);
     setUpTransFormation(command.m_transInfo);
-    command.setZorder(m_globalPiority);
+    command.setZorder(getCustomRenderPriority());
     queues->addRenderCommand(command, requirementArg);
 }
 

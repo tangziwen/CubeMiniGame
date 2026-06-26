@@ -1,12 +1,12 @@
 {
 	"shaders":{
-		"vs" : "Shaders/TileMap2D_v.glsl",
-		"fs" : "Shaders/TileMap2D_f.glsl"
+		"vs" : "Shaders/SpriteTexture_v.glsl",
+		"fs" : "Shaders/Text_f.glsl"
 	},
-	"name" : "TileMap2D",
+	"name" : "Sprite",
 	"BlendEnable" : true,
 	"DepthTestEnable" : false,
-	"EnableInstanced" : true,
+	"DepthWriteEnable" : false,
 	"property" : {
 		"attributes" : [
 			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}

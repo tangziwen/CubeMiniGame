@@ -1,5 +1,5 @@
 #include "MaterialInstance.h"
-#include "MaterialTemplate.h"
+#include "Material.h"
 #include <utility>
 #include <stdlib.h>
 #include "../Shader/ShaderMgr.h"
@@ -80,15 +80,20 @@ void applyAttributeOverride(MaterialInstance * material, rapidjson::Value& attri
 
 }
 
-MaterialInstance::MaterialInstance(): m_materialTemplate(nullptr),m_isMaterialTemplateUnique(false),m_shadingParams(nullptr)
+MaterialInstance::MaterialInstance(): m_material(nullptr),m_isMaterialUnique(false),m_shadingParams(nullptr)
 {
 }
 
-void MaterialInstance::loadFromTemplate(std::string name)
+void MaterialInstance::loadFromMaterial(std::string name)
 {
 	//tlog("load MaterialInstance %s\n", name.c_str());
-	applyTemplate(MaterialTemplate::getFromTemplate(name));
+	applyMaterial(Material::getFromLib(name));
 	//tlog("load MaterialInstance finished %s\n", name.c_str());
+}
+
+void MaterialInstance::loadFromMaterial(Material * material)
+{
+	applyMaterial(material);
 }
 
 void MaterialInstance::loadFromFile(std::string filePath)
@@ -108,7 +113,7 @@ void MaterialInstance::loadFromFile(std::string filePath)
 	}
 	else
 	{
-		applyTemplate(MaterialTemplate::getFromFile(filePath));
+		applyMaterial(Material::getFromFile(filePath));
 	}
 }
 
@@ -120,34 +125,34 @@ void MaterialInstance::loadFromJson(rapidjson::Value& doc, std::string envFolder
 		return;
 	}
 
-	auto materialTemplate = new MaterialTemplate();
-	materialTemplate->loadFromJson(doc, envFolder);
-	applyTemplate(materialTemplate);
+	auto material = new Material();
+	material->loadFromJson(doc, envFolder);
+	applyMaterial(material);
 }
 
-void MaterialInstance::applyTemplate(MaterialTemplate * materialTemplate)
+void MaterialInstance::applyMaterial(Material * material)
 {
-	if(!materialTemplate)
+	if(!material)
 	{
-		tlog("[error] bad material template!!!");
+		tlog("[error] bad material!!!");
 		abort();
 	}
 
-	m_materialTemplate = materialTemplate;
-	m_isMaterialTemplateUnique = false;
-	m_name = materialTemplate->m_name;
+	m_material = material;
+	m_isMaterialUnique = false;
+	m_name = material->m_name;
 
 	if(!m_shadingParams)
 	{
 		m_shadingParams = new ShadingParams();
 	}
-	m_shadingParams->copyFrom(materialTemplate->m_shadingParams);
+	m_shadingParams->copyFrom(material->m_shadingParams);
 }
 
 void MaterialInstance::loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder)
 {
 	std::string materialPath = resolvePathInFolder(doc["MaterialInstance"].GetString(), envFolder);
-	applyTemplate(MaterialTemplate::getFromFile(materialPath));
+	applyMaterial(Material::getFromFile(materialPath));
 	if(doc.HasMember("overrides"))
 	{
 		applyInstanceOverrides(doc["overrides"], envFolder);
@@ -179,7 +184,7 @@ void MaterialInstance::applyInstanceOverrides(rapidjson::Value& overrides, std::
 			}
 			else if(tex[1].IsInt())
 			{
-				ensureUniqueMaterialTemplate()->m_texSlotMap[name] = tex[1].GetInt();
+				ensureUniqueMaterial()->m_texSlotMap[name] = tex[1].GetInt();
 				if(tex.Size() > 2 && tex[2].IsString())
 				{
 					texturePath = tex[2].GetString();
@@ -195,10 +200,17 @@ void MaterialInstance::applyInstanceOverrides(rapidjson::Value& overrides, std::
 
 }
 
-MaterialInstance *MaterialInstance::createFromTemplate(std::string name)
+MaterialInstance *MaterialInstance::createFromMaterial(std::string name)
 {
 	auto mat = new MaterialInstance();
-	mat->loadFromTemplate(name);
+	mat->loadFromMaterial(name);
+	return mat;
+}
+
+MaterialInstance *MaterialInstance::createFromMaterial(Material * material)
+{
+	auto mat = new MaterialInstance();
+	mat->loadFromMaterial(material);
 	return mat;
 }
 
@@ -383,21 +395,21 @@ void MaterialInstance::use(ShaderProgram * extraProgram)
 
 unsigned int MaterialInstance::getMapSlot(std::string mapName)
 {
-	return m_materialTemplate->getMapSlot(mapName);
+	return m_material->getMapSlot(mapName);
 }
 
 
 ShaderProgram *MaterialInstance::getProgram() const
 {
-	return m_materialTemplate->getProgram();
+	return m_material->getProgram();
 }
 
 
 MaterialInstance *MaterialInstance::clone()
 {
 	auto mat = new MaterialInstance();
-	mat->m_materialTemplate = m_materialTemplate;
-	mat->m_isMaterialTemplateUnique = false;
+	mat->m_material = m_material;
+	mat->m_isMaterialUnique = false;
 	mat->m_shadingParams = new ShadingParams();
 	if(m_shadingParams)
 	{
@@ -409,17 +421,17 @@ MaterialInstance *MaterialInstance::clone()
 
 void MaterialInstance::reload()
 {
-	m_materialTemplate->reload();
+	m_material->reload();
 }
 
 bool MaterialInstance::getIsCullFace()
 {
-	return m_materialTemplate->getIsCullFace();
+	return m_material->getIsCullFace();
 }
 
 RenderFlag::CullMode MaterialInstance::getCullMode()
 {
-	return m_materialTemplate->getCullMode();
+	return m_material->getCullMode();
 }
 
 TechniqueVar * MaterialInstance::get(std::string name)
@@ -516,32 +528,32 @@ void MaterialInstance::handleSemanticValuePassing(TechniqueVar * val, const std:
 
 RenderFlag::BlendingFactor MaterialInstance::getFactorSrc() const
 {
-	return m_materialTemplate->getFactorSrc();
+	return m_material->getFactorSrc();
 }
 
 RenderFlag::BlendingFactor MaterialInstance::getFactorDst() const
 {
-	return m_materialTemplate->getFactorDst();
+	return m_material->getFactorDst();
 }
 
 bool MaterialInstance::isIsEnableBlend() const
 {
-	return m_materialTemplate->isIsEnableBlend();
+	return m_material->isIsEnableBlend();
 }
 
 uint32_t MaterialInstance::getMutationFlag()
 {
-	return m_materialTemplate->getMutationFlag();
+	return m_material->getMutationFlag();
 }
 
 uint32_t MaterialInstance::getMaterialFlag()
 {
-	return m_materialTemplate->getMaterialFlag();
+	return m_material->getMaterialFlag();
 }
 
 const std::string& MaterialInstance::getFullDescriptionStr()
 {
-	return m_materialTemplate->getFullDescriptionStr();
+	return m_material->getFullDescriptionStr();
 }
 
 std::unordered_map<std::string, TechniqueVar>& MaterialInstance::getVarList()
@@ -551,32 +563,32 @@ std::unordered_map<std::string, TechniqueVar>& MaterialInstance::getVarList()
 
 PrimitiveTopology MaterialInstance::getPrimitiveTopology()
 {
-	return m_materialTemplate->getPrimitiveTopology();
+	return m_material->getPrimitiveTopology();
 }
 
 RasterFillMode MaterialInstance::getRasterFillMode()
 {
-	return m_materialTemplate->getRasterFillMode();
+	return m_material->getRasterFillMode();
 }
 
 RenderFlag::RenderStage MaterialInstance::getRenderStage() const
 {
-	return m_materialTemplate->getRenderStage();
+	return m_material->getRenderStage();
 }
 
 bool MaterialInstance::isIsDepthTestEnable() const
 {
-	return m_materialTemplate->isIsDepthTestEnable();
+	return m_material->isIsDepthTestEnable();
 }
 
 bool MaterialInstance::isIsDepthWriteEnable() const
 {
-	return m_materialTemplate->isIsDepthWriteEnable();
+	return m_material->isIsDepthWriteEnable();
 }
 
 bool MaterialInstance::isEnableInstanced()
 {
-	return m_materialTemplate->isEnableInstanced();
+	return m_material->isEnableInstanced();
 }
 
 /**
@@ -594,25 +606,24 @@ ShadingParams * MaterialInstance::getShadingParams()
 	return m_shadingParams;
 }
 
-MaterialTemplate * MaterialInstance::getMaterialTemplate()
+Material * MaterialInstance::getMaterial()
 {
-	return m_materialTemplate;
+	return m_material;
 }
 
-const MaterialTemplate * MaterialInstance::getMaterialTemplate() const
+const Material * MaterialInstance::getMaterial() const
 {
-	return m_materialTemplate;
+	return m_material;
 }
 
-MaterialTemplate * MaterialInstance::ensureUniqueMaterialTemplate()
+Material * MaterialInstance::ensureUniqueMaterial()
 {
-	if(!m_isMaterialTemplateUnique)
+	if(!m_isMaterialUnique)
 	{
-		m_materialTemplate = m_materialTemplate->clone();
-		m_isMaterialTemplateUnique = true;
+		m_material = m_material->clone();
+		m_isMaterialUnique = true;
 	}
-	return m_materialTemplate;
+	return m_material;
 }
 
 } // namespace tzw
-

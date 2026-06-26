@@ -3,6 +3,8 @@
 #include "Engine/EngineDef.h"
 #include "Event/Event.h"
 
+#include <string>
+
 namespace tzw
 {
 class Node;
@@ -13,8 +15,13 @@ class RetainedUISystem : public Singleton<RetainedUISystem>, public EventListene
 public:
 	RetainedUISystem();
 
+	Node* root();
 	Node* guiRoot();
 	Scene* guiScene() const;
+	void add(Node* node, bool sort = true);
+	Node* layer(const std::string& name);
+	Node* findOrCreateLayer(const std::string& name, int localPriority);
+	void addToLayer(const std::string& name, int localPriority, Node* node, bool sort = true);
 	void onFrameUpdate(float delta) override;
 
 private:

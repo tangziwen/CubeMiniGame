@@ -27,7 +27,7 @@ ControlPart::ControlPart(std::string itemName):
 
 	GamePart::initFromItemName(itemName);
 	m_parent = nullptr;
-	EventMgr::shared()->addFixedPiorityListener(this);
+	EventMgr::shared()->addStandaloneEventListener(this);
 	ControlPart::generateName();
 	audio = AudioSystem::shared()->createSound("Audio/engine_loop.wav");
 	audio->setIsLooping(true);

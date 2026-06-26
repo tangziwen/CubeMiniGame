@@ -40,7 +40,7 @@ namespace
 
 EditorCamera::EditorCamera()
 {
-	setLocalPiority(-1);
+	setLocalPriority(-1);
 }
 
 EditorCamera* EditorCamera::create(Camera* cloneObj)
@@ -322,7 +322,7 @@ void EditorCamera::init(Camera* cloneObj)
 	cloneObj->getPixelOffset(m_offsetPixelX, m_offsetPixelY);
 	setOffsetPixel(m_offsetPixelX, m_offsetPixelY);
 	syncEulerFromRotation();
-	EventMgr::shared()->addFixedPiorityListener(this);
+	EventMgr::shared()->addStandaloneEventListener(this);
 }
 
 void EditorCamera::syncEulerFromRotation()

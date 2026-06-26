@@ -84,5 +84,14 @@ vec4 Drawable::getOverLayColor()
 {
 	return m_overLayColor;
 }
-} // namespace tzw
 
+unsigned int Drawable::getCustomRenderPriority() const
+{
+	return m_customRenderPriority;
+}
+
+void Drawable::setCustomRenderPriority(unsigned int customRenderPriority)
+{
+	m_customRenderPriority = customRenderPriority;
+}
+} // namespace tzw

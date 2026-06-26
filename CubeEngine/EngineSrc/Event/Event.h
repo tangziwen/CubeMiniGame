@@ -153,8 +153,8 @@ public:
 	virtual bool onScroll(vec2 offset);
     virtual void onFrameUpdate(float delta);
     EventListener();
-    unsigned int getFixedPiority() const;
-    void setFixedPiority(unsigned int getFixedPiority);
+    unsigned int getStandaloneEventPriority() const;
+    void setStandaloneEventPriority(unsigned int standaloneEventPriority);
     bool isSwallow() const;
     void setIsSwallow(bool isSwallow);
     EventMgr *getMgr() const;
@@ -165,7 +165,7 @@ protected:
     Node * m_attachNode;
     EventMgr * m_mgr;
     bool m_isSwallow;
-    unsigned int m_fixedPiority;
+    unsigned int m_standaloneEventPriority;
 };
 
 } // namespace tzw

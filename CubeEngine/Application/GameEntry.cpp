@@ -26,7 +26,7 @@ static void showSplash()
     auto size = splashSprite->getContentSize();
 	 
     splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
-	splashSprite->setLocalPiority(999);
+	splashSprite->setLocalPriority(999);
 	splashSprite->setColor(vec4(1, 1, 1, 0));
     g_GetCurrScene()->addNode(splashSprite);
 
@@ -53,7 +53,7 @@ static void showSplash2()
     auto size = splashSprite->getContentSize();
 	 
     splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
-	splashSprite->setLocalPiority(999);
+	splashSprite->setLocalPriority(999);
 	splashSprite->setColor(vec4(1, 1, 1, 0));
     g_GetCurrScene()->addNode(splashSprite);
 
@@ -62,7 +62,7 @@ static void showSplash2()
     auto size2 = splashSprite2->getContentSize();
 	 
     splashSprite2->setPos2D(Engine::shared()->windowWidth()/2 - size2.x/2 + 150,Engine::shared()->windowHeight()/2 - size2.y/2);
-	splashSprite2->setLocalPiority(999);
+	splashSprite2->setLocalPriority(999);
 	splashSprite2->setColor(vec4(1, 1, 1, 0));
     g_GetCurrScene()->addNode(splashSprite2);
 }

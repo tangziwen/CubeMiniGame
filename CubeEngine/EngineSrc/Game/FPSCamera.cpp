@@ -33,7 +33,7 @@ FPSCamera::FPSCamera(bool isOpenPhysics)
     m_enableFPSFeature = true;
     collisionPackage = new ColliderEllipsoid();
     collisionPackage->eRadius = vec3(m_distToside, distToGround, m_distToFront);
-	setLocalPiority(-1);
+	setLocalPriority(-1);
 
 
 	if(m_isOpenPhysics) {
@@ -393,7 +393,7 @@ void FPSCamera::init(Camera *cloneObj)
     setPos(cloneObj->getPos());
     setRotateE(cloneObj->getRotateE());
     setScale(vec3(1.0,1.0,1.0));
-    EventMgr::shared()->addFixedPiorityListener(this);
+    EventMgr::shared()->addStandaloneEventListener(this);
 	cloneObj->getPerspectInfo(&m_fov, &m_aspect, &m_near, &m_far);
 	m_width = cloneObj->getWidth();
 	m_height = cloneObj->getHeight();

@@ -11,7 +11,7 @@ namespace tzw
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
 	    MaterialInstance * matSSGI = new MaterialInstance();
-	    matSSGI->loadFromTemplate("SSGI");
+	    matSSGI->loadFromMaterial("SSGI");
 
 
 	    MaterialPool::shared()->addMaterial("SSGI", matSSGI);

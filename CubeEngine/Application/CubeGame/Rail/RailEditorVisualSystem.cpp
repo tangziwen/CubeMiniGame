@@ -1,5 +1,6 @@
 #include "RailEditorVisualSystem.h"
 
+#include "EngineSrc/2D/RetainedUISystem.h"
 #include "EngineSrc/3D/Primitive/CubePrimitive.h"
 #include "EngineSrc/3D/Primitive/LinePrimitive.h"
 #include "EngineSrc/Base/Node.h"
@@ -10,16 +11,15 @@ namespace tzw {
 namespace
 {
 constexpr int EditorVisualRootPriority = 100;
-constexpr unsigned int EditorDeleteBillboardPriority = 220;
-constexpr unsigned int EditorLineAddBillboardPriority = 230;
-constexpr unsigned int EditorLineRemoveBillboardPriority = 240;
+const char* EditorUiLayerName = "overlay";
+const char* EditorUiRootName = "RailEditorVisualRoot";
+constexpr int EditorUiLayerPriority = 100;
 
-WorldBillboardSprite* createEditorBillboard(Node* visualRoot, const vec2& size, unsigned int priority)
+WorldBillboardSprite* createEditorBillboard(Node* visualRoot, const vec2& size)
 {
 	auto sprite = WorldBillboardSprite::createWithColor(vec4::fromRGB(255, 255, 255), size);
 	sprite->setScreenOffset(vec2(0.0f, 0.0f));
-	sprite->setGlobalPiority(priority);
-	visualRoot->addChild(sprite, false);
+	visualRoot->addChild(sprite);
 	return sprite;
 }
 
@@ -94,7 +94,7 @@ void RailStationDeleteBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f), EditorDeleteBillboardPriority);
+		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f));
 	}
 }
 
@@ -157,7 +157,7 @@ void RailRoutePointDeleteBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(20.0f, 20.0f), EditorDeleteBillboardPriority);
+		m_sprite = createEditorBillboard(visualRoot, vec2(20.0f, 20.0f));
 	}
 }
 
@@ -221,7 +221,7 @@ void RailLineAddStationBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f), EditorLineAddBillboardPriority);
+		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f));
 	}
 }
 
@@ -284,7 +284,7 @@ void RailLineAddRoutePointBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f), EditorLineAddBillboardPriority);
+		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f));
 	}
 }
 
@@ -338,7 +338,7 @@ void RailLineRemoveControlPointBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f), EditorLineRemoveBillboardPriority);
+		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f));
 	}
 }
 
@@ -397,6 +397,15 @@ void RailEditorVisualSystem::clear()
 		delete m_visualRoot;
 		m_visualRoot = nullptr;
 	}
+	if (m_uiRoot)
+	{
+		if (m_uiRoot->getParent())
+		{
+			m_uiRoot->removeFromParent();
+		}
+		delete m_uiRoot;
+		m_uiRoot = nullptr;
+	}
 }
 
 void RailEditorVisualSystem::showTrackAddPreview(const RailNetwork& network, const RailBuildTool& buildTool,
@@ -419,7 +428,7 @@ void RailEditorVisualSystem::showStationBillboards(const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailStationManager& stationManager, bool deleteMode,
 	const std::function<void(RailStationId)>& onClicked)
 {
-	if (!m_visualRoot)
+	if (!m_uiRoot)
 	{
 		return;
 	}
@@ -434,7 +443,7 @@ void RailEditorVisualSystem::showStationBillboards(const RailNetwork& network,
 	{
 		for (const RailStation& station : stationManager.stations())
 		{
-			ensureStationDeleteBillboard(station.id).sync(m_visualRoot, network, anchorManager,
+			ensureStationDeleteBillboard(station.id).sync(m_uiRoot, network, anchorManager,
 				stationManager, station, onClicked);
 		}
 	}
@@ -446,7 +455,7 @@ void RailEditorVisualSystem::showRoutePointBillboards(const RailNetwork& network
 	const RailAnchorManager& anchorManager, const RailRoutePointManager& routePointManager, bool deleteMode,
 	const std::function<void(RailRoutePointId)>& onClicked)
 {
-	if (!m_visualRoot)
+	if (!m_uiRoot)
 	{
 		return;
 	}
@@ -461,7 +470,7 @@ void RailEditorVisualSystem::showRoutePointBillboards(const RailNetwork& network
 	{
 		for (const RailRoutePoint& routePoint : routePointManager.routePoints())
 		{
-			ensureRoutePointDeleteBillboard(routePoint.id).sync(m_visualRoot, network, anchorManager,
+			ensureRoutePointDeleteBillboard(routePoint.id).sync(m_uiRoot, network, anchorManager,
 				routePoint, onClicked);
 		}
 	}
@@ -475,7 +484,7 @@ void RailEditorVisualSystem::showLineAddControlBillboards(const RailNetwork& net
 	const std::function<void(RailStationId)>& onStationClicked,
 	const std::function<void(RailRoutePointId)>& onRoutePointClicked)
 {
-	if (!m_visualRoot)
+	if (!m_uiRoot)
 	{
 		return;
 	}
@@ -488,12 +497,12 @@ void RailEditorVisualSystem::showLineAddControlBillboards(const RailNetwork& net
 
 	for (const RailStation& station : stationManager.stations())
 	{
-		ensureLineAddStationBillboard(station.id).sync(m_visualRoot, network, anchorManager,
+		ensureLineAddStationBillboard(station.id).sync(m_uiRoot, network, anchorManager,
 			stationManager, station, onStationClicked);
 	}
 	for (const RailRoutePoint& routePoint : routePointManager.routePoints())
 	{
-		ensureLineAddRoutePointBillboard(routePoint.id).sync(m_visualRoot, network, anchorManager,
+		ensureLineAddRoutePointBillboard(routePoint.id).sync(m_uiRoot, network, anchorManager,
 			routePoint, onRoutePointClicked);
 	}
 	hideUnusedLineAddBillboards(stationManager, routePointManager);
@@ -504,7 +513,7 @@ void RailEditorVisualSystem::showLineRemoveControlBillboards(const RailNetwork& 
 	const RailRoutePointManager& routePointManager, const RailLine* line,
 	const std::function<void(int)>& onControlPointClicked)
 {
-	if (!m_visualRoot)
+	if (!m_uiRoot)
 	{
 		return;
 	}
@@ -525,7 +534,7 @@ void RailEditorVisualSystem::showLineRemoveControlBillboards(const RailNetwork& 
 	{
 		if (i < controlPointCount)
 		{
-			m_lineRemoveControlPointBillboards[i].sync(m_visualRoot, i, line->controlPoints[i],
+			m_lineRemoveControlPointBillboards[i].sync(m_uiRoot, i, line->controlPoints[i],
 				network, anchorManager, stationManager, routePointManager, onControlPointClicked);
 		}
 		else
@@ -568,12 +577,21 @@ void RailEditorVisualSystem::ensureVisualRoot(Node* sceneRoot)
 	if (!m_visualRoot)
 	{
 		m_visualRoot = new Node();
-		m_visualRoot->setName("RailEditorVisualRoot");
-		m_visualRoot->setLocalPiority(EditorVisualRootPriority);
+		m_visualRoot->setName("RailEditorWorldVisualRoot");
+		m_visualRoot->setLocalPriority(EditorVisualRootPriority);
 	}
 	if (!m_visualRoot->getParent())
 	{
-		sceneRoot->addChild(m_visualRoot, false);
+		sceneRoot->addChild(m_visualRoot);
+	}
+	if (!m_uiRoot)
+	{
+		m_uiRoot = new Node();
+		m_uiRoot->setName(EditorUiRootName);
+	}
+	if (!m_uiRoot->getParent())
+	{
+		RetainedUISystem::shared()->addToLayer(EditorUiLayerName, EditorUiLayerPriority, m_uiRoot);
 	}
 }
 

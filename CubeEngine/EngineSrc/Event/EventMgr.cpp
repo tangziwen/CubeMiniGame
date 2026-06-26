@@ -38,22 +38,22 @@ EventMgr::EventMgr()
 
 void EventMgr::addListener(EventListener *listener)
 {
-    addFixedPiorityListener(listener);
+    addStandaloneEventListener(listener);
 }
 
 void EventMgr::addListener(EventListener *listener, Node *node)
 {
-    addNodePiorityListener(node,listener);
+    addNodeEventPriorityListener(node,listener);
 }
 
-void EventMgr::addFixedPiorityListener(EventListener *event)
+void EventMgr::addStandaloneEventListener(EventListener *event)
 {
-    m_list.push_back(event);
+    m_standaloneEventListeners.push_back(event);
     event->setMgr(this);
-    sortFixedListener();
+    sortStandaloneEventListeners();
 }
 
-void EventMgr::addNodePiorityListener(Node *node, EventListener *event)
+void EventMgr::addNodeEventPriorityListener(Node *node, EventListener *event)
 {
     auto result = m_nodeListenerMap.find(node);
     if (result != m_nodeListenerMap.end()) return;
@@ -75,15 +75,15 @@ static bool nodeEventCompare(const EventListener *a,const EventListener *b)
 {
     auto NodeA = a->attachNode();
     auto NodeB = b->attachNode();
-    return NodeA->getGlobalPiority() > NodeB->getGlobalPiority();
+    return NodeA->getNodeEventPriority() > NodeB->getNodeEventPriority();
 }
 
-void EventMgr::sortNodePiorityListener()
+void EventMgr::sortNodeEventPriorityListeners()
 {
     auto root = g_GetCurrScene()->root();
-    m_NodePioritylist.clear();
+    m_nodeEventPriorityListeners.clear();
     visitNode(root);
-    std::stable_sort(m_NodePioritylist.begin(),m_NodePioritylist.end(),nodeEventCompare);
+    std::stable_sort(m_nodeEventPriorityListeners.begin(),m_nodeEventPriorityListeners.end(),nodeEventCompare);
 }
 
 void EventMgr::notifyListenerChange()
@@ -178,7 +178,7 @@ void EventMgr::dispatchQueuedKeyEvents()
 	if(m_isNeedSortNodeListener)
 	{
 		m_isNeedSortNodeListener = false;
-		sortNodePiorityListener();
+		sortNodeEventPriorityListeners();
 	}
 
 	std::deque<EventInfo> pendingPointerEvents;
@@ -220,9 +220,9 @@ void EventMgr::dispatchQueuedKeyEvents()
 
 void EventMgr::updateFrameListeners(float delta)
 {
-	for(size_t i =0;i<m_list.size();i++)
+	for(size_t i =0;i<m_standaloneEventListeners.size();i++)
 	{
-		EventListener * event = m_list[i];
+		EventListener * event = m_standaloneEventListeners[i];
 		event->onFrameUpdate(delta);
 	}
 }
@@ -241,7 +241,7 @@ void EventMgr::dispatchQueuedPointerEvents()
 	if (hasPointerEvent)
 	{
 		m_isNeedSortNodeListener = false;
-		sortNodePiorityListener();
+		sortNodeEventPriorityListeners();
 	}
 
 	std::deque<EventInfo> pendingKeyEvents;
@@ -295,7 +295,7 @@ void EventMgr::visitNode(Node *node)
     }
     if(m_nodeListenerMap.find(node) != m_nodeListenerMap.end())
     {
-        m_NodePioritylist.push_front(m_nodeListenerMap[node]);
+        m_nodeEventPriorityListeners.push_front(m_nodeListenerMap[node]);
     }
     if(node->getChildrenAmount() > 0 )
     {
@@ -312,11 +312,11 @@ void EventMgr::applyKeyPress(EventInfo &info)
 {
 	if (dispatchCaptureKeyPress(info)) return;
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onKeyPress(info.keycode) && event->isSwallow()) return;
     }
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if(event->onKeyPress(info.keycode) && event->isSwallow()) return;
@@ -327,11 +327,11 @@ void EventMgr::applyKeyCharInput(EventInfo &info)
 {
 	if (dispatchCaptureKeyCharInput(info)) return;
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onCharInput(info.theChar) && event->isSwallow()) return;
     }
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if(event->onCharInput(info.theChar) && event->isSwallow()) return;
@@ -342,11 +342,11 @@ void EventMgr::applyKeyRelease(EventInfo &info)
 {
 	if (dispatchCaptureKeyRelease(info)) return;
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onKeyRelease(info.keycode) && event->isSwallow()) return;
     }
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if(event->onKeyRelease(info.keycode)&&event->isSwallow()) return;
@@ -361,7 +361,7 @@ void EventMgr::applyMousePress(EventInfo &info)
 		return;
 	}
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onMousePress(info.arg,info.pos) && event->isSwallow())
 		{
@@ -369,7 +369,7 @@ void EventMgr::applyMousePress(EventInfo &info)
 			return;
 		}
     }
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if (event->onMousePress(info.arg,info.pos) && event->isSwallow())
@@ -388,7 +388,7 @@ void EventMgr::applyMouseRelease(EventInfo &info)
 		return;
 	}
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow())
 		{
@@ -396,7 +396,7 @@ void EventMgr::applyMouseRelease(EventInfo &info)
 			return;
 		}
     }
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if(event->onMouseRelease(info.arg,info.pos) && event->isSwallow())
@@ -411,11 +411,11 @@ void EventMgr::applyMouseMove(EventInfo &info)
 {
 	if (dispatchCaptureMouseMove(info)) return;
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
     }
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if(event->onMouseMove(info.pos)&& event->isSwallow()) return;
@@ -426,11 +426,11 @@ void EventMgr::applyScroll(EventInfo& info)
 {
 	if (dispatchCaptureScroll(info)) return;
 
-    for (auto event :m_NodePioritylist)
+    for (auto event :m_nodeEventPriorityListeners)
     {
         if(event->onScroll(info.offset)&& event->isSwallow()) return;
 	}
-    for(auto event : m_list)
+    for(auto event : m_standaloneEventListeners)
     {
 		if (event == m_captureListener) continue;
         if(event->onScroll(info.offset)&& event->isSwallow()) return;
@@ -505,10 +505,10 @@ void EventMgr::removeEventListener(EventListener *event)
 	{
 		m_captureListener = nullptr;
 	}
-    auto result = std::find(m_list.begin(),m_list.end(),event);
-    if(result != m_list.end())
+    auto result = std::find(m_standaloneEventListeners.begin(),m_standaloneEventListeners.end(),event);
+    if(result != m_standaloneEventListeners.end())
     {
-        m_list.erase(result);
+        m_standaloneEventListeners.erase(result);
     }
 }
 
@@ -524,12 +524,12 @@ void EventMgr::removeNodeEventListener(Node* node)
 
 static bool eventSort(const EventListener *a,const EventListener *b)
 {
-    return a->getFixedPiority() > b->getFixedPiority();
+    return a->getStandaloneEventPriority() > b->getStandaloneEventPriority();
 }
 
-void EventMgr::sortFixedListener()
+void EventMgr::sortStandaloneEventListeners()
 {
-    std::stable_sort(m_list.begin(),m_list.end(),eventSort);
+    std::stable_sort(m_standaloneEventListeners.begin(),m_standaloneEventListeners.end(),eventSort);
 }
 
 } // namespace tzw

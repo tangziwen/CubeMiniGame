@@ -51,7 +51,7 @@ namespace tzw
 			
 			m_button = Button::create(vec4(1.0, 1.0, 1.0, 0.5), vec2(32, 32));
 			
-			m_button->setLocalPiority(2);
+			m_button->setLocalPriority(2);
 			m_button->setOnBtnClicked([this](Button *)
 				{
 
@@ -70,7 +70,7 @@ namespace tzw
 			for (int i =0; i<4; i++)
 			{
 				m_selectedBorders[i] = GUIFrame::create(vec4(200.0/255,200.0/255,37.0/255,1.0));
-				m_selectedBorders[i]->setLocalPiority(100);
+				m_selectedBorders[i]->setLocalPriority(100);
 				m_button->addChild(m_selectedBorders[i]);
 			}
 			auto contentSize = m_button->getContentSize();
@@ -105,7 +105,7 @@ namespace tzw
 		{
 			m_label = LabelNew::create("5K");
 			vec2 cs = m_label->getContentSize();
-			m_label->setLocalPiority(1);
+			m_label->setLocalPriority(1);
 			m_sprite->addChild(m_label);
 			m_label->setPos2D(0, - cs.y/2.0 -8);
 			m_label->setColor(vec4(1.0, 0.64, 0, 1));

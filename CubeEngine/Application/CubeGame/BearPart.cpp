@@ -38,7 +38,7 @@ BearPart::BearPart(std::string itemName)
 	
 	BearPart::generateName();
 
-	m_xrayMat = MaterialInstance::createFromTemplate("PartXRay");
+	m_xrayMat = MaterialInstance::createFromMaterial("PartXRay");
 
 }
 

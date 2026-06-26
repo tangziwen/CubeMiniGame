@@ -52,10 +52,10 @@ void RLContactListener::PreSolve(b2Contact* contact, const b2Manifold* oldManifo
 void RLWorld::start()
 {
 	m_crossHairsprite = Sprite::create("RL/CrossHair.png");
-	m_crossHairsprite->setLocalPiority(9999);
+	m_crossHairsprite->setLocalPriority(9999);
 
 	m_centerTips = LabelNew::create("Press E To Use");
-	m_centerTips->setLocalPiority(999);
+	m_centerTips->setLocalPriority(999);
 	vec2 size = Engine::shared()->winSize();
 	vec2 cs = m_centerTips->getContentSize();
 	m_centerTips->setPos2D(size.x / 2.f - cs.x * 0.5f, size.y * .5f - 200);
@@ -63,7 +63,7 @@ void RLWorld::start()
 
 	g_GetCurrScene()->addNode(m_crossHairsprite);
 	//Engine::shared()->setUnlimitedCursor(true);
-	EventMgr::shared()->addFixedPiorityListener(this);
+	EventMgr::shared()->addStandaloneEventListener(this);
 	RLWeaponCollection::shared()->loadConfig();
 	RLShopMgr::shared()->init();
 	RLHeroCollection::shared()->loadConfig();
@@ -428,7 +428,7 @@ void RLWorld::startNextSubWave()
 
 	 
     //splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
-	splashSprite->setLocalPiority(999);
+	splashSprite->setLocalPriority(999);
 	splashSprite->setColor(vec4(0, 0, 0, 0));
     g_GetCurrScene()->addNode(splashSprite);
 
@@ -474,7 +474,7 @@ void RLWorld::showTempTips(std::string str)
 
 	 
     //splashSprite->setPos2D(Engine::shared()->windowWidth()/2 - size.x/2,Engine::shared()->windowHeight()/2 - size.y/2);
-	splashSprite->setLocalPiority(999);
+	splashSprite->setLocalPriority(999);
 	splashSprite->setColor(vec4(1, 1, 1, 0));
     g_GetCurrScene()->addNode(splashSprite);
 	vec2 size = Engine::shared()->winSize();

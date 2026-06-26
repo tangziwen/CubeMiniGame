@@ -50,7 +50,7 @@ void Sprite::initWithTexture(std::string texturePath)
     Drawable2D::setContentSize(m_texture->getSize());
     setRenderRect(m_contentSize, m_lb, m_rt, m_color);
     setUpTechnique();
-    m_material->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
 
 }
 
@@ -69,6 +69,7 @@ void Sprite::initWithTexture(Texture *texture)
     Drawable2D::setContentSize(m_texture->getSize());
     setRenderRect(m_contentSize, m_lb, m_rt, m_color);
     setUpTechnique();
+    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
 }
 
 void Sprite::initWithColor(vec4 color,vec2 contentSize)
@@ -76,6 +77,7 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
 	m_material = new MaterialInstance();
     m_mesh = new tzw::Mesh();
     setUpTechnique();
+    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
     m_mesh->addIndex(2);
@@ -98,7 +100,7 @@ void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue 
     }
     RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
     setUpTransFormation(command.m_transInfo);
-    command.setZorder(m_globalPiority);
+    command.setZorder(getCustomRenderPriority());
     queues->addRenderCommand(command, requirementArg);
 }
 
@@ -179,12 +181,12 @@ void Sprite::setUpTechnique()
         m_material = new MaterialInstance();
         if(m_texture)
         {
-            m_material->loadFromTemplate("Sprite");
+            m_material->loadFromMaterial("Sprite");
             m_material->setTex("SpriteTexture", m_texture);
         }else
         {
-            m_material->loadFromTemplate("SpriteColor");
-            m_material = MaterialInstance::createFromTemplate("SpriteColor");
+            m_material->loadFromMaterial("SpriteColor");
+            m_material = MaterialInstance::createFromMaterial("SpriteColor");
         }
         m_material->setVar("color",m_color);
 
@@ -250,7 +252,7 @@ void Sprite::setTouchEnable(bool isEnable)
     {
         if(isEnable)
         {
-            EventMgr::shared()->addNodePiorityListener(this,this);
+            EventMgr::shared()->addNodeEventPriorityListener(this,this);
         }
         else
         {

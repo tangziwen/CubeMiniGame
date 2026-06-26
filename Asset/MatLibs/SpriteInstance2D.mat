@@ -6,6 +6,7 @@
 	"name" : "TileMap2D",
 	"BlendEnable" : true,
 	"DepthTestEnable" : false,
+	"DepthWriteEnable" : false,
 	"EnableInstanced" : true,
 	"property" : {
 		"attributes" : [

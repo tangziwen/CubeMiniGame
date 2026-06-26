@@ -7,7 +7,7 @@ namespace tzw {
 	TileMap2DMgr::TileMap2DMgr()
 	{
 		setIsAccpectOcTtree(false);
-		setLocalPiority(0);
+		setLocalPriority(0);
 		initMesh();
 	}
 
@@ -19,7 +19,7 @@ namespace tzw {
 			m_totalTypes ++;//inc for type id
 
 			auto material = new MaterialInstance();
-			material->loadFromTemplate("TileMap2D");
+			material->loadFromMaterial("TileMap2D");
 			auto texture = TextureMgr::shared()->getByPath(filePath);
 			material->setTex("SpriteTexture", texture);
 

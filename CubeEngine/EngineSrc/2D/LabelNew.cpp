@@ -10,9 +10,9 @@ LabelNew::LabelNew():
 {
     m_mesh = new Mesh();
 	m_material = new MaterialInstance();
-    m_material = MaterialInstance::createFromTemplate("Text");
+    m_material = MaterialInstance::createFromMaterial("Text");
     m_material->setVar("color",getColor());
-    m_material->ensureUniqueMaterialTemplate()->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
     setCamera(g_GetCurrScene()->defaultGUICamera());
 }
 
@@ -119,7 +119,7 @@ void LabelNew::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueu
 	    m_material->setTex("SpriteTexture",m_atlas->texture());
 	    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
 	    setUpTransFormation(command.m_transInfo);
-	    command.setZorder(m_globalPiority);
+	    command.setZorder(getCustomRenderPriority());
 	    queues->addRenderCommand(command, requirementArg);
     }
 }

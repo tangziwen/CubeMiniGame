@@ -48,22 +48,22 @@ void EventListener::onFrameUpdate(float delta)
 }
 
 EventListener::EventListener()
-		: m_attachNode(nullptr), m_mgr(nullptr), m_isSwallow(true), m_fixedPiority(0)
+		: m_attachNode(nullptr), m_mgr(nullptr), m_isSwallow(true), m_standaloneEventPriority(0)
 {
 
 }
 
-unsigned int EventListener::getFixedPiority() const
+unsigned int EventListener::getStandaloneEventPriority() const
 {
-    return m_fixedPiority;
+    return m_standaloneEventPriority;
 }
 
-void EventListener::setFixedPiority(unsigned int eventPiority)
+void EventListener::setStandaloneEventPriority(unsigned int standaloneEventPriority)
 {
-    m_fixedPiority = eventPiority;
+    m_standaloneEventPriority = standaloneEventPriority;
     if (m_mgr)
     {
-        m_mgr->sortFixedListener();
+        m_mgr->sortStandaloneEventListeners();
     }
 }
 

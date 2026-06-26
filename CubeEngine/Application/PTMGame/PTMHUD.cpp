@@ -23,7 +23,7 @@ namespace tzw
 	void PTMHUD::init()
 	{
 		m_frame = GUIFrame::create(vec2(Engine::shared()->windowWidth(), 50));
-		m_frame->setLocalPiority(9999);
+		m_frame->setLocalPriority(9999);
 		g_GetCurrScene()->addNode(m_frame);
 
 		m_nationName = LabelNew::create("unknown");

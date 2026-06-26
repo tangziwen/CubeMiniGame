@@ -12,7 +12,7 @@ namespace tzw
 Button::Button():
     m_isTouched(false)
 {
-    EventMgr::shared()->addNodePiorityListener(this,this);
+    EventMgr::shared()->addNodeEventPriorityListener(this,this);
     setIsSwallow(true);
 }
 
@@ -26,8 +26,8 @@ Button *Button::create(std::string str)
     btn->m_frameBG = GUIFrame::create(GUIStyleMgr::shared()->defaultPalette()->buttonFrameColor);
     btn->addChild(btn->m_label);
     btn->addChild(btn->m_frameBG);
-    btn->m_frameBG->setLocalPiority(0);
-    btn->m_label->setLocalPiority(1);
+    btn->m_frameBG->setLocalPriority(0);
+    btn->m_label->setLocalPriority(1);
     btn->setStr(str);
 
     return btn;
@@ -41,7 +41,7 @@ Button *Button::create(vec4 color, vec2 Size)
     btn->m_label = nullptr;
     btn->m_frameBG = GUIFrame::create(color,Size);
     btn->addChild(btn->m_frameBG);
-    btn->m_frameBG->setLocalPiority(0);
+    btn->m_frameBG->setLocalPriority(0);
     //btn->setContentSize(Size);
     btn->adjustBorders();
     return btn;
@@ -228,7 +228,7 @@ void Button::initBorders()
         {
             m_borders[i] = GUIFrame::create(vec4(33.0/255,33.0/255,37.0/255,1.0));
             this->addChild(m_borders[i]);
-            m_borders[i]->setLocalPiority(1);
+            m_borders[i]->setLocalPriority(1);
         }
 }
 

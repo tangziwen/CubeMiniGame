@@ -45,8 +45,8 @@ public:
 	{
 		m_root = Node::create();
 		m_root->setName("notification_toast");
-		m_root->setLocalPiority(10000);
-		m_root->setGlobalPiority(10000);
+		m_root->setLocalPriority(10000);
+		m_root->setNodeEventPriority(10000);
 		parent->addChild(m_root);
 
 		m_label = LabelNew::create(text);
@@ -56,11 +56,11 @@ public:
 
 		m_background = Sprite::createWithColor(colorForLevel(level), m_size);
 		m_background->setTouchEnable(false);
-		m_background->setGlobalPiority(10001);
+		m_background->setNodeEventPriority(10001);
 		m_background->setPos2D(m_size.x * 0.5f, m_size.y * 0.5f);
 		m_root->addChild(m_background);
 
-		m_label->setGlobalPiority(10002);
+		m_label->setNodeEventPriority(10002);
 		m_label->setPos2D(ToastPaddingX, m_size.y * 0.5f + 7.0f);
 		m_root->addChild(m_label);
 	}
@@ -139,7 +139,7 @@ NotificationSystem::NotificationSystem()
 {
 	setIsSwallow(false);
 	RetainedUISystem::shared();
-	EventMgr::shared()->addFixedPiorityListener(this);
+	EventMgr::shared()->addStandaloneEventListener(this);
 }
 
 NotificationSystem::~NotificationSystem() = default;

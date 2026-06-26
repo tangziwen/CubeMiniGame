@@ -179,6 +179,7 @@ private:
 	RailTrackMesh m_trackMesh;
 	RailLinePreviewVisual m_linePreviewVisual;
 	Node* m_visualRoot = nullptr;
+	Node* m_uiRoot = nullptr;
 	std::vector<CubePrimitive*> m_nodeVisuals;
 	std::vector<CubePrimitive*> m_trackPreviewSleeperVisuals;
 	CubePrimitive* m_pendingAnchorVisual = nullptr;

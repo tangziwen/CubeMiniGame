@@ -20,7 +20,7 @@ public:
 	explicit RailStationVisual(RailStationId stationId);
 
 	RailStationId stationId() const;
-	void sync(Node* visualRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
+	void sync(Node* visualRoot, Node* uiRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailStation& station);
 	void hide();
 
@@ -38,7 +38,7 @@ public:
 	explicit RailRoutePointVisual(RailRoutePointId routePointId);
 
 	RailRoutePointId routePointId() const;
-	void sync(Node* visualRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
+	void sync(Node* visualRoot, Node* uiRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailRoutePoint& routePoint);
 	void hide();
 
@@ -74,6 +74,7 @@ public:
 
 private:
 	void ensureVisualRoot(Node* sceneRoot);
+	void ensureUiRoot();
 	RailStationVisual& ensureStationVisual(RailStationId stationId);
 	RailRoutePointVisual& ensureRoutePointVisual(RailRoutePointId routePointId);
 	void hideUnused(const RailStationManager& stationManager, const RailRoutePointManager& routePointManager);
@@ -81,6 +82,7 @@ private:
 	bool containsRoutePoint(const RailRoutePointManager& routePointManager, RailRoutePointId routePointId) const;
 
 	Node* m_visualRoot = nullptr;
+	Node* m_uiRoot = nullptr;
 	std::vector<RailStationVisual> m_stationVisuals;
 	std::vector<RailRoutePointVisual> m_routePointVisuals;
 };

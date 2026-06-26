@@ -551,7 +551,7 @@ namespace tzw
 	{
 		m_item = item;
 		//material
-	    auto m_material = MaterialInstance::createFromTemplate("ModelPBR");
+	    auto m_material = MaterialInstance::createFromMaterial("ModelPBR");
 		auto texture =  TextureMgr::shared()->getByPath("Texture/metalgrid3-ue/metalgrid3_basecolor.png", true);
 		m_material->setTex("DiffuseMap", texture);
 

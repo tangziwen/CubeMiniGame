@@ -6,7 +6,7 @@ namespace tzw {
 
 GUIListView::GUIListView()
 {
-    EventMgr::shared()->addNodePiorityListener(this,this);
+    EventMgr::shared()->addNodeEventPriorityListener(this,this);
     setIsSwallow(true);
     m_pageSize = 10;
     m_currentPage = 0;

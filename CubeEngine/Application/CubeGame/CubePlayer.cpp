@@ -58,7 +58,7 @@ namespace tzw
 		m_paintGun->m_surface = PartSurfaceMgr::shared()->getItem("foam grip");
 		m_currMode = Mode::MODE_DEFORM_SPHERE;
 		IMGUISystem::shared()->addObject(this);
-		EventMgr::shared()->addFixedPiorityListener(this);
+		EventMgr::shared()->addStandaloneEventListener(this);
 		FPSCamera* camera = FPSCamera::create(g_GetCurrScene()->defaultCamera(), true);
 		camera->setCamPos(vec3(5, 20.0, -5));
 		mainRoot->addChild(camera);

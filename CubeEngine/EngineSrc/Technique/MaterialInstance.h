@@ -11,7 +11,7 @@
 #include "rapidjson/document.h"
 #include "Rendering/RenderFlag.h"
 #include "MaterialState.h"
-#include "MaterialTemplate.h"
+#include "Material.h"
 #include "ShadingParams.h"
 namespace tzw {
 class StdMaterial;
@@ -23,10 +23,12 @@ class MaterialInstance : public InspectableUI
 {
 public:
     MaterialInstance ();
-	void loadFromTemplate(std::string name);
+	void loadFromMaterial(std::string name);
+	void loadFromMaterial(Material * material);
 	void loadFromFile(std::string filePath);
 	void loadFromJson(rapidjson::Value & obj, std::string envFolder);
-    static MaterialInstance * createFromTemplate(std::string name);
+    static MaterialInstance * createFromMaterial(std::string name);
+    static MaterialInstance * createFromMaterial(Material * material);
 	static MaterialInstance * createFromFile(std::string matPath);
 	static MaterialInstance * createFromJson(rapidjson::Value & obj, std::string envFolder);
     void setVar(std::string name, const Matrix44 &value);
@@ -66,15 +68,15 @@ public:
 	PrimitiveTopology getPrimitiveTopology();
 	RasterFillMode getRasterFillMode();
 	ShadingParams * getShadingParams();
-	MaterialTemplate * getMaterialTemplate();
-	const MaterialTemplate * getMaterialTemplate() const;
-	MaterialTemplate * ensureUniqueMaterialTemplate();
+	Material * getMaterial();
+	const Material * getMaterial() const;
+	Material * ensureUniqueMaterial();
 private:
-	void applyTemplate(MaterialTemplate * materialTemplate);
+	void applyMaterial(Material * material);
 	void applyInstanceOverrides(rapidjson::Value& overrides, std::string envFolder);
 	void loadFromInstanceJson(rapidjson::Value& doc, std::string envFolder);
-	MaterialTemplate * m_materialTemplate;
-	bool m_isMaterialTemplateUnique;
+	Material * m_material;
+	bool m_isMaterialUnique;
 	ShadingParams * m_shadingParams;
 	// bool m_isEnableAlphaTest;
 	std::string m_name;
