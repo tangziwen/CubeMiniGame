@@ -9,6 +9,11 @@ namespace tzw {
 
 namespace
 {
+constexpr int EditorVisualRootPriority = 100;
+constexpr unsigned int EditorDeleteBillboardPriority = 220;
+constexpr unsigned int EditorLineAddBillboardPriority = 230;
+constexpr unsigned int EditorLineRemoveBillboardPriority = 240;
+
 WorldBillboardSprite* createEditorBillboard(Node* visualRoot, const vec2& size, unsigned int priority)
 {
 	auto sprite = WorldBillboardSprite::createWithColor(vec4::fromRGB(255, 255, 255), size);
@@ -89,7 +94,7 @@ void RailStationDeleteBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f), 20);
+		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f), EditorDeleteBillboardPriority);
 	}
 }
 
@@ -152,7 +157,7 @@ void RailRoutePointDeleteBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(20.0f, 20.0f), 20);
+		m_sprite = createEditorBillboard(visualRoot, vec2(20.0f, 20.0f), EditorDeleteBillboardPriority);
 	}
 }
 
@@ -216,7 +221,7 @@ void RailLineAddStationBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f), 21);
+		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f), EditorLineAddBillboardPriority);
 	}
 }
 
@@ -279,7 +284,7 @@ void RailLineAddRoutePointBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f), 21);
+		m_sprite = createEditorBillboard(visualRoot, vec2(22.0f, 22.0f), EditorLineAddBillboardPriority);
 	}
 }
 
@@ -333,7 +338,7 @@ void RailLineRemoveControlPointBillboard::ensureSprite(Node* visualRoot)
 {
 	if (!m_sprite && visualRoot)
 	{
-		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f), 22);
+		m_sprite = createEditorBillboard(visualRoot, vec2(24.0f, 24.0f), EditorLineRemoveBillboardPriority);
 	}
 }
 
@@ -564,6 +569,7 @@ void RailEditorVisualSystem::ensureVisualRoot(Node* sceneRoot)
 	{
 		m_visualRoot = new Node();
 		m_visualRoot->setName("RailEditorVisualRoot");
+		m_visualRoot->setLocalPiority(EditorVisualRootPriority);
 	}
 	if (!m_visualRoot->getParent())
 	{

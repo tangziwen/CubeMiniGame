@@ -1,6 +1,7 @@
 #pragma once
 #include "CubeGame/GameWorld.h"
 #include "CubeGame/Rail/RailLine.h"
+#include "CubeGame/UI/InspectPanel.h"
 #include "2D/IMGUISystem.h"
 #include "Event/Event.h"
 #include <functional>
@@ -53,6 +54,7 @@ namespace tzw
 		void syncEditorWorldVisuals();
 		bool handleEditorPrimaryClick();
 		bool handleEditorSecondaryClick();
+		bool handleInspectPrimaryClick(RailSystem* railSystem);
 		void setEditorState(EditorState state);
 		bool isLineControlEditState() const;
 		bool isTerrainState() const;
@@ -64,6 +66,7 @@ namespace tzw
 		EditorState m_syncedEditorState = EditorState::None;
 		bool m_lineWindowOpen = false;
 		bool m_trainWindowOpen = false;
+		InspectPanel m_inspectPanel;
 		int m_activeTab = 0;
 		float m_radius = 2.0f;
 		float m_strength = 0.5f;

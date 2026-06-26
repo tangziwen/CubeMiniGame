@@ -7,6 +7,12 @@
 
 namespace tzw {
 
+namespace
+{
+constexpr int PersistentTrackVisualRootPriority = 10;
+constexpr int PersistentPointVisualRootPriority = 20;
+}
+
 RailStationVisual::RailStationVisual(RailStationId stationId)
 	: m_stationId(stationId)
 {
@@ -34,6 +40,8 @@ void RailStationVisual::sync(Node* visualRoot, const RailNetwork& network,
 	}
 	m_marker->setIsVisible(true);
 	m_marker->setPos(sample.position + vec3(0.0f, 0.34f, 0.0f));
+	m_nameBillboard.sync(visualRoot, sample.position + vec3(0.0f, 1.05f, 0.0f), station.name,
+		vec4::fromRGB(80, 70, 35, 225));
 }
 
 void RailStationVisual::hide()
@@ -42,6 +50,7 @@ void RailStationVisual::hide()
 	{
 		m_marker->setIsVisible(false);
 	}
+	m_nameBillboard.hide();
 }
 
 void RailStationVisual::ensureMarker(Node* visualRoot)
@@ -84,6 +93,8 @@ void RailRoutePointVisual::sync(Node* visualRoot, const RailNetwork& network,
 	}
 	m_marker->setIsVisible(true);
 	m_marker->setPos(sample.position + vec3(0.0f, 0.28f, 0.0f));
+	m_nameBillboard.sync(visualRoot, sample.position + vec3(0.0f, 0.88f, 0.0f), routePoint.name,
+		vec4::fromRGB(55, 45, 75, 225));
 }
 
 void RailRoutePointVisual::hide()
@@ -92,6 +103,7 @@ void RailRoutePointVisual::hide()
 	{
 		m_marker->setIsVisible(false);
 	}
+	m_nameBillboard.hide();
 }
 
 void RailRoutePointVisual::ensureMarker(Node* visualRoot)
@@ -180,6 +192,7 @@ void RailTrackVisualSet::ensureVisualRoot(Node* sceneRoot)
 	{
 		m_visualRoot = new Node();
 		m_visualRoot->setName("RailPersistentTrackVisualRoot");
+		m_visualRoot->setLocalPiority(PersistentTrackVisualRootPriority);
 	}
 	if (!m_visualRoot->getParent())
 	{
@@ -238,6 +251,7 @@ void RailPointVisualSet::ensureVisualRoot(Node* sceneRoot)
 	{
 		m_visualRoot = new Node();
 		m_visualRoot->setName("RailPersistentPointVisualRoot");
+		m_visualRoot->setLocalPiority(PersistentPointVisualRootPriority);
 	}
 	if (!m_visualRoot->getParent())
 	{

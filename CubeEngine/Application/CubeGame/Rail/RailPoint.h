@@ -75,7 +75,7 @@ struct RailStation
 class RailStationManager
 {
 public:
-	RailStationId createStation(RailAnchorId anchorId);
+	RailStationId createStation(RailAnchorId anchorId, const std::string& name = "");
 	bool deleteStation(RailStationId stationId, RailAnchorManager& anchorManager);
 	void clear(RailAnchorManager& anchorManager);
 	void clearWithoutAnchors();
@@ -87,6 +87,7 @@ public:
 	const std::vector<RailStation>& stations() const;
 	const std::vector<RailPlatform>& platforms() const;
 
+	bool renameStation(RailStationId stationId, const std::string& name);
 	const RailPlatform* firstPlatform(RailStationId stationId) const;
 	RailAnchorId anchorForStation(RailStationId stationId) const;
 	RailStationId findNearestStation(const RailNetwork& network, const RailAnchorManager& anchorManager,
@@ -109,7 +110,7 @@ struct RailRoutePoint
 class RailRoutePointManager
 {
 public:
-	RailRoutePointId createRoutePoint(RailAnchorId anchorId);
+	RailRoutePointId createRoutePoint(RailAnchorId anchorId, const std::string& name = "");
 	bool deleteRoutePoint(RailRoutePointId routePointId, RailAnchorManager& anchorManager);
 	void clear(RailAnchorManager& anchorManager);
 	void clearWithoutAnchors();
@@ -118,6 +119,7 @@ public:
 	const RailRoutePoint* routePoint(RailRoutePointId routePointId) const;
 	const std::vector<RailRoutePoint>& routePoints() const;
 
+	bool renameRoutePoint(RailRoutePointId routePointId, const std::string& name);
 	RailAnchorId anchorForRoutePoint(RailRoutePointId routePointId) const;
 	RailRoutePointId findNearestRoutePoint(const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const vec3& point, float maxDistance) const;

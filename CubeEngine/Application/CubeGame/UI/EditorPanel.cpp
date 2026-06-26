@@ -428,6 +428,7 @@ namespace tzw
 		ImGui::End();
 
 		drawRailFloatingWindows();
+		m_inspectPanel.draw(GameWorld::shared()->railSystem());
 	}
 
 	void EditorPanel::onFrameUpdate(float)
@@ -574,10 +575,29 @@ namespace tzw
 				notifyRailEditResult(railSystem->addPickedControlPointToSelectedLine(PlacementMode::CursorBased));
 			}
 			return true;
+		case EditorState::None:
+			return handleInspectPrimaryClick(railSystem);
 		default:
 			break;
 		}
 		return false;
+	}
+
+	bool EditorPanel::handleInspectPrimaryClick(RailSystem* railSystem)
+	{
+		if (!railSystem)
+		{
+			return false;
+		}
+
+		RailInspectTarget target;
+		if (!railSystem->pickInspectTarget(PlacementMode::CursorBased, target))
+		{
+			return false;
+		}
+
+		m_inspectPanel.inspect(target, railSystem);
+		return true;
 	}
 
 	bool EditorPanel::handleEditorSecondaryClick()
@@ -625,14 +645,19 @@ namespace tzw
 		drawRailToolButton(u8"删除路点", EditorState::RoutePointDelete, buttonWidth);
 
 		ImGui::Separator();
-		if (ImGui::Button(u8"线路面板", ImVec2(95.0f, 28.0f)))
+		if (ImGui::Button(u8"线路面板", ImVec2(82.0f, 28.0f)))
 		{
 			m_lineWindowOpen = true;
 		}
 		ImGui::SameLine();
-		if (ImGui::Button(u8"车辆面板", ImVec2(95.0f, 28.0f)))
+		if (ImGui::Button(u8"车辆面板", ImVec2(82.0f, 28.0f)))
 		{
 			m_trainWindowOpen = true;
+		}
+		ImGui::SameLine();
+		if (ImGui::Button(u8"Inspect", ImVec2(78.0f, 28.0f)))
+		{
+			m_inspectPanel.open();
 		}
 	}
 
@@ -844,6 +869,12 @@ namespace tzw
 			if (ImGui::SmallButton(toggleButtonId.c_str()))
 			{
 				trainToToggle = train.id;
+			}
+			ImGui::SameLine();
+			std::string inspectButtonId = std::string(u8"查看##trainInspect") + std::to_string(train.id);
+			if (ImGui::SmallButton(inspectButtonId.c_str()))
+			{
+				m_inspectPanel.inspect(RailInspectTarget::train(train.id), railSystem);
 			}
 
 			const RailLine* currentLine = railSystem->lineManager().line(train.lineId);

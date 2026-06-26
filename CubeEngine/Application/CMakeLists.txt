@@ -77,6 +77,7 @@ set(APP_SOURCES
     CubeGame/Rail/RailEditorVisualSystem.cpp
     CubeGame/Rail/RailPersistentVisualSystem.cpp
     CubeGame/Rail/RailPoint.cpp
+    CubeGame/Rail/RailPointNameBillboard.cpp
     CubeGame/Rail/RailSpline.cpp
     CubeGame/Rail/RailSystem.cpp
     CubeGame/Rail/RailTrain.cpp
@@ -88,6 +89,7 @@ set(APP_SOURCES
     CubeGame/TriggerNode.cpp
     CubeGame/UI/EditorPanel.cpp
     CubeGame/UI/HudUI.cpp
+    CubeGame/UI/InspectPanel.cpp
     CubeGame/UI/InventoryUI.cpp
     CubeGame/UI/KeyMapper.cpp
     CubeGame/UI/LoadWorldUI.cpp
@@ -225,8 +227,10 @@ set(APP_HEADERS
     CubeGame/Rail/RailNetwork.h
     CubeGame/Rail/RailNodeMesh.h
     CubeGame/Rail/RailEditorVisualSystem.h
+    CubeGame/Rail/RailInspectTarget.h
     CubeGame/Rail/RailPersistentVisualSystem.h
     CubeGame/Rail/RailPoint.h
+    CubeGame/Rail/RailPointNameBillboard.h
     CubeGame/Rail/RailSpline.h
     CubeGame/Rail/RailSystem.h
     CubeGame/Rail/RailTrain.h
@@ -238,6 +242,7 @@ set(APP_HEADERS
     CubeGame/TriggerNode.h
     CubeGame/UI/EditorPanel.h
     CubeGame/UI/HudUI.h
+    CubeGame/UI/InspectPanel.h
     CubeGame/UI/InventoryUI.h
     CubeGame/UI/KeyMapper.h
     CubeGame/UI/LoadWorldUI.h

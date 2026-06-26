@@ -18,6 +18,11 @@ float routePointPickRadius(const RailConfig& config)
 	return std::max(config.nodePickRadius * 1.5f, 1.25f);
 }
 
+float trainPickRadius(const RailConfig& config)
+{
+	return std::max(config.nodePickRadius * 1.5f, 1.25f);
+}
+
 bool isSameControlPoint(const RailLineControlPoint& lhs, const RailLineControlPoint& rhs)
 {
 	if (lhs.kind != rhs.kind)
@@ -30,6 +35,46 @@ bool isSameControlPoint(const RailLineControlPoint& lhs, const RailLineControlPo
 	}
 	return lhs.routePointId == rhs.routePointId;
 }
+}
+
+RailInspectTarget RailInspectTarget::train(RailTrainId trainId)
+{
+	RailInspectTarget target;
+	target.kind = RailInspectTargetKind::Train;
+	target.trainId = trainId;
+	return target;
+}
+
+RailInspectTarget RailInspectTarget::station(RailStationId stationId)
+{
+	RailInspectTarget target;
+	target.kind = RailInspectTargetKind::Station;
+	target.stationId = stationId;
+	return target;
+}
+
+RailInspectTarget RailInspectTarget::routePoint(RailRoutePointId routePointId)
+{
+	RailInspectTarget target;
+	target.kind = RailInspectTargetKind::RoutePoint;
+	target.routePointId = routePointId;
+	return target;
+}
+
+bool RailInspectTarget::isValid() const
+{
+	switch (kind)
+	{
+	case RailInspectTargetKind::Train:
+		return trainId != InvalidRailTrainId;
+	case RailInspectTargetKind::Station:
+		return stationId != InvalidRailStationId;
+	case RailInspectTargetKind::RoutePoint:
+		return routePointId != InvalidRailRoutePointId;
+	case RailInspectTargetKind::None:
+	default:
+		return false;
+	}
 }
 
 RailSystem::RailSystem()
@@ -169,14 +214,14 @@ const RailRoutePointManager& RailSystem::routePointManager() const
 	return m_routePointManager;
 }
 
-RailEditResult RailSystem::handleStationAddPrimaryClick(PlacementMode placementMode)
+RailEditResult RailSystem::handleStationAddPrimaryClick(PlacementMode placementMode, const std::string& name)
 {
 	RailAnchorId anchorId = InvalidRailAnchorId;
 	if (!createAnchorAtHit(placementMode, anchorId))
 	{
 		return RailEditResult::InvalidOperation;
 	}
-	m_stationManager.createStation(anchorId);
+	m_stationManager.createStation(anchorId, name);
 	rebuildAllRailLines();
 	return RailEditResult::Success;
 }
@@ -204,14 +249,14 @@ bool RailSystem::handleStationDeletePrimaryClick(PlacementMode placementMode)
 	return changed;
 }
 
-RailEditResult RailSystem::handleRoutePointAddPrimaryClick(PlacementMode placementMode)
+RailEditResult RailSystem::handleRoutePointAddPrimaryClick(PlacementMode placementMode, const std::string& name)
 {
 	RailAnchorId anchorId = InvalidRailAnchorId;
 	if (!createAnchorAtHit(placementMode, anchorId))
 	{
 		return RailEditResult::InvalidOperation;
 	}
-	m_routePointManager.createRoutePoint(anchorId);
+	m_routePointManager.createRoutePoint(anchorId, name);
 	rebuildAllRailLines();
 	return RailEditResult::Success;
 }
@@ -237,6 +282,78 @@ bool RailSystem::handleRoutePointDeletePrimaryClick(PlacementMode placementMode)
 		rebuildAllRailLines();
 	}
 	return changed;
+}
+
+bool RailSystem::renameStation(RailStationId stationId, const std::string& name)
+{
+	return m_stationManager.renameStation(stationId, name);
+}
+
+bool RailSystem::renameRoutePoint(RailRoutePointId routePointId, const std::string& name)
+{
+	return m_routePointManager.renameRoutePoint(routePointId, name);
+}
+
+bool RailSystem::pickInspectTarget(PlacementMode placementMode, RailInspectTarget& outTarget) const
+{
+	outTarget = RailInspectTarget();
+	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
+	if (!BuildingSystem::isValidHitPoint(terrainHit))
+	{
+		return false;
+	}
+
+	const float trainRadius = trainPickRadius(m_config);
+	RailTrainId nearestTrainId = InvalidRailTrainId;
+	float nearestTrainDistance = trainRadius;
+	for (const RailTrain& train : m_trainManager.trains())
+	{
+		if (train.pose.valid)
+		{
+			const float distance = train.pose.position.distance(terrainHit);
+			if (distance <= nearestTrainDistance)
+			{
+				nearestTrainDistance = distance;
+				nearestTrainId = train.id;
+			}
+		}
+		for (const RailTrainPose& carPose : train.carPoses)
+		{
+			if (!carPose.valid)
+			{
+				continue;
+			}
+			const float distance = carPose.position.distance(terrainHit);
+			if (distance <= nearestTrainDistance)
+			{
+				nearestTrainDistance = distance;
+				nearestTrainId = train.id;
+			}
+		}
+	}
+	if (nearestTrainId != InvalidRailTrainId)
+	{
+		outTarget = RailInspectTarget::train(nearestTrainId);
+		return true;
+	}
+
+	const RailStationId stationId = m_stationManager.findNearestStation(
+		m_network, m_anchorManager, terrainHit, stationPickRadius(m_config));
+	if (stationId != InvalidRailStationId)
+	{
+		outTarget = RailInspectTarget::station(stationId);
+		return true;
+	}
+
+	const RailRoutePointId routePointId = m_routePointManager.findNearestRoutePoint(
+		m_network, m_anchorManager, terrainHit, routePointPickRadius(m_config));
+	if (routePointId != InvalidRailRoutePointId)
+	{
+		outTarget = RailInspectTarget::routePoint(routePointId);
+		return true;
+	}
+
+	return false;
 }
 
 bool RailSystem::addStationToSelectedLine(RailStationId stationId)

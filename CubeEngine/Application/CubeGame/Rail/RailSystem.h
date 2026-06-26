@@ -2,9 +2,12 @@
 
 #include "RailBuildTool.h"
 #include "RailEditorVisualSystem.h"
+#include "RailInspectTarget.h"
 #include "RailLine.h"
 #include "RailPersistentVisualSystem.h"
 #include "RailTrain.h"
+
+#include <string>
 
 namespace tzw {
 
@@ -42,10 +45,13 @@ public:
 	const RailStationManager& stationManager() const;
 	RailRoutePointManager& routePointManager();
 	const RailRoutePointManager& routePointManager() const;
-	RailEditResult handleStationAddPrimaryClick(PlacementMode placementMode);
+	RailEditResult handleStationAddPrimaryClick(PlacementMode placementMode, const std::string& name = "");
 	bool handleStationDeletePrimaryClick(PlacementMode placementMode);
-	RailEditResult handleRoutePointAddPrimaryClick(PlacementMode placementMode);
+	RailEditResult handleRoutePointAddPrimaryClick(PlacementMode placementMode, const std::string& name = "");
 	bool handleRoutePointDeletePrimaryClick(PlacementMode placementMode);
+	bool renameStation(RailStationId stationId, const std::string& name);
+	bool renameRoutePoint(RailRoutePointId routePointId, const std::string& name);
+	bool pickInspectTarget(PlacementMode placementMode, RailInspectTarget& outTarget) const;
 	bool addStationToSelectedLine(RailStationId stationId);
 	bool addRoutePointToSelectedLine(RailRoutePointId routePointId);
 	RailEditResult addPickedControlPointToSelectedLine(PlacementMode placementMode);

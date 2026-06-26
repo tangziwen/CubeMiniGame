@@ -115,16 +115,16 @@ bool RailAnchorManager::pickLocationOnTrack(const RailNetwork& network, const ve
 	return true;
 }
 
-RailStationId RailStationManager::createStation(RailAnchorId anchorId)
+RailStationId RailStationManager::createStation(RailAnchorId anchorId, const std::string& name)
 {
 	RailStation station;
 	station.id = m_nextStationId++;
-	station.name = "Station " + std::to_string(station.id);
+	station.name = name.empty() ? "Station" + std::to_string(station.id) : name;
 
 	RailPlatform platform;
 	platform.id = m_nextPlatformId++;
 	platform.stationId = station.id;
-	platform.name = "Platform " + std::to_string(platform.id);
+	platform.name = "Platform" + std::to_string(platform.id);
 	platform.anchorId = anchorId;
 
 	station.platforms.push_back(platform.id);
@@ -237,6 +237,21 @@ const std::vector<RailPlatform>& RailStationManager::platforms() const
 	return m_platforms;
 }
 
+bool RailStationManager::renameStation(RailStationId stationId, const std::string& name)
+{
+	if (name.empty())
+	{
+		return false;
+	}
+	RailStation* targetStation = station(stationId);
+	if (!targetStation)
+	{
+		return false;
+	}
+	targetStation->name = name;
+	return true;
+}
+
 const RailPlatform* RailStationManager::firstPlatform(RailStationId stationId) const
 {
 	const RailStation* targetStation = station(stationId);
@@ -276,11 +291,11 @@ RailStationId RailStationManager::findNearestStation(const RailNetwork& network,
 	return result;
 }
 
-RailRoutePointId RailRoutePointManager::createRoutePoint(RailAnchorId anchorId)
+RailRoutePointId RailRoutePointManager::createRoutePoint(RailAnchorId anchorId, const std::string& name)
 {
 	RailRoutePoint routePoint;
 	routePoint.id = m_nextRoutePointId++;
-	routePoint.name = "Route Point " + std::to_string(routePoint.id);
+	routePoint.name = name.empty() ? "RoutePoint" + std::to_string(routePoint.id) : name;
 	routePoint.anchorId = anchorId;
 	m_routePoints.push_back(routePoint);
 	return routePoint.id;
@@ -344,6 +359,21 @@ const RailRoutePoint* RailRoutePointManager::routePoint(RailRoutePointId routePo
 const std::vector<RailRoutePoint>& RailRoutePointManager::routePoints() const
 {
 	return m_routePoints;
+}
+
+bool RailRoutePointManager::renameRoutePoint(RailRoutePointId routePointId, const std::string& name)
+{
+	if (name.empty())
+	{
+		return false;
+	}
+	RailRoutePoint* targetRoutePoint = routePoint(routePointId);
+	if (!targetRoutePoint)
+	{
+		return false;
+	}
+	targetRoutePoint->name = name;
+	return true;
 }
 
 RailAnchorId RailRoutePointManager::anchorForRoutePoint(RailRoutePointId routePointId) const

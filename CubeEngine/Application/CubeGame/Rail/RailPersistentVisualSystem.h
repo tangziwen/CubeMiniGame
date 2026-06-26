@@ -2,6 +2,7 @@
 #define TZW_RAIL_PERSISTENT_VISUAL_SYSTEM_H
 
 #include "RailPoint.h"
+#include "RailPointNameBillboard.h"
 #include "RailTrackMesh.h"
 #include "RailTrainVisual.h"
 
@@ -28,6 +29,7 @@ private:
 
 	RailStationId m_stationId = InvalidRailStationId;
 	CubePrimitive* m_marker = nullptr;
+	RailPointNameBillboard m_nameBillboard;
 };
 
 class RailRoutePointVisual
@@ -45,6 +47,7 @@ private:
 
 	RailRoutePointId m_routePointId = InvalidRailRoutePointId;
 	CubePrimitive* m_marker = nullptr;
+	RailPointNameBillboard m_nameBillboard;
 };
 
 class RailTrackVisualSet
