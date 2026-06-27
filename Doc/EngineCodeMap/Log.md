@@ -2,25 +2,17 @@
 
 ## Role
 
-TODO
+Legacy/simple log system facade.
 
-## Entry Points
+## Important Objects
 
-TODO
-
-## Contracts
-
-TODO
-
-## Ownership
-
-TODO
+- `LogSystem`: singleton with formatted/string logging methods.
+- `T_LOG`: macro alias for `LogSystem::shared()->log`.
 
 ## Boundaries
 
-TODO
+- Newer utility logging helpers live in `Utility/log/Log.h` as `tlog`, `tlogError`, and `initLogSystem()`.
 
 ## Known Traps
 
-TODO
-
+- There are two logging surfaces (`Log` and `Utility/log`); check existing call sites before standardizing a module.

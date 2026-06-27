@@ -1,0 +1,4 @@
+interface:
+  display_name: "Engine CodeMap Sync"
+  short_description: "Review Engine CodeMap after engine changes"
+  default_prompt: "Use $engine-codemap-sync after engine code changes to decide whether Doc/EngineCodeMap needs a concise update."

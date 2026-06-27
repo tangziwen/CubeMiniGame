@@ -2,25 +2,26 @@
 
 ## Role
 
-TODO
+Geometry storage, GPU buffer submission, ray intersection, AABB calculation, and instancing payloads.
 
-## Entry Points
+## Important Objects
 
-TODO
+- `Mesh`: vertices/indices/instances, AABB, VBO/IBO/render buffers, merge/subdivide/normal/tangent helpers, ray intersection, and GPU submit/resubmit.
+- `InstancedMesh`: instance buffer wrapper for a base `Mesh`.
+- `VertexData`: position, normal, UV, color, barycentric, material blend, tangent, overlay color.
+- `InstanceData`: per-instance transform/color data.
 
 ## Contracts
 
-TODO
-
-## Ownership
-
-TODO
+- Call `finish()` or explicit submit methods after building geometry that must render.
+- Call `calculateAABB()` / keep AABB current for culling and picking.
+- Use `submitInstanced()` / `reSubmitInstanced()` when changing instance lists.
 
 ## Boundaries
 
-TODO
+- Mesh does not own scene lifetime or material routing.
+- Backend buffer details are abstracted through `RenderBuffer`.
 
 ## Known Traps
 
-TODO
-
+- `Mesh::m_indices` stores `short_u`; very large meshes need index-size awareness.

@@ -2,25 +2,16 @@
 
 ## Role
 
-TODO
+Legacy Doxygen-style source documentation stubs.
 
-## Entry Points
+## Important Objects
 
-TODO
-
-## Contracts
-
-TODO
-
-## Ownership
-
-TODO
+- `mainpage.h`, `res_page.h`, `use_scripte.h`: Doxygen page content only.
 
 ## Boundaries
 
-TODO
+- This directory is not the human-maintained navigation map. Use `Doc/EngineCodeMap` for AI-facing module navigation.
 
 ## Known Traps
 
-TODO
-
+- Files here are headers for documentation generation, not runtime code.
