@@ -6,8 +6,10 @@
 #include "EngineSrc/Technique/MaterialPool.h"
 #include <iostream>
 #include <cstring>
+#include <cstdlib>
 #include <vector>
 #include "Utility/file/Tfile.h"
+#include "Utility/log/Log.h"
 #include "Utility/misc/Tmisc.h"
 
 namespace tzw {
@@ -104,47 +106,97 @@ std::string resolvePathInFolder(const std::string& filePath, const std::string& 
 	return filePath;
 }
 
-void applyRenderStateOverrides(Material * material, rapidjson::Value& materialData)
+bool hasRenderStateOverrides(rapidjson::Value& materialData)
 {
-	if(materialData.HasMember("cullFace"))
-	{
-		material->setIsCullFace(materialData["cullFace"].GetBool());
-	}
-	if(materialData.HasMember("CullMode"))
-	{
-		material->setCullMode(parseCullMode(materialData["CullMode"].GetString(), material->getCullMode()));
-	}
-	if(materialData.HasMember("RasterFillMode"))
-	{
-		material->setRasterFillMode(parseRasterFillMode(materialData["RasterFillMode"].GetString(), material->getRasterFillMode()));
-	}
-	if(materialData.HasMember("DepthTestEnable"))
-	{
-		material->setIsDepthTestEnable(materialData["DepthTestEnable"].GetBool());
-	}
-	if(materialData.HasMember("DepthWriteEnable"))
-	{
-		material->setIsDepthWriteEnable(materialData["DepthWriteEnable"].GetBool());
-	}
-	if(materialData.HasMember("BlendEnable"))
-	{
-		material->setIsEnableBlend(materialData["BlendEnable"].GetBool());
-	}
-	if(materialData.HasMember("EnableInstanced"))
-	{
-		material->setIsEnableInstanced(materialData["EnableInstanced"].GetBool());
-	}
-	if(materialData.HasMember("SrcBlendFactor"))
-	{
-		material->setFactorSrc(parseBlendFactor(materialData["SrcBlendFactor"].GetString(), material->getFactorSrc()));
-	}
-	if(materialData.HasMember("DstBlendFactor"))
-	{
-		material->setFactorDst(parseBlendFactor(materialData["DstBlendFactor"].GetString(), material->getFactorDst()));
-	}
+	return materialData.HasMember("cullFace")
+		|| materialData.HasMember("CullMode")
+		|| materialData.HasMember("RasterFillMode")
+		|| materialData.HasMember("DepthTestEnable")
+		|| materialData.HasMember("DepthWriteEnable")
+		|| materialData.HasMember("BlendEnable")
+		|| materialData.HasMember("EnableInstanced")
+		|| materialData.HasMember("SrcBlendFactor")
+		|| materialData.HasMember("DstBlendFactor");
+}
+
+void applyRenderStageOverride(Material * material, rapidjson::Value& materialData)
+{
 	if(materialData.HasMember("RenderStage"))
 	{
 		material->setRenderStage(parseRenderStage(materialData["RenderStage"].GetString(), material->getRenderStage()));
+	}
+}
+
+void applyTechniqueRenderStateOverrides(Material * material, MaterialTechniqueType type, rapidjson::Value& materialData)
+{
+	auto& technique = material->getTechnique(type);
+	if(materialData.HasMember("cullFace"))
+	{
+		material->setIsCullFace(type, materialData["cullFace"].GetBool());
+	}
+	if(materialData.HasMember("CullMode"))
+	{
+		material->setCullMode(type, parseCullMode(materialData["CullMode"].GetString(), technique.m_cullMode));
+	}
+	if(materialData.HasMember("RasterFillMode"))
+	{
+		material->setRasterFillMode(type, parseRasterFillMode(materialData["RasterFillMode"].GetString(), technique.m_rasterFillMode));
+	}
+	if(materialData.HasMember("DepthTestEnable"))
+	{
+		material->setIsDepthTestEnable(type, materialData["DepthTestEnable"].GetBool());
+	}
+	if(materialData.HasMember("DepthWriteEnable"))
+	{
+		material->setIsDepthWriteEnable(type, materialData["DepthWriteEnable"].GetBool());
+	}
+	if(materialData.HasMember("BlendEnable"))
+	{
+		material->setIsEnableBlend(type, materialData["BlendEnable"].GetBool());
+	}
+	if(materialData.HasMember("EnableInstanced"))
+	{
+		material->setIsEnableInstanced(type, materialData["EnableInstanced"].GetBool());
+	}
+	if(materialData.HasMember("SrcBlendFactor"))
+	{
+		material->setFactorSrc(type, parseBlendFactor(materialData["SrcBlendFactor"].GetString(), technique.m_factorSrc));
+	}
+	if(materialData.HasMember("DstBlendFactor"))
+	{
+		material->setFactorDst(type, parseBlendFactor(materialData["DstBlendFactor"].GetString(), technique.m_factorDst));
+	}
+}
+
+void applyGlobalRenderStateOverrides(Material * material, rapidjson::Value& materialData)
+{
+	if(!hasRenderStateOverrides(materialData))
+	{
+		return;
+	}
+	for(auto type : material->getTechniqueTypes())
+	{
+		applyTechniqueRenderStateOverrides(material, type, materialData);
+	}
+}
+
+void applyTechniqueOverrides(Material * material, rapidjson::Value& techniquesData)
+{
+	if(!techniquesData.IsObject())
+	{
+		tlog("[error] model material techniques must be an object");
+		abort();
+	}
+
+	for(auto iter = techniquesData.MemberBegin(); iter != techniquesData.MemberEnd(); ++iter)
+	{
+		if(!iter->value.IsObject())
+		{
+			tlog("[error] model material technique override must be an object. technique=%s", iter->name.GetString());
+			abort();
+		}
+		auto type = materialTechniqueTypeFromString(iter->name.GetString());
+		applyTechniqueRenderStateOverrides(material, type, iter->value);
 	}
 }
 
@@ -196,7 +248,13 @@ void applyAttributeOverride(Material * material, rapidjson::Value& attribute)
 
 void applyMaterialVariantOverrides(Material * material, rapidjson::Value& materialData, const std::string& folder)
 {
-	applyRenderStateOverrides(material, materialData);
+	applyRenderStageOverride(material, materialData);
+	applyGlobalRenderStateOverrides(material, materialData);
+
+	if(materialData.HasMember("techniques"))
+	{
+		applyTechniqueOverrides(material, materialData["techniques"]);
+	}
 
 	if(materialData.HasMember("attributes"))
 	{
