@@ -10,7 +10,7 @@ class DeviceMaterialVK: public DeviceMaterial
 {
 public:
 	DeviceMaterialVK();
-	virtual void init(MaterialInstance* material) override;
+	virtual void init(MaterialInstance* material, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) override;
 	virtual void initCompute(DeviceShaderCollection * shader) override;
 	virtual DeviceDescriptor * getMaterialDescriptorSet() override;
 	virtual void updateUniform() override;

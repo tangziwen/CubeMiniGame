@@ -18,7 +18,7 @@ class DeviceRenderStageVK : public DeviceRenderStage
 public:
 	DeviceRenderStageVK();
 	void finish();
-	void draw(RenderQueue * renderQueue) override;
+	void draw(RenderQueue * renderQueue, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) override;
 	void drawScreenQuad() override;
 	void drawSphere() override;
 	void dispatch(unsigned int x, unsigned int y, unsigned int z) override;

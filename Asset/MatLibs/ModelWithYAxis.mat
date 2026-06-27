@@ -1,16 +1,36 @@
 {
-	"shaders":{
-		"vs" : "Shaders/GeometryPassAxisBillBoard_v.glsl",
-		"fs" : "Shaders/GeometryPass_f.glsl"
-	},
-	"name" : "ModelStd",
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_roughness", "type":"float", "default":1.0},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		],
-		"maps" : [
-			["DiffuseMap", 0]
-		]
-	}
+    "name": "ModelStd",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/GeometryPassAxisBillBoard_v.glsl",
+                "fs": "Shaders/GeometryPass_f.glsl"
+            }
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_roughness",
+                "type": "float",
+                "default": 1.0
+            },
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ],
+        "maps": [
+            [
+                "DiffuseMap",
+                0
+            ]
+        ]
+    }
 }

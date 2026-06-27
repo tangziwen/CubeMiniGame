@@ -1,21 +1,50 @@
 {
-	"shaders":{
-		"vs" : "Shaders/GeometryPass_v.glsl",
-		"fs" : "Shaders/GeometryPassRimLight_f.glsl"
-	},
-	"name" : "ModelRimLight",
-	"RenderStage": "TRANSPARENT",
-	"BlendEnable" : true,
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_roughness", "type":"float", "default":5.0},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		],
-		"maps" : [
-			["DiffuseMap", 0],
-			["MetallicMap", 1],
-			["RoughnessMap", 2],
-			["NormalMap", 3]
-		]
-	}
+    "name": "ModelRimLight",
+    "RenderStage": "TRANSPARENT",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/GeometryPass_v.glsl",
+                "fs": "Shaders/GeometryPassRimLight_f.glsl"
+            },
+            "BlendEnable": true
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_roughness",
+                "type": "float",
+                "default": 5.0
+            },
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ],
+        "maps": [
+            [
+                "DiffuseMap",
+                0
+            ],
+            [
+                "MetallicMap",
+                1
+            ],
+            [
+                "RoughnessMap",
+                2
+            ],
+            [
+                "NormalMap",
+                3
+            ]
+        ]
+    }
 }

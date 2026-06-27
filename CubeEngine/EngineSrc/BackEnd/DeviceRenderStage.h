@@ -12,6 +12,7 @@
 #include "DeviceDescriptor.h"
 #include "DeviceRenderCommand.h"
 #include "Rendering/RenderQueues.h"
+#include "Technique/MaterialTechnique.h"
 namespace tzw
 {
 class DeviceRenderStage
@@ -26,7 +27,7 @@ public:
 	void setFrameBuffer(DeviceFrameBuffer * frameBuffer);
 	virtual void prepare(DeviceRenderCommand* renderCommand);
 	virtual void finish() = 0;
-	virtual void draw(RenderQueue * renderQueue) = 0;
+	virtual void draw(RenderQueue * renderQueue, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) = 0;
 	virtual void drawScreenQuad() = 0;
 	virtual void drawSphere() = 0;
 	virtual void dispatch(unsigned int x, unsigned int y, unsigned int z) = 0;
@@ -60,7 +61,7 @@ protected:
 	DevicePipeline * m_singlePipeline;
 	DeviceMaterial * m_soloMaterial;
 	std::unordered_map<MaterialInstance *, DevicePipeline *>m_matPipelinePool;
-	std::unordered_map<MaterialInstance *, DeviceMaterial *>m_deviceMaterialPool;
+	std::unordered_map<std::string, DeviceMaterial *>m_deviceMaterialPool;
 	std::unordered_map<std::string, DevicePipeline *>m_pipelinePool;
 	std::unordered_set<DeviceMaterial *> m_activeMatList;
     static DeviceBuffer * m_quadVertexBuffer;

@@ -1,28 +1,68 @@
 {
-	"shaders":{
-		"vs" : "Shaders/ScreenQuad_v.glsl",
-		"fs" : "Shaders/LightPassDir_f.glsl"
-	},
-	"name" : "DirectLight",
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "One",
-	"DstBlendFactor" : "One",
-	"cullFace" : false,
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_roughness", "type":"float", "default":5.0},
-			{"name" : "TU_camPos", "type":"semantic_CameraPos"},
-			{"name" : "TU_winSize", "type":"semantic_WinSize"},
-			{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
-			{"name" : "TU_sunColor", "type":"semantic_SunColor"},
-			{"name" : "TU_sunDirection", "type":"semantic_SunDirection"},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		],
-		"maps" : [
-		["environmentMap", 0, "IBLTest/autumn_irradiance_latlong.dds"],
-		["prefilterMap", 0, "IBLTest/autumn_radiance_latlong.dds"]
-		]
-	}
+    "name": "DirectLight",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/ScreenQuad_v.glsl",
+                "fs": "Shaders/LightPassDir_f.glsl"
+            },
+            "cullFace": false,
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": false,
+            "SrcBlendFactor": "One",
+            "DstBlendFactor": "One"
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_roughness",
+                "type": "float",
+                "default": 5.0
+            },
+            {
+                "name": "TU_camPos",
+                "type": "semantic_CameraPos"
+            },
+            {
+                "name": "TU_winSize",
+                "type": "semantic_WinSize"
+            },
+            {
+                "name": "TU_viewProjectInverted",
+                "type": "semantic_ViewProjectInverted"
+            },
+            {
+                "name": "TU_sunColor",
+                "type": "semantic_SunColor"
+            },
+            {
+                "name": "TU_sunDirection",
+                "type": "semantic_SunDirection"
+            },
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ],
+        "maps": [
+            [
+                "environmentMap",
+                0,
+                "IBLTest/autumn_irradiance_latlong.dds"
+            ],
+            [
+                "prefilterMap",
+                0,
+                "IBLTest/autumn_radiance_latlong.dds"
+            ]
+        ]
+    }
 }

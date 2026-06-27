@@ -1,18 +1,20 @@
 {
-	"shaders":{
-		"vs" : "Shaders/ScreenQuad_v.glsl",
-		"fs" : "Shaders/SSAOComposite_f.glsl"
-	},
-	"name" : "PostEffect",
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
-	"property" : {
-		"attributes" : [
-		],
-		"maps" : [
-		]
-	}
+    "name": "PostEffect",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/ScreenQuad_v.glsl",
+                "fs": "Shaders/SSAOComposite_f.glsl"
+            },
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": false,
+            "SrcBlendFactor": "SrcAlpha",
+            "DstBlendFactor": "OneMinusSrcAlpha"
+        }
+    },
+    "property": {
+        "attributes": [],
+        "maps": []
+    }
 }

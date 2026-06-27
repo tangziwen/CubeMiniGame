@@ -9,6 +9,7 @@
 #include "Mesh/InstancedMesh.h"
 #include "DeviceMaterialVK.h"
 #include "Technique/MaterialInstance.h"
+#include <cstdint>
 namespace tzw
 {
 	DeviceRenderStageVK::DeviceRenderStageVK()
@@ -22,7 +23,7 @@ namespace tzw
         //CHECK_VULKAN_ERROR("vkEndCommandBuffer error %d\n", res);
 	}
 
-	void DeviceRenderStageVK::draw(RenderQueue * renderQueue)
+	void DeviceRenderStageVK::draw(RenderQueue * renderQueue, MaterialTechniqueType techniqueType)
 	{
 		if(renderQueue)
 		{
@@ -34,16 +35,19 @@ namespace tzw
             //if(a.batchType() != RenderCommand::RenderBatchType::Single) continue;
             MaterialInstance * mat = a.getMat();
             auto material = mat->getMaterial();
+            const auto& technique = material->getTechnique(techniqueType);
 
-            //std::string & matStr = mat->getFullDescriptionStr();
             DevicePipelineVK * currPipeLine = nullptr;
             DeviceMaterialVK * currDeviceMat = nullptr;
-            auto deviceMatIter = m_deviceMaterialPool.find(mat);
+            // A material instance can be drawn through different techniques in future passes.
+            // Keep descriptor caches separated by technique so shader-layout-specific bindings do not collide.
+            std::string deviceMaterialKey = std::to_string(reinterpret_cast<uintptr_t>(mat)) + "|" + materialTechniqueTypeToString(techniqueType);
+            auto deviceMatIter = m_deviceMaterialPool.find(deviceMaterialKey);
             if (deviceMatIter == m_deviceMaterialPool.end())
             {
                 auto deviceMaterial = new DeviceMaterialVK();
-                deviceMaterial->init(mat);
-                m_deviceMaterialPool[mat] =  deviceMaterial;
+                deviceMaterial->init(mat, techniqueType);
+                m_deviceMaterialPool[deviceMaterialKey] = deviceMaterial;
                 currDeviceMat = deviceMaterial;
             }
             else
@@ -51,7 +55,9 @@ namespace tzw
                 currDeviceMat = static_cast<DeviceMaterialVK *>(deviceMatIter->second);
             }
 
-            auto iter = m_pipelinePool.find(material->getFullDescriptionStr());
+            // Pipeline compatibility is derived from the resolved technique state for this pass.
+            // Do not key only by MaterialInstance: the same instance may use different shaders/states per technique.
+            auto iter = m_pipelinePool.find(technique.getFullDescriptionStr());
             if(iter == m_pipelinePool.end())
             {
                 DeviceVertexInput vertexInput;
@@ -82,13 +88,13 @@ namespace tzw
                     instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo2.x)});
 
                     currPipeLine = new DevicePipelineVK();
-                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1, techniqueType);
                 }else //single draw call
                 {
                     currPipeLine = new DevicePipelineVK();
-                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1);
+                    currPipeLine->init(this->getFrameBuffer()->getSize(), mat, this->getRenderPass(), vertexInput, false, instanceInput, this->getRenderPass()->getAttachmentCount()-1, techniqueType);
                 }
-                m_pipelinePool[material->getFullDescriptionStr()] = currPipeLine;
+                m_pipelinePool[technique.getFullDescriptionStr()] = currPipeLine;
             }
             else
             {

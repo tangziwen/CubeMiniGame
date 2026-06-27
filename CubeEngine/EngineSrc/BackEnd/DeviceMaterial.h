@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "Rendering/ImageFormat.h"
+#include "Technique/MaterialTechnique.h"
 
 namespace tzw
 {
@@ -14,7 +15,7 @@ public:
 	virtual DeviceDescriptor * getMaterialDescriptorSet() = 0;
 	virtual void updateUniform() = 0;
 	virtual void initCompute(DeviceShaderCollection * shader) = 0;
-	virtual void init(MaterialInstance* material) = 0;
+	virtual void init(MaterialInstance* material, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) = 0;
 	virtual void updateUniformSingle(std::string name, void * buff, size_t size) =0;
 	virtual void updateMaterialDescriptorSet() = 0;
 	MaterialInstance * getMat()

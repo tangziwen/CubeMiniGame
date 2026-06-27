@@ -1,19 +1,42 @@
 {
-	"shaders":{
-		"vs" : "Shaders/GeometryPass_v.glsl",
-		"fs" : "Shaders/GeometryPass_f.glsl"
-	},
-	"name" : "Grass",
-	"cullFace" : false,
-	"EnableInstanced" : true,
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_camPos", "type":"semantic_CameraPos"},
-			{"name" : "TU_roughness", "type":"float", "default":1.0},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		],
-		"maps" : [
-			["DiffuseMap", 0]
-		]
-	}
+    "name": "Grass",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/GeometryPass_v.glsl",
+                "fs": "Shaders/GeometryPass_f.glsl"
+            },
+            "cullFace": false,
+            "EnableInstanced": true
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_camPos",
+                "type": "semantic_CameraPos"
+            },
+            {
+                "name": "TU_roughness",
+                "type": "float",
+                "default": 1.0
+            },
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ],
+        "maps": [
+            [
+                "DiffuseMap",
+                0
+            ]
+        ]
+    }
 }

@@ -1,18 +1,34 @@
 {
-	"shaders":{
-		"vs" : "Shaders/GUIColor_v.glsl",
-		"fs" : "Shaders/GUIColor_f.glsl"
-	},
-	"name" : "Color",
-	"BlendEnable" : true,
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		],
-		"maps" : [
-			["SpriteTexture", 0]
-		]
-	}
+    "name": "Color",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/GUIColor_v.glsl",
+                "fs": "Shaders/GUIColor_f.glsl"
+            },
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": true
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ],
+        "maps": [
+            [
+                "SpriteTexture",
+                0
+            ]
+        ]
+    }
 }

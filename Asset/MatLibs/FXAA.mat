@@ -1,19 +1,25 @@
 {
-	"shaders":{
-		"vs" : "Shaders/ScreenQuad_v.glsl",
-		"fs" : "Shaders/FXAA_f.glsl"
-	},
-	"name" : "FXAA",
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
-	"property" : {
-		"attributes" : [
-		{"name" : "TU_winSize", "type":"semantic_WinSize"}
-		],
-		"maps" : [
-		]
-	}
+    "name": "FXAA",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/ScreenQuad_v.glsl",
+                "fs": "Shaders/FXAA_f.glsl"
+            },
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": false,
+            "SrcBlendFactor": "SrcAlpha",
+            "DstBlendFactor": "OneMinusSrcAlpha"
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_winSize",
+                "type": "semantic_WinSize"
+            }
+        ],
+        "maps": []
+    }
 }

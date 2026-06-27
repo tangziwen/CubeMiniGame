@@ -15,11 +15,12 @@ namespace tzw
 
 	}
 
-    void DeviceMaterialVK::init(MaterialInstance* material)
+    void DeviceMaterialVK::init(MaterialInstance* material, MaterialTechniqueType techniqueType)
     {
 		m_mat = material;
         m_shadingParams = material->getShadingParams();
-        DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(material->getMaterial()->getProgram()->getDeviceShader());
+        auto& technique = material->getMaterial()->getTechnique(techniqueType);
+        DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(technique.m_program->getDeviceShader());
         m_shader = shader;
 
         //create material descriptor pool

@@ -1,16 +1,29 @@
 {
-	"shaders":{
-		"vs" : "Shaders/IMGUI_v.glsl",
-		"fs" : "Shaders/IMGUI_f.glsl"
-	},
-	"name" : "Sprite",
-	"BlendEnable" : true,
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"cullFace" : false,
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		]
-	}
+    "name": "Sprite",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/IMGUI_v.glsl",
+                "fs": "Shaders/IMGUI_f.glsl"
+            },
+            "cullFace": false,
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": true
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ]
+    }
 }

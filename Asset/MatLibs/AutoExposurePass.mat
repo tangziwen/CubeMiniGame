@@ -1,19 +1,25 @@
 {
-	"shaders":{
-		"vs" : "Shaders/ScreenQuad_v.glsl",
-		"fs" : "Shaders/AutoExposurePass_f.glsl"
-	},
-	"name" : "AutoExposurePass",
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
-	"property" : {
-		"attributes" : [
-			{"name" : "TU_winSize", "type":"semantic_WinSize"}
-		],
-		"maps" : [
-		]
-	}
+    "name": "AutoExposurePass",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/ScreenQuad_v.glsl",
+                "fs": "Shaders/AutoExposurePass_f.glsl"
+            },
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": false,
+            "SrcBlendFactor": "SrcAlpha",
+            "DstBlendFactor": "OneMinusSrcAlpha"
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_winSize",
+                "type": "semantic_WinSize"
+            }
+        ],
+        "maps": []
+    }
 }

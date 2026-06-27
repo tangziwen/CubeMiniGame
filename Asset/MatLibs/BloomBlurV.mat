@@ -1,18 +1,20 @@
 {
-	"shaders":{
-		"vs" : "Shaders/ScreenQuad_v.glsl",
-		"fs" : "Shaders/BloomBlurV_f.glsl"
-	},
-	"name" : "BlurV",
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
-	"property" : {
-		"attributes" : [
-		],
-		"maps" : [
-		]
-	}
+    "name": "BlurV",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/ScreenQuad_v.glsl",
+                "fs": "Shaders/BloomBlurV_f.glsl"
+            },
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": false,
+            "SrcBlendFactor": "SrcAlpha",
+            "DstBlendFactor": "OneMinusSrcAlpha"
+        }
+    },
+    "property": {
+        "attributes": [],
+        "maps": []
+    }
 }

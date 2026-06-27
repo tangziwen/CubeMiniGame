@@ -5,6 +5,7 @@
 #include <vector>
 #include <functional>
 #include "Rendering/RenderFlag.h"
+#include "Technique/MaterialTechnique.h"
 #include "vulkan/vulkan.h"
 namespace tzw
 {
@@ -41,7 +42,8 @@ public:
 	
 	virtual void initCompute(DeviceShaderCollection * computeShader) = 0;
 	virtual void init(vec2 viewPortSize, MaterialInstance * mat, DeviceRenderPass* targetRenderPass
-	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1) = 0;
+	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1,
+	                  MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) = 0;
 	virtual void resetItemWiseDescritporSet() = 0;
 	virtual DeviceDescriptor * giveItemWiseDescriptorSet() = 0;
 	void setDynamicState(uint32_t state)

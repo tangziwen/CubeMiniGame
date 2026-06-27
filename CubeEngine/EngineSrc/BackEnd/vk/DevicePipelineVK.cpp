@@ -53,7 +53,7 @@ void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
     printf("Compute pipeline created\n");
 }
 
-void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount)
+void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount, MaterialTechniqueType techniqueType)
 {
 
     m_totalItemWiseDesSet = 0;
@@ -61,7 +61,8 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
     m_mat = mat;
     m_shadingParams = mat->getShadingParams();
     auto material = mat->getMaterial();
-    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(material->getProgram()->getDeviceShader());
+    auto& technique = material->getTechnique(techniqueType);
+    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(technique.m_program->getDeviceShader());
     m_shader = shader;
 
     VkPipelineShaderStageCreateInfo shaderStageCreateInfo[2] = {};
@@ -134,7 +135,7 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
 
     VkPipelineInputAssemblyStateCreateInfo pipelineIACreateInfo = {};
     pipelineIACreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    switch(material->getPrimitiveTopology())
+    switch(technique.m_primitiveTopology)
     {
     case PrimitiveTopology::TriangleList:
         pipelineIACreateInfo.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
@@ -185,15 +186,15 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
 	
     VkPipelineDepthStencilStateCreateInfo depthStencil{};
     depthStencil.sType = VK_STRUCTURE_TYPE_PIPELINE_DEPTH_STENCIL_STATE_CREATE_INFO;
-    depthStencil.depthTestEnable = material->isIsDepthTestEnable();
-    depthStencil.depthWriteEnable = material->isIsDepthWriteEnable();
+    depthStencil.depthTestEnable = technique.m_isDepthTestEnable;
+    depthStencil.depthWriteEnable = technique.m_isDepthWriteEnable;
     depthStencil.depthCompareOp = VK_COMPARE_OP_LESS;
     depthStencil.depthBoundsTestEnable = VK_FALSE;
     depthStencil.stencilTestEnable = VK_FALSE;
 	
     VkPipelineRasterizationStateCreateInfo rastCreateInfo = {};
     rastCreateInfo.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
-    switch(material->getRasterFillMode())
+    switch(technique.m_rasterFillMode)
     {
     case RasterFillMode::Fill:
         rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
@@ -207,8 +208,8 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
         rastCreateInfo.polygonMode = VK_POLYGON_MODE_FILL;
         break;
     }
-    if(material->getIsCullFace()){
-        RenderFlag::CullMode cullMode =  material->getCullMode();
+    if(technique.m_isCullFace){
+        RenderFlag::CullMode cullMode = technique.m_cullMode;
         if(cullMode == RenderFlag::CullMode::Back)
         {
             rastCreateInfo.cullMode = VK_CULL_MODE_BACK_BIT;
@@ -237,14 +238,14 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
     {
         VkPipelineColorBlendAttachmentState blendAttachState = {};
         blendAttachState.colorWriteMask = VK_COLOR_COMPONENT_R_BIT | VK_COLOR_COMPONENT_G_BIT | VK_COLOR_COMPONENT_B_BIT | VK_COLOR_COMPONENT_A_BIT;
-        blendAttachState.srcColorBlendFactor= getBlendFactor(material->getFactorSrc());
-        blendAttachState.dstColorBlendFactor=getBlendFactor(material->getFactorDst());
+        blendAttachState.srcColorBlendFactor = getBlendFactor(technique.m_factorSrc);
+        blendAttachState.dstColorBlendFactor = getBlendFactor(technique.m_factorDst);
         blendAttachState.colorBlendOp=VK_BLEND_OP_ADD;
 
         blendAttachState.srcAlphaBlendFactor=VK_BLEND_FACTOR_ONE;
         blendAttachState.dstAlphaBlendFactor=VK_BLEND_FACTOR_ZERO;
         blendAttachState.alphaBlendOp=VK_BLEND_OP_ADD;
-        blendAttachState.blendEnable = material->isIsEnableBlend();
+        blendAttachState.blendEnable = technique.m_isEnableBlend;
 
         blendStateList.emplace_back(blendAttachState);
     
@@ -307,14 +308,12 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
 }
 VkDescriptorSetLayout DevicePipelineVK::getDescriptorSetLayOut()
 {
-    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getMaterial()->getProgram()->getDeviceShader());
-    return shader->getDescriptorSetLayOut();
+    return m_shader->getDescriptorSetLayOut();
 }
 
 VkDescriptorSetLayout DevicePipelineVK::getMaterialDescriptorSetLayOut()
 {
-    DeviceShaderCollectionVK * shader = static_cast<DeviceShaderCollectionVK *>(m_mat->getMaterial()->getProgram()->getDeviceShader());
-    return shader->getMaterialDescriptorSetLayOut();
+    return m_shader->getMaterialDescriptorSetLayOut();
 }
 
 VkPipelineLayout DevicePipelineVK::getPipelineLayOut()

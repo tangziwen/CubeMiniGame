@@ -1,28 +1,79 @@
 {
-	"shaders":{
-		"vs" : "Shaders/Sky_v.glsl",
-		"fs" : "Shaders/Sky_f.glsl"
-	},
-	"name" : "Sky",
-	"cullFace" : false,
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : true,
-	"property" : {
-		"attributes" : [
-			{"name" : "sun_intensity", "type":"float", "default":22.0},
-			{"name" : "TU_sunDirection", "type":"semantic_SunDirection"},
-			{"name" : "TU_winSize", "type":"semantic_WinSize"},
-			{"name" : "weather", "type":"float", "default":1.0},
-			{"name" : "TU_color", "type":"vec4", "default":[1.0, 1.0, 1.0, 1.0]}
-		],
-		"maps" : [
-			[ "tint", 1, "Texture/Sky/tint.tga"],
-			["tint2", 2, "Texture/Sky/tint2.tga"],
-			[ "sun", 3, "Texture/Sky/sun.tga"],
-			["moon", 4, "Texture/Sky/moon.tga"],
-			["clouds1", 5, "Texture/Sky/clouds1.tga"],
-			["clouds2", 6, "Texture/Sky/clouds2.tga"]
-		]
-	}
+    "name": "Sky",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/Sky_v.glsl",
+                "fs": "Shaders/Sky_f.glsl"
+            },
+            "cullFace": false,
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": true
+        }
+    },
+    "property": {
+        "attributes": [
+            {
+                "name": "sun_intensity",
+                "type": "float",
+                "default": 22.0
+            },
+            {
+                "name": "TU_sunDirection",
+                "type": "semantic_SunDirection"
+            },
+            {
+                "name": "TU_winSize",
+                "type": "semantic_WinSize"
+            },
+            {
+                "name": "weather",
+                "type": "float",
+                "default": 1.0
+            },
+            {
+                "name": "TU_color",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        ],
+        "maps": [
+            [
+                "tint",
+                1,
+                "Texture/Sky/tint.tga"
+            ],
+            [
+                "tint2",
+                2,
+                "Texture/Sky/tint2.tga"
+            ],
+            [
+                "sun",
+                3,
+                "Texture/Sky/sun.tga"
+            ],
+            [
+                "moon",
+                4,
+                "Texture/Sky/moon.tga"
+            ],
+            [
+                "clouds1",
+                5,
+                "Texture/Sky/clouds1.tga"
+            ],
+            [
+                "clouds2",
+                6,
+                "Texture/Sky/clouds2.tga"
+            ]
+        ]
+    }
 }

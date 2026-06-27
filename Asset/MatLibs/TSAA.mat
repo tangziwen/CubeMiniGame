@@ -1,80 +1,124 @@
 {
-    "shaders": {
-        "vs": "Shaders/ScreenQuad_v.glsl",
-        "fs": "Shaders/TSAA_f.glsl"
+    "name": "PostEffect",
+    "techniques": {
+        "default": {
+            "shaders": {
+                "vs": "Shaders/ScreenQuad_v.glsl",
+                "fs": "Shaders/TSAA_f.glsl"
+            },
+            "cullFace": false,
+            "DepthTestEnable": false,
+            "DepthWriteEnable": false,
+            "BlendEnable": false,
+            "SrcBlendFactor": "SrcAlpha",
+            "DstBlendFactor": "OneMinusSrcAlpha"
+        }
     },
-	"name": "PostEffect",
-	"cullFace" : false,
-	"DepthTestEnable" : false,
-	"DepthWriteEnable" : false,
-	"BlendEnable" : false,
-	"SrcBlendFactor" : "SrcAlpha",
-	"DstBlendFactor" : "OneMinusSrcAlpha",
-  "property": {
-    "attributes": [
-		{"name" : "TU_viewProjectInverted", "type":"semantic_ViewProjectInverted"},
-		{"name" : "TU_winSize", "type":"semantic_WinSize"},
-		{"name" : "TU_jitterUV", "type":"vec2", "default":[0, 0]},
-		{"name" : "TU_TSAAResolveParams", "type":"vec4", "default":[0.94, 0.10, 0.010, 0.05]},
-		{"name" : "TU_TSAARejectionParams", "type":"vec4", "default":[1.00, 0.92, 0.0, 0.0]},
-		{"name" : "TU_TSAADebugMode", "type":"int", "default":0},
-		{"name" : "TU_camPos", "type":"semantic_CameraPos"},
-		{"name" : "TU_camInfo", "type":"semantic_CamInfo"},
-      {
-        "name": "fog_near",
-        "type": "float",
-        "default": 50,
-        "ui_info": {
-          "range": [
-            0,
-            150
-          ]
-        }
-      },
-      {
-        "name": "fog_far",
-        "type": "float",
-        "default": 450,
-        "ui_info": {
-          "range": [
-            0,
-            800
-          ]
-        }
-      },
-      {
-        "name": "fog_height_min",
-        "type": "float",
-        "default": -50,
-        "ui_info": {
-          "range": [
-            -50,
-            50
-          ]
-        }
-      },
-      {
-        "name": "fog_height_max",
-        "type": "float",
-        "default": 120,
-        "ui_info": {
-          "range": [
-            0,
-            200
-          ]
-        }
-      },
-      {
-        "name": "fog_color",
-        "type": "vec3",
-        "default": [
-          1,
-          1,
-          1
-        ]
-      }
-    ],
-    "maps": [
-	]
-  }
+    "property": {
+        "attributes": [
+            {
+                "name": "TU_viewProjectInverted",
+                "type": "semantic_ViewProjectInverted"
+            },
+            {
+                "name": "TU_winSize",
+                "type": "semantic_WinSize"
+            },
+            {
+                "name": "TU_jitterUV",
+                "type": "vec2",
+                "default": [
+                    0,
+                    0
+                ]
+            },
+            {
+                "name": "TU_TSAAResolveParams",
+                "type": "vec4",
+                "default": [
+                    0.94,
+                    0.1,
+                    0.01,
+                    0.05
+                ]
+            },
+            {
+                "name": "TU_TSAARejectionParams",
+                "type": "vec4",
+                "default": [
+                    1.0,
+                    0.92,
+                    0.0,
+                    0.0
+                ]
+            },
+            {
+                "name": "TU_TSAADebugMode",
+                "type": "int",
+                "default": 0
+            },
+            {
+                "name": "TU_camPos",
+                "type": "semantic_CameraPos"
+            },
+            {
+                "name": "TU_camInfo",
+                "type": "semantic_CamInfo"
+            },
+            {
+                "name": "fog_near",
+                "type": "float",
+                "default": 50,
+                "ui_info": {
+                    "range": [
+                        0,
+                        150
+                    ]
+                }
+            },
+            {
+                "name": "fog_far",
+                "type": "float",
+                "default": 450,
+                "ui_info": {
+                    "range": [
+                        0,
+                        800
+                    ]
+                }
+            },
+            {
+                "name": "fog_height_min",
+                "type": "float",
+                "default": -50,
+                "ui_info": {
+                    "range": [
+                        -50,
+                        50
+                    ]
+                }
+            },
+            {
+                "name": "fog_height_max",
+                "type": "float",
+                "default": 120,
+                "ui_info": {
+                    "range": [
+                        0,
+                        200
+                    ]
+                }
+            },
+            {
+                "name": "fog_color",
+                "type": "vec3",
+                "default": [
+                    1,
+                    1,
+                    1
+                ]
+            }
+        ],
+        "maps": []
+    }
 }

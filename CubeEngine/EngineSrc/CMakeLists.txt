@@ -219,6 +219,7 @@ set(ENGINE_SOURCES
     "Technique/MaterialInstance.cpp"
     Technique/MaterialPool.cpp
     Technique/Material.cpp
+    Technique/MaterialTechnique.cpp
     Technique/ShadingParams.cpp
     Technique/TechniqueVar.cpp
     Texture/Texture.cpp
@@ -474,6 +475,7 @@ set(ENGINE_HEADERS
     Technique/MaterialInstance.h
     Technique/MaterialPool.h
     Technique/Material.h
+    Technique/MaterialTechnique.h
     Technique/ShadingParams.h
     Technique/TechniqueVar.h
     Texture/Texture.h

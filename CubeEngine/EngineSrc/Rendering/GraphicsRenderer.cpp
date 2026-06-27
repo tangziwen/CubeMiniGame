@@ -412,7 +412,7 @@ namespace tzw
 
             }
             //drawObjs_Common(m_matPipelinePool, shadowCommand[i], m_ShadowStage[i], shadowList);
-            m_ShadowStage[i]->draw(shadowList);
+            m_ShadowStage[i]->draw(shadowList, MaterialTechniqueType::Default);
             m_ShadowStage[i]->endRenderPass();
             m_ShadowStage[i]->finish();
             m_renderPath->addRenderStage(m_ShadowStage[i]);
@@ -421,7 +421,7 @@ namespace tzw
         //------------deferred g - pass begin-------------
         m_gPassStage->prepare(cmd);
         m_gPassStage->beginRenderPass();
-        m_gPassStage->draw(renderQueues);
+        m_gPassStage->draw(renderQueues, MaterialTechniqueType::Default);
         m_gPassStage->endRenderPass();
         m_gPassStage->finish();
         m_renderPath->addRenderStage(m_gPassStage);
@@ -530,7 +530,7 @@ namespace tzw
         {
         m_transparentStage->prepare(cmd);
         m_transparentStage->beginRenderPass();
-        m_transparentStage->draw(renderQueues);
+        m_transparentStage->draw(renderQueues, MaterialTechniqueType::Default);
         m_transparentStage->endRenderPass();
         m_transparentStage->finish();
         m_renderPath->addRenderStage(m_transparentStage);
@@ -572,7 +572,7 @@ namespace tzw
                 {
                     m_debugWireframeStage->prepare(cmd);
                     m_debugWireframeStage->beginRenderPass();
-                    m_debugWireframeStage->draw(debugQueue);
+                    m_debugWireframeStage->draw(debugQueue, MaterialTechniqueType::Default);
                     m_debugWireframeStage->endRenderPass();
                     m_debugWireframeStage->finish();
                     m_renderPath->addRenderStage(m_debugWireframeStage);
@@ -735,7 +735,7 @@ namespace tzw
         //------------GUI Pass begin---------------
         m_guiStage[imageIdx]->prepare(cmd);
         m_guiStage[imageIdx]->beginRenderPass();
-        m_guiStage[imageIdx]->draw(renderQueues);
+        m_guiStage[imageIdx]->draw(renderQueues, MaterialTechniqueType::Default);
         if(!m_imguiPipeline)
         {
             initImguiStuff();
@@ -882,7 +882,7 @@ namespace tzw
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
                 m_thumbNailRenderStage->prepare(cmd);
                 m_thumbNailRenderStage->beginRenderPass(nullptr, vec4(0.5, 0.5, 0.5, 1.0));
-                m_thumbNailRenderStage->draw(nullptr);
+                m_thumbNailRenderStage->draw(nullptr, MaterialTechniqueType::Default);
 		    	m_thumbNailRenderStage->endRenderPass();
                 m_thumbNailRenderStage->finish();
                 isAnythumbnail = true;
