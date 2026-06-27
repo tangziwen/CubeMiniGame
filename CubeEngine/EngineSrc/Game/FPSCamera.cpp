@@ -328,9 +328,18 @@ void FPSCamera::setCamPos(const vec3& pos)
 		btTransform mat;
 		mat.setIdentity();
 		auto m =mat; //m_ghost2->getWorldTransform();
-		m.setOrigin(btVector3(pos.x, pos.y, pos.z));
+		const float physicsEyeOffset = distToGround - m_capsuleHigh / 2.0f - 0.3f;
+		m.setOrigin(btVector3(pos.x, pos.y - physicsEyeOffset, pos.z));
 		m_ghost2->setWorldTransform(m);
 	}
+}
+
+void FPSCamera::resetMovementInput()
+{
+	m_forward = 0;
+	m_slide = 0;
+	m_up = 0;
+	m_isMoving = false;
 }
 
 bool FPSCamera::getIsEnableGravity() const

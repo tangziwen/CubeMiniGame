@@ -64,6 +64,7 @@ public:
 	void showLineAddControlBillboards();
 	void showLineRemoveControlBillboards();
 	void hideEditorVisuals();
+	void hideAllEditorVisuals();
 	void setLinePreview(RailLineId lineId);
 	void clearLinePreview();
 
@@ -71,6 +72,8 @@ private:
 	void rebuildAllRailLines();
 	void markVisualDirty();
 	bool handleTrackPrimaryClick(PlacementMode placementMode);
+	bool deletePointsAnchoredToSegment(RailSegmentId segmentId);
+	bool isAnchorOnSegment(RailAnchorId anchorId, RailSegmentId segmentId) const;
 	bool createAnchorAtHit(PlacementMode placementMode, RailAnchorId& outAnchorId);
 	bool addControlPointToSelectedLine(const RailLineControlPoint& controlPoint);
 

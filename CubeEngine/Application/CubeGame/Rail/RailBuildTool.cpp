@@ -49,9 +49,10 @@ vec3 previewTangentVector(const vec3& direction, float length)
 }
 }
 
-void RailBuildTool::bind(RailNetwork* network, const RailConfig* config)
+void RailBuildTool::bind(RailNetwork* network, RailAnchorManager* anchorManager, const RailConfig* config)
 {
 	m_network = network;
+	m_anchorManager = anchorManager;
 	m_config = config;
 	clearPending();
 }
@@ -167,7 +168,7 @@ bool RailBuildTool::handlePrimaryClick(PlacementMode placementMode)
 		if (anchor.type == RailBuildAnchorType::Segment)
 		{
 			clearPending();
-			return m_network->deleteSegment(anchor.segmentId); 
+			return m_network->deleteSegment(anchor.segmentId);
 		}
 		return false;
 	}
@@ -208,6 +209,18 @@ void RailBuildTool::handleSecondaryClick()
 	{
 		clearPending();
 	}
+}
+
+bool RailBuildTool::pickSegment(PlacementMode placementMode, RailSegmentId& outSegmentId) const
+{
+	outSegmentId = InvalidRailSegmentId;
+	RailBuildAnchor anchor = pickAnchor(placementMode);
+	if (anchor.type != RailBuildAnchorType::Segment)
+	{
+		return false;
+	}
+	outSegmentId = anchor.segmentId;
+	return outSegmentId != InvalidRailSegmentId;
 }
 
 RailBuildAnchor RailBuildTool::pickAnchor(PlacementMode placementMode) const
@@ -363,6 +376,11 @@ bool RailBuildTool::resolveAnchorToNode(const RailBuildAnchor& anchor, RailNodeI
 			if (!m_network->splitSegment(anchor.segmentId, anchor.distanceOnSegment, splitResult))
 			{
 				return false;
+			}
+			if (m_anchorManager)
+			{
+				m_anchorManager->migrateAnchorsAfterSegmentSplit(anchor.segmentId, anchor.distanceOnSegment,
+					splitResult.firstSegmentId, splitResult.secondSegmentId);
 			}
 			outNodeId = splitResult.nodeId;
 			return outNodeId != InvalidRailNodeId;

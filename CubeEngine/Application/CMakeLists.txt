@@ -69,6 +69,9 @@ set(APP_SOURCES
     CubeGame/Projectile.cpp
     CubeGame/ProjectileBullet.cpp
     CubeGame/ResNode.cpp
+    CubeGame/Editor/EditorController.cpp
+    CubeGame/Editor/RailEditingController.cpp
+    CubeGame/Editor/TerrainEditingController.cpp
     CubeGame/Rail/RailBuildTool.cpp
     CubeGame/Rail/RailLine.cpp
     CubeGame/Rail/RailLinePreviewVisual.cpp
@@ -95,8 +98,8 @@ set(APP_SOURCES
     CubeGame/UI/LoadWorldUI.cpp
     CubeGame/UI/NewWorldSettingUI.cpp
     CubeGame/UI/PainterUI.cpp
-    CubeGame/UI/RailEditorModule.cpp
-    CubeGame/UI/TerrainEditorModule.cpp
+    CubeGame/UI/RailEditorImGuiView.cpp
+    CubeGame/UI/TerrainEditorImGuiView.cpp
     CubeGame/UIHelper.cpp
     CubeGame/Vehicle.cpp
     CubeGame/VehicleBroswer.cpp
@@ -223,6 +226,10 @@ set(APP_HEADERS
     CubeGame/Projectile.h
     CubeGame/ProjectileBullet.h
     CubeGame/ResNode.h
+    CubeGame/Editor/EditorController.h
+    CubeGame/Editor/EditorState.h
+    CubeGame/Editor/RailEditingController.h
+    CubeGame/Editor/TerrainEditingController.h
     CubeGame/Rail/RailBuildTool.h
     CubeGame/Rail/RailLine.h
     CubeGame/Rail/RailLinePreviewVisual.h
@@ -242,7 +249,6 @@ set(APP_HEADERS
     CubeGame/SwitchPart.h
     CubeGame/ThrusterPart.h
     CubeGame/TriggerNode.h
-    CubeGame/UI/EditorModalState.h
     CubeGame/UI/EditorPanel.h
     CubeGame/UI/HudUI.h
     CubeGame/UI/InspectPanel.h
@@ -251,8 +257,8 @@ set(APP_HEADERS
     CubeGame/UI/LoadWorldUI.h
     CubeGame/UI/NewWorldSettingUI.h
     CubeGame/UI/PainterUI.h
-    CubeGame/UI/RailEditorModule.h
-    CubeGame/UI/TerrainEditorModule.h
+    CubeGame/UI/RailEditorImGuiView.h
+    CubeGame/UI/TerrainEditorImGuiView.h
     CubeGame/UIHelper.h
     CubeGame/Vehicle.h
     CubeGame/VehicleBroswer.h

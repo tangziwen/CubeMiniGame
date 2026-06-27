@@ -1,7 +1,6 @@
 #include "EditorPanel.h"
 
 #include "2D/IMGUISystem.h"
-#include "CubeGame/GameState.h"
 #include "CubeGame/GameWorld.h"
 #include "EngineSrc/Game/EditorCamera.h"
 #include "Event/EventMgr.h"
@@ -66,13 +65,14 @@ namespace tzw
 
 	void EditorPanel::drawParameterPanel()
 	{
-		if (m_modalState.module == EditorModuleId::Terrain)
+		EditorState& state = m_editorController.state();
+		if (state.module == EditorModuleId::Terrain)
 		{
-			m_terrainModule.drawParameterPanel(m_modalState);
+			m_terrainView.drawParameterPanel(state, m_editorController.terrain());
 		}
-		else if (m_modalState.module == EditorModuleId::Rail)
+		else if (state.module == EditorModuleId::Rail)
 		{
-			m_railModule.drawParameterPanel(m_modalState);
+			m_railView.drawParameterPanel(state, m_editorController.rail());
 		}
 		else
 		{
@@ -82,6 +82,11 @@ namespace tzw
 
 	void EditorPanel::drawParameterWindow(vec2 screenSize)
 	{
+		if (m_editorController.state().module == EditorModuleId::None)
+		{
+			return;
+		}
+
 		ImGui::SetNextWindowPos(
 			ImVec2(15.0f, screenSize.y - 96.0f),
 			ImGuiCond_Always,
@@ -116,25 +121,25 @@ namespace tzw
 		{
 			if (ImGui::BeginTabItem(u8"地形"))
 			{
-				switchToTab(TerrainTabIndex, EditorModuleId::Terrain);
-				m_terrainModule.drawMainTab(m_modalState);
+				m_editorController.switchToTab(TerrainTabIndex, EditorModuleId::Terrain);
+				m_terrainView.drawMainTab(m_editorController.state(), m_editorController.terrain());
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(u8"火车"))
 			{
-				switchToTab(RailTabIndex, EditorModuleId::Rail);
-				m_railModule.drawMainTab(m_modalState, m_inspectPanel);
+				m_editorController.switchToTab(RailTabIndex, EditorModuleId::Rail);
+				m_railView.drawMainTab(m_editorController.state(), m_editorController.rail(), m_inspectPanel);
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(u8"摆放物"))
 			{
-				switchToTab(PlacementTabIndex, EditorModuleId::Placement);
+				m_editorController.switchToTab(PlacementTabIndex, EditorModuleId::Placement);
 				ImGui::TextUnformatted(u8"摆放物编辑功能占位");
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem(u8"植被"))
 			{
-				switchToTab(VegetationTabIndex, EditorModuleId::None);
+				m_editorController.switchToTab(VegetationTabIndex, EditorModuleId::None);
 				ImGui::TextUnformatted(u8"植被编辑功能占位");
 				ImGui::EndTabItem();
 			}
@@ -143,55 +148,19 @@ namespace tzw
 
 		ImGui::End();
 
-		m_railModule.drawFloatingWindows(m_modalState, m_inspectPanel);
+		m_railView.drawFloatingWindows(m_editorController.state(), m_editorController.rail(), m_inspectPanel);
 		m_inspectPanel.draw(GameWorld::shared()->railSystem());
 	}
 
-	void EditorPanel::onFrameUpdate(float)
+	void EditorPanel::onFrameUpdate(float delta)
 	{
-		if (GameState::shared()->getPlayerMode() == PlayerMode::Editor)
-		{
-			m_railModule.syncWorldVisuals(m_modalState);
-			return;
-		}
-
-		m_railModule.hideWorldVisuals();
+		m_editorController.onFrameUpdate(delta);
 	}
 
 	bool EditorPanel::onMousePress(int button, vec2 pos)
 	{
 		(void)pos;
-		if (GameState::shared()->getPlayerMode() != PlayerMode::Editor)
-		{
-			return false;
-		}
-		if (button == TZW_MOUSE_BUTTON_LEFT)
-		{
-			if (m_terrainModule.handlePrimaryClick(m_modalState))
-			{
-				return true;
-			}
-			return m_railModule.handlePrimaryClick(m_modalState, m_inspectPanel);
-		}
-		if (button == TZW_MOUSE_BUTTON_RIGHT)
-		{
-			return m_railModule.handleSecondaryClick(m_modalState);
-		}
-		return false;
-	}
-
-	void EditorPanel::switchToTab(int tabIndex, EditorModuleId moduleId)
-	{
-		if (m_activeTab == tabIndex)
-		{
-			return;
-		}
-
-		if (m_modalState.module != moduleId)
-		{
-			m_modalState.clear();
-		}
-		m_activeTab = tabIndex;
+		return m_editorController.onMousePress(button, m_inspectPanel);
 	}
 
 	EditorPanel::EditorPanel():m_onCreate(nullptr)

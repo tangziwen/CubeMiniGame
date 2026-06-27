@@ -1,8 +1,7 @@
-#include "RailEditorModule.h"
+#include "RailEditorImGuiView.h"
 
 #include "2D/IMGUISystem.h"
-#include "2D/NotificationSystem.h"
-#include "CubeGame/BuildingSystem.h"
+#include "CubeGame/Editor/RailEditingController.h"
 #include "CubeGame/GameWorld.h"
 #include "CubeGame/Rail/RailSystem.h"
 #include "CubeGame/UI/InspectPanel.h"
@@ -31,14 +30,6 @@ std::string controlPointLabel(const RailSystem* railSystem, const RailLineContro
 	return routePoint ? routePoint->name : "Missing Route Point";
 }
 
-void notifyRailEditResult(RailEditResult result)
-{
-	if (result != RailEditResult::Success)
-	{
-		NotificationSystem::shared()->push("invalid operation", NotificationLevel::Warning);
-	}
-}
-
 RailEditorState trackState(RailTrackAction action)
 {
 	RailEditorState state;
@@ -64,21 +55,21 @@ RailEditorState lineState(RailLineAction action)
 }
 }
 
-void RailEditorModule::drawMainTab(EditorModalState& state, InspectPanel& inspectPanel)
+void RailEditorImGuiView::drawMainTab(EditorState& state, RailEditingController& controller, InspectPanel& inspectPanel)
 {
 	ImGui::Text(u8"Train Tool");
 	ImGui::Separator();
 
-	drawRailTrackPanel(state);
+	drawRailTrackPanel(state, controller);
 
 	ImGui::Separator();
 	float buttonWidth = 95.0f;
-	drawRailToolButton(state, u8"创建站点", pointState(RailPointAction::AddStation), buttonWidth);
+	drawRailToolButton(state, controller, u8"创建站点", pointState(RailPointAction::AddStation), buttonWidth);
 	ImGui::SameLine();
-	drawRailToolButton(state, u8"删除站点", pointState(RailPointAction::DeleteStation), buttonWidth);
-	drawRailToolButton(state, u8"创建路点", pointState(RailPointAction::AddRoutePoint), buttonWidth);
+	drawRailToolButton(state, controller, u8"删除站点", pointState(RailPointAction::DeleteStation), buttonWidth);
+	drawRailToolButton(state, controller, u8"创建路点", pointState(RailPointAction::AddRoutePoint), buttonWidth);
 	ImGui::SameLine();
-	drawRailToolButton(state, u8"删除路点", pointState(RailPointAction::DeleteRoutePoint), buttonWidth);
+	drawRailToolButton(state, controller, u8"删除路点", pointState(RailPointAction::DeleteRoutePoint), buttonWidth);
 
 	ImGui::Separator();
 	if (ImGui::Button(u8"线路面板", ImVec2(82.0f, 28.0f)))
@@ -91,13 +82,13 @@ void RailEditorModule::drawMainTab(EditorModalState& state, InspectPanel& inspec
 		m_trainWindowOpen = true;
 	}
 	ImGui::SameLine();
-	if (ImGui::Button(u8"Inspect", ImVec2(78.0f, 28.0f)))
+	if (ImGui::Button("Inspect", ImVec2(78.0f, 28.0f)))
 	{
 		inspectPanel.open();
 	}
 }
 
-void RailEditorModule::drawParameterPanel(EditorModalState& state)
+void RailEditorImGuiView::drawParameterPanel(EditorState& state, RailEditingController& controller)
 {
 	if (state.module != EditorModuleId::Rail || !state.rail.isActive())
 	{
@@ -107,7 +98,7 @@ void RailEditorModule::drawParameterPanel(EditorModalState& state)
 
 	if (state.rail.isLineControlEditState())
 	{
-		drawLineEditParameterPanel(state, GameWorld::shared()->railSystem());
+		drawLineEditParameterPanel(state, controller, GameWorld::shared()->railSystem());
 		return;
 	}
 
@@ -130,28 +121,24 @@ void RailEditorModule::drawParameterPanel(EditorModalState& state)
 		{
 		case RailPointAction::AddStation:
 			ImGui::TextUnformatted(u8"创建站点");
-			ImGui::TextWrapped(u8"左键点击已有轨道创建站点和默认月台。");
+			ImGui::TextWrapped(u8"左键点击已有轨道，把站点锚定到轨道上。");
 			break;
 		case RailPointAction::DeleteStation:
 			ImGui::TextUnformatted(u8"删除站点");
-			ImGui::TextWrapped(u8"左键点击站点标记删除，不影响轨道。");
+			ImGui::TextWrapped(u8"左键点击站点删除。");
 			break;
 		case RailPointAction::AddRoutePoint:
 			ImGui::TextUnformatted(u8"创建路点");
-			ImGui::TextWrapped(u8"左键点击已有轨道创建线路导航路点。");
+			ImGui::TextWrapped(u8"左键点击已有轨道，把路点锚定到轨道上。");
 			break;
 		case RailPointAction::DeleteRoutePoint:
 			ImGui::TextUnformatted(u8"删除路点");
-			ImGui::TextWrapped(u8"左键点击路点标记删除，不影响轨道。");
+			ImGui::TextWrapped(u8"左键点击路点删除。");
 			break;
 		case RailPointAction::None:
 		default:
 			break;
 		}
-	}
-	else
-	{
-		ImGui::TextUnformatted(u8"当前分类无参数");
 	}
 
 	if (ImGui::Button(u8"退出编辑", ImVec2(-1.0f, 28.0f)))
@@ -160,14 +147,15 @@ void RailEditorModule::drawParameterPanel(EditorModalState& state)
 	}
 }
 
-void RailEditorModule::drawFloatingWindows(EditorModalState& state, InspectPanel& inspectPanel)
+void RailEditorImGuiView::drawFloatingWindows(EditorState& state, RailEditingController& controller,
+	InspectPanel& inspectPanel)
 {
 	if (m_lineWindowOpen)
 	{
 		ImGui::SetNextWindowSize(ImVec2(520.0f, 300.0f), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(u8"线路面板", &m_lineWindowOpen, ImGuiWindowFlags_None))
 		{
-			drawRailLinePanel(state);
+			drawRailLinePanel(state, controller);
 		}
 		ImGui::End();
 	}
@@ -176,185 +164,21 @@ void RailEditorModule::drawFloatingWindows(EditorModalState& state, InspectPanel
 		ImGui::SetNextWindowSize(ImVec2(420.0f, 320.0f), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(u8"车辆面板", &m_trainWindowOpen, ImGuiWindowFlags_None))
 		{
-			drawRailTrainPanel(inspectPanel);
+			drawRailTrainPanel(controller, inspectPanel);
 		}
 		ImGui::End();
 	}
 }
 
-bool RailEditorModule::handlePrimaryClick(const EditorModalState& state, InspectPanel& inspectPanel)
-{
-	RailSystem* railSystem = GameWorld::shared()->railSystem();
-	if (state.module != EditorModuleId::Rail || !state.rail.isActive())
-	{
-		return handleInspectPrimaryClick(railSystem, inspectPanel);
-	}
-
-	if (!railSystem)
-	{
-		return true;
-	}
-
-	switch (state.rail.domain)
-	{
-	case RailEditDomain::Track:
-		if (state.rail.trackAction == RailTrackAction::AddTrack)
-		{
-			railSystem->handleTrackAddPrimaryClick(PlacementMode::CursorBased);
-		}
-		else if (state.rail.trackAction == RailTrackAction::DeleteTrack)
-		{
-			railSystem->handleTrackDeletePrimaryClick(PlacementMode::CursorBased);
-		}
-		return true;
-	case RailEditDomain::Point:
-		switch (state.rail.pointAction)
-		{
-		case RailPointAction::AddStation:
-			notifyRailEditResult(railSystem->handleStationAddPrimaryClick(PlacementMode::CursorBased));
-			return true;
-		case RailPointAction::DeleteStation:
-			railSystem->handleStationDeletePrimaryClick(PlacementMode::CursorBased);
-			return true;
-		case RailPointAction::AddRoutePoint:
-			notifyRailEditResult(railSystem->handleRoutePointAddPrimaryClick(PlacementMode::CursorBased));
-			return true;
-		case RailPointAction::DeleteRoutePoint:
-			railSystem->handleRoutePointDeletePrimaryClick(PlacementMode::CursorBased);
-			return true;
-		case RailPointAction::None:
-		default:
-			return false;
-		}
-	case RailEditDomain::Line:
-		if (state.rail.lineAction == RailLineAction::AddControlPoint)
-		{
-			notifyRailEditResult(railSystem->addPickedControlPointToSelectedLine(PlacementMode::CursorBased));
-			return true;
-		}
-		return false;
-	case RailEditDomain::Train:
-	case RailEditDomain::None:
-	default:
-		break;
-	}
-
-	return false;
-}
-
-bool RailEditorModule::handleSecondaryClick(const EditorModalState& state)
-{
-	RailSystem* railSystem = GameWorld::shared()->railSystem();
-	if (railSystem && state.module == EditorModuleId::Rail && state.rail.isTrackEditState())
-	{
-		railSystem->cancelTrackEdit();
-		return true;
-	}
-	return false;
-}
-
-void RailEditorModule::syncWorldVisuals(const EditorModalState& state)
-{
-	RailSystem* railSystem = GameWorld::shared()->railSystem();
-	const RailEditorState railState = state.module == EditorModuleId::Rail ? state.rail : RailEditorState();
-	if (!railSystem)
-	{
-		m_syncedRailState = railState;
-		return;
-	}
-
-	if (m_syncedRailState != railState)
-	{
-		railSystem->cancelTrackEdit();
-		railSystem->hideEditorVisuals();
-		if (railState.isLineControlEditState())
-		{
-			const RailLineId selectedLineId = railSystem->lineManager().selectedLineId();
-			if (selectedLineId != InvalidRailLineId)
-			{
-				railSystem->setLinePreview(selectedLineId);
-			}
-		}
-		else
-		{
-			railSystem->clearLinePreview();
-		}
-		m_syncedRailState = railState;
-	}
-
-	switch (railState.domain)
-	{
-	case RailEditDomain::Track:
-		if (railState.trackAction == RailTrackAction::AddTrack)
-		{
-			railSystem->syncTrackAddVisuals(PlacementMode::CursorBased);
-		}
-		else if (railState.trackAction == RailTrackAction::DeleteTrack)
-		{
-			railSystem->syncTrackDeleteVisuals();
-		}
-		else
-		{
-			railSystem->hideEditorVisuals();
-		}
-		break;
-	case RailEditDomain::Point:
-		switch (railState.pointAction)
-		{
-		case RailPointAction::DeleteStation:
-			railSystem->showStationEditorVisuals(true);
-			break;
-		case RailPointAction::DeleteRoutePoint:
-			railSystem->showRoutePointEditorVisuals(true);
-			break;
-		case RailPointAction::AddStation:
-		case RailPointAction::AddRoutePoint:
-		case RailPointAction::None:
-		default:
-			railSystem->hideEditorVisuals();
-			break;
-		}
-		break;
-	case RailEditDomain::Line:
-		if (railState.lineAction == RailLineAction::AddControlPoint)
-		{
-			railSystem->showLineAddControlBillboards();
-		}
-		else if (railState.lineAction == RailLineAction::RemoveControlPoint)
-		{
-			railSystem->showLineRemoveControlBillboards();
-		}
-		else
-		{
-			railSystem->hideEditorVisuals();
-		}
-		break;
-	case RailEditDomain::Train:
-	case RailEditDomain::None:
-	default:
-		railSystem->hideEditorVisuals();
-		break;
-	}
-}
-
-void RailEditorModule::hideWorldVisuals()
-{
-	if (RailSystem* railSystem = GameWorld::shared()->railSystem())
-	{
-		railSystem->hideEditorVisuals();
-	}
-	m_syncedRailState = RailEditorState();
-}
-
-void RailEditorModule::drawRailTrackPanel(EditorModalState& state)
+void RailEditorImGuiView::drawRailTrackPanel(EditorState& state, RailEditingController& controller)
 {
 	float buttonWidth = 95.0f;
-	drawRailToolButton(state, u8"增加铁轨", trackState(RailTrackAction::AddTrack), buttonWidth);
+	drawRailToolButton(state, controller, u8"增加铁轨", trackState(RailTrackAction::AddTrack), buttonWidth);
 	ImGui::SameLine();
-	drawRailToolButton(state, u8"删除铁轨", trackState(RailTrackAction::DeleteTrack), buttonWidth);
+	drawRailToolButton(state, controller, u8"删除铁轨", trackState(RailTrackAction::DeleteTrack), buttonWidth);
 }
 
-void RailEditorModule::drawRailLinePanel(EditorModalState& state)
+void RailEditorImGuiView::drawRailLinePanel(EditorState& state, RailEditingController& controller)
 {
 	RailSystem* railSystem = GameWorld::shared()->railSystem();
 	if (!railSystem)
@@ -366,41 +190,25 @@ void RailEditorModule::drawRailLinePanel(EditorModalState& state)
 	RailLineManager& lineManager = railSystem->lineManager();
 	if (ImGui::Button(u8"创建线路"))
 	{
-		const RailLineId lineId = lineManager.createLine();
-		lineManager.setSelectedLineId(lineId);
-		railSystem->setLinePreview(lineId);
+		controller.createLine();
 	}
 	ImGui::SameLine();
-	if (isLineControlEditState(state))
+	if (controller.isLineControlEditState(state))
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_Alpha, ImGui::GetStyle().Alpha * 0.45f);
 	}
-	if (ImGui::Button(u8"删除线路") && !isLineControlEditState(state))
+	if (ImGui::Button(u8"删除线路") && !controller.isLineControlEditState(state))
 	{
-		const RailLineId lineId = lineManager.selectedLineId();
-		if (lineId != InvalidRailLineId && lineManager.deleteLine(lineId))
-		{
-			railSystem->trainManager().clearLineAssignment(lineId);
-			railSystem->clearLinePreview();
-			if (lineManager.selectedLineId() != InvalidRailLineId)
-			{
-				railSystem->setLinePreview(lineManager.selectedLineId());
-			}
-		}
+		controller.deleteSelectedLine();
 	}
-	if (isLineControlEditState(state))
+	if (controller.isLineControlEditState(state))
 	{
 		ImGui::PopStyleVar();
 	}
 	ImGui::SameLine();
 	if (ImGui::Button(u8"取消预览"))
 	{
-		lineManager.setSelectedLineId(InvalidRailLineId);
-		if (isLineControlEditState(state))
-		{
-			state.clear();
-		}
-		railSystem->clearLinePreview();
+		controller.cancelLinePreview(state);
 	}
 
 	ImGui::Separator();
@@ -417,16 +225,15 @@ void RailEditorModule::drawRailLinePanel(EditorModalState& state)
 		}
 		if (ImGui::Selectable((line.name + "##line").c_str(), isSelected, ImGuiSelectableFlags_None, ImVec2(90.0f, 0.0f)))
 		{
-			lineManager.setSelectedLineId(line.id);
-			railSystem->setLinePreview(line.id);
+			controller.selectLine(line.id);
 		}
 		if (isSelected)
 		{
 			ImGui::SameLine();
 			if (ImGui::SmallButton(u8"编辑##lineEdit"))
 			{
-				setRailState(state, lineState(RailLineAction::AddControlPoint));
-				railSystem->setLinePreview(line.id);
+				controller.setRailState(state, lineState(RailLineAction::AddControlPoint));
+				controller.selectLine(line.id);
 			}
 		}
 		if (!line.isUsable)
@@ -469,8 +276,7 @@ void RailEditorModule::drawRailLinePanel(EditorModalState& state)
 			std::string buttonId = station.name + "##addStationToLine" + std::to_string(station.id);
 			if (ImGui::SmallButton(buttonId.c_str()))
 			{
-				railSystem->addStationToSelectedLine(station.id);
-				railSystem->setLinePreview(selectedLine->id);
+				controller.addStationToSelectedLine(station.id);
 			}
 			ImGui::SameLine();
 		}
@@ -479,8 +285,7 @@ void RailEditorModule::drawRailLinePanel(EditorModalState& state)
 			std::string buttonId = routePoint.name + "##addRoutePointToLine" + std::to_string(routePoint.id);
 			if (ImGui::SmallButton(buttonId.c_str()))
 			{
-				railSystem->addRoutePointToSelectedLine(routePoint.id);
-				railSystem->setLinePreview(selectedLine->id);
+				controller.addRoutePointToSelectedLine(routePoint.id);
 			}
 			ImGui::SameLine();
 		}
@@ -488,7 +293,7 @@ void RailEditorModule::drawRailLinePanel(EditorModalState& state)
 	ImGui::Columns(1, "RailLineColumns", false);
 }
 
-void RailEditorModule::drawRailTrainPanel(InspectPanel& inspectPanel)
+void RailEditorImGuiView::drawRailTrainPanel(RailEditingController& controller, InspectPanel& inspectPanel)
 {
 	RailSystem* railSystem = GameWorld::shared()->railSystem();
 	if (!railSystem)
@@ -506,7 +311,7 @@ void RailEditorModule::drawRailTrainPanel(InspectPanel& inspectPanel)
 		ImGui::SliderInt(u8"车厢数量", &m_newTrainCarriageCount, 0, 12);
 		if (ImGui::Button(u8"创建"))
 		{
-			railSystem->trainManager().createTrain(m_newTrainCarriageCount);
+			controller.createTrain(m_newTrainCarriageCount);
 			ImGui::CloseCurrentPopup();
 		}
 		ImGui::EndPopup();
@@ -577,7 +382,7 @@ void RailEditorModule::drawRailTrainPanel(InspectPanel& inspectPanel)
 				const bool isSelected = train.lineId == line.id;
 				if (ImGui::Selectable(line.name.c_str(), isSelected))
 				{
-					railSystem->trainManager().assignLine(train.id, line.id, railSystem->lineManager());
+					controller.assignTrainLine(train.id, line.id);
 				}
 				if (isSelected)
 				{
@@ -589,15 +394,16 @@ void RailEditorModule::drawRailTrainPanel(InspectPanel& inspectPanel)
 	}
 	if (trainToDelete != InvalidRailTrainId)
 	{
-		railSystem->trainManager().deleteTrain(trainToDelete);
+		controller.deleteTrain(trainToDelete);
 	}
 	if (trainToToggle != InvalidRailTrainId)
 	{
-		railSystem->trainManager().toggleTrainRunning(trainToToggle);
+		controller.toggleTrainRunning(trainToToggle);
 	}
 }
 
-void RailEditorModule::drawLineEditParameterPanel(EditorModalState& state, RailSystem* railSystem)
+void RailEditorImGuiView::drawLineEditParameterPanel(EditorState& state, RailEditingController& controller,
+	RailSystem* railSystem)
 {
 	if (!railSystem)
 	{
@@ -620,12 +426,12 @@ void RailEditorModule::drawLineEditParameterPanel(EditorModalState& state, RailS
 	ImGui::Text("%s", selectedLine->name.c_str());
 	if (ImGui::RadioButton(u8"添加控制点", state.rail.lineAction == RailLineAction::AddControlPoint))
 	{
-		setRailState(state, lineState(RailLineAction::AddControlPoint));
+		controller.setRailState(state, lineState(RailLineAction::AddControlPoint));
 	}
 	ImGui::SameLine();
 	if (ImGui::RadioButton(u8"删除控制点", state.rail.lineAction == RailLineAction::RemoveControlPoint))
 	{
-		setRailState(state, lineState(RailLineAction::RemoveControlPoint));
+		controller.setRailState(state, lineState(RailLineAction::RemoveControlPoint));
 	}
 	if (ImGui::Button(u8"退出线路编辑"))
 	{
@@ -655,20 +461,16 @@ void RailEditorModule::drawLineEditParameterPanel(EditorModalState& state, RailS
 		snprintf(buttonId, sizeof(buttonId), u8"删除##lineControlRemove%d", i);
 		if (ImGui::SmallButton(buttonId))
 		{
-			if (lineManager.removeControlPointAt(selectedLine->id, i, railSystem->network(),
-				railSystem->anchorManager(), railSystem->stationManager(), railSystem->routePointManager()))
-			{
-				railSystem->setLinePreview(selectedLine->id);
-				railSystem->trainManager().refreshAfterLineRebuild(lineManager);
-			}
+			controller.removeControlPointFromSelectedLine(i);
 			break;
 		}
 	}
 }
 
-void RailEditorModule::drawRailToolButton(EditorModalState& state, const char* label, const RailEditorState& nextState, float width)
+void RailEditorImGuiView::drawRailToolButton(EditorState& state, RailEditingController& controller,
+	const char* label, const RailEditorState& nextState, float width)
 {
-	bool isSelected = isRailStateSelected(state, nextState);
+	bool isSelected = controller.isRailStateSelected(state, nextState);
 	if (isSelected)
 	{
 		ImGui::PushStyleColor(ImGuiCol_Header, ImVec4(0.2f, 0.5f, 0.8f, 1.0f));
@@ -690,45 +492,11 @@ void RailEditorModule::drawRailToolButton(EditorModalState& state, const char* l
 		}
 		else
 		{
-			setRailState(state, nextState);
+			controller.setRailState(state, nextState);
 		}
 	}
 
 	ImGui::PopStyleColor(3);
-}
-
-void RailEditorModule::setRailState(EditorModalState& state, const RailEditorState& railState)
-{
-	state.clear();
-	state.module = EditorModuleId::Rail;
-	state.rail = railState;
-}
-
-bool RailEditorModule::handleInspectPrimaryClick(RailSystem* railSystem, InspectPanel& inspectPanel)
-{
-	if (!railSystem)
-	{
-		return false;
-	}
-
-	RailInspectTarget target;
-	if (!railSystem->pickInspectTarget(PlacementMode::CursorBased, target))
-	{
-		return false;
-	}
-
-	inspectPanel.inspect(target, railSystem);
-	return true;
-}
-
-bool RailEditorModule::isLineControlEditState(const EditorModalState& state) const
-{
-	return state.module == EditorModuleId::Rail && state.rail.isLineControlEditState();
-}
-
-bool RailEditorModule::isRailStateSelected(const EditorModalState& state, const RailEditorState& railState) const
-{
-	return state.module == EditorModuleId::Rail && state.rail == railState;
 }
 
 } // namespace tzw

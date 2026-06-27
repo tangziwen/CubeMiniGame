@@ -1,6 +1,7 @@
 #pragma once
 
 #include "RailNetwork.h"
+#include "RailPoint.h"
 
 namespace tzw {
 
@@ -33,13 +34,14 @@ struct RailBuildAnchor
 class RailBuildTool
 {
 public:
-	void bind(RailNetwork* network, const RailConfig* config);
+	void bind(RailNetwork* network, RailAnchorManager* anchorManager, const RailConfig* config);
 	void setMode(RailBuildMode mode);
 	RailBuildMode mode() const;
 	bool hasPendingAnchor() const;
 	void clearPending();
 	bool handlePrimaryClick(PlacementMode placementMode);
 	void handleSecondaryClick();
+	bool pickSegment(PlacementMode placementMode, RailSegmentId& outSegmentId) const;
 	RailNodeId pendingNodeId() const;
 	bool pendingAnchorPosition(vec3& outPosition) const;
 	bool buildPreviewSegment(PlacementMode placementMode, RailSegment& outSegment) const;
@@ -51,6 +53,7 @@ private:
 	bool resolveAnchorToNode(const RailBuildAnchor& anchor, RailNodeId& outNodeId);
 
 	RailNetwork* m_network = nullptr;
+	RailAnchorManager* m_anchorManager = nullptr;
 	const RailConfig* m_config = nullptr;
 	RailBuildMode m_mode = RailBuildMode::None;
 	RailBuildAnchor m_pendingAnchor;

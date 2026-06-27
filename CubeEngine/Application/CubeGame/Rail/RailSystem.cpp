@@ -79,7 +79,7 @@ bool RailInspectTarget::isValid() const
 
 RailSystem::RailSystem()
 {
-	m_buildTool.bind(&m_network, &m_config);
+	m_buildTool.bind(&m_network, &m_anchorManager, &m_config);
 }
 
 RailSystem::~RailSystem()
@@ -89,7 +89,7 @@ RailSystem::~RailSystem()
 
 void RailSystem::init()
 {
-	m_buildTool.bind(&m_network, &m_config);
+	m_buildTool.bind(&m_network, &m_anchorManager, &m_config);
 	m_persistentVisuals.markDirty();
 }
 
@@ -145,7 +145,19 @@ bool RailSystem::handleTrackAddPrimaryClick(PlacementMode placementMode)
 bool RailSystem::handleTrackDeletePrimaryClick(PlacementMode placementMode)
 {
 	m_buildTool.setMode(RailBuildMode::Delete);
-	return handleTrackPrimaryClick(placementMode);
+	RailSegmentId segmentId = InvalidRailSegmentId;
+	if (!m_buildTool.pickSegment(placementMode, segmentId))
+	{
+		return false;
+	}
+	const bool deletedPoints = deletePointsAnchoredToSegment(segmentId);
+	const bool deletedSegment = handleTrackPrimaryClick(placementMode);
+	if (deletedPoints && !deletedSegment)
+	{
+		rebuildAllRailLines();
+		markVisualDirty();
+	}
+	return deletedSegment || deletedPoints;
 }
 
 void RailSystem::cancelTrackEdit()
@@ -514,6 +526,13 @@ void RailSystem::hideEditorVisuals()
 	m_editorVisuals.hideInteractionVisuals();
 }
 
+void RailSystem::hideAllEditorVisuals()
+{
+	cancelTrackEdit();
+	hideEditorVisuals();
+	clearLinePreview();
+}
+
 void RailSystem::setLinePreview(RailLineId lineId)
 {
 	if (m_previewLineId == lineId)
@@ -542,6 +561,45 @@ void RailSystem::rebuildAllRailLines()
 void RailSystem::markVisualDirty()
 {
 	m_persistentVisuals.markDirty();
+}
+
+bool RailSystem::deletePointsAnchoredToSegment(RailSegmentId segmentId)
+{
+	bool changed = false;
+
+	std::vector<RailStationId> stationsToDelete;
+	for (const RailStation& station : m_stationManager.stations())
+	{
+		if (isAnchorOnSegment(m_stationManager.anchorForStation(station.id), segmentId))
+		{
+			stationsToDelete.push_back(station.id);
+		}
+	}
+	for (RailStationId stationId : stationsToDelete)
+	{
+		changed = m_stationManager.deleteStation(stationId, m_anchorManager) || changed;
+	}
+
+	std::vector<RailRoutePointId> routePointsToDelete;
+	for (const RailRoutePoint& routePoint : m_routePointManager.routePoints())
+	{
+		if (isAnchorOnSegment(routePoint.anchorId, segmentId))
+		{
+			routePointsToDelete.push_back(routePoint.id);
+		}
+	}
+	for (RailRoutePointId routePointId : routePointsToDelete)
+	{
+		changed = m_routePointManager.deleteRoutePoint(routePointId, m_anchorManager) || changed;
+	}
+
+	return changed;
+}
+
+bool RailSystem::isAnchorOnSegment(RailAnchorId anchorId, RailSegmentId segmentId) const
+{
+	const RailAnchor* anchor = m_anchorManager.anchor(anchorId);
+	return anchor && anchor->location.segmentId == segmentId;
 }
 
 bool RailSystem::createAnchorAtHit(PlacementMode placementMode, RailAnchorId& outAnchorId)

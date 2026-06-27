@@ -168,6 +168,7 @@ namespace tzw
 		{
 			m_camera->setCamPos(m_editorCamera->getPos());
 			m_camera->setRotateQ(m_editorCamera->getRotateQ());
+			m_camera->resetMovementInput();
 			m_camera->reCache();
 			m_camera->setEnableFPSFeature(true);
 			g_GetCurrScene()->setDefaultCamera(m_camera);

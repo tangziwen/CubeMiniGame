@@ -1,10 +1,10 @@
 #pragma once
 
 #include "2D/IMGUISystem.h"
-#include "CubeGame/UI/EditorModalState.h"
+#include "CubeGame/Editor/EditorController.h"
 #include "CubeGame/UI/InspectPanel.h"
-#include "CubeGame/UI/RailEditorModule.h"
-#include "CubeGame/UI/TerrainEditorModule.h"
+#include "CubeGame/UI/RailEditorImGuiView.h"
+#include "CubeGame/UI/TerrainEditorImGuiView.h"
 #include "Event/Event.h"
 
 #include <functional>
@@ -26,12 +26,10 @@ namespace tzw
 		void drawCameraModeCombo();
 		void drawParameterPanel();
 		void drawParameterWindow(vec2 screenSize);
-		void switchToTab(int tabIndex, EditorModuleId moduleId);
 
-		EditorModalState m_modalState;
-		TerrainEditorModule m_terrainModule;
-		RailEditorModule m_railModule;
+		EditorController m_editorController;
+		TerrainEditorImGuiView m_terrainView;
+		RailEditorImGuiView m_railView;
 		InspectPanel m_inspectPanel;
-		int m_activeTab = 0;
 	};
 }

@@ -1,5 +1,5 @@
-#ifndef TZW_EDITOR_MODAL_STATE_H
-#define TZW_EDITOR_MODAL_STATE_H
+#ifndef TZW_EDITOR_STATE_H
+#define TZW_EDITOR_STATE_H
 
 namespace tzw {
 
@@ -94,7 +94,7 @@ inline bool operator!=(const RailEditorState& left, const RailEditorState& right
 	return !(left == right);
 }
 
-struct EditorModalState
+struct EditorState
 {
 	EditorModuleId module = EditorModuleId::None;
 	TerrainToolAction terrainAction = TerrainToolAction::None;
@@ -120,4 +120,4 @@ struct EditorModalState
 
 } // namespace tzw
 
-#endif // TZW_EDITOR_MODAL_STATE_H
+#endif // TZW_EDITOR_STATE_H

@@ -47,6 +47,8 @@ public:
 	const RailAnchor* anchor(RailAnchorId anchorId) const;
 	const std::vector<RailAnchor>& anchors() const;
 
+	void migrateAnchorsAfterSegmentSplit(RailSegmentId oldSegmentId, float splitDistance,
+		RailSegmentId firstSegmentId, RailSegmentId secondSegmentId);
 	bool isAnchorValid(const RailNetwork& network, RailAnchorId anchorId) const;
 	RailAnchorSample sampleAnchor(const RailNetwork& network, RailAnchorId anchorId) const;
 	bool pickLocationOnTrack(const RailNetwork& network, const vec3& point, float maxDistance,

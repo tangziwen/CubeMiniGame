@@ -62,6 +62,27 @@ const std::vector<RailAnchor>& RailAnchorManager::anchors() const
 	return m_anchors;
 }
 
+void RailAnchorManager::migrateAnchorsAfterSegmentSplit(RailSegmentId oldSegmentId, float splitDistance,
+	RailSegmentId firstSegmentId, RailSegmentId secondSegmentId)
+{
+	for (RailAnchor& anchor : m_anchors)
+	{
+		if (anchor.location.segmentId != oldSegmentId)
+		{
+			continue;
+		}
+		if (anchor.location.distanceOnSegment <= splitDistance)
+		{
+			anchor.location.segmentId = firstSegmentId;
+		}
+		else
+		{
+			anchor.location.segmentId = secondSegmentId;
+			anchor.location.distanceOnSegment -= splitDistance;
+		}
+	}
+}
+
 bool RailAnchorManager::isAnchorValid(const RailNetwork& network, RailAnchorId anchorId) const
 {
 	const RailAnchor* targetAnchor = anchor(anchorId);

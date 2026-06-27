@@ -33,9 +33,10 @@ public:
     float getDistToGround() const;
     void setDistToGround(float value);
 
-    float getGravity() const;
-    void setGravity(float gravity);
+	float getGravity() const;
+	void setGravity(float gravity);
 	void setCamPos(const vec3 &pos);
+	void resetMovementInput();
     bool getIsEnableGravity() const;
     void setIsEnableGravity(bool isEnableGravity);
 
