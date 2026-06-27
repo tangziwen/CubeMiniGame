@@ -1,80 +1,37 @@
 #pragma once
-#include "CubeGame/GameWorld.h"
-#include "CubeGame/Rail/RailLine.h"
-#include "CubeGame/UI/InspectPanel.h"
+
 #include "2D/IMGUISystem.h"
+#include "CubeGame/UI/EditorModalState.h"
+#include "CubeGame/UI/InspectPanel.h"
+#include "CubeGame/UI/RailEditorModule.h"
+#include "CubeGame/UI/TerrainEditorModule.h"
 #include "Event/Event.h"
+
 #include <functional>
+#include <string>
+
 namespace tzw
 {
-	class RailSystem;
-
 	class EditorPanel : public IMGUIObject, public EventListener
 	{
 	public:
-		enum class EditorState
-		{
-			None,
-			CarveSphere,
-			RaiseSphere,
-			CarveBox,
-			RaiseBox,
-			PaintSphere,
-			TrackAdd,
-			TrackDelete,
-			StationAdd,
-			StationDelete,
-			RoutePointAdd,
-			RoutePointDelete,
-			LineAddControlPoint,
-			LineRemoveControlPoint,
-		};
-
 		void drawIMGUI(bool * isOpen) override;
 		void onFrameUpdate(float delta) override;
 		bool onMousePress(int button, vec2 pos) override;
 		EditorPanel();
 		std::function<void (std::string)> m_onCreate;
 		void prepare();
-    private:
-		void applyTerrainEdit();
+	private:
 		void drawCameraModeWindow(vec2 screenSize);
 		void drawCameraModeCombo();
-		void drawTerrainTab();
-		void drawTrainTab();
-		void drawRailTrackPanel();
-		void drawRailFloatingWindows();
-		void drawRailLinePanel();
-		void drawRailTrainPanel();
-		void drawToolButton(const char* label, EditorState state, float width);
-		void drawRailToolButton(const char* label, EditorState state, float width);
 		void drawParameterPanel();
 		void drawParameterWindow(vec2 screenSize);
-		void drawLineEditParameterPanel(RailSystem* railSystem);
-		void syncEditorWorldVisuals();
-		bool handleEditorPrimaryClick();
-		bool handleEditorSecondaryClick();
-		bool handleInspectPrimaryClick(RailSystem* railSystem);
-		void setEditorState(EditorState state);
-		bool isLineControlEditState() const;
-		bool isTerrainState() const;
-		bool isRailTrackState() const;
-		bool isStationEditState() const;
-		bool isRoutePointEditState() const;
+		void switchToTab(int tabIndex, EditorModuleId moduleId);
 
-		EditorState m_editorState = EditorState::None;
-		EditorState m_syncedEditorState = EditorState::None;
-		bool m_lineWindowOpen = false;
-		bool m_trainWindowOpen = false;
+		EditorModalState m_modalState;
+		TerrainEditorModule m_terrainModule;
+		RailEditorModule m_railModule;
 		InspectPanel m_inspectPanel;
 		int m_activeTab = 0;
-		float m_radius = 2.0f;
-		float m_strength = 0.5f;
-		float m_density = 0.5f;
-		float m_boxHalfX = 2.0f;
-		float m_boxHalfY = 2.0f;
-		float m_boxHalfZ = 2.0f;
-		int m_materialIndex = 0;
-		int m_newTrainCarriageCount = 0;
 	};
 }
