@@ -94,7 +94,8 @@ void TerrainDrawableNode::submitDrawCmd(RenderFlag::RenderStage stage, RenderQue
 {
     if (!m_isBound)
         return;
-    if (stage != RenderFlag::RenderStage::COMMON)
+    const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stage));
+    if (renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
         return;
     if (!m_mesh || m_mesh->isEmpty())
         return;
@@ -103,7 +104,7 @@ void TerrainDrawableNode::submitDrawCmd(RenderFlag::RenderStage stage, RenderQue
     if (!m_material)
         return;
 
-    RenderCommand command(m_mesh, m_material, this, stage);
+    RenderCommand command(m_mesh, m_material, this, static_cast<RenderFlag::RenderStage>(renderStage));
     setUpTransFormation(command.m_transInfo);
     command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
     if (m_debugWireframeEnabled)

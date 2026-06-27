@@ -6,6 +6,25 @@
 #include "Mesh/InstancedMesh.h"
 
 namespace tzw {
+namespace
+{
+uint32_t resolveMaterialStageForRequest(MaterialInstance* material, uint32_t requestedStageMask)
+{
+	uint32_t renderStage = material ? static_cast<uint32_t>(material->getRenderStage())
+		: static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		renderStage = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	}
+	if(requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset)
+		|| requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::All))
+	{
+		return renderStage;
+	}
+	return renderStage & requestedStageMask;
+}
+}
+
 VegetationBatInfo::VegetationBatInfo()
 {
 }
@@ -197,8 +216,13 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
+			const uint32_t renderStage = resolveMaterialStageForRequest(mat, static_cast<uint32_t>(stageType));
+			if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			{
+				return;
+			}
 			m_instancedMeshList[0]->submitInstanced();
-			RenderCommand command(theMesh, mat, this, stageType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(theMesh, mat, this, static_cast<RenderFlag::RenderStage>(renderStage), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
@@ -211,8 +235,13 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
+			const uint32_t renderStage = resolveMaterialStageForRequest(mat, static_cast<uint32_t>(stageType));
+			if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			{
+				return;
+			}
 			m_instancedMeshList[0]->submitInstanced();
-			RenderCommand command(theMesh, mat, this, stageType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(theMesh, mat, this, static_cast<RenderFlag::RenderStage>(renderStage), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
@@ -228,8 +257,13 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 				
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
+				const uint32_t renderStage = resolveMaterialStageForRequest(mat, static_cast<uint32_t>(stageType));
+				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				{
+					continue;
+				}
 				m_instancedMeshList[i]->submitInstanced();
-				RenderCommand command(theMesh, mat, this, stageType,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(theMesh, mat, this, static_cast<RenderFlag::RenderStage>(renderStage),RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
@@ -523,7 +557,12 @@ void FoliageSystem::finish()
 
 void FoliageSystem::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh, m_material,this, requirementType);
+	const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(requirementType));
+	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		return;
+	}
+	RenderCommand command(m_mesh, m_material,this, static_cast<RenderFlag::RenderStage>(renderStage));
 	setUpTransFormation(command.m_transInfo);
 	queues->addRenderCommand(command, requirementArg);
 }

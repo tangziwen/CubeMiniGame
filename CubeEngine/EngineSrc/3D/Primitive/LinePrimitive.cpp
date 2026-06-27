@@ -23,7 +23,12 @@ LinePrimitive::~LinePrimitive()
 
 void LinePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material,this,stageType);
+	const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stageType));
+	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		return;
+	}
+	RenderCommand command(m_mesh,m_material,this,static_cast<RenderFlag::RenderStage>(renderStage));
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
     queues->addRenderCommand(command, requirementArg);
@@ -116,8 +121,10 @@ void LinePrimitive::init()
 	m_material = MaterialInstance::createFromMaterial("Color");
 	auto material = m_material->ensureUniqueMaterial();
 	material->setIsDepthTestEnable(false);
+	material->setIsDepthWriteEnable(false);
 	material->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 	material->setPrimitiveTopology(PrimitiveTopology::LineList);
+	setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 } // namespace tzw

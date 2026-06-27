@@ -34,12 +34,12 @@ void CubePrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue
 {
 	if(getIsVisible())
 	{
-        RenderFlag::RenderStage stage = RenderFlag::RenderStage::COMMON;
-        if(stageType == RenderFlag::RenderStage::SHADOW)
-        {
-            stage = RenderFlag::RenderStage::SHADOW;
-        }
-		RenderCommand command(m_mesh, m_material,this, stageType);
+		const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stageType));
+		if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		{
+			return;
+		}
+		RenderCommand command(m_mesh, m_material,this, static_cast<RenderFlag::RenderStage>(renderStage));
 		setUpCommand(command);
 		queues->addRenderCommand(command, requirementArg);
 	}

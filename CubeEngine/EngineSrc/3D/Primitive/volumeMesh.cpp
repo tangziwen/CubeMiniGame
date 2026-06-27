@@ -19,7 +19,12 @@ SimpleMesh::SimpleMesh(VertexData * vertices, uint32_t verticesSize, const uint3
 
 void SimpleMesh::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material,this, stageType);
+	const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stageType));
+	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		return;
+	}
+	RenderCommand command(m_mesh,m_material,this, static_cast<RenderFlag::RenderStage>(renderStage));
     setUpTransFormation(command.m_transInfo);
 	command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 	queues->addRenderCommand(command, requirementArg);

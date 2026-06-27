@@ -53,7 +53,12 @@ LaserPrimitive::LaserPrimitive(vec3 begin, vec3 end, float width, bool isOriginI
 
 void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
 {
-	RenderCommand command(m_mesh,m_material, this, RenderFlag::RenderStage::TRANSPARENT);
+	const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stageType));
+	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		return;
+	}
+	RenderCommand command(m_mesh,m_material, this, static_cast<RenderFlag::RenderStage>(renderStage));
     setUpTransFormation(command.m_transInfo);
 	//command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
 	 queues->addRenderCommand(command, requirementArg);
@@ -120,7 +125,9 @@ void LaserPrimitive::init()
 	material->setIsCullFace(false);
 	material->setIsEnableBlend(true);
 	material->setIsDepthWriteEnable(false);
+	material->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
 	setMaterial(m_material);
+	setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 	

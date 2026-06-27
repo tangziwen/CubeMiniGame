@@ -15,6 +15,7 @@ struct InstanceRendereData
 	InstanceData data;
     MaterialInstance * material;
     Mesh * m_mesh;
+	uint32_t renderStageMask = static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
 };
 struct TransformationInfo{
     Matrix44 m_worldMatrix;

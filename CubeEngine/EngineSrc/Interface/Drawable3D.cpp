@@ -1,4 +1,5 @@
 #include "Drawable3D.h"
+#include "../Technique/MaterialInstance.h"
 #include "../Scene/Scene.h"
 #include <algorithm>
 #include "../Scene/OctreeScene.h"
@@ -10,7 +11,7 @@ Drawable3D::Drawable3D()
 	setLocalPriority(-999);
 	m_octNodeIndex = -1;
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
-	m_renderStageFlag = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	m_renderStageFlag = static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
 	m_outlineEnabled = false;
 	m_outlineColor = vec4(1.0f, 0.85f, 0.15f, 1.0f);
 }
@@ -133,6 +134,56 @@ uint32_t Drawable3D::getDrawableFlag() const
 void Drawable3D::setDrawableFlag(const uint32_t drawableFlag)
 {
 	m_drawableFlag = drawableFlag;
+}
+
+uint32_t Drawable3D::getRenderStage(MaterialInstance* materialHint) const
+{
+	if(m_renderStageFlag != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		return m_renderStageFlag;
+	}
+	if(materialHint)
+	{
+		const uint32_t materialStage = static_cast<uint32_t>(materialHint->getRenderStage());
+		if(materialStage != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		{
+			return materialStage;
+		}
+	}
+	return static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+}
+
+uint32_t Drawable3D::getRenderStageForRequest(MaterialInstance* materialHint, uint32_t requestedStageMask) const
+{
+	if(requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset)
+		|| requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::All))
+	{
+		return getRenderStage(materialHint);
+	}
+
+	const uint32_t explicitStage = m_renderStageFlag;
+	if(explicitStage != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		const uint32_t explicitMatch = explicitStage & requestedStageMask;
+		if(explicitMatch != 0)
+		{
+			return explicitMatch;
+		}
+
+		const bool shadowOnlyRequest = (requestedStageMask & ~static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW)) == 0;
+		if(shadowOnlyRequest)
+		{
+			return static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
+		}
+	}
+
+	uint32_t materialStage = materialHint ? static_cast<uint32_t>(materialHint->getRenderStage())
+		: static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	if(materialStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	{
+		materialStage = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	}
+	return materialStage & requestedStageMask;
 }
 
 void Drawable3D::setOutlineEnabled(bool enabled)

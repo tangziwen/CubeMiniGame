@@ -35,6 +35,7 @@ namespace tzw {
 			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
+		setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
 
 		setIsAccpectOcTtree(false);
 
@@ -134,7 +135,8 @@ namespace tzw {
 
 	void ParticleEmitter::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue* queues, int requirementArg)
 	{
-		if (requirementType == RenderFlag::RenderStage::SHADOW) {
+		const uint32_t renderStage = getRenderStageForRequest(getMaterial(), static_cast<uint32_t>(requirementType));
+		if (renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset)) {
 			return;
 		}
 		m_instancedMesh->clearInstances();
@@ -167,7 +169,7 @@ namespace tzw {
 		if (m_instancedMesh->getInstanceSize() > 0) {
 			reCache();
 			RenderCommand command(
-				m_mesh, getMaterial(), this, RenderFlag::RenderStage::TRANSPARENT, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				m_mesh, getMaterial(), this, static_cast<RenderFlag::RenderStage>(renderStage), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			setUpTransFormation(command.m_transInfo);
 			command.setInstancedMesh(m_instancedMesh);
 			queues->addRenderCommand(command, requirementArg);
@@ -250,6 +252,7 @@ namespace tzw {
 			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
+		setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
 		auto tex = TextureMgr::shared()->getByPath(filePath);
 
 		tex->genMipMap();
@@ -307,6 +310,7 @@ namespace tzw {
 			auto mat = MaterialInstance::createFromMaterial("ParticleFixedY");
 			mat->setTex("DiffuseMap", getMaterial()->getTex("DiffuseMap"));
 			setMaterial(mat);
+			setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
 		}
 		break;
 		default:;

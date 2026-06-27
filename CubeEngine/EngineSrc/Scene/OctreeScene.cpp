@@ -263,7 +263,7 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
             Drawable3D * obj = node->m_drawlist[i];
             if(!camera->isOutOfFrustum(obj->getAABB()))
             {
-            	if((obj->getDrawableFlag() & itemFlags) && (obj->getRenderStageFlag() & renderStageFlag))
+				if((obj->getDrawableFlag() & itemFlags) && obj->getRenderStageForRequest(obj->getMaterial(), renderStageFlag))
             	{
             		resultList.push_back (obj);
             	}
@@ -284,7 +284,7 @@ void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t itemFlags, uint32_t re
         //put self
         for(auto drawObj : node->m_drawlist)
         {
-            if((drawObj->getDrawableFlag() & itemFlags) && (drawObj->getRenderStageFlag() & renderStageFlag))
+            if((drawObj->getDrawableFlag() & itemFlags) && drawObj->getRenderStageForRequest(drawObj->getMaterial(), renderStageFlag))
             {
         		if(testFunc(drawObj->getAABB()))
 	            {

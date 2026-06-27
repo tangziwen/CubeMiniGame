@@ -45,6 +45,8 @@ public:
 	{
 		return m_renderStageFlag;
 	}
+	uint32_t getRenderStage(MaterialInstance* materialHint = nullptr) const;
+	uint32_t getRenderStageForRequest(MaterialInstance* materialHint, uint32_t requestedStageMask) const;
 	void setRenderStageFlag(const uint32_t renderStage)
 	{
 		m_renderStageFlag = renderStage;

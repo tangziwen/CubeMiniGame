@@ -44,8 +44,15 @@ namespace tzw
 	void InstancingMgr::pushInstanceRenderData(RenderFlag::RenderStage stage, InstanceRendereData data, int batchID)
 	{
 		int renderTypeID = getInstancedIndexFromRenderType(stage);
-		uint32_t stageID = static_cast<uint32_t>(stage);
-		stageID = static_cast<uint32_t>(data.material->getMaterial()->getRenderStage());
+		uint32_t stageID = data.renderStageMask;
+		if(stageID == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		{
+			stageID = static_cast<uint32_t>(data.material->getMaterial()->getRenderStage());
+		}
+		if(stageID == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		{
+			stageID = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+		}
 		auto mat_to_mesh = m_map.find(stageID);
 		InstancedMesh * instacing = nullptr;
 		if(mat_to_mesh != m_map.end())//already have this stage

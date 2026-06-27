@@ -101,7 +101,8 @@ namespace tzw {
 		{
 			for (int i = 0; i < m_node->getMeshCount(); i++)
 			{
-				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, m_node->getMaterial()->getRenderStage());
+				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this,
+					static_cast<RenderFlag::RenderStage>(m_node->getRenderStage(m_node->getMaterial())));
 
     			m_node->setUpCommand(command);
 				m_node->setUpTransFormation(command.m_transInfo);

@@ -18,7 +18,7 @@ namespace tzw
 		m_partSurface = partInstance->getPartSurface();
 		setRenderMode(RenderMode::COMMON);
 		
-		setRenderStageFlag(uint32_t(RenderFlag::RenderStage::COMMON) | uint32_t(RenderFlag::RenderStage::SHADOW));
+		setRenderStageFlag(uint32_t(RenderFlag::RenderStage::SHADOW));
 		auto size = m_visualInfo.size;
 		//auto cube = new CubePrimitive(size.x, size.y, size.z, false);
 		//m_localAABB = cube->getMesh()->getAabb();
@@ -68,7 +68,13 @@ namespace tzw
 			}
 			for(auto &info : m_infoList)
 			{
-				RenderCommand command(info.mesh, info.material,this, info.material->getRenderStage());
+				const uint32_t renderStage = getRenderStageForRequest(info.material, static_cast<uint32_t>(requirementType));
+				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				{
+					continue;
+				}
+				RenderCommand command(info.mesh, info.material,this,
+					static_cast<RenderFlag::RenderStage>(renderStage));
 				setUpCommand(command);
 				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{
@@ -152,4 +158,3 @@ namespace tzw
 		}
 	}
 }
-

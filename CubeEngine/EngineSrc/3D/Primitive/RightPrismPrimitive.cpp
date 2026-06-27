@@ -34,7 +34,12 @@ void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage requirementType,
 {
 	if(getIsVisible())
 	{
-		RenderCommand command(m_mesh, m_material,this, requirementType);
+		const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(requirementType));
+		if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		{
+			return;
+		}
+		RenderCommand command(m_mesh, m_material,this, static_cast<RenderFlag::RenderStage>(renderStage));
 		setUpCommand(command);
 		queues->addRenderCommand(command, requirementArg);
 	}

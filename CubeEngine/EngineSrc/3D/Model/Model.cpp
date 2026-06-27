@@ -49,7 +49,12 @@ void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queue
 				{
 					mat= m_effectList[mesh->getMatIndex()];
 				}
-		        RenderCommand command(mesh,mat, this, mat->getRenderStage());
+				const uint32_t renderStage = getRenderStageForRequest(mat, static_cast<uint32_t>(stageType));
+				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				{
+					continue;
+				}
+		        RenderCommand command(mesh,mat, this, static_cast<RenderFlag::RenderStage>(renderStage));
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        queues->addRenderCommand(command, requirementArg);
@@ -59,7 +64,12 @@ void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queue
 		    for(auto mesh : m_extraMeshList[m_currPose])
 		    {
 		        auto tech = m_effectList[mesh->getMatIndex()];
-		        RenderCommand command(mesh,tech, this, tech->getRenderStage());
+				const uint32_t renderStage = getRenderStageForRequest(tech, static_cast<uint32_t>(stageType));
+				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				{
+					continue;
+				}
+		        RenderCommand command(mesh,tech, this, static_cast<RenderFlag::RenderStage>(renderStage));
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        queues->addRenderCommand(command, requirementArg);

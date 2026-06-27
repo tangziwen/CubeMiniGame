@@ -62,6 +62,7 @@ enum class RenderStageType
 };
 enum class RenderStage : uint32_t
 {
+	Unset = 0,
 	COMMON = 1UL <<1,
 	TRANSPARENT = 1UL <<2,
 	AFTER_DEPTH_CLEAR = 1UL <<3,
