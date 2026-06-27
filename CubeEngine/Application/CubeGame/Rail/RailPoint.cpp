@@ -13,6 +13,20 @@ RailAnchorId RailAnchorManager::createAnchor(const RailTrackLocation& location)
 	return anchor.id;
 }
 
+RailAnchorId RailAnchorManager::unserializeAnchor(RailAnchorId anchorId, const RailTrackLocation& location)
+{
+	if (anchorId == InvalidRailAnchorId || anchor(anchorId))
+	{
+		return InvalidRailAnchorId;
+	}
+	RailAnchor anchorData;
+	anchorData.id = anchorId;
+	anchorData.location = location;
+	m_anchors.push_back(anchorData);
+	m_nextAnchorId = std::max(m_nextAnchorId, anchorId + 1);
+	return anchorId;
+}
+
 bool RailAnchorManager::deleteAnchor(RailAnchorId anchorId)
 {
 	auto iter = std::remove_if(m_anchors.begin(), m_anchors.end(), [anchorId](const RailAnchor& anchor)
@@ -152,6 +166,32 @@ RailStationId RailStationManager::createStation(RailAnchorId anchorId, const std
 	m_platforms.push_back(platform);
 	m_stations.push_back(station);
 	return station.id;
+}
+
+bool RailStationManager::unserializeStation(const RailStation& station)
+{
+	if (station.id == InvalidRailStationId || this->station(station.id))
+	{
+		return false;
+	}
+	m_stations.push_back(station);
+	m_nextStationId = std::max(m_nextStationId, station.id + 1);
+	for (RailPlatformId platformId : station.platforms)
+	{
+		m_nextPlatformId = std::max(m_nextPlatformId, platformId + 1);
+	}
+	return true;
+}
+
+bool RailStationManager::unserializePlatform(const RailPlatform& platform)
+{
+	if (platform.id == InvalidRailPlatformId || this->platform(platform.id))
+	{
+		return false;
+	}
+	m_platforms.push_back(platform);
+	m_nextPlatformId = std::max(m_nextPlatformId, platform.id + 1);
+	return true;
 }
 
 bool RailStationManager::deleteStation(RailStationId stationId, RailAnchorManager& anchorManager)
@@ -320,6 +360,17 @@ RailRoutePointId RailRoutePointManager::createRoutePoint(RailAnchorId anchorId, 
 	routePoint.anchorId = anchorId;
 	m_routePoints.push_back(routePoint);
 	return routePoint.id;
+}
+
+bool RailRoutePointManager::unserializeRoutePoint(const RailRoutePoint& routePoint)
+{
+	if (routePoint.id == InvalidRailRoutePointId || this->routePoint(routePoint.id))
+	{
+		return false;
+	}
+	m_routePoints.push_back(routePoint);
+	m_nextRoutePointId = std::max(m_nextRoutePointId, routePoint.id + 1);
+	return true;
 }
 
 bool RailRoutePointManager::deleteRoutePoint(RailRoutePointId routePointId, RailAnchorManager& anchorManager)

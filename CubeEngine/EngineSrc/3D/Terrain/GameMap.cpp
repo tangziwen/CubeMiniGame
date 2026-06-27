@@ -2,6 +2,16 @@
 
 #include "FastNoise/FastNoise.h"
 #include <algorithm>
+#include <cstdint>
+#include <cstdio>
+#include <cmath>
+#include <cstring>
+#include <random>
+#include <vector>
+#include "rapidjson/document.h"
+#include "rapidjson/filereadstream.h"
+#include "rapidjson/filewritestream.h"
+#include "rapidjson/prettywriter.h"
 #include "3D/Vegetation/FoliageSystem.h"
 namespace tzw {
 GameMap* GameMap::m_instance = nullptr;
@@ -11,6 +21,92 @@ namespace {
 int ceilDiv(int value, int divisor)
 {
 	return (value + divisor - 1) / divisor;
+}
+
+constexpr uint32_t TerrainSnapshotVersion = 1;
+constexpr uint32_t TerrainSnapshotPageSize = GAME_MAX_BUFFER_SIZE;
+constexpr uint32_t TerrainSnapshotVoxelCount =
+	GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE * GAME_MAX_BUFFER_SIZE;
+constexpr uint32_t TerrainSnapshotMaterialBytesPerVoxel = 4;
+const char TerrainSnapshotMagic[8] = { 'T', 'Z', 'W', 'T', 'E', 'R', 'R', '1' };
+
+template<typename T>
+bool writeBinaryValue(FILE* file, const T& value)
+{
+	return file && fwrite(&value, sizeof(T), 1, file) == 1;
+}
+
+template<typename T>
+bool readBinaryValue(FILE* file, T& value)
+{
+	return file && fread(&value, sizeof(T), 1, file) == 1;
+}
+
+bool writeBinaryData(FILE* file, const void* data, size_t size)
+{
+	return file && (size == 0 || fwrite(data, size, 1, file) == 1);
+}
+
+bool readBinaryData(FILE* file, void* data, size_t size)
+{
+	return file && (size == 0 || fread(data, size, 1, file) == 1);
+}
+
+void addFloatArray(rapidjson::Value& obj, const char* name, float x, float y, float z,
+	rapidjson::Document::AllocatorType& allocator)
+{
+	rapidjson::Value values(rapidjson::kArrayType);
+	values.PushBack(x, allocator);
+	values.PushBack(y, allocator);
+	values.PushBack(z, allocator);
+	obj.AddMember(rapidjson::Value(name, allocator), values, allocator);
+}
+
+bool readFloatArray3(const rapidjson::Value& obj, const char* name, float& x, float& y, float& z)
+{
+	if (!obj.HasMember(name) || !obj[name].IsArray() || obj[name].Size() != 3)
+	{
+		return false;
+	}
+	const rapidjson::Value& values = obj[name];
+	if (!values[0].IsNumber() || !values[1].IsNumber() || !values[2].IsNumber())
+	{
+		return false;
+	}
+	x = values[0].GetFloat();
+	y = values[1].GetFloat();
+	z = values[2].GetFloat();
+	return true;
+}
+
+bool readRequiredIntField(const rapidjson::Value& obj, const char* name, int& value)
+{
+	if (!obj.HasMember(name) || !obj[name].IsInt())
+	{
+		return false;
+	}
+	value = obj[name].GetInt();
+	return true;
+}
+
+bool readRequiredUintField(const rapidjson::Value& obj, const char* name, uint32_t& value)
+{
+	if (!obj.HasMember(name) || !obj[name].IsUint())
+	{
+		return false;
+	}
+	value = obj[name].GetUint();
+	return true;
+}
+
+bool readRequiredFloatField(const rapidjson::Value& obj, const char* name, float& value)
+{
+	if (!obj.HasMember(name) || !obj[name].IsNumber())
+	{
+		return false;
+	}
+	value = obj[name].GetFloat();
+	return true;
 }
 
 unsigned char proceduralDensityAt(GameMap& map, int sampleX, int sampleY, int sampleZ)
@@ -110,6 +206,7 @@ GameMap::GameMap()
   , m_depthVoxels(GAME_MAP_DEPTH_VOXELS)
   , m_heightVoxels(GAME_MAP_HEIGHT_VOXELS)
   , m_blockSize(BLOCK_SIZE)
+  , m_proceduralSeed(1337)
 {
   m_plane = new noise::model::Plane(myModule);
   myModule.SetPersistence(0.001);
@@ -157,18 +254,25 @@ GameMap::GameMap()
 		m_depthVoxels * m_blockSize / -2.0f);
 }
 
+GameMap::~GameMap()
+{
+	releaseTerrainBuffers();
+	delete m_plane;
+	m_plane = nullptr;
+}
+
 void GameMap::init(const GameMapInitInfo& initInfo)
 {
+	releaseTerrainBuffers();
 	m_ratio = initInfo.ratio;
 	m_widthVoxels = initInfo.widthVoxels;
 	m_depthVoxels = initInfo.depthVoxels;
 	m_heightVoxels = initInfo.heightVoxels;
 	m_blockSize = initInfo.blockSize;
+	m_proceduralSeed = initInfo.proceduralSeed;
 	m_mapOffset = vec3(m_widthVoxels * m_blockSize / -2.0f, 0,
 		m_depthVoxels * m_blockSize / -2.0f);
-	x_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	y_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
-	z_offset = static_cast<float>(rand()) / static_cast<float>(RAND_MAX);
+	applyProceduralSeed();
 
 	mapBufferSize_X = ceilDiv(m_widthVoxels, GAME_MAX_BUFFER_SIZE);
 	mapBufferSize_Y = ceilDiv(m_heightVoxels, GAME_MAX_BUFFER_SIZE);
@@ -649,6 +753,344 @@ void GameMap::loadTerrain(std::string filePath)
 	tlog("loadCount %ld", loadCount);
 }
 
+bool GameMap::serializeTerrainSnapshot(std::string manifestPath, std::string pageDataPath)
+{
+	if (!m_totalBuffer)
+	{
+		return false;
+	}
+
+	const int totalPageCount = mapBufferSize_X * mapBufferSize_Y * mapBufferSize_Z;
+	std::vector<int> editedPageIds;
+	editedPageIds.reserve(totalPageCount);
+	for (int i = 0; i < totalPageCount; ++i)
+	{
+		if (m_totalBuffer[i].m_buff && m_totalBuffer[i].isEdit)
+		{
+			editedPageIds.push_back(i);
+		}
+	}
+	const uint32_t editedPageCount = static_cast<uint32_t>(editedPageIds.size());
+
+	rapidjson::Document doc;
+	doc.SetObject();
+	auto& allocator = doc.GetAllocator();
+	doc.AddMember("Version", static_cast<int>(TerrainSnapshotVersion), allocator);
+	doc.AddMember("PageDataFile", rapidjson::Value(pageDataPath.c_str(), allocator), allocator);
+	doc.AddMember("WidthVoxels", m_widthVoxels, allocator);
+	doc.AddMember("DepthVoxels", m_depthVoxels, allocator);
+	doc.AddMember("HeightVoxels", m_heightVoxels, allocator);
+	doc.AddMember("BlockSize", m_blockSize, allocator);
+	doc.AddMember("PageSize", static_cast<int>(TerrainSnapshotPageSize), allocator);
+	doc.AddMember("MapType", static_cast<int>(m_mapType), allocator);
+	doc.AddMember("MinHeight", m_minHeight, allocator);
+	doc.AddMember("MaxHeight", m_maxHeight, allocator);
+	doc.AddMember("ProceduralSeed", m_proceduralSeed, allocator);
+	addFloatArray(doc, "Offsets", x_offset, y_offset, z_offset, allocator);
+	doc.AddMember("PageOrder", rapidjson::Value("LinearPageIdAscending", allocator), allocator);
+	doc.AddMember("PageCount", editedPageCount, allocator);
+
+	FILE* pageFile = fopen(pageDataPath.c_str(), "wb");
+	if (!pageFile)
+	{
+		tlog("[error] can not write terrain page data %s", pageDataPath.c_str());
+		return false;
+	}
+
+	bool ok = writeBinaryData(pageFile, TerrainSnapshotMagic, sizeof(TerrainSnapshotMagic))
+		&& writeBinaryValue(pageFile, TerrainSnapshotVersion)
+		&& writeBinaryValue(pageFile, TerrainSnapshotPageSize)
+		&& writeBinaryValue(pageFile, editedPageCount);
+
+	std::vector<unsigned char> densityBytes(TerrainSnapshotVoxelCount);
+	std::vector<unsigned char> matReadyBytes(TerrainSnapshotVoxelCount);
+	std::vector<unsigned char> materialBytes(
+		static_cast<size_t>(TerrainSnapshotVoxelCount) * TerrainSnapshotMaterialBytesPerVoxel);
+	// TerrainPages.bin records are part of the save format and must stay sorted by linear page id.
+	for (int pageIndexValue : editedPageIds)
+	{
+		if (!ok)
+		{
+			break;
+		}
+		GameMapBuffer& buffer = m_totalBuffer[pageIndexValue];
+
+		ensurePageDensityComplete(pageIndexValue);
+		const uint32_t pageX = static_cast<uint32_t>(pageIndexValue / (mapBufferSize_Z * mapBufferSize_Y));
+		const int rest = pageIndexValue % (mapBufferSize_Z * mapBufferSize_Y);
+		const uint32_t pageY = static_cast<uint32_t>(rest / mapBufferSize_Z);
+		const uint32_t pageZ = static_cast<uint32_t>(rest % mapBufferSize_Z);
+		const uint32_t densitySize = TerrainSnapshotVoxelCount;
+		const uint32_t matReadySize = TerrainSnapshotVoxelCount;
+		const uint32_t materialSize = TerrainSnapshotVoxelCount * TerrainSnapshotMaterialBytesPerVoxel;
+
+		for (uint32_t i = 0; i < TerrainSnapshotVoxelCount; ++i)
+		{
+			densityBytes[i] = buffer.m_buff[i].w;
+			const bool materialReady = buffer.m_matReady && buffer.m_matReady[i];
+			matReadyBytes[i] = materialReady ? 1 : 0;
+			const size_t base = static_cast<size_t>(i) * TerrainSnapshotMaterialBytesPerVoxel;
+			if (materialReady)
+			{
+				materialBytes[base + 0] = static_cast<unsigned char>(buffer.m_buff[i].matInfo.matIndex1);
+				materialBytes[base + 1] = static_cast<unsigned char>(buffer.m_buff[i].matInfo.matIndex2);
+				materialBytes[base + 2] = static_cast<unsigned char>(buffer.m_buff[i].matInfo.matIndex3);
+				materialBytes[base + 3] = buffer.m_buff[i].matInfo.matBlendFactor;
+			}
+			else
+			{
+				materialBytes[base + 0] = 0;
+				materialBytes[base + 1] = 0;
+				materialBytes[base + 2] = 0;
+				materialBytes[base + 3] = 0;
+			}
+		}
+
+		ok = writeBinaryValue(pageFile, pageX)
+			&& writeBinaryValue(pageFile, pageY)
+			&& writeBinaryValue(pageFile, pageZ)
+			&& writeBinaryValue(pageFile, densitySize)
+			&& writeBinaryData(pageFile, densityBytes.data(), densityBytes.size())
+			&& writeBinaryValue(pageFile, matReadySize)
+			&& writeBinaryData(pageFile, matReadyBytes.data(), matReadyBytes.size())
+			&& writeBinaryValue(pageFile, materialSize)
+			&& writeBinaryData(pageFile, materialBytes.data(), materialBytes.size());
+	}
+	fclose(pageFile);
+	if (!ok)
+	{
+		tlog("[error] failed to write terrain page data %s", pageDataPath.c_str());
+		return false;
+	}
+
+	FILE* manifestFile = fopen(manifestPath.c_str(), "wb");
+	if (!manifestFile)
+	{
+		tlog("[error] can not write terrain manifest %s", manifestPath.c_str());
+		return false;
+	}
+	char manifestBuffer[65536];
+	rapidjson::FileWriteStream manifestStream(manifestFile, manifestBuffer, sizeof(manifestBuffer));
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(manifestStream);
+	writer.SetIndent('\t', 1);
+	doc.Accept(writer);
+	fclose(manifestFile);
+	return true;
+}
+
+bool GameMap::unserializeTerrainSnapshot(std::string manifestPath, std::string pageDataPath)
+{
+	FILE* manifestFile = fopen(manifestPath.c_str(), "rb");
+	if (!manifestFile)
+	{
+		return false;
+	}
+	char manifestBuffer[65536];
+	rapidjson::FileReadStream manifestStream(manifestFile, manifestBuffer, sizeof(manifestBuffer));
+	rapidjson::Document doc;
+	doc.ParseStream<rapidjson::kParseCommentsFlag | rapidjson::kParseTrailingCommasFlag>(manifestStream);
+	fclose(manifestFile);
+	if (doc.HasParseError() || !doc.IsObject())
+	{
+		tlog("[error] terrain manifest parse failed %s", manifestPath.c_str());
+		return false;
+	}
+
+	int manifestVersion = 0;
+	int manifestWidth = 0;
+	int manifestDepth = 0;
+	int manifestHeight = 0;
+	int manifestPageSize = 0;
+	float manifestBlockSize = 0.0f;
+	uint32_t manifestPageCount = 0;
+	if (!readRequiredIntField(doc, "Version", manifestVersion)
+		|| manifestVersion != static_cast<int>(TerrainSnapshotVersion))
+	{
+		tlog("[error] unsupported terrain snapshot version %s", manifestPath.c_str());
+		return false;
+	}
+	if (!readRequiredIntField(doc, "WidthVoxels", manifestWidth)
+		|| !readRequiredIntField(doc, "DepthVoxels", manifestDepth)
+		|| !readRequiredIntField(doc, "HeightVoxels", manifestHeight)
+		|| !readRequiredFloatField(doc, "BlockSize", manifestBlockSize)
+		|| !readRequiredIntField(doc, "PageSize", manifestPageSize)
+		|| !readRequiredUintField(doc, "PageCount", manifestPageCount))
+	{
+		tlog("[error] terrain manifest missing required fields %s", manifestPath.c_str());
+		return false;
+	}
+	if (!doc.HasMember("PageOrder") || !doc["PageOrder"].IsString()
+		|| std::strcmp(doc["PageOrder"].GetString(), "LinearPageIdAscending") != 0)
+	{
+		tlog("[error] terrain manifest page order mismatch %s", manifestPath.c_str());
+		return false;
+	}
+	if (manifestWidth != m_widthVoxels
+		|| manifestDepth != m_depthVoxels
+		|| manifestHeight != m_heightVoxels
+		|| manifestPageSize != static_cast<int>(TerrainSnapshotPageSize))
+	{
+		tlog("[error] terrain snapshot dimensions mismatch %s", manifestPath.c_str());
+		return false;
+	}
+	if (std::fabs(manifestBlockSize - m_blockSize) > 0.0001f)
+	{
+		tlog("[error] terrain snapshot block size mismatch %s", manifestPath.c_str());
+		return false;
+	}
+
+	if (doc.HasMember("MapType"))
+	{
+		if (!doc["MapType"].IsInt())
+		{
+			return false;
+		}
+		m_mapType = static_cast<MapType>(doc["MapType"].GetInt());
+	}
+	if (doc.HasMember("MinHeight"))
+	{
+		if (!doc["MinHeight"].IsNumber())
+		{
+			return false;
+		}
+		m_minHeight = doc["MinHeight"].GetFloat();
+	}
+	if (doc.HasMember("MaxHeight"))
+	{
+		if (!doc["MaxHeight"].IsNumber())
+		{
+			return false;
+		}
+		m_maxHeight = doc["MaxHeight"].GetFloat();
+	}
+	if (doc.HasMember("ProceduralSeed"))
+	{
+		if (!doc["ProceduralSeed"].IsInt())
+		{
+			return false;
+		}
+		m_proceduralSeed = doc["ProceduralSeed"].GetInt();
+	}
+	if (!readFloatArray3(doc, "Offsets", x_offset, y_offset, z_offset))
+	{
+		applyProceduralSeed();
+	}
+
+	FILE* pageFile = fopen(pageDataPath.c_str(), "rb");
+	if (!pageFile)
+	{
+		if (manifestPageCount != 0)
+		{
+			return false;
+		}
+		releaseTerrainBuffers();
+		mapBufferSize_X = ceilDiv(m_widthVoxels, GAME_MAX_BUFFER_SIZE);
+		mapBufferSize_Y = ceilDiv(m_heightVoxels, GAME_MAX_BUFFER_SIZE);
+		mapBufferSize_Z = ceilDiv(m_depthVoxels, GAME_MAX_BUFFER_SIZE);
+		m_totalBuffer = new GameMapBuffer[mapBufferSize_X * mapBufferSize_Y * mapBufferSize_Z];
+		return true;
+	}
+
+	char magic[sizeof(TerrainSnapshotMagic)];
+	uint32_t version = 0;
+	uint32_t pageSize = 0;
+	uint32_t pageCount = 0;
+	bool ok = readBinaryData(pageFile, magic, sizeof(magic))
+		&& std::memcmp(magic, TerrainSnapshotMagic, sizeof(TerrainSnapshotMagic)) == 0
+		&& readBinaryValue(pageFile, version)
+		&& readBinaryValue(pageFile, pageSize)
+		&& readBinaryValue(pageFile, pageCount)
+		&& version == TerrainSnapshotVersion
+		&& pageSize == TerrainSnapshotPageSize
+		&& pageCount == manifestPageCount;
+	if (!ok)
+	{
+		fclose(pageFile);
+		tlog("[error] terrain page data header mismatch %s", pageDataPath.c_str());
+		return false;
+	}
+
+	releaseTerrainBuffers();
+	mapBufferSize_X = ceilDiv(m_widthVoxels, GAME_MAX_BUFFER_SIZE);
+	mapBufferSize_Y = ceilDiv(m_heightVoxels, GAME_MAX_BUFFER_SIZE);
+	mapBufferSize_Z = ceilDiv(m_depthVoxels, GAME_MAX_BUFFER_SIZE);
+	m_totalBuffer = new GameMapBuffer[mapBufferSize_X * mapBufferSize_Y * mapBufferSize_Z];
+
+	std::vector<unsigned char> densityBytes(TerrainSnapshotVoxelCount);
+	std::vector<unsigned char> matReadyBytes(TerrainSnapshotVoxelCount);
+	std::vector<unsigned char> materialBytes(
+		static_cast<size_t>(TerrainSnapshotVoxelCount) * TerrainSnapshotMaterialBytesPerVoxel);
+	int lastPageLinearId = -1;
+	for (uint32_t page = 0; ok && page < pageCount; ++page)
+	{
+		uint32_t pageX = 0;
+		uint32_t pageY = 0;
+		uint32_t pageZ = 0;
+		uint32_t densitySize = 0;
+		uint32_t matReadySize = 0;
+		uint32_t materialSize = 0;
+		ok = readBinaryValue(pageFile, pageX)
+			&& readBinaryValue(pageFile, pageY)
+			&& readBinaryValue(pageFile, pageZ)
+			&& readBinaryValue(pageFile, densitySize)
+			&& densitySize == TerrainSnapshotVoxelCount
+			&& readBinaryData(pageFile, densityBytes.data(), densityBytes.size())
+			&& readBinaryValue(pageFile, matReadySize)
+			&& matReadySize == TerrainSnapshotVoxelCount
+			&& readBinaryData(pageFile, matReadyBytes.data(), matReadyBytes.size())
+			&& readBinaryValue(pageFile, materialSize)
+			&& materialSize == TerrainSnapshotVoxelCount * TerrainSnapshotMaterialBytesPerVoxel
+			&& readBinaryData(pageFile, materialBytes.data(), materialBytes.size());
+		if (!ok)
+		{
+			break;
+		}
+		if (pageX >= static_cast<uint32_t>(mapBufferSize_X)
+			|| pageY >= static_cast<uint32_t>(mapBufferSize_Y)
+			|| pageZ >= static_cast<uint32_t>(mapBufferSize_Z))
+		{
+			ok = false;
+			break;
+		}
+		const int pageLinearId = static_cast<int>(pageX) * (mapBufferSize_Z * mapBufferSize_Y)
+			+ static_cast<int>(pageY) * mapBufferSize_Z
+			+ static_cast<int>(pageZ);
+		if (pageLinearId <= lastPageLinearId)
+		{
+			ok = false;
+			break;
+		}
+		lastPageLinearId = pageLinearId;
+
+		generateVoxelPage(pageX, pageY, pageZ);
+		GameMapBuffer& buffer = m_totalBuffer[pageLinearId];
+		for (uint32_t i = 0; i < TerrainSnapshotVoxelCount; ++i)
+		{
+			buffer.m_buff[i].w = densityBytes[i];
+			if (buffer.m_densityReady)
+			{
+				buffer.m_densityReady[i] = 1;
+			}
+			if (buffer.m_matReady)
+			{
+				buffer.m_matReady[i] = matReadyBytes[i] ? 1 : 0;
+			}
+			const size_t base = static_cast<size_t>(i) * TerrainSnapshotMaterialBytesPerVoxel;
+			buffer.m_buff[i].matInfo.matIndex1 = static_cast<char>(materialBytes[base + 0]);
+			buffer.m_buff[i].matInfo.matIndex2 = static_cast<char>(materialBytes[base + 1]);
+			buffer.m_buff[i].matInfo.matIndex3 = static_cast<char>(materialBytes[base + 2]);
+			buffer.m_buff[i].matInfo.matBlendFactor = materialBytes[base + 3];
+		}
+		buffer.isEdit = true;
+	}
+	fclose(pageFile);
+	if (!ok)
+	{
+		tlog("[error] terrain page data read failed %s", pageDataPath.c_str());
+	}
+	return ok;
+}
+
 void GameMap::generateVoxelPage(size_t buffIDX, size_t buffIDY, size_t buffIDZ)
 {
 	int buffIndex = buffIDX * (mapBufferSize_Z * mapBufferSize_Y) + buffIDY * (mapBufferSize_Z) + buffIDZ;
@@ -937,6 +1379,47 @@ bool GameMap::writeVoxelMaterial(int x, int y, int z, int matIndex)
 	setVoxelMaterialReady(x, y, z, true);
 	m_totalBuffer[pageIndexForVoxel(x, y, z)].isEdit = true;
 	return true;
+}
+
+void GameMap::releaseTerrainBuffers()
+{
+	if (!m_totalBuffer)
+	{
+		return;
+	}
+	const int totalPageCount = mapBufferSize_X * mapBufferSize_Y * mapBufferSize_Z;
+	for (int i = 0; i < totalPageCount; ++i)
+	{
+		delete[] m_totalBuffer[i].m_buff;
+		m_totalBuffer[i].m_buff = nullptr;
+		delete[] m_totalBuffer[i].m_densityReady;
+		m_totalBuffer[i].m_densityReady = nullptr;
+		delete[] m_totalBuffer[i].m_matReady;
+		m_totalBuffer[i].m_matReady = nullptr;
+		m_totalBuffer[i].isEdit = false;
+	}
+	delete[] m_totalBuffer;
+	m_totalBuffer = nullptr;
+}
+
+void GameMap::setProceduralSeed(int seed)
+{
+	m_proceduralSeed = seed;
+	applyProceduralSeed();
+}
+
+void GameMap::applyProceduralSeed()
+{
+	std::mt19937 rng(static_cast<uint32_t>(m_proceduralSeed));
+	std::uniform_real_distribution<float> dist(0.0f, 1.0f);
+	x_offset = dist(rng);
+	y_offset = dist(rng);
+	z_offset = dist(rng);
+}
+
+int GameMap::proceduralSeed() const
+{
+	return m_proceduralSeed;
 }
 
 GameMapBuffer::GameMapBuffer()

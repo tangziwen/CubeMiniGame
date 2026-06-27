@@ -383,6 +383,28 @@ RailLineId RailLineManager::createLine()
 	return line.id;
 }
 
+bool RailLineManager::unserializeLine(const RailLine& line)
+{
+	if (line.id == InvalidRailLineId || this->line(line.id))
+	{
+		return false;
+	}
+	RailLine unserialized = line;
+	unserialized.pathSteps.clear();
+	unserialized.isLoop = false;
+	unserialized.isUsable = false;
+	unserialized.invalidReason = "Need at least 2 different stations";
+	unserialized.totalLength = 0.0f;
+	for (RailLineControlPoint& controlPoint : unserialized.controlPoints)
+	{
+		controlPoint.isResolved = false;
+		controlPoint.distanceOnLine = 0.0f;
+	}
+	m_lines.push_back(unserialized);
+	m_nextLineId = std::max(m_nextLineId, line.id + 1);
+	return true;
+}
+
 bool RailLineManager::deleteLine(RailLineId lineId)
 {
 	auto iter = std::remove_if(m_lines.begin(), m_lines.end(), [lineId](const RailLine& line)

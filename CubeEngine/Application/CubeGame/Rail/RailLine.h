@@ -90,6 +90,7 @@ class RailLineManager
 {
 public:
 	RailLineId createLine();
+	bool unserializeLine(const RailLine& line);
 	bool deleteLine(RailLineId lineId);
 	bool addControlPoint(RailLineId lineId, const RailLineControlPoint& controlPoint,
 		const RailNetwork& network, const RailAnchorManager& anchorManager,

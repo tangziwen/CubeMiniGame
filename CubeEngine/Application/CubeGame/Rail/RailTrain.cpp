@@ -24,6 +24,23 @@ RailTrainId RailTrainManager::createTrain(int carriageCount)
 	return train.id;
 }
 
+bool RailTrainManager::unserializeTrain(const RailTrain& train)
+{
+	if (train.id == InvalidRailTrainId || this->train(train.id))
+	{
+		return false;
+	}
+	RailTrain unserialized = train;
+	unserialized.carPoses.clear();
+	if (unserialized.placementMode == RailTrainPlacementMode::OnLine)
+	{
+		unserialized.pose = RailTrainPose();
+	}
+	m_trains.push_back(unserialized);
+	m_nextTrainId = std::max(m_nextTrainId, train.id + 1);
+	return true;
+}
+
 bool RailTrainManager::deleteTrain(RailTrainId trainId)
 {
 	auto iter = std::remove_if(m_trains.begin(), m_trains.end(), [trainId](const RailTrain& train)

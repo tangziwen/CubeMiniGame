@@ -83,6 +83,9 @@ public:
 	RailNodeId createNode(const vec3& position, const vec3& preferredTangent = vec3(1.0f, 0.0f, 0.0f),
 		bool isConnectable = true);
 	RailSegmentId createSegment(RailNodeId startNode, RailNodeId endNode);
+	RailNodeId unserializeNode(RailNodeId nodeId, const vec3& position, const vec3& preferredTangent, bool isConnectable);
+	RailSegmentId unserializeSegment(RailSegmentId segmentId, RailNodeId startNode, RailNodeId endNode,
+		const vec3& startTangent, const vec3& endTangent);
 	bool deleteSegment(RailSegmentId segmentId);
 	bool splitSegment(RailSegmentId segmentId, float distanceOnSegment, RailSplitResult& outResult);
 

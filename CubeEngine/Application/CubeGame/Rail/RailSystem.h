@@ -7,6 +7,7 @@
 #include "RailPersistentVisualSystem.h"
 #include "RailTrain.h"
 #include "EngineSrc/Math/vec4.h"
+#include "rapidjson/document.h"
 
 #include <string>
 
@@ -29,6 +30,8 @@ public:
 	void init();
 	void update(Node* sceneRoot, float deltaSeconds);
 	void clear();
+	void serialize(rapidjson::Value& railData, rapidjson::Document::AllocatorType& allocator) const;
+	bool unserialize(const rapidjson::Value& railData);
 
 	bool handleTrackAddPrimaryClick(PlacementMode placementMode);
 	bool handleTrackDeletePrimaryClick(PlacementMode placementMode);

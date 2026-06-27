@@ -28,9 +28,39 @@
 
 #include "Utility/file/JsonUtility.h"
 
+#include <cstdio>
+#include <system_error>
+
 namespace tzw {
 
-void WorldInfo::save(std::string filepath)
+namespace
+{
+bool writeJsonFile(const std::filesystem::path& filePath, const rapidjson::Value& value)
+{
+	const std::string pathString = filePath.string();
+	FILE* file = fopen(pathString.c_str(), "w");
+	if (!file)
+	{
+		tlog("[error] failed to write json file %s", pathString.c_str());
+		return false;
+	}
+
+	char writeBuffer[65536];
+	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(writeBuffer));
+	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
+	writer.SetIndent('\t', 1);
+	const bool writeOk = value.Accept(writer) && ferror(file) == 0;
+	const bool closeOk = fclose(file) == 0;
+	if (!writeOk || !closeOk)
+	{
+		tlog("[error] failed to finish json file %s", pathString.c_str());
+		return false;
+	}
+	return true;
+}
+}
+
+bool WorldInfo::save(std::string filepath)
 {
 	rapidjson::Document doc;
 	doc.SetObject();
@@ -39,16 +69,7 @@ void WorldInfo::save(std::string filepath)
 	doc.AddMember("GameMode", m_gameMode, aloc);
 	doc.AddMember("TerrainProceduralType", m_terrainProceduralType, aloc);
 	doc.AddMember("ProceduralSeed", m_proceduralSeed, aloc);
-	rapidjson::StringBuffer buffer;
-	auto file = fopen(filepath.c_str(), "w");
-	size_t buffSize = 65536;
-	char * writeBuffer = static_cast<char*>(malloc(buffSize));
-	rapidjson::FileWriteStream stream(file, writeBuffer, buffSize);
-	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
-	writer.SetIndent('\t', 1);
-	doc.Accept(writer);
-	fclose(file);
-	free(writeBuffer);
+	return writeJsonFile(filepath, doc);
 }
 
 void WorldInfo::load(std::string filepath)
@@ -57,8 +78,8 @@ void WorldInfo::load(std::string filepath)
 	std::string worldName = doc["WorldName"].GetString();
 	strcpy(m_gameName, worldName.c_str());
 	m_gameMode = doc["GameMode"].GetInt();
-	m_terrainProceduralType = doc["TerrainProceduralType"].GetInt();
-	m_proceduralSeed = doc["ProceduralSeed"].GetInt();
+	m_terrainProceduralType = doc.HasMember("TerrainProceduralType") ? doc["TerrainProceduralType"].GetInt() : 1;
+	m_proceduralSeed = doc.HasMember("ProceduralSeed") ? doc["ProceduralSeed"].GetInt() : 1337;
 	tlog("world %s load finished, GameMode %d TerrainProceduralType %d ProceduralSeed %d", m_gameName, m_gameMode, m_terrainProceduralType, m_proceduralSeed);
 }
 
@@ -84,6 +105,7 @@ void GameWorld::createWorld(Scene *scene, int widthVoxels, int depthVoxels, int 
 	mapInfo.depthVoxels = depthVoxels;
 	mapInfo.heightVoxels = heightVoxels;
 	mapInfo.blockSize = BLOCK_SIZE;
+	mapInfo.proceduralSeed = m_currWorldInfo.m_proceduralSeed;
 	GameMap::shared()->init(mapInfo);
 	CropSystem::shared()->initFromFile();
 
@@ -100,6 +122,7 @@ void GameWorld::createWorld(Scene *scene, int widthVoxels, int depthVoxels, int 
 
 void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxels, int heightVoxels, float ratio, std::string filePath)
 {
+	(void)filePath;
 	m_scene = scene;
 	m_width = widthVoxels;
     m_depth = depthVoxels;
@@ -110,10 +133,17 @@ void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxe
 	mapInfo.depthVoxels = depthVoxels;
 	mapInfo.heightVoxels = heightVoxels;
 	mapInfo.blockSize = BLOCK_SIZE;
+	mapInfo.proceduralSeed = m_currWorldInfo.m_proceduralSeed;
 	GameMap::shared()->init(mapInfo);
 	CropSystem::shared()->initFromFile();
 	auto worldLocation = getWorldLocation();
-	GameMap::shared()->loadTerrain((worldLocation / "Terrain.bin").string());
+	const std::filesystem::path terrainManifestPath = worldLocation / "Terrain.json";
+	const std::filesystem::path terrainPagePath = worldLocation / "TerrainPages.bin";
+	if (std::filesystem::exists(terrainManifestPath)
+		&& !GameMap::shared()->unserializeTerrainSnapshot(terrainManifestPath.string(), terrainPagePath.string()))
+	{
+		tlog("[error] failed to load terrain snapshot %s", terrainManifestPath.string().c_str());
+	}
 
 	vec3 mapOffset = GameMap::shared()->getMapOffset();
 	TerrainOctreeConfig config = TerrainOctreeConfig::fromVoxelDomain(
@@ -123,6 +153,17 @@ void GameWorld::createWorldFromFile(Scene* scene, int widthVoxels, int depthVoxe
 	m_terrainRuntime->init(config);
 	m_railSystem = std::make_unique<RailSystem>();
 	m_railSystem->init();
+	const std::filesystem::path railPath = worldLocation / "Rail.json";
+	if (std::filesystem::exists(railPath))
+	{
+		auto railDoc = Tfile::shared()->getJsonObject(railPath.string());
+		if (!m_railSystem->unserialize(railDoc))
+		{
+			tlog("[error] failed to load rail data %s", railPath.string().c_str());
+			m_railSystem->clear();
+			m_railSystem->init();
+		}
+	}
 }
 
 vec3 GameWorld::worldToGrid(vec3 world)
@@ -214,7 +255,7 @@ void GameWorld::loadGame(std::string worldName)
 		GameMap::shared()->setMapType(GameMap::MapType::Noise);
 		GameMap::shared()->setMaxHeight(10);
 		GameMap::shared()->setMinHeight(3);
-		createWorldFromFile(g_GetCurrScene(), GAME_MAP_WIDTH_VOXELS, GAME_MAP_DEPTH_VOXELS, GAME_MAP_HEIGHT_VOXELS, 0.05, "Data/PlayerData/Save/Terrain.bin");
+		createWorldFromFile(g_GetCurrScene(), GAME_MAP_WIDTH_VOXELS, GAME_MAP_DEPTH_VOXELS, GAME_MAP_HEIGHT_VOXELS, 0.05, "");
 		loadPlayerInfo();
 	}));
 
@@ -235,18 +276,26 @@ void GameWorld::loadGame(std::string worldName)
 
 void GameWorld::saveGame(std::string filePath)
 {
+	(void)filePath;
 	std::filesystem::path worldLocation = getWorldLocation();
 
 	tlog("world location is %s", worldLocation.string().c_str());
-	if(! std::filesystem::exists(worldLocation))
+	std::error_code fsError;
+	std::filesystem::create_directories(worldLocation, fsError);
+	if (fsError)
 	{
-		std::filesystem::create_directory(worldLocation);//create directory
+		tlog("[error] failed to create world directory %s: %s",
+			worldLocation.string().c_str(), fsError.message().c_str());
+		return;
 	}
 
 	//save world meta info
 	{
 		std::filesystem::path metaPath = worldLocation / "meta.json";
-		m_currWorldInfo.save(metaPath.string());
+		if (!m_currWorldInfo.save(metaPath.string()))
+		{
+			return;
+		}
 	}
 	
 	//save static directory
@@ -255,24 +304,38 @@ void GameWorld::saveGame(std::string filePath)
 		rapidjson::Document doc;
 		doc.SetObject();
 		BuildingSystem::shared()->dumpStatic(doc, doc.GetAllocator());
-		rapidjson::StringBuffer buffer;
-		auto file = fopen(staticObjPath.string().c_str(), "w");
-		size_t buffSize = 65536;
-		char * writeBuffer = static_cast<char*>(malloc(buffSize));
-		rapidjson::FileWriteStream stream(file, writeBuffer, buffSize);
-		rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
-		writer.SetIndent('\t', 1);
-		doc.Accept(writer);
-		fclose(file);
-		free(writeBuffer);
+		if (!writeJsonFile(staticObjPath, doc))
+		{
+			return;
+		}
 	}
 
 
 	//save playerInfo
-	savePlayerInfo();
+	if (!savePlayerInfo())
+	{
+		return;
+	}
 
 	//save terrain
-	GameMap::shared()->saveTerrain((worldLocation / "Terrain.bin").string());
+	if (!GameMap::shared()->serializeTerrainSnapshot((worldLocation / "Terrain.json").string(),
+		(worldLocation / "TerrainPages.bin").string()))
+	{
+		tlog("[error] failed to save terrain snapshot");
+	}
+
+	//save rail
+	if (m_railSystem)
+	{
+		std::filesystem::path railPath = worldLocation / "Rail.json";
+		rapidjson::Document doc;
+		doc.SetObject();
+		m_railSystem->serialize(doc, doc.GetAllocator());
+		if (!writeJsonFile(railPath, doc))
+		{
+			return;
+		}
+	}
 }
 
 bool GameWorld::onKeyPress(int keyCode)
@@ -330,24 +393,14 @@ GameWorld::~GameWorld()
 	tlog("hello world");
 }
 
-void GameWorld::savePlayerInfo()
+bool GameWorld::savePlayerInfo()
 {
 	std::filesystem::path worldLocation = getWorldLocation();
 	rapidjson::Document doc;
 	doc.SetObject();
-	auto& j_aloc = doc.GetAllocator();
 	JsonUtility::shared()->addV3(doc, doc, "PlayerPos", getPlayer()->getPos());
 	JsonUtility::shared()->addV4(doc, doc, "PlayerRot", getPlayer()->getRotateQ().toVec4());
-	rapidjson::StringBuffer buffer;
-	auto file = fopen((worldLocation/ "player.json").string().c_str(), "w");
-	size_t buffSize = 65536;
-	char * writeBuffer = static_cast<char*>(malloc(buffSize));
-	rapidjson::FileWriteStream stream(file, writeBuffer, sizeof(buffSize));
-	rapidjson::PrettyWriter<rapidjson::FileWriteStream> writer(stream);
-	writer.SetIndent('\t', 1);
-	doc.Accept(writer);
-	fclose(file);
-	free(writeBuffer);
+	return writeJsonFile(worldLocation / "player.json", doc);
 }
 
 void GameWorld::loadPlayerInfo()

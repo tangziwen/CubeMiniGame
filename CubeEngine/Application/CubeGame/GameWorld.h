@@ -21,11 +21,11 @@ class RailSystem;
 
 struct WorldInfo
 {
-    int m_gameMode;
-	char m_gameName[64];
-	int m_terrainProceduralType;
-	int m_proceduralSeed;
-	void save(std::string filepath);
+    int m_gameMode = 1;
+	char m_gameName[64] = "World";
+	int m_terrainProceduralType = 1;
+	int m_proceduralSeed = 1337;
+	bool save(std::string filepath);
 	void load(std::string filepath);
 };
 
@@ -56,7 +56,7 @@ public:
 	RailSystem* railSystem() const;
 	void init();
     virtual ~GameWorld();
-	void savePlayerInfo();
+	bool savePlayerInfo();
 	void loadPlayerInfo();
 private:
 	std::filesystem::path getWorldLocation();

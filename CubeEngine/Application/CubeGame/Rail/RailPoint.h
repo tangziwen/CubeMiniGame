@@ -40,6 +40,7 @@ class RailAnchorManager
 {
 public:
 	RailAnchorId createAnchor(const RailTrackLocation& location);
+	RailAnchorId unserializeAnchor(RailAnchorId anchorId, const RailTrackLocation& location);
 	bool deleteAnchor(RailAnchorId anchorId);
 	void clear();
 
@@ -78,6 +79,8 @@ class RailStationManager
 {
 public:
 	RailStationId createStation(RailAnchorId anchorId, const std::string& name = "");
+	bool unserializeStation(const RailStation& station);
+	bool unserializePlatform(const RailPlatform& platform);
 	bool deleteStation(RailStationId stationId, RailAnchorManager& anchorManager);
 	void clear(RailAnchorManager& anchorManager);
 	void clearWithoutAnchors();
@@ -113,6 +116,7 @@ class RailRoutePointManager
 {
 public:
 	RailRoutePointId createRoutePoint(RailAnchorId anchorId, const std::string& name = "");
+	bool unserializeRoutePoint(const RailRoutePoint& routePoint);
 	bool deleteRoutePoint(RailRoutePointId routePointId, RailAnchorManager& anchorManager);
 	void clear(RailAnchorManager& anchorManager);
 	void clearWithoutAnchors();

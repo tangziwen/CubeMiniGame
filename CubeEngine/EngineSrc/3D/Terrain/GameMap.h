@@ -45,6 +45,7 @@ struct GameMapInitInfo
 	int depthVoxels = 2048;
 	int heightVoxels = 128;
 	float blockSize = 1.0f;
+	int proceduralSeed = 1337;
 };
 
 class GameMap
@@ -56,6 +57,7 @@ public:
         Plain,
     };
     GameMap();
+	~GameMap();
     void init(const GameMapInitInfo& initInfo);
     void init(float ratio,int width, int depth, int height);
     static GameMap * shared();
@@ -91,7 +93,10 @@ public:
 	vec2 getCenterOfMap();
 	void saveTerrain(std::string filePath);
 	void loadTerrain(std::string filePath);
+	bool serializeTerrainSnapshot(std::string manifestPath, std::string pageDataPath);
+	bool unserializeTerrainSnapshot(std::string manifestPath, std::string pageDataPath);
 	vec3 getMapOffset() const;
+	int proceduralSeed() const;
 	bool isVoxelInDomain(int x, int y, int z) const;
 	bool hasVoxelPageFor(int x, int y, int z) const;
 	bool ensureVoxelPageFor(int x, int y, int z);
@@ -111,6 +116,9 @@ private:
 	void setVoxelMaterialReady(int x, int y, int z, bool isReady);
 	voxelInfo makeOutsideVoxel() const;
 	void generateVoxelPage(size_t buffID_x, size_t buffID_y, size_t buffID_z);
+	void releaseTerrainBuffers();
+	void setProceduralSeed(int seed);
+	void applyProceduralSeed();
     float x_offset,y_offset,z_offset;
     float m_maxHeight;
     float m_ratio;
@@ -131,6 +139,7 @@ private:
 	int m_depthVoxels;
 	int m_heightVoxels;
 	float m_blockSize;
+	int m_proceduralSeed;
 };
 
 } // namespace tzw

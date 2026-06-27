@@ -72,6 +72,7 @@
 - 每帧调用的函数必须使用 `update` 或 `tick` 作为前缀，例如 `updateTrains()`、`tickSimulation()`。
 - 事件处理函数使用 `on` 开头，写出事件来源或语义，例如 `onMouseClick()`、`onWindowResize()`。
 - 全局变量和自由函数使用 `g_` 前缀，并使用 PascalCase，例如 `g_CurrScene`、`g_GetCurrScene()`。
+- 序列化反序列化或者类似保存/读取之类写入文件的操作统一用'serialize'/'unserialize'前缀
 - 布尔查询谓词优先使用能表达语义的前缀：状态用 `is`，拥有关系用 `has`，能力用 `can`，策略判断用 `should`，例如 `isVisible()`、`hasSelection()`、`canUndo()`、`shouldRebuildMesh()`。
 - 查找失败合法时优先用 `find`；对象必须存在时优先用 `get`。构造新对象或资源时按语义选择 `create`、`build` 或 `load`。
 

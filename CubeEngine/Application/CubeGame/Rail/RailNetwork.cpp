@@ -73,6 +73,51 @@ RailSegmentId RailNetwork::createSegment(RailNodeId startNode, RailNodeId endNod
 		makeTangentVector(endDirection, length));
 }
 
+RailNodeId RailNetwork::unserializeNode(RailNodeId nodeId, const vec3& position, const vec3& preferredTangent,
+	bool isConnectable)
+{
+	if (nodeId == InvalidRailNodeId || node(nodeId))
+	{
+		return InvalidRailNodeId;
+	}
+
+	auto newNode = std::make_unique<RailNode>();
+	newNode->id = nodeId;
+	newNode->position = position;
+	newNode->preferredTangent = safeNormalized(preferredTangent, vec3(1.0f, 0.0f, 0.0f));
+	newNode->isConnectable = isConnectable;
+	m_nodes.emplace(nodeId, std::move(newNode));
+	m_nextNodeId = std::max(m_nextNodeId, nodeId + 1);
+	return nodeId;
+}
+
+RailSegmentId RailNetwork::unserializeSegment(RailSegmentId segmentId, RailNodeId startNode, RailNodeId endNode,
+	const vec3& startTangent, const vec3& endTangent)
+{
+	if (segmentId == InvalidRailSegmentId || segment(segmentId) || !node(startNode) || !node(endNode)
+		|| startNode == endNode)
+	{
+		return InvalidRailSegmentId;
+	}
+
+	RailSegment segmentData;
+	segmentData.id = segmentId;
+	segmentData.startNode = startNode;
+	segmentData.endNode = endNode;
+	segmentData.startTangent = startTangent;
+	segmentData.endTangent = endTangent;
+	rebuildSegmentSpline(segmentData);
+	if (segmentData.cachedLength <= 0.0001f)
+	{
+		return InvalidRailSegmentId;
+	}
+	m_segments.emplace(segmentId, segmentData);
+	attachSegmentToNode(startNode, segmentId);
+	attachSegmentToNode(endNode, segmentId);
+	m_nextSegmentId = std::max(m_nextSegmentId, segmentId + 1);
+	return segmentId;
+}
+
 bool RailNetwork::deleteSegment(RailSegmentId segmentId)
 {
 	return deleteSegmentInternal(segmentId, true);

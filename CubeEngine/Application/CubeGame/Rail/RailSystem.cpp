@@ -9,6 +9,8 @@ namespace tzw {
 
 namespace
 {
+constexpr int RailSaveVersion = 1;
+
 float stationPickRadius(const RailConfig& config)
 {
 	return std::max(config.nodePickRadius * 2.0f, 1.75f);
@@ -30,6 +32,122 @@ bool isSameControlPoint(const RailLineControlPoint& lhs, const RailLineControlPo
 		return lhs.stationId == rhs.stationId;
 	}
 	return lhs.routePointId == rhs.routePointId;
+}
+
+rapidjson::Value makeVec3Value(const vec3& value, rapidjson::Document::AllocatorType& allocator)
+{
+	rapidjson::Value result(rapidjson::kArrayType);
+	result.PushBack(value.x, allocator);
+	result.PushBack(value.y, allocator);
+	result.PushBack(value.z, allocator);
+	return result;
+}
+
+bool readVec3Value(const rapidjson::Value& value, vec3& outValue)
+{
+	if (!value.IsArray() || value.Size() != 3 || !value[0].IsNumber() || !value[1].IsNumber() || !value[2].IsNumber())
+	{
+		return false;
+	}
+	outValue = vec3(value[0].GetFloat(), value[1].GetFloat(), value[2].GetFloat());
+	return true;
+}
+
+bool readRequiredInt(const rapidjson::Value& objectValue, const char* memberName, int& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName) || !objectValue[memberName].IsInt())
+	{
+		return false;
+	}
+	outValue = objectValue[memberName].GetInt();
+	return true;
+}
+
+bool readRequiredFloat(const rapidjson::Value& objectValue, const char* memberName, float& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName) || !objectValue[memberName].IsNumber())
+	{
+		return false;
+	}
+	outValue = objectValue[memberName].GetFloat();
+	return true;
+}
+
+bool readRequiredBool(const rapidjson::Value& objectValue, const char* memberName, bool& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName) || !objectValue[memberName].IsBool())
+	{
+		return false;
+	}
+	outValue = objectValue[memberName].GetBool();
+	return true;
+}
+
+bool readOptionalBool(const rapidjson::Value& objectValue, const char* memberName, bool& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName))
+	{
+		return true;
+	}
+	if (!objectValue[memberName].IsBool())
+	{
+		return false;
+	}
+	outValue = objectValue[memberName].GetBool();
+	return true;
+}
+
+bool readOptionalInt(const rapidjson::Value& objectValue, const char* memberName, int& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName))
+	{
+		return true;
+	}
+	if (!objectValue[memberName].IsInt())
+	{
+		return false;
+	}
+	outValue = objectValue[memberName].GetInt();
+	return true;
+}
+
+bool readOptionalFloat(const rapidjson::Value& objectValue, const char* memberName, float& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName))
+	{
+		return true;
+	}
+	if (!objectValue[memberName].IsNumber())
+	{
+		return false;
+	}
+	outValue = objectValue[memberName].GetFloat();
+	return true;
+}
+
+std::string readOptionalString(const rapidjson::Value& objectValue, const char* memberName)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName) || !objectValue[memberName].IsString())
+	{
+		return "";
+	}
+	return objectValue[memberName].GetString();
+}
+
+bool readRequiredVec3(const rapidjson::Value& objectValue, const char* memberName, vec3& outValue)
+{
+	if (!objectValue.IsObject() || !objectValue.HasMember(memberName))
+	{
+		return false;
+	}
+	return readVec3Value(objectValue[memberName], outValue);
+}
+
+void addStringMember(rapidjson::Value& objectValue, const char* memberName, const std::string& value,
+	rapidjson::Document::AllocatorType& allocator)
+{
+	objectValue.AddMember(rapidjson::Value(memberName, allocator),
+		rapidjson::Value(value.c_str(), allocator), allocator);
 }
 }
 
@@ -141,12 +259,363 @@ void RailSystem::clear()
 	m_previewLineId = InvalidRailLineId;
 }
 
+void RailSystem::serialize(rapidjson::Value& railData, rapidjson::Document::AllocatorType& allocator) const
+{
+	railData.SetObject();
+	railData.AddMember("Version", RailSaveVersion, allocator);
+
+	rapidjson::Value nodes(rapidjson::kArrayType);
+	for (const auto& pair : m_network.nodes())
+	{
+		const RailNode* node = pair.second.get();
+		if (!node)
+		{
+			continue;
+		}
+		rapidjson::Value nodeData(rapidjson::kObjectType);
+		nodeData.AddMember("Id", node->id, allocator);
+		nodeData.AddMember("Position", makeVec3Value(node->position, allocator), allocator);
+		nodeData.AddMember("PreferredTangent", makeVec3Value(node->preferredTangent, allocator), allocator);
+		nodeData.AddMember("IsConnectable", node->isConnectable, allocator);
+		nodes.PushBack(nodeData, allocator);
+	}
+	railData.AddMember("Nodes", nodes, allocator);
+
+	rapidjson::Value segments(rapidjson::kArrayType);
+	for (const auto& pair : m_network.segments())
+	{
+		const RailSegment& segment = pair.second;
+		rapidjson::Value segmentData(rapidjson::kObjectType);
+		segmentData.AddMember("Id", segment.id, allocator);
+		segmentData.AddMember("StartNode", segment.startNode, allocator);
+		segmentData.AddMember("EndNode", segment.endNode, allocator);
+		segmentData.AddMember("StartTangent", makeVec3Value(segment.startTangent, allocator), allocator);
+		segmentData.AddMember("EndTangent", makeVec3Value(segment.endTangent, allocator), allocator);
+		segments.PushBack(segmentData, allocator);
+	}
+	railData.AddMember("Segments", segments, allocator);
+
+	rapidjson::Value anchors(rapidjson::kArrayType);
+	for (const RailAnchor& anchor : m_anchorManager.anchors())
+	{
+		rapidjson::Value anchorData(rapidjson::kObjectType);
+		anchorData.AddMember("Id", anchor.id, allocator);
+		anchorData.AddMember("SegmentId", anchor.location.segmentId, allocator);
+		anchorData.AddMember("DistanceOnSegment", anchor.location.distanceOnSegment, allocator);
+		anchors.PushBack(anchorData, allocator);
+	}
+	railData.AddMember("Anchors", anchors, allocator);
+
+	rapidjson::Value stations(rapidjson::kArrayType);
+	for (const RailStation& station : m_stationManager.stations())
+	{
+		rapidjson::Value stationData(rapidjson::kObjectType);
+		stationData.AddMember("Id", station.id, allocator);
+		addStringMember(stationData, "Name", station.name, allocator);
+		rapidjson::Value platformIds(rapidjson::kArrayType);
+		for (RailPlatformId platformId : station.platforms)
+		{
+			platformIds.PushBack(platformId, allocator);
+		}
+		stationData.AddMember("Platforms", platformIds, allocator);
+		stations.PushBack(stationData, allocator);
+	}
+	railData.AddMember("Stations", stations, allocator);
+
+	rapidjson::Value platforms(rapidjson::kArrayType);
+	for (const RailPlatform& platform : m_stationManager.platforms())
+	{
+		rapidjson::Value platformData(rapidjson::kObjectType);
+		platformData.AddMember("Id", platform.id, allocator);
+		platformData.AddMember("StationId", platform.stationId, allocator);
+		addStringMember(platformData, "Name", platform.name, allocator);
+		platformData.AddMember("AnchorId", platform.anchorId, allocator);
+		platforms.PushBack(platformData, allocator);
+	}
+	railData.AddMember("Platforms", platforms, allocator);
+
+	rapidjson::Value routePoints(rapidjson::kArrayType);
+	for (const RailRoutePoint& routePoint : m_routePointManager.routePoints())
+	{
+		rapidjson::Value routePointData(rapidjson::kObjectType);
+		routePointData.AddMember("Id", routePoint.id, allocator);
+		addStringMember(routePointData, "Name", routePoint.name, allocator);
+		routePointData.AddMember("AnchorId", routePoint.anchorId, allocator);
+		routePoints.PushBack(routePointData, allocator);
+	}
+	railData.AddMember("RoutePoints", routePoints, allocator);
+
+	rapidjson::Value lines(rapidjson::kArrayType);
+	for (const RailLine& line : m_lineManager.lines())
+	{
+		rapidjson::Value lineData(rapidjson::kObjectType);
+		lineData.AddMember("Id", line.id, allocator);
+		addStringMember(lineData, "Name", line.name, allocator);
+		rapidjson::Value controlPoints(rapidjson::kArrayType);
+		for (const RailLineControlPoint& controlPoint : line.controlPoints)
+		{
+			rapidjson::Value controlPointData(rapidjson::kObjectType);
+			controlPointData.AddMember("Kind", static_cast<int>(controlPoint.kind), allocator);
+			controlPointData.AddMember("StationId", controlPoint.stationId, allocator);
+			controlPointData.AddMember("RoutePointId", controlPoint.routePointId, allocator);
+			controlPoints.PushBack(controlPointData, allocator);
+		}
+		lineData.AddMember("ControlPoints", controlPoints, allocator);
+		lines.PushBack(lineData, allocator);
+	}
+	railData.AddMember("Lines", lines, allocator);
+
+	rapidjson::Value trains(rapidjson::kArrayType);
+	for (const RailTrain& train : m_trainManager.trains())
+	{
+		rapidjson::Value trainData(rapidjson::kObjectType);
+		trainData.AddMember("Id", train.id, allocator);
+		addStringMember(trainData, "Name", train.name, allocator);
+		trainData.AddMember("LineId", train.lineId, allocator);
+		trainData.AddMember("PlacementMode", static_cast<int>(train.placementMode), allocator);
+		trainData.AddMember("CarriageCount", train.carriageCount, allocator);
+		trainData.AddMember("Speed", train.speed, allocator);
+		trainData.AddMember("HeadDistance", train.headDistance, allocator);
+		trainData.AddMember("Direction", train.direction, allocator);
+		trainData.AddMember("Active", train.active, allocator);
+		trainData.AddMember("IsManuallyStopped", train.isManuallyStopped, allocator);
+		trainData.AddMember("IsDwelling", train.isDwelling, allocator);
+		trainData.AddMember("DwellRemainingSeconds", train.dwellRemainingSeconds, allocator);
+		trainData.AddMember("DwellingStationId", train.dwellingStationId, allocator);
+		trainData.AddMember("DwellingPlatformId", train.dwellingPlatformId, allocator);
+		trainData.AddMember("LastStoppedStationId", train.lastStoppedStationId, allocator);
+		trainData.AddMember("LastStoppedPlatformId", train.lastStoppedPlatformId, allocator);
+		trainData.AddMember("LastStopDistance", train.lastStopDistance, allocator);
+		trainData.AddMember("PoseValid", train.pose.valid, allocator);
+		if (train.pose.valid)
+		{
+			trainData.AddMember("PosePosition", makeVec3Value(train.pose.position, allocator), allocator);
+			trainData.AddMember("PoseTangent", makeVec3Value(train.pose.tangent, allocator), allocator);
+		}
+		trains.PushBack(trainData, allocator);
+	}
+	railData.AddMember("Trains", trains, allocator);
+}
+
+bool RailSystem::unserialize(const rapidjson::Value& railData)
+{
+	if (!railData.IsObject())
+	{
+		return false;
+	}
+	if (railData.HasMember("Version") && railData["Version"].IsInt()
+		&& railData["Version"].GetInt() != RailSaveVersion)
+	{
+		return false;
+	}
+
+	auto hasArray = [&railData](const char* memberName)
+	{
+		return railData.HasMember(memberName) && railData[memberName].IsArray();
+	};
+	if (!hasArray("Nodes") || !hasArray("Segments") || !hasArray("Anchors") || !hasArray("Stations")
+		|| !hasArray("Platforms") || !hasArray("RoutePoints") || !hasArray("Lines") || !hasArray("Trains"))
+	{
+		return false;
+	}
+
+	clear();
+
+	for (const rapidjson::Value& nodeData : railData["Nodes"].GetArray())
+	{
+		int nodeId = InvalidRailNodeId;
+		vec3 position;
+		vec3 preferredTangent;
+		bool isConnectable = true;
+		if (!readRequiredInt(nodeData, "Id", nodeId)
+			|| !readRequiredVec3(nodeData, "Position", position)
+			|| !readRequiredVec3(nodeData, "PreferredTangent", preferredTangent)
+			|| !readRequiredBool(nodeData, "IsConnectable", isConnectable))
+		{
+			return false;
+		}
+		if (m_network.unserializeNode(nodeId, position, preferredTangent, isConnectable) == InvalidRailNodeId)
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& segmentData : railData["Segments"].GetArray())
+	{
+		int segmentId = InvalidRailSegmentId;
+		int startNode = InvalidRailNodeId;
+		int endNode = InvalidRailNodeId;
+		vec3 startTangent;
+		vec3 endTangent;
+		if (!readRequiredInt(segmentData, "Id", segmentId)
+			|| !readRequiredInt(segmentData, "StartNode", startNode)
+			|| !readRequiredInt(segmentData, "EndNode", endNode)
+			|| !readRequiredVec3(segmentData, "StartTangent", startTangent)
+			|| !readRequiredVec3(segmentData, "EndTangent", endTangent))
+		{
+			return false;
+		}
+		if (m_network.unserializeSegment(segmentId, startNode, endNode, startTangent, endTangent) == InvalidRailSegmentId)
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& anchorData : railData["Anchors"].GetArray())
+	{
+		int anchorId = InvalidRailAnchorId;
+		RailTrackLocation location;
+		if (!readRequiredInt(anchorData, "Id", anchorId)
+			|| !readRequiredInt(anchorData, "SegmentId", location.segmentId)
+			|| !readRequiredFloat(anchorData, "DistanceOnSegment", location.distanceOnSegment))
+		{
+			return false;
+		}
+		if (m_anchorManager.unserializeAnchor(anchorId, location) == InvalidRailAnchorId)
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& stationData : railData["Stations"].GetArray())
+	{
+		RailStation station;
+		if (!readRequiredInt(stationData, "Id", station.id)
+			|| !stationData.HasMember("Platforms") || !stationData["Platforms"].IsArray())
+		{
+			return false;
+		}
+		station.name = readOptionalString(stationData, "Name");
+		for (const rapidjson::Value& platformValue : stationData["Platforms"].GetArray())
+		{
+			if (!platformValue.IsInt())
+			{
+				return false;
+			}
+			station.platforms.push_back(platformValue.GetInt());
+		}
+		if (!m_stationManager.unserializeStation(station))
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& platformData : railData["Platforms"].GetArray())
+	{
+		RailPlatform platform;
+		if (!readRequiredInt(platformData, "Id", platform.id)
+			|| !readRequiredInt(platformData, "StationId", platform.stationId)
+			|| !readRequiredInt(platformData, "AnchorId", platform.anchorId))
+		{
+			return false;
+		}
+		platform.name = readOptionalString(platformData, "Name");
+		if (!m_stationManager.unserializePlatform(platform))
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& routePointData : railData["RoutePoints"].GetArray())
+	{
+		RailRoutePoint routePoint;
+		if (!readRequiredInt(routePointData, "Id", routePoint.id)
+			|| !readRequiredInt(routePointData, "AnchorId", routePoint.anchorId))
+		{
+			return false;
+		}
+		routePoint.name = readOptionalString(routePointData, "Name");
+		if (!m_routePointManager.unserializeRoutePoint(routePoint))
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& lineData : railData["Lines"].GetArray())
+	{
+		RailLine line;
+		if (!readRequiredInt(lineData, "Id", line.id)
+			|| !lineData.HasMember("ControlPoints") || !lineData["ControlPoints"].IsArray())
+		{
+			return false;
+		}
+		line.name = readOptionalString(lineData, "Name");
+		for (const rapidjson::Value& controlPointData : lineData["ControlPoints"].GetArray())
+		{
+			RailLineControlPoint controlPoint;
+			int kind = static_cast<int>(RailLineControlPointKind::Station);
+			if (!readRequiredInt(controlPointData, "Kind", kind)
+				|| !readOptionalInt(controlPointData, "StationId", controlPoint.stationId)
+				|| !readOptionalInt(controlPointData, "RoutePointId", controlPoint.routePointId))
+			{
+				return false;
+			}
+			controlPoint.kind = static_cast<RailLineControlPointKind>(kind);
+			line.controlPoints.push_back(controlPoint);
+		}
+		if (!m_lineManager.unserializeLine(line))
+		{
+			return false;
+		}
+	}
+
+	for (const rapidjson::Value& trainData : railData["Trains"].GetArray())
+	{
+		RailTrain train;
+		int placementMode = static_cast<int>(RailTrainPlacementMode::Unplaced);
+		if (!readRequiredInt(trainData, "Id", train.id)
+			|| !readOptionalInt(trainData, "LineId", train.lineId)
+			|| !readOptionalInt(trainData, "PlacementMode", placementMode)
+			|| !readOptionalInt(trainData, "CarriageCount", train.carriageCount)
+			|| !readOptionalFloat(trainData, "Speed", train.speed)
+			|| !readOptionalFloat(trainData, "HeadDistance", train.headDistance)
+			|| !readOptionalInt(trainData, "Direction", train.direction)
+			|| !readOptionalBool(trainData, "Active", train.active)
+			|| !readOptionalBool(trainData, "IsManuallyStopped", train.isManuallyStopped)
+			|| !readOptionalBool(trainData, "IsDwelling", train.isDwelling)
+			|| !readOptionalFloat(trainData, "DwellRemainingSeconds", train.dwellRemainingSeconds)
+			|| !readOptionalInt(trainData, "DwellingStationId", train.dwellingStationId)
+			|| !readOptionalInt(trainData, "DwellingPlatformId", train.dwellingPlatformId)
+			|| !readOptionalInt(trainData, "LastStoppedStationId", train.lastStoppedStationId)
+			|| !readOptionalInt(trainData, "LastStoppedPlatformId", train.lastStoppedPlatformId)
+			|| !readOptionalFloat(trainData, "LastStopDistance", train.lastStopDistance))
+		{
+			return false;
+		}
+		train.name = readOptionalString(trainData, "Name");
+		train.placementMode = static_cast<RailTrainPlacementMode>(placementMode);
+		if (!readOptionalBool(trainData, "PoseValid", train.pose.valid))
+		{
+			return false;
+		}
+		if (train.pose.valid)
+		{
+			if (!readRequiredVec3(trainData, "PosePosition", train.pose.position)
+				|| !readRequiredVec3(trainData, "PoseTangent", train.pose.tangent))
+			{
+				return false;
+			}
+		}
+		if (!m_trainManager.unserializeTrain(train))
+		{
+			return false;
+		}
+	}
+
+	rebuildAllRailLines();
+	m_trainManager.refreshAfterLineRebuild(m_lineManager);
+	m_persistentVisuals.markDirty();
+	m_editorVisuals.clear();
+	m_previewLineId = InvalidRailLineId;
+	return true;
+}
+
 bool RailSystem::handleTrackPrimaryClick(PlacementMode placementMode)
 {
 	const bool changed = m_buildTool.handlePrimaryClick(placementMode);
-	markVisualDirty();
 	if (changed)
 	{
+		markVisualDirty();
 		rebuildAllRailLines();
 	}
 	return changed;
@@ -166,14 +635,17 @@ bool RailSystem::handleTrackDeletePrimaryClick(PlacementMode placementMode)
 	{
 		return false;
 	}
-	const bool deletedPoints = deletePointsAnchoredToSegment(segmentId);
-	const bool deletedSegment = handleTrackPrimaryClick(placementMode);
-	if (deletedPoints && !deletedSegment)
+	m_buildTool.clearPending();
+	const bool deletedSegment = m_network.deleteSegment(segmentId);
+	if (!deletedSegment)
 	{
-		rebuildAllRailLines();
-		markVisualDirty();
+		return false;
 	}
-	return deletedSegment || deletedPoints;
+
+	deletePointsAnchoredToSegment(segmentId);
+	markVisualDirty();
+	rebuildAllRailLines();
+	return true;
 }
 
 void RailSystem::cancelTrackEdit()

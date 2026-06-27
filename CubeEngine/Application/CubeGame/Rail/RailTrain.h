@@ -62,6 +62,7 @@ class RailTrainManager
 {
 public:
 	RailTrainId createTrain(int carriageCount);
+	bool unserializeTrain(const RailTrain& train);
 	bool deleteTrain(RailTrainId trainId);
 	bool assignLine(RailTrainId trainId, RailLineId lineId, const RailLineManager& lineManager);
 	void clearLineAssignment(RailLineId lineId);
