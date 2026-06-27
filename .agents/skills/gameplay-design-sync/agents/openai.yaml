@@ -1,0 +1,4 @@
+interface:
+  display_name: "Gameplay Design Sync"
+  short_description: "Sync completed gameplay design intent"
+  default_prompt: "Use $gameplay-design-sync to reconcile completed CubeGame gameplay changes into the long-lived design intent docs."

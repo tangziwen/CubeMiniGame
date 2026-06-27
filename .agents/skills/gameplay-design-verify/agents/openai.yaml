@@ -1,0 +1,6 @@
+interface:
+  display_name: "Gameplay Design Verify"
+  short_description: "Verify code against gameplay intent"
+  default_prompt: "Use $gameplay-design-verify to check CubeGame code against the gameplay intent documents."
+policy:
+  allow_implicit_invocation: false

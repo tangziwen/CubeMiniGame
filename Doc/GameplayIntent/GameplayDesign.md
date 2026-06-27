@@ -1,0 +1,78 @@
+# CubeGame Gameplay Design
+
+## Design Intent
+
+`CubeEngine/Application/CubeGame` 是当前唯一活跃的 gameplay 层。其他 application gameplay 目录视为旧内容，除非明确重新启用，否则不承载新的游戏设计。
+
+这个游戏的核心不是一个固定关卡或固定胜利条件，而是一个可以被玩家编辑、测试和逐步赋予行为的体素沙盒。玩家应该感觉自己在塑造一个小型系统：修改地形，放置对象，建立连接，观察结果，再回到编辑。
+
+游戏的重点体验是“我理解这个世界如何运转，并且能改变它”。因此 gameplay 代码里的概念应该尽量接近玩家和设计者会说出的概念，而不是只暴露底层实现对象。
+
+## Experience
+
+- 玩家进入一个世界，并在游玩与编辑之间切换。
+- 编辑行为应该直接作用于世界，而不是像操作外部工具。
+- 世界中的对象应该尽量可见、可检查、可命名。
+- 当系统拒绝某个操作时，玩家应该获得清晰反馈。
+- 玩法系统可以先宽松、可实验，再逐步收紧规则。
+
+## Design
+
+### World As Editable System
+
+世界不是单纯的背景，而是玩家理解和改变系统的主要对象。地形、对象、铁路和 UI 反馈都应该服务于“玩家能看懂并改变世界”这个目标。
+
+### Play And Edit Loop
+
+游玩和编辑不是两个彻底割裂的产品形态。玩家应该能从观察世界进入编辑，再把编辑结果带回运行中的世界进行验证。
+
+### Player Mode
+
+玩家模式是游玩与编辑之间的总开关。它影响相机、输入解释和编辑器是否接管世界点击。设计上应把“玩家当前在玩”与“玩家当前在编辑”区分清楚。
+
+### Concept-first Gameplay
+
+gameplay 概念应该尽量接近玩家和设计者会说出的概念。代码可以有技术结构，但不应该让玩家概念被低层对象吞掉。
+
+## Game Concepts
+
+- 世界：玩家当前正在游玩和编辑的空间。
+- 玩家：在世界中观察、移动、切换模式并触发 gameplay 行为的主体。
+- 编辑模式：玩家临时从游玩切换到创造和调整世界的状态。
+- 地形：世界的基础空间，可被编辑和塑形。
+- 铁路：当前最明确的长期 gameplay 系统，用来表达连接、站点、路线和运行中的列车。
+- UI/反馈：帮助玩家理解当前选择、操作结果和系统状态的表现层。
+
+## Concept Code Anchors
+
+- 世界 -> `GameWorld`
+- 玩家 -> `CubePlayer`
+- 玩家模式 -> `GameState`
+- 游戏 UI -> `GameUISystem`
+- 编辑模式 -> `EditorPanel` / `EditorState`
+- 地形编辑 -> `TerrainEditSystem`
+- 铁路 -> `RailSystem`
+
+## Critical Code Anchors
+
+- `BuildingSystem`：当前仍承担部分放置射线、地形编辑和 rail cursor placement 辅助；它是技术锚点，不是长期 gameplay 概念归属。
+
+## Code Rules
+
+- gameplay 真相应由对应的 gameplay system 或明确的领域对象持有，UI 和 visual 只表达或操作这些真相。
+- visual 和实际 gameplay 状态要分离；visual 可以重建、隐藏或失效，但不应该成为状态本身。
+- 一个长期玩法领域通常应有一个清晰的 system 作为入口，用来管理生命周期、对外动作和每帧同步。
+- UI 层负责选择玩家意图、展示参数和反馈，不应直接持有领域模型的长期状态。
+- helper、config、data、view、visual、manager 等辅助结构可以存在，但默认不进入 `Game Concepts`。
+- 新增代码类型时，先判断它服务哪个 gameplay 概念；只有玩家/设计师会认知的概念才进入意图文档。
+
+## Design Boundaries
+
+- 如果一个概念只属于当前游戏，就放在 `CubeGame`，不要因为它会渲染或 raycast 就放进引擎层。
+- gameplay 类名应该优先服务游戏概念，让用户能从名字理解它在游戏里的意义。
+- UI 可以选择动作和展示反馈，但不应成为 gameplay 真相的所有者。
+- 视觉对象是状态的投影，不是 gameplay 概念本身。
+- AI 可以自由组织具体实现，但不能把玩家概念压扁成低层数据结构。
+- 当前不追求完整通用编辑器框架。
+- 当前不把所有 gameplay 能力抽象成引擎通用系统。
+- 当前不为旧 application gameplay 目录补设计。
