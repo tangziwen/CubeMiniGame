@@ -1,6 +1,6 @@
 ---
 name: gameplay-design-sync
-description: Assess whether completed CubeGame gameplay changes should be reconciled into Doc/GameplayIntent design documents. Use implicitly after code changes when changed files include CubeEngine/Application/CubeGame and the change may alter gameplay design intent, concrete design mechanisms, concepts, object relationships, aliases, or Concept Code Anchors. First filter out pure engine/non-gameplay changes, then list candidate concept changes and ask the user before editing design docs. Do not use for pure engine changes, pure rendering/backend changes, ordinary bug fixes, helper/config/data-only additions, or implementation-only refactors that do not change gameplay concepts.
+description: Assess whether completed CubeGame gameplay changes should be reconciled into Doc/GameplayIntent design documents. Use implicitly only after C/C++ source or header file changes under CubeEngine/Application/CubeGame, such as .c, .cc, .cpp, .cxx, .h, .hh, .hpp, .hxx, .inl, or .ipp, and only when the change may alter gameplay design intent, concrete design mechanisms, concepts, object relationships, aliases, or Concept Code Anchors. Ignore doc-only, build-only, asset-only, config-only, generated, formatting, and other non-code-file changes unless the user explicitly asks to evaluate gameplay design docs. First filter out pure engine/non-gameplay changes, then list candidate concept changes and ask the user before editing design docs. Do not use for pure engine changes, pure rendering/backend changes, ordinary bug fixes, helper/config/data-only additions, or implementation-only refactors that do not change gameplay concepts.
 ---
 
 # Gameplay Design Sync
@@ -17,7 +17,10 @@ Concepts are designer/gameplay concepts, not a code type inventory. A concept ma
 
 Before editing anything, inspect the changed-file list from conversation context, `git diff --name-only`, or the relevant CodePlan `File Operations`.
 
-- If no changed file is under `CubeEngine/Application/CubeGame/`, stop and report that no gameplay intent sync is needed.
+- Treat only C/C++ source or header files as trigger files: `.c`, `.cc`, `.cpp`, `.cxx`, `.h`, `.hh`, `.hpp`, `.hxx`, `.inl`, and `.ipp`.
+- For implicit post-change use, if there are no changed trigger files under `CubeEngine/Application/CubeGame/`, stop and report that no gameplay intent sync is needed.
+- If the user explicitly asks to evaluate or update gameplay design docs, the skill may still run without trigger files, but treat non-code changes as supporting context and classify `skip` unless they clearly express a gameplay design change.
+- Ignore changed files with other extensions, including docs, build files, assets, generated files, scripts, config, shaders, and data files, when deciding whether the skill should run implicitly.
 - If changes are pure engine, renderer, backend, asset, build, formatting, or bug-fix work, stop unless the user explicitly says the gameplay design changed.
 - Ignore changes outside `CubeEngine/Application/CubeGame/` when deciding design-doc content.
 - Do not update `Doc/GameplayIntent/` for implementation-only refactors that preserve the same gameplay concepts.
