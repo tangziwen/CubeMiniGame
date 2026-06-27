@@ -172,6 +172,7 @@ namespace tzw
 
         m_ssgi.init();
         m_tsaa.init();
+        m_outlinePass.init();
 
         m_HBAOStage = backEnd->createRenderStage_imp();
         auto hbaoBuffer= backEnd->createFrameBuffer_imp();
@@ -383,7 +384,6 @@ namespace tzw
 	{
 		handleThumbNails();
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-        auto screenSize = Engine::shared()->winSize();
         backEnd->prepareFrame();
         
 		auto cmd = backEnd->getGeneralCommandBuffer();
@@ -392,7 +392,6 @@ namespace tzw
         SceneCuller::shared()->collectPrimitives();
         RenderQueue * renderQueues = SceneCuller::shared()->getRenderQueues();
 		
-        auto & commonList = renderQueues->getList();
         for (int i = 0 ; i < 3 ; i++)
         {
             auto shadowList = SceneCuller::shared()->getCSMQueues(i);
@@ -433,7 +432,6 @@ namespace tzw
 
             m_DeferredLightingStage->prepare(cmd);
             m_DeferredLightingStage->beginRenderPass();
-            auto pipeline = m_DeferredLightingStage->getSinglePipeline();
             auto material = m_DeferredLightingStage->getSolorDeviceMaterial();
             
             Matrix44 lightVPList[3] = {};
@@ -448,7 +446,6 @@ namespace tzw
 
 
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            std::vector<VkDescriptorImageInfo> imageInfoList;
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
@@ -485,7 +482,6 @@ namespace tzw
             m_PointLightingStage->prepare(cmd);
             m_PointLightingStage->beginRenderPass();
             auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            std::vector<VkDescriptorImageInfo> imageInfoList;
             for(int i =0; i < gbufferTex.size(); i++)
             {
                 auto tex = gbufferTex[i];
@@ -606,7 +602,7 @@ namespace tzw
             }
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
-            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
+            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_HBAOStage->getSinglePipeline())->giveItemWiseDescriptorSet();
             itemBuf.map();
             Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
             itemBuf.copyFrom(&m, sizeof(Matrix44));
@@ -641,7 +637,7 @@ namespace tzw
             m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 2, m_HBAOStage->getFrameBuffer()->getTextureList()[0]);
             DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
             //update uniform.
-            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
+            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_SSRStage->getSinglePipeline())->giveItemWiseDescriptorSet();
             itemBuf.map();
             Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
             itemBuf.copyFrom(&m, sizeof(Matrix44));
@@ -710,8 +706,6 @@ namespace tzw
         //------------Texture To Screen Pass begin---------------
 
         int imageIdx = backEnd->getCurrSwapIndex();
-        m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
-        m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
 		DeviceTexture * tex = nullptr;
 		if(m_isAAEnable)
 		{
@@ -722,7 +716,10 @@ namespace tzw
         {
 			tex = m_fogStage->getFrameBuffer()->getTextureList()[0];
         }
+        tex = m_outlinePass.draw(cmd, m_renderPath, renderQueues, tex, m_gPassStage->getFrameBuffer()->getDepthMap());
 
+        m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
+        m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
         m_textureToScreenRenderStage[imageIdx]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
         m_textureToScreenRenderStage[imageIdx]->bindSinglePipelineDescriptor();
         m_textureToScreenRenderStage[imageIdx]->drawScreenQuad();

@@ -49,6 +49,10 @@ public:
 	{
 		m_renderStageFlag = renderStage;
 	}
+	void setOutlineEnabled(bool enabled);
+	bool isOutlineEnabled() const;
+	void setOutlineColor(vec4 color);
+	vec4 outlineColor() const;
 	virtual void getInstancedData(std::vector<InstanceRendereData> & dataList);
 protected:
     AABB m_localAABB;
@@ -57,6 +61,8 @@ protected:
 	int m_octNodeIndex;
 	uint32_t m_drawableFlag;
 	uint32_t m_renderStageFlag;
+	bool m_outlineEnabled;
+	vec4 m_outlineColor;
 };
 
 class Drawable3DGroup

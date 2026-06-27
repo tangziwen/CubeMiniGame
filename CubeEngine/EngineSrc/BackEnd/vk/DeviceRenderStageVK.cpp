@@ -126,6 +126,7 @@ namespace tzw
                 uniformStruct.world = a.m_transInfo.m_worldMatrix;
                 uniformStruct.view = a.m_transInfo.m_viewMatrix;
                 uniformStruct.projection = a.m_transInfo.m_projectMatrix;
+                uniformStruct.outlineColor = a.outlineColor();
             itemBuf.copyFrom(&uniformStruct, sizeof(uniformStruct));
             itemBuf.unMap();
 		    Mesh * mesh = nullptr;

@@ -68,6 +68,7 @@ enum class RenderStage : uint32_t
 	GUI= 1UL <<4,
 	SHADOW = 1UL <<5,
 	DEBUG_LAYER = 1UL <<6,
+	OUTLINE_MASK = 1UL <<7,
 	All = -1
 };
 
@@ -83,4 +84,3 @@ enum class CullMode{
 };
 }
 } // namespace tzw
-

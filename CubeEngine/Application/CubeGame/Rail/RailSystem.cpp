@@ -1,6 +1,7 @@
 #include "RailSystem.h"
 
 #include "CubeGame/BuildingSystem.h"
+#include "EngineSrc/Scene/ScenePickingSystem.h"
 
 #include <algorithm>
 
@@ -14,11 +15,6 @@ float stationPickRadius(const RailConfig& config)
 }
 
 float routePointPickRadius(const RailConfig& config)
-{
-	return std::max(config.nodePickRadius * 1.5f, 1.25f);
-}
-
-float trainPickRadius(const RailConfig& config)
 {
 	return std::max(config.nodePickRadius * 1.5f, 1.25f);
 }
@@ -74,6 +70,26 @@ bool RailInspectTarget::isValid() const
 	case RailInspectTargetKind::None:
 	default:
 		return false;
+	}
+}
+
+bool RailInspectTarget::equals(const RailInspectTarget& other) const
+{
+	if (kind != other.kind)
+	{
+		return false;
+	}
+	switch (kind)
+	{
+	case RailInspectTargetKind::Train:
+		return trainId == other.trainId;
+	case RailInspectTargetKind::Station:
+		return stationId == other.stationId;
+	case RailInspectTargetKind::RoutePoint:
+		return routePointId == other.routePointId;
+	case RailInspectTargetKind::None:
+	default:
+		return true;
 	}
 }
 
@@ -309,63 +325,73 @@ bool RailSystem::renameRoutePoint(RailRoutePointId routePointId, const std::stri
 bool RailSystem::pickInspectTarget(PlacementMode placementMode, RailInspectTarget& outTarget) const
 {
 	outTarget = RailInspectTarget();
-	const vec3 terrainHit = BuildingSystem::shared()->hitTerrain(placementMode);
-	if (!BuildingSystem::isValidHitPoint(terrainHit))
+	if (placementMode != PlacementMode::CursorBased)
 	{
 		return false;
 	}
 
-	const float trainRadius = trainPickRadius(m_config);
-	RailTrainId nearestTrainId = InvalidRailTrainId;
-	float nearestTrainDistance = trainRadius;
-	for (const RailTrain& train : m_trainManager.trains())
+	Ray pickRay;
+	if (!ScenePickingSystem::makeCursorRay(pickRay))
 	{
-		if (train.pose.valid)
-		{
-			const float distance = train.pose.position.distance(terrainHit);
-			if (distance <= nearestTrainDistance)
-			{
-				nearestTrainDistance = distance;
-				nearestTrainId = train.id;
-			}
-		}
-		for (const RailTrainPose& carPose : train.carPoses)
-		{
-			if (!carPose.valid)
-			{
-				continue;
-			}
-			const float distance = carPose.position.distance(terrainHit);
-			if (distance <= nearestTrainDistance)
-			{
-				nearestTrainDistance = distance;
-				nearestTrainId = train.id;
-			}
-		}
-	}
-	if (nearestTrainId != InvalidRailTrainId)
-	{
-		outTarget = RailInspectTarget::train(nearestTrainId);
-		return true;
+		return false;
 	}
 
-	const RailStationId stationId = m_stationManager.findNearestStation(
-		m_network, m_anchorManager, terrainHit, stationPickRadius(m_config));
-	if (stationId != InvalidRailStationId)
+	PickResult pickResult;
+	if (!ScenePickingSystem::shared()->pick(pickRay, RailInspectPickCategory, pickResult))
 	{
-		outTarget = RailInspectTarget::station(stationId);
-		return true;
+		return false;
 	}
 
-	const RailRoutePointId routePointId = m_routePointManager.findNearestRoutePoint(
-		m_network, m_anchorManager, terrainHit, routePointPickRadius(m_config));
-	if (routePointId != InvalidRailRoutePointId)
+	const RailInspectTargetKind kind = static_cast<RailInspectTargetKind>(pickResult.payload.type);
+	switch (kind)
 	{
-		outTarget = RailInspectTarget::routePoint(routePointId);
-		return true;
+	case RailInspectTargetKind::Train:
+		if (m_trainManager.train(pickResult.payload.id0))
+		{
+			outTarget = RailInspectTarget::train(pickResult.payload.id0);
+			return true;
+		}
+		break;
+	case RailInspectTargetKind::Station:
+		if (m_stationManager.station(pickResult.payload.id0))
+		{
+			outTarget = RailInspectTarget::station(pickResult.payload.id0);
+			return true;
+		}
+		break;
+	case RailInspectTargetKind::RoutePoint:
+		if (m_routePointManager.routePoint(pickResult.payload.id0))
+		{
+			outTarget = RailInspectTarget::routePoint(pickResult.payload.id0);
+			return true;
+		}
+		break;
+	case RailInspectTargetKind::None:
+	default:
+		break;
 	}
 
 	return false;
+}
+
+void RailSystem::setTrainOutline(RailTrainId trainId, bool enabled, vec4 color)
+{
+	m_persistentVisuals.setTrainOutline(trainId, enabled, color);
+}
+
+void RailSystem::setStationOutline(RailStationId stationId, bool enabled, vec4 color)
+{
+	m_persistentVisuals.setStationOutline(stationId, enabled, color);
+}
+
+void RailSystem::setRoutePointOutline(RailRoutePointId routePointId, bool enabled, vec4 color)
+{
+	m_persistentVisuals.setRoutePointOutline(routePointId, enabled, color);
+}
+
+void RailSystem::clearOutlines()
+{
+	m_persistentVisuals.clearOutlines();
 }
 
 bool RailSystem::addStationToSelectedLine(RailStationId stationId)

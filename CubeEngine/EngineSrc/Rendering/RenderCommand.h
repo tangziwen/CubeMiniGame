@@ -65,6 +65,8 @@ public:
     void setMat(MaterialInstance * newMat);
     Mesh * getMesh();
     void * getDrawableObj();
+	void setOutlineColor(const vec4& outlineColor);
+	const vec4& outlineColor() const;
 private:
     void *m_obj;
 	uint32_t m_renderStageMask;
@@ -74,6 +76,7 @@ private:
     PrimitiveType m_primitiveType;
     unsigned int m_Zorder;
     DepthPolicy m_depthTestPolicy;
+	vec4 m_outlineColor;
 };
 
 } // namespace tzw

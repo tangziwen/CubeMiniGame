@@ -4,6 +4,8 @@
 #include "RailPoint.h"
 #include "RailTrain.h"
 
+#include <cstdint>
+
 namespace tzw {
 
 enum class RailInspectTargetKind
@@ -13,6 +15,8 @@ enum class RailInspectTargetKind
 	Station,
 	RoutePoint,
 };
+
+constexpr uint32_t RailInspectPickCategory = 1u << 8;
 
 struct RailInspectTarget
 {
@@ -25,6 +29,7 @@ struct RailInspectTarget
 	static RailInspectTarget station(RailStationId stationId);
 	static RailInspectTarget routePoint(RailRoutePointId routePointId);
 	bool isValid() const;
+	bool equals(const RailInspectTarget& other) const;
 };
 
 } // namespace tzw

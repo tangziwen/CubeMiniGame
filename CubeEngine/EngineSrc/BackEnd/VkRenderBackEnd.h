@@ -63,6 +63,7 @@ struct ItemUniform
     alignas(16) Matrix44 world;
     alignas(16) Matrix44 view;
     alignas(16) Matrix44 projection;
+    alignas(16) vec4 outlineColor;
 };
 struct FrameBufferVK{
 	int32_t width, height;
@@ -269,4 +270,3 @@ private:
 };
 
 } // namespace tzw
-

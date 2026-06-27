@@ -200,6 +200,7 @@ set(ENGINE_SOURCES
     Rendering/GraphicsRenderer.cpp
     Rendering/ImageFormat.cpp
     Rendering/InstancingMgr.cpp
+    Rendering/OutlinePass.cpp
     Rendering/RenderBuffer.cpp
     Rendering/RenderCommand.cpp
     Rendering/RenderPath.cpp
@@ -210,6 +211,7 @@ set(ENGINE_SOURCES
     Scene/OctreeScene.cpp
     Scene/Scene.cpp
     Scene/SceneCuller.cpp
+    Scene/ScenePickingSystem.cpp
     Scene/SceneMgr.cpp
     ScriptPy/ScriptBinding.cpp
     ScriptPy/ScriptPyMgr.cpp
@@ -455,6 +457,7 @@ set(ENGINE_HEADERS
     Rendering/GraphicsRenderer.h
     Rendering/ImageFormat.h
     Rendering/InstancingMgr.h
+    Rendering/OutlinePass.h
     Rendering/RenderBuffer.h
     Rendering/RenderCommand.h
     Rendering/RenderFlag.h
@@ -466,6 +469,7 @@ set(ENGINE_HEADERS
     Scene/OctreeScene.h
     Scene/Scene.h
     Scene/SceneCuller.h
+    Scene/ScenePickingSystem.h
     Scene/SceneMgr.h
     ScriptPy/ScriptBindMacro.h
     ScriptPy/ScriptPyMgr.h

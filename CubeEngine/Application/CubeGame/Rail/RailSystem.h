@@ -6,6 +6,7 @@
 #include "RailLine.h"
 #include "RailPersistentVisualSystem.h"
 #include "RailTrain.h"
+#include "EngineSrc/Math/vec4.h"
 
 #include <string>
 
@@ -52,6 +53,10 @@ public:
 	bool renameStation(RailStationId stationId, const std::string& name);
 	bool renameRoutePoint(RailRoutePointId routePointId, const std::string& name);
 	bool pickInspectTarget(PlacementMode placementMode, RailInspectTarget& outTarget) const;
+	void setTrainOutline(RailTrainId trainId, bool enabled, vec4 color);
+	void setStationOutline(RailStationId stationId, bool enabled, vec4 color);
+	void setRoutePointOutline(RailRoutePointId routePointId, bool enabled, vec4 color);
+	void clearOutlines();
 	bool addStationToSelectedLine(RailStationId stationId);
 	bool addRoutePointToSelectedLine(RailRoutePointId routePointId);
 	RailEditResult addPickedControlPointToSelectedLine(PlacementMode placementMode);

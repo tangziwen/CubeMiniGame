@@ -358,7 +358,14 @@ bool RailEditingController::handleInspectPrimaryClick(RailSystem* railSystem, In
 	RailInspectTarget target;
 	if (!railSystem->pickInspectTarget(PlacementMode::CursorBased, target))
 	{
-		return false;
+		inspectPanel.clearTarget(railSystem);
+		return true;
+	}
+
+	if (inspectPanel.isInspecting(target))
+	{
+		inspectPanel.clearTarget(railSystem);
+		return true;
 	}
 
 	inspectPanel.inspect(target, railSystem);

@@ -5,6 +5,8 @@
 #include "RailPointNameBillboard.h"
 #include "RailTrackMesh.h"
 #include "RailTrainVisual.h"
+#include "EngineSrc/Math/vec3.h"
+#include "EngineSrc/Scene/ScenePickingSystem.h"
 
 #include <vector>
 
@@ -23,13 +25,19 @@ public:
 	void sync(Node* visualRoot, Node* uiRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailStation& station);
 	void hide();
+	void clearPickTarget();
+	void setOutline(bool enabled, vec4 color);
 
 private:
 	void ensureMarker(Node* visualRoot);
+	void syncPickTarget(const vec3& center);
 
 	RailStationId m_stationId = InvalidRailStationId;
 	CubePrimitive* m_marker = nullptr;
+	PickHandle m_pickHandle;
 	RailPointNameBillboard m_nameBillboard;
+	bool m_outlineEnabled = false;
+	vec4 m_outlineColor = vec4(1.0f, 0.85f, 0.15f, 1.0f);
 };
 
 class RailRoutePointVisual
@@ -41,13 +49,19 @@ public:
 	void sync(Node* visualRoot, Node* uiRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailRoutePoint& routePoint);
 	void hide();
+	void clearPickTarget();
+	void setOutline(bool enabled, vec4 color);
 
 private:
 	void ensureMarker(Node* visualRoot);
+	void syncPickTarget(const vec3& center);
 
 	RailRoutePointId m_routePointId = InvalidRailRoutePointId;
 	CubePrimitive* m_marker = nullptr;
+	PickHandle m_pickHandle;
 	RailPointNameBillboard m_nameBillboard;
+	bool m_outlineEnabled = false;
+	vec4 m_outlineColor = vec4(1.0f, 0.85f, 0.15f, 1.0f);
 };
 
 class RailTrackVisualSet
@@ -71,6 +85,9 @@ public:
 	void sync(Node* sceneRoot, const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager);
 	void clear();
+	void setStationOutline(RailStationId stationId, bool enabled, vec4 color);
+	void setRoutePointOutline(RailRoutePointId routePointId, bool enabled, vec4 color);
+	void clearOutlines();
 
 private:
 	void ensureVisualRoot(Node* sceneRoot);
@@ -96,6 +113,10 @@ public:
 		const RailTrainManager& trainManager);
 	void markDirty();
 	void clear();
+	void setTrainOutline(RailTrainId trainId, bool enabled, vec4 color);
+	void setStationOutline(RailStationId stationId, bool enabled, vec4 color);
+	void setRoutePointOutline(RailRoutePointId routePointId, bool enabled, vec4 color);
+	void clearOutlines();
 
 private:
 	RailTrackVisualSet m_trackVisuals;

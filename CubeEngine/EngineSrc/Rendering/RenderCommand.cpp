@@ -8,7 +8,8 @@ namespace tzw {
 RenderCommand::RenderCommand(Mesh *mesh, MaterialInstance *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
-    m_batchType(batchType)
+    m_batchType(batchType),
+	m_outlineColor(1.0f, 0.85f, 0.15f, 1.0f)
 {
     m_obj = obj;
 	m_renderStageMask = static_cast<uint32_t>(renderStage);
@@ -109,6 +110,16 @@ Mesh* RenderCommand::getMesh()
 void* RenderCommand::getDrawableObj()
 {
     return m_obj;
+}
+
+void RenderCommand::setOutlineColor(const vec4& outlineColor)
+{
+	m_outlineColor = outlineColor;
+}
+
+const vec4& RenderCommand::outlineColor() const
+{
+	return m_outlineColor;
 }
 } // namespace tzw
 

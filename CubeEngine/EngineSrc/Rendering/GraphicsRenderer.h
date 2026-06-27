@@ -6,6 +6,7 @@
 #include "TSAA.h"
 #include "SSGI.h"
 #include "Bloom.h"
+#include "OutlinePass.h"
 namespace tzw
 {
 	class DevicePipelineVK;
@@ -28,6 +29,7 @@ namespace tzw
 		TSAA m_tsaa;
 		SSGI m_ssgi;
 		Bloom m_bloom;
+		OutlinePass m_outlinePass;
 		DeviceRenderStage * m_ShadowStage[3];
 		DeviceRenderStage * m_gPassStage;
 		DeviceRenderStage * m_DeferredLightingStage;

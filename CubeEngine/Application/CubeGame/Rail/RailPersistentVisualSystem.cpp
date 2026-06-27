@@ -1,10 +1,13 @@
 #include "RailPersistentVisualSystem.h"
 
+#include "CubeGame/Rail/RailInspectTarget.h"
 #include "EngineSrc/3D/Primitive/CubePrimitive.h"
 #include "EngineSrc/2D/RetainedUISystem.h"
 #include "EngineSrc/3D/Primitive/LinePrimitive.h"
 #include "EngineSrc/Base/Node.h"
 #include "EngineSrc/Math/vec4.h"
+
+#include <memory>
 
 namespace tzw {
 
@@ -12,9 +15,36 @@ namespace
 {
 constexpr int PersistentTrackVisualRootPriority = 10;
 constexpr int PersistentPointVisualRootPriority = 20;
+constexpr int StationPickPriority = 20;
+constexpr int RoutePointPickPriority = 10;
+const vec3 StationPickHalfExtents(0.48f, 0.52f, 0.48f);
+const vec3 RoutePointPickHalfExtents(0.32f, 0.38f, 0.32f);
 const char* PersistentUiLayerName = "default";
 const char* PersistentUiRootName = "RailPersistentVisualRoot";
 constexpr int PersistentUiLayerPriority = 0;
+
+AABB makeCenteredBounds(const vec3& halfExtents)
+{
+	AABB bounds;
+	bounds.update(-halfExtents);
+	bounds.update(halfExtents);
+	return bounds;
+}
+
+std::unique_ptr<PickShape> makeTranslatedBoxPickShape(const vec3& center, const vec3& halfExtents)
+{
+	Matrix44 transform;
+	transform.setTranslate(center);
+	return std::make_unique<BoxPickShape>(makeCenteredBounds(halfExtents), transform);
+}
+
+PickPayload railPickPayload(RailInspectTargetKind kind, int id)
+{
+	PickPayload payload;
+	payload.type = static_cast<int>(kind);
+	payload.id0 = id;
+	return payload;
+}
 }
 
 RailStationVisual::RailStationVisual(RailStationId stationId)
@@ -43,9 +73,12 @@ void RailStationVisual::sync(Node* visualRoot, Node* uiRoot, const RailNetwork& 
 		return;
 	}
 	m_marker->setIsVisible(true);
+	m_marker->setOutlineEnabled(m_outlineEnabled);
+	m_marker->setOutlineColor(m_outlineColor);
 	m_marker->setPos(sample.position + vec3(0.0f, 0.34f, 0.0f));
 	m_nameBillboard.sync(uiRoot, sample.position + vec3(0.0f, 1.05f, 0.0f), station.name,
 		vec4::fromRGB(80, 70, 35, 225));
+	syncPickTarget(sample.position + vec3(0.0f, 0.34f, 0.0f));
 }
 
 void RailStationVisual::hide()
@@ -55,6 +88,31 @@ void RailStationVisual::hide()
 		m_marker->setIsVisible(false);
 	}
 	m_nameBillboard.hide();
+	if (m_pickHandle.isValid())
+	{
+		ScenePickingSystem::shared()->setTargetEnabled(m_pickHandle, false);
+	}
+}
+
+void RailStationVisual::clearPickTarget()
+{
+	if (!m_pickHandle.isValid())
+	{
+		return;
+	}
+	ScenePickingSystem::shared()->unregisterTarget(m_pickHandle);
+	m_pickHandle = PickHandle();
+}
+
+void RailStationVisual::setOutline(bool enabled, vec4 color)
+{
+	m_outlineEnabled = enabled;
+	m_outlineColor = color;
+	if (m_marker)
+	{
+		m_marker->setOutlineEnabled(enabled);
+		m_marker->setOutlineColor(color);
+	}
 }
 
 void RailStationVisual::ensureMarker(Node* visualRoot)
@@ -67,7 +125,29 @@ void RailStationVisual::ensureMarker(Node* visualRoot)
 	m_marker->setIsAccpectOcTtree(false);
 	m_marker->setIsHitable(false);
 	m_marker->setColor(vec4::fromRGB(240, 210, 70));
+	m_marker->setOutlineEnabled(m_outlineEnabled);
+	m_marker->setOutlineColor(m_outlineColor);
 	visualRoot->addChild(m_marker, false);
+}
+
+void RailStationVisual::syncPickTarget(const vec3& center)
+{
+	std::unique_ptr<PickShape> shape = makeTranslatedBoxPickShape(center, StationPickHalfExtents);
+	if (!m_pickHandle.isValid())
+	{
+		PickTargetDesc desc;
+		desc.category = RailInspectPickCategory;
+		desc.priority = StationPickPriority;
+		desc.owner = this;
+		desc.payload = railPickPayload(RailInspectTargetKind::Station, m_stationId);
+		desc.enabled = true;
+		desc.shape = std::move(shape);
+		m_pickHandle = ScenePickingSystem::shared()->registerTarget(std::move(desc));
+		return;
+	}
+
+	ScenePickingSystem::shared()->updateTargetShape(m_pickHandle, std::move(shape));
+	ScenePickingSystem::shared()->setTargetEnabled(m_pickHandle, true);
 }
 
 RailRoutePointVisual::RailRoutePointVisual(RailRoutePointId routePointId)
@@ -96,9 +176,12 @@ void RailRoutePointVisual::sync(Node* visualRoot, Node* uiRoot, const RailNetwor
 		return;
 	}
 	m_marker->setIsVisible(true);
+	m_marker->setOutlineEnabled(m_outlineEnabled);
+	m_marker->setOutlineColor(m_outlineColor);
 	m_marker->setPos(sample.position + vec3(0.0f, 0.28f, 0.0f));
 	m_nameBillboard.sync(uiRoot, sample.position + vec3(0.0f, 0.88f, 0.0f), routePoint.name,
 		vec4::fromRGB(55, 45, 75, 225));
+	syncPickTarget(sample.position + vec3(0.0f, 0.28f, 0.0f));
 }
 
 void RailRoutePointVisual::hide()
@@ -108,6 +191,31 @@ void RailRoutePointVisual::hide()
 		m_marker->setIsVisible(false);
 	}
 	m_nameBillboard.hide();
+	if (m_pickHandle.isValid())
+	{
+		ScenePickingSystem::shared()->setTargetEnabled(m_pickHandle, false);
+	}
+}
+
+void RailRoutePointVisual::clearPickTarget()
+{
+	if (!m_pickHandle.isValid())
+	{
+		return;
+	}
+	ScenePickingSystem::shared()->unregisterTarget(m_pickHandle);
+	m_pickHandle = PickHandle();
+}
+
+void RailRoutePointVisual::setOutline(bool enabled, vec4 color)
+{
+	m_outlineEnabled = enabled;
+	m_outlineColor = color;
+	if (m_marker)
+	{
+		m_marker->setOutlineEnabled(enabled);
+		m_marker->setOutlineColor(color);
+	}
 }
 
 void RailRoutePointVisual::ensureMarker(Node* visualRoot)
@@ -120,7 +228,29 @@ void RailRoutePointVisual::ensureMarker(Node* visualRoot)
 	m_marker->setIsAccpectOcTtree(false);
 	m_marker->setIsHitable(false);
 	m_marker->setColor(vec4::fromRGB(180, 120, 240));
+	m_marker->setOutlineEnabled(m_outlineEnabled);
+	m_marker->setOutlineColor(m_outlineColor);
 	visualRoot->addChild(m_marker, false);
+}
+
+void RailRoutePointVisual::syncPickTarget(const vec3& center)
+{
+	std::unique_ptr<PickShape> shape = makeTranslatedBoxPickShape(center, RoutePointPickHalfExtents);
+	if (!m_pickHandle.isValid())
+	{
+		PickTargetDesc desc;
+		desc.category = RailInspectPickCategory;
+		desc.priority = RoutePointPickPriority;
+		desc.owner = this;
+		desc.payload = railPickPayload(RailInspectTargetKind::RoutePoint, m_routePointId);
+		desc.enabled = true;
+		desc.shape = std::move(shape);
+		m_pickHandle = ScenePickingSystem::shared()->registerTarget(std::move(desc));
+		return;
+	}
+
+	ScenePickingSystem::shared()->updateTargetShape(m_pickHandle, std::move(shape));
+	ScenePickingSystem::shared()->setTargetEnabled(m_pickHandle, true);
 }
 
 void RailTrackVisualSet::sync(Node* sceneRoot, const RailNetwork& network, const RailConfig& config, bool forceRebuild)
@@ -237,6 +367,14 @@ void RailPointVisualSet::sync(Node* sceneRoot, const RailNetwork& network, const
 
 void RailPointVisualSet::clear()
 {
+	for (RailStationVisual& visual : m_stationVisuals)
+	{
+		visual.clearPickTarget();
+	}
+	for (RailRoutePointVisual& visual : m_routePointVisuals)
+	{
+		visual.clearPickTarget();
+	}
 	m_stationVisuals.clear();
 	m_routePointVisuals.clear();
 	if (m_visualRoot)
@@ -256,6 +394,60 @@ void RailPointVisualSet::clear()
 		}
 		delete m_uiRoot;
 		m_uiRoot = nullptr;
+	}
+}
+
+void RailPointVisualSet::setStationOutline(RailStationId stationId, bool enabled, vec4 color)
+{
+	if (stationId == InvalidRailStationId)
+	{
+		return;
+	}
+	if (!enabled)
+	{
+		for (RailStationVisual& visual : m_stationVisuals)
+		{
+			if (visual.stationId() == stationId)
+			{
+				visual.setOutline(false, color);
+				return;
+			}
+		}
+		return;
+	}
+	ensureStationVisual(stationId).setOutline(enabled, color);
+}
+
+void RailPointVisualSet::setRoutePointOutline(RailRoutePointId routePointId, bool enabled, vec4 color)
+{
+	if (routePointId == InvalidRailRoutePointId)
+	{
+		return;
+	}
+	if (!enabled)
+	{
+		for (RailRoutePointVisual& visual : m_routePointVisuals)
+		{
+			if (visual.routePointId() == routePointId)
+			{
+				visual.setOutline(false, color);
+				return;
+			}
+		}
+		return;
+	}
+	ensureRoutePointVisual(routePointId).setOutline(enabled, color);
+}
+
+void RailPointVisualSet::clearOutlines()
+{
+	for (RailStationVisual& visual : m_stationVisuals)
+	{
+		visual.setOutline(false, vec4(1.0f, 0.85f, 0.15f, 1.0f));
+	}
+	for (RailRoutePointVisual& visual : m_routePointVisuals)
+	{
+		visual.setOutline(false, vec4(1.0f, 0.85f, 0.15f, 1.0f));
 	}
 }
 
@@ -320,6 +512,7 @@ void RailPointVisualSet::hideUnused(const RailStationManager& stationManager,
 		if (!containsStation(stationManager, visual.stationId()))
 		{
 			visual.hide();
+			visual.clearPickTarget();
 		}
 	}
 	for (RailRoutePointVisual& visual : m_routePointVisuals)
@@ -327,6 +520,7 @@ void RailPointVisualSet::hideUnused(const RailStationManager& stationManager,
 		if (!containsRoutePoint(routePointManager, visual.routePointId()))
 		{
 			visual.hide();
+			visual.clearPickTarget();
 		}
 	}
 }
@@ -382,6 +576,27 @@ void RailPersistentVisualSystem::clear()
 	m_pointVisuals.clear();
 	m_trainVisuals.clear();
 	m_trackDirty = true;
+}
+
+void RailPersistentVisualSystem::setTrainOutline(RailTrainId trainId, bool enabled, vec4 color)
+{
+	m_trainVisuals.setTrainOutline(trainId, enabled, color);
+}
+
+void RailPersistentVisualSystem::setStationOutline(RailStationId stationId, bool enabled, vec4 color)
+{
+	m_pointVisuals.setStationOutline(stationId, enabled, color);
+}
+
+void RailPersistentVisualSystem::setRoutePointOutline(RailRoutePointId routePointId, bool enabled, vec4 color)
+{
+	m_pointVisuals.setRoutePointOutline(routePointId, enabled, color);
+}
+
+void RailPersistentVisualSystem::clearOutlines()
+{
+	m_pointVisuals.clearOutlines();
+	m_trainVisuals.clearOutlines();
 }
 
 } // namespace tzw

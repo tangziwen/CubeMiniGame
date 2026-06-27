@@ -11,6 +11,8 @@ Drawable3D::Drawable3D()
 	m_octNodeIndex = -1;
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
 	m_renderStageFlag = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	m_outlineEnabled = false;
+	m_outlineColor = vec4(1.0f, 0.85f, 0.15f, 1.0f);
 }
 
 Drawable3D::~Drawable3D()
@@ -90,6 +92,7 @@ void Drawable3D::setIsHitable(bool val)
 void Drawable3D::setUpCommand(RenderCommand & command)
 {
 	Drawable::setUpCommand(command);
+	command.setOutlineColor(m_outlineColor);
 }
 
 int Drawable3D::setOctNodeIndex(int index)
@@ -130,6 +133,26 @@ uint32_t Drawable3D::getDrawableFlag() const
 void Drawable3D::setDrawableFlag(const uint32_t drawableFlag)
 {
 	m_drawableFlag = drawableFlag;
+}
+
+void Drawable3D::setOutlineEnabled(bool enabled)
+{
+	m_outlineEnabled = enabled;
+}
+
+bool Drawable3D::isOutlineEnabled() const
+{
+	return m_outlineEnabled;
+}
+
+void Drawable3D::setOutlineColor(vec4 color)
+{
+	m_outlineColor = color;
+}
+
+vec4 Drawable3D::outlineColor() const
+{
+	return m_outlineColor;
 }
 
 void Drawable3D::getInstancedData(std::vector<InstanceRendereData> & instanceDataList)

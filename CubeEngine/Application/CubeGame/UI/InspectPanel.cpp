@@ -2,6 +2,7 @@
 
 #include "2D/IMGUISystem.h"
 #include "2D/NotificationSystem.h"
+#include "CubeGame/GameWorld.h"
 #include "CubeGame/Rail/RailSystem.h"
 
 #include <cstdio>
@@ -10,6 +11,8 @@ namespace tzw {
 
 namespace
 {
+const vec4 InspectOutlineColor(1.0f, 0.82f, 0.16f, 1.0f);
+
 const char* placementModeText(RailTrainPlacementMode mode)
 {
 	switch (mode)
@@ -46,6 +49,7 @@ void InspectPanel::draw(RailSystem* railSystem)
 		}
 		else if (!targetExists(railSystem))
 		{
+			clearTargetOutline(railSystem);
 			m_target = RailInspectTarget();
 			drawEmpty();
 		}
@@ -70,6 +74,11 @@ void InspectPanel::draw(RailSystem* railSystem)
 		}
 	}
 	ImGui::End();
+	if (!m_isOpen)
+	{
+		clearTargetOutline(railSystem);
+		m_target = RailInspectTarget();
+	}
 }
 
 void InspectPanel::open()
@@ -80,6 +89,8 @@ void InspectPanel::open()
 void InspectPanel::close()
 {
 	m_isOpen = false;
+	clearTargetOutline(GameWorld::shared()->railSystem());
+	m_target = RailInspectTarget();
 }
 
 bool InspectPanel::isOpen() const
@@ -87,9 +98,29 @@ bool InspectPanel::isOpen() const
 	return m_isOpen;
 }
 
+const RailInspectTarget& InspectPanel::target() const
+{
+	return m_target;
+}
+
+bool InspectPanel::isInspecting(const RailInspectTarget& target) const
+{
+	return m_target.isValid() && m_target.equals(target);
+}
+
+void InspectPanel::clearTarget(RailSystem* railSystem)
+{
+	clearTargetOutline(railSystem);
+	m_target = RailInspectTarget();
+	m_nameBuffer = {};
+}
+
 void InspectPanel::inspect(const RailInspectTarget& target, RailSystem* railSystem)
 {
+	clearTargetOutline(railSystem);
 	m_target = target;
+	applyTargetOutline(railSystem, m_target, true);
+	m_outlinedTarget = m_target;
 	if (railSystem && target.kind == RailInspectTargetKind::Station)
 	{
 		const RailStation* station = railSystem->stationManager().station(target.stationId);
@@ -188,6 +219,40 @@ void InspectPanel::drawRoutePoint(RailSystem* railSystem)
 	{
 		commitRoutePointName(railSystem);
 	}
+}
+
+void InspectPanel::applyTargetOutline(RailSystem* railSystem, const RailInspectTarget& target, bool enabled)
+{
+	if (!railSystem || !target.isValid())
+	{
+		return;
+	}
+
+	switch (target.kind)
+	{
+	case RailInspectTargetKind::Train:
+		railSystem->setTrainOutline(target.trainId, enabled, InspectOutlineColor);
+		break;
+	case RailInspectTargetKind::Station:
+		railSystem->setStationOutline(target.stationId, enabled, InspectOutlineColor);
+		break;
+	case RailInspectTargetKind::RoutePoint:
+		railSystem->setRoutePointOutline(target.routePointId, enabled, InspectOutlineColor);
+		break;
+	case RailInspectTargetKind::None:
+	default:
+		break;
+	}
+}
+
+void InspectPanel::clearTargetOutline(RailSystem* railSystem)
+{
+	if (!railSystem || !m_outlinedTarget.isValid())
+	{
+		return;
+	}
+	applyTargetOutline(railSystem, m_outlinedTarget, false);
+	m_outlinedTarget = RailInspectTarget();
 }
 
 void InspectPanel::syncNameBuffer(const std::string& name)
