@@ -26,6 +26,9 @@
 #include "Lighting/PointLight.h"
 #include "Scene/SceneCuller.h"
 #include "Utility/file/Tfile.h"
+#include "RenderQueues.h"
+#include "SceneView.h"
+#include "ShadowView.h"
 
 namespace tzw
 {
@@ -39,218 +42,30 @@ namespace tzw
 
 	GraphicsRenderer::GraphicsRenderer():m_isAAEnable(true)
 	{
+        m_sceneView = nullptr;
+        m_guiQueue = nullptr;
+        for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
+        {
+            m_shadowViews[i] = nullptr;
+        }
 	}
 
     void GraphicsRenderer::init()
     {
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
+        m_sceneView = new SceneView();
+        m_sceneView->init();
+        for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
+        {
+            m_shadowViews[i] = new ShadowView(i);
+            m_shadowViews[i]->init();
+        }
+
         auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
         thumbnailPass->init({{ImageFormat::R8G8B8A8, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
         m_thumbNailRenderStage = backEnd->createRenderStage_imp();
         m_thumbNailRenderStage->init(thumbnailPass, nullptr);
-
-        auto size = Engine::shared()->winSize();
-        auto gBufferRenderPass = backEnd->createDeviceRenderpass_imp();
-        gBufferRenderPass->init({
-            {ImageFormat::R8G8B8A8, false}, 
-            {ImageFormat::R8G8B8A8, false}, 
-            {ImageFormat::R8G8B8A8_S, false}, 
-            {ImageFormat::R8G8B8A8, false},
-            {ImageFormat::D24_S8, true}
-            }
-            , DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-        auto gBuffer = backEnd->createFrameBuffer_imp();
-        gBuffer->init(size.x, size.y, gBufferRenderPass);
-
-        
-        m_gPassStage = backEnd->createRenderStage_imp();
-        m_gPassStage->setName("GBufferPass");
-        m_gPassStage->init(gBufferRenderPass, gBuffer, (uint32_t)RenderFlag::RenderStage::COMMON);
-
-        m_shadowMat = new MaterialInstance();
-        m_shadowMat->loadFromMaterial("Shadow");
-        m_shadowInstancedMat = new MaterialInstance();
-        m_shadowInstancedMat->loadFromMaterial("ShadowInstance");
-
-        for(int i = 0; i < 3; i ++)
-        {
-            auto shadowRenderPass = backEnd->createDeviceRenderpass_imp();
-            shadowRenderPass->init({{ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-            auto shadowBuffer = backEnd->createFrameBuffer_imp();
-            shadowBuffer->init(ShadowMap::shared()->getShadowMapSize(), ShadowMap::shared()->getShadowMapSize(), shadowRenderPass);
-            m_ShadowStage[i] = backEnd->createRenderStage_imp();
-            m_ShadowStage[i]->setName("Shadow Pass");
-            m_ShadowStage[i]->init(shadowRenderPass, shadowBuffer);
-        }
-
-
-        auto deferredLightingPass = backEnd->createDeviceRenderpass_imp();
-        deferredLightingPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
-        auto deferredLightingBuffer= backEnd->createFrameBuffer_imp();
-        deferredLightingBuffer->init(size.x, size.y, deferredLightingPass);
-
-        m_DeferredLightingStage = backEnd->createRenderStage_imp();
-        m_DeferredLightingStage->init(deferredLightingPass, deferredLightingBuffer);
-        m_DeferredLightingStage->setName("Deferred Sun Lighting Stage");
-        MaterialInstance* mat = new MaterialInstance();
-        mat->loadFromMaterial("DirectLight");
-        m_DeferredLightingStage->createSinglePipeline(mat);
-
-        //point light
-        MaterialInstance * pointLightMat = new MaterialInstance();
-        pointLightMat->loadFromMaterial("PointLight");
-        auto pointLightPass = backEnd->createDeviceRenderpass_imp();
-        pointLightPass->init({
-            {ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-        m_PointLightingStage = backEnd->createRenderStage_imp();
-
-        m_PointLightingStage->init(pointLightPass, m_DeferredLightingStage->getFrameBuffer());
-        m_PointLightingStage->createSinglePipeline(pointLightMat);
-        m_PointLightingStage->setName("Deferred Point Light Stage");
-
-        DeviceVertexInput imguiVertexInput;
-        imguiVertexInput.stride = sizeof(VertexData);
-        imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-        imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
-        imguiVertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-
-
-        auto winSize = Engine::shared()->winSize();
-        DeviceVertexInput emptyInstancingInput;
-
-        auto skyPass = backEnd->createDeviceRenderpass_imp();
-        skyPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-        m_skyStage = backEnd->createRenderStage_imp();
-        m_skyStage->init(skyPass, m_DeferredLightingStage->getFrameBuffer());
-        m_skyStage->setName("Sky Stage");
-
-        MaterialInstance * matSkyPass = new MaterialInstance();
-        matSkyPass->loadFromMaterial("Sky");
-        m_skyStage->createSinglePipeline(matSkyPass);
-
-
-
-	    MaterialInstance * matHBAO = new MaterialInstance();
-	    matHBAO->loadFromMaterial("HBAO");
-		static Texture * jitterTex = nullptr;
-		if(!jitterTex)
-		{
-			std::mt19937 rmt;
-			
-			unsigned char *  jitterTexMem  = (unsigned char * )malloc(8 * 8 * 4);
-			float numDir = 8.0;
-			for(int w = 0; w < 8; w++)
-			{
-				for(int h = 0; h< 8; h++)
-				{
-				    float Rand1 = static_cast<float>(rmt()) / 4294967296.0f;
-				    float Rand2 = static_cast<float>(rmt()) / 4294967296.0f;
-
-				    // Use random rotation angles in [0,2PI/NUM_DIRECTIONS)
-				    float Angle       = 2.f * 3.14156 * Rand1 / numDir;
-                    int index = h * 8 * 4 + w * 4;
-					float tmp = cosf(Angle);
-					float tmp1 = tmp * 0.5 + 0.5;
-					float tmp2 = tmp1 * 255;
-				    jitterTexMem[index] = (unsigned char)(tmp2);
-				    jitterTexMem[index + 1] = (unsigned char)((sinf(Angle) * 0.5 + 0.5) * 255);
-				    jitterTexMem[index + 2] = (unsigned char)(Rand2 * 255);
-				    jitterTexMem[index + 3] = 0;
-				}
-			}
-			jitterTex = new Texture(jitterTexMem, 8, 8, ImageFormat::R8G8B8A8);
-		}
-		matHBAO->setTex("jitterTex", jitterTex);
-
-	    MaterialPool::shared()->addMaterial("HBAO", matHBAO);
-        auto HBAOPass = backEnd->createDeviceRenderpass_imp();
-        HBAOPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-
-        m_ssgi.init();
-        m_tsaa.init();
-        m_outlinePass.init();
-
-        m_HBAOStage = backEnd->createRenderStage_imp();
-        auto hbaoBuffer= backEnd->createFrameBuffer_imp();
-        hbaoBuffer->init(size.x, size.y, HBAOPass);
-        m_HBAOStage->init(HBAOPass, hbaoBuffer);
-        m_HBAOStage->setName("HBAO Stage");
-        m_HBAOStage->createSinglePipeline(matHBAO);
-		
-		m_sceneCopyTex = new DeviceTextureVK();
-		m_sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-		
-	    MaterialInstance * matSSR = new MaterialInstance();
-	    matSSR->loadFromMaterial("SSR");
-	    MaterialPool::shared()->addMaterial("SSR", matSSR);
-        auto SSRPass = backEnd->createDeviceRenderpass_imp();
-        SSRPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-		
-        m_SSRStage = backEnd->createRenderStage_imp();
-        m_SSRStage->init(SSRPass, m_DeferredLightingStage->getFrameBuffer());
-        m_SSRStage->setName("SSR Stage");
-        m_SSRStage->createSinglePipeline(matSSR);
-
-
-		
-	    MaterialInstance * matFog = new MaterialInstance();
-	    matFog->loadFromMaterial("GlobalFog");
-	    MaterialPool::shared()->addMaterial("GlobalFog", matFog);
-        auto fogPass = backEnd->createDeviceRenderpass_imp();
-        fogPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-		
-        m_fogStage = backEnd->createRenderStage_imp();
-        m_fogStage->init(fogPass, m_DeferredLightingStage->getFrameBuffer());
-        m_fogStage->setName("Fog Stage");
-        m_fogStage->createSinglePipeline(matFog);
-
-        m_bloom.init(m_DeferredLightingStage->getFrameBuffer());
-
-        auto FXAAPass = backEnd->createDeviceRenderpass_imp();
-        FXAAPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-	    MaterialInstance * matFXAA = new MaterialInstance();
-	    matFXAA->loadFromMaterial("FXAA");
-        auto fxAABuffer = backEnd->createFrameBuffer_imp();
-        fxAABuffer->init(size.x, size.y, FXAAPass);
-		m_aaStage = backEnd->createRenderStage_imp();
-		m_aaStage->init(FXAAPass, fxAABuffer);
-		m_aaStage->setName("FXAA Stage");
-		m_aaStage->createSinglePipeline(matFXAA);
-
-		
-        auto transparentPass = backEnd->createDeviceRenderpass_imp();
-        transparentPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-        m_transparentStage = backEnd->createRenderStage_imp();
-		m_transparentStage->setName("TransparentPass");
-        m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::TRANSPARENT);
-
-        auto debugWireframePass = backEnd->createDeviceRenderpass_imp();
-        debugWireframePass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-        m_debugWireframeStage = backEnd->createRenderStage_imp();
-        m_debugWireframeStage->init(debugWireframePass, m_DeferredLightingStage->getFrameBuffer(), (uint32_t)RenderFlag::RenderStage::DEBUG_LAYER);
-        m_debugWireframeStage->setName("Debug Wireframe Pass");
-        if(!backEnd->isWireframeRasterModeSupported())
-        {
-            DebugSystem::shared()->setWireframeOverlayEnabled(false);
-        }
-
-        m_computeTest = backEnd->createRenderStage_imp();
-        m_computeTest->initCompute();
-        m_computeTest->setName("Compute Test");
-        auto computeShader = new DeviceShaderCollectionVK();
-        tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/VulkanTestCompute.glsl",false);
-        computeShader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"VulkanTestCompute.glsl");
-        computeShader->finish();
-        m_computeTest->createSingleComputePipeline(computeShader);
 
         MaterialInstance * matTextureToScreen = new MaterialInstance();
         matTextureToScreen->loadFromMaterial("TextureToScreen");
@@ -283,6 +98,7 @@ namespace tzw
         }
 	    m_imguiPipeline = nullptr;
         m_renderPath = new RenderPath();
+        m_guiQueue = new RenderQueue();
     }
 
     void GraphicsRenderer::initImguiStuff()
@@ -370,15 +186,10 @@ namespace tzw
     }
     void GraphicsRenderer::preTick()
     {
-        if(m_isAAEnable)
+        if(m_sceneView)
         {
-            m_tsaa.preTick();
+            m_sceneView->preTick(m_isAAEnable);
         }
-        else if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
-        {
-            g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
-        }
-        m_ssgi.preTick();
     }
 	void GraphicsRenderer::render()
 	{
@@ -389,334 +200,23 @@ namespace tzw
 		auto cmd = backEnd->getGeneralCommandBuffer();
         cmd->startRecord();
 		m_renderPath->prepare(cmd);
-        SceneCuller::shared()->collectPrimitives();
-        RenderQueue * renderQueues = SceneCuller::shared()->getRenderQueues();
-		
-        for (int i = 0 ; i < 3 ; i++)
-        {
-            auto shadowList = SceneCuller::shared()->getCSMQueues(i);
-            m_ShadowStage[i]->prepare(cmd);
-            m_ShadowStage[i]->beginRenderPass();
-            for(auto & command : shadowList->getList())
-            {
-                if(command.batchType() != RenderCommand::RenderBatchType::Single){
-                
-                    command.setMat(m_shadowInstancedMat);
-                }else
-                {
-                    command.setMat(m_shadowMat);
-                }
-                command.m_transInfo.m_viewMatrix = ShadowMap::shared()->getLightViewMatrix();
-                command.m_transInfo.m_projectMatrix = ShadowMap::shared()->getLightProjectionMatrix(i);
+        m_sceneView->setAAEnabled(m_isAAEnable);
+        m_sceneView->collect();
 
-            }
-            //drawObjs_Common(m_matPipelinePool, shadowCommand[i], m_ShadowStage[i], shadowList);
-            m_ShadowStage[i]->draw(shadowList, MaterialTechniqueType::Default);
-            m_ShadowStage[i]->endRenderPass();
-            m_ShadowStage[i]->finish();
-            m_renderPath->addRenderStage(m_ShadowStage[i]);
+        ShadowMap::shared()->calculateProjectionMatrix();
+        std::vector<DeviceTexture *> shadowTextureList;
+        for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++)
+        {
+            m_shadowViews[i]->collect();
+            m_shadowViews[i]->draw(cmd, m_renderPath);
+            shadowTextureList.emplace_back(m_shadowViews[i]->depthTexture());
         }
 
-        //------------deferred g - pass begin-------------
-        m_gPassStage->prepare(cmd);
-        m_gPassStage->beginRenderPass();
-        m_gPassStage->draw(renderQueues, MaterialTechniqueType::Default);
-        m_gPassStage->endRenderPass();
-        m_gPassStage->finish();
-        m_renderPath->addRenderStage(m_gPassStage);
-
-        //------------deferred g - pass end-----------------
-
-        //------------deferred Lighting Pass begin---------------
-        {
-
-            m_DeferredLightingStage->prepare(cmd);
-            m_DeferredLightingStage->beginRenderPass();
-            auto material = m_DeferredLightingStage->getSolorDeviceMaterial();
-            
-            Matrix44 lightVPList[3] = {};
-            float shadowEnd[3] = {};
-            for(int i = 0; i < 3; i++)
-            {
-                shadowEnd[i] =  ShadowMap::shared()->getCascadeEnd(i);
-                lightVPList[i] = ShadowMap::shared()->getLightProjectionMatrix(i) * ShadowMap::shared()->getLightViewMatrix();
-            }
-            material->updateUniformSingle("TU_LightVP",lightVPList, sizeof(lightVPList));
-            material->updateUniformSingle("TU_ShadowMapEnd", shadowEnd, sizeof(shadowEnd));
-
-
-            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            for(int i =0; i < gbufferTex.size(); i++)
-            {
-                auto tex = gbufferTex[i];
-                material->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
-            }
-            std::vector<DeviceTexture *> shadowList = {
-                m_ShadowStage[0]->getFrameBuffer()->getDepthMap(),
-                m_ShadowStage[1]->getFrameBuffer()->getDepthMap(), 
-                m_ShadowStage[2]->getFrameBuffer()->getDepthMap()
-            };
-
-            material->getMaterialDescriptorSet()->updateDescriptorByBinding(8, shadowList);
-            //pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(9, shadowList[1]);
-            //pipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(10, shadowList[2]);
-
-            m_DeferredLightingStage->bindSinglePipelineDescriptor();
-            m_DeferredLightingStage->drawScreenQuad();
-
-            m_DeferredLightingStage->endRenderPass();
-
-
-            /*
-            backEnd->blitTexture(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(),
-                static_cast<DeviceTextureVK *>(m_gPassStage->getFrameBuffer()->getDepthMap()), 
-                static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getDepthMap()),
-                m_DeferredLightingStage->getFrameBuffer()->getSize(), 
-                VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-            */
-            m_DeferredLightingStage->finish();
-            m_renderPath->addRenderStage(m_DeferredLightingStage);
-        }
-        //point light pass
-        {
-            m_PointLightingStage->prepare(cmd);
-            m_PointLightingStage->beginRenderPass();
-            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            for(int i =0; i < gbufferTex.size(); i++)
-            {
-                auto tex = gbufferTex[i];
-                m_PointLightingStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
-            }
-            std::vector<Drawable3D *> pointlightList;
-            auto currScene = g_GetCurrScene();
-	        currScene->getOctreeScene()->cullingByCameraExtraFlag(g_GetCurrScene()->defaultCamera(), static_cast<uint32_t>(DrawableFlag::PointLight), static_cast<uint32_t>(RenderFlag::RenderStage::All),pointlightList);
-            for(auto obj : pointlightList)
-            {
-                PointLight* p = static_cast<PointLight*>(obj);
-                if(!p->getIsVisible())
-                    continue;;
-                DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(PointLightUniform));
-                PointLightUniform uniform;
-                //update uniform.
-                DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_PointLightingStage->getSinglePipeline())->giveItemWiseDescriptorSet();
-                itemBuf.map();
-		        auto projection = currScene->defaultCamera()->projection();
-		        Matrix44 m;
-		        m.setToIdentity();
-		        m.setTranslate(p->getWorldPos());
-		        auto r = p->getRadius();
-		        m.setScale(vec3(r, r, r));
-		        auto v = currScene->defaultCamera()->getViewMatrix();
-                uniform.wvp = projection * v * m;
-                uniform.LightPos = vec4(p->getWorldPos(), p->getRadius());
-                uniform.LightColor = vec4(p->getLightColor() * p->intensity(), 1);
-                itemBuf.copyFrom(&uniform, sizeof(PointLightUniform));
-                itemBuf.unMap();
-                itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-                m_PointLightingStage->bindSinglePipelineDescriptor(itemDescriptorSet);
-                m_PointLightingStage->drawSphere();
-            }
-            m_PointLightingStage->endRenderPass();
-            m_PointLightingStage->finish();
-            m_renderPath->addRenderStage(m_PointLightingStage);
-        }
-        //------------deferred Lighting Pass end---------------
-
-        //------------transparent pass begin ------------------
-        {
-        m_transparentStage->prepare(cmd);
-        m_transparentStage->beginRenderPass();
-        m_transparentStage->draw(renderQueues, MaterialTechniqueType::Default);
-        m_transparentStage->endRenderPass();
-        m_transparentStage->finish();
-        m_renderPath->addRenderStage(m_transparentStage);
-        }
-        //------------transparent pass end ------------------
-
-
-        //------------Sky Pass begin---------------
-        
-        {
-            m_skyStage->prepare(cmd);
-            m_skyStage->beginRenderPass();
-            DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
-            //update uniform.
-            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_skyStage->getSinglePipeline())->giveItemWiseDescriptorSet();
-            itemBuf.map();
-            Matrix44 scale;
-            scale.setScale(vec3(6360000.0f, 6360000.0f, 6360000.0f));
-            Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix() * scale;
-            itemBuf.copyFrom(&m, sizeof(Matrix44));
-            itemBuf.unMap();
-            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-            auto tex = m_gPassStage->getFrameBuffer()->getDepthMap();
-            m_skyStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
-            m_skyStage->bindSinglePipelineDescriptor(itemDescriptorSet);
-            m_skyStage->drawSphere();
-            m_skyStage->endRenderPass();
-            m_skyStage->finish();
-            m_renderPath->addRenderStage(m_skyStage);
-        }
-        //------------Sky Pass end---------------
-
-        //------------Debug Wireframe Pass begin---------------
-        {
-            if (DebugSystem::shared()->isWireframeOverlayEnabled())
-            {
-                auto debugQueue = DebugSystem::shared()->buildWireframeQueue(renderQueues);
-                if (debugQueue && !debugQueue->getList().empty())
-                {
-                    m_debugWireframeStage->prepare(cmd);
-                    m_debugWireframeStage->beginRenderPass();
-                    m_debugWireframeStage->draw(debugQueue, MaterialTechniqueType::Default);
-                    m_debugWireframeStage->endRenderPass();
-                    m_debugWireframeStage->finish();
-                    m_renderPath->addRenderStage(m_debugWireframeStage);
-                }
-            }
-        }
-        //------------Debug Wireframe Pass end---------------
-
- 
-
-        {
-
-            Matrix44 proj = g_GetCurrScene()->defaultCamera()->projection();
-            const float* P = proj.data();
-            float R = 0.8;
-            m_HBAOStage->getSinglePipeline()->getMat()->setVar("TU_RadiusInfo", vec4(R, R * R, tanf(g_GetCurrScene()->defaultCamera()->getFov() * 0.5f* 3.14 / 180.0), 0.0));
-            vec4 projInfoPerspective = vec4(
-                2.0f / (P[4 * 0 + 0]),                  // (x) * (R - L)/N
-                2.0f / (P[4 * 1 + 1]),                  // (y) * (T - B)/N
-                -(1.0f - P[4 * 2 + 0]) / P[4 * 0 + 0],  // L/N
-                -(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1]  // B/N
-            );
-            m_HBAOStage->getSinglePipeline()->getMat()->setVar("TU_ProjInfo", projInfoPerspective);
-            m_HBAOStage->prepare(cmd);
-            m_HBAOStage->beginRenderPass();
-            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            for(int i =0; i < gbufferTex.size(); i++)
-            {
-                auto tex = gbufferTex[i];
-                m_HBAOStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
-            }
-            DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
-            //update uniform.
-            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_HBAOStage->getSinglePipeline())->giveItemWiseDescriptorSet();
-            itemBuf.map();
-            Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
-            itemBuf.copyFrom(&m, sizeof(Matrix44));
-            itemBuf.unMap();
-            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-            m_HBAOStage->bindSinglePipelineDescriptor(itemDescriptorSet);
-            m_HBAOStage->drawScreenQuad();
-            m_HBAOStage->endRenderPass();
-            m_HBAOStage->finish();
-            m_renderPath->addRenderStage(m_HBAOStage);
-        }
-		
-        //Copy Scene
-        backEnd->blitTexture(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(),
-            static_cast<DeviceTextureVK *>(m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]), 
-            static_cast<DeviceTextureVK *>(m_sceneCopyTex),
-            m_DeferredLightingStage->getFrameBuffer()->getSize(), 
-            VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-        //SSR
-        {
-            m_SSRStage->prepare(cmd);
-            m_SSRStage->beginRenderPass();
-            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            for(int i =0; i < gbufferTex.size(); i++)
-            {
-                auto tex = gbufferTex[i];
-                m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
-            }
-            //Scene copy
-			m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 1, m_sceneCopyTex);
-            //AO
-            m_SSRStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(gbufferTex.size() + 2, m_HBAOStage->getFrameBuffer()->getTextureList()[0]);
-            DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
-            //update uniform.
-            DeviceDescriptor * itemDescriptorSet = static_cast<DevicePipelineVK *>(m_SSRStage->getSinglePipeline())->giveItemWiseDescriptorSet();
-            itemBuf.map();
-            Matrix44 m = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
-            itemBuf.copyFrom(&m, sizeof(Matrix44));
-            itemBuf.unMap();
-            itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-            m_SSRStage->bindSinglePipelineDescriptor(itemDescriptorSet);
-            m_SSRStage->drawScreenQuad();
-            m_SSRStage->endRenderPass();
-            m_SSRStage->finish();
-            m_renderPath->addRenderStage(m_SSRStage);
-        }
-
-
-        m_renderPath->addRenderStage(m_ssgi.draw(cmd, m_sceneCopyTex, 
-            m_gPassStage->getFrameBuffer()->getDepthMap(), 
-            m_gPassStage->getFrameBuffer()->getTextureList()[2],
-            m_gPassStage->getFrameBuffer()->getTextureList()[0],
-            m_SSRStage->getFrameBuffer()));
-
-
-        {
-            m_fogStage->prepare(cmd);
-            m_fogStage->beginRenderPass();
-            auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
-            for(int i =0; i < gbufferTex.size(); i++)
-            {
-                auto tex = gbufferTex[i];
-                m_fogStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(i + 1, tex);
-            }
-            m_fogStage->bindSinglePipelineDescriptor();
-            m_fogStage->drawScreenQuad();
-            m_fogStage->endRenderPass();
-            m_fogStage->finish();
-            m_renderPath->addRenderStage(m_fogStage);
-        }
-
-        //bloom
-        {
-            m_bloom.draw(cmd, m_renderPath, m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]);
-        }
-        //tsaa
-		if(m_isAAEnable)
-		{
-			m_renderPath->addRenderStage(m_tsaa.draw(cmd, m_fogStage->getFrameBuffer()->getTextureList()[0],  m_gPassStage->getFrameBuffer()->getDepthMap()));
-		}
-        else
-        {
-        	//reset jitter
-	        g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
-        }
-		
-        /*
-        {
-            m_aaStage->prepare(cmd);
-            m_aaStage->beginRenderPass();
-            auto deferredOutPut = m_fogStage->getFrameBuffer()->getTextureList();
-			m_aaStage->getSinglePipeline()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, deferredOutPut[0]);
-            m_aaStage->bindSinglePipelineDescriptor();
-            m_aaStage->drawScreenQuad();
-            m_aaStage->endRenderPass();
-            m_aaStage->finish();
-            m_renderPath->addRenderStage(m_aaStage);
-        }
-        */
-
-        //------------Texture To Screen Pass begin---------------
+        m_sceneView->setShadowTextures(shadowTextureList);
+        m_sceneView->draw(cmd, m_renderPath);
 
         int imageIdx = backEnd->getCurrSwapIndex();
-		DeviceTexture * tex = nullptr;
-		if(m_isAAEnable)
-		{
-			tex = m_tsaa.getOutput()->getTextureList()[0];
-			
-		}
-        else
-        {
-			tex = m_fogStage->getFrameBuffer()->getTextureList()[0];
-        }
-        tex = m_outlinePass.draw(cmd, m_renderPath, renderQueues, tex, m_gPassStage->getFrameBuffer()->getDepthMap());
+		DeviceTexture * tex = m_sceneView->outputTexture();
 
         m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
         m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
@@ -730,9 +230,10 @@ namespace tzw
 		
 
         //------------GUI Pass begin---------------
+        collectUICommands();
         m_guiStage[imageIdx]->prepare(cmd);
         m_guiStage[imageIdx]->beginRenderPass();
-        m_guiStage[imageIdx]->draw(renderQueues, MaterialTechniqueType::Default);
+        m_guiStage[imageIdx]->draw(m_guiQueue, MaterialTechniqueType::Default);
         if(!m_imguiPipeline)
         {
             initImguiStuff();
@@ -862,8 +363,6 @@ namespace tzw
         m_renderPath->addRenderStage(m_guiStage[imageIdx]);
         //------------GUI Pass end---------------
 
-        //renderQueues->clearCommands();
-
         bool isAnythumbnail = false;
         auto & thumbNailList = getThumbNailList();
 	    for(auto thumbnail : thumbNailList)
@@ -914,5 +413,28 @@ namespace tzw
 			}
 		}
 		//m_thumbNailList.clear();
+	}
+
+	void GraphicsRenderer::collectUICommands()
+	{
+		m_guiQueue->clearCommands();
+		auto currScene = g_GetCurrScene();
+		if(!currScene)
+		{
+			return;
+		}
+		std::vector<Node *> directDrawList = currScene->getDirectDrawList();
+		for(auto node : directDrawList)
+		{
+			if(!node || node->getNodeType() != Node::NodeType::DrawableUI)
+			{
+				continue;
+			}
+			node->submitDrawCmd(RenderFlag::RenderStage::GUI, m_guiQueue, 0);
+			if(node->onSubmitDrawCommand)
+			{
+				node->onSubmitDrawCommand(RenderFlag::RenderStage::GUI);
+			}
+		}
 	}
 }

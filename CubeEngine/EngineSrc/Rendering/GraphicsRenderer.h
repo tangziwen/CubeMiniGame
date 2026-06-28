@@ -1,20 +1,20 @@
 #pragma once
 #include "../Engine/EngineDef.h"
+#include "3D/ShadowMap/ShadowMap.h"
 #include "3D/Thumbnail.h"
 #include "vulkan/vulkan.h"
 #include "BackEnd/DeviceRenderStage.h"
-#include "TSAA.h"
-#include "SSGI.h"
-#include "Bloom.h"
-#include "OutlinePass.h"
 namespace tzw
 {
 	class DevicePipelineVK;
 	class DeviceBufferVK;
 	class DeviceRenderStageVK;
 	class MaterialInstance;
+	class RenderQueue;
 	class RenderPath;
 	class DeviceTextureVK;
+	class SceneView;
+	class ShadowView;
 	class GraphicsRenderer:public Singleton<GraphicsRenderer>
 	{
 	public:
@@ -26,25 +26,12 @@ namespace tzw
 		bool m_isAAEnable = false;
 		void preTick();
 	private:
-		TSAA m_tsaa;
-		SSGI m_ssgi;
-		Bloom m_bloom;
-		OutlinePass m_outlinePass;
-		DeviceRenderStage * m_ShadowStage[3];
-		DeviceRenderStage * m_gPassStage;
-		DeviceRenderStage * m_DeferredLightingStage;
-		DeviceRenderStage * m_PointLightingStage;
-		DeviceRenderStage * m_skyStage;
-		DeviceRenderStage * m_debugWireframeStage;
-		DeviceRenderStage * m_SSRStage;
-		DeviceRenderStage * m_HBAOStage;
-		DeviceRenderStage * m_fogStage;
-		DeviceRenderStage * m_transparentStage;
+		SceneView * m_sceneView;
+		ShadowView * m_shadowViews[SHADOWMAP_CASCADE_NUM];
 		DeviceRenderStage * m_thumbNailRenderStage;
-		DeviceRenderStage * m_aaStage;
-		DeviceRenderStage * m_computeTest;
 		DeviceRenderStage * m_textureToScreenRenderStage[2];
 		DeviceRenderStage * m_guiStage[2];
+		RenderQueue * m_guiQueue;
 		
 		DeviceBuffer *m_imguiIndex;
 		DeviceBuffer *m_imguiVertex;
@@ -54,13 +41,11 @@ namespace tzw
 		VkDescriptorSet m_imguiDescriptorSet;
 		DeviceBufferVK * m_imguiUniformBuffer;
 		MaterialInstance * m_imguiMat;
-		MaterialInstance * m_shadowMat;
-		MaterialInstance * m_shadowInstancedMat;
 		RenderPath * m_renderPath;
 		DeviceTextureVK * m_imguiTextureFont;
-		DeviceTextureVK * m_sceneCopyTex;
 		std::vector<ThumbNail *> m_thumbNailList;
 		void handleThumbNails();
+		void collectUICommands();
 	};
 
 

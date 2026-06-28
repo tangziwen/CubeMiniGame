@@ -206,6 +206,9 @@ set(ENGINE_SOURCES
     Rendering/RenderPath.cpp
     Rendering/RenderQueues.cpp
     Rendering/RenderStage.cpp
+    Rendering/RenderView.cpp
+    Rendering/SceneView.cpp
+    Rendering/ShadowView.cpp
     Rendering/SSGI.cpp
     Rendering/TSAA.cpp
     Scene/OctreeScene.cpp

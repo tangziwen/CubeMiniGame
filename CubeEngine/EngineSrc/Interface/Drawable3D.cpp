@@ -12,6 +12,9 @@ Drawable3D::Drawable3D()
 	m_octNodeIndex = -1;
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
 	m_renderStageFlag = static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
+	m_renderViewMask = renderViewTypeToMask(RenderViewType::Scene);
+	m_castShadow = false;
+	m_receiveShadow = true;
 	m_outlineEnabled = false;
 	m_outlineColor = vec4(1.0f, 0.85f, 0.15f, 1.0f);
 }
@@ -161,6 +164,14 @@ uint32_t Drawable3D::getRenderStageForRequest(MaterialInstance* materialHint, ui
 		return getRenderStage(materialHint);
 	}
 
+	const bool shadowOnlyRequest = (requestedStageMask & ~static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW)) == 0;
+	if(shadowOnlyRequest)
+	{
+		return isCastShadow()
+			? static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW)
+			: static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
+	}
+
 	const uint32_t explicitStage = m_renderStageFlag;
 	if(explicitStage != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
 	{
@@ -170,11 +181,6 @@ uint32_t Drawable3D::getRenderStageForRequest(MaterialInstance* materialHint, ui
 			return explicitMatch;
 		}
 
-		const bool shadowOnlyRequest = (requestedStageMask & ~static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW)) == 0;
-		if(shadowOnlyRequest)
-		{
-			return static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
-		}
 	}
 
 	uint32_t materialStage = materialHint ? static_cast<uint32_t>(materialHint->getRenderStage())
@@ -204,6 +210,45 @@ void Drawable3D::setOutlineColor(vec4 color)
 vec4 Drawable3D::outlineColor() const
 {
 	return m_outlineColor;
+}
+
+void Drawable3D::setCastShadow(bool enabled)
+{
+	m_castShadow = enabled;
+	setAcceptsRenderView(RenderViewType::Shadow, enabled);
+}
+
+bool Drawable3D::isCastShadow() const
+{
+	return m_castShadow;
+}
+
+void Drawable3D::setReceiveShadow(bool enabled)
+{
+	m_receiveShadow = enabled;
+}
+
+bool Drawable3D::isReceiveShadow() const
+{
+	return m_receiveShadow;
+}
+
+bool Drawable3D::acceptsRenderView(RenderViewType viewType) const
+{
+	return (m_renderViewMask & renderViewTypeToMask(viewType)) != 0;
+}
+
+void Drawable3D::setAcceptsRenderView(RenderViewType viewType, bool enabled)
+{
+	const uint32_t viewMask = renderViewTypeToMask(viewType);
+	if(enabled)
+	{
+		m_renderViewMask |= viewMask;
+	}
+	else
+	{
+		m_renderViewMask &= ~viewMask;
+	}
 }
 
 void Drawable3D::getInstancedData(std::vector<InstanceRendereData> & instanceDataList)

@@ -431,6 +431,7 @@ FoliageSystem::FoliageSystem()
 	m_leafMat->setTex("DiffuseMap", leafTex);
 
 	setIsAccpectOcTtree(false);
+	setCastShadow(true);
 	 
 	setCamera(g_GetCurrScene()->defaultCamera());
 	 

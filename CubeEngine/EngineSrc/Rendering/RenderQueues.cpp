@@ -14,9 +14,9 @@ namespace tzw
 		m_fullList.emplace_back(command);
 	}
 
-	void RenderQueue::addInstancedData(InstanceRendereData& data)
+	void RenderQueue::addInstancedData(InstanceRendereData& data, RenderFlag::RenderStage renderStage, int batchID)
 	{
-		m_instancesBatcher->pushInstanceRenderData(RenderFlag::RenderStage::COMMON, data, 0);
+		m_instancesBatcher->pushInstanceRenderData(renderStage, data, batchID);
 	}
 
 	std::vector<RenderCommand>& RenderQueue::getList()
@@ -47,8 +47,8 @@ namespace tzw
 		}
 	}
 
-	void RenderQueue::generateInstancedDrawCall()
+	void RenderQueue::generateInstancedDrawCall(RenderFlag::RenderStage renderStage, int batchID, int requirementArg)
 	{
-		m_instancesBatcher->generateDrawCall(RenderFlag::RenderStage::COMMON, this, 0, 0);
+		m_instancesBatcher->generateDrawCall(renderStage, this, batchID, requirementArg);
 	}
 }

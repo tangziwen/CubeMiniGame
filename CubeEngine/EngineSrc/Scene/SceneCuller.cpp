@@ -1,63 +1,96 @@
 #include "SceneCuller.h"
+
+#include "Scene.h"
 #include "SceneMgr.h"
 #include "OctreeScene.h"
 #include "3D/Vegetation/FoliageSystem.h"
+#include "Interface/Drawable3D.h"
 #include "Rendering/InstancingMgr.h"
+#include "Rendering/RenderView.h"
 #include "../3D/ShadowMap/ShadowMap.h"
 #include "Engine/DebugSystem.h"
+
 namespace tzw
 {
 	namespace
 	{
-		constexpr uint32_t SceneRenderStageMask =
-			static_cast<uint32_t>(RenderFlag::RenderStage::COMMON)
-			| static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT)
-			| static_cast<uint32_t>(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR)
-			| static_cast<uint32_t>(RenderFlag::RenderStage::DEBUG_LAYER);
+		void collectSceneDirectDraw(RenderView* view);
+		void collectSceneView(RenderView* view);
+		void collectShadowView(RenderView* view);
 	}
 
 	SceneCuller::SceneCuller()
 	{
-		m_renderQueues = new RenderQueue();
-		for(int i = 0; i < 3; i++)
+	}
+
+	void SceneCuller::collect(RenderView* view)
+	{
+		if(!view || !view->renderQueue())
 		{
-			m_CSMQueue[i] = new RenderQueue();
+			return;
+		}
+		view->renderQueue()->clearCommands();
+
+		switch(view->viewType())
+		{
+		case RenderViewType::Scene:
+			collectSceneView(view);
+			break;
+		case RenderViewType::Shadow:
+			collectShadowView(view);
+			break;
+		default:
+			break;
 		}
 	}
-	void SceneCuller::collectPrimitives()
+
+	namespace
 	{
-		clearCommands();
-		auto currScene = SceneMgr::shared()->getCurrScene();
-		std::vector<Node *> directDrawList = currScene->getDirectDrawList();
-		for(auto node : directDrawList)
+	void collectSceneView(RenderView* view)
+	{
+		if(!view || !view->renderQueue())
 		{
-			node->submitDrawCmd(static_cast<RenderFlag::RenderStage>(SceneRenderStageMask), m_renderQueues, 0);
-			if(node->onSubmitDrawCommand)
-			{
-				node->onSubmitDrawCommand(static_cast<RenderFlag::RenderStage>(SceneRenderStageMask));
-			}
-	
+			return;
 		}
-		directDrawList.clear();
-		auto cam = SceneMgr::shared()->getCurrScene()->defaultCamera();
-		OctreeScene * octreeScene =  SceneMgr::shared()->getCurrScene()->getOctreeScene();
-		SceneMgr::shared()->getCurrScene()->getOctreeScene()->cullingByCamera(cam, SceneRenderStageMask);
-		//vegetation
+		auto renderQueue = view->renderQueue();
+		auto renderStageMask = view->submitStageMask();
+
+		auto currScene = SceneMgr::shared()->getCurrScene();
+		if(!currScene || !view->camera() || !currScene->getOctreeScene())
+		{
+			return;
+		}
+
+		collectSceneDirectDraw(view);
+
+		auto cam = view->camera();
+		OctreeScene * octreeScene = currScene->getOctreeScene();
+
 		FoliageSystem::shared()->clearTreeGroup();
-		auto &visibleList = octreeScene->getVisibleList();
+		std::vector<Drawable3D *> visibleList;
+		octreeScene->cullingByCameraForRenderView(
+			cam,
+			view->viewType(),
+			static_cast<uint32_t>(DrawableFlag::Drawable),
+			renderStageMask,
+			visibleList);
 		for(auto obj : visibleList)
 		{
-			obj->submitDrawCmd(static_cast<RenderFlag::RenderStage>(SceneRenderStageMask), m_renderQueues, 0);
+			obj->submitDrawCmd(static_cast<RenderFlag::RenderStage>(renderStageMask), renderQueue, 0);
 			if(obj->onSubmitDrawCommand)
 			{
-				obj->onSubmitDrawCommand(static_cast<RenderFlag::RenderStage>(SceneRenderStageMask));
+				obj->onSubmitDrawCommand(static_cast<RenderFlag::RenderStage>(renderStageMask));
 			}
 		}
-		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStage::COMMON, m_renderQueues, 0);
+		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStage::COMMON, renderQueue, 0);
 
-		
 		std::vector<Drawable3D *> nodeList;
-		octreeScene->cullingByCameraExtraFlag(cam, static_cast<uint32_t>(DrawableFlag::Instancing), SceneRenderStageMask, nodeList);
+		octreeScene->cullingByCameraForRenderView(
+			cam,
+			view->viewType(),
+			static_cast<uint32_t>(DrawableFlag::Instancing),
+			renderStageMask,
+			nodeList);
 		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON, -1);
 		std::vector<InstanceRendereData> instanceDataList;
 		for(auto node:nodeList)
@@ -65,11 +98,11 @@ namespace tzw
 			if(node->getIsVisible())
 			{
 				const size_t startIndex = instanceDataList.size();
-				node->getInstancedData(instanceDataList);   
+				node->getInstancedData(instanceDataList);
 				for(size_t i = startIndex; i < instanceDataList.size(); ++i)
 				{
 					instanceDataList[i].renderStageMask = node->getRenderStageForRequest(
-						instanceDataList[i].material, SceneRenderStageMask);
+						instanceDataList[i].material, renderStageMask);
 				}
 			}
 		}
@@ -79,80 +112,100 @@ namespace tzw
 			{
 				continue;
 			}
-			m_renderQueues->addInstancedData(instanceData);
+			renderQueue->addInstancedData(instanceData, RenderFlag::RenderStage::COMMON, 0);
 		}
-		m_renderQueues->generateInstancedDrawCall();
+		renderQueue->generateInstancedDrawCall(RenderFlag::RenderStage::COMMON, 0, 0);
 
-		DebugSystem::shared()->doRender(m_renderQueues, 0.0);
-
-		collectShadowCmd();
+		DebugSystem::shared()->doRender(renderQueue, 0.0);
 	}
 
-	void SceneCuller::clearCommands()
+	void collectShadowView(RenderView* view)
 	{
-		m_renderQueues->clearCommands();
-		for(int i = 0; i < 3; i++)
+		if(!view || !view->renderQueue())
 		{
-			m_CSMQueue[i]->clearCommands();
+			return;
 		}
-	}
+		auto renderQueue = view->renderQueue();
+		auto renderStageMask = view->submitStageMask();
+		int layer = view->viewIndex();
 
-	RenderQueue* SceneCuller::getRenderQueues()
-	{
-		return m_renderQueues;
-	}
-
-	RenderQueue* SceneCuller::getCSMQueues(int layer)
-	{
-		return m_CSMQueue[layer];
-	}
-
-	void SceneCuller::collectShadowCmd()
-	{
-		ShadowMap::shared()->calculateProjectionMatrix();
-		for(int i = 0; i < 3; i ++)
+		auto currScene = g_GetCurrScene();
+		if(!currScene || !currScene->getOctreeScene())
 		{
-		
-			auto aabb = ShadowMap::shared()->getPotentialRange(i);
-			std::vector<Drawable3D *> shadowNeedDrawList;
-		    g_GetCurrScene()->getRange(&shadowNeedDrawList, static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing), 
-				static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW), aabb);
+			return;
+		}
 
-			
-			
-		    std::vector<InstanceRendereData> istanceCommandList;
-		    for(auto obj:shadowNeedDrawList)
-		    {
-			    if(!obj->getIsVisible()) continue;
-			    if(obj->getDrawableFlag() &static_cast<uint32_t>(DrawableFlag::Drawable))
-			    {
-				    obj->submitDrawCmd(RenderFlag::RenderStage::SHADOW, m_CSMQueue[i], i);
-			    }
-			    else//instancing
-			    {
-				    const size_t startIndex = istanceCommandList.size();
-				    obj->getInstancedData(istanceCommandList);   
-				    for(size_t dataIndex = startIndex; dataIndex < istanceCommandList.size(); ++dataIndex)
-				    {
-					    istanceCommandList[dataIndex].renderStageMask = obj->getRenderStageForRequest(
-						    istanceCommandList[dataIndex].material,
-						    static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW));
-				    }
-			    }
-		    }
-			FoliageSystem::shared()->submitShadowDraw(m_CSMQueue[i], i);
-			
-			
-		    for(auto& instanceData : istanceCommandList)
-	        {
-				if(instanceData.renderStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		auto aabb = ShadowMap::shared()->getPotentialRange(layer);
+		std::vector<Drawable3D *> shadowNeedDrawList;
+		currScene->getOctreeScene()->getRangeForRenderView(
+			&shadowNeedDrawList,
+			view->viewType(),
+			static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing),
+			renderStageMask,
+			aabb);
+
+		std::vector<InstanceRendereData> instanceCommandList;
+		for(auto obj:shadowNeedDrawList)
+		{
+			if(!obj->getIsVisible())
+			{
+				continue;
+			}
+			if(obj->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Drawable))
+			{
+				obj->submitDrawCmd(static_cast<RenderFlag::RenderStage>(renderStageMask), renderQueue, layer);
+			}
+			else
+			{
+				const size_t startIndex = instanceCommandList.size();
+				obj->getInstancedData(instanceCommandList);
+				for(size_t dataIndex = startIndex; dataIndex < instanceCommandList.size(); ++dataIndex)
 				{
-					continue;
+					instanceCommandList[dataIndex].renderStageMask = obj->getRenderStageForRequest(
+						instanceCommandList[dataIndex].material,
+						renderStageMask);
 				}
-				m_CSMQueue[i]->addInstancedData(instanceData);
-	        }
-            m_CSMQueue[i]->generateInstancedDrawCall();
+			}
 		}
+		if(FoliageSystem::shared()->isCastShadow())
+		{
+			FoliageSystem::shared()->submitShadowDraw(renderQueue, layer);
+		}
+
+		for(auto& instanceData : instanceCommandList)
+		{
+			if(instanceData.renderStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			{
+				continue;
+			}
+			renderQueue->addInstancedData(instanceData, RenderFlag::RenderStage::SHADOW, layer);
+		}
+		renderQueue->generateInstancedDrawCall(RenderFlag::RenderStage::SHADOW, layer, layer);
 	}
 
+	void collectSceneDirectDraw(RenderView* view)
+	{
+		auto currScene = SceneMgr::shared()->getCurrScene();
+		auto renderQueue = view->renderQueue();
+		auto renderStageMask = view->submitStageMask();
+		std::vector<Node *> directDrawList = currScene->getDirectDrawList();
+		for(auto node : directDrawList)
+		{
+			if(!node || node->getNodeType() != Node::NodeType::Drawable3D)
+			{
+				continue;
+			}
+			auto drawable = static_cast<Drawable3D*>(node);
+			if(!drawable->acceptsRenderView(view->viewType()))
+			{
+				continue;
+			}
+			node->submitDrawCmd(static_cast<RenderFlag::RenderStage>(renderStageMask), renderQueue, view->viewIndex());
+			if(node->onSubmitDrawCommand)
+			{
+				node->onSubmitDrawCommand(static_cast<RenderFlag::RenderStage>(renderStageMask));
+			}
+		}
+	}
+	}
 }

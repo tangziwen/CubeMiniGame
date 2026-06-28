@@ -6,8 +6,11 @@
 #include "../Math/t_Sphere.h"
 #include "../Collision/ColliderEllipsoid.h"
 #include "Utility/log/Log.h"
+#include "Rendering/RenderViewType.h"
 namespace tzw {
 class Ray;
+class OctreeScene;
+class SceneCuller;
 enum class DrawableFlag
 {
 	Drawable = 1 << 1,
@@ -18,6 +21,8 @@ enum class DrawableFlag
 };
 class Drawable3D : public Drawable
 {
+	friend class OctreeScene;
+	friend class SceneCuller;
 public:
     Drawable3D();
     virtual ~Drawable3D();
@@ -55,14 +60,23 @@ public:
 	bool isOutlineEnabled() const;
 	void setOutlineColor(vec4 color);
 	vec4 outlineColor() const;
+	void setCastShadow(bool enabled);
+	bool isCastShadow() const;
+	void setReceiveShadow(bool enabled);
+	bool isReceiveShadow() const;
 	virtual void getInstancedData(std::vector<InstanceRendereData> & dataList);
+	bool acceptsRenderView(RenderViewType viewType) const;
 protected:
+	void setAcceptsRenderView(RenderViewType viewType, bool enabled);
     AABB m_localAABB;
     AABB m_worldAABBCache;
 	bool m_isHitable;
 	int m_octNodeIndex;
 	uint32_t m_drawableFlag;
 	uint32_t m_renderStageFlag;
+	uint32_t m_renderViewMask;
+	bool m_castShadow;
+	bool m_receiveShadow;
 	bool m_outlineEnabled;
 	vec4 m_outlineColor;
 };

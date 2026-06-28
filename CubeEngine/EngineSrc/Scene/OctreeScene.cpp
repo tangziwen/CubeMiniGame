@@ -211,10 +211,21 @@ void OctreeScene::cullingByCameraExtraFlag(Camera* camera, uint32_t drawableFlag
 	//cullingImp_R(m_root,flags, &resultList,test);
 }
 
+void OctreeScene::cullingByCameraForRenderView(Camera* camera, RenderViewType viewType, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D*>& resultList)
+{
+	cullingByCameraView_R(m_root, camera, viewType, flags, renderStageFlag, resultList);
+}
+
 void OctreeScene::getRange(std::vector<Drawable3D *> *list, uint32_t drawableFlag, uint32_t renderStageFlag,  AABB aabb)
 {
     auto test = [&aabb](const AABB& targetAABB){vec3 noNeedVar; return aabb.isIntersect(targetAABB, noNeedVar);};
     cullingImp_R(m_root,drawableFlag, renderStageFlag, list,test);
+}
+
+void OctreeScene::getRangeForRenderView(std::vector<Drawable3D *> *list, RenderViewType viewType, uint32_t drawableFlag, uint32_t renderStageFlag, AABB aabb)
+{
+	auto test = [&aabb](const AABB& targetAABB){vec3 noNeedVar; return aabb.isIntersect(targetAABB, noNeedVar);};
+	cullingViewImp_R(m_root, viewType, drawableFlag, renderStageFlag, list, test);
 }
 
 int OctreeScene::getAmount()
@@ -277,6 +288,29 @@ void OctreeScene::cullingByCameraFlag_R(OctreeNode* node, Camera* camera, uint32
     }
 }
 
+void OctreeScene::cullingByCameraView_R(OctreeNode* node, Camera* camera, RenderViewType viewType, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D*>& resultList)
+{
+	if(!camera->isOutOfFrustum(node->aabb))
+	{
+		for(int i=0;i<node->m_drawlist.size();i++)
+		{
+			Drawable3D * obj = node->m_drawlist[i];
+			if(!camera->isOutOfFrustum(obj->getAABB()))
+			{
+				if((obj->getDrawableFlag() & itemFlags) && obj->acceptsRenderView(viewType) && obj->getRenderStageForRequest(obj->getMaterial(), renderStageFlag))
+				{
+					resultList.push_back (obj);
+				}
+			}
+		}
+		if(!node->m_child[0]) return;
+		for(int i=0;i<8;i++)
+		{
+			cullingByCameraView_R(node->m_child[i],camera, viewType, itemFlags, renderStageFlag, resultList);
+		}
+	}
+}
+
 void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
 {
 	if(testFunc(node->aabb))
@@ -299,6 +333,30 @@ void OctreeScene::cullingImp_R(OctreeNode *node, uint32_t itemFlags, uint32_t re
             cullingImp_R(node->m_child[i], itemFlags, renderStageFlag, list, testFunc);
         }
     }
+}
+
+void OctreeScene::cullingViewImp_R(OctreeNode *node, RenderViewType viewType, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D *> *list, const std::function<bool(const AABB&)>& testFunc)
+{
+	if(testFunc(node->aabb))
+	{
+		for(auto drawObj : node->m_drawlist)
+		{
+			if((drawObj->getDrawableFlag() & itemFlags)
+				&& drawObj->acceptsRenderView(viewType)
+				&& drawObj->getRenderStageForRequest(drawObj->getMaterial(), renderStageFlag))
+			{
+				if(testFunc(drawObj->getAABB()))
+				{
+					list->push_back(drawObj);
+				}
+			}
+		}
+		if(!node->m_child[0]) return;
+		for(int i =0;i<8;i++)
+		{
+			cullingViewImp_R(node->m_child[i], viewType, itemFlags, renderStageFlag, list, testFunc);
+		}
+	}
 }
 
 
