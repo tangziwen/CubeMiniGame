@@ -30,6 +30,7 @@ RenderView::RenderView(RenderViewType viewType, int viewIndex)
 	: m_viewType(viewType)
 	, m_viewIndex(viewIndex)
 	, m_camera(nullptr)
+	, m_submitStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
 {
 }
 
@@ -60,15 +61,7 @@ const RenderQueue* RenderView::renderQueue() const
 
 uint32_t RenderView::submitStageMask() const
 {
-	uint32_t stageMask = static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
-	for(const auto& pass : m_passes)
-	{
-		if(pass.consumesSceneQueue())
-		{
-			stageMask |= pass.renderStageMask();
-		}
-	}
-	return stageMask;
+	return m_submitStageMask;
 }
 
 void RenderView::setCamera(Camera* camera)
@@ -79,6 +72,15 @@ void RenderView::setCamera(Camera* camera)
 void RenderView::addPass(DeviceRenderStage* stage, uint32_t renderStageMask, bool consumesSceneQueue)
 {
 	m_passes.emplace_back(stage, renderStageMask, consumesSceneQueue);
+	if(consumesSceneQueue)
+	{
+		addSubmitStage(renderStageMask);
+	}
+}
+
+void RenderView::addSubmitStage(uint32_t renderStageMask)
+{
+	m_submitStageMask |= renderStageMask;
 }
 
 void RenderView::clearQueue()

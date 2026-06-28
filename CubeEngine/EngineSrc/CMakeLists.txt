@@ -467,6 +467,10 @@ set(ENGINE_HEADERS
     Rendering/RenderPath.h
     Rendering/RenderQueues.h
     Rendering/RenderStage.h
+    Rendering/RenderView.h
+    Rendering/RenderViewType.h
+    Rendering/SceneView.h
+    Rendering/ShadowView.h
     Rendering/SSGI.h
     Rendering/TSAA.h
     Scene/OctreeScene.h

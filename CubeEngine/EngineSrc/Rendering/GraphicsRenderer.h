@@ -2,16 +2,15 @@
 #include "../Engine/EngineDef.h"
 #include "3D/ShadowMap/ShadowMap.h"
 #include "3D/Thumbnail.h"
-#include "vulkan/vulkan.h"
 #include "BackEnd/DeviceRenderStage.h"
 namespace tzw
 {
-	class DevicePipelineVK;
 	class DeviceBufferVK;
-	class DeviceRenderStageVK;
+	class DeviceRenderCommand;
 	class MaterialInstance;
 	class RenderQueue;
 	class RenderPath;
+	class DeviceTexture;
 	class DeviceTextureVK;
 	class SceneView;
 	class ShadowView;
@@ -38,12 +37,15 @@ namespace tzw
 		DevicePipeline * m_imguiPipeline;
 		DeviceMaterial * m_imguiMaterial;
 		void initImguiStuff();
-		VkDescriptorSet m_imguiDescriptorSet;
 		DeviceBufferVK * m_imguiUniformBuffer;
 		MaterialInstance * m_imguiMat;
 		RenderPath * m_renderPath;
 		DeviceTextureVK * m_imguiTextureFont;
 		std::vector<ThumbNail *> m_thumbNailList;
+		void drawTextureToScreen(DeviceRenderCommand * cmd, int imageIdx, DeviceTexture * tex);
+		void drawGui(DeviceRenderCommand * cmd, int imageIdx);
+		void drawImgui(int imageIdx);
+		void drawPendingThumbnail(DeviceRenderCommand * cmd);
 		void handleThumbNails();
 		void collectUICommands();
 	};

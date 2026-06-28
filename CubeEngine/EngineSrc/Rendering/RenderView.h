@@ -47,6 +47,7 @@ public:
 protected:
 	void setCamera(Camera* camera);
 	void addPass(DeviceRenderStage* stage, uint32_t renderStageMask, bool consumesSceneQueue);
+	void addSubmitStage(uint32_t renderStageMask);
 	void clearQueue();
 	void applyCameraToCommands(Camera* camera);
 	void applyMatricesToCommands(const Matrix44& viewMatrix, const Matrix44& projectMatrix);
@@ -55,6 +56,7 @@ protected:
 	int m_viewIndex;
 	Camera* m_camera;
 	RenderQueue m_renderQueue;
+	uint32_t m_submitStageMask;
 	std::vector<RenderViewPass> m_passes;
 };
 }

@@ -80,7 +80,7 @@ void SceneView::init()
 	m_gPassStage->setName("GBufferPass");
 	m_gPassStage->init(gBufferRenderPass, gBuffer, static_cast<uint32_t>(RenderFlag::RenderStage::COMMON));
 	addPass(m_gPassStage, static_cast<uint32_t>(RenderFlag::RenderStage::COMMON), true);
-	addPass(nullptr, static_cast<uint32_t>(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR), true);
+	addSubmitStage(static_cast<uint32_t>(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR));
 
 	auto deferredLightingPass = backEnd->createDeviceRenderpass_imp();
 	deferredLightingPass->init({{

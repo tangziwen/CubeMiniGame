@@ -18,7 +18,7 @@ namespace tzw
 		m_partSurface = partInstance->getPartSurface();
 		setRenderMode(RenderMode::COMMON);
 		
-		setRenderStageFlag(uint32_t(RenderFlag::RenderStage::SHADOW));
+		setCastShadow(true);
 		auto size = m_visualInfo.size;
 		//auto cube = new CubePrimitive(size.x, size.y, size.z, false);
 		//m_localAABB = cube->getMesh()->getAabb();

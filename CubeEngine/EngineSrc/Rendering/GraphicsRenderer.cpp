@@ -1,45 +1,23 @@
 #include "GraphicsRenderer.h"
 
-#include <random>
+#include <cstdlib>
 
-#include "RenderPath.h"
-#include "BackEnd/vk/DeviceRenderStageVK.h"
-
-#include "BackEnd/vk/DevicePipelineVK.h"
-#include "BackEnd/vk/DeviceFrameBufferVK.h"
-#include "Engine/Engine.h"
-#include "BackEnd/RenderBackEndBase.h"
-
-#include "Technique/MaterialPool.h"
-#include "3D/ShadowMap/ShadowMap.h"
 #include "2D/IMGUISystem.h"
-#include "BackEnd/vk/DeviceBufferVK.h"
+#include "3D/ShadowMap/ShadowMap.h"
 #include "BackEnd/VkRenderBackEnd.h"
-#include <EngineSrc\Scene\SceneMgr.h>
+#include "BackEnd/vk/DeviceBufferVK.h"
 #include "BackEnd/vk/DeviceTextureVK.h"
-#include "BackEnd/vk/DeviceShaderCollectionVK.h"
-#include "3D/Thumbnail.h"
-#include "Scene/SceneMgr.h"
-#include "Scene/Scene.h"
-#include "Scene/OctreeScene.h"
-#include "Engine/DebugSystem.h"
-#include "Lighting/PointLight.h"
-#include "Scene/SceneCuller.h"
-#include "Utility/file/Tfile.h"
+#include "Engine/Engine.h"
+#include "RenderPath.h"
 #include "RenderQueues.h"
+#include "Scene/Scene.h"
+#include "Scene/SceneMgr.h"
 #include "SceneView.h"
 #include "ShadowView.h"
+#include "Technique/MaterialInstance.h"
 
 namespace tzw
 {
-
-    struct PointLightUniform
-    {
-        alignas(16) Matrix44 wvp;
-        alignas(16) vec4 LightPos;
-        alignas(16) vec4 LightColor;
-    };
-
 	GraphicsRenderer::GraphicsRenderer():m_isAAEnable(true)
 	{
         m_sceneView = nullptr;
@@ -72,29 +50,29 @@ namespace tzw
 
         for(int i = 0 ; i < 2; i++)
         {
-            auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto pass = backEnd->createDeviceRenderpass_imp();
             pass->init({{
             ImageFormat::Surface_Format, false}, {
             ImageFormat::D24_S8, true},}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false, true);
-            auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
+            auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer);
             stage->setName("Texture To Screen Pass");
-            m_textureToScreenRenderStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
+            m_textureToScreenRenderStage[i] = stage;
             m_textureToScreenRenderStage[i]->createSinglePipeline(matTextureToScreen);
         }
 
         for(int i = 0 ; i < 2; i++)
         {
-            auto pass = backEnd->createDeviceRenderpass_imp();//new DeviceRenderPassVK(1, DeviceRenderPassVK::OpType::LOAD_AND_STORE, ImageFormat::Surface_Format, false, true);
+            auto pass = backEnd->createDeviceRenderpass_imp();
             pass->init({{
             ImageFormat::Surface_Format, false}, {
             ImageFormat::D24_S8, true},}, DeviceRenderPass::OpType::LOAD_AND_STORE, false, true);
-            auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);//new DeviceFrameBufferVK(size.x, size.y, m_fbs[i]);
+            auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);
             auto stage = backEnd->createRenderStage_imp();
             stage->init(pass, frameBuffer, (uint32_t)RenderFlag::RenderStage::GUI);
             stage->setName("GUI Pass");
-            m_guiStage[i] = stage;//new DeviceRenderStageVK(pass, frameBuffer);
+            m_guiStage[i] = stage;
         }
 	    m_imguiPipeline = nullptr;
         m_renderPath = new RenderPath();
@@ -134,45 +112,9 @@ namespace tzw
         m_imguiMaterial = backEnd->createDeviceMaterial_imp();
         m_imguiMaterial->init(m_imguiMat);
 
-        auto shader = static_cast<DeviceShaderCollectionVK *>(m_imguiMat->getProgram()->getDeviceShader());
-        VkDescriptorSetLayout layout = static_cast<DevicePipelineVK*>(m_imguiPipeline)->getDescriptorSetLayOut();
-        VkDescriptorSetAllocateInfo alloc_info = {};
-        alloc_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
-        alloc_info.descriptorPool = backEnd->getDescriptorPool();
-        alloc_info.descriptorSetCount = 1;
-        alloc_info.pSetLayouts = &layout;
-        auto res = vkAllocateDescriptorSets(backEnd->getDevice(), &alloc_info, &m_imguiDescriptorSet);
-        if(res)
-        {
-            abort();
-        }
-         printf("create descriptor sets 44444 %p\n", m_imguiDescriptorSet);
-
-
-
-
         m_imguiUniformBuffer = static_cast<DeviceBufferVK*>(backEnd->createBuffer_imp());
         m_imguiUniformBuffer->init(DeviceBufferType::Uniform);
         m_imguiUniformBuffer->allocateEmpty(sizeof(Matrix44));
-
-        //update descriptor
-        VkDescriptorBufferInfo bufferInfo{};
-        bufferInfo.buffer = m_imguiUniformBuffer->getBuffer();
-        bufferInfo.offset = 0;
-        bufferInfo.range = sizeof(Matrix44);
-
-        VkWriteDescriptorSet writeSet;
-        writeSet.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        writeSet.pNext = nullptr;
-        writeSet.dstSet = m_imguiDescriptorSet;
-        writeSet.dstBinding = 0;
-        writeSet.dstArrayElement = 0;
-        writeSet.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        writeSet.descriptorCount = 1;
-        writeSet.pBufferInfo = &bufferInfo;
-        VkWriteDescriptorSet writeSetList[] = {writeSet};
-        vkUpdateDescriptorSets(backEnd->getDevice(), 1, writeSetList, 0, nullptr);
-    
 
         ImGuiIO& io = ImGui::GetIO();
 
@@ -182,7 +124,6 @@ namespace tzw
         m_imguiTextureFont = new DeviceTextureVK();
         m_imguiTextureFont->initDataRaw(pixels, width, height, ImageFormat::R8G8B8A8);
         io.Fonts->TexID = m_imguiTextureFont;
-        //m_imguiPipeline->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_imguiTextureFont);
     }
     void GraphicsRenderer::preTick()
     {
@@ -216,8 +157,15 @@ namespace tzw
         m_sceneView->draw(cmd, m_renderPath);
 
         int imageIdx = backEnd->getCurrSwapIndex();
-		DeviceTexture * tex = m_sceneView->outputTexture();
+        drawTextureToScreen(cmd, imageIdx, m_sceneView->outputTexture());
+        drawGui(cmd, imageIdx);
+        drawPendingThumbnail(cmd);
+		cmd->endRecord();
+        backEnd->endFrame(m_renderPath);
+	}
 
+	void GraphicsRenderer::drawTextureToScreen(DeviceRenderCommand * cmd, int imageIdx, DeviceTexture * tex)
+	{
         m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
         m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
         m_textureToScreenRenderStage[imageIdx]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
@@ -226,10 +174,10 @@ namespace tzw
         m_textureToScreenRenderStage[imageIdx]->endRenderPass();
         m_textureToScreenRenderStage[imageIdx]->finish();
         m_renderPath->addRenderStage(m_textureToScreenRenderStage[imageIdx]);
-        //------------Texture To Screen Pass end---------------
-		
+	}
 
-        //------------GUI Pass begin---------------
+	void GraphicsRenderer::drawGui(DeviceRenderCommand * cmd, int imageIdx)
+	{
         collectUICommands();
         m_guiStage[imageIdx]->prepare(cmd);
         m_guiStage[imageIdx]->beginRenderPass();
@@ -238,15 +186,22 @@ namespace tzw
         {
             initImguiStuff();
         }
-        //IMGUI
+        drawImgui(imageIdx);
+        m_guiStage[imageIdx]->endRenderPass();
+        m_guiStage[imageIdx]->finish();
+        m_renderPath->addRenderStage(m_guiStage[imageIdx]);
+	}
+
+	void GraphicsRenderer::drawImgui(int imageIdx)
+	{
+        auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
         IMGUISystem::shared()->renderIMGUI();
 
         auto draw_data = IMGUISystem::shared()->getDrawData();
         int fb_width = (int)(draw_data->DisplaySize.x * draw_data->FramebufferScale.x);
         int fb_height = (int)(draw_data->DisplaySize.y * draw_data->FramebufferScale.y);
-        // Will project scissor/clipping rectangles into framebuffer space
-        ImVec2 clip_off = draw_data->DisplayPos;         // (0,0) unless using multi-viewports
-        ImVec2 clip_scale = draw_data->FramebufferScale; // (1,1) unless using retina display which are often (2,2)
+        ImVec2 clip_off = draw_data->DisplayPos;
+        ImVec2 clip_scale = draw_data->FramebufferScale;
         if (draw_data->TotalVtxCount > 0)
         {
             m_imguiUniformBuffer->map();
@@ -255,17 +210,18 @@ namespace tzw
 		        projection.ortho(0.0f, screenSize.x, screenSize.y, 0.0f, 0.1f, 10.0f);
                 m_imguiUniformBuffer->copyFrom(&projection, sizeof(Matrix44));
             m_imguiUniformBuffer->unmap();
-            // Create or resize the vertex/index buffers
+
             size_t vertex_size = draw_data->TotalVtxCount * sizeof(ImDrawVert);
             size_t index_size = draw_data->TotalIdxCount * sizeof(ImDrawIdx);
-            if (!m_imguiVertex->isValid()|| m_imguiVertex->getSize() < vertex_size)
+            if (!m_imguiVertex->isValid() || m_imguiVertex->getSize() < vertex_size)
+            {
                 m_imguiVertex->allocateEmpty(vertex_size);
-                //CreateOrResizeBuffer(rb->VertexBuffer, rb->VertexBufferMemory, rb->VertexBufferSize, vertex_size, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
+            }
             if (!m_imguiIndex->isValid() || m_imguiIndex->getSize() < index_size)
+            {
                 m_imguiIndex->allocateEmpty(index_size);
-                //CreateOrResizeBuffer(rb->IndexBuffer, rb->IndexBufferMemory, rb->IndexBufferSize, index_size, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
+            }
 
-            // Upload vertex/index data into a single contiguous GPU buffer
             size_t vtx_dst_offset = 0;
             size_t idx_dst_offset = 0;
             m_imguiVertex->map();
@@ -289,9 +245,11 @@ namespace tzw
             VkResult err = vkFlushMappedMemoryRanges(backEnd->getDevice(), 2, range);
             m_imguiVertex->unmap();
             m_imguiIndex->unmap();
+            if(err != VK_SUCCESS)
+            {
+                abort();
+            }
 
-            // Render command lists
-            // (Because we merged all buffers into a single one, we maintain our own offset into them)
             int global_vtx_offset = 0;
             int global_idx_offset = 0;
             m_imguiPipeline->resetItemWiseDescritporSet();
@@ -300,33 +258,27 @@ namespace tzw
                 const ImDrawList* cmd_list = draw_data->CmdLists[n];
                 for (int cmd_i = 0; cmd_i < cmd_list->CmdBuffer.Size; cmd_i++)
                 {
-                    
                     const ImDrawCmd* pcmd = &cmd_list->CmdBuffer[cmd_i];
+                    auto descriptorSet = m_imguiPipeline->giveItemWiseDescriptorSet();
 
-
-                    auto descriptiorSet = m_imguiPipeline->giveItemWiseDescriptorSet();
-
-                    descriptiorSet->updateDescriptorByBinding(0,m_imguiUniformBuffer,0, sizeof(Matrix44));
+                    descriptorSet->updateDescriptorByBinding(0, m_imguiUniformBuffer, 0, sizeof(Matrix44));
                     if(pcmd->TextureId)
                     {
-                        descriptiorSet->updateDescriptorByBinding(1,static_cast<DeviceTextureVK * >(pcmd->TextureId));
+                        descriptorSet->updateDescriptorByBinding(1, static_cast<DeviceTextureVK * >(pcmd->TextureId));
                     }
                     else
                     {
-                        descriptiorSet->updateDescriptorByBinding(1,m_imguiTextureFont);
+                        descriptorSet->updateDescriptorByBinding(1, m_imguiTextureFont);
                     }
-                    
 
                     m_guiStage[imageIdx]->bindPipeline(m_imguiPipeline);
 
-                    std::vector<DeviceDescriptor *> descriptorSetList = {m_imguiMaterial->getMaterialDescriptorSet(), descriptiorSet};
-                    
+                    std::vector<DeviceDescriptor *> descriptorSetList = {m_imguiMaterial->getMaterialDescriptorSet(), descriptorSet};
                     m_guiStage[imageIdx]->bindDescriptor(m_imguiPipeline, descriptorSetList);
 
                     m_guiStage[imageIdx]->bindVBO(m_imguiVertex);
                     m_guiStage[imageIdx]->bindIBO(m_imguiIndex);
 
-                    // Project scissor/clipping rectangles into framebuffer space
                     ImVec4 clip_rect;
                     clip_rect.x = (pcmd->ClipRect.x - clip_off.x) * clip_scale.x;
                     clip_rect.y = (pcmd->ClipRect.y - clip_off.y) * clip_scale.y;
@@ -335,45 +287,42 @@ namespace tzw
 
                     if (clip_rect.x < fb_width && clip_rect.y < fb_height && clip_rect.z >= 0.0f && clip_rect.w >= 0.0f)
                     {
-                        // Negative offsets are illegal for vkCmdSetScissor
                         if (clip_rect.x < 0.0f)
+                        {
                             clip_rect.x = 0.0f;
+                        }
                         if (clip_rect.y < 0.0f)
+                        {
                             clip_rect.y = 0.0f;
+                        }
 
-                        // Apply scissor/clipping rectangle
                         vec4 scissorRect;
                         scissorRect.x = clip_rect.x;
                         scissorRect.y = clip_rect.y;
                         scissorRect.z = clip_rect.z - clip_rect.x;
                         scissorRect.w = clip_rect.w - clip_rect.y;
                         m_guiStage[imageIdx]->setScissor(scissorRect);
-                        
                     }
-                    // Draw
                     m_guiStage[imageIdx]->drawElement(pcmd->ElemCount, 1, pcmd->IdxOffset + global_idx_offset, pcmd->VtxOffset + global_vtx_offset, 0);
                 }
                 global_idx_offset += cmd_list->IdxBuffer.Size;
                 global_vtx_offset += cmd_list->VtxBuffer.Size;
             }
         }
+	}
 
-        m_guiStage[imageIdx]->endRenderPass();
-        m_guiStage[imageIdx]->finish();
-        m_renderPath->addRenderStage(m_guiStage[imageIdx]);
-        //------------GUI Pass end---------------
-
-        bool isAnythumbnail = false;
+	void GraphicsRenderer::drawPendingThumbnail(DeviceRenderCommand * cmd)
+	{
         auto & thumbNailList = getThumbNailList();
 	    for(auto thumbnail : thumbNailList)
 	    {
 		    if(!thumbnail->isIsDone())
 		    {
-                if(!thumbnail->getFrameBufferVK()){
+                if(!thumbnail->getFrameBufferVK())
+                {
                     thumbnail->initFrameBufferVK(static_cast<DeviceRenderPassVK *>(m_thumbNailRenderStage->getRenderPass()));
                 }
-                
-                std::vector<RenderCommand> thumbnailCommandList;
+
                 thumbnail->getSnapShotCommand(m_thumbNailRenderStage->getSelfRenderQueue());
                 m_thumbNailRenderStage->setFrameBuffer(thumbnail->getFrameBufferVK());
                 m_thumbNailRenderStage->prepare(cmd);
@@ -381,15 +330,11 @@ namespace tzw
                 m_thumbNailRenderStage->draw(nullptr, MaterialTechniqueType::Default);
 		    	m_thumbNailRenderStage->endRenderPass();
                 m_thumbNailRenderStage->finish();
-                isAnythumbnail = true;
 			    thumbnail->setIsDone(true);
                 m_renderPath->addRenderStage(m_thumbNailRenderStage);
                 break;
 		    }
 	    }
-		//backEnd->endGeneralCommandBuffer();
-		cmd->endRecord();
-        backEnd->endFrame(m_renderPath);
 	}
 
 	void GraphicsRenderer::updateThumbNail(ThumbNail* thumb)
