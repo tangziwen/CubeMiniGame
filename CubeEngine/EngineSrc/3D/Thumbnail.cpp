@@ -49,7 +49,7 @@ namespace tzw {
 			{
 				for (int i = 0; i < m_node->getMeshCount(); i++)
 				{
-					RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, RenderFlag::RenderStage::COMMON);
+					RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this, DrawPassType::GBuffer);
 
     				m_node->setUpCommand(command);
 					m_node->setUpTransFormation(command.m_transInfo);
@@ -102,7 +102,7 @@ namespace tzw {
 			for (int i = 0; i < m_node->getMeshCount(); i++)
 			{
 				RenderCommand command(m_node->getMesh(i), m_node->getMaterial(), this,
-					static_cast<RenderFlag::RenderStage>(m_node->getRenderStage(m_node->getMaterial())));
+					m_node->getDrawPassMask(m_node->getMaterial()));
 
     			m_node->setUpCommand(command);
 				m_node->setUpTransFormation(command.m_transInfo);
@@ -117,7 +117,7 @@ namespace tzw {
 			std::vector<InstanceRendereData> theList;
 			m_node->getInstancedData(theList);
 			std::vector<RenderCommand> cmdList;
-			InstancingMgr::shared()->generateSingleCommand(RenderFlag::RenderStage::COMMON, theList, cmdList);
+			InstancingMgr::shared()->generateSingleCommand(DrawPassType::GBuffer, theList, cmdList);
 			for(auto & command : cmdList)
 			{
 				MaterialInstance * mat = new MaterialInstance();

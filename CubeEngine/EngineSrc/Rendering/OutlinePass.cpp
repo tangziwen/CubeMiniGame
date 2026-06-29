@@ -26,7 +26,7 @@ void OutlinePass::init()
 
 	m_maskStage = backEnd->createRenderStage_imp();
 	m_maskStage->setName("Outline Mask Pass");
-	m_maskStage->init(maskPass, maskBuffer, static_cast<uint32_t>(RenderFlag::RenderStage::OUTLINE_MASK));
+	m_maskStage->init(maskPass, maskBuffer, DrawPassType::OutlineMask);
 
 	m_maskMaterial = new MaterialInstance();
 	m_maskMaterial->loadFromMaterial("OutlineMask");
@@ -113,7 +113,7 @@ bool OutlinePass::buildOutlineQueue(RenderQueue* sourceQueue)
 
 		RenderCommand outlineCommand = command;
 		outlineCommand.setMat(m_maskMaterial);
-		outlineCommand.setRenderStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::OUTLINE_MASK));
+		outlineCommand.setDrawPassMask(DrawPassType::OutlineMask);
 		outlineCommand.setOutlineColor(drawable->outlineColor());
 		m_outlineQueue.addRenderCommand(outlineCommand, 0);
 	}

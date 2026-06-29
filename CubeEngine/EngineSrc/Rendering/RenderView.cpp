@@ -4,9 +4,9 @@
 
 namespace tzw
 {
-RenderViewPass::RenderViewPass(DeviceRenderStage* stage, uint32_t renderStageMask, bool consumesSceneQueue)
+RenderViewPass::RenderViewPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue)
 	: m_stage(stage)
-	, m_renderStageMask(renderStageMask)
+	, m_drawPassMask(drawPassMask)
 	, m_consumesSceneQueue(consumesSceneQueue)
 {
 }
@@ -16,9 +16,9 @@ DeviceRenderStage* RenderViewPass::stage() const
 	return m_stage;
 }
 
-uint32_t RenderViewPass::renderStageMask() const
+DrawPassTypeMask RenderViewPass::drawPassMask() const
 {
-	return m_renderStageMask;
+	return m_drawPassMask;
 }
 
 bool RenderViewPass::consumesSceneQueue() const
@@ -30,7 +30,7 @@ RenderView::RenderView(RenderViewType viewType, int viewIndex)
 	: m_viewType(viewType)
 	, m_viewIndex(viewIndex)
 	, m_camera(nullptr)
-	, m_submitStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	, m_submitDrawPassMask(DrawPassType::Unset)
 {
 }
 
@@ -59,9 +59,9 @@ const RenderQueue* RenderView::renderQueue() const
 	return &m_renderQueue;
 }
 
-uint32_t RenderView::submitStageMask() const
+DrawPassTypeMask RenderView::submitDrawPassMask() const
 {
-	return m_submitStageMask;
+	return m_submitDrawPassMask;
 }
 
 void RenderView::setCamera(Camera* camera)
@@ -69,18 +69,18 @@ void RenderView::setCamera(Camera* camera)
 	m_camera = camera;
 }
 
-void RenderView::addPass(DeviceRenderStage* stage, uint32_t renderStageMask, bool consumesSceneQueue)
+void RenderView::addPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue)
 {
-	m_passes.emplace_back(stage, renderStageMask, consumesSceneQueue);
+	m_passes.emplace_back(stage, drawPassMask, consumesSceneQueue);
 	if(consumesSceneQueue)
 	{
-		addSubmitStage(renderStageMask);
+		addSubmitDrawPass(drawPassMask);
 	}
 }
 
-void RenderView::addSubmitStage(uint32_t renderStageMask)
+void RenderView::addSubmitDrawPass(DrawPassTypeMask drawPassMask)
 {
-	m_submitStageMask |= renderStageMask;
+	m_submitDrawPassMask |= drawPassMask;
 }
 
 void RenderView::clearQueue()

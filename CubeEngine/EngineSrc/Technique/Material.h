@@ -63,8 +63,8 @@ public:
     RasterFillMode getRasterFillMode() const;
     void setRasterFillMode(RasterFillMode newMode);
     void setRasterFillMode(MaterialTechniqueType type, RasterFillMode newMode);
-    RenderFlag::RenderStage getRenderStage() const;
-    void setRenderStage(RenderFlag::RenderStage renderStage);
+    DrawPassType getDrawPassType() const;
+    void setDrawPassType(DrawPassType drawPassType);
     void setDefaultVar(std::string name, const float& value);
     void setDefaultVar(std::string name, const int& value);
     void setDefaultVar(std::string name, const vec2& value);
@@ -88,7 +88,7 @@ private:
     ShadingParams m_shadingParams;
     std::unordered_map<std::string, unsigned int> m_texSlotMap;
     std::unordered_map<MaterialTechniqueType, MaterialTechnique> m_techniques;
-    RenderFlag::RenderStage m_renderStage;
+    DrawPassType m_drawPassType;
 };
 
 } // namespace tzw

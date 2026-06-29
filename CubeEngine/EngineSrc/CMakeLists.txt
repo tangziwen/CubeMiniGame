@@ -197,6 +197,7 @@ set(ENGINE_SOURCES
     Mesh/VertexData.cpp
     Rendering/Bloom.cpp
     Rendering/CSMShadowSystem.cpp
+    Rendering/DrawPass.cpp
     Rendering/FrameBuffer.cpp
     Rendering/GraphicsRenderer.cpp
     Rendering/ImageFormat.cpp
@@ -204,9 +205,9 @@ set(ENGINE_SOURCES
     Rendering/OutlinePass.cpp
     Rendering/RenderBuffer.cpp
     Rendering/RenderCommand.cpp
+    Rendering/RenderGraph.cpp
     Rendering/RenderPath.cpp
     Rendering/RenderQueues.cpp
-    Rendering/RenderStage.cpp
     Rendering/RenderView.cpp
     Rendering/SceneView.cpp
     Rendering/ShadowView.cpp
@@ -458,6 +459,7 @@ set(ENGINE_HEADERS
     Mesh/VertexData.h
     Rendering/Bloom.h
     Rendering/CSMShadowSystem.h
+    Rendering/DrawPass.h
     Rendering/FrameBuffer.h
     Rendering/GraphicsRenderer.h
     Rendering/ImageFormat.h
@@ -466,9 +468,9 @@ set(ENGINE_HEADERS
     Rendering/RenderBuffer.h
     Rendering/RenderCommand.h
     Rendering/RenderFlag.h
+    Rendering/RenderGraph.h
     Rendering/RenderPath.h
     Rendering/RenderQueues.h
-    Rendering/RenderStage.h
     Rendering/RenderView.h
     Rendering/RenderViewType.h
     Rendering/SceneView.h

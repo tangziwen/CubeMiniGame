@@ -76,9 +76,9 @@ bool Scene::hitByRay(const Ray &ray, vec3 &hitPoint)
     return m_octreeScene->hitByRay(ray,hitPoint);
 }
 
-void Scene::getRange(std::vector<Drawable3D *> *list, uint32_t itemFlag, uint32_t renderStageFlag, AABB aabb)
+void Scene::getRange(std::vector<Drawable3D *> *list, uint32_t itemFlag, DrawPassTypeMask drawPassMask, AABB aabb)
 {
-    m_octreeScene->getRange(list, itemFlag, renderStageFlag, aabb);
+    m_octreeScene->getRange(list, itemFlag, drawPassMask, aabb);
 }
 
 Node *Scene::root()

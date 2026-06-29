@@ -35,7 +35,7 @@ namespace tzw {
 			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
-		setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
+		setDrawPassMask(DrawPassType::Transparent);
 
 		setIsAccpectOcTtree(false);
 
@@ -133,10 +133,10 @@ namespace tzw {
 	void ParticleEmitter::pushCommand()
 	{}
 
-	void ParticleEmitter::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue* queues, int requirementArg)
+	void ParticleEmitter::submitDrawCmd(DrawPassTypeMask requestedDrawPassMask, RenderQueue* queues, int requirementArg)
 	{
-		const uint32_t renderStage = getRenderStageForRequest(getMaterial(), static_cast<uint32_t>(requirementType));
-		if (renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset)) {
+		const DrawPassTypeMask drawPass = getDrawPassForRequest(getMaterial(), requestedDrawPassMask);
+		if (drawPass == DrawPassType::Unset) {
 			return;
 		}
 		m_instancedMesh->clearInstances();
@@ -169,7 +169,7 @@ namespace tzw {
 		if (m_instancedMesh->getInstanceSize() > 0) {
 			reCache();
 			RenderCommand command(
-				m_mesh, getMaterial(), this, static_cast<RenderFlag::RenderStage>(renderStage), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				m_mesh, getMaterial(), this, drawPass, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			setUpTransFormation(command.m_transInfo);
 			command.setInstancedMesh(m_instancedMesh);
 			queues->addRenderCommand(command, requirementArg);
@@ -252,7 +252,7 @@ namespace tzw {
 			MaterialPool::shared()->addMaterial(uniqueName, mat);
 		}
 		setMaterial(mat);
-		setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
+		setDrawPassMask(DrawPassType::Transparent);
 		auto tex = TextureMgr::shared()->getByPath(filePath);
 
 		tex->genMipMap();
@@ -310,7 +310,7 @@ namespace tzw {
 			auto mat = MaterialInstance::createFromMaterial("ParticleFixedY");
 			mat->setTex("DiffuseMap", getMaterial()->getTex("DiffuseMap"));
 			setMaterial(mat);
-			setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
+			setDrawPassMask(DrawPassType::Transparent);
 		}
 		break;
 		default:;

@@ -4,6 +4,7 @@
 #include <cstdint>
 #include <string>
 #include "MaterialState.h"
+#include "Rendering/DrawPass.h"
 #include "Rendering/RenderFlag.h"
 
 namespace tzw
@@ -26,7 +27,7 @@ struct MaterialTechnique
     uint32_t getMutationFlag() const;
     uint32_t getMaterialFlag() const;
     const std::string& getFullDescriptionStr() const;
-    void updateFullDescriptionStr(RenderFlag::RenderStage renderStage);
+    void updateFullDescriptionStr(DrawPassType drawPassType);
 
     std::string m_vsPath;
     std::string m_fsPath;

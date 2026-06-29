@@ -24,7 +24,7 @@ public:
     void initWithTexture(std::string texturePath);
     void initWithTexture(Texture * texture);
     void initWithColor(vec4 color, vec2 getContentSize);
-    void submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg) override;
+    void submitDrawCmd(DrawPassTypeMask requestedDrawPassMask, RenderQueue * queues, int requirementArg) override;
     void setRenderRect(vec2 size, vec2 lb = vec2(0,0), vec2 rt= vec2(1,1), vec4 color = vec4(1,1,1,1) );
     void setContentSize(const vec2 &getContentSize) override;
     Texture *texture() const;

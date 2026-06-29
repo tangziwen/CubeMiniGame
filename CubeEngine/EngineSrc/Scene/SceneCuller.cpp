@@ -53,7 +53,7 @@ namespace tzw
 			return;
 		}
 		auto renderQueue = view->renderQueue();
-		auto renderStageMask = view->submitStageMask();
+		auto drawPassMask = view->submitDrawPassMask();
 
 		auto currScene = SceneMgr::shared()->getCurrScene();
 		if(!currScene || !view->camera() || !currScene->getOctreeScene())
@@ -72,26 +72,26 @@ namespace tzw
 			cam,
 			view->viewType(),
 			static_cast<uint32_t>(DrawableFlag::Drawable),
-			renderStageMask,
+			drawPassMask,
 			visibleList);
 		for(auto obj : visibleList)
 		{
-			obj->submitDrawCmd(static_cast<RenderFlag::RenderStage>(renderStageMask), renderQueue, 0);
+			obj->submitDrawCmd(drawPassMask, renderQueue, 0);
 			if(obj->onSubmitDrawCommand)
 			{
-				obj->onSubmitDrawCommand(static_cast<RenderFlag::RenderStage>(renderStageMask));
+				obj->onSubmitDrawCommand(drawPassMask);
 			}
 		}
-		FoliageSystem::shared()->pushCommand(RenderFlag::RenderStage::COMMON, renderQueue, 0);
+		FoliageSystem::shared()->pushCommand(DrawPassType::GBuffer, renderQueue, 0);
 
 		std::vector<Drawable3D *> nodeList;
 		octreeScene->cullingByCameraForRenderView(
 			cam,
 			view->viewType(),
 			static_cast<uint32_t>(DrawableFlag::Instancing),
-			renderStageMask,
+			drawPassMask,
 			nodeList);
-		InstancingMgr::shared()->prepare(RenderFlag::RenderStage::COMMON, -1);
+		InstancingMgr::shared()->prepare(DrawPassType::GBuffer, -1);
 		std::vector<InstanceRendereData> instanceDataList;
 		for(auto node:nodeList)
 		{
@@ -101,20 +101,20 @@ namespace tzw
 				node->getInstancedData(instanceDataList);
 				for(size_t i = startIndex; i < instanceDataList.size(); ++i)
 				{
-					instanceDataList[i].renderStageMask = node->getRenderStageForRequest(
-						instanceDataList[i].material, renderStageMask);
+					instanceDataList[i].drawPassMask = node->getDrawPassForRequest(
+						instanceDataList[i].material, drawPassMask);
 				}
 			}
 		}
 		for(auto& instanceData : instanceDataList)
 		{
-			if(instanceData.renderStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			if(instanceData.drawPassMask == DrawPassType::Unset)
 			{
 				continue;
 			}
-			renderQueue->addInstancedData(instanceData, RenderFlag::RenderStage::COMMON, 0);
+			renderQueue->addInstancedData(instanceData, DrawPassType::GBuffer, 0);
 		}
-		renderQueue->generateInstancedDrawCall(RenderFlag::RenderStage::COMMON, 0, 0);
+		renderQueue->generateInstancedDrawCall(DrawPassType::GBuffer, 0, 0);
 
 		DebugSystem::shared()->doRender(renderQueue, 0.0);
 	}
@@ -126,7 +126,7 @@ namespace tzw
 			return;
 		}
 		auto renderQueue = view->renderQueue();
-		auto renderStageMask = view->submitStageMask();
+		auto drawPassMask = view->submitDrawPassMask();
 		int layer = view->viewIndex();
 
 		auto currScene = g_GetCurrScene();
@@ -141,7 +141,7 @@ namespace tzw
 			&shadowNeedDrawList,
 			view->viewType(),
 			static_cast<uint32_t>(DrawableFlag::Drawable) | static_cast<uint32_t>(DrawableFlag::Instancing),
-			renderStageMask,
+			drawPassMask,
 			aabb);
 
 		std::vector<InstanceRendereData> instanceCommandList;
@@ -153,7 +153,7 @@ namespace tzw
 			}
 			if(obj->getDrawableFlag() & static_cast<uint32_t>(DrawableFlag::Drawable))
 			{
-				obj->submitDrawCmd(static_cast<RenderFlag::RenderStage>(renderStageMask), renderQueue, layer);
+				obj->submitDrawCmd(drawPassMask, renderQueue, layer);
 			}
 			else
 			{
@@ -161,9 +161,9 @@ namespace tzw
 				obj->getInstancedData(instanceCommandList);
 				for(size_t dataIndex = startIndex; dataIndex < instanceCommandList.size(); ++dataIndex)
 				{
-					instanceCommandList[dataIndex].renderStageMask = obj->getRenderStageForRequest(
+					instanceCommandList[dataIndex].drawPassMask = obj->getDrawPassForRequest(
 						instanceCommandList[dataIndex].material,
-						renderStageMask);
+						drawPassMask);
 				}
 			}
 		}
@@ -174,20 +174,20 @@ namespace tzw
 
 		for(auto& instanceData : instanceCommandList)
 		{
-			if(instanceData.renderStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			if(instanceData.drawPassMask == DrawPassType::Unset)
 			{
 				continue;
 			}
-			renderQueue->addInstancedData(instanceData, RenderFlag::RenderStage::SHADOW, layer);
+			renderQueue->addInstancedData(instanceData, DrawPassType::Shadow, layer);
 		}
-		renderQueue->generateInstancedDrawCall(RenderFlag::RenderStage::SHADOW, layer, layer);
+		renderQueue->generateInstancedDrawCall(DrawPassType::Shadow, layer, layer);
 	}
 
 	void collectSceneDirectDraw(RenderView* view)
 	{
 		auto currScene = SceneMgr::shared()->getCurrScene();
 		auto renderQueue = view->renderQueue();
-		auto renderStageMask = view->submitStageMask();
+		auto drawPassMask = view->submitDrawPassMask();
 		std::vector<Node *> directDrawList = currScene->getDirectDrawList();
 		for(auto node : directDrawList)
 		{
@@ -200,10 +200,10 @@ namespace tzw
 			{
 				continue;
 			}
-			node->submitDrawCmd(static_cast<RenderFlag::RenderStage>(renderStageMask), renderQueue, view->viewIndex());
+			node->submitDrawCmd(drawPassMask, renderQueue, view->viewIndex());
 			if(node->onSubmitDrawCommand)
 			{
-				node->onSubmitDrawCommand(static_cast<RenderFlag::RenderStage>(renderStageMask));
+				node->onSubmitDrawCommand(drawPassMask);
 			}
 		}
 	}

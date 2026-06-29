@@ -105,7 +105,7 @@ namespace tzw {
 		m_mesh->finish(true);
 	}
 
-	void SpriteInstanceMgr::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg)
+	void SpriteInstanceMgr::submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg)
 	{
 		if(m_tilesList.empty() || !m_mesh || m_tileTypePool.empty()) return;
 		for(auto& iter : m_tileTypePool)
@@ -142,7 +142,7 @@ namespace tzw {
 				//tiletype->instancedMesh->clearInstances();
 				if (instancedMesh->getInstanceSize() == 0) continue;
 				instancedMesh->submitInstanced();
-				RenderCommand command(m_mesh, tiletype->material, this, RenderFlag::RenderStage::GUI, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(m_mesh, tiletype->material, this, DrawPassType::GUI, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(instancedMesh);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 

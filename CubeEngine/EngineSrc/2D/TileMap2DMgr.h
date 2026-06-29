@@ -33,7 +33,7 @@ public:
 	void setOverLay(unsigned short x, unsigned short y, vec4 color);
 	void removeTileAt(unsigned short x, unsigned short y);
 	void initMesh();
-	void submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg);
+	void submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg);
 	int getIndex(unsigned short x, unsigned short y);
 private:
 	int m_totalTypes = 0;

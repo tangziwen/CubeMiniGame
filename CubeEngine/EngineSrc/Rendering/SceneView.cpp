@@ -78,9 +78,9 @@ void SceneView::init()
 
 	m_gPassStage = backEnd->createRenderStage_imp();
 	m_gPassStage->setName("GBufferPass");
-	m_gPassStage->init(gBufferRenderPass, gBuffer, static_cast<uint32_t>(RenderFlag::RenderStage::COMMON));
-	addPass(m_gPassStage, static_cast<uint32_t>(RenderFlag::RenderStage::COMMON), true);
-	addSubmitStage(static_cast<uint32_t>(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR));
+	m_gPassStage->init(gBufferRenderPass, gBuffer, DrawPassType::GBuffer);
+	addPass(m_gPassStage, DrawPassType::GBuffer, true);
+	addSubmitDrawPass(DrawPassType::AfterDepthClear);
 
 	auto deferredLightingPass = backEnd->createDeviceRenderpass_imp();
 	deferredLightingPass->init({{
@@ -215,20 +215,20 @@ void SceneView::init()
 		ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
 	m_transparentStage = backEnd->createRenderStage_imp();
 	m_transparentStage->setName("TransparentPass");
-	m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
-	addPass(m_transparentStage, static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT), true);
+	m_transparentStage->init(transparentPass, m_DeferredLightingStage->getFrameBuffer(), DrawPassType::Transparent);
+	addPass(m_transparentStage, DrawPassType::Transparent, true);
 
 	auto debugWireframePass = backEnd->createDeviceRenderpass_imp();
 	debugWireframePass->init({{
 		ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
 	m_debugWireframeStage = backEnd->createRenderStage_imp();
-	m_debugWireframeStage->init(debugWireframePass, m_DeferredLightingStage->getFrameBuffer(), static_cast<uint32_t>(RenderFlag::RenderStage::DEBUG_LAYER));
+	m_debugWireframeStage->init(debugWireframePass, m_DeferredLightingStage->getFrameBuffer(), DrawPassType::DebugLayer);
 	m_debugWireframeStage->setName("Debug Wireframe Pass");
 	if(!backEnd->isWireframeRasterModeSupported())
 	{
 		DebugSystem::shared()->setWireframeOverlayEnabled(false);
 	}
-	addPass(m_debugWireframeStage, static_cast<uint32_t>(RenderFlag::RenderStage::DEBUG_LAYER), true);
+	addPass(m_debugWireframeStage, DrawPassType::DebugLayer, true);
 
 	m_computeTest = backEnd->createRenderStage_imp();
 	m_computeTest->initCompute();
@@ -301,7 +301,7 @@ void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath)
 		}
 		std::vector<Drawable3D *> pointlightList;
 		auto currScene = g_GetCurrScene();
-		currScene->getOctreeScene()->cullingByCameraExtraFlag(camera(), static_cast<uint32_t>(DrawableFlag::PointLight), static_cast<uint32_t>(RenderFlag::RenderStage::All),pointlightList);
+		currScene->getOctreeScene()->cullingByCameraExtraFlag(camera(), static_cast<uint32_t>(DrawableFlag::PointLight), DrawPassType::All,pointlightList);
 		for(auto obj : pointlightList)
 		{
 			PointLight* p = static_cast<PointLight*>(obj);
@@ -449,8 +449,13 @@ void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath)
 		m_gPassStage->getFrameBuffer()->getTextureList()[0],
 		m_SSRStage->getFrameBuffer()));
 
+	m_renderGraph.clear();
+	RenderGraphPassDesc fogPass;
+	fogPass.name = "Fog";
+	fogPass.stage = m_fogStage;
+	fogPass.execute = [this](RenderGraphContext& graphContext)
 	{
-		m_fogStage->prepare(cmd);
+		m_fogStage->prepare(graphContext.cmd());
 		m_fogStage->beginRenderPass();
 		auto gbufferTex = m_gPassStage->getFrameBuffer()->getTextureList();
 		for(int i =0; i < gbufferTex.size(); i++)
@@ -462,8 +467,12 @@ void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath)
 		m_fogStage->drawScreenQuad();
 		m_fogStage->endRenderPass();
 		m_fogStage->finish();
-		renderPath->addRenderStage(m_fogStage);
-	}
+		graphContext.renderPath()->addRenderStage(m_fogStage);
+	};
+	m_renderGraph.addPass(fogPass);
+
+	RenderGraphContext graphContext(cmd, renderPath, renderQueues);
+	m_renderGraph.execute(graphContext);
 
 	m_bloom.draw(cmd, renderPath, m_DeferredLightingStage->getFrameBuffer()->getTextureList()[0]);
 

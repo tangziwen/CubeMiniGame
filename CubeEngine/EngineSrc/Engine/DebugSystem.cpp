@@ -249,7 +249,7 @@ void DebugSystem::doRender(RenderQueue * queue,float dt)
 	if(m_immediateLine->getLineCount() > 0)
 	{
 		m_immediateLine->initBuffer();
-		m_immediateLine->submitDrawCmd(RenderFlag::RenderStage::COMMON, queue, 0);
+		m_immediateLine->submitDrawCmd(DrawPassType::GBuffer, queue, 0);
 	}
 	for(auto& primitive : m_retainedPrimitives)
 	{
@@ -316,13 +316,13 @@ RenderQueue* DebugSystem::buildWireframeQueue(const RenderQueue* sourceQueue)
 	MaterialInstance* wireframeMaterial = getDebugWireframeMaterial();
 	for(auto& command : sourceQueue->getList())
 	{
-		if(!command.hasRenderStage(RenderFlag::RenderStage::DEBUG_LAYER))
+		if(!command.hasDrawPass(DrawPassType::DebugLayer))
 		{
 			continue;
 		}
 		RenderCommand overlayCommand = command;
 		overlayCommand.setMat(wireframeMaterial);
-		overlayCommand.setRenderStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::DEBUG_LAYER));
+		overlayCommand.setDrawPassMask(DrawPassType::DebugLayer);
 		m_wireframeQueue->addRenderCommand(overlayCommand, 0);
 	}
 	return m_wireframeQueue.get();
@@ -520,7 +520,7 @@ MaterialInstance* DebugSystem::getDebugWireframeMaterial()
 	{
 		m_debugWireframeMaterial = MaterialInstance::createFromMaterial("Color");
 		auto material = m_debugWireframeMaterial->ensureUniqueMaterial();
-		material->setRenderStage(RenderFlag::RenderStage::DEBUG_LAYER);
+		material->setDrawPassType(DrawPassType::DebugLayer);
 		material->setPrimitiveTopology(PrimitiveTopology::TriangleList);
 		material->setRasterFillMode(RasterFillMode::Wireframe);
 		material->setIsDepthTestEnable(m_wireframeOverlayDepthTestEnabled);

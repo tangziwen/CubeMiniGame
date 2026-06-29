@@ -2,6 +2,7 @@
 
 #include "Bloom.h"
 #include "OutlinePass.h"
+#include "RenderGraph.h"
 #include "Rendering/RenderView.h"
 #include "SSGI.h"
 #include "TSAA.h"
@@ -33,6 +34,7 @@ private:
 	SSGI m_ssgi;
 	Bloom m_bloom;
 	OutlinePass m_outlinePass;
+	RenderGraph m_renderGraph;
 	DeviceRenderStage * m_gPassStage;
 	DeviceRenderStage * m_DeferredLightingStage;
 	DeviceRenderStage * m_PointLightingStage;

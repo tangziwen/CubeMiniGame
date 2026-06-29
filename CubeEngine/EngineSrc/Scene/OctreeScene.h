@@ -5,6 +5,7 @@
 
 #include "../Math/AABB.h"
 #include "../Math/Ray.h"
+#include "Rendering/DrawPass.h"
 #include "Rendering/RenderViewType.h"
 #include <unordered_set>
 #include <unordered_map>
@@ -30,21 +31,21 @@ public:
     void removeObj(Drawable3D * obj);
     void updateObj(Drawable3D * obj);
     bool hitByRay(const Ray &ray, vec3 &hitPoint);
-    void cullingByCamera(Camera * camera, uint32_t renderStageFlag);
-	void cullingByCameraExtraFlag(Camera * camera, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D *> & resultList);
-	void cullingByCameraForRenderView(Camera * camera, RenderViewType viewType, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D *> & resultList);
-    void getRange(std::vector<Drawable3D *> * list, uint32_t flags, uint32_t renderStageFlag, AABB aabb);
-	void getRangeForRenderView(std::vector<Drawable3D *> * list, RenderViewType viewType, uint32_t flags, uint32_t renderStageFlag, AABB aabb);
+    void cullingByCamera(Camera * camera, DrawPassTypeMask drawPassMask);
+	void cullingByCameraExtraFlag(Camera * camera, uint32_t flags, DrawPassTypeMask drawPassMask, std::vector<Drawable3D *> & resultList);
+	void cullingByCameraForRenderView(Camera * camera, RenderViewType viewType, uint32_t flags, DrawPassTypeMask drawPassMask, std::vector<Drawable3D *> & resultList);
+    void getRange(std::vector<Drawable3D *> * list, uint32_t flags, DrawPassTypeMask drawPassMask, AABB aabb);
+	void getRangeForRenderView(std::vector<Drawable3D *> * list, RenderViewType viewType, uint32_t flags, DrawPassTypeMask drawPassMask, AABB aabb);
     int getAmount();
     std::vector<Drawable3D *>& getVisibleList();
 	bool isInOctree(Drawable3D * obj);
 	OctreeNode * getNodeByIndex(int index);
 private:
     int getAmount_R(OctreeNode * node);
-	void cullingByCameraFlag_R(OctreeNode * node,Camera * camera, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D *> & resultList);
-	void cullingByCameraView_R(OctreeNode * node, Camera * camera, RenderViewType viewType, uint32_t flags, uint32_t renderStageFlag, std::vector<Drawable3D *> & resultList);
-    void cullingImp_R(OctreeNode * node, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);
-	void cullingViewImp_R(OctreeNode * node, RenderViewType viewType, uint32_t itemFlags, uint32_t renderStageFlag, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);
+	void cullingByCameraFlag_R(OctreeNode * node,Camera * camera, uint32_t flags, DrawPassTypeMask drawPassMask, std::vector<Drawable3D *> & resultList);
+	void cullingByCameraView_R(OctreeNode * node, Camera * camera, RenderViewType viewType, uint32_t flags, DrawPassTypeMask drawPassMask, std::vector<Drawable3D *> & resultList);
+    void cullingImp_R(OctreeNode * node, uint32_t itemFlags, DrawPassTypeMask drawPassMask, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);
+	void cullingViewImp_R(OctreeNode * node, RenderViewType viewType, uint32_t itemFlags, DrawPassTypeMask drawPassMask, std::vector<Drawable3D *> * list, const std::function<bool(const AABB&)>& testFunc);
     OctreeNode * m_root;
     bool addObj_R(OctreeNode * node,Drawable3D * obj);
     bool removeObj_R(OctreeNode * node,Drawable3D * obj);

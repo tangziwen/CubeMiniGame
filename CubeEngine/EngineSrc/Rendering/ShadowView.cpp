@@ -37,9 +37,9 @@ void ShadowView::init()
 	shadowBuffer->init(ShadowMap::shared()->getShadowMapSize(), ShadowMap::shared()->getShadowMapSize(), shadowRenderPass);
 	m_shadowStage = backEnd->createRenderStage_imp();
 	m_shadowStage->setName("Shadow Pass");
-	m_shadowStage->init(shadowRenderPass, shadowBuffer, static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW));
+	m_shadowStage->init(shadowRenderPass, shadowBuffer, DrawPassType::Shadow);
 
-	addPass(m_shadowStage, static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW), true);
+	addPass(m_shadowStage, DrawPassType::Shadow, true);
 }
 
 void ShadowView::collect()

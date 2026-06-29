@@ -90,12 +90,12 @@ bool TerrainDrawableNode::getIsAccpectOcTtree() const
     return m_isBound && m_mesh && !m_mesh->isEmpty();
 }
 
-void TerrainDrawableNode::submitDrawCmd(RenderFlag::RenderStage stage, RenderQueue* queues, int requirementArg)
+void TerrainDrawableNode::submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue* queues, int requirementArg)
 {
     if (!m_isBound)
         return;
-    const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stage));
-    if (renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+    const DrawPassTypeMask drawPass = getDrawPassForRequest(m_material, drawPassMask);
+    if (drawPass == DrawPassType::Unset)
         return;
     if (!m_mesh || m_mesh->isEmpty())
         return;
@@ -104,12 +104,12 @@ void TerrainDrawableNode::submitDrawCmd(RenderFlag::RenderStage stage, RenderQue
     if (!m_material)
         return;
 
-    RenderCommand command(m_mesh, m_material, this, static_cast<RenderFlag::RenderStage>(renderStage));
+    RenderCommand command(m_mesh, m_material, this, drawPass);
     setUpTransFormation(command.m_transInfo);
     command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
     if (m_debugWireframeEnabled)
     {
-        command.addRenderStage(RenderFlag::RenderStage::DEBUG_LAYER);
+        command.addDrawPass(DrawPassType::DebugLayer);
     }
     queues->addRenderCommand(command, requirementArg);
 }

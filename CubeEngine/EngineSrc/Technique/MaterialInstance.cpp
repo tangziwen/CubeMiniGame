@@ -571,9 +571,9 @@ RasterFillMode MaterialInstance::getRasterFillMode()
 	return m_material->getRasterFillMode();
 }
 
-RenderFlag::RenderStage MaterialInstance::getRenderStage() const
+DrawPassType MaterialInstance::getDrawPassType() const
 {
-	return m_material->getRenderStage();
+	return m_material->getDrawPassType();
 }
 
 bool MaterialInstance::isIsDepthTestEnable() const

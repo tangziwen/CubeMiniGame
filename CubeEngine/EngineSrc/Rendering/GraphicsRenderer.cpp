@@ -63,7 +63,7 @@ namespace tzw
             ImageFormat::D24_S8, true},}, DeviceRenderPass::OpType::LOAD_AND_STORE, false, true);
             auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);
             auto stage = backEnd->createRenderStage_imp();
-            stage->init(pass, frameBuffer, (uint32_t)RenderFlag::RenderStage::GUI);
+            stage->init(pass, frameBuffer, DrawPassType::GUI);
             stage->setName("GUI Pass");
             m_guiStage[i] = stage;
         }
@@ -361,10 +361,10 @@ namespace tzw
 			{
 				continue;
 			}
-			node->submitDrawCmd(RenderFlag::RenderStage::GUI, m_guiQueue, 0);
+			node->submitDrawCmd(DrawPassType::GUI, m_guiQueue, 0);
 			if(node->onSubmitDrawCommand)
 			{
-				node->onSubmitDrawCommand(RenderFlag::RenderStage::GUI);
+				node->onSubmitDrawCommand(DrawPassType::GUI);
 			}
 		}
 	}

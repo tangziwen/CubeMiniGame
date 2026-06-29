@@ -50,7 +50,7 @@ void Sprite::initWithTexture(std::string texturePath)
     Drawable2D::setContentSize(m_texture->getSize());
     setRenderRect(m_contentSize, m_lb, m_rt, m_color);
     setUpTechnique();
-    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterial()->setDrawPassType(DrawPassType::GUI);
 
 }
 
@@ -69,7 +69,7 @@ void Sprite::initWithTexture(Texture *texture)
     Drawable2D::setContentSize(m_texture->getSize());
     setRenderRect(m_contentSize, m_lb, m_rt, m_color);
     setUpTechnique();
-    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterial()->setDrawPassType(DrawPassType::GUI);
 }
 
 void Sprite::initWithColor(vec4 color,vec2 contentSize)
@@ -77,7 +77,7 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
 	m_material = new MaterialInstance();
     m_mesh = new tzw::Mesh();
     setUpTechnique();
-    m_material->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::GUI);
+    m_material->ensureUniqueMaterial()->setDrawPassType(DrawPassType::GUI);
     m_mesh->addIndex(0);
     m_mesh->addIndex(1);
     m_mesh->addIndex(2);
@@ -89,7 +89,7 @@ void Sprite::initWithColor(vec4 color,vec2 contentSize)
     setRenderRect(m_contentSize, m_lb, m_rt, m_color);
 }
 
-void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
+void Sprite::submitDrawCmd(DrawPassTypeMask requestedDrawPassMask, RenderQueue * queues, int requirementArg)
 {
 
     if(m_isRenderRectDirty)
@@ -98,7 +98,7 @@ void Sprite::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue 
         setRenderRect(m_contentSize, m_lb, m_rt, m_color);
         m_isRenderRectDirty = false;
     }
-    RenderCommand command(m_mesh,m_material,this, RenderFlag::RenderStage::GUI);
+    RenderCommand command(m_mesh,m_material,this, DrawPassType::GUI);
     setUpTransFormation(command.m_transInfo);
     command.setZorder(getCustomRenderPriority());
     queues->addRenderCommand(command, requirementArg);

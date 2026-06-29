@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Rendering/DrawPass.h"
 #include "Rendering/RenderFlag.h"
 #include "Rendering/RenderQueues.h"
 #include "Rendering/RenderViewType.h"
@@ -16,14 +17,14 @@ class RenderPath;
 class RenderViewPass
 {
 public:
-	RenderViewPass(DeviceRenderStage* stage, uint32_t renderStageMask, bool consumesSceneQueue);
+	RenderViewPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue);
 	DeviceRenderStage* stage() const;
-	uint32_t renderStageMask() const;
+	DrawPassTypeMask drawPassMask() const;
 	bool consumesSceneQueue() const;
 
 private:
 	DeviceRenderStage* m_stage;
-	uint32_t m_renderStageMask;
+	DrawPassTypeMask m_drawPassMask;
 	bool m_consumesSceneQueue;
 };
 
@@ -38,7 +39,7 @@ public:
 	Camera* camera() const;
 	RenderQueue* renderQueue();
 	const RenderQueue* renderQueue() const;
-	uint32_t submitStageMask() const;
+	DrawPassTypeMask submitDrawPassMask() const;
 
 	virtual void init() = 0;
 	virtual void collect() = 0;
@@ -46,8 +47,8 @@ public:
 
 protected:
 	void setCamera(Camera* camera);
-	void addPass(DeviceRenderStage* stage, uint32_t renderStageMask, bool consumesSceneQueue);
-	void addSubmitStage(uint32_t renderStageMask);
+	void addPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue);
+	void addSubmitDrawPass(DrawPassTypeMask drawPassMask);
 	void clearQueue();
 	void applyCameraToCommands(Camera* camera);
 	void applyMatricesToCommands(const Matrix44& viewMatrix, const Matrix44& projectMatrix);
@@ -56,7 +57,7 @@ protected:
 	int m_viewIndex;
 	Camera* m_camera;
 	RenderQueue m_renderQueue;
-	uint32_t m_submitStageMask;
+	DrawPassTypeMask m_submitDrawPassMask;
 	std::vector<RenderViewPass> m_passes;
 };
 }

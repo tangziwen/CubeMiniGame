@@ -19,7 +19,7 @@ public:
     Mesh* getMesh(int index) override;
     int getMeshCount() override;
     bool getIsAccpectOcTtree() const override;
-    void submitDrawCmd(RenderFlag::RenderStage stage, RenderQueue* queues, int requirementArg) override;
+    void submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue* queues, int requirementArg) override;
     void setUpTransFormation(TransformationInfo& info) override;
     void setDebugWireframeEnabled(bool enabled);
     bool isDebugWireframeEnabled() const;

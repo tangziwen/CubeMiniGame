@@ -167,7 +167,7 @@ MaterialInstance* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce,
 
 			auto normalMapTexture =  TextureMgr::shared()->getByPath(surface->getNormalMapPath());
 			mat->setTex("NormalMap", normalMapTexture);
-			mat->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+			mat->ensureUniqueMaterial()->setDrawPassType(DrawPassType::Transparent);
 		}
 		else
 		{
@@ -200,7 +200,7 @@ MaterialInstance* GamePartRenderMgr::findOrCreateSingleMaterial(bool isInsatnce,
 				mat->setTex("SpriteTexture", texture);
 
 				newMatList.m_matList.emplace_back(mat);
-				mat->ensureUniqueMaterial()->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+				mat->ensureUniqueMaterial()->setDrawPassType(DrawPassType::Transparent);
 			}
 		}//default;
 

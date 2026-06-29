@@ -77,7 +77,7 @@ void DebugPrimitive::submitDrawCmd(RenderQueue* queue, int requirementArg)
 		return;
 	}
 	m_line->initBuffer();
-	m_line->submitDrawCmd(RenderFlag::RenderStage::COMMON, queue, requirementArg);
+	m_line->submitDrawCmd(DrawPassType::GBuffer, queue, requirementArg);
 }
 
 LinePrimitive* DebugPrimitive::getLinePrimitive()

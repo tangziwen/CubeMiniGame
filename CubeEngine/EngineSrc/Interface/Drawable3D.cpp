@@ -11,7 +11,7 @@ Drawable3D::Drawable3D()
 	setLocalPriority(-999);
 	m_octNodeIndex = -1;
 	m_drawableFlag = static_cast<uint32_t>(DrawableFlag::Drawable);
-	m_renderStageFlag = static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
+	m_drawPassMask = DrawPassType::Unset;
 	m_renderViewMask = renderViewTypeToMask(RenderViewType::Scene);
 	m_castShadow = false;
 	m_receiveShadow = true;
@@ -139,43 +139,43 @@ void Drawable3D::setDrawableFlag(const uint32_t drawableFlag)
 	m_drawableFlag = drawableFlag;
 }
 
-uint32_t Drawable3D::getRenderStage(MaterialInstance* materialHint) const
+DrawPassTypeMask Drawable3D::getDrawPassMask(MaterialInstance* materialHint) const
 {
-	if(m_renderStageFlag != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	if(m_drawPassMask != DrawPassType::Unset)
 	{
-		return m_renderStageFlag;
+		return m_drawPassMask;
 	}
 	if(materialHint)
 	{
-		const uint32_t materialStage = static_cast<uint32_t>(materialHint->getRenderStage());
-		if(materialStage != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		const DrawPassTypeMask materialDrawPass = materialHint->getDrawPassType();
+		if(materialDrawPass != DrawPassType::Unset)
 		{
-			return materialStage;
+			return materialDrawPass;
 		}
 	}
-	return static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+	return DrawPassType::GBuffer;
 }
 
-uint32_t Drawable3D::getRenderStageForRequest(MaterialInstance* materialHint, uint32_t requestedStageMask) const
+DrawPassTypeMask Drawable3D::getDrawPassForRequest(MaterialInstance* materialHint, DrawPassTypeMask requestedDrawPassMask) const
 {
-	if(requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset)
-		|| requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::All))
+	if(requestedDrawPassMask == DrawPassType::Unset
+		|| requestedDrawPassMask == DrawPassType::All)
 	{
-		return getRenderStage(materialHint);
+		return getDrawPassMask(materialHint);
 	}
 
-	const bool shadowOnlyRequest = (requestedStageMask & ~static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW)) == 0;
+	const bool shadowOnlyRequest = (requestedDrawPassMask & ~DrawPassType::Shadow) == 0;
 	if(shadowOnlyRequest)
 	{
 		return isCastShadow()
-			? static_cast<uint32_t>(RenderFlag::RenderStage::SHADOW)
-			: static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
+			? DrawPassType::Shadow
+			: DrawPassType::Unset;
 	}
 
-	const uint32_t explicitStage = m_renderStageFlag;
-	if(explicitStage != static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	const DrawPassTypeMask explicitDrawPass = m_drawPassMask;
+	if(explicitDrawPass != DrawPassType::Unset)
 	{
-		const uint32_t explicitMatch = explicitStage & requestedStageMask;
+		const DrawPassTypeMask explicitMatch = explicitDrawPass & requestedDrawPassMask;
 		if(explicitMatch != 0)
 		{
 			return explicitMatch;
@@ -183,13 +183,13 @@ uint32_t Drawable3D::getRenderStageForRequest(MaterialInstance* materialHint, ui
 
 	}
 
-	uint32_t materialStage = materialHint ? static_cast<uint32_t>(materialHint->getRenderStage())
-		: static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
-	if(materialStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	DrawPassTypeMask materialDrawPass = materialHint ? materialHint->getDrawPassType()
+		: DrawPassType::GBuffer;
+	if(materialDrawPass == DrawPassType::Unset)
 	{
-		materialStage = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+		materialDrawPass = DrawPassType::GBuffer;
 	}
-	return materialStage & requestedStageMask;
+	return materialDrawPass & requestedDrawPassMask;
 }
 
 void Drawable3D::setOutlineEnabled(bool enabled)

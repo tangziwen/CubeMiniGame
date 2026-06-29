@@ -8,20 +8,20 @@
 namespace tzw {
 namespace
 {
-uint32_t resolveMaterialStageForRequest(MaterialInstance* material, uint32_t requestedStageMask)
+DrawPassTypeMask resolveMaterialDrawPassForRequest(MaterialInstance* material, DrawPassTypeMask requestedDrawPassMask)
 {
-	uint32_t renderStage = material ? static_cast<uint32_t>(material->getRenderStage())
-		: static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
-	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	DrawPassTypeMask drawPass = material ? material->getDrawPassType()
+		: DrawPassType::GBuffer;
+	if(drawPass == DrawPassType::Unset)
 	{
-		renderStage = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+		drawPass = DrawPassType::GBuffer;
 	}
-	if(requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::Unset)
-		|| requestedStageMask == static_cast<uint32_t>(RenderFlag::RenderStage::All))
+	if(requestedDrawPassMask == DrawPassType::Unset
+		|| requestedDrawPassMask == DrawPassType::All)
 	{
-		return renderStage;
+		return drawPass;
 	}
-	return renderStage & requestedStageMask;
+	return drawPass & requestedDrawPassMask;
 }
 }
 
@@ -208,7 +208,7 @@ void VegetationBatch::setUpTransFormation(TransformationInfo& info)
 	info.m_worldMatrix = mat;
 }
 
-void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
+void VegetationBatch::commitRenderCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg)
 {
 	switch (m_type)
 	{
@@ -216,13 +216,13 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
-			const uint32_t renderStage = resolveMaterialStageForRequest(mat, static_cast<uint32_t>(stageType));
-			if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			const DrawPassTypeMask drawPass = resolveMaterialDrawPassForRequest(mat, drawPassMask);
+			if(drawPass == DrawPassType::Unset)
 			{
 				return;
 			}
 			m_instancedMeshList[0]->submitInstanced();
-			RenderCommand command(theMesh, mat, this, static_cast<RenderFlag::RenderStage>(renderStage), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(theMesh, mat, this, drawPass, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
@@ -235,13 +235,13 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 		{
 			auto theMesh = m_quadMesh;
 			auto mat = m_quadMat;
-			const uint32_t renderStage = resolveMaterialStageForRequest(mat, static_cast<uint32_t>(stageType));
-			if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+			const DrawPassTypeMask drawPass = resolveMaterialDrawPassForRequest(mat, drawPassMask);
+			if(drawPass == DrawPassType::Unset)
 			{
 				return;
 			}
 			m_instancedMeshList[0]->submitInstanced();
-			RenderCommand command(theMesh, mat, this, static_cast<RenderFlag::RenderStage>(renderStage), RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(theMesh, mat, this, drawPass, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(m_instancedMeshList[0]);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
@@ -257,13 +257,13 @@ void VegetationBatch::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQ
 				
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
-				const uint32_t renderStage = resolveMaterialStageForRequest(mat, static_cast<uint32_t>(stageType));
-				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				const DrawPassTypeMask drawPass = resolveMaterialDrawPassForRequest(mat, drawPassMask);
+				if(drawPass == DrawPassType::Unset)
 				{
 					continue;
 				}
 				m_instancedMeshList[i]->submitInstanced();
-				RenderCommand command(theMesh, mat, this, static_cast<RenderFlag::RenderStage>(renderStage),RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(theMesh, mat, this, drawPass,RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
@@ -292,7 +292,7 @@ void VegetationBatch::commitShadowRenderCmd(RenderQueue * queues, int level)
 				auto theMesh = m_model->getMesh(i);
 				auto mat = m_model->getMat(theMesh->getMatIndex());
 				m_instancedMeshList[i]->submitInstanced();
-				RenderCommand command(theMesh, mat, this, RenderFlag::RenderStage::SHADOW, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+				RenderCommand command(theMesh, mat, this, DrawPassType::Shadow, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 				command.setInstancedMesh(m_instancedMeshList[i]);
 				command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 				setUpTransFormation(command.m_transInfo);
@@ -342,13 +342,13 @@ void VegetationInfo::clear()
 	}
 }
 
-void VegetationInfo::commitRenderCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
+void VegetationInfo::commitRenderCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg)
 {
 	for(int i = 0; i < 3; i++)
 	{
 		if(m_lodBatch[i] && m_lodBatch[i]->m_totalCount)
 		{
-			m_lodBatch[i]->commitRenderCmd(stageType, queues, requirementArg);
+			m_lodBatch[i]->commitRenderCmd(drawPassMask, queues, requirementArg);
 		}
 	}
 }
@@ -512,7 +512,7 @@ unsigned int FoliageSystem::getTypeId()
 	return 2333;
 }
 
-void FoliageSystem::pushCommand(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
+void FoliageSystem::pushCommand(DrawPassTypeMask requestedDrawPassMask, RenderQueue * queues, int requirementArg)
 {
 	//regroup
 	for(const auto& iter : m_tree)
@@ -539,7 +539,7 @@ void FoliageSystem::pushCommand(RenderFlag::RenderStage requirementType, RenderQ
 		{
 			if(info->anyHas())
 			{
-				info->commitRenderCmd(requirementType, queues, requirementArg);
+				info->commitRenderCmd(requestedDrawPassMask, queues, requirementArg);
 			}
 		}
 
@@ -556,14 +556,14 @@ void FoliageSystem::finish()
 	m_isFinish = true;
 }
 
-void FoliageSystem::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
+void FoliageSystem::submitDrawCmd(DrawPassTypeMask requestedDrawPassMask, RenderQueue * queues, int requirementArg)
 {
-	const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(requirementType));
-	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	const DrawPassTypeMask drawPass = getDrawPassForRequest(m_material, requestedDrawPassMask);
+	if(drawPass == DrawPassType::Unset)
 	{
 		return;
 	}
-	RenderCommand command(m_mesh, m_material,this, static_cast<RenderFlag::RenderStage>(renderStage));
+	RenderCommand command(m_mesh, m_material,this, drawPass);
 	setUpTransFormation(command.m_transInfo);
 	queues->addRenderCommand(command, requirementArg);
 }

@@ -31,7 +31,7 @@ Model *Model::create(std::string modelFilePath, bool useCache)
     return theModel;
 }
 
-void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
+void Model::submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
@@ -49,12 +49,12 @@ void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queue
 				{
 					mat= m_effectList[mesh->getMatIndex()];
 				}
-				const uint32_t renderStage = getRenderStageForRequest(mat, static_cast<uint32_t>(stageType));
-				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				const DrawPassTypeMask drawPass = getDrawPassForRequest(mat, drawPassMask);
+				if(drawPass == DrawPassType::Unset)
 				{
 					continue;
 				}
-		        RenderCommand command(mesh,mat, this, static_cast<RenderFlag::RenderStage>(renderStage));
+		        RenderCommand command(mesh,mat, this, drawPass);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        queues->addRenderCommand(command, requirementArg);
@@ -64,12 +64,12 @@ void Model::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queue
 		    for(auto mesh : m_extraMeshList[m_currPose])
 		    {
 		        auto tech = m_effectList[mesh->getMatIndex()];
-				const uint32_t renderStage = getRenderStageForRequest(tech, static_cast<uint32_t>(stageType));
-				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				const DrawPassTypeMask drawPass = getDrawPassForRequest(tech, drawPassMask);
+				if(drawPass == DrawPassType::Unset)
 				{
 					continue;
 				}
-		        RenderCommand command(mesh,tech, this, static_cast<RenderFlag::RenderStage>(renderStage));
+		        RenderCommand command(mesh,tech, this, drawPass);
     			setUpCommand(command);
 		        setUpTransFormation(command.m_transInfo);
 		        queues->addRenderCommand(command, requirementArg);

@@ -282,7 +282,7 @@ namespace tzw
 		AABB aabb;
 		aabb.update(vec3(pos.x - dist, pos.y - dist, pos.z - dist));
 		aabb.update(vec3(pos.x + dist, pos.y + dist, pos.z + dist));
-		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), static_cast<uint32_t>(RenderFlag::RenderStage::All), aabb);
+		g_GetCurrScene()->getRange(&list, static_cast<uint32_t>(DrawableFlag::All), DrawPassType::All, aabb);
 		keepTerrainDrawablesOnly(list);
 		if (!list.empty())
 		{

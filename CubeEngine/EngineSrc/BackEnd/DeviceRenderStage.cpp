@@ -18,12 +18,12 @@ namespace tzw
 		m_selfRenderQueue = new RenderQueue();
 	}
 
-	void DeviceRenderStage::init(DeviceRenderPass* renderPass, DeviceFrameBuffer* frameBuffer, uint32_t renderStage)
+	void DeviceRenderStage::init(DeviceRenderPass* renderPass, DeviceFrameBuffer* frameBuffer, DrawPassTypeMask drawPassMask)
 	{
         m_renderPass = renderPass;
         m_frameBuffer = frameBuffer;
         m_singlePipeline = nullptr;
-		m_renderStage = renderStage;
+		m_drawPassMask = drawPassMask;
 	}
 
 	void DeviceRenderStage::initCompute()
@@ -31,7 +31,7 @@ namespace tzw
         m_renderPass = nullptr;
         m_frameBuffer = nullptr;
         m_singlePipeline = nullptr;
-		m_renderStage = 0;
+		m_drawPassMask = DrawPassType::Unset;
 	}
 
 	DeviceRenderPass* DeviceRenderStage::getRenderPass()

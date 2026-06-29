@@ -56,7 +56,7 @@ namespace tzw
 		m_isNeedUpdateRenderInfo;
 	}
 
-	void GamePartRenderNode::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
+	void GamePartRenderNode::submitDrawCmd(DrawPassTypeMask requestedDrawPassMask, RenderQueue * queues, int requirementArg)
 	{
 		if(getIsVisible())
 		{
@@ -68,17 +68,17 @@ namespace tzw
 			}
 			for(auto &info : m_infoList)
 			{
-				const uint32_t renderStage = getRenderStageForRequest(info.material, static_cast<uint32_t>(requirementType));
-				if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+				const DrawPassTypeMask drawPass = getDrawPassForRequest(info.material, requestedDrawPassMask);
+				if(drawPass == DrawPassType::Unset)
 				{
 					continue;
 				}
 				RenderCommand command(info.mesh, info.material,this,
-					static_cast<RenderFlag::RenderStage>(renderStage));
+					drawPass);
 				setUpCommand(command);
 				if(m_renderMode == RenderMode::AFTER_DEPTH)
 				{
-					command.setRenderStageMask(static_cast<uint32_t>(RenderFlag::RenderStage::AFTER_DEPTH_CLEAR));
+					command.setDrawPassMask(DrawPassType::AfterDepthClear);
 				}
 				queues->addRenderCommand(command, requirementArg);
 			}

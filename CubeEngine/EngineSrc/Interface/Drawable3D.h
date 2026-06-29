@@ -6,6 +6,7 @@
 #include "../Math/t_Sphere.h"
 #include "../Collision/ColliderEllipsoid.h"
 #include "Utility/log/Log.h"
+#include "Rendering/DrawPass.h"
 #include "Rendering/RenderViewType.h"
 namespace tzw {
 class Ray;
@@ -46,15 +47,11 @@ public:
 	void setColor(vec4 newColor) override;
 	uint32_t getDrawableFlag() const;
 	void setDrawableFlag(const uint32_t drawableFlag);
-	uint32_t getRenderStageFlag() const
+	DrawPassTypeMask getDrawPassMask(MaterialInstance* materialHint = nullptr) const;
+	DrawPassTypeMask getDrawPassForRequest(MaterialInstance* materialHint, DrawPassTypeMask requestedDrawPassMask) const;
+	void setDrawPassMask(DrawPassTypeMask drawPassMask)
 	{
-		return m_renderStageFlag;
-	}
-	uint32_t getRenderStage(MaterialInstance* materialHint = nullptr) const;
-	uint32_t getRenderStageForRequest(MaterialInstance* materialHint, uint32_t requestedStageMask) const;
-	void setRenderStageFlag(const uint32_t renderStage)
-	{
-		m_renderStageFlag = renderStage;
+		m_drawPassMask = drawPassMask;
 	}
 	void setOutlineEnabled(bool enabled);
 	bool isOutlineEnabled() const;
@@ -73,7 +70,7 @@ protected:
 	bool m_isHitable;
 	int m_octNodeIndex;
 	uint32_t m_drawableFlag;
-	uint32_t m_renderStageFlag;
+	DrawPassTypeMask m_drawPassMask;
 	uint32_t m_renderViewMask;
 	bool m_castShadow;
 	bool m_receiveShadow;

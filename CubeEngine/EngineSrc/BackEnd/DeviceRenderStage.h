@@ -1,6 +1,6 @@
 #pragma once
 #include "Rendering/ImageFormat.h"
-#include "Rendering/RenderStage.h"
+#include "Rendering/DrawPass.h"
 #include "Rendering/RenderCommand.h"
 #include "DeviceRenderPass.h"
 #include <unordered_map>
@@ -19,7 +19,7 @@ class DeviceRenderStage
 {
 public:
 	DeviceRenderStage();
-	void init(DeviceRenderPass * renderPass, DeviceFrameBuffer * frameBuffer, uint32_t renderStage = (uint32_t)RenderFlag::RenderStage::All);
+	void init(DeviceRenderPass * renderPass, DeviceFrameBuffer * frameBuffer, DrawPassTypeMask drawPassMask = DrawPassType::All);
 	void initCompute();
 	DeviceRenderPass * getRenderPass();
 	DeviceFrameBuffer * getFrameBuffer();
@@ -70,7 +70,7 @@ protected:
 	std::string m_name;
 	DeviceRenderCommand * m_deviceRenderCommand;
 	RenderQueue * m_selfRenderQueue;
-	uint32_t m_renderStage;
+	DrawPassTypeMask m_drawPassMask;
 };
 };
 

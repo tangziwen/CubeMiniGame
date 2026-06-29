@@ -8,6 +8,7 @@
 #include "../Lighting/DirectionalLight.h"
 #include "../Lighting/AmbientLight.h"
 #include "../3D/SkyBox.h"
+#include "Rendering/DrawPass.h"
 namespace tzw {
 
 class OctreeScene;
@@ -31,7 +32,7 @@ public:
     void setDefaultCamera(Camera *defaultCamera);
 
     bool hitByRay(const Ray &ray, vec3 &hitPoint);
-    void getRange(std::vector<Drawable3D *>* list,uint32_t itemFlag, uint32_t renderStageFlag, AABB aabb);
+    void getRange(std::vector<Drawable3D *>* list,uint32_t itemFlag, DrawPassTypeMask drawPassMask, AABB aabb);
     Node * root();
     ConsolePanel *getConsolePanel() const;
     void setConsolePanel(ConsolePanel *consolePanel);

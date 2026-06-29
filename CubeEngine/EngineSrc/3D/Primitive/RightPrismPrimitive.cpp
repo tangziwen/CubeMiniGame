@@ -30,16 +30,16 @@ RightPrismPrimitive::RightPrismPrimitive(float width,  float height, float depth
     setIsAccpectOcTtree(true);
 }
 
-void RightPrismPrimitive::submitDrawCmd(RenderFlag::RenderStage requirementType, RenderQueue * queues, int requirementArg)
+void RightPrismPrimitive::submitDrawCmd(DrawPassTypeMask requestedDrawPassMask, RenderQueue * queues, int requirementArg)
 {
 	if(getIsVisible())
 	{
-		const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(requirementType));
-		if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		const DrawPassTypeMask drawPass = getDrawPassForRequest(m_material, requestedDrawPassMask);
+		if(drawPass == DrawPassType::Unset)
 		{
 			return;
 		}
-		RenderCommand command(m_mesh, m_material,this, static_cast<RenderFlag::RenderStage>(renderStage));
+		RenderCommand command(m_mesh, m_material,this, drawPass);
 		setUpCommand(command);
 		queues->addRenderCommand(command, requirementArg);
 	}

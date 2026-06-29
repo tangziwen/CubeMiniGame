@@ -5,14 +5,14 @@
 #include "../Mesh/VertexData.h"
 namespace tzw {
 
-RenderCommand::RenderCommand(Mesh *mesh, MaterialInstance *material, void * obj,RenderFlag::RenderStage renderStage, PrimitiveType primitiveType, RenderBatchType batchType)
+RenderCommand::RenderCommand(Mesh *mesh, MaterialInstance *material, void * obj, DrawPassTypeMask drawPassMask, PrimitiveType primitiveType, RenderBatchType batchType)
     :m_mesh(mesh),m_material(material),
 	m_primitiveType(primitiveType),m_Zorder(0),
     m_batchType(batchType),
 	m_outlineColor(1.0f, 0.85f, 0.15f, 1.0f)
 {
     m_obj = obj;
-	m_renderStageMask = static_cast<uint32_t>(renderStage);
+	m_drawPassMask = drawPassMask;
 }
 
 void RenderCommand::render()
@@ -61,29 +61,29 @@ void RenderCommand::setDepthTestPolicy(const DepthPolicy &depthTestPolicy)
     m_depthTestPolicy = depthTestPolicy;
 }
 
-uint32_t RenderCommand::getRenderStageMask() const
+DrawPassTypeMask RenderCommand::getDrawPassMask() const
 {
-	return m_renderStageMask;
+	return m_drawPassMask;
 }
 
-void RenderCommand::setRenderStageMask(uint32_t renderStageMask)
+void RenderCommand::setDrawPassMask(DrawPassTypeMask drawPassMask)
 {
-	m_renderStageMask = renderStageMask;
+	m_drawPassMask = drawPassMask;
 }
 
-void RenderCommand::addRenderStage(RenderFlag::RenderStage renderStage)
+void RenderCommand::addDrawPass(DrawPassTypeMask drawPassMask)
 {
-	m_renderStageMask |= static_cast<uint32_t>(renderStage);
+	m_drawPassMask |= drawPassMask;
 }
 
-void RenderCommand::removeRenderStage(RenderFlag::RenderStage renderStage)
+void RenderCommand::removeDrawPass(DrawPassTypeMask drawPassMask)
 {
-	m_renderStageMask &= ~static_cast<uint32_t>(renderStage);
+	m_drawPassMask &= ~drawPassMask;
 }
 
-bool RenderCommand::hasRenderStage(RenderFlag::RenderStage renderStage) const
+bool RenderCommand::hasDrawPass(DrawPassTypeMask drawPassMask) const
 {
-	return (m_renderStageMask & static_cast<uint32_t>(renderStage)) != 0;
+	return (m_drawPassMask & drawPassMask) != 0;
 }
 
 InstancedMesh* RenderCommand::getInstancedMesh() const

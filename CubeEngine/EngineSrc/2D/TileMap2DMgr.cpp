@@ -106,7 +106,7 @@ namespace tzw {
 		m_mesh->finish(true);
 	}
 
-	void TileMap2DMgr::submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg)
+	void TileMap2DMgr::submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg)
 	{
 		if(m_tilesList.empty() || !m_mesh || m_tileTypePool.empty()) return;
 		for(auto& iter : m_tileTypePool)
@@ -132,7 +132,7 @@ namespace tzw {
 			//tiletype->instancedMesh->clearInstances();
 			if (tiletype->instancedMesh->getInstanceSize() == 0) continue;
 			tiletype->instancedMesh->submitInstanced();
-			RenderCommand command(m_mesh, tiletype->material, this, RenderFlag::RenderStage::GUI, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(m_mesh, tiletype->material, this, DrawPassType::GUI, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(tiletype->instancedMesh);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 

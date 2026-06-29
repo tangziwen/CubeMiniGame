@@ -40,7 +40,7 @@ public:
 	void removeTileAt(unsigned short x, unsigned short y);
 	void removeSprite(SpriteInstanceInfo *info);
 	void initMesh();
-	void submitDrawCmd(RenderFlag::RenderStage renderStage, RenderQueue * queues, int requirementArg);
+	void submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg);
 	int getOrAddType(const std::string & filePath);
 private:
 	int m_totalTypes = 0;

@@ -89,7 +89,7 @@ const std::string& MaterialTechnique::getFullDescriptionStr() const
     return m_fullDescString;
 }
 
-void MaterialTechnique::updateFullDescriptionStr(RenderFlag::RenderStage renderStage)
+void MaterialTechnique::updateFullDescriptionStr(DrawPassType drawPassType)
 {
     std::ostringstream ostr;
     if(m_program)
@@ -102,7 +102,7 @@ void MaterialTechnique::updateFullDescriptionStr(RenderFlag::RenderStage renderS
     }
     ostr << "|technique:" << materialTechniqueTypeToString(MaterialTechniqueType::Default)
         << "|mutation:" << getMutationFlag()
-        << "|stage:" << static_cast<int>(renderStage)
+        << "|drawPass:" << static_cast<int>(drawPassType)
         << "|flags:" << static_cast<uint32_t>(getMaterialFlag())
         << "|topology:" << static_cast<int>(m_primitiveTopology)
         << "|raster:" << static_cast<int>(m_rasterFillMode)

@@ -55,24 +55,6 @@ enum class BlendingFactor
 };
 
 
-enum class RenderStageType
-{
-    COMMON,
-    SHADOW,
-};
-enum class RenderStage : uint32_t
-{
-	Unset = 0,
-	COMMON = 1UL <<1,
-	TRANSPARENT = 1UL <<2,
-	AFTER_DEPTH_CLEAR = 1UL <<3,
-	GUI= 1UL <<4,
-	SHADOW = 1UL <<5,
-	DEBUG_LAYER = 1UL <<6,
-	OUTLINE_MASK = 1UL <<7,
-	All = -1
-};
-
 enum class BufferStorageType
 {
 	STATIC_DRAW,

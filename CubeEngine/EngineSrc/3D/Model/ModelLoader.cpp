@@ -41,35 +41,6 @@ RenderFlag::BlendingFactor parseBlendFactor(const std::string& str, RenderFlag::
 	return defaultFactor;
 }
 
-RenderFlag::RenderStage parseRenderStage(const std::string& str, RenderFlag::RenderStage defaultStage)
-{
-	if(str == "COMMON")
-	{
-		return RenderFlag::RenderStage::COMMON;
-	}
-	if(str == "TRANSPARENT")
-	{
-		return RenderFlag::RenderStage::TRANSPARENT;
-	}
-	if(str == "AFTER_DEPTH_CLEAR")
-	{
-		return RenderFlag::RenderStage::AFTER_DEPTH_CLEAR;
-	}
-	if(str == "GUI")
-	{
-		return RenderFlag::RenderStage::GUI;
-	}
-	if(str == "SHADOW")
-	{
-		return RenderFlag::RenderStage::SHADOW;
-	}
-	if(str == "DEBUG_LAYER")
-	{
-		return RenderFlag::RenderStage::DEBUG_LAYER;
-	}
-	return defaultStage;
-}
-
 RenderFlag::CullMode parseCullMode(const std::string& str, RenderFlag::CullMode defaultMode)
 {
 	if(str == "front" || str == "Front")
@@ -119,11 +90,15 @@ bool hasRenderStateOverrides(rapidjson::Value& materialData)
 		|| materialData.HasMember("DstBlendFactor");
 }
 
-void applyRenderStageOverride(Material * material, rapidjson::Value& materialData)
+void applyDrawPassTypeOverride(Material * material, rapidjson::Value& materialData)
 {
 	if(materialData.HasMember("RenderStage"))
 	{
-		material->setRenderStage(parseRenderStage(materialData["RenderStage"].GetString(), material->getRenderStage()));
+		material->setDrawPassType(parseDrawPassType(materialData["RenderStage"].GetString(), material->getDrawPassType()));
+	}
+	if(materialData.HasMember("DrawPassType"))
+	{
+		material->setDrawPassType(parseDrawPassType(materialData["DrawPassType"].GetString(), material->getDrawPassType()));
 	}
 }
 
@@ -248,7 +223,7 @@ void applyAttributeOverride(Material * material, rapidjson::Value& attribute)
 
 void applyMaterialVariantOverrides(Material * material, rapidjson::Value& materialData, const std::string& folder)
 {
-	applyRenderStageOverride(material, materialData);
+	applyDrawPassTypeOverride(material, materialData);
 	applyGlobalRenderStateOverrides(material, materialData);
 
 	if(materialData.HasMember("techniques"))

@@ -51,14 +51,14 @@ LaserPrimitive::LaserPrimitive(vec3 begin, vec3 end, float width, bool isOriginI
 	Node::setRotateQ(q);
 }
 
-void LaserPrimitive::submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg)
+void LaserPrimitive::submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg)
 {
-	const uint32_t renderStage = getRenderStageForRequest(m_material, static_cast<uint32_t>(stageType));
-	if(renderStage == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+	const DrawPassTypeMask drawPass = getDrawPassForRequest(m_material, drawPassMask);
+	if(drawPass == DrawPassType::Unset)
 	{
 		return;
 	}
-	RenderCommand command(m_mesh,m_material, this, static_cast<RenderFlag::RenderStage>(renderStage));
+	RenderCommand command(m_mesh,m_material, this, drawPass);
     setUpTransFormation(command.m_transInfo);
 	//command.setPrimitiveType(RenderCommand::PrimitiveType::Lines);
 	 queues->addRenderCommand(command, requirementArg);
@@ -125,9 +125,9 @@ void LaserPrimitive::init()
 	material->setIsCullFace(false);
 	material->setIsEnableBlend(true);
 	material->setIsDepthWriteEnable(false);
-	material->setRenderStage(RenderFlag::RenderStage::TRANSPARENT);
+	material->setDrawPassType(DrawPassType::Transparent);
 	setMaterial(m_material);
-	setRenderStageFlag(static_cast<uint32_t>(RenderFlag::RenderStage::TRANSPARENT));
+	setDrawPassMask(DrawPassType::Transparent);
 	setCamera(g_GetCurrScene()->defaultCamera());
 }
 	

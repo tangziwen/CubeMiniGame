@@ -27,7 +27,7 @@ namespace tzw
 	{
 		if(renderQueue)
 		{
-			renderQueue->dispatch(m_selfRenderQueue, m_renderStage);
+			renderQueue->dispatch(m_selfRenderQueue, m_drawPassMask);
 		}
         for(RenderCommand & a : m_selfRenderQueue->getList())
         {

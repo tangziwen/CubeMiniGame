@@ -81,7 +81,7 @@ private:
 	// bool m_isEnableAlphaTest;
 	std::string m_name;
 public:
-	RenderFlag::RenderStage getRenderStage() const;
+	DrawPassType getDrawPassType() const;
 };
 
 } // namespace tzw

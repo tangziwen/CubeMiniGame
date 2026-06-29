@@ -18,7 +18,7 @@ public:
 	LinePrimitive(vec3 begin, vec3 end);
 	LinePrimitive();
 	~LinePrimitive();
-	void submitDrawCmd(RenderFlag::RenderStage stageType, RenderQueue * queues, int requirementArg) override;
+	void submitDrawCmd(DrawPassTypeMask drawPassMask, RenderQueue * queues, int requirementArg) override;
 	void initBuffer();
 	virtual void setUpTransFormation(TransformationInfo &info);
 	void append(vec3 begin, vec3 end, vec3 color = vec3(1, 1, 1));

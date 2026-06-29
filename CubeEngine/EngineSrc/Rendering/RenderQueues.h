@@ -12,12 +12,12 @@ namespace tzw {
 	public:
 		RenderQueue();
 		void addRenderCommand(RenderCommand& command, int level);
-		void addInstancedData(InstanceRendereData & data, RenderFlag::RenderStage renderStage = RenderFlag::RenderStage::COMMON, int batchID = 0);
+		void addInstancedData(InstanceRendereData & data, DrawPassTypeMask drawPassMask = DrawPassType::GBuffer, int batchID = 0);
 		std::vector<RenderCommand> & getList();
 		const std::vector<RenderCommand> & getList() const;
 		void clearCommands();
-		void dispatch(RenderQueue * queue, uint32_t renderStage);
-		void generateInstancedDrawCall(RenderFlag::RenderStage renderStage = RenderFlag::RenderStage::COMMON, int batchID = 0, int requirementArg = 0);
+		void dispatch(RenderQueue * queue, DrawPassTypeMask drawPassMask);
+		void generateInstancedDrawCall(DrawPassTypeMask drawPassMask = DrawPassType::GBuffer, int batchID = 0, int requirementArg = 0);
 	private:
 		std::vector<RenderCommand> m_fullList;
 		InstancingMgr * m_instancesBatcher;

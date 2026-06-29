@@ -14,9 +14,9 @@ namespace tzw
 		m_fullList.emplace_back(command);
 	}
 
-	void RenderQueue::addInstancedData(InstanceRendereData& data, RenderFlag::RenderStage renderStage, int batchID)
+	void RenderQueue::addInstancedData(InstanceRendereData& data, DrawPassTypeMask drawPassMask, int batchID)
 	{
-		m_instancesBatcher->pushInstanceRenderData(renderStage, data, batchID);
+		m_instancesBatcher->pushInstanceRenderData(drawPassMask, data, batchID);
 	}
 
 	std::vector<RenderCommand>& RenderQueue::getList()
@@ -32,23 +32,23 @@ namespace tzw
 	void RenderQueue::clearCommands()
 	{
 		m_fullList.clear();
-		m_instancesBatcher->prepare(RenderFlag::RenderStage::All, -1);
+		m_instancesBatcher->prepare(DrawPassType::All, -1);
 	}
 
-	void RenderQueue::dispatch(RenderQueue* otherQueue, uint32_t renderStage)
+	void RenderQueue::dispatch(RenderQueue* otherQueue, DrawPassTypeMask drawPassMask)
 	{
 		otherQueue->clearCommands();
 		for(auto& cmd :m_fullList)
 		{
-			if(cmd.getRenderStageMask() & renderStage)
+			if(cmd.getDrawPassMask() & drawPassMask)
 			{
 				otherQueue->addRenderCommand(cmd, 0);
 			}
 		}
 	}
 
-	void RenderQueue::generateInstancedDrawCall(RenderFlag::RenderStage renderStage, int batchID, int requirementArg)
+	void RenderQueue::generateInstancedDrawCall(DrawPassTypeMask drawPassMask, int batchID, int requirementArg)
 	{
-		m_instancesBatcher->generateDrawCall(renderStage, this, batchID, requirementArg);
+		m_instancesBatcher->generateDrawCall(drawPassMask, this, batchID, requirementArg);
 	}
 }

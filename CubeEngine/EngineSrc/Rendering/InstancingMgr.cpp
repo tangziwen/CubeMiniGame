@@ -5,12 +5,9 @@
 #include <unordered_set>
 namespace tzw
 {
-	void InstancingMgr::prepare(RenderFlag::RenderStage renderStage, int batchIdx)
+	void InstancingMgr::prepare(DrawPassTypeMask, int batchIdx)
 	{
 		bool isAllBatch = batchIdx < 0;
-		uint32_t stageID = static_cast<uint32_t> (renderStage);
-		//auto innerMatMapIter =  m_map.find(stageID);
-		//if(innerMatMapIter == m_map.end()) return;
 
 		for(auto innerMatMapIter : m_map)
 		{
@@ -41,21 +38,20 @@ namespace tzw
 		}
 	}
 
-	void InstancingMgr::pushInstanceRenderData(RenderFlag::RenderStage stage, InstanceRendereData data, int batchID)
+	void InstancingMgr::pushInstanceRenderData(DrawPassTypeMask drawPassMask, InstanceRendereData data, int batchID)
 	{
-		int renderTypeID = getInstancedIndexFromRenderType(stage);
-		uint32_t stageID = data.renderStageMask;
-		if(stageID == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		uint32_t drawPassID = data.drawPassMask;
+		if(drawPassID == DrawPassType::Unset)
 		{
-			stageID = static_cast<uint32_t>(data.material->getMaterial()->getRenderStage());
+			drawPassID = static_cast<uint32_t>(data.material->getMaterial()->getDrawPassType());
 		}
-		if(stageID == static_cast<uint32_t>(RenderFlag::RenderStage::Unset))
+		if(drawPassID == DrawPassType::Unset)
 		{
-			stageID = static_cast<uint32_t>(RenderFlag::RenderStage::COMMON);
+			drawPassID = DrawPassType::GBuffer;
 		}
-		auto mat_to_mesh = m_map.find(stageID);
+		auto mat_to_mesh = m_map.find(drawPassID);
 		InstancedMesh * instacing = nullptr;
-		if(mat_to_mesh != m_map.end())//already have this stage
+		if(mat_to_mesh != m_map.end())//already have this draw pass
 		{
 			auto mesh_to_instance = mat_to_mesh->second.find(data.material);
 			
@@ -103,29 +99,26 @@ namespace tzw
 		else //total empty
 		{
 			innerMatMap newMatMap{};
-			m_map.insert(std::make_pair(stageID, newMatMap));// = newMap;
+			m_map.insert(std::make_pair(drawPassID, newMatMap));// = newMap;
 			innerMeshMap newMeshMap{};
-			m_map[stageID].insert(std::make_pair(data.material, newMeshMap));// = newMap;
+			m_map[drawPassID].insert(std::make_pair(data.material, newMeshMap));// = newMap;
 			instacing = new InstancedMesh(data.m_mesh);
 
 			for(int j = 0; j < MAX_BATCHING_COUNT; j++)
 			{
-				m_map[stageID][data.material][data.m_mesh][j] = nullptr;
+				m_map[drawPassID][data.material][data.m_mesh][j] = nullptr;
 			}
 
-			m_map[stageID][data.material][data.m_mesh][batchID] = instacing;
+			m_map[drawPassID][data.material][data.m_mesh][batchID] = instacing;
 		}
 		
 		instacing->pushInstance(data.data);
 	}
 
-	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage requirementStage, RenderQueue * queues,int batchID, int requirementArg)
+	void InstancingMgr::generateDrawCall(DrawPassTypeMask requirementDrawPassMask, RenderQueue * queues,int batchID, int requirementArg)
 	{
-		uint32_t renderType = static_cast<uint32_t>(requirementStage);
-		//auto innerMatIter = m_map.find(renderType);
-		//if(innerMatIter  == m_map.end()) return;
 		std::vector<RenderCommand> cmdList;
-		generateDrawCall(requirementStage, batchID, requirementArg, cmdList);
+		generateDrawCall(requirementDrawPassMask, batchID, requirementArg, cmdList);
 
 		for(auto & cmd : cmdList)
 		{
@@ -133,11 +126,8 @@ namespace tzw
 		}
 	}
 
-	void InstancingMgr::generateDrawCall(RenderFlag::RenderStage requirementStage, int batchID, int requirementArg, std::vector<RenderCommand>& cmmdList)
+	void InstancingMgr::generateDrawCall(DrawPassTypeMask, int batchID, int requirementArg, std::vector<RenderCommand>& cmmdList)
 	{
-		uint32_t renderType = static_cast<uint32_t>(requirementStage);
-		//auto innerMatIter = m_map.find(renderType);
-		//if(innerMatIter  == m_map.end()) return;
 		for(auto innerMatIter : m_map)
 		{
 			for(auto & innerMap : innerMatIter.second)
@@ -152,7 +142,7 @@ namespace tzw
 							if(t.second[i] && t.second[i]->getInstanceSize()> 0)
 							{
 								t.second[i]->submitInstanced();
-								RenderCommand command(t.first, innerMap.first, nullptr, (RenderFlag::RenderStage)innerMatIter.first, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+								RenderCommand command(t.first, innerMap.first, nullptr, (DrawPassTypeMask)innerMatIter.first, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 								command.setInstancedMesh(t.second[i]);
 								command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 								setUpTransFormation(command.m_transInfo);
@@ -165,7 +155,7 @@ namespace tzw
 						if(t.second[batchID] &&t.second[batchID]->getInstanceSize()> 0)
 						{
 							t.second[batchID]->submitInstanced();
-							RenderCommand command(t.first, innerMap.first, nullptr, (RenderFlag::RenderStage)innerMatIter.first, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+							RenderCommand command(t.first, innerMap.first, nullptr, (DrawPassTypeMask)innerMatIter.first, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 							command.setInstancedMesh(t.second[batchID]);
 							command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 							setUpTransFormation(command.m_transInfo);
@@ -187,7 +177,7 @@ namespace tzw
 		mat.setToIdentity();
 		info.m_worldMatrix = mat;
 	}
-	void InstancingMgr::generateSingleCommand(RenderFlag::RenderStage requirementType, std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
+	void InstancingMgr::generateSingleCommand(DrawPassTypeMask requestedDrawPassMask, std::vector<InstanceRendereData> dataList, std::vector<RenderCommand> & cmdList)
 	{
 		std::unordered_map<Mesh *,InstancedMesh * > tmpMeshList;
 		std::unordered_map<Mesh *,MaterialInstance * > tmpMatList;
@@ -207,7 +197,7 @@ namespace tzw
 		{
 			auto instancing = iter.second;
 			instancing->submitInstanced();
-			RenderCommand command(instancing->getMesh(), tmpMatList[instancing->getMesh()], nullptr, requirementType, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
+			RenderCommand command(instancing->getMesh(), tmpMatList[instancing->getMesh()], nullptr, requestedDrawPassMask, RenderCommand::PrimitiveType::TRIANGLES, RenderCommand::RenderBatchType::Instanced);
 			command.setInstancedMesh(instancing);
 			command.setPrimitiveType(RenderCommand::PrimitiveType::TRIANGLES);
 			setUpTransFormation(command.m_transInfo);
@@ -215,16 +205,16 @@ namespace tzw
 		}
 		return;
 	}
-	int InstancingMgr::getInstancedIndexFromRenderType(RenderFlag::RenderStage renderType)
+	int InstancingMgr::getInstancedIndexFromDrawPass(DrawPassTypeMask drawPassMask)
 	{
 		int clearID = 0;
-		switch(renderType)
+		switch(drawPassMask)
 		{
-		case RenderFlag::RenderStage::GUI: break;
-		case RenderFlag::RenderStage::COMMON:
-			clearID = COMMON_PASS_INSTANCE;
+		case DrawPassType::GUI: break;
+		case DrawPassType::GBuffer:
+			clearID = GBUFFER_PASS_INSTANCE;
 			break;
-		case RenderFlag::RenderStage::SHADOW:
+		case DrawPassType::Shadow:
 			clearID = SHADOW_PASS_INSTANCE;
 			break;
 		default: ;

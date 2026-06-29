@@ -3,7 +3,7 @@
 #include "../Interface/DepthPolicy.h"
 #include "../Math/Matrix44.h"
 #include "Mesh/InstanceData.h"
-#include "Rendering/RenderFlag.h"
+#include "Rendering/DrawPass.h"
 #include <vector>
 
 namespace tzw {
@@ -15,7 +15,7 @@ struct InstanceRendereData
 	InstanceData data;
     MaterialInstance * material;
     Mesh * m_mesh;
-	uint32_t renderStageMask = static_cast<uint32_t>(RenderFlag::RenderStage::Unset);
+	DrawPassTypeMask drawPassMask = DrawPassType::Unset;
 };
 struct TransformationInfo{
     Matrix44 m_worldMatrix;
@@ -40,7 +40,7 @@ public:
         Single,
 		Instanced,
     };
-    RenderCommand(Mesh * mesh,MaterialInstance * material, void * obj, RenderFlag::RenderStage renderStage, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
+    RenderCommand(Mesh * mesh,MaterialInstance * material, void * obj, DrawPassTypeMask drawPassMask, PrimitiveType primitiveType = PrimitiveType::TRIANGLES, RenderBatchType batchType = RenderBatchType::Single);
     void render();
 
     RenderBatchType batchType() const;
@@ -54,11 +54,11 @@ public:
 	DepthPolicy depthTestPolicy() const;
 	void setDepthTestPolicy(const DepthPolicy &depthTestPolicy);
 	TransformationInfo m_transInfo;
-	uint32_t getRenderStageMask() const;
-	void setRenderStageMask(uint32_t renderStageMask);
-	void addRenderStage(RenderFlag::RenderStage renderStage);
-	void removeRenderStage(RenderFlag::RenderStage renderStage);
-	bool hasRenderStage(RenderFlag::RenderStage renderStage) const;
+	DrawPassTypeMask getDrawPassMask() const;
+	void setDrawPassMask(DrawPassTypeMask drawPassMask);
+	void addDrawPass(DrawPassTypeMask drawPassMask);
+	void removeDrawPass(DrawPassTypeMask drawPassMask);
+	bool hasDrawPass(DrawPassTypeMask drawPassMask) const;
 	RenderBatchType m_batchType;
 	InstancedMesh* getInstancedMesh() const;
 	void setInstancedMesh(InstancedMesh* const instancedMesh);
@@ -70,7 +70,7 @@ public:
 	const vec4& outlineColor() const;
 private:
     void *m_obj;
-	uint32_t m_renderStageMask;
+	DrawPassTypeMask m_drawPassMask;
     Mesh * m_mesh;
 	InstancedMesh * m_instancedMesh;
     MaterialInstance *m_material;

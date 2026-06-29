@@ -37,23 +37,6 @@ RenderFlag::BlendingFactor parseBlendFactor(const std::string& str, RenderFlag::
     return defaultFactor;
 }
 
-RenderFlag::RenderStage parseRenderStage(const std::string& str, RenderFlag::RenderStage defaultStage)
-{
-    if(str == "COMMON")
-    {
-        return RenderFlag::RenderStage::COMMON;
-    }
-    if(str == "TRANSPARENT")
-    {
-        return RenderFlag::RenderStage::TRANSPARENT;
-    }
-    if(str == "AFTER_DEPTH_CLEAR")
-    {
-        return RenderFlag::RenderStage::AFTER_DEPTH_CLEAR;
-    }
-    return defaultStage;
-}
-
 RenderFlag::CullMode parseCullMode(const std::string& str, RenderFlag::CullMode defaultMode)
 {
     if(str == "front" || str == "Front")
@@ -296,7 +279,7 @@ std::unordered_map<std::string, Material*>& getMaterialCache()
 }
 
 Material::Material()
-    : m_renderStage(RenderFlag::RenderStage::COMMON)
+    : m_drawPassType(DrawPassType::GBuffer)
 {
     m_techniques[MaterialTechniqueType::Default] = MaterialTechnique();
 }
@@ -309,7 +292,7 @@ Material * Material::clone() const
     material->m_shadingParams.copyFrom(m_shadingParams);
     material->m_texSlotMap = m_texSlotMap;
     material->m_techniques = m_techniques;
-    material->m_renderStage = m_renderStage;
+    material->m_drawPassType = m_drawPassType;
     return material;
 }
 
@@ -334,7 +317,7 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
     m_texSlotMap.clear();
     m_techniques.clear();
     m_techniques[MaterialTechniqueType::Default] = MaterialTechnique();
-    m_renderStage = RenderFlag::RenderStage::COMMON;
+    m_drawPassType = DrawPassType::GBuffer;
 
     if(doc.HasMember("name"))
     {
@@ -343,7 +326,11 @@ void Material::loadFromJson(rapidjson::Value& doc, std::string envFolder)
 
     if(doc.HasMember("RenderStage"))
     {
-        m_renderStage = parseRenderStage(doc["RenderStage"].GetString(), m_renderStage);
+        m_drawPassType = parseDrawPassType(doc["RenderStage"].GetString(), m_drawPassType);
+    }
+    if(doc.HasMember("DrawPassType"))
+    {
+        m_drawPassType = parseDrawPassType(doc["DrawPassType"].GetString(), m_drawPassType);
     }
 
     if(doc.HasMember("shaders"))
@@ -660,14 +647,14 @@ void Material::setRasterFillMode(MaterialTechniqueType type, RasterFillMode newM
     updateFullDescriptionStr();
 }
 
-RenderFlag::RenderStage Material::getRenderStage() const
+DrawPassType Material::getDrawPassType() const
 {
-    return m_renderStage;
+    return m_drawPassType;
 }
 
-void Material::setRenderStage(RenderFlag::RenderStage renderStage)
+void Material::setDrawPassType(DrawPassType drawPassType)
 {
-    m_renderStage = renderStage;
+    m_drawPassType = drawPassType;
     updateFullDescriptionStr();
 }
 
@@ -808,7 +795,7 @@ void Material::loadTechnique(MaterialTechnique& technique, rapidjson::Value& doc
 
 void Material::updateTechniqueFullDescriptionStr(MaterialTechnique& technique)
 {
-    technique.updateFullDescriptionStr(m_renderStage);
+    technique.updateFullDescriptionStr(m_drawPassType);
 }
 
 void Material::updateFullDescriptionStr()
