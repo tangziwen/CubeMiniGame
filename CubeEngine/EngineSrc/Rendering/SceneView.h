@@ -30,11 +30,32 @@ public:
 	RenderQueue* sceneQueue();
 
 private:
+	void initRenderGraphResources();
+	void initRenderGraph();
+	void executeHBAOPass(RenderGraphContext& graphContext);
+	void executeSceneColorCopyPass(RenderGraphContext& graphContext);
+	void executeSSRPass(RenderGraphContext& graphContext);
+	void executeSSGIPass(RenderGraphContext& graphContext);
+	void executeFogPass(RenderGraphContext& graphContext);
+	void executeBloomPass(RenderGraphContext& graphContext);
+	void executeTSAAPass(RenderGraphContext& graphContext);
+	void executeOutlinePass(RenderGraphContext& graphContext);
+
 	TSAA m_tsaa;
 	SSGI m_ssgi;
 	Bloom m_bloom;
 	OutlinePass m_outlinePass;
 	RenderGraph m_renderGraph;
+	RenderGraphResourceHandle m_gBufferFrameBufferResource;
+	RenderGraphResourceHandle m_hbaoFrameBufferResource;
+	RenderGraphResourceHandle m_fxaaFrameBufferResource;
+	RenderGraphResourceHandle m_sceneColorResource;
+	RenderGraphResourceHandle m_sceneColorCopyResource;
+	RenderGraphResourceHandle m_gBufferDepthResource;
+	RenderGraphResourceHandle m_gBufferNormalResource;
+	RenderGraphResourceHandle m_gBufferBaseColorResource;
+	RenderGraphResourceHandle m_hbaoOutputResource;
+	RenderGraphResourceHandle m_sceneFrameBufferResource;
 	DeviceRenderStage * m_gPassStage;
 	DeviceRenderStage * m_DeferredLightingStage;
 	DeviceRenderStage * m_PointLightingStage;
