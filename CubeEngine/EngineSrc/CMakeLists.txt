@@ -196,6 +196,7 @@ set(ENGINE_SOURCES
     Mesh/Mesh.cpp
     Mesh/VertexData.cpp
     Rendering/Bloom.cpp
+    Rendering/CSMShadowSystem.cpp
     Rendering/FrameBuffer.cpp
     Rendering/GraphicsRenderer.cpp
     Rendering/ImageFormat.cpp
@@ -456,6 +457,7 @@ set(ENGINE_HEADERS
     Mesh/Mesh.h
     Mesh/VertexData.h
     Rendering/Bloom.h
+    Rendering/CSMShadowSystem.h
     Rendering/FrameBuffer.h
     Rendering/GraphicsRenderer.h
     Rendering/ImageFormat.h

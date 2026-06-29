@@ -3,6 +3,7 @@
 #include "2D/IMGUISystem.h"
 #include "CubeGame/Editor/RailEditingController.h"
 #include "CubeGame/GameWorld.h"
+#include "CubeGame/Rail/RailLineVisualStyle.h"
 #include "CubeGame/Rail/RailSystem.h"
 #include "CubeGame/UI/InspectPanel.h"
 
@@ -28,6 +29,11 @@ std::string controlPointLabel(const RailSystem* railSystem, const RailLineContro
 
 	const RailRoutePoint* routePoint = railSystem->routePointManager().routePoint(controlPoint.routePointId);
 	return routePoint ? routePoint->name : "Missing Route Point";
+}
+
+ImVec4 imguiColor(const vec4& color)
+{
+	return ImVec4(color.x, color.y, color.z, color.w);
 }
 
 RailEditorState trackState(RailTrackAction action)
@@ -57,34 +63,21 @@ RailEditorState lineState(RailLineAction action)
 
 void RailEditorImGuiView::drawMainTab(EditorState& state, RailEditingController& controller, InspectPanel& inspectPanel)
 {
-	ImGui::Text(u8"Train Tool");
-	ImGui::Separator();
-
-	drawRailTrackPanel(state, controller);
-
-	ImGui::Separator();
-	float buttonWidth = 95.0f;
-	drawRailToolButton(state, controller, u8"创建站点", pointState(RailPointAction::AddStation), buttonWidth);
-	ImGui::SameLine();
-	drawRailToolButton(state, controller, u8"删除站点", pointState(RailPointAction::DeleteStation), buttonWidth);
-	drawRailToolButton(state, controller, u8"创建路点", pointState(RailPointAction::AddRoutePoint), buttonWidth);
-	ImGui::SameLine();
-	drawRailToolButton(state, controller, u8"删除路点", pointState(RailPointAction::DeleteRoutePoint), buttonWidth);
-
-	ImGui::Separator();
-	if (ImGui::Button(u8"线路面板", ImVec2(82.0f, 28.0f)))
+	if (ImGui::BeginTabBar("RailEditorToolTabs", ImGuiTabBarFlags_None))
 	{
-		m_lineWindowOpen = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button(u8"车辆面板", ImVec2(82.0f, 28.0f)))
-	{
-		m_trainWindowOpen = true;
-	}
-	ImGui::SameLine();
-	if (ImGui::Button("Inspect", ImVec2(78.0f, 28.0f)))
-	{
-		inspectPanel.open();
+		if (ImGui::BeginTabItem(u8"建造"))
+		{
+			drawRailTrackPanel(state, controller);
+			ImGui::Separator();
+			drawRailPointPanel(state, controller);
+			ImGui::EndTabItem();
+		}
+		if (ImGui::BeginTabItem(u8"线路"))
+		{
+			drawRailManagementPanel(inspectPanel);
+			ImGui::EndTabItem();
+		}
+		ImGui::EndTabBar();
 	}
 }
 
@@ -152,12 +145,17 @@ void RailEditorImGuiView::drawFloatingWindows(EditorState& state, RailEditingCon
 {
 	if (m_lineWindowOpen)
 	{
-		ImGui::SetNextWindowSize(ImVec2(520.0f, 300.0f), ImGuiCond_FirstUseEver);
+		ImGui::SetNextWindowSize(ImVec2(680.0f, 360.0f), ImGuiCond_FirstUseEver);
 		if (ImGui::Begin(u8"线路面板", &m_lineWindowOpen, ImGuiWindowFlags_None))
 		{
 			drawRailLinePanel(state, controller);
 		}
 		ImGui::End();
+	}
+	RailSystem* railSystem = GameWorld::shared()->railSystem();
+	if (railSystem)
+	{
+		railSystem->setLineOverviewVisible(m_lineWindowOpen);
 	}
 	if (m_trainWindowOpen)
 	{
@@ -176,6 +174,34 @@ void RailEditorImGuiView::drawRailTrackPanel(EditorState& state, RailEditingCont
 	drawRailToolButton(state, controller, u8"增加铁轨", trackState(RailTrackAction::AddTrack), buttonWidth);
 	ImGui::SameLine();
 	drawRailToolButton(state, controller, u8"删除铁轨", trackState(RailTrackAction::DeleteTrack), buttonWidth);
+}
+
+void RailEditorImGuiView::drawRailPointPanel(EditorState& state, RailEditingController& controller)
+{
+	float buttonWidth = 95.0f;
+	drawRailToolButton(state, controller, u8"创建站点", pointState(RailPointAction::AddStation), buttonWidth);
+	ImGui::SameLine();
+	drawRailToolButton(state, controller, u8"删除站点", pointState(RailPointAction::DeleteStation), buttonWidth);
+	drawRailToolButton(state, controller, u8"创建路点", pointState(RailPointAction::AddRoutePoint), buttonWidth);
+	ImGui::SameLine();
+	drawRailToolButton(state, controller, u8"删除路点", pointState(RailPointAction::DeleteRoutePoint), buttonWidth);
+}
+
+void RailEditorImGuiView::drawRailManagementPanel(InspectPanel& inspectPanel)
+{
+	if (ImGui::Button(u8"线路面板", ImVec2(120.0f, 30.0f)))
+	{
+		m_lineWindowOpen = true;
+	}
+	ImGui::SameLine();
+	if (ImGui::Button(u8"车辆面板", ImVec2(120.0f, 30.0f)))
+	{
+		m_trainWindowOpen = true;
+	}
+	if (ImGui::Button("Inspect", ImVec2(120.0f, 30.0f)))
+	{
+		inspectPanel.open();
+	}
 }
 
 void RailEditorImGuiView::drawRailLinePanel(EditorState& state, RailEditingController& controller)
@@ -213,33 +239,39 @@ void RailEditorImGuiView::drawRailLinePanel(EditorState& state, RailEditingContr
 
 	ImGui::Separator();
 	ImGui::Columns(2, "RailLineColumns", true);
-	ImGui::SetColumnWidth(0, 160.0f);
+	ImGui::SetColumnWidth(0, 245.0f);
 	ImGui::TextUnformatted(u8"线路");
 	ImGui::Separator();
 	for (const RailLine& line : lineManager.lines())
 	{
 		const bool isSelected = line.id == lineManager.selectedLineId();
+		ImGui::PushID(line.id);
+		ImGui::ColorButton("lineColor", imguiColor(railLineColor(line.id)),
+			ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, ImVec2(14.0f, 14.0f));
+		ImGui::SameLine();
 		if (!line.isUsable)
 		{
 			ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(1.0f, 0.25f, 0.25f, 1.0f));
 		}
-		if (ImGui::Selectable((line.name + "##line").c_str(), isSelected, ImGuiSelectableFlags_None, ImVec2(90.0f, 0.0f)))
+		if (ImGui::Selectable((line.name + "##line").c_str(), isSelected, ImGuiSelectableFlags_None,
+			ImVec2(150.0f, 0.0f)))
 		{
 			controller.selectLine(line.id);
-		}
-		if (isSelected)
-		{
-			ImGui::SameLine();
-			if (ImGui::SmallButton(u8"编辑##lineEdit"))
-			{
-				controller.setRailState(state, lineState(RailLineAction::AddControlPoint));
-				controller.selectLine(line.id);
-			}
 		}
 		if (!line.isUsable)
 		{
 			ImGui::PopStyleColor();
 		}
+		if (line.isUsable)
+		{
+			ImGui::TextDisabled(u8"可用 %.0fm  控制点 %d", line.totalLength,
+				static_cast<int>(line.controlPoints.size()));
+		}
+		else
+		{
+			ImGui::TextDisabled(u8"不可用  控制点 %d", static_cast<int>(line.controlPoints.size()));
+		}
+		ImGui::PopID();
 	}
 
 	ImGui::NextColumn();
@@ -252,7 +284,16 @@ void RailEditorImGuiView::drawRailLinePanel(EditorState& state, RailEditingContr
 	}
 	else
 	{
+		ImGui::ColorButton("selectedLineColor", imguiColor(railLineColor(selectedLine->id)),
+			ImGuiColorEditFlags_NoTooltip | ImGuiColorEditFlags_NoDragDrop, ImVec2(16.0f, 16.0f));
+		ImGui::SameLine();
 		ImGui::Text("%s", selectedLine->name.c_str());
+		ImGui::SameLine();
+		if (ImGui::SmallButton(u8"编辑##lineEdit"))
+		{
+			controller.setRailState(state, lineState(RailLineAction::AddControlPoint));
+			controller.selectLine(selectedLine->id);
+		}
 		if (selectedLine->isUsable)
 		{
 			ImGui::Text(u8"可用 %.1fm", selectedLine->totalLength);
@@ -265,8 +306,16 @@ void RailEditorImGuiView::drawRailLinePanel(EditorState& state, RailEditingContr
 		ImGui::TextUnformatted(u8"控制点");
 		for (int i = 0; i < static_cast<int>(selectedLine->controlPoints.size()); ++i)
 		{
-			std::string label = controlPointLabel(railSystem, selectedLine->controlPoints[i]);
-			ImGui::Text("%d. %s", i + 1, label.c_str());
+			const RailLineControlPoint& controlPoint = selectedLine->controlPoints[i];
+			std::string label = controlPointLabel(railSystem, controlPoint);
+			if (controlPoint.isResolved)
+			{
+				ImGui::Text("%d. %s  %.1fm", i + 1, label.c_str(), controlPoint.distanceOnLine);
+			}
+			else
+			{
+				ImGui::Text("%d. %s", i + 1, label.c_str());
+			}
 		}
 
 		ImGui::Separator();

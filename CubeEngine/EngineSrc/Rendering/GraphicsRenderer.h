@@ -1,10 +1,10 @@
 #pragma once
 #include "../Engine/EngineDef.h"
-#include "3D/ShadowMap/ShadowMap.h"
 #include "3D/Thumbnail.h"
 #include "BackEnd/DeviceRenderStage.h"
 namespace tzw
 {
+	class CSMShadowSystem;
 	class DeviceBufferVK;
 	class DeviceRenderCommand;
 	class MaterialInstance;
@@ -13,7 +13,6 @@ namespace tzw
 	class DeviceTexture;
 	class DeviceTextureVK;
 	class SceneView;
-	class ShadowView;
 	class GraphicsRenderer:public Singleton<GraphicsRenderer>
 	{
 	public:
@@ -26,7 +25,7 @@ namespace tzw
 		void preTick();
 	private:
 		SceneView * m_sceneView;
-		ShadowView * m_shadowViews[SHADOWMAP_CASCADE_NUM];
+		CSMShadowSystem * m_csmShadowSystem;
 		DeviceRenderStage * m_thumbNailRenderStage;
 		DeviceRenderStage * m_textureToScreenRenderStage[2];
 		DeviceRenderStage * m_guiStage[2];

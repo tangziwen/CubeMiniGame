@@ -196,6 +196,7 @@ void RailEditingController::hideWorldVisuals()
 	RailSystem* railSystem = GameWorld::shared()->railSystem();
 	if (railSystem)
 	{
+		railSystem->setLineOverviewVisible(false);
 		railSystem->hideAllEditorVisuals();
 	}
 	m_syncedRailState = RailEditorState();
@@ -243,6 +244,7 @@ void RailEditingController::cancelLinePreview(EditorState& state)
 		return;
 	}
 	railSystem->lineManager().setSelectedLineId(InvalidRailLineId);
+	railSystem->setLineOverviewVisible(false);
 	if (isLineControlEditState(state))
 	{
 		state.clear();

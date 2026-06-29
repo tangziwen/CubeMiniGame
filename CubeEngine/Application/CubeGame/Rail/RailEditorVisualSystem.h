@@ -4,6 +4,7 @@
 #include "RailBuildTool.h"
 #include "RailLine.h"
 #include "RailLinePreviewVisual.h"
+#include "RailLineTextBillboard.h"
 #include "RailNodeMesh.h"
 #include "RailPoint.h"
 #include "RailTrackMesh.h"
@@ -138,14 +139,21 @@ public:
 		const std::function<void(RailRoutePointId)>& onClicked);
 	void showLineAddControlBillboards(const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager,
+		const RailLine* selectedLine,
 		const std::function<void(RailStationId)>& onStationClicked,
 		const std::function<void(RailRoutePointId)>& onRoutePointClicked);
 	void showLineRemoveControlBillboards(const RailNetwork& network, const RailAnchorManager& anchorManager,
 		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager,
 		const RailLine* line, const std::function<void(int)>& onControlPointClicked);
 	void hideInteractionVisuals();
+	void showLineOverview(Node* sceneRoot, const RailNetwork& network, const RailLineManager& lineManager,
+		RailLineId selectedLineId);
+	void clearLineOverview();
 	void showLinePreview(Node* sceneRoot, const RailNetwork& network, const RailLine* line);
 	void clearLinePreview();
+	void showSelectedLineControlPointLabels(const RailNetwork& network, const RailAnchorManager& anchorManager,
+		const RailStationManager& stationManager, const RailRoutePointManager& routePointManager, const RailLine* line);
+	void hideSelectedLineControlPointLabels();
 	void hideAll();
 
 private:
@@ -169,6 +177,7 @@ private:
 	void hideRoutePointDeleteBillboards();
 	void hideLineAddBillboards();
 	void hideLineRemoveControlPointBillboards();
+	void hideLineControlPointLabels();
 	void hideUnusedStationDeleteBillboards(const RailStationManager& stationManager);
 	void hideUnusedRoutePointDeleteBillboards(const RailRoutePointManager& routePointManager);
 	void hideUnusedLineAddBillboards(const RailStationManager& stationManager,
@@ -178,6 +187,7 @@ private:
 	RailNodeMesh m_nodeMesh;
 	RailTrackMesh m_trackMesh;
 	RailLinePreviewVisual m_linePreviewVisual;
+	RailLinePreviewVisual m_lineOverviewVisual;
 	Node* m_visualRoot = nullptr;
 	Node* m_uiRoot = nullptr;
 	std::vector<CubePrimitive*> m_nodeVisuals;
@@ -189,6 +199,7 @@ private:
 	std::vector<RailLineAddStationBillboard> m_lineAddStationBillboards;
 	std::vector<RailLineAddRoutePointBillboard> m_lineAddRoutePointBillboards;
 	std::vector<RailLineRemoveControlPointBillboard> m_lineRemoveControlPointBillboards;
+	std::vector<RailLineTextBillboard> m_lineControlPointLabels;
 };
 
 } // namespace tzw

@@ -3,17 +3,16 @@
 #include <cstdlib>
 
 #include "2D/IMGUISystem.h"
-#include "3D/ShadowMap/ShadowMap.h"
 #include "BackEnd/VkRenderBackEnd.h"
 #include "BackEnd/vk/DeviceBufferVK.h"
 #include "BackEnd/vk/DeviceTextureVK.h"
+#include "CSMShadowSystem.h"
 #include "Engine/Engine.h"
 #include "RenderPath.h"
 #include "RenderQueues.h"
 #include "Scene/Scene.h"
 #include "Scene/SceneMgr.h"
 #include "SceneView.h"
-#include "ShadowView.h"
 #include "Technique/MaterialInstance.h"
 
 namespace tzw
@@ -21,11 +20,8 @@ namespace tzw
 	GraphicsRenderer::GraphicsRenderer():m_isAAEnable(true)
 	{
         m_sceneView = nullptr;
+        m_csmShadowSystem = nullptr;
         m_guiQueue = nullptr;
-        for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
-        {
-            m_shadowViews[i] = nullptr;
-        }
 	}
 
     void GraphicsRenderer::init()
@@ -34,11 +30,8 @@ namespace tzw
 
         m_sceneView = new SceneView();
         m_sceneView->init();
-        for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
-        {
-            m_shadowViews[i] = new ShadowView(i);
-            m_shadowViews[i]->init();
-        }
+        m_csmShadowSystem = new CSMShadowSystem();
+        m_csmShadowSystem->init();
 
         auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
         thumbnailPass->init({{ImageFormat::R8G8B8A8, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
@@ -144,16 +137,9 @@ namespace tzw
         m_sceneView->setAAEnabled(m_isAAEnable);
         m_sceneView->collect();
 
-        ShadowMap::shared()->calculateProjectionMatrix();
-        std::vector<DeviceTexture *> shadowTextureList;
-        for (int i = 0 ; i < SHADOWMAP_CASCADE_NUM ; i++)
-        {
-            m_shadowViews[i]->collect();
-            m_shadowViews[i]->draw(cmd, m_renderPath);
-            shadowTextureList.emplace_back(m_shadowViews[i]->depthTexture());
-        }
-
-        m_sceneView->setShadowTextures(shadowTextureList);
+        m_csmShadowSystem->collect();
+        m_csmShadowSystem->draw(cmd, m_renderPath);
+        m_sceneView->setShadowTextures(m_csmShadowSystem->depthTextures());
         m_sceneView->draw(cmd, m_renderPath);
 
         int imageIdx = backEnd->getCurrSwapIndex();

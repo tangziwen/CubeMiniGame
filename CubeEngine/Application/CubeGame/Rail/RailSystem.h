@@ -73,6 +73,7 @@ public:
 	void showLineRemoveControlBillboards();
 	void hideEditorVisuals();
 	void hideAllEditorVisuals();
+	void setLineOverviewVisible(bool isVisible);
 	void setLinePreview(RailLineId lineId);
 	void clearLinePreview();
 
@@ -96,6 +97,7 @@ private:
 	RailPersistentVisualSystem m_persistentVisuals;
 	RailEditorVisualSystem m_editorVisuals;
 	RailLineId m_previewLineId = InvalidRailLineId;
+	bool m_lineOverviewVisible = false;
 };
 
 } // namespace tzw

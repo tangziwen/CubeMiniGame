@@ -239,9 +239,24 @@ void RailSystem::update(Node* sceneRoot, float deltaSeconds)
 	m_trainManager.updateWorldPoses(m_network, m_lineManager);
 	m_persistentVisuals.sync(sceneRoot, m_network, m_config, m_anchorManager, m_stationManager,
 		m_routePointManager, m_lineManager, m_trainManager);
+	if (m_lineOverviewVisible)
+	{
+		m_editorVisuals.showLineOverview(sceneRoot, m_network, m_lineManager, m_previewLineId);
+	}
+	else
+	{
+		m_editorVisuals.clearLineOverview();
+	}
 	if (m_previewLineId != InvalidRailLineId)
 	{
-		m_editorVisuals.showLinePreview(sceneRoot, m_network, m_lineManager.line(m_previewLineId));
+		const RailLine* previewLine = m_lineManager.line(m_previewLineId);
+		m_editorVisuals.showLinePreview(sceneRoot, m_network, previewLine);
+		m_editorVisuals.showSelectedLineControlPointLabels(m_network, m_anchorManager, m_stationManager,
+			m_routePointManager, previewLine);
+	}
+	else
+	{
+		m_editorVisuals.hideSelectedLineControlPointLabels();
 	}
 }
 
@@ -257,6 +272,7 @@ void RailSystem::clear()
 	m_persistentVisuals.clear();
 	m_editorVisuals.clear();
 	m_previewLineId = InvalidRailLineId;
+	m_lineOverviewVisible = false;
 }
 
 void RailSystem::serialize(rapidjson::Value& railData, rapidjson::Document::AllocatorType& allocator) const
@@ -987,7 +1003,9 @@ void RailSystem::showRoutePointEditorVisuals(bool deleteMode)
 
 void RailSystem::showLineAddControlBillboards()
 {
+	const RailLine* selectedLine = m_lineManager.line(m_lineManager.selectedLineId());
 	m_editorVisuals.showLineAddControlBillboards(m_network, m_anchorManager, m_stationManager, m_routePointManager,
+		selectedLine,
 		[this](RailStationId stationId)
 	{
 		addStationToSelectedLine(stationId);
@@ -1028,7 +1046,21 @@ void RailSystem::hideAllEditorVisuals()
 {
 	cancelTrackEdit();
 	hideEditorVisuals();
+	setLineOverviewVisible(false);
 	clearLinePreview();
+}
+
+void RailSystem::setLineOverviewVisible(bool isVisible)
+{
+	if (m_lineOverviewVisible == isVisible)
+	{
+		return;
+	}
+	m_lineOverviewVisible = isVisible;
+	if (!m_lineOverviewVisible)
+	{
+		m_editorVisuals.clearLineOverview();
+	}
 }
 
 void RailSystem::setLinePreview(RailLineId lineId)
@@ -1048,6 +1080,7 @@ void RailSystem::clearLinePreview()
 	}
 	m_previewLineId = InvalidRailLineId;
 	m_editorVisuals.clearLinePreview();
+	m_editorVisuals.hideSelectedLineControlPointLabels();
 }
 
 void RailSystem::rebuildAllRailLines()

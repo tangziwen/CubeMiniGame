@@ -18,6 +18,8 @@ public:
 
 private:
 	void drawRailTrackPanel(EditorState& state, RailEditingController& controller);
+	void drawRailPointPanel(EditorState& state, RailEditingController& controller);
+	void drawRailManagementPanel(InspectPanel& inspectPanel);
 	void drawRailLinePanel(EditorState& state, RailEditingController& controller);
 	void drawRailTrainPanel(RailEditingController& controller, InspectPanel& inspectPanel);
 	void drawLineEditParameterPanel(EditorState& state, RailEditingController& controller, RailSystem* railSystem);

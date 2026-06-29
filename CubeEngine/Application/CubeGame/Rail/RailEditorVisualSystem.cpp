@@ -1,10 +1,13 @@
 #include "RailEditorVisualSystem.h"
 
+#include "RailLineVisualStyle.h"
 #include "EngineSrc/2D/RetainedUISystem.h"
 #include "EngineSrc/3D/Primitive/CubePrimitive.h"
 #include "EngineSrc/3D/Primitive/LinePrimitive.h"
 #include "EngineSrc/Base/Node.h"
 #include "EngineSrc/Math/vec4.h"
+
+#include <string>
 
 namespace tzw {
 
@@ -14,6 +17,8 @@ constexpr int EditorVisualRootPriority = 100;
 const char* EditorUiLayerName = "overlay";
 const char* EditorUiRootName = "RailEditorVisualRoot";
 constexpr int EditorUiLayerPriority = 100;
+const vec2 LineControlPointLabelSize(26.0f, 22.0f);
+const vec4 LineControlPointTextColor(1.0f, 1.0f, 1.0f, 1.0f);
 
 WorldBillboardSprite* createEditorBillboard(Node* visualRoot, const vec2& size)
 {
@@ -31,6 +36,66 @@ bool stationExists(const RailStationManager& stationManager, RailStationId stati
 bool routePointExists(const RailRoutePointManager& routePointManager, RailRoutePointId routePointId)
 {
 	return routePointManager.routePoint(routePointId) != nullptr;
+}
+
+bool lineContainsStation(const RailLine* line, RailStationId stationId)
+{
+	if (!line)
+	{
+		return false;
+	}
+	for (const RailLineControlPoint& controlPoint : line->controlPoints)
+	{
+		if (controlPoint.kind == RailLineControlPointKind::Station && controlPoint.stationId == stationId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool lineContainsRoutePoint(const RailLine* line, RailRoutePointId routePointId)
+{
+	if (!line)
+	{
+		return false;
+	}
+	for (const RailLineControlPoint& controlPoint : line->controlPoints)
+	{
+		if (controlPoint.kind == RailLineControlPointKind::RoutePoint && controlPoint.routePointId == routePointId)
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
+bool resolveControlPointPosition(const RailLineControlPoint& controlPoint, const RailNetwork& network,
+	const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
+	const RailRoutePointManager& routePointManager, vec3& outPosition)
+{
+	RailAnchorId anchorId = InvalidRailAnchorId;
+	if (controlPoint.kind == RailLineControlPointKind::Station)
+	{
+		anchorId = stationManager.anchorForStation(controlPoint.stationId);
+	}
+	else
+	{
+		const RailRoutePoint* routePoint = routePointManager.routePoint(controlPoint.routePointId);
+		if (routePoint)
+		{
+			anchorId = routePoint->anchorId;
+		}
+	}
+
+	RailAnchorSample sample = anchorManager.sampleAnchor(network, anchorId);
+	if (!sample.valid)
+	{
+		return false;
+	}
+
+	outPosition = sample.position;
+	return true;
 }
 }
 
@@ -379,6 +444,7 @@ void RailEditorVisualSystem::prepare(Node* sceneRoot)
 void RailEditorVisualSystem::clear()
 {
 	m_linePreviewVisual.clear();
+	m_lineOverviewVisual.clear();
 	m_nodeVisuals.clear();
 	m_trackPreviewSleeperVisuals.clear();
 	m_pendingAnchorVisual = nullptr;
@@ -388,6 +454,7 @@ void RailEditorVisualSystem::clear()
 	m_lineAddStationBillboards.clear();
 	m_lineAddRoutePointBillboards.clear();
 	m_lineRemoveControlPointBillboards.clear();
+	m_lineControlPointLabels.clear();
 	if (m_visualRoot)
 	{
 		if (m_visualRoot->getParent())
@@ -480,7 +547,7 @@ void RailEditorVisualSystem::showRoutePointBillboards(const RailNetwork& network
 
 void RailEditorVisualSystem::showLineAddControlBillboards(const RailNetwork& network,
 	const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
-	const RailRoutePointManager& routePointManager,
+	const RailRoutePointManager& routePointManager, const RailLine* selectedLine,
 	const std::function<void(RailStationId)>& onStationClicked,
 	const std::function<void(RailRoutePointId)>& onRoutePointClicked)
 {
@@ -497,11 +564,19 @@ void RailEditorVisualSystem::showLineAddControlBillboards(const RailNetwork& net
 
 	for (const RailStation& station : stationManager.stations())
 	{
+		if (lineContainsStation(selectedLine, station.id))
+		{
+			continue;
+		}
 		ensureLineAddStationBillboard(station.id).sync(m_uiRoot, network, anchorManager,
 			stationManager, station, onStationClicked);
 	}
 	for (const RailRoutePoint& routePoint : routePointManager.routePoints())
 	{
+		if (lineContainsRoutePoint(selectedLine, routePoint.id))
+		{
+			continue;
+		}
 		ensureLineAddRoutePointBillboard(routePoint.id).sync(m_uiRoot, network, anchorManager,
 			routePoint, onRoutePointClicked);
 	}
@@ -552,6 +627,17 @@ void RailEditorVisualSystem::hideInteractionVisuals()
 	hideBillboards();
 }
 
+void RailEditorVisualSystem::showLineOverview(Node* sceneRoot, const RailNetwork& network,
+	const RailLineManager& lineManager, RailLineId selectedLineId)
+{
+	m_lineOverviewVisual.showOverview(sceneRoot, network, lineManager, selectedLineId);
+}
+
+void RailEditorVisualSystem::clearLineOverview()
+{
+	m_lineOverviewVisual.clear();
+}
+
 void RailEditorVisualSystem::showLinePreview(Node* sceneRoot, const RailNetwork& network, const RailLine* line)
 {
 	m_linePreviewVisual.show(sceneRoot, network, line);
@@ -562,10 +648,54 @@ void RailEditorVisualSystem::clearLinePreview()
 	m_linePreviewVisual.clear();
 }
 
+void RailEditorVisualSystem::showSelectedLineControlPointLabels(const RailNetwork& network,
+	const RailAnchorManager& anchorManager, const RailStationManager& stationManager,
+	const RailRoutePointManager& routePointManager, const RailLine* line)
+{
+	if (!m_uiRoot)
+	{
+		return;
+	}
+
+	const int controlPointCount = line ? static_cast<int>(line->controlPoints.size()) : 0;
+	while (static_cast<int>(m_lineControlPointLabels.size()) < controlPointCount)
+	{
+		m_lineControlPointLabels.emplace_back();
+	}
+
+	const vec4 backgroundColor = line ? railLineSelectedColor(line->id) : vec4::fromRGB(45, 55, 65, 230);
+	for (int i = 0; i < static_cast<int>(m_lineControlPointLabels.size()); ++i)
+	{
+		if (i >= controlPointCount)
+		{
+			m_lineControlPointLabels[i].hide();
+			continue;
+		}
+
+		vec3 position;
+		if (!resolveControlPointPosition(line->controlPoints[i], network, anchorManager, stationManager,
+			routePointManager, position))
+		{
+			m_lineControlPointLabels[i].hide();
+			continue;
+		}
+
+		m_lineControlPointLabels[i].sync(m_uiRoot, position + vec3(0.0f, 1.28f, 0.0f),
+			std::to_string(i + 1), backgroundColor, LineControlPointTextColor, LineControlPointLabelSize);
+	}
+}
+
+void RailEditorVisualSystem::hideSelectedLineControlPointLabels()
+{
+	hideLineControlPointLabels();
+}
+
 void RailEditorVisualSystem::hideAll()
 {
 	hideInteractionVisuals();
 	clearLinePreview();
+	clearLineOverview();
+	hideLineControlPointLabels();
 }
 
 void RailEditorVisualSystem::ensureVisualRoot(Node* sceneRoot)
@@ -867,6 +997,7 @@ void RailEditorVisualSystem::hideBillboards()
 	hideRoutePointDeleteBillboards();
 	hideLineAddBillboards();
 	hideLineRemoveControlPointBillboards();
+	hideLineControlPointLabels();
 }
 
 void RailEditorVisualSystem::hideStationDeleteBillboards()
@@ -902,6 +1033,14 @@ void RailEditorVisualSystem::hideLineRemoveControlPointBillboards()
 	for (RailLineRemoveControlPointBillboard& billboard : m_lineRemoveControlPointBillboards)
 	{
 		billboard.hide();
+	}
+}
+
+void RailEditorVisualSystem::hideLineControlPointLabels()
+{
+	for (RailLineTextBillboard& label : m_lineControlPointLabels)
+	{
+		label.hide();
 	}
 }
 

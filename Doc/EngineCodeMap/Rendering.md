@@ -6,7 +6,8 @@ High-level render pipeline orchestration, 3D render views, render queues, post e
 
 ## Important Objects
 
-- `GraphicsRenderer`: owns frame begin/end orchestration, schedules 3D views, then handles texture-to-screen, GUI/ImGui, and thumbnails.
+- `GraphicsRenderer`: owns frame begin/end orchestration, schedules 3D/shadow systems, then handles texture-to-screen, GUI/ImGui, and thumbnails.
+- `CSMShadowSystem`: owns cascaded shadow `ShadowView` instances, updates shadow projection state, draws cascades in order, and exposes depth textures for scene lighting.
 - `RenderView`: base 3D view context with view type/index, camera, output queue, and ordered passes; it derives submit stage masks from passes and does not own UI.
 - `RenderViewPass`: per-view pass descriptor that declares the consumed `RenderStage`; fullscreen/light/post passes may consume no scene queue.
 - `SceneView`: main 3D view that owns the GBuffer, deferred lighting, transparent, sky, debug wireframe, HBAO/SSR/SSGI/fog/bloom/TSAA/outline pipeline.
