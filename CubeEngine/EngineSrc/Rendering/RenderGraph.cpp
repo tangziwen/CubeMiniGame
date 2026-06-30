@@ -157,6 +157,24 @@ RenderGraphResourceAccess makeAccess(RenderGraphResourceHandle resource, RenderG
 	access.afterLayout = afterLayout;
 	return access;
 }
+
+std::string rasterPassCacheKey(const RenderGraphRasterPassDesc& desc)
+{
+	std::ostringstream stream;
+	stream << desc.name
+		<< "|fb=" << (desc.frameBufferResource.isValid() ? desc.frameBufferResource.index() : invalidResourceIndex())
+		<< "|mat=" << reinterpret_cast<uintptr_t>(desc.material)
+		<< "|mask=" << desc.drawPassMask
+		<< "|consume=" << desc.consumesSceneQueue
+		<< "|op=" << static_cast<int>(desc.opType)
+		<< "|read=" << desc.isNeedTransitionToRead
+		<< "|screen=" << desc.isOutputToScreen;
+	for(const auto& attachment : desc.attachments)
+	{
+		stream << "|att=" << static_cast<int>(attachment.format) << "," << attachment.isDepthStencilAttachment;
+	}
+	return stream.str();
+}
 }
 
 RenderGraphResourceHandle::RenderGraphResourceHandle()
@@ -403,10 +421,16 @@ void RenderGraph::clear()
 	m_passes.clear();
 }
 
+void RenderGraph::beginBuild()
+{
+	clear();
+}
+
 void RenderGraph::clearResources()
 {
 	releaseOwnedResources();
 	m_resources.clear();
+	m_rasterPassCache.clear();
 }
 
 RenderGraphPassDesc& RenderGraphPassDesc::readColor(RenderGraphResourceHandle resource)
@@ -469,43 +493,22 @@ RenderGraphPassHandle RenderGraph::addPass(const RenderGraphPassDesc& desc)
 
 RenderGraphPassHandle RenderGraph::addRasterPass(const RenderGraphRasterPassDesc& desc, std::function<void(RenderGraphPassContext&)> execute)
 {
-	auto backEnd = Engine::shared()->getRenderBackEnd();
-	auto frameBufferResource = desc.frameBufferResource;
-	DeviceRenderPass* renderPass = nullptr;
-	if(!frameBufferResource.isValid())
+	const auto key = rasterPassCacheKey(desc);
+	auto cache = findRasterPassCache(key);
+	if(!cache)
 	{
-		renderPass = backEnd->createDeviceRenderpass_imp();
-		renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
-		frameBufferResource = createFrameBuffer(desc.frameBufferDesc, renderPass);
+		cache = &createRasterPassCache(key, desc, desc.frameBufferResource);
 	}
-	else
-	{
-		auto graphResource = resource(frameBufferResource);
-		if(desc.attachments.empty() && graphResource)
-		{
-			renderPass = graphResource->renderPass;
-		}
-		if(!renderPass)
-		{
-			renderPass = backEnd->createDeviceRenderpass_imp();
-			renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
-		}
-	}
-	auto frameBuffer = this->frameBuffer(frameBufferResource);
 
-	auto stage = backEnd->createRenderStage_imp();
-	stage->init(renderPass, frameBuffer, desc.drawPassMask);
-	stage->setName(desc.name);
-	if(desc.material)
-	{
-		stage->createSinglePipeline(desc.material);
-	}
+	auto frameBufferResource = cache->frameBufferResource;
+	auto frameBuffer = this->frameBuffer(frameBufferResource);
+	cache->stage->setFrameBuffer(frameBuffer);
 
 	RenderGraphPassDesc pass;
 	pass.name = desc.name;
 	pass.kind = RenderGraphPassKind::Raster;
-	pass.renderPass = renderPass;
-	pass.compiledStage = stage;
+	pass.renderPass = cache->renderPass;
+	pass.compiledStage = cache->stage;
 	pass.frameBufferResource = frameBufferResource;
 	pass.consumedDrawPassMask = desc.consumesSceneQueue ? desc.drawPassMask : DrawPassType::Unset;
 	pass.resourceAccesses = desc.resourceAccesses;
@@ -536,6 +539,61 @@ RenderGraphPassHandle RenderGraph::addExternalPass(const RenderGraphPassDesc& de
 	auto pass = desc;
 	pass.kind = RenderGraphPassKind::External;
 	return addPass(pass);
+}
+
+RenderGraph::RasterPassCacheEntry* RenderGraph::findRasterPassCache(const std::string& key)
+{
+	for(auto& cache : m_rasterPassCache)
+	{
+		if(cache.key == key)
+		{
+			return &cache;
+		}
+	}
+	return nullptr;
+}
+
+RenderGraph::RasterPassCacheEntry& RenderGraph::createRasterPassCache(const std::string& key, const RenderGraphRasterPassDesc& desc,
+	RenderGraphResourceHandle frameBufferResource)
+{
+	auto backEnd = Engine::shared()->getRenderBackEnd();
+	DeviceRenderPass* renderPass = nullptr;
+	if(!frameBufferResource.isValid())
+	{
+		renderPass = backEnd->createDeviceRenderpass_imp();
+		renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
+		frameBufferResource = createFrameBuffer(desc.frameBufferDesc, renderPass);
+	}
+	else
+	{
+		auto graphResource = resource(frameBufferResource);
+		if(desc.attachments.empty() && graphResource)
+		{
+			renderPass = graphResource->renderPass;
+		}
+		if(!renderPass)
+		{
+			renderPass = backEnd->createDeviceRenderpass_imp();
+			renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
+		}
+	}
+
+	auto frameBuffer = this->frameBuffer(frameBufferResource);
+	auto stage = backEnd->createRenderStage_imp();
+	stage->init(renderPass, frameBuffer, desc.drawPassMask);
+	stage->setName(desc.name);
+	if(desc.material)
+	{
+		stage->createSinglePipeline(desc.material);
+	}
+
+	RasterPassCacheEntry cache;
+	cache.key = key;
+	cache.renderPass = renderPass;
+	cache.stage = stage;
+	cache.frameBufferResource = frameBufferResource;
+	m_rasterPassCache.emplace_back(cache);
+	return m_rasterPassCache.back();
 }
 
 RenderGraphResourceHandle RenderGraph::importTexture(const RenderGraphResourceDesc& desc, DeviceTexture* texture)

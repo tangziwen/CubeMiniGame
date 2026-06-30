@@ -2,6 +2,7 @@
 #include "../Engine/EngineDef.h"
 #include "3D/Thumbnail.h"
 #include "BackEnd/DeviceRenderStage.h"
+#include "RenderSettings.h"
 namespace tzw
 {
 	class CSMShadowSystem;
@@ -21,9 +22,11 @@ namespace tzw
 		void render();
 		void updateThumbNail(ThumbNail * thumb);
 		std::vector<ThumbNail *> & getThumbNailList();
-		bool m_isAAEnable = false;
+		RenderSettings& renderSettings();
+		const RenderSettings& renderSettings() const;
 		void preTick();
 	private:
+		RenderSettings m_renderSettings;
 		SceneView * m_sceneView;
 		CSMShadowSystem * m_csmShadowSystem;
 		DeviceRenderStage * m_thumbNailRenderStage;

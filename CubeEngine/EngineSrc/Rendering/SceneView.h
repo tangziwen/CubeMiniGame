@@ -14,6 +14,8 @@ namespace tzw
 class DeviceDescriptor;
 class DeviceFrameBuffer;
 class DeviceTexture;
+class MaterialInstance;
+class RenderSettings;
 
 class SceneView : public RenderView
 {
@@ -23,8 +25,8 @@ public:
 	void init() override;
 	void collect() override;
 	void draw(DeviceRenderCommand* cmd, RenderPath* renderPath) override;
-	void preTick(bool isAAEnable);
-	void setAAEnabled(bool isAAEnable);
+	void preTick(const RenderSettings& settings);
+	void setRenderSettings(const RenderSettings* settings);
 	void setShadowTextures(const std::vector<DeviceTexture*>& shadowTextures);
 
 	DeviceTexture* outputTexture() const;
@@ -32,7 +34,8 @@ public:
 
 private:
 	void initRenderGraphResources();
-	void initRenderGraph();
+	void initRenderGraphMaterials();
+	void buildRenderGraph();
 	void executeDeferredLightingPass(RenderGraphPassContext& graphContext);
 	void executePointLightingPass(RenderGraphPassContext& graphContext);
 	void executeSkyPass(RenderGraphPassContext& graphContext);
@@ -54,6 +57,13 @@ private:
 	Bloom m_bloom;
 	OutlinePass m_outlinePass;
 	RenderGraph m_renderGraph;
+	const RenderSettings* m_renderSettings;
+	MaterialInstance* m_directLightMat;
+	MaterialInstance* m_pointLightMat;
+	MaterialInstance* m_skyMat;
+	MaterialInstance* m_hbaoMat;
+	MaterialInstance* m_ssrMat;
+	MaterialInstance* m_fogMat;
 	RenderGraphResourceHandle m_gBufferFrameBufferResource;
 	RenderGraphResourceHandle m_hbaoFrameBufferResource;
 	RenderGraphResourceHandle m_sceneColorResource;
@@ -63,23 +73,8 @@ private:
 	RenderGraphResourceHandle m_gBufferBaseColorResource;
 	RenderGraphResourceHandle m_hbaoOutputResource;
 	RenderGraphResourceHandle m_sceneFrameBufferResource;
-	RenderGraphPassHandle m_gBufferPass;
-	RenderGraphPassHandle m_deferredLightingPass;
-	RenderGraphPassHandle m_pointLightingPass;
-	RenderGraphPassHandle m_transparentPass;
-	RenderGraphPassHandle m_skyPass;
-	RenderGraphPassHandle m_debugWireframePass;
-	RenderGraphPassHandle m_hbaoPass;
-	RenderGraphPassHandle m_sceneColorCopyPass;
-	RenderGraphPassHandle m_ssrPass;
-	RenderGraphPassHandle m_fogPass;
-	RenderGraphPassHandle m_ssgiPass;
-	RenderGraphPassHandle m_bloomPass;
-	RenderGraphPassHandle m_tsaaPass;
-	RenderGraphPassHandle m_outlinePassHandle;
 	DeviceTexture * m_sceneCopyTex;
 	DeviceTexture * m_outputTexture;
 	std::vector<DeviceTexture*> m_shadowTextures;
-	bool m_isAAEnable;
 };
 }

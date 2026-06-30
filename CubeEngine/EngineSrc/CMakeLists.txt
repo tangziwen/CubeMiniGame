@@ -206,6 +206,7 @@ set(ENGINE_SOURCES
     Rendering/RenderBuffer.cpp
     Rendering/RenderCommand.cpp
     Rendering/RenderGraph.cpp
+    Rendering/RenderSettings.cpp
     Rendering/RenderPath.cpp
     Rendering/RenderQueues.cpp
     Rendering/RenderView.cpp
@@ -469,6 +470,7 @@ set(ENGINE_HEADERS
     Rendering/RenderCommand.h
     Rendering/RenderFlag.h
     Rendering/RenderGraph.h
+    Rendering/RenderSettings.h
     Rendering/RenderPath.h
     Rendering/RenderQueues.h
     Rendering/RenderView.h

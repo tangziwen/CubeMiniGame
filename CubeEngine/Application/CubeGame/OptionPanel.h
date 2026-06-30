@@ -18,7 +18,8 @@ namespace tzw
 		int m_langItemCurrent;
 		int m_screenSizeEngineCurrent;
 		bool m_isFullScreen;
-		bool m_isOpenSSAO;
+		bool m_isOpenSSGI;
+		bool m_isOpenSSR;
 		bool m_isOpenBloom;
 		bool m_isOpenAA;
 		bool m_isOpenFog;

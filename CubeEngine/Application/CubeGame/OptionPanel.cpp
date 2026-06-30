@@ -48,10 +48,12 @@ namespace tzw
 			}
 		}
 		m_isFullScreen = Engine::shared()->isIsFullScreen();
-		//m_isOpenSSAO = Renderer::shared()->isSsaoEnable();
-		//m_isOpenBloom = Renderer::shared()->isBloomEnable();
-		m_isOpenAA = GraphicsRenderer::shared()->m_isAAEnable;
-		//m_isOpenFog = Renderer::shared()->isFogEnable();
+		auto& renderSettings = GraphicsRenderer::shared()->renderSettings();
+		m_isOpenSSGI = renderSettings.ssgiEnabled();
+		m_isOpenSSR = renderSettings.ssrEnabled();
+		m_isOpenBloom = renderSettings.bloomEnabled();
+		m_isOpenAA = renderSettings.aaEnabled();
+		m_isOpenFog = renderSettings.fogEnabled();
 		//m_isOpenShadow = Renderer::shared()->isShadowEnable();
 		
 	}
@@ -111,12 +113,17 @@ namespace tzw
             ImGui::EndCombo();
         }
 
-		ImGui::TextUnformatted(TRC(u8"SSAO:"));
+		ImGui::TextUnformatted("SSGI:");
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"开##SSAO"), m_isOpenSSAO)) m_isOpenSSAO = true;
+		if(ImGui::RadioButton(TRC(u8"开##SSGI"), m_isOpenSSGI)) m_isOpenSSGI = true;
 		ImGui::SameLine();
-		if(ImGui::RadioButton(TRC(u8"关##SSAO"), !m_isOpenSSAO)) m_isOpenSSAO = false;
+		if(ImGui::RadioButton(TRC(u8"关##SSGI"), !m_isOpenSSGI)) m_isOpenSSGI = false;
 
+		ImGui::TextUnformatted("SSR:");
+		ImGui::SameLine();
+		if(ImGui::RadioButton(TRC(u8"开##SSR"), m_isOpenSSR)) m_isOpenSSR = true;
+		ImGui::SameLine();
+		if(ImGui::RadioButton(TRC(u8"关##SSR"), !m_isOpenSSR)) m_isOpenSSR = false;
 
 		ImGui::TextUnformatted(TRC(u8"Bloom"));
 		ImGui::SameLine();
@@ -144,7 +151,12 @@ namespace tzw
 		if(ImGui::RadioButton(TRC(u8"开##FOG"), m_isOpenFog)) m_isOpenFog = true;
 		ImGui::SameLine();
 		if(ImGui::RadioButton(TRC(u8"关##FOG"), !m_isOpenFog)) m_isOpenFog = false;
-		GraphicsRenderer::shared()->m_isAAEnable = m_isOpenAA;
+		auto& renderSettings = GraphicsRenderer::shared()->renderSettings();
+		renderSettings.setSSGIEnabled(m_isOpenSSGI);
+		renderSettings.setSSREnabled(m_isOpenSSR);
+		renderSettings.setBloomEnabled(m_isOpenBloom);
+		renderSettings.setAAEnabled(m_isOpenAA);
+		renderSettings.setFogEnabled(m_isOpenFog);
 
 		if(ImGui::Button(TRC(u8"保存设置")))
 		{

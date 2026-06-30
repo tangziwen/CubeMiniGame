@@ -17,7 +17,7 @@
 
 namespace tzw
 {
-	GraphicsRenderer::GraphicsRenderer():m_isAAEnable(true)
+	GraphicsRenderer::GraphicsRenderer()
 	{
         m_sceneView = nullptr;
         m_csmShadowSystem = nullptr;
@@ -30,6 +30,7 @@ namespace tzw
 
         m_sceneView = new SceneView();
         m_sceneView->init();
+        m_sceneView->setRenderSettings(&m_renderSettings);
         m_csmShadowSystem = new CSMShadowSystem();
         m_csmShadowSystem->init();
 
@@ -70,6 +71,16 @@ namespace tzw
 	    m_imguiPipeline = nullptr;
         m_renderPath = new RenderPath();
         m_guiQueue = new RenderQueue();
+    }
+
+    RenderSettings& GraphicsRenderer::renderSettings()
+    {
+        return m_renderSettings;
+    }
+
+    const RenderSettings& GraphicsRenderer::renderSettings() const
+    {
+        return m_renderSettings;
     }
 
     void GraphicsRenderer::initImguiStuff()
@@ -122,7 +133,7 @@ namespace tzw
     {
         if(m_sceneView)
         {
-            m_sceneView->preTick(m_isAAEnable);
+            m_sceneView->preTick(m_renderSettings);
         }
     }
 	void GraphicsRenderer::render()
@@ -134,7 +145,7 @@ namespace tzw
 		auto cmd = backEnd->getGeneralCommandBuffer();
         cmd->startRecord();
 		m_renderPath->prepare(cmd);
-        m_sceneView->setAAEnabled(m_isAAEnable);
+        m_sceneView->setRenderSettings(&m_renderSettings);
         m_sceneView->collect();
 
         m_csmShadowSystem->collect();

@@ -18,6 +18,7 @@
 #include "Interface/Drawable3D.h"
 #include "Lighting/PointLight.h"
 #include "RenderPath.h"
+#include "RenderSettings.h"
 #include "Scene/OctreeScene.h"
 #include "Scene/Scene.h"
 #include "Scene/SceneCuller.h"
@@ -55,9 +56,15 @@ RenderGraphResourceDesc makeGraphResourceDesc(const char* name, ImageFormat form
 
 SceneView::SceneView()
 	: RenderView(RenderViewType::Scene)
+	, m_renderSettings(nullptr)
+	, m_directLightMat(nullptr)
+	, m_pointLightMat(nullptr)
+	, m_skyMat(nullptr)
+	, m_hbaoMat(nullptr)
+	, m_ssrMat(nullptr)
+	, m_fogMat(nullptr)
 	, m_sceneCopyTex(nullptr)
 	, m_outputTexture(nullptr)
-	, m_isAAEnable(false)
 {
 }
 
@@ -117,7 +124,7 @@ void SceneView::init()
 	addSubmitDrawPass(DrawPassType::DebugLayer);
 
 	initRenderGraphResources();
-	initRenderGraph();
+	initRenderGraphMaterials();
 }
 
 void SceneView::initRenderGraphResources()
@@ -147,125 +154,19 @@ void SceneView::initRenderGraphResources()
 	m_hbaoOutputResource = m_hbaoFrameBufferResource;
 }
 
-void SceneView::initRenderGraph()
+void SceneView::initRenderGraphMaterials()
 {
-	m_renderGraph.clear();
+	m_directLightMat = new MaterialInstance();
+	m_directLightMat->loadFromMaterial("DirectLight");
 
-	DeviceAttachmentInfoList sceneLoadAttachments = {
-		{ImageFormat::R16G16B16A16, false},
-		{ImageFormat::D24_S8, true},
-	};
+	m_pointLightMat = new MaterialInstance();
+	m_pointLightMat->loadFromMaterial("PointLight");
 
-	RenderGraphRasterPassDesc gBufferPass;
-	gBufferPass.name = "GBufferPass";
-	gBufferPass.frameBufferResource = m_gBufferFrameBufferResource;
-	gBufferPass.drawPassMask = DrawPassType::GBuffer;
-	gBufferPass.consumesSceneQueue = true;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.writeColor(m_gBufferFrameBufferResource, RenderGraphResourceLayout::ShaderRead)
-			.writeDepth(m_gBufferDepthResource, RenderGraphResourceLayout::DepthRead);
-		gBufferPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_gBufferPass = m_renderGraph.addRasterPass(gBufferPass, [](RenderGraphPassContext& graphContext)
-	{
-		graphContext.drawSceneQueue();
-	});
+	m_skyMat = new MaterialInstance();
+	m_skyMat->loadFromMaterial("Sky");
 
-	MaterialInstance* directLightMat = new MaterialInstance();
-	directLightMat->loadFromMaterial("DirectLight");
-	RenderGraphRasterPassDesc deferredLightingPass;
-	deferredLightingPass.name = "Deferred Sun Lighting Stage";
-	deferredLightingPass.frameBufferResource = m_sceneFrameBufferResource;
-	deferredLightingPass.material = directLightMat;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.readColor(m_gBufferFrameBufferResource)
-			.readDepth(m_gBufferDepthResource)
-			.readColor(m_gBufferNormalResource)
-			.writeColor(m_sceneColorResource);
-		deferredLightingPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_deferredLightingPass = m_renderGraph.addFullscreenPass(deferredLightingPass, [this](RenderGraphPassContext& graphContext)
-	{
-		executeDeferredLightingPass(graphContext);
-	});
-
-	MaterialInstance* pointLightMat = new MaterialInstance();
-	pointLightMat->loadFromMaterial("PointLight");
-	RenderGraphRasterPassDesc pointLightingPass;
-	pointLightingPass.name = "Deferred Point Light Stage";
-	pointLightingPass.attachments = sceneLoadAttachments;
-	pointLightingPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
-	pointLightingPass.frameBufferResource = m_sceneFrameBufferResource;
-	pointLightingPass.material = pointLightMat;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.readColor(m_gBufferFrameBufferResource)
-			.readDepth(m_gBufferDepthResource)
-			.writeColor(m_sceneColorResource);
-		pointLightingPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_pointLightingPass = m_renderGraph.addRasterPass(pointLightingPass, [this](RenderGraphPassContext& graphContext)
-	{
-		executePointLightingPass(graphContext);
-	});
-
-	RenderGraphRasterPassDesc transparentPass;
-	transparentPass.name = "TransparentPass";
-	transparentPass.attachments = sceneLoadAttachments;
-	transparentPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
-	transparentPass.frameBufferResource = m_sceneFrameBufferResource;
-	transparentPass.drawPassMask = DrawPassType::Transparent;
-	transparentPass.consumesSceneQueue = true;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.writeColor(m_sceneColorResource);
-		transparentPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_transparentPass = m_renderGraph.addRasterPass(transparentPass, [](RenderGraphPassContext& graphContext)
-	{
-		graphContext.drawSceneQueue();
-	});
-
-	MaterialInstance* skyMat = new MaterialInstance();
-	skyMat->loadFromMaterial("Sky");
-	RenderGraphRasterPassDesc skyPass;
-	skyPass.name = "Sky Stage";
-	skyPass.attachments = sceneLoadAttachments;
-	skyPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
-	skyPass.frameBufferResource = m_sceneFrameBufferResource;
-	skyPass.material = skyMat;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.readDepth(m_gBufferDepthResource)
-			.writeColor(m_sceneColorResource);
-		skyPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_skyPass = m_renderGraph.addRasterPass(skyPass, [this](RenderGraphPassContext& graphContext)
-	{
-		executeSkyPass(graphContext);
-	});
-
-	RenderGraphRasterPassDesc debugWireframePass;
-	debugWireframePass.name = "Debug Wireframe Pass";
-	debugWireframePass.attachments = sceneLoadAttachments;
-	debugWireframePass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
-	debugWireframePass.frameBufferResource = m_sceneFrameBufferResource;
-	debugWireframePass.drawPassMask = DrawPassType::DebugLayer;
-	debugWireframePass.consumesSceneQueue = true;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.writeColor(m_sceneColorResource);
-		debugWireframePass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_debugWireframePass = m_renderGraph.addRasterPass(debugWireframePass, [this](RenderGraphPassContext& graphContext)
-	{
-		executeDebugWireframePass(graphContext);
-	});
-
-	MaterialInstance * matHBAO = new MaterialInstance();
-	matHBAO->loadFromMaterial("HBAO");
+	m_hbaoMat = new MaterialInstance();
+	m_hbaoMat->loadFromMaterial("HBAO");
 	static Texture * jitterTex = nullptr;
 	if(!jitterTex)
 	{
@@ -292,105 +193,255 @@ void SceneView::initRenderGraph()
 		}
 		jitterTex = new Texture(jitterTexMem, 8, 8, ImageFormat::R8G8B8A8);
 	}
-	matHBAO->setTex("jitterTex", jitterTex);
-	MaterialPool::shared()->addMaterial("HBAO", matHBAO);
+	m_hbaoMat->setTex("jitterTex", jitterTex);
+	MaterialPool::shared()->addMaterial("HBAO", m_hbaoMat);
 
-	RenderGraphRasterPassDesc hbaoPass;
-	hbaoPass.name = "HBAO";
-	hbaoPass.frameBufferResource = m_hbaoFrameBufferResource;
-	hbaoPass.material = matHBAO;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.readColor(m_gBufferFrameBufferResource)
-			.readDepth(m_gBufferDepthResource)
-			.readColor(m_gBufferNormalResource)
-			.writeColor(m_hbaoOutputResource, RenderGraphResourceLayout::ShaderRead);
-		hbaoPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_hbaoPass = m_renderGraph.addFullscreenPass(hbaoPass, [this](RenderGraphPassContext& graphContext)
-	{
-		executeHBAOPass(graphContext);
-	});
+	m_ssrMat = new MaterialInstance();
+	m_ssrMat->loadFromMaterial("SSR");
+	MaterialPool::shared()->addMaterial("SSR", m_ssrMat);
 
-	m_sceneColorCopyPass = m_renderGraph.addBlitPass("SceneColorCopy", m_sceneColorResource, m_sceneColorCopyResource);
+	m_fogMat = new MaterialInstance();
+	m_fogMat->loadFromMaterial("GlobalFog");
+	MaterialPool::shared()->addMaterial("GlobalFog", m_fogMat);
+}
 
-	MaterialInstance * matSSR = new MaterialInstance();
-	matSSR->loadFromMaterial("SSR");
-	MaterialPool::shared()->addMaterial("SSR", matSSR);
-	RenderGraphRasterPassDesc ssrPass;
-	ssrPass.name = "SSR";
-	ssrPass.attachments = sceneLoadAttachments;
-	ssrPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
-	ssrPass.frameBufferResource = m_sceneFrameBufferResource;
-	ssrPass.material = matSSR;
-	{
-		RenderGraphPassDesc accesses;
-		accesses.readColor(m_gBufferFrameBufferResource)
-			.readDepth(m_gBufferDepthResource)
-			.readColor(m_gBufferNormalResource)
-			.readColor(m_sceneColorCopyResource)
-			.readColor(m_hbaoOutputResource)
-			.writeColor(m_sceneColorResource);
-		ssrPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	m_ssrPass = m_renderGraph.addFullscreenPass(ssrPass, [this](RenderGraphPassContext& graphContext)
-	{
-		executeSSRPass(graphContext);
-	});
+void SceneView::buildRenderGraph()
+{
+	m_renderGraph.beginBuild();
+	RenderSettings defaultSettings;
+	const auto& settings = m_renderSettings ? *m_renderSettings : defaultSettings;
+	m_outputTexture = nullptr;
 
-	RenderGraphPassDesc ssgiPass;
-	ssgiPass.name = "SSGI";
-	ssgiPass.readColor(m_sceneColorCopyResource)
-		.readDepth(m_gBufferDepthResource)
-		.readColor(m_gBufferNormalResource)
-		.readColor(m_gBufferBaseColorResource)
-		.writeColor(m_sceneColorResource);
-	ssgiPass.execute = [this](RenderGraphPassContext& graphContext)
-	{
-		executeSSGIPass(graphContext);
+	DeviceAttachmentInfoList sceneLoadAttachments = {
+		{ImageFormat::R16G16B16A16, false},
+		{ImageFormat::D24_S8, true},
 	};
-	m_ssgiPass = m_renderGraph.addExternalPass(ssgiPass);
 
-	MaterialInstance * matFog = new MaterialInstance();
-	matFog->loadFromMaterial("GlobalFog");
-	MaterialPool::shared()->addMaterial("GlobalFog", matFog);
-	RenderGraphRasterPassDesc fogPass;
-	fogPass.name = "Fog";
-	fogPass.attachments = sceneLoadAttachments;
-	fogPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
-	fogPass.frameBufferResource = m_sceneFrameBufferResource;
-	fogPass.material = matFog;
+	RenderGraphRasterPassDesc gBufferPass;
+	gBufferPass.name = "GBufferPass";
+	gBufferPass.frameBufferResource = m_gBufferFrameBufferResource;
+	gBufferPass.drawPassMask = DrawPassType::GBuffer;
+	gBufferPass.consumesSceneQueue = true;
+	{
+		RenderGraphPassDesc accesses;
+		accesses.writeColor(m_gBufferFrameBufferResource, RenderGraphResourceLayout::ShaderRead)
+			.writeDepth(m_gBufferDepthResource, RenderGraphResourceLayout::DepthRead);
+		gBufferPass.resourceAccesses = accesses.resourceAccesses;
+	}
+	m_renderGraph.addRasterPass(gBufferPass, [](RenderGraphPassContext& graphContext)
+	{
+		graphContext.drawSceneQueue();
+	});
+
+	RenderGraphRasterPassDesc deferredLightingPass;
+	deferredLightingPass.name = "Deferred Sun Lighting Stage";
+	deferredLightingPass.frameBufferResource = m_sceneFrameBufferResource;
+	deferredLightingPass.material = m_directLightMat;
 	{
 		RenderGraphPassDesc accesses;
 		accesses.readColor(m_gBufferFrameBufferResource)
 			.readDepth(m_gBufferDepthResource)
 			.readColor(m_gBufferNormalResource)
 			.writeColor(m_sceneColorResource);
-		fogPass.resourceAccesses = accesses.resourceAccesses;
+		deferredLightingPass.resourceAccesses = accesses.resourceAccesses;
 	}
-	m_fogPass = m_renderGraph.addFullscreenPass(fogPass, [this](RenderGraphPassContext& graphContext)
+	m_renderGraph.addFullscreenPass(deferredLightingPass, [this](RenderGraphPassContext& graphContext)
 	{
-		executeFogPass(graphContext);
+		executeDeferredLightingPass(graphContext);
 	});
 
-	RenderGraphPassDesc bloomPass;
-	bloomPass.name = "Bloom";
-	bloomPass.readWriteColor(m_sceneColorResource, RenderGraphResourceLayout::ShaderRead);
-	bloomPass.execute = [this](RenderGraphPassContext& graphContext)
+	RenderGraphRasterPassDesc pointLightingPass;
+	pointLightingPass.name = "Deferred Point Light Stage";
+	pointLightingPass.attachments = sceneLoadAttachments;
+	pointLightingPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+	pointLightingPass.frameBufferResource = m_sceneFrameBufferResource;
+	pointLightingPass.material = m_pointLightMat;
 	{
-		executeBloomPass(graphContext);
-	};
-	m_bloomPass = m_renderGraph.addExternalPass(bloomPass);
+		RenderGraphPassDesc accesses;
+		accesses.readColor(m_gBufferFrameBufferResource)
+			.readDepth(m_gBufferDepthResource)
+			.writeColor(m_sceneColorResource);
+		pointLightingPass.resourceAccesses = accesses.resourceAccesses;
+	}
+	m_renderGraph.addRasterPass(pointLightingPass, [this](RenderGraphPassContext& graphContext)
+	{
+		executePointLightingPass(graphContext);
+	});
 
-	RenderGraphPassDesc tsaaPass;
-	tsaaPass.name = "TSAA";
-	tsaaPass.readColor(m_sceneColorResource)
-		.readDepth(m_gBufferDepthResource);
-	tsaaPass.execute = [this](RenderGraphPassContext& graphContext)
+	RenderGraphRasterPassDesc transparentPass;
+	transparentPass.name = "TransparentPass";
+	transparentPass.attachments = sceneLoadAttachments;
+	transparentPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+	transparentPass.frameBufferResource = m_sceneFrameBufferResource;
+	transparentPass.drawPassMask = DrawPassType::Transparent;
+	transparentPass.consumesSceneQueue = true;
 	{
-		executeTSAAPass(graphContext);
-	};
-	m_tsaaPass = m_renderGraph.addExternalPass(tsaaPass);
+		RenderGraphPassDesc accesses;
+		accesses.writeColor(m_sceneColorResource);
+		transparentPass.resourceAccesses = accesses.resourceAccesses;
+	}
+	m_renderGraph.addRasterPass(transparentPass, [](RenderGraphPassContext& graphContext)
+	{
+		graphContext.drawSceneQueue();
+	});
+
+	RenderGraphRasterPassDesc skyPass;
+	skyPass.name = "Sky Stage";
+	skyPass.attachments = sceneLoadAttachments;
+	skyPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+	skyPass.frameBufferResource = m_sceneFrameBufferResource;
+	skyPass.material = m_skyMat;
+	{
+		RenderGraphPassDesc accesses;
+		accesses.readDepth(m_gBufferDepthResource)
+			.writeColor(m_sceneColorResource);
+		skyPass.resourceAccesses = accesses.resourceAccesses;
+	}
+	m_renderGraph.addRasterPass(skyPass, [this](RenderGraphPassContext& graphContext)
+	{
+		executeSkyPass(graphContext);
+	});
+
+	RenderGraphRasterPassDesc debugWireframePass;
+	debugWireframePass.name = "Debug Wireframe Pass";
+	debugWireframePass.attachments = sceneLoadAttachments;
+	debugWireframePass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+	debugWireframePass.frameBufferResource = m_sceneFrameBufferResource;
+	debugWireframePass.drawPassMask = DrawPassType::DebugLayer;
+	debugWireframePass.consumesSceneQueue = true;
+	{
+		RenderGraphPassDesc accesses;
+		accesses.writeColor(m_sceneColorResource);
+		debugWireframePass.resourceAccesses = accesses.resourceAccesses;
+	}
+	m_renderGraph.addRasterPass(debugWireframePass, [this](RenderGraphPassContext& graphContext)
+	{
+		executeDebugWireframePass(graphContext);
+	});
+
+	const bool needsSceneColorCopy = settings.ssrEnabled() || settings.ssgiEnabled();
+	if(settings.ssrEnabled())
+	{
+		RenderGraphRasterPassDesc hbaoPass;
+		hbaoPass.name = "HBAO";
+		hbaoPass.frameBufferResource = m_hbaoFrameBufferResource;
+		hbaoPass.material = m_hbaoMat;
+		{
+			RenderGraphPassDesc accesses;
+			accesses.readColor(m_gBufferFrameBufferResource)
+				.readDepth(m_gBufferDepthResource)
+				.readColor(m_gBufferNormalResource)
+				.writeColor(m_hbaoOutputResource, RenderGraphResourceLayout::ShaderRead);
+			hbaoPass.resourceAccesses = accesses.resourceAccesses;
+		}
+		m_renderGraph.addFullscreenPass(hbaoPass, [this](RenderGraphPassContext& graphContext)
+		{
+			executeHBAOPass(graphContext);
+		});
+	}
+
+	if(needsSceneColorCopy)
+	{
+		m_renderGraph.addBlitPass("SceneColorCopy", m_sceneColorResource, m_sceneColorCopyResource);
+	}
+
+	if(settings.ssrEnabled())
+	{
+		RenderGraphRasterPassDesc ssrPass;
+		ssrPass.name = "SSR";
+		ssrPass.attachments = sceneLoadAttachments;
+		ssrPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+		ssrPass.frameBufferResource = m_sceneFrameBufferResource;
+		ssrPass.material = m_ssrMat;
+		{
+			RenderGraphPassDesc accesses;
+			accesses.readColor(m_gBufferFrameBufferResource)
+				.readDepth(m_gBufferDepthResource)
+				.readColor(m_gBufferNormalResource)
+				.readColor(m_sceneColorCopyResource)
+				.readColor(m_hbaoOutputResource)
+				.writeColor(m_sceneColorResource);
+			ssrPass.resourceAccesses = accesses.resourceAccesses;
+		}
+		m_renderGraph.addFullscreenPass(ssrPass, [this](RenderGraphPassContext& graphContext)
+		{
+			executeSSRPass(graphContext);
+		});
+	}
+
+	if(settings.ssgiEnabled())
+	{
+		RenderGraphPassDesc ssgiPass;
+		ssgiPass.name = "SSGI";
+		ssgiPass.readColor(m_sceneColorCopyResource)
+			.readDepth(m_gBufferDepthResource)
+			.readColor(m_gBufferNormalResource)
+			.readColor(m_gBufferBaseColorResource)
+			.writeColor(m_sceneColorResource);
+		ssgiPass.execute = [this](RenderGraphPassContext& graphContext)
+		{
+			executeSSGIPass(graphContext);
+		};
+		m_renderGraph.addExternalPass(ssgiPass);
+	}
+
+	if(settings.fogEnabled())
+	{
+		RenderGraphRasterPassDesc fogPass;
+		fogPass.name = "Fog";
+		fogPass.attachments = sceneLoadAttachments;
+		fogPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+		fogPass.frameBufferResource = m_sceneFrameBufferResource;
+		fogPass.material = m_fogMat;
+		{
+			RenderGraphPassDesc accesses;
+			accesses.readColor(m_gBufferFrameBufferResource)
+				.readDepth(m_gBufferDepthResource)
+				.readColor(m_gBufferNormalResource)
+				.writeColor(m_sceneColorResource);
+			fogPass.resourceAccesses = accesses.resourceAccesses;
+		}
+		m_renderGraph.addFullscreenPass(fogPass, [this](RenderGraphPassContext& graphContext)
+		{
+			executeFogPass(graphContext);
+		});
+	}
+
+	if(settings.bloomEnabled())
+	{
+		RenderGraphPassDesc bloomPass;
+		bloomPass.name = "Bloom";
+		bloomPass.readWriteColor(m_sceneColorResource, RenderGraphResourceLayout::ShaderRead);
+		bloomPass.execute = [this](RenderGraphPassContext& graphContext)
+		{
+			executeBloomPass(graphContext);
+		};
+		m_renderGraph.addExternalPass(bloomPass);
+	}
+
+	if(settings.aaEnabled())
+	{
+		RenderGraphPassDesc tsaaPass;
+		tsaaPass.name = "TSAA";
+		tsaaPass.readColor(m_sceneColorResource)
+			.readDepth(m_gBufferDepthResource);
+		tsaaPass.execute = [this](RenderGraphPassContext& graphContext)
+		{
+			executeTSAAPass(graphContext);
+		};
+		m_renderGraph.addExternalPass(tsaaPass);
+	}
+	else
+	{
+		RenderGraphPassDesc sceneOutputPass;
+		sceneOutputPass.name = "SceneOutput";
+		sceneOutputPass.readColor(m_sceneColorResource);
+		sceneOutputPass.execute = [this](RenderGraphPassContext& graphContext)
+		{
+			m_outputTexture = graphTexture(m_sceneColorResource, &graphContext);
+		};
+		m_renderGraph.addExternalPass(sceneOutputPass);
+	}
 
 	RenderGraphPassDesc outlinePass;
 	outlinePass.name = "Outline";
@@ -400,7 +451,7 @@ void SceneView::initRenderGraph()
 	{
 		executeOutlinePass(graphContext);
 	};
-	m_outlinePassHandle = m_renderGraph.addExternalPass(outlinePass);
+	m_renderGraph.addExternalPass(outlinePass);
 }
 
 DeviceFrameBuffer* SceneView::graphFrameBuffer(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext) const
@@ -468,6 +519,7 @@ void SceneView::collect()
 
 void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath)
 {
+	buildRenderGraph();
 	RenderGraphContext graphContext(cmd, renderPath, renderQueue());
 	m_renderGraph.execute(graphContext);
 }
@@ -680,25 +732,14 @@ void SceneView::executeBloomPass(RenderGraphPassContext& graphContext)
 
 void SceneView::executeTSAAPass(RenderGraphPassContext& graphContext)
 {
-	if(m_isAAEnable)
+	auto sceneColor = graphTexture(m_sceneColorResource, &graphContext);
+	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
+	if(!sceneColor || !gBufferDepth)
 	{
-		auto sceneColor = graphTexture(m_sceneColorResource, &graphContext);
-		auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
-		if(!sceneColor || !gBufferDepth)
-		{
-			return;
-		}
-		graphContext.renderPath()->addRenderStage(m_tsaa.draw(graphContext.cmd(), sceneColor,  gBufferDepth));
-		m_outputTexture = m_tsaa.getOutput()->getTextureList()[0];
+		return;
 	}
-	else
-	{
-		if(camera())
-		{
-			camera()->setOffsetPixel(0, 0);
-		}
-		m_outputTexture = graphTexture(m_sceneColorResource, &graphContext);
-	}
+	graphContext.renderPath()->addRenderStage(m_tsaa.draw(graphContext.cmd(), sceneColor,  gBufferDepth));
+	m_outputTexture = m_tsaa.getOutput()->getTextureList()[0];
 }
 
 void SceneView::executeOutlinePass(RenderGraphPassContext& graphContext)
@@ -711,10 +752,9 @@ void SceneView::executeOutlinePass(RenderGraphPassContext& graphContext)
 	m_outputTexture = m_outlinePass.draw(graphContext.cmd(), graphContext.renderPath(), graphContext.sceneQueue(), m_outputTexture, gBufferDepth);
 }
 
-void SceneView::preTick(bool isAAEnable)
+void SceneView::preTick(const RenderSettings& settings)
 {
-	m_isAAEnable = isAAEnable;
-	if(m_isAAEnable)
+	if(settings.aaEnabled())
 	{
 		m_tsaa.preTick();
 	}
@@ -722,12 +762,15 @@ void SceneView::preTick(bool isAAEnable)
 	{
 		g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
 	}
-	m_ssgi.preTick();
+	if(settings.ssgiEnabled())
+	{
+		m_ssgi.preTick();
+	}
 }
 
-void SceneView::setAAEnabled(bool isAAEnable)
+void SceneView::setRenderSettings(const RenderSettings* settings)
 {
-	m_isAAEnable = isAAEnable;
+	m_renderSettings = settings;
 }
 
 void SceneView::setShadowTextures(const std::vector<DeviceTexture*>& shadowTextures)

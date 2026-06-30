@@ -231,6 +231,7 @@ private:
 class RenderGraph
 {
 public:
+	void beginBuild();
 	void clear();
 	void clearResources();
 	RenderGraphPassHandle addPass(const RenderGraphPassDesc& desc);
@@ -256,6 +257,16 @@ public:
 	void execute(RenderGraphContext& context);
 
 private:
+	struct RasterPassCacheEntry
+	{
+		std::string key;
+		DeviceRenderPass* renderPass = nullptr;
+		DeviceRenderStage* stage = nullptr;
+		RenderGraphResourceHandle frameBufferResource = RenderGraphResourceHandle::invalid();
+	};
+
+	RasterPassCacheEntry* findRasterPassCache(const std::string& key);
+	RasterPassCacheEntry& createRasterPassCache(const std::string& key, const RenderGraphRasterPassDesc& desc, RenderGraphResourceHandle frameBufferResource);
 	void releaseOwnedResources();
 	void applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass);
 	void updateResourceLayoutsAfterPass(const RenderGraphPassDesc& pass);
@@ -265,5 +276,6 @@ private:
 
 	std::vector<RenderGraphPassDesc> m_passes;
 	std::vector<RenderGraphResource> m_resources;
+	std::vector<RasterPassCacheEntry> m_rasterPassCache;
 };
 }
