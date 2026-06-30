@@ -32,6 +32,8 @@ struct ImageMetaInfo
 class DeviceTexture
 {
 public:
+	virtual ~DeviceTexture() = default;
+
 	ImageMetaInfo m_metaInfo = {};
 	unsigned int m_uid = 0;//temporally for opengl
 	[[nodiscard]] TextureRoleEnum getTextureRole() const

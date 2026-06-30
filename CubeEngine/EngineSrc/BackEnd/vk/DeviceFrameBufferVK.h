@@ -13,6 +13,7 @@ class DeviceFrameBufferVK : public DeviceFrameBuffer
 {
 public:
 	DeviceFrameBufferVK() = default;
+	~DeviceFrameBufferVK() override;
 	void init(int w, int h, VkFramebuffer renderPass);
 	void init(int w, int h, DeviceRenderPass * renderPass) override;
 	void initWithTextures(DeviceRenderPass * renderPass, const std::vector<DeviceTexture *> &textureList, int w, int h) override;
@@ -22,7 +23,8 @@ public:
 	vec2 getSize() override;
 	VkFramebuffer getFrameBuffer();
 private:
-	VkFramebuffer m_frameBuffer;
+	VkFramebuffer m_frameBuffer = {};
+	bool m_ownsTextureList = false;
 };
 };
 

@@ -6,16 +6,33 @@
 #include "Engine/Engine.h"
 namespace tzw
 {
+    DeviceFrameBufferVK::~DeviceFrameBufferVK()
+    {
+        if(m_frameBuffer)
+        {
+            vkDestroyFramebuffer(VKRenderBackEnd::shared()->getDevice(), m_frameBuffer, nullptr);
+        }
+        if(m_ownsTextureList)
+        {
+            for(auto texture : m_textureList)
+            {
+                delete texture;
+            }
+        }
+    }
+
     void DeviceFrameBufferVK::init(int w, int h, VkFramebuffer frameBuffer)
     {
         m_size = vec2(w,h);
         m_frameBuffer = frameBuffer;
+        m_ownsTextureList = false;
     }
     void DeviceFrameBufferVK::init(int w, int h, DeviceRenderPass * renderPass)
 	{
         m_size = vec2(w,h);
         auto & attachmentList = renderPass->getAttachmentList();
         m_depthTexture = nullptr;
+        m_ownsTextureList = true;
         for(int i =0 ; i < attachmentList.size(); i++){
 
             if(!attachmentList[i].isDepthStencilAttachment)
@@ -56,6 +73,7 @@ namespace tzw
         m_size = vec2(w,h);
         auto & attachmentList = renderPass->getAttachmentList();
         m_textureList = textureList;
+        m_ownsTextureList = false;
         std::vector<VkImageView> attachments;
         attachments.resize(attachmentList.size());
         for(int i = 0; i <attachmentList.size(); i++){
@@ -81,6 +99,7 @@ namespace tzw
 		static_cast<DeviceTextureVK *>(depth)->getImageView(), //the depth buffer
 		};
         auto screenSize = Engine::shared()->winSize();
+        m_ownsTextureList = false;
         VkFramebufferCreateInfo fbCreateInfo = {};
         fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
         fbCreateInfo.renderPass = static_cast<DeviceRenderPassVK *>(renderPass)->getRenderPass();

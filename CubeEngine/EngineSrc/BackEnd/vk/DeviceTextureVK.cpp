@@ -33,6 +33,32 @@ DeviceTextureVK::DeviceTextureVK(VkImage image, VkImageView view):m_isDepth(fals
 {
     m_textureImage = image;
     m_textureImageView = view;
+    m_ownsImage = false;
+}
+
+DeviceTextureVK::~DeviceTextureVK()
+{
+    auto device = VKRenderBackEnd::shared()->getDevice();
+    if(m_sampler)
+    {
+        vkDestroySampler(device, m_sampler, nullptr);
+    }
+    if(m_textureStencilImageView)
+    {
+        vkDestroyImageView(device, m_textureStencilImageView, nullptr);
+    }
+    if(m_ownsImage && m_textureImageView)
+    {
+        vkDestroyImageView(device, m_textureImageView, nullptr);
+    }
+    if(m_ownsImage && m_textureImage)
+    {
+        vkDestroyImage(device, m_textureImage, nullptr);
+    }
+    if(m_ownsImage && m_textureImageMemory)
+    {
+        vkFreeMemory(device, m_textureImageMemory, nullptr);
+    }
 }
 
 const VkImage DeviceTextureVK::getImage()

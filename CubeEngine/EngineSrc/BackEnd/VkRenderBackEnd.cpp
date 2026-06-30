@@ -1247,6 +1247,10 @@ void VKRenderBackEnd::getStageAndAcessMaskFromLayOut(VkImageLayout layout, VkPip
         stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
         access = VK_ACCESS_TRANSFER_WRITE_BIT;
         break;
+    case VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL:
+        stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+        access = VK_ACCESS_TRANSFER_READ_BIT;
+        break;
     case VK_IMAGE_LAYOUT_GENERAL:
         stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
         access = VK_ACCESS_MEMORY_READ_BIT | VK_ACCESS_MEMORY_WRITE_BIT ;
@@ -1266,6 +1270,11 @@ void VKRenderBackEnd::getStageAndAcessMaskFromLayOut(VkImageLayout layout, VkPip
 void VKRenderBackEnd::transitionImageLayoutUseBarrier(VkCommandBuffer cmd, DeviceTextureVK * texture,
     VkImageLayout oldLayout, VkImageLayout newLayout, int mipBase, int mipCount)
 {
+    if(oldLayout == newLayout)
+    {
+        return;
+    }
+
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = oldLayout;

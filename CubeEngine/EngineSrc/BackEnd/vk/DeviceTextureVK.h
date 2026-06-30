@@ -12,6 +12,7 @@ public:
 	DeviceTextureVK(std::string filepath);
 	DeviceTextureVK();
 	DeviceTextureVK(VkImage image, VkImageView view);
+	~DeviceTextureVK() override;
 	const VkImage getImage();
 	const VkImageView getImageView();
 	const VkSampler getSampler();
@@ -29,6 +30,7 @@ private:
 	VkImageView m_textureImageView = {};
 	VkImageView m_textureStencilImageView = {};
 	VkSampler m_sampler = {};
+	bool m_ownsImage = true;
 };
 
 
