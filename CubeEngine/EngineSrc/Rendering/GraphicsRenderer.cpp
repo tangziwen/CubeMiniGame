@@ -39,23 +39,6 @@ namespace tzw
         m_thumbNailRenderStage = backEnd->createRenderStage_imp();
         m_thumbNailRenderStage->init(thumbnailPass, nullptr);
 
-        MaterialInstance * matTextureToScreen = new MaterialInstance();
-        matTextureToScreen->loadFromMaterial("TextureToScreen");
-
-        for(int i = 0 ; i < 2; i++)
-        {
-            auto pass = backEnd->createDeviceRenderpass_imp();
-            pass->init({{
-            ImageFormat::Surface_Format, false}, {
-            ImageFormat::D24_S8, true},}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false, true);
-            auto frameBuffer = backEnd->createSwapChainFrameBuffer(i);
-            auto stage = backEnd->createRenderStage_imp();
-            stage->init(pass, frameBuffer);
-            stage->setName("Texture To Screen Pass");
-            m_textureToScreenRenderStage[i] = stage;
-            m_textureToScreenRenderStage[i]->createSinglePipeline(matTextureToScreen);
-        }
-
         for(int i = 0 ; i < 2; i++)
         {
             auto pass = backEnd->createDeviceRenderpass_imp();
@@ -151,26 +134,12 @@ namespace tzw
         m_csmShadowSystem->collect();
         m_csmShadowSystem->draw(cmd, m_renderPath);
         m_sceneView->setShadowTextures(m_csmShadowSystem->depthTextures());
-        m_sceneView->draw(cmd, m_renderPath);
-
         int imageIdx = backEnd->getCurrSwapIndex();
-        drawTextureToScreen(cmd, imageIdx, m_sceneView->outputTexture());
+        m_sceneView->draw(cmd, m_renderPath, imageIdx);
         drawGui(cmd, imageIdx);
         drawPendingThumbnail(cmd);
 		cmd->endRecord();
         backEnd->endFrame(m_renderPath);
-	}
-
-	void GraphicsRenderer::drawTextureToScreen(DeviceRenderCommand * cmd, int imageIdx, DeviceTexture * tex)
-	{
-        m_textureToScreenRenderStage[imageIdx]->prepare(cmd);
-        m_textureToScreenRenderStage[imageIdx]->beginRenderPass();
-        m_textureToScreenRenderStage[imageIdx]->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, tex);
-        m_textureToScreenRenderStage[imageIdx]->bindSinglePipelineDescriptor();
-        m_textureToScreenRenderStage[imageIdx]->drawScreenQuad();
-        m_textureToScreenRenderStage[imageIdx]->endRenderPass();
-        m_textureToScreenRenderStage[imageIdx]->finish();
-        m_renderPath->addRenderStage(m_textureToScreenRenderStage[imageIdx]);
 	}
 
 	void GraphicsRenderer::drawGui(DeviceRenderCommand * cmd, int imageIdx)

@@ -7,6 +7,7 @@
 #include "Engine/Engine.h"
 #include "Scene/SceneMgr.h"
 #include "DeviceTextureVK.h"
+#include <unordered_map>
 namespace tzw
 {
 
@@ -56,7 +57,8 @@ namespace tzw
         if(!shader->findLocationInfo("t_shaderUnifom")) return;
         auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
         //update material parameter
-        auto & varList = m_shadingParams->getVarList();
+        std::unordered_map<std::string, TechniqueVar> emptyVarList;
+        auto& varList = m_shadingParams ? m_shadingParams->getVarList() : emptyVarList;
         std::vector<VkWriteDescriptorSet> descriptorWrites{};
         void* data;
         //copy new data
@@ -205,7 +207,8 @@ namespace tzw
             return;
         }
         auto & matDescSet = matDescIter->second;
-        auto & varList = m_shadingParams->getVarList();
+        std::unordered_map<std::string, TechniqueVar> emptyVarList;
+        auto& varList = m_shadingParams ? m_shadingParams->getVarList() : emptyVarList;
 
 
         for(auto& i :matDescSet)

@@ -99,6 +99,10 @@ namespace tzw
 		static_cast<DeviceTextureVK *>(depth)->getImageView(), //the depth buffer
 		};
         auto screenSize = Engine::shared()->winSize();
+        m_textureList.clear();
+        m_textureList.emplace_back(tex);
+        m_textureList.emplace_back(depth);
+        m_depthTexture = depth;
         m_ownsTextureList = false;
         VkFramebufferCreateInfo fbCreateInfo = {};
         fbCreateInfo.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;

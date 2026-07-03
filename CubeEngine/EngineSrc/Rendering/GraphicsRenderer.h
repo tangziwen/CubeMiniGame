@@ -30,7 +30,6 @@ namespace tzw
 		SceneView * m_sceneView;
 		CSMShadowSystem * m_csmShadowSystem;
 		DeviceRenderStage * m_thumbNailRenderStage;
-		DeviceRenderStage * m_textureToScreenRenderStage[2];
 		DeviceRenderStage * m_guiStage[2];
 		RenderQueue * m_guiQueue;
 		
@@ -44,7 +43,6 @@ namespace tzw
 		RenderPath * m_renderPath;
 		DeviceTextureVK * m_imguiTextureFont;
 		std::vector<ThumbNail *> m_thumbNailList;
-		void drawTextureToScreen(DeviceRenderCommand * cmd, int imageIdx, DeviceTexture * tex);
 		void drawGui(DeviceRenderCommand * cmd, int imageIdx);
 		void drawImgui(int imageIdx);
 		void drawPendingThumbnail(DeviceRenderCommand * cmd);

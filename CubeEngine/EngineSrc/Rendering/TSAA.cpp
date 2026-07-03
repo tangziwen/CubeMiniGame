@@ -1,40 +1,22 @@
 #include "TSAA.h"
 
-#include "BackEnd/vk/DeviceTextureVK.h"
+#include "BackEnd/DeviceDescriptor.h"
+#include "BackEnd/DevicePipeline.h"
+#include "RenderGraph.h"
 #include "Technique/MaterialPool.h"
-#include "EngineSrc/BackEnd/VkRenderBackEnd.h"
 #include "Engine/Engine.h"
 #include "EngineSrc/Scene/SceneMgr.h"
 namespace tzw
 {
 	void TSAA::init()
 	{
-        vec2 winSize = Engine::shared()->winSize();
-        auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-
-	    MaterialInstance * matTSAA = new MaterialInstance();
-	    matTSAA->loadFromMaterial("TSAA");
-
-
-	    MaterialPool::shared()->addMaterial("TSAA", matTSAA);
-        auto TSAAPass = backEnd->createDeviceRenderpass_imp();
-        TSAAPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-
-        m_tsaaStage = backEnd->createRenderStage_imp();
-        //two buffer
-        m_bufferA = backEnd->createFrameBuffer_imp();
-        m_bufferA->init(winSize.x, winSize.y, TSAAPass);
-
-        m_bufferB = backEnd->createFrameBuffer_imp();
-        m_bufferB->init(winSize.x, winSize.y, TSAAPass);
-
-        auto tex = (DeviceTextureVK *)m_bufferB->getTextureList()[0];
-		backEnd->transitionImageLayout(tex->getImage(), backEnd->getFormat(ImageFormat::R16G16B16A16) , VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-
-        m_tsaaStage->init(TSAAPass, m_bufferA);
-        m_tsaaStage->setName("TSAA Stage");
-        m_tsaaStage->createSinglePipeline(matTSAA);
+		m_material = new MaterialInstance();
+		m_material->loadFromMaterial("TSAA");
+		MaterialPool::shared()->addMaterial("TSAA", m_material);
+		m_attachments = {
+			{ImageFormat::R16G16B16A16, false},
+			{ImageFormat::D24_S8, true}
+		};
         m_offset = vec2(0, 0);
 	}
     float TemporalHalton(int Index, int Base) noexcept
@@ -61,37 +43,52 @@ namespace tzw
         m_offset = vec2((TemporalHalton(m_index + 1, 2) - 0.5f) * m_jitterScalePixels, (TemporalHalton(m_index + 1, 3) - 0.5f) * m_jitterScalePixels);
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(m_offset.x, m_offset.y);
     }
-    DeviceRenderStage* TSAA::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth)
+	MaterialInstance* TSAA::material() const
+	{
+		return m_material;
+	}
+
+	const DeviceAttachmentInfoList& TSAA::attachments() const
+	{
+		return m_attachments;
+	}
+
+	int TSAA::targetBufferIndex() const
+	{
+		return m_targetBufferIndex;
+	}
+
+	int TSAA::historyBufferIndex() const
+	{
+		return 1 - m_targetBufferIndex;
+	}
+
+    void TSAA::executeResolve(RenderGraphPassContext& graphContext, DeviceTexture * historyFrame, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
         // GraphicsRenderer runs TSAA after fog and before TextureToScreen. Current scene color
         // is sampled in jittered render space; reprojection uses unjittered camera space and TU_LastVP.
         // Reset before material uniforms update so TU_viewProjectInverted describes current resolve space.
         g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
+		auto pipeline = graphContext.pipeline();
+		auto descriptor = graphContext.materialDescriptor();
+		if(!pipeline || !descriptor || !historyFrame || !currFrame || !Depth)
+		{
+			return;
+		}
         vec2 winSize = Engine::shared()->winSize();
         vec2 jitterUV = vec2(m_offset.x / winSize.x, m_offset.y / winSize.y);
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_jitterUV", jitterUV);
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_LastVP",  m_lastViewProj);
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_TSAAResolveParams", m_resolveParams);
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_TSAARejectionParams", m_rejectionParams);
-        m_tsaaStage->getSinglePipeline()->getMat()->setVar("TU_TSAADebugMode", m_debugMode);
+        pipeline->getMat()->setVar("TU_jitterUV", jitterUV);
+        pipeline->getMat()->setVar("TU_LastVP",  m_lastViewProj);
+        pipeline->getMat()->setVar("TU_TSAAResolveParams", m_resolveParams);
+        pipeline->getMat()->setVar("TU_TSAARejectionParams", m_rejectionParams);
+        pipeline->getMat()->setVar("TU_TSAADebugMode", m_debugMode);
 
-        m_tsaaStage->prepare(cmd);
-        m_tsaaStage->beginRenderPass(m_bufferA);
-        m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, m_bufferB->getTextureList()[0]);
-        m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, currFrame);
+        descriptor->updateDescriptorByBinding(1, historyFrame);
+        descriptor->updateDescriptorByBinding(2, currFrame);
         // Depth is the GBuffer depth supplied by GraphicsRenderer, not the deferred lighting/fog depth.
-        m_tsaaStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, Depth);
-        m_tsaaStage->bindSinglePipelineDescriptor();
-        m_tsaaStage->drawScreenQuad();
-        m_tsaaStage->endRenderPass();
-        m_tsaaStage->finish();
-
-        std::swap(m_bufferA, m_bufferB);//swap buffer
-        return m_tsaaStage;
-    }
-
-    DeviceFrameBuffer * TSAA::getOutput()
-    {
-        return m_bufferB;
+        descriptor->updateDescriptorByBinding(3, Depth);
+        graphContext.bindSinglePipelineDescriptor();
+        graphContext.drawScreenQuad();
+		m_targetBufferIndex = 1 - m_targetBufferIndex;
     }
 }

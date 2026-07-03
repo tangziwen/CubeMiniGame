@@ -1,11 +1,16 @@
 #include "Bloom.h"
 #include "Technique/MaterialPool.h"
+#include "Technique/ShadingParams.h"
+#include "BackEnd/DeviceDescriptor.h"
+#include "BackEnd/DeviceMaterial.h"
+#include "BackEnd/DeviceShaderCollection.h"
 #include "EngineSrc/BackEnd/VkRenderBackEnd.h"
 #include "Engine/Engine.h"
 #include "EngineSrc/Scene/SceneMgr.h"
-#include "BackEnd/vk/DeviceShaderCollectionVK.h"
+#include "BackEnd/vk/DeviceRenderCommandVK.h"
 #include "BackEnd/vk/DeviceTextureVK.h"
 #include "Utility/file/Tfile.h"
+#include "RenderGraph.h"
 #include "RenderPath.h"
 namespace tzw
 {
@@ -15,21 +20,13 @@ namespace tzw
 		auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 
         //bright stage
-        m_brightStage = backEnd->createRenderStage_imp();
-        m_brightStage->initCompute();
-        m_brightStage->setName("Bright Pass");
-
-        auto computeShader = new DeviceShaderCollectionVK();
+        m_brightShader = backEnd->createShader_imp();
         tzw::Data data = tzw::Tfile::shared()->getData("VulkanShaders/BrightPass.glsl",false);
-        computeShader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"BrightPass.glsl");
-        computeShader->finish();
-        m_brightStage->createSingleComputePipeline(computeShader);
-        ShadingParams * BrightParams = new ShadingParams();
-        BrightParams->setVar("TU_InSize", vec2(1600, 960));
-        BrightParams->setVar("TU_OutSize", getLayerSize(0));
-        m_brightStage->getSolorDeviceMaterial()->setShadingParams(BrightParams);
-        m_brightStage->getSolorDeviceMaterial()->updateMaterialDescriptorSet();
-        m_brightStage->getSolorDeviceMaterial()->updateUniform();
+        m_brightShader->addShader((const unsigned char *)data.getBytes(),data.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"BrightPass.glsl");
+        m_brightShader->finish();
+        m_brightParams = new ShadingParams();
+        m_brightParams->setVar("TU_InSize", vec2(1600, 960));
+        m_brightParams->setVar("TU_OutSize", getLayerSize(0));
 
         //down Sample stage
         for(int i = 0; i < BLOOM_LAYERS - 1; i ++)
@@ -38,7 +35,7 @@ namespace tzw
             m_DownSampleStage[i]->initCompute();
             m_DownSampleStage[i]->setName("DownSample Pass");
 
-            auto downSampleShader = new DeviceShaderCollectionVK();
+            auto downSampleShader = backEnd->createShader_imp();
             tzw::Data downSampleData = tzw::Tfile::shared()->getData("VulkanShaders/DownSample.glsl",false);
             downSampleShader->addShader((const unsigned char *)downSampleData.getBytes(),downSampleData.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"DownSample.glsl");
             downSampleShader->finish();
@@ -58,7 +55,7 @@ namespace tzw
             m_blurStage[i][0]->initCompute();
             m_blurStage[i][0]->setName("Blur Vertical Pass");
 
-            auto BlurVShader = new DeviceShaderCollectionVK();
+            auto BlurVShader = backEnd->createShader_imp();
             tzw::Data blurSampleData = tzw::Tfile::shared()->getData("VulkanShaders/BlurV.glsl",false);
             BlurVShader->addShader((const unsigned char *)blurSampleData.getBytes(),blurSampleData.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"BlurV.glsl");
             BlurVShader->finish();
@@ -76,7 +73,7 @@ namespace tzw
             m_blurStage[i][1]->initCompute();
             m_blurStage[i][1]->setName("Blur Horizonal Pass");
 
-            auto BlurHShader = new DeviceShaderCollectionVK();
+            auto BlurHShader = backEnd->createShader_imp();
             tzw::Data blurHSampleData = tzw::Tfile::shared()->getData("VulkanShaders/BlurH.glsl",false);
             BlurHShader->addShader((const unsigned char *)blurHSampleData.getBytes(),blurHSampleData.getSize(),DeviceShaderType::ComputeShader,(const unsigned char *)"BlurH.glsl");
             BlurHShader->finish();
@@ -118,36 +115,24 @@ namespace tzw
 
 	void Bloom::draw(DeviceRenderCommand * cmd,RenderPath * path, DeviceTexture * sceneColor)
 	{
+        drawAfterBright(cmd, path);
+	}
 
+	void Bloom::drawAfterBright(DeviceRenderCommand * cmd,RenderPath * path)
+	{
         auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-        m_brightStage->prepare(cmd);
-        m_brightStage->beginCompute();
-        backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-        static_cast<DeviceTextureVK*>(sceneColor), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
-
         for(int i = 0; i < BLOOM_LAYERS; i++)
         {
             for(int j = 0; j < 2; j++)
             {
+                if(i == 0 && j == 0)
+                {
+                    continue;
+                }
                 backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
                 static_cast<DeviceTextureVK*>(m_bloomTexture[i][j]), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_GENERAL, 0, 1);
             }
         }
-
-        m_brightStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(1, sceneColor);
-        m_brightStage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[0][0]);
-
-        m_brightStage->bindSinglePipelineDescriptorCompute();
-        vec2 disptachSize = getLayerSize(0);
-        m_brightStage->dispatch(disptachSize.x/ 16, disptachSize.y/ 16, 1);
-        m_brightStage->endCompute();
-        path->addRenderStage(m_brightStage);
-        //add a barrier
-
-        vkCmdPipelineBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, 
-            VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, 
-            0,0,nullptr,0,nullptr, 0, nullptr);
 
         for(int i = 0; i < BLOOM_LAYERS - 1; i ++)
         {
@@ -206,9 +191,6 @@ namespace tzw
         }
 
 		
-        backEnd->transitionImageLayoutUseBarrier(static_cast<DeviceRenderCommandVK *>(cmd)->getVK(), 
-        static_cast<DeviceTextureVK*>(sceneColor), VK_IMAGE_LAYOUT_GENERAL, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL, 0, 1);
-
         for(int i = 0; i < BLOOM_LAYERS; i++)
         {
             for(int j = 0; j < 2; j++)
@@ -239,6 +221,40 @@ namespace tzw
         path->addRenderStage(m_bloomCompositeStage);
 		return ;
 	}
+
+    void Bloom::executeBrightPass(RenderGraphPassContext& graphContext, DeviceTexture* sceneColor)
+    {
+        auto deviceMaterial = graphContext.material();
+        auto descriptorSet = graphContext.materialDescriptor();
+        if(!deviceMaterial || !descriptorSet || !sceneColor || !m_bloomTexture[0][0])
+        {
+            return;
+        }
+
+        deviceMaterial->setShadingParams(m_brightParams);
+        deviceMaterial->updateMaterialDescriptorSet();
+        deviceMaterial->updateUniform();
+        descriptorSet->updateDescriptorByBindingAsStorageImage(1, sceneColor);
+        descriptorSet->updateDescriptorByBindingAsStorageImage(2, m_bloomTexture[0][0]);
+        graphContext.bindSinglePipelineDescriptorCompute();
+        vec2 disptachSize = getLayerSize(0);
+        graphContext.dispatch(static_cast<uint32_t>(disptachSize.x / 16), static_cast<uint32_t>(disptachSize.y / 16), 1);
+    }
+
+    DeviceShaderCollection* Bloom::brightShader() const
+    {
+        return m_brightShader;
+    }
+
+    DeviceTexture* Bloom::bloomTexture(int layer, int index) const
+    {
+        if(layer < 0 || layer >= BLOOM_LAYERS || index < 0 || index >= 2)
+        {
+            return nullptr;
+        }
+        return m_bloomTexture[layer][index];
+    }
+
     vec2 Bloom::getLayerSize(int index)
     {
         return vec2(1600 >> (index + 1), 960 >> (index + 1));

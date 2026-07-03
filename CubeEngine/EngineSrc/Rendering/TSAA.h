@@ -1,21 +1,31 @@
 #pragma once
-#include "EngineSrc/BackEnd/DeviceRenderStage.h"
+
+#include "BackEnd/DeviceRenderPass.h"
+#include "Math/Matrix44.h"
+#include "Math/vec2.h"
 namespace tzw
 {
+	class DeviceTexture;
+	class MaterialInstance;
+	class RenderGraphPassContext;
+
 	class TSAA
 	{
 	public:
 		void init();
-		DeviceRenderStage* draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth);
-		DeviceFrameBuffer * getOutput();
 		void preTick();
+		MaterialInstance* material() const;
+		const DeviceAttachmentInfoList& attachments() const;
+		int targetBufferIndex() const;
+		int historyBufferIndex() const;
+		void executeResolve(RenderGraphPassContext& graphContext, DeviceTexture* historyFrame, DeviceTexture* currFrame, DeviceTexture* depth);
 	protected:
-		DeviceRenderStage * m_tsaaStage;
-		DeviceFrameBuffer * m_bufferA;
-		DeviceFrameBuffer * m_bufferB;
+		MaterialInstance* m_material = nullptr;
+		DeviceAttachmentInfoList m_attachments;
 		// Previous-frame unjittered view-projection matrix for history reprojection.
 		Matrix44 m_lastViewProj;
 		int m_index = 0;
+		int m_targetBufferIndex = 0;
 		// Current-frame jitter in pixels, applied to scene rendering and passed as TU_jitterUV.
 		vec2 m_offset;
 		// TSAA resolve tuning parameters.

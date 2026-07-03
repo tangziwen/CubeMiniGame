@@ -48,6 +48,22 @@ void OutlinePass::init()
 	m_compositeStage->createSinglePipeline(m_compositeMaterial);
 }
 
+bool OutlinePass::hasOutlineCommands(const RenderQueue* sourceQueue) const
+{
+	if(!sourceQueue)
+	{
+		return false;
+	}
+	for(const auto& command : sourceQueue->getList())
+	{
+		if(isOutlineCommand(command))
+		{
+			return true;
+		}
+	}
+	return false;
+}
+
 DeviceTexture* OutlinePass::draw(DeviceRenderCommand* cmd, RenderPath* renderPath, RenderQueue* sourceQueue,
 	DeviceTexture* sceneColor, DeviceTexture* sceneDepth)
 {
@@ -84,6 +100,32 @@ DeviceTexture* OutlinePass::draw(DeviceRenderCommand* cmd, RenderPath* renderPat
 	return m_compositeStage->getFrameBuffer()->getTextureList()[0];
 }
 
+DeviceTexture* OutlinePass::outputTexture() const
+{
+	if(!m_compositeStage || !m_compositeStage->getFrameBuffer())
+	{
+		return nullptr;
+	}
+	auto& textures = m_compositeStage->getFrameBuffer()->getTextureList();
+	return textures.empty() ? nullptr : textures[0];
+}
+
+bool OutlinePass::isOutlineCommand(const RenderCommand& command) const
+{
+	auto drawableObj = const_cast<RenderCommand&>(command).getDrawableObj();
+	if (command.batchType() != RenderCommand::RenderBatchType::Single || !drawableObj)
+	{
+		return false;
+	}
+	auto node = static_cast<Node*>(drawableObj);
+	if (node->getNodeType() != Node::NodeType::Drawable3D)
+	{
+		return false;
+	}
+	auto drawable = static_cast<Drawable3D*>(node);
+	return drawable->isOutlineEnabled();
+}
+
 bool OutlinePass::buildOutlineQueue(RenderQueue* sourceQueue)
 {
 	m_outlineQueue.clearCommands();
@@ -94,23 +136,13 @@ bool OutlinePass::buildOutlineQueue(RenderQueue* sourceQueue)
 
 	for (auto& command : sourceQueue->getList())
 	{
-		if (command.batchType() != RenderCommand::RenderBatchType::Single || !command.getDrawableObj())
+		if (!isOutlineCommand(command))
 		{
 			continue;
 		}
 
 		auto node = static_cast<Node*>(command.getDrawableObj());
-		if (node->getNodeType() != Node::NodeType::Drawable3D)
-		{
-			continue;
-		}
-
 		auto drawable = static_cast<Drawable3D*>(node);
-		if (!drawable->isOutlineEnabled())
-		{
-			continue;
-		}
-
 		RenderCommand outlineCommand = command;
 		outlineCommand.setMat(m_maskMaterial);
 		outlineCommand.setDrawPassMask(DrawPassType::OutlineMask);

@@ -14,10 +14,13 @@ class OutlinePass
 {
 public:
 	void init();
+	bool hasOutlineCommands(const RenderQueue* sourceQueue) const;
 	DeviceTexture* draw(DeviceRenderCommand* cmd, RenderPath* renderPath, RenderQueue* sourceQueue,
 		DeviceTexture* sceneColor, DeviceTexture* sceneDepth);
+	DeviceTexture* outputTexture() const;
 
 private:
+	bool isOutlineCommand(const RenderCommand& command) const;
 	bool buildOutlineQueue(RenderQueue* sourceQueue);
 
 	DeviceRenderStage* m_maskStage = nullptr;

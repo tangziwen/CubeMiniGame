@@ -25,6 +25,7 @@ public:
 	void init() override;
 	void collect() override;
 	void draw(DeviceRenderCommand* cmd, RenderPath* renderPath) override;
+	void draw(DeviceRenderCommand* cmd, RenderPath* renderPath, int imageIndex);
 	void preTick(const RenderSettings& settings);
 	void setRenderSettings(const RenderSettings* settings);
 	void setShadowTextures(const std::vector<DeviceTexture*>& shadowTextures);
@@ -35,7 +36,7 @@ public:
 private:
 	void initRenderGraphResources();
 	void initRenderGraphMaterials();
-	void buildRenderGraph();
+	bool buildRenderGraph(int imageIndex);
 	void executeDeferredLightingPass(RenderGraphPassContext& graphContext);
 	void executePointLightingPass(RenderGraphPassContext& graphContext);
 	void executeSkyPass(RenderGraphPassContext& graphContext);
@@ -47,6 +48,7 @@ private:
 	void executeBloomPass(RenderGraphPassContext& graphContext);
 	void executeTSAAPass(RenderGraphPassContext& graphContext);
 	void executeOutlinePass(RenderGraphPassContext& graphContext);
+	void executeTextureToScreenPass(RenderGraphPassContext& graphContext);
 	DeviceFrameBuffer* graphFrameBuffer(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext = nullptr) const;
 	DeviceTexture* graphTexture(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext = nullptr) const;
 	DeviceTexture* graphDepthTexture(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext = nullptr) const;
@@ -64,6 +66,7 @@ private:
 	MaterialInstance* m_hbaoMat;
 	MaterialInstance* m_ssrMat;
 	MaterialInstance* m_fogMat;
+	MaterialInstance* m_textureToScreenMat;
 	RenderGraphResourceHandle m_gBufferFrameBufferResource;
 	RenderGraphResourceHandle m_hbaoFrameBufferResource;
 	RenderGraphResourceHandle m_sceneColorResource;
@@ -72,7 +75,11 @@ private:
 	RenderGraphResourceHandle m_gBufferNormalResource;
 	RenderGraphResourceHandle m_gBufferBaseColorResource;
 	RenderGraphResourceHandle m_hbaoOutputResource;
+	RenderGraphResourceHandle m_outlineOutputResource;
+	RenderGraphResourceHandle m_bloomBrightOutputResource;
 	RenderGraphResourceHandle m_sceneFrameBufferResource;
+	RenderGraphResourceHandle m_tsaaFrameBufferResources[2];
+	RenderGraphResourceHandle m_screenFrameBufferResources[2];
 	DeviceTexture * m_sceneCopyTex;
 	DeviceTexture * m_outputTexture;
 	std::vector<DeviceTexture*> m_shadowTextures;
