@@ -39,6 +39,7 @@ enum class RenderGraphResourceLayout
 	TransferSrc,
 	TransferDst,
 	General,
+	Present,
 };
 
 enum class RenderGraphResourceAccessType
@@ -53,6 +54,26 @@ enum class RenderGraphResourceAccessType
 	ReadStorageImage,
 	WriteStorageImage,
 	ReadWriteStorageImage,
+};
+
+enum class RenderGraphResourceUsage
+{
+	Unknown,
+	FragmentShaderRead,
+	ComputeStorageRead,
+	ComputeStorageWrite,
+	ComputeStorageReadWrite,
+	ColorAttachmentWrite,
+	DepthAttachmentWrite,
+	TransferRead,
+	TransferWrite,
+	Present,
+};
+
+struct RenderGraphResourceState
+{
+	RenderGraphResourceLayout layout = RenderGraphResourceLayout::Unknown;
+	RenderGraphResourceUsage usage = RenderGraphResourceUsage::Unknown;
 };
 
 class RenderGraphResourceHandle
@@ -149,8 +170,8 @@ struct RenderGraphResource
 	DeviceFrameBuffer* frameBuffer = nullptr;
 	DeviceRenderPass* renderPass = nullptr;
 	bool graphOwned = false;
-	RenderGraphResourceLayout currentColorLayout = RenderGraphResourceLayout::Unknown;
-	RenderGraphResourceLayout currentDepthLayout = RenderGraphResourceLayout::Unknown;
+	RenderGraphResourceState currentColorState;
+	RenderGraphResourceState currentDepthState;
 };
 
 struct RenderGraphRasterPassDesc
@@ -274,6 +295,7 @@ private:
 	RenderGraphResourceHandle blitSource = RenderGraphResourceHandle::invalid();
 	RenderGraphResourceHandle blitDestination = RenderGraphResourceHandle::invalid();
 	RenderGraphResourceHandle outputResource = RenderGraphResourceHandle::invalid();
+	bool isOutputToScreen = false;
 	std::vector<NamedOutput> namedOutputs;
 	std::vector<RenderGraphPassHandle> dependencies;
 };
@@ -345,7 +367,7 @@ private:
 	bool compilePass(RenderGraphPassHandle pass, std::vector<uint8_t>& visitState, std::string& message);
 	void releaseOwnedResources();
 	void applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass);
-	void updateResourceLayoutsAfterPass(const RenderGraphPassDesc& pass);
+	void updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass);
 	void executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 	void executeComputePass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 	void executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass);

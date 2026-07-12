@@ -111,6 +111,11 @@ public:
 	void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
     void transitionImageLayoutUseBarrier(VkCommandBuffer cmd, DeviceTextureVK * texture,
         VkImageLayout oldLayout, VkImageLayout newLayout, int mipBase, int mipCount);
+    void transitionImageLayoutUseBarrier(VkCommandBuffer cmd, DeviceTextureVK * texture,
+        VkImageLayout oldLayout, VkImageLayout newLayout,
+        VkPipelineStageFlags srcStage, VkAccessFlags srcAccess,
+        VkPipelineStageFlags dstStage, VkAccessFlags dstAccess,
+        int mipBase, int mipCount);
 	void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, int baseMipLevel = 0, int levelCount = 1);
 	void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT, int mipLevel = 0);
     const VkSurfaceFormatKHR& GetSurfaceFormat() const;

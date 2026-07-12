@@ -67,6 +67,8 @@ const char* layoutName(RenderGraphResourceLayout layout)
 		return "TransferDst";
 	case RenderGraphResourceLayout::General:
 		return "General";
+	case RenderGraphResourceLayout::Present:
+		return "Present";
 	}
 	return "Unknown";
 }
@@ -162,10 +164,292 @@ bool toVkLayout(RenderGraphResourceLayout layout, VkImageLayout& outLayout)
 	case RenderGraphResourceLayout::General:
 		outLayout = VK_IMAGE_LAYOUT_GENERAL;
 		return true;
+	case RenderGraphResourceLayout::Present:
+		outLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+		return true;
 	case RenderGraphResourceLayout::Unknown:
 		break;
 	}
 	return false;
+}
+
+RenderGraphResourceState makeState(RenderGraphResourceLayout layout, RenderGraphResourceUsage usage)
+{
+	RenderGraphResourceState state;
+	state.layout = layout;
+	state.usage = usage;
+	return state;
+}
+
+RenderGraphResourceState stateForLayout(RenderGraphResourceLayout layout, bool)
+{
+	switch(layout)
+	{
+	case RenderGraphResourceLayout::ColorAttachment:
+		return makeState(layout, RenderGraphResourceUsage::ColorAttachmentWrite);
+	case RenderGraphResourceLayout::DepthAttachment:
+		return makeState(layout, RenderGraphResourceUsage::DepthAttachmentWrite);
+	case RenderGraphResourceLayout::DepthRead:
+		return makeState(layout, RenderGraphResourceUsage::FragmentShaderRead);
+	case RenderGraphResourceLayout::ShaderRead:
+		return makeState(layout, RenderGraphResourceUsage::FragmentShaderRead);
+	case RenderGraphResourceLayout::TransferSrc:
+		return makeState(layout, RenderGraphResourceUsage::TransferRead);
+	case RenderGraphResourceLayout::TransferDst:
+		return makeState(layout, RenderGraphResourceUsage::TransferWrite);
+	case RenderGraphResourceLayout::General:
+		return makeState(layout, RenderGraphResourceUsage::ComputeStorageReadWrite);
+	case RenderGraphResourceLayout::Present:
+		return makeState(layout, RenderGraphResourceUsage::Present);
+	case RenderGraphResourceLayout::Unknown:
+		break;
+	}
+	return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
+}
+
+RenderGraphResourceState beforeStateForAccess(const RenderGraphResourceAccess& access)
+{
+	switch(access.type)
+	{
+	case RenderGraphResourceAccessType::ReadColor:
+		return makeState(RenderGraphResourceLayout::ShaderRead, RenderGraphResourceUsage::FragmentShaderRead);
+	case RenderGraphResourceAccessType::ReadDepth:
+		return makeState(RenderGraphResourceLayout::DepthRead, RenderGraphResourceUsage::FragmentShaderRead);
+	case RenderGraphResourceAccessType::WriteColor:
+		return makeState(RenderGraphResourceLayout::ColorAttachment, RenderGraphResourceUsage::ColorAttachmentWrite);
+	case RenderGraphResourceAccessType::WriteDepth:
+		return makeState(RenderGraphResourceLayout::DepthAttachment, RenderGraphResourceUsage::DepthAttachmentWrite);
+	case RenderGraphResourceAccessType::ReadWriteColor:
+		return stateForLayout(access.beforeLayout, false);
+	case RenderGraphResourceAccessType::TransferRead:
+		return makeState(RenderGraphResourceLayout::TransferSrc, RenderGraphResourceUsage::TransferRead);
+	case RenderGraphResourceAccessType::TransferWrite:
+		return makeState(RenderGraphResourceLayout::TransferDst, RenderGraphResourceUsage::TransferWrite);
+	case RenderGraphResourceAccessType::ReadStorageImage:
+		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageRead);
+	case RenderGraphResourceAccessType::WriteStorageImage:
+		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageWrite);
+	case RenderGraphResourceAccessType::ReadWriteStorageImage:
+		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageReadWrite);
+	}
+	return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
+}
+
+RenderGraphResourceState afterStateForAccess(const RenderGraphResourceAccess& access)
+{
+	if(access.afterLayout == RenderGraphResourceLayout::Unknown)
+	{
+		return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
+	}
+
+	switch(access.type)
+	{
+	case RenderGraphResourceAccessType::ReadColor:
+		return makeState(RenderGraphResourceLayout::ShaderRead, RenderGraphResourceUsage::FragmentShaderRead);
+	case RenderGraphResourceAccessType::ReadDepth:
+		return makeState(RenderGraphResourceLayout::DepthRead, RenderGraphResourceUsage::FragmentShaderRead);
+	case RenderGraphResourceAccessType::WriteColor:
+		if(access.afterLayout == RenderGraphResourceLayout::ColorAttachment)
+		{
+			return makeState(access.afterLayout, RenderGraphResourceUsage::ColorAttachmentWrite);
+		}
+		return stateForLayout(access.afterLayout, false);
+	case RenderGraphResourceAccessType::WriteDepth:
+		if(access.afterLayout == RenderGraphResourceLayout::DepthAttachment)
+		{
+			return makeState(access.afterLayout, RenderGraphResourceUsage::DepthAttachmentWrite);
+		}
+		return stateForLayout(access.afterLayout, true);
+	case RenderGraphResourceAccessType::ReadWriteColor:
+		return stateForLayout(access.afterLayout, false);
+	case RenderGraphResourceAccessType::TransferRead:
+		return makeState(RenderGraphResourceLayout::TransferSrc, RenderGraphResourceUsage::TransferRead);
+	case RenderGraphResourceAccessType::TransferWrite:
+		if(access.afterLayout == RenderGraphResourceLayout::TransferDst)
+		{
+			return makeState(access.afterLayout, RenderGraphResourceUsage::TransferWrite);
+		}
+		return stateForLayout(access.afterLayout, false);
+	case RenderGraphResourceAccessType::ReadStorageImage:
+		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageRead);
+	case RenderGraphResourceAccessType::WriteStorageImage:
+		if(access.afterLayout == RenderGraphResourceLayout::General)
+		{
+			return makeState(access.afterLayout, RenderGraphResourceUsage::ComputeStorageWrite);
+		}
+		return stateForLayout(access.afterLayout, false);
+	case RenderGraphResourceAccessType::ReadWriteStorageImage:
+		if(access.afterLayout == RenderGraphResourceLayout::General)
+		{
+			return makeState(access.afterLayout, RenderGraphResourceUsage::ComputeStorageReadWrite);
+		}
+		return stateForLayout(access.afterLayout, false);
+	}
+	return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
+}
+
+bool isUnknownState(const RenderGraphResourceState& state)
+{
+	return state.layout == RenderGraphResourceLayout::Unknown
+		|| state.usage == RenderGraphResourceUsage::Unknown;
+}
+
+bool stateReads(RenderGraphResourceUsage usage)
+{
+	return usage == RenderGraphResourceUsage::FragmentShaderRead
+		|| usage == RenderGraphResourceUsage::ComputeStorageRead
+		|| usage == RenderGraphResourceUsage::ComputeStorageReadWrite
+		|| usage == RenderGraphResourceUsage::TransferRead;
+}
+
+bool stateWrites(RenderGraphResourceUsage usage)
+{
+	return usage == RenderGraphResourceUsage::ComputeStorageWrite
+		|| usage == RenderGraphResourceUsage::ComputeStorageReadWrite
+		|| usage == RenderGraphResourceUsage::ColorAttachmentWrite
+		|| usage == RenderGraphResourceUsage::DepthAttachmentWrite
+		|| usage == RenderGraphResourceUsage::TransferWrite;
+}
+
+bool isStorageState(RenderGraphResourceUsage usage)
+{
+	return usage == RenderGraphResourceUsage::ComputeStorageRead
+		|| usage == RenderGraphResourceUsage::ComputeStorageWrite
+		|| usage == RenderGraphResourceUsage::ComputeStorageReadWrite;
+}
+
+bool needsStateBarrier(const RenderGraphResourceState& currentState, const RenderGraphResourceState& nextState, bool allowSameStateDependency)
+{
+	if(isUnknownState(currentState) || isUnknownState(nextState))
+	{
+		return false;
+	}
+	if(currentState.layout != nextState.layout || currentState.usage != nextState.usage)
+	{
+		return true;
+	}
+	return allowSameStateDependency && stateWrites(currentState.usage)
+		&& (stateReads(nextState.usage) || stateWrites(nextState.usage))
+		&& (isStorageState(currentState.usage) || isStorageState(nextState.usage));
+}
+
+bool toVkState(const RenderGraphResourceState& state, VkImageLayout& layout, VkPipelineStageFlags& stage, VkAccessFlags& access)
+{
+	if(!toVkLayout(state.layout, layout))
+	{
+		return false;
+	}
+
+	switch(state.usage)
+	{
+	case RenderGraphResourceUsage::FragmentShaderRead:
+		stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		access = VK_ACCESS_SHADER_READ_BIT;
+		return true;
+	case RenderGraphResourceUsage::ComputeStorageRead:
+		stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access = VK_ACCESS_SHADER_READ_BIT;
+		return true;
+	case RenderGraphResourceUsage::ComputeStorageWrite:
+		stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access = VK_ACCESS_SHADER_WRITE_BIT;
+		return true;
+	case RenderGraphResourceUsage::ComputeStorageReadWrite:
+		stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
+		access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
+		return true;
+	case RenderGraphResourceUsage::ColorAttachmentWrite:
+		stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		access = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		return true;
+	case RenderGraphResourceUsage::DepthAttachmentWrite:
+		stage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
+		access = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
+		return true;
+	case RenderGraphResourceUsage::TransferRead:
+		stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		access = VK_ACCESS_TRANSFER_READ_BIT;
+		return true;
+	case RenderGraphResourceUsage::TransferWrite:
+		stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
+		access = VK_ACCESS_TRANSFER_WRITE_BIT;
+		return true;
+	case RenderGraphResourceUsage::Present:
+		stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
+		access = 0;
+		return true;
+	case RenderGraphResourceUsage::Unknown:
+		break;
+	}
+	return false;
+}
+
+void transitionImageState(VKRenderBackEnd* backEnd, DeviceRenderCommandVK* command, DeviceTextureVK* texture,
+	const RenderGraphResourceState& currentState, const RenderGraphResourceState& nextState)
+{
+	if(!backEnd || !command || !texture)
+	{
+		return;
+	}
+
+	VkImageLayout oldLayout;
+	VkImageLayout newLayout;
+	VkPipelineStageFlags srcStage = {};
+	VkPipelineStageFlags dstStage = {};
+	VkAccessFlags srcAccess = {};
+	VkAccessFlags dstAccess = {};
+	if(toVkState(currentState, oldLayout, srcStage, srcAccess) && toVkState(nextState, newLayout, dstStage, dstAccess))
+	{
+		backEnd->transitionImageLayoutUseBarrier(command->getVK(), texture, oldLayout, newLayout,
+			srcStage, srcAccess, dstStage, dstAccess, 0, 1);
+	}
+}
+
+std::vector<DeviceTextureVK*> vkTexturesForAccess(RenderGraphResource* graphResource, RenderGraphResourceAccessType type)
+{
+	std::vector<DeviceTextureVK*> textures;
+	if(!graphResource)
+	{
+		return textures;
+	}
+
+	if(isDepthAccess(type))
+	{
+		auto vkTexture = dynamic_cast<DeviceTextureVK*>(graphResource->depthTexture);
+		if(vkTexture)
+		{
+			textures.emplace_back(vkTexture);
+		}
+		return textures;
+	}
+
+	if(graphResource->frameBuffer)
+	{
+		auto depthTexture = graphResource->depthTexture;
+		auto& frameBufferTextures = graphResource->frameBuffer->getTextureList();
+		for(auto texture : frameBufferTextures)
+		{
+			if(!texture || texture == depthTexture)
+			{
+				continue;
+			}
+			auto vkTexture = dynamic_cast<DeviceTextureVK*>(texture);
+			if(vkTexture)
+			{
+				textures.emplace_back(vkTexture);
+			}
+		}
+	}
+
+	if(textures.empty())
+	{
+		auto vkTexture = dynamic_cast<DeviceTextureVK*>(graphResource->texture);
+		if(vkTexture)
+		{
+			textures.emplace_back(vkTexture);
+		}
+	}
+	return textures;
 }
 
 RenderGraphResourceAccess makeAccess(RenderGraphResourceHandle resource, RenderGraphResourceAccessType type,
@@ -658,6 +942,7 @@ RenderGraphNode RenderGraph::addRasterNode(const RenderGraphRasterPassDesc& desc
 	pass.compiledStage = cache->stage;
 	pass.frameBufferResource = frameBufferResource;
 	pass.outputResource = frameBufferResource;
+	pass.isOutputToScreen = desc.isOutputToScreen;
 	pass.consumedDrawPassMask = desc.consumesSceneQueue ? desc.drawPassMask : DrawPassType::Unset;
 	pass.resourceAccesses = desc.resourceAccesses;
 	pass.execute = execute;
@@ -836,8 +1121,8 @@ RenderGraphResourceHandle RenderGraph::importTexture(const RenderGraphResourceDe
 	resource.frameBuffer = nullptr;
 	resource.renderPass = nullptr;
 	resource.graphOwned = false;
-	resource.currentColorLayout = desc.initialColorLayout;
-	resource.currentDepthLayout = desc.initialDepthLayout;
+	resource.currentColorState = stateForLayout(desc.initialColorLayout, false);
+	resource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
@@ -854,8 +1139,8 @@ RenderGraphResourceHandle RenderGraph::importFrameBuffer(const RenderGraphResour
 	resource.frameBuffer = frameBuffer;
 	resource.renderPass = nullptr;
 	resource.graphOwned = false;
-	resource.currentColorLayout = desc.initialColorLayout;
-	resource.currentDepthLayout = desc.initialDepthLayout;
+	resource.currentColorState = stateForLayout(desc.initialColorLayout, false);
+	resource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
@@ -875,8 +1160,8 @@ RenderGraphResourceHandle RenderGraph::createFrameBuffer(const RenderGraphResour
 	resource.frameBuffer = frameBuffer;
 	resource.renderPass = renderPass;
 	resource.graphOwned = true;
-	resource.currentColorLayout = desc.initialColorLayout;
-	resource.currentDepthLayout = desc.initialDepthLayout;
+	resource.currentColorState = stateForLayout(desc.initialColorLayout, false);
+	resource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
@@ -905,8 +1190,8 @@ void RenderGraph::resizeOwnedFrameBuffers(vec2 size)
 		graphResource.desc.size = size;
 		graphResource.texture = firstColorTexture(graphResource.frameBuffer);
 		graphResource.depthTexture = graphResource.frameBuffer->getDepthMap();
-		graphResource.currentColorLayout = graphResource.desc.initialColorLayout;
-		graphResource.currentDepthLayout = graphResource.desc.initialDepthLayout;
+		graphResource.currentColorState = stateForLayout(graphResource.desc.initialColorLayout, false);
+		graphResource.currentDepthState = stateForLayout(graphResource.desc.initialDepthLayout, true);
 	}
 }
 
@@ -919,11 +1204,11 @@ void RenderGraph::setResourceLayout(RenderGraphResourceHandle handle, RenderGrap
 	}
 	if(colorLayout != RenderGraphResourceLayout::Unknown)
 	{
-		graphResource->currentColorLayout = colorLayout;
+		graphResource->currentColorState = stateForLayout(colorLayout, false);
 	}
 	if(depthLayout != RenderGraphResourceLayout::Unknown)
 	{
-		graphResource->currentDepthLayout = depthLayout;
+		graphResource->currentDepthState = stateForLayout(depthLayout, true);
 	}
 }
 
@@ -1430,6 +1715,20 @@ bool RenderGraph::compile(RenderGraphNode root, std::string* outMessage)
 
 	m_hasCompiledOrder = true;
 	m_compiledRoot = root.passHandle();
+	std::string validateMessage;
+	if(!validate(&validateMessage))
+	{
+		m_compileMessage = "RenderGraph compile failed validation:\n" + validateMessage;
+		m_compiledPassOrder.clear();
+		m_hasCompiledOrder = false;
+		m_compiledRoot = RenderGraphPassHandle::invalid();
+		if(outMessage)
+		{
+			*outMessage = m_compileMessage;
+		}
+		tlogError("%s", m_compileMessage.c_str());
+		return false;
+	}
 	if(outMessage)
 	{
 		*outMessage = m_compileMessage;
@@ -1475,6 +1774,7 @@ void RenderGraph::execute(RenderGraphContext& context)
 	if(!validate(&validateMessage))
 	{
 		tlogError("RenderGraph validation failed:\n%s", validateMessage.c_str());
+		return;
 	}
 
 	context.setGraph(this);
@@ -1497,7 +1797,7 @@ void RenderGraph::execute(RenderGraphContext& context)
 			executeExternalPass(context, pass);
 			break;
 		}
-		updateResourceLayoutsAfterPass(pass);
+		updateResourceStatesAfterPass(context, pass);
 	};
 
 	if(m_hasCompiledOrder)
@@ -1620,49 +1920,58 @@ void RenderGraph::executeExternalPass(RenderGraphContext& context, RenderGraphPa
 void RenderGraph::applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass)
 {
 	auto command = dynamic_cast<DeviceRenderCommandVK*>(context.cmd());
-	if(!command)
-	{
-		return;
-	}
-
 	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
 	for(const auto& access : pass.resourceAccesses)
 	{
 		auto graphResource = resource(access.resource);
-		if(!graphResource || access.beforeLayout == RenderGraphResourceLayout::Unknown)
+		auto nextState = beforeStateForAccess(access);
+		if(!graphResource || isUnknownState(nextState))
 		{
 			continue;
 		}
 
-		auto texture = isDepthAccess(access.type) ? graphResource->depthTexture : graphResource->texture;
-		auto vkTexture = dynamic_cast<DeviceTextureVK*>(texture);
-		if(!vkTexture)
+		auto vkTextures = vkTexturesForAccess(graphResource, access.type);
+		if(vkTextures.empty())
 		{
 			continue;
 		}
 
-		auto& currentLayout = isDepthAccess(access.type) ? graphResource->currentDepthLayout : graphResource->currentColorLayout;
-		if(currentLayout == RenderGraphResourceLayout::Unknown || currentLayout == access.beforeLayout)
+		auto& currentState = isDepthAccess(access.type) ? graphResource->currentDepthState : graphResource->currentColorState;
+		const bool screenColorAccess = pass.isOutputToScreen
+			&& isColorAccess(access.type)
+			&& isWriteAccess(access.type)
+			&& pass.frameBufferResource.isValid()
+			&& access.resource.isValid()
+			&& pass.frameBufferResource.index() == access.resource.index();
+		if(isUnknownState(currentState))
 		{
-			currentLayout = access.beforeLayout;
+			currentState = nextState;
 			continue;
 		}
 
-		VkImageLayout oldLayout;
-		VkImageLayout newLayout;
-		if(toVkLayout(currentLayout, oldLayout) && toVkLayout(access.beforeLayout, newLayout))
+		if(!screenColorAccess && needsStateBarrier(currentState, nextState, true))
 		{
-			backEnd->transitionImageLayoutUseBarrier(command->getVK(), vkTexture, oldLayout, newLayout, 0, 1);
-			currentLayout = access.beforeLayout;
+			for(auto vkTexture : vkTextures)
+			{
+				transitionImageState(backEnd, command, vkTexture, currentState, nextState);
+			}
 		}
+		currentState = nextState;
 	}
 }
 
-void RenderGraph::updateResourceLayoutsAfterPass(const RenderGraphPassDesc& pass)
+void RenderGraph::updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass)
 {
+	auto command = dynamic_cast<DeviceRenderCommandVK*>(context.cmd());
+	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
+	const bool graphOwnsExecution = pass.kind == RenderGraphPassKind::Raster
+		|| pass.kind == RenderGraphPassKind::Compute
+		|| pass.kind == RenderGraphPassKind::Blit;
+
 	for(const auto& access : pass.resourceAccesses)
 	{
-		if(access.afterLayout == RenderGraphResourceLayout::Unknown)
+		auto nextState = afterStateForAccess(access);
+		if(isUnknownState(nextState))
 		{
 			continue;
 		}
@@ -1671,14 +1980,23 @@ void RenderGraph::updateResourceLayoutsAfterPass(const RenderGraphPassDesc& pass
 		{
 			continue;
 		}
-		if(isDepthAccess(access.type))
+
+		auto& currentState = isDepthAccess(access.type) ? graphResource->currentDepthState : graphResource->currentColorState;
+		const bool screenColorAccess = pass.isOutputToScreen
+			&& isColorAccess(access.type)
+			&& isWriteAccess(access.type)
+			&& pass.frameBufferResource.isValid()
+			&& access.resource.isValid()
+			&& pass.frameBufferResource.index() == access.resource.index();
+		if(graphOwnsExecution && !screenColorAccess && !isUnknownState(currentState) && needsStateBarrier(currentState, nextState, false))
 		{
-			graphResource->currentDepthLayout = access.afterLayout;
+			auto vkTextures = vkTexturesForAccess(graphResource, access.type);
+			for(auto vkTexture : vkTextures)
+			{
+				transitionImageState(backEnd, command, vkTexture, currentState, nextState);
+			}
 		}
-		else
-		{
-			graphResource->currentColorLayout = access.afterLayout;
-		}
+		currentState = nextState;
 	}
 }
 }

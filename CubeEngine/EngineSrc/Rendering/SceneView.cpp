@@ -84,9 +84,8 @@ void SceneView::init()
 		{ImageFormat::D24_S8, true}
 	};
 	m_gBufferFrameBufferResource = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("GBufferFrameBuffer", ImageFormat::R8G8B8A8, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-			RenderGraphResourceLayout::ShaderRead, RenderGraphResourceLayout::DepthRead),
-		gBufferAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
+		makeGraphResourceDesc("GBufferFrameBuffer", ImageFormat::R8G8B8A8, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		gBufferAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
 	DeviceAttachmentInfoList sceneAttachments = {
 		{ImageFormat::R16G16B16A16, false},
@@ -102,13 +101,11 @@ void SceneView::init()
 	m_outlinePass.init();
 
 	m_tsaaFrameBufferResources[0] = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("TSAAFrameBufferA", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-			RenderGraphResourceLayout::ShaderRead),
-		m_tsaa.attachments(), DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
+		makeGraphResourceDesc("TSAAFrameBufferA", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		m_tsaa.attachments(), DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 	m_tsaaFrameBufferResources[1] = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("TSAAFrameBufferB", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-			RenderGraphResourceLayout::ShaderRead),
-		m_tsaa.attachments(), DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
+		makeGraphResourceDesc("TSAAFrameBufferB", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		m_tsaa.attachments(), DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
 	DeviceAttachmentInfoList hbaoAttachments = {
 		{ImageFormat::R16G16B16A16, false},
@@ -116,7 +113,7 @@ void SceneView::init()
 	};
 	m_hbaoFrameBufferResource = m_renderGraph.createFrameBuffer(
 		makeGraphResourceDesc("HBAOFrameBuffer", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
-		hbaoAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
+		hbaoAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
 	auto sceneCopyTex = new DeviceTextureVK();
 	sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
@@ -179,7 +176,8 @@ void SceneView::initRenderGraphResources()
 	for(int i = 0; i < 2; i++)
 	{
 		m_screenFrameBufferResources[i] = m_renderGraph.importFrameBuffer(
-			makeGraphResourceDesc("ScreenFrameBuffer", ImageFormat::Surface_Format, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+			makeGraphResourceDesc("ScreenFrameBuffer", ImageFormat::Surface_Format, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
+				RenderGraphResourceLayout::Present),
 			backEnd->createSwapChainFrameBuffer(i));
 	}
 }
@@ -449,18 +447,25 @@ bool SceneView::buildRenderGraph(int imageIndex)
 
 	if(settings.ssgiEnabled())
 	{
-		RenderGraphPassDesc ssgiPass;
+		RenderGraphRasterPassDesc ssgiPass;
 		ssgiPass.name = "SSGI";
-		ssgiPass.readColor(m_sceneColorCopyResource)
+		ssgiPass.attachments = sceneLoadAttachments;
+		ssgiPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+		ssgiPass.frameBufferResource = m_sceneFrameBufferResource;
+		ssgiPass.material = m_ssgi.material();
+		{
+			RenderGraphPassDesc accesses;
+			accesses.readColor(m_sceneColorCopyResource)
 			.readDepth(m_gBufferDepthResource)
 			.readColor(m_gBufferNormalResource)
 			.readColor(m_gBufferBaseColorResource)
 			.writeColor(m_sceneColorResource);
-		ssgiPass.execute = [this](RenderGraphPassContext& graphContext)
+			ssgiPass.resourceAccesses = accesses.resourceAccesses;
+		}
+		auto ssgiNode = m_renderGraph.addFullscreenNode(ssgiPass, [this](RenderGraphPassContext& graphContext)
 		{
 			executeSSGIPass(graphContext);
-		};
-		auto ssgiNode = m_renderGraph.addExternalNode(ssgiPass)
+		})
 			.withOutput(m_sceneColorResource)
 			.withOutput("sceneColor", m_sceneColorResource)
 			.dependsOn(sceneChainNode)
@@ -611,7 +616,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		{
 			accesses.readColor(finalSceneResource);
 		}
-		accesses.writeColor(screenFrameBufferResource);
+		accesses.writeColor(screenFrameBufferResource, RenderGraphResourceLayout::Present);
 		textureToScreenPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto textureToScreenNode = m_renderGraph.addFullscreenNode(textureToScreenPass, [this](RenderGraphPassContext& graphContext)
@@ -876,16 +881,11 @@ void SceneView::executeSSGIPass(RenderGraphPassContext& graphContext)
 	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
 	auto gBufferNormal = graphTexture(m_gBufferNormalResource, &graphContext);
 	auto gBufferBaseColor = graphTexture(m_gBufferBaseColorResource, &graphContext);
-	auto sceneFrameBuffer = graphFrameBuffer(m_sceneFrameBufferResource, &graphContext);
-	if(!sceneColorCopy || !gBufferDepth || !gBufferNormal || !gBufferBaseColor || !sceneFrameBuffer)
+	if(!sceneColorCopy || !gBufferDepth || !gBufferNormal || !gBufferBaseColor || !graphContext.targetFrameBuffer())
 	{
 		return;
 	}
-	graphContext.renderPath()->addRenderStage(m_ssgi.draw(graphContext.cmd(), sceneColorCopy,
-		gBufferDepth,
-		gBufferNormal,
-		gBufferBaseColor,
-		sceneFrameBuffer));
+	m_ssgi.execute(graphContext, sceneColorCopy, gBufferDepth, gBufferNormal, gBufferBaseColor);
 }
 
 void SceneView::executeFogPass(RenderGraphPassContext& graphContext)

@@ -1,67 +1,51 @@
 #include "SSGI.h"
-#include "Technique/MaterialPool.h"
-#include "EngineSrc/BackEnd/VkRenderBackEnd.h"
-#include "Engine/Engine.h"
+
+#include "BackEnd/DeviceDescriptor.h"
+#include "BackEnd/DeviceMaterial.h"
 #include "EngineSrc/Scene/SceneMgr.h"
+#include "RenderGraph.h"
+#include "Technique/MaterialInstance.h"
+#include "Technique/MaterialPool.h"
+
 namespace tzw
 {
-	void SSGI::init()
+void SSGI::init()
+{
+	m_material = new MaterialInstance();
+	m_material->loadFromMaterial("SSGI");
+	MaterialPool::shared()->addMaterial("SSGI", m_material);
+}
+
+void SSGI::execute(RenderGraphPassContext& graphContext, DeviceTexture* currentFrame, DeviceTexture* depth,
+	DeviceTexture* normal, DeviceTexture* baseColor)
+{
+	auto scene = g_GetCurrScene();
+	auto camera = scene ? scene->defaultCamera() : nullptr;
+	auto deviceMaterial = graphContext.material();
+	auto descriptor = graphContext.materialDescriptor();
+	if(!m_material || !camera || !deviceMaterial || !descriptor || !currentFrame || !depth || !normal || !baseColor)
 	{
-        vec2 winSize = Engine::shared()->winSize();
-        auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-
-	    MaterialInstance * matSSGI = new MaterialInstance();
-	    matSSGI->loadFromMaterial("SSGI");
-
-
-	    MaterialPool::shared()->addMaterial("SSGI", matSSGI);
-        auto ssgiPass = backEnd->createDeviceRenderpass_imp();
-        ssgiPass->init({{
-            ImageFormat::R16G16B16A16, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOAD_AND_STORE, false);
-
-        m_stage = backEnd->createRenderStage_imp();
-        //two buffer
-        m_bufferA = backEnd->createFrameBuffer_imp();
-        m_bufferA->init(winSize.x, winSize.y, ssgiPass);
-
-        m_bufferB = backEnd->createFrameBuffer_imp();
-        m_bufferB->init(winSize.x, winSize.y, ssgiPass);
-
-        m_stage->init(ssgiPass, m_bufferA);
-        m_stage->setName("SSGI Stage");
-        m_stage->createSinglePipeline(matSSGI);
+		return;
 	}
 
-    void SSGI::preTick()
-    {
-        m_index = (m_index + 1) %(8 - 1);
-       // m_lastViewProj = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
-        //float jitterOffset = 0.15;
-        //jitter the projection
-        //g_GetCurrScene()->defaultCamera()->setOffsetPixel((TemporalHalton(m_index + 1, 2) - 0.5f) * jitterOffset, (TemporalHalton(m_index + 1, 3) - 0.5f) * jitterOffset);
-    }
+	m_material->setVar("TU_VP", camera->getViewProjectionMatrix());
+	m_material->setVar("TU_FrameIndex", m_index);
+	deviceMaterial->updateUniform();
+	descriptor->updateDescriptorByBinding(1, currentFrame);
+	descriptor->updateDescriptorByBinding(2, depth);
+	descriptor->updateDescriptorByBinding(3, normal);
+	descriptor->updateDescriptorByBinding(4, baseColor);
+	graphContext.bindSinglePipelineDescriptor();
+	graphContext.drawScreenQuad();
+}
 
-    DeviceRenderStage* SSGI::draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth, DeviceTexture * normal, DeviceTexture * baseColor, DeviceFrameBuffer * OutPutTarget)
-    {
-        //std::swap(m_bufferA, m_bufferB);//swap buffer
-        auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-        m_stage->getSinglePipeline()->getMat()->setVar("TU_VP",  g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix());
-        m_stage->getSinglePipeline()->getMat()->setVar("TU_FrameIndex",  m_index);
-        m_stage->prepare(cmd);
-        m_stage->beginRenderPass(OutPutTarget);
-        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(1, currFrame);
-        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(2, Depth);
-        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(3, normal);
-        m_stage->getSolorDeviceMaterial()->getMaterialDescriptorSet()->updateDescriptorByBinding(4, baseColor);
-        m_stage->bindSinglePipelineDescriptor();
-        m_stage->drawScreenQuad();
-        m_stage->endRenderPass();
-        m_stage->finish();
-        return m_stage;
-    }
+MaterialInstance* SSGI::material() const
+{
+	return m_material;
+}
 
-    DeviceFrameBuffer * SSGI::getOutput()
-    {
-        return m_bufferA;
-    }
+void SSGI::preTick()
+{
+	m_index = (m_index + 1) % (8 - 1);
+}
 }

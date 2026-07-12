@@ -1,19 +1,22 @@
 #pragma once
-#include "EngineSrc/BackEnd/DeviceRenderStage.h"
+
 namespace tzw
 {
-	class SSGI
-	{
-	public:
-		void init();
-		DeviceRenderStage* draw(DeviceRenderCommand * cmd, DeviceTexture * currFrame, DeviceTexture * Depth, DeviceTexture * normal, DeviceTexture * baseColor, DeviceFrameBuffer * OutPutTarget);
-		DeviceFrameBuffer * getOutput();
-		void preTick();
-	protected:
-		DeviceRenderStage * m_stage;
-		DeviceFrameBuffer * m_bufferA;
-		DeviceFrameBuffer * m_bufferB;
-		DeviceFrameBuffer * m_outputTarget;
-		int m_index = 0;
-	};
+class DeviceTexture;
+class MaterialInstance;
+class RenderGraphPassContext;
+
+class SSGI
+{
+public:
+	void init();
+	void execute(RenderGraphPassContext& graphContext, DeviceTexture* currentFrame, DeviceTexture* depth,
+		DeviceTexture* normal, DeviceTexture* baseColor);
+	MaterialInstance* material() const;
+	void preTick();
+
+private:
+	MaterialInstance* m_material = nullptr;
+	int m_index = 0;
+};
 }

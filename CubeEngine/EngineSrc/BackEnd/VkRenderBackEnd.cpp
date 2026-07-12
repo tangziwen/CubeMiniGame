@@ -1275,6 +1275,24 @@ void VKRenderBackEnd::transitionImageLayoutUseBarrier(VkCommandBuffer cmd, Devic
         return;
     }
 
+    VkPipelineStageFlags sourceStage = {};
+    VkPipelineStageFlags destinationStage = {};
+    VkAccessFlags sourceAccess = {};
+    VkAccessFlags destinationAccess = {};
+
+    getStageAndAcessMaskFromLayOut(oldLayout, sourceStage, sourceAccess);
+    getStageAndAcessMaskFromLayOut(newLayout, destinationStage, destinationAccess);
+
+    transitionImageLayoutUseBarrier(cmd, texture, oldLayout, newLayout,
+        sourceStage, sourceAccess, destinationStage, destinationAccess, mipBase, mipCount);
+}
+
+void VKRenderBackEnd::transitionImageLayoutUseBarrier(VkCommandBuffer cmd, DeviceTextureVK * texture,
+    VkImageLayout oldLayout, VkImageLayout newLayout,
+    VkPipelineStageFlags srcStage, VkAccessFlags srcAccess,
+    VkPipelineStageFlags dstStage, VkAccessFlags dstAccess,
+    int mipBase, int mipCount)
+{
     VkImageMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
     barrier.oldLayout = oldLayout;
@@ -1289,18 +1307,12 @@ void VKRenderBackEnd::transitionImageLayoutUseBarrier(VkCommandBuffer cmd, Devic
     barrier.subresourceRange.levelCount = mipCount;
     barrier.subresourceRange.baseArrayLayer = 0;
     barrier.subresourceRange.layerCount = 1;
-
-    VkPipelineStageFlags sourceStage = {};
-    VkPipelineStageFlags destinationStage = {};
-
-
-    getStageAndAcessMaskFromLayOut(oldLayout, sourceStage, barrier.srcAccessMask);
-    getStageAndAcessMaskFromLayOut(newLayout, destinationStage, barrier.dstAccessMask);
- 
+    barrier.srcAccessMask = srcAccess;
+    barrier.dstAccessMask = dstAccess;
 
     vkCmdPipelineBarrier(
         cmd,
-        sourceStage, destinationStage,
+        srcStage, dstStage,
         0,
         0, nullptr,
         0, nullptr,
