@@ -2,12 +2,10 @@
 
 #include "3D/ShadowMap/ShadowMap.h"
 #include <vector>
+#include "RenderGraph.h"
 
 namespace tzw
 {
-class DeviceRenderCommand;
-class DeviceTexture;
-class RenderPath;
 class ShadowView;
 
 class CSMShadowSystem
@@ -15,13 +13,11 @@ class CSMShadowSystem
 public:
 	CSMShadowSystem();
 
-	void init();
+	void init(RenderGraph& graph);
 	void collect();
-	void draw(DeviceRenderCommand* cmd, RenderPath* renderPath);
-	const std::vector<DeviceTexture*>& depthTextures() const;
+	std::vector<RenderGraphNode> buildRenderGraph();
 
 private:
 	ShadowView* m_shadowViews[SHADOWMAP_CASCADE_NUM];
-	std::vector<DeviceTexture*> m_depthTextures;
 };
 }

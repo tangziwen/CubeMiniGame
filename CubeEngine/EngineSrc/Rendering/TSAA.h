@@ -5,6 +5,7 @@
 #include "Math/vec2.h"
 namespace tzw
 {
+class Camera;
 	class DeviceTexture;
 	class MaterialInstance;
 	class RenderGraphPassContext;
@@ -13,7 +14,7 @@ namespace tzw
 	{
 	public:
 		void init();
-		void preTick();
+		void preTick(Camera* camera);
 		MaterialInstance* material() const;
 		const DeviceAttachmentInfoList& attachments() const;
 		int targetBufferIndex() const;

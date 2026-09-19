@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <functional>
 #include <limits>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -11,10 +12,14 @@
 #include "BackEnd/DeviceTexture.h"
 #include "Math/vec2.h"
 #include "Rendering/DrawPass.h"
+#include "Rendering/VertexLayout.h"
+#include "Math/vec4.h"
 #include "Technique/MaterialTechnique.h"
 
 namespace tzw
 {
+class Camera;
+class DeviceBuffer;
 class DeviceDescriptor;
 class DeviceFrameBuffer;
 class DeviceMaterial;
@@ -45,6 +50,7 @@ enum class RenderGraphResourceAccessType
 	ReadStorageImage,
 	WriteStorageImage,
 	ReadWriteStorageImage,
+	Present,
 };
 
 using RenderGraphResourceUsage = DeviceTextureUsage;
@@ -139,6 +145,7 @@ enum class RenderGraphPassKind
 	Raster,
 	Compute,
 	Blit,
+	Present,
 	External,
 };
 
@@ -150,6 +157,8 @@ struct RenderGraphResource
 	DeviceTexture* depthTexture = nullptr;
 	DeviceFrameBuffer* frameBuffer = nullptr;
 	DeviceRenderPass* renderPass = nullptr;
+	bool ownsTexture = false;
+	bool isSwapChainImage = false;
 	bool ownsFrameBuffer = false;
 	bool ownsRenderPass = false;
 	std::vector<RenderGraphResourceHandle> colorAttachments;
@@ -157,6 +166,36 @@ struct RenderGraphResource
 	bool contentsInitialized = false;
 	RenderGraphResourceState currentColorState;
 	RenderGraphResourceState currentDepthState;
+};
+
+enum class RenderGraphIndexType
+{
+	UInt16,
+	UInt32,
+};
+
+struct RenderGraphIndexedDraw
+{
+	RenderGraphResourceHandle texture;
+	uint32_t indexCount = 0;
+	uint32_t firstIndex = 0;
+	int32_t vertexOffset = 0;
+	vec4 scissor;
+	std::function<void()> callback;
+};
+
+struct RenderGraphIndexedDrawData
+{
+	VertexLayout vertexLayout;
+	RenderGraphIndexType indexType = RenderGraphIndexType::UInt16;
+	std::vector<uint8_t> vertices;
+	std::vector<uint8_t> indices;
+	std::vector<uint8_t> uniformData;
+	uint32_t uniformBinding = 0;
+	uint32_t textureBinding = 1;
+	std::vector<RenderGraphIndexedDraw> draws;
+
+	bool validate(std::string* outMessage = nullptr) const;
 };
 
 struct RenderGraphRasterPassDesc
@@ -171,6 +210,10 @@ struct RenderGraphRasterPassDesc
 	DrawPassTypeMask drawPassMask = DrawPassType::Unset;
 	bool consumesSceneQueue = false;
 	MaterialInstance* material = nullptr;
+	RenderQueue* sceneQueue = nullptr;
+	Camera* camera = nullptr;
+	VertexLayout vertexLayout;
+	bool dynamicScissor = false;
 	std::vector<RenderGraphResourceAccess> resourceAccesses;
 };
 
@@ -187,6 +230,7 @@ public:
 	DeviceRenderCommand* cmd() const;
 	RenderPath* renderPath() const;
 	RenderQueue* sceneQueue() const;
+	Camera* camera() const;
 	const RenderGraphPassDesc* pass() const;
 	const RenderGraphResource* resource(RenderGraphResourceHandle handle) const;
 	DeviceTexture* texture(RenderGraphResourceHandle handle) const;
@@ -202,6 +246,8 @@ public:
 	void bindSinglePipelineDescriptorCompute();
 	void drawQueue(RenderQueue* renderQueue, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default);
 	void drawSceneQueue(MaterialTechniqueType techniqueType = MaterialTechniqueType::Default);
+	void bindTexture(uint32_t binding, RenderGraphResourceHandle resource);
+	void bindTextures(uint32_t binding, const std::vector<RenderGraphResourceHandle>& resources);
 	void drawScreenQuad();
 	void drawSphere();
 	void dispatch(uint32_t x, uint32_t y, uint32_t z);
@@ -278,6 +324,12 @@ private:
 	RenderGraphPassHandle handle = RenderGraphPassHandle::invalid();
 	DeviceRenderPass* renderPass = nullptr;
 	DeviceRenderStage* compiledStage = nullptr;
+	RenderQueue* sceneQueue = nullptr;
+	Camera* camera = nullptr;
+	std::shared_ptr<const RenderGraphIndexedDrawData> indexedDrawData;
+	DeviceBuffer* vertexBuffer = nullptr;
+	DeviceBuffer* indexBuffer = nullptr;
+	DeviceBuffer* uniformBuffer = nullptr;
 	DeviceRenderPass::OpType opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
 	RenderGraphResourceHandle frameBufferResource = RenderGraphResourceHandle::invalid();
 	RenderGraphResourceHandle blitSource = RenderGraphResourceHandle::invalid();
@@ -307,6 +359,11 @@ public:
 	RenderGraphNode addComputeNode(const RenderGraphComputePassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
 	RenderGraphNode addBlitNode(const std::string& name, RenderGraphResourceHandle source, RenderGraphResourceHandle destination);
 	RenderGraphNode addExternalNode(const RenderGraphPassDesc& desc);
+	RenderGraphNode addIndexedRasterNode(const RenderGraphRasterPassDesc& desc, RenderGraphIndexedDrawData data);
+	RenderGraphNode addPresentNode(const std::string& name, RenderGraphResourceHandle resource);
+	RenderGraphResourceHandle importSwapChainFrameBuffer(uint32_t imageIndex);
+	RenderGraphResourceHandle importSampledTexture(const std::string& name, DeviceTexture* texture);
+	RenderGraphResourceHandle createTexture(const RenderGraphResourceDesc& desc, const unsigned char* pixels);
 	RenderGraphPassHandle addRasterPass(const RenderGraphRasterPassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
 	RenderGraphPassHandle addFullscreenPass(const RenderGraphRasterPassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
 	RenderGraphPassHandle addComputePass(const RenderGraphComputePassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
@@ -347,6 +404,9 @@ private:
 		std::string key;
 		DeviceRenderPass* renderPass = nullptr;
 		DeviceRenderStage* stage = nullptr;
+		DeviceBuffer* vertexBuffer = nullptr;
+		DeviceBuffer* indexBuffer = nullptr;
+		DeviceBuffer* uniformBuffer = nullptr;
 		RenderGraphResourceHandle frameBufferResource = RenderGraphResourceHandle::invalid();
 		bool ownsRenderPass = false;
 	};
@@ -374,7 +434,8 @@ private:
 	void releaseOwnedResources();
 	bool applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass, std::string& message);
 	bool updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass, std::string& message);
-	void executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
+	bool executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass, std::string& message);
+	bool executeIndexedDraws(RenderGraphContext& context, RenderGraphPassDesc& pass, std::string& message);
 	void executeComputePass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 	bool executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 	void executeExternalPass(RenderGraphContext& context, RenderGraphPassDesc& pass);

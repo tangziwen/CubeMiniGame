@@ -1,6 +1,13 @@
 #include "BackEnd/DeviceFrameBuffer.h"
 #include "BackEnd/DeviceRenderCommand.h"
 #include "BackEnd/DeviceTexture.h"
+#include "BackEnd/DeviceRenderStage.h"
+#include "BackEnd/RenderBackEndBase.h"
+#include "Base/Camera.h"
+#include "Engine/Engine.h"
+#include "Technique/MaterialInstance.h"
+#include <cstring>
+#include <limits>
 #include "Rendering/RenderGraph.h"
 
 #include <iostream>
@@ -148,6 +155,105 @@ public:
 	bool acceptBlits = true;
 	std::vector<DeviceTextureBarrier> barriers;
 	std::vector<DeviceTextureBlit> blits;
+};
+
+class FakeBuffer final : public DeviceBuffer
+{
+public:
+	void allocate(void* data, size_t size) override
+	{
+		const auto bytes = static_cast<const uint8_t*>(data);
+		upload.assign(bytes, bytes + size);
+	}
+	bool init(DeviceBufferType type) override { m_type = type; return true; }
+	void bind() override {}
+	void setUsePool(bool) override {}
+	std::vector<uint8_t> upload;
+};
+
+class FakeDescriptor final : public DeviceDescriptor
+{
+public:
+	void updateDescriptorByBinding(int, DeviceTexture*) override {}
+	void updateDescriptorByBinding(int, std::vector<DeviceTexture*>&) override {}
+	void updateDescriptorByBinding(int, DeviceBuffer*, size_t, size_t) override {}
+	void updateDescriptorByBinding(int, DeviceItemBuffer*) override {}
+	void updateDescriptorByBindingAsStorageImage(int, DeviceTexture*) override {}
+};
+
+class FakePipeline final : public DevicePipeline
+{
+public:
+	void initCompute(DeviceShaderCollection*) override {}
+	void init(vec2, MaterialInstance*, DeviceRenderPass*, DeviceVertexInput, bool, DeviceVertexInput, int,
+		MaterialTechniqueType) override {}
+	void resetItemWiseDescritporSet() override {}
+	DeviceDescriptor* giveItemWiseDescriptorSet() override { return &descriptor; }
+	FakeDescriptor descriptor;
+};
+
+class FakeStage final : public DeviceRenderStage
+{
+public:
+	void finish() override {}
+	void draw(RenderQueue* queue, MaterialTechniqueType) override { lastQueue = queue; }
+	void drawScreenQuad() override {}
+	void drawSphere() override {}
+	void dispatch(unsigned int, unsigned int, unsigned int) override {}
+	void beginCompute() override {}
+	void endCompute() override {}
+	void createSinglePipeline(MaterialInstance*, const VertexLayout&, bool) override { m_singlePipeline = new FakePipeline(); }
+	void bindSinglePipelineDescriptor() override {}
+	void bindSinglePipelineDescriptor(DeviceDescriptor*) override {}
+	void bindSinglePipelineDescriptorCompute() override {}
+	void bindPipeline(DevicePipeline*) override {}
+	void bindDescriptor(DevicePipeline*, std::vector<DeviceDescriptor*>) override {}
+	void beginRenderPass(DeviceFrameBuffer*, vec4, vec2) override { observedCamera = m_viewCamera; }
+	void endRenderPass() override {}
+	void bindVBO(DeviceBuffer*) override {}
+	void bindIBO(DeviceBuffer*, bool use32BitIndices) override { index32 = use32BitIndices; }
+	void setScissor(vec4 rect) override { scissor = rect; }
+	void drawElement(uint32_t count, uint32_t, uint32_t first, int32_t offset, uint32_t) override
+	{
+		drawCount++;
+		lastIndexCount = count;
+		lastFirstIndex = first;
+		lastVertexOffset = offset;
+	}
+	RenderQueue* lastQueue = nullptr;
+	Camera* observedCamera = nullptr;
+	bool index32 = false;
+	int drawCount = 0;
+	uint32_t lastIndexCount = 0, lastFirstIndex = 0;
+	int32_t lastVertexOffset = 0;
+	vec4 scissor;
+protected:
+	void fetchCommand() override {}
+};
+
+class FakeBackend final : public RenderBackEndBase
+{
+public:
+	FakeBackend() : previous(Engine::shared()->getRenderBackEnd()) { Engine::shared()->setRenderBackEnd(this); }
+	~FakeBackend() { Engine::shared()->setRenderBackEnd(previous); }
+	DeviceTexture* loadTextureRaw_imp(const unsigned char*, int, int, ImageFormat, unsigned int) override { return new FakeTexture(); }
+	DeviceShaderCollection* createShader_imp() override { return nullptr; }
+	DeviceBuffer* createBuffer_imp() override { return new FakeBuffer(); }
+	DeviceRenderPass* createDeviceRenderpass_imp() override { return new FakeRenderPass(); }
+	DevicePipeline* createPipeline_imp() override { return nullptr; }
+	DeviceRenderStage* createRenderStage_imp() override
+	{
+		auto stage = new FakeStage();
+		stages.emplace_back(stage);
+		return stage;
+	}
+	DeviceFrameBuffer* createFrameBuffer_imp() override { return nullptr; }
+	DeviceFrameBuffer* getSwapChainFrameBuffer(unsigned int) override { return swapchain; }
+	void prepareFrame() override {}
+	void endFrame(RenderPath*) override {}
+	RenderBackEndBase* previous;
+	DeviceFrameBuffer* swapchain = nullptr;
+	std::vector<FakeStage*> stages;
 };
 
 int failureCount = 0;
@@ -595,12 +701,202 @@ void testImplicitRasterFinalLayouts()
 	}
 }
 
+RenderGraphIndexedDrawData indexedTriangle(RenderGraphResourceHandle texture, bool index32 = false)
+{
+	RenderGraphIndexedDrawData data;
+	data.vertexLayout = {8, {{VertexAttributeFormat::Float2, 0}}};
+	data.vertices.resize(4 * 8);
+	data.uniformData.resize(64);
+	data.indexType = index32 ? RenderGraphIndexType::UInt32 : RenderGraphIndexType::UInt16;
+	const uint32_t wideIndices[] = {0, 0, 1, 2};
+	const uint16_t shortIndices[] = {0, 0, 1, 2};
+	data.indices.resize(index32 ? sizeof(wideIndices) : sizeof(shortIndices));
+	std::memcpy(data.indices.data(), index32 ? static_cast<const void*>(wideIndices) : shortIndices, data.indices.size());
+	RenderGraphIndexedDraw draw;
+	draw.texture = texture;
+	draw.indexCount = 3;
+	draw.firstIndex = 1;
+	draw.vertexOffset = 1;
+	draw.scissor = vec4(-5, -10, 100, 100);
+	data.draws.push_back(draw);
+	return data;
+}
+
+void testIndexedDrawValidation()
+{
+	RenderGraph graph;
+	FakeTexture texture;
+	auto handle = importTexture(graph, texture, "IndexedTexture");
+	for(bool wide : {false, true})
+	{
+		auto data = indexedTriangle(handle, wide);
+		expect(data.validate(), "both index widths must accept base vertex and first index offsets");
+		data.draws[0].vertexOffset = 2;
+		expect(!data.validate(), "base vertex must not overrun uploaded vertices");
+		data.draws[0].vertexOffset = -1;
+		expect(!data.validate(), "negative resolved vertex index must fail");
+		data = indexedTriangle(handle, wide);
+		data.draws[0].indexCount = 4;
+		expect(!data.validate(), "out-of-range index count must fail");
+		data = indexedTriangle(handle, wide);
+		data.indices.pop_back();
+		expect(!data.validate(), "partial index element must fail");
+	}
+	auto data = indexedTriangle(handle);
+	data.vertexLayout.attributes[0].offset = 4;
+	expect(!data.validate(), "attribute cannot extend past vertex stride");
+	data = indexedTriangle(handle);
+	data.draws[0].scissor.x = std::numeric_limits<float>::infinity();
+	expect(!data.validate(), "non-finite scissor must fail");
+	data = indexedTriangle(handle);
+	data.uniformData.clear();
+	expect(!data.validate(), "indexed draws must have uniform data");
+	data = indexedTriangle(handle);
+	data.draws.clear();
+	data.vertices.clear();
+	data.indices.clear();
+	expect(data.validate(), "empty ImGui frames are valid");
+}
+
+void testMultipleViewQueuesAndCameras()
+{
+	FakeBackend backend;
+	RenderGraph graph;
+	FakeTexture shadowDepth, mainColor, mirrorColor;
+	FakeFrameBuffer shadowTarget({}, &shadowDepth), mainTarget({&mainColor}), mirrorTarget({&mirrorColor}, nullptr, vec2(32, 16));
+	auto shadowDesc = textureDesc("Shadow");
+	shadowDesc.role = TextureRoleEnum::AS_DEPTH;
+	auto shadow = graph.importFrameBuffer(shadowDesc, &shadowTarget);
+	auto main = graph.importFrameBuffer(textureDesc("Main"), &mainTarget);
+	auto mirror = graph.importFrameBuffer(textureDesc("Mirror"), &mirrorTarget);
+	RenderQueue shadowQueue, mainQueue, mirrorQueue;
+	Camera mainCamera, mirrorCamera;
+	RenderGraphRasterPassDesc pass;
+	pass.name = "Shadow";
+	pass.frameBufferResource = shadow;
+	pass.attachments = {{ImageFormat::D24_S8, true}};
+	pass.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
+	pass.sceneQueue = &shadowQueue;
+	RenderGraphPassDesc accesses;
+	accesses.writeDepth(graph.depthAttachment(shadow), RenderGraphResourceLayout::DepthRead);
+	pass.resourceAccesses = accesses.resourceAccesses;
+	auto shadowNode = graph.addRasterNode(pass, [](RenderGraphPassContext& context) { context.drawSceneQueue(); });
+	expect(shadowNode.output().index() == graph.depthAttachment(shadow).index(), "depth-only views should expose depth as default output");
+	auto addView = [&](RenderGraphResourceHandle target, Camera* camera, RenderQueue* queue)
+	{
+		pass.name = "Scene";
+		pass.frameBufferResource = target;
+		pass.attachments = {{ImageFormat::R8G8B8A8, false}};
+		pass.sceneQueue = queue;
+		pass.camera = camera;
+		accesses.resourceAccesses.clear();
+		accesses.readDepth(shadowNode.output()).writeColor(graph.colorAttachment(target), RenderGraphResourceLayout::ShaderRead);
+		pass.resourceAccesses = accesses.resourceAccesses;
+		return graph.addRasterNode(pass, [camera, queue](RenderGraphPassContext& context)
+		{
+			expect(context.camera() == camera && context.sceneQueue() == queue, "view context must remain local to each pass");
+			context.drawSceneQueue();
+		}).dependsOn(shadowNode);
+	};
+	auto mainNode = addView(main, &mainCamera, &mainQueue);
+	auto mirrorNode = addView(mirror, &mirrorCamera, &mirrorQueue);
+	RenderGraphPassDesc rootDesc;
+	rootDesc.name = "CompositeViews";
+	rootDesc.readColor(mainNode.output()).readColor(mirrorNode.output());
+	auto root = graph.addExternalNode(rootDesc).dependsOn(mainNode).dependsOn(mirrorNode);
+	std::string message;
+	expect(graph.compile(root, &message), "independent views sharing a shadow producer must compile: " + message);
+	FakeRenderCommand command;
+	RenderQueue fallbackQueue;
+	RenderGraphContext context(&command, nullptr, &fallbackQueue);
+	expect(graph.execute(context, &message), "multi-view graph must execute: " + message);
+	expect(backend.stages.size() == 3, "different view targets must have distinct stages even with the same pass name");
+	expect(backend.stages[0]->lastQueue == &shadowQueue && backend.stages[1]->lastQueue == &mainQueue
+		&& backend.stages[2]->lastQueue == &mirrorQueue, "pass queues must override the legacy frame queue");
+	expect(backend.stages[1]->observedCamera == &mainCamera && backend.stages[2]->observedCamera == &mirrorCamera,
+		"backend uniform updates must receive the correct view camera");
+}
+
+void testIndexedOverlayAndPresent()
+{
+	for(bool wide : {false, true})
+	{
+		FakeBackend backend;
+		RenderGraph graph;
+		FakeTexture screenColor, sampledTexture;
+		FakeFrameBuffer screen({&screenColor});
+		backend.swapchain = &screen;
+		auto target = graph.importSwapChainFrameBuffer(0);
+		auto color = graph.colorAttachment(target);
+		auto sampled = importTexture(graph, sampledTexture, "OffscreenView");
+		expect(graph.importSampledTexture("ImGuiAlias", &sampledTexture).index() == sampled.index(),
+			"ImGui imports must reuse the offscreen view resource identity");
+		RenderGraphRasterPassDesc pass;
+		pass.name = "ScreenComposite";
+		pass.frameBufferResource = target;
+		pass.attachments = {{ImageFormat::R8G8B8A8, false}};
+		pass.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
+		RenderGraphPassDesc accesses;
+		accesses.writeColor(color);
+		pass.resourceAccesses = accesses.resourceAccesses;
+		auto composite = graph.addRasterNode(pass);
+		pass.name = "GuiOverlay";
+		pass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+		accesses.resourceAccesses.clear();
+		accesses.readWriteColor(color);
+		pass.resourceAccesses = accesses.resourceAccesses;
+		auto gui = graph.addRasterNode(pass).dependsOn(composite);
+		pass.name = "ImGuiOverlay";
+		MaterialInstance material;
+		pass.material = &material;
+		auto data = indexedTriangle(sampled, wide);
+		auto clipped = data.draws[0];
+		clipped.scissor = vec4(100, 100, 5, 5);
+		data.draws.insert(data.draws.begin(), clipped);
+		int callbacks = 0;
+		RenderGraphIndexedDraw callback;
+		callback.callback = [&callbacks]() { callbacks++; };
+		data.draws.insert(data.draws.begin(), callback);
+		auto overlay = graph.addIndexedRasterNode(pass, std::move(data)).dependsOn(gui);
+		auto present = graph.addPresentNode("Present", color).dependsOn(overlay);
+		std::string message;
+		expect(graph.compile(present, &message), "screen, GUI, indexed overlay, present chain must compile: " + message);
+		FakeRenderCommand command;
+		RenderGraphContext context(&command, nullptr, nullptr);
+		expect(graph.execute(context, &message), "indexed overlay must execute: " + message);
+		auto stage = backend.stages.back();
+		expect(callbacks == 1 && stage->drawCount == 1, "callbacks execute once and fully clipped geometry is skipped");
+		expect(stage->index32 == wide && stage->lastFirstIndex == 1 && stage->lastVertexOffset == 1,
+			"index width and draw offsets must reach the backend unchanged");
+		expect(stage->scissor.x == 0 && stage->scissor.y == 0 && stage->scissor.z == 64 && stage->scissor.w == 64,
+			"scissor must be clamped to target extent");
+		expect(!command.barriers.empty() && command.barriers.back().texture == &screenColor
+			&& command.barriers.back().before.layout == DeviceTextureLayout::ColorAttachment
+			&& command.barriers.back().after.layout == DeviceTextureLayout::Present,
+			"only final graph node transitions the swapchain to presentation");
+		expect(RenderGraphTestAccess::colorState(graph, color).layout == DeviceTextureLayout::Present,
+			"graph must preserve presentation state for the next frame");
+	}
+}
+
+void testPresentRejectsOffscreenTexture()
+{
+	RenderGraph graph;
+	FakeTexture texture;
+	auto resource = importTexture(graph, texture, "Offscreen");
+	auto present = graph.addPresentNode("InvalidPresent", resource);
+	std::string message;
+	expect(!graph.compile(present, &message) && message.find("not a swapchain") != std::string::npos,
+		"Present must reject textures outside the swapchain");
+}
+
 }
 }
 
 int main()
 {
 	using namespace tzw;
+	Engine::shared()->setRenderBackEnd(nullptr);
 	testDependencyCycle();
 	testInvalidResourceHandle();
 	testGraphOwnedReadBeforeWrite();
@@ -621,6 +917,10 @@ int main()
 	testDepthOnlyRebindAndUpdatedMetadata();
 	testImplicitRasterFinalLayouts();
 	testBlitFitsBothTextures();
+	testIndexedDrawValidation();
+	testMultipleViewQueuesAndCameras();
+	testIndexedOverlayAndPresent();
+	testPresentRejectsOffscreenTexture();
 	if(failureCount != 0)
 	{
 		std::cerr << failureCount << " RenderGraph test(s) failed.\n";

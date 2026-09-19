@@ -205,6 +205,7 @@ set(ENGINE_SOURCES
     Rendering/OutlinePass.cpp
     Rendering/RenderBuffer.cpp
     Rendering/RenderCommand.cpp
+    Rendering/VertexLayout.h
     Rendering/RenderGraph.cpp
     Rendering/RenderSettings.cpp
     Rendering/RenderPath.cpp

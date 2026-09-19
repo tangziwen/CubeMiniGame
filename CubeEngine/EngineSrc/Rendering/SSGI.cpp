@@ -2,7 +2,7 @@
 
 #include "BackEnd/DeviceDescriptor.h"
 #include "BackEnd/DeviceMaterial.h"
-#include "EngineSrc/Scene/SceneMgr.h"
+#include "Base/Camera.h"
 #include "RenderGraph.h"
 #include "Technique/MaterialInstance.h"
 #include "Technique/MaterialPool.h"
@@ -23,8 +23,7 @@ void SSGI::init()
 void SSGI::execute(RenderGraphPassContext& graphContext, DeviceTexture* currentFrame, DeviceTexture* depth,
 	DeviceTexture* normal, DeviceTexture* baseColor)
 {
-	auto scene = g_GetCurrScene();
-	auto camera = scene ? scene->defaultCamera() : nullptr;
+	auto camera = graphContext.camera();
 	auto deviceMaterial = graphContext.material();
 	auto descriptor = graphContext.materialDescriptor();
 	if(!m_material || !camera || !deviceMaterial || !descriptor || !currentFrame || !depth || !normal || !baseColor)

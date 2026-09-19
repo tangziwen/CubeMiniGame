@@ -6,6 +6,7 @@ class GLFWwindow;
 
 namespace tzw {
 class DeviceTexture;
+class DeviceRenderCommand;
 class DeviceShaderCollection;
 class DeviceBuffer;
 class RenderPath;
@@ -27,6 +28,10 @@ public:
 	virtual DeviceRenderStage * createRenderStage_imp() = 0;
 	virtual DeviceFrameBuffer * createFrameBuffer_imp() = 0;
 	virtual DeviceMaterial * createDeviceMaterial_imp();
+	virtual DeviceRenderCommand* getGeneralCommandBuffer() { return nullptr; }
+	virtual DeviceFrameBuffer* getSwapChainFrameBuffer(unsigned int imageIndex) { return nullptr; }
+	virtual unsigned int getSwapChainImageCount() const { return 0; }
+	virtual int getCurrSwapIndex() { return 0; }
 	virtual void prepareFrame() = 0;
 	virtual void endFrame(RenderPath * renderPath) = 0;
 }; // namespace tzw

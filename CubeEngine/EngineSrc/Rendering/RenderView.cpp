@@ -4,33 +4,12 @@
 
 namespace tzw
 {
-RenderViewPass::RenderViewPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue)
-	: m_stage(stage)
-	, m_drawPassMask(drawPassMask)
-	, m_consumesSceneQueue(consumesSceneQueue)
-{
-}
-
-DeviceRenderStage* RenderViewPass::stage() const
-{
-	return m_stage;
-}
-
-DrawPassTypeMask RenderViewPass::drawPassMask() const
-{
-	return m_drawPassMask;
-}
-
-bool RenderViewPass::consumesSceneQueue() const
-{
-	return m_consumesSceneQueue;
-}
-
-RenderView::RenderView(RenderViewType viewType, int viewIndex)
+RenderView::RenderView(RenderGraph& graph, RenderViewType viewType, int viewIndex)
 	: m_viewType(viewType)
 	, m_viewIndex(viewIndex)
 	, m_camera(nullptr)
 	, m_submitDrawPassMask(DrawPassType::Unset)
+	, m_renderGraph(graph)
 {
 }
 
@@ -67,15 +46,6 @@ DrawPassTypeMask RenderView::submitDrawPassMask() const
 void RenderView::setCamera(Camera* camera)
 {
 	m_camera = camera;
-}
-
-void RenderView::addPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue)
-{
-	m_passes.emplace_back(stage, drawPassMask, consumesSceneQueue);
-	if(consumesSceneQueue)
-	{
-		addSubmitDrawPass(drawPassMask);
-	}
 }
 
 void RenderView::addSubmitDrawPass(DrawPassTypeMask drawPassMask)

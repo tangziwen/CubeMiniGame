@@ -170,7 +170,6 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
 }
 	VKRenderBackEnd::VKRenderBackEnd()
 	{
-	    m_imguiPipeline = nullptr;
         m_renderPath = new RenderPath();
         m_imageIndex = 0;
 	}
@@ -325,6 +324,14 @@ static VkSurfaceKHR createVKSurface(VkInstance* instance, GLFWwindow * window)
     DeviceFrameBufferVK* VKRenderBackEnd::createSwapChainFrameBuffer(int index)
     {
         return m_screenFrameBuffer[index];
+    }
+    DeviceFrameBuffer* VKRenderBackEnd::getSwapChainFrameBuffer(unsigned int imageIndex)
+    {
+        return imageIndex < m_images.size() ? m_screenFrameBuffer[imageIndex] : nullptr;
+    }
+    unsigned int VKRenderBackEnd::getSwapChainImageCount() const
+    {
+        return static_cast<unsigned int>(m_images.size());
     }
     int VKRenderBackEnd::getCurrSwapIndex()
     {

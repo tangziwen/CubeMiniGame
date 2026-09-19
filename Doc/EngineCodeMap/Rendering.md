@@ -6,17 +6,16 @@ High-level render pipeline orchestration, 3D render views, render queues, post e
 
 ## Important Objects
 
-- `GraphicsRenderer`: owns frame begin/end orchestration, schedules shadow and `SceneView`, then handles GUI/ImGui and thumbnails after `SceneView` writes the texture-to-screen result into the swapchain framebuffer.
-- `CSMShadowSystem`: owns cascaded shadow `ShadowView` instances, updates shadow projection state, draws cascades in order, and exposes depth textures for scene lighting.
+- `GraphicsRenderer`: owns the shared frame `RenderGraph`, frame begin/end, CSM and scene-view scheduling, screen composition, GUI/ImGui graph nodes, and the final Present node; `createSceneView(camera, size)` adds an offscreen scene view, while thumbnails still use the separate legacy stage.
+- `CSMShadowSystem`: updates cascade projections and collects `ShadowView`s; `buildRenderGraph()` returns depth-output nodes consumed by scene lighting. Current cascade coverage is computed from the default scene camera and shared by scene views.
 - `DrawPass`: draw submission vocabulary (`DrawPassType`, `DrawPassTypeMask`) used by drawables, materials, render queues, render views, and device stages.
-- `RenderGraph`: graph node/resource authoring and execution layer; `RenderGraphNode` expresses pass dependencies and optional outputs, `compile(root)` builds and validates a dependency-first order from the final node, invalid graphs are rejected before execution, `RenderGraphResourceHandle` names textures/framebuffers/storage-image texture access, resource state inference derives Vulkan layout/stage/access barriers for graph-owned raster/compute/blit nodes, and backend `DeviceRenderStage`s are compiled/executed internally before being added to `RenderPath`.
-- `RenderView`: base 3D view context with view type/index, camera, output queue, and ordered passes; it derives submit draw-pass masks from queue-consuming passes and does not own UI.
-- `RenderViewPass`: per-view pass descriptor that declares the consumed `DrawPassTypeMask`; fullscreen/light/post passes may consume no scene queue.
-- `SceneView`: main 3D view authored through `RenderGraph` nodes; it builds the scene chain each frame, keeps GBuffer/deferred/AfterDepthClear/transparent/sky/debug/HBAO/SSR/SSGI/Fog/TSAA/TextureToScreen as graph-owned raster/fullscreen nodes, runs Bloom bright/downsample/blur as graph-owned compute nodes and Bloom composite plus conditional Outline mask/composite as graph-owned raster/fullscreen nodes, and uses SceneColorCopy as a blit node.
-- `ShadowView`: per-CSM-cascade 3D view that owns the shadow-map pass and collects only shadow-casting 3D drawables.
+- `RenderGraph`: authors and validates dependencies and texture states for raster/compute/blit/Present nodes; owns framebuffer/pass caches and indexed-draw uploads, and executes backend stages internally. `addIndexedRasterNode()` accepts neutral vertex layouts, 16/32-bit index streams, per-draw textures/scissors and callbacks; sampled textures join graph access validation automatically. Raster passes carry their own queue and camera, and depth-only nodes expose depth as their default output.
+- `RenderView`: base view context with type/index, camera, private render queue and shared graph reference; `buildRenderGraph()` contributes nodes and an output without clearing, compiling or executing the whole frame graph.
+- `SceneView`: owns view-local GBuffer/postprocess resources and TSAA history, accepts a camera and target size, and contributes the deferred scene/Bloom/Outline chain to the shared graph. It returns an offscreen output node; screen composition belongs to `GraphicsRenderer`.
+- `ShadowView`: per-CSM-cascade view that collects shadow casters and contributes a graph-owned depth-only raster pass; lighting samples its graph resource directly.
 - `RenderPath`: ordered list of `DeviceRenderStage`s submitted to backend `endFrame()`.
 - `RenderQueue`: stores `RenderCommand`s and batches instancing through `InstancingMgr`.
 - `RenderCommand`: mesh/material/drawable transform packet with draw-pass mask, primitive type, depth policy, batch type, and outline color.
 - `RenderBuffer`: CPU/GPU buffer wrapper used by mesh and instance data.
-- `TSAA`, `SSGI`, `Bloom`, `OutlinePass`: postprocess modules owned by `SceneView`; `SSGI` now supplies graph-facing material and draw logic rather than owning a backend render stage.
-- `RenderFlag`, `ImageFormat`: shared render enums and image format mapping.
+- `TSAA`, `SSGI`, `Bloom`, `OutlinePass`: postprocess modules owned by `SceneView`; TSAA/SSGI use the pass camera and postprocess dimensions follow the view target.
+- `RenderFlag`, `ImageFormat`, `VertexLayout`: shared rendering flags, image formats and backend-neutral vertex attribute descriptions.

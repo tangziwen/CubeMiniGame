@@ -1,11 +1,13 @@
 #include "TSAA.h"
 
 #include "BackEnd/DeviceDescriptor.h"
+#include "BackEnd/DeviceMaterial.h"
 #include "BackEnd/DevicePipeline.h"
 #include "RenderGraph.h"
 #include "Technique/MaterialPool.h"
 #include "Engine/Engine.h"
-#include "EngineSrc/Scene/SceneMgr.h"
+#include "Base/Camera.h"
+#include "BackEnd/DeviceFrameBuffer.h"
 namespace tzw
 {
 	void TSAA::init()
@@ -37,16 +39,17 @@ namespace tzw
 		}
 		return Result;
 	}
-    void TSAA::preTick()
+    void TSAA::preTick(Camera* camera)
     {
+        if(!camera) return;
         m_index = (m_index + 1) % 16;
         // Restore the unjittered camera before capturing the previous-frame VP.
-        g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
-        m_lastViewProj = g_GetCurrScene()->defaultCamera()->getViewProjectionMatrix();
+        camera->setOffsetPixel(0, 0);
+        m_lastViewProj = camera->getViewProjectionMatrix();
 
         // Generate current-frame jitter in pixels and apply it for scene rendering.
         m_offset = vec2((TemporalHalton(m_index + 1, 2) - 0.5f) * m_jitterScalePixels, (TemporalHalton(m_index + 1, 3) - 0.5f) * m_jitterScalePixels);
-        g_GetCurrScene()->defaultCamera()->setOffsetPixel(m_offset.x, m_offset.y);
+        camera->setOffsetPixel(m_offset.x, m_offset.y);
     }
 	MaterialInstance* TSAA::material() const
 	{
@@ -70,17 +73,19 @@ namespace tzw
 
     void TSAA::executeResolve(RenderGraphPassContext& graphContext, DeviceTexture * historyFrame, DeviceTexture * currFrame, DeviceTexture * Depth)
     {
+        auto camera = graphContext.camera();
+        if(!camera) return;
         // GraphicsRenderer runs TSAA after fog and before TextureToScreen. Current scene color
         // is sampled in jittered render space; reprojection uses unjittered camera space and TU_LastVP.
         // Reset before material uniforms update so TU_viewProjectInverted describes current resolve space.
-        g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
+        camera->setOffsetPixel(0, 0);
 		auto pipeline = graphContext.pipeline();
 		auto descriptor = graphContext.materialDescriptor();
 		if(!pipeline || !descriptor || !historyFrame || !currFrame || !Depth)
 		{
 			return;
 		}
-        vec2 winSize = Engine::shared()->winSize();
+        vec2 winSize = graphContext.targetFrameBuffer()->getSize();
         vec2 jitterUV = vec2(m_offset.x / winSize.x, m_offset.y / winSize.y);
         pipeline->getMat()->setVar("TU_jitterUV", jitterUV);
         pipeline->getMat()->setVar("TU_LastVP",  m_lastViewProj);
@@ -88,6 +93,7 @@ namespace tzw
         pipeline->getMat()->setVar("TU_TSAARejectionParams", m_rejectionParams);
         pipeline->getMat()->setVar("TU_TSAADebugMode", m_debugMode);
 
+        graphContext.material()->updateUniform();
         descriptor->updateDescriptorByBinding(1, historyFrame);
         descriptor->updateDescriptorByBinding(2, currFrame);
         // Depth is the GBuffer depth supplied by GraphicsRenderer, not the deferred lighting/fog depth.

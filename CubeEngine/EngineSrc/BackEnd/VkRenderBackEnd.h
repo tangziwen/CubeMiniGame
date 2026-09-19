@@ -142,7 +142,9 @@ public:
     void updateItemDescriptor(VkDescriptorSet itemDescSet, MaterialInstance * mat, size_t m_offset, size_t bufferRange);
     void blitTexture(VkCommandBuffer command, DeviceTextureVK * srdTex, DeviceTextureVK * dstTex, vec2 size, VkImageLayout srcLayout, VkImageLayout dstLayout);
     DeviceFrameBufferVK * createSwapChainFrameBuffer(int index);
-    int getCurrSwapIndex();
+    int getCurrSwapIndex() override;
+    DeviceFrameBuffer* getSwapChainFrameBuffer(unsigned int imageIndex) override;
+    unsigned int getSwapChainImageCount() const override;
     DeviceRenderPassVK* getScreenRenderPass();
     void beginDebugRegion(VkCommandBuffer cmd, const char * labelStr);
     void endDebugRegion(VkCommandBuffer cmd);
@@ -247,15 +249,6 @@ private:
     VkDebugUtilsMessengerEXT debugMessenger;
 
     VkDebugReportCallbackEXT callback;
-    //imgui
-    DeviceBufferVK *m_imguiIndex;
-    DeviceBufferVK *m_imguiVertex;
-    MaterialInstance * m_imguiMat;
-    MaterialInstance * m_shadowMat;
-    MaterialInstance * m_shadowInstancedMat;
-    DevicePipelineVK * m_imguiPipeline;
-    VkDescriptorSet m_imguiDescriptorSet;
-    DeviceBufferVK * m_imguiUniformBuffer;
     //renderer
     std::unordered_map<MaterialInstance *, DevicePipelineVK *>m_matPipelinePool;
     std::unordered_map<MaterialInstance *, DevicePipelineVK *>m_thumbNailPipelinePool;
@@ -264,7 +257,6 @@ private:
     DeviceMemoryPoolVK * m_memoryPool;
     DeviceRenderPassVK * m_screenRenderPass;
     std::unordered_set<DevicePipelineVK *> m_fuckingObjList;
-    DeviceTextureVK * m_imguiTextureFont;
     unsigned m_imageIndex;
     std::vector<unsigned> m_commandBufferIndex;
     RenderPath * m_renderPath;

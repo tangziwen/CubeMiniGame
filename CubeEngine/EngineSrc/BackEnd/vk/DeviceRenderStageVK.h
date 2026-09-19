@@ -31,7 +31,8 @@ public:
 	void beginCompute() override;
 	void endCompute() override;
 	void bindVBO(DeviceBuffer * buf) override;
-	void bindIBO(DeviceBuffer * buf) override;
+	void bindIBO(DeviceBuffer * buf, bool use32BitIndices = false) override;
+	void createSinglePipeline(MaterialInstance* material, const VertexLayout& layout, bool dynamicScissor) override;
 	void setScissor(vec4 scissorRect);
 	void drawElement(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance);
 protected:

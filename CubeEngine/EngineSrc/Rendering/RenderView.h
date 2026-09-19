@@ -4,34 +4,18 @@
 #include "Rendering/RenderFlag.h"
 #include "Rendering/RenderQueues.h"
 #include "Rendering/RenderViewType.h"
+#include "Rendering/RenderGraph.h"
 #include "Math/Matrix44.h"
 #include <vector>
 
 namespace tzw
 {
 class Camera;
-class DeviceRenderCommand;
-class DeviceRenderStage;
-class RenderPath;
-
-class RenderViewPass
-{
-public:
-	RenderViewPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue);
-	DeviceRenderStage* stage() const;
-	DrawPassTypeMask drawPassMask() const;
-	bool consumesSceneQueue() const;
-
-private:
-	DeviceRenderStage* m_stage;
-	DrawPassTypeMask m_drawPassMask;
-	bool m_consumesSceneQueue;
-};
 
 class RenderView
 {
 public:
-	explicit RenderView(RenderViewType viewType, int viewIndex = 0);
+	explicit RenderView(RenderGraph& graph, RenderViewType viewType, int viewIndex = 0);
 	virtual ~RenderView() = default;
 
 	RenderViewType viewType() const;
@@ -43,11 +27,10 @@ public:
 
 	virtual void init() = 0;
 	virtual void collect() = 0;
-	virtual void draw(DeviceRenderCommand* cmd, RenderPath* renderPath) = 0;
+	virtual RenderGraphNode buildRenderGraph() = 0;
 
 protected:
 	void setCamera(Camera* camera);
-	void addPass(DeviceRenderStage* stage, DrawPassTypeMask drawPassMask, bool consumesSceneQueue);
 	void addSubmitDrawPass(DrawPassTypeMask drawPassMask);
 	void clearQueue();
 	void applyCameraToCommands(Camera* camera);
@@ -58,6 +41,6 @@ protected:
 	Camera* m_camera;
 	RenderQueue m_renderQueue;
 	DrawPassTypeMask m_submitDrawPassMask;
-	std::vector<RenderViewPass> m_passes;
+	RenderGraph& m_renderGraph;
 };
 }

@@ -13,11 +13,11 @@ CSMShadowSystem::CSMShadowSystem()
 	}
 }
 
-void CSMShadowSystem::init()
+void CSMShadowSystem::init(RenderGraph& graph)
 {
 	for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
 	{
-		m_shadowViews[i] = new ShadowView(i);
+		m_shadowViews[i] = new ShadowView(graph, i);
 		m_shadowViews[i]->init();
 	}
 }
@@ -31,18 +31,13 @@ void CSMShadowSystem::collect()
 	}
 }
 
-void CSMShadowSystem::draw(DeviceRenderCommand* cmd, RenderPath* renderPath)
+std::vector<RenderGraphNode> CSMShadowSystem::buildRenderGraph()
 {
-	m_depthTextures.clear();
-	for(int i = 0; i < SHADOWMAP_CASCADE_NUM; i++)
+	std::vector<RenderGraphNode> nodes;
+	for(auto view : m_shadowViews)
 	{
-		m_shadowViews[i]->draw(cmd, renderPath);
-		m_depthTextures.emplace_back(m_shadowViews[i]->depthTexture());
+		nodes.emplace_back(view->buildRenderGraph());
 	}
-}
-
-const std::vector<DeviceTexture*>& CSMShadowSystem::depthTextures() const
-{
-	return m_depthTextures;
+	return nodes;
 }
 }

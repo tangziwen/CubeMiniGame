@@ -4,24 +4,23 @@
 
 namespace tzw
 {
-class DeviceTexture;
 class MaterialInstance;
 
 class ShadowView : public RenderView
 {
 public:
-	explicit ShadowView(int cascadeIndex = 0);
+	ShadowView(RenderGraph& graph, int cascadeIndex = 0);
 
 	void init() override;
 	void collect() override;
-	void draw(DeviceRenderCommand* cmd, RenderPath* renderPath) override;
+	RenderGraphNode buildRenderGraph() override;
 
-	DeviceTexture* depthTexture() const;
 	int cascadeIndex() const;
 
 private:
 	int m_cascadeIndex;
-	DeviceRenderStage* m_shadowStage;
+	RenderGraphResourceHandle m_frameBuffer;
+	RenderGraphResourceHandle m_depth;
 	MaterialInstance* m_shadowMat;
 	MaterialInstance* m_shadowInstancedMat;
 };

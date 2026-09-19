@@ -3,6 +3,7 @@
 #include <algorithm>
 
 #include "BackEnd/DeviceDescriptor.h"
+#include "BackEnd/DeviceFrameBuffer.h"
 #include "BackEnd/DeviceMaterial.h"
 #include "BackEnd/DeviceShaderCollection.h"
 #include "BackEnd/VkRenderBackEnd.h"
@@ -51,7 +52,7 @@ bool configureComputeMaterial(RenderGraphPassContext& graphContext, ShadingParam
 }
 }
 
-void Bloom::init(DeviceFrameBuffer*)
+void Bloom::init(DeviceFrameBuffer* target)
 {
 	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
 	if(!m_compositeMaterial)
@@ -79,13 +80,13 @@ void Bloom::init(DeviceFrameBuffer*)
 		MaterialPool::shared()->addMaterial("BloomCompositePass", m_compositeMaterial);
 	}
 
-	auto windowSize = Engine::shared()->winSize();
+	auto windowSize = target ? target->getSize() : Engine::shared()->winSize();
 	if(m_size.x == windowSize.x && m_size.y == windowSize.y && m_bloomTexture[0][0])
 	{
 		return;
 	}
 	m_size = windowSize;
-	m_brightParams->setVar("TU_InSize", Engine::shared()->winSize());
+	m_brightParams->setVar("TU_InSize", m_size);
 	m_brightParams->setVar("TU_OutSize", layerSize(0));
 
 	for(int layer = 0; layer < BLOOM_LAYERS - 1; layer++)

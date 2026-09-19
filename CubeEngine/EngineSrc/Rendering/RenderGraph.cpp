@@ -1,6 +1,8 @@
 #include "RenderGraph.h"
 
 #include "BackEnd/DeviceMaterial.h"
+#include "BackEnd/DeviceBuffer.h"
+#include "BackEnd/DeviceDescriptor.h"
 #include "BackEnd/DeviceFrameBuffer.h"
 #include "BackEnd/DevicePipeline.h"
 #include "BackEnd/RenderBackEndBase.h"
@@ -10,6 +12,8 @@
 #include "Utility/log/Log.h"
 
 #include <algorithm>
+#include <cmath>
+#include <cstring>
 #include <sstream>
 
 namespace tzw
@@ -97,6 +101,8 @@ const char* accessName(RenderGraphResourceAccessType type)
 		return "WriteStorageImage";
 	case RenderGraphResourceAccessType::ReadWriteStorageImage:
 		return "ReadWriteStorageImage";
+	case RenderGraphResourceAccessType::Present:
+		return "Present";
 	}
 	return "Unknown";
 }
@@ -110,7 +116,8 @@ bool isColorAccess(RenderGraphResourceAccessType type)
 		|| type == RenderGraphResourceAccessType::TransferWrite
 		|| type == RenderGraphResourceAccessType::ReadStorageImage
 		|| type == RenderGraphResourceAccessType::WriteStorageImage
-		|| type == RenderGraphResourceAccessType::ReadWriteStorageImage;
+		|| type == RenderGraphResourceAccessType::ReadWriteStorageImage
+		|| type == RenderGraphResourceAccessType::Present;
 }
 
 bool isDepthAccess(RenderGraphResourceAccessType type)
@@ -139,7 +146,8 @@ bool isReadAccess(RenderGraphResourceAccessType type)
 		|| type == RenderGraphResourceAccessType::ReadWriteDepth
 		|| type == RenderGraphResourceAccessType::TransferRead
 		|| type == RenderGraphResourceAccessType::ReadStorageImage
-		|| type == RenderGraphResourceAccessType::ReadWriteStorageImage;
+		|| type == RenderGraphResourceAccessType::ReadWriteStorageImage
+		|| type == RenderGraphResourceAccessType::Present;
 }
 
 RenderGraphResourceState makeState(RenderGraphResourceLayout layout, RenderGraphResourceUsage usage)
@@ -202,6 +210,8 @@ RenderGraphResourceState beforeStateForAccess(const RenderGraphResourceAccess& a
 		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageWrite);
 	case RenderGraphResourceAccessType::ReadWriteStorageImage:
 		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageReadWrite);
+	case RenderGraphResourceAccessType::Present:
+		return makeState(RenderGraphResourceLayout::Present, RenderGraphResourceUsage::Present);
 	}
 	return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
 }
@@ -296,7 +306,12 @@ std::string rasterPassCacheKey(const RenderGraphRasterPassDesc& desc)
 		<< "|consume=" << desc.consumesSceneQueue
 		<< "|op=" << static_cast<int>(desc.opType)
 		<< "|read=" << desc.isNeedTransitionToRead
-		<< "|screen=" << desc.isOutputToScreen;
+		<< "|screen=" << desc.isOutputToScreen
+		<< "|stride=" << desc.vertexLayout.stride << "|scissor=" << desc.dynamicScissor;
+	for(const auto& attribute : desc.vertexLayout.attributes)
+	{
+		stream << "|vertex=" << static_cast<int>(attribute.format) << "," << attribute.offset;
+	}
 	for(const auto& attachment : desc.attachments)
 	{
 		stream << "|att=" << static_cast<int>(attachment.format) << "," << attachment.isDepthStencilAttachment;
@@ -311,6 +326,83 @@ std::string computePassCacheKey(const RenderGraphComputePassDesc& desc)
 		<< "|shader=" << reinterpret_cast<uintptr_t>(desc.shaderCollection);
 	return stream.str();
 }
+}
+
+bool RenderGraphIndexedDrawData::validate(std::string* outMessage) const
+{
+	auto fail = [&](const char* message)
+	{
+		if(outMessage) *outMessage = message;
+		return false;
+	};
+	if(vertexLayout.stride == 0 || vertexLayout.attributes.empty())
+	{
+		return fail("Indexed draw data requires a vertex layout.");
+	}
+	for(const auto& attribute : vertexLayout.attributes)
+	{
+		uint32_t size = 0;
+		switch(attribute.format)
+		{
+		case VertexAttributeFormat::Float2: size = 8; break;
+		case VertexAttributeFormat::Float3: size = 12; break;
+		case VertexAttributeFormat::Float4: size = 16; break;
+		case VertexAttributeFormat::UNorm8x4: size = 4; break;
+		}
+		if(size == 0 || attribute.offset > vertexLayout.stride || size > vertexLayout.stride - attribute.offset)
+		{
+			return fail("Indexed draw vertex attribute exceeds the stride.");
+		}
+	}
+	if(indexType != RenderGraphIndexType::UInt16 && indexType != RenderGraphIndexType::UInt32)
+	{
+		return fail("Unsupported indexed draw index type.");
+	}
+	const size_t indexSize = indexType == RenderGraphIndexType::UInt32 ? sizeof(uint32_t) : sizeof(uint16_t);
+	if(vertices.size() % vertexLayout.stride != 0 || indices.size() % indexSize != 0)
+	{
+		return fail("Indexed draw stream size is not aligned to its element size.");
+	}
+	const auto vertexCount = vertices.size() / vertexLayout.stride;
+	const auto indexCount = indices.size() / indexSize;
+	for(const auto& draw : draws)
+	{
+		if(draw.callback || draw.indexCount == 0) continue;
+		if(!draw.texture.isValid() || uniformData.empty())
+		{
+			return fail("Indexed draw requires a texture and uniform data.");
+		}
+		if(draw.firstIndex > indexCount || draw.indexCount > indexCount - draw.firstIndex)
+		{
+			return fail("Indexed draw exceeds the uploaded index range.");
+		}
+		if(!std::isfinite(draw.scissor.x) || !std::isfinite(draw.scissor.y)
+			|| !std::isfinite(draw.scissor.z) || !std::isfinite(draw.scissor.w))
+		{
+			return fail("Indexed draw has a non-finite scissor rectangle.");
+		}
+		for(size_t i = draw.firstIndex; i < static_cast<size_t>(draw.firstIndex) + draw.indexCount; i++)
+		{
+			uint32_t index = 0;
+			if(indexSize == sizeof(uint16_t))
+			{
+				uint16_t shortIndex;
+				std::memcpy(&shortIndex, indices.data() + i * indexSize, indexSize);
+				index = shortIndex;
+			}
+			else
+			{
+				std::memcpy(&index, indices.data() + i * indexSize, indexSize);
+			}
+			const int64_t vertex = static_cast<int64_t>(index) + draw.vertexOffset;
+			if(vertex < 0 || static_cast<uint64_t>(vertex) >= vertexCount)
+			{
+				return fail("Indexed draw references a vertex outside the uploaded stream.");
+			}
+		}
+	}
+	if(outMessage) outMessage->clear();
+	return true;
 }
 
 RenderGraphResourceHandle::RenderGraphResourceHandle()
@@ -508,7 +600,12 @@ RenderPath* RenderGraphPassContext::renderPath() const
 
 RenderQueue* RenderGraphPassContext::sceneQueue() const
 {
-	return m_graphContext ? m_graphContext->sceneQueue() : nullptr;
+	return m_pass && m_pass->sceneQueue ? m_pass->sceneQueue : (m_graphContext ? m_graphContext->sceneQueue() : nullptr);
+}
+
+Camera* RenderGraphPassContext::camera() const
+{
+	return m_pass ? m_pass->camera : nullptr;
 }
 
 const RenderGraphPassDesc* RenderGraphPassContext::pass() const
@@ -604,6 +701,21 @@ void RenderGraphPassContext::drawQueue(RenderQueue* renderQueue, MaterialTechniq
 void RenderGraphPassContext::drawSceneQueue(MaterialTechniqueType techniqueType)
 {
 	drawQueue(sceneQueue(), techniqueType);
+}
+
+void RenderGraphPassContext::bindTexture(uint32_t binding, RenderGraphResourceHandle handle)
+{
+	auto descriptor = materialDescriptor();
+	if(descriptor) descriptor->updateDescriptorByBinding(binding, texture(handle));
+}
+
+void RenderGraphPassContext::bindTextures(uint32_t binding, const std::vector<RenderGraphResourceHandle>& handles)
+{
+	auto descriptor = materialDescriptor();
+	if(!descriptor) return;
+	std::vector<DeviceTexture*> textures;
+	for(auto handle : handles) textures.emplace_back(texture(handle));
+	descriptor->updateDescriptorByBinding(binding, textures);
 }
 
 void RenderGraphPassContext::drawScreenQuad()
@@ -771,12 +883,15 @@ RenderGraphNode RenderGraph::addRasterNode(const RenderGraphRasterPassDesc& desc
 		cache->stage->setFrameBuffer(frameBuffer);
 	}
 	auto outputResource = colorAttachment(frameBufferResource);
+	if(!outputResource.isValid()) outputResource = depthAttachment(frameBufferResource);
 
 	RenderGraphPassDesc pass;
 	pass.name = desc.name;
 	pass.kind = RenderGraphPassKind::Raster;
 	pass.renderPass = cache->renderPass;
 	pass.compiledStage = cache->stage;
+	pass.sceneQueue = desc.sceneQueue;
+	pass.camera = desc.camera;
 	pass.opType = pass.renderPass ? pass.renderPass->getOpType() : desc.opType;
 	pass.frameBufferResource = frameBufferResource;
 	pass.outputResource = outputResource;
@@ -830,6 +945,66 @@ RenderGraphNode RenderGraph::addBlitNode(const std::string& name, RenderGraphRes
 	auto handle = addPass(pass);
 	setPassOutput(handle, destination);
 	return RenderGraphNode(this, handle, destination);
+}
+
+RenderGraphNode RenderGraph::addIndexedRasterNode(const RenderGraphRasterPassDesc& desc, RenderGraphIndexedDrawData data)
+{
+	auto indexedDesc = desc;
+	indexedDesc.vertexLayout = data.vertexLayout;
+	indexedDesc.dynamicScissor = true;
+	RenderGraphPassDesc accesses;
+	accesses.resourceAccesses = desc.resourceAccesses;
+	for(const auto& draw : data.draws)
+	{
+		if(draw.callback || draw.indexCount == 0) continue;
+		auto textureResource = resource(draw.texture);
+		const auto type = textureResource && textureResource->desc.role == TextureRoleEnum::AS_DEPTH
+			? RenderGraphResourceAccessType::ReadDepth : RenderGraphResourceAccessType::ReadColor;
+		bool declared = false;
+		for(const auto& access : accesses.resourceAccesses)
+		{
+			declared = declared || (access.resource.index() == draw.texture.index() && access.type == type);
+		}
+		if(!declared)
+		{
+			if(type == RenderGraphResourceAccessType::ReadDepth) accesses.readDepth(draw.texture);
+			else accesses.readColor(draw.texture);
+		}
+	}
+	indexedDesc.resourceAccesses = std::move(accesses.resourceAccesses);
+	auto node = addRasterNode(indexedDesc);
+	auto& pass = m_passes[node.passHandle().index()];
+	pass.indexedDrawData = std::make_shared<RenderGraphIndexedDrawData>(std::move(data));
+	auto cache = findRasterPassCache(rasterPassCacheKey(indexedDesc));
+	if(cache && !cache->vertexBuffer)
+	{
+		auto backend = Engine::shared()->getRenderBackEnd();
+		cache->vertexBuffer = backend->createBuffer_imp();
+		cache->indexBuffer = backend->createBuffer_imp();
+		cache->uniformBuffer = backend->createBuffer_imp();
+		if(cache->vertexBuffer) cache->vertexBuffer->init(DeviceBufferType::Vertex);
+		if(cache->indexBuffer) cache->indexBuffer->init(DeviceBufferType::Index);
+		if(cache->uniformBuffer) cache->uniformBuffer->init(DeviceBufferType::Uniform);
+	}
+	if(cache)
+	{
+		pass.vertexBuffer = cache->vertexBuffer;
+		pass.indexBuffer = cache->indexBuffer;
+		pass.uniformBuffer = cache->uniformBuffer;
+	}
+	return node;
+}
+
+RenderGraphNode RenderGraph::addPresentNode(const std::string& name, RenderGraphResourceHandle handle)
+{
+	RenderGraphPassDesc pass;
+	pass.name = name;
+	pass.kind = RenderGraphPassKind::Present;
+	pass.resourceAccesses.emplace_back(makeAccess(handle, RenderGraphResourceAccessType::Present,
+		RenderGraphResourceLayout::Present, RenderGraphResourceLayout::Present));
+	auto passHandle = addPass(pass);
+	setPassOutput(passHandle, handle);
+	return RenderGraphNode(this, passHandle, handle);
 }
 
 RenderGraphNode RenderGraph::addExternalNode(const RenderGraphPassDesc& desc)
@@ -939,7 +1114,8 @@ RenderGraph::RasterPassCacheEntry& RenderGraph::createRasterPassCache(const std:
 		stage->setName(desc.name);
 		if(desc.material)
 		{
-			stage->createSinglePipeline(desc.material);
+			if(desc.vertexLayout.stride != 0) stage->createSinglePipeline(desc.material, desc.vertexLayout, desc.dynamicScissor);
+			else stage->createSinglePipeline(desc.material);
 		}
 	}
 
@@ -1099,6 +1275,54 @@ void RenderGraph::registerFrameBufferAttachments(RenderGraphResourceHandle frame
 			colorIndex++;
 		}
 	}
+}
+
+RenderGraphResourceHandle RenderGraph::importSwapChainFrameBuffer(uint32_t imageIndex)
+{
+	auto backend = Engine::shared()->getRenderBackEnd();
+	auto frameBuffer = backend ? backend->getSwapChainFrameBuffer(imageIndex) : nullptr;
+	if(!frameBuffer) return RenderGraphResourceHandle::invalid();
+	RenderGraphResourceDesc desc;
+	desc.name = "Swapchain." + std::to_string(imageIndex);
+	desc.size = frameBuffer->getSize();
+	desc.initialColorLayout = RenderGraphResourceLayout::Present;
+	auto handle = importFrameBuffer(desc, frameBuffer);
+	for(auto color : resource(handle)->colorAttachments) resource(color)->isSwapChainImage = true;
+	return handle;
+}
+
+RenderGraphResourceHandle RenderGraph::importSampledTexture(const std::string& name, DeviceTexture* texture)
+{
+	auto existing = findTextureResource(texture);
+	if(existing.isValid()) return existing;
+	RenderGraphResourceDesc desc;
+	desc.name = name;
+	if(texture)
+	{
+		desc.format = texture->m_metaInfo.m_imageFormat;
+		desc.role = texture->getTextureRole();
+		desc.usage = texture->getTextureUsage();
+		desc.size = vec2(texture->m_metaInfo.width, texture->m_metaInfo.height);
+	}
+	desc.initialColorLayout = RenderGraphResourceLayout::ShaderRead;
+	desc.initialDepthLayout = RenderGraphResourceLayout::DepthRead;
+	return importTexture(desc, texture);
+}
+
+RenderGraphResourceHandle RenderGraph::createTexture(const RenderGraphResourceDesc& desc, const unsigned char* pixels)
+{
+	if(!pixels || desc.size.x <= 0 || desc.size.y <= 0) return RenderGraphResourceHandle::invalid();
+	auto texture = Engine::shared()->getRenderBackEnd()->loadTextureRaw_imp(pixels,
+		static_cast<int>(desc.size.x), static_cast<int>(desc.size.y), desc.format, 0);
+	auto initializedDesc = desc;
+	initializedDesc.initialColorLayout = RenderGraphResourceLayout::ShaderRead;
+	auto handle = registerTextureResource(initializedDesc, texture, false);
+	if(auto owned = resource(handle))
+	{
+		owned->ownsTexture = true;
+		owned->contentsInitialized = true;
+	}
+	return handle;
 }
 
 RenderGraphResourceHandle RenderGraph::importTexture(const RenderGraphResourceDesc& desc, DeviceTexture* texture)
@@ -1372,6 +1596,9 @@ void RenderGraph::invalidateRasterPassCache(RenderGraphResourceHandle frameBuffe
 		}
 		delete cache->stage;
 		cache->stage = nullptr;
+		delete cache->vertexBuffer;
+		delete cache->indexBuffer;
+		delete cache->uniformBuffer;
 		if(cache->ownsRenderPass)
 		{
 			delete cache->renderPass;
@@ -1593,6 +1820,21 @@ bool RenderGraph::validate(std::string* outMessage) const
 			stream << "RenderGraph contains an unnamed pass.\n";
 			isValid = false;
 		}
+		if(pass.indexedDrawData)
+		{
+			if(!pass.compiledStage || !pass.compiledStage->getSinglePipeline()
+				|| !pass.vertexBuffer || !pass.indexBuffer || !pass.uniformBuffer)
+			{
+				stream << "Indexed raster pass `" << pass.name << "` requires a material pipeline and upload buffers.\n";
+				isValid = false;
+			}
+			std::string drawMessage;
+			if(!pass.indexedDrawData->validate(&drawMessage))
+			{
+				stream << "Pass `" << pass.name << "`: " << drawMessage << "\n";
+				isValid = false;
+			}
+		}
 		if(pass.kind == RenderGraphPassKind::Raster)
 		{
 			auto target = resource(pass.frameBufferResource);
@@ -1715,6 +1957,11 @@ bool RenderGraph::validate(std::string* outMessage) const
 			{
 				stream << "Pass `" << pass.name << "` uses depth access for color texture `"
 					<< graphResource->desc.name << "`.\n";
+				isValid = false;
+			}
+			if(access.type == RenderGraphResourceAccessType::Present && !graphResource->isSwapChainImage)
+			{
+				stream << "Pass `" << pass.name << "` presents a resource that is not a swapchain image.\n";
 				isValid = false;
 			}
 			const auto requiredState = beforeStateForAccess(access);
@@ -2183,7 +2430,9 @@ bool RenderGraph::execute(RenderGraphContext& context, std::string* outMessage)
 		switch(pass.kind)
 		{
 		case RenderGraphPassKind::Raster:
-			executeRasterPass(context, pass);
+			if(!executeRasterPass(context, pass, executionMessage)) return false;
+			break;
+		case RenderGraphPassKind::Present:
 			break;
 		case RenderGraphPassKind::Compute:
 			executeComputePass(context, pass);
@@ -2231,6 +2480,10 @@ void RenderGraph::releasePassCache()
 	{
 		delete cache.stage;
 		cache.stage = nullptr;
+		delete cache.vertexBuffer;
+		delete cache.indexBuffer;
+		delete cache.uniformBuffer;
+		cache.vertexBuffer = cache.indexBuffer = cache.uniformBuffer = nullptr;
 	}
 	for(auto& cache : m_computePassCache)
 	{
@@ -2241,6 +2494,15 @@ void RenderGraph::releasePassCache()
 
 void RenderGraph::releaseOwnedResources()
 {
+	for(auto& graphResource : m_resources)
+	{
+		if(graphResource.ownsTexture)
+		{
+			delete graphResource.texture;
+			graphResource.texture = nullptr;
+			graphResource.ownsTexture = false;
+		}
+	}
 	for(auto& graphResource : m_resources)
 	{
 		if(graphResource.kind == RenderGraphResourceKind::FrameBuffer && graphResource.ownsFrameBuffer)
@@ -2272,27 +2534,74 @@ void RenderGraph::releaseOwnedResources()
 	m_computePassCache.clear();
 }
 
-void RenderGraph::executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass)
+bool RenderGraph::executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass, std::string& message)
 {
 	auto stage = pass.compiledStage;
-	if(!stage)
+	if(!stage) return false;
+	if(pass.indexedDrawData)
 	{
-		return;
+		const auto& data = *pass.indexedDrawData;
+		if(!pass.vertexBuffer || !pass.indexBuffer || !pass.uniformBuffer)
+		{
+			message += "Indexed raster pass `" + pass.name + "` has no upload buffers.\n";
+			return false;
+		}
+		if(!data.vertices.empty()) pass.vertexBuffer->allocate(const_cast<uint8_t*>(data.vertices.data()), data.vertices.size());
+		if(!data.indices.empty()) pass.indexBuffer->allocate(const_cast<uint8_t*>(data.indices.data()), data.indices.size());
+		if(!data.uniformData.empty()) pass.uniformBuffer->allocate(const_cast<uint8_t*>(data.uniformData.data()), data.uniformData.size());
 	}
-
+	stage->setViewCamera(pass.camera);
 	stage->prepare(context.cmd());
 	stage->beginRenderPass();
 	RenderGraphPassContext passContext(&context, &pass);
-	if(pass.execute)
-	{
-		pass.execute(passContext);
-	}
+	if(pass.execute) pass.execute(passContext);
+	const bool success = !pass.indexedDrawData || executeIndexedDraws(context, pass, message);
 	stage->endRenderPass();
 	stage->finish();
-	if(context.renderPath())
+	if(context.renderPath()) context.renderPath()->addRenderStage(stage);
+	return success;
+}
+
+bool RenderGraph::executeIndexedDraws(RenderGraphContext& context, RenderGraphPassDesc& pass, std::string& message)
+{
+	auto stage = pass.compiledStage;
+	auto pipeline = stage->getSinglePipeline();
+	if(!pipeline)
 	{
-		context.renderPath()->addRenderStage(stage);
+		message += "Indexed raster pass `" + pass.name + "` requires a material pipeline.\n";
+		return false;
 	}
+	const auto& data = *pass.indexedDrawData;
+	const auto size = frameBuffer(pass.frameBufferResource)->getSize();
+	for(const auto& draw : data.draws)
+	{
+		if(draw.callback)
+		{
+			draw.callback();
+			continue;
+		}
+		if(draw.indexCount == 0) continue;
+		const float left = (std::max)(0.0f, draw.scissor.x);
+		const float top = (std::max)(0.0f, draw.scissor.y);
+		const float right = (std::min)(size.x, draw.scissor.x + draw.scissor.z);
+		const float bottom = (std::min)(size.y, draw.scissor.y + draw.scissor.w);
+		if(right <= left || bottom <= top) continue;
+		auto descriptor = pipeline->giveItemWiseDescriptorSet();
+		if(!descriptor || !texture(draw.texture))
+		{
+			message += "Indexed raster pass `" + pass.name + "` cannot bind a draw resource.\n";
+			return false;
+		}
+		descriptor->updateDescriptorByBinding(data.uniformBinding, pass.uniformBuffer, 0, data.uniformData.size());
+		descriptor->updateDescriptorByBinding(data.textureBinding, texture(draw.texture));
+		stage->bindPipeline(pipeline);
+		stage->bindSinglePipelineDescriptor(descriptor);
+		stage->bindVBO(pass.vertexBuffer);
+		stage->bindIBO(pass.indexBuffer, data.indexType == RenderGraphIndexType::UInt32);
+		stage->setScissor(vec4(left, top, right - left, bottom - top));
+		stage->drawElement(draw.indexCount, 1, draw.firstIndex, draw.vertexOffset, 0);
+	}
+	return true;
 }
 
 void RenderGraph::executeComputePass(RenderGraphContext& context, RenderGraphPassDesc& pass)
@@ -2399,7 +2708,12 @@ bool RenderGraph::applyAutomaticTransitions(RenderGraphContext& context, const R
 			return false;
 		}
 
-		if(!screenColorAccess && needsStateBarrier(currentState, nextState, true))
+		const bool targetColor = target && std::any_of(target->colorAttachments.begin(), target->colorAttachments.end(),
+			[&](RenderGraphResourceHandle color) { return color.index() == access.resource.index(); });
+		const bool discardSwapChainContents = targetColor && graphResource->isSwapChainImage
+			&& pass.kind == RenderGraphPassKind::Raster && pass.opType == DeviceRenderPass::OpType::LOADCLEAR_AND_STORE
+			&& access.type == RenderGraphResourceAccessType::WriteColor;
+		if(!screenColorAccess && !discardSwapChainContents && needsStateBarrier(currentState, nextState, true))
 		{
 			for(auto texture : textures)
 			{

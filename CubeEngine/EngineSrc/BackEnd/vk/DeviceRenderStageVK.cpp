@@ -3,6 +3,7 @@
 #include "DeviceTextureVK.h"
 #include "DeviceFrameBufferVK.h"
 #include "DeviceRenderStageVK.h"
+#include "Rendering/VertexLayout.h"
 #include "EngineSrc/Mesh/VertexData.h"
 #include "Rendering/RenderCommand.h"
 #include "BackEnd/vk/DeviceBufferVK.h"
@@ -106,6 +107,7 @@ namespace tzw
                 m_activeMatList.insert(currDeviceMat);
 
                 //update material-wise parameter.
+                currDeviceMat->setView(m_viewCamera, getFrameBuffer()->getSize());
                 currDeviceMat->updateUniform();
                 currDeviceMat->updateMaterialDescriptorSet();
             }
@@ -285,6 +287,7 @@ namespace tzw
         if(m_singlePipeline)
         {
             vkCmdBindPipeline(command->getVK(), VK_PIPELINE_BIND_POINT_GRAPHICS, static_cast<DevicePipelineVK*>(m_singlePipeline)->getPipeline());
+            m_soloMaterial->setView(m_viewCamera, getFrameBuffer()->getSize());
             m_soloMaterial->updateUniform();
             static_cast<DevicePipelineVK*>(m_singlePipeline)->resetItemWiseDescritporSet();
         }
@@ -312,6 +315,35 @@ namespace tzw
         VKRenderBackEnd::shared()->endDebugRegion(command->getVK());
     }
 
+    void DeviceRenderStageVK::createSinglePipeline(MaterialInstance* material, const VertexLayout& layout, bool dynamicScissor)
+    {
+        DeviceVertexInput vertexInput{};
+        vertexInput.stride = static_cast<int>(layout.stride);
+        for(const auto& attribute : layout.attributes)
+        {
+            VkFormat format = VK_FORMAT_UNDEFINED;
+            switch(attribute.format)
+            {
+            case VertexAttributeFormat::Float2: format = VK_FORMAT_R32G32_SFLOAT; break;
+            case VertexAttributeFormat::Float3: format = VK_FORMAT_R32G32B32_SFLOAT; break;
+            case VertexAttributeFormat::Float4: format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
+            case VertexAttributeFormat::UNorm8x4: format = VK_FORMAT_R8G8B8A8_UNORM; break;
+            }
+            vertexInput.addVertexAttributeDesc({format, static_cast<int>(attribute.offset)});
+        }
+        DeviceVertexInput instanceInput{};
+        m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
+        m_singlePipeline->setDynamicState(dynamicScissor ? PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR : PIPELINE_DYNAMIC_STATE_FLAG_NONE);
+        int colorCount = 0;
+        for(const auto& attachment : getRenderPass()->getAttachmentList())
+        {
+            colorCount += attachment.isDepthStencilAttachment ? 0 : 1;
+        }
+        m_singlePipeline->init(getFrameBuffer()->getSize(), material, getRenderPass(), vertexInput, false, instanceInput, colorCount);
+        m_soloMaterial = VKRenderBackEnd::shared()->createDeviceMaterial_imp();
+        m_soloMaterial->init(material);
+    }
+
     void DeviceRenderStageVK::bindVBO(DeviceBuffer* buf)
     {
         VkBuffer vertex_buffers[1] = { static_cast<DeviceBufferVK *>(buf)->getBuffer() };
@@ -320,10 +352,10 @@ namespace tzw
         vkCmdBindVertexBuffers(command->getVK(), 0, 1, vertex_buffers, vertex_offset);
     }
 
-    void DeviceRenderStageVK::bindIBO(DeviceBuffer* buf)
+    void DeviceRenderStageVK::bindIBO(DeviceBuffer* buf, bool use32BitIndices)
     {
 		DeviceRenderCommandVK * command = static_cast<DeviceRenderCommandVK*>(m_deviceRenderCommand);
-        vkCmdBindIndexBuffer(command->getVK(), static_cast<DeviceBufferVK *>(buf)->getBuffer(), 0, VK_INDEX_TYPE_UINT16);
+        vkCmdBindIndexBuffer(command->getVK(), static_cast<DeviceBufferVK *>(buf)->getBuffer(), 0, use32BitIndices ? VK_INDEX_TYPE_UINT32 : VK_INDEX_TYPE_UINT16);
     }
 
     void DeviceRenderStageVK::setScissor(vec4 scissorRect)

@@ -1,10 +1,12 @@
 #pragma once
 #include <string>
+#include "Math/vec2.h"
 #include "Rendering/ImageFormat.h"
 #include "Technique/MaterialTechnique.h"
 
 namespace tzw
 {
+class Camera;
 class MaterialInstance;
 class ShadingParams;
 class DeviceDescriptor;
@@ -28,7 +30,10 @@ public:
 		return m_shadingParams;
 	}
 	void setShadingParams(ShadingParams * params){ m_shadingParams = params;}
+void setView(Camera* camera, vec2 size) { m_viewCamera = camera; m_viewSize = size; }
 protected:
+	Camera* m_viewCamera = nullptr;
+	vec2 m_viewSize = vec2(0, 0);
 	MaterialInstance * m_mat = nullptr;
 	ShadingParams * m_shadingParams = nullptr;
 };

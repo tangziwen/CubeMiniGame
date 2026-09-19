@@ -71,6 +71,7 @@ namespace tzw
 
 	void DeviceMaterialVK::updateUniform()
 	{
+        auto viewCamera = m_viewCamera ? m_viewCamera : (g_GetCurrScene() ? g_GetCurrScene()->defaultCamera() : nullptr);
         DeviceShaderCollectionVK * shader = m_shader;
         if(!shader->findLocationInfo("t_shaderUnifom")) return;
         auto materialUniformBufferInfo = shader->getLocationInfo("t_shaderUnifom");
@@ -131,7 +132,7 @@ namespace tzw
 		                    case TechniqueVar::SemanticType::NO_SEMANTIC: break;
                             case TechniqueVar::SemanticType::WIN_SIZE:
 		                    {
-                                vec2 winSize = Engine::shared()->winSize();
+                                vec2 winSize = m_viewSize.x > 0 && m_viewSize.y > 0 ? m_viewSize : Engine::shared()->winSize();
                                 memcpy(offsetDst, &winSize, blockMember.size);
                             }
 		                    break;
@@ -142,9 +143,9 @@ namespace tzw
 		                    case TechniqueVar::SemanticType::InvertedProj: break;
 		                    case TechniqueVar::SemanticType::CamPos:
 		                    {
-                                if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+                                if(viewCamera)
                                 {
-                                    vec3 worldPos = g_GetCurrScene()->defaultCamera()->getWorldPos();
+                                    vec3 worldPos = viewCamera->getWorldPos();
                                     memcpy(offsetDst, &worldPos, blockMember.size);
                                 }
 
@@ -152,10 +153,9 @@ namespace tzw
 		                    break;
                             case TechniqueVar::SemanticType::InvertedViewProj:
 		                    {
-                                if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+                                if(viewCamera)
                                 {
-			                        auto currScene = g_GetCurrScene();
-			                        auto cam = currScene->defaultCamera();
+			                        auto cam = viewCamera;
                                     auto invertedMat = cam->getViewProjectionMatrix().inverted();
                                     memcpy(offsetDst, invertedMat.data(), blockMember.size);
                                 }
@@ -164,9 +164,9 @@ namespace tzw
 		                    break;
 		                    case TechniqueVar::SemanticType::CamDir:
 		                    {
-                                if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+                                if(viewCamera)
                                 {
-                                    vec3 camDir = g_GetCurrScene()->defaultCamera()->getForward();
+                                    vec3 camDir = viewCamera->getForward();
                                     memcpy(offsetDst, &camDir, blockMember.size);
                                 }
 		                    }
@@ -193,10 +193,9 @@ namespace tzw
 		                    break;
 						    case TechniqueVar::SemanticType::CamInfo:
 						    {
-                                if(g_GetCurrScene())
+                                if(viewCamera)
                                 {
-							    auto currScene = g_GetCurrScene();
-							    auto cam = currScene->defaultCamera();
+							    auto cam = viewCamera;
 							    vec4 camInfo(cam->getNear(), cam->getFar(), cam->getFov(), cam->getAspect());
         					    memcpy(offsetDst, &camInfo, blockMember.size);
                                 }

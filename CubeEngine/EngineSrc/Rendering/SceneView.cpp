@@ -55,8 +55,8 @@ RenderGraphResourceDesc makeGraphResourceDesc(const char* name, ImageFormat form
 }
 }
 
-SceneView::SceneView()
-	: RenderView(RenderViewType::Scene)
+SceneView::SceneView(RenderGraph& graph, Camera* camera, int viewIndex, vec2 size)
+	: RenderView(graph, RenderViewType::Scene, viewIndex)
 	, m_renderSettings(nullptr)
 	, m_directLightMat(nullptr)
 	, m_pointLightMat(nullptr)
@@ -64,17 +64,17 @@ SceneView::SceneView()
 	, m_hbaoMat(nullptr)
 	, m_ssrMat(nullptr)
 	, m_fogMat(nullptr)
-	, m_textureToScreenMat(nullptr)
 	, m_sceneCopyTex(nullptr)
 	, m_outputTexture(nullptr)
+	, m_viewCamera(camera)
+	, m_viewSize(size)
 {
 }
 
 void SceneView::init()
 {
 	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-	auto size = Engine::shared()->winSize();
-	m_renderGraph.clearResources();
+	auto size = m_viewSize.x > 0 && m_viewSize.y > 0 ? m_viewSize : Engine::shared()->winSize();
 
 	DeviceAttachmentInfoList gBufferAttachments = {
 		{ImageFormat::R8G8B8A8, false},
@@ -192,17 +192,6 @@ void SceneView::initRenderGraphResources()
 		m_tsaaColorResources[index] = m_renderGraph.colorAttachment(m_tsaaFrameBufferResources[index]);
 		m_tsaaDepthResources[index] = m_renderGraph.depthAttachment(m_tsaaFrameBufferResources[index]);
 	}
-
-	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-	for(int i = 0; i < 2; i++)
-	{
-		m_screenFrameBufferResources[i] = m_renderGraph.importFrameBuffer(
-			makeGraphResourceDesc("ScreenFrameBuffer", ImageFormat::Surface_Format, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-				RenderGraphResourceLayout::Present),
-			backEnd->createSwapChainFrameBuffer(i));
-		m_screenColorResources[i] = m_renderGraph.colorAttachment(m_screenFrameBufferResources[i]);
-		m_screenDepthResources[i] = m_renderGraph.depthAttachment(m_screenFrameBufferResources[i]);
-	}
 }
 
 void SceneView::initRenderGraphMaterials()
@@ -258,34 +247,17 @@ void SceneView::initRenderGraphMaterials()
 	m_fogMat = new MaterialInstance();
 	m_fogMat->loadFromMaterial("GlobalFog");
 	MaterialPool::shared()->addMaterial("GlobalFog", m_fogMat);
-
-	m_textureToScreenMat = new MaterialInstance();
-	m_textureToScreenMat->loadFromMaterial("TextureToScreen");
 }
 
-bool SceneView::buildRenderGraph(int imageIndex)
+RenderGraphNode SceneView::buildRenderGraph()
 {
-	m_renderGraph.beginBuild();
 	RenderSettings defaultSettings;
 	const auto& settings = m_renderSettings ? *m_renderSettings : defaultSettings;
 	m_outputTexture = nullptr;
 	m_shadowTextureResources.clear();
-	for(size_t index = 0; index < m_shadowTextures.size(); index++)
+	for(const auto& node : m_shadowNodes)
 	{
-		auto texture = m_shadowTextures[index];
-		if(!texture)
-		{
-			continue;
-		}
-		RenderGraphResourceDesc shadowDesc;
-		shadowDesc.name = "ShadowDepth." + std::to_string(index);
-		shadowDesc.format = texture->m_metaInfo.m_imageFormat;
-		shadowDesc.role = TextureRoleEnum::AS_DEPTH;
-		shadowDesc.usage = texture->getTextureUsage();
-		shadowDesc.size = vec2(texture->m_metaInfo.width, texture->m_metaInfo.height);
-		shadowDesc.imported = true;
-		shadowDesc.initialDepthLayout = RenderGraphResourceLayout::DepthRead;
-		m_shadowTextureResources.emplace_back(m_renderGraph.importTexture(shadowDesc, texture));
+		m_shadowTextureResources.emplace_back(node.output("depth"));
 	}
 
 	DeviceAttachmentInfoList sceneLoadAttachments = {
@@ -315,9 +287,11 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	};
 
 	RenderGraphRasterPassDesc gBufferPass;
+	gBufferPass.camera = camera();
 	gBufferPass.name = "GBufferPass";
 	gBufferPass.frameBufferResource = m_gBufferFrameBufferResource;
 	gBufferPass.drawPassMask = DrawPassType::GBuffer;
+	gBufferPass.sceneQueue = renderQueue();
 	gBufferPass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
@@ -332,6 +306,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		.withOutput("depth", m_gBufferDepthResource);
 
 	RenderGraphRasterPassDesc deferredLightingPass;
+	deferredLightingPass.camera = camera();
 	deferredLightingPass.name = "Deferred Sun Lighting Stage";
 	deferredLightingPass.frameBufferResource = m_sceneFrameBufferResource;
 	deferredLightingPass.material = m_directLightMat;
@@ -351,9 +326,11 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		executeDeferredLightingPass(graphContext);
 	}).withOutput(m_sceneColorResource)
 		.withOutput("sceneColor", m_sceneColorResource);
+	for(const auto& shadow : m_shadowNodes) deferredLightingNode.dependsOn(shadow);
 	auto sceneChainNode = gBufferNode.connect(deferredLightingNode);
 
 	RenderGraphRasterPassDesc pointLightingPass;
+	pointLightingPass.camera = camera();
 	pointLightingPass.name = "Deferred Point Light Stage";
 	pointLightingPass.attachments = sceneLoadAttachments;
 	pointLightingPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
@@ -373,11 +350,13 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	auto deferredSceneNode = sceneChainNode;
 
 	RenderGraphRasterPassDesc afterDepthClearPass;
+	afterDepthClearPass.camera = camera();
 	afterDepthClearPass.name = "AfterDepthClearPass";
 	afterDepthClearPass.attachments = sceneLoadAttachments;
 	afterDepthClearPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
 	afterDepthClearPass.frameBufferResource = m_sceneFrameBufferResource;
 	afterDepthClearPass.drawPassMask = DrawPassType::AfterDepthClear;
+	afterDepthClearPass.sceneQueue = renderQueue();
 	afterDepthClearPass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
@@ -394,11 +373,13 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	sceneChainNode = afterDepthClearNode.connect(pointLightingNode);
 
 	RenderGraphRasterPassDesc transparentPass;
+	transparentPass.camera = camera();
 	transparentPass.name = "TransparentPass";
 	transparentPass.attachments = sceneLoadAttachments;
 	transparentPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
 	transparentPass.frameBufferResource = m_sceneFrameBufferResource;
 	transparentPass.drawPassMask = DrawPassType::Transparent;
+	transparentPass.sceneQueue = renderQueue();
 	transparentPass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
@@ -413,6 +394,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	sceneChainNode = sceneChainNode.connect(transparentNode);
 
 	RenderGraphRasterPassDesc skyPass;
+	skyPass.camera = camera();
 	skyPass.name = "Sky Stage";
 	skyPass.attachments = sceneLoadAttachments;
 	skyPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
@@ -433,11 +415,13 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	sceneChainNode = sceneChainNode.connect(skyNode);
 
 	RenderGraphRasterPassDesc debugWireframePass;
+	debugWireframePass.camera = camera();
 	debugWireframePass.name = "Debug Wireframe Pass";
 	debugWireframePass.attachments = sceneLoadAttachments;
 	debugWireframePass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
 	debugWireframePass.frameBufferResource = m_sceneFrameBufferResource;
 	debugWireframePass.drawPassMask = DrawPassType::DebugLayer;
+	debugWireframePass.sceneQueue = renderQueue();
 	debugWireframePass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
@@ -456,6 +440,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	if(settings.ssrEnabled())
 	{
 		RenderGraphRasterPassDesc hbaoPass;
+		hbaoPass.camera = camera();
 		hbaoPass.name = "HBAO";
 		hbaoPass.frameBufferResource = m_hbaoFrameBufferResource;
 		hbaoPass.material = m_hbaoMat;
@@ -485,6 +470,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	if(settings.ssrEnabled())
 	{
 		RenderGraphRasterPassDesc ssrPass;
+		ssrPass.camera = camera();
 		ssrPass.name = "SSR";
 		ssrPass.attachments = sceneLoadAttachments;
 		ssrPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
@@ -513,6 +499,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	if(settings.ssgiEnabled())
 	{
 		RenderGraphRasterPassDesc ssgiPass;
+		ssgiPass.camera = camera();
 		ssgiPass.name = "SSGI";
 		ssgiPass.attachments = sceneLoadAttachments;
 		ssgiPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
@@ -542,6 +529,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	if(settings.fogEnabled())
 	{
 		RenderGraphRasterPassDesc fogPass;
+		fogPass.camera = camera();
 		fogPass.name = "Fog";
 		fogPass.attachments = sceneLoadAttachments;
 		fogPass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
@@ -628,6 +616,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		}
 
 		RenderGraphRasterPassDesc bloomCompositePass;
+		bloomCompositePass.camera = camera();
 		bloomCompositePass.name = "Bloom Composite";
 		bloomCompositePass.attachments = sceneLoadAttachments;
 		bloomCompositePass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
@@ -664,6 +653,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		if(!m_tsaaHistoryInitialized[historyIndex])
 		{
 			RenderGraphRasterPassDesc historyClearPass;
+			historyClearPass.camera = camera();
 			historyClearPass.name = "TSAA History Clear " + std::to_string(historyIndex);
 			historyClearPass.frameBufferResource = m_tsaaFrameBufferResources[historyIndex];
 			RenderGraphPassDesc accesses;
@@ -674,6 +664,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 				.withOutput(tsaaHistoryColor);
 		}
 		RenderGraphRasterPassDesc tsaaPass;
+		tsaaPass.camera = camera();
 		tsaaPass.name = "TSAA";
 		tsaaPass.frameBufferResource = tsaaTargetResource;
 		tsaaPass.material = m_tsaa.material();
@@ -709,9 +700,11 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	if(m_outlinePass.hasOutlineCommands(renderQueue()) && m_outlineOutputResource.isValid())
 	{
 		RenderGraphRasterPassDesc outlineMaskPass;
+		outlineMaskPass.camera = camera();
 		outlineMaskPass.name = "Outline Mask";
 		outlineMaskPass.frameBufferResource = m_outlineMaskFrameBufferResource;
 		outlineMaskPass.drawPassMask = DrawPassType::OutlineMask;
+		outlineMaskPass.sceneQueue = renderQueue();
 		RenderGraphPassDesc maskAccesses;
 		maskAccesses.writeColor(m_outlineMaskColorResource, RenderGraphResourceLayout::ShaderRead)
 			.writeDepth(m_outlineMaskDepthResource, RenderGraphResourceLayout::DepthRead);
@@ -723,6 +716,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 			.dependsOn(gBufferNode);
 
 		RenderGraphRasterPassDesc outlineCompositePass;
+		outlineCompositePass.camera = camera();
 		outlineCompositePass.name = "Outline Composite";
 		outlineCompositePass.frameBufferResource = m_outlineFrameBufferResource;
 		outlineCompositePass.material = m_outlinePass.compositeMaterial();
@@ -750,46 +744,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	}
 	m_outputTexture = graphTexture(finalSceneResource);
 
-	int screenIndex = imageIndex % 2;
-	if(screenIndex < 0)
-	{
-		screenIndex = 0;
-	}
-	auto screenFrameBufferResource = m_screenFrameBufferResources[screenIndex];
-	RenderGraphRasterPassDesc textureToScreenPass;
-	textureToScreenPass.name = "Texture To Screen Pass";
-	textureToScreenPass.attachments = {
-		{ImageFormat::Surface_Format, false},
-		{ImageFormat::D24_S8, true},
-	};
-	textureToScreenPass.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
-	textureToScreenPass.isOutputToScreen = true;
-	textureToScreenPass.frameBufferResource = screenFrameBufferResource;
-	textureToScreenPass.material = m_textureToScreenMat;
-	{
-		RenderGraphPassDesc accesses;
-		if(finalSceneResource.isValid())
-		{
-			accesses.readColor(finalSceneResource);
-		}
-		accesses.writeColor(m_screenColorResources[screenIndex], RenderGraphResourceLayout::Present);
-		if(m_screenDepthResources[screenIndex].isValid())
-		{
-			accesses.writeDepth(m_screenDepthResources[screenIndex]);
-		}
-		textureToScreenPass.resourceAccesses = accesses.resourceAccesses;
-	}
-	auto textureToScreenNode = m_renderGraph.addFullscreenNode(textureToScreenPass, [this](RenderGraphPassContext& graphContext)
-	{
-		executeTextureToScreenPass(graphContext);
-	}).dependsOn(finalOutputNode);
-	std::string compileMessage;
-	if(!m_renderGraph.compile(textureToScreenNode, &compileMessage))
-	{
-		tlogError("SceneView RenderGraph compile failed:\n%s", compileMessage.c_str());
-		return false;
-	}
-	return true;
+	return finalOutputNode;
 }
 
 DeviceFrameBuffer* SceneView::graphFrameBuffer(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext) const
@@ -850,29 +805,13 @@ size_t SceneView::bindGBufferTextures(DeviceDescriptor* descriptor, int firstBin
 void SceneView::collect()
 {
 	auto currScene = g_GetCurrScene();
-	setCamera(currScene ? currScene->defaultCamera() : nullptr);
+	setCamera(m_viewCamera ? m_viewCamera : (currScene ? currScene->defaultCamera() : nullptr));
 	SceneCuller::shared()->collect(this);
 	applyCameraToCommands(camera());
 }
 
-void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath)
+void SceneView::onGraphExecuted()
 {
-	draw(cmd, renderPath, 0);
-}
-
-void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath, int imageIndex)
-{
-	if(!buildRenderGraph(imageIndex))
-	{
-		return;
-	}
-	RenderGraphContext graphContext(cmd, renderPath, renderQueue());
-	std::string executionMessage;
-	if(!m_renderGraph.execute(graphContext, &executionMessage))
-	{
-		tlogError("SceneView RenderGraph execute failed:\n%s", executionMessage.c_str());
-		return;
-	}
 	RenderSettings defaultSettings;
 	const auto& settings = m_renderSettings ? *m_renderSettings : defaultSettings;
 	if(settings.aaEnabled())
@@ -902,7 +841,7 @@ void SceneView::executeDeferredLightingPass(RenderGraphPassContext& graphContext
 	material->updateUniformSingle("TU_ShadowMapEnd", shadowEnd, sizeof(shadowEnd));
 
 	bindGBufferTextures(descriptorSet, 1, &graphContext);
-	descriptorSet->updateDescriptorByBinding(8, m_shadowTextures);
+	graphContext.bindTextures(8, m_shadowTextureResources);
 	graphContext.bindSinglePipelineDescriptor();
 	graphContext.drawScreenQuad();
 }
@@ -1086,27 +1025,17 @@ void SceneView::executeTSAAPass(RenderGraphPassContext& graphContext)
 	m_tsaa.executeResolve(graphContext, historyFrame, sceneColor, gBufferDepth);
 }
 
-void SceneView::executeTextureToScreenPass(RenderGraphPassContext& graphContext)
-{
-	auto descriptorSet = graphContext.materialDescriptor();
-	if(!descriptorSet || !m_outputTexture)
-	{
-		return;
-	}
-	descriptorSet->updateDescriptorByBinding(1, m_outputTexture);
-	graphContext.bindSinglePipelineDescriptor();
-	graphContext.drawScreenQuad();
-}
-
 void SceneView::preTick(const RenderSettings& settings)
 {
+	auto scene = g_GetCurrScene();
+	setCamera(m_viewCamera ? m_viewCamera : (scene ? scene->defaultCamera() : nullptr));
 	if(settings.aaEnabled())
 	{
-		m_tsaa.preTick();
+		m_tsaa.preTick(camera());
 	}
-	else if(g_GetCurrScene() && g_GetCurrScene()->defaultCamera())
+	else if(camera())
 	{
-		g_GetCurrScene()->defaultCamera()->setOffsetPixel(0, 0);
+		camera()->setOffsetPixel(0, 0);
 	}
 	if(settings.ssgiEnabled())
 	{
@@ -1119,9 +1048,9 @@ void SceneView::setRenderSettings(const RenderSettings* settings)
 	m_renderSettings = settings;
 }
 
-void SceneView::setShadowTextures(const std::vector<DeviceTexture*>& shadowTextures)
+void SceneView::setShadowNodes(const std::vector<RenderGraphNode>& nodes)
 {
-	m_shadowTextures = shadowTextures;
+	m_shadowNodes = nodes;
 }
 
 DeviceTexture* SceneView::outputTexture() const

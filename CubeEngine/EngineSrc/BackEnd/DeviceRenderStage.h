@@ -15,6 +15,8 @@
 #include "Technique/MaterialTechnique.h"
 namespace tzw
 {
+class Camera;
+struct VertexLayout;
 class DeviceRenderStage
 {
 public:
@@ -26,6 +28,7 @@ public:
 	DeviceFrameBuffer * getFrameBuffer();
 	void setRenderPass(DeviceRenderPass * renderPass);
 	void setFrameBuffer(DeviceFrameBuffer * frameBuffer);
+	void setViewCamera(Camera* camera) { m_viewCamera = camera; }
 	virtual void prepare(DeviceRenderCommand* renderCommand);
 	virtual void finish() = 0;
 	virtual void draw(RenderQueue * renderQueue, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) = 0;
@@ -35,6 +38,7 @@ public:
 	virtual void beginCompute() = 0;
 	virtual void endCompute() = 0;
 	void createSinglePipeline(MaterialInstance * material);
+	virtual void createSinglePipeline(MaterialInstance* material, const VertexLayout& layout, bool dynamicScissor) = 0;
 	void createSingleComputePipeline(DeviceShaderCollection * shaderCollection);
 	DevicePipeline * getSinglePipeline();
 	DeviceMaterial * getSolorDeviceMaterial();
@@ -46,7 +50,7 @@ public:
 	virtual void beginRenderPass(DeviceFrameBuffer* buffer = nullptr, vec4 clearColor = vec4(0, 0, 0, 1), vec2 clearDepthStencil = vec2(1, 0)) = 0;
 	virtual void endRenderPass() = 0;
 	virtual void bindVBO(DeviceBuffer * buf) = 0;
-	virtual void bindIBO(DeviceBuffer * buf) = 0;
+	virtual void bindIBO(DeviceBuffer * buf, bool use32BitIndices = false) = 0;
 	virtual void setScissor(vec4 scissorRect) = 0;
 	virtual void drawElement(uint32_t indexCount, uint32_t instanceCount, uint32_t firstIndex, int32_t vertexOffset, uint32_t firstInstance) = 0;
 	std::string & getName(){m_name;}
@@ -57,6 +61,7 @@ protected:
 	void initFullScreenTriangleOptimized();
 	void initSphere();
 	virtual void fetchCommand() = 0;
+	Camera* m_viewCamera = nullptr;
 	DeviceRenderPass * m_renderPass;
 	DeviceFrameBuffer * m_frameBuffer;
 	DevicePipeline * m_singlePipeline;
