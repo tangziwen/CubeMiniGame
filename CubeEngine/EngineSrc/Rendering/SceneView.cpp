@@ -11,8 +11,7 @@
 #include "BackEnd/DevicePipeline.h"
 #include "BackEnd/DeviceRenderCommand.h"
 #include "BackEnd/DeviceBuffer.h"
-#include "BackEnd/VkRenderBackEnd.h"
-#include "BackEnd/vk/DeviceTextureVK.h"
+#include "BackEnd/RenderBackEndBase.h"
 #include "Engine/DebugSystem.h"
 #include "Engine/Engine.h"
 #include "Interface/Drawable3D.h"
@@ -64,7 +63,6 @@ SceneView::SceneView(RenderGraph& graph, Camera* camera, int viewIndex, vec2 siz
 	, m_hbaoMat(nullptr)
 	, m_ssrMat(nullptr)
 	, m_fogMat(nullptr)
-	, m_sceneCopyTex(nullptr)
 	, m_outputTexture(nullptr)
 	, m_viewCamera(camera)
 	, m_viewSize(size)
@@ -73,28 +71,27 @@ SceneView::SceneView(RenderGraph& graph, Camera* camera, int viewIndex, vec2 siz
 
 void SceneView::init()
 {
-	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
+	auto backEnd = Engine::shared()->getRenderBackEnd();
 	auto size = m_viewSize.x > 0 && m_viewSize.y > 0 ? m_viewSize : Engine::shared()->winSize();
 
 	DeviceAttachmentInfoList gBufferAttachments = {
-		{ImageFormat::R8G8B8A8, false},
-		{ImageFormat::R8G8B8A8, false},
-		{ImageFormat::R8G8B8A8_S, false},
-		{ImageFormat::R8G8B8A8, false},
-		{ImageFormat::D24_S8, true}
+		{ImageFormat::RGBA8_UNorm, false},
+		{ImageFormat::RGBA8_UNorm, false},
+		{ImageFormat::RGBA8_SNorm, false},
+		{ImageFormat::RGBA8_UNorm, false},
+		{ImageFormat::D24_UNorm_S8_UInt, true}
 	};
 	m_gBufferFrameBufferResource = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("GBufferFrameBuffer", ImageFormat::R8G8B8A8, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		makeGraphResourceDesc("GBufferFrameBuffer", ImageFormat::RGBA8_UNorm, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		gBufferAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
 	DeviceAttachmentInfoList sceneAttachments = {
-		{ImageFormat::R16G16B16A16, false},
-		{ImageFormat::D24_S8, true},
+		{ImageFormat::RGBA16_Float, false},
+		{ImageFormat::D24_UNorm_S8_UInt, true},
 	};
 	m_sceneFrameBufferResource = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("SceneFrameBuffer", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		makeGraphResourceDesc("SceneFrameBuffer", ImageFormat::RGBA16_Float, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		sceneAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
-	auto deferredLightingBuffer = m_renderGraph.frameBuffer(m_sceneFrameBufferResource);
 
 	m_ssgi.init();
 	m_tsaa.init();
@@ -103,39 +100,34 @@ void SceneView::init()
 	m_tsaaHistoryInitialized[1] = false;
 
 	m_tsaaFrameBufferResources[0] = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("TSAAFrameBufferA", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		makeGraphResourceDesc("TSAAFrameBufferA", ImageFormat::RGBA16_UNorm, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		m_tsaa.attachments(), DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 	m_tsaaFrameBufferResources[1] = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("TSAAFrameBufferB", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		makeGraphResourceDesc("TSAAFrameBufferB", ImageFormat::RGBA16_UNorm, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		m_tsaa.attachments(), DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
 	DeviceAttachmentInfoList hbaoAttachments = {
-		{ImageFormat::R16G16B16A16, false},
-		{ImageFormat::D24_S8, true},
+		{ImageFormat::RGBA16_UNorm, false},
+		{ImageFormat::D24_UNorm_S8_UInt, true},
 	};
 	m_hbaoFrameBufferResource = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("HBAOFrameBuffer", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		makeGraphResourceDesc("HBAOFrameBuffer", ImageFormat::RGBA16_UNorm, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		hbaoAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
 	DeviceAttachmentInfoList outlineMaskAttachments = {
-		{ImageFormat::R8G8B8A8, false},
-		{ImageFormat::D24_S8, true},
+		{ImageFormat::RGBA8_UNorm, false},
+		{ImageFormat::D24_UNorm_S8_UInt, true},
 	};
 	m_outlineMaskFrameBufferResource = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("OutlineMaskFrameBuffer", ImageFormat::R8G8B8A8, TextureRoleEnum::AS_COLOR,
+		makeGraphResourceDesc("OutlineMaskFrameBuffer", ImageFormat::RGBA8_UNorm, TextureRoleEnum::AS_COLOR,
 			TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		outlineMaskAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 	m_outlineFrameBufferResource = m_renderGraph.createFrameBuffer(
-		makeGraphResourceDesc("OutlineFrameBuffer", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR,
+		makeGraphResourceDesc("OutlineFrameBuffer", ImageFormat::RGBA16_UNorm, TextureRoleEnum::AS_COLOR,
 			TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
-		{{ImageFormat::R16G16B16A16, false}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
+		{{ImageFormat::RGBA16_UNorm, false}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
-	delete m_sceneCopyTex;
-	auto sceneCopyTex = new DeviceTextureVK();
-	sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-	m_sceneCopyTex = sceneCopyTex;
-
-	m_bloom.init(deferredLightingBuffer);
+	m_bloom.init(m_renderGraph, size);
 
 	if(!backEnd->isWireframeRasterModeSupported())
 	{
@@ -153,15 +145,14 @@ void SceneView::init()
 
 void SceneView::initRenderGraphResources()
 {
-	auto sceneFrameBuffer = graphFrameBuffer(m_sceneFrameBufferResource);
+	auto sceneFrameBuffer = m_sceneFrameBufferResource->get<DeviceFrameBuffer>();
 	auto size = sceneFrameBuffer ? sceneFrameBuffer->getSize() : Engine::shared()->winSize();
 
 	m_sceneColorResource = m_renderGraph.colorAttachment(m_sceneFrameBufferResource);
 	m_sceneDepthResource = m_renderGraph.depthAttachment(m_sceneFrameBufferResource);
-	m_sceneColorCopyResource = m_renderGraph.importTexture(
-		makeGraphResourceDesc("SceneColorCopy", ImageFormat::R16G16B16A16_SFLOAT, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-			RenderGraphResourceLayout::ShaderRead),
-		m_sceneCopyTex);
+    m_sceneColorCopyResource = m_renderGraph.createTexture(
+        makeGraphResourceDesc("SceneColorCopy", ImageFormat::RGBA16_Float, TextureRoleEnum::AS_COLOR,
+            TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size));
 	for(uint32_t index = 0; index < 4; index++)
 	{
 		m_gBufferColorResources[index] = m_renderGraph.colorAttachment(m_gBufferFrameBufferResource, index);
@@ -178,12 +169,7 @@ void SceneView::initRenderGraphResources()
 	{
 		for(int index = 0; index < 2; index++)
 		{
-			auto bloomSize = m_bloom.layerSize(layer);
-			m_bloomTextureResources[layer][index] = m_renderGraph.importTexture(
-				makeGraphResourceDesc(("Bloom." + std::to_string(layer) + "." + std::to_string(index)).c_str(),
-					ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT,
-					bloomSize, RenderGraphResourceLayout::ShaderRead),
-				m_bloom.bloomTexture(layer, index));
+			m_bloomTextureResources[layer][index] = m_bloom.bloomTexture(layer, index);
 		}
 	}
 	m_bloomBrightOutputResource = m_bloomTextureResources[0][0];
@@ -235,7 +221,7 @@ void SceneView::initRenderGraphMaterials()
 				jitterTexMem[index + 3] = 0;
 			}
 		}
-		jitterTex = new Texture(jitterTexMem, 8, 8, ImageFormat::R8G8B8A8);
+		jitterTex = new Texture(jitterTexMem, 8, 8, ImageFormat::RGBA8_UNorm);
 	}
 	m_hbaoMat->setTex("jitterTex", jitterTex);
 	MaterialPool::shared()->addMaterial("HBAO", m_hbaoMat);
@@ -261,8 +247,8 @@ RenderGraphNode SceneView::buildRenderGraph()
 	}
 
 	DeviceAttachmentInfoList sceneLoadAttachments = {
-		{ImageFormat::R16G16B16A16, false},
-		{ImageFormat::D24_S8, true},
+		{ImageFormat::RGBA16_Float, false},
+		{ImageFormat::D24_UNorm_S8_UInt, true},
 	};
 	auto readGBuffer = [this](RenderGraphPassDesc& accesses)
 	{
@@ -563,7 +549,7 @@ RenderGraphNode SceneView::buildRenderGraph()
 		}
 		auto brightNode = m_renderGraph.addComputeNode(brightPass, [this](RenderGraphPassContext& graphContext)
 		{
-			m_bloom.executeBrightPass(graphContext, graphTexture(m_sceneColorResource, &graphContext));
+			m_bloom.executeBrightPass(graphContext, m_sceneColorResource);
 		}).withOutput(m_bloomBrightOutputResource)
 			.withOutput("color", m_bloomBrightOutputResource)
 			.dependsOn(sceneChainNode);
@@ -731,10 +717,10 @@ RenderGraphNode SceneView::buildRenderGraph()
 			[this, finalSceneResource](RenderGraphPassContext& graphContext)
 		{
 			m_outlinePass.executeComposite(graphContext,
-				graphTexture(finalSceneResource, &graphContext),
-				graphTexture(m_outlineMaskColorResource, &graphContext),
-				graphDepthTexture(m_outlineMaskDepthResource, &graphContext),
-				graphDepthTexture(m_gBufferDepthResource, &graphContext));
+				finalSceneResource->get<DeviceTexture>(),
+				m_outlineMaskColorResource->get<DeviceTexture>(),
+				m_outlineMaskDepthResource->get<DeviceTexture>(),
+				m_gBufferDepthResource->get<DeviceTexture>());
 		})
 			.withOutput(m_outlineOutputResource)
 			.withOutput("sceneColor", m_outlineOutputResource)
@@ -742,53 +728,14 @@ RenderGraphNode SceneView::buildRenderGraph()
 			.dependsOn(outlineMaskNode);
 		finalSceneResource = finalOutputNode.output();
 	}
-	m_outputTexture = graphTexture(finalSceneResource);
+	m_outputTexture = finalSceneResource->get<DeviceTexture>();
 
 	return finalOutputNode;
 }
 
-DeviceFrameBuffer* SceneView::graphFrameBuffer(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext) const
+size_t SceneView::bindGBufferTextures(DeviceDescriptor* descriptor, int firstBinding) const
 {
-	if(graphContext)
-	{
-		auto frameBuffer = graphContext->frameBuffer(handle);
-		if(frameBuffer)
-		{
-			return frameBuffer;
-		}
-	}
-	return m_renderGraph.frameBuffer(handle);
-}
-
-DeviceTexture* SceneView::graphTexture(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext) const
-{
-	if(graphContext)
-	{
-		auto texture = graphContext->texture(handle);
-		if(texture)
-		{
-			return texture;
-		}
-	}
-	return m_renderGraph.texture(handle);
-}
-
-DeviceTexture* SceneView::graphDepthTexture(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext) const
-{
-	if(graphContext)
-	{
-		auto texture = graphContext->depthTexture(handle);
-		if(texture)
-		{
-			return texture;
-		}
-	}
-	return m_renderGraph.depthTexture(handle);
-}
-
-size_t SceneView::bindGBufferTextures(DeviceDescriptor* descriptor, int firstBinding, const RenderGraphPassContext* graphContext) const
-{
-	auto gBufferFrameBuffer = graphFrameBuffer(m_gBufferFrameBufferResource, graphContext);
+	auto gBufferFrameBuffer = m_gBufferFrameBufferResource->get<DeviceFrameBuffer>();
 	if(!descriptor || !gBufferFrameBuffer)
 	{
 		return 0;
@@ -840,7 +787,7 @@ void SceneView::executeDeferredLightingPass(RenderGraphPassContext& graphContext
 	material->updateUniformSingle("TU_LightVP", lightVPList, sizeof(lightVPList));
 	material->updateUniformSingle("TU_ShadowMapEnd", shadowEnd, sizeof(shadowEnd));
 
-	bindGBufferTextures(descriptorSet, 1, &graphContext);
+	bindGBufferTextures(descriptorSet, 1);
 	graphContext.bindTextures(8, m_shadowTextureResources);
 	graphContext.bindSinglePipelineDescriptor();
 	graphContext.drawScreenQuad();
@@ -848,8 +795,7 @@ void SceneView::executeDeferredLightingPass(RenderGraphPassContext& graphContext
 
 void SceneView::executePointLightingPass(RenderGraphPassContext& graphContext)
 {
-	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-	bindGBufferTextures(graphContext.materialDescriptor(), 1, &graphContext);
+	bindGBufferTextures(graphContext.materialDescriptor(), 1);
 
 	std::vector<Drawable3D *> pointlightList;
 	auto currScene = g_GetCurrScene();
@@ -865,14 +811,8 @@ void SceneView::executePointLightingPass(RenderGraphPassContext& graphContext)
 		{
 			continue;
 		}
-		auto itemDescriptorSet = graphContext.itemDescriptor();
-		if(!itemDescriptorSet)
-		{
-			return;
-		}
-		DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(PointLightUniform));
+
 		PointLightUniform uniform;
-		itemBuf.map();
 		auto projection = camera()->projection();
 		Matrix44 m;
 		m.setToIdentity();
@@ -883,35 +823,25 @@ void SceneView::executePointLightingPass(RenderGraphPassContext& graphContext)
 		uniform.wvp = projection * v * m;
 		uniform.LightPos = vec4(p->getWorldPos(), p->getRadius());
 		uniform.LightColor = vec4(p->getLightColor() * p->intensity(), 1);
-		itemBuf.copyFrom(&uniform, sizeof(PointLightUniform));
-		itemBuf.unMap();
-		itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-		graphContext.bindSinglePipelineDescriptor(itemDescriptorSet);
+		if(!graphContext.bindItemUniform(0, &uniform, sizeof(PointLightUniform))) return;
 		graphContext.drawSphere();
 	}
 }
 
 void SceneView::executeSkyPass(RenderGraphPassContext& graphContext)
 {
-	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 	auto descriptorSet = graphContext.materialDescriptor();
-	auto itemDescriptorSet = graphContext.itemDescriptor();
-	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
-	if(!descriptorSet || !itemDescriptorSet || !gBufferDepth)
+	auto gBufferDepth = m_gBufferDepthResource->get<DeviceTexture>();
+	if(!descriptorSet || !gBufferDepth)
 	{
 		return;
 	}
 
-	DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
-	itemBuf.map();
 	Matrix44 scale;
 	scale.setScale(vec3(6360000.0f, 6360000.0f, 6360000.0f));
 	Matrix44 m = camera()->getViewProjectionMatrix() * scale;
-	itemBuf.copyFrom(&m, sizeof(Matrix44));
-	itemBuf.unMap();
-	itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
 	descriptorSet->updateDescriptorByBinding(1, gBufferDepth);
-	graphContext.bindSinglePipelineDescriptor(itemDescriptorSet);
+	if(!graphContext.bindItemUniform(0, &m, sizeof(Matrix44))) return;
 	graphContext.drawSphere();
 }
 
@@ -930,11 +860,9 @@ void SceneView::executeDebugWireframePass(RenderGraphPassContext& graphContext)
 
 void SceneView::executeHBAOPass(RenderGraphPassContext& graphContext)
 {
-	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 	auto pipeline = graphContext.pipeline();
 	auto descriptorSet = graphContext.materialDescriptor();
-	auto itemDescriptorSet = graphContext.itemDescriptor();
-	if(!pipeline || !descriptorSet || !itemDescriptorSet)
+	if(!pipeline || !descriptorSet)
 	{
 		return;
 	}
@@ -950,48 +878,38 @@ void SceneView::executeHBAOPass(RenderGraphPassContext& graphContext)
 		-(1.0f + P[4 * 2 + 1]) / P[4 * 1 + 1]
 	);
 	pipeline->getMat()->setVar("TU_ProjInfo", projInfoPerspective);
-	bindGBufferTextures(descriptorSet, 1, &graphContext);
-	DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
-	itemBuf.map();
+	bindGBufferTextures(descriptorSet, 1);
+
 	Matrix44 m = camera()->getViewProjectionMatrix();
-	itemBuf.copyFrom(&m, sizeof(Matrix44));
-	itemBuf.unMap();
-	itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-	graphContext.bindSinglePipelineDescriptor(itemDescriptorSet);
+	if(!graphContext.bindItemUniform(0, &m, sizeof(Matrix44))) return;
 	graphContext.drawScreenQuad();
 }
 
 void SceneView::executeSSRPass(RenderGraphPassContext& graphContext)
 {
-	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
-	auto sceneColorCopy = graphTexture(m_sceneColorCopyResource, &graphContext);
-	auto hbaoOutput = graphTexture(m_hbaoOutputResource, &graphContext);
+	auto sceneColorCopy = m_sceneColorCopyResource->get<DeviceTexture>();
+	auto hbaoOutput = m_hbaoOutputResource->get<DeviceTexture>();
 	auto descriptorSet = graphContext.materialDescriptor();
-	auto itemDescriptorSet = graphContext.itemDescriptor();
-	if(!sceneColorCopy || !hbaoOutput || !descriptorSet || !itemDescriptorSet)
+	if(!sceneColorCopy || !hbaoOutput || !descriptorSet)
 	{
 		return;
 	}
 
-	auto gbufferTextureCount = bindGBufferTextures(descriptorSet, 1, &graphContext);
+	auto gbufferTextureCount = bindGBufferTextures(descriptorSet, 1);
 	descriptorSet->updateDescriptorByBinding(static_cast<int>(gbufferTextureCount) + 1, sceneColorCopy);
 	descriptorSet->updateDescriptorByBinding(static_cast<int>(gbufferTextureCount) + 2, hbaoOutput);
-	DeviceItemBuffer itemBuf = backEnd->getItemBufferPool()->giveMeItemBuffer(sizeof(Matrix44));
-	itemBuf.map();
+
 	Matrix44 m = camera()->getViewProjectionMatrix();
-	itemBuf.copyFrom(&m, sizeof(Matrix44));
-	itemBuf.unMap();
-	itemDescriptorSet->updateDescriptorByBinding(0, &itemBuf);
-	graphContext.bindSinglePipelineDescriptor(itemDescriptorSet);
+	if(!graphContext.bindItemUniform(0, &m, sizeof(Matrix44))) return;
 	graphContext.drawScreenQuad();
 }
 
 void SceneView::executeSSGIPass(RenderGraphPassContext& graphContext)
 {
-	auto sceneColorCopy = graphTexture(m_sceneColorCopyResource, &graphContext);
-	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
-	auto gBufferNormal = graphTexture(m_gBufferNormalResource, &graphContext);
-	auto gBufferBaseColor = graphTexture(m_gBufferBaseColorResource, &graphContext);
+	auto sceneColorCopy = m_sceneColorCopyResource->get<DeviceTexture>();
+	auto gBufferDepth = m_gBufferDepthResource->get<DeviceTexture>();
+	auto gBufferNormal = m_gBufferNormalResource->get<DeviceTexture>();
+	auto gBufferBaseColor = m_gBufferBaseColorResource->get<DeviceTexture>();
 	if(!sceneColorCopy || !gBufferDepth || !gBufferNormal || !gBufferBaseColor || !graphContext.targetFrameBuffer())
 	{
 		return;
@@ -1007,17 +925,17 @@ void SceneView::executeFogPass(RenderGraphPassContext& graphContext)
 		return;
 	}
 
-	bindGBufferTextures(descriptorSet, 1, &graphContext);
+	bindGBufferTextures(descriptorSet, 1);
 	graphContext.bindSinglePipelineDescriptor();
 	graphContext.drawScreenQuad();
 }
 
 void SceneView::executeTSAAPass(RenderGraphPassContext& graphContext)
 {
-	auto historyFrame = graphTexture(m_tsaaColorResources[m_tsaa.historyBufferIndex()], &graphContext);
-	auto targetFrame = graphTexture(m_tsaaColorResources[m_tsaa.targetBufferIndex()], &graphContext);
-	auto sceneColor = graphTexture(m_sceneColorResource, &graphContext);
-	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
+	auto historyFrame = m_tsaaColorResources[m_tsaa.historyBufferIndex()]->get<DeviceTexture>();
+	auto targetFrame = m_tsaaColorResources[m_tsaa.targetBufferIndex()]->get<DeviceTexture>();
+	auto sceneColor = m_sceneColorResource->get<DeviceTexture>();
+	auto gBufferDepth = m_gBufferDepthResource->get<DeviceTexture>();
 	if(!historyFrame || !targetFrame || !sceneColor || !gBufferDepth)
 	{
 		return;

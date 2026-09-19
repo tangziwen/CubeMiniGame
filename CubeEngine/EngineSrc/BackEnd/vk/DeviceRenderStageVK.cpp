@@ -61,32 +61,32 @@ namespace tzw
             auto iter = m_pipelinePool.find(technique.getFullDescriptionStr());
             if(iter == m_pipelinePool.end())
             {
-                DeviceVertexInput vertexInput;
+                VertexLayout vertexInput;
                 vertexInput.stride = sizeof(VertexData);
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VertexData, m_color)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_normal)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_tangent)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float3, offsetof(VertexData, m_pos)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(VertexData, m_color)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float2, offsetof(VertexData, m_texCoord)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float3, offsetof(VertexData, m_normal)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float3, offsetof(VertexData, m_tangent)});
 
                 //use for terrain
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_matBlendFactor)});
-                vertexInput.addVertexAttributeDesc({VK_FORMAT_R8G8B8_UINT, offsetof(VertexData, m_matIndex)});
-            	vertexInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(VertexData, m_overlayColor)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float3, offsetof(VertexData, m_matBlendFactor)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::UInt8x3, offsetof(VertexData, m_matIndex)});
+                vertexInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(VertexData, m_overlayColor)});
                 //instancing optional
-                DeviceVertexInput instanceInput;
+                VertexLayout instanceInput;
                 //instancing
                 if(a.batchType() != RenderCommand::RenderBatchType::Single)
                 {
                     instanceInput.stride = sizeof(InstanceData);
                     //matrix
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform) + sizeof(float) * 4});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 8});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, transform)+ sizeof(float) * 12});
+                    instanceInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(InstanceData, transform)});
+                    instanceInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(InstanceData, transform) + sizeof(float) * 4});
+                    instanceInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(InstanceData, transform)+ sizeof(float) * 8});
+                    instanceInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(InstanceData, transform)+ sizeof(float) * 12});
 
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo.x)});
-                    instanceInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32A32_SFLOAT, offsetof(InstanceData, extraInfo2.x)});
+                    instanceInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(InstanceData, extraInfo.x)});
+                    instanceInput.attributes.push_back({VertexAttributeFormat::Float4, offsetof(InstanceData, extraInfo2.x)});
 
                     currPipeLine = new DevicePipelineVK();
                     currPipeLine->init(this->getFrameBuffer()->getSize(), mat,this->getRenderPass(), vertexInput, true, instanceInput, this->getRenderPass()->getAttachmentCount()-1, techniqueType);
@@ -317,21 +317,8 @@ namespace tzw
 
     void DeviceRenderStageVK::createSinglePipeline(MaterialInstance* material, const VertexLayout& layout, bool dynamicScissor)
     {
-        DeviceVertexInput vertexInput{};
-        vertexInput.stride = static_cast<int>(layout.stride);
-        for(const auto& attribute : layout.attributes)
-        {
-            VkFormat format = VK_FORMAT_UNDEFINED;
-            switch(attribute.format)
-            {
-            case VertexAttributeFormat::Float2: format = VK_FORMAT_R32G32_SFLOAT; break;
-            case VertexAttributeFormat::Float3: format = VK_FORMAT_R32G32B32_SFLOAT; break;
-            case VertexAttributeFormat::Float4: format = VK_FORMAT_R32G32B32A32_SFLOAT; break;
-            case VertexAttributeFormat::UNorm8x4: format = VK_FORMAT_R8G8B8A8_UNORM; break;
-            }
-            vertexInput.addVertexAttributeDesc({format, static_cast<int>(attribute.offset)});
-        }
-        DeviceVertexInput instanceInput{};
+        const auto& vertexInput = layout;
+        VertexLayout instanceInput{};
         m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
         m_singlePipeline->setDynamicState(dynamicScissor ? PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR : PIPELINE_DYNAMIC_STATE_FLAG_NONE);
         int colorCount = 0;

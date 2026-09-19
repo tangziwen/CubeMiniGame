@@ -1,5 +1,6 @@
 #pragma once
 #include "Rendering/ImageFormat.h"
+#include <cstdint>
 
 namespace tzw
 {
@@ -18,6 +19,15 @@ enum class TextureUsageEnum
 	
 };
 	
+struct DeviceTextureDesc
+{
+    uint32_t width = 0;
+    uint32_t height = 0;
+    ImageFormat format = ImageFormat::RGBA8_UNorm;
+    TextureRoleEnum role = TextureRoleEnum::AS_COLOR;
+    TextureUsageEnum usage = TextureUsageEnum::SAMPLE_AND_ATTACHMENT;
+};
+
 struct ImageMetaInfo
 {
 	int channels;

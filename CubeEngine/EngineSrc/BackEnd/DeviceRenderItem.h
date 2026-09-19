@@ -1,7 +1,7 @@
 #pragma once
 #include "Rendering/ImageFormat.h"
 #include <vector>
-#include "EngineSrc/BackEnd/vk/DeviceItemBufferPoolVK.h"
+#include "DeviceBuffer.h"
 #include "DeviceDescriptor.h"
 namespace tzw
 {

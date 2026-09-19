@@ -87,7 +87,23 @@ void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
     printf("Compute pipeline created\n");
 }
 
-void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRenderPass* targetRenderPass, DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount, MaterialTechniqueType techniqueType)
+namespace
+{
+VkFormat g_GetVertexFormat(VertexAttributeFormat format)
+{
+    switch(format)
+    {
+    case VertexAttributeFormat::Float2: return VK_FORMAT_R32G32_SFLOAT;
+    case VertexAttributeFormat::Float3: return VK_FORMAT_R32G32B32_SFLOAT;
+    case VertexAttributeFormat::Float4: return VK_FORMAT_R32G32B32A32_SFLOAT;
+    case VertexAttributeFormat::UNorm8x4: return VK_FORMAT_R8G8B8A8_UNORM;
+    case VertexAttributeFormat::UInt8x3: return VK_FORMAT_R8G8B8_UINT;
+    }
+    abort();
+}
+}
+
+void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRenderPass* targetRenderPass, VertexLayout vertexInput, bool isSupportInstancing, VertexLayout instanceVertexInput, int colorAttachmentCount, MaterialTechniqueType techniqueType)
 {
 
     m_totalItemWiseDesSet = 0;
@@ -136,29 +152,29 @@ void DevicePipelineVK::init(vec2 viewPortSize, MaterialInstance* mat, DeviceRend
     std::vector<VkVertexInputAttributeDescription> attributeDecsriptionList;
     if(isSupportInstancing)
     {
-        attributeDecsriptionList.resize(m_vertexInput.m_attributeList.size() + instanceVertexInput.m_attributeList.size());
+        attributeDecsriptionList.resize(m_vertexInput.attributes.size() + instanceVertexInput.attributes.size());
     }
     else{
     
-        attributeDecsriptionList.resize(m_vertexInput.m_attributeList.size());
+        attributeDecsriptionList.resize(m_vertexInput.attributes.size());
     }
     
 
-    for(int i = 0; i < m_vertexInput.m_attributeList.size(); i++)
+    for(int i = 0; i < m_vertexInput.attributes.size(); i++)
     {
         attributeDecsriptionList[i].binding = 0;
         attributeDecsriptionList[i].location = i;
-        attributeDecsriptionList[i].format = m_vertexInput.m_attributeList[i].format;
-        attributeDecsriptionList[i].offset = m_vertexInput.m_attributeList[i].offset;
+        attributeDecsriptionList[i].format = g_GetVertexFormat(m_vertexInput.attributes[i].format);
+        attributeDecsriptionList[i].offset = m_vertexInput.attributes[i].offset;
     }
     if(isSupportInstancing){
-        size_t normalVertexSize = m_vertexInput.m_attributeList.size();
-        for(int i = normalVertexSize; i < instanceVertexInput.m_attributeList.size() + normalVertexSize; i++)
+        size_t normalVertexSize = m_vertexInput.attributes.size();
+        for(int i = normalVertexSize; i < instanceVertexInput.attributes.size() + normalVertexSize; i++)
         {
             attributeDecsriptionList[i].binding = 1;
             attributeDecsriptionList[i].location = i;
-            attributeDecsriptionList[i].format = instanceVertexInput.m_attributeList[i - normalVertexSize].format;
-            attributeDecsriptionList[i].offset = instanceVertexInput.m_attributeList[i - normalVertexSize].offset;
+            attributeDecsriptionList[i].format = g_GetVertexFormat(instanceVertexInput.attributes[i - normalVertexSize].format);
+            attributeDecsriptionList[i].offset = instanceVertexInput.attributes[i - normalVertexSize].offset;
         }
     }
 
@@ -434,11 +450,11 @@ void DevicePipelineVK::createDescriptorPool()
     {
         for(auto & locationInfo : iter.second){
         	if(locationInfo.set != OBJECT_DESCRIPTOR_SET_ID) continue;
-            if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+            if(locationInfo.type == DeviceShaderBindingType::Uniform)
             {
                 uniformBuffCount ++;
             }
-            else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+            else if(locationInfo.type == DeviceShaderBindingType::Sampler)
             {
                 textuerCount++;
             }

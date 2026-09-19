@@ -1,5 +1,6 @@
 #include "DeviceRenderPass.h"
-#include "VkRenderBackEnd.h"
+#include "RenderBackEndBase.h"
+#include "Engine/Engine.h"
 #include "DeviceTexture.h"
 #include "DeviceFrameBuffer.h"
 #include "DeviceRenderStage.h"
@@ -86,25 +87,25 @@ namespace tzw
 
     void DeviceRenderStage::createSinglePipeline(MaterialInstance* material)
     {
-        DeviceVertexInput vertexDataInput;
+        VertexLayout vertexDataInput{};
         vertexDataInput.stride = sizeof(VertexData);
-        vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_pos)});
-        vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32B32_SFLOAT, offsetof(VertexData, m_color)});
-        vertexDataInput.addVertexAttributeDesc({VK_FORMAT_R32G32_SFLOAT, offsetof(VertexData, m_texCoord)});
+        vertexDataInput.attributes.push_back({VertexAttributeFormat::Float3, offsetof(VertexData, m_pos)});
+        vertexDataInput.attributes.push_back({VertexAttributeFormat::Float3, offsetof(VertexData, m_color)});
+        vertexDataInput.attributes.push_back({VertexAttributeFormat::Float2, offsetof(VertexData, m_texCoord)});
 
-        DeviceVertexInput emptyInstancingInput;
-		m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
+        VertexLayout emptyInstancingInput{};
+		m_singlePipeline = Engine::shared()->getRenderBackEnd()->createPipeline_imp();
         m_singlePipeline->init(getFrameBuffer()->getSize(), material, getRenderPass(), vertexDataInput, false, emptyInstancingInput);
-		m_soloMaterial = VKRenderBackEnd::shared()->createDeviceMaterial_imp();
+		m_soloMaterial = Engine::shared()->getRenderBackEnd()->createDeviceMaterial_imp();
 		m_soloMaterial->init(material);
 		
     }
 
 	void DeviceRenderStage::createSingleComputePipeline(DeviceShaderCollection * shaderCollection)
 	{
-		m_singlePipeline = VKRenderBackEnd::shared()->createPipeline_imp();
+		m_singlePipeline = Engine::shared()->getRenderBackEnd()->createPipeline_imp();
 		m_singlePipeline->initCompute(shaderCollection);
-		m_soloMaterial = VKRenderBackEnd::shared()->createDeviceMaterial_imp();
+		m_soloMaterial = Engine::shared()->getRenderBackEnd()->createDeviceMaterial_imp();
 		m_soloMaterial->initCompute(shaderCollection);
 	}
 
@@ -130,22 +131,22 @@ namespace tzw
             VertexData(vec3( 3.0f, -1.0f,  1.0f), vec2(2.f, 0.0f)), // v1
             VertexData(vec3(-1.0f,  3.0f,  1.0f), vec2(0.0f, 2.f)),  // v2
         };
-        auto vbuffer = VKRenderBackEnd::shared()->createBuffer_imp();
+        auto vbuffer = Engine::shared()->getRenderBackEnd()->createBuffer_imp();
         vbuffer->init(DeviceBufferType::Vertex);
 
         vbuffer->allocate(vertices, sizeof(vertices[0]) * 3);
-        m_quadVertexBuffer = vbuffer;//static_cast<DeviceBufferVK *>(vbuffer);
+        m_quadVertexBuffer = vbuffer;
 
 
         uint16_t indices[] = {
          0,  2,  1,
 
 		};
-        auto ibuffer = VKRenderBackEnd::shared()->createBuffer_imp();
+        auto ibuffer = Engine::shared()->getRenderBackEnd()->createBuffer_imp();
         ibuffer->init(DeviceBufferType::Index);
 
         ibuffer->allocate(indices, sizeof(indices));
-        m_quadIndexBuffer = ibuffer;//static_cast<DeviceBufferVK *>(ibuffer);
+        m_quadIndexBuffer = ibuffer;
 	}
 
     void DeviceRenderStage::initFullScreenQuad()
@@ -157,22 +158,22 @@ namespace tzw
             VertexData(vec3(-1.0f,  1.0f,  1.0f), vec2(0.0f, 1.f)),  // v2
             VertexData(vec3( 1.0f,  1.0f,  1.0f), vec2(1.f, 1.f)), // v3
         };
-        auto vbuffer = VKRenderBackEnd::shared()->createBuffer_imp();
+        auto vbuffer = Engine::shared()->getRenderBackEnd()->createBuffer_imp();
         vbuffer->init(DeviceBufferType::Vertex);
 
         vbuffer->allocate(vertices, sizeof(vertices[0]) * 4);
-        m_quadVertexBuffer = vbuffer;//static_cast<DeviceBufferVK *>(vbuffer);
+        m_quadVertexBuffer = vbuffer;
 
 
         uint16_t indices[] = {
          0,  2,  1,  1,  2,  3,
 
 		};
-        auto ibuffer = VKRenderBackEnd::shared()->createBuffer_imp();
+        auto ibuffer = Engine::shared()->getRenderBackEnd()->createBuffer_imp();
         ibuffer->init(DeviceBufferType::Index);
 
         ibuffer->allocate(indices, sizeof(indices));
-        m_quadIndexBuffer = ibuffer;//static_cast<DeviceBufferVK *>(ibuffer);
+        m_quadIndexBuffer = ibuffer;
     }
 	static vec3 pointOnSurface(float u, float v)
 	{

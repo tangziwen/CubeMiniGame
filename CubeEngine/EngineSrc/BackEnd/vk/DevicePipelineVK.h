@@ -13,6 +13,7 @@ namespace tzw
 {
 class MaterialInstance;
 class DeviceShaderCollectionVK;
+class DeviceItemBufferPoolVK;
 class DeviceTextureVK;
 class DeviceRenderPassVK;
 
@@ -23,7 +24,7 @@ public:
 	~DevicePipelineVK() override;
 	void initCompute(DeviceShaderCollection * computeShader) override;
 	void init(vec2 viewPortSize, MaterialInstance * mat, DeviceRenderPass* targetRenderPass
-		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1,
+		,VertexLayout vertexInput, bool isSupportInstancing, VertexLayout instanceVertexInput, int colorAttachmentCount = 1,
 		MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) override;
 	VkDescriptorSetLayout getDescriptorSetLayOut();
 	VkDescriptorSetLayout getMaterialDescriptorSetLayOut();
@@ -41,7 +42,7 @@ private:
 	VkPipeline m_pipeline;
 	VkPipelineLayout m_pipelineLayout;
 	DeviceShaderCollectionVK * m_shader;
-	DeviceVertexInput m_vertexInput;
+	VertexLayout m_vertexInput;
 	VkBlendFactor getBlendFactor(RenderFlag::BlendingFactor factor);
 	std::unordered_map<void *, DeviceRenderItem *> m_renderItemMap;
 	DeviceItemBufferPoolVK * m_itemBufferPool;

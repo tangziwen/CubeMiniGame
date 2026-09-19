@@ -234,7 +234,8 @@ VkImageAspectFlags DeviceTextureVK::getImageAspectFlag()
         flag = VK_IMAGE_ASPECT_COLOR_BIT;
         break;
     case TextureRoleEnum::AS_DEPTH:
-        flag = VK_IMAGE_ASPECT_DEPTH_BIT | VK_IMAGE_ASPECT_STENCIL_BIT;
+        flag = VK_IMAGE_ASPECT_DEPTH_BIT;
+        if(ImageFormatHasStencil(m_metaInfo.m_imageFormat)) flag |= VK_IMAGE_ASPECT_STENCIL_BIT;
         break;
     }
     return flag;
@@ -247,14 +248,19 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
     VkDeviceSize imageSize = texWidth * texHeight * ImageFormatGetSize(format);
     
 	
+	m_metaInfo.m_imageFormat = format;
 	m_metaInfo.width = texWidth;
 	m_metaInfo.height = texHeight;
     m_textureRole = texRole;
 	m_textureUsage = texUsage;
-    VkBuffer stagingBuffer;
-    VkDeviceMemory stagingBufferMemory;
-    VkFormat vkformat = VKRenderBackEnd::shared()->getFormat(format);
-    VKRenderBackEnd::shared()->createVKBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    VkBuffer stagingBuffer = VK_NULL_HANDLE;
+    VkDeviceMemory stagingBufferMemory = VK_NULL_HANDLE;
+    VkFormat vkformat = backEnd->getFormat(format);
+    if(initLayout == -1 && texUsage == TextureUsageEnum::SAMPLE_ONLY)
+    {
+        backEnd->createVKBuffer(imageSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT,
+            VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, stagingBuffer, stagingBufferMemory);
+    }
 
     VkImageUsageFlags usageFlag = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
     switch(m_textureUsage)
@@ -320,7 +326,7 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
             }
         }
     }
-    else
+    else if(initLayout != VK_IMAGE_LAYOUT_UNDEFINED)
     {
 	    backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, flag);
 	    backEnd->transitionImageLayout(m_textureImage, vkformat, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, (VkImageLayout)initLayout, flag);
@@ -335,7 +341,10 @@ void DeviceTextureVK::initEmpty(size_t texWidth, size_t texHeight, ImageFormat f
     if(m_textureRole ==TextureRoleEnum::AS_DEPTH)
     {
         m_textureImageView = backEnd->createImageView(m_textureImage, vkformat, VK_IMAGE_ASPECT_DEPTH_BIT);
-        m_textureStencilImageView = backEnd->createImageView(m_textureImage, vkformat, VK_IMAGE_ASPECT_STENCIL_BIT);
+        if(ImageFormatHasStencil(format))
+        {
+            m_textureStencilImageView = backEnd->createImageView(m_textureImage, vkformat, VK_IMAGE_ASPECT_STENCIL_BIT);
+        }
     }
     else
     {
@@ -382,7 +391,7 @@ void DeviceTextureVK::initData(const unsigned char* buff, size_t size)
         abort();
         //throw std::runtime_error("failed to load texture image!");
     }
-    VkFormat vkformat = VKRenderBackEnd::shared()->getFormat(ImageFormat::R8G8B8A8);
+    VkFormat vkformat = VKRenderBackEnd::shared()->getFormat(ImageFormat::RGBA8_UNorm);
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
     if(t.empty())

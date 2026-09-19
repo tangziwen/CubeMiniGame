@@ -11,6 +11,7 @@ class DeviceTexture;
 enum class DeviceTextureLayout
 {
 	Unknown,
+	Undefined,
 	ColorAttachment,
 	DepthAttachment,
 	DepthRead,
@@ -24,6 +25,7 @@ enum class DeviceTextureLayout
 enum class DeviceTextureUsage
 {
 	Unknown,
+	None,
 	FragmentShaderRead,
 	ComputeStorageRead,
 	ComputeStorageWrite,

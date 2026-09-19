@@ -37,6 +37,9 @@ bool toVkLayout(DeviceTextureLayout layout, VkImageLayout& outLayout)
 	case DeviceTextureLayout::Present:
 		outLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 		return true;
+	case DeviceTextureLayout::Undefined:
+		outLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		return true;
 	case DeviceTextureLayout::Unknown:
 		break;
 	}
@@ -88,6 +91,10 @@ bool toVkState(const DeviceTextureState& state, VkImageLayout& layout, VkPipelin
 		stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
 		access = 0;
 		return true;
+	case DeviceTextureUsage::None:
+		stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		access = 0;
+		return state.layout == DeviceTextureLayout::Undefined;
 	case DeviceTextureUsage::Unknown:
 		break;
 	}
@@ -121,7 +128,7 @@ void DeviceRenderCommandVK::endRecord()
 bool DeviceRenderCommandVK::textureBarrier(const DeviceTextureBarrier& barrier)
 {
 	auto texture = dynamic_cast<DeviceTextureVK*>(barrier.texture);
-	if(!texture || barrier.levelCount == 0)
+	if(!texture || barrier.levelCount == 0 || barrier.after.layout == DeviceTextureLayout::Undefined)
 	{
 		tlogError("DeviceRenderCommandVK textureBarrier received an invalid texture or mip range.");
 		return false;

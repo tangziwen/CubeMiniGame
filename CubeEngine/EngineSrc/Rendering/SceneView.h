@@ -45,10 +45,7 @@ private:
 	void executeSSGIPass(RenderGraphPassContext& graphContext);
 	void executeFogPass(RenderGraphPassContext& graphContext);
 	void executeTSAAPass(RenderGraphPassContext& graphContext);
-	DeviceFrameBuffer* graphFrameBuffer(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext = nullptr) const;
-	DeviceTexture* graphTexture(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext = nullptr) const;
-	DeviceTexture* graphDepthTexture(RenderGraphResourceHandle handle, const RenderGraphPassContext* graphContext = nullptr) const;
-	size_t bindGBufferTextures(DeviceDescriptor* descriptor, int firstBinding, const RenderGraphPassContext* graphContext = nullptr) const;
+	size_t bindGBufferTextures(DeviceDescriptor* descriptor, int firstBinding) const;
 
 	TSAA m_tsaa;
 	SSGI m_ssgi;
@@ -83,7 +80,6 @@ private:
 	RenderGraphResourceHandle m_tsaaFrameBufferResources[2];
 	RenderGraphResourceHandle m_tsaaColorResources[2];
 	RenderGraphResourceHandle m_tsaaDepthResources[2];
-	DeviceTexture * m_sceneCopyTex;
 	DeviceTexture * m_outputTexture;
 	Camera* m_viewCamera;
 	vec2 m_viewSize;

@@ -1,6 +1,8 @@
 #pragma once
 
 #include <cstdint>
+#include <cstddef>
+#include <type_traits>
 #include <functional>
 #include <limits>
 #include <memory>
@@ -58,6 +60,7 @@ using RenderGraphResourceState = DeviceTextureState;
 
 enum class RenderGraphResourceKind
 {
+	Invalid,
 	Texture,
 	FrameBuffer,
 };
@@ -70,13 +73,17 @@ public:
 	bool isValid() const;
 	uint32_t index() const;
 	static RenderGraphResourceHandle invalid();
+	// The graph must outlive its handles; invalid/stale handles resolve to an Invalid resource.
+	const RenderGraphResource* operator->() const;
 
 private:
 	friend class RenderGraph;
 
-	explicit RenderGraphResourceHandle(uint32_t index);
+	RenderGraphResourceHandle(const RenderGraph* graph, uint32_t index, uint64_t generation);
 
 	uint32_t m_index;
+	const RenderGraph* m_graph = nullptr;
+	uint64_t m_generation = 0;
 };
 
 class RenderGraphPassHandle
@@ -123,7 +130,7 @@ private:
 struct RenderGraphResourceDesc
 {
 	std::string name;
-	ImageFormat format = ImageFormat::Surface_Format;
+	ImageFormat format = ImageFormat::Surface;
 	TextureRoleEnum role = TextureRoleEnum::AS_COLOR;
 	TextureUsageEnum usage = TextureUsageEnum::SAMPLE_AND_ATTACHMENT;
 	vec2 size = vec2(0, 0);
@@ -151,8 +158,28 @@ enum class RenderGraphPassKind
 
 struct RenderGraphResource
 {
+    RenderGraphResourceKind type() const { return kind; }
+
+    template<typename T>
+    T* get() const
+    {
+        if constexpr(std::is_same_v<T, DeviceTexture>)
+        {
+            return kind == RenderGraphResourceKind::Texture ? texture : nullptr;
+        }
+        else if constexpr(std::is_same_v<T, DeviceFrameBuffer>)
+        {
+            return kind == RenderGraphResourceKind::FrameBuffer ? frameBuffer : nullptr;
+        }
+        else
+        {
+            static_assert(std::is_same_v<T, DeviceTexture> || std::is_same_v<T, DeviceFrameBuffer>,
+                "Unsupported RenderGraph resource type");
+        }
+    }
+
 	RenderGraphResourceDesc desc;
-	RenderGraphResourceKind kind = RenderGraphResourceKind::Texture;
+	RenderGraphResourceKind kind = RenderGraphResourceKind::Invalid;
 	DeviceTexture* texture = nullptr;
 	DeviceTexture* depthTexture = nullptr;
 	DeviceFrameBuffer* frameBuffer = nullptr;
@@ -233,9 +260,6 @@ public:
 	Camera* camera() const;
 	const RenderGraphPassDesc* pass() const;
 	const RenderGraphResource* resource(RenderGraphResourceHandle handle) const;
-	DeviceTexture* texture(RenderGraphResourceHandle handle) const;
-	DeviceTexture* depthTexture(RenderGraphResourceHandle handle) const;
-	DeviceFrameBuffer* frameBuffer(RenderGraphResourceHandle handle) const;
 	DeviceFrameBuffer* targetFrameBuffer() const;
 	DeviceMaterial* material() const;
 	DeviceDescriptor* materialDescriptor() const;
@@ -246,6 +270,7 @@ public:
 	void bindSinglePipelineDescriptorCompute();
 	void drawQueue(RenderQueue* renderQueue, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default);
 	void drawSceneQueue(MaterialTechniqueType techniqueType = MaterialTechniqueType::Default);
+	bool bindItemUniform(uint32_t binding, const void* data, size_t size);
 	void bindTexture(uint32_t binding, RenderGraphResourceHandle resource);
 	void bindTextures(uint32_t binding, const std::vector<RenderGraphResourceHandle>& resources);
 	void drawScreenQuad();
@@ -273,9 +298,6 @@ public:
 	RenderQueue* sceneQueue() const;
 	const RenderGraphPassDesc* pass() const;
 	const RenderGraphResource* resource(RenderGraphResourceHandle handle) const;
-	DeviceTexture* texture(RenderGraphResourceHandle handle) const;
-	DeviceTexture* depthTexture(RenderGraphResourceHandle handle) const;
-	DeviceFrameBuffer* frameBuffer(RenderGraphResourceHandle handle) const;
 
 private:
 	friend class RenderGraph;
@@ -343,7 +365,7 @@ private:
 class RenderGraph
 {
 public:
-	RenderGraph() = default;
+	RenderGraph();
 	~RenderGraph();
 	RenderGraph(const RenderGraph&) = delete;
 	RenderGraph& operator=(const RenderGraph&) = delete;
@@ -363,7 +385,10 @@ public:
 	RenderGraphNode addPresentNode(const std::string& name, RenderGraphResourceHandle resource);
 	RenderGraphResourceHandle importSwapChainFrameBuffer(uint32_t imageIndex);
 	RenderGraphResourceHandle importSampledTexture(const std::string& name, DeviceTexture* texture);
+	RenderGraphResourceHandle createTexture(const RenderGraphResourceDesc& desc);
 	RenderGraphResourceHandle createTexture(const RenderGraphResourceDesc& desc, const unsigned char* pixels);
+	// Borrowed until clearResources(); compiled stages are released before these shaders.
+	DeviceShaderCollection* createComputeShader(const std::string& path);
 	RenderGraphPassHandle addRasterPass(const RenderGraphRasterPassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
 	RenderGraphPassHandle addFullscreenPass(const RenderGraphRasterPassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
 	RenderGraphPassHandle addComputePass(const RenderGraphComputePassDesc& desc, std::function<void(RenderGraphPassContext&)> execute = nullptr);
@@ -383,9 +408,6 @@ public:
 	DeviceFrameBuffer* passFrameBuffer(RenderGraphPassHandle handle) const;
 	RenderGraphResource* resource(RenderGraphResourceHandle handle);
 	const RenderGraphResource* resource(RenderGraphResourceHandle handle) const;
-	DeviceTexture* texture(RenderGraphResourceHandle handle) const;
-	DeviceTexture* depthTexture(RenderGraphResourceHandle handle) const;
-	DeviceFrameBuffer* frameBuffer(RenderGraphResourceHandle handle) const;
 	bool validate(std::string* outMessage = nullptr) const;
 	std::string dump() const;
 	std::string dump(RenderGraphNode root) const;
@@ -442,8 +464,10 @@ private:
 
 	std::vector<RenderGraphPassDesc> m_passes;
 	std::vector<RenderGraphResource> m_resources;
+	uint64_t m_resourceGeneration = 1;
 	std::vector<RasterPassCacheEntry> m_rasterPassCache;
 	std::vector<ComputePassCacheEntry> m_computePassCache;
+	std::vector<std::unique_ptr<DeviceShaderCollection>> m_ownedShaders;
 	std::vector<std::string> m_resourceRegistrationErrors;
 	std::vector<uint32_t> m_compiledPassOrder;
 	bool m_hasCompiledOrder = false;

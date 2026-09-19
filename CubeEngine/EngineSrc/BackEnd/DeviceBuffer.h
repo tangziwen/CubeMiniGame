@@ -1,4 +1,5 @@
 #pragma once
+#include <cstddef>
 
 
 namespace tzw
@@ -31,6 +32,17 @@ public:
 	virtual void copyFrom( void * ptr, size_t size, size_t memOffset = 0);
 protected:
 	size_t m_alignment = 0;
+};
+
+// Borrows a range from its buffer owner; mapping does not transfer ownership.
+struct DeviceItemBuffer
+{
+    DeviceBuffer* m_buffer = nullptr;
+    size_t m_offset = 0;
+    size_t m_size = 0;
+    void map();
+    void copyFrom(const void* ptr, size_t size, size_t memOffset = 0);
+    void unMap();
 };
 };
 

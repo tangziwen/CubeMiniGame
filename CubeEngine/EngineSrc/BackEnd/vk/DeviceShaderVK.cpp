@@ -10,6 +10,11 @@
 #include "Base/TAssert.h"
 namespace tzw
 {
+    DeviceShaderVK::~DeviceShaderVK()
+    {
+        if(m_rawModule) vkDestroyShaderModule(VKRenderBackEnd::shared()->getDevice(), m_rawModule, nullptr);
+    }
+
 	void DeviceShaderVK::compile(const unsigned char* buff, size_t size, 
 		DeviceShaderType type, const unsigned char* fileInfoStr)
 	{
@@ -65,7 +70,7 @@ namespace tzw
 
 
 		    printf("Image %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
-            DeviceShaderVKLocationInfo info;
+            DeviceShaderBindingInfo info;
 
 
             const spirv_cross::SPIRType &valType = glsl.get_type(resource.type_id); // Notice how we're using type_id here because we need the array information and not decoration information.
@@ -77,18 +82,8 @@ namespace tzw
             info.set = set;
             info.binding = binding;
             info.name = resource.name;
-            info.type = DeviceShaderVKLocationType::Sampler;
-            if(type == DeviceShaderType::VertexShader){
-                info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
-            }
-            else if(type == DeviceShaderType::ComputeShader)
-            {
-                info.stageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
-            }
-            else{
-        
-                info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
-            }
+            info.type = DeviceShaderBindingType::Sampler;
+            info.stageMask = g_ShaderStageMask(type);
             m_nameInfoMap[resource.name.c_str()] = info;
             m_setInfoMap[set].emplace_back(info);
 	    }
@@ -103,19 +98,13 @@ namespace tzw
             uint32_t member_count = uniformBufferType.member_types.size();
             glsl.get_member_name(resource.base_type_id, 0);
 		    printf("Uniform %s at set = %u, binding = %u, size %u name %s\n", resource.name.c_str(), set, binding,uniformBufferStructSize, varName.c_str());
-            DeviceShaderVKLocationInfo info;
+            DeviceShaderBindingInfo info;
             info.set = set;
             info.binding = binding;
-            info.type = DeviceShaderVKLocationType::Uniform;
+            info.type = DeviceShaderBindingType::Uniform;
             info.size = uniformBufferStructSize;
             info.name = resource.name;
-            if(type == DeviceShaderType::VertexShader){
-                info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
-            }
-            else{
-        
-                info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
-            }
+            info.stageMask = g_ShaderStageMask(type);
             //uniform block each member
             for (int i = 0; i < member_count; i++)
             {
@@ -135,22 +124,12 @@ namespace tzw
 		    unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
 		    unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
 		    printf("Storage Buffer %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
-            DeviceShaderVKLocationInfo info;
+            DeviceShaderBindingInfo info;
             info.set = set;
             info.binding = binding;
             info.name = resource.name;
-            info.type = DeviceShaderVKLocationType::StorageBuffer;
-            if(type == DeviceShaderType::VertexShader){
-                info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
-            }
-            else if(type == DeviceShaderType::ComputeShader)
-            {
-                info.stageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
-            }
-            else
-            {
-                info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
-            }
+            info.type = DeviceShaderBindingType::StorageBuffer;
+            info.stageMask = g_ShaderStageMask(type);
             m_nameInfoMap[resource.name.c_str()] = info;
             m_setInfoMap[set].emplace_back(info);
         }
@@ -160,22 +139,12 @@ namespace tzw
 		    unsigned set = glsl.get_decoration(resource.id, spv::DecorationDescriptorSet);
 		    unsigned binding = glsl.get_decoration(resource.id, spv::DecorationBinding);
 		    printf("Storage Image %s at set = %u, binding = %u\n", resource.name.c_str(), set, binding);
-            DeviceShaderVKLocationInfo info;
+            DeviceShaderBindingInfo info;
             info.set = set;
             info.binding = binding;
             info.name = resource.name;
-            info.type = DeviceShaderVKLocationType::StorageImage;
-            if(type == DeviceShaderType::VertexShader){
-                info.stageFlag |= VK_SHADER_STAGE_VERTEX_BIT;
-            }
-            else if(type == DeviceShaderType::ComputeShader)
-            {
-                info.stageFlag |= VK_SHADER_STAGE_COMPUTE_BIT;
-            }
-            else
-            {
-                info.stageFlag |= VK_SHADER_STAGE_FRAGMENT_BIT;
-            }
+            info.type = DeviceShaderBindingType::StorageImage;
+            info.stageMask = g_ShaderStageMask(type);
             m_nameInfoMap[resource.name.c_str()] = info;
             m_setInfoMap[set].emplace_back(info);
         }

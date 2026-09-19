@@ -24,10 +24,10 @@ void ShadowView::init()
 
 	RenderGraphResourceDesc desc;
 	desc.name = "Shadow." + std::to_string(m_cascadeIndex);
-	desc.format = ImageFormat::D24_S8;
+	desc.format = ImageFormat::D24_UNorm_S8_UInt;
 	desc.role = TextureRoleEnum::AS_DEPTH;
 	desc.size = vec2(ShadowMap::shared()->getShadowMapSize(), ShadowMap::shared()->getShadowMapSize());
-	m_frameBuffer = m_renderGraph.createFrameBuffer(desc, {{ImageFormat::D24_S8, true}},
+	m_frameBuffer = m_renderGraph.createFrameBuffer(desc, {{ImageFormat::D24_UNorm_S8_UInt, true}},
 		DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
 	m_depth = m_renderGraph.depthAttachment(m_frameBuffer);
 	addSubmitDrawPass(DrawPassType::Shadow);

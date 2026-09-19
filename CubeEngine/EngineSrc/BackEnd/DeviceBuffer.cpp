@@ -50,3 +50,18 @@ void tzw::DeviceBuffer::unmap()
 void tzw::DeviceBuffer::copyFrom(void* ptr, size_t size, size_t memOffset)
 {
 }
+
+void tzw::DeviceItemBuffer::map()
+{
+    m_buffer->map();
+}
+
+void tzw::DeviceItemBuffer::copyFrom(const void* ptr, size_t size, size_t memOffset)
+{
+    m_buffer->copyFrom(const_cast<void*>(ptr), size, m_offset + memOffset);
+}
+
+void tzw::DeviceItemBuffer::unMap()
+{
+    m_buffer->unmap();
+}

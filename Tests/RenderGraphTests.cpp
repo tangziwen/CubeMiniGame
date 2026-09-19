@@ -54,6 +54,10 @@ namespace
 {
 class FakeTexture final : public DeviceTexture
 {
+public:
+    explicit FakeTexture(int* destroyed = nullptr) : destroyed(destroyed) {}
+    ~FakeTexture() override { if(destroyed) ++*destroyed; }
+    int* destroyed;
 };
 
 class FakeFrameBuffer final : public DeviceFrameBuffer
@@ -179,13 +183,35 @@ public:
 	void updateDescriptorByBinding(int, DeviceBuffer*, size_t, size_t) override {}
 	void updateDescriptorByBinding(int, DeviceItemBuffer*) override {}
 	void updateDescriptorByBindingAsStorageImage(int, DeviceTexture*) override {}
+    bool updateUniformByBinding(int binding, const void* data, size_t size) override
+    {
+        if(!data || !size) return false;
+        uniformBinding = binding;
+        auto bytes = static_cast<const uint8_t*>(data);
+        uniform.assign(bytes, bytes + size);
+        return true;
+    }
+    int uniformBinding = -1;
+    std::vector<uint8_t> uniform;
+};
+
+class FakeMaterial final : public DeviceMaterial
+{
+public:
+    DeviceDescriptor* getMaterialDescriptorSet() override { return &descriptor; }
+    void updateUniform() override {}
+    void initCompute(DeviceShaderCollection*) override {}
+    void init(MaterialInstance*, MaterialTechniqueType) override {}
+    void updateUniformSingle(std::string, void*, size_t) override {}
+    void updateMaterialDescriptorSet() override {}
+    FakeDescriptor descriptor;
 };
 
 class FakePipeline final : public DevicePipeline
 {
 public:
 	void initCompute(DeviceShaderCollection*) override {}
-	void init(vec2, MaterialInstance*, DeviceRenderPass*, DeviceVertexInput, bool, DeviceVertexInput, int,
+	void init(vec2, MaterialInstance*, DeviceRenderPass*, VertexLayout, bool, VertexLayout, int,
 		MaterialTechniqueType) override {}
 	void resetItemWiseDescritporSet() override {}
 	DeviceDescriptor* giveItemWiseDescriptorSet() override { return &descriptor; }
@@ -204,7 +230,12 @@ public:
 	void endCompute() override {}
 	void createSinglePipeline(MaterialInstance*, const VertexLayout&, bool) override { m_singlePipeline = new FakePipeline(); }
 	void bindSinglePipelineDescriptor() override {}
-	void bindSinglePipelineDescriptor(DeviceDescriptor*) override {}
+	void bindSinglePipelineDescriptor(DeviceDescriptor* descriptor) override
+    {
+        auto fake = static_cast<FakeDescriptor*>(descriptor);
+        uniformBindings.push_back(fake->uniformBinding);
+        uniformUploads.push_back(fake->uniform);
+    }
 	void bindSinglePipelineDescriptorCompute() override {}
 	void bindPipeline(DevicePipeline*) override {}
 	void bindDescriptor(DevicePipeline*, std::vector<DeviceDescriptor*>) override {}
@@ -220,6 +251,8 @@ public:
 		lastFirstIndex = first;
 		lastVertexOffset = offset;
 	}
+	std::vector<int> uniformBindings;
+    std::vector<std::vector<uint8_t>> uniformUploads;
 	RenderQueue* lastQueue = nullptr;
 	Camera* observedCamera = nullptr;
 	bool index32 = false;
@@ -237,10 +270,22 @@ public:
 	FakeBackend() : previous(Engine::shared()->getRenderBackEnd()) { Engine::shared()->setRenderBackEnd(this); }
 	~FakeBackend() { Engine::shared()->setRenderBackEnd(previous); }
 	DeviceTexture* loadTextureRaw_imp(const unsigned char*, int, int, ImageFormat, unsigned int) override { return new FakeTexture(); }
-	DeviceShaderCollection* createShader_imp() override { return nullptr; }
+	DeviceTexture* createTexture_imp(const DeviceTextureDesc& desc) override
+    {
+        lastTextureDesc = desc;
+        auto texture = new FakeTexture(&destroyedTextures);
+        texture->m_metaInfo.width = desc.width;
+        texture->m_metaInfo.height = desc.height;
+        texture->m_metaInfo.m_imageFormat = desc.format;
+        texture->setTextureRole(desc.role);
+        texture->setTextureUsage(desc.usage);
+        return texture;
+    }
+    DeviceShaderCollection* createShader_imp() override { return nullptr; }
 	DeviceBuffer* createBuffer_imp() override { return new FakeBuffer(); }
 	DeviceRenderPass* createDeviceRenderpass_imp() override { return new FakeRenderPass(); }
-	DevicePipeline* createPipeline_imp() override { return nullptr; }
+	DevicePipeline* createPipeline_imp() override { return new FakePipeline(); }
+    DeviceMaterial* createDeviceMaterial_imp() override { return new FakeMaterial(); }
 	DeviceRenderStage* createRenderStage_imp() override
 	{
 		auto stage = new FakeStage();
@@ -251,6 +296,8 @@ public:
 	DeviceFrameBuffer* getSwapChainFrameBuffer(unsigned int) override { return swapchain; }
 	void prepareFrame() override {}
 	void endFrame(RenderPath*) override {}
+	DeviceTextureDesc lastTextureDesc;
+    int destroyedTextures = 0;
 	RenderBackEndBase* previous;
 	DeviceFrameBuffer* swapchain = nullptr;
 	std::vector<FakeStage*> stages;
@@ -272,7 +319,7 @@ RenderGraphResourceDesc textureDesc(const std::string& name)
 {
 	RenderGraphResourceDesc desc;
 	desc.name = name;
-	desc.format = ImageFormat::R8G8B8A8;
+	desc.format = ImageFormat::RGBA8_UNorm;
 	desc.role = TextureRoleEnum::AS_COLOR;
 	desc.size = vec2(64.0f, 64.0f);
 	desc.initialColorLayout = RenderGraphResourceLayout::ShaderRead;
@@ -290,6 +337,126 @@ RenderGraphNode addReadRoot(RenderGraph& graph, RenderGraphResourceHandle resour
 	desc.name = name;
 	desc.readColor(resource);
 	return graph.addExternalNode(desc);
+}
+
+void testTypedResourceHandles()
+{
+    FakeBackend backend;
+    RenderGraph graph;
+    FakeTexture texture;
+    auto handle = importTexture(graph, texture, "TypedTexture");
+    expect(handle->type() == RenderGraphResourceKind::Texture && handle->get<DeviceTexture>() == &texture,
+        "resource exposes its type and borrowed device object");
+    expect(handle->get<DeviceFrameBuffer>() == nullptr, "resource type mismatch must return null");
+    FakeFrameBuffer buffer({&texture});
+    auto frame = graph.importFrameBuffer(textureDesc("TypedFrame"), &buffer);
+    expect(frame->get<DeviceFrameBuffer>() == &buffer && frame->get<DeviceTexture>() == nullptr,
+        "framebuffer resources expose only their matching device type");
+    // Force registry growth; a handle must resolve the resource rather than cache a vector element address.
+    for(int i = 0; i < 64; ++i) graph.createTexture(textureDesc("Scratch"));
+    expect(handle->get<DeviceTexture>() == &texture, "resource handles survive registry reallocation");
+    RenderGraph other;
+    expect(other.resource(handle) == nullptr, "a foreign graph must reject the handle");
+    graph.clearResources();
+    auto replacement = importTexture(graph, texture, "Replacement");
+    expect(replacement.isValid() && !handle.isValid() && handle->type() == RenderGraphResourceKind::Invalid
+        && handle->get<DeviceTexture>() == nullptr, "clearing resources invalidates old handles even when indices are reused");
+    expect(RenderGraphResourceHandle::invalid()->get<DeviceTexture>() == nullptr,
+        "invalid resource handles safely resolve to null device objects");
+}
+
+void testOwnedEmptyTexture()
+{
+    FakeBackend backend;
+    RenderGraph graph;
+    auto desc = textureDesc("BloomScratch");
+    desc.format = ImageFormat::RGBA16_Float;
+    auto scratch = graph.createTexture(desc);
+    expect(scratch.isValid() && backend.lastTextureDesc.format == ImageFormat::RGBA16_Float,
+        "empty texture factory must preserve the requested HDR format");
+    expect(graph.resource(scratch)->ownsTexture && !graph.resource(scratch)->contentsInitialized,
+        "graph owns empty textures without pretending their contents are initialized");
+    auto read = addReadRoot(graph, scratch);
+    std::string message;
+    expect(!graph.compile(read, &message), "empty texture must reject reads before its first write");
+    graph.beginBuild();
+    FakeTexture source;
+    auto sourceHandle = importTexture(graph, source, "Source");
+    auto copy = graph.addBlitNode("Initialize", sourceHandle, scratch);
+    auto root = addReadRoot(graph, scratch).dependsOn(copy);
+    expect(graph.compile(root, &message), "first write then read must compile: " + message);
+    FakeRenderCommand command;
+    RenderGraphContext context(&command, nullptr, nullptr);
+    expect(graph.execute(context, &message), "empty texture initialization must execute: " + message);
+    bool initializedFromUndefined = false;
+    for(const auto& barrier : command.barriers)
+    {
+        if(barrier.texture == scratch->get<DeviceTexture>()
+            && barrier.before.layout == DeviceTextureLayout::Undefined
+            && barrier.before.usage == DeviceTextureUsage::None
+            && barrier.after.layout == DeviceTextureLayout::TransferDst) initializedFromUndefined = true;
+    }
+    expect(initializedFromUndefined, "first GPU write must transition the new texture from Undefined");
+    graph.clearResources();
+    expect(backend.destroyedTextures == 1, "clearing graph must destroy owned texture exactly once");
+    graph.clearResources();
+    expect(backend.destroyedTextures == 1, "repeated clear must not destroy borrowed or already released textures");
+}
+
+void testNeutralStageAndUniformUpload()
+{
+    FakeBackend backend;
+    RenderGraph graph;
+    FakeTexture color;
+    FakeFrameBuffer frameBuffer({&color});
+    auto target = graph.importFrameBuffer(textureDesc("UniformTarget"), &frameBuffer);
+    RenderGraphRasterPassDesc desc;
+    desc.name = "UniformUploads";
+    desc.frameBufferResource = target;
+    desc.attachments = {{ImageFormat::RGBA8_UNorm, false}};
+    desc.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
+    MaterialInstance material;
+    desc.material = &material;
+    RenderGraphPassDesc accesses;
+    accesses.writeColor(graph.colorAttachment(target));
+    desc.resourceAccesses = accesses.resourceAccesses;
+    auto node = graph.addFullscreenNode(desc, [](RenderGraphPassContext& context)
+    {
+        uint32_t value = 17;
+        expect(context.bindItemUniform(3, &value, sizeof(value)), "first uniform upload must succeed");
+        value = 29;
+        expect(context.bindItemUniform(3, &value, sizeof(value)), "second draw gets its own uploaded value");
+        expect(!context.bindItemUniform(3, nullptr, sizeof(value)), "null uniforms must be rejected");
+        expect(!context.bindItemUniform(3, &value, 0), "empty uniforms must be rejected");
+    });
+    std::string message;
+    expect(graph.compile(node, &message), "neutral full-screen pass must compile: " + message);
+    FakeRenderCommand command;
+    RenderGraphContext context(&command, nullptr, nullptr);
+    expect(graph.execute(context, &message), "common stage must work with a non-Vulkan backend: " + message);
+    auto stage = backend.stages.back();
+    expect(stage->uniformUploads.size() == 2 && stage->uniformBindings == std::vector<int>({3, 3}),
+        "uniform bindings must reach the backend once per valid upload");
+    if(stage->uniformUploads.size() == 2)
+    {
+        uint32_t first = 0, second = 0;
+        std::memcpy(&first, stage->uniformUploads[0].data(), sizeof(first));
+        std::memcpy(&second, stage->uniformUploads[1].data(), sizeof(second));
+        expect(first == 17 && second == 29, "uploads must snapshot CPU data rather than retain stack pointers");
+    }
+}
+
+void testBasicImageFormats()
+{
+    expect(ImageFormatGetSize(ImageFormat::RGB8_UNorm) == 3
+        && ImageFormatGetSize(ImageFormat::RGBA8_UNorm) == 4
+        && ImageFormatGetSize(ImageFormat::RGB16_UNorm) == 6
+        && ImageFormatGetSize(ImageFormat::RGBA16_Float) == 8, "RGB/RGBA byte sizes must preserve channel precision");
+    expect(ImageFormatGetSize(ImageFormat::D16_UNorm) == 2
+        && ImageFormatGetSize(ImageFormat::D32_Float) == 4, "D16 and D32 must report their actual byte sizes");
+    expect(ImageFormatIsDepth(ImageFormat::D16_UNorm) && ImageFormatIsDepth(ImageFormat::D32_Float)
+        && !ImageFormatHasStencil(ImageFormat::D16_UNorm) && !ImageFormatHasStencil(ImageFormat::D32_Float)
+        && ImageFormatHasStencil(ImageFormat::D24_UNorm_S8_UInt), "depth-only formats must not acquire a stencil aspect");
 }
 
 void testDependencyCycle()
@@ -434,7 +601,7 @@ void testAttachmentIdentityAndConflict()
 
 	auto conflictDesc = textureDesc("ConflictingDepthImport");
 	conflictDesc.role = TextureRoleEnum::AS_DEPTH;
-	conflictDesc.format = ImageFormat::D16;
+	conflictDesc.format = ImageFormat::D16_UNorm;
 	auto conflict = graph.importTexture(conflictDesc, &shared);
 	expect(!conflict.isValid(), "conflicting import metadata must be rejected");
 	auto root = addReadRoot(graph, firstColor);
@@ -455,7 +622,7 @@ void testImportedFrameBufferRebind()
 	expect(graph.rebindImportedFrameBuffer(frameBufferHandle, &newFrameBuffer, RenderGraphResourceLayout::ShaderRead),
 		"imported framebuffer with the same attachment shape should rebind");
 	expect(graph.colorAttachment(frameBufferHandle).index() == colorHandle.index(), "rebind must preserve attachment handles");
-	expect(graph.texture(colorHandle) == &newTexture, "rebind must update the attachment texture pointer");
+	expect(colorHandle->get<DeviceTexture>() == &newTexture, "rebind must update the attachment texture pointer");
 	auto frameBufferResource = graph.resource(frameBufferHandle);
 	auto colorResource = graph.resource(colorHandle);
 	expect(frameBufferResource && frameBufferResource->desc.size.x == 128 && frameBufferResource->desc.size.y == 96,
@@ -617,7 +784,7 @@ void testRebindRejectsSharedAndDuplicateAttachments()
 	expect(graph.compile(root), "graph using shared imported attachments should compile");
 	expect(!graph.rebindImportedFrameBuffer(firstHandle, &rebound, RenderGraphResourceLayout::ShaderRead),
 		"rebind must reject replacing an attachment shared by another framebuffer");
-	expect(graph.texture(graph.colorAttachment(secondHandle)) == &shared && graph.frameBuffer(firstHandle) == &first,
+	expect(graph.colorAttachment(secondHandle)->get<DeviceTexture>() == &shared && firstHandle->get<DeviceFrameBuffer>() == &first,
 		"failed shared rebind must leave all original bindings intact");
 	FakeRenderCommand command;
 	RenderGraphContext context(&command, nullptr, nullptr);
@@ -629,7 +796,7 @@ void testRebindRejectsSharedAndDuplicateAttachments()
 	auto multipleHandle = graph.importFrameBuffer(textureDesc("Multiple"), &multiple);
 	expect(!graph.rebindImportedFrameBuffer(multipleHandle, &duplicates, RenderGraphResourceLayout::ShaderRead),
 		"rebind must reject duplicate new texture pointers before mutating resource identities");
-	expect(graph.frameBuffer(multipleHandle) == &multiple, "duplicate attachment rejection must preserve the framebuffer");
+	expect(multipleHandle->get<DeviceFrameBuffer>() == &multiple, "duplicate attachment rejection must preserve the framebuffer");
 }
 
 void testDepthOnlyRebindAndUpdatedMetadata()
@@ -681,7 +848,7 @@ void testImplicitRasterFinalLayouts()
 	desc.initialColorLayout = RenderGraphResourceLayout::ColorAttachment;
 	auto target = graph.importFrameBuffer(desc, &frameBuffer);
 	FakeRenderPass renderPass;
-	renderPass.init({{ImageFormat::R8G8B8A8, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
+	renderPass.init({{ImageFormat::RGBA8_UNorm, false}, {ImageFormat::D24_UNorm_S8_UInt, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
 	RenderGraphPassDesc accesses;
 	accesses.writeColor(graph.colorAttachment(target), RenderGraphResourceLayout::ShaderRead)
 		.writeDepth(graph.depthAttachment(target), RenderGraphResourceLayout::DepthRead);
@@ -774,7 +941,7 @@ void testMultipleViewQueuesAndCameras()
 	RenderGraphRasterPassDesc pass;
 	pass.name = "Shadow";
 	pass.frameBufferResource = shadow;
-	pass.attachments = {{ImageFormat::D24_S8, true}};
+	pass.attachments = {{ImageFormat::D24_UNorm_S8_UInt, true}};
 	pass.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
 	pass.sceneQueue = &shadowQueue;
 	RenderGraphPassDesc accesses;
@@ -786,7 +953,7 @@ void testMultipleViewQueuesAndCameras()
 	{
 		pass.name = "Scene";
 		pass.frameBufferResource = target;
-		pass.attachments = {{ImageFormat::R8G8B8A8, false}};
+		pass.attachments = {{ImageFormat::RGBA8_UNorm, false}};
 		pass.sceneQueue = queue;
 		pass.camera = camera;
 		accesses.resourceAccesses.clear();
@@ -834,7 +1001,7 @@ void testIndexedOverlayAndPresent()
 		RenderGraphRasterPassDesc pass;
 		pass.name = "ScreenComposite";
 		pass.frameBufferResource = target;
-		pass.attachments = {{ImageFormat::R8G8B8A8, false}};
+		pass.attachments = {{ImageFormat::RGBA8_UNorm, false}};
 		pass.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
 		RenderGraphPassDesc accesses;
 		accesses.writeColor(color);
@@ -897,6 +1064,10 @@ int main()
 {
 	using namespace tzw;
 	Engine::shared()->setRenderBackEnd(nullptr);
+	testTypedResourceHandles();
+	testOwnedEmptyTexture();
+	testNeutralStageAndUniformUpload();
+	testBasicImageFormats();
 	testDependencyCycle();
 	testInvalidResourceHandle();
 	testGraphOwnedReadBeforeWrite();

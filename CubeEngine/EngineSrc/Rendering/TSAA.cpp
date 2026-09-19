@@ -19,8 +19,8 @@ namespace tzw
 			MaterialPool::shared()->addMaterial("TSAA", m_material);
 		}
 		m_attachments = {
-			{ImageFormat::R16G16B16A16, false},
-			{ImageFormat::D24_S8, true}
+			{ImageFormat::RGBA16_UNorm, false},
+			{ImageFormat::D24_UNorm_S8_UInt, true}
 		};
         m_offset = vec2(0, 0);
 		m_index = 0;

@@ -9,6 +9,21 @@
 #include "EngineSrc/Utility/log/Log.h"
 #include "Base/TAssert.h"
 namespace tzw{
+DeviceShaderCollectionVK::~DeviceShaderCollectionVK()
+{
+    for(auto layout : m_descriptorSetLayouts)
+    {
+        if(!layout) continue;
+        vkDestroyDescriptorSetLayout(VKRenderBackEnd::shared()->getDevice(), layout->getLayout(), nullptr);
+        delete layout;
+    }
+    delete m_vsShader;
+    delete m_fsShader;
+    delete m_tsShader;
+    delete m_teShader;
+    delete m_csShader;
+}
+
 void DeviceShaderCollectionVK::addShader(const unsigned char* buff, size_t size, DeviceShaderType type, const unsigned char* fileInfoStr)
 {
     assert(buff);
@@ -64,7 +79,7 @@ DeviceShaderVK * DeviceShaderCollectionVK::getCsModule()
     return m_csShader;
 }
 
-DeviceShaderVKLocationInfo DeviceShaderCollectionVK::getLocationInfo(std::string name)
+DeviceShaderBindingInfo DeviceShaderCollectionVK::getLocationInfo(std::string name)
 {
     auto result = m_nameInfoMap.find(name);
     if(result == m_nameInfoMap.end())
@@ -86,7 +101,7 @@ bool DeviceShaderCollectionVK::findLocationInfo(std::string name)
     return m_nameInfoMap.find(name)!= m_nameInfoMap.end();
 }
 
-std::unordered_map<std::string, DeviceShaderVKLocationInfo>& DeviceShaderCollectionVK::getNameLocationMap()
+std::unordered_map<std::string, DeviceShaderBindingInfo>& DeviceShaderCollectionVK::getNameLocationMap()
 {
     return m_nameInfoMap;
 }
@@ -159,19 +174,19 @@ void DeviceShaderCollectionVK::createDescriptorSetLayOut()
             {
                 bindingSet.insert(locationInfo.binding);
 
-                if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+                if(locationInfo.type == DeviceShaderBindingType::Uniform)
                 {
                     layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
                 }
-                else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+                else if(locationInfo.type == DeviceShaderBindingType::Sampler)
                 {
                     layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
                 }
-                else if(locationInfo.type == DeviceShaderVKLocationType::StorageBuffer)
+                else if(locationInfo.type == DeviceShaderBindingType::StorageBuffer)
                 {
                     layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
                 }
-                else if(locationInfo.type == DeviceShaderVKLocationType::StorageImage)
+                else if(locationInfo.type == DeviceShaderBindingType::StorageImage)
                 {
                     layOutBinding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
                 }
@@ -183,7 +198,7 @@ void DeviceShaderCollectionVK::createDescriptorSetLayOut()
                     layOutBinding.descriptorCount = 1;
                 }
                 
-                layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;//locationInfo.stageFlag;
+                layOutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_COMPUTE_BIT;
                 descriptorLayoutList.emplace_back(layOutBinding);
                 layout->addBinding(locationInfo.binding, locationInfo.name);
             }
@@ -220,7 +235,7 @@ bool DeviceShaderCollectionVK::isHavePerObjectDescriptorSetLayOut()
     return m_setInfoMap.find(1) != m_setInfoMap.end();
 }
 
-std::unordered_map<int, std::vector<DeviceShaderVKLocationInfo>>& DeviceShaderCollectionVK::getSetInfo()
+std::unordered_map<int, std::vector<DeviceShaderBindingInfo>>& DeviceShaderCollectionVK::getSetInfo()
 {
     return m_setInfoMap;
 }
@@ -232,18 +247,5 @@ DeviceDescriptorSetLayoutVK* DeviceShaderCollectionVK::getLayOutBySet(unsigned s
 
 
 
-int DeviceShaderVKLocationInfo::getBlockMemberIndex(std::string name)
-{
-    for(int i = 0; i < m_member.size(); i++)
-    {
-        if(m_member[i].name == name)
-        {
-            return i;
-        }
-    
-    }
-
-    return -1;
-}
 
 }

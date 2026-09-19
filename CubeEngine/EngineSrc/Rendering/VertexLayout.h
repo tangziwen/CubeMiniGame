@@ -11,6 +11,7 @@ enum class VertexAttributeFormat
     Float3,
     Float4,
     UNorm8x4,
+    UInt8x3,
 };
 
 struct VertexAttribute

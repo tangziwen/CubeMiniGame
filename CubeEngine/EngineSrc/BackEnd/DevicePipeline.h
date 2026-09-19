@@ -6,7 +6,7 @@
 #include <functional>
 #include "Rendering/RenderFlag.h"
 #include "Technique/MaterialTechnique.h"
-#include "vulkan/vulkan.h"
+#include "Rendering/VertexLayout.h"
 namespace tzw
 {
 class MaterialInstance;
@@ -14,19 +14,6 @@ class ShadingParams;
 class DeviceRenderPass;
 class DeviceDescriptor;
 class DeviceShaderCollection;
-struct DeviceVertexAttributeDescVK
-{
-	VkFormat format;
-	int offset;
-
-};
-struct DeviceVertexInput
-{
-	int stride;
-	void addVertexAttributeDesc(DeviceVertexAttributeDescVK vertexAttributeDesc);
-	std::vector<DeviceVertexAttributeDescVK> m_attributeList;
-
-};
 const uint32_t PIPELINE_DYNAMIC_STATE_FLAG_NONE = 0;
 const uint32_t PIPELINE_DYNAMIC_STATE_FLAG_VIEWPORT = 1 << 1;
 const uint32_t PIPELINE_DYNAMIC_STATE_FLAG_SCISSOR = 1 << 2;
@@ -42,7 +29,7 @@ public:
 	
 	virtual void initCompute(DeviceShaderCollection * computeShader) = 0;
 	virtual void init(vec2 viewPortSize, MaterialInstance * mat, DeviceRenderPass* targetRenderPass
-	                  ,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1,
+	                  ,VertexLayout vertexInput, bool isSupportInstancing, VertexLayout instanceVertexInput, int colorAttachmentCount = 1,
 	                  MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) = 0;
 	virtual void resetItemWiseDescritporSet() = 0;
 	virtual DeviceDescriptor * giveItemWiseDescriptorSet() = 0;

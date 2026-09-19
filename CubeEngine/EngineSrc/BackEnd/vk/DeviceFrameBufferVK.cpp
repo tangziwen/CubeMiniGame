@@ -43,7 +43,7 @@ namespace tzw
             }else
             {
                 auto texture = new DeviceTextureVK();
-                texture->initEmpty(w, h, ImageFormat::D24_S8, TextureRoleEnum::AS_DEPTH, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
+                texture->initEmpty(w, h, attachmentList[i].format, TextureRoleEnum::AS_DEPTH, TextureUsageEnum::SAMPLE_AND_ATTACHMENT);
                 m_depthTexture = texture;
                 m_textureList.emplace_back(texture);
             }

@@ -127,6 +127,7 @@ public:
 	VkImageView VKRenderBackEnd::createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags = VK_IMAGE_ASPECT_COLOR_BIT,int baseMipLevel = 0, int levelCount = 1);
     void createVKBuffer(size_t size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer&buffer, VkDeviceMemory& bufferMemory);
     DeviceMemoryPoolVK * getMemoryPool();
+    DeviceTexture* createTexture_imp(const DeviceTextureDesc& desc) override;
     VkFormat getFormat(ImageFormat imageFormat);
 
 	VkCommandBuffer beginSingleTimeCommands();
@@ -148,7 +149,7 @@ public:
     DeviceRenderPassVK* getScreenRenderPass();
     void beginDebugRegion(VkCommandBuffer cmd, const char * labelStr);
     void endDebugRegion(VkCommandBuffer cmd);
-    bool isWireframeRasterModeSupported() const;
+    bool isWireframeRasterModeSupported() const override;
 
     void setIsEnableValidation(bool newVal) {m_isEnableValidation = newVal;};
 private:

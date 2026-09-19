@@ -6,10 +6,11 @@ namespace tzw
 	class DeviceShaderVK: public DeviceShader
 	{
 	public:
+		~DeviceShaderVK() override;
 		void compile(const unsigned char * buff, size_t size, DeviceShaderType type, const unsigned char * fileInfoStr) override;
 		VkShaderModule getRawModule() { return m_rawModule;}
 	protected:
-		VkShaderModule m_rawModule;
+		VkShaderModule m_rawModule = VK_NULL_HANDLE;
 	};
 
 }

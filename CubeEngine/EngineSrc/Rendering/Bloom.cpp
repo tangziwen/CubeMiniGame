@@ -3,64 +3,44 @@
 #include <algorithm>
 
 #include "BackEnd/DeviceDescriptor.h"
-#include "BackEnd/DeviceFrameBuffer.h"
 #include "BackEnd/DeviceMaterial.h"
-#include "BackEnd/DeviceShaderCollection.h"
-#include "BackEnd/VkRenderBackEnd.h"
-#include "BackEnd/vk/DeviceTextureVK.h"
 #include "Engine/Engine.h"
 #include "RenderGraph.h"
 #include "Technique/MaterialInstance.h"
 #include "Technique/MaterialPool.h"
 #include "Technique/ShadingParams.h"
-#include "Utility/file/Tfile.h"
 
 namespace tzw
 {
 namespace
 {
-DeviceShaderCollection* loadComputeShader(VKRenderBackEnd* backEnd, const char* path, const char* debugName)
-{
-	auto shader = backEnd ? backEnd->createShader_imp() : nullptr;
-	if(!shader)
-	{
-		return nullptr;
-	}
-	Data data = Tfile::shared()->getData(path, false);
-	shader->addShader(static_cast<const unsigned char*>(data.getBytes()), data.getSize(),
-		DeviceShaderType::ComputeShader, reinterpret_cast<const unsigned char*>(debugName));
-	shader->finish();
-	return shader;
-}
-
 bool configureComputeMaterial(RenderGraphPassContext& graphContext, ShadingParams* params,
-	DeviceTexture* input, DeviceTexture* output)
+	RenderGraphResourceHandle input, RenderGraphResourceHandle output)
 {
 	auto material = graphContext.material();
 	auto descriptor = graphContext.materialDescriptor();
-	if(!material || !descriptor || !params || !input || !output)
+	if(!material || !descriptor || !params || !input.isValid() || !output.isValid())
 	{
 		return false;
 	}
 	material->setShadingParams(params);
 	material->updateMaterialDescriptorSet();
 	material->updateUniform();
-	descriptor->updateDescriptorByBindingAsStorageImage(1, input);
-	descriptor->updateDescriptorByBindingAsStorageImage(2, output);
+	descriptor->updateDescriptorByBindingAsStorageImage(1, input->get<DeviceTexture>());
+	descriptor->updateDescriptorByBindingAsStorageImage(2, output->get<DeviceTexture>());
 	graphContext.bindSinglePipelineDescriptorCompute();
 	return true;
 }
 }
 
-void Bloom::init(DeviceFrameBuffer* target)
+void Bloom::init(RenderGraph& graph, vec2 windowSize)
 {
-	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
 	if(!m_compositeMaterial)
 	{
-		m_brightShader = loadComputeShader(backEnd, "VulkanShaders/BrightPass.glsl", "BrightPass.glsl");
-		m_downSampleShader = loadComputeShader(backEnd, "VulkanShaders/DownSample.glsl", "DownSample.glsl");
-		m_blurShaders[0] = loadComputeShader(backEnd, "VulkanShaders/BlurV.glsl", "BlurV.glsl");
-		m_blurShaders[1] = loadComputeShader(backEnd, "VulkanShaders/BlurH.glsl", "BlurH.glsl");
+		m_brightShader = graph.createComputeShader("VulkanShaders/BrightPass.glsl");
+		m_downSampleShader = graph.createComputeShader("VulkanShaders/DownSample.glsl");
+		m_blurShaders[0] = graph.createComputeShader("VulkanShaders/BlurV.glsl");
+		m_blurShaders[1] = graph.createComputeShader("VulkanShaders/BlurH.glsl");
 
 		m_brightParams = new ShadingParams();
 		for(int layer = 0; layer < BLOOM_LAYERS - 1; layer++)
@@ -80,8 +60,7 @@ void Bloom::init(DeviceFrameBuffer* target)
 		MaterialPool::shared()->addMaterial("BloomCompositePass", m_compositeMaterial);
 	}
 
-	auto windowSize = target ? target->getSize() : Engine::shared()->winSize();
-	if(m_size.x == windowSize.x && m_size.y == windowSize.y && m_bloomTexture[0][0])
+	if(m_size.x == windowSize.x && m_size.y == windowSize.y && m_bloomTexture[0][0].isValid())
 	{
 		return;
 	}
@@ -107,17 +86,16 @@ void Bloom::init(DeviceFrameBuffer* target)
 	{
 		for(int index = 0; index < 2; index++)
 		{
-			delete m_bloomTexture[layer][index];
-			auto texture = new DeviceTextureVK();
-			auto size = layerSize(layer);
-			texture->initEmpty(static_cast<size_t>(size.x), static_cast<size_t>(size.y), ImageFormat::R16G16B16A16,
-				TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
-			m_bloomTexture[layer][index] = texture;
+            RenderGraphResourceDesc desc;
+            desc.name = "Bloom." + std::to_string(layer) + "." + std::to_string(index);
+            desc.size = layerSize(layer);
+            desc.format = ImageFormat::RGBA16_Float;
+            m_bloomTexture[layer][index] = graph.createTexture(desc);
 		}
 	}
 }
 
-void Bloom::executeBrightPass(RenderGraphPassContext& graphContext, DeviceTexture* sceneColor)
+void Bloom::executeBrightPass(RenderGraphPassContext& graphContext, RenderGraphResourceHandle sceneColor)
 {
 	if(configureComputeMaterial(graphContext, m_brightParams, sceneColor, m_bloomTexture[0][0]))
 	{
@@ -164,7 +142,7 @@ void Bloom::executeCompositePass(RenderGraphPassContext& graphContext)
 	}
 	for(int layer = 0; layer < BLOOM_LAYERS; layer++)
 	{
-		descriptor->updateDescriptorByBinding(layer + 1, m_bloomTexture[layer][0]);
+		graphContext.bindTexture(layer + 1, m_bloomTexture[layer][0]);
 	}
 	graphContext.bindSinglePipelineDescriptor();
 	graphContext.drawScreenQuad();
@@ -190,11 +168,11 @@ MaterialInstance* Bloom::compositeMaterial() const
 	return m_compositeMaterial;
 }
 
-DeviceTexture* Bloom::bloomTexture(int layer, int index) const
+RenderGraphResourceHandle Bloom::bloomTexture(int layer, int index) const
 {
 	if(layer < 0 || layer >= BLOOM_LAYERS || index < 0 || index >= 2)
 	{
-		return nullptr;
+		return RenderGraphResourceHandle::invalid();
 	}
 	return m_bloomTexture[layer][index];
 }

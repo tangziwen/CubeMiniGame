@@ -1,4 +1,4 @@
-#include "DeviceDEscriptorVK.h"
+#include "DeviceDescriptorVK.h"
 #include "../VkRenderBackEnd.h"
 #include "DeviceTextureVK.h"
 #include "DeviceBufferVK.h"
@@ -139,8 +139,19 @@ namespace tzw
     }
     void DeviceDescriptorVK::updateDescriptorByBinding(int binding, DeviceItemBuffer * itemBuff)
     {
-        updateDescriptorByBinding(binding, itemBuff->m_pool->getBuffer(), itemBuff->m_offset, itemBuff->m_size);
+        updateDescriptorByBinding(binding, itemBuff->m_buffer, itemBuff->m_offset, itemBuff->m_size);
     }
+    bool DeviceDescriptorVK::updateUniformByBinding(int binding, const void* data, size_t size)
+    {
+        if(!data || size == 0 || !m_layout->isHaveThisBinding(binding)) return false;
+        auto buffer = VKRenderBackEnd::shared()->getItemBufferPool()->giveMeItemBuffer(size);
+        buffer.map();
+        buffer.copyFrom(data, size);
+        buffer.unMap();
+        updateDescriptorByBinding(binding, &buffer);
+        return true;
+    }
+
     VkDescriptorSet DeviceDescriptorVK::getDescSet()
     {
         return m_descriptorSet;

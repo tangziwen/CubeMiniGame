@@ -37,7 +37,7 @@ namespace tzw
         m_csmShadowSystem->init(m_renderGraph);
 
         auto thumbnailPass = backEnd->createDeviceRenderpass_imp();
-        thumbnailPass->init({{ImageFormat::R8G8B8A8, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
+        thumbnailPass->init({{ImageFormat::RGBA8_UNorm, false}, {ImageFormat::D24_UNorm_S8_UInt, true}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
         m_thumbNailRenderStage = backEnd->createRenderStage_imp();
         m_thumbNailRenderStage->init(thumbnailPass, nullptr);
 
@@ -71,11 +71,11 @@ namespace tzw
         io.Fonts->GetTexDataAsRGBA32(&pixels, &width, &height);
         RenderGraphResourceDesc desc;
         desc.name = "ImGui.Font";
-        desc.format = ImageFormat::R8G8B8A8;
+        desc.format = ImageFormat::RGBA8_UNorm;
         desc.usage = TextureUsageEnum::SAMPLE_ONLY;
         desc.size = vec2(width, height);
         m_imguiFont = m_renderGraph.createTexture(desc, pixels);
-        io.Fonts->TexID = m_renderGraph.texture(m_imguiFont);
+        io.Fonts->TexID = m_imguiFont->get<DeviceTexture>();
         io.BackendFlags |= ImGuiBackendFlags_RendererHasVtxOffset;
     }
     SceneView* GraphicsRenderer::createSceneView(Camera* camera, vec2 size)
@@ -146,7 +146,7 @@ namespace tzw
         RenderGraphRasterPassDesc screen;
         screen.name = "Texture To Screen";
         screen.frameBufferResource = target;
-        screen.attachments = {{ImageFormat::Surface_Format, false}, {ImageFormat::D24_S8, true}};
+        screen.attachments = {{ImageFormat::Surface, false}, {ImageFormat::D24_UNorm_S8_UInt, true}};
         screen.opType = DeviceRenderPass::OpType::LOADCLEAR_AND_STORE;
         screen.material = m_textureToScreenMat;
         RenderGraphPassDesc accesses;
@@ -253,7 +253,7 @@ namespace tzw
         RenderGraphRasterPassDesc pass;
         pass.name = "ImGui";
         pass.frameBufferResource = target;
-        pass.attachments = {{ImageFormat::Surface_Format, false}, {ImageFormat::D24_S8, true}};
+        pass.attachments = {{ImageFormat::Surface, false}, {ImageFormat::D24_UNorm_S8_UInt, true}};
         pass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
         pass.material = m_imguiMat;
         RenderGraphPassDesc accesses;

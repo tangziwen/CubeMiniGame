@@ -675,7 +675,7 @@ VkApplicationInfo appInfo = {};
     void VKRenderBackEnd::CreateRenderPass()
     {
         m_screenRenderPass = new DeviceRenderPassVK();
-        m_screenRenderPass->init({{ImageFormat::Surface_Format, false}, {ImageFormat::D24_S8, true}}, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, false, true);
+        m_screenRenderPass->init({{ImageFormat::Surface, false}, {ImageFormat::D24_UNorm_S8_UInt, true}}, DeviceRenderPassVK::OpType::LOADCLEAR_AND_STORE, false, true);
     }
 
     void VKRenderBackEnd::CreateTextureToScreenRenderPass()
@@ -1032,30 +1032,33 @@ VkApplicationInfo appInfo = {};
     VkFormat VKRenderBackEnd::getFormat(ImageFormat imageFormat)
     {
         switch(imageFormat){
-        case ImageFormat::R8:
+        case ImageFormat::R8_UNorm:
             return VK_FORMAT_R8_UNORM;
-        case ImageFormat::R8G8:
+        case ImageFormat::RG8_UNorm:
             return VK_FORMAT_R8G8_UNORM;
-        case ImageFormat::R8G8B8:
+        case ImageFormat::RGB8_UNorm:
             return VK_FORMAT_R8G8B8_UNORM;
-        case ImageFormat::R8G8B8A8:
+        case ImageFormat::RGBA8_UNorm:
             return VK_FORMAT_R8G8B8A8_UNORM;
-        case ImageFormat::R8G8B8A8_S:
+        case ImageFormat::RGBA8_SNorm:
             return VK_FORMAT_R8G8B8A8_SNORM;
-        case ImageFormat::R16G16B16A16:
+        case ImageFormat::RGBA16_UNorm:
             return VK_FORMAT_R16G16B16A16_UNORM;
-        case ImageFormat::D16:
+        case ImageFormat::D16_UNorm:
             return VK_FORMAT_D16_UNORM;
-        case ImageFormat::D24_S8:
+        case ImageFormat::D24_UNorm_S8_UInt:
             return VK_FORMAT_D24_UNORM_S8_UINT;
-        case ImageFormat::D16_S8:
+        case ImageFormat::D16_UNorm_S8_UInt:
             return VK_FORMAT_D16_UNORM_S8_UINT;
-        case ImageFormat::R16G16B16A16_SFLOAT:
+        case ImageFormat::RGBA16_Float:
             return VK_FORMAT_R16G16B16A16_SFLOAT;
-        case ImageFormat::Surface_Format:
-            return GetSurfaceFormat().format;
+        case ImageFormat::RGB16_UNorm: return VK_FORMAT_R16G16B16_UNORM;
+        case ImageFormat::RGB16_Float: return VK_FORMAT_R16G16B16_SFLOAT;
+        case ImageFormat::D32_Float: return VK_FORMAT_D32_SFLOAT;
+        case ImageFormat::D32_Float_S8_UInt: return VK_FORMAT_D32_SFLOAT_S8_UINT;
+        case ImageFormat::Surface: return GetSurfaceFormat().format;
         }
-        return VK_FORMAT_R8G8B8A8_UNORM;
+        return VK_FORMAT_UNDEFINED;
     }
 
 void VKRenderBackEnd::createTextureImage()
@@ -1585,6 +1588,31 @@ void VKRenderBackEnd::initDevice(GLFWwindow * window)
     {
         DeviceTextureVK * texture = new DeviceTextureVK();
         texture->initDataRaw(buf, width, height,format);
+        return texture;
+    }
+
+    DeviceTexture* VKRenderBackEnd::createTexture_imp(const DeviceTextureDesc& desc)
+    {
+        if(!desc.width || !desc.height || desc.format == ImageFormat::Surface
+            || ImageFormatIsDepth(desc.format) != (desc.role == TextureRoleEnum::AS_DEPTH)) return nullptr;
+        VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+        if(desc.usage == TextureUsageEnum::SAMPLE_AND_ATTACHMENT)
+        {
+            usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+            usage |= desc.role == TextureRoleEnum::AS_DEPTH ? VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT
+                : VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT | VK_IMAGE_USAGE_STORAGE_BIT;
+        }
+        VkImageFormatProperties properties{};
+        const auto result = vkGetPhysicalDeviceImageFormatProperties(GetPhysDevice(), getFormat(desc.format),
+            VK_IMAGE_TYPE_2D, VK_IMAGE_TILING_OPTIMAL, usage, 0, &properties);
+        if(result != VK_SUCCESS || desc.width > properties.maxExtent.width || desc.height > properties.maxExtent.height)
+        {
+            tlogError("Unsupported empty texture format/usage/extent: format=%u, size=%ux%u.",
+                static_cast<unsigned>(desc.format), desc.width, desc.height);
+            return nullptr;
+        }
+        auto texture = new DeviceTextureVK();
+        texture->initEmpty(desc.width, desc.height, desc.format, desc.role, desc.usage, 1, VK_IMAGE_LAYOUT_UNDEFINED);
         return texture;
     }
 

@@ -1,20 +1,19 @@
 #pragma once
 #include "Math/vec2.h"
+#include "RenderGraph.h"
 namespace tzw
 {
 #define BLOOM_LAYERS (3)
 
-	class DeviceFrameBuffer;
 	class DeviceShaderCollection;
-	class DeviceTexture;
 	class RenderGraphPassContext;
 	class MaterialInstance;
 	class ShadingParams;
 	class Bloom
 	{
 	public:
-		void init(DeviceFrameBuffer * frameBuffer);
-		void executeBrightPass(RenderGraphPassContext& graphContext, DeviceTexture* sceneColor);
+		void init(RenderGraph& graph, vec2 size);
+		void executeBrightPass(RenderGraphPassContext& graphContext, RenderGraphResourceHandle sceneColor);
 		void executeDownSamplePass(RenderGraphPassContext& graphContext, int layer);
 		void executeBlurPass(RenderGraphPassContext& graphContext, int layer, int direction);
 		void executeCompositePass(RenderGraphPassContext& graphContext);
@@ -22,7 +21,7 @@ namespace tzw
 		DeviceShaderCollection* downSampleShader() const;
 		DeviceShaderCollection* blurShader(int direction) const;
 		MaterialInstance* compositeMaterial() const;
-		DeviceTexture* bloomTexture(int layer, int index) const;
+		RenderGraphResourceHandle bloomTexture(int layer, int index) const;
 		vec2 layerSize(int index) const;
 	private:
 		DeviceShaderCollection* m_brightShader = nullptr;
@@ -32,7 +31,7 @@ namespace tzw
 		ShadingParams* m_downSampleParams[BLOOM_LAYERS - 1] = {};
 		ShadingParams* m_blurParams[BLOOM_LAYERS][2] = {};
 		MaterialInstance* m_compositeMaterial = nullptr;
-		DeviceTexture * m_bloomTexture[BLOOM_LAYERS][2] = {};
+		RenderGraphResourceHandle m_bloomTexture[BLOOM_LAYERS][2] = {};
 		vec2 m_size = vec2(0, 0);
 	};
 

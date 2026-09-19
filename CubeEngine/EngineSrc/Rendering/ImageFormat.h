@@ -1,21 +1,27 @@
 #pragma once
+#include <cstddef>
 
-
-namespace tzw {
+namespace tzw
+{
 enum class ImageFormat
 {
-	R8,
-	R8G8,
-	R8G8B8,
-	R8G8B8A8,
-	R16G16B16A16,
-	D16,
-	D24_S8,
-	D16_S8,
-	R8G8B8A8_S,
-	R16G16B16A16_SFLOAT,
-	Surface_Format
+    R8_UNorm,
+    RG8_UNorm,
+    RGB8_UNorm,
+    RGBA8_UNorm,
+    RGBA16_UNorm,
+    D16_UNorm,
+    D24_UNorm_S8_UInt,
+    D16_UNorm_S8_UInt,
+    RGBA8_SNorm,
+    RGBA16_Float,
+    Surface,
+    RGB16_UNorm,
+    RGB16_Float,
+    D32_Float,
+    D32_Float_S8_UInt,
 };
 size_t ImageFormatGetSize(ImageFormat format);
-} // namespace tzw
-
+bool ImageFormatIsDepth(ImageFormat format);
+bool ImageFormatHasStencil(ImageFormat format);
+}

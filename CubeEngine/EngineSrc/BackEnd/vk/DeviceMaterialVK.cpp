@@ -233,7 +233,7 @@ namespace tzw
             switch(i.type)
             {
                 //currently the uniform descriptor only can show once, and always be called "t_shaderUnifom"
-                case DeviceShaderVKLocationType::Uniform:
+                case DeviceShaderBindingType::Uniform:
                 {
                     //update materials uniform buffer
                     VkDescriptorBufferInfo bufferInfo{};
@@ -252,7 +252,7 @@ namespace tzw
                     vkUpdateDescriptorSets(VKRenderBackEnd::shared()->getDevice(), 1, &writeSet, 0, nullptr);
                 }
                 break;
-                case DeviceShaderVKLocationType::Sampler:
+                case DeviceShaderBindingType::Sampler:
                 {
                     auto iter = varList.find(i.name);
                     if(iter != varList.end())
@@ -316,11 +316,11 @@ namespace tzw
         {
             for(auto & locationInfo : iter.second){
         	    if(locationInfo.set != MATERIAL_DESCRIPTOR_SET_ID) continue;
-                if(locationInfo.type == DeviceShaderVKLocationType::Uniform)
+                if(locationInfo.type == DeviceShaderBindingType::Uniform)
                 {
                     uniformBuffCount ++;
                 }
-                else if(locationInfo.type == DeviceShaderVKLocationType::Sampler)
+                else if(locationInfo.type == DeviceShaderBindingType::Sampler)
                 {
                     if(locationInfo.arraySize > 0)
                     {
@@ -331,11 +331,11 @@ namespace tzw
                         textuerCount++;
                     }
                 }
-                if(locationInfo.type == DeviceShaderVKLocationType::StorageBuffer)
+                if(locationInfo.type == DeviceShaderBindingType::StorageBuffer)
                 {
                     storageBufferCount ++;
                 }
-                if(locationInfo.type == DeviceShaderVKLocationType::StorageImage)
+                if(locationInfo.type == DeviceShaderBindingType::StorageImage)
                 {
                     storageImageCount ++;
                 }

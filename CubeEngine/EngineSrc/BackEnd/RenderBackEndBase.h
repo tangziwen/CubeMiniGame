@@ -6,6 +6,7 @@ class GLFWwindow;
 
 namespace tzw {
 class DeviceTexture;
+struct DeviceTextureDesc;
 class DeviceRenderCommand;
 class DeviceShaderCollection;
 class DeviceBuffer;
@@ -21,6 +22,9 @@ public:
 	virtual void initDevice(GLFWwindow * window);
 	virtual DeviceTexture * loadTexture_imp(const unsigned char* buf, size_t buffSize, unsigned int loadingFlag);
 	virtual DeviceTexture * loadTextureRaw_imp(const unsigned char* buf, int width, int height, ImageFormat format, unsigned int loadingFlag)= 0;
+	// Creates an empty texture in Undefined state; the caller owns it.
+	virtual DeviceTexture* createTexture_imp(const DeviceTextureDesc& desc) { return nullptr; }
+	virtual bool isWireframeRasterModeSupported() const { return false; }
 	virtual DeviceShaderCollection * createShader_imp() = 0;
 	virtual DeviceBuffer * createBuffer_imp() = 0;
 	virtual DeviceRenderPass * createDeviceRenderpass_imp() = 0;

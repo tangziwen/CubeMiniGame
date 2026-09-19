@@ -1,4 +1,7 @@
 #include "RenderGraph.h"
+#include <cmath>
+#include "BackEnd/DeviceShaderCollection.h"
+#include "Utility/file/Tfile.h"
 
 #include "BackEnd/DeviceMaterial.h"
 #include "BackEnd/DeviceBuffer.h"
@@ -55,6 +58,8 @@ const char* layoutName(RenderGraphResourceLayout layout)
 	{
 	case RenderGraphResourceLayout::Unknown:
 		return "Unknown";
+	case RenderGraphResourceLayout::Undefined:
+		return "Undefined";
 	case RenderGraphResourceLayout::ColorAttachment:
 		return "ColorAttachment";
 	case RenderGraphResourceLayout::DepthAttachment:
@@ -162,6 +167,8 @@ RenderGraphResourceState stateForLayout(RenderGraphResourceLayout layout, bool)
 {
 	switch(layout)
 	{
+	case RenderGraphResourceLayout::Undefined:
+		return makeState(layout, RenderGraphResourceUsage::None);
 	case RenderGraphResourceLayout::ColorAttachment:
 		return makeState(layout, RenderGraphResourceUsage::ColorAttachmentWrite);
 	case RenderGraphResourceLayout::DepthAttachment:
@@ -348,6 +355,7 @@ bool RenderGraphIndexedDrawData::validate(std::string* outMessage) const
 		case VertexAttributeFormat::Float3: size = 12; break;
 		case VertexAttributeFormat::Float4: size = 16; break;
 		case VertexAttributeFormat::UNorm8x4: size = 4; break;
+		case VertexAttributeFormat::UInt8x3: size = 3; break;
 		}
 		if(size == 0 || attribute.offset > vertexLayout.stride || size > vertexLayout.stride - attribute.offset)
 		{
@@ -410,14 +418,21 @@ RenderGraphResourceHandle::RenderGraphResourceHandle()
 {
 }
 
-RenderGraphResourceHandle::RenderGraphResourceHandle(uint32_t index)
-	: m_index(index)
+RenderGraphResourceHandle::RenderGraphResourceHandle(const RenderGraph* graph, uint32_t index, uint64_t generation)
+	: m_index(index), m_graph(graph), m_generation(generation)
 {
 }
 
 bool RenderGraphResourceHandle::isValid() const
 {
-	return m_index != invalidResourceIndex();
+	return m_graph && m_graph->resource(*this) != nullptr;
+}
+
+const RenderGraphResource* RenderGraphResourceHandle::operator->() const
+{
+    static const RenderGraphResource invalidResource;
+    auto resource = m_graph ? m_graph->resource(*this) : nullptr;
+    return resource ? resource : &invalidResource;
 }
 
 uint32_t RenderGraphResourceHandle::index() const
@@ -557,21 +572,6 @@ const RenderGraphResource* RenderGraphContext::resource(RenderGraphResourceHandl
 	return m_graph ? m_graph->resource(handle) : nullptr;
 }
 
-DeviceTexture* RenderGraphContext::texture(RenderGraphResourceHandle handle) const
-{
-	return m_graph ? m_graph->texture(handle) : nullptr;
-}
-
-DeviceTexture* RenderGraphContext::depthTexture(RenderGraphResourceHandle handle) const
-{
-	return m_graph ? m_graph->depthTexture(handle) : nullptr;
-}
-
-DeviceFrameBuffer* RenderGraphContext::frameBuffer(RenderGraphResourceHandle handle) const
-{
-	return m_graph ? m_graph->frameBuffer(handle) : nullptr;
-}
-
 void RenderGraphContext::setGraph(const RenderGraph* graph)
 {
 	m_graph = graph;
@@ -618,24 +618,9 @@ const RenderGraphResource* RenderGraphPassContext::resource(RenderGraphResourceH
 	return m_graphContext ? m_graphContext->resource(handle) : nullptr;
 }
 
-DeviceTexture* RenderGraphPassContext::texture(RenderGraphResourceHandle handle) const
-{
-	return m_graphContext ? m_graphContext->texture(handle) : nullptr;
-}
-
-DeviceTexture* RenderGraphPassContext::depthTexture(RenderGraphResourceHandle handle) const
-{
-	return m_graphContext ? m_graphContext->depthTexture(handle) : nullptr;
-}
-
-DeviceFrameBuffer* RenderGraphPassContext::frameBuffer(RenderGraphResourceHandle handle) const
-{
-	return m_graphContext ? m_graphContext->frameBuffer(handle) : nullptr;
-}
-
 DeviceFrameBuffer* RenderGraphPassContext::targetFrameBuffer() const
 {
-	return m_pass && m_graphContext ? m_graphContext->frameBuffer(m_pass->frameBufferResource) : nullptr;
+	return m_pass ? m_pass->frameBufferResource->get<DeviceFrameBuffer>() : nullptr;
 }
 
 DeviceMaterial* RenderGraphPassContext::material() const
@@ -703,10 +688,19 @@ void RenderGraphPassContext::drawSceneQueue(MaterialTechniqueType techniqueType)
 	drawQueue(sceneQueue(), techniqueType);
 }
 
+bool RenderGraphPassContext::bindItemUniform(uint32_t binding, const void* data, size_t size)
+{
+    if(!data || !size) return false;
+    auto descriptor = itemDescriptor();
+    if(!descriptor || !descriptor->updateUniformByBinding(binding, data, size)) return false;
+    bindSinglePipelineDescriptor(descriptor);
+    return true;
+}
+
 void RenderGraphPassContext::bindTexture(uint32_t binding, RenderGraphResourceHandle handle)
 {
 	auto descriptor = materialDescriptor();
-	if(descriptor) descriptor->updateDescriptorByBinding(binding, texture(handle));
+	if(descriptor) descriptor->updateDescriptorByBinding(binding, handle->get<DeviceTexture>());
 }
 
 void RenderGraphPassContext::bindTextures(uint32_t binding, const std::vector<RenderGraphResourceHandle>& handles)
@@ -714,7 +708,7 @@ void RenderGraphPassContext::bindTextures(uint32_t binding, const std::vector<Re
 	auto descriptor = materialDescriptor();
 	if(!descriptor) return;
 	std::vector<DeviceTexture*> textures;
-	for(auto handle : handles) textures.emplace_back(texture(handle));
+	for(auto handle : handles) textures.emplace_back(handle->get<DeviceTexture>());
 	descriptor->updateDescriptorByBinding(binding, textures);
 }
 
@@ -750,6 +744,8 @@ DeviceRenderStage* RenderGraphPassContext::stage() const
 	return m_pass ? m_pass->compiledStage : nullptr;
 }
 
+RenderGraph::RenderGraph() = default;
+
 RenderGraph::~RenderGraph()
 {
 	clearResources();
@@ -773,8 +769,10 @@ void RenderGraph::clearResources()
 {
 	clear();
 	releasePassCache();
+	m_ownedShaders.clear();
 	releaseOwnedResources();
 	m_resources.clear();
+	++m_resourceGeneration;
 	m_resourceRegistrationErrors.clear();
 }
 
@@ -877,7 +875,7 @@ RenderGraphNode RenderGraph::addRasterNode(const RenderGraphRasterPassDesc& desc
 	}
 
 	auto frameBufferResource = cache->frameBufferResource;
-	auto frameBuffer = this->frameBuffer(frameBufferResource);
+	auto frameBuffer = frameBufferResource->get<DeviceFrameBuffer>();
 	if(cache->stage)
 	{
 		cache->stage->setFrameBuffer(frameBuffer);
@@ -1106,7 +1104,7 @@ RenderGraph::RasterPassCacheEntry& RenderGraph::createRasterPassCache(const std:
 		}
 	}
 
-	auto frameBuffer = this->frameBuffer(frameBufferResource);
+	auto frameBuffer = frameBufferResource->get<DeviceFrameBuffer>();
 	auto stage = backEnd->createRenderStage_imp();
 	if(stage && renderPass && frameBuffer)
 	{
@@ -1156,7 +1154,7 @@ RenderGraphResourceHandle RenderGraph::findTextureResource(DeviceTexture* textur
 		const auto& graphResource = m_resources[i];
 		if(graphResource.kind == RenderGraphResourceKind::Texture && graphResource.texture == texture)
 		{
-			return RenderGraphResourceHandle(i);
+			return RenderGraphResourceHandle(this, i, m_resourceGeneration);
 		}
 	}
 	return RenderGraphResourceHandle::invalid();
@@ -1184,8 +1182,8 @@ RenderGraphResourceHandle RenderGraph::registerTextureResource(const RenderGraph
 			? existing->desc.initialDepthLayout != desc.initialDepthLayout
 			: existing->desc.initialColorLayout != desc.initialColorLayout);
 		if(!existing || existing->desc.role != desc.role
-			|| (existing->desc.format != desc.format && desc.format != ImageFormat::Surface_Format
-				&& existing->desc.format != ImageFormat::Surface_Format)
+			|| (existing->desc.format != desc.format && desc.format != ImageFormat::Surface
+				&& existing->desc.format != ImageFormat::Surface)
 			|| existing->desc.usage != desc.usage
 			|| existing->desc.imported != imported
 			|| sizeConflict
@@ -1229,7 +1227,7 @@ RenderGraphResourceHandle RenderGraph::registerTextureResource(const RenderGraph
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(graphResource);
-	return RenderGraphResourceHandle(index);
+	return RenderGraphResourceHandle(this, index, m_resourceGeneration);
 }
 
 void RenderGraph::registerFrameBufferAttachments(RenderGraphResourceHandle frameBufferResource)
@@ -1309,6 +1307,45 @@ RenderGraphResourceHandle RenderGraph::importSampledTexture(const std::string& n
 	return importTexture(desc, texture);
 }
 
+RenderGraphResourceHandle RenderGraph::createTexture(const RenderGraphResourceDesc& desc)
+{
+    if(!std::isfinite(desc.size.x) || !std::isfinite(desc.size.y)
+        || desc.size.x < 1 || desc.size.y < 1
+        || std::floor(desc.size.x) != desc.size.x || std::floor(desc.size.y) != desc.size.y
+        || static_cast<double>(desc.size.x) > std::numeric_limits<uint32_t>::max()
+        || static_cast<double>(desc.size.y) > std::numeric_limits<uint32_t>::max())
+    {
+        return RenderGraphResourceHandle::invalid();
+    }
+    DeviceTextureDesc textureDesc;
+    textureDesc.width = static_cast<uint32_t>(desc.size.x);
+    textureDesc.height = static_cast<uint32_t>(desc.size.y);
+    textureDesc.format = desc.format;
+    textureDesc.role = desc.role;
+    textureDesc.usage = desc.usage;
+    auto texture = Engine::shared()->getRenderBackEnd()->createTexture_imp(textureDesc);
+    auto emptyDesc = desc;
+    emptyDesc.initialColorLayout = RenderGraphResourceLayout::Undefined;
+    emptyDesc.initialDepthLayout = RenderGraphResourceLayout::Undefined;
+    auto handle = registerTextureResource(emptyDesc, texture, false);
+    if(auto owned = resource(handle)) owned->ownsTexture = true;
+    return handle;
+}
+
+DeviceShaderCollection* RenderGraph::createComputeShader(const std::string& path)
+{
+    Data data = Tfile::shared()->getData(path, false);
+    if(!data.getBytes() || !data.getSize()) return nullptr;
+    std::unique_ptr<DeviceShaderCollection> shader(Engine::shared()->getRenderBackEnd()->createShader_imp());
+    if(!shader || !shader->create()) return nullptr;
+    shader->addShader(static_cast<const unsigned char*>(data.getBytes()), data.getSize(),
+        DeviceShaderType::ComputeShader, reinterpret_cast<const unsigned char*>(path.c_str()));
+    if(!shader->finish()) return nullptr;
+    auto result = shader.get();
+    m_ownedShaders.emplace_back(std::move(shader));
+    return result;
+}
+
 RenderGraphResourceHandle RenderGraph::createTexture(const RenderGraphResourceDesc& desc, const unsigned char* pixels)
 {
 	if(!pixels || desc.size.x <= 0 || desc.size.y <= 0) return RenderGraphResourceHandle::invalid();
@@ -1340,7 +1377,7 @@ RenderGraphResourceHandle RenderGraph::importFrameBuffer(const RenderGraphResour
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
-	RenderGraphResourceHandle handle(index);
+	RenderGraphResourceHandle handle(this, index, m_resourceGeneration);
 	registerFrameBufferAttachments(handle);
 	return handle;
 }
@@ -1360,7 +1397,7 @@ RenderGraphResourceHandle RenderGraph::createFrameBuffer(const RenderGraphResour
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
-	RenderGraphResourceHandle handle(index);
+	RenderGraphResourceHandle handle(this, index, m_resourceGeneration);
 	registerFrameBufferAttachments(handle);
 	return handle;
 }
@@ -1536,7 +1573,7 @@ void RenderGraph::resizeOwnedFrameBuffers(vec2 size)
 		const auto& graphResource = m_resources[resourceIndex];
 		if(graphResource.kind == RenderGraphResourceKind::FrameBuffer && graphResource.ownsFrameBuffer)
 		{
-			invalidateRasterPassCache(RenderGraphResourceHandle(resourceIndex));
+			invalidateRasterPassCache(RenderGraphResourceHandle(this, resourceIndex, m_resourceGeneration));
 		}
 	}
 	for(auto& graphResource : m_resources)
@@ -1644,12 +1681,12 @@ DeviceFrameBuffer* RenderGraph::passFrameBuffer(RenderGraphPassHandle handle) co
 	{
 		return nullptr;
 	}
-	return frameBuffer(m_passes[handle.index()].frameBufferResource);
+	return m_passes[handle.index()].frameBufferResource->get<DeviceFrameBuffer>();
 }
 
 RenderGraphResource* RenderGraph::resource(RenderGraphResourceHandle handle)
 {
-	if(!handle.isValid() || handle.index() >= m_resources.size())
+	if(handle.m_graph != this || handle.m_generation != m_resourceGeneration || handle.index() >= m_resources.size())
 	{
 		return nullptr;
 	}
@@ -1658,29 +1695,11 @@ RenderGraphResource* RenderGraph::resource(RenderGraphResourceHandle handle)
 
 const RenderGraphResource* RenderGraph::resource(RenderGraphResourceHandle handle) const
 {
-	if(!handle.isValid() || handle.index() >= m_resources.size())
+	if(handle.m_graph != this || handle.m_generation != m_resourceGeneration || handle.index() >= m_resources.size())
 	{
 		return nullptr;
 	}
 	return &m_resources[handle.index()];
-}
-
-DeviceTexture* RenderGraph::texture(RenderGraphResourceHandle handle) const
-{
-	auto graphResource = resource(handle);
-	return graphResource && graphResource->kind == RenderGraphResourceKind::Texture ? graphResource->texture : nullptr;
-}
-
-DeviceTexture* RenderGraph::depthTexture(RenderGraphResourceHandle handle) const
-{
-	auto graphResource = resource(handle);
-	return graphResource && graphResource->kind == RenderGraphResourceKind::Texture ? graphResource->depthTexture : nullptr;
-}
-
-DeviceFrameBuffer* RenderGraph::frameBuffer(RenderGraphResourceHandle handle) const
-{
-	auto graphResource = resource(handle);
-	return graphResource && graphResource->kind == RenderGraphResourceKind::FrameBuffer ? graphResource->frameBuffer : nullptr;
 }
 
 void RenderGraph::addDependency(RenderGraphPassHandle pass, RenderGraphPassHandle dependency)
@@ -1891,7 +1910,7 @@ bool RenderGraph::validate(std::string* outMessage) const
 			isValid = false;
 		}
 		else if(pass.kind == RenderGraphPassKind::Blit
-			&& (!texture(pass.blitSource) || !texture(pass.blitDestination)))
+			&& (!pass.blitSource->get<DeviceTexture>() || !pass.blitDestination->get<DeviceTexture>()))
 		{
 			stream << "Blit pass `" << pass.name << "` has invalid texture resources.\n";
 			isValid = false;
@@ -1964,6 +1983,11 @@ bool RenderGraph::validate(std::string* outMessage) const
 				stream << "Pass `" << pass.name << "` presents a resource that is not a swapchain image.\n";
 				isValid = false;
 			}
+            if(access.afterLayout == RenderGraphResourceLayout::Undefined)
+            {
+                stream << "Pass `" << pass.name << "` cannot discard its output into Undefined layout.\n";
+                isValid = false;
+            }
 			const auto requiredState = beforeStateForAccess(access);
 			const auto currentState = isDepthAccess(access.type) ? graphResource->currentDepthState : graphResource->currentColorState;
 			if(isUnknownState(currentState))
@@ -2572,7 +2596,7 @@ bool RenderGraph::executeIndexedDraws(RenderGraphContext& context, RenderGraphPa
 		return false;
 	}
 	const auto& data = *pass.indexedDrawData;
-	const auto size = frameBuffer(pass.frameBufferResource)->getSize();
+	const auto size = pass.frameBufferResource->get<DeviceFrameBuffer>()->getSize();
 	for(const auto& draw : data.draws)
 	{
 		if(draw.callback)
@@ -2587,13 +2611,13 @@ bool RenderGraph::executeIndexedDraws(RenderGraphContext& context, RenderGraphPa
 		const float bottom = (std::min)(size.y, draw.scissor.y + draw.scissor.w);
 		if(right <= left || bottom <= top) continue;
 		auto descriptor = pipeline->giveItemWiseDescriptorSet();
-		if(!descriptor || !texture(draw.texture))
+		if(!descriptor || !draw.texture->get<DeviceTexture>())
 		{
 			message += "Indexed raster pass `" + pass.name + "` cannot bind a draw resource.\n";
 			return false;
 		}
 		descriptor->updateDescriptorByBinding(data.uniformBinding, pass.uniformBuffer, 0, data.uniformData.size());
-		descriptor->updateDescriptorByBinding(data.textureBinding, texture(draw.texture));
+		descriptor->updateDescriptorByBinding(data.textureBinding, draw.texture->get<DeviceTexture>());
 		stage->bindPipeline(pipeline);
 		stage->bindSinglePipelineDescriptor(descriptor);
 		stage->bindVBO(pass.vertexBuffer);
@@ -2630,8 +2654,8 @@ void RenderGraph::executeComputePass(RenderGraphContext& context, RenderGraphPas
 bool RenderGraph::executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass)
 {
 	auto command = context.cmd();
-	auto source = texture(pass.blitSource);
-	auto destination = texture(pass.blitDestination);
+	auto source = pass.blitSource->get<DeviceTexture>();
+	auto destination = pass.blitDestination->get<DeviceTexture>();
 	if(!command || !source || !destination)
 	{
 		return false;
