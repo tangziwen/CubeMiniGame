@@ -13,8 +13,8 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 	vec2 TU_winSize;
 	vec2 TU_jitterUV;
 	vec3 TU_camPos;
-	mat4 TU_viewProjectInverted;
-	mat4 TU_LastVP;
+	mat4 TU_ClipToHistory;
+	vec4 TU_HistoryInfo;// previous near/far, history valid, unused
 	vec4 TU_camInfo;
 	vec4 TU_ProjInfo;
 	vec4 TU_RadiusInfo;// radius, radius*radius, radiusToscreen
@@ -28,6 +28,8 @@ layout(set = 0, binding = 2) uniform sampler2D RT_CurrScene;
 // makes smaller valid depth closer. The depth sampler may be linear/repeat, so
 // edge-safe reprojection uses the integer fetch helpers below.
 layout(set = 0, binding = 3) uniform sampler2D RT_depth;
+// The TSAA depth attachment stores positive view distance divided by that frame's far plane.
+layout(set = 0, binding = 4) uniform sampler2D RT_historyDepth;
 
 struct DepthNeighborhood
 {
@@ -95,14 +97,9 @@ DepthNeighborhood selectReprojectionDepth(vec2 currTC)
 	return result;
 }
 
-vec4 getWorldPosFromDepth(float depthValue, vec2 uv)
+float getViewDepth(float depthValue, float nearPlane, float farPlane)
 {
-  vec4 clipSpaceLocation;
-  clipSpaceLocation.xy = uv * 2.0 - 1.0;
-  clipSpaceLocation.z = depthValue;
-  clipSpaceLocation.w = 1.0;
-  vec4 homogenousLocation = t_shaderUnifom.TU_viewProjectInverted * clipSpaceLocation;
-  return vec4(homogenousLocation.xyz / homogenousLocation.w, 1.0);
+	return nearPlane * farPlane / max(farPlane - depthValue * (farPlane - nearPlane), 0.000001);
 }
 
 vec2 getScreenCoord()
@@ -140,10 +137,7 @@ vec3 YCoCg2RGB(vec3 YCoCg)
 
 void computeNeighborhoodAABB(vec2 centerUV, vec2 texelSize, out vec3 cMin, out vec3 cMax)
 {
-	// Variance clipping with min/max expansion: the AABB is always at least as
-	// large as the current-frame neighborhood, which prevents over-clipping at
-	// hard edges when jitter changes the foreground/background ratio.
-	const float gamma = 2.0;
+	const float gamma = 1.25;
 	vec3 m1 = vec3(0.0);
 	vec3 m2 = vec3(0.0);
 	vec3 hardMin = vec3(1e5);
@@ -153,7 +147,7 @@ void computeNeighborhoodAABB(vec2 centerUV, vec2 texelSize, out vec3 cMin, out v
 	{
 		for(int x = -1; x <= 1; x++)
 		{
-			vec2 sampleTC = clamp(centerUV + vec2(float(x), float(y)) * texelSize, vec2(0.0), vec2(1.0));
+			vec2 sampleTC = clamp(centerUV + vec2(float(x), float(y)) * texelSize, 0.5 * texelSize, vec2(1.0) - 0.5 * texelSize);
 			vec3 sampleYCoCg = RGB2YCoCg(texture(RT_CurrScene, sampleTC).rgb);
 			m1 += sampleYCoCg;
 			m2 += sampleYCoCg * sampleYCoCg;
@@ -166,11 +160,11 @@ void computeNeighborhoodAABB(vec2 centerUV, vec2 texelSize, out vec3 cMin, out v
 	m2 /= 9.0;
 	vec3 sigma = sqrt(max(m2 - m1 * m1, vec3(0.0)));
 
-	cMin = min(hardMin, m1 - gamma * sigma);
-	cMax = max(hardMax, m1 + gamma * sigma);
+	cMin = max(hardMin, m1 - gamma * sigma);
+	cMax = min(hardMax, m1 + gamma * sigma);
 }
 
-vec3 clipHistoryToAabb(vec3 historyYCoCg, vec3 currentYCoCg, vec3 cMin, vec3 cMax)
+vec3 clipHistoryToAabb(vec3 historyYCoCg, vec3 cMin, vec3 cMax)
 {
 	vec3 center = 0.5 * (cMin + cMax);
 	vec3 extent = 0.5 * (cMax - cMin) + vec3(0.0001);
@@ -192,18 +186,27 @@ void main()
 	float motionWeightScale = t_shaderUnifom.TU_TSAAResolveParams.w;
 	float lumaRejectThreshold = t_shaderUnifom.TU_TSAARejectionParams.x;
 	float edgeHistoryWeight = t_shaderUnifom.TU_TSAARejectionParams.y;
+	float relativeDepthTolerance = t_shaderUnifom.TU_TSAARejectionParams.z;
+	float absoluteDepthTolerance = t_shaderUnifom.TU_TSAARejectionParams.w;
 	int debugMode = t_shaderUnifom.TU_TSAADebugMode;
 
 	vec2 tc = getScreenCoord();
 	vec2 one_over_size = vec2(1.0) / t_shaderUnifom.TU_winSize;
-	// Current color/depth use jittered current-frame UV; world reconstruction below uses unjittered tc.
-	vec2 currTC = clamp(tc + t_shaderUnifom.TU_jitterUV, vec2(0.0), vec2(1.0));
+	// Current color/depth use jittered UV; the history transform consumes unjittered clip coordinates.
+	vec2 currTC = clamp(tc + t_shaderUnifom.TU_jitterUV, 0.5 * one_over_size, vec2(1.0) - 0.5 * one_over_size);
 	vec4 currScene = texture(RT_CurrScene, currTC);
+	float centerDepth = fetchDepthPixel(ivec2(floor(currTC * t_shaderUnifom.TU_winSize)));
+	float viewDepth = getViewDepth(centerDepth, t_shaderUnifom.TU_camInfo.x, t_shaderUnifom.TU_camInfo.y);
+	// Zero marks background; all written depths stay below the clear value for the LESS depth test.
+	gl_FragDepth = isValidDepth(centerDepth) ? clamp(viewDepth / t_shaderUnifom.TU_camInfo.y, 0.0000001, 0.999999) : 0.0;
+	if(t_shaderUnifom.TU_HistoryInfo.z < 0.5 || !isValidDepth(centerDepth))
+	{
+		out_Color = vec4(currScene.rgb, 1.0);
+		return;
+	}
 
 	vec3 cMin, cMax;
-	// Sample the neighborhood at the unjittered pixel center so the AABB stays
-	// stable frame-to-frame when the camera is not moving.
-	computeNeighborhoodAABB(tc, one_over_size, cMin, cMax);
+	computeNeighborhoodAABB(currTC, one_over_size, cMin, cMax);
 
 	DepthNeighborhood depthNeighborhood = selectReprojectionDepth(currTC);
 	if(!depthNeighborhood.hasValidDepth)
@@ -214,8 +217,7 @@ void main()
 
 	float depth = depthNeighborhood.closestDepth;
 	float depthRange = depthNeighborhood.maxDepth - depthNeighborhood.minDepth;
-	vec3 worldPos = getWorldPosFromDepth(depth, tc).xyz;
-	vec4 lastNDC = t_shaderUnifom.TU_LastVP * vec4(worldPos, 1.0);
+	vec4 lastNDC = t_shaderUnifom.TU_ClipToHistory * vec4(tc * 2.0 - 1.0, depth, 1.0);
 	if(lastNDC.w <= 0.0)
 	{
 		out_Color = vec4(currScene.xyz, 1.0);
@@ -224,32 +226,43 @@ void main()
 	lastNDC /= lastNDC.w;
 	
 	vec2 lastUV = vec2(lastNDC.x * 0.5 + 0.5, lastNDC.y * 0.5 + 0.5);
-	if(lastUV.x < 0.0 || lastUV.x > 1.0 || lastUV.y < 0.0 || lastUV.y > 1.0)
+	if(lastUV.x < 0.0 || lastUV.x > 1.0 || lastUV.y < 0.0 || lastUV.y > 1.0 || lastNDC.z < 0.0 || lastNDC.z >= 1.0)
 	{
 		out_Color = vec4(currScene.xyz, 1.0);
 		return;
 	}
 
-	vec2 historyUV = clamp(lastUV, vec2(0.0), vec2(1.0));
+	vec2 historyUV = clamp(lastUV, 0.5 * one_over_size, vec2(1.0) - 0.5 * one_over_size);
+	vec4 centerLastClip = t_shaderUnifom.TU_ClipToHistory * vec4(tc * 2.0 - 1.0, centerDepth, 1.0);
+	if(centerLastClip.w <= 0.0 || centerLastClip.z < 0.0 || centerLastClip.z >= centerLastClip.w)
+	{
+		out_Color = vec4(currScene.rgb, 1.0);
+		return;
+	}
+	float expectedHistoryDepth = getViewDepth(centerLastClip.z / centerLastClip.w, t_shaderUnifom.TU_HistoryInfo.x, t_shaderUnifom.TU_HistoryInfo.y);
+	ivec2 historyPixel = clampPixelCoord(ivec2(floor(historyUV * t_shaderUnifom.TU_winSize)));
+	float storedHistoryDepth = texelFetch(RT_historyDepth, historyPixel, 0).r;
+	float historyViewDepth = storedHistoryDepth * t_shaderUnifom.TU_HistoryInfo.y;
+	float depthTolerance = max(absoluteDepthTolerance, relativeDepthTolerance * expectedHistoryDepth);
+	bool historyRejected = storedHistoryDepth <= 0.0 || storedHistoryDepth >= 1.0
+		|| abs(historyViewDepth - expectedHistoryDepth) > depthTolerance;
 	vec3 historyYCoCg = RGB2YCoCg(texture(RT_oldTAA, historyUV).rgb);
-	vec3 clippedHistoryYCoCg = clipHistoryToAabb(historyYCoCg, RGB2YCoCg(currScene.rgb), cMin, cMax);
+	vec3 clippedHistoryYCoCg = clipHistoryToAabb(historyYCoCg, cMin, cMax);
 	vec3 clippedHistoryRgb = YCoCg2RGB(clippedHistoryYCoCg);
 
-	bool historyRejected = false;
 	float historyWeight = baseHistoryWeight;
 	historyWeight = mix(historyWeight, edgeHistoryWeight, smoothstep(edgeDepthRangeThreshold, edgeDepthRangeThreshold * 3.0, depthRange));
 	float motionPixels = length((lastUV - tc) * t_shaderUnifom.TU_winSize);
 	float motionFactor = clamp(motionPixels * motionWeightScale, 0.0, 1.0);
-	historyWeight = mix(historyWeight, minHistoryWeight, motionFactor * motionFactor);
+	historyWeight = mix(historyWeight, minHistoryWeight, motionFactor);
 
 	float currY = RGB2YCoCg(currScene.rgb).x;
-	float historyY = clippedHistoryYCoCg.x;
-	if(abs(historyY - currY) > lumaRejectThreshold)
-	{
-		historyWeight = minHistoryWeight;
-		historyRejected = true;
-	}
-	historyWeight = clamp(historyWeight, minHistoryWeight, baseHistoryWeight);
+	float historyY = historyYCoCg.x;
+	float relativeLumaDifference = abs(historyY - currY) / max(max(abs(historyY), abs(currY)), 0.1);
+	float lumaRejection = smoothstep(lumaRejectThreshold * 0.5, lumaRejectThreshold, relativeLumaDifference);
+	historyWeight *= 1.0 - lumaRejection;
+	historyRejected = historyRejected || lumaRejection >= 1.0;
+	historyWeight = historyRejected ? 0.0 : clamp(historyWeight, 0.0, baseHistoryWeight);
 
 	vec3 finalColor = mix(currScene.rgb, clippedHistoryRgb, historyWeight);
 	if(debugMode == 0)

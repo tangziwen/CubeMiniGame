@@ -644,7 +644,7 @@ RenderGraphNode SceneView::buildRenderGraph()
 			historyClearPass.frameBufferResource = m_tsaaFrameBufferResources[historyIndex];
 			RenderGraphPassDesc accesses;
 			accesses.writeColor(tsaaHistoryColor, RenderGraphResourceLayout::ShaderRead)
-				.writeDepth(m_tsaaDepthResources[historyIndex]);
+				.writeDepth(m_tsaaDepthResources[historyIndex], RenderGraphResourceLayout::DepthRead);
 			historyClearPass.resourceAccesses = accesses.resourceAccesses;
 			historyClearNode = m_renderGraph.addRasterNode(historyClearPass)
 				.withOutput(tsaaHistoryColor);
@@ -658,9 +658,10 @@ RenderGraphNode SceneView::buildRenderGraph()
 			RenderGraphPassDesc accesses;
 			accesses.readColor(m_sceneColorResource)
 				.readColor(tsaaHistoryColor)
+				.readDepth(m_tsaaDepthResources[historyIndex])
 				.readDepth(m_gBufferDepthResource)
 				.writeColor(m_tsaaColorResources[targetIndex], RenderGraphResourceLayout::ShaderRead)
-				.writeDepth(m_tsaaDepthResources[targetIndex]);
+				.writeDepth(m_tsaaDepthResources[targetIndex], RenderGraphResourceLayout::DepthRead);
 			tsaaPass.resourceAccesses = accesses.resourceAccesses;
 		}
 		outputNode = m_renderGraph.addFullscreenNode(tsaaPass, [this](RenderGraphPassContext& graphContext)
@@ -933,14 +934,15 @@ void SceneView::executeFogPass(RenderGraphPassContext& graphContext)
 void SceneView::executeTSAAPass(RenderGraphPassContext& graphContext)
 {
 	auto historyFrame = m_tsaaColorResources[m_tsaa.historyBufferIndex()]->get<DeviceTexture>();
+	auto historyDepth = m_tsaaDepthResources[m_tsaa.historyBufferIndex()]->get<DeviceTexture>();
 	auto targetFrame = m_tsaaColorResources[m_tsaa.targetBufferIndex()]->get<DeviceTexture>();
 	auto sceneColor = m_sceneColorResource->get<DeviceTexture>();
 	auto gBufferDepth = m_gBufferDepthResource->get<DeviceTexture>();
-	if(!historyFrame || !targetFrame || !sceneColor || !gBufferDepth)
+	if(!historyFrame || !historyDepth || !targetFrame || !sceneColor || !gBufferDepth)
 	{
 		return;
 	}
-	m_tsaa.executeResolve(graphContext, historyFrame, sceneColor, gBufferDepth);
+	m_tsaa.executeResolve(graphContext, historyFrame, historyDepth, sceneColor, gBufferDepth);
 }
 
 void SceneView::preTick(const RenderSettings& settings)
@@ -951,9 +953,10 @@ void SceneView::preTick(const RenderSettings& settings)
 	{
 		m_tsaa.preTick(camera());
 	}
-	else if(camera())
+	else
 	{
-		camera()->setOffsetPixel(0, 0);
+		m_tsaa.resetHistory();
+		if(camera()) camera()->setOffsetPixel(0, 0);
 	}
 	if(settings.ssgiEnabled())
 	{

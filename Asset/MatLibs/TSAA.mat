@@ -7,8 +7,8 @@
                 "fs": "Shaders/TSAA_f.glsl"
             },
             "cullFace": false,
-            "DepthTestEnable": false,
-            "DepthWriteEnable": false,
+            "DepthTestEnable": true,
+            "DepthWriteEnable": true,
             "BlendEnable": false,
             "SrcBlendFactor": "SrcAlpha",
             "DstBlendFactor": "OneMinusSrcAlpha"
@@ -16,10 +16,6 @@
     },
     "property": {
         "attributes": [
-            {
-                "name": "TU_viewProjectInverted",
-                "type": "semantic_ViewProjectInverted"
-            },
             {
                 "name": "TU_winSize",
                 "type": "semantic_WinSize"
@@ -36,20 +32,20 @@
                 "name": "TU_TSAAResolveParams",
                 "type": "vec4",
                 "default": [
-                    0.94,
+                    0.90,
                     0.1,
                     0.01,
-                    0.05
+                    0.15
                 ]
             },
             {
                 "name": "TU_TSAARejectionParams",
                 "type": "vec4",
                 "default": [
-                    1.0,
-                    0.92,
-                    0.0,
-                    0.0
+                    0.20,
+                    0.75,
+                    0.02,
+                    0.01
                 ]
             },
             {
