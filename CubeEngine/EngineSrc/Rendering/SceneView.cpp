@@ -99,6 +99,8 @@ void SceneView::init()
 	m_ssgi.init();
 	m_tsaa.init();
 	m_outlinePass.init();
+	m_tsaaHistoryInitialized[0] = false;
+	m_tsaaHistoryInitialized[1] = false;
 
 	m_tsaaFrameBufferResources[0] = m_renderGraph.createFrameBuffer(
 		makeGraphResourceDesc("TSAAFrameBufferA", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
@@ -115,6 +117,20 @@ void SceneView::init()
 		makeGraphResourceDesc("HBAOFrameBuffer", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
 		hbaoAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
 
+	DeviceAttachmentInfoList outlineMaskAttachments = {
+		{ImageFormat::R8G8B8A8, false},
+		{ImageFormat::D24_S8, true},
+	};
+	m_outlineMaskFrameBufferResource = m_renderGraph.createFrameBuffer(
+		makeGraphResourceDesc("OutlineMaskFrameBuffer", ImageFormat::R8G8B8A8, TextureRoleEnum::AS_COLOR,
+			TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		outlineMaskAttachments, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
+	m_outlineFrameBufferResource = m_renderGraph.createFrameBuffer(
+		makeGraphResourceDesc("OutlineFrameBuffer", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR,
+			TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size),
+		{{ImageFormat::R16G16B16A16, false}}, DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, false);
+
+	delete m_sceneCopyTex;
 	auto sceneCopyTex = new DeviceTextureVK();
 	sceneCopyTex->initEmpty(size.x, size.y, ImageFormat::R16G16B16A16_SFLOAT,TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, 1, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 	m_sceneCopyTex = sceneCopyTex;
@@ -138,39 +154,44 @@ void SceneView::init()
 void SceneView::initRenderGraphResources()
 {
 	auto sceneFrameBuffer = graphFrameBuffer(m_sceneFrameBufferResource);
-	auto gBufferFrameBuffer = graphFrameBuffer(m_gBufferFrameBufferResource);
 	auto size = sceneFrameBuffer ? sceneFrameBuffer->getSize() : Engine::shared()->winSize();
 
-	m_sceneColorResource = m_sceneFrameBufferResource;
+	m_sceneColorResource = m_renderGraph.colorAttachment(m_sceneFrameBufferResource);
+	m_sceneDepthResource = m_renderGraph.depthAttachment(m_sceneFrameBufferResource);
 	m_sceneColorCopyResource = m_renderGraph.importTexture(
 		makeGraphResourceDesc("SceneColorCopy", ImageFormat::R16G16B16A16_SFLOAT, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
 			RenderGraphResourceLayout::ShaderRead),
 		m_sceneCopyTex);
-	m_gBufferDepthResource = m_gBufferFrameBufferResource;
-	m_gBufferBaseColorResource = m_gBufferFrameBufferResource;
-	if(gBufferFrameBuffer)
+	for(uint32_t index = 0; index < 4; index++)
 	{
-		auto& gBufferTextures = gBufferFrameBuffer->getTextureList();
-		if(gBufferTextures.size() > 2)
+		m_gBufferColorResources[index] = m_renderGraph.colorAttachment(m_gBufferFrameBufferResource, index);
+	}
+	m_gBufferBaseColorResource = m_gBufferColorResources[0];
+	m_gBufferNormalResource = m_gBufferColorResources[2];
+	m_gBufferDepthResource = m_renderGraph.depthAttachment(m_gBufferFrameBufferResource);
+	m_hbaoOutputResource = m_renderGraph.colorAttachment(m_hbaoFrameBufferResource);
+	m_hbaoDepthResource = m_renderGraph.depthAttachment(m_hbaoFrameBufferResource);
+	m_outlineMaskColorResource = m_renderGraph.colorAttachment(m_outlineMaskFrameBufferResource);
+	m_outlineMaskDepthResource = m_renderGraph.depthAttachment(m_outlineMaskFrameBufferResource);
+	m_outlineOutputResource = m_renderGraph.colorAttachment(m_outlineFrameBufferResource);
+	for(int layer = 0; layer < BLOOM_LAYERS; layer++)
+	{
+		for(int index = 0; index < 2; index++)
 		{
-			m_gBufferNormalResource = m_renderGraph.importTexture(
-				makeGraphResourceDesc("GBufferNormal", ImageFormat::R8G8B8A8_S, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, gBufferFrameBuffer->getSize(),
-					RenderGraphResourceLayout::ShaderRead),
-				gBufferTextures[2]);
+			auto bloomSize = m_bloom.layerSize(layer);
+			m_bloomTextureResources[layer][index] = m_renderGraph.importTexture(
+				makeGraphResourceDesc(("Bloom." + std::to_string(layer) + "." + std::to_string(index)).c_str(),
+					ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT,
+					bloomSize, RenderGraphResourceLayout::ShaderRead),
+				m_bloom.bloomTexture(layer, index));
 		}
 	}
-	m_hbaoOutputResource = m_hbaoFrameBufferResource;
-	auto outlineOutputTexture = m_outlinePass.outputTexture();
-	m_outlineOutputResource = outlineOutputTexture
-		? m_renderGraph.importTexture(
-			makeGraphResourceDesc("OutlineOutput", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-				RenderGraphResourceLayout::ShaderRead),
-			outlineOutputTexture)
-		: RenderGraphResourceHandle::invalid();
-	m_bloomBrightOutputResource = m_renderGraph.importTexture(
-		makeGraphResourceDesc("BloomBrightOutput", ImageFormat::R16G16B16A16, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
-			RenderGraphResourceLayout::ShaderRead),
-		m_bloom.bloomTexture(0, 0));
+	m_bloomBrightOutputResource = m_bloomTextureResources[0][0];
+	for(int index = 0; index < 2; index++)
+	{
+		m_tsaaColorResources[index] = m_renderGraph.colorAttachment(m_tsaaFrameBufferResources[index]);
+		m_tsaaDepthResources[index] = m_renderGraph.depthAttachment(m_tsaaFrameBufferResources[index]);
+	}
 
 	auto backEnd = static_cast<VKRenderBackEnd *>(Engine::shared()->getRenderBackEnd());
 	for(int i = 0; i < 2; i++)
@@ -179,11 +200,17 @@ void SceneView::initRenderGraphResources()
 			makeGraphResourceDesc("ScreenFrameBuffer", ImageFormat::Surface_Format, TextureRoleEnum::AS_COLOR, TextureUsageEnum::SAMPLE_AND_ATTACHMENT, size,
 				RenderGraphResourceLayout::Present),
 			backEnd->createSwapChainFrameBuffer(i));
+		m_screenColorResources[i] = m_renderGraph.colorAttachment(m_screenFrameBufferResources[i]);
+		m_screenDepthResources[i] = m_renderGraph.depthAttachment(m_screenFrameBufferResources[i]);
 	}
 }
 
 void SceneView::initRenderGraphMaterials()
 {
+	if(m_directLightMat)
+	{
+		return;
+	}
 	m_directLightMat = new MaterialInstance();
 	m_directLightMat->loadFromMaterial("DirectLight");
 
@@ -242,10 +269,49 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	RenderSettings defaultSettings;
 	const auto& settings = m_renderSettings ? *m_renderSettings : defaultSettings;
 	m_outputTexture = nullptr;
+	m_shadowTextureResources.clear();
+	for(size_t index = 0; index < m_shadowTextures.size(); index++)
+	{
+		auto texture = m_shadowTextures[index];
+		if(!texture)
+		{
+			continue;
+		}
+		RenderGraphResourceDesc shadowDesc;
+		shadowDesc.name = "ShadowDepth." + std::to_string(index);
+		shadowDesc.format = texture->m_metaInfo.m_imageFormat;
+		shadowDesc.role = TextureRoleEnum::AS_DEPTH;
+		shadowDesc.usage = texture->getTextureUsage();
+		shadowDesc.size = vec2(texture->m_metaInfo.width, texture->m_metaInfo.height);
+		shadowDesc.imported = true;
+		shadowDesc.initialDepthLayout = RenderGraphResourceLayout::DepthRead;
+		m_shadowTextureResources.emplace_back(m_renderGraph.importTexture(shadowDesc, texture));
+	}
 
 	DeviceAttachmentInfoList sceneLoadAttachments = {
 		{ImageFormat::R16G16B16A16, false},
 		{ImageFormat::D24_S8, true},
+	};
+	auto readGBuffer = [this](RenderGraphPassDesc& accesses)
+	{
+		for(auto resource : m_gBufferColorResources)
+		{
+			accesses.readColor(resource);
+		}
+		accesses.readDepth(m_gBufferDepthResource);
+	};
+	auto writeGBuffer = [this](RenderGraphPassDesc& accesses)
+	{
+		for(auto resource : m_gBufferColorResources)
+		{
+			accesses.writeColor(resource, RenderGraphResourceLayout::ShaderRead);
+		}
+		accesses.writeDepth(m_gBufferDepthResource, RenderGraphResourceLayout::DepthRead);
+	};
+	auto readWriteScene = [this](RenderGraphPassDesc& accesses)
+	{
+		accesses.readWriteColor(m_sceneColorResource);
+		accesses.readWriteDepth(m_sceneDepthResource);
 	};
 
 	RenderGraphRasterPassDesc gBufferPass;
@@ -255,15 +321,14 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	gBufferPass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
-		accesses.writeColor(m_gBufferFrameBufferResource, RenderGraphResourceLayout::ShaderRead)
-			.writeDepth(m_gBufferDepthResource, RenderGraphResourceLayout::DepthRead);
+		writeGBuffer(accesses);
 		gBufferPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto gBufferNode = m_renderGraph.addRasterNode(gBufferPass, [](RenderGraphPassContext& graphContext)
 	{
 		graphContext.drawSceneQueue();
-	}).withOutput(m_gBufferFrameBufferResource)
-		.withOutput("color", m_gBufferFrameBufferResource)
+	}).withOutput(m_gBufferBaseColorResource)
+		.withOutput("color", m_gBufferBaseColorResource)
 		.withOutput("depth", m_gBufferDepthResource);
 
 	RenderGraphRasterPassDesc deferredLightingPass;
@@ -272,10 +337,13 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	deferredLightingPass.material = m_directLightMat;
 	{
 		RenderGraphPassDesc accesses;
-		accesses.readColor(m_gBufferFrameBufferResource)
-			.readDepth(m_gBufferDepthResource)
-			.readColor(m_gBufferNormalResource)
-			.writeColor(m_sceneColorResource);
+		readGBuffer(accesses);
+		for(auto shadowResource : m_shadowTextureResources)
+		{
+			accesses.readDepth(shadowResource);
+		}
+		accesses.writeColor(m_sceneColorResource)
+			.writeDepth(m_sceneDepthResource);
 		deferredLightingPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto deferredLightingNode = m_renderGraph.addFullscreenNode(deferredLightingPass, [this](RenderGraphPassContext& graphContext)
@@ -293,9 +361,8 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	pointLightingPass.material = m_pointLightMat;
 	{
 		RenderGraphPassDesc accesses;
-		accesses.readColor(m_gBufferFrameBufferResource)
-			.readDepth(m_gBufferDepthResource)
-			.writeColor(m_sceneColorResource);
+		readGBuffer(accesses);
+		readWriteScene(accesses);
 		pointLightingPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto pointLightingNode = m_renderGraph.addRasterNode(pointLightingPass, [this](RenderGraphPassContext& graphContext)
@@ -314,8 +381,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	afterDepthClearPass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
-		accesses.readDepth(m_gBufferDepthResource)
-			.writeColor(m_sceneColorResource);
+		readWriteScene(accesses);
 		afterDepthClearPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto afterDepthClearNode = m_renderGraph.addRasterNode(afterDepthClearPass, [](RenderGraphPassContext& graphContext)
@@ -336,7 +402,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	transparentPass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
-		accesses.writeColor(m_sceneColorResource);
+		readWriteScene(accesses);
 		transparentPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto transparentNode = m_renderGraph.addRasterNode(transparentPass, [](RenderGraphPassContext& graphContext)
@@ -355,7 +421,8 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	{
 		RenderGraphPassDesc accesses;
 		accesses.readDepth(m_gBufferDepthResource)
-			.writeColor(m_sceneColorResource);
+			.readWriteColor(m_sceneColorResource)
+			.readWriteDepth(m_sceneDepthResource);
 		skyPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto skyNode = m_renderGraph.addRasterNode(skyPass, [this](RenderGraphPassContext& graphContext)
@@ -374,7 +441,7 @@ bool SceneView::buildRenderGraph(int imageIndex)
 	debugWireframePass.consumesSceneQueue = true;
 	{
 		RenderGraphPassDesc accesses;
-		accesses.writeColor(m_sceneColorResource);
+		readWriteScene(accesses);
 		debugWireframePass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto debugWireframeNode = m_renderGraph.addRasterNode(debugWireframePass, [this](RenderGraphPassContext& graphContext)
@@ -394,10 +461,9 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		hbaoPass.material = m_hbaoMat;
 		{
 			RenderGraphPassDesc accesses;
-			accesses.readColor(m_gBufferFrameBufferResource)
-				.readDepth(m_gBufferDepthResource)
-				.readColor(m_gBufferNormalResource)
-				.writeColor(m_hbaoOutputResource, RenderGraphResourceLayout::ShaderRead);
+			readGBuffer(accesses);
+			accesses.writeColor(m_hbaoOutputResource, RenderGraphResourceLayout::ShaderRead)
+				.writeDepth(m_hbaoDepthResource);
 			hbaoPass.resourceAccesses = accesses.resourceAccesses;
 		}
 		hbaoNode = m_renderGraph.addFullscreenNode(hbaoPass, [this](RenderGraphPassContext& graphContext)
@@ -426,12 +492,11 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		ssrPass.material = m_ssrMat;
 		{
 			RenderGraphPassDesc accesses;
-			accesses.readColor(m_gBufferFrameBufferResource)
-				.readDepth(m_gBufferDepthResource)
-				.readColor(m_gBufferNormalResource)
-				.readColor(m_sceneColorCopyResource)
+			readGBuffer(accesses);
+			accesses.readColor(m_sceneColorCopyResource)
 				.readColor(m_hbaoOutputResource)
-				.writeColor(m_sceneColorResource);
+				.readWriteColor(m_sceneColorResource)
+				.readWriteDepth(m_sceneDepthResource);
 			ssrPass.resourceAccesses = accesses.resourceAccesses;
 		}
 		auto ssrNode = m_renderGraph.addFullscreenNode(ssrPass, [this](RenderGraphPassContext& graphContext)
@@ -459,7 +524,8 @@ bool SceneView::buildRenderGraph(int imageIndex)
 			.readDepth(m_gBufferDepthResource)
 			.readColor(m_gBufferNormalResource)
 			.readColor(m_gBufferBaseColorResource)
-			.writeColor(m_sceneColorResource);
+			.readWriteColor(m_sceneColorResource)
+			.readWriteDepth(m_sceneDepthResource);
 			ssgiPass.resourceAccesses = accesses.resourceAccesses;
 		}
 		auto ssgiNode = m_renderGraph.addFullscreenNode(ssgiPass, [this](RenderGraphPassContext& graphContext)
@@ -483,10 +549,8 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		fogPass.material = m_fogMat;
 		{
 			RenderGraphPassDesc accesses;
-			accesses.readColor(m_gBufferFrameBufferResource)
-				.readDepth(m_gBufferDepthResource)
-				.readColor(m_gBufferNormalResource)
-				.writeColor(m_sceneColorResource);
+			readGBuffer(accesses);
+			readWriteScene(accesses);
 			fogPass.resourceAccesses = accesses.resourceAccesses;
 		}
 		auto fogNode = m_renderGraph.addFullscreenNode(fogPass, [this](RenderGraphPassContext& graphContext)
@@ -516,26 +580,99 @@ bool SceneView::buildRenderGraph(int imageIndex)
 			.withOutput("color", m_bloomBrightOutputResource)
 			.dependsOn(sceneChainNode);
 
-		RenderGraphPassDesc bloomPass;
-		bloomPass.name = "Bloom";
-		bloomPass.writeColor(m_sceneColorResource, RenderGraphResourceLayout::ShaderRead)
-			.readWriteStorageImage(m_bloomBrightOutputResource, RenderGraphResourceLayout::ShaderRead);
-		bloomPass.execute = [this](RenderGraphPassContext& graphContext)
+		auto downSampleNode = brightNode;
+		for(int layer = 0; layer < BLOOM_LAYERS - 1; layer++)
 		{
-			executeBloomPass(graphContext);
-		};
-		auto bloomNode = m_renderGraph.addExternalNode(bloomPass)
+			RenderGraphComputePassDesc downSamplePass;
+			downSamplePass.name = "Bloom Downsample " + std::to_string(layer);
+			downSamplePass.shaderCollection = m_bloom.downSampleShader();
+			RenderGraphPassDesc accesses;
+			accesses.readStorageImage(m_bloomTextureResources[layer][0])
+				.writeStorageImage(m_bloomTextureResources[layer + 1][0]);
+			downSamplePass.resourceAccesses = accesses.resourceAccesses;
+			downSampleNode = m_renderGraph.addComputeNode(downSamplePass, [this, layer](RenderGraphPassContext& graphContext)
+			{
+				m_bloom.executeDownSamplePass(graphContext, layer);
+			}).withOutput(m_bloomTextureResources[layer + 1][0])
+				.dependsOn(downSampleNode);
+		}
+
+		RenderGraphNode blurNodes[BLOOM_LAYERS];
+		for(int layer = 0; layer < BLOOM_LAYERS; layer++)
+		{
+			RenderGraphComputePassDesc blurVerticalPass;
+			blurVerticalPass.name = "Bloom Blur Vertical " + std::to_string(layer);
+			blurVerticalPass.shaderCollection = m_bloom.blurShader(0);
+			RenderGraphPassDesc verticalAccesses;
+			verticalAccesses.readStorageImage(m_bloomTextureResources[layer][0])
+				.writeStorageImage(m_bloomTextureResources[layer][1]);
+			blurVerticalPass.resourceAccesses = verticalAccesses.resourceAccesses;
+			auto verticalNode = m_renderGraph.addComputeNode(blurVerticalPass, [this, layer](RenderGraphPassContext& graphContext)
+			{
+				m_bloom.executeBlurPass(graphContext, layer, 0);
+			}).withOutput(m_bloomTextureResources[layer][1])
+				.dependsOn(downSampleNode);
+
+			RenderGraphComputePassDesc blurHorizontalPass;
+			blurHorizontalPass.name = "Bloom Blur Horizontal " + std::to_string(layer);
+			blurHorizontalPass.shaderCollection = m_bloom.blurShader(1);
+			RenderGraphPassDesc horizontalAccesses;
+			horizontalAccesses.readStorageImage(m_bloomTextureResources[layer][1])
+				.writeStorageImage(m_bloomTextureResources[layer][0], RenderGraphResourceLayout::ShaderRead);
+			blurHorizontalPass.resourceAccesses = horizontalAccesses.resourceAccesses;
+			blurNodes[layer] = m_renderGraph.addComputeNode(blurHorizontalPass, [this, layer](RenderGraphPassContext& graphContext)
+			{
+				m_bloom.executeBlurPass(graphContext, layer, 1);
+			}).withOutput(m_bloomTextureResources[layer][0])
+				.dependsOn(verticalNode);
+		}
+
+		RenderGraphRasterPassDesc bloomCompositePass;
+		bloomCompositePass.name = "Bloom Composite";
+		bloomCompositePass.attachments = sceneLoadAttachments;
+		bloomCompositePass.opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
+		bloomCompositePass.frameBufferResource = m_sceneFrameBufferResource;
+		bloomCompositePass.material = m_bloom.compositeMaterial();
+		RenderGraphPassDesc compositeAccesses;
+		readWriteScene(compositeAccesses);
+		for(int layer = 0; layer < BLOOM_LAYERS; layer++)
+		{
+			compositeAccesses.readColor(m_bloomTextureResources[layer][0]);
+		}
+		bloomCompositePass.resourceAccesses = compositeAccesses.resourceAccesses;
+		auto bloomNode = m_renderGraph.addFullscreenNode(bloomCompositePass, [this](RenderGraphPassContext& graphContext)
+		{
+			m_bloom.executeCompositePass(graphContext);
+		})
 			.withOutput(m_sceneColorResource)
-			.withOutput("sceneColor", m_sceneColorResource)
-			.dependsOn(brightNode);
+			.withOutput("sceneColor", m_sceneColorResource);
+		for(auto& blurNode : blurNodes)
+		{
+			bloomNode = bloomNode.dependsOn(blurNode);
+		}
 		sceneChainNode = bloomNode;
 	}
 
 	RenderGraphNode outputNode;
 	if(settings.aaEnabled())
 	{
-		auto tsaaTargetResource = m_tsaaFrameBufferResources[m_tsaa.targetBufferIndex()];
-		auto tsaaHistoryResource = m_tsaaFrameBufferResources[m_tsaa.historyBufferIndex()];
+		auto targetIndex = m_tsaa.targetBufferIndex();
+		auto historyIndex = m_tsaa.historyBufferIndex();
+		auto tsaaTargetResource = m_tsaaFrameBufferResources[targetIndex];
+		auto tsaaHistoryColor = m_tsaaColorResources[historyIndex];
+		RenderGraphNode historyClearNode;
+		if(!m_tsaaHistoryInitialized[historyIndex])
+		{
+			RenderGraphRasterPassDesc historyClearPass;
+			historyClearPass.name = "TSAA History Clear " + std::to_string(historyIndex);
+			historyClearPass.frameBufferResource = m_tsaaFrameBufferResources[historyIndex];
+			RenderGraphPassDesc accesses;
+			accesses.writeColor(tsaaHistoryColor, RenderGraphResourceLayout::ShaderRead)
+				.writeDepth(m_tsaaDepthResources[historyIndex]);
+			historyClearPass.resourceAccesses = accesses.resourceAccesses;
+			historyClearNode = m_renderGraph.addRasterNode(historyClearPass)
+				.withOutput(tsaaHistoryColor);
+		}
 		RenderGraphRasterPassDesc tsaaPass;
 		tsaaPass.name = "TSAA";
 		tsaaPass.frameBufferResource = tsaaTargetResource;
@@ -543,56 +680,75 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		{
 			RenderGraphPassDesc accesses;
 			accesses.readColor(m_sceneColorResource)
-				.readColor(tsaaHistoryResource)
+				.readColor(tsaaHistoryColor)
 				.readDepth(m_gBufferDepthResource)
-				.writeColor(tsaaTargetResource, RenderGraphResourceLayout::ShaderRead);
+				.writeColor(m_tsaaColorResources[targetIndex], RenderGraphResourceLayout::ShaderRead)
+				.writeDepth(m_tsaaDepthResources[targetIndex]);
 			tsaaPass.resourceAccesses = accesses.resourceAccesses;
 		}
 		outputNode = m_renderGraph.addFullscreenNode(tsaaPass, [this](RenderGraphPassContext& graphContext)
 		{
 			executeTSAAPass(graphContext);
-		}).withOutput(tsaaTargetResource)
-			.withOutput("color", tsaaTargetResource)
-			.withOutput("history", tsaaHistoryResource)
+		}).withOutput(m_tsaaColorResources[targetIndex])
+			.withOutput("color", m_tsaaColorResources[targetIndex])
+			.withOutput("history", tsaaHistoryColor)
 			.dependsOn(sceneChainNode);
+		if(historyClearNode.isValid())
+		{
+			outputNode = outputNode.dependsOn(historyClearNode);
+		}
 	}
 	else
 	{
-		RenderGraphPassDesc sceneOutputPass;
-		sceneOutputPass.name = "SceneOutput";
-		sceneOutputPass.readColor(m_sceneColorResource);
-		sceneOutputPass.execute = [this](RenderGraphPassContext& graphContext)
-		{
-			m_outputTexture = graphTexture(m_sceneColorResource, &graphContext);
-		};
-		outputNode = m_renderGraph.addExternalNode(sceneOutputPass)
-			.withOutput(m_sceneColorResource)
-			.withOutput("sceneColor", m_sceneColorResource)
-			.dependsOn(sceneChainNode);
+		outputNode = sceneChainNode.withOutput(m_sceneColorResource)
+			.withOutput("sceneColor", m_sceneColorResource);
 	}
 
 	auto finalOutputNode = outputNode;
 	auto finalSceneResource = outputNode.output();
 	if(m_outlinePass.hasOutlineCommands(renderQueue()) && m_outlineOutputResource.isValid())
 	{
-		RenderGraphPassDesc outlinePass;
-		outlinePass.name = "Outline";
-		if(finalSceneResource.isValid())
+		RenderGraphRasterPassDesc outlineMaskPass;
+		outlineMaskPass.name = "Outline Mask";
+		outlineMaskPass.frameBufferResource = m_outlineMaskFrameBufferResource;
+		outlineMaskPass.drawPassMask = DrawPassType::OutlineMask;
+		RenderGraphPassDesc maskAccesses;
+		maskAccesses.writeColor(m_outlineMaskColorResource, RenderGraphResourceLayout::ShaderRead)
+			.writeDepth(m_outlineMaskDepthResource, RenderGraphResourceLayout::DepthRead);
+		outlineMaskPass.resourceAccesses = maskAccesses.resourceAccesses;
+		auto outlineMaskNode = m_renderGraph.addRasterNode(outlineMaskPass, [this](RenderGraphPassContext& graphContext)
 		{
-			outlinePass.readColor(finalSceneResource);
-		}
-		outlinePass.readDepth(m_gBufferDepthResource)
+			m_outlinePass.executeMask(graphContext);
+		}).withOutput(m_outlineMaskColorResource)
+			.dependsOn(gBufferNode);
+
+		RenderGraphRasterPassDesc outlineCompositePass;
+		outlineCompositePass.name = "Outline Composite";
+		outlineCompositePass.frameBufferResource = m_outlineFrameBufferResource;
+		outlineCompositePass.material = m_outlinePass.compositeMaterial();
+		RenderGraphPassDesc outlineAccesses;
+		outlineAccesses.readColor(finalSceneResource)
+			.readColor(m_outlineMaskColorResource)
+			.readDepth(m_outlineMaskDepthResource)
+			.readDepth(m_gBufferDepthResource)
 			.writeColor(m_outlineOutputResource, RenderGraphResourceLayout::ShaderRead);
-		outlinePass.execute = [this](RenderGraphPassContext& graphContext)
+		outlineCompositePass.resourceAccesses = outlineAccesses.resourceAccesses;
+		finalOutputNode = m_renderGraph.addFullscreenNode(outlineCompositePass,
+			[this, finalSceneResource](RenderGraphPassContext& graphContext)
 		{
-			executeOutlinePass(graphContext);
-		};
-		finalOutputNode = m_renderGraph.addExternalNode(outlinePass)
+			m_outlinePass.executeComposite(graphContext,
+				graphTexture(finalSceneResource, &graphContext),
+				graphTexture(m_outlineMaskColorResource, &graphContext),
+				graphDepthTexture(m_outlineMaskDepthResource, &graphContext),
+				graphDepthTexture(m_gBufferDepthResource, &graphContext));
+		})
 			.withOutput(m_outlineOutputResource)
 			.withOutput("sceneColor", m_outlineOutputResource)
-			.dependsOn(outputNode);
+			.dependsOn(outputNode)
+			.dependsOn(outlineMaskNode);
 		finalSceneResource = finalOutputNode.output();
 	}
+	m_outputTexture = graphTexture(finalSceneResource);
 
 	int screenIndex = imageIndex % 2;
 	if(screenIndex < 0)
@@ -616,7 +772,11 @@ bool SceneView::buildRenderGraph(int imageIndex)
 		{
 			accesses.readColor(finalSceneResource);
 		}
-		accesses.writeColor(screenFrameBufferResource, RenderGraphResourceLayout::Present);
+		accesses.writeColor(m_screenColorResources[screenIndex], RenderGraphResourceLayout::Present);
+		if(m_screenDepthResources[screenIndex].isValid())
+		{
+			accesses.writeDepth(m_screenDepthResources[screenIndex]);
+		}
 		textureToScreenPass.resourceAccesses = accesses.resourceAccesses;
 	}
 	auto textureToScreenNode = m_renderGraph.addFullscreenNode(textureToScreenPass, [this](RenderGraphPassContext& graphContext)
@@ -707,7 +867,19 @@ void SceneView::draw(DeviceRenderCommand* cmd, RenderPath* renderPath, int image
 		return;
 	}
 	RenderGraphContext graphContext(cmd, renderPath, renderQueue());
-	m_renderGraph.execute(graphContext);
+	std::string executionMessage;
+	if(!m_renderGraph.execute(graphContext, &executionMessage))
+	{
+		tlogError("SceneView RenderGraph execute failed:\n%s", executionMessage.c_str());
+		return;
+	}
+	RenderSettings defaultSettings;
+	const auto& settings = m_renderSettings ? *m_renderSettings : defaultSettings;
+	if(settings.aaEnabled())
+	{
+		m_tsaaHistoryInitialized[m_tsaa.targetBufferIndex()] = true;
+		m_tsaaHistoryInitialized[m_tsaa.historyBufferIndex()] = true;
+	}
 }
 
 void SceneView::executeDeferredLightingPass(RenderGraphPassContext& graphContext)
@@ -901,17 +1073,10 @@ void SceneView::executeFogPass(RenderGraphPassContext& graphContext)
 	graphContext.drawScreenQuad();
 }
 
-void SceneView::executeBloomPass(RenderGraphPassContext& graphContext)
-{
-	m_bloom.drawAfterBright(graphContext.cmd(), graphContext.renderPath());
-}
-
 void SceneView::executeTSAAPass(RenderGraphPassContext& graphContext)
 {
-	auto targetResource = m_tsaaFrameBufferResources[m_tsaa.targetBufferIndex()];
-	auto historyResource = m_tsaaFrameBufferResources[m_tsaa.historyBufferIndex()];
-	auto historyFrame = graphTexture(historyResource, &graphContext);
-	auto targetFrame = graphTexture(targetResource, &graphContext);
+	auto historyFrame = graphTexture(m_tsaaColorResources[m_tsaa.historyBufferIndex()], &graphContext);
+	auto targetFrame = graphTexture(m_tsaaColorResources[m_tsaa.targetBufferIndex()], &graphContext);
 	auto sceneColor = graphTexture(m_sceneColorResource, &graphContext);
 	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
 	if(!historyFrame || !targetFrame || !sceneColor || !gBufferDepth)
@@ -919,17 +1084,6 @@ void SceneView::executeTSAAPass(RenderGraphPassContext& graphContext)
 		return;
 	}
 	m_tsaa.executeResolve(graphContext, historyFrame, sceneColor, gBufferDepth);
-	m_outputTexture = targetFrame;
-}
-
-void SceneView::executeOutlinePass(RenderGraphPassContext& graphContext)
-{
-	auto gBufferDepth = graphDepthTexture(m_gBufferDepthResource, &graphContext);
-	if(!m_outputTexture || !gBufferDepth)
-	{
-		return;
-	}
-	m_outputTexture = m_outlinePass.draw(graphContext.cmd(), graphContext.renderPath(), graphContext.sceneQueue(), m_outputTexture, gBufferDepth);
 }
 
 void SceneView::executeTextureToScreenPass(RenderGraphPassContext& graphContext)

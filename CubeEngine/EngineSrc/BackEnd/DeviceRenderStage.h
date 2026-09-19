@@ -19,6 +19,7 @@ class DeviceRenderStage
 {
 public:
 	DeviceRenderStage();
+	virtual ~DeviceRenderStage();
 	void init(DeviceRenderPass * renderPass, DeviceFrameBuffer * frameBuffer, DrawPassTypeMask drawPassMask = DrawPassType::All);
 	void initCompute();
 	DeviceRenderPass * getRenderPass();

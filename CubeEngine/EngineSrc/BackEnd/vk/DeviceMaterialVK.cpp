@@ -16,6 +16,24 @@ namespace tzw
 
 	}
 
+	DeviceMaterialVK::~DeviceMaterialVK()
+	{
+		delete m_materialDescripotrSet;
+		auto device = VKRenderBackEnd::shared()->getDevice();
+		if(m_matUniformBuffer != VK_NULL_HANDLE)
+		{
+			vkDestroyBuffer(device, m_matUniformBuffer, nullptr);
+		}
+		if(m_matUniformBufferMemory != VK_NULL_HANDLE)
+		{
+			vkFreeMemory(device, m_matUniformBufferMemory, nullptr);
+		}
+		if(m_materialDescriptorPool != VK_NULL_HANDLE)
+		{
+			vkDestroyDescriptorPool(device, m_materialDescriptorPool, nullptr);
+		}
+	}
+
     void DeviceMaterialVK::init(MaterialInstance* material, MaterialTechniqueType techniqueType)
     {
 		m_mat = material;

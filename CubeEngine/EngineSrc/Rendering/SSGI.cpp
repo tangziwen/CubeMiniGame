@@ -11,9 +11,13 @@ namespace tzw
 {
 void SSGI::init()
 {
-	m_material = new MaterialInstance();
-	m_material->loadFromMaterial("SSGI");
-	MaterialPool::shared()->addMaterial("SSGI", m_material);
+	if(!m_material)
+	{
+		m_material = new MaterialInstance();
+		m_material->loadFromMaterial("SSGI");
+		MaterialPool::shared()->addMaterial("SSGI", m_material);
+	}
+	m_index = 0;
 }
 
 void SSGI::execute(RenderGraphPassContext& graphContext, DeviceTexture* currentFrame, DeviceTexture* depth,

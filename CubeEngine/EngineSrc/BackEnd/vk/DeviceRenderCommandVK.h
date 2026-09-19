@@ -10,6 +10,8 @@ public:
 	DeviceRenderCommandVK(VkCommandBuffer handle);
 	void startRecord() override;
 	void endRecord() override;
+	bool textureBarrier(const DeviceTextureBarrier& barrier) override;
+	bool blitTexture(const DeviceTextureBlit& blit) override;
 
 	VkCommandBuffer getVK()
 	{

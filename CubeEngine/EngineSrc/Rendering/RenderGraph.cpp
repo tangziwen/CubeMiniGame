@@ -5,13 +5,11 @@
 #include "BackEnd/DevicePipeline.h"
 #include "BackEnd/RenderBackEndBase.h"
 #include "BackEnd/DeviceRenderStage.h"
-#include "BackEnd/VkRenderBackEnd.h"
-#include "BackEnd/vk/DeviceRenderCommandVK.h"
-#include "BackEnd/vk/DeviceTextureVK.h"
 #include "Engine/Engine.h"
 #include "RenderPath.h"
 #include "Utility/log/Log.h"
 
+#include <algorithm>
 #include <sstream>
 
 namespace tzw
@@ -87,6 +85,8 @@ const char* accessName(RenderGraphResourceAccessType type)
 		return "WriteDepth";
 	case RenderGraphResourceAccessType::ReadWriteColor:
 		return "ReadWriteColor";
+	case RenderGraphResourceAccessType::ReadWriteDepth:
+		return "ReadWriteDepth";
 	case RenderGraphResourceAccessType::TransferRead:
 		return "TransferRead";
 	case RenderGraphResourceAccessType::TransferWrite:
@@ -116,7 +116,8 @@ bool isColorAccess(RenderGraphResourceAccessType type)
 bool isDepthAccess(RenderGraphResourceAccessType type)
 {
 	return type == RenderGraphResourceAccessType::ReadDepth
-		|| type == RenderGraphResourceAccessType::WriteDepth;
+		|| type == RenderGraphResourceAccessType::WriteDepth
+		|| type == RenderGraphResourceAccessType::ReadWriteDepth;
 }
 
 bool isWriteAccess(RenderGraphResourceAccessType type)
@@ -124,6 +125,7 @@ bool isWriteAccess(RenderGraphResourceAccessType type)
 	return type == RenderGraphResourceAccessType::WriteColor
 		|| type == RenderGraphResourceAccessType::WriteDepth
 		|| type == RenderGraphResourceAccessType::ReadWriteColor
+		|| type == RenderGraphResourceAccessType::ReadWriteDepth
 		|| type == RenderGraphResourceAccessType::TransferWrite
 		|| type == RenderGraphResourceAccessType::WriteStorageImage
 		|| type == RenderGraphResourceAccessType::ReadWriteStorageImage;
@@ -134,43 +136,10 @@ bool isReadAccess(RenderGraphResourceAccessType type)
 	return type == RenderGraphResourceAccessType::ReadColor
 		|| type == RenderGraphResourceAccessType::ReadDepth
 		|| type == RenderGraphResourceAccessType::ReadWriteColor
+		|| type == RenderGraphResourceAccessType::ReadWriteDepth
 		|| type == RenderGraphResourceAccessType::TransferRead
 		|| type == RenderGraphResourceAccessType::ReadStorageImage
 		|| type == RenderGraphResourceAccessType::ReadWriteStorageImage;
-}
-
-bool toVkLayout(RenderGraphResourceLayout layout, VkImageLayout& outLayout)
-{
-	switch(layout)
-	{
-	case RenderGraphResourceLayout::ColorAttachment:
-		outLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		return true;
-	case RenderGraphResourceLayout::DepthAttachment:
-		outLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		return true;
-	case RenderGraphResourceLayout::DepthRead:
-		outLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		return true;
-	case RenderGraphResourceLayout::ShaderRead:
-		outLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		return true;
-	case RenderGraphResourceLayout::TransferSrc:
-		outLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
-		return true;
-	case RenderGraphResourceLayout::TransferDst:
-		outLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
-		return true;
-	case RenderGraphResourceLayout::General:
-		outLayout = VK_IMAGE_LAYOUT_GENERAL;
-		return true;
-	case RenderGraphResourceLayout::Present:
-		outLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
-		return true;
-	case RenderGraphResourceLayout::Unknown:
-		break;
-	}
-	return false;
 }
 
 RenderGraphResourceState makeState(RenderGraphResourceLayout layout, RenderGraphResourceUsage usage)
@@ -220,7 +189,9 @@ RenderGraphResourceState beforeStateForAccess(const RenderGraphResourceAccess& a
 	case RenderGraphResourceAccessType::WriteDepth:
 		return makeState(RenderGraphResourceLayout::DepthAttachment, RenderGraphResourceUsage::DepthAttachmentWrite);
 	case RenderGraphResourceAccessType::ReadWriteColor:
-		return stateForLayout(access.beforeLayout, false);
+		return makeState(RenderGraphResourceLayout::ColorAttachment, RenderGraphResourceUsage::ColorAttachmentWrite);
+	case RenderGraphResourceAccessType::ReadWriteDepth:
+		return makeState(RenderGraphResourceLayout::DepthAttachment, RenderGraphResourceUsage::DepthAttachmentWrite);
 	case RenderGraphResourceAccessType::TransferRead:
 		return makeState(RenderGraphResourceLayout::TransferSrc, RenderGraphResourceUsage::TransferRead);
 	case RenderGraphResourceAccessType::TransferWrite:
@@ -237,55 +208,12 @@ RenderGraphResourceState beforeStateForAccess(const RenderGraphResourceAccess& a
 
 RenderGraphResourceState afterStateForAccess(const RenderGraphResourceAccess& access)
 {
-	if(access.afterLayout == RenderGraphResourceLayout::Unknown)
+	auto state = beforeStateForAccess(access);
+	if(access.afterLayout == RenderGraphResourceLayout::Unknown || access.afterLayout == state.layout)
 	{
-		return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
+		return state;
 	}
-
-	switch(access.type)
-	{
-	case RenderGraphResourceAccessType::ReadColor:
-		return makeState(RenderGraphResourceLayout::ShaderRead, RenderGraphResourceUsage::FragmentShaderRead);
-	case RenderGraphResourceAccessType::ReadDepth:
-		return makeState(RenderGraphResourceLayout::DepthRead, RenderGraphResourceUsage::FragmentShaderRead);
-	case RenderGraphResourceAccessType::WriteColor:
-		if(access.afterLayout == RenderGraphResourceLayout::ColorAttachment)
-		{
-			return makeState(access.afterLayout, RenderGraphResourceUsage::ColorAttachmentWrite);
-		}
-		return stateForLayout(access.afterLayout, false);
-	case RenderGraphResourceAccessType::WriteDepth:
-		if(access.afterLayout == RenderGraphResourceLayout::DepthAttachment)
-		{
-			return makeState(access.afterLayout, RenderGraphResourceUsage::DepthAttachmentWrite);
-		}
-		return stateForLayout(access.afterLayout, true);
-	case RenderGraphResourceAccessType::ReadWriteColor:
-		return stateForLayout(access.afterLayout, false);
-	case RenderGraphResourceAccessType::TransferRead:
-		return makeState(RenderGraphResourceLayout::TransferSrc, RenderGraphResourceUsage::TransferRead);
-	case RenderGraphResourceAccessType::TransferWrite:
-		if(access.afterLayout == RenderGraphResourceLayout::TransferDst)
-		{
-			return makeState(access.afterLayout, RenderGraphResourceUsage::TransferWrite);
-		}
-		return stateForLayout(access.afterLayout, false);
-	case RenderGraphResourceAccessType::ReadStorageImage:
-		return makeState(RenderGraphResourceLayout::General, RenderGraphResourceUsage::ComputeStorageRead);
-	case RenderGraphResourceAccessType::WriteStorageImage:
-		if(access.afterLayout == RenderGraphResourceLayout::General)
-		{
-			return makeState(access.afterLayout, RenderGraphResourceUsage::ComputeStorageWrite);
-		}
-		return stateForLayout(access.afterLayout, false);
-	case RenderGraphResourceAccessType::ReadWriteStorageImage:
-		if(access.afterLayout == RenderGraphResourceLayout::General)
-		{
-			return makeState(access.afterLayout, RenderGraphResourceUsage::ComputeStorageReadWrite);
-		}
-		return stateForLayout(access.afterLayout, false);
-	}
-	return makeState(RenderGraphResourceLayout::Unknown, RenderGraphResourceUsage::Unknown);
+	return stateForLayout(access.afterLayout, isDepthAccess(access.type));
 }
 
 bool isUnknownState(const RenderGraphResourceState& state)
@@ -311,13 +239,6 @@ bool stateWrites(RenderGraphResourceUsage usage)
 		|| usage == RenderGraphResourceUsage::TransferWrite;
 }
 
-bool isStorageState(RenderGraphResourceUsage usage)
-{
-	return usage == RenderGraphResourceUsage::ComputeStorageRead
-		|| usage == RenderGraphResourceUsage::ComputeStorageWrite
-		|| usage == RenderGraphResourceUsage::ComputeStorageReadWrite;
-}
-
 bool needsStateBarrier(const RenderGraphResourceState& currentState, const RenderGraphResourceState& nextState, bool allowSameStateDependency)
 {
 	if(isUnknownState(currentState) || isUnknownState(nextState))
@@ -329,125 +250,27 @@ bool needsStateBarrier(const RenderGraphResourceState& currentState, const Rende
 		return true;
 	}
 	return allowSameStateDependency && stateWrites(currentState.usage)
-		&& (stateReads(nextState.usage) || stateWrites(nextState.usage))
-		&& (isStorageState(currentState.usage) || isStorageState(nextState.usage));
+		&& (stateReads(nextState.usage) || stateWrites(nextState.usage));
 }
 
-bool toVkState(const RenderGraphResourceState& state, VkImageLayout& layout, VkPipelineStageFlags& stage, VkAccessFlags& access)
+std::vector<DeviceTexture*> texturesForAccess(RenderGraphResource* graphResource, RenderGraphResourceAccessType type)
 {
-	if(!toVkLayout(state.layout, layout))
-	{
-		return false;
-	}
-
-	switch(state.usage)
-	{
-	case RenderGraphResourceUsage::FragmentShaderRead:
-		stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		access = VK_ACCESS_SHADER_READ_BIT;
-		return true;
-	case RenderGraphResourceUsage::ComputeStorageRead:
-		stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		access = VK_ACCESS_SHADER_READ_BIT;
-		return true;
-	case RenderGraphResourceUsage::ComputeStorageWrite:
-		stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		access = VK_ACCESS_SHADER_WRITE_BIT;
-		return true;
-	case RenderGraphResourceUsage::ComputeStorageReadWrite:
-		stage = VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT;
-		access = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT;
-		return true;
-	case RenderGraphResourceUsage::ColorAttachmentWrite:
-		stage = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		access = VK_ACCESS_COLOR_ATTACHMENT_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
-		return true;
-	case RenderGraphResourceUsage::DepthAttachmentWrite:
-		stage = VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT;
-		access = VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		return true;
-	case RenderGraphResourceUsage::TransferRead:
-		stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		access = VK_ACCESS_TRANSFER_READ_BIT;
-		return true;
-	case RenderGraphResourceUsage::TransferWrite:
-		stage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-		access = VK_ACCESS_TRANSFER_WRITE_BIT;
-		return true;
-	case RenderGraphResourceUsage::Present:
-		stage = VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT;
-		access = 0;
-		return true;
-	case RenderGraphResourceUsage::Unknown:
-		break;
-	}
-	return false;
-}
-
-void transitionImageState(VKRenderBackEnd* backEnd, DeviceRenderCommandVK* command, DeviceTextureVK* texture,
-	const RenderGraphResourceState& currentState, const RenderGraphResourceState& nextState)
-{
-	if(!backEnd || !command || !texture)
-	{
-		return;
-	}
-
-	VkImageLayout oldLayout;
-	VkImageLayout newLayout;
-	VkPipelineStageFlags srcStage = {};
-	VkPipelineStageFlags dstStage = {};
-	VkAccessFlags srcAccess = {};
-	VkAccessFlags dstAccess = {};
-	if(toVkState(currentState, oldLayout, srcStage, srcAccess) && toVkState(nextState, newLayout, dstStage, dstAccess))
-	{
-		backEnd->transitionImageLayoutUseBarrier(command->getVK(), texture, oldLayout, newLayout,
-			srcStage, srcAccess, dstStage, dstAccess, 0, 1);
-	}
-}
-
-std::vector<DeviceTextureVK*> vkTexturesForAccess(RenderGraphResource* graphResource, RenderGraphResourceAccessType type)
-{
-	std::vector<DeviceTextureVK*> textures;
-	if(!graphResource)
+	std::vector<DeviceTexture*> textures;
+	if(!graphResource || graphResource->kind != RenderGraphResourceKind::Texture)
 	{
 		return textures;
 	}
-
 	if(isDepthAccess(type))
 	{
-		auto vkTexture = dynamic_cast<DeviceTextureVK*>(graphResource->depthTexture);
-		if(vkTexture)
+		if(graphResource->depthTexture)
 		{
-			textures.emplace_back(vkTexture);
+			textures.emplace_back(graphResource->depthTexture);
 		}
 		return textures;
 	}
-
-	if(graphResource->frameBuffer)
+	if(graphResource->texture)
 	{
-		auto depthTexture = graphResource->depthTexture;
-		auto& frameBufferTextures = graphResource->frameBuffer->getTextureList();
-		for(auto texture : frameBufferTextures)
-		{
-			if(!texture || texture == depthTexture)
-			{
-				continue;
-			}
-			auto vkTexture = dynamic_cast<DeviceTextureVK*>(texture);
-			if(vkTexture)
-			{
-				textures.emplace_back(vkTexture);
-			}
-		}
-	}
-
-	if(textures.empty())
-	{
-		auto vkTexture = dynamic_cast<DeviceTextureVK*>(graphResource->texture);
-		if(vkTexture)
-		{
-			textures.emplace_back(vkTexture);
-		}
+		textures.emplace_back(graphResource->texture);
 	}
 	return textures;
 }
@@ -815,6 +638,11 @@ DeviceRenderStage* RenderGraphPassContext::stage() const
 	return m_pass ? m_pass->compiledStage : nullptr;
 }
 
+RenderGraph::~RenderGraph()
+{
+	clearResources();
+}
+
 void RenderGraph::clear()
 {
 	m_passes.clear();
@@ -831,13 +659,11 @@ void RenderGraph::beginBuild()
 
 void RenderGraph::clearResources()
 {
+	clear();
+	releasePassCache();
 	releaseOwnedResources();
 	m_resources.clear();
-	m_rasterPassCache.clear();
-	m_computePassCache.clear();
-	m_compiledPassOrder.clear();
-	m_hasCompiledOrder = false;
-	m_compiledRoot = RenderGraphPassHandle::invalid();
+	m_resourceRegistrationErrors.clear();
 }
 
 RenderGraphPassDesc& RenderGraphPassDesc::readColor(RenderGraphResourceHandle resource)
@@ -871,7 +697,14 @@ RenderGraphPassDesc& RenderGraphPassDesc::writeDepth(RenderGraphResourceHandle r
 RenderGraphPassDesc& RenderGraphPassDesc::readWriteColor(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout)
 {
 	resourceAccesses.emplace_back(makeAccess(resource, RenderGraphResourceAccessType::ReadWriteColor,
-		RenderGraphResourceLayout::Unknown, finalLayout));
+		RenderGraphResourceLayout::ColorAttachment, finalLayout));
+	return *this;
+}
+
+RenderGraphPassDesc& RenderGraphPassDesc::readWriteDepth(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout)
+{
+	resourceAccesses.emplace_back(makeAccess(resource, RenderGraphResourceAccessType::ReadWriteDepth,
+		RenderGraphResourceLayout::DepthAttachment, finalLayout));
 	return *this;
 }
 
@@ -933,22 +766,30 @@ RenderGraphNode RenderGraph::addRasterNode(const RenderGraphRasterPassDesc& desc
 
 	auto frameBufferResource = cache->frameBufferResource;
 	auto frameBuffer = this->frameBuffer(frameBufferResource);
-	cache->stage->setFrameBuffer(frameBuffer);
+	if(cache->stage)
+	{
+		cache->stage->setFrameBuffer(frameBuffer);
+	}
+	auto outputResource = colorAttachment(frameBufferResource);
 
 	RenderGraphPassDesc pass;
 	pass.name = desc.name;
 	pass.kind = RenderGraphPassKind::Raster;
 	pass.renderPass = cache->renderPass;
 	pass.compiledStage = cache->stage;
+	pass.opType = pass.renderPass ? pass.renderPass->getOpType() : desc.opType;
 	pass.frameBufferResource = frameBufferResource;
-	pass.outputResource = frameBufferResource;
-	pass.isOutputToScreen = desc.isOutputToScreen;
+	pass.outputResource = outputResource;
+	pass.isOutputToScreen = pass.renderPass ? pass.renderPass->isOutputToScreen() : desc.isOutputToScreen;
 	pass.consumedDrawPassMask = desc.consumesSceneQueue ? desc.drawPassMask : DrawPassType::Unset;
 	pass.resourceAccesses = desc.resourceAccesses;
 	pass.execute = execute;
 	auto handle = addPass(pass);
-	setPassOutput(handle, frameBufferResource);
-	return RenderGraphNode(this, handle, frameBufferResource);
+	if(outputResource.isValid())
+	{
+		setPassOutput(handle, outputResource);
+	}
+	return RenderGraphNode(this, handle, outputResource);
 }
 
 RenderGraphNode RenderGraph::addFullscreenNode(const RenderGraphRasterPassDesc& desc, std::function<void(RenderGraphPassContext&)> execute)
@@ -1057,11 +898,20 @@ RenderGraph::RasterPassCacheEntry& RenderGraph::createRasterPassCache(const std:
 {
 	auto backEnd = Engine::shared()->getRenderBackEnd();
 	DeviceRenderPass* renderPass = nullptr;
+	bool ownsRenderPass = false;
 	if(!frameBufferResource.isValid())
 	{
 		renderPass = backEnd->createDeviceRenderpass_imp();
-		renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
-		frameBufferResource = createFrameBuffer(desc.frameBufferDesc, renderPass);
+		if(renderPass)
+		{
+			renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
+			frameBufferResource = createFrameBuffer(desc.frameBufferDesc, renderPass);
+			auto graphResource = resource(frameBufferResource);
+			if(graphResource)
+			{
+				graphResource->ownsRenderPass = true;
+			}
+		}
 	}
 	else
 	{
@@ -1073,17 +923,24 @@ RenderGraph::RasterPassCacheEntry& RenderGraph::createRasterPassCache(const std:
 		if(!renderPass)
 		{
 			renderPass = backEnd->createDeviceRenderpass_imp();
-			renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
+			if(renderPass)
+			{
+				renderPass->init(desc.attachments, desc.opType, desc.isNeedTransitionToRead, desc.isOutputToScreen);
+				ownsRenderPass = true;
+			}
 		}
 	}
 
 	auto frameBuffer = this->frameBuffer(frameBufferResource);
 	auto stage = backEnd->createRenderStage_imp();
-	stage->init(renderPass, frameBuffer, desc.drawPassMask);
-	stage->setName(desc.name);
-	if(desc.material)
+	if(stage && renderPass && frameBuffer)
 	{
-		stage->createSinglePipeline(desc.material);
+		stage->init(renderPass, frameBuffer, desc.drawPassMask);
+		stage->setName(desc.name);
+		if(desc.material)
+		{
+			stage->createSinglePipeline(desc.material);
+		}
 	}
 
 	RasterPassCacheEntry cache;
@@ -1091,6 +948,7 @@ RenderGraph::RasterPassCacheEntry& RenderGraph::createRasterPassCache(const std:
 	cache.renderPass = renderPass;
 	cache.stage = stage;
 	cache.frameBufferResource = frameBufferResource;
+	cache.ownsRenderPass = ownsRenderPass;
 	m_rasterPassCache.emplace_back(cache);
 	return m_rasterPassCache.back();
 }
@@ -1111,22 +969,141 @@ RenderGraph::ComputePassCacheEntry& RenderGraph::createComputePassCache(const st
 	return m_computePassCache.back();
 }
 
-RenderGraphResourceHandle RenderGraph::importTexture(const RenderGraphResourceDesc& desc, DeviceTexture* texture)
+RenderGraphResourceHandle RenderGraph::findTextureResource(DeviceTexture* texture) const
 {
-	RenderGraphResource resource;
-	resource.desc = desc;
-	resource.desc.imported = true;
-	resource.texture = texture;
-	resource.depthTexture = nullptr;
-	resource.frameBuffer = nullptr;
-	resource.renderPass = nullptr;
-	resource.graphOwned = false;
-	resource.currentColorState = stateForLayout(desc.initialColorLayout, false);
-	resource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
+	if(!texture)
+	{
+		return RenderGraphResourceHandle::invalid();
+	}
+	for(uint32_t i = 0; i < m_resources.size(); i++)
+	{
+		const auto& graphResource = m_resources[i];
+		if(graphResource.kind == RenderGraphResourceKind::Texture && graphResource.texture == texture)
+		{
+			return RenderGraphResourceHandle(i);
+		}
+	}
+	return RenderGraphResourceHandle::invalid();
+}
+
+RenderGraphResourceHandle RenderGraph::registerTextureResource(const RenderGraphResourceDesc& desc, DeviceTexture* texture, bool imported)
+{
+	if(!texture)
+	{
+		const auto error = "RenderGraph cannot register null texture `" + desc.name + "`.";
+		m_resourceRegistrationErrors.emplace_back(error);
+		tlogError("%s", error.c_str());
+		return RenderGraphResourceHandle::invalid();
+	}
+
+	auto existingHandle = findTextureResource(texture);
+	if(existingHandle.isValid())
+	{
+		auto existing = resource(existingHandle);
+		const bool sizeConflict = existing
+			&& existing->desc.size.x > 0 && existing->desc.size.y > 0
+			&& desc.size.x > 0 && desc.size.y > 0
+			&& (existing->desc.size.x != desc.size.x || existing->desc.size.y != desc.size.y);
+		const bool layoutConflict = existing && (desc.role == TextureRoleEnum::AS_DEPTH
+			? existing->desc.initialDepthLayout != desc.initialDepthLayout
+			: existing->desc.initialColorLayout != desc.initialColorLayout);
+		if(!existing || existing->desc.role != desc.role
+			|| (existing->desc.format != desc.format && desc.format != ImageFormat::Surface_Format
+				&& existing->desc.format != ImageFormat::Surface_Format)
+			|| existing->desc.usage != desc.usage
+			|| existing->desc.imported != imported
+			|| sizeConflict
+			|| layoutConflict)
+		{
+			const auto error = "RenderGraph texture `" + desc.name + "` was imported with conflicting metadata.";
+			bool alreadyRecorded = false;
+			for(const auto& existingError : m_resourceRegistrationErrors)
+			{
+				if(existingError == error)
+				{
+					alreadyRecorded = true;
+					break;
+				}
+			}
+			if(!alreadyRecorded)
+			{
+				m_resourceRegistrationErrors.emplace_back(error);
+			}
+			tlogError("%s", error.c_str());
+			return RenderGraphResourceHandle::invalid();
+		}
+		return existingHandle;
+	}
+
+	RenderGraphResource graphResource;
+	graphResource.desc = desc;
+	graphResource.desc.imported = imported;
+	graphResource.kind = RenderGraphResourceKind::Texture;
+	graphResource.texture = texture;
+	graphResource.contentsInitialized = imported;
+	if(desc.role == TextureRoleEnum::AS_DEPTH)
+	{
+		graphResource.depthTexture = texture;
+		graphResource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
+	}
+	else
+	{
+		graphResource.currentColorState = stateForLayout(desc.initialColorLayout, false);
+	}
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
-	m_resources.emplace_back(resource);
+	m_resources.emplace_back(graphResource);
 	return RenderGraphResourceHandle(index);
+}
+
+void RenderGraph::registerFrameBufferAttachments(RenderGraphResourceHandle frameBufferResource)
+{
+	auto graphResource = resource(frameBufferResource);
+	if(!graphResource || graphResource->kind != RenderGraphResourceKind::FrameBuffer || !graphResource->frameBuffer)
+	{
+		return;
+	}
+
+	graphResource->colorAttachments.clear();
+	graphResource->depthAttachment = RenderGraphResourceHandle::invalid();
+	auto depthTexture = graphResource->frameBuffer->getDepthMap();
+	auto& textures = graphResource->frameBuffer->getTextureList();
+	auto attachmentInfos = graphResource->renderPass ? graphResource->renderPass->getAttachmentList() : DeviceAttachmentInfoList{};
+	uint32_t colorIndex = 0;
+	for(size_t i = 0; i < textures.size(); i++)
+	{
+		auto texture = textures[i];
+		if(!texture)
+		{
+			continue;
+		}
+		RenderGraphResourceDesc attachmentDesc = graphResource->desc;
+		attachmentDesc.imported = graphResource->desc.imported;
+		const bool isDepth = texture == depthTexture;
+		if(i < attachmentInfos.size())
+		{
+			attachmentDesc.format = attachmentInfos[i].format;
+		}
+		attachmentDesc.role = isDepth ? TextureRoleEnum::AS_DEPTH : TextureRoleEnum::AS_COLOR;
+		attachmentDesc.name += isDepth ? ".Depth" : (".Color" + std::to_string(colorIndex));
+		auto attachmentHandle = registerTextureResource(attachmentDesc, texture, graphResource->desc.imported);
+		if(isDepth)
+		{
+			graphResource = resource(frameBufferResource);
+			graphResource->depthAttachment = attachmentHandle;
+		}
+		else
+		{
+			graphResource = resource(frameBufferResource);
+			graphResource->colorAttachments.emplace_back(attachmentHandle);
+			colorIndex++;
+		}
+	}
+}
+
+RenderGraphResourceHandle RenderGraph::importTexture(const RenderGraphResourceDesc& desc, DeviceTexture* texture)
+{
+	return registerTextureResource(desc, texture, true);
 }
 
 RenderGraphResourceHandle RenderGraph::importFrameBuffer(const RenderGraphResourceDesc& desc, DeviceFrameBuffer* frameBuffer)
@@ -1134,17 +1111,14 @@ RenderGraphResourceHandle RenderGraph::importFrameBuffer(const RenderGraphResour
 	RenderGraphResource resource;
 	resource.desc = desc;
 	resource.desc.imported = true;
-	resource.texture = firstColorTexture(frameBuffer);
-	resource.depthTexture = frameBuffer ? frameBuffer->getDepthMap() : nullptr;
+	resource.kind = RenderGraphResourceKind::FrameBuffer;
 	resource.frameBuffer = frameBuffer;
-	resource.renderPass = nullptr;
-	resource.graphOwned = false;
-	resource.currentColorState = stateForLayout(desc.initialColorLayout, false);
-	resource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
-	return RenderGraphResourceHandle(index);
+	RenderGraphResourceHandle handle(index);
+	registerFrameBufferAttachments(handle);
+	return handle;
 }
 
 RenderGraphResourceHandle RenderGraph::createFrameBuffer(const RenderGraphResourceDesc& desc, DeviceRenderPass* renderPass)
@@ -1155,17 +1129,16 @@ RenderGraphResourceHandle RenderGraph::createFrameBuffer(const RenderGraphResour
 	RenderGraphResource resource;
 	resource.desc = desc;
 	resource.desc.imported = false;
-	resource.texture = firstColorTexture(frameBuffer);
-	resource.depthTexture = frameBuffer->getDepthMap();
+	resource.kind = RenderGraphResourceKind::FrameBuffer;
 	resource.frameBuffer = frameBuffer;
 	resource.renderPass = renderPass;
-	resource.graphOwned = true;
-	resource.currentColorState = stateForLayout(desc.initialColorLayout, false);
-	resource.currentDepthState = stateForLayout(desc.initialDepthLayout, true);
+	resource.ownsFrameBuffer = true;
 
 	const uint32_t index = static_cast<uint32_t>(m_resources.size());
 	m_resources.emplace_back(resource);
-	return RenderGraphResourceHandle(index);
+	RenderGraphResourceHandle handle(index);
+	registerFrameBufferAttachments(handle);
+	return handle;
 }
 
 RenderGraphResourceHandle RenderGraph::createFrameBuffer(const RenderGraphResourceDesc& desc, const DeviceAttachmentInfoList& attachments,
@@ -1173,14 +1146,179 @@ RenderGraphResourceHandle RenderGraph::createFrameBuffer(const RenderGraphResour
 {
 	auto renderPass = Engine::shared()->getRenderBackEnd()->createDeviceRenderpass_imp();
 	renderPass->init(attachments, opType, isNeedTransitionToRead, isOutputToScreen);
-	return createFrameBuffer(desc, renderPass);
+	auto handle = createFrameBuffer(desc, renderPass);
+	auto graphResource = resource(handle);
+	if(graphResource)
+	{
+		graphResource->ownsRenderPass = true;
+	}
+	return handle;
+}
+
+RenderGraphResourceHandle RenderGraph::colorAttachment(RenderGraphResourceHandle frameBufferResource, uint32_t index) const
+{
+	auto graphResource = resource(frameBufferResource);
+	if(!graphResource || graphResource->kind != RenderGraphResourceKind::FrameBuffer
+		|| index >= graphResource->colorAttachments.size())
+	{
+		return RenderGraphResourceHandle::invalid();
+	}
+	return graphResource->colorAttachments[index];
+}
+
+RenderGraphResourceHandle RenderGraph::depthAttachment(RenderGraphResourceHandle frameBufferResource) const
+{
+	auto graphResource = resource(frameBufferResource);
+	if(!graphResource || graphResource->kind != RenderGraphResourceKind::FrameBuffer)
+	{
+		return RenderGraphResourceHandle::invalid();
+	}
+	return graphResource->depthAttachment;
+}
+
+bool RenderGraph::rebindImportedFrameBuffer(RenderGraphResourceHandle handle, DeviceFrameBuffer* frameBuffer,
+	RenderGraphResourceLayout initialColorLayout, RenderGraphResourceLayout initialDepthLayout)
+{
+	auto graphResource = resource(handle);
+	if(!graphResource || graphResource->kind != RenderGraphResourceKind::FrameBuffer
+		|| !graphResource->desc.imported || !frameBuffer)
+	{
+		return false;
+	}
+
+	auto& newTextures = frameBuffer->getTextureList();
+	auto newDepth = frameBuffer->getDepthMap();
+	if((!graphResource->colorAttachments.empty() && initialColorLayout == RenderGraphResourceLayout::Unknown)
+		|| (newDepth && initialDepthLayout == RenderGraphResourceLayout::Unknown))
+	{
+		tlogError("RenderGraph imported framebuffer `%s` rebind requires explicit attachment states.", graphResource->desc.name.c_str());
+		return false;
+	}
+	std::vector<DeviceTexture*> uniqueTextures;
+	for(auto texture : newTextures)
+	{
+		if(!texture || std::find(uniqueTextures.begin(), uniqueTextures.end(), texture) != uniqueTextures.end())
+		{
+			tlogError("RenderGraph imported framebuffer `%s` rebind has null or duplicate attachments.", graphResource->desc.name.c_str());
+			return false;
+		}
+		uniqueTextures.emplace_back(texture);
+	}
+	if(newDepth && std::find(newTextures.begin(), newTextures.end(), newDepth) == newTextures.end())
+	{
+		tlogError("RenderGraph imported framebuffer `%s` rebind is missing its depth attachment.", graphResource->desc.name.c_str());
+		return false;
+	}
+	size_t newColorCount = 0;
+	for(auto texture : newTextures)
+	{
+		if(texture && texture != newDepth)
+		{
+			newColorCount++;
+		}
+	}
+	if(newColorCount != graphResource->colorAttachments.size()
+		|| static_cast<bool>(newDepth) != graphResource->depthAttachment.isValid())
+	{
+		tlogError("RenderGraph imported framebuffer `%s` changed attachment shape during rebind.", graphResource->desc.name.c_str());
+		return false;
+	}
+	size_t checkedColorIndex = 0;
+	for(auto texture : newTextures)
+	{
+		if(!texture)
+		{
+			continue;
+		}
+		auto expectedHandle = texture == newDepth
+			? graphResource->depthAttachment
+			: graphResource->colorAttachments[checkedColorIndex++];
+		auto attachmentResource = resource(expectedHandle);
+		if(!attachmentResource)
+		{
+			return false;
+		}
+		if(attachmentResource->texture != texture)
+		{
+			for(uint32_t resourceIndex = 0; resourceIndex < m_resources.size(); resourceIndex++)
+			{
+				const auto& other = m_resources[resourceIndex];
+				if(resourceIndex == handle.index() || other.kind != RenderGraphResourceKind::FrameBuffer)
+				{
+					continue;
+				}
+				bool shared = other.depthAttachment.isValid() && other.depthAttachment.index() == expectedHandle.index();
+				for(auto color : other.colorAttachments)
+				{
+					shared = shared || (color.isValid() && color.index() == expectedHandle.index());
+				}
+				if(shared)
+				{
+					tlogError("RenderGraph imported framebuffer `%s` cannot rebind an attachment shared with `%s`.",
+						graphResource->desc.name.c_str(), other.desc.name.c_str());
+					return false;
+				}
+			}
+		}
+		auto existingHandle = findTextureResource(texture);
+		if(existingHandle.isValid() && existingHandle.index() != expectedHandle.index())
+		{
+			tlogError("RenderGraph imported framebuffer `%s` rebind aliases an existing texture resource.", graphResource->desc.name.c_str());
+			return false;
+		}
+	}
+
+	clear();
+	invalidateRasterPassCache(handle);
+	graphResource->frameBuffer = frameBuffer;
+	graphResource->desc.size = frameBuffer->getSize();
+	graphResource->desc.initialColorLayout = initialColorLayout;
+	graphResource->desc.initialDepthLayout = initialDepthLayout;
+	size_t colorIndex = 0;
+	for(auto texture : newTextures)
+	{
+		if(!texture)
+		{
+			continue;
+		}
+		if(texture == newDepth)
+		{
+			auto attachmentResource = resource(graphResource->depthAttachment);
+			attachmentResource->texture = texture;
+			attachmentResource->depthTexture = texture;
+			attachmentResource->desc.size = graphResource->desc.size;
+			attachmentResource->contentsInitialized = true;
+			attachmentResource->desc.initialDepthLayout = initialDepthLayout;
+			attachmentResource->currentDepthState = stateForLayout(initialDepthLayout, true);
+		}
+		else
+		{
+			auto attachmentResource = resource(graphResource->colorAttachments[colorIndex++]);
+			attachmentResource->texture = texture;
+			attachmentResource->desc.size = graphResource->desc.size;
+			attachmentResource->contentsInitialized = true;
+			attachmentResource->desc.initialColorLayout = initialColorLayout;
+			attachmentResource->currentColorState = stateForLayout(initialColorLayout, false);
+		}
+	}
+	return true;
 }
 
 void RenderGraph::resizeOwnedFrameBuffers(vec2 size)
 {
+	clear();
+	for(uint32_t resourceIndex = 0; resourceIndex < m_resources.size(); resourceIndex++)
+	{
+		const auto& graphResource = m_resources[resourceIndex];
+		if(graphResource.kind == RenderGraphResourceKind::FrameBuffer && graphResource.ownsFrameBuffer)
+		{
+			invalidateRasterPassCache(RenderGraphResourceHandle(resourceIndex));
+		}
+	}
 	for(auto& graphResource : m_resources)
 	{
-		if(!graphResource.graphOwned || !graphResource.renderPass)
+		if(graphResource.kind != RenderGraphResourceKind::FrameBuffer
+			|| !graphResource.ownsFrameBuffer || !graphResource.renderPass)
 		{
 			continue;
 		}
@@ -1188,10 +1326,59 @@ void RenderGraph::resizeOwnedFrameBuffers(vec2 size)
 		graphResource.frameBuffer = Engine::shared()->getRenderBackEnd()->createFrameBuffer_imp();
 		graphResource.frameBuffer->init(static_cast<int>(size.x), static_cast<int>(size.y), graphResource.renderPass);
 		graphResource.desc.size = size;
-		graphResource.texture = firstColorTexture(graphResource.frameBuffer);
-		graphResource.depthTexture = graphResource.frameBuffer->getDepthMap();
-		graphResource.currentColorState = stateForLayout(graphResource.desc.initialColorLayout, false);
-		graphResource.currentDepthState = stateForLayout(graphResource.desc.initialDepthLayout, true);
+		auto& textures = graphResource.frameBuffer->getTextureList();
+		auto depthTexture = graphResource.frameBuffer->getDepthMap();
+		size_t colorIndex = 0;
+		for(auto texture : textures)
+		{
+			if(texture == depthTexture)
+			{
+				auto attachmentResource = resource(graphResource.depthAttachment);
+				if(attachmentResource)
+				{
+					attachmentResource->texture = texture;
+					attachmentResource->depthTexture = texture;
+					attachmentResource->desc.size = size;
+					attachmentResource->contentsInitialized = false;
+					attachmentResource->currentDepthState = stateForLayout(graphResource.desc.initialDepthLayout, true);
+				}
+				continue;
+			}
+			if(colorIndex < graphResource.colorAttachments.size())
+			{
+				auto attachmentResource = resource(graphResource.colorAttachments[colorIndex]);
+				if(attachmentResource)
+				{
+					attachmentResource->texture = texture;
+					attachmentResource->desc.size = size;
+					attachmentResource->contentsInitialized = false;
+					attachmentResource->currentColorState = stateForLayout(graphResource.desc.initialColorLayout, false);
+				}
+			}
+			colorIndex++;
+		}
+	}
+}
+
+void RenderGraph::invalidateRasterPassCache(RenderGraphResourceHandle frameBufferResource)
+{
+	for(auto cache = m_rasterPassCache.begin(); cache != m_rasterPassCache.end();)
+	{
+		if(!cache->frameBufferResource.isValid() || !frameBufferResource.isValid()
+			|| cache->frameBufferResource.index() != frameBufferResource.index())
+		{
+			++cache;
+			continue;
+		}
+		delete cache->stage;
+		cache->stage = nullptr;
+		if(cache->ownsRenderPass)
+		{
+			delete cache->renderPass;
+			cache->renderPass = nullptr;
+			cache->ownsRenderPass = false;
+		}
+		cache = m_rasterPassCache.erase(cache);
 	}
 }
 
@@ -1202,11 +1389,23 @@ void RenderGraph::setResourceLayout(RenderGraphResourceHandle handle, RenderGrap
 	{
 		return;
 	}
-	if(colorLayout != RenderGraphResourceLayout::Unknown)
+	if(graphResource->kind == RenderGraphResourceKind::FrameBuffer)
+	{
+		for(auto attachment : graphResource->colorAttachments)
+		{
+			setResourceLayout(attachment, colorLayout);
+		}
+		if(graphResource->depthAttachment.isValid())
+		{
+			setResourceLayout(graphResource->depthAttachment, RenderGraphResourceLayout::Unknown, depthLayout);
+		}
+		return;
+	}
+	if(colorLayout != RenderGraphResourceLayout::Unknown && graphResource->desc.role == TextureRoleEnum::AS_COLOR)
 	{
 		graphResource->currentColorState = stateForLayout(colorLayout, false);
 	}
-	if(depthLayout != RenderGraphResourceLayout::Unknown)
+	if(depthLayout != RenderGraphResourceLayout::Unknown && graphResource->desc.role == TextureRoleEnum::AS_DEPTH)
 	{
 		graphResource->currentDepthState = stateForLayout(depthLayout, true);
 	}
@@ -1242,19 +1441,19 @@ const RenderGraphResource* RenderGraph::resource(RenderGraphResourceHandle handl
 DeviceTexture* RenderGraph::texture(RenderGraphResourceHandle handle) const
 {
 	auto graphResource = resource(handle);
-	return graphResource ? graphResource->texture : nullptr;
+	return graphResource && graphResource->kind == RenderGraphResourceKind::Texture ? graphResource->texture : nullptr;
 }
 
 DeviceTexture* RenderGraph::depthTexture(RenderGraphResourceHandle handle) const
 {
 	auto graphResource = resource(handle);
-	return graphResource ? graphResource->depthTexture : nullptr;
+	return graphResource && graphResource->kind == RenderGraphResourceKind::Texture ? graphResource->depthTexture : nullptr;
 }
 
 DeviceFrameBuffer* RenderGraph::frameBuffer(RenderGraphResourceHandle handle) const
 {
 	auto graphResource = resource(handle);
-	return graphResource ? graphResource->frameBuffer : nullptr;
+	return graphResource && graphResource->kind == RenderGraphResourceKind::FrameBuffer ? graphResource->frameBuffer : nullptr;
 }
 
 void RenderGraph::addDependency(RenderGraphPassHandle pass, RenderGraphPassHandle dependency)
@@ -1335,8 +1534,126 @@ bool RenderGraph::validate(std::string* outMessage) const
 {
 	std::ostringstream stream;
 	bool isValid = true;
+	for(const auto& error : m_resourceRegistrationErrors)
+	{
+		stream << error << "\n";
+		isValid = false;
+	}
+	for(size_t resourceIndex = 0; resourceIndex < m_resources.size(); resourceIndex++)
+	{
+		const auto& graphResource = m_resources[resourceIndex];
+		if(graphResource.kind == RenderGraphResourceKind::FrameBuffer)
+		{
+			for(size_t attachmentIndex = 0; attachmentIndex < graphResource.colorAttachments.size(); attachmentIndex++)
+			{
+				const auto attachment = graphResource.colorAttachments[attachmentIndex];
+				if(!resource(attachment))
+				{
+					stream << "Framebuffer `" << graphResource.desc.name << "` has an invalid color attachment handle.\n";
+					isValid = false;
+					continue;
+				}
+				for(size_t otherIndex = attachmentIndex + 1; otherIndex < graphResource.colorAttachments.size(); otherIndex++)
+				{
+					const auto other = graphResource.colorAttachments[otherIndex];
+					if(attachment.isValid() && other.isValid() && attachment.index() == other.index())
+					{
+						stream << "Framebuffer `" << graphResource.desc.name << "` aliases one texture in multiple attachment slots.\n";
+						isValid = false;
+					}
+				}
+			}
+			if(graphResource.depthAttachment.isValid() && !resource(graphResource.depthAttachment))
+			{
+				stream << "Framebuffer `" << graphResource.desc.name << "` has an invalid depth attachment handle.\n";
+				isValid = false;
+			}
+			continue;
+		}
+		if(graphResource.kind != RenderGraphResourceKind::Texture || !graphResource.texture)
+		{
+			continue;
+		}
+		for(size_t otherIndex = resourceIndex + 1; otherIndex < m_resources.size(); otherIndex++)
+		{
+			const auto& other = m_resources[otherIndex];
+			if(other.kind == RenderGraphResourceKind::Texture && other.texture == graphResource.texture)
+			{
+				stream << "Texture `" << graphResource.desc.name << "` aliases resource `"
+					<< other.desc.name << "` through a different handle.\n";
+				isValid = false;
+			}
+		}
+	}
+
 	for(const auto& pass : m_passes)
 	{
+		if(pass.name.empty())
+		{
+			stream << "RenderGraph contains an unnamed pass.\n";
+			isValid = false;
+		}
+		if(pass.kind == RenderGraphPassKind::Raster)
+		{
+			auto target = resource(pass.frameBufferResource);
+			if(!target || target->kind != RenderGraphResourceKind::FrameBuffer || !target->frameBuffer
+				|| !pass.renderPass || !pass.compiledStage)
+			{
+				stream << "Raster pass `" << pass.name << "` has an invalid framebuffer, render pass, or stage.\n";
+				isValid = false;
+			}
+			else
+			{
+				auto validateAttachmentAccess = [&](RenderGraphResourceHandle attachment, bool isDepth)
+				{
+					if(!attachment.isValid())
+					{
+						return;
+					}
+					const RenderGraphResourceAccess* found = nullptr;
+					for(const auto& access : pass.resourceAccesses)
+					{
+						if(access.resource.isValid() && access.resource.index() == attachment.index())
+						{
+							found = &access;
+							break;
+						}
+					}
+					const bool validClearAccess = found && (isDepth
+						? (found->type == RenderGraphResourceAccessType::WriteDepth || found->type == RenderGraphResourceAccessType::ReadWriteDepth)
+						: (found->type == RenderGraphResourceAccessType::WriteColor || found->type == RenderGraphResourceAccessType::ReadWriteColor));
+					const bool validLoadAccess = found
+						&& (isDepth ? found->type == RenderGraphResourceAccessType::ReadWriteDepth
+							: found->type == RenderGraphResourceAccessType::ReadWriteColor);
+					if((pass.opType == DeviceRenderPass::OpType::LOADCLEAR_AND_STORE && !validClearAccess)
+						|| (pass.opType == DeviceRenderPass::OpType::LOAD_AND_STORE && !validLoadAccess))
+					{
+						auto attachmentResource = resource(attachment);
+						stream << "Raster pass `" << pass.name << "` does not declare a "
+							<< (pass.opType == DeviceRenderPass::OpType::LOAD_AND_STORE ? "read-write" : "write")
+							<< " access for attachment `"
+							<< (attachmentResource ? attachmentResource->desc.name : "<invalid>") << "`.\n";
+						isValid = false;
+					}
+				};
+				for(auto color : target->colorAttachments)
+				{
+					validateAttachmentAccess(color, false);
+				}
+				validateAttachmentAccess(target->depthAttachment, true);
+			}
+		}
+		else if(pass.kind == RenderGraphPassKind::Compute && !pass.compiledStage)
+		{
+			stream << "Compute pass `" << pass.name << "` has no compiled stage.\n";
+			isValid = false;
+		}
+		else if(pass.kind == RenderGraphPassKind::Blit
+			&& (!texture(pass.blitSource) || !texture(pass.blitDestination)))
+		{
+			stream << "Blit pass `" << pass.name << "` has invalid texture resources.\n";
+			isValid = false;
+		}
 		for(const auto& dependency : pass.dependencies)
 		{
 			if(!dependency.isValid() || dependency.index() >= m_passes.size())
@@ -1369,6 +1686,13 @@ bool RenderGraph::validate(std::string* outMessage) const
 				isValid = false;
 				continue;
 			}
+			if(graphResource->kind != RenderGraphResourceKind::Texture)
+			{
+				stream << "Pass `" << pass.name << "` accesses framebuffer `"
+					<< graphResource->desc.name << "` instead of one of its attachments.\n";
+				isValid = false;
+				continue;
+			}
 			if(isColorAccess(access.type) && !graphResource->texture)
 			{
 				stream << "Pass `" << pass.name << "` " << accessName(access.type)
@@ -1381,18 +1705,44 @@ bool RenderGraph::validate(std::string* outMessage) const
 					<< " has no depth texture for `" << graphResource->desc.name << "`.\n";
 				isValid = false;
 			}
+			if(isColorAccess(access.type) && graphResource->desc.role != TextureRoleEnum::AS_COLOR)
+			{
+				stream << "Pass `" << pass.name << "` uses color access for depth texture `"
+					<< graphResource->desc.name << "`.\n";
+				isValid = false;
+			}
+			if(isDepthAccess(access.type) && graphResource->desc.role != TextureRoleEnum::AS_DEPTH)
+			{
+				stream << "Pass `" << pass.name << "` uses depth access for color texture `"
+					<< graphResource->desc.name << "`.\n";
+				isValid = false;
+			}
+			const auto requiredState = beforeStateForAccess(access);
+			const auto currentState = isDepthAccess(access.type) ? graphResource->currentDepthState : graphResource->currentColorState;
+			if(isUnknownState(currentState))
+			{
+				stream << "Pass `" << pass.name << "` accesses resource `" << graphResource->desc.name
+					<< "` with an unknown initial state.\n";
+				isValid = false;
+			}
+			if(access.beforeLayout != RenderGraphResourceLayout::Unknown && access.beforeLayout != requiredState.layout)
+			{
+				stream << "Pass `" << pass.name << "` declares an incompatible before layout for `"
+					<< graphResource->desc.name << "`.\n";
+				isValid = false;
+			}
+			if(pass.kind == RenderGraphPassKind::External && isWriteAccess(access.type))
+			{
+				stream << "External pass `" << pass.name << "` declares a GPU write; use a graph-owned pass.\n";
+				isValid = false;
+			}
 			for(size_t j = i + 1; j < pass.resourceAccesses.size(); j++)
 			{
 				const auto& other = pass.resourceAccesses[j];
 				if(other.resource.isValid() && access.resource.isValid()
 					&& other.resource.index() == access.resource.index()
-					&& ((isColorAccess(access.type) && isColorAccess(other.type))
-						|| (isDepthAccess(access.type) && isDepthAccess(other.type)))
-					&& (isWriteAccess(access.type) || isWriteAccess(other.type))
-					&& access.type != RenderGraphResourceAccessType::ReadWriteColor
-					&& other.type != RenderGraphResourceAccessType::ReadWriteColor
-					&& access.type != RenderGraphResourceAccessType::ReadWriteStorageImage
-					&& other.type != RenderGraphResourceAccessType::ReadWriteStorageImage)
+					&& (isWriteAccess(access.type) || isWriteAccess(other.type)
+						|| access.type != other.type || access.afterLayout != other.afterLayout))
 				{
 					stream << "Pass `" << pass.name << "` has conflicting accesses for `"
 						<< graphResource->desc.name << "`.\n";
@@ -1432,6 +1782,7 @@ bool RenderGraph::validate(std::string* outMessage) const
 		};
 
 		std::vector<int> lastWriter(m_resources.size(), -1);
+		std::vector<std::vector<int>> readersSinceWrite(m_resources.size());
 		for(auto passIndex : m_compiledPassOrder)
 		{
 			if(passIndex >= m_passes.size())
@@ -1449,11 +1800,19 @@ bool RenderGraph::validate(std::string* outMessage) const
 				}
 				const auto resourceIndex = access.resource.index();
 				const auto previousWriter = lastWriter[resourceIndex];
+				const auto graphResource = resource(access.resource);
+				if(isReadAccess(access.type) && previousWriter < 0 && graphResource
+					&& !graphResource->desc.imported && !graphResource->contentsInitialized)
+				{
+					stream << "Pass `" << pass.name << "` reads graph-owned resource `"
+						<< graphResource->desc.name << "` before any reachable writer.\n";
+					isValid = false;
+				}
 				if(previousWriter >= 0 && (isReadAccess(access.type) || isWriteAccess(access.type))
+					&& static_cast<size_t>(previousWriter) != passIndex
 					&& !hasDependencyPath(passIndex, static_cast<size_t>(previousWriter)))
 				{
 					const auto& writerPass = m_passes[static_cast<size_t>(previousWriter)];
-					const auto graphResource = resource(access.resource);
 					stream << "Pass `" << pass.name << "` accesses `"
 						<< (graphResource ? graphResource->desc.name : "<invalid>")
 						<< "` after writer `" << writerPass.name
@@ -1462,7 +1821,27 @@ bool RenderGraph::validate(std::string* outMessage) const
 				}
 				if(isWriteAccess(access.type))
 				{
+					for(auto readerIndex : readersSinceWrite[resourceIndex])
+					{
+						if(readerIndex >= 0 && static_cast<size_t>(readerIndex) != passIndex
+							&& !hasDependencyPath(passIndex, static_cast<size_t>(readerIndex)))
+						{
+							stream << "Pass `" << pass.name << "` writes `"
+								<< (graphResource ? graphResource->desc.name : "<invalid>")
+								<< "` after reader `" << m_passes[static_cast<size_t>(readerIndex)].name
+								<< "` without a dependency path.\n";
+							isValid = false;
+						}
+					}
+				}
+				if(isReadAccess(access.type))
+				{
+					readersSinceWrite[resourceIndex].emplace_back(static_cast<int>(passIndex));
+				}
+				if(isWriteAccess(access.type))
+				{
 					lastWriter[resourceIndex] = static_cast<int>(passIndex);
+					readersSinceWrite[resourceIndex].clear();
 				}
 			}
 		}
@@ -1768,20 +2147,39 @@ bool RenderGraph::compilePass(RenderGraphPassHandle pass, std::vector<uint8_t>& 
 	return true;
 }
 
-void RenderGraph::execute(RenderGraphContext& context)
+bool RenderGraph::execute(RenderGraphContext& context, std::string* outMessage)
 {
+	std::string executionMessage;
+	if(!m_hasCompiledOrder || !m_compiledRoot.isValid())
+	{
+		executionMessage = "RenderGraph execute failed: graph has not been compiled successfully.\n";
+		if(outMessage)
+		{
+			*outMessage = executionMessage;
+		}
+		tlogError("%s", executionMessage.c_str());
+		return false;
+	}
 	std::string validateMessage;
 	if(!validate(&validateMessage))
 	{
-		tlogError("RenderGraph validation failed:\n%s", validateMessage.c_str());
-		return;
+		executionMessage = "RenderGraph validation failed:\n" + validateMessage;
+		if(outMessage)
+		{
+			*outMessage = executionMessage;
+		}
+		tlogError("%s", executionMessage.c_str());
+		return false;
 	}
 
 	context.setGraph(this);
-	const auto executePass = [this, &context](RenderGraphPassDesc& pass)
+	const auto executePass = [this, &context, &executionMessage](RenderGraphPassDesc& pass)
 	{
 		context.setPass(&pass);
-		applyAutomaticTransitions(context, pass);
+		if(!applyAutomaticTransitions(context, pass, executionMessage))
+		{
+			return false;
+		}
 		switch(pass.kind)
 		{
 		case RenderGraphPassKind::Raster:
@@ -1791,48 +2189,87 @@ void RenderGraph::execute(RenderGraphContext& context)
 			executeComputePass(context, pass);
 			break;
 		case RenderGraphPassKind::Blit:
-			executeBlitPass(context, pass);
+			if(!executeBlitPass(context, pass))
+			{
+				executionMessage += "Blit pass `" + pass.name + "` failed.\n";
+				return false;
+			}
 			break;
 		case RenderGraphPassKind::External:
 			executeExternalPass(context, pass);
 			break;
 		}
-		updateResourceStatesAfterPass(context, pass);
+		return updateResourceStatesAfterPass(context, pass, executionMessage);
 	};
 
-	if(m_hasCompiledOrder)
+	for(auto passIndex : m_compiledPassOrder)
 	{
-		for(auto passIndex : m_compiledPassOrder)
+		if(passIndex >= m_passes.size() || !executePass(m_passes[passIndex]))
 		{
-			if(passIndex < m_passes.size())
+			context.setPass(nullptr);
+			context.setGraph(nullptr);
+			if(outMessage)
 			{
-				executePass(m_passes[passIndex]);
+				*outMessage = executionMessage;
 			}
-		}
-	}
-	else
-	{
-		for(auto& pass : m_passes)
-		{
-			executePass(pass);
+			tlogError("RenderGraph execution failed:\n%s", executionMessage.c_str());
+			return false;
 		}
 	}
 	context.setPass(nullptr);
 	context.setGraph(nullptr);
+	if(outMessage)
+	{
+		outMessage->clear();
+	}
+	return true;
+}
+
+void RenderGraph::releasePassCache()
+{
+	for(auto& cache : m_rasterPassCache)
+	{
+		delete cache.stage;
+		cache.stage = nullptr;
+	}
+	for(auto& cache : m_computePassCache)
+	{
+		delete cache.stage;
+		cache.stage = nullptr;
+	}
 }
 
 void RenderGraph::releaseOwnedResources()
 {
 	for(auto& graphResource : m_resources)
 	{
-		if(graphResource.graphOwned)
+		if(graphResource.kind == RenderGraphResourceKind::FrameBuffer && graphResource.ownsFrameBuffer)
 		{
 			delete graphResource.frameBuffer;
 			graphResource.frameBuffer = nullptr;
-			graphResource.texture = nullptr;
-			graphResource.depthTexture = nullptr;
+			graphResource.ownsFrameBuffer = false;
 		}
 	}
+	for(auto& graphResource : m_resources)
+	{
+		if(graphResource.kind == RenderGraphResourceKind::FrameBuffer && graphResource.ownsRenderPass)
+		{
+			delete graphResource.renderPass;
+			graphResource.renderPass = nullptr;
+			graphResource.ownsRenderPass = false;
+		}
+	}
+	for(auto& cache : m_rasterPassCache)
+	{
+		if(cache.ownsRenderPass)
+		{
+			delete cache.renderPass;
+			cache.renderPass = nullptr;
+			cache.ownsRenderPass = false;
+		}
+	}
+	m_rasterPassCache.clear();
+	m_computePassCache.clear();
 }
 
 void RenderGraph::executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass)
@@ -1881,31 +2318,32 @@ void RenderGraph::executeComputePass(RenderGraphContext& context, RenderGraphPas
 	}
 }
 
-void RenderGraph::executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass)
+bool RenderGraph::executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass)
 {
-	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
-	auto command = dynamic_cast<DeviceRenderCommandVK*>(context.cmd());
-	auto source = dynamic_cast<DeviceTextureVK*>(texture(pass.blitSource));
-	auto destination = dynamic_cast<DeviceTextureVK*>(texture(pass.blitDestination));
-	if(!backEnd || !command || !source || !destination)
+	auto command = context.cmd();
+	auto source = texture(pass.blitSource);
+	auto destination = texture(pass.blitDestination);
+	if(!command || !source || !destination)
 	{
-		return;
+		return false;
 	}
 
-	auto sourceFrameBuffer = frameBuffer(pass.blitSource);
-	auto destinationFrameBuffer = frameBuffer(pass.blitDestination);
-	vec2 blitSize = sourceFrameBuffer ? sourceFrameBuffer->getSize() : vec2(0, 0);
-	if(blitSize.x <= 0 || blitSize.y <= 0)
+	auto sourceResource = resource(pass.blitSource);
+	auto destinationResource = resource(pass.blitDestination);
+	if(!sourceResource || !destinationResource
+		|| sourceResource->desc.size.x <= 0 || sourceResource->desc.size.y <= 0
+		|| destinationResource->desc.size.x <= 0 || destinationResource->desc.size.y <= 0)
 	{
-		blitSize = destinationFrameBuffer ? destinationFrameBuffer->getSize() : vec2(0, 0);
+		return false;
 	}
-	if(blitSize.x <= 0 || blitSize.y <= 0)
-	{
-		return;
-	}
+	vec2 blitSize((std::min)(sourceResource->desc.size.x, destinationResource->desc.size.x),
+		(std::min)(sourceResource->desc.size.y, destinationResource->desc.size.y));
 
-	backEnd->blitTexture(command->getVK(), source, destination, blitSize,
-		VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+	DeviceTextureBlit blit;
+	blit.source = source;
+	blit.destination = destination;
+	blit.size = blitSize;
+	return command->blitTexture(blit);
 }
 
 void RenderGraph::executeExternalPass(RenderGraphContext& context, RenderGraphPassDesc& pass)
@@ -1917,10 +2355,14 @@ void RenderGraph::executeExternalPass(RenderGraphContext& context, RenderGraphPa
 	}
 }
 
-void RenderGraph::applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass)
+bool RenderGraph::applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass, std::string& message)
 {
-	auto command = dynamic_cast<DeviceRenderCommandVK*>(context.cmd());
-	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
+	auto command = context.cmd();
+	if(!command)
+	{
+		message += "RenderGraph has no device command for pass `" + pass.name + "`.\n";
+		return false;
+	}
 	for(const auto& access : pass.resourceAccesses)
 	{
 		auto graphResource = resource(access.resource);
@@ -1930,43 +2372,87 @@ void RenderGraph::applyAutomaticTransitions(RenderGraphContext& context, const R
 			continue;
 		}
 
-		auto vkTextures = vkTexturesForAccess(graphResource, access.type);
-		if(vkTextures.empty())
+		auto textures = texturesForAccess(graphResource, access.type);
+		if(textures.empty())
 		{
-			continue;
+			message += "Pass `" + pass.name + "` has no backend texture for `" + graphResource->desc.name + "`.\n";
+			return false;
 		}
 
 		auto& currentState = isDepthAccess(access.type) ? graphResource->currentDepthState : graphResource->currentColorState;
-		const bool screenColorAccess = pass.isOutputToScreen
-			&& isColorAccess(access.type)
-			&& isWriteAccess(access.type)
-			&& pass.frameBufferResource.isValid()
-			&& access.resource.isValid()
-			&& pass.frameBufferResource.index() == access.resource.index();
+		auto target = resource(pass.frameBufferResource);
+		bool screenColorAccess = false;
+		if(pass.isOutputToScreen && target && isColorAccess(access.type) && isWriteAccess(access.type))
+		{
+			for(auto color : target->colorAttachments)
+			{
+				if(color.isValid() && access.resource.isValid() && color.index() == access.resource.index())
+				{
+					screenColorAccess = true;
+					break;
+				}
+			}
+		}
 		if(isUnknownState(currentState))
 		{
-			currentState = nextState;
-			continue;
+			message += "Pass `" + pass.name + "` cannot transition an unknown state for `" + graphResource->desc.name + "`.\n";
+			return false;
 		}
 
 		if(!screenColorAccess && needsStateBarrier(currentState, nextState, true))
 		{
-			for(auto vkTexture : vkTextures)
+			for(auto texture : textures)
 			{
-				transitionImageState(backEnd, command, vkTexture, currentState, nextState);
+				DeviceTextureBarrier barrier;
+				barrier.texture = texture;
+				barrier.before = currentState;
+				barrier.after = nextState;
+				if(!command->textureBarrier(barrier))
+				{
+					message += "Backend rejected transition for `" + graphResource->desc.name
+						+ "` before pass `" + pass.name + "`.\n";
+					return false;
+				}
 			}
 		}
 		currentState = nextState;
 	}
+	return true;
 }
 
-void RenderGraph::updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass)
+bool RenderGraph::updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass, std::string& message)
 {
-	auto command = dynamic_cast<DeviceRenderCommandVK*>(context.cmd());
-	auto backEnd = static_cast<VKRenderBackEnd*>(Engine::shared()->getRenderBackEnd());
-	const bool graphOwnsExecution = pass.kind == RenderGraphPassKind::Raster
-		|| pass.kind == RenderGraphPassKind::Compute
-		|| pass.kind == RenderGraphPassKind::Blit;
+	auto command = context.cmd();
+	if(!command)
+	{
+		message += "RenderGraph has no device command after pass `" + pass.name + "`.\n";
+		return false;
+	}
+
+	// The backend render pass may have already transitioned its attachments on exit.
+	if(pass.kind == RenderGraphPassKind::Raster && pass.renderPass)
+	{
+		auto target = resource(pass.frameBufferResource);
+		if(target)
+		{
+			for(auto color : target->colorAttachments)
+			{
+				auto attachment = resource(color);
+				if(attachment)
+				{
+					attachment->currentColorState.layout = pass.renderPass->isNeedTransitionToRead()
+						? RenderGraphResourceLayout::ShaderRead
+						: (pass.isOutputToScreen ? RenderGraphResourceLayout::Present : RenderGraphResourceLayout::ColorAttachment);
+				}
+			}
+			auto depth = resource(target->depthAttachment);
+			if(depth)
+			{
+				depth->currentDepthState.layout = pass.renderPass->isNeedTransitionToRead()
+					? RenderGraphResourceLayout::DepthRead : RenderGraphResourceLayout::DepthAttachment;
+			}
+		}
+	}
 
 	for(const auto& access : pass.resourceAccesses)
 	{
@@ -1982,21 +2468,44 @@ void RenderGraph::updateResourceStatesAfterPass(RenderGraphContext& context, con
 		}
 
 		auto& currentState = isDepthAccess(access.type) ? graphResource->currentDepthState : graphResource->currentColorState;
-		const bool screenColorAccess = pass.isOutputToScreen
-			&& isColorAccess(access.type)
-			&& isWriteAccess(access.type)
-			&& pass.frameBufferResource.isValid()
-			&& access.resource.isValid()
-			&& pass.frameBufferResource.index() == access.resource.index();
-		if(graphOwnsExecution && !screenColorAccess && !isUnknownState(currentState) && needsStateBarrier(currentState, nextState, false))
+		auto target = resource(pass.frameBufferResource);
+		bool screenColorAccess = false;
+		if(pass.isOutputToScreen && target && isColorAccess(access.type) && isWriteAccess(access.type))
 		{
-			auto vkTextures = vkTexturesForAccess(graphResource, access.type);
-			for(auto vkTexture : vkTextures)
+			for(auto color : target->colorAttachments)
 			{
-				transitionImageState(backEnd, command, vkTexture, currentState, nextState);
+				if(color.isValid() && access.resource.isValid() && color.index() == access.resource.index())
+				{
+					screenColorAccess = true;
+					break;
+				}
+			}
+		}
+		const bool screenPresentHandoff = screenColorAccess
+			&& currentState.layout == RenderGraphResourceLayout::Present && nextState.layout == RenderGraphResourceLayout::Present;
+		if(!screenPresentHandoff && !isUnknownState(currentState) && needsStateBarrier(currentState, nextState, false))
+		{
+			auto textures = texturesForAccess(graphResource, access.type);
+			for(auto texture : textures)
+			{
+				DeviceTextureBarrier barrier;
+				barrier.texture = texture;
+				barrier.before = currentState;
+				barrier.after = nextState;
+				if(!command->textureBarrier(barrier))
+				{
+					message += "Backend rejected transition for `" + graphResource->desc.name
+						+ "` after pass `" + pass.name + "`.\n";
+					return false;
+				}
 			}
 		}
 		currentState = nextState;
+		if(isWriteAccess(access.type))
+		{
+			graphResource->contentsInitialized = true;
+		}
 	}
+	return true;
 }
 }

@@ -9,6 +9,7 @@ class DeviceBufferVK : public DeviceBuffer
 {
 public:
 	DeviceBufferVK();
+	~DeviceBufferVK() override;
 	virtual void allocate(void * data, size_t ammount);
 	void allocateEmpty(size_t ammount) override;
 	void allocateAndSet(size_t alloc_size, void * data, size_t ammount) override;

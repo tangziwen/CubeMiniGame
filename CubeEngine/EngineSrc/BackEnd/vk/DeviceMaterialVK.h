@@ -10,6 +10,7 @@ class DeviceMaterialVK: public DeviceMaterial
 {
 public:
 	DeviceMaterialVK();
+	~DeviceMaterialVK() override;
 	virtual void init(MaterialInstance* material, MaterialTechniqueType techniqueType = MaterialTechniqueType::Default) override;
 	virtual void initCompute(DeviceShaderCollection * shader) override;
 	virtual DeviceDescriptor * getMaterialDescriptorSet() override;
@@ -20,11 +21,11 @@ private:
 	void createMaterialDescriptorPool();
 	void createMaterialUniformBuffer();
 	void createMaterialDescriptorSet();
-	DeviceDescriptorVK * m_materialDescripotrSet;
-	VkDescriptorPool m_materialDescriptorPool;
-	VkBuffer m_matUniformBuffer;
-	VkDeviceMemory m_matUniformBufferMemory;
-	DeviceShaderCollectionVK * m_shader;
+	DeviceDescriptorVK * m_materialDescripotrSet = nullptr;
+	VkDescriptorPool m_materialDescriptorPool = VK_NULL_HANDLE;
+	VkBuffer m_matUniformBuffer = VK_NULL_HANDLE;
+	VkDeviceMemory m_matUniformBufferMemory = VK_NULL_HANDLE;
+	DeviceShaderCollectionVK * m_shader = nullptr;
 };
 
 

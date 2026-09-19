@@ -10,14 +10,19 @@ namespace tzw
 {
 	void TSAA::init()
 	{
-		m_material = new MaterialInstance();
-		m_material->loadFromMaterial("TSAA");
-		MaterialPool::shared()->addMaterial("TSAA", m_material);
+		if(!m_material)
+		{
+			m_material = new MaterialInstance();
+			m_material->loadFromMaterial("TSAA");
+			MaterialPool::shared()->addMaterial("TSAA", m_material);
+		}
 		m_attachments = {
 			{ImageFormat::R16G16B16A16, false},
 			{ImageFormat::D24_S8, true}
 		};
         m_offset = vec2(0, 0);
+		m_index = 0;
+		m_targetBufferIndex = 0;
 	}
     float TemporalHalton(int Index, int Base) noexcept
 	{

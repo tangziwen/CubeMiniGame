@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "BackEnd/DeviceRenderPass.h"
+#include "BackEnd/DeviceRenderCommand.h"
 #include "BackEnd/DeviceTexture.h"
 #include "Math/vec2.h"
 #include "Rendering/DrawPass.h"
@@ -29,18 +30,7 @@ class RenderQueue;
 struct RenderGraphPassDesc;
 struct RenderGraphResource;
 
-enum class RenderGraphResourceLayout
-{
-	Unknown,
-	ColorAttachment,
-	DepthAttachment,
-	DepthRead,
-	ShaderRead,
-	TransferSrc,
-	TransferDst,
-	General,
-	Present,
-};
+using RenderGraphResourceLayout = DeviceTextureLayout;
 
 enum class RenderGraphResourceAccessType
 {
@@ -49,6 +39,7 @@ enum class RenderGraphResourceAccessType
 	WriteColor,
 	WriteDepth,
 	ReadWriteColor,
+	ReadWriteDepth,
 	TransferRead,
 	TransferWrite,
 	ReadStorageImage,
@@ -56,24 +47,13 @@ enum class RenderGraphResourceAccessType
 	ReadWriteStorageImage,
 };
 
-enum class RenderGraphResourceUsage
-{
-	Unknown,
-	FragmentShaderRead,
-	ComputeStorageRead,
-	ComputeStorageWrite,
-	ComputeStorageReadWrite,
-	ColorAttachmentWrite,
-	DepthAttachmentWrite,
-	TransferRead,
-	TransferWrite,
-	Present,
-};
+using RenderGraphResourceUsage = DeviceTextureUsage;
+using RenderGraphResourceState = DeviceTextureState;
 
-struct RenderGraphResourceState
+enum class RenderGraphResourceKind
 {
-	RenderGraphResourceLayout layout = RenderGraphResourceLayout::Unknown;
-	RenderGraphResourceUsage usage = RenderGraphResourceUsage::Unknown;
+	Texture,
+	FrameBuffer,
 };
 
 class RenderGraphResourceHandle
@@ -165,11 +145,16 @@ enum class RenderGraphPassKind
 struct RenderGraphResource
 {
 	RenderGraphResourceDesc desc;
+	RenderGraphResourceKind kind = RenderGraphResourceKind::Texture;
 	DeviceTexture* texture = nullptr;
 	DeviceTexture* depthTexture = nullptr;
 	DeviceFrameBuffer* frameBuffer = nullptr;
 	DeviceRenderPass* renderPass = nullptr;
-	bool graphOwned = false;
+	bool ownsFrameBuffer = false;
+	bool ownsRenderPass = false;
+	std::vector<RenderGraphResourceHandle> colorAttachments;
+	RenderGraphResourceHandle depthAttachment = RenderGraphResourceHandle::invalid();
+	bool contentsInitialized = false;
 	RenderGraphResourceState currentColorState;
 	RenderGraphResourceState currentDepthState;
 };
@@ -265,7 +250,8 @@ struct RenderGraphPassDesc
 	RenderGraphPassDesc& readDepth(RenderGraphResourceHandle resource);
 	RenderGraphPassDesc& writeColor(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout = RenderGraphResourceLayout::ColorAttachment);
 	RenderGraphPassDesc& writeDepth(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout = RenderGraphResourceLayout::DepthAttachment);
-	RenderGraphPassDesc& readWriteColor(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout = RenderGraphResourceLayout::Unknown);
+	RenderGraphPassDesc& readWriteColor(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout = RenderGraphResourceLayout::ColorAttachment);
+	RenderGraphPassDesc& readWriteDepth(RenderGraphResourceHandle resource, RenderGraphResourceLayout finalLayout = RenderGraphResourceLayout::DepthAttachment);
 	RenderGraphPassDesc& transferRead(RenderGraphResourceHandle resource);
 	RenderGraphPassDesc& transferWrite(RenderGraphResourceHandle resource);
 	RenderGraphPassDesc& readStorageImage(RenderGraphResourceHandle resource);
@@ -280,6 +266,7 @@ struct RenderGraphPassDesc
 private:
 	friend class RenderGraph;
 	friend class RenderGraphPassContext;
+	friend class RenderGraphTestAccess;
 
 	struct NamedOutput
 	{
@@ -291,6 +278,7 @@ private:
 	RenderGraphPassHandle handle = RenderGraphPassHandle::invalid();
 	DeviceRenderPass* renderPass = nullptr;
 	DeviceRenderStage* compiledStage = nullptr;
+	DeviceRenderPass::OpType opType = DeviceRenderPass::OpType::LOAD_AND_STORE;
 	RenderGraphResourceHandle frameBufferResource = RenderGraphResourceHandle::invalid();
 	RenderGraphResourceHandle blitSource = RenderGraphResourceHandle::invalid();
 	RenderGraphResourceHandle blitDestination = RenderGraphResourceHandle::invalid();
@@ -303,6 +291,13 @@ private:
 class RenderGraph
 {
 public:
+	RenderGraph() = default;
+	~RenderGraph();
+	RenderGraph(const RenderGraph&) = delete;
+	RenderGraph& operator=(const RenderGraph&) = delete;
+	RenderGraph(RenderGraph&&) = delete;
+	RenderGraph& operator=(RenderGraph&&) = delete;
+
 	void beginBuild();
 	void clear();
 	void clearResources();
@@ -322,6 +317,10 @@ public:
 	RenderGraphResourceHandle createFrameBuffer(const RenderGraphResourceDesc& desc, DeviceRenderPass* renderPass);
 	RenderGraphResourceHandle createFrameBuffer(const RenderGraphResourceDesc& desc, const DeviceAttachmentInfoList& attachments,
 		DeviceRenderPass::OpType opType, bool isNeedTransitionToRead, bool isOutputToScreen = false);
+	RenderGraphResourceHandle colorAttachment(RenderGraphResourceHandle frameBufferResource, uint32_t index = 0) const;
+	RenderGraphResourceHandle depthAttachment(RenderGraphResourceHandle frameBufferResource) const;
+	bool rebindImportedFrameBuffer(RenderGraphResourceHandle handle, DeviceFrameBuffer* frameBuffer,
+		RenderGraphResourceLayout initialColorLayout, RenderGraphResourceLayout initialDepthLayout = RenderGraphResourceLayout::Unknown);
 	void resizeOwnedFrameBuffers(vec2 size);
 	void setResourceLayout(RenderGraphResourceHandle handle, RenderGraphResourceLayout colorLayout, RenderGraphResourceLayout depthLayout = RenderGraphResourceLayout::Unknown);
 	DeviceFrameBuffer* passFrameBuffer(RenderGraphPassHandle handle) const;
@@ -337,10 +336,11 @@ public:
 	std::string dumpDot() const;
 	std::string dumpDot(RenderGraphNode root) const;
 	bool compile(RenderGraphNode root, std::string* outMessage = nullptr);
-	void execute(RenderGraphContext& context);
+	bool execute(RenderGraphContext& context, std::string* outMessage = nullptr);
 
 private:
 	friend class RenderGraphNode;
+	friend class RenderGraphTestAccess;
 
 	struct RasterPassCacheEntry
 	{
@@ -348,6 +348,7 @@ private:
 		DeviceRenderPass* renderPass = nullptr;
 		DeviceRenderStage* stage = nullptr;
 		RenderGraphResourceHandle frameBufferResource = RenderGraphResourceHandle::invalid();
+		bool ownsRenderPass = false;
 	};
 
 	struct ComputePassCacheEntry
@@ -364,19 +365,25 @@ private:
 	void setPassOutput(RenderGraphPassHandle pass, RenderGraphResourceHandle output);
 	void setPassOutput(RenderGraphPassHandle pass, const std::string& name, RenderGraphResourceHandle output);
 	RenderGraphResourceHandle passOutput(RenderGraphPassHandle pass, const std::string& name) const;
+	RenderGraphResourceHandle registerTextureResource(const RenderGraphResourceDesc& desc, DeviceTexture* texture, bool imported);
+	void registerFrameBufferAttachments(RenderGraphResourceHandle frameBufferResource);
+	RenderGraphResourceHandle findTextureResource(DeviceTexture* texture) const;
+	void invalidateRasterPassCache(RenderGraphResourceHandle frameBufferResource);
 	bool compilePass(RenderGraphPassHandle pass, std::vector<uint8_t>& visitState, std::string& message);
+	void releasePassCache();
 	void releaseOwnedResources();
-	void applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass);
-	void updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass);
+	bool applyAutomaticTransitions(RenderGraphContext& context, const RenderGraphPassDesc& pass, std::string& message);
+	bool updateResourceStatesAfterPass(RenderGraphContext& context, const RenderGraphPassDesc& pass, std::string& message);
 	void executeRasterPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 	void executeComputePass(RenderGraphContext& context, RenderGraphPassDesc& pass);
-	void executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
+	bool executeBlitPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 	void executeExternalPass(RenderGraphContext& context, RenderGraphPassDesc& pass);
 
 	std::vector<RenderGraphPassDesc> m_passes;
 	std::vector<RenderGraphResource> m_resources;
 	std::vector<RasterPassCacheEntry> m_rasterPassCache;
 	std::vector<ComputePassCacheEntry> m_computePassCache;
+	std::vector<std::string> m_resourceRegistrationErrors;
 	std::vector<uint32_t> m_compiledPassOrder;
 	bool m_hasCompiledOrder = false;
 	RenderGraphPassHandle m_compiledRoot = RenderGraphPassHandle::invalid();

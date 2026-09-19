@@ -13,13 +13,18 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 float weight[5] = float[] (0.227027, 0.1945946, 0.1216216, 0.054054, 0.016216);
 void main() 
 {
+	if(any(greaterThanEqual(ivec2(gl_GlobalInvocationID.xy), imageSize(targetBuffer))))
+	{
+		return;
+	}
 	vec2 UV = vec2(gl_GlobalInvocationID.x / t_shaderUnifom.TU_OutSize.x, gl_GlobalInvocationID.y / t_shaderUnifom.TU_OutSize.y);
 	ivec2 InPixelPos = ivec2(UV.x * t_shaderUnifom.TU_InSize.x, UV.y * t_shaderUnifom.TU_InSize.y);
+	ivec2 maxInputPixel = imageSize(inBuffer) - ivec2(1);
 	vec3 accum = imageLoad(inBuffer, InPixelPos).rgb * weight[0];
 	for(int i = 1; i< 5; i ++)
 	{
-		accum += imageLoad(inBuffer, InPixelPos + ivec2(i, 0)).rgb * weight[i];
-		accum += imageLoad(inBuffer, InPixelPos - ivec2(i, 0)).rgb * weight[i];
+		accum += imageLoad(inBuffer, clamp(InPixelPos + ivec2(i, 0), ivec2(0), maxInputPixel)).rgb * weight[i];
+		accum += imageLoad(inBuffer, clamp(InPixelPos - ivec2(i, 0), ivec2(0), maxInputPixel)).rgb * weight[i];
 	}
 	imageStore(targetBuffer, ivec2(gl_GlobalInvocationID.xy), vec4(accum, 1.0));
 }

@@ -1,51 +1,26 @@
 #include "OutlinePass.h"
 
-#include "BackEnd/DeviceFrameBuffer.h"
-#include "BackEnd/DeviceRenderStage.h"
-#include "BackEnd/RenderBackEndBase.h"
-#include "Engine/Engine.h"
+#include "BackEnd/DeviceDescriptor.h"
 #include "Interface/Drawable3D.h"
-#include "Rendering/ImageFormat.h"
 #include "Rendering/RenderCommand.h"
-#include "Rendering/RenderFlag.h"
-#include "Rendering/RenderPath.h"
+#include "Rendering/RenderGraph.h"
 #include "Technique/MaterialInstance.h"
 
 namespace tzw
 {
 void OutlinePass::init()
 {
-	auto backEnd = Engine::shared()->getRenderBackEnd();
-	auto size = Engine::shared()->winSize();
-
-	auto maskPass = backEnd->createDeviceRenderpass_imp();
-	maskPass->init({{ImageFormat::R8G8B8A8, false}, {ImageFormat::D24_S8, true}},
-		DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-	auto maskBuffer = backEnd->createFrameBuffer_imp();
-	maskBuffer->init(size.x, size.y, maskPass);
-
-	m_maskStage = backEnd->createRenderStage_imp();
-	m_maskStage->setName("Outline Mask Pass");
-	m_maskStage->init(maskPass, maskBuffer, DrawPassType::OutlineMask);
-
+	if(m_maskMaterial && m_compositeMaterial)
+	{
+		return;
+	}
 	m_maskMaterial = new MaterialInstance();
 	m_maskMaterial->loadFromMaterial("OutlineMask");
-
-	auto compositePass = backEnd->createDeviceRenderpass_imp();
-	compositePass->init({{ImageFormat::R16G16B16A16, false}},
-		DeviceRenderPass::OpType::LOADCLEAR_AND_STORE, true);
-	auto compositeBuffer = backEnd->createFrameBuffer_imp();
-	compositeBuffer->init(size.x, size.y, compositePass);
-
-	m_compositeStage = backEnd->createRenderStage_imp();
-	m_compositeStage->setName("Outline Composite Pass");
-	m_compositeStage->init(compositePass, compositeBuffer);
 
 	m_compositeMaterial = new MaterialInstance();
 	m_compositeMaterial->loadFromMaterial("OutlineComposite");
 	m_compositeMaterial->setVar("TU_outlineWidth", 2.0f);
 	m_compositeMaterial->setVar("TU_depthEpsilon", 0.0005f);
-	m_compositeStage->createSinglePipeline(m_compositeMaterial);
 }
 
 bool OutlinePass::hasOutlineCommands(const RenderQueue* sourceQueue) const
@@ -64,61 +39,49 @@ bool OutlinePass::hasOutlineCommands(const RenderQueue* sourceQueue) const
 	return false;
 }
 
-DeviceTexture* OutlinePass::draw(DeviceRenderCommand* cmd, RenderPath* renderPath, RenderQueue* sourceQueue,
-	DeviceTexture* sceneColor, DeviceTexture* sceneDepth)
+void OutlinePass::executeMask(RenderGraphPassContext& graphContext)
 {
-	if (!m_maskStage || !m_compositeStage)
+	if(buildOutlineQueue(graphContext.sceneQueue()))
 	{
-		init();
+		graphContext.drawQueue(&m_outlineQueue);
 	}
-	if (!sceneColor || !sceneDepth || !buildOutlineQueue(sourceQueue))
-	{
-		return sceneColor;
-	}
-
-	m_maskStage->prepare(cmd);
-	m_maskStage->beginRenderPass(nullptr, vec4(0, 0, 0, 0), vec2(1, 0));
-	m_maskStage->draw(&m_outlineQueue, MaterialTechniqueType::Default);
-	m_maskStage->endRenderPass();
-	m_maskStage->finish();
-	renderPath->addRenderStage(m_maskStage);
-
-	auto descriptor = m_compositeStage->getSolorDeviceMaterial()->getMaterialDescriptorSet();
-	descriptor->updateDescriptorByBinding(1, sceneColor);
-	descriptor->updateDescriptorByBinding(2, m_maskStage->getFrameBuffer()->getTextureList()[0]);
-	descriptor->updateDescriptorByBinding(3, m_maskStage->getFrameBuffer()->getDepthMap());
-	descriptor->updateDescriptorByBinding(4, sceneDepth);
-
-	m_compositeStage->prepare(cmd);
-	m_compositeStage->beginRenderPass();
-	m_compositeStage->bindSinglePipelineDescriptor();
-	m_compositeStage->drawScreenQuad();
-	m_compositeStage->endRenderPass();
-	m_compositeStage->finish();
-	renderPath->addRenderStage(m_compositeStage);
-
-	return m_compositeStage->getFrameBuffer()->getTextureList()[0];
 }
 
-DeviceTexture* OutlinePass::outputTexture() const
+void OutlinePass::executeComposite(RenderGraphPassContext& graphContext, DeviceTexture* sceneColor,
+	DeviceTexture* maskColor, DeviceTexture* maskDepth, DeviceTexture* sceneDepth)
 {
-	if(!m_compositeStage || !m_compositeStage->getFrameBuffer())
+	auto descriptor = graphContext.materialDescriptor();
+	if(!descriptor || !sceneColor || !maskColor || !maskDepth || !sceneDepth)
 	{
-		return nullptr;
+		return;
 	}
-	auto& textures = m_compositeStage->getFrameBuffer()->getTextureList();
-	return textures.empty() ? nullptr : textures[0];
+	descriptor->updateDescriptorByBinding(1, sceneColor);
+	descriptor->updateDescriptorByBinding(2, maskColor);
+	descriptor->updateDescriptorByBinding(3, maskDepth);
+	descriptor->updateDescriptorByBinding(4, sceneDepth);
+	graphContext.bindSinglePipelineDescriptor();
+	graphContext.drawScreenQuad();
+}
+
+MaterialInstance* OutlinePass::maskMaterial() const
+{
+	return m_maskMaterial;
+}
+
+MaterialInstance* OutlinePass::compositeMaterial() const
+{
+	return m_compositeMaterial;
 }
 
 bool OutlinePass::isOutlineCommand(const RenderCommand& command) const
 {
 	auto drawableObj = const_cast<RenderCommand&>(command).getDrawableObj();
-	if (command.batchType() != RenderCommand::RenderBatchType::Single || !drawableObj)
+	if(command.batchType() != RenderCommand::RenderBatchType::Single || !drawableObj)
 	{
 		return false;
 	}
 	auto node = static_cast<Node*>(drawableObj);
-	if (node->getNodeType() != Node::NodeType::Drawable3D)
+	if(node->getNodeType() != Node::NodeType::Drawable3D)
 	{
 		return false;
 	}
@@ -129,14 +92,14 @@ bool OutlinePass::isOutlineCommand(const RenderCommand& command) const
 bool OutlinePass::buildOutlineQueue(RenderQueue* sourceQueue)
 {
 	m_outlineQueue.clearCommands();
-	if (!sourceQueue)
+	if(!sourceQueue)
 	{
 		return false;
 	}
 
-	for (auto& command : sourceQueue->getList())
+	for(auto& command : sourceQueue->getList())
 	{
-		if (!isOutlineCommand(command))
+		if(!isOutlineCommand(command))
 		{
 			continue;
 		}

@@ -11,10 +11,11 @@ class DeviceRenderPassVK : public DeviceRenderPass
 {
 public:
 	DeviceRenderPassVK();
+	~DeviceRenderPassVK() override;
 	void init(const DeviceAttachmentInfoList & colorFormatList, OpType opType, bool isNeedTransitionToRread, bool isOutputToScreen = false) override;
 	VkRenderPass getRenderPass();
 private:
-	VkRenderPass m_renderPass;
+	VkRenderPass m_renderPass = VK_NULL_HANDLE;
 };
 };
 

@@ -15,8 +15,42 @@ namespace tzw
 {
 
 DevicePipelineVK::DevicePipelineVK()
+	: m_currItemWiseDescriptorSetIdx(0)
+	, m_totalItemWiseDesSet(0)
+	, m_pipeline(VK_NULL_HANDLE)
+	, m_pipelineLayout(VK_NULL_HANDLE)
+	, m_shader(nullptr)
+	, m_itemBufferPool(nullptr)
 {
-	
+}
+
+DevicePipelineVK::~DevicePipelineVK()
+{
+	for(auto& entry : m_renderItemMap)
+	{
+		delete entry.second;
+	}
+	for(auto descriptor : m_itemDescritptorSetList)
+	{
+		delete descriptor;
+	}
+	delete m_itemBufferPool;
+	auto device = VKRenderBackEnd::shared()->getDevice();
+	for(auto descriptorPool : m_descriptorPoolList)
+	{
+		if(descriptorPool != VK_NULL_HANDLE)
+		{
+			vkDestroyDescriptorPool(device, descriptorPool, nullptr);
+		}
+	}
+	if(m_pipeline != VK_NULL_HANDLE)
+	{
+		vkDestroyPipeline(device, m_pipeline, nullptr);
+	}
+	if(m_pipelineLayout != VK_NULL_HANDLE)
+	{
+		vkDestroyPipelineLayout(device, m_pipelineLayout, nullptr);
+	}
 }
 void DevicePipelineVK::initCompute(DeviceShaderCollection * shader)
 {

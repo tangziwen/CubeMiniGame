@@ -20,6 +20,7 @@ class DevicePipelineVK : public DevicePipeline
 {
 public:
 	DevicePipelineVK();
+	~DevicePipelineVK() override;
 	void initCompute(DeviceShaderCollection * computeShader) override;
 	void init(vec2 viewPortSize, MaterialInstance * mat, DeviceRenderPass* targetRenderPass
 		,DeviceVertexInput vertexInput, bool isSupportInstancing, DeviceVertexInput instanceVertexInput, int colorAttachmentCount = 1,

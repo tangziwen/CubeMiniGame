@@ -12,6 +12,7 @@ class DeviceShaderCollection;
 class DeviceMaterial
 {
 public:
+	virtual ~DeviceMaterial() = default;
 	virtual DeviceDescriptor * getMaterialDescriptorSet() = 0;
 	virtual void updateUniform() = 0;
 	virtual void initCompute(DeviceShaderCollection * shader) = 0;

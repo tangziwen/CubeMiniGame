@@ -21,10 +21,13 @@ public:
 		LOAD_AND_STORE,
 	};
 	DeviceRenderPass();
+	virtual ~DeviceRenderPass() = default;
 	virtual void init(const DeviceAttachmentInfoList & attachList, OpType opType,bool isNeedTransitionToRread, bool isOutputToScreen = false) = 0;
 	size_t getAttachmentCount();
 	std::vector<DeviceRenderPassAttachmentInfo> & getAttachmentList();
 	OpType getOpType();
+	bool isNeedTransitionToRead() const { return m_isNeedTransitionToRead; }
+	bool isOutputToScreen() const { return m_isOutPutToScreen; }
 protected:
 	OpType m_opType;
 	bool m_isNeedTransitionToRead;

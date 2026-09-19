@@ -4,6 +4,9 @@ namespace tzw
 {
 
 	DeviceRenderPass::DeviceRenderPass()
+		: m_opType(OpType::LOAD_AND_STORE)
+		, m_isNeedTransitionToRead(false)
+		, m_isOutPutToScreen(false)
 	{
 	}
 	size_t DeviceRenderPass::getAttachmentCount()

@@ -22,6 +22,7 @@ class DeviceItemBufferPoolVK
 {
 public:
 	DeviceItemBufferPoolVK(size_t guessSize);
+	~DeviceItemBufferPoolVK();
 	size_t giveMeBuffer(size_t size);
 	DeviceItemBuffer giveMeItemBuffer(size_t size);
 	void reset();

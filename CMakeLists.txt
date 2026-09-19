@@ -14,6 +14,8 @@ endif()
 
 project(CubeMiniGame)
 
+include(CTest)
+
 set(CUBE_CLIENT_TARGET CubeClient)
 
 option(CUBEENGINE_USE_VULKAN "Build Vulkan backend" ON)
@@ -65,4 +67,14 @@ target_link_libraries(${CUBE_CLIENT_TARGET}
 # ------------------------------------------------------------------------------
 if(MSVC)
     target_compile_options(${CUBE_CLIENT_TARGET} PRIVATE /utf-8)
+endif()
+
+if(BUILD_TESTING)
+    add_executable(RenderGraphTests Tests/RenderGraphTests.cpp)
+    target_compile_features(RenderGraphTests PRIVATE cxx_std_17)
+    target_link_libraries(RenderGraphTests PRIVATE CubeEngine)
+    if(MSVC)
+        target_compile_options(RenderGraphTests PRIVATE /utf-8)
+    endif()
+    add_test(NAME RenderGraphTests COMMAND RenderGraphTests)
 endif()

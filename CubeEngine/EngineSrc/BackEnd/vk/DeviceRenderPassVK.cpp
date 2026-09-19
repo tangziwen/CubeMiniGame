@@ -9,6 +9,15 @@ namespace tzw
         
 	}
 
+	DeviceRenderPassVK::~DeviceRenderPassVK()
+	{
+		if(m_renderPass != VK_NULL_HANDLE)
+		{
+			vkDestroyRenderPass(VKRenderBackEnd::shared()->getDevice(), m_renderPass, nullptr);
+			m_renderPass = VK_NULL_HANDLE;
+		}
+	}
+
     void DeviceRenderPassVK::init(const DeviceAttachmentInfoList & attachList, OpType opType, bool isNeedTransitionToRread, bool isOutputToScreen)
     {
         m_isNeedTransitionToRead = isNeedTransitionToRread;

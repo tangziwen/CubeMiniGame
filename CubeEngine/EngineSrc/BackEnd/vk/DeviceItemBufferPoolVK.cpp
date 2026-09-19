@@ -29,6 +29,11 @@ namespace tzw
 		m_currSize = 0;
 	}
 
+	DeviceItemBufferPoolVK::~DeviceItemBufferPoolVK()
+	{
+		delete m_buffer;
+	}
+
 	size_t DeviceItemBufferPoolVK::giveMeBuffer(size_t size)
 	{
 		auto deviceProperties = VKRenderBackEnd::shared()->GetPhysDeviceProperties();

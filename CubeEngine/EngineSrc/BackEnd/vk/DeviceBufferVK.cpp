@@ -13,6 +13,29 @@ namespace tzw
         m_offset = 0;
     }
 
+    DeviceBufferVK::~DeviceBufferVK()
+    {
+        if(m_buffer == VK_NULL_HANDLE)
+        {
+            return;
+        }
+        if(m_isUsePool)
+        {
+            VKRenderBackEnd::shared()->getMemoryPool()->destroyBuffer(m_buffer, m_bufferInfo);
+        }
+        else
+        {
+            auto device = VKRenderBackEnd::shared()->getDevice();
+            vkDestroyBuffer(device, m_buffer, nullptr);
+            if(m_memory != VK_NULL_HANDLE)
+            {
+                vkFreeMemory(device, m_memory, nullptr);
+            }
+        }
+        m_buffer = VK_NULL_HANDLE;
+        m_memory = VK_NULL_HANDLE;
+    }
+
     void DeviceBufferVK::allocate(void* data, size_t ammount)
 	{
         auto device = VKRenderBackEnd::shared()->getDevice();

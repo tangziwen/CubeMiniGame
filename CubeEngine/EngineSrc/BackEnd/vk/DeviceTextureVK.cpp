@@ -178,6 +178,7 @@ void DeviceTextureVK::initDataRaw(const unsigned char * buff, size_t texWidth, s
 
 	m_metaInfo.width = texWidth;
 	m_metaInfo.height = texHeight;
+	m_metaInfo.m_imageFormat = format;
     if (!pixels) 
     {
         abort();

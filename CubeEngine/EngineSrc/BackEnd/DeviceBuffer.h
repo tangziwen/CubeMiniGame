@@ -12,6 +12,7 @@ class DeviceBuffer
 {
 public:
 	DeviceBuffer();
+	virtual ~DeviceBuffer() = default;
 	virtual void allocate(void * data, size_t ammount) = 0;
 	virtual void allocateAndSet(size_t alloc_size, void * data, size_t ammount);
 	virtual void allocateEmpty(size_t ammount);

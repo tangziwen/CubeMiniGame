@@ -14,8 +14,33 @@ namespace tzw
     Mesh * DeviceRenderStage::m_sphere = nullptr;
 
 	DeviceRenderStage::DeviceRenderStage()
+		: m_renderPass(nullptr)
+		, m_frameBuffer(nullptr)
+		, m_singlePipeline(nullptr)
+		, m_soloMaterial(nullptr)
+		, m_deviceRenderCommand(nullptr)
+		, m_selfRenderQueue(new RenderQueue())
+		, m_drawPassMask(DrawPassType::Unset)
 	{
-		m_selfRenderQueue = new RenderQueue();
+	}
+
+	DeviceRenderStage::~DeviceRenderStage()
+	{
+		delete m_singlePipeline;
+		delete m_soloMaterial;
+		for(auto& entry : m_pipelinePool)
+		{
+			delete entry.second;
+		}
+		for(auto& entry : m_deviceMaterialPool)
+		{
+			delete entry.second;
+		}
+		for(auto& entry : m_matPipelinePool)
+		{
+			delete entry.second;
+		}
+		delete m_selfRenderQueue;
 	}
 
 	void DeviceRenderStage::init(DeviceRenderPass* renderPass, DeviceFrameBuffer* frameBuffer, DrawPassTypeMask drawPassMask)

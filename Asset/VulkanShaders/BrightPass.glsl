@@ -11,6 +11,10 @@ layout(set = 0, binding = 0) uniform UniformBufferObjectMat
 } t_shaderUnifom;
 void main() 
 {
+	if(any(greaterThanEqual(ivec2(gl_GlobalInvocationID.xy), imageSize(targetBuffer))))
+	{
+		return;
+	}
 	vec2 UV = vec2(gl_GlobalInvocationID.x / t_shaderUnifom.TU_OutSize.x, gl_GlobalInvocationID.y / t_shaderUnifom.TU_OutSize.y);
 	ivec2 InPixelPos = ivec2(UV.x * t_shaderUnifom.TU_InSize.x, UV.y * t_shaderUnifom.TU_InSize.y);
 	vec4 color = imageLoad(inBuffer, InPixelPos);
